@@ -9,6 +9,13 @@ export {
 } from './ascii-letters.ts';
 export { longestRunOf, } from './character-run.ts';
 export { isHanCharacter, } from './han-only-text.ts';
+export {
+  continuesLatinWord,
+  isCombiningMark,
+  isLatinLetter,
+  isLatinLetterOrMark,
+  isLatinWordCharacter,
+} from './latin-letters.ts';
 export { isIdeograph, } from './preservation-tokens.ts';
 export {
   carriesContent,

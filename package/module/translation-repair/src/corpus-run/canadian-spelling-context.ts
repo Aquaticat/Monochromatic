@@ -2,6 +2,7 @@ import {
   isCasedLetter,
   isDigit,
 } from './canadian-date-parts.ts';
+import { isCombiningMark, } from '../latin-letters.ts';
 import {
   runEnd,
   runStart,
@@ -13,16 +14,6 @@ import {
 // a longer token stops it (ledger K10, H14), and emphasis underscores or a
 // slash between words do not. `canadian-spelling-capital.ts` decides the
 // same for a capitalised word's capital (ledger K11).
-
-/**
- First combining diacritical mark, which continues the letter before it.
- */
-const FIRST_COMBINING_MARK = 0x03_00;
-
-/**
- Last combining diacritical mark.
- */
-const LAST_COMBINING_MARK = 0x03_6F;
 
 /**
  Neighbours that always put a word outside prose: a heading or hashtag mark,
@@ -86,11 +77,7 @@ type Side = Readonly<{
 export function isWordCharacter(
   { character, }: { readonly character: string; },
 ): boolean {
-  /**
-   The unit's code.
-   */
-  const code = character.codePointAt(0,) ?? 0;
-  return isCasedLetter({ character, },) || ((code >= FIRST_COMBINING_MARK) && (code <= LAST_COMBINING_MARK));
+  return isCasedLetter({ character, },) || isCombiningMark({ character, },);
 }
 
 /**

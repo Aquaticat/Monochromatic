@@ -1,4 +1,7 @@
-import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+import {
+  isCombiningMark,
+  isLatinWordCharacter,
+} from './latin-letters.ts';
 import { isHanCharacter, } from './han-only-text.ts';
 
 //region Glossary match
@@ -70,27 +73,6 @@ export type GlossarySpan = {
 };
 
 /**
- First code point of the combining diacritical marks block, which carries
- the tone marks NFD splits off pinyin.
- */
-const COMBINING_FIRST = '\u{0300}';
-
-/**
- Last code point of the combining diacritical marks block.
- */
-const COMBINING_LAST = '\u{036F}';
-
-/**
- First code point of the Latin-1 letters and the Latin Extended blocks.
- */
-const LATIN_EXTENDED_FIRST = '\u{00C0}';
-
-/**
- Last code point of Latin Extended-B.
- */
-const LATIN_EXTENDED_LAST = '\u{024F}';
-
-/**
  Characters a hyphen may be written as, each read as a space.
  */
 const HYPHENS: ReadonlySet<string> = new Set([
@@ -98,55 +80,6 @@ const HYPHENS: ReadonlySet<string> = new Set([
   '\u{2010}',
   '\u{2011}',
 ],);
-
-/**
- Signs inside the Latin-1 range that are not letters.
- */
-const LATIN_SIGNS: ReadonlySet<string> = new Set([
-  '\u{00D7}',
-  '\u{00F7}',
-],);
-
-/**
- Whether a character belongs to a Latin word, so a form edge may not stand
- beside it: an ASCII letter or digit, or a letter of the Latin-1 and Latin
- Extended blocks.
-
- @param character - one character of a folded text, empty past either end
-
- @returns True for a letter or digit a word may continue with
-
- @example
- ```ts
- isGlossaryWordCharacter({ character: 'o', },); // true
- isGlossaryWordCharacter({ character: '，', },); // false
- ```
- */
-export function isGlossaryWordCharacter({ character, }: { readonly character: string; },): boolean {
-  if (character === '')
-    return false;
-  if (isAsciiAlphanumeric({ character, },))
-    return true;
-  return (character >= LATIN_EXTENDED_FIRST)
-    && (character <= LATIN_EXTENDED_LAST)
-    && (!LATIN_SIGNS.has(character,));
-}
-
-/**
- Whether a character is a combining mark NFD split off a letter.
-
- @param character - one code point
-
- @returns True inside the combining diacritical marks block
-
- @example
- ```ts
- isCombiningMark({ character: '\u{0300}', },); // true
- ```
- */
-function isCombiningMark({ character, }: { readonly character: string; },): boolean {
-  return (character >= COMBINING_FIRST) && (character <= COMBINING_LAST);
-}
 
 /**
  Whether a character separates words the way a space does: whitespace of any
@@ -303,18 +236,18 @@ export function formStarts(
    Whether the form opens on a Latin letter or digit, so its start needs a
    boundary.
    */
-  const opensWord = isGlossaryWordCharacter({ character: form.charAt(0,), },);
+  const opensWord = isLatinWordCharacter({ character: form.charAt(0,), },);
   /**
    Whether the form closes on a Latin letter or digit, so its end needs a
    boundary.
    */
-  const closesWord = isGlossaryWordCharacter({ character: form.at(-1,) ?? '', },);
+  const closesWord = isLatinWordCharacter({ character: form.at(-1,) ?? '', },);
   return occurrenceStarts({
     text: folded,
     needle: form,
   },)
     .filter(function standsApart(start,): boolean {
-      if (opensWord && isGlossaryWordCharacter({ character: folded.charAt(start - 1,), },))
+      if (opensWord && isLatinWordCharacter({ character: folded.charAt(start - 1,), },))
         return false;
       if ((!closesWord) || (end === 'open'))
         return true;
@@ -331,7 +264,7 @@ export function formStarts(
           suffix,
           after,
         )
-          && (!isGlossaryWordCharacter({ character: folded.charAt(after + suffix.length,), },));
+          && (!isLatinWordCharacter({ character: folded.charAt(after + suffix.length,), },));
       },);
     },);
 }
