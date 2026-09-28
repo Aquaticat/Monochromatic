@@ -1,5 +1,5 @@
 /** Cluster-local packets retain every claim, merge ballot and independent quorum basis. */
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { type Logger, tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   buildAdjudicationMessages,
@@ -203,6 +203,30 @@ await describe({
         expect(result.issues).toHaveLength(1);
         expect(fixture.captures.every(capture => capture.claims.length === 1)).toBe(true);
         expect(fixture.captures.every(capture => !capture.prompt.includes('FULL ORIGINAL DOCUMENT'))).toBe(true);
+      },
+    }),
+    it({
+      name: 'SAYS IN THE RUN LOG how each issue was decided and on what weight (ledger E5): the stage '
+        + 'logged only its packet count, so an accepted issue the editor then served read in the log '
+        + 'with nothing saying the panel had accepted it, or how narrowly',
+      fn: async () => {
+        const fixture = panelFixture();
+        /** Lines the stage wrote. */
+        const said: string[] = [];
+        /** Logger keeping every line, whatever its level. */
+        const keep = (line: string): number => said.push(line);
+        const captured: Logger = { debug: keep, error: keep, fatal: keep, info: keep, trace: keep, warn: keep, flush: async () => {}, };
+        const result = await runPanelStage({ ...panelInput(fixture.client), l: captured, });
+        const [rejected, accepted,] = result.issues;
+        /** Weight the rejected claim drew against it, as the stage tallied it. */
+        const against = rejected?.tallies['claim-first']?.unsupported ?? 0;
+        /** Weight the accepted claims drew for them. */
+        const forSecond = accepted?.tallies['claim-second']?.supported ?? 0;
+        const forThird = accepted?.tallies['claim-third']?.supported ?? 0;
+        // Positive control: the fixture votes carry weight, so a line naming it is not naming zero.
+        expect(Math.min(against, forSecond, forThird,)).toBeGreaterThan(0);
+        expect(said.some(line => line.includes(`${rejected?.issueId} rejected`) && line.includes(`claim-first: supported 0, unsupported ${String(against)},`))).toBe(true);
+        expect(said.some(line => line.includes(`${accepted?.issueId} accepted`) && line.includes(`claim-second: supported ${String(forSecond)},`) && line.includes(`claim-third: supported ${String(forThird)},`))).toBe(true);
       },
     }),
   ],
