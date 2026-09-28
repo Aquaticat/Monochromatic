@@ -8,6 +8,7 @@ import {
   type HyperServedId,
 } from './hyper-catalog.ts';
 import {
+  OPENROUTER_DROPPED_SEATS,
   OPENROUTER_MODELS,
   OPENROUTER_WITHHELD,
   type OpenRouterServedId,
@@ -337,8 +338,12 @@ export function reachOf(
     bedrock: bedrock.served,
     // SERVED AND BOUGHT. A seat the owner withheld from OpenRouter on cost
     // (2026-09-03) is one this provider does not serve as far as the router
-    // is concerned, since 2026-09-09 (`OPENROUTER_WITHHELD`).
-    openrouter: openrouter.served && (!OPENROUTER_WITHHELD.has(modelId,)),
+    // is concerned, since 2026-09-09 (`OPENROUTER_WITHHELD`); so is a seat the
+    // owner dropped from it (`OPENROUTER_DROPPED_SEATS`, ledger P11), which
+    // held only while its card carried no OpenRouter block.
+    openrouter: openrouter.served
+      && (!OPENROUTER_WITHHELD.has(modelId,))
+      && (!OPENROUTER_DROPPED_SEATS.has(modelId,)),
   };
 }
 
@@ -424,7 +429,8 @@ function openRouterShowsPictures(
    */
   const spelling = openRouterIdFor({ modelId, },);
 
-  if ((!spelling.served) || OPENROUTER_WITHHELD.has(modelId,))
+  if ((!spelling.served) || OPENROUTER_WITHHELD.has(modelId,)
+    || OPENROUTER_DROPPED_SEATS.has(modelId,))
     return false;
 
   /**
