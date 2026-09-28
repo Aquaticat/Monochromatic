@@ -893,7 +893,9 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     on 2026-09-28 two more, before a `PIPESTATUS` echo and between two `rg` probes;
     then a `;` between two `rg --count` probes of the built declarations,
     a heredoc that wrote a script followed by an unchained command that ran it,
-    and a `;` before an `echo` closing a TianqiChen666 refusal count.
+    and a `;` before an `echo` closing a TianqiChen666 refusal count;
+    after the crash that heredoc slip repeated during L11 (the edit script for `refine-slice-settle.ts`).
+    Prevention: write a script with the Write tool and run it in its own call.
 - A capped search taken as complete (QRY): before `7ceffe055` changed two card prices,
     the search for tests pinning the old ones ran through `head --lines=10`,
     which cut off `deepseek-v41-admission.unit.test.ts`; the full suite caught it and `bc69e2336` fixed it.
@@ -2110,11 +2112,26 @@ Status: open.
 
 ### L11: refinement on a slice whose patch lost gets no recheck
 
-Status: open (class one hundred eight's open half, with H4); owner ruled 2026-09-28, "Recheck the rewrite" (`design-commitments.md`), implementation pending;
+Status: fixed in `462c514ee` (guard `35272d1cd`; class one hundred eight's open half, with H4);
+owner ruled 2026-09-28, "Recheck the rewrite" (`design-commitments.md`);
 measured 2026-09-28.
 Across every run, 1,218 of 2,144 refined slices were rewrites of the archive after the accuracy patch lost,
 457 of them on slices with panel-accepted issues the rewrite was never shown, and none had a checker round;
 on the TianqiChen666 runs 106 of 125, 75 with accepted issues.
+
+The retention recheck in `refine-slice-settle.ts` now rules on every accepted issue `T1` leaves open beside the confirmed ones,
+and rolls the whole slice back when a confirmed issue is no longer resolved or an open one drew at least one worse ballot,
+the threshold the owner ruled the same day for a patch's unconfirmed edits (L3).
+A `fixed` ballot on an open issue credits nothing: the round is a rollback gate.
+Rejected and needs-human issues buy no round.
+The introduced-defect probe already ran on every kept rewrite, in the shadow role it has in the accuracy lane,
+and its comment claiming every rewritten slice had its issues repaired is corrected.
+Scope beyond the question's wording: an accepted issue a winning patch left open is checked by the same rule,
+since the rewrite was never shown it either; the ruling's mechanism, not a new one.
+Mutation check (`l11-mutants.json`): leaving the open issues out of the round, never rolling back on them,
+a worse majority in place of one ballot, dropping the status filter, and crediting a fixed ballot are each caught;
+the comment-wording control survives.
+Cache: rides inside refine version 5 with an account in `refine-slice-key.ts`.
 
 ### L12: logging gaps in the repair lane
 

@@ -94,6 +94,13 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  for that ballot rather than as a lost voice (ledger P13, `a991ef1e1`), which
  changes the quorum a select round closes on; checked on 2026-09-28: still no
  slice-cache file newer than 00:26 on 2026-09-27.
+
+ Rides inside 5 too: the retention recheck now also rules on every accepted
+ issue `T1` leaves open, which is every accepted issue of a rewrite of the
+ archive after a lost patch, and rolls the slice back on one worse ballot
+ (ledger L11, `462c514ee`), so a stored settlement may now be a rollback and
+ carries that round's readings; checked on 2026-09-28: still no slice-cache
+ file newer than 00:26 on 2026-09-27.
  */
 export const REFINE_CACHE_VERSION = 5;
 
