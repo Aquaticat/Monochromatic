@@ -167,16 +167,20 @@ await describe({
         + 'length by default (class ninety-three, XingZ626, 2026-09-23): Morph for DeepSeek V4.1 Flash '
         + '(847 streams at 6.2 s and 514 characters a reply against DekaLLM\'s 432 at 54 s and 8,813), '
         + 'Wafer for GLM-5.3-Flash (40 at 14.5 s and 651 characters against Together\'s 187 at 91 s and '
-        + '23,666), sent as `provider.order` with fallbacks allowed; every other row names none',
+        + '23,666), and Together then CoreWeave for MiniMax M3, the two measured endpoints its schema '
+        + 'requests reach (ledger H12: 7,601 streams at p90 5.5 s against 37,870 at 9.7 s since 2026-09-21, '
+        + 'both FP4, completion alike), sent as `provider.order` with fallbacks allowed; every other row names none',
       fn: async () => {
         expect(OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash'].preferredEndpoints,).toEqual(['morph',],);
         expect(OPENROUTER_MODELS['z-ai/glm-5.3-flash'].preferredEndpoints,).toEqual(['wafer',],);
+        expect(OPENROUTER_MODELS['minimax/minimax-m3'].preferredEndpoints,).toEqual(['together', 'coreweave',],);
         /**
          Rows with a measured endpoint named on them.
          */
         const named: ReadonlySet<string> = new Set([
           'deepseek/deepseek-v4.1-flash',
           'z-ai/glm-5.3-flash',
+          'minimax/minimax-m3',
         ],);
         for (const info of Object.values(OPENROUTER_MODELS,)) {
           if (!named.has(info.id,))
@@ -247,6 +251,7 @@ await describe({
             'parasail',
             'modelrun',
           ],
+          order: ['together', 'coreweave',],
         },);
         expect(minimax.ignore,).not.toBe(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,);
         expect(openRouterProviderPreferencesFor({ servedId: 'deepseek/deepseek-v4.1-flash', },),).toEqual({
