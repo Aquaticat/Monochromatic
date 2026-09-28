@@ -56,6 +56,9 @@ whether a registered name falls under it is the owner's call.
 
 Status: fixed in `357f534b7` (guard `8da383b89`, stems guarded in `36e7a4c30`).
 Renderings now match bounded and inflected (`renderingSpans`: s, es, d, ed, ing, a final e dropped, a final y turned), so "heal", "soothe" and "cure" carry every form and "atrium" is not Atri; multi-word renderings that inflect inside ("becoming the doll") are listed, and 药娘 takes "transgender girl".
+The new rendering end was not replayed over the archives as the refusals were:
+it reaches only the COMMUNITY RENDERINGS block, evidence the judges weigh,
+so a looser count ("masked" as 头壳's "mask") costs a departure line, never a refusal.
 `communityRenderingDepartures` names a departure for "Healing views",
 "How hard this mental illness is to cure",
 "becoming the doll",
@@ -93,7 +96,9 @@ Guard: one cat fixture per gap.
 
 ### C6: false or page-specific whys and comments shown to the models
 
-Status: fixed in `357f534b7` (guard `8da383b89` flips the kigurumi test that pinned 安慰).
+Status: fixed in `357f534b7` (guard `8da383b89` flips the kigurumi test that pinned 安慰);
+the root planning doc and handover, which repeated the misquotation to the owner, were corrected on 2026-09-28
+in the commit that records this line (the page's only 安慰 is in a reader-comment JSON; `page.md` line 89 writes 安抚).
 
 - 炸柜's why pairs it with throwing away the medication,
     true of XIEPT2 only and false on mikaela_khara.
@@ -190,7 +195,8 @@ Fix: move the lesson to `GRAMMATICAL_ENGLISH_RULE` and correct the comment.
 
 ### R6: 摆烂's why prescribes one page's sentence
 
-Status: fixed in `357f534b7`: the why covers taking it easy and no longer prescribes one sentence; "slacked off" stays refused under the house rule that names it slang.
+Status: fixed in `357f534b7`: the why covers taking it easy and no longer prescribes one sentence; "slacked off" stays refused under the house rule that names it slang
+(`src/house-policy.ts:79`: "The English adds no slang of its own either (gearhead, slacked off)").
 On lxy "stopped trying" is a mistranslation of 偶尔摆烂.
 "slack off" register is an owner question.
 
@@ -769,7 +775,7 @@ The probe calls providers and prints no sheet, so no live run was made for this.
 
 ### H3: the 治愈 misquote
 
-Status: fixed in `357f534b7` (the 安慰 contrast) and in the commit that closes H3 in this ledger
+Status: fixed in `357f534b7` (the 安慰 contrast) and `f6cf6679b`
 (the reasons, now given as the change's own); the owner was told 2026-09-27.
 The comment also called the reasons the owner's,
 though the owner wrote only "I kinda disagree here".
@@ -873,7 +879,8 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
 - Results claimed without a validated probe (the en_CA scan's false positives;
     class one hundred ten not replayed on real texts).
 - Evidence misquoted to the owner and rulings misread (治愈's 安慰; class fifty-four's reading of "else fail").
-- Shell rule slips in this session: a `;` in a suite command and in a test command.
+- Shell rule slips in this session: a `;` in a suite command and in a test command;
+    on 2026-09-28 two more, before a `PIPESTATUS` echo and between two `rg` probes.
 
 ## History, classes 1 to 92 and before numbering
 

@@ -8294,8 +8294,12 @@ and its why said "healed" reads as curing a wound.
 The owner answered "'被她治愈 should read "comforted", not "healed".' - I kinda disagree here."
 The reading was wrong on three counts:
 
-- The page writes 安慰 where it means comfort (可爱的女孩会继续安慰大家),
-  so "comforted" for 治愈 collapses the writer's two words into the weaker one.
+- ~~The page writes 安慰 where it means comfort,
+  so "comforted" for 治愈 collapses the writer's two words into the weaker one.~~
+  Corrected 2026-09-28 (ledger C6 and H3): a misquotation.
+  The page writes 安抚 (`page.md` line 89) and never 安慰,
+  so there were no two words to collapse;
+  and these three counts were the change's reasons, not the owner's, who wrote only "I kinda disagree here".
 - 治愈系 is "healing" in the fandom's own English (iyashikei, "healing anime"),
   and a kigurumi doll beside it makes the emotional sense plain.
 - The archive's translator wrote "those she has healed";
@@ -8303,7 +8307,8 @@ The reading was wrong on three counts:
 
 The owner chose "Healed first (Recommended)" over removing the entry.
 Guard `2234f1a92` red first, fix `23f4e15d6`:
-the entry leads with "healed" and its why says never to flatten 治愈 into "comforted" where the page keeps 安慰 apart.
+the entry leads with "healed" and its why says never to flatten 治愈 into "comforted" where the page keeps 安慰 apart
+(corrected 2026-09-28 in `357f534b7`: the why no longer names 安慰, ledger C6).
 Lint 0/0; the full suite at `23f4e15d6` read 1,169 PASS, 0 FAIL.
 TianqiChen66618 was stopped a few minutes in, and TianqiChen66619 launched on `.frozen-dist-23f4e15d6`.
 

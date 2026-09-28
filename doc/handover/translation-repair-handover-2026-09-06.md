@@ -4876,8 +4876,10 @@ each read off the pass log and the shipped page:
     `community-glossary-fandom.ts` (guard `644f23cf5`, fix `06a2c5c05`, seeds pin `6a6cd1a84`).
     TIANQICHEN66617 (`.frozen-dist-5860bc0b1`) stopped a few minutes in for class one hundred eighty-four.
     治愈 CORRECTION (owner 2026-09-27: "'被她治愈 should read "comforted", not "healed".' - I kinda
-    disagree here." then "Healed first (Recommended)"): the page writes 安慰 where it means comfort,
-    "healing" is the fandom English for 治愈系 and the archive wrote "healed"; the entry leads with "healed"
+    disagree here." then "Healed first (Recommended)"): the change's reasons, not the owner's, were that the
+    page writes 安慰 where it means comfort (a misquotation: it writes 安抚, never 安慰; corrected 2026-09-28,
+    ledger C6 and H3), "healing" is the fandom English for 治愈系 and the archive wrote "healed"; the entry
+    leads with "healed"
     (guard `2234f1a92`, fix `23f4e15d6`). TIANQICHEN66618 (`.frozen-dist-06a2c5c05`) stopped for it.
     TIANQICHEN66619 READ (`.frozen-dist-23f4e15d6`): INCOMPLETE at slice 9 after 755,525 ms, class one
     hundred eighty-five: the address floor counted the imperative 你看 as an address (guard `5cdeebb58`, fix
