@@ -435,5 +435,52 @@ await describe({
         },).unrecorded,).toEqual(['sectionPairing',],);
       },
     },),
+    it({
+      name: 'CARVES OVER THE ARCHIVE THE ARTIFACT STORED rather than the corpus copy it is handed, since the '
+        + 'pass reshapes the archive before it carves (ledger A18)',
+      fn: async () => {
+        /**
+         How the run carved the archive it had reshaped.
+         */
+        const carved = prepareDocumentPair({
+          sourceText: SOURCE_DOC,
+          targetText: TARGET_DOC,
+        },);
+
+        /**
+         The rebuild, handed a corpus copy carrying a line the run never carved.
+         */
+        const rebuilt = rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: carved,
+            strip: [],
+          },),
+          sourceText: SOURCE_DOC,
+          targetText: `${TARGET_DOC}\nA stray corpus line the run never carved.\n`,
+        },);
+        expect(rebuilt.prepared.targetText,).toBe(TARGET_DOC,);
+        expect(rebuilt.reproduction,).toStrictEqual({ kind: 'reproduced', },);
+      },
+    },),
+    it({
+      name: 'CARVES OVER THE CORPUS COPY where the artifact predates storing its archive, the control',
+      fn: async () => {
+        /**
+         Corpus copy the rebuild is handed.
+         */
+        const corpusCopy = `${TARGET_DOC}\nA stray corpus line the run never carved.\n`;
+        expect(rebuildPreparation({
+          artifact: writeAndRead({
+            prepared: prepareDocumentPair({
+              sourceText: SOURCE_DOC,
+              targetText: TARGET_DOC,
+            },),
+            strip: ['archiveText',],
+          },),
+          sourceText: SOURCE_DOC,
+          targetText: corpusCopy,
+        },).prepared.targetText,).toBe(corpusCopy,);
+      },
+    },),
   ],
 },);

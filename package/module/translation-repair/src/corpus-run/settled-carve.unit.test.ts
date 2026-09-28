@@ -123,15 +123,26 @@ async function fixtureGit(
 
 /**
  Makes a throwaway corpus clone carrying the fixture entry at one commit.
- 
+
+ @param pages - original and archive English the entry carries, the fixture
+ pages unless a case needs others
+
  @returns Clone directory and commit, removed on dispose
- 
+
  @example
  ```ts
  await using corpus = await throwawayCorpus();
  ```
  */
-async function throwawayCorpus(): Promise<
+async function throwawayCorpus(
+  {
+    sourcePage = SOURCE_PAGE,
+    targetPage = TARGET_PAGE,
+  }: {
+    readonly sourcePage?: string;
+    readonly targetPage?: string;
+  } = {},
+): Promise<
   AsyncDisposable & {
     readonly cloneDir: string;
     readonly commitSha: string;
@@ -175,7 +186,7 @@ async function throwawayCorpus(): Promise<
       dir,
       'page.md',
     ),
-    SOURCE_PAGE,
+    sourcePage,
     'utf8',
   );
   await writeFile(
@@ -183,7 +194,7 @@ async function throwawayCorpus(): Promise<
       dir,
       'page.en.md',
     ),
-    TARGET_PAGE,
+    targetPage,
     'utf8',
   );
   await fixtureGit({
@@ -762,6 +773,96 @@ await describe({
           runsDir: runs.runsDir,
           cloneDir: '/nonexistent/clone',
         },),).toEqual({ kind: 'unsettled', },);
+      },
+    },),
+    it({
+      name: 'CARVES AN ARCHIVE-AUTHORITY ENTRY AS THE RUN DID, with no metadata slice, so slice indices do not '
+        + 'shift by one (ledger F-6)',
+      fn: async () => {
+        /**
+         Original carrying visible metadata.
+         */
+        const sourcePage = `---\nname: 猫猫\n---\n\n${SOURCE_PAGE}`;
+        /**
+         Archive English carrying the same metadata.
+         */
+        const targetPage = `---\nname: Maomao\n---\n\n${TARGET_PAGE}`;
+        await using corpus = await throwawayCorpus({
+          sourcePage,
+          targetPage,
+        },);
+        await using runs = await throwawayRuns();
+        /**
+         How a current pass carves it when the archive's front matter governs.
+         */
+        const carved = prepareDocumentPair({
+          sourceText: sourcePage,
+          targetText: targetPage,
+          includeFrontMatter: true,
+          frontMatterAuthority: 'archive',
+          sealArchiveOriginal: true,
+        },);
+        await writeArtifact({
+          runsDir: runs.runsDir,
+          prepared: carved,
+          corpusSha: corpus.commitSha,
+          strip: [],
+        },);
+
+        /**
+         Carve through the settled artifact.
+         */
+        const carve = await carveSettled({
+          entryId: ENTRY_ID,
+          runsDir: runs.runsDir,
+          cloneDir: corpus.cloneDir,
+        },);
+        if (carve.kind !== 'settled')
+          throw new Error(`expected a settled carve, got ${carve.kind}`,);
+        expect(carve.prepared.slices.length,).toBe(carved.slices.length,);
+        expect(preparationIdentity({ prepared: carve.prepared, },),).toBe(
+          preparationIdentity({ prepared: carved, },),
+        );
+      },
+    },),
+    it({
+      name: 'CARVES OVER THE ARCHIVE THE ARTIFACT STORED, which the pass reshaped before carving, '
+        + 'not the corpus copy (ledger A18)',
+      fn: async () => {
+        await using corpus = await throwawayCorpus({
+          targetPage: `${TARGET_PAGE}\nA stray corpus line the run never carved.\n`,
+        },);
+        await using runs = await throwawayRuns();
+        /**
+         How the pass carved the archive it had reshaped.
+         */
+        const carved = prepareDocumentPair({
+          sourceText: SOURCE_PAGE,
+          targetText: TARGET_PAGE,
+          includeFrontMatter: true,
+          sealArchiveOriginal: true,
+        },);
+        await writeArtifact({
+          runsDir: runs.runsDir,
+          prepared: carved,
+          corpusSha: corpus.commitSha,
+          strip: [],
+        },);
+
+        /**
+         Carve through the settled artifact.
+         */
+        const carve = await carveSettled({
+          entryId: ENTRY_ID,
+          runsDir: runs.runsDir,
+          cloneDir: corpus.cloneDir,
+        },);
+        if (carve.kind !== 'settled')
+          throw new Error(`expected a settled carve, got ${carve.kind}`,);
+        expect(carve.targetText,).toBe(TARGET_PAGE,);
+        expect(preparationIdentity({ prepared: carve.prepared, },),).toBe(
+          preparationIdentity({ prepared: carved, },),
+        );
       },
     },),
   ],
