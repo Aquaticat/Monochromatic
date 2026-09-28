@@ -2322,7 +2322,15 @@ seventeenth addendum of `doc/decision/translation-repair-ineligible-standing.md`
 
 ### L10: the attestation screen only looks at addition claims
 
-Status: open.
+Status: closed as designed, 2026-09-28; measured, no change.
+What a cited reference can answer is "the original never states this", which is an addition claim;
+a mistranslation or omission claim on an attested detail can still be right (the archive may word the detail wrongly),
+and the panel sees the cited references for every claim it hears, so the screen is a shortcut for one question,
+not the only path references take.
+Measured over every artifact (`l10-attested-others.mjs`): the screen fired on two attested archive quotes in all,
+and no claim of any other category touched either of them.
+A lower bound, since only quotes an addition claim hit leave a finding, and a small sample;
+the same script rerun on later runs reopens this if other categories start filing on attested details.
 
 ### L11: refinement on a slice whose patch lost gets no recheck
 
