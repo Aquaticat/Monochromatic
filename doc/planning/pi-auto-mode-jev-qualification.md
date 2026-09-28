@@ -5,8 +5,10 @@
 The bounded client-failure,
 preparation-inclusive budget,
 and semantic studies are complete at their recorded scopes.
-The user-selected semantic prerequisite is finished;
-provider-agnostic design questions can resume without declaring a model adopted or production-qualified.
+This completes Jev's bounded semantic prerequisite,
+not the full multi-candidate investigation.
+The user asked about Voyage-rerank when the design interview resumed;
+that interview is paused while Voyage's incomplete assessment is addressed.
 The `0.95/0.05` diagnostic band passed only the frozen semantic gate.
 Broader service,
 calibration,

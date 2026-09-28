@@ -208,12 +208,26 @@ Overall service/privacy,
 production calibration,
 and live-authority qualification remain open.
 
-The user-selected bounded semantic stage is finished.
-Provider-agnostic policy questions may return to the interview frontier without selecting a provider or threshold.
-This is not a claim that the overall candidate audit or production qualification is complete.
-No further model batch,
+The bounded Jev and Respan semantic studies are finished,
+but that does not complete the full candidate investigation.
+The agent resumed the design interview with Q16 on inherited-directive revocation.
+The user instead asked:
+"Have you looked at Voyage-rerank?"
+Q16 remains unanswered and the design interview is paused.
+
+Voyage has interface and raw-feature evidence only:
+4 `rerank-3` requests over 10 documents with complete policy.
+It has not received equivalent corrected parser-first semantic qualification,
+and no relevance-to-axiom-probability mapping is validated.
+The quotation-based quality conclusions remain withdrawn.
+Do not treat Voyage as fully qualified or categorically unusable.
+The [Voyage fit record](../planning/pi-auto-mode-voyage-fit.md) and retained raw artifact were rechecked.
+Returning to the design interview before resolving this candidate-status gap was premature.
+No new training,
+private Voyage input consent,
+model batch,
 paid Pro expansion,
-or paused Laya source work follows automatically.
+or paused Laya source work follows merely from this clarification.
 
 ## Sequencing correction
 
@@ -438,8 +452,9 @@ Do not reopen these choices:
   through verified lineage and a valid original human witness.
   Copied text or an entry ID alone does not establish authority.
   Cross-session revocation linkage remains unresolved.
-  The bounded semantic prerequisite is now complete;
-  asking this provider-agnostic policy question does not select a model or authorize implementation.
+  Q16 was proposed but not answered;
+  the user asked about Voyage-rerank instead.
+  The interview is paused while its incomplete assessment is addressed.
 
 Fixed checks,
 provenance,
@@ -1591,8 +1606,9 @@ Scratch commit `cf8a7fc` retains the result and quote control.
 Todo #11 is complete for Voyage interface/feature fit only.
 Todo #16 was paused for the candidate-research priority correction.
 Its effect/authorization contract and code-owned witness/freshness tests remain incomplete.
-The completed bounded semantic checkpoint does not authorize implementation;
-remaining provider-agnostic interview choices can now be resolved.
+The completed Jev/Respan checkpoint does not authorize implementation
+or establish readiness of the still-incomplete Voyage assessment.
+The design interview remains paused.
 The inventory honors Q13 B.
 Joint permission binding is required even within one grant:
 separate operation and target mentions cannot be combined across clauses.
@@ -1817,8 +1833,10 @@ old approval reuse,
 manual prompts,
 deadline/retry/cancellation paths,
 and real Pi consumer integration remain unimplemented.
-The bounded semantic prerequisite is complete,
-so unresolved provider-agnostic preferences can return to the interview frontier.
+The Jev and Respan bounded studies are complete,
+but Voyage's corrected qualification and probability mapping remain unresolved.
+The user asked about that gap instead of answering Q16;
+do not resume the interview on a claim that candidate investigation is finished.
 Broader service and production-qualification gates remain open.
 Preserve the original 24 reserved scenarios;
 do not tune definitions or thresholds to reserved model results.
@@ -1904,7 +1922,8 @@ while correcting the premature integration interview.
 This handover records those answers and the return to candidate investigation.
 The in-memory probe still does not qualify persisted replay.
 The dependent inheritance/revocation questions were deferred until the chosen bounded semantic work finished.
-That prerequisite is now complete;
-provider-agnostic policy questions can resume without assuming adoption.
+Only the bounded Jev and Respan studies are now complete.
+The attempted resumption with Q16 was interrupted by the user's Voyage-rerank question;
+Q16 remains unanswered and the interview is paused.
 No candidate has a qualified production selection,
 and no production implementation is authorized.
