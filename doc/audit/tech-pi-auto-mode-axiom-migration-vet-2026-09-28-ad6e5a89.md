@@ -200,9 +200,71 @@ Image/source identity,
 resource controls,
 and numerical correctness are separate checks.
 
+## Offline numerical checkpoint
+
+The first-party solver and mathematical controls are in
+`~/temp/agent/voyage-probability-heads-2026-09-28`.
+Each role will fit only margin and common level,
+using fit-only population standardization and summed binary log loss plus half the squared slopes.
+The intercept is unpenalized;
+regularization is fixed rather than selected from validation outputs.
+Newton/Cholesky steps use bounded Armijo backtracking,
+with a summed-gradient infinity-norm tolerance of `1e-8`.
+No unconverged head is released.
+
+Source `d033190`,
+controller `f162ffe`,
+and corrected continuation `6e200f8` retain the exact implementation and schedule.
+The direct Node image is
+`7beb7abcd199abd8076295bd8161df9ce5033e46472098a48a57cd13251b72f7`.
+Its runtime bytes matched the previously inspected Node/library identities;
+the old client-test application is not copied or executed.
+Actual cgroup checks observed 2 GiB memory,
+zero extra swap,
+2 CPUs,
+and 16 process/thread slots.
+The containers were non-root,
+network/credential-free,
+read-only,
+without user mounts or accelerators,
+and limited to 60 seconds.
+
+Numeric controls passed,
+including finite-difference derivatives,
+independent intercept/slope roots,
+forced backtracking and exhaustion,
+collinearity,
+and inference-time preprocessing immutability.
+The synthetic environment fixture was rejected;
+a separately built copy omitting only that guard accepted it.
+Omitting the objective penalty failed the numeric comparison.
+The allowed wait completed;
+the one-second lifetime control exited without its completion marker.
+These controls are not semantic qualification or general runtime/performance guarantees.
+
+The first guard-omission copy emitted Node `EACCES` opening `/fit/run.mjs`: 
+its private source directory/files used `0700`/`0600`.
+A separately named `0755`/`0644` copy under the private scratch parent corrected readability.
+The original failure is preserved,
+not counted as a working omission test.
+The continuation reused successful initial results without rerunning them.
+
+Verifier `4858a1b` and `proc_d64c` rechecked raw outcomes,
+frozen/current solver source,
+variant deltas,
+image/command/resource evidence,
+and stopped-container identities without another numerical run.
+The seven identified disposable containers were then removed.
+Original-result SHA-256:
+`a8fc198d2a5263fac3fb3558ec04b7f5364ee0c3e4c0942fa0067727343dba00`.
+Completed-continuation SHA-256:
+`659406e39bb4d7bfa25360ac439151a14fee32f9c49b7258d28f13af5e2460af`.
+No external numerical dependency or model call was added.
+
 ## Current outcome
 
-Fitting authority is now explicit.
-No local head has been fitted yet,
-no new corpus has been queried,
-and no calibrated probability or production model is selected in this context.
+The offline numerical mechanism is tested at the recorded scope.
+No semantic head has been fitted,
+no fresh semantic corpus has been queried,
+and no calibrated probability or production model is selected.
+Next: freeze fresh grouped source episodes and references before feature collection.

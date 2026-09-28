@@ -385,6 +385,45 @@ and stop conditions must be frozen before querying.
 The [fitting-context audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ad6e5a89.md)
 records the new authority without rewriting the pre-fitting report.
 
+## Offline fitter checkpoint
+
+The first-party numerical solver is now implemented and tested in
+`~/temp/agent/voyage-probability-heads-2026-09-28`.
+It standardizes each role's margin and common level using fit-partition population statistics only.
+The fixed objective is summed binary log loss plus half the squared slopes;
+the intercept is unpenalized.
+There is no regularization grid or validation-driven coefficient adjustment in this phase.
+
+Newton/Cholesky steps use Armijo backtracking.
+At most 100 gradient checkpoints and 32 backtracking attempts are permitted;
+the infinity norm of the summed gradient must reach `1e-8`.
+Unknown labels,
+non-finite data,
+numerical contract errors,
+or nonconvergence release no candidate head.
+Inference applies frozen preprocessing and never refits it.
+
+Mathematical controls passed under the declared offline 2 GiB/2-CPU sandbox,
+including independent scalar roots,
+finite-difference derivatives,
+forced backtracking/exhaustion,
+collinearity,
+and preprocessing immutability.
+The retained omission controls demonstrated sensitivity to a removed environment guard and omitted slope penalty.
+An initial Node `EACCES` in the disposable omission image was preserved and corrected in a new readable copy.
+Verifier `4858a1b` rechecked source,
+image/command/resource evidence,
+raw outcomes,
+and variant differences without repeating the numerical runs.
+The completed-continuation SHA-256 is
+`659406e39bb4d7bfa25360ac439151a14fee32f9c49b7258d28f13af5e2460af`.
+
+No fresh semantic corpus has been queried and no semantic head is fitted yet.
+Numerical controls do not establish truth estimation,
+calibration,
+or an active abstention profile.
+The fresh grouped corpus and references must be frozen next.
+
 ## Later validation boundary
 
 Scoped local-head fitting is authorized;

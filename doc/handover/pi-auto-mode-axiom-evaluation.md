@@ -402,6 +402,34 @@ The new fitting-context fingerprint is
 `ad6e5a89b84b5e6dd1bd1ef79e496f2928b5cc622771e16a61b5637693bf96fa`;
 the pre-fitting audit remains preserved unchanged.
 
+Task #46 implemented and tested the offline numerical fitter in
+`~/temp/agent/voyage-probability-heads-2026-09-28`.
+It uses fit-only population standardization,
+a fixed summed-log-loss objective with unit slope penalty and unpenalized intercept,
+and bounded Newton/Cholesky/Armijo optimization.
+Independent scalar-root and finite-difference controls passed,
+as did forced backtracking,
+collinearity,
+and no-refitting-on-prediction checks.
+
+The first disposable omission image failed with Node `EACCES` at `/fit/run.mjs`.
+Task #49 retained that failure and corrected only the new copy's source readability.
+The completed continuation then demonstrated environment-guard and objective-penalty omissions,
+plus normal versus lifetime-interrupted waits.
+`proc_f717` completed the controls;
+`proc_d64c` rechecked evidence without numerical re-execution and removed seven identified stopped fixtures.
+Verifier source is `4858a1b`;
+completed-continuation SHA-256 is
+`659406e39bb4d7bfa25360ac439151a14fee32f9c49b7258d28f13af5e2460af`.
+No fresh semantic source was queried or semantic probability head fitted.
+
+Next is task #47:
+freeze fresh grouped source episodes and predeclared references.
+Task #48 owns feature collection,
+semantic-head fitting,
+and locked evaluation after that freeze.
+The tested numerical solver is not evidence of semantic accuracy or calibration.
+
 ## Sequencing correction
 
 The user stopped the integration-policy interview and asked whether investigation of Laya,
