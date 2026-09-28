@@ -3421,7 +3421,14 @@ and `corpus-run/run-seats-read.ts` still says every driver asks it before each c
 
 ### X13: the pairing keys carry no roster
 
-Status: open.
+Status: fixed in `fea6e4688` (red guards `e9caf3f27`; mutation checked with a control, three mutants caught).
+Both keys fold the roster that answers, last, after a separator and the word `roster`;
+the block round passes its roster through `blockPairingQuestion`, and the block key goldens were recaptured
+under a fixture roster. Every pairing key moved inside version 3, under which nothing was written.
+The full suite after the mutants found one more test deriving pairing keys itself
+(`corpus-run/pass-footnote-lifecycle.unit.test.ts`), fixed in `b84c2384c` (M39).
+
+Found as:
 The same defect X11 fixed in the consolidation key.
 `blockPairingQuestionKey` (`block-pairing-question-key.ts`) and the section round's `roundKey`
 (`prepare-section-round.ts`) hash the version and the texts only.
@@ -3632,6 +3639,21 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M39: a key change committed on a census of callers, and a commit message and its correction garbled
+
+Status: happened 2026-09-28 in X13; the missed test fixed in `b84c2384c`, the messages corrected by a commit comment.
+Before `fea6e4688` the census of what reads the pairing keys searched for calls to the key builders.
+Two of the tests it found also derive the key by hand, which surfaced only when they went red;
+`corpus-run/pass-footnote-lifecycle.unit.test.ts` calls no builder and joins the key material itself,
+so it went red only in the full suite.
+Afterwards a search for tests joining the version and a separator returned one of those three,
+while a search for every test hashing with `createHash('sha256'` found all four hashing tests: the M33 lesson again.
+The message of `b84c2384c` then carried a garbled phrase, and the first correction comment on it
+carried a placeholder where a hash belonged; the comment was edited to the resolved hash.
+Prevention: census a key by the material it hashes (`createHash`, the version constant, the separator),
+never by the names of its builders, and sanity-check a search that returns nothing with a broader one.
+Read a commit message back before committing, and resolve every hash a message or comment names with `git log`.
 
 ### M38: stray marker lines in guard scripts, stripped by a pattern that ate indentation
 
