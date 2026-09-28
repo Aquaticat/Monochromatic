@@ -31,7 +31,8 @@ const crossedPairs = [{ source: 0, target: 0 }, { source: 1, target: 2 }, { sour
 function cacheKey(targetText: string): string {
   const originals = parseDocument({ text: sourceText }).nodes;
   const targets = parseDocument({ text: targetText }).nodes;
-  return createHash('sha256').update(['3', ...originals.map(node => node.text), '\0', ...targets.map(node => node.text)].join('\0')).digest('hex');
+  // The roster that answers closes the key (ledger X13).
+  return createHash('sha256').update(['3', ...originals.map(node => node.text), '\0', ...targets.map(node => node.text), '\0', 'roster', ...roster].join('\0')).digest('hex');
 }
 
 await describe({
