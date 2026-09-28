@@ -4927,7 +4927,17 @@ each read off the pass log and the shipped page:
     every cache version set after the newest slice-cache file and none written since (`097e5ecde`,
     `9a3f28b30`). A full suite at `9a3f28b30` passed, 1,228 cases. TIANQICHEN66621 LAUNCHED on
     `.frozen-dist-9a3f28b30`, pid 431565, log `~/temp/agent/TianqiChen66621.log`, with a waiter.
-    NEXT: read TianqiChen66621 when it ends; after it L5, L10, L14, L12, L13 and the D series. DEFERRED PAST
+    L5 NEUTRAL ACCEPTANCES FIXED, 2026-09-28, decided for quality: the tally holds an acceptance settled at
+    neutral for a human (`e87e353ae`), both sheets define the severity scale after MQM and the panel lifts a
+    real defect filed neutral (`fb6c06cca`), guards `266a0891a`, `aa7f4e360`, `c53d5c717`, `925b85a8f`, all
+    mutants caught; `SLICE_CACHE_VERSION` 34 (`ef20e7978`), the first number spent while a run held the last
+    (TianqiChen66621 wrote 28 slice-cache files under 33); docs `dd9bd179c`. Full suite after `ef20e7978`:
+    1,230 passed, 0 failed. RESTART, 2026-09-28 ~11:00: the waiter task died with the session; the pass itself
+    runs in its systemd scope `pass-TianqiChen66621` (pid 431565). Relaunch the waiter in the background:
+    `mise exec -- node ~/temp/agent/audit-glossary-fix/wait-TianqiChen66621.mjs`.
+    L5 IN PROGRESS, the footnote sub-item (ledger L5, "Footnote definitions outside the slice"): census and
+    design recorded there; next, run `l5-footnote-window.mjs`, then red guard in `fidelity-window.ts`.
+    NEXT AFTER L5: L10, L14, L12, L13 and the D series; read TianqiChen66621 when it ends. DEFERRED PAST
     THE LAUNCH: L6 (task 401), H5's consolidation half.
     Probe scripts, the single-file runner (`run-files.ts`) and the mutation harness (`mutants.ts`, JSON spec)
     live in `~/temp/agent/audit-glossary-fix/`, which survives a reboot; the scratchpad did not.

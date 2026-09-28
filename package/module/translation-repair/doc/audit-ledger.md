@@ -2194,6 +2194,45 @@ the dispute rule's "addition at any severity" now means any severity from minor 
 The cross-check's needs-human now also holds a supported majority at neutral,
 so its precision over accepted issues reads higher by construction on runs from this version.
 
+#### Footnote definitions outside the slice
+
+Status: in progress; census done, design chosen, no code yet.
+The critic sheet shows the slice pair, its neighbours, the declared names and the cited references;
+the panel also gets the whole original (`documentSourceText`), but no sheet gets the translation's footnote definitions,
+and the critic gets neither side's.
+A slice citing `[^5]` whose definition sits at the page end reads as if the attribution the note carries were dropped
+(sh2 slices 33 and 37).
+Census over every artifact under the agent runs (`l5-footnote-census.mjs`, all runs, repeats included):
+342 of 6,261 slices cite a source footnote defined outside the slice, 171 a target one;
+the panel accepted 318 issues on those slices,
+74 of them omission or addition claims (XingZ60 slice 44 recurs in a dozen runs, mostly not selected),
+and 85 accepted issues there name a footnote, attribution, credit, citation or translator, or quote a `[^` marker.
+Not yet measured: how many cite a definition outside the fidelity window rather than only outside the slice,
+and how many slices hold a definition whose every citation is outside the window
+(`l5-footnote-window.mjs`, written, not run: the auto-mode classifier failed before the restart).
+
+Design, decided for quality: `neighbouringSource` and `neighbouringIncumbent` in `fidelity-window.ts`
+append, after the window's text, the definition of every footnote label the current slice cites
+that neither the slice nor the window defines, each side from its own document.
+Every sheet that shows the nearby block then carries them (critic, panel, editor, the translate lane's sheets),
+and the repair, refine and translate keys hash the window text,
+so only the slices it changes re-key and no version moves.
+The reverse case (a slice holding a definition whose citing sentence is outside the window) waits on the measurement.
+Next: run the window census, red guard in `fidelity-window.unit.test.ts` (or a sibling),
+fix, mutation check, account in the three key TSDocs as an input change, ledger.
+
+#### Remaining L5 sub-items
+
+Status: open.
+The forced-difference line of the panel sheet (`adjudicate-prompt.ts`, "Fluency-serving additions are not additions")
+names conjunctions, connectives, pronouns and small words, not a subject or object English grammar needs
+(Tq16 slice 20, "this side of me").
+Whether the house rule glossing a handle in parentheses reaches the panel as licensing the gloss (Cu11 slice 1),
+and whether the DECLARED NAMES block covers a page-wide archive rendering of a handle (XZ14 slice 49).
+鲨鲨, a plush shark, taken for a person 4 to 0 critical (hu31 slice 39): a model error with the full original shown;
+check what the sheet showed before calling it out of reach.
+Closed elsewhere: Tq16 slice 0's gloss of a work (S5's `APPARATUS_KINDS`), sh2 slice 38's MDX comment (L4).
+
 ### L6: the lane contest runs on insertion slices the repair lane does not apply to
 
 Status: open; measured and designed 2026-09-28, deferred past the TianqiChen666 launch,
