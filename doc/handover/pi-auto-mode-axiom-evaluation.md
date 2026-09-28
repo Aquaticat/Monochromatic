@@ -34,7 +34,60 @@ Current references:
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
-## Completed Drex evaluation and current progress
+## Current concrete-head result
+
+Tasks #54 and #55 completed the fresh concrete-coordinate probability-head study.
+The [result and freeze-scope record](../planning/pi-auto-mode-voyage-concrete-fit.md)
+contains the exact evidence identities,
+role/operation/group diagnostics,
+and residual examples.
+Private root: `~/temp/agent/voyage-concrete-heads-2026-09-28`.
+Final recomputation checkpoint: `e9547e8`.
+
+The fixed 120 calls and one offline four-head fit completed without tuning from validation/test.
+Every shared five-second clock passed,
+including test inference.
+Test log loss was `0.20367026825072396` against constant baseline `0.6365141682948132`;
+Brier was `0.05649030415346677` against `0.2222222222222221`.
+All role slices improved both sample proper losses.
+Test bands were 51 correct/0 wrong/21 unresolved at 80/20,
+37/0/35 at 90/10,
+and 28/0/44 at 95/05.
+Every band failed coverage on validation and test.
+Approved-prose positive relation accepted no true test reference at any band.
+Zero accepted errors is not population reliability.
+
+The manifest binds listed owned code,
+inputs,
+and policy,
+including the concrete-to-abstract encoder and projection chain.
+It is not a hermetic freeze of host `unbash`,
+logger implementation,
+Node executable,
+or the full host dependency closure.
+Fitting alone used the pinned sandbox;
+feature preparation,
+inference,
+evaluation,
+and report recomputation used the host.
+Reconstructed request/response/prediction checks support the observations,
+not a proof that every host dependency stayed unchanged or correct.
+Do not rewrite frozen sources to revise their broad freeze comments.
+
+The finite phase is complete.
+No extra calls,
+refit,
+threshold selection,
+production change,
+or new experiment is selected.
+No intrinsic provider ranking or causal cross-corpus improvement follows.
+All original reserved scenarios remain unopened.
+Broader service/privacy,
+calibration,
+and live-consumer/adoption gates remain open;
+Q16 and Laya #34 remain paused.
+
+## Completed Drex evaluation and prior progress
 
 The user asked to also evaluate Nace Drex and supplied `AUTO_MODE_NACE_DREX_API_KEY`.
 Task #50 took priority under the newly supplied-resource rule and completed the bounded access checkpoint.
@@ -1068,10 +1121,10 @@ including the still-tied `.env`/`.env.template` read-prose pair.
 These are raw-feature observations,
 not probabilities or calibration.
 
-Next are #54 and #55:
-freeze fully fresh 36-source fit/validation/test partitions with nine episode groups per partition,
-then fit the same four fixed-objective heads on the unchanged concrete coordinates in the same offline sandbox.
-The new phase remains 108 core plus twelve fit-only controls,
+Tasks #54 and #55 subsequently froze fully fresh 36-source fit/validation/test partitions
+with nine episode groups per partition,
+then fitted the same four fixed-objective heads on unchanged concrete coordinates in the same offline sandbox.
+The completed phase used 108 core plus twelve fit-only control calls,
 with no tuning from validation and a fresh locked test.
 The [fresh concrete fitting protocol](../planning/pi-auto-mode-voyage-concrete-fit.md)
 now has 108 authored sources in
@@ -1085,15 +1138,14 @@ parser,
 and partition-omission controls.
 Corpus freeze `95f7fef` has SHA-256
 `362c56a0a7849c35391109ba082ddedd95612c6cdd79ef31a0dee015b648bddb`.
-No feature call or semantic fit has run in that new phase.
+No feature call or semantic fit preceded that corpus freeze.
 Only unchanged owned implementation sources were copied;
 old learned parameters/results were not copied.
-Next is the execution freeze for #55,
-not refitting from the exposed old test.
+The owned-code/input freeze and completed fit/test results are recorded in the current concrete-head result.
 Do not retune the completed candidate on its exposed test data.
 Do not resume Q16 or Laya #34.
 
-Voyage's corpus manifest remains
+The first fitted Voyage study's historical corpus manifest remains
 `e59f9ac8f70811a1d05654d6c6014584019653b68617e4a3b909b81144fc0eb0`.
 Its fixed study plan retains the original `ad6e5a89` authorization context;
 the current `ef5701a1` context preserves that Voyage authority and adds only bounded public/synthetic Drex evaluation.

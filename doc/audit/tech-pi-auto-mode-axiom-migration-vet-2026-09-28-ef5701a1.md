@@ -771,12 +771,146 @@ corpus freeze is `95f7fef`.
 The 22-file manifest SHA-256 is
 `362c56a0a7849c35391109ba082ddedd95612c6cdd79ef31a0dee015b648bddb`.
 Private corpus documentation was rendered and linted before freezing.
-No feature query or semantic-head fit has run in this new phase.
+No feature query or semantic-head fit preceded this corpus freeze.
 
 Only unchanged owned implementation sources were copied into the new experiment;
 no prior learned parameters or feature results were copied.
-The next gate is the complete execution/source freeze against this corpus,
+The subsequent gate was the listed owned-code/input freeze against this corpus,
 then the fixed 84-call pretest,
 offline fit,
 candidate lock,
 and 36-call fresh test.
+
+That owned-code/input freeze is retained at source `cf4362d` and input/control checkpoint `b2bfe95`.
+The 208-file manifest SHA-256 is
+`c58d665d2e7dea46440a1ec37bfabbff6c3ff5a291d50467bd9fc574e1cf115b`.
+Inherited numerical/consumer/evaluator controls are accepted only with byte-identical source checks;
+no rerun of those old controls is claimed.
+`proc_0222` exercised the fresh source/encoder/partition boundaries,
+repeat/reverse bodies,
+reference exclusion,
+role-specific inference,
+and shared clocks with an omitted-deadline control.
+
+`proc_eb09` completed the 84-call fresh concrete pretest phase:
+42 source pairs and 336 raw scores.
+`proc_a3c5` rechecked request identities,
+raw responses,
+source/policy,
+and the fixed controls without another model call.
+Pretest result SHA-256:
+`4ce1c7bd0ab22e0b525ba096933f635e260cd87965bcb5926c5b58471052cb75`.
+All shared clocks passed;
+observed times were `781.8516049999998` to `2008.2279899999994` ms.
+Reported usage totaled 3,922,580 tokens.
+`proc_38c7` completed the one offline fit in the declared sandbox.
+All four heads used eighteen fresh fit rows,
+converged in five Newton steps,
+and met the fixed gradient criterion.
+Candidate SHA-256:
+`7b9b9a59981baa703b40d73d6b505f01684fcc82e6c5acf8eb5f37c09def6864`.
+Its immutable input image is
+`61379ca81b2a461ff4938245ca9af3b5405e20e4396a3a406d197d2a341b42c8`.
+
+`proc_2abb` evaluated fit/validation without tuning and created the candidate lock,
+retained at private `124ad86`.
+Lock SHA-256:
+`360b93ace81b7d62bf049f000f4bb6122a930f862af964c2bd4882c026565fcc`.
+Validation log loss was `0.19037282892773663` versus baseline `0.6365141682948132`;
+Brier was `0.05138624733195122` versus `0.2222222222222221`.
+All four role slices improved both proper losses on that constructed sample.
+No validation band passed:
+80/20 had 49 correct,
+0 wrong,
+23 unresolved;
+90/10 had 40/0/32;
+95/05 had 30/0/42.
+No threshold or coefficient change followed.
+
+`proc_8d41` completed the fixed 36-call fresh locked-test phase with the same candidate.
+Raw evidence is retained at `2e45676`;
+`proc_2866` reconstructed requests and rechecked raw responses,
+features,
+and in-clock candidate predictions without more calls.
+Test result SHA-256:
+`4584453c331e9f3f1d3cd6c7edbc40998ad30a253bdc46d57d9b2dabf1815344`.
+All test paired clocks passed at `930.6093670000009` to `1588.0206019999998` ms.
+The complete phase used 120 calls,
+480 raw scores,
+and 5,603,848 reported tokens.
+All 24 sampled fit-only repeat/reverse axiom raw pairs matched with zero coordinate deltas;
+the changed-pair positive control passed.
+This does not establish global determinism or serving independence.
+
+`proc_04d2` evaluated test;
+`proc_739b` recomputed all partition reports from the unchanged candidate.
+Private `e9547e8` retains the summary and review checks.
+Summary SHA-256:
+`2d36795b4617cb8e8486820d92c5b6ea3e674542ab89101055a086ef62bb6808`.
+Test log loss was `0.20367026825072396` versus constant baseline `0.6365141682948132`;
+Brier was `0.05649030415346677` versus `0.2222222222222221`.
+All roles improved both sample proper losses.
+The corpus differs from the first fitted study,
+so its loss values cannot identify a causal template effect or intrinsic provider ranking.
+It was authored by the same agent after examining earlier failure modes;
+fresh text does not make it independent workload sampling.
+
+Every test band failed coverage:
+80/20 had 51 correct/0 wrong/21 unresolved;
+90/10 had 37/0/35;
+95/05 had 28/0/44.
+Approved-prose positive relation accepted no true reference at any band;
+its six true references scored `0.32495985746353645` to `0.6497014503253993`.
+Both positive roles lacked accepted true at 90/10 and 95/05;
+approved-prose prohibition also lacked accepted true at 95/05.
+Zero accepted errors is conditional on unresolved examples,
+not a reliability guarantee.
+
+Test five-bin mean absolute gap was `0.0837846675036532` overall.
+Accepted-subset gaps were `0.06376012505008574`,
+`0.03163174499057504`,
+and `0.015987796606792438`,
+on 51,
+37,
+and 28 accepted estimates respectively.
+These are sample diagnostics,
+not calibration bounds.
+The [fresh concrete-head result](../planning/pi-auto-mode-voyage-concrete-fit.md)
+records accepted losses,
+role/operation/group evidence,
+empty-cell handling,
+and every residual 0.5-threshold error with its synthetic source wording.
+
+### Freeze-scope correction
+
+The 208-entry manifest includes the owned concrete wrapper,
+original paired encoder,
+projection,
+question definitions,
+main parser,
+and shared shell-analyzer sources.
+It does not hash the complete host dependency/runtime closure,
+including `unbash`,
+logger implementation,
+and host Node executable.
+It is therefore not a hermetic execution freeze;
+no retroactive freeze is claimed.
+Retain the frozen source files unchanged despite their broader command-tree comments.
+In-clock projection checks and request/response/prediction reconstruction support the observations,
+not a proof that every host dependency remained unchanged or correct.
+Only fitting ran inside the pinned offline sandbox;
+feature preparation,
+inference,
+evaluation,
+and report recomputation ran on the host.
+
+The bounded study is complete.
+The candidate improves sample proper losses but does not qualify the all-role selective-approval profile.
+No post-hoc threshold,
+refit,
+extra call phase,
+provider adoption,
+or production change follows.
+This does not reject every possible Voyage estimator or auxiliary role.
+The original reserved bank remains untouched;
+Q16 and Laya #34 remain paused.
