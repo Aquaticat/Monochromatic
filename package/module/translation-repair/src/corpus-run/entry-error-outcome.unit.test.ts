@@ -35,7 +35,15 @@ await describe({
     ...([
       new ConsolidationStandingIneligibleError({ sliceIndex: 1, terminal: 'incumbent-only', }),
       new ContributorCompletenessError({ entryId: 'Cat', droppedCount: 1, }),
-      new DroppedDestinationError({ entryId: 'Cat', droppedCount: 1, }),
+      new DroppedDestinationError({
+        entryId: 'Cat',
+        droppedCount: 1,
+        traces: [{
+          sourceSlices: [2,],
+          archiveSlices: [],
+          shippedSlices: [],
+        },],
+      }),
       new FrontMatterCompletenessError({ entryId: 'Cat', reason: 'missing-slice', }),
       new NaturalnessRepairInterruptedError({ reason: 'contributor-structure', }),
       new NaturalnessCompletenessError({ sliceIndex: 1, }),

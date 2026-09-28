@@ -194,6 +194,7 @@ const NAMED_PARTS: Record<string, string> = {
   'String(census.total,)': 'count',
   'String(charsSeen,)': 'count',
   'String(droppedCount,)': 'count',
+  'whereCarried({ traces, },)': 'fixed clause naming slice indices whose original carries a dropped destination',
   'String(sourceDistinct,)': 'count',
   'String(pageDistinct,)': 'count',
   'refusal': 'strict parser refusal site, positions and rule names only (MdxParseError)',

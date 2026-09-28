@@ -31,7 +31,10 @@ import { assertArchiveOriginalComplete, } from './archive-original-completeness.
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
 import { assertContributorNamesComplete, } from './contributor-completeness.ts';
-import { assertDestinationsComplete, } from './destination-completeness.ts';
+import {
+  assertDestinationsComplete,
+  traceDroppedDestinations,
+} from './destination-completeness.ts';
 import {
   type DestinationCheck,
   droppedDestinations,
@@ -305,9 +308,36 @@ export async function publishFixedPage(
     pageText,
     archiveText,
   },);
+  /**
+   Where each dropped destination sits among the slices (ledger E1).
+   */
+  const traces = traceDroppedDestinations({
+    dropped: destinations.dropped,
+    slices,
+    replacements,
+  },);
+  // THE ADDRESSES GO TO THE RUN LOG, where `destinations-line.ts` says they
+  // are; the refusal's message carries slice indices only.
+  for (const [
+    at,
+    address,
+  ] of destinations
+    .dropped
+    .entries()) {
+    /**
+     This address's trace.
+     */
+    const trace = traces[at];
+    l.warn(
+      `entry ${entryId}: page drops source destination ${address}; original carries it in slices `
+        + `[${(trace?.sourceSlices ?? []).join(', ',)}], archive in [${(trace?.archiveSlices ?? []).join(', ',)}], `
+        + `shipped text in [${(trace?.shippedSlices ?? []).join(', ',)}]`,
+    );
+  }
   assertDestinationsComplete({
     entryId,
     destinations,
+    traces,
   },);
 
   // TWO DIFFERENT SOURCE HEADINGS RENDERED AS ONE is a defect no slice floor
