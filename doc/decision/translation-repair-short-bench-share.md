@@ -128,10 +128,40 @@ Since `84a6caa02` a refused window seat hands its place in that round to the nex
 (`runGatherRound`'s `reserve` in `stage-round.ts`),
 and the windowed stages (`stage-windowed-rounds.ts`) no longer re-ask a refused seat in later rounds,
 which the gathers had stopped doing on 2026-09-09.
-The windowed stages still size their quorum over the seated bench rather than the reachable one
-(audit ledger X8, open).
+The windowed stages still sized their quorum over the seated bench rather than the reachable one
+(audit ledger X8) until the next addendum.
 
 The checker bench is the one bench that does not keep an unserved seat while a served one is available:
 since 2026-09-27 it is the first three of the measured checker order a wet provider serves,
 padded with unserved ranked seats only while fewer than three are served
 (`run-seats.ts`, audit ledger L1).
+
+## Addendum 2026-09-27, second: the windowed stages and the naturalness review size on the reachable bench
+
+Taken under the rule itself, by the whole-package audit (audit ledger E3 and X8).
+The six stages that read their own rounds (lane contest, section and block pairing,
+the consolidation gate, the polish gate and the absolute naturalness review)
+sized their quorum on the seated bench.
+Five of them decide on two ballots, so for them the bench quorum only set how long rounds chased seats;
+the naturalness review decides on it,
+and 59 of the 4,567 reviews in the 265 stored artifacts closed `quorum-not-met` with 2 to 4 usable seats.
+XingZ624 shows the shape:
+a confirmation asked the 5 seats its discovery asked, over a bench of 8,
+and closed 3 of 5 usable against a quorum of 4 with `glm-5.3` and Qwen3.8-27B refused out of budget.
+
+- `runWindowedRounds` takes the bench (`quorumOver`, the seats asked by default)
+    and re-sizes the quorum with `reachableQuorum` before every round,
+    counting out of reach the seats the router refused
+    and the bench seats the stage may not ask at all.
+    It returns the quorum it closed on and that count, and warns when the bench was short.
+- The naturalness review decides on that quorum and records the count as `unreachable` in its review round;
+    the artifact reader recomputes the verdict from it,
+    and reads a round without it, every round stored before this change, as none out of reach,
+    which is exactly the exact-half quorum those rounds were decided by.
+- The other five stages carry `stage-short-bench (<stage> reachable r of n, quorum q)` in their findings,
+    as the gathers do.
+- Counting the seats a confirmation may not ask as out of reach follows from the two settled rules
+    (the reachable share sizes every gather; a confirmation asks only the discovery's seats)
+    rather than from an answer in these words, and is open to the owner's veto.
+    With nothing refused the confirmation's quorum is unchanged;
+    it drops to the reachable share only where the seats it may ask cannot meet the bench quorum.

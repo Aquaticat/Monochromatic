@@ -229,8 +229,12 @@ await describe({
         const { quorumOver, ...request } = requestFor(clientFor({},),);
         expect(quorumOver,).toBe(WIDE_BENCH,);
         const round = await reviewAbsoluteNaturalness(request,);
-        const { quorumOver: basis, ...legacyRound } = round;
+        // A ROUND STORED BEFORE PROVENANCE carried neither field: `unreachable`
+        // arrived after `quorumOver` (ledger X8), so stripping one alone would
+        // build a record no earlier schema wrote.
+        const { quorumOver: basis, unreachable, ...legacyRound } = round;
         expect(basis,).toBe(ROSTER.length,);
+        expect(unreachable,).toBe(0,);
         const parsed = parseNaturalnessReview({
           value: { correctionCount: 0, corrections: [], rounds: [legacyRound,], },
           path: 'review', finalText: TEXT,
@@ -238,6 +242,7 @@ await describe({
         },);
         expect(parsed.rounds[0]?.verdict,).toBe('acceptable',);
         expect(parsed.rounds[0],).not.toHaveProperty('quorumOver',);
+        expect(parsed.rounds[0],).not.toHaveProperty('unreachable',);
       },
     },),
   ],
