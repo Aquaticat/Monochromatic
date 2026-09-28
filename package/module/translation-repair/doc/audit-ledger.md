@@ -954,6 +954,23 @@ The page-name glossary covers names and linked titles the archive pairs, and the
 dictionary words someone has entered; a coined or rare term outside both can ship in as many forms as slices.
 H9's entry closes the one instance read; the general mechanism waits on a measurement of how often
 a repeated term ships in more than one form.
+Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/h16-count.mjs`, `h16-terms.mjs`):
+42 entries have a settled artifact, and on each one's newest, 768 slices carry 75 with no archive English;
+only XingZ60 (32 of 121) and shi_Yumiaoya (11 of 18) have two or more
+(XIEPT2's 25 of 35 is a stub run of 2026-09-03).
+The deterministic preparation cannot widen the count to all 92 pairs:
+an unanchored slice is an insertion chunk, made only after the roster's pairing and the insertion admission.
+Over those two pages, 103 rare Han n-grams (on at most two pinned originals) recur across two or more unanchored slices;
+read against the shipped text, most are ordinary phrasing, and the repeated terms are names, titles
+and a few community words, most shipped in one form.
+The divergences are concentrated in title-marked spans no archive anchors:
+one of XingZ60's section titles ships in three forms (heading, attribution and footnote,
+one of them bare pinyin and one garbled), another differs by an article between heading and attribution,
+a pseudonym in brackets is kept in Han in one signature and rendered in the other (today's floors refuse the Han),
+and a handle and a community's name vary in case (`z60` and `Z60`, `limelight` and `Limelight`);
+shi_Yumiaoya's 同居者 turns plural in the slice after the one that names a single person.
+So the defect is real and bounded: repeated titles and names on unanchored slices,
+which the page-name glossary would cover if the archive paired them.
 
 ### Process mistakes, classes 93 to 185
 
