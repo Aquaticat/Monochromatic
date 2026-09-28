@@ -2,7 +2,10 @@ import {
   addressCount,
   hanThirdPersonCount,
 } from './translate-address-original.ts';
-import { isAsciiLetter, } from './ascii-letters.ts';
+import {
+  isLatinLetter,
+  isLatinLetterOrMark,
+} from './latin-letters.ts';
 
 //region Second-person address the passage carries
 // CLASS NINETY-SEVEN (yingying5, 2026-09-23). The original's closing wish
@@ -155,8 +158,10 @@ export function blocksOf({ text, }: { readonly text: string; },): readonly strin
 }
 
 /**
- Every run of ASCII letters in a text, lower-cased, so a pronoun is matched
- as a whole word and never inside another.
+ Every run of Latin letters in a text, lower-cased, so a pronoun is matched
+ as a whole word and never inside another: a run opens on a letter, accented
+ or not, and goes on through letters and combining marks, so `you` inside
+ `youé` is no pronoun (ledger B18).
 
  @param text - candidate text
 
@@ -173,7 +178,7 @@ function latinWords({ text, }: { readonly text: string; },): readonly string[] {
    */
   const words: string[] = [];
   for (let start = 0; start < text.length; start += 1) {
-    if (!isAsciiLetter({ character: text.charAt(start,), },))
+    if (!isLatinLetter({ character: text.charAt(start,), },))
       continue;
     /**
      Offset just past this word.
@@ -193,7 +198,8 @@ function latinWords({ text, }: { readonly text: string; },): readonly string[] {
 }
 
 /**
- Offset just past the run of ASCII letters starting at an offset.
+ Offset just past the run of Latin letters and combining marks starting at
+ an offset.
 
  @param text - text being scanned
 
@@ -216,7 +222,7 @@ function wordEnd(
   },
 ): number {
   for (let at = start; at < text.length; at += 1) {
-    if (!isAsciiLetter({ character: text.charAt(at,), },))
+    if (!isLatinLetterOrMark({ character: text.charAt(at,), },))
       return at;
   }
   return text.length;
