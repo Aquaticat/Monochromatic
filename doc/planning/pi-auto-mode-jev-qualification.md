@@ -2,11 +2,19 @@
 
 ## Status and scope
 
-Candidate investigation continues before further integration-policy questions.
-The earlier native development and overflow probes are useful evidence,
+The bounded client-failure,
+preparation-inclusive budget,
+and semantic studies are complete at their recorded scopes.
+The user-selected semantic prerequisite is finished;
+provider-agnostic design questions can resume without declaring a model adopted or production-qualified.
+The `0.95/0.05` diagnostic band passed only the frozen semantic gate.
+Broader service,
+calibration,
+and live-consumer qualification remain open.
+Native development and overflow probes remain scoped evidence,
 not production qualification.
 See the [axiom record](pi-auto-mode-axioms.md)
-and [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md).
+and [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-80e67cc0.md).
 No model winner,
 threshold,
 account mutation,
