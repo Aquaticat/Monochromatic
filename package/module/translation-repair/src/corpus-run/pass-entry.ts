@@ -3,7 +3,6 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { armCallDeadline, } from '../call-deadline.ts';
-import { runDocumentLanes, } from '../document-lanes.ts';
 import { archiveDisputesOfRepair, } from '../archive-dispute.ts';
 import {
   entryArchiveOriginalOf,
@@ -38,8 +37,8 @@ import {
   openEntryCaches,
   retireSettledEntryCache,
 } from './pass-entry-caches.ts';
-import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
 import { readLanesSeats, } from './pass-reseat.ts';
+import { runPassLanes, } from './pass-lanes.ts';
 
 //region Pass entry
 
@@ -256,10 +255,7 @@ async function runEntryPipeline(
      The contest and the consolidation seams read their own: XIEPT2 on
      2026-09-03 ran Synthetic dry seven minutes into a 219-minute entry.
      */
-    const {
-      seats,
-      lanesHooks,
-    } = await readLanesSeats({
+    const lanesSeating = await readLanesSeats({
       client,
       signal: deadline.callSignal,
       entryId: entry.id,
@@ -276,7 +272,8 @@ async function runEntryPipeline(
     const admissionAsRead = await admitPassInsertions({
       client,
       prepared: paired,
-      modelIds: seats.roster,
+      modelIds: lanesSeating.seats
+        .roster,
       overlap,
       signal: deadline.callSignal,
       entryId: entry.id,
@@ -332,23 +329,22 @@ async function runEntryPipeline(
     }
 
     /**
-     What both lanes made of that slicing, with neither preferred.
+     What both lanes made of that slicing, with neither preferred, on the
+     benches and re-seat hooks the lanes reading supplied (`pass-lanes.ts`,
+     the seam a test drives: ledger X14).
      */
-    const lanes = await runDocumentLanes({
+    const lanes = await runPassLanes({
       client,
       prepared,
-      repairModels: seats.repairModels,
-      translateModels: seats.translateModels,
-      ...lanesHooks,
+      lanesSeating,
       pictureReadings,
       signal: deadline.callSignal,
-      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
       overlap,
       repairSliceCache: sliceCache,
       refineSliceCache,
       translateSliceCache,
       translateInsertionAdmission,
-      l: tagged({ tag: entry.id, },),
+      entryId: entry.id,
     },);
 
     // AFTER the lanes return and BEFORE anything is written, which is the only

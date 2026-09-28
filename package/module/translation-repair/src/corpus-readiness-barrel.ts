@@ -106,5 +106,9 @@ export {
   preparePassEntry,
 } from './corpus-run/pass-prepare.ts';
 export { attestPassReferences, } from './corpus-run/pass-attest-references.ts';
+export {
+  type LanesSeating,
+  runPassLanes,
+} from './corpus-run/pass-lanes.ts';
 
 //endregion Corpus readiness barrel
