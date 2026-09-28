@@ -9,6 +9,7 @@ import {
   prepareBlockPairing,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type PairedSectionRecord,
   type SliceCache,
 } from '../dist/final/node/index.mjs';
@@ -211,6 +212,29 @@ await describe({
           caught = error;
         }
         expect(caught).toBe(failure);
+      },
+    },),
+    it({
+      name: 'ASKS AGAIN UNDER ANOTHER ROSTER (ledger X13): a pairing one bench settled is not resumed for a bench '
+        + 'that never answered it, such as the full bench after a dry reading paired the section on a subset',
+      fn: async () => {
+        const f = fixture();
+        await prepareBlockPairing(f.input);
+        const [first] = f.writes;
+        if (first === undefined) throw new Error('expected the first roster to persist its pairing');
+        await prepareBlockPairing({
+          ...f.input,
+          modelIds: [SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,],
+        });
+        expect({
+          calls: f.calls.length,
+          writes: f.writes.length,
+          keysDiffer: f.writes[1]?.key !== first.key,
+        }).toEqual({
+          calls: 4,
+          writes: 2,
+          keysDiffer: true,
+        });
       },
     },),
     it({

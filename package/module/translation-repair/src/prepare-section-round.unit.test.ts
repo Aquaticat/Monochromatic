@@ -25,6 +25,8 @@ import {
   parseDocument,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  type RosterModelId,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -129,6 +131,14 @@ const ROSTER = [
 ] as const;
 
 /**
+ Another roster of two, sharing one seat with `ROSTER`.
+ */
+const OTHER_ROSTER = [
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+] as const;
+
+/**
  Logger for the round under test.
  */
 const l = tagged({ tag: 'prepare-section-round-test', },);
@@ -199,6 +209,8 @@ function countingClient({ reply, }: { readonly reply: string; },) {
  @param resumed - pairings an earlier run stored
  
  @param persisted - store this run writes into
+
+ @param modelIds - roster the round asks
  
  @returns What the round settled, beside how many calls it cost
  
@@ -214,12 +226,14 @@ async function runRound(
     reply = AGREED_REPLY,
     resumed = new Map<string, StoredRound>(),
     persisted = new Map<string, string>(),
+    modelIds = ROSTER,
   }: {
     readonly sourceText?: string;
     readonly targetText?: string;
     readonly reply?: string;
     readonly resumed?: ReadonlyMap<string, StoredRound>;
     readonly persisted?: Map<string, string>;
+    readonly modelIds?: readonly RosterModelId[];
   },
 ) {
   /**
@@ -235,7 +249,7 @@ async function runRound(
    */
   const round = await buySectionPairing({
     client,
-    modelIds: ROSTER,
+    modelIds,
     source: parseDocument({ text: sourceText, },),
     target: parseDocument({ text: targetText, },),
     signal: new AbortController().signal,
@@ -341,6 +355,38 @@ await describe({
         expect(second.round
           .findings,).toEqual(first.round
           .findings,);
+      },
+    },),
+
+    it({
+      name: 'ASKS AGAIN UNDER ANOTHER ROSTER (ledger X13): a round one bench settled is not resumed for a '
+        + 'bench that never answered it, such as the full bench after a dry reading paired on a subset',
+      fn: async () => {
+        const first = await runRound({},);
+        /** The stored records, read back as the cache would hand them over. */
+        const resumed = new Map([...first.persisted
+          .entries(),].map(function toRecord([key, serialized,],): readonly [
+          string,
+          StoredRound,
+        ] {
+          return [
+            key,
+            storedRoundOf(serialized,),
+          ];
+        },),);
+        const second = await runRound({
+          resumed,
+          modelIds: OTHER_ROSTER,
+        },);
+        expect({
+          calls: second.calls.count,
+          keysDiffer: [...second.persisted.keys(),].some(function unlikeFirst(key,): boolean {
+            return !first.persisted.has(key,);
+          },),
+        },).toEqual({
+          calls: OTHER_ROSTER.length,
+          keysDiffer: true,
+        },);
       },
     },),
 
