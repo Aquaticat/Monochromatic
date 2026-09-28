@@ -3,6 +3,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ClaimCluster, } from './aggregate-claims.ts';
 import type { SpanAnchor, } from './issue-model.ts';
 import { ISSUE_SEVERITIES, } from './issue-taxonomy.ts';
+import { OBLIGATORY_DIFFERENCES, } from './obligatory-differences.ts';
 import {
   PANEL_NEUTRAL_REGRADE_RULE,
   PANEL_NOTHING_WRONG_RULE,
@@ -85,12 +86,14 @@ ${HOUSE_POLICY_BLOCK}
 Translation policy, which governs what may count as a defect at all. A claim that survives its own quotes can still be unsupported because it asks for the wrong thing:
 - Non-literalness is not a defect. A rendering whose wording, sentence boundaries, or clause order differ from the ORIGINAL is correct when it reads naturally and carries the same feeling. Vote unsupported on any claim whose whole case is that a more literal rendering exists.
 - A merely possible alternative gloss is not a defect. When the claim argues that a word "could be" or "should be" some other rendering, and the shipped rendering is defensible in context, vote unsupported. The question is whether the translation is wrong, not whether another choice was available.
-- Fluency-serving additions are not additions. Conjunctions, discourse connectives, pronouns, and other small words that English grammar or readability requires carry no new content, so a claim reporting one as accuracy/addition is unsupported.
 - Do not apply prose standards to verse. When the span is poetry, lyrics, or deliberately stylized lines, compression, inversion, unusual punctuation, and non-literal imagery are the form working as intended, not defects.
 - In-group vocabulary rendered by its conventional meaning is correct even when a literal reading of the characters says otherwise; never vote supported on the strength of a literal reading alone.
 - ${PANEL_NOTHING_WRONG_RULE}
 - The ORIGINAL is not golden. A TRANSLATION that is clearer, better punctuated, or more explicit than the ORIGINAL is doing its job, and that alone is never a defect.
 - Accurate page apparatus a translator ADDED is not an addition: ${APPARATUS_KINDS}. It is correct information a reader benefits from. Vote unsupported on a claim whose whole case is that the ORIGINAL does not carry it; vote supported only when the added detail is WRONG. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS}
+
+${OBLIGATORY_DIFFERENCES}
+- Vote unsupported on a claim whose whole case is one of these differences; a claim that the supplied or rendered choice is the WRONG one is judged on the reading the ORIGINAL supports.
 
 ${DECLARED_IDENTITY_RULES}
 - Vote unsupported on a claim whose whole case is a rendering the block makes correct.

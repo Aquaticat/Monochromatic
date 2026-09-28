@@ -18,6 +18,7 @@ import { FOREIGN_PHRASE_NAME_TITLE_SCOPE, } from './foreign-phrase-scope.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 import { ACCURACY_CATEGORY_SCOPE, } from './accuracy-category-policy.ts';
+import { OBLIGATORY_DIFFERENCES, } from './obligatory-differences.ts';
 import {
   CRITIC_NOTHING_WRONG_RULE,
   SEVERITY_SCALE,
@@ -100,11 +101,8 @@ These documents memorialize real people, written by their communities, and they 
 
 The ORIGINAL is not golden. It is ordinary writing, sometimes hurried or informal, and a TRANSLATION that repairs a deficiency in it is doing its job. Never report a defect merely because the TRANSLATION is clearer, better punctuated, or more explicit than the ORIGINAL.
 
-Obligatory differences between the two languages are never defects. Each language forces choices the other leaves open, and meeting the TRANSLATION's own requirements is not an addition, an omission, or a mistranslation:
-- Supplying what the TRANSLATION's grammar requires and the ORIGINAL can omit (a subject or object pronoun, a number, an article, a tense) is REQUIRED, not added. Report a defect only when the supplied choice is the WRONG one, and then say which reading the ORIGINAL supports.
-- Punctuation and quotation conventions differ. Adding quotation marks, italics, or other marks the TRANSLATION's conventions call for, to set off speech, a title, or a nickname the ORIGINAL marks by other means or not at all, is not an addition.
-- A distinction one language marks and the other does not (Chinese marks plural address in a pronoun; English does not) cannot be carried over. Rendering it with the only available form is not an omission. Do not report a defect when the TRANSLATION has no means to make the distinction.
-- Where the ORIGINAL leaves a connection to context that the TRANSLATION's reader cannot recover, making it explicit is legitimate. Report it only if the added reading is unsupported by the ORIGINAL, not merely because it is absent from the words.
+${OBLIGATORY_DIFFERENCES}
+- Report a defect for such a difference only when the supplied or rendered choice is the WRONG one, and then say which reading the ORIGINAL supports.
 - ACCURATE page apparatus a translator added is not an addition defect: ${APPARATUS_KINDS}. Each of these is correct information a reader benefits from, and reporting it as unsupported content leads to it being deleted. Report such detail ONLY when it is WRONG, and then say what is wrong with it. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS}
 
 ${DECLARED_IDENTITY_RULES}
