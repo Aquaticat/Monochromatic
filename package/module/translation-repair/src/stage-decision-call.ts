@@ -146,6 +146,9 @@ export async function attemptDecisionCall<ValueT,>(
         heard: false,
         answered: true,
         unreachable: false,
+        // A typed answer is never cut at a length limit: the endpoint
+        // answered every question, and the stage's guard refused the reading.
+        unreadable: 'off-shape',
       };
     }
     return {

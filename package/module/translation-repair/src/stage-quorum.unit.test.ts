@@ -26,7 +26,8 @@ import {
 import {
   gatherStageVoices,
   NoProviderForModelError,
-  RECOVERY_NUDGE,
+  CUT_SHORT_RECOVERY_NUDGE,
+  OFF_SHAPE_RECOVERY_NUDGE,
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_ONLY,
@@ -1148,7 +1149,7 @@ await describe({
           ): Promise<ChatJsonOutcome<ValueT>> => {
             calls[request.modelId] = (calls[request.modelId] ?? 0) + 1;
             /** Whether this ask carries the recovery nudge. */
-            const nudged = request.messages.at(-1,)?.content === RECOVERY_NUDGE.content;
+            const nudged = request.messages.at(-1,)?.content === OFF_SHAPE_RECOVERY_NUDGE.content;
             if (request.modelId === silent)
               throw new Error('scripted transport failure',);
             if ((request.modelId === recovering) && (!nudged)) {
@@ -1266,11 +1267,15 @@ await describe({
           cutShortNudged: cutShort in nudges,
           offShapeNudged: offShape in nudges,
           apart: nudges[cutShort] !== nudges[offShape],
+          cutShortWording: nudges[cutShort] === JSON.stringify(CUT_SHORT_RECOVERY_NUDGE.content,),
+          offShapeWording: nudges[offShape] === JSON.stringify(OFF_SHAPE_RECOVERY_NUDGE.content,),
         },).toEqual({
           heard: 3,
           cutShortNudged: true,
           offShapeNudged: true,
           apart: true,
+          cutShortWording: true,
+          offShapeWording: true,
         },);
       },
     },),

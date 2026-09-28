@@ -15,7 +15,8 @@ import {
   modelPromptDigest,
   NoProviderForModelError,
   promptUniqueClient,
-  RECOVERY_NUDGE,
+  CUT_SHORT_RECOVERY_NUDGE,
+  OFF_SHAPE_RECOVERY_NUDGE,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatTextRequest,
   type SyntheticClient,
@@ -262,9 +263,10 @@ await describe({
         expect(asked[1]?.otherThan,).toBe('synthetic',);
         expect(asked[1]?.messages.slice(0, -1,),).toStrictEqual(REQUEST.messages,);
 
-        // A WORDING OF ITS OWN, so the stage recovery round's nudged prompt is
-        // still a new digest rather than a replay of this re-ask.
-        expect(asked[1]?.messages.at(-1,),).not.toStrictEqual(RECOVERY_NUDGE,);
+        // A WORDING OF ITS OWN, so either of the stage recovery round's nudged
+        // prompts is still a new digest rather than a replay of this re-ask.
+        expect(asked[1]?.messages.at(-1,),).not.toStrictEqual(OFF_SHAPE_RECOVERY_NUDGE,);
+        expect(asked[1]?.messages.at(-1,),).not.toStrictEqual(CUT_SHORT_RECOVERY_NUDGE,);
 
         // Asked again, both answers come from the claims.
         const again = await client.chatJson({ ...REQUEST, validate: isStringAnswer, },);

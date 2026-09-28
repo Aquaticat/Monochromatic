@@ -24,11 +24,12 @@ import { contextRoot, } from './log-context.ts';
 // model and prompt once; the same bytes asked again would be the same sample
 // by that rule, and would come back from its cache in no time (`#473`).
 //
-// A WORDING OF ITS OWN, not the stage recovery round's `RECOVERY_NUDGE`. That
-// round later re-asks every seat still unreadable with its nudge on whatever
-// provider the policy picks; sharing the wording would make its prompt this
-// re-ask's digest, answered from the claims with the reply that already
-// failed, and the round would go silent for exactly the seats it exists for.
+// A WORDING OF ITS OWN, not either of the stage recovery round's
+// (`recovery-nudge.ts`). That round later re-asks every seat still unreadable
+// with its nudge on whatever provider the policy picks; sharing a wording
+// would make its prompt this re-ask's digest, answered from the claims with
+// the reply that already failed, and the round would go silent for exactly
+// the seats it exists for.
 //
 // ONCE, AND NEVER FROM A REPLY NO ROUTER TAGGED: a payload stored before the
 // tag existed, or a client that routes nowhere, cannot name a provider to

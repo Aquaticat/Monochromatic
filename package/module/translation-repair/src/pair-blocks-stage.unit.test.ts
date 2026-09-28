@@ -296,7 +296,7 @@ await describe({
         expect(outcome.heard,).toBe(0,);
         expect(outcome.outcomes,).toEqual(ROSTER.map(modelId => ({
           modelId,
-          voice: { heard: false, answered: true, unreachable: false, },
+          voice: { heard: false, answered: true, unreachable: false, unreadable: 'off-shape', },
         })),);
       },
     },),

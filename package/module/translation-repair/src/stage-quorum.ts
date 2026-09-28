@@ -15,6 +15,11 @@ import {
   reachableQuorum,
   shortBenchStageFinding,
 } from './stage-reachable-quorum.ts';
+import {
+  RECOVERY_NUDGES,
+  UNREADABLE_CAUSES,
+  type UnreadableCause,
+} from './recovery-nudge.ts';
 import type { StageDecision, } from './stage-decision-call.ts';
 import { runGatherRound, } from './stage-round.ts';
 import { stageQuorumUnmetFinding, } from './stage-silence.ts';
@@ -52,27 +57,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  deadlines.
  */
 export const STAGE_RETRY_ROUNDS = 3;
-
-/**
- What the recovery round adds to the prompt of a model whose answer nothing
- could read.
- 
- THE COMPLAINT IS THE ROUND'S WHOLE VALUE. `promptUniqueClient` answers a
- second call for the same model and prompt from its cache, schema mismatch
- included, so a recovery round that re-sent the same bytes was answered with
- the same unreadable bytes in 0 to 1 ms on every one of the five occasions
- measured across two passes on 2026-09-02 (`#473`). The guard here is a type
- predicate and carries no message of its own, so the complaint names the
- failure in general terms: the answer arrived and its shape was not the one
- asked for. That is enough to make the digest new and to tell the model what
- to do differently.
- */
-export const RECOVERY_NUDGE: ChatMessage = {
-  role: 'user',
-  content: 'Your previous reply arrived but could not be read: it did not match the required '
-    + 'response shape. Answer the same question again, replying with ONLY the JSON object of '
-    + 'the shape described, nothing before or after it.',
-};
 
 /**
  One heard voice with its speaker.
@@ -309,10 +293,11 @@ export async function gatherStageVoices<ValueT,>(
     const unreachableSeats = new Set<RosterModelId>();
 
     /**
-     Seats whose latest answer nothing could read, across every round: a
-     seat leaves the moment some round hears it.
+     Seats whose latest answer nothing could read, across every round, each
+     with why, which picks its recovery wording (ledger P10): a seat leaves the
+     moment some round hears it.
      */
-    const unreadableSeats = new Set<RosterModelId>();
+    const unreadableSeats = new Map<RosterModelId, UnreadableCause>();
 
     /**
      Everything a round needs except who to ask and how many to wait for.
@@ -418,7 +403,11 @@ export async function gatherStageVoices<ValueT,>(
         if (outcome.voice
           .answered) {
           answeredBadly.push(outcome.modelId,);
-          unreadableSeats.add(outcome.modelId,);
+          unreadableSeats.set(
+            outcome.modelId,
+            outcome.voice
+              .unreadable,
+          );
         }
       }
       // A SEAT THE ROUTER REFUSED IS NOT RE-ASKED. Nothing changes between
@@ -445,8 +434,8 @@ export async function gatherStageVoices<ValueT,>(
      seat whose latest answer nothing could read, whichever round it came in.
      SEPARATE FROM `pending`, because the two are re-asked for opposite
      reasons. A pending model is one quorum still NEEDS. One of these is a
-     model whose voice is recoverable, since it reached the end of its work
-     and only the shape defeated the guard.
+     model whose voice is recoverable, since an answer arrived: whole with
+     only the shape defeating the guard, or cut at the length limit.
      */
     const unreadable = modelIds.filter(function stillUnreadable(modelId,): boolean {
       return unreadableSeats.has(modelId,);
@@ -471,13 +460,41 @@ export async function gatherStageVoices<ValueT,>(
     // something about itself rather than about the weather, and the calibration
     // is what answers that.
     if (unreadable.length > 0) {
+      /**
+       The unreadable seats grouped by what happened to them, in
+       `UNREADABLE_CAUSES` order; a cause no seat has asks nobody.
+       */
+      const byCause = UNREADABLE_CAUSES
+        .map(function seatsWith(cause,): {
+          readonly cause: UnreadableCause;
+          readonly modelIds: readonly RosterModelId[];
+        } {
+          return {
+            cause,
+            modelIds: unreadable.filter(function hasCause(modelId,): boolean {
+              return unreadableSeats.get(modelId,) === cause;
+            },),
+          };
+        },)
+        .filter(function asksSomeone(group,): boolean {
+          return group.modelIds
+            .length
+            > 0;
+        },);
       l.warn(
-        `${stage}: recovery round for ${String(unreadable.length,)} unreadable answers`,
+        `${stage}: recovery round for ${String(unreadable.length,)} unreadable answers (${
+          byCause
+            .map(function describe(group,): string {
+              return `${String(group.modelIds
+                .length,)} ${group.cause}`;
+            },)
+            .join(', ',)
+        })`,
       );
 
       /**
        Second reading of the voices that finished but could not be read.
-       
+
        NEEDING NONE OF THEM IS THE BOUND. Quorum usually stands by now, and
        where the quorum rounds ran out short the recovered voices still count
        toward it; either way this round is entitled to no more than a
@@ -487,25 +504,33 @@ export async function gatherStageVoices<ValueT,>(
        for all of them instead would let one re-ask that hangs hold the whole
        gather for a full exchange deadline, which is six minutes in a run and
        the opposite of what a recovery is for.
-       
+
+       ONE ROUND PER WORDING, RUN TOGETHER (ledger P10): a round carries one
+       prompt, and each group's prompt names what happened to it; both open
+       their windows at once, so the pair costs one window, not two.
+
        A voice that comes back promptly is still collected: the window
        resolves as soon as every ask settles.
        */
-      const recovered = await runGatherRound<ValueT>({
-        ...roundRequest,
-        // A DIFFERENT PROMPT, OR THE ROUND BUYS NOTHING. `promptUniqueClient`
-        // serves a second call for the same model and prompt from its cache,
-        // schema mismatch included, so re-sending the same bytes came back with
-        // the same unreadable answer in 0 to 1 ms every time it was measured
-        // (`#473`, five recovery rounds over two passes on 2026-09-02). The
-        // nudge tells the model what happened and makes the digest new.
-        messages: [
-          ...messages,
-          RECOVERY_NUDGE,
-        ],
-        modelIds: unreadable,
-        heardNeeded: 0,
-      },);
+      const recovered = (await Promise.all(byCause.map(async function recoverGroup(group,) {
+        return await runGatherRound<ValueT>({
+          ...roundRequest,
+          // A DIFFERENT PROMPT, OR THE ROUND BUYS NOTHING. `promptUniqueClient`
+          // serves a second call for the same model and prompt from its cache,
+          // schema mismatch included, so re-sending the same bytes came back
+          // with the same unreadable answer in 0 to 1 ms every time it was
+          // measured (`#473`, five recovery rounds over two passes on
+          // 2026-09-02). The nudge tells the model what happened and makes the
+          // digest new.
+          messages: [
+            ...messages,
+            RECOVERY_NUDGES[group.cause],
+          ],
+          modelIds: group.modelIds,
+          heardNeeded: 0,
+        },);
+      },),))
+        .flat();
 
       for (const outcome of recovered) {
         if (outcome.voice
@@ -538,7 +563,7 @@ export async function gatherStageVoices<ValueT,>(
       collected,
       asked,
       unreachable: unreachableSeats,
-      unreadable: unreadableSeats,
+      unreadable: new Set(unreadableSeats.keys(),),
     };
   })();
 

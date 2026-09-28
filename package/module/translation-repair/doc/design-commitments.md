@@ -358,6 +358,13 @@ Part of [the package README](../README.md).
   since the round re-asks every seat still unreadable and a shared wording would make its prompt
   this re-ask's digest, answered from the claims with the reply that already failed;
   and a refusal-shaped reply is re-asked elsewhere too, with a nudge neutral on why the reply could not be used.
+- **A reply the length limit cut is re-asked as cut, not as off the shape.**
+  DECIDED FOR QUALITY, 2026-09-28, under the standing directive below (ledger P10):
+  the recovery round told every unreadable seat its reply "did not match the required response shape",
+  while 74 of the 75 cap-cut deepseek-v4.1-flash replies on Hyper had streamed no content at all.
+  Each cause now has its own wording (`src/recovery-nudge.ts`);
+  the cut one names the length limit and asks for the answer within it, keeping any working brief,
+  which is prose in the prompt and never a reasoning parameter on the wire.
 - **A claim the panel settles at neutral asks for no edit; the sheets define every severity.**
   DECIDED FOR QUALITY, 2026-09-28, under the standing directive below (ledger L5):
   neutral asserts no defect, yet 28 accepted neutral issues shipped an edit, 8 of them claims calling the rendering correct.

@@ -11,6 +11,10 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import { isDecisionSeat, } from './model-card-derive.ts';
 import { NoProviderForModelError, } from './provider-router.ts';
 import {
+  type UnreadableCause,
+  unreadableCauseOf,
+} from './recovery-nudge.ts';
+import {
   attemptDecisionCall,
   type StageDecision,
 } from './stage-decision-call.ts';
@@ -46,27 +50,20 @@ export type StageVoice<ValueT,> =
   }
   | {
     /**
-     Voice lost to a non-ok outcome or transport failure.
+     Voice lost to a transport failure, a grace abandonment, an unfilled
+     roster position or a refused seat: no answer arrived.
      */
     readonly heard: false;
 
     /**
-     Whether the model finished and only the shape was wrong.
-     
-     SEPARATES THE TWO LOSSES THAT LOOK ALIKE AND ARE NOT. `ChatJsonOutcome`
-     has three kinds and only `ok` is usable, so a non-`ok` outcome carries
-     `rawText` and means the model got there. A thrown failure, a grace
-     abandonment and an unfilled roster position all mean it did not.
-     
-     `stage-quorum.ts` re-asks on exactly this: a model that finished is worth
-     one fresh call, and a model still thinking is worth a second timeout on
-     the critical path to nobody.
+     No answer arrived, so the recovery round does not re-ask it; see the
+     answered variant for why the two losses are kept apart.
      */
-    readonly answered: boolean;
+    readonly answered: false;
 
     /**
      Whether no wet provider served the seat at all.
-     
+
      THE ONE LOSS THAT SAYS SOMETHING ABOUT THE BENCH RATHER THAN THE MODEL.
      `judgeSeatsFor` keeps a seat on the bench when every provider serving
      it reads dry, and the router refuses the call in the same millisecond as
@@ -78,6 +75,39 @@ export type StageVoice<ValueT,> =
      smaller than it looks.
      */
     readonly unreachable: boolean;
+  }
+  | {
+    /**
+     Voice lost to an answer that arrived and nothing could read.
+     */
+    readonly heard: false;
+
+    /**
+     An answer arrived.
+
+     SEPARATES THE TWO LOSSES THAT LOOK ALIKE AND ARE NOT. `ChatJsonOutcome`
+     has three kinds and only `ok` is usable, so a non-`ok` outcome carries
+     `rawText` and means an answer arrived, whole or cut at the length limit.
+     A thrown failure, a grace abandonment and an unfilled roster position all
+     mean none did.
+
+     `stage-quorum.ts` re-asks on exactly this: an answer that arrived is
+     worth one fresh call, nudged by what happened to it, and a model still
+     thinking is worth a second timeout on the critical path to nobody.
+     */
+    readonly answered: true;
+
+    /**
+     A seat that answered was reached.
+     */
+    readonly unreachable: false;
+
+    /**
+     Why nothing could read it, which picks the recovery round's wording
+     (ledger P10): a reply the length limit cut is told it ran out of room,
+     not that its shape was wrong.
+     */
+    readonly unreadable: UnreadableCause;
   };
 
 /**
@@ -270,19 +300,21 @@ export async function attemptStageCall<ValueT,>(
     if (outcome.kind !== 'ok') {
       l.warn(`${stage} ${modelId}: ${lostVoiceCause({ outcome, },)}, voice lost`,);
 
-      // ANSWERED. Every non-`ok` kind carries `rawText`, so the model reached
-      // the end of its work and only the shape defeated the guard. The kinds
-      // are `refusal-shaped` and `schema-mismatch`, and nothing else reaches
-      // here: a stream cut by the idle, runaway or degeneration guards throws
-      // and lands in the catch below as not answered, and a straggler the
-      // round abandons is classified in `stage-round.ts`, never here.
-      // CONFIRMED LIVE on the first recovery rounds (two calibration arms of
-      // 2026-08-26): all four re-asked voices were `schema-mismatch`, three
+      // ANSWERED. Every non-`ok` kind carries `rawText`, so an answer arrived:
+      // whole, with only the shape defeating the guard, or cut at the length
+      // limit before it was complete, which the cause keeps apart (ledger
+      // P10). The kinds are `refusal-shaped` and `schema-mismatch`, and nothing
+      // else reaches here: a stream cut by the idle, runaway or degeneration
+      // guards throws and lands in the catch below as not answered, and a
+      // straggler the round abandons is classified in `stage-round.ts`, never
+      // here. CONFIRMED LIVE on the first recovery rounds (two calibration arms
+      // of 2026-08-26): all four re-asked voices were `schema-mismatch`, three
       // came back readable, and none of the thirteen grace cuts was re-asked.
       return {
         heard: false,
         answered: true,
         unreachable: false,
+        unreadable: unreadableCauseOf({ outcome, },),
       };
     }
     return {

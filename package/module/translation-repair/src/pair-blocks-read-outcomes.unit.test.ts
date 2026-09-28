@@ -54,7 +54,7 @@ await describe({
       name: 'replays missing outcomes and distinguishes configured seats from asked seats',
       fn: async () => {
         const outcomes: readonly RoundOutcome<BlockPairingWire>[] = [
-          { modelId: roster[1], voice: { heard: false, answered: true, unreachable: false, }, },
+          { modelId: roster[1], voice: { heard: false, answered: true, unreachable: false, unreadable: 'off-shape', }, },
         ];
         const result = readBlockPairingOutcomes({ outcomes, modelIds: roster, sourceCount: 2, targetCount: 2, l, },);
         expect(result.pairs,).toEqual([],);

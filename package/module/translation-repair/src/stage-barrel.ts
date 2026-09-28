@@ -20,10 +20,17 @@ export {
 export {
   gatherStageVoices,
   type HeardVoice,
-  RECOVERY_NUDGE,
   STAGE_RETRY_ROUNDS,
   type StageGather,
 } from './stage-quorum.ts';
+export {
+  CUT_SHORT_RECOVERY_NUDGE,
+  OFF_SHAPE_RECOVERY_NUDGE,
+  RECOVERY_NUDGES,
+  UNREADABLE_CAUSES,
+  type UnreadableCause,
+  unreadableCauseOf,
+} from './recovery-nudge.ts';
 export {
   askingWindow,
   benchRotation,
