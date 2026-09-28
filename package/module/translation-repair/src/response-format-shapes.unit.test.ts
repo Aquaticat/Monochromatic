@@ -45,8 +45,9 @@ await describe({
       name: 'ADJUDICATION_RESPONSE_FORMAT',
       children: [
         it({
-          name: 'names the panel_ballot schema and requires claim and vote on every verdict, group '
-            + 'and sameDefect on every conflict group, so the panel cannot answer without naming both '
+          name: 'names the panel_ballot schema and requires claim, reason and vote on every verdict, '
+            + 'reason declared before vote (owner, 2026-09-27, "Reason before vote"), and group and '
+            + 'sameDefect on every conflict group, so the panel cannot answer without naming both '
             + 'halves of either kind of entry',
           fn: async () => {
             expect(ADJUDICATION_RESPONSE_FORMAT.json_schema.name,).toBe('panel_ballot',);
@@ -58,8 +59,13 @@ await describe({
              */
             const schema = JSON.stringify(ADJUDICATION_RESPONSE_FORMAT.json_schema.schema,);
             expect(schema,).toContain('"required":["verdicts"]',);
-            expect(schema,).toContain('"required":["claim","vote"]',);
+            expect(schema,).toContain('"required":["claim","reason","vote"]',);
             expect(schema,).toContain('"required":["group","sameDefect"]',);
+            // DECLARED FIRST, as the sheet's reply shape shows it: a decoder
+            // held to the schema may write fields in declared order, and
+            // nothing here should invite the vote ahead of its reason.
+            expect(schema.indexOf('"reason":{',),).toBeGreaterThan(0,);
+            expect(schema.indexOf('"reason":{',),).toBeLessThan(schema.indexOf('"vote":{',),);
           },
         },),
       ],

@@ -113,6 +113,28 @@ await describe({
       },
     },),
     it({
+      name: 'ASKS FOR THE REASON BEFORE THE VOTE, in the instruction and in the reply shape it shows '
+        + '(owner, 2026-09-27, "Reason before vote"): a panelist writes out what decides the claim, '
+        + 'then votes, and the reason is stored with the ballot',
+      fn: async () => {
+        /** Panelist system instructions. */
+        const system = buildAdjudicationMessages({
+          sourceText: '猫猫在中午打盹。',
+          targetText: 'The cat naps at noon.',
+          clusters: CLUSTERS,
+        },)
+          .messages[0]
+          ?.content ?? '';
+        expect(system,).toContain('write its reason first, then cast exactly one vote',);
+        /**
+         Where the reply shape the sheet shows names each field.
+         */
+        const shape = system.slice(system.indexOf('{"verdicts"',),);
+        expect(shape.indexOf('"reason"',),).toBeGreaterThan(0,);
+        expect(shape.indexOf('"reason"',),).toBeLessThan(shape.indexOf('"vote"',),);
+      },
+    },),
+    it({
       name: 'numbers claims globally and maps ids in prompt order',
       fn: async () => {
         /** Plan for the two-cluster sheet. */

@@ -57,7 +57,7 @@ function panelFixture(input: { readonly disjoint?: boolean; readonly rejectThird
       }
       const groups = CLUSTERS.filter(cluster => cluster.members.some(member => present.includes(member)));
       const value = {
-        verdicts: present.map((member, index) => ({ claim: index + 1, vote: (member.claimId === 'claim-first') || ((input.rejectThird === true) && (member.claimId === 'claim-third')) ? 'unsupported' : 'supported', })),
+        verdicts: present.map((member, index) => ({ claim: index + 1, reason: `${member.claimId} checked against its quotes`, vote: (member.claimId === 'claim-first') || ((input.rejectThird === true) && (member.claimId === 'claim-third')) ? 'unsupported' : 'supported', })),
         groups: groups.map((cluster, index) => ({ group: index + 1, sameDefect: cluster.members.length > 1, })),
       };
       if (!request.validate(value))
@@ -248,6 +248,22 @@ await describe({
         expect(Math.min(against, forSecond, forThird,)).toBeGreaterThan(0);
         expect(said.some(line => line.includes(`${rejected?.issueId} rejected`) && line.includes(`claim-first: supported 0, unsupported ${String(against)},`))).toBe(true);
         expect(said.some(line => line.includes(`${accepted?.issueId} accepted`) && line.includes(`claim-second: supported ${String(forSecond)},`) && line.includes(`claim-third: supported ${String(forThird)},`))).toBe(true);
+      },
+    }),
+    it({
+      name: 'STORES AND LOGS EACH PANELIST\'S REASON beside its vote (owner, 2026-09-27, "Reason before vote"), '
+        + 'so why a claim was accepted or rejected survives in the artifact and reads in the run log',
+      fn: async () => {
+        const fixture = panelFixture();
+        /** Lines the stage wrote. */
+        const said: string[] = [];
+        const result = await runPanelStage({ ...panelInput(fixture.client), l: capturingLogger({ lines: said, }), });
+        /** Every stored ballot on the rejected claim. */
+        const ballots = result.issues[0]?.readings?.['claim-first']?.ballots ?? [];
+        // Positive control: the claim was read by at least one panelist.
+        expect(ballots.length).toBeGreaterThan(0);
+        expect(ballots.every(ballot => ballot.reason === 'claim-first checked against its quotes')).toBe(true);
+        expect(ballots.every(ballot => said.some(line => line.includes(`claim-first ${ballot.panelistId} unsupported: claim-first checked against its quotes`)))).toBe(true);
       },
     }),
   ],

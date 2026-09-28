@@ -87,7 +87,7 @@ await describe({
         + 'change to the FIXTURE INPUTS below moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(32,);
+        expect(SLICE_CACHE_VERSION,).toBe(33,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -139,6 +139,10 @@ await describe({
         //
         // VERSION 32 ON 2026-09-27 the same way: one cast checker ballot no
         // longer resolves an issue, which changes what a settled slice shipped.
+        //
+        // VERSION 33 THE SAME DAY: the panel sheet asks each verdict's reason
+        // before its vote, and every stored ballot carries it (owner, "Reason
+        // before vote"), so the question and the record both moved.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
           .toBe('6b44be9a56f39b571074aebe89fce488e8019d39b220fd6d89a930a1614f5f2f',);
       },

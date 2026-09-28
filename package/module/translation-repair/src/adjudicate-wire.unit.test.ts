@@ -71,6 +71,12 @@ await describe({
           groups: [{ group: 1, },],
         },),).toBe(false,);
         expect(isPanelBallotWire('a string',),).toBe(false,);
+        // A REASON THAT IS NOT TEXT is malformed; a missing one is resolved
+        // per verdict instead (owner, 2026-09-27, "Reason before vote").
+        expect(isPanelBallotWire({ verdicts: [{ claim: 1, reason: 7, vote: 'supported', },], },),)
+          .toBe(false,);
+        expect(isPanelBallotWire({ verdicts: [{ claim: 1, reason: 'Paws match.', vote: 'supported', },], },),)
+          .toBe(true,);
       },
     },),
   ],
@@ -88,15 +94,18 @@ await describe({
             verdicts: [
               {
                 claim: 1,
+                reason: 'The whiskers are counted wrong.',
                 vote: 'supported',
                 severity: 'critical',
               },
               {
                 claim: 2,
+                reason: 'The paw is where the original puts it.',
                 vote: 'unsupported',
               },
               {
                 claim: 3,
+                reason: 'The tail is not in either quote.',
                 vote: 'abstain',
               },
             ],
@@ -113,11 +122,56 @@ await describe({
         expect(ballot.verdicts['issue/whisker'],).toEqual({
           vote: 'supported',
           severity: 'critical',
+          reason: 'The whiskers are counted wrong.',
+        },);
+        expect(ballot.verdicts['issue/paw'],).toEqual({
+          vote: 'unsupported',
+          reason: 'The paw is where the original puts it.',
+        },);
+        expect(ballot.verdicts['issue/tail'],).toEqual({
+          vote: 'abstain',
+          reason: 'The tail is not in either quote.',
+        },);
+        expect(ballot.mergeOpinions['cluster/chase'],).toBe(false,);
+        expect(ballot.findings,).toHaveLength(0,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE VOTE OF A VERDICT GIVEN WITHOUT A REASON and records the gap (owner, 2026-09-27, '
+        + '"Reason before vote"): the reason explains the vote rather than qualifying it, and a provider '
+        + 'that does not hold the reply to its schema can drop it, so losing the ballot over it would '
+        + 'turn an audit gap into a lost voice',
+      fn: async () => {
+        /** Ballot with one reason missing and one blank. */
+        const ballot = resolvePanelBallot({
+          wire: {
+            verdicts: [
+              {
+                claim: 1,
+                reason: 'The whiskers are counted wrong.',
+                vote: 'supported',
+              },
+              {
+                claim: 2,
+                vote: 'unsupported',
+              },
+              {
+                claim: 3,
+                reason: '   ',
+                vote: 'abstain',
+              },
+            ],
+          },
+          claimIds: CLAIM_IDS,
+          clusterIds: CLUSTER_IDS,
         },);
         expect(ballot.verdicts['issue/paw'],).toEqual({ vote: 'unsupported', },);
         expect(ballot.verdicts['issue/tail'],).toEqual({ vote: 'abstain', },);
-        expect(ballot.mergeOpinions['cluster/chase'],).toBe(false,);
-        expect(ballot.findings,).toHaveLength(0,);
+        expect(ballot.findings,).toStrictEqual([
+          'missing-reason (2)',
+          'missing-reason (3)',
+        ],);
       },
     },),
 
