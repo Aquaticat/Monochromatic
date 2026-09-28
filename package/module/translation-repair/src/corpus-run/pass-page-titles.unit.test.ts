@@ -8,6 +8,8 @@
  @module
  */
 
+import { createHash, } from 'node:crypto';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
@@ -19,7 +21,9 @@ import {
   type BenchSeating,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  hashContent,
   keepBench,
+  PAGE_TITLE_CACHE_VERSION,
   pageTitleKey,
   type PageTitleLexiconRecord,
   passPageTitles,
@@ -274,12 +278,20 @@ await describe({
             return line.startsWith('- 猫之歌',) && line.includes('"Song of the Cat"',);
           },),
           stored: moved.persisted.size,
+          // Stored under the roster that answered, so a resume on another
+          // bench asks again rather than reading this bench's answer.
+          storedUnderAnswering: moved.persisted.has(pageTitleKey({
+            sourceText: REPEATING,
+            spans: [{ source: '猫之歌', occurrences: 2, },],
+            modelIds: RESEATED,
+          },),),
         },).toEqual({
           askedAny: true,
           offReseated: [],
           hookReads: 1,
           carries: true,
           stored: 1,
+          storedUnderAnswering: true,
         },);
       },
     },),
@@ -356,6 +368,29 @@ await describe({
           titles: false,
           original: false,
         },);
+      },
+    },),
+    it({
+      name: 'IS THE SHA-256 OF ONE JSON VALUE carrying the cache version, so moving the version moves every key '
+        + '(ledger M25) and no two questions share bytes (ledger X15)',
+      fn: async () => {
+        /**
+         The titles asked.
+         */
+        const spans = [{ source: '猫之歌', occurrences: 2, },];
+        expect(pageTitleKey({ sourceText: REPEATING, spans, modelIds: ROSTER, },),).toBe(
+          createHash('sha256',)
+            .update(
+              JSON.stringify({
+                version: PAGE_TITLE_CACHE_VERSION,
+                source: hashContent({ content: REPEATING, },),
+                titles: spans,
+                roster: ROSTER,
+              },),
+              'utf8',
+            )
+            .digest('hex',),
+        );
       },
     },),
   ],

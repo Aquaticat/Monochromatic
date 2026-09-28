@@ -56,7 +56,8 @@ await describe({
       fn: async () => {
         expect({
           plain: spansOf({ sourceText: '<h3 align="center">猫之歌</h3>\n\n《猫之歌》很好听。\n', },),
-          nested: spansOf({ sourceText: '<h3><b>猫之歌</b></h3>\n\n《猫之歌》很好听。\n', },),
+          // Twice, so reading the nested heading whole would list it.
+          nested: spansOf({ sourceText: '<h3><b>猫之歌</b></h3>\n\n<h3><b>猫之歌</b></h3>\n', },),
         },).toEqual({
           plain: [{ source: '猫之歌', occurrences: 2, },],
           nested: [],
