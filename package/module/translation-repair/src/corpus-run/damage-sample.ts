@@ -27,6 +27,8 @@ import {
 } from './artifact-pool.ts';
 import { readdirArtifacts, } from './artifact-placement.ts';
 
+import { textSettingOf, } from './env-text-setting.ts';
+
 //region Damage sample
 // Draws shipped regions at random and asks a human the SAME source-anchored
 // question the probe now asks, so the two answers are comparable.
@@ -262,14 +264,14 @@ async function main(): Promise<void> {
   const dir = await resolveRunsDir();
 
   /**
-   Draw seed, overridable so a later round can draw a fresh sample.
+   Draw seed, overridable so a later round can draw a fresh sample; an
+   exported-empty variable reads as unset (ledger D15).
    */
-  const { DAMAGE_SAMPLE_SEED: configuredSeed, } = process.env;
-
-  /**
-   Seed actually used, defaulted when nothing was exported.
-   */
-  const seed = configuredSeed ?? 'damage-round-one';
+  const seed = textSettingOf({
+    env: process.env,
+    name: 'DAMAGE_SAMPLE_SEED',
+    fallback: 'damage-round-one',
+  },);
 
   /**
    Every distinct shipped region in the settled artifacts.

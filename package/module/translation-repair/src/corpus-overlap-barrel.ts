@@ -19,4 +19,6 @@ export {
   readCorpusPinSetting,
 } from './corpus-run/corpus-pin-override.ts';
 
+export { textSettingOf, } from './corpus-run/env-text-setting.ts';
+
 //endregion Corpus overlap exports

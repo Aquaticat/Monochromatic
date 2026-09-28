@@ -13,6 +13,8 @@ import { reportingRefusals, } from './cli-refusal.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
+import { textSettingOf, } from './env-text-setting.ts';
+
 //region Score verify
 // Joins the blind verification grades to the manifest that says which set each
 // item came from, and reports what the unlabelled probe's flags are worth.
@@ -194,14 +196,14 @@ async function main(): Promise<void> {
 
   /**
    Which sheet to score, so one scorer serves every sheet this formatter
-   writes rather than each sheet growing its own.
+   writes rather than each sheet growing its own; an exported-empty variable
+   reads as unset (ledger D15).
    */
-  const { VERIFY_SHEET_BASENAME: configuredBasename, } = process.env;
-
-  /**
-   Basename actually used.
-   */
-  const basename = configuredBasename ?? 'probe-verify';
+  const basename = textSettingOf({
+    env: process.env,
+    name: 'VERIFY_SHEET_BASENAME',
+    fallback: 'probe-verify',
+  },);
 
   /**
    Graded sheet items, in sheet order.
