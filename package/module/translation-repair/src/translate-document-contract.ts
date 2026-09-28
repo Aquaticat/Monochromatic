@@ -154,6 +154,15 @@ import type { SliceReplacement, } from './splice-slices.ts';
  round hears; checked on 2026-09-28: still no slice-cache file newer than
  00:26 on 2026-09-27.
 
+ Rides inside 15 too: a disputed slice's repair text never stands in when it
+ is the archive's own wording, and the refused-wording finding a translate
+ author reads says why the repair lane's text is refused (withdrawn at
+ assembly, or unconfirmed by the checkers) rather than blaming the checkers
+ for both (ledger L12, `f66e96f06` and `3ffbcec10`). No settled slice moves:
+ 0 of 1,132 fully resolved disputes over every artifact had unchanged text.
+ Checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (task #395, ledger M28): 15 was set
  in `66703994a` at 22:56 on 2026-09-27, after the newest slice-cache file under the
  agent runs (00:26 on 2026-09-27), and no slice-cache file has been written

@@ -919,6 +919,14 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     The heredoc repeat came after the rule "a Bash call that holds `<<` holds nothing else" was recorded,
     so the prevention stays the same and is now applied without exception:
     edit scripts go through the Write tool and run alone.
+    During L12 three more:
+    a call chained four `&&` steps where three is the limit;
+    a `git add && git commit` ran from the package directory, which cli-git's `require-root` guard refused
+    (git commands run from the repository root or with `git -C`);
+    and a two-line test fix went through `python3 -c` in the call rather than a script written with the Write tool.
+    Prevention: count the `&&` before sending,
+    start every git call with `cd -- <repo root>` or `git -C`,
+    and treat an inline `-c` script as the heredoc slip in another form.
 - The Write tool decodes `\u2028` and `\u2029` in the content it is given into the raw characters
     (it left `\u0085` as text), so a source file written with those escapes held raw line separators,
     which `no-multi-str` flagged in `sheet-line-text.ts` and which reached `sheet-line-text.unit.test.ts` unflagged.
@@ -2392,15 +2400,52 @@ a rollback there would discard edits fixing panel-confirmed defects on the same 
 Mutation check (`l11b-mutants.json`): never rolling back, ignoring added-damage claims, ignoring removal claims,
 and attaching the report on a rollback are each caught; the comment-wording control survives.
 Cache: rides inside refine version 5 with an account in `refine-slice-key.ts`.
+
 ### L12: logging gaps in the repair lane
 
-Status: open (with A11).
-No chunk index on critic,
-editor,
-checker,
-refine,
-select and probe lines under overlap;
-ballot irregularities never logged.
+Status: fixed, each part guarded and mutation-checked.
+A11 put the slice on the critic, editor, checker, select and probe lines.
+What it left, and what the audit found beside it:
+the refinement phase ran slices side by side with no slice on its lines;
+panel and checker ballot irregularities reached the findings and never the log;
+assembly's document-scale damage checks named no slice;
+the settlement line said "unchanged" for three different settlements;
+and the dispute line blamed the checkers for every refused stand-in.
+
+- Refinement: `4c714af90` (guard `ca684d49e`).
+    Each slice refines under `inSliceLogContext`, as the accuracy pass settles each slice.
+- Ballot irregularities: `da02c1fef` (guard `152c83e41`).
+    `logBallotIrregularities` warns one line per finding, naming the stage and the model that cast the ballot;
+    the audit counted 10, 14 and 26 on three runs' artifacts and none in their logs.
+- Assembly damage: `7d40f198b` (guards `2e443cd1a`, and `44ccb69f5` for the translate assembler).
+    Repair assembly logs the slices and phrase of each introduced repetition
+    and the slice and words of each content loss;
+    translate assembly logs repetitions, the only document-scale check it runs.
+    The findings stay free of corpus wording; the log carries it.
+- Settlement line: `179297e7a` (guard `56fcd6e03`, wiring guard `824113c56`).
+    "Unchanged" now says which: the archive won, the patch won and wrote nothing,
+    or the patch won and was refused for dropping a declared name.
+- Dispute stand-in: `f66e96f06` (guard `cbb8f3f26`) and `3ffbcec10` (guard `05357361d`).
+    A refused dispute names its refusal
+    (withdrawn at assembly, the archive's own wording, or unconfirmed by the checkers)
+    in the log line and in the refused-wording finding a translate author reads,
+    which also said the checkers had not confirmed a withdrawn slice's text.
+    A stand-in identical to the archive is now refused whatever the checkers voted.
+    Measured over every artifact (`l12e-census.mjs`): 266 artifacts, 1,791 disputed slices,
+    1,132 with every disputing issue resolved, none of them with unchanged text, so no settled slice moves.
+    `ArchiveDispute` is a union now, so a refused dispute cannot lack its reason.
+
+Mutation check (`l12-mutants.json`, then `l12b-mutants.json`):
+dropping the refinement context, either ballot-log call, the model in the ballot line,
+any of the three assembly log loops, the slice in either damage line,
+either settlement branch, either settlement wiring argument,
+the archive-wording or withdrawn refusal,
+and the refusal lookup in the dispute line and in the author's reason are each caught; both controls survive.
+The first run found the settlement wiring unguarded (both mutants survived), which `824113c56` closed;
+two ballot-log mutants in it did not parse and two patterns had been reformatted by lint, so the second run redid them.
+Cache: the log lines touch no key.
+The eligibility and the reason reach the translate and consolidation lanes through the refused wordings,
+which no key hashes; they ride inside translate 15 and consolidation 20 with accounts, same slice-cache check, same result.
 
 ### L13: stale TSDoc and comments
 
