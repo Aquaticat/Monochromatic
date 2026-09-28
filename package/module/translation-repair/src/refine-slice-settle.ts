@@ -292,6 +292,10 @@ export async function settleRefinedSlice(
     refineContributors: refined.contributors,
     sourceText,
     refinedText: refined.refinedText,
+    // The rewriters' evidence, which the checkers judge the rewrite by
+    // (ledger L14): a worse ballot rolls the whole slice back.
+    ...(identityContext === undefined ? {} : { identityContext, }),
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
     signal,
     perCallTimeoutMs,
     l,
@@ -501,6 +505,11 @@ export async function settleRefinedSlice(
  
  @param refinedText - candidate text the refinement produced
  
+ @param identityContext - declared names and handles, when any (ledger L14)
+ 
+ @param referenceContext - what the pages the original cites say, when it
+ cites any (ledger L14)
+ 
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -530,6 +539,8 @@ async function retainsResolvedIssues(
     refineContributors,
     sourceText,
     refinedText,
+    identityContext,
+    referenceContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -540,6 +551,8 @@ async function retainsResolvedIssues(
     readonly refineContributors: readonly RosterModelId[];
     readonly sourceText: string;
     readonly refinedText: string;
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -611,6 +624,8 @@ async function retainsResolvedIssues(
       editorAuthorship: outcome.authorship,
       refineContributors,
     },),
+    ...(identityContext === undefined ? {} : { identityContext, }),
+    ...(referenceContext === undefined ? {} : { referenceContext, }),
     signal,
     perCallTimeoutMs,
     l,

@@ -89,8 +89,11 @@ export type ChunkProof = {
  
  @param neighbouringIncumbentText - archive English of those passages
  
- @param identityContext - declared names and handles for the probe, or the
- empty string on a page declaring none (ledger H8)
+ @param identityContext - declared names and handles for the checkers and
+ the probe, or the empty string on a page declaring none (ledger H8, L14)
+ 
+ @param referenceContext - what the pages the original links say, for the
+ checkers; absent when it links nowhere (ledger L14)
  
  @param signal - caller abort honoured by every exchange
  
@@ -119,6 +122,7 @@ export async function proveRepairedChunk(
     neighbouringSourceText,
     neighbouringIncumbentText,
     identityContext,
+    referenceContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -135,6 +139,7 @@ export async function proveRepairedChunk(
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
     readonly identityContext: string;
+    readonly referenceContext?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -172,6 +177,11 @@ export async function proveRepairedChunk(
       .patchedText,
     issues: acceptedIssues,
     authorship,
+    // THE PANEL'S EVIDENCE (ledger L14): the checkers' worse ballots strip an
+    // edit (ledger L3), and one reading without the declared names would count
+    // a declared handle kept as written as damage.
+    identityContext,
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     signal,
     perCallTimeoutMs,
     l,

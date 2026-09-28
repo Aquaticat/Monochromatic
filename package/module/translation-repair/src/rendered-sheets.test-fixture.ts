@@ -12,6 +12,7 @@ import {
   buildRenderingAuditMessages,
   buildResolutionMessages,
   buildTranslateMessages,
+  hashContent,
   HOUSE_POLICY_BLOCK,
   messageText,
   TRANSLATE_SELECTION_TASK,
@@ -65,6 +66,56 @@ const IDENTITY = 'name: 咪咪 = Mittens';
  Invented cited reference.
  */
 const REFERENCES = '- reference 1 https://example.org/mittens ("Mittens"): Mittens had an older sister who was also a tabby.';
+
+/**
+ Opening sentence of the invented original, which the invented claim quotes.
+ */
+const SOURCE_QUOTE = '那晚小猫咪在窗台上睡着了。';
+
+/**
+ Opening sentence of the invented archive rendering, which the invented
+ claim quotes.
+ */
+const ARCHIVE_QUOTE = 'That night the kitten falls asleep on the windowsill.';
+
+/**
+ Invented accepted issue quoting both documents, so the checker sheet shows
+ its claim evidence (ledger L14).
+ */
+const TENSE_ISSUE = {
+  issueId: 'issue/tense',
+  status: 'accepted' as const,
+  severity: 'minor' as const,
+  claims: [
+    {
+      claimId: 'claim/tense',
+      claim: {
+        category: 'fluency/grammar' as const,
+        severity: 'minor' as const,
+        summary: 'The narration is told in the present.',
+        spans: [
+          {
+            side: 'source' as const,
+            nodeId: 'block/1',
+            nodeHash: hashContent({ content: SOURCE, },),
+            startOffset: 0,
+            endOffset: SOURCE_QUOTE.length,
+            quotedText: SOURCE_QUOTE,
+          },
+          {
+            side: 'target' as const,
+            nodeId: 'block/1',
+            nodeHash: hashContent({ content: ARCHIVE, },),
+            startOffset: 0,
+            endOffset: ARCHIVE_QUOTE.length,
+            quotedText: ARCHIVE_QUOTE,
+          },
+        ],
+      },
+    },
+  ],
+  tallies: {},
+};
 
 /**
  Joins the content of every message of an exchange.
@@ -137,8 +188,10 @@ export function renderedSheets(): readonly RenderedSheet[] {
    */
   const resolutionPlan = buildResolutionMessages({
     sourceText: SOURCE,
-    patchedText: ARCHIVE,
-    issues: [],
+    patchedText: REPAIR,
+    issues: [TENSE_ISSUE,],
+    identityContext: IDENTITY,
+    referenceContext: REFERENCES,
   },);
   return [
     {

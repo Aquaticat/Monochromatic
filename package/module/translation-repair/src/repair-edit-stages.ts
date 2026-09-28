@@ -82,6 +82,12 @@ export type CheckerStageResult = {
  @param authorship - who wrote `patchedText`, so a checker judging its own
  work is heard at a discount rather than at full weight
  
+ @param identityContext - declared names and handles the panel judged the
+ issues by, absent or empty on a page declaring none (ledger L14)
+ 
+ @param referenceContext - what the pages the original links say, absent or
+ empty when it links nowhere (ledger L14)
+ 
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -103,6 +109,8 @@ export async function runCheckerStage(
     patchedText,
     issues,
     authorship,
+    identityContext,
+    referenceContext,
     signal,
     perCallTimeoutMs,
     l,
@@ -113,6 +121,8 @@ export async function runCheckerStage(
     readonly patchedText: string;
     readonly issues: readonly AdjudicatedIssue[];
     readonly authorship: IssueAuthorship;
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -125,6 +135,8 @@ export async function runCheckerStage(
     sourceText,
     patchedText,
     issues,
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
   },);
 
   /**

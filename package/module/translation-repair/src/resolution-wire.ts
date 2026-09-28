@@ -3,12 +3,23 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { ADDITION_IS_REMOVED_NOT_SOFTENED, } from './addition-repair-rule.ts';
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import { citedReferenceBlockText, } from './cited-reference-rule.ts';
+import {
+  DECLARED_IDENTITY_RULES,
+  declaredNamesBlock,
+} from './declared-identity-rule.ts';
 import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
+import {
+  CHECKER_IDENTITY_RULE,
+  CHECKER_QUOTE_RULE,
+  CHECKER_REFERENCE_RULE,
+  resolutionIssueBlock,
+} from './resolution-sheet-evidence.ts';
 
 //region Resolution check
 // Region changed does not mean issue resolved (settled architecture): after
@@ -64,23 +75,64 @@ export function isResolutionVerdict(value: unknown,): value is ResolutionVerdict
 }
 
 /**
- System instructions shared by every checker call.
+ How every checker judges, before any rule a sheet's evidence adds.
  */
-const RESOLUTION_SYSTEM_PROMPT = `You are a strict bilingual translation reviewer.
+const RESOLUTION_JUDGING_RULES = `You are a strict bilingual translation reviewer.
 Editors revised the TRANSLATION of the ORIGINAL document to fix the numbered issues below.
 For EVERY issue, judge the REVISED translation:
 - fixed: the defect is gone and the fix reads correctly
 - not-fixed: the defect is still present, in the same or another form
 - worse: the revision introduced new damage around this issue
 
+${CHECKER_QUOTE_RULE}
+
 ${ADDITION_IS_REMOVED_NOT_SOFTENED} For such an issue, such a restatement is not-fixed.
 
 ${MEASUREMENT_POLICY_BLOCK}
 
-An issue asking for a detail reader protection keeps out is answered not-fixed, and there is no verdict here meaning the issue should never have been filed: the REVISED translation is right not to carry that detail, and saying fixed would agree that it should. Where the REVISED translation HAS restored such a detail, the verdict is worse.
+An issue asking for a detail reader protection keeps out is answered not-fixed, and there is no verdict here meaning the issue should never have been filed: the REVISED translation is right not to carry that detail, and saying fixed would agree that it should. Where the REVISED translation HAS restored such a detail, the verdict is worse.`;
 
-Reply with ONLY a JSON object of shape {"checks": [{"issue": 1, "verdict": "fixed"}]}. No prose, no code fences.
+/**
+ Reply shape every checker is held to, stated last.
+ */
+const RESOLUTION_REPLY_RULE = `Reply with ONLY a JSON object of shape {"checks": [{"issue": 1, "verdict": "fixed"}]}. No prose, no code fences.
 Every issue number must appear exactly once in checks.`;
+
+/**
+ System instructions for one checker sheet: the judging rules, the rules
+ for the evidence this sheet shows, then the reply shape.
+
+ THE EVIDENCE RULES RIDE WITH THEIR BLOCKS, as the introduced-defect probe's
+ identity rules do (ledger H8): a sheet for a page declaring nothing and
+ linking nowhere reads the same rules it always did.
+
+ @param declaresNames - whether the sheet shows a DECLARED NAMES block
+
+ @param citesReferences - whether the sheet shows the cited references
+
+ @returns System prompt text
+
+ @example
+ ```ts
+ const system = resolutionSystemPrompt({ declaresNames: false, citesReferences: false, },);
+ ```
+ */
+function resolutionSystemPrompt(
+  {
+    declaresNames,
+    citesReferences,
+  }: {
+    readonly declaresNames: boolean;
+    readonly citesReferences: boolean;
+  },
+): string {
+  return [
+    RESOLUTION_JUDGING_RULES,
+    ...(declaresNames ? [`${DECLARED_IDENTITY_RULES}\n${CHECKER_IDENTITY_RULE}`,] : []),
+    ...(citesReferences ? [CHECKER_REFERENCE_RULE,] : []),
+    RESOLUTION_REPLY_RULE,
+  ].join('\n\n',);
+}
 
 /**
  Messages plus the issue order checks resolve through:
@@ -109,13 +161,21 @@ export type ResolutionPromptPlan = {
 
 /**
  Builds the checker sheet: original, revised translation, and every
- accepted issue the editors were asked to fix.
+ accepted issue the editors were asked to fix with its claims' quotes, with
+ the declared names before the documents and the cited references after
+ them, as the panel that accepted the issues read them (ledger L14).
  
  @param sourceText - original chunk text
  
  @param patchedText - revised translation after patch application
  
  @param issues - accepted issues the editors addressed
+ 
+ @param identityContext - declared names and handles, absent or empty on a
+ page declaring none
+ 
+ @param referenceContext - what the pages the original links say, absent or
+ empty when it links nowhere
  
  @returns Messages plus issue numbering order
  
@@ -129,10 +189,14 @@ export function buildResolutionMessages(
     sourceText,
     patchedText,
     issues,
+    identityContext,
+    referenceContext,
   }: {
     readonly sourceText: string;
     readonly patchedText: string;
     readonly issues: readonly AdjudicatedIssue[];
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
   },
 ): ResolutionPromptPlan {
   /**
@@ -142,44 +206,59 @@ export function buildResolutionMessages(
     issue,
     index,
   ) {
-    /**
-     Claim lines of this issue.
-     */
-    const claimLines = issue.claims
-      .map(function toLine(member,) {
-      return `- (${member.claim
-        .category}, ${issue.severity}): ${member.claim
-          .summary}`;
+    return resolutionIssueBlock({
+      issue,
+      index,
     },);
-
-    return `ISSUE ${index + 1}
-${claimLines.join('\n',)}`;
   },);
 
   /**
-   Fence no enclosed text can reproduce.
+   Fence no enclosed text can reproduce, chosen against the declared names
+   and the references too, since either is arbitrary page text.
    */
   const fence = selectFence({
     texts: [
       sourceText,
       patchedText,
+      identityContext ?? '',
+      referenceContext ?? '',
       ...blocks,
     ],
+  },);
+
+  /**
+   Declared names before the documents, or nothing on a page declaring none.
+   */
+  const identityBlock = declaredNamesBlock({
+    fence,
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+  },);
+
+  /**
+   Cited references after the revised translation, or nothing when the
+   original links nowhere.
+   */
+  const referenceBlock = citedReferenceBlockText({
+    fence,
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
   },);
 
   return {
     messages: [
       {
         role: 'system',
-        content: RESOLUTION_SYSTEM_PROMPT,
+        content: resolutionSystemPrompt({
+          declaresNames: identityBlock !== '',
+          citesReferences: referenceBlock !== '',
+        },),
       },
       {
         role: 'user',
-        content: `${fence} ORIGINAL ${fence}
+        content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} REVISED TRANSLATION ${fence}
 ${patchedText}
-${fence} ISSUES ${fence}
+${referenceBlock}${fence} ISSUES ${fence}
 ${blocks.join('\n\n',)}
 ${fence} END ${fence}`,
       },

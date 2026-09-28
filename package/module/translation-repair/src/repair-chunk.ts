@@ -70,7 +70,8 @@ import { settleShippedPatch, } from './repair-chunk-settle.ts';
  
  @param referenceContext - what the original's cited pages say, shown to
  the critic and the panel so a detail the archive took from a reference is
- not deleted as an addition (class thirty-five)
+ not deleted as an addition (class thirty-five), and to the checkers so one
+ is not counted as damage (ledger L14)
  
  @param attestedDetails - archive details a cited reference states, attested
  word for word at preparation; an addition claim on one is rejected before
@@ -404,6 +405,7 @@ export async function repairChunk(
     authorship: wholeEnvelopes.authorship,
     ...windowFragment,
     identityContext: identityContext ?? '',
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     signal,
     perCallTimeoutMs,
     l,
