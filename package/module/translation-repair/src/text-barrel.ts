@@ -12,6 +12,7 @@ export { longestRunOf, } from './character-run.ts';
 export { isHanCharacter, } from './han-only-text.ts';
 export {
   continuesLatinWord,
+  foldLatinWord,
   isCombiningMark,
   isLatinLetter,
   isLatinLetterOrMark,

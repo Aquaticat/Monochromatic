@@ -16,6 +16,7 @@ import {
 
 import {
   continuesLatinWord,
+  foldLatinWord,
   isCombiningMark,
   isLatinLetter,
   isLatinLetterOrMark,
@@ -183,6 +184,24 @@ await describe({
           't',
           'x',
           'z',
+        ],);
+      },
+    },),
+    it({
+      name: 'FOLDS a word written with its accent, a separate accent or none to one lower-case form',
+      fn: async () => {
+        expect([
+          'Kätzchen',
+          'Ka\u{0308}tzchen',
+          'KATZCHEN',
+          'Château',
+        ].map(function folded(word,): string {
+          return foldLatinWord({ word, },);
+        },),).toEqual([
+          'katzchen',
+          'katzchen',
+          'katzchen',
+          'chateau',
         ],);
       },
     },),

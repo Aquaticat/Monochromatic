@@ -72,5 +72,25 @@ await describe({
         },),).toBe(0,);
       },
     },),
+
+    it({
+      name: 'scores 1 for a handle written with its accent, with a separate accent, or without one, '
+        + 'since a translator carries a handle across any of the three ways (ledger B18)',
+      fn: async () => {
+        // ASCII runs alone cut `Kätzchen` to `tzchen` and the other two
+        // spellings to `katzchen`, so only the identical spelling matched.
+        expect(latinTokens({ text: '### 其六：Kätzchen', },),).toEqual(new Set(['katzchen',],),);
+        expect([
+          '### Kätzchen',
+          '### Ka\u{0308}tzchen',
+          '### Katzchen',
+        ].map(function affinity(target,): number {
+          return headingAffinity({
+            source: '### 其六：Kätzchen',
+            target,
+          },);
+        },),).toEqual([1, 1, 1,],);
+      },
+    },),
   ],
 },);

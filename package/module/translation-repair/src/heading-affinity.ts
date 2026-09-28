@@ -1,4 +1,7 @@
-import { isAsciiLetter, } from './ascii-letters.ts';
+import {
+  foldLatinWord,
+  latinWordSpans,
+} from './latin-letters.ts';
 
 //region Heading affinity
 // Written as a prototype for `#71`, and WIRED SINCE: `align-headings-grid.ts`
@@ -30,15 +33,17 @@ import { isAsciiLetter, } from './ascii-letters.ts';
 const MIN_TOKEN_LENGTH = 3;
 
 /**
- Extracts lowercase Latin runs from a heading.
+ Extracts folded Latin runs from a heading.
  
- Written as an index scan rather than a pattern: the rule is one predicate per
- character with one run buffer, and a heading is arbitrary text that must not
- be able to make the scan backtrack.
+ Runs come from the shared index scan (`latinWordSpans`), which a heading's
+ arbitrary text cannot make backtrack, and each is folded (`foldLatinWord`)
+ so a handle written with its accent, with a separate one or without matches
+ itself: ASCII runs alone cut `Mikä` to `mik` on both sides and matched only by
+ that accident, and cut `Mika` to a different run (ledger B18).
  
  @param text - heading text
  
- @returns Distinct lowercase runs of at least {@link MIN_TOKEN_LENGTH}
+ @returns Distinct folded runs of at least {@link MIN_TOKEN_LENGTH} letters
  
  @example
  ```ts
@@ -46,35 +51,15 @@ const MIN_TOKEN_LENGTH = 3;
  ```
  */
 export function latinTokens({ text, }: { readonly text: string; },): ReadonlySet<string> {
-  return (function scan(): ReadonlySet<string> {
-    /**
-     Runs found so far.
-     */
-    const found = new Set<string>();
-
-    /**
-     Characters of the run currently open.
-     */
-    let run = '';
-    for (let index = 0; index < text.length; index += 1) {
-      /**
-       Character under the cursor.
-       */
-      const character = text.charAt(index,);
-      if (isAsciiLetter({ character, },)) {
-        run += character.toLowerCase();
-        continue;
-      }
-      if (run.length >= MIN_TOKEN_LENGTH)
-        found.add(run,);
-
-      run = '';
-    }
-    if (run.length >= MIN_TOKEN_LENGTH)
-      found.add(run,);
-
-    return found;
-  })();
+  return new Set(
+    latinWordSpans({ text, },)
+      .map(function folded({ word, },): string {
+        return foldLatinWord({ word, },);
+      },)
+      .filter(function longEnough(token,): boolean {
+        return token.length >= MIN_TOKEN_LENGTH;
+      },),
+  );
 }
 
 /**

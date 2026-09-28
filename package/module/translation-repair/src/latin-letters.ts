@@ -227,4 +227,28 @@ export function lowerCaseLatinWords({ text, }: { readonly text: string; },): rea
   },);
 }
 
+/**
+ A Latin word folded for comparison across writers: decomposed, its
+ combining marks dropped, lower-cased. `Mikä`, `Mika\u{0308}` and `Mika` fold
+ alike, as a handle carried across a translation is written with its accent,
+ with a separate one, or without.
+
+ @param word - run of Latin letters and marks
+
+ @returns Folded word
+
+ @example
+ ```ts
+ foldLatinWord({ word: 'Mikä', },); // 'mika'
+ ```
+ */
+export function foldLatinWord({ word, }: { readonly word: string; },): string {
+  return Array.from(word.normalize('NFD',),)
+    .filter(function unmarked(character,): boolean {
+      return !isCombiningMark({ character, },);
+    },)
+    .join('',)
+    .toLowerCase();
+}
+
 //endregion Latin letters
