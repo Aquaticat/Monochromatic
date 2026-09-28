@@ -13,9 +13,14 @@ import type { WouldShipSource, } from './would-ship-text.ts';
 // fault in the code and still stops the entry, so a bug is never shipped as a
 // content report. A page that does not parse is not collected here at all:
 // it would break the site build, and still refuses.
+//
+// THE PAGE-AGREEMENT CHECK JOINED THEM by a second answer the same day ("Ship
+// with defect reported"): a page that does not carry what its artifact says
+// ships is a defect in the assembly code rather than in the text, and it
+// ships reported rather than leaving the archive's page in its place.
 
 /**
- A content check at publish whose failure ships as a reported defect.
+ A check at publish whose failure ships as a reported defect.
 
  @example
  ```ts
@@ -28,7 +33,8 @@ export type PublishCheck =
   | 'destinations'
   | 'front-matter'
   | 'headings'
-  | 'no-valid-wording';
+  | 'no-valid-wording'
+  | 'page-agreement';
 
 /**
  One failed content check the page shipped with.

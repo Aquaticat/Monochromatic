@@ -36,6 +36,7 @@ import {
 } from './archive-original-completeness.ts';
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
+import { PublishedPageDisagreesError, } from './published-page-disagreement.ts';
 import {
   assertContributorNamesComplete,
   ContributorCompletenessError,
@@ -284,21 +285,6 @@ export async function publishFixedPage(
     replacements,
   },);
 
-  // BEFORE THE WRITE, so a page that disagrees with its artifact publishes
-  // nothing rather than landing on disk for a later reader to find. The archive
-  // handed in here is the text actually spliced rather than the copy the
-  // artifact stores, so the weighing is an equality on every entry instead of
-  // reporting an older artifact as unweighable.
-  refusePageThatDisagrees({
-    artifact,
-    archive: {
-      kind: 'stored',
-      text: archiveText,
-    },
-    pageText,
-    entryId,
-  },);
-
   /**
    What would-ship page carries of source destinations, the archive's
    rendering of one accepted in its place.
@@ -344,6 +330,27 @@ export async function publishFixedPage(
    */
   const failedChecks = publishDefects({
     steps: [
+      // A PAGE THAT DISAGREES WITH ITS ARTIFACT ships too (owner, 2026-09-27,
+      // "Ship with defect reported"): the check is one-sided, so a failure is
+      // a defect in assembly rather than in the text. The archive handed in is
+      // the text actually spliced rather than the copy the artifact stores, so
+      // the weighing is an equality on every entry instead of reporting an
+      // older artifact as unweighable.
+      {
+        check: 'page-agreement',
+        refusal: PublishedPageDisagreesError,
+        run: function pageAgreement(): void {
+          refusePageThatDisagrees({
+            artifact,
+            archive: {
+              kind: 'stored',
+              text: archiveText,
+            },
+            pageText,
+            entryId,
+          },);
+        },
+      },
       {
         check: 'front-matter',
         refusal: FrontMatterCompletenessError,
@@ -431,7 +438,7 @@ export async function publishFixedPage(
   },);
 
   /**
-   Where it goes after every completeness invariant passes.
+   Where the page goes, once every check has reported and the grammar passed.
    */
   const path = fixedPagePath({
     publishDir,
