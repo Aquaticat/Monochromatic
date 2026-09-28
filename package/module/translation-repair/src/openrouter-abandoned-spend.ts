@@ -25,11 +25,11 @@ import { reportSpend, } from './spend-line.ts';
 
 /**
  Median of recorded model medians for an unmeasured version, not a pooled-stream percentile.
- The cards measured on 2026-09-28 (ledger P7) carry 0.9, 126, 130, 138, 228, 286, 292 and 302;
- the middle of the eight is 183, halfway between 138 and 228.
+ The cards measured on 2026-09-28 over pass-run logs (ledger P7) carry 0.9, 93, 130, 140, 228, 286, 292
+ and 302; the middle of the eight is 184, halfway between 140 and 228.
  This remains an explicitly abandoned-call estimate, never reported usage.
  */
-const UNMEASURED_RAW_CHARS_PER_TOKEN = 183;
+const UNMEASURED_RAW_CHARS_PER_TOKEN = 184;
 
 /**
  Raw stream characters per completion token, the 50th percentile over every

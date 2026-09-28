@@ -66,8 +66,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // 9 s). The pipeline sends no reasoning parameter by the owner's rule,
       // so the seat names the measured endpoint instead.
       preferredEndpoints: ['wafer',],
-      // Raw characters per completion token, median of 15,239 streams since 2026-09-21 (ledger P7,
-      // 2026-09-28).
+      // Raw characters per completion token over pass-run logs, median of 15,239 streams
+      // since 2026-09-21 (ledger P7, 2026-09-28).
       rawCharsPerToken: 302,
     },
     // Hyper p99 over 886 calls; Synthetic 16,342 over 4,775; OpenRouter
@@ -131,9 +131,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 15,
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      // Raw characters per completion token, median of 500 streams, none since 2026-09-21 (ledger P7,
-      // 2026-09-28).
-      rawCharsPerToken: 138,
+      // Raw characters per completion token over pass-run logs, median of 443 run
+      // streams, none since 2026-09-21 (ledger P7, 2026-09-28).
+      rawCharsPerToken: 140,
     },
     // Hyper p99 over 2,777 calls; OpenRouter 8,254 over 488; Synthetic
     // 4,350 over 7,051.
@@ -169,8 +169,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 0.17,
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      // Raw characters per completion token, median of 1,326 streams, none since 2026-09-21 (ledger P7,
-      // 2026-09-28).
+      // Raw characters per completion token over pass-run logs, median of 1,326 streams,
+      // none since 2026-09-21 (ledger P7, 2026-09-28).
       rawCharsPerToken: 286,
     },
     bedrock: {
@@ -224,8 +224,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
         'modelrun',
       ],
       preferredEndpoints: [],
-      // Raw characters per completion token, median of 45,307 streams since 2026-09-21 (ledger P7,
-      // 2026-09-28).
+      // Raw characters per completion token over pass-run logs, median of 45,307 streams
+      // since 2026-09-21 (ledger P7, 2026-09-28).
       rawCharsPerToken: 130,
     },
     // Hyper p99 over 27,361 calls; OpenRouter 718 over 6,657.
@@ -246,8 +246,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 0.34,
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      // Raw characters per completion token, median of 1,797 streams; the 40 since 2026-09-21 read 289 (ledger P7,
-      // 2026-09-28).
+      // Raw characters per completion token over pass-run logs, median of 1,797 streams;
+      // the 40 since 2026-09-21 read 289 (ledger P7, 2026-09-28).
       rawCharsPerToken: 292,
     },
     bedrock: {
@@ -347,8 +347,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
         'sail-research',
       ],
       preferredEndpoints: ['morph',],
-      // Raw characters per completion token, median of 47,186 streams since 2026-09-21; all time reads 257 (ledger P7,
-      // 2026-09-28).
+      // Raw characters per completion token over pass-run logs, median of 47,186 streams
+      // since 2026-09-21; all time reads 257 (ledger P7, 2026-09-28).
       rawCharsPerToken: 228,
     },
     // Approved 2026-09-11; no completed-call distribution of its own yet.
@@ -413,7 +413,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 0.15,
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      // Raw characters per completion token, median of 37,281 streams since 2026-09-21: it bills far more tokens than it streams (ledger P7,
+      // Raw characters per completion token over pass-run logs, median of 37,120 streams
+      // since 2026-09-21: it bills far more tokens than it streams (ledger P7,
       // 2026-09-28).
       rawCharsPerToken: 0.9,
     },
@@ -447,9 +448,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // which is the non-retaining route this pipeline does not use.
       ignoredEndpoints: [],
       preferredEndpoints: [],
-      // Raw characters per completion token, median of 264 streams, all since 2026-09-21 (ledger P7,
-      // 2026-09-28).
-      rawCharsPerToken: 126,
+      // Raw characters per completion token over pass-run logs, median of 78 run
+      // streams, all since 2026-09-21 (ledger P7, 2026-09-28).
+      rawCharsPerToken: 93,
     },
     // No completed-call distribution of its own yet.
     completionCap: 'pooled-p99',
