@@ -80,7 +80,11 @@ export class EveryProviderDryError extends Error {
     { measured = 'no reading cited', }: { readonly measured?: string; } = {},
   ) {
     super(
-      `Every provider is out of budget at once: Synthetic has no five-hour or weekly credit left, Charm Hyper has no balance left, and OpenRouter has no credit left. Nothing further can be bought, so this run ends. Synthetic regenerates on its own schedule; Hyper and OpenRouter refill on purchase. Measured at the decision: ${measured}.`,
+      'Every provider is out of budget at once: Synthetic has no five-hour or weekly credit left, Charm Hyper has '
+        + 'no balance left, Amazon Bedrock has no credit left short of the owner\'s card, and OpenRouter has no '
+        + 'credit left. Nothing further can be bought, so this run ends. Synthetic regenerates on its own '
+        + 'schedule; Hyper and OpenRouter refill on purchase; Bedrock\'s credit is never topped up. '
+        + `Measured at the decision: ${measured}.`,
     );
     this.name = 'EveryProviderDryError';
   }
@@ -323,8 +327,18 @@ export function routeProviderFor(
 ): ProviderChoice {
   if (PROVIDER_ORDER.every(function isDry(provider,): boolean {
     return dry[provider];
-  },))
-    throw new EveryProviderDryError();
+  },)) {
+    // THE READING IT DECIDED ON, cited (ledger P12): this refusal said "no
+    // reading cited" where the router had the whole dryness record in hand.
+    throw new EveryProviderDryError({
+      measured: `meters read ${
+        PROVIDER_ORDER.map(function stateOf(provider,): string {
+          return `${provider} ${dry[provider] ? 'dry' : 'wet'}`;
+        },)
+          .join(', ',)
+      }; no holds read at this decision`,
+    },);
+  }
 
   /**
    Providers that both serve this model and have budget, in spending order.
