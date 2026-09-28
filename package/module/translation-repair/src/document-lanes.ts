@@ -37,6 +37,7 @@ import type {
   TranslateDocumentResult,
   TranslateModels,
   TranslateSliceRecord,
+  TranslateSliceSeating,
 } from './translate-document-contract.ts';
 import { translateDocument, } from './translate-document.ts';
 
@@ -226,7 +227,8 @@ function laneDelivery(
  keeps that lane's bench from quorum (the thirteenth class's second face);
  a roster it returns for the repair lane seats that slice (class one hundred
  three, where the checker bench read at the lanes boundary ran on one voice
- after a dry-out inside the lane)
+ after a dry-out inside the lane), and one for the translate lane seats that
+ lane's slice (ledger H5)
  
  
  @param adjudicationConfig - tally thresholds and weights for the repair lane
@@ -295,7 +297,7 @@ export async function runDocumentLanes(
     readonly reseatTranslate?: () => Promise<TranslateModels>;
     readonly beforeSlice?: (
       args: { readonly lane: 'repair' | 'translate'; },
-    ) => Promise<RepairSliceSeating>;
+    ) => Promise<RepairSliceSeating & TranslateSliceSeating>;
     readonly adjudicationConfig?: AdjudicationConfig;
 
     /**
@@ -380,7 +382,11 @@ export async function runDocumentLanes(
       ? {}
       : {
         beforeSlice: async function beforeRepairSlice(): Promise<RepairSliceSeating> {
-          return await beforeSlice({ lane: 'repair', },);
+          /**
+           What the hook hands this chunk, either lane's roster in it.
+           */
+          const seating = await beforeSlice({ lane: 'repair', },);
+          return (seating.repairModels === undefined) ? {} : { repairModels: seating.repairModels, };
         },
       }),
     parentLogger: dl,
@@ -436,8 +442,12 @@ export async function runDocumentLanes(
     ...((beforeSlice === undefined)
       ? {}
       : {
-        beforeSlice: async function beforeTranslateSlice(): Promise<void> {
-          await beforeSlice({ lane: 'translate', },);
+        beforeSlice: async function beforeTranslateSlice(): Promise<TranslateSliceSeating> {
+          /**
+           What the hook hands this slice, either lane's roster in it.
+           */
+          const seating = await beforeSlice({ lane: 'translate', },);
+          return (seating.translateModels === undefined) ? {} : { translateModels: seating.translateModels, };
         },
       }),
     l: dl,

@@ -48,6 +48,7 @@ export {
   type TranslateModels,
   TRANSLATE_SLICE_CACHE_VERSION,
   type TranslateSliceRecord,
+  type TranslateSliceSeating,
 } from './translate-document-contract.ts';
 export { settleTranslateSlice, } from './translate-slice.ts';
 export {

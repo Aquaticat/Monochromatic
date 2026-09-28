@@ -25,6 +25,7 @@ import type {
   TranslateDocumentResult,
   TranslateModels,
   TranslateSliceRecord,
+  TranslateSliceSeating,
   UnfilledSlice,
 } from './translate-document-contract.ts';
 import { settleTranslateSlice, } from './translate-slice-settle.ts';
@@ -139,9 +140,11 @@ export async function translateDocument(
 
     /**
      Awaited before each slice starts, so a caller can hold the slice back
-     while a named provider hold keeps the bench from quorum.
+     while a named provider hold keeps the bench from quorum; a roster it
+     returns seats that slice (ledger H5, as class one hundred three seats
+     the repair lane's chunks).
      */
-    readonly beforeSlice?: () => Promise<void>;
+    readonly beforeSlice?: () => Promise<TranslateSliceSeating>;
     readonly l: Logger;
   }>,
 ): Promise<TranslateDocumentResult> {
@@ -172,18 +175,30 @@ export async function translateDocument(
    */
   const attestedLines = attestedDetailLines({ details: prepared.attestedDetails ?? [], },);
   /**
-   What this run asks, folded into every key.
+   What a run on one roster asks, folded into every key it settles, so a
+   slice seated on a re-read roster is keyed by the roster that judged it.
+
+   @param seated - roster the slice runs on
+
+   @returns Run shape for that roster
    */
-  const runShape = translateRunShape({
-    models,
-    ...((prepared.identityContext === undefined)
-      ? {}
-      : { identityContext: prepared.identityContext, }),
-    ...((prepared.referenceContext === undefined)
-      ? {}
-      : { referenceContext: prepared.referenceContext, }),
-    ...((attestedLines.length === 0) ? {} : { attestedLines, }),
-  },);
+  function shapeFor({ seated, }: { readonly seated: TranslateModels; },): string {
+    return translateRunShape({
+      models: seated,
+      ...((prepared.identityContext === undefined)
+        ? {}
+        : { identityContext: prepared.identityContext, }),
+      ...((prepared.referenceContext === undefined)
+        ? {}
+        : { referenceContext: prepared.referenceContext, }),
+      ...((attestedLines.length === 0) ? {} : { attestedLines, }),
+    },);
+  }
+
+  /**
+   What this run asks on the lane's own roster, folded into every key.
+   */
+  const runShape = shapeFor({ seated: models, },);
 
   /**
    Slices with no translation beside them that page has room to be missing.
@@ -232,8 +247,24 @@ export async function translateDocument(
         sliceIndex: slice.target
           .sliceIndex,
         run: async function settleTranslateInContext() {
-          if (beforeSlice !== undefined)
-            await beforeSlice();
+          /**
+           What the hook hands this slice: nothing, or a roster read since
+           the lane started.
+           */
+          const seating: TranslateSliceSeating = (beforeSlice === undefined) ? {} : await beforeSlice();
+          /**
+           Roster this slice runs on.
+           */
+          const sliceModels = seating.translateModels ?? models;
+          if (seating.translateModels !== undefined) {
+            assertRostersConfigured({
+              lane: 'translate',
+              roles: {
+                translatorModelIds: sliceModels.translatorModelIds,
+                judgeModelIds: sliceModels.judgeModelIds,
+              },
+            },);
+          }
           /**
            Whether production evidence permits filling this source-only slice.
            */
@@ -252,13 +283,13 @@ export async function translateDocument(
           return await settleTranslateSlice({
             client,
             prepared,
-            models,
+            models: sliceModels,
             slice,
             slicePosition,
             insertionAdmitted,
             insertionCarried,
             pictureReadings,
-            runShape,
+            runShape: (seating.translateModels === undefined) ? runShape : shapeFor({ seated: sliceModels, },),
             ...((sliceCache === undefined) ? {} : { sliceCache, }),
             twins,
             ...((archiveDispute === undefined) ? {} : { archiveDispute, }),

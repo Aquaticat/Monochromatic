@@ -172,6 +172,22 @@ export type TranslateModels = {
 };
 
 /**
+ Roster a per-slice hook hands the translate lane, as the repair lane's
+ hook hands it one (ledger H5).
+
+ @example
+ ```ts
+ const seating: TranslateSliceSeating = { translateModels, };
+ ```
+ */
+export type TranslateSliceSeating = {
+  /**
+   Roster read since the lane started, absent while the given one stands.
+   */
+  readonly translateModels?: TranslateModels;
+};
+
+/**
  What the driver did with one slice's stage result.
  
  @example

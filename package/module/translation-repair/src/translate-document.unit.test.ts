@@ -44,6 +44,7 @@ import {
   type SyntheticClient,
   type TranslateModels,
   type TranslateSliceRecord,
+  type TranslateSliceSeating,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -519,7 +520,7 @@ async function runDriver(
     readonly translateConcurrency?: TranslateConcurrency;
     readonly persisted?: Map<string, TranslateSliceRecord>;
     readonly calls?: CallLog;
-    readonly beforeSlice?: () => Promise<void>;
+    readonly beforeSlice?: () => Promise<TranslateSliceSeating>;
     readonly messages?: string[];
   },
 ) {
@@ -681,8 +682,9 @@ await describe({
       fn: async () => {
         const before = { calls: 0, };
         const { result, } = await runDriver({
-          beforeSlice: async (): Promise<void> => {
+          beforeSlice: async (): Promise<TranslateSliceSeating> => {
             before.calls += 1;
+            return {};
           },
         },);
         expect(before.calls,).toBe(result.sliceCount,);
