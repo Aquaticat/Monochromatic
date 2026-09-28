@@ -226,21 +226,23 @@ export function opensSentence(
     at: start,
   },);
   /**
-   What stands before the word on its line.
-   */
-  const prefix = new Set(text.slice(
-    lineStart,
-    start,
-  ));
-  /**
-   Whether a heading, quote or list marker alone opens the line.
+   Whether a heading, quote or list marker alone opens the line. The marker
+   is found by index, not by a set of the prefix's characters, since a
+   marker such as "- " is two characters long.
    */
   const marked = (runEnd({
     text,
     from: lineStart,
     keeps: opensLine,
   },) >= start) && LINE_MARKERS.some(function carries(marker,): boolean {
-    return prefix.has(marker,);
+    /**
+     Where the marker first stands on the line.
+     */
+    const markerAt = text.indexOf(
+      marker,
+      lineStart,
+    );
+    return (markerAt !== (-1)) && ((markerAt + marker.length) <= start);
   },);
   /**
    Offset just past the last character before the word that is no gap.
