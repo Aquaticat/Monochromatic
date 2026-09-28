@@ -827,7 +827,21 @@ Guard: `probe-page-rules.unit.test.ts`.
 
 ### H9: observations left unbuilt after the owner said to fix everything
 
-Status: open, to re-check on current pages:
+Status: re-checked 2026-09-28 on XingZ6014's page (the latest XingZ60 page, 2026-09-26);
+the one that stood is fixed in `b1dcdc00b`, and the gap behind it is H16.
+Every observation is XingZ60's.
+同类 now reads "the same kind", and 更多人 is not in the original:
+the nearest clause (更多其他的相似点, `page.md:311`) is rendered in full.
+The album's title reads the same in its heading and its attribution.
+Both 雨狸 signatures still give a bare-pinyin handle and one keeps 妄想症 in Han,
+but today's floors refuse both renderings (`validateTranslatedSlice`: Han residue and signer handle,
+then signer handle), so the next XingZ60 run cannot ship them.
+螐儿 still took two treatments, a bird in one slice and an unnamed crawling creature in another,
+which no floor sees; the rendering glossary now carries 螐 with its dictionary meaning
+and a why saying the author's note carries the bird reading
+(guard `rendering-glossary-rare-word.unit.test.ts`; disabling the entry fails it, the control survives).
+Only XingZ60 writes the character, so only its slices re-key.
+The observations as first recorded:
 更多人 omitted,
 螐 in three treatments and the album in two forms,
 "Yuli" with no literal gloss,
@@ -889,6 +903,18 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
 `suicide-drop.unit.test.ts`,
 `community-glossary.unit.test.ts`,
 `consolidate-gate-wire.unit.test.ts`.
+
+### H16: a term repeated in slices judged apart has no shared rendering where the archive has none
+
+Status: open, found fixing H9.
+Each slice is written and judged alone.
+Where the archive renders a passage, its English anchors every slice;
+where it does not (a partial archive, as XingZ60's poem), a term the original repeats
+reaches each slice's bench with nothing saying how the others rendered it.
+The page-name glossary covers names and linked titles the archive pairs, and the rendering glossary covers
+dictionary words someone has entered; a coined or rare term outside both can ship in as many forms as slices.
+H9's entry closes the one instance read; the general mechanism waits on a measurement of how often
+a repeated term ships in more than one form.
 
 ### Process mistakes, classes 93 to 185
 
