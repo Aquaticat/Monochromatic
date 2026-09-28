@@ -126,7 +126,7 @@ await describe({
       fn: async () => {
         expect(readsAsRefusal({ reading: 'The image shows a Noël card and a sleeping cat.', },),).toBe(false,);
         expect(readsAsRefusal({ reading: 'The picture shows a sign reading Café Noe\u{0308}l.', },),).toBe(false,);
-        expect(latinWords({ text: 'Café Noe\u{0308}l', },),).toEqual(['café', 'noe\u{0308}l',],);
+        expect(latinWords({ text: 'Café Noe\u{0308}l, Émile', },),).toEqual(['café', 'noe\u{0308}l', 'émile',],);
       },
     },),
 
