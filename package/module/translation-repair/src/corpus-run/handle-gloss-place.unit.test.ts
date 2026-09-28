@@ -187,25 +187,35 @@ await describe({
       name: 'READS a rendering whose last letter carries a combining accent as another word, so the gloss never '
         + 'lands between a letter and its accent; a cased test read the mark as no letter (ledger B18)',
       fn: async () => {
-        /**
-         Credits where the first one writes a different word, `Yumaó` with a separate accent.
-         */
-        const replacements = [
-          {
-            sliceIndex: 1,
-            replacementText: '> Lyrics one\n\n<p style="text-align: end;">—— Yumao\u{0301} [Delusion] “Song One”</p>',
-          },
-          {
-            sliceIndex: 2,
-            replacementText: '> Lyrics two\n\n'
-              + '<p style="text-align: end;">—— Yumao (Rain Cat) [Delusion] “Song Two”</p>',
-          },
-        ];
+        // The pre-letter pass read `Yumao` plus a combining acute in the lyrics
+        // as the handle's first appearance and wrote the gloss between the `o`
+        // and its accent, which then sat on the closing parenthesis.
         const placed = placeHandleGlosses({
           slices: CREDITED,
-          replacements,
+          replacements: [
+            {
+              sliceIndex: 1,
+              replacementText: '> Lyrics one, sung by Yumao\u{0301} the cat\n\n'
+                + '<p style="text-align: end;">—— Yumao [Delusion] “Song One”</p>',
+            },
+            {
+              sliceIndex: 2,
+              replacementText: '> Lyrics two\n\n'
+                + '<p style="text-align: end;">—— Yumao (Rain Cat) [Delusion] “Song Two”</p>',
+            },
+          ],
         },);
-        expect(bySlice({ replacements: placed.replacements, },),).toEqual(bySlice({ replacements, },),);
+        /**
+         Page text per slice after the pass.
+         */
+        const text = bySlice({ replacements: placed.replacements, },);
+        expect(text.get(1,),).toBe(
+          '> Lyrics one, sung by Yumao\u{0301} the cat\n\n'
+            + '<p style="text-align: end;">—— Yumao (Rain Cat) [Delusion] “Song One”</p>',
+        );
+        expect(text.get(2,),).toBe(
+          '> Lyrics two\n\n<p style="text-align: end;">—— Yumao [Delusion] “Song Two”</p>',
+        );
       },
     },),
     it({
