@@ -229,6 +229,29 @@ model batch,
 paid Pro expansion,
 or paused Laya source work follows merely from this clarification.
 
+The user then requested continuation after a system crash.
+Commit `8edcade70` and clean retained experiment repositories were verified;
+a missing process-manager record did not trigger a repeated study.
+Task #41 now freezes a corrected Voyage raw-feature check under
+`~/temp/agent/voyage-semantic-controls-2026-09-28`.
+Source `af607b3` and input/control freeze `a101ca4` precede live calls.
+Local controls `proc_9f53` passed without networking.
+
+The [Voyage protocol](../planning/pi-auto-mode-voyage-fit.md#corrected-source-isolated-study)
+uses the existing synthetic matrix and code-owned parser/structured facts,
+not raw Bash occurrence questions or candidate final verdicts.
+At most 17 sequential calls include a topical control,
+12 within-query feature contrasts,
+and a fixed four-call action-shaped timing envelope.
+Every document retains complete current policy with truncation disabled.
+Raw relevance is not relabelled as probability;
+no fitting,
+training,
+private Voyage upload,
+reserved-case query,
+or automatic repeat is authorized.
+The design interview remains paused.
+
 ## Sequencing correction
 
 The user stopped the integration-policy interview and asked whether investigation of Laya,

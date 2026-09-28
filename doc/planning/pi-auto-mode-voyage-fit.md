@@ -22,6 +22,129 @@ The published distinction between relevance and truth probability is independent
 it remains an interface fact.
 See the [actual parser verification](../handover/pi-auto-mode-axiom-evaluation.md#parser-boundary-correction).
 
+## Corrected source-isolated study
+
+The user asked about Voyage-rerank when the design interview resumed,
+then requested continuation after a system crash.
+The interview remains paused.
+The retained documentation commit and experiment repositories survived;
+no completed study was rerun to recover a lost process-manager entry.
+
+Current sources were re-read on 2026-09-28.
+The legacy [reranker guide](https://docs.voyageai.com/docs/reranker)
+lists `rerank-3` as Preview with a 32,000-token context,
+while its parameter details still describe older model limits.
+The [current model page](https://www.mongodb.com/docs/voyageai/models/rerankers/)
+also lists `rerank-3` and describes query/document cross-encoders.
+Do not transplant Atlas limits,
+billing,
+or account settings onto the legacy route.
+
+The official [instruction-following tutorial][instructions]
+shows instructions prepended to queries and structured metadata serialized into document strings.
+Its examples use `rerank-2.5`;
+they do not guarantee `rerank-3` behavior or define a truth-probability response.
+They do support measuring instruction-guided semantic features rather than dismissing the family by its interface name.
+No notebook or third-party command tree was executed.
+
+### Frozen scope
+
+Private source `af607b3` is under `~/temp/agent/voyage-semantic-controls-2026-09-28`.
+Input freeze `a101ca4` records 57 source/input files.
+Local checks `proc_9f53` passed exact-body and policy preservation,
+reference exclusion,
+index identity,
+raw scores outside the unit interval,
+perfect/inverted/tied ordering,
+and shared-clock boundaries.
+Isolated comparison and deadline omissions exposed false acceptance;
+original sources remained unchanged.
+No network request occurred in those controls.
+Reuse the existing Jev matrix's 36 synthetic source texts and pre-query reference labels,
+not Jev outputs.
+Actual existing parser or structured-read projection supplies operation facts.
+Documents contain only the selected source kind,
+`evidence_text`,
+`supplied_operation`,
+and complete current policy.
+No raw Bash interpretation,
+final-action ranking,
+reference answer,
+or rationale enters the model request.
+
+The maximum is 17 sequential `rerank-3` calls:
+
+- One fixed full-policy topical control with two documents.
+  It also checks current model/request acceptance;
+  refusal stops the study without substitution.
+- Twelve diagnostic queries crossing operation,
+  source kind,
+  and predicate.
+  Each ranks six documents covering the existing semantic families,
+  yielding 72 raw scores.
+- Four final single-document calls for the fixed read/cross-clause profile.
+  They evaluate both predicates for its request and approved-prose sources under one shared five-second clock.
+
+The total maximum is 78 scores;
+only 72 belong to the semantic matrix.
+Diagnostic calls each have a five-second component limit,
+not a complete per-action deadline claim.
+Only the final four-call envelope bears on that complete experimental budget,
+including preparation and freshness checks.
+Process/module startup and evidence-file writing are excluded.
+No retries or parallel live calls are planned.
+
+Every document contains complete fresh `AGENTS.md`,
+with `truncation: false`.
+Inputs remain public/synthetic;
+existing Gateway/Jev or Respan consent does not authorize private Voyage uploads.
+The [legacy FAQ](https://docs.voyageai.com/docs/faq)
+still describes an opt-out from storage and future training;
+the actual setting remains uninspected and no dashboard attempt is reopened.
+
+### Analysis and stop boundary
+
+Retain indexed raw scores without a probability range assumption,
+normalization,
+or threshold selection.
+For each diagnostic query separately,
+report true-versus-false reference pair order,
+exact ties,
+inversions,
+and raw minimum-true/maximum-false values.
+No cross-query raw-score mean or probability conversion is computed.
+Pairs reuse documents and are not independent statistical samples.
+
+A strict ordering failure limits this tested increasing-scalar support representation,
+not every possible Voyage input,
+abstaining rule,
+or composed classifier.
+Clean ordering would establish only feature feasibility,
+not a qualified truth-probability mapping.
+No fitting or training is performed or authorized by the result.
+The final single-document scores provide a scoped batch-shape comparison,
+not general score invariance.
+
+Stop on the first transport,
+HTTP,
+input,
+source,
+policy,
+schema,
+deadline,
+or topical-control failure,
+or at frozen completion.
+Preserve partial evidence.
+Do not revise definitions,
+change the model/endpoint,
+repeat automatically,
+query reserved scenarios,
+train,
+or deploy an adapter from these results.
+The study cannot by itself qualify the primary probability-assessor role.
+
+[instructions]: https://www.mongodb.com/company/blog/technical/instruction-following-rerankers-an-unsung-context-engineering-tool
+
 ## Published interface evidence
 
 The [current model overview](https://www.mongodb.com/docs/voyageai/models/)

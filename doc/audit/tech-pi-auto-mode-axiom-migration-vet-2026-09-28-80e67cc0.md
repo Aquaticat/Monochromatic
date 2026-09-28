@@ -404,6 +404,50 @@ counts,
 clock boundaries,
 and limitations.
 
+## Corrected Voyage feature checkpoint
+
+The user asked about Voyage-rerank instead of answering Q16,
+then requested continuation after a system crash.
+The design interview remains paused.
+The historical Voyage raw-feature study is not corrected semantic qualification
+or a validated relevance-to-truth probability mapping.
+Its quotation-based model-quality conclusions remain withdrawn.
+
+Current legacy and Atlas sources were re-read without merging their endpoint/settings guarantees.
+The legacy guide lists `rerank-3` as Preview;
+instruction-following examples name `rerank-2.5`.
+No model or endpoint substitution is made.
+Public/synthetic input consent is unchanged;
+private Voyage inputs and training remain unauthorized.
+
+The [corrected feature protocol](../planning/pi-auto-mode-voyage-fit.md#corrected-source-isolated-study)
+reuses the existing source matrix and pre-query references.
+Private source `af607b3` and freeze `a101ca4` cover 57 source/input files.
+Local controls `proc_9f53` passed,
+including actual projection,
+full-policy serialization,
+reference exclusion,
+indexed raw-score handling,
+ordinal comparisons,
+and source-preserving comparison/deadline omissions.
+
+At most 17 sequential calls retain 78 scores,
+including 72 diagnostic matrix scores.
+Interpret only within-query order,
+ties,
+and inversions;
+no probability normalization,
+threshold selection,
+or classifier fitting occurs.
+A separate final four-call profile shares five seconds including preparation and freshness.
+Diagnostic batch timings are not per-action deadline qualification.
+First failure or frozen completion stops the study without automatic repeat.
+
+Clean ordering would mean only feature feasibility;
+failed ordering constrains the tested increasing-scalar representation,
+not every possible Voyage model or composed classifier.
+Neither outcome alone qualifies the primary probability-assessor role.
+
 ## Current outcome
 
 Direct Lite scoring access is established,
