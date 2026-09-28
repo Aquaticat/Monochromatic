@@ -94,6 +94,9 @@ const DEPARTURE_CASES: readonly DepartureCase[] = [
   ['C3 治愈 a healing cat', '猫可以治愈人。', 'A healing cat.', false,],
   ['C3 药娘 transgender girl', '猫是药娘。', 'The cat was a transgender girl.', false,],
   ['C3 变娃 becoming the doll', '猫今天变娃了。', 'Today the cat was becoming the doll.', false,],
+  ['C3 治愈 soothing, a final e dropped', '可以治愈人的风景。', 'Soothing views everywhere.', false,],
+  ['C3 治愈 cured, a d added', '猫的病治愈了。', 'The cat’s illness was cured.', false,],
+  ['C3 跨圈 communities, a final y turned', '猫在跨圈里交了很多朋友。', 'The cat made friends in trans communities.', false,],
   ['C3 亚托莉 atrium', '亚托莉在猫舍。', 'The cat napped in the atrium.', true,],
 ];
 
