@@ -116,12 +116,14 @@ export function monthAfterDay(
   const joined = day.ordinal && text.startsWith(
     OF,
     next,
-  ) && isDateSpace({ character: text.charAt(next + OF.length,), },);
+  )
+    && isDateSpace({ character: text.charAt(next + OF.length,), },);
   if (!isDateSpace({ character: text.charAt(day.end,), },))
     return NO_PART;
   return readMonth({
     text,
-    at: joined ? next + OF.length + 1 : next,
+    at: joined ? next + OF.length
+      + 1 : next,
   },);
 }
 
@@ -243,7 +245,8 @@ export function readJoin(
   const spacedWord = RANGE_WORDS.has(text.slice(
     joinStart,
     joinEnd,
-  ),) && (joinStart > at) && (end > joinEnd);
+  ),) && (joinStart > at)
+    && (end > joinEnd);
   /**
    The whole join as written.
    */
@@ -334,7 +337,8 @@ function dayFirstParts(
       month,
     },)
     : NO_PART;
-  if ((day.kind === 'none') || (month.kind === 'none') || (tail.kind === 'none'))
+  if ((day.kind === 'none') || (month.kind === 'none')
+    || (tail.kind === 'none'))
     return NO_PART;
   return {
     kind: 'parts',
@@ -442,7 +446,8 @@ export function readRange(
       at: join.end,
     },)
     : NO_PART;
-  if ((first.kind === 'none') || (join.kind === 'none') || (last.kind === 'none'))
+  if ((first.kind === 'none') || (join.kind === 'none')
+    || (last.kind === 'none'))
     return NO_PART;
   /**
    Both days and the join between them, as written month first.
@@ -450,11 +455,15 @@ export function readRange(
   const days = `${String(first.day,)}${text.slice(
     first.end,
     join.end,
-  )}${String(last.day.day,)}`;
+  )}${String(last.day
+    .day,)}`;
   return {
     kind: 'date',
-    end: last.tail.end,
-    to: `${last.month.month} ${days}${last.tail.tail}`,
+    end: last.tail
+      .end,
+    to: `${last.month
+      .month} ${days}${last.tail
+        .tail}`,
     takesArticle: first.ordinal,
   };
 }

@@ -166,14 +166,14 @@ await describe({
           rewritten({ text: 'The vet visit moved to 4 May.', },),
           rewritten({ text: '- 4 May: the cat napped.', },),
           rewritten({ text: 'The cat napped—4 May, to be exact.', },),
-          rewritten({ text: 'On\u00a04 May the cat napped.', },),
+          rewritten({ text: 'On\u00A04 May the cat napped.', },),
         ],).toEqual([
           'The cat stayed until May 4.',
           'The shelter was closed till May 4.',
           'The vet visit moved to May 4.',
           '- May 4: the cat napped.',
           'The cat napped—May 4, to be exact.',
-          'On\u00a0May 4 the cat napped.',
+          'On\u00A0May 4 the cat napped.',
         ],);
       },
     },),
@@ -213,6 +213,58 @@ await describe({
           'The cat was archived at March 31, 2023.',
           'On September 4, 2024, the cat napped.',
           'On December 21, 2023, the cat left.',
+        ],);
+      },
+    },),
+    it({
+      name: 'READS EACH SHAPE\'S EDGES: a month and year with no day, a period that ends the sentence or only '
+        + 'the abbreviation, a pair, a hyphen after a date, a bare day\'s article, and "I" after the month',
+      fn: async () => {
+        expect([
+          rewritten({ text: 'The cats were adopted between Nov 2023 and Feb. 2024.', },),
+          rewritten({ text: 'Aug. 8th, 2018 was hot.', },),
+          rewritten({ text: 'On 4 Sept. the cat napped.', },),
+          rewritten({ text: 'The shelter closed on 31 Mar. The cat left.', },),
+          rewritten({ text: 'The cat napped on the 4th or 5th May.', },),
+          rewritten({ text: 'The cat napped 2 June-3 July.', },),
+          rewritten({ text: 'The cat slept from May 30th to 2nd June.', },),
+          rewritten({ text: 'The cat missed the 4 May deadline.', },),
+          rewritten({ text: 'On 4 May I fed the cat.', },),
+          rewritten({ text: '😺4 May', },),
+        ],).toEqual([
+          'The cats were adopted between November 2023 and February 2024.',
+          'August 8, 2018, was hot.',
+          'On September 4 the cat napped.',
+          'The shelter closed on March 31. The cat left.',
+          'The cat napped on May 4 or 5.',
+          'The cat napped June 2-July 3.',
+          'The cat slept from May 30 to June 2.',
+          'The cat missed the May 4 deadline.',
+          'On May 4 I fed the cat.',
+          '😺May 4',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES a comma-joined year whose day-first date goes on, a year-first date with no suffix that goes '
+        + 'on, a hyphen inside a longer token, and an "of" after a bare day',
+      fn: async () => {
+        /**
+         Texts whose dates are read as no year-first date, or as no date at all.
+         */
+        const kept = [
+          'In 2021 May 4 was a Tuesday for the cat.',
+          'The cat read COVID-19 May updates.',
+          'The cat fed 3 of June’s kittens.',
+        ];
+        expect([
+          rewritten({ text: 'In 2020, 4 May was a holiday for the cat.', },),
+          ...kept.map(function rewrite(text,): string {
+            return rewritten({ text, },);
+          },),
+        ],).toEqual([
+          'In 2020, May 4 was a holiday for the cat.',
+          ...kept,
         ],);
       },
     },),

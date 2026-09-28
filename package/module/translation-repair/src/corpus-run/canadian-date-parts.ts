@@ -206,7 +206,7 @@ export function readDay(
    */
   const inMonth = (day >= 1) && (day <= LAST_DAY);
   if ((digits === 0) || (digits > DAY_DIGITS)
-    || !inMonth)
+    || (!inMonth))
     return NO_PART;
   /**
    Ordinal suffix after the digits, or the empty string.
@@ -357,7 +357,7 @@ export function yearAfter(
 ): YearPart | NoPart | RefusedPart {
   if (continuesWord({ character: text.charAt(at,), },))
     return REFUSED_PART;
-  if (!isDateSpace({ character: text.charAt(at,), },) || !isDigit({ character: text.charAt(at + 1,), },))
+  if ((!isDateSpace({ character: text.charAt(at,), },)) || (!isDigit({ character: text.charAt(at + 1,), },)))
     return NO_PART;
   /**
    Where the digits after the space end.
@@ -406,7 +406,7 @@ export function monthStartsName(
     readonly month: MonthPart;
   },
 ): boolean {
-  if (month.period || !isDateSpace({ character: text.charAt(month.end,), },))
+  if (month.period || (!isDateSpace({ character: text.charAt(month.end,), },)))
     return false;
   /**
    Where the next word ends.
@@ -503,7 +503,7 @@ export function keptPeriod(
    Whether a lower-case word runs on after the period.
    */
   const runsOn = isDateSpace({ character: text.charAt(month.end,), },) && (next !== next.toUpperCase());
-  return (month.period && !runsOn) ? '.' : '';
+  return (month.period && (!runsOn)) ? '.' : '';
 }
 
 //endregion Canadian date parts

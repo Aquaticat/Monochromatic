@@ -141,9 +141,10 @@ function opensDate(
   },
 ): boolean {
   /**
-   UTF-16 unit before the digit.
+   UTF-16 unit before the digit: read at a pair's second half, `codePointAt`
+   returns that half alone. Zero at the text's start.
    */
-  const code = text.charCodeAt(state.at - 1,);
+  const code = text.codePointAt(state.at - 1,) ?? 0;
   /**
    Character before the digit.
    */
@@ -194,18 +195,20 @@ function rewriteStart(
   /**
    Where the article would start.
    */
-  const start = state.at - 1 - ARTICLE_LENGTH;
+  const start = state.at - 1
+    - ARTICLE_LENGTH;
   /**
    Whether the article stands there as a word of its own.
    */
   const article = ARTICLES.has(text.slice(
     start,
     state.at - 1,
-  ),) && !continuesWord({ character: text.charAt(start - 1,), },);
+  ),) && (!continuesWord({ character: text.charAt(start - 1,), },));
   /**
    Whether the article may be dropped with the date.
    */
-  const drops = reading.takesArticle && (start >= 0) && (start > state.lastEnd)
+  const drops = reading.takesArticle && (start >= 0)
+    && (start > state.lastEnd)
     && isDateSpace({ character: text.charAt(state.at - 1,), },);
   return (drops && article) ? start : state.at;
 }
@@ -251,13 +254,16 @@ function readingAt(
     },))
       return NO_PART;
     return DIGIT_READERS.reduce<DateReading | NoPart>(
-      function firstFound(found, reader,): DateReading | NoPart {
+      function firstFound(
+        found,
+        reader,
+      ): DateReading | NoPart {
         return (found.kind === 'date') ? found : reader(place,);
       },
       NO_PART,
     );
   }
-  return (isCasedLetter({ character, },) && !continuesWord({ character: text.charAt(state.at - 1,), },))
+  return (isCasedLetter({ character, },) && (!continuesWord({ character: text.charAt(state.at - 1,), },)))
     ? readMonthFirst(place,)
     : NO_PART;
 }
@@ -315,11 +321,11 @@ export function monthFirstDates(
         reading,
       },)
       : state.at;
-    if ((reading.kind === 'none') || !inProse({
+    if ((reading.kind === 'none') || (!inProse({
       ranges,
       start,
       end: reading.end,
-    },)) {
+    },))) {
       state.at += 1;
       continue;
     }

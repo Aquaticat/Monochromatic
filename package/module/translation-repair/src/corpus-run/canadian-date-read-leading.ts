@@ -17,6 +17,7 @@ import {
 import {
   type DateReading,
   type DayPart,
+  type MonthPart,
   NO_PART,
   type NoPart,
   type RefusedPart,
@@ -95,7 +96,8 @@ function monthFirstDays(
       day: last,
     },)
     : NO_PART;
-  if ((join.kind === 'none') || (last.kind === 'none') || (ownMonth.kind === 'month')) {
+  if ((join.kind === 'none') || (last.kind === 'none')
+    || (ownMonth.kind === 'month')) {
     return {
       written: String(first.day,),
       end: first.end,
@@ -148,6 +150,49 @@ function yearAfterDays(
 }
 
 /**
+ Reads a month standing with a year and no day: "Nov 2023", written with the
+ month in full as running text spells it; a full name reads back unchanged.
+
+ @param text - text under scan
+
+ @param month - month just read
+
+ @returns The month and year, or no part where no clean year follows
+
+ @example
+ ```ts
+ monthYear({ text: 'Nov 2023', month: { kind: 'month', month: 'November', end: 3, period: false, }, },); // { kind: 'date', end: 8, to: 'November 2023', takesArticle: false }
+ ```
+ */
+function monthYear(
+  {
+    text,
+    month,
+  }: {
+    readonly text: string;
+    readonly month: MonthPart;
+  },
+): DateReading | NoPart {
+  /**
+   The year after the month.
+   */
+  const year = isDateSpace({ character: text.charAt(month.end,), },)
+    ? readYear({
+      text,
+      at: month.end + 1,
+    },)
+    : NO_PART;
+  if (year.kind === 'none')
+    return NO_PART;
+  return {
+    kind: 'date',
+    end: year.end,
+    to: `${month.month} ${year.year}`,
+    takesArticle: false,
+  };
+}
+
+/**
  Reads a month-first date: "December 29th", "May 14th, 2023 the cat",
  "Aug. 8th, 2018".
 
@@ -187,8 +232,14 @@ export function readMonthFirst(
       at: month.end + 1,
     },)
     : NO_PART;
-  if ((month.kind === 'none') || (first.kind === 'none'))
+  if (month.kind === 'none')
     return NO_PART;
+  if (first.kind === 'none') {
+    return monthYear({
+      text,
+      month,
+    },);
+  }
   /**
    The days the month carries.
    */
@@ -275,7 +326,7 @@ function yearMonthDay(
     text,
     end: day.end,
   },);
-  if (runsOn && !day.ordinal)
+  if (runsOn && (!day.ordinal))
     return NO_PART;
   return {
     kind: 'date',
@@ -338,7 +389,8 @@ function yearDayMonth(
   const runsOn = monthStartsName({
     text,
     month,
-  },) || continuesWord({ character: text.charAt(month.end,), },) || wordFollows({
+  },) || continuesWord({ character: text.charAt(month.end,), },)
+    || wordFollows({
     text,
     end: month.end,
   },);
