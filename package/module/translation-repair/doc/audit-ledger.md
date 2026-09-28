@@ -262,17 +262,29 @@ Files: `src/corpus-run/canadian-date.ts`,
 
 ### K1: the date rewrite drops the comma after the year, and a test asserts it
 
-Status: open.
+Status: fixed in `e9065faef` and `2efc90630` (guards `68d86f733`).
 aiyysk1 and aiyysk2 shipped "February 9, 2024 was Lunar New Year’s Eve."
 The Language Portal of Canada requires a comma after the year when the sentence continues.
 `canadian-forms.unit.test.ts` expects "March 13, 2024 in a box".
+Every full date the pass reads now takes the closing comma where a word follows its year
+(`closingComma` in `src/corpus-run/canadian-date-parts.ts`),
+including a month-first date the page already wrote ("December 21, 2023 the cat").
+The replay over the 364 archive and settled pages adds it at both aiyysk pages and at the archive.
 
 ### K2: `closesRange` gets ranges wrong
 
-Status: open.
+Status: fixed in `e9065faef` and `2efc90630` (guards `68d86f733`).
 Splits a range across a line break,
 skips "until 4 May" and a list item "- 4 May:",
 and mixes orders when both ends carry a month.
+`closesRange` is gone.
+`readRange` (`src/corpus-run/canadian-date-read.ts`) reads a range or pair of days sharing one month
+("1st to 3rd June", "4th or 5th May") whole and writes it once, month first, keeping the join as written,
+line break included;
+a range whose ends both carry a month is two dates, each rewritten.
+A day after "until", "till" or "to" is a date like any other,
+and a no-break space, an en dash, an em dash, a `>` and an emoji now open one.
+A hyphen opens one only right after the date before it ("2 June-3 July"), so "COVID-19 May" stays.
 
 ### K3: the closed word list leaves non-Canadian forms, including ones the house policy names
 
@@ -285,7 +297,18 @@ Missing inflections of listed stems,
 
 ### K4: ordinal and year-first dates left alone
 
-Status: open.
+Status: fixed in `e9065faef` and `2efc90630` (guards `68d86f733`).
+`readMonthFirst` and `readYearFirst` (`src/corpus-run/canadian-date-read-leading.ts`)
+drop a month-first ordinal's suffix ("December 29th"),
+write a year-first date month first ("2023 Feb 25th", "2023, 31 Mar."),
+and spell an abbreviated month out, with or without a day ("4 Sept 2024", "Nov 2023").
+A year-first date is read only where its day carries a suffix or ends the clause,
+so "In 2021 May 4 was a Tuesday" stays;
+every year-first date in the pinned archive carries a suffix.
+A comma-joined year before a day-first date is joined only where the date ends its clause,
+so "In 2020, 4 May was a holiday" becomes "In 2020, May 4 was a holiday".
+The replay rewrites 266 dates across the 364 pages and leaves no day-first, month-first ordinal,
+year-first or unclosed-year date in prose.
 
 ### K5: withdrawn slices ship raw archive text
 
@@ -309,11 +332,20 @@ A quote mark inside a JSX comment and a stray backtick protect the rest of the t
 
 ### K8: small wrong rewrites
 
-Status: open.
+Status: dates fixed in `e9065faef` and `2efc90630` (guards `68d86f733`);
+accented neighbours open under H14.
 "5 May beetles",
 "the 4th May",
 "4 May2024",
 accented neighbours.
+A day-first month followed by a listed compound ("May beetles", "March hare")
+or a capitalised word ("June Carter", "April Fools’") is no date;
+"I" and a capital after an abbreviation's period are exempt.
+No day-first date in the 364 pages is followed by a capitalised word, so the rule costs nothing there.
+An ordinal day's article and "of" go with it ("the 4th of May" is "May 4");
+a bare day keeps its article ("the 4 May deadline" is "the May 4 deadline").
+A month or year running into digits or letters refuses the date.
+A mutation check broke each of 14 guards in turn; the Canadian form tests failed every time.
 
 ### K9: quoted lowercase English is respelled though the README says it is kept
 

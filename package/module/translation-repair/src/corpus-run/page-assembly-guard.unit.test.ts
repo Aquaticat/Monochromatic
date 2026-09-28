@@ -591,7 +591,7 @@ await describe({
           },)
           .map(function carried(row,): string {
             return row.replacementText;
-          },),).toEqual(['The cat napped on April 29, 2024 by the window[^1].\n\n',],);
+          },),).toEqual(['The cat napped on April 29, 2024, by the window[^1].\n\n',],);
       },
     },),
   ],
