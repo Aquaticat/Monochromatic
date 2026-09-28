@@ -120,6 +120,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  checked on 2026-09-28: still no slice-cache file newer than 00:26 on
  2026-09-27.
 
+ Rides inside 5 too: the recovery round re-asks a reply the length
+ limit cut with a nudge naming the cut, apart from one off the shape
+ (ledger P10, `ce0ef7b51`), which changes what such a seat is asked and
+ whose voices a round hears; checked on 2026-09-28: still no slice-cache
+ file newer than 00:26 on 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (task #395, ledger M28): 5 was set
  in `30e66051e` at 03:34 on 2026-09-27, after the newest slice-cache file under the
  agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
