@@ -193,6 +193,7 @@ function memoryLedger({ remainingUsd = 150, }: { readonly remainingUsd?: number;
       return {
         creditUsd: 200,
         spentUsd: 200 - remainingUsd,
+        reckonedUsd: 0,
         remainingUsd,
         calls: noted.length,
       };
@@ -442,6 +443,7 @@ await describe({
         expect(await client.credits({ signal: SIGNAL, },),).toEqual({
           creditUsd: 200,
           spentUsd: 50,
+          reckonedUsd: 0,
           remainingUsd: 150,
           calls: 0,
         },);

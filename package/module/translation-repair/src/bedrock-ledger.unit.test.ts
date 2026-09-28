@@ -132,6 +132,7 @@ await describe({
           expect(await ledger.read(),).toEqual({
             creditUsd: 200,
             spentUsd: 0,
+            reckonedUsd: 0,
             remainingUsd: 200,
             calls: 0,
           },);
@@ -159,6 +160,7 @@ await describe({
           expect(await ledger.read(),).toEqual({
             creditUsd: 1,
             spentUsd: 0.75,
+            reckonedUsd: 0,
             remainingUsd: 0.25,
             calls: 2,
           },);
@@ -408,6 +410,84 @@ await describe({
           env: { [BEDROCK_LEDGER_PATH_VAR]: '/var/lib/cats/spend.jsonl', },
           home: '/srv/cats',
         },),).toBe('/var/lib/cats/spend.jsonl',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'the ledger says how much of its spend is reckoned (ledger P1)',
+  children: [
+    it({
+      name: 'SUMS THE RECKONED LINES APART, in the reading and on the meter line, so a reader can see how much of '
+        + 'what is left rests on bounds and estimates rather than reported usage',
+      fn: async () => {
+        await inScratch(async function body(dir,) {
+          /**
+           Ledger holding one reported call and one reckoned attempt.
+           */
+          const ledger = createBedrockLedger({
+            path: join(
+              dir,
+              'bedrock-spend.jsonl',
+            ),
+            creditUsd: 200,
+          },);
+          await ledger.note(callCosting({ usd: 0.25, },),);
+          await ledger.note({
+            ...callCosting({ usd: 0.1, },),
+            estimated: 'abandoned-bound',
+          },);
+          /**
+           Reading of both.
+           */
+          const credits = await ledger.read();
+          expect({
+            spent: credits.spentUsd,
+            reckoned: credits.reckonedUsd,
+            meter: bedrockMeterLevel({ credits, },),
+          },).toEqual({
+            spent: 0.35,
+            reckoned: 0.1,
+            meter: ['bedrockUsd=199.65', 'bedrockReckonedUsd=0.10',],
+          },);
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES A RECKONING MARK IT DOES NOT WRITE, naming its line, rather than summing a line whose '
+        + 'provenance nothing here can vouch for',
+      fn: async () => {
+        await inScratch(async function body(dir,) {
+          /**
+           Ledger file whose one line carries a mark nothing writes.
+           */
+          const path = join(
+            dir,
+            'bedrock-spend.jsonl',
+          );
+          await writeFile(
+            path,
+            `${JSON.stringify({ ...callCosting({ usd: 0.1, },), estimated: 'guessed', },)}\n`,
+            'utf8',
+          );
+          /**
+           What the read threw.
+           */
+          const thrown = await (async function readOrError(): Promise<unknown> {
+            try {
+              return await createBedrockLedger({
+                path,
+                creditUsd: 200,
+              },).read();
+            }
+            catch (error) {
+              return error;
+            }
+          })();
+          expect(thrown,).toBeInstanceOf(BedrockLedgerShapeError,);
+          expect((thrown as Error).message,).toContain('line 1',);
+        },);
       },
     },),
   ],

@@ -81,6 +81,7 @@ await describe({
               return {
                 creditUsd: 200,
                 spentUsd: 0,
+                reckonedUsd: 0,
                 remainingUsd: 200,
                 calls: 0,
               };
