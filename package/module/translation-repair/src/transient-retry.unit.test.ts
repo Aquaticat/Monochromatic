@@ -60,6 +60,21 @@ const WAIT_POLICY = {
 };
 
 /**
+ Retry policy whose first backoff is long enough that sleeping it out is
+ visible against a caller abort.
+ */
+const SLOW_POLICY = {
+  limit: 1,
+  baseMs: 20_000,
+};
+
+/**
+ Shortest first backoff `SLOW_POLICY` grants: equal jitter sleeps at least
+ half the attempt's window, and the first window is the base.
+ */
+const SHORTEST_FIRST_BACKOFF_MS = SLOW_POLICY.baseMs / 2;
+
+/**
  Builds the exchange every case sends.
  
  @param signal - caller abort handle
@@ -454,6 +469,56 @@ await describe({
         ).rejects.toThrow(SyntheticHttpError,);
         // One attempt, then the abort stops the loop instead of five more.
         expect(calls.count,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'ENDS THE BACKOFF THE MOMENT THE CALLER ABORTS, rather than sleeping it out while the call holds '
+        + 'its seat (ledger P13: a backoff of up to 16 s outlived the abort)',
+      fn: async () => {
+        /**
+         Attempt counter, so a stopped loop is visible as a call count.
+         */
+        const calls = { count: 0, };
+
+        /**
+         Caller abort tripped while the first backoff sleeps.
+         */
+        const controller = new AbortController();
+
+        /**
+         Transport failing transiently and aborting the caller on the next
+         turn of the event loop, once the ladder has begun its backoff.
+         */
+        const transport: ModelTransport = async () => {
+          calls.count += 1;
+          setTimeout(function abortDuringBackoff() {
+            controller.abort();
+          }, 0,);
+          return {
+            status: 503,
+            bodyText: 'busy',
+          };
+        };
+
+        /**
+         When the ladder began.
+         */
+        const startedMs = performance.now();
+        await expect(
+          exchangeWithRetry({
+            transport,
+            exchange: exchangeWith({ signal: controller.signal, },),
+            policy: SLOW_POLICY,
+          },),
+        ).rejects.toThrow(SyntheticHttpError,);
+        expect({
+          calls: calls.count,
+          outlivedTheAbort: (performance.now() - startedMs) >= SHORTEST_FIRST_BACKOFF_MS,
+        },).toEqual({
+          calls: 1,
+          outlivedTheAbort: false,
+        },);
       },
     },),
 
