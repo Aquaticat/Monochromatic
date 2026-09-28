@@ -2201,7 +2201,16 @@ so its precision over accepted issues reads higher by construction on runs from 
 
 #### Footnote definitions outside the slice
 
-Status: premise refuted; the window change is reverted (`80a18dd53`); the remedy is the note rule's framing, below.
+Status: premise refuted and the window change reverted (`80a18dd53`);
+fixed in the note rule's framing (`868e848d3`, guard `c611b525e` corrected in `657e9db35`, mutation checked;
+rides inside repair 34 and refine 5, `e8d906387`).
+`DECLARED_IDENTITY_RULES` now says a footnote marker in either document points to the note line with that label
+and what the note says stands at that marker, so content the ORIGINAL states inline and the TRANSLATION's own note
+carries at its marker is not omitted, nor the reverse; the note lines stay vocabulary evidence otherwise.
+The red guard's editor case first failed for a second reason (the editor states these rules only when the page
+declares something, and the fixture declared nothing), so it would have stayed red after the fix; caught on the fix run.
+The translate lane's sheets carry the note lines with no framing rule at all, and no evidence yet says they misread them,
+so the clause stays on the repair sheets.
 The audit said no sheet shows footnote definitions, so a slice citing `[^5]` read as if the attribution
 the note carries were dropped (sh2 slices 33 and 37).
 That was never checked against a rendered sheet, and it is false:
