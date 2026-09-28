@@ -27,7 +27,12 @@ export {
   buildLicensedQuotes,
   buildRemovableQuotes,
 } from './licensed-quotes.ts';
-export { lostMarkupAtoms, } from './markup-atom-preservation.ts';
+export {
+  markupDelta,
+  type MarkupDelta,
+  markupSourceKeys,
+  settleMarkupMoves,
+} from './markup-atom-preservation.ts';
 export {
   MARKUP_ATOM_SHEET_NAMES,
   type MarkupAtom,

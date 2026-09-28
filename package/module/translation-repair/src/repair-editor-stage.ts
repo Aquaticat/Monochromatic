@@ -6,7 +6,10 @@ import {
   buildLicensedQuotes,
   buildRemovableQuotes,
 } from './licensed-quotes.ts';
-import type { PatchOutcome, } from './apply-patch.ts';
+import type {
+  PatchOutcome,
+  PreservationMode,
+} from './apply-patch.ts';
 import {
   NOBODY_WROTE_IT,
   type ShippedProducer,
@@ -88,6 +91,14 @@ export type EditorStageResult = {
    whole-chunk proposal.
    */
   readonly shippedProducer: ShippedProducer;
+
+  /**
+   Gate the patch passed, so a stage re-applying a subset of it (the
+   worse-voted strip, ledger L3) applies the same gate. A SUBSET OF A GATED
+   PATCH IS NOT GATED BY CONSTRUCTION: an edit whose lost markup a sibling
+   edit wrote stands only while that sibling does (ledger L4).
+   */
+  readonly preservation: PreservationMode;
 };
 
 /**
@@ -236,10 +247,13 @@ export async function runEditorStage(
 
   /**
    Defect text each envelope's issues quoted, which the preservation gate
-   treats as licensed to disappear, and the addition claims' quotes, whose
-   markup atoms alone an edit may remove (ledger L4).
+   treats as licensed to disappear, the addition claims' quotes, whose markup
+   atoms alone an edit may remove, and the original the markup is read
+   against: the whole source document where the chunk has it, since an atom
+   copied from the source is copied from the page rather than the slice
+   (ledger L4).
    */
-  const preservation = {
+  const preservation: PreservationMode = {
     mode: 'enforce',
     licensedQuotes: buildLicensedQuotes({
       envelopes,
@@ -249,7 +263,8 @@ export async function runEditorStage(
       envelopes,
       issues,
     },),
-  } as const;
+    sourceText: documentSourceText ?? sourceText,
+  };
 
   /**
    One gated patch per heard editor, in roster order.
@@ -296,6 +311,7 @@ export async function runEditorStage(
       findings: stageFindings,
       // No operation survived the gate, so the untouched translation ships.
       shippedProducer: NOBODY_WROTE_IT,
+      preservation,
     };
   }
 
@@ -372,6 +388,7 @@ export async function runEditorStage(
   return {
     patch,
     shippedProducer: chunkSelection.shippedProducer,
+    preservation,
     heardEditors: gather.voices
       .length,
     rounds: [

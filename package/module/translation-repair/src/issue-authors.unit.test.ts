@@ -224,6 +224,8 @@ function editorOf(
     rounds,
     findings: [],
     shippedProducer,
+    // These fixtures read authorship only, so no gate is re-applied to them.
+    preservation: { mode: 'skip', },
   };
 }
 

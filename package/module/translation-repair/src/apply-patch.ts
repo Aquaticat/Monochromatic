@@ -1,6 +1,14 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { lostMarkupAtoms, } from './markup-atom-preservation.ts';
+import {
+  type GatedOperation,
+  NO_MARKUP_DELTA,
+  settleGatedOperations,
+} from './apply-patch-markup.ts';
+import {
+  markupDelta,
+  markupSourceKeys,
+} from './markup-atom-preservation.ts';
 import { checkPreservation, } from './preservation-check.ts';
 
 import { hashContent, } from './document-node.ts';
@@ -87,6 +95,14 @@ export type PreservationMode =
      every addition removal rather than licensing all of them.
      */
     readonly removableQuotes: ReadonlyMap<string, readonly string[]>;
+
+    /**
+     Original the markup is read against: the whole source document where
+     the stage has it, else the chunk's. An atom it carries is copied markup
+     that must survive; one it does not is markup the translation authored,
+     which an edit may re-mark but not drop (ledger L4).
+     */
+    readonly sourceText: string;
   }
   | {
     /**
@@ -246,14 +262,22 @@ export function applyPatchOperations(
   },),);
 
   /**
-   Operations that passed every gate, in input order.
+   Operations every per-edit gate passed, in input order, with what each did
+   to its envelope's markup.
    */
-  const applied: PatchOperation[] = [];
+  const gated: GatedOperation[] = [];
 
   /**
-   Refusals in input order.
+   Refusals of the per-edit gates, in input order.
    */
   const rejected: PatchRejection[] = [];
+
+  /**
+   Keys of the markup the source carries, read once for every edit.
+   */
+  const sourceKeys = (preservation.mode === 'enforce')
+    ? markupSourceKeys({ sourceText: preservation.sourceText, },)
+    : new Set<string>();
 
   /**
    Envelope ids already claimed by an accepted operation.
@@ -358,33 +382,43 @@ export function applyPatchOperations(
         continue;
       }
 
-      /**
-       Markup atoms the edit lost that no addition claim quoted, which the
-       rules above cannot see inside a licensed quote (ledger L4).
-       */
-      const lostMarkup = lostMarkupAtoms({
-        before: envelope.baseText,
-        after: restored,
-        removableQuotes: preservation.removableQuotes
-          .get(envelope.envelopeId,)
-          ?? [],
-      },);
-      if (lostMarkup.length > 0) {
-        // Kinds only, never the atoms: a destination or a code span is page
-        // content, and the reason is stored.
-        rejected.push({
-          operation,
-          reason: `preservation-lost-markup (${[...new Set(lostMarkup,),].join(', ',)})`,
-        },);
-        continue;
-      }
     }
 
-    applied.push({
-      ...operation,
-      newText: restored,
+    gated.push({
+      operation,
+      restored: {
+        ...operation,
+        newText: restored,
+      },
+      // Markup the edit lost that no addition claim quoted, which the rules
+      // above cannot see inside a licensed quote (ledger L4); settled over the
+      // whole patch below, since a sibling edit may write it.
+      delta: (preservation.mode === 'enforce')
+        ? markupDelta({
+          before: envelope.baseText,
+          after: restored,
+          removableQuotes: preservation.removableQuotes
+            .get(envelope.envelopeId,)
+            ?? [],
+          sourceKeys,
+        },)
+        : NO_MARKUP_DELTA,
     },);
   }
+
+  /**
+   What ships and every refusal, once the markup rule has read the patch.
+   */
+  const settled = settleGatedOperations({
+    operations,
+    gated,
+    rejected,
+  },);
+
+  /**
+   Operations that passed every gate, in input order.
+   */
+  const { applied, } = settled;
 
   /**
    Accepted operations in descending document order,
@@ -431,7 +465,7 @@ export function applyPatchOperations(
   return {
     patchedText,
     applied,
-    rejected,
+    rejected: settled.rejected,
   };
 }
 

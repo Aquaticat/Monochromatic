@@ -144,15 +144,17 @@ export function stripWorseVotedEdits(
       return !strippedEnvelopeIds.has(operation.envelopeId,);
     },);
   /**
-   The reduced patch. THE GATE IS SKIPPED ON PURPOSE: every kept edit
-   passed it inside the whole patch, envelopes never overlap, and each edit
-   is judged on its own envelope, so re-applying a subset passes it again.
+   The reduced patch, UNDER THE GATE THE WHOLE PATCH PASSED. Every per-edit
+   rule passes again, since envelopes never overlap and each edit is judged on
+   its own envelope; the markup rule may not, since an edit whose lost
+   markup a stripped sibling wrote has lost it once the sibling goes (ledger
+   L4).
    */
   const reduced = applyPatchOperations({
     targetText,
     envelopes,
     operations: kept,
-    preservation: { mode: 'skip', },
+    preservation: editor.preservation,
   },);
   return {
     stripped: true,
@@ -160,10 +162,13 @@ export function stripWorseVotedEdits(
       ...editor,
       patch: {
         ...reduced,
-        // The gate's refusals of the whole patch stay on the record; a
-        // stripped edit is not a refusal.
-        rejected: editor.patch
-          .rejected,
+        // The gate's refusals of the whole patch stay on the record, with any
+        // the reduced patch added; a stripped edit is not a refusal.
+        rejected: [
+          ...editor.patch
+            .rejected,
+          ...reduced.rejected,
+        ],
       },
     },
     issueIds: [...worseIssueIds,],
@@ -276,7 +281,7 @@ export async function proveSheddingWorseVoted(request: ProofRequest,): Promise<S
     .applied
     .length
     === 0) {
-    l.info('every edit of the patch was stripped, so the chunk keeps its standing with no recheck',);
+    l.info('no edit of the patch survived the strip and its gate, so the chunk keeps its standing with no recheck',);
     return {
       editor: strip.editor,
       appliedEnvelopes: reducedReading,

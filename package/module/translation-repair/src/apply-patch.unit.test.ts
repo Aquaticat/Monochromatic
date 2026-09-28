@@ -403,6 +403,7 @@ await describe({
             mode: 'enforce',
             licensedQuotes: new Map([['envelope/credit', ['Contributor for this entry:',],],],),
             removableQuotes: new Map(),
+            sourceText: '',
           },
         },);
 
