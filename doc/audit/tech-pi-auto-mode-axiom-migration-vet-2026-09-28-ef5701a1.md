@@ -718,7 +718,8 @@ Serving weights,
 cache independence,
 and future stability remain unverified.
 
-Raw result commit: `f3bc49d`.
+Raw result commit:
+ `f3bc49d`.
 Result SHA-256:
 `7d5123ff10fbaa7cda551050ae2ca0a91d612278003921244e34d11b7b6a1cb4`.
 `proc_7968` rebuilt bodies,
