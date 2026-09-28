@@ -52,8 +52,13 @@ export class CandidateSlateError extends Error {
  */
 export type CandidateMeasurements = {
   /**
-   Whether the candidate still parses and keeps document conventions
-   (footnote graph resolvable, front matter intact).
+   Whether the candidate is no worse than the archive on grammar downgrades
+   (`downgradeCount`) and broken footnotes (`footnoteBreakCount`).
+
+   RELATIVE, NOT ABSOLUTE: an archive may arrive malformed, and a candidate
+   keeping that damage passes while one adding to it fails
+   (`measurePatchedCandidate`). So true does not mean the candidate parses,
+   and front matter is not measured here at all.
    */
   readonly integrityOk: boolean;
 
@@ -128,8 +133,10 @@ export const UNCHANGED_CANDIDATE_ID = 'candidate/unchanged';
 
 /**
  Measurements of the unchanged translation:
- intact by definition, resolving nothing, regressing nothing,
- changing nothing.
+ intact, since integrity is measured against the archive itself, resolving
+ nothing, regressing nothing, changing nothing. This is what
+ `measurePatchedCandidate` returns for the archive against itself, malformed
+ or not, and `chunk-measure.unit.test.ts` pins that equality.
  */
 export const UNCHANGED_MEASUREMENTS: CandidateMeasurements = {
   integrityOk: true,
@@ -274,12 +281,12 @@ export function winnerChangedText(
  was needed here", and one carrying some other wording would win ties on the
  strength of a name while shipping an edit nobody ranked.
  
- Its MEASUREMENTS are deliberately not checked, so a caller MAY hand in an
- archive measured honestly rather than intact by definition. THE REPAIR PATH
- DOES NOT: `settleChunkVerdict` always passes `UNCHANGED_MEASUREMENTS`, whose
- `integrityOk` is true, so a malformed archive competes today as though it
- parsed. Measuring it is a behaviour change rather than a check, and it is
- recorded rather than taken here.
+ Its MEASUREMENTS are deliberately not checked. `settleChunkVerdict` passes
+ `UNCHANGED_MEASUREMENTS`, which is the honest measurement of the archive:
+ integrity is relative to the archive, so a malformed archive is intact
+ against itself, and a patch keeping its damage ties it on integrity rather
+ than losing (ledger E6, which first read the constant as a claim that the
+ archive parsed).
  
  @param candidates - competing candidates including the unchanged one
  

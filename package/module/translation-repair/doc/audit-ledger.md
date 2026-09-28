@@ -892,8 +892,18 @@ a panel verdict carries no reason.
 
 ### E6: a malformed archive competes in repair selection as though it parsed
 
-Status: open.
-`repair-chunk-verdict.ts` passes `UNCHANGED_MEASUREMENTS` with `integrityOk` true.
+Status: not a defect in behaviour; the docs that claimed one are corrected, and the equality is pinned in `c62aa9ac8`.
+`repair-chunk-verdict.ts` passes `UNCHANGED_MEASUREMENTS` with `integrityOk` true,
+and that is the honest measurement:
+`measurePatchedCandidate` asks whether a candidate is no worse than the archive on grammar downgrades and broken footnotes,
+and the repair lane's baseline is the archive itself (`repair-chunk-evidence.ts`),
+so the archive against itself is intact however it parses.
+The claim came from `selectRepairCandidate`'s TSDoc (`2e2694680`),
+which read `integrityOk` as absolute, as its own field doc did ("still parses", "front matter intact", which nothing measures).
+The guard in `chunk-measure.unit.test.ts` fails when integrity is made absolute (mutation checked).
+A patch that repairs an archive's structure gains no integrity rank for it;
+it gains rank only through an accepted issue the checkers find resolved, which is the lexicographic order as settled.
+See M22.
 
 ### E7: the sheet-leak label list has fallen behind the sheets
 
@@ -2186,6 +2196,15 @@ so the assertion held at its initial zero whatever was bought.
 A parser test named "listing the two it does" had pinned three kinds, and later four.
 Prevention: a counter or state a throwing path must leave untouched is held by the test outside the call;
 test names describe the property, not a count that the next change makes false.
+
+### M22: a comment's claim carried into the ledger without reading the measurement it described
+
+Status: corrected, 2026-09-27 (E6).
+The audit copied "a malformed archive competes as though it parsed" from a TSDoc paragraph into the ledger as E6,
+and no one read `measurePatchedCandidate`, where integrity is relative to the archive,
+so the finding asked for a behaviour change that would have changed nothing on the archive's own row.
+Prevention: a finding drawn from a comment is confirmed against the code the comment describes before it is filed,
+and a field's doc says what the code measures, relative or absolute, with the function that measures it named.
 
 ### M15: a finding carried and a fix started against an owner ruling
 
