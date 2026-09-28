@@ -144,7 +144,7 @@ await describe({
         // before its vote, and every stored ballot carries it (owner, "Reason
         // before vote"), so the question and the record both moved.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('6b44be9a56f39b571074aebe89fce488e8019d39b220fd6d89a930a1614f5f2f',);
+          .toBe('74a428a553da7045985acfc713d3ebd46c1ec13cd89b16670e7e34c7edd5288b',);
       },
     },),
     it({

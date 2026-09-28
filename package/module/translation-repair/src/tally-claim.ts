@@ -224,6 +224,11 @@ export function panelReadingForClaim(
     ballots: Object
       .entries(ballots,)
       .map(function toBallot([panelistId, ballot,],): PanelClaimBallot {
+        /**
+         Reason this panelist gave for this claim, absent where it gave none.
+         */
+        const reason = ballot.verdicts[claimId]
+          ?.reason;
         return {
           panelistId,
           vote: castVote({
@@ -234,6 +239,7 @@ export function panelReadingForClaim(
             panelistId,
             config,
           },),
+          ...((reason === undefined) ? {} : { reason, }),
         };
       },),
     configuredPanelists,

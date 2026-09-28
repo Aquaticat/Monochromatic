@@ -58,6 +58,17 @@ export type PanelClaimBallot = {
    config was not the default.
    */
   readonly weight: number;
+
+  /**
+   Why it voted so, as it wrote before the vote (owner, 2026-09-27, "Reason
+   before vote").
+
+   ABSENT WITH TWO MEANINGS a reader can tell apart: a panelist that gave none
+   left a `missing-reason` finding on its packet, and a ballot settled before
+   the rule has neither, since those slices were cached under repair slice
+   version 32 or earlier.
+   */
+  readonly reason?: string;
 };
 
 /**

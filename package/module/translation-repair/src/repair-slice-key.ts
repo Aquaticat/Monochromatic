@@ -298,8 +298,19 @@ import type { RepairModels, } from './repair-contract.ts';
  selection counts resolved issues, so a slice settled under version 31 may
  have shipped a patch whose only confirmation was one checker, and resuming
  it would carry that decision past the floor.
+
+ VERSION 33, the same day, for both kinds of change at once. The QUESTION
+ moved: the panel sheet asks each verdict's reason before its vote (owner,
+ "Reason before vote"), and `repairRunShape` holds rosters and context but no
+ sheet text, so a slice settled under the old sheet keys identically and
+ would resume with votes cast without the reasoning the rule asks for. And the
+ RECORD grew: every stored panel ballot carries its `reason`, so resuming
+ would mix reasoned and unreasoned ballots in one entry, the confusion
+ version 31 was spent to prevent. It costs nothing beyond version 32: the
+ newest of the 14,596 slice-cache files under the agent runs was written at
+ 00:26 that day, before version 32 existed.
  */
-export const SLICE_CACHE_VERSION = 32;
+export const SLICE_CACHE_VERSION = 33;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

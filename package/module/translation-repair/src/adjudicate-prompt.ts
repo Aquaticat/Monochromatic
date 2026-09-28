@@ -62,7 +62,7 @@ const ADJUDICATION_SYSTEM_PROMPT = `You are an impartial bilingual adjudicator.
 Reviewers reported the numbered claims below against the TRANSLATION of the ORIGINAL document.
 You did not write these claims. Judge each claim strictly on the document evidence.
 
-For EVERY claim, cast exactly one vote:
+For EVERY claim, write its reason first, then cast exactly one vote. The reason is one or two sentences naming the document evidence that decides the claim; the vote follows from it:
 - supported: the documents confirm the defect exists as claimed
 - unsupported: the documents contradict the claim, or the quoted evidence does not show the claimed defect
 - ambiguous: the documents genuinely permit both readings; a human must decide
@@ -93,8 +93,8 @@ Optionally re-grade a supported claim's severity: one of ${ISSUE_SEVERITIES.join
 For every GROUP holding more than one claim, also state whether its claims describe one single defect (sameDefect true) or genuinely distinct defects (sameDefect false).
 
 Reply with ONLY a JSON object of shape
-{"verdicts": [{"claim": 1, "vote": "supported", "severity": "major"}], "groups": [{"group": 1, "sameDefect": true}]}.
-The severity field is optional. No prose, no code fences.
+{"verdicts": [{"claim": 1, "reason": "The quoted TRANSLATION names the wrong city.", "vote": "supported", "severity": "major"}], "groups": [{"group": 1, "sameDefect": true}]}.
+The severity field is optional; the reason is not. No prose outside the JSON, no code fences.
 Every claim number must appear exactly once in verdicts.`;
 
 /**

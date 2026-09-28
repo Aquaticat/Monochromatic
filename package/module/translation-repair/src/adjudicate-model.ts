@@ -64,11 +64,12 @@ export function isPanelVoteState(value: unknown,): value is PanelVoteState {
 
 /**
  One resolved verdict inside a ballot:
- the vote, plus the optional severity re-grade the panel may apply.
- 
+ the vote, the optional severity re-grade the panel may apply, and the
+ reason given before the vote.
+
  @example
  ```ts
- const verdict: BallotVerdict = { vote: 'supported', severity: 'major', };
+ const verdict: BallotVerdict = { vote: 'supported', severity: 'major', reason: 'The quote shows the wrong name.', };
  ```
  */
 export type BallotVerdict = {
@@ -81,6 +82,13 @@ export type BallotVerdict = {
    Re-graded severity, when the panelist disagrees with the claimed one.
    */
   readonly severity?: IssueSeverity;
+
+  /**
+   What the panelist said decides the claim, written before its vote (owner,
+   2026-09-27, "Reason before vote"). Absent where it gave none, which the
+   ballot's findings record, and on every ballot resolved before the rule.
+   */
+  readonly reason?: string;
 };
 
 /**

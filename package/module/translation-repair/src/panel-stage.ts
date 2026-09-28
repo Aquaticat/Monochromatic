@@ -151,6 +151,41 @@ function describePanelDecision(issue: AdjudicatedIssue,): string {
 }
 
 /**
+ Each ballot behind an issue's decision as the run log says it: claim,
+ panelist, vote, and the reason it gave before voting (owner, 2026-09-27,
+ "Reason before vote").
+
+ @param issue - issue as the tally decided it
+
+ @returns One line per stored ballot, in claim then ballot order
+
+ @example
+ ```ts
+ for (const line of describePanelReasons(issue,)) packetLogger.info(line,);
+ ```
+ */
+function describePanelReasons(issue: AdjudicatedIssue,): readonly string[] {
+  /**
+   Stored readings keyed by claim id, none on an issue the tally did not build.
+   */
+  const { readings = {}, } = issue;
+  return issue.claims
+    .flatMap(function linesOf({ claimId, },): readonly string[] {
+      /**
+       Ballots stored for this claim, none where the tally kept no reading.
+       */
+      const { ballots, } = readings[claimId] ?? { ballots: [], };
+      return ballots.map(function lineOf({
+        panelistId,
+        vote,
+        reason,
+      },): string {
+        return `${issue.issueId} ${claimId} ${panelistId} ${vote}: ${reason ?? '(gave no reason)'}`;
+      },);
+    },);
+}
+
+/**
  Reviews precomputed clusters independently within one fixed panel stage.
  Ballots cannot create another packet or change its membership. Sequential
  packet execution bounds provider fan-out; the existing model window and
@@ -329,8 +364,11 @@ export async function runPanelStage(
         configuredPanelists: panelModelIds.length,
         ...(adjudicationConfig === undefined ? {} : { config: adjudicationConfig, }),
       },);
-      for (const issue of issues)
+      for (const issue of issues) {
         packetLogger.info(describePanelDecision(issue,),);
+        for (const line of describePanelReasons(issue,))
+          packetLogger.info(line,);
+      }
       return {
         issues,
         heardIds: gather.voices

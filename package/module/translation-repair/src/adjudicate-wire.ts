@@ -22,7 +22,7 @@ import {
  
  @example
  ```ts
- const wire: PanelVerdictWire = { claim: 1, vote: 'supported', };
+ const wire: PanelVerdictWire = { claim: 1, reason: 'The quote already carries it.', vote: 'unsupported', };
  ```
  */
 export type PanelVerdictWire = {
@@ -30,6 +30,14 @@ export type PanelVerdictWire = {
    One-based claim number from the prompt sheet.
    */
   readonly claim: number;
+
+  /**
+   What decides the claim, written BEFORE the vote (owner, 2026-09-27,
+   "Reason before vote"). Required by the schema; optional here because a
+   provider that does not hold replies to it can drop the field, and a
+   missing reason is resolved as a finding beside a vote that still counts.
+   */
+  readonly reason?: string;
 
   /**
    Vote string; validated against the closed vocabulary at resolution.
@@ -107,6 +115,8 @@ function isPanelVerdictWire(value: unknown,): value is PanelVerdictWire {
   if ((claim % 1) !== 0)
     return false;
   if ((typeof value.vote) !== 'string')
+    return false;
+  if ((value.reason !== undefined) && ((typeof value.reason) !== 'string'))
     return false;
   return (value.severity === undefined) || ((typeof value.severity) === 'string');
 }
@@ -190,11 +200,15 @@ export const ADJUDICATION_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
             type: 'object',
             required: [
               'claim',
+              'reason',
               'vote',
             ],
             additionalProperties: false,
+            // REASON DECLARED BEFORE VOTE, as the sheet's reply shape shows it
+            // (owner, 2026-09-27, "Reason before vote").
             properties: {
               claim: { type: 'integer', },
+              reason: { type: 'string', },
               vote: { type: 'string', },
               severity: { type: 'string', },
             },
@@ -223,8 +237,9 @@ export const ADJUDICATION_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 /**
  Resolves one wire ballot into id-keyed verdicts through the prompt plan.
  Fails closed per item: out-of-range or duplicate references and unknown
- votes become findings, an invalid severity drops only the re-grade, and
- claims left without a verdict are recorded and abstain at tally time.
+ votes become findings, an invalid severity drops only the re-grade, a
+ missing or blank reason is recorded while its vote still counts, and claims
+ left without a verdict are recorded and abstain at tally time.
  
  @param wire - ballot as the panelist reported it
  
@@ -276,14 +291,30 @@ export function resolvePanelBallot(
       findings.push(`unknown-vote (${verdict.vote})`,);
       continue;
     }
+    /**
+     This verdict's reason, trimmed, or empty where none was given.
+     */
+    const reason = (verdict.reason ?? '').trim();
+    // A MISSING REASON IS AN AUDIT GAP, NOT A LOST VOICE: the vote still
+    // counts, and the gap is recorded beside it.
+    if (reason === '')
+      findings.push(`missing-reason (${verdict.claim})`,);
+    /**
+     The reason as a spreadable field, absent where none was given.
+     */
+    const given = (reason === '') ? {} : { reason, };
     if ((verdict.severity !== undefined) && (!isIssueSeverity(verdict.severity,))) {
       findings.push(`unknown-regrade-severity (${verdict.severity})`,);
-      verdicts[claimId] = { vote: verdict.vote, };
+      verdicts[claimId] = {
+        vote: verdict.vote,
+        ...given,
+      };
       continue;
     }
     verdicts[claimId] = {
       vote: verdict.vote,
       ...(verdict.severity === undefined ? {} : { severity: verdict.severity, }),
+      ...given,
     };
   }
   for (const [index, claimId,] of claimIds.entries()) {
