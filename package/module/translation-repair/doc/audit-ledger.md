@@ -880,7 +880,9 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     class one hundred ten not replayed on real texts).
 - Evidence misquoted to the owner and rulings misread (治愈's 安慰; class fifty-four's reading of "else fail").
 - Shell rule slips in this session: a `;` in a suite command and in a test command;
-    on 2026-09-28 two more, before a `PIPESTATUS` echo and between two `rg` probes.
+    on 2026-09-28 two more, before a `PIPESTATUS` echo and between two `rg` probes;
+    then a `;` between two `rg --count` probes of the built declarations,
+    and a heredoc that wrote a script followed by an unchained command that ran it.
 
 ## History, classes 1 to 92 and before numbering
 
@@ -1899,11 +1901,26 @@ Retry lines never name the model;
 Status: open.
 `transient-retry.ts` backoff ignores the caller's abort;
 a payment refusal clears on any meter movement;
-decision-seat structural losses marked reachable;
-decision-seat prompts reach 30,203 of a 32,000-token context
-and `ce824d933` adds the house rules to them with no size check;
 the Bedrock stream bound spans the whole retry ladder;
 card prices differ from the endpoint bought.
+
+Fixed in `a991ef1e1` (guard `cabfa82f4`; mutation checked with a control, five mutants caught):
+decision-seat structural losses marked reachable,
+and decision-seat prompts reaching 30,203 of a 32,000-token context
+after `ce824d933` added the house rules with no size check.
+The decisions reference documents a 413 for an oversized payload and nothing for a state past the context,
+so the endpoint was probed on 2026-09-28 with cat-themed states (under a cent):
+a 45,046-character state came back HTTP 400 `max_tokens_exceeded` with the evidence first and with it last,
+never a decision on a truncated state.
+The same probes measured the house rules at 4,085 tokens (17,493 characters),
+Han text at one token a character and English at 4.2 characters a token;
+4 of the 13,878 Jev prompts in the run logs would now pass the context.
+Not a launch gate: the largest TianqiChen666 Jev prompt was 4,779 tokens, from a build before `ce824d933`.
+The endpoint is the tokenizer, so nothing estimates a state's size:
+that refusal, a stage with no typed question and a client with no decisions transport
+now read as out of reach, so the gather sizes its quorum without the seat and never re-asks it
+(the 2026-09-09 short-bench rule and the owner's "Count as out of reach").
+Rides inside the translate (15), repair (33) and refine (5) cache versions with written accounts.
 
 ## Repair lane
 

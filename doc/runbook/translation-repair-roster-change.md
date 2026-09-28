@@ -110,8 +110,12 @@ gets a card with a `decisions` side instead of provider sides.
     lane contests,
     panels,
     gates)
-    calls chat and leaves a decision seat unheard as a lost voice,
-    so a decision seat votes only where a `StageDecision` is threaded.
+    calls chat and reads a decision seat as out of reach,
+    so a decision seat votes only where a `StageDecision` is threaded
+    and no quorum waits on it anywhere else.
+    A state past the seat's context is out of reach for that ballot too:
+    the endpoint refuses it with HTTP 400 `max_tokens_exceeded`
+    (probed 2026-09-28; ledger P13 in `package/module/translation-repair/doc/audit-ledger.md`).
 6.  Measure it with `judge-fidelity-probe -- --candidates <id>`
     as for any judge;
     its ballots carry the reason prefix `typed decision`

@@ -135,6 +135,12 @@ import type { SliceReplacement, } from './splice-slices.ts';
  read rather than lost (ledger P8, `cac097368`), which changes whose voices
  every round hears; checked on 2026-09-28: still no slice-cache file newer
  than 00:26 on 2026-09-27.
+
+ Rides inside 15 too: a decision seat whose state the endpoint refuses
+ as past its context, or that a stage cannot ask, now reads as out of reach
+ for that ballot rather than as a lost voice (ledger P13, `a991ef1e1`), which
+ changes the quorum a select round closes on; checked on 2026-09-28: still no
+ slice-cache file newer than 00:26 on 2026-09-27.
  */
 export const TRANSLATE_SLICE_CACHE_VERSION = 15;
 
