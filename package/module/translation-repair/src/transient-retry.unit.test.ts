@@ -891,3 +891,50 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: 'the retry line names the call it retries (ledger P12)',
+  children: [
+    it({
+      name: 'NAMES THE MODEL on the retry line: 3,864 "stream ended without its [DONE] terminator ... retrying" '
+        + 'lines across the logs named no model or provider, so none could be attributed',
+      fn: async () => {
+        /**
+         Lines `console.warn` received.
+         */
+        const lines: string[] = [];
+        /**
+         `console.warn` as it was, put back once the ladder returns.
+         */
+        const warned = console.warn;
+        console.warn = (...parts: readonly unknown[]) => {
+          lines.push(parts.map(String,)
+            .join(' ',),);
+        };
+        {
+          await using restore = {
+            [Symbol.asyncDispose]: async () => {
+              console.warn = warned;
+            },
+          };
+          await exchangeWithRetry({
+            transport: scriptedTransport({
+              script: [new Error('connection reset',), OK_REPLY,],
+              calls: { count: 0, },
+            },),
+            exchange: exchangeWith({ signal: new AbortController().signal, },),
+            policy: FAST_POLICY,
+          },);
+          void restore;
+        }
+        /**
+         The label every attempt of this exchange carries.
+         */
+        const { label, } = exchangeWith({ signal: new AbortController().signal, },);
+        expect(lines.some(function namesIt(line,): boolean {
+          return line.includes('retrying',) && line.includes(label,);
+        },),).toBe(true,);
+      },
+    },),
+  ],
+},);
