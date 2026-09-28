@@ -1,0 +1,405 @@
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
+import type { SyntheticClient, } from './chat-contract.ts';
+import {
+  buildPageTitleLexiconMessages,
+  isPageTitleLexiconWire,
+  PAGE_TITLE_LEXICON_RESPONSE_FORMAT,
+  type PageTitleLexiconWire,
+} from './page-title-lexicon-wire.ts';
+import type { RepeatedTitleSpan, } from './page-title-spans.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
+import { gatherStageVoices, } from './stage-quorum.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
+
+//region Page title lexicon stage
+// ONE RENDERING PER REPEATED TITLE, ONCE PER PAGE (ledger H16, 2026-09-28).
+// The bench is asked once; each title keeps the rendering most voices gave,
+// compared without case, spacing or wrapping quotes, the earliest seat on the
+// roster breaking a tie so a resumed page reads the same answer. The lines
+// are evidence beside the page-name block: the judges still decide.
+
+/**
+ Heading of the sheet block.
+ */
+const HEADING = 'TITLES THIS PAGE REPEATS THAT THE ARCHIVE DOES NOT RENDER '
+  + '(the bench settled one English rendering for each, so every passage renders the same title the same way):';
+
+/**
+ Marks a rendering may arrive wrapped in, taken off before comparing.
+ */
+const WRAPPERS: ReadonlySet<string> = new Set([
+  '"',
+  '\'',
+  '*',
+  '“',
+  '”',
+  '‘',
+  '’',
+  '《',
+  '》',
+],);
+
+/**
+ One title's settled rendering.
+
+ @example
+ ```ts
+ const settled: SettledPageTitle = { source: '猫之歌', occurrences: 3, rendering: 'Song of the Cat', voices: 2, heard: 3, };
+ ```
+ */
+export type SettledPageTitle = {
+  /**
+   Title as the original writes it.
+   */
+  readonly source: string;
+  /**
+   Marked places it stands on the page.
+   */
+  readonly occurrences: number;
+  /**
+   Rendering most voices gave.
+   */
+  readonly rendering: string;
+  /**
+   Voices that gave it.
+   */
+  readonly voices: number;
+  /**
+   Voices heard.
+   */
+  readonly heard: number;
+};
+
+/**
+ What the lexicon round settled.
+
+ @example
+ ```ts
+ const lexicon: PageTitleLexicon = { titles: [], heard: 0, findings: [], };
+ ```
+ */
+export type PageTitleLexicon = {
+  /**
+   Titles settled, in order of first appearance; a title no voice rendered is absent.
+   */
+  readonly titles: readonly SettledPageTitle[];
+  /**
+   Voices heard.
+   */
+  readonly heard: number;
+  /**
+   What the round reported.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ A rendering with its wrapping marks and surrounding space off.
+
+ @param rendering - rendering as a voice gave it
+
+ @returns Rendering as the sheet shows it
+
+ @example
+ ```ts
+ unwrapped({ rendering: ' “Song of the Cat” ', },); // 'Song of the Cat'
+ ```
+ */
+function unwrapped({ rendering, }: { readonly rendering: string; },): string {
+  /**
+   Rendering without surrounding space; every wrapper is one UTF-16 unit, so
+   an index walks them from either end.
+   */
+  const trimmed = rendering.trim();
+  /**
+   Bounds of the wrapped words: first unit that is no wrapper, and one past the last.
+   */
+  const bounds = {
+    start: 0,
+    end: trimmed.length,
+  };
+  while ((bounds.start < bounds.end) && WRAPPERS.has(trimmed.charAt(bounds.start,),))
+    bounds.start += 1;
+  while ((bounds.end > bounds.start) && WRAPPERS.has(trimmed.charAt(bounds.end - 1,),))
+    bounds.end -= 1;
+  return trimmed
+    .slice(
+      bounds.start,
+      bounds.end,
+    )
+    .trim();
+}
+
+/**
+ Form two renderings share when they differ only in case or spacing.
+
+ @param rendering - unwrapped rendering
+
+ @returns Comparison key
+
+ @example
+ ```ts
+ comparisonKey({ rendering: 'Song  of the cat', },); // 'song of the cat'
+ ```
+ */
+function comparisonKey({ rendering, }: { readonly rendering: string; },): string {
+  return rendering
+    .split(' ',)
+    .filter(function word(part,): boolean {
+      return part !== '';
+    },)
+    .join(' ',)
+    .toLowerCase();
+}
+
+/**
+ The rendering most voices gave one title, the earliest seat breaking a tie.
+
+ @param answers - each voice's rendering of the title, in roster order, empty
+ for a voice that gave none
+
+ @returns Rendering and how many voices gave it, none where no voice rendered it
+
+ @example
+ ```ts
+ const chosen = mostGiven({ answers: ['Song of the Cat', 'song of the cat', 'Cat Song',], },);
+ ```
+ */
+function mostGiven(
+  { answers, }: { readonly answers: readonly string[]; },
+): readonly {
+  readonly rendering: string;
+  readonly voices: number;
+}[] {
+  /**
+   Voices per comparison key, with the first wording given under it.
+   */
+  const tally = answers
+    .filter(function given(answer,): boolean {
+      return answer !== '';
+    },)
+    .reduce(
+      function count(
+        seen,
+        answer,
+      ) {
+        /**
+         Key the answer counts under.
+         */
+        const key = comparisonKey({ rendering: answer, },);
+        /**
+         Count so far under that key.
+         */
+        const held = seen.get(key,);
+        seen.set(
+          key,
+          {
+            rendering: held?.rendering ?? answer,
+            voices: (held?.voices ?? 0) + 1,
+          },
+        );
+        return seen;
+      },
+      new Map<string, {
+        readonly rendering: string;
+        readonly voices: number
+      }>(),
+    );
+  return [...tally.values(),]
+    .reduce(
+      function best(
+        chosen: readonly {
+          readonly rendering: string;
+          readonly voices: number
+        }[],
+        candidate,
+      ) {
+        /**
+         Leader so far, none before the first.
+         */
+        const [leader,] = chosen;
+        return ((leader === undefined) || (candidate.voices > leader.voices)) ? [candidate,] : chosen;
+      },
+      [],
+    );
+}
+
+/**
+ Settles one English rendering for each title a page repeats, asking the bench once.
+
+ @param client - provider client
+
+ @param modelIds - bench asked, in roster order
+
+ @param sourceText - the original document
+
+ @param spans - titles the page repeats and the archive leaves unpaired
+
+ @param signal - the entry's abort
+
+ @param exchangeTimeoutMs - per-call timeout
+
+ @param l - entry logger
+
+ @param fanOut - seats the round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for
+
+ @returns Settled titles, voices heard and findings
+
+ @example
+ ```ts
+ const lexicon = await settlePageTitles({ client, modelIds, sourceText, spans, signal, exchangeTimeoutMs, l, },);
+ ```
+ */
+export async function settlePageTitles(
+  {
+    client,
+    modelIds,
+    sourceText,
+    spans,
+    signal,
+    exchangeTimeoutMs,
+    l,
+    fanOut,
+  }: ForeignBorrowed<{
+    readonly client: SyntheticClient;
+    readonly modelIds: readonly RosterModelId[];
+    readonly sourceText: string;
+    readonly spans: readonly RepeatedTitleSpan[];
+    readonly signal: AbortSignal;
+    readonly exchangeTimeoutMs: number;
+    readonly l: Logger;
+    readonly fanOut?: FanOutMode;
+  }>,
+): Promise<PageTitleLexicon> {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const tl = tagged({
+    tag: settlePageTitles.name,
+    l,
+  },);
+  if (spans.length === 0) {
+    tl.debug('the page repeats no unpaired title, so nobody is asked',);
+    return {
+      titles: [],
+      heard: 0,
+      findings: [],
+    };
+  }
+  /**
+   Quorum-bounded replies.
+   */
+  const gather = await gatherStageVoices<PageTitleLexiconWire>({
+    client,
+    modelIds,
+    messages: buildPageTitleLexiconMessages({
+      sourceText,
+      titles: spans.map(function sourceOf(span,): string {
+        return span.source;
+      },),
+    },),
+    signal,
+    exchangeTimeoutMs,
+    responseFormat: PAGE_TITLE_LEXICON_RESPONSE_FORMAT,
+    validate: isPageTitleLexiconWire,
+    stage: 'page-title-lexicon',
+    l: tl,
+    ...((fanOut === undefined) ? {} : { fanOut, }),
+  },);
+  /**
+   Voices in roster order, so the earliest seat breaks a tie.
+   */
+  const voices = gather.voices
+    .toSorted(function byRoster(
+      left,
+      right,
+    ): number {
+      return modelIds.indexOf(left.modelId,) - modelIds.indexOf(right.modelId,);
+    },);
+  /**
+   Voices heard.
+   */
+  const heard = voices.length;
+  /**
+   Each title's settled rendering, where some voice gave one.
+   */
+  const titles = spans.flatMap(function settle(
+    span,
+    at,
+  ): readonly SettledPageTitle[] {
+    /**
+     Each voice's rendering of this title, empty where it gave none.
+     */
+    const answers = voices.map(function answerOf(voice,): string {
+      /**
+       This voice's entry for the title, if any.
+       */
+      const entry = voice.value
+        .titles
+        .find(function forTitle(item,): boolean {
+          return item.title === (at
+            + 1);
+        },);
+      return (entry === undefined) ? '' : unwrapped({ rendering: entry.rendering, },);
+    },);
+    return mostGiven({ answers, },)
+      .map(function toSettled(chosen,): SettledPageTitle {
+        return {
+          source: span.source,
+          occurrences: span.occurrences,
+          rendering: chosen.rendering,
+          voices: chosen.voices,
+          heard,
+        };
+      },);
+  },);
+  tl.info(
+    `PAGE TITLES heard=${String(heard,)} asked=${String(spans.length,)} settled=${String(titles.length,)}`,
+  );
+  return {
+    titles,
+    heard,
+    findings: [
+      ...gather.findings,
+      `page title lexicon settled ${String(titles.length,)} of ${String(spans.length,)} repeated titles from ${
+        String(heard,)
+      } voices`,
+    ],
+  };
+}
+
+/**
+ Identity-context lines carrying a page's settled titles: a heading and one
+ line per title, empty when none settled.
+
+ @param titles - settled titles
+
+ @returns Sheet lines
+
+ @example
+ ```ts
+ const lines = pageTitleLines({ titles, },);
+ ```
+ */
+export function pageTitleLines(
+  { titles, }: { readonly titles: readonly SettledPageTitle[]; },
+): readonly string[] {
+  if (titles.length === 0)
+    return [];
+  return [
+    HEADING,
+    ...titles.map(function toLine(title,): string {
+      return `- ${title.source} (${String(title.occurrences,)} places on the page): "${title.rendering}" (${
+        String(title.voices,)
+      } of ${String(title.heard,)} voices)`;
+    },),
+  ];
+}
+
+//endregion Page title lexicon stage

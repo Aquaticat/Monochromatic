@@ -138,6 +138,17 @@ const CLAIM_BY_ROLE = {
     prefix: 'refine.',
     marker: 'refine-generation.txt',
   },
+
+  /**
+   Page title lexicon (ledger H16). NOT A LANE: evidence settled once per page
+   before either lane runs, keyed by the titles it answers, which every slice
+   key then folds through the identity context. Rebought, it would word the
+   titles afresh and move every slice key on the page.
+   */
+  pageTitles: {
+    prefix: 'page-titles.',
+    marker: 'page-titles-generation.txt',
+  },
 } as const satisfies Record<string, SliceNamespace>;
 
 /**
@@ -189,5 +200,10 @@ export const PICTURE_READING_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.pictureRe
  Naturalness refinement's claim.
  */
 export const REFINE_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.refinement;
+
+/**
+ Page title lexicon's claim.
+ */
+export const PAGE_TITLES_NAMESPACE: SliceNamespace = CLAIM_BY_ROLE.pageTitles;
 
 //endregion Slice cache claims

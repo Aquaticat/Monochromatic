@@ -112,5 +112,29 @@ export {
 } from './corpus-run/pass-lanes.ts';
 export { createPassPictureReader, } from './corpus-run/pass-seated-pictures.ts';
 export { type PassPictureSources, } from './corpus-run/pass-visual-evidence.ts';
+export { pairedPageNames, } from './page-name-glossary.ts';
+export {
+  type RepeatedTitleSpan,
+  repeatedTitleSpans,
+} from './page-title-spans.ts';
+export {
+  buildPageTitleLexiconMessages,
+  isPageTitleLexiconWire,
+  PAGE_TITLE_LEXICON_RESPONSE_FORMAT,
+} from './page-title-lexicon-wire.ts';
+export {
+  type PageTitleLexicon,
+  pageTitleLines,
+  type SettledPageTitle,
+  settlePageTitles,
+} from './page-title-lexicon-stage.ts';
+export { PAGE_TITLE_CACHE_VERSION, } from './page-title-cache-version.ts';
+export {
+  openPageTitleCache,
+  pageTitleKey,
+  type PageTitleLexiconRecord,
+  passPageTitles,
+  type PassPageTitles,
+} from './corpus-run/pass-page-titles.ts';
 
 //endregion Corpus readiness barrel

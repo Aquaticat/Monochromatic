@@ -971,6 +971,15 @@ and a handle and a community's name vary in case (`z60` and `Z60`, `limelight` a
 shi_Yumiaoya's 同居者 turns plural in the slice after the one that names a single person.
 So the defect is real and bounded: repeated titles and names on unanchored slices,
 which the page-name glossary would cover if the archive paired them.
+Bound over all 92 pairs (`h16-bound.mjs`): 8 pages carry 16 title-marked spans
+(ATX or HTML heading text, 《…》, 【…】, and 「…」 equal to one of those) on two or more places
+that the page-name glossary does not pair; XingZ60 carries 6 of them.
+Decided 2026-09-28 for quality, against no ruling:
+the preparation settles one English rendering per such span once per page, asking its roster
+through the hook the attestation uses (X12), cached, and carries it as evidence lines after the page-name block;
+it restores and enforces nothing, since the judges keep deciding headings (owner, 2026-09-21, `page-name-glossary.ts`).
+Kept out of H16: the Latin case drift, which is X16,
+and 同居者 turning plural, one page's translation slip rather than a missing mechanism.
 
 ### Process mistakes, classes 93 to 185
 

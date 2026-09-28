@@ -1,0 +1,323 @@
+import { createHash, } from 'node:crypto';
+
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
+import type { BenchSeating, } from '../bench-seating.ts';
+import type { SyntheticClient, } from '../chat-contract.ts';
+import { hashContent, } from '../document-node.ts';
+import {
+  isJsonArray,
+  isJsonRecord,
+} from '../json-guard.ts';
+import { PAGE_TITLE_CACHE_VERSION, } from '../page-title-cache-version.ts';
+import {
+  pageTitleLines,
+  type SettledPageTitle,
+  settlePageTitles,
+} from '../page-title-lexicon-stage.ts';
+import {
+  type RepeatedTitleSpan,
+  repeatedTitleSpans,
+} from '../page-title-spans.ts';
+import type { SliceCache, } from '../slice-cache.ts';
+import type { RosterModelId, } from '../synthetic-catalog.ts';
+import {
+  openNamespacedCache,
+  PAGE_TITLES_NAMESPACE,
+} from './slice-cache-namespace.ts';
+
+//region Pass page titles
+// THE PREPARATION'S TITLE LEXICON (ledger H16, 2026-09-28): the titles a page
+// repeats and the archive leaves unpaired, settled once and carried as
+// evidence lines after the page-name block. CACHED because the answer is
+// wording: rebought on a resume, it would word the titles afresh, the identity
+// context every slice key folds would move, and every settled slice of the
+// page would be bought again.
+
+/**
+ What one settled lexicon round stores.
+
+ @example
+ ```ts
+ const record: PageTitleLexiconRecord = { titles: [], findings: [], };
+ ```
+ */
+export type PageTitleLexiconRecord = {
+  /**
+   Titles settled.
+   */
+  readonly titles: readonly SettledPageTitle[];
+  /**
+   What the round reported.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ Lines and findings the lexicon adds to a preparation.
+
+ @example
+ ```ts
+ const added: PassPageTitles = { lines: [], findings: [], };
+ ```
+ */
+export type PassPageTitles = {
+  /**
+   Identity-context lines, empty when nothing settled.
+   */
+  readonly lines: readonly string[];
+  /**
+   What the round reported, or what a resumed round had reported.
+   */
+  readonly findings: readonly string[];
+};
+
+/**
+ Whether a stored value is one settled title.
+
+ @param value - parsed stored item
+
+ @returns Whether it reads as a settled title
+
+ @example
+ ```ts
+ isSettledPageTitle({ source: '猫之歌', occurrences: 2, rendering: 'Song of the Cat', voices: 2, heard: 3, },);
+ ```
+ */
+function isSettledPageTitle(value: unknown,): value is SettledPageTitle {
+  return isJsonRecord(value,)
+    && ((typeof value.source) === 'string')
+    && ((typeof value.rendering) === 'string')
+    && Number.isInteger(value.occurrences,)
+    && Number.isInteger(value.voices,)
+    && Number.isInteger(value.heard,);
+}
+
+/**
+ Whether a stored value is a settled lexicon round.
+
+ @param value - parsed stored record
+
+ @returns Whether it can be republished as one
+
+ @example
+ ```ts
+ isPageTitleLexiconRecord({ titles: [], findings: [], },);
+ ```
+ */
+function isPageTitleLexiconRecord(value: unknown,): value is PageTitleLexiconRecord {
+  return isJsonRecord(value,)
+    && isJsonArray(value.titles,)
+    && value.titles
+    .every(isSettledPageTitle,)
+    && isJsonArray(value.findings,)
+    && value.findings
+    .every(function isFinding(finding,): boolean {
+      return (typeof finding) === 'string';
+    },);
+}
+
+/**
+ Opens an entry's page title lexicon cache.
+
+ @param dir - per-entry slice-cache directory
+
+ @param generation - digest of the built pipeline this pass runs
+
+ @returns Cache resuming a settled lexicon and persisting a new one
+
+ @example
+ ```ts
+ const pageTitleCache = await openPageTitleCache({ dir: entryCacheDir, generation, },);
+ ```
+ */
+export async function openPageTitleCache(
+  {
+    dir,
+    generation,
+  }: {
+    readonly dir: string;
+    readonly generation: string;
+  },
+): Promise<SliceCache<PageTitleLexiconRecord>> {
+  return await openNamespacedCache({
+    dir,
+    generation,
+    namespace: PAGE_TITLES_NAMESPACE,
+    isValue: isPageTitleLexiconRecord,
+  },);
+}
+
+/**
+ Names one lexicon question: the original it was asked over, the titles and
+ the roster that answers, as one JSON value so no two questions share a key
+ (the X15 lesson).
+
+ @param sourceText - the original document
+
+ @param spans - titles asked about
+
+ @param modelIds - roster that answers
+
+ @returns Cache key
+
+ @example
+ ```ts
+ const key = pageTitleKey({ sourceText, spans, modelIds, },);
+ ```
+ */
+export function pageTitleKey(
+  {
+    sourceText,
+    spans,
+    modelIds,
+  }: {
+    readonly sourceText: string;
+    readonly spans: readonly RepeatedTitleSpan[];
+    readonly modelIds: readonly RosterModelId[];
+  },
+): string {
+  return createHash('sha256',)
+    .update(
+      JSON.stringify({
+        version: PAGE_TITLE_CACHE_VERSION,
+        source: hashContent({ content: sourceText, },),
+        titles: spans,
+        roster: modelIds,
+      },),
+      'utf8',
+    )
+    .digest('hex',);
+}
+
+/**
+ Settles, or resumes, the lexicon of one entry's repeated unpaired titles.
+
+ THE HOOK IS READ ONLY WHEN THE PAGE REPEATS SUCH A TITLE, since a page that
+ repeats none asks nobody and so has no bench to re-seat.
+
+ @param client - provider client
+
+ @param modelIds - roster the preparation started on
+
+ @param beforeItem - hook handing the round its roster (ledger X12), `keepBench`
+ for a caller with none; required so no caller drops it by omission
+
+ @param sourceText - the original document
+
+ @param targetText - archive as the preparation reads it
+
+ @param cache - store a settled round is republished from
+
+ @param signal - entry deadline and caller abort
+
+ @param exchangeTimeoutMs - per-call bound
+
+ @param l - entry logger
+
+ @returns Lines for the identity context and the round's findings
+
+ @example
+ ```ts
+ const { lines, findings, } = await passPageTitles({ client, modelIds, beforeItem, sourceText, targetText, cache, signal, exchangeTimeoutMs, l, },);
+ ```
+ */
+export async function passPageTitles(
+  {
+    client,
+    modelIds,
+    beforeItem,
+    sourceText,
+    targetText,
+    cache,
+    signal,
+    exchangeTimeoutMs,
+    l,
+  }: ForeignBorrowed<{
+    readonly client: SyntheticClient;
+    readonly modelIds: readonly RosterModelId[];
+    readonly beforeItem: () => Promise<BenchSeating>;
+    readonly sourceText: string;
+    readonly targetText: string;
+    readonly cache: SliceCache<PageTitleLexiconRecord>;
+    readonly signal: AbortSignal;
+    readonly exchangeTimeoutMs: number;
+    readonly l: Logger;
+  }>,
+): Promise<PassPageTitles> {
+  /**
+   Titles the page repeats and the archive leaves unpaired.
+   */
+  const spans = repeatedTitleSpans({
+    sourceText,
+    targetText,
+  },);
+  if (spans.length === 0) {
+    l.debug(`${passPageTitles.name}: the page repeats no unpaired title`,);
+    return {
+      lines: [],
+      findings: [],
+    };
+  }
+  /**
+   Seating the hook hands the round: a roster read under a hold, or none,
+   which keeps the one the preparation started on.
+   */
+  const seating = await beforeItem();
+  /**
+   Roster the round is asked of.
+   */
+  const roster = seating.modelIds ?? modelIds;
+  /**
+   This question's identity.
+   */
+  const key = pageTitleKey({
+    sourceText,
+    spans,
+    modelIds: roster,
+  },);
+  /**
+   A round an earlier run settled for this question.
+   */
+  const cached = cache.resumed
+    .get(key,);
+  if (cached !== undefined) {
+    l.info(`PAGE TITLES resumed: ${String(cached.titles
+      .length,)} of ${String(spans.length,)} repeated titles`,);
+    return {
+      lines: pageTitleLines({ titles: cached.titles, },),
+      findings: cached.findings,
+    };
+  }
+  /**
+   What the bench settled.
+   */
+  const lexicon = await settlePageTitles({
+    client,
+    modelIds: roster,
+    sourceText,
+    spans,
+    signal,
+    exchangeTimeoutMs,
+    l,
+  },);
+  // A ROUND NOBODY ANSWERED IS NOT AN ANSWER and is not stored: the bench was
+  // unreachable, not undecided, and storing that would keep the page unsettled
+  // on every resume.
+  if (lexicon.heard > 0) {
+    await cache.persist({
+      key,
+      serialized: JSON.stringify({
+        titles: lexicon.titles,
+        findings: lexicon.findings,
+      } satisfies PageTitleLexiconRecord,),
+    },);
+  }
+  return {
+    lines: pageTitleLines({ titles: lexicon.titles, },),
+    findings: lexicon.findings,
+  };
+}
+
+//endregion Pass page titles

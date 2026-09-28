@@ -419,6 +419,87 @@ function headingPairs(
 }
 
 /**
+ Pairs the page shows, links first, one per source text.
+
+ @param sourceText - whole original document
+
+ @param targetText - whole archive document
+
+ @returns Each source text the archive renders, with its rendering and evidence
+
+ @example
+ ```ts
+ const pairs = pageNamePairs({ sourceText, targetText, },);
+ ```
+ */
+function pageNamePairs(
+  {
+    sourceText,
+    targetText,
+  }: {
+    readonly sourceText: string;
+    readonly targetText: string;
+  },
+): readonly PageName[] {
+  /**
+   Source texts already named.
+   */
+  const named = new Set<string>();
+  /**
+   What each page shows, which is all the names it renders (ledger E10: the
+   front matter, comments and code fences paired names and shifted headings).
+   */
+  const shown = {
+    sourceText: visibleText({ text: sourceText, },),
+    targetText: visibleText({ text: targetText, },),
+  };
+  return [
+    ...linkedTextPairs(shown,),
+    ...signaturePairs(shown,),
+    ...headingPairs(shown,),
+  ].filter(function firstOnly(pair,): boolean {
+    if (named.has(pair.source,))
+      return false;
+    named.add(pair.source,);
+    return true;
+  },);
+}
+
+/**
+ Source texts whose rendering the archive already gives on this page, so a
+ stage settling repeated titles (ledger H16, `page-title-spans.ts`) leaves
+ them to this block.
+
+ @param sourceText - whole original document
+
+ @param targetText - whole archive document
+
+ @returns Each paired source text
+
+ @example
+ ```ts
+ const paired = pairedPageNames({ sourceText, targetText, },);
+ ```
+ */
+export function pairedPageNames(
+  {
+    sourceText,
+    targetText,
+  }: {
+    readonly sourceText: string;
+    readonly targetText: string;
+  },
+): ReadonlySet<string> {
+  return new Set(pageNamePairs({
+    sourceText,
+    targetText,
+  },)
+    .map(function sourceOf(pair,): string {
+      return pair.source;
+    },),);
+}
+
+/**
  Identity-context lines naming how this page renders its people, linked
  titles and headings, read off the archive: a heading and one line per
  distinct source text, empty when the page carries none.
@@ -446,29 +527,11 @@ export function pageNameLines(
   },
 ): readonly string[] {
   /**
-   Source texts already named.
-   */
-  const named = new Set<string>();
-  /**
-   What each page shows, which is all the names it renders (ledger E10: the
-   front matter, comments and code fences paired names and shifted headings).
-   */
-  const shown = {
-    sourceText: visibleText({ text: sourceText, },),
-    targetText: visibleText({ text: targetText, },),
-  };
-  /**
    Pairs, links first, one per source text.
    */
-  const pairs = [
-    ...linkedTextPairs(shown,),
-    ...signaturePairs(shown,),
-    ...headingPairs(shown,),
-  ].filter(function firstOnly(pair,): boolean {
-    if (named.has(pair.source,))
-      return false;
-    named.add(pair.source,);
-    return true;
+  const pairs = pageNamePairs({
+    sourceText,
+    targetText,
   },);
   if (pairs.length === 0)
     return [];
