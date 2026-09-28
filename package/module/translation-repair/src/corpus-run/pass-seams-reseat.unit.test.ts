@@ -42,10 +42,12 @@ import {
   type PipelineDigest,
   prepareDocumentPair,
   type ProjectedLanes,
+  readLanesSeats,
   type RosterModelId,
   type RunClient,
   runPassConsolidation,
   runPassContest,
+  runPassLanes,
   runPassPreparation,
 } from '../../dist/final/node/index.mjs';
 
@@ -689,6 +691,150 @@ await describe({
           controlAskedLost: true,
           movedAskedAny: true,
           movedAskedLost: false,
+        },);
+      },
+    },),
+  ],
+},);
+
+/**
+ Seats either lane's benches hold under a view.
+
+ @param dry - which providers read dry
+
+ @returns Every seat of the repair and translate benches
+
+ @example
+ ```ts
+ const seats = laneSeatsUnder({ dry: ALL_WET, },);
+ ```
+ */
+function laneSeatsUnder({ dry, }: { readonly dry: BudgetView; },): ReadonlySet<RosterModelId> {
+  /**
+   Both lanes' benches under that view.
+   */
+  const {
+    repairModels,
+    translateModels,
+  } = judgeSeatsFor({ dry, },);
+  return new Set([
+    ...repairModels.criticModelIds,
+    ...repairModels.panelModelIds,
+    ...repairModels.editorModelIds,
+    ...repairModels.judgeModelIds,
+    ...translateModels.translatorModelIds,
+    ...translateModels.judgeModelIds,
+  ],);
+}
+
+/**
+ Seats the dry-out takes from the lanes' benches.
+ */
+const LOST_LANE_SEATS: readonly RosterModelId[] = (function lostLaneSeats(): readonly RosterModelId[] {
+  /**
+   Lane seats while Synthetic is dry.
+   */
+  const dry = laneSeatsUnder({ dry: SYNTHETIC_DRY, },);
+  /**
+   Lane seats the dry-out takes.
+   */
+  const lost = [...laneSeatsUnder({ dry: ALL_WET, },),].filter(function gone(seat,): boolean {
+    return !dry.has(seat,);
+  },);
+  if (lost.length === 0)
+    throw new Error('the fixture views seat the same lane benches, so the lanes case cannot tell a wired hook apart',);
+  return lost;
+})();
+
+/**
+ Runs the lanes seam over the one slice, on the benches and hooks a lanes
+ reading supplies.
+
+ @param later - view every reading after the lanes' own answers
+
+ @returns Seats the lanes' calls asked
+
+ @example
+ ```ts
+ const asked = await lanesAsked({ later: SYNTHETIC_DRY, },);
+ ```
+ */
+async function lanesAsked({ later, }: { readonly later: BudgetView; },): Promise<readonly RosterModelId[]> {
+  /**
+   Seat of every call.
+   */
+  const asked: RosterModelId[] = [];
+  /**
+   Client whose first reading is the lanes' own.
+   */
+  const client = viewChangingClient({
+    later,
+    asked,
+    answer: '{}',
+  },);
+  /**
+   Entry abort the readings and the lanes honour.
+   */
+  const signal = AbortSignal.timeout(30_000,);
+  await runPassLanes({
+    client,
+    prepared: prepareDocumentPair({
+      sourceText: SOURCE,
+      targetText: ARCHIVE,
+    },),
+    lanesSeating: await readLanesSeats({
+      client,
+      signal,
+      entryId: 'CatEntry',
+    },),
+    pictureReadings: new Map(),
+    signal,
+    entryId: 'CatEntry',
+  },);
+  return asked;
+}
+
+/**
+ Lost lane seats a run asked.
+
+ @param asked - seats the run asked
+
+ @returns Those among them the dry-out takes
+
+ @example
+ ```ts
+ const lostAsked = lostLaneSeatsIn({ asked, },);
+ ```
+ */
+function lostLaneSeatsIn({ asked, }: { readonly asked: readonly RosterModelId[]; },): readonly RosterModelId[] {
+  return asked.filter(function lost(seat,): boolean {
+    return LOST_LANE_SEATS.includes(seat,);
+  },);
+}
+
+await describe({
+  name: 'lanes seam re-seats under a hold (ledger X14)',
+  children: [
+    it({
+      name: 'THE LANES SEAM WIRES BOTH LANES\' HOOKS: a lane after a dry-out asks the benches the hooks re-read, '
+        + 'never a seat the dry-out took, which lanes whose view never changes do ask',
+      fn: async () => {
+        /**
+         Seats asked while every provider stays wet.
+         */
+        const control = await lanesAsked({ later: ALL_WET, },);
+        /**
+         Seats asked once Synthetic reads dry after the lanes' own reading.
+         */
+        const moved = await lanesAsked({ later: SYNTHETIC_DRY, },);
+        expect({
+          controlAskedLost: lostLaneSeatsIn({ asked: control, },).length > 0,
+          movedAskedAny: moved.length > 0,
+          movedAskedLost: lostLaneSeatsIn({ asked: moved, },),
+        },).toEqual({
+          controlAskedLost: true,
+          movedAskedAny: true,
+          movedAskedLost: [],
         },);
       },
     },),
