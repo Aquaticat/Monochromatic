@@ -63,9 +63,37 @@ not scoring entitlement or quality.
 
 Official API documentation describes a 4,096-token v1.1 path and v1.0 handling of longer requests,
 while also making general pinned-version statements.
-The planned full-policy canary must record the returned model without truncating policy or crediting v1.0 evidence to v1.1.
-Both selected-source calls share five seconds,
+The completed full-policy canary recorded the returned model without truncating policy or crediting v1.0 evidence to v1.1.
+`proc_bb2d` made two calls with all 42,677 policy bytes,
+both requesting v1.1 and reporting v1.0.
+The shared preparation-through-freshness clock was `1984.5333979999998` ms,
 with zero retries and no final policy decision.
+Request positive/prohibition estimates were `0.9042`/`0.0565`;
+approved-prose estimates were `0.9653`/`0.0609`.
+Both reference pairs were true/false.
+
+Source `564d544`,
+freeze `496dfac`,
+and raw `e639234` retain the canary.
+`proc_fc6e` made no new API call:
+it reconstructed bodies,
+reparsed responses,
+and checked current source/policy plus changed-scalar sensitivity.
+Result SHA-256:
+`3e18de5385d1a2433db6b7c20f96d4330b08b74f7bc4e383d90caab647548a5d`.
+Manifest SHA-256:
+`0728f866798c5961297b7f8829bbc84bc89888e8e71ff696059944dc7c79179e`.
+This establishes scoring access/routing/budget on these exposed examples,
+not semantic qualification or calibration.
+The [route-label troubleshooting note](../troubleshooting/drex-model-route-label.md) preserves the boundary.
+
+Task #51 next freezes a 36-call v1.0 semantic study on the existing 18-profile bank.
+The read canary pair and shared original transfer anchor do not count toward novel coverage;
+all errors still count.
+No private input,
+training,
+reserved-scenario release,
+or production threshold is included.
 The new audit fingerprint is
 `ef5701a1742e46a37acbba740e60ab78b73691072dd670f346f963068696175a`;
 the Voyage `ad6e5a89` context remains archived unchanged.
@@ -485,7 +513,9 @@ No original reserved case is released.
 The schedule is 84 fit/validation calls including fit-only repeat/order controls,
 then 36 locked-test calls after the candidate artifact/evaluator are frozen.
 Validation and test cannot change coefficients or regularization in this phase.
-Task #48 next freezes the exact feature client and fitting/evaluation command tree,
+Task #48 is paused for the newly supplied Drex candidate.
+When resumed,
+it freezes the exact feature client and fitting/evaluation command tree,
 then owns collection,
 semantic-head fitting,
 and locked evaluation.

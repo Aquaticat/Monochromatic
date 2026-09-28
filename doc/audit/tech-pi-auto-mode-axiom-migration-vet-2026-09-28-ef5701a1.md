@@ -248,3 +248,69 @@ input bodies,
 references,
 response checks,
 and local controls before dispatch.
+
+## Verified canary result
+
+The source was frozen at private `564d544`;
+local controls and the 59-file input/source freeze were retained at `496dfac`.
+Controls passed full-policy/source preservation,
+reference exclusion,
+predeclared version-label distinction,
+response rejection,
+preparation-expiry zero-dispatch,
+late-aggregate rejection,
+and an isolated omitted-deadline variant.
+
+`proc_bb2d` completed two calls in `1984.5333979999998` ms,
+including preparation and final freshness,
+with zero retries and complete 42,677-byte policy in both requests.
+Request bodies were 45,914 and 46,131 bytes.
+Both requested `drex-v1.1`;
+both responses reported `drex-v1.0`.
+The result is consistent with the documented long-input route,
+not proof of internal token preservation,
+actual serving weights,
+or v1.1 semantic quality.
+
+The request source returned positive relation `0.9042` and explicit prohibition `0.0565`.
+The approved-prose source returned `0.9653` and `0.0609`.
+Both predeclared reference pairs were true/false.
+Reported usage totaled 22,347 input and 94 output tokens.
+Provider evaluation-time fields are not the shared assessment clock.
+No calibration profile or production threshold is selected.
+
+Raw result commit: `e639234`.
+Result SHA-256:
+`3e18de5385d1a2433db6b7c20f96d4330b08b74f7bc4e383d90caab647548a5d`.
+Manifest SHA-256:
+`0728f866798c5961297b7f8829bbc84bc89888e8e71ff696059944dc7c79179e`.
+Verifier SHA-256:
+`c19cea1d8e7651260522dbc6c2fad989ac555f9693f6748457f947107b529980`.
+`proc_fc6e` reconstructed bodies,
+reparsed retained responses,
+checked current source/policy identities,
+and validated changed-scalar comparison without another API call.
+
+The supplied scoring resource is now exercised at this payload scope.
+The next task is one separately frozen v1.0 semantic study on the existing exposed 18-profile bank,
+with its actual parser/structured preparation and full-policy shared five-second clocks.
+The read canary pair and shared original transfer anchor are excluded from novel coverage,
+while every error still counts.
+No private input,
+training,
+reserved scenario,
+source-audit restart,
+or production integration follows.
+
+## Remaining boundaries
+
+The second bounded discovery query was
+`site:nace.ai "Acceptable Use Policy" Drex`,
+Radius ID `search_823a63f553ac3e5db641d23e68d099d6`.
+It returned parent/Drex terms,
+legacy terms,
+and login,
+not a standalone current AUP.
+This does not prove that no AUP exists.
+Its identification and the other uncompleted service/adoption gates remain open;
+no additional private-data consent is inferred.
