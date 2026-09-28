@@ -552,7 +552,8 @@ await describe({
   name: 'the all-dry refusal names every provider (ledger P12)',
   children: [
     it({
-      name: 'NAMES BEDROCK AND SAYS ITS CREDIT NEVER REFILLS, and cites the reading the router decided on, since '
+      name: 'LISTS BEDROCK AMONG THE PROVIDERS OUT OF BUDGET AND SAYS ITS CREDIT NEVER REFILLS, and cites the reading '
+        + 'the router decided on, since '
         + 'the refusal named three providers, said they refill, and carried "no reading cited" from the router',
       fn: async () => {
         /**
@@ -588,13 +589,22 @@ await describe({
         })();
         if (!(thrown instanceof EveryProviderDryError))
           throw new Error('an all-dry refusal by construction',);
+
+        /**
+         The clause saying which providers are out of budget, read apart from
+         the sentences after it, which name Bedrock again for its refill: a
+         check over the whole message passed with Bedrock gone from the list.
+         */
+        const [outOfBudget = '',] = thrown.message.split('Nothing further can be bought',);
         expect({
-          bedrock: thrown.message.includes('Bedrock',),
+          unlisted: ['Synthetic', 'Hyper', 'Bedrock', 'OpenRouter',].filter(function missingFromList(name,): boolean {
+            return !outOfBudget.includes(name,);
+          },),
           neverRefills: thrown.message.includes('never topped up',),
           cited: !thrown.message.includes('no reading cited',),
           reading: thrown.message.includes('bedrock dry',),
         },).toEqual({
-          bedrock: true,
+          unlisted: [],
           neverRefills: true,
           cited: true,
           reading: true,
