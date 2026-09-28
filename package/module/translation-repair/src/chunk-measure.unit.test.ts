@@ -14,13 +14,16 @@ import {
 
 import {
   type AdjudicatedIssue,
+  downgradeCount,
   type EditableEnvelope,
+  footnoteBreakCount,
   hashContent,
   type IssueResolutionTally,
   measurePatchedCandidate,
   selectCreditableIssues,
   parseDocument,
   type PatchOperation,
+  UNCHANGED_MEASUREMENTS,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -367,6 +370,40 @@ await describe({
             targetDocument: parseDocument({ text: before, },),
           },).integrityOk,
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'MEASURES A MALFORMED ARCHIVE AGAINST ITSELF AS `UNCHANGED_MEASUREMENTS`, which is what '
+        + 'the repair slate hands selection for it. Integrity asks whether a candidate is no worse '
+        + 'than the archive, so the archive is intact by construction however it parses; ledger E6 '
+        + 'read the constant as a claim that the archive parsed, and a change to an absolute '
+        + 'integrity would have to measure the archive rather than keep the constant',
+      fn: async () => {
+        /**
+         Archive with an unclosed component and a dangling reference.
+         */
+        const malformedText = '<Aside>\n\nWhiskers naps here[^1]\n';
+        /**
+         That archive, parsed as the repair lane parses its baseline.
+         */
+        const archive = parseDocument({ text: malformedText, },);
+
+        // Positive control: the fixture really is malformed on both counts
+        // integrity reads, so the equality below is not over a clean archive.
+        expect(downgradeCount({ document: archive, },),).toBeGreaterThan(0,);
+        expect(footnoteBreakCount({ document: archive, },),).toBeGreaterThan(0,);
+        expect(
+          measurePatchedCandidate({
+            acceptedIssues: [catIssue({ issueId: 'adjudicated/nap', severity: 'major', },),],
+            tallies: {},
+            resolvedTotal: 0,
+            envelopes: [],
+            applied: [],
+            patchedDocument: archive,
+            targetDocument: archive,
+          },),
+        ).toStrictEqual(UNCHANGED_MEASUREMENTS,);
       },
     },),
   ],
