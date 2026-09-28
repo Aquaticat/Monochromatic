@@ -882,7 +882,8 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
 - Shell rule slips in this session: a `;` in a suite command and in a test command;
     on 2026-09-28 two more, before a `PIPESTATUS` echo and between two `rg` probes;
     then a `;` between two `rg --count` probes of the built declarations,
-    and a heredoc that wrote a script followed by an unchained command that ran it.
+    a heredoc that wrote a script followed by an unchained command that ran it,
+    and a `;` before an `echo` closing a TianqiChen666 refusal count.
 
 ## History, classes 1 to 92 and before numbering
 
@@ -2385,6 +2386,11 @@ the judges' replacement goes on, the record carries `translate-archive-ineligibl
 A first fixture put a link in the original, which re-paired the section as an insertion and failed for the wrong reason;
 the guard uses the pronoun floor, which reads only the text.
 Rides inside the translate cache version 15 with a written account.
+The 47 measures the symptom, not the fix's reach, which is unmeasured on the agreement path:
+where the repair lane also left the archive, a kept archive made the lanes agree and shipped with no floor,
+leaving no consolidation line, and such slices now go through the contest and the consolidation.
+An original the grammar cannot read (`unknown`) lifts the refusals too, as the consolidation refuses that standing alike.
+Not a launch factor: no TianqiChen666 run refused anything in the translate lane.
 
 ### X7: windowed stages re-ask a seat the router refused
 

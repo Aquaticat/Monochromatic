@@ -18,7 +18,16 @@ import { validateTranslatedSlice, } from './translate-validate.ts';
 // original, the archive wording it would keep as both candidate and page (the
 // eligible stand-in on a disputed slice, as the consolidation's incumbent is),
 // the front-matter role, the line-structure rule, the declared name pairs and
-// the disputed wordings (`readStandingVerdict`).
+// the disputed wordings (`readStandingVerdict`). THE SAME ANSWER TOO: an
+// original the grammar cannot read gives no verdict (`unknown`), and the
+// consolidation refuses a standing on that as it does on a finding, so no
+// refusal here keeps the archive on it either.
+//
+// REACH NOT MEASURED ON THE AGREEMENT PATH. Where the repair lane also left
+// the archive, a kept archive made the lanes agree and the slice shipped
+// with no floor at all, so no consolidation line records it; those slices
+// now go through the contest and the consolidation whenever the archive fails
+// the rule. The TianqiChen666 runs refused nothing in the translate lane.
 
 /**
  Finding a slice carries when the publication rule refused its archive, so
