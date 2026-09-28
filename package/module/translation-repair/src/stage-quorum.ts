@@ -34,9 +34,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // waiting on every voice makes one provider-side model degrading for a day
 // block every stage that seats it, spending four deadlines per gather on a
 // voice that will not come. The property full-roster was chosen to protect,
-// no stage decided by a single model, is already held by the quorum
-// arithmetic on the rosters that exist: editors, refiners and checkers all
-// sit at three with a quorum of two.
+// no stage decided by a single model, is what the quorum aims at: at least
+// two voices (`MIN_STAGE_VOICES`), and editors, refiners and checkers sit at
+// three. It is a retry target, not a floor: a gather still short after every
+// round proceeds on what it heard and records the shortfall, so one voice can
+// still decide a stage then (XingZ6014 slice 87 resolved an issue on one
+// usable ballot before ledger L8 stopped an empty report counting as heard).
 //
 // Critics never used it either, by a separate user decision on 2026-07-23,
 // for the same reason stated locally: waiting on a complete roster stalls a

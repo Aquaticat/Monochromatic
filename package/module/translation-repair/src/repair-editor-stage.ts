@@ -40,14 +40,16 @@ import { writerRoundGraceMs, } from './writer-grace-override.ts';
 
 //region Editor stage
 // Several editors rewrite one chunk's envelopes independently, every proposal
-// passes the same deterministic apply gate, and judges that wrote none of them
-// choose what ships. This is the stage that used to be one model deciding
-// alone.
+// passes the same deterministic apply gate, and judges choose what ships. An
+// editor may sit among the judges, and its ballot for its own candidate counts
+// at the self-vote weight (the user ruling of 2026-08-14). This is the stage
+// that used to be one model deciding alone.
 //
 // The stage never returns the untouched translation just because judging failed
-// to converge: a decline ships the fallback repair. It returns the untouched
-// translation only when no editor produced an operation that survived the gate,
-// which is the same condition the single-editor stage exited on.
+// to converge: a round the judges cannot decide ships the fallback repair. It
+// returns the untouched translation when every judge declines every candidate
+// (ledger L14(c)), and when no editor produced an operation that survived the
+// gate, which is the condition the single-editor stage exited on.
 
 /**
  Everything the editor stage produced for one chunk.
@@ -138,8 +140,9 @@ export type EditorStageResult = {
  
  @returns Winning patch plus findings
  
- @throws {@link import('./repair-contract.ts').ProducerRosterError} when every
- judge also edits
+ @throws {@link import('./repair-contract.ts').ProducerRosterError} when either
+ roster repeats a model, no editor is seated, or too few judges are seated to
+ reach the minimum vote weight
  
  @example
  ```ts

@@ -66,7 +66,9 @@ import type { RepairModels, } from './repair-contract.ts';
  Version 12 is behaviour again: the preservation gate now runs inside
  `applyPatchOperations` and rejects an operation that drops content no
  accepted issue quoted. A slice resumed from version 11 carries text an edit
- the gate would now refuse already changed, so the two cannot be mixed.
+ the gate would now refuse already changed, so the two cannot be mixed. (Ledger
+ L4 later measured that the gate can see almost nothing, since envelopes are
+ cut from the licensed quotes; the markup-atom check guards inside them.)
  
  Versions 13 through 16 were bumped without a paragraph here, which the note
  above says must never happen; recovered from the commits that moved the

@@ -22,6 +22,12 @@ import {
 // sound. The separation is not marginal: the worst sound repair loses 57% of
 // its unlicensed tokens, and the rejected one loses 92%.
 //
+// WHAT IT CAN SEE TODAY (ledger L4, measured 2026-09-28). Envelopes are cut
+// from the accepted issues' own quotes, so the replaced text and the licensed
+// text are the same text: `residualTokens` is 0 on 536 of 540 recorded
+// regions, and this token rule rejects almost nothing. What guards inside a
+// licensed quote is the markup-atom check in `apply-patch.ts`.
+//
 // WHAT IT DOES NOT CATCH, stated so nobody expects it to. Rewording is not
 // deletion. Item 37 turned "reminiscing" into "pleading", which is real damage
 // and passes this gate, because the sentence is still represented. Catching

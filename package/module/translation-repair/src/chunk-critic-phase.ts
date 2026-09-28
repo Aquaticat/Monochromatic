@@ -37,7 +37,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  @example
  ```ts
  const phase = await runChunkCriticPhase({ ... },);
- if (phase.votesStand) return unchanged;
+ if (phase.votesStand) l.warn('non-translation votes stand; carried as evidence',);
  ```
  */
 export type ChunkCriticPhase = {
@@ -58,8 +58,10 @@ export type ChunkCriticPhase = {
   readonly contradicted: boolean;
 
   /**
-   Whether votes met the block threshold uncontradicted, so this slice must
-   ship unchanged.
+   Whether votes met the block threshold uncontradicted. Evidence only since
+   question 3, answer B (2026-08-16): the slice proceeds, and the votes ride
+   on the outcome as `nonTranslationStanding` for the judges and the
+   document-level report.
    */
   readonly votesStand: boolean;
 
@@ -70,9 +72,10 @@ export type ChunkCriticPhase = {
 
   /**
    WHICH critics answered, sorted by model id. Attribution counts a critic's
-   hits; this is what it was asked, so a rate can be computed rather than
-   only a tally. Unfiltered by screening, since being heard is independent of
-   whether the claims survived.
+   hits; this is every critic whose answer was heard, so a rate per answer can
+   be computed rather than only a tally. A critic asked and never heard is not
+   here. Unfiltered by screening, since being heard is independent of whether
+   the claims survived.
    */
   readonly heardCriticIds: readonly RosterModelId[];
 

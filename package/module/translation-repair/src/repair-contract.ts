@@ -788,9 +788,10 @@ export type ChunkRepairOutcome = {
   readonly nonTranslationContradicted: boolean;
 
   /**
-   Whether votes met the block threshold uncontradicted, so this slice
-   shipped unchanged; the caller weighs standing slices by character
-   share for the document-level block.
+   Whether votes met the block threshold uncontradicted. Evidence only since
+   question 3, answer B (2026-08-16): the slice was repaired like any other,
+   and the caller weighs standing slices by character share for the
+   document-level dominance finding, which reports and blocks nothing.
    */
   readonly nonTranslationStanding: boolean;
 

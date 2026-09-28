@@ -81,7 +81,8 @@ import { envelopeContext, } from './editor-envelope-context.ts';
  
  @param envelopes - envelopes of this chunk
  
- @param judgeModelIds - whole roster; producers are removed downstream
+ @param judgeModelIds - whole roster; a judge that wrote a candidate still votes, at
+ the self-vote weight for that candidate
  
  @param sourceText - original chunk text, evidence for judges
  
@@ -297,7 +298,8 @@ export async function selectPerEnvelope(
  
  @param candidates - whole-chunk proposals including the composite
  
- @param judgeModelIds - whole roster; producers are removed downstream
+ @param judgeModelIds - whole roster; a judge that wrote a candidate still votes, at
+ the self-vote weight for that candidate
  
  @param sourceText - original chunk text, evidence for judges
  

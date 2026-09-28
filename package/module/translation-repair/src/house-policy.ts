@@ -205,9 +205,12 @@ ${FORCED_DIFFERENCES} ${JUDGE_POLICY_TAIL}`;
  The rendering auditor, the resolution checker and the introduced-defect
  prober all grade text against the ORIGINAL, and all three scored a page
  obeying reader protection as a defect because none had ever been told the
- rule. Nothing ships from any of them, which is why they were fixed after the
- deciding sheets rather than with them; what they do decide is which defects
- get worked on next.
+ rule. They were fixed after the deciding sheets on the reading that nothing
+ ships from any of them, which does not hold for two: checker ballots decide
+ which issues count as resolved, strip an edit voted worse (ledger L3) and
+ roll a rewrite back (ledger L11), and a probe claim the screen admits rolls
+ a naturalness rewrite back. The rendering auditor decides which defects get
+ worked on next.
  
  @example
  ```ts
