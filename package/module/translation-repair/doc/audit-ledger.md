@@ -2763,9 +2763,9 @@ refine 5 in `30e66051e` (03:34 that morning), lane contest 6 and pairing 3 in `d
 Every one was set after the newest slice-cache file under the agent runs (00:26 on 2026-09-27),
 and none has been written since: `find ... -newermt '2026-09-27 00:27'` gives 0, and its control at 00:20 gives 18.
 So no answer cached under an earlier question can be served under any current number, and no version moves.
-Of the 153 non-test source commits since the earliest of them, 116 are named in no account;
-37 are the fixes the accounts name, and most of the rest are docs, tests, logging, page assembly and the runs lock.
-They ride inside every version by the same fact, and each version's TSDoc now says so, dated.
+Of the 153 non-test source commits since the earliest of them, 37 are named by an account and 116 by none
+(the script prints each with its subject and the versions set before it);
+they ride inside every version by the same fact, and each version's TSDoc now says so, dated.
 
 ### M29: a red guard asked a function that never reads the entry it guards
 

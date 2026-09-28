@@ -159,7 +159,7 @@ import type { SliceReplacement, } from './splice-slices.ts';
  agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
- accounts above name and those they do not (listed in the ledger under M28).
+ accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).
  */
 export const TRANSLATE_SLICE_CACHE_VERSION = 15;
 
