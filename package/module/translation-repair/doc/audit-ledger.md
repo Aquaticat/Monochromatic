@@ -1898,11 +1898,48 @@ Retry lines never name the model;
 
 ### P13: low items
 
-Status: open.
-`transient-retry.ts` backoff ignores the caller's abort;
-a payment refusal clears on any meter movement;
-the Bedrock stream bound spans the whole retry ladder;
-card prices differ from the endpoint bought.
+Status: closed 2026-09-28; five sub-items fixed, one refuted with evidence.
+
+#### Retry backoff and caller abort
+
+Fixed in `169b51e8a` (guard `b0cd02da1`; mutation checked with a control).
+The ladder slept its backoff on a timer no signal could end and read the abort after it,
+so an aborted or timed-out call held its seat for up to the ladder's 16 s reach.
+The sleep now takes the exchange signal and returns at once on its abort.
+While there, `9c10b0a6c` corrected the ladder's reach wording:
+`longestBackoffMs` returns `baseMs * 2 ** limit` (16 s), which its TSDoc, call site, test policy
+and `31e67a100` all called the last retry's widest window (8 s).
+The code value is what the suite pins; 277 of 57,803 logged backoffs slept a stated wait between the two,
+and with no model on retry lines (P12) their outcome is unmeasured, so the wording moved and the behavior stayed.
+
+#### Payment refusal clearing on a downward meter move
+
+Refuted, recorded at the rule in `de673c843`.
+Of 230 payment refusals in the run logs, 198 came from OpenRouter at a wet meter (0.01 to 1.94 USD),
+refusing what the balance leaves after in-flight reservations:
+8 bodies name `in_flight_budget_exhausted`, the rest ask for up to 131,072 tokens and are told 1,844 to 84,651 are affordable.
+A settling call lowers the balance while freeing its larger reservation,
+so clearing only on a rise would hold OpenRouter dry for the rest of a run;
+the rule's measured cost is 28 refusals after a downward move.
+
+#### Bedrock stream bound across the retry ladder
+
+Fixed in `b1a4f4b9e` (guard `684df9e91`, with the `streamBoundMsOverride` test seam; mutation checked with a control).
+The bound is a one-stream measurement (class 148) but was armed once around `exchangeWithRetry`.
+It now wraps each attempt inside the transport, and the ladder rethrows a bound cut, found through the cause chain,
+so the router still holds Bedrock out for the model.
+Latent: all five run cuts ran a single attempt to 60 s.
+
+#### Card prices against the endpoint bought
+
+Fixed in `7ceffe055`, with no guard (no offline oracle holds the live listing).
+GLM-5.3-Flash carried DeepInfra's 0.075 and 0.25 while all 253 of its calls on the three latest TianqiChen666 runs went to Wafer,
+listed 2026-09-28 at 0.9 and 0.5;
+DeepSeek V4.1 Flash carried the catalog's 0.3 and 1.2 while 812 of 817 went to Morph,
+listed at 0.12 and 0.468 and charged at 0.662 to 0.674 of that.
+Only the abandoned-spend estimate reads these; `configuration.md` now says a preferred-endpoint card carries that endpoint's price.
+
+#### Decision seats past reach
 
 Fixed in `a991ef1e1` (guard `cabfa82f4`; mutation checked with a control, five mutants caught):
 decision-seat structural losses marked reachable,
