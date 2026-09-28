@@ -1,17 +1,19 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { shortestHold, } from '../budget-hold-wait.ts';
 import type { RepairSliceSeating, } from '../repair-contract.ts';
 import type {
   TranslateModels,
   TranslateSliceSeating,
 } from '../translate-document-contract.ts';
+import {
+  type Reseated,
+  reseatHookFor,
+} from './pass-reseat-hook.ts';
 import type { JudgeSeats, } from './run-seats.ts';
 import {
   readJudgeSeats,
   type SeatReadingClient,
 } from './run-seats-read.ts';
-import type { JudgeSeatPhase, } from './run-seats-wait.ts';
 
 //region Translate lane re-seating
 // SPLIT OUT OF `pass-entry.ts` for the file-length cap when the thirteenth
@@ -81,12 +83,65 @@ export function translateReseatFor(
 }
 
 /**
- Which seat reading a lane's chunks wait on.
+ What the repair lane takes from a seat reading: its roster, whose checkers
+ the line names.
+
+ @param seats - benches as of this chunk
+
+ @returns Roster the chunk runs on, beside the line naming it
+
+ @example
+ ```ts
+ const { seating, line, } = repairSeatingOf({ seats, },);
+ ```
  */
-const LANE_PHASE: Readonly<Record<'repair' | 'translate', JudgeSeatPhase>> = {
-  repair: 'lanes',
-  translate: 'translate lane',
-};
+function repairSeatingOf(
+  { seats, }: { readonly seats: JudgeSeats; },
+): Reseated<RepairSliceSeating> {
+  /**
+   Checkers the chunk runs on, for the line.
+   */
+  const checkers = seats.repairModels
+    .checkerModelIds
+    .join(',',);
+  return {
+    seating: { repairModels: seats.repairModels, },
+    line: `chunk re-seated under a hold: checkers=${checkers}`,
+  };
+}
+
+/**
+ What the translate lane takes from a seat reading: its writers and judges,
+ whose writers the line names.
+
+ THE TRANSLATE LANE RE-SEATS TOO (ledger H5, 2026-09-28): it only waited, so a
+ dry-out inside the lane left every later slice on the roster read before it,
+ the stage classes one hundred three, one hundred nine and one hundred
+ thirteen had each fixed for one repair stage at a time.
+
+ @param seats - benches as of this slice
+
+ @returns Roster the slice runs on, beside the line naming it
+
+ @example
+ ```ts
+ const { seating, line, } = translateSeatingOf({ seats, },);
+ ```
+ */
+function translateSeatingOf(
+  { seats, }: { readonly seats: JudgeSeats; },
+): Reseated<TranslateSliceSeating> {
+  /**
+   Writers the slice runs on, for the line.
+   */
+  const writers = seats.translateModels
+    .translatorModelIds
+    .join(',',);
+  return {
+    seating: { translateModels: seats.translateModels, },
+    line: `slice re-seated under a hold: writers=${writers}`,
+  };
+}
 
 /**
  Hooks the lanes driver calls: the translate lane's re-seating when it is
@@ -139,15 +194,26 @@ export function lanesHooksFor(
    */
   const l = tagged({ tag: entryId, },);
   /**
-   Each lane's seating as last read under a hold, handed to every slice of
-   that lane after it; empty until a hold has run.
+   Each lane's own re-seating, so neither hands the other a roster it read
+   (`pass-reseat-hook.ts`).
    */
-  const latest: {
-    repair: RepairSliceSeating;
-    translate: TranslateSliceSeating;
-  } = {
-    repair: {},
-    translate: {},
+  const reseatLane = {
+    repair: reseatHookFor<RepairSliceSeating>({
+      client,
+      signal,
+      phase: 'lanes',
+      unseated: {},
+      seatingOf: repairSeatingOf,
+      l,
+    },),
+    translate: reseatHookFor<TranslateSliceSeating>({
+      client,
+      signal,
+      phase: 'translate lane',
+      unseated: {},
+      seatingOf: translateSeatingOf,
+      l,
+    },),
   };
   return {
     reseatTranslate: translateReseatFor({
@@ -158,43 +224,7 @@ export function lanesHooksFor(
     beforeSlice: async function beforeSlice(
       { lane, }: { readonly lane: 'repair' | 'translate'; },
     ): Promise<RepairSliceSeating & TranslateSliceSeating> {
-      if (shortestHold({ holds: client.providerHolds(), },) === 0)
-        return latest[lane];
-      /**
-       Benches as of this slice, the reading waiting out a named hold when
-       a bench the lane leans on cannot reach quorum.
-       */
-      const reseated = await readJudgeSeats({
-        client,
-        phase: LANE_PHASE[lane],
-        signal,
-        l,
-      },);
-      // THE TRANSLATE LANE RE-SEATS TOO (ledger H5, 2026-09-28): it only
-      // waited, so a dry-out inside the lane left every later slice on the
-      // roster read before it, the stage classes one hundred three, one
-      // hundred nine and one hundred thirteen had each fixed for one repair
-      // stage at a time.
-      if (lane === 'translate') {
-        latest.translate = { translateModels: reseated.translateModels, };
-        /**
-         Writers the slice runs on, for the line.
-         */
-        const writers = reseated.translateModels
-          .translatorModelIds
-          .join(',',);
-        l.info(`JUDGE SEATS phase=${LANE_PHASE[lane]} slice re-seated under a hold: writers=${writers}`,);
-        return latest.translate;
-      }
-      latest.repair = { repairModels: reseated.repairModels, };
-      /**
-       Checkers the chunk runs on, for the line.
-       */
-      const checkers = reseated.repairModels
-        .checkerModelIds
-        .join(',',);
-      l.info(`JUDGE SEATS phase=${LANE_PHASE[lane]} chunk re-seated under a hold: checkers=${checkers}`,);
-      return latest.repair;
+      return await reseatLane[lane]();
     },
   };
 }
