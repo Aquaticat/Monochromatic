@@ -277,3 +277,17 @@ Part of [the package README](../README.md).
   about 10.3 hours of settling discarded (ledger E1).
   The check that a page carries what its artifact says ships is not one of these:
   it guards the assembly itself, and a page failing it is a defect in the code, not in the text.
+- **A slice with no valid wording keeps the archive's, and the page ships.**
+  Owner, 2026-09-27, asked whether an entry keeps stopping at once
+  when no wording for a slice passes the deterministic rule
+  (the lanes', the consolidations' and the archive's, or the archive has nothing there),
+  given that a stopped entry leaves the archive's whole page live, that slice included:
+  "Keep archive, ship".
+  The slice keeps exactly what the archive has there, nothing where the archive is silent,
+  the page ships with every other repair,
+  and the slice is reported on the `DEFECTS` line.
+  This replaces the "else fail the slice at once" half of the rule of 2026-09-04;
+  its first half stands, so a valid proposal is still preferred wherever one exists.
+  Measured before the ruling: 18 real entries stopped on this refusal from 2026-09-04 to 2026-09-27,
+  about 34.3 hours in all, most on terminals later rulings already turned into shipping the slate's choice;
+  on the build of the ruling, one real stop was of the kind still reachable (yuliannyanner2, `incumbent-only`, 0.48 hours).
