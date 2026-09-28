@@ -334,9 +334,10 @@ const result = await repairTranslation({
   and a window seat the router refuses for want of a wet provider
   hands its place in that round to the next seat not yet asked (`runGatherRound` in `src/stage-round.ts`);
   up to three retry rounds (`STAGE_RETRY_ROUNDS`) ask the seats not yet asked before the ones lost,
-  and never re-ask a seat the router refused.
+  and never re-ask a seat the router refused,
+  nor a seat whose answer arrived but could not be read, since the same prompt returns the same bytes.
   Once the rounds end, one recovery round re-asks, with a note saying why,
-  each seat whose answer in the last round arrived but could not be read.
+  every seat whose answer could not be read, whichever round it came in (ledger P2).
   A stage still short of quorum proceeds on what it heard and records the shortfall as findings.
   The six stages that record every seat's own outcome
   take the same window and retry rounds through `runWindowedRounds` (`src/stage-windowed-rounds.ts`),

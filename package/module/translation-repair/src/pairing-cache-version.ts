@@ -32,6 +32,13 @@
  round hears; checked on 2026-09-28: still no slice-cache file newer than
  00:26 on 2026-09-27.
 
+ Rides inside 3 too: Bedrock reads dry with 1.33 USD still left, and its
+ ledger holds every billed attempt at its bound (ledger P1, `2a108dfb3`,
+ `107763dbb` and `7cfd5ae4b`), so a Gemma call moves to OpenRouter sooner
+ as Bedrock nears its credit, which changes whose voices a round hears;
+ checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (task #395, ledger M28): 3 was set
  in `d614a0c1d` at 00:30 on 2026-09-28, after the newest slice-cache file under the
  agent runs (00:26 on 2026-09-27), and no slice-cache file has been written

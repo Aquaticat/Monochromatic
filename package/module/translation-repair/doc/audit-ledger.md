@@ -927,6 +927,16 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     Prevention: count the `&&` before sending,
     start every git call with `cd -- <repo root>` or `git -C`,
     and treat an inline `-c` script as the heredoc slip in another form.
+    During P1 the do-nothing placeholder came back as a background `sleep 1` while a mutation run finished.
+- A census read logs it should not have (QIV): the first P7 card ratios and P1 counts read every `.log`
+    under the agent directory, where unit-test suites and prototype test logs carry fixture SPEND and stream lines;
+    mimo's median moved from 126 to 93 once kept to pass-run logs.
+    Prevention: a log census keeps logs that open with `START tip=` and says so in its header.
+- The mutation harness (`mutants.ts`) counted only failures that said `AssertionError`,
+    so a mutant that made a test throw anything else read as a survivor (P1's no-usage mutant, a `TypeError`).
+    Survivals reported before 2026-09-28 may be false; catches were not. It now counts every failing test line.
+- The Write tool also strips trailing spaces, so an edit script's literal holding a TSDoc blank line
+    that carries spaces never matches the file; the scripts build those lines in code.
 - The Write tool decodes `\u2028` and `\u2029` in the content it is given into the raw characters
     (it left `\u0085` as text), so a source file written with those escapes held raw line separators,
     which `no-multi-str` flagged in `sheet-line-text.ts` and which reached `sheet-line-text.unit.test.ts` unflagged.
@@ -1866,10 +1876,52 @@ Probes and full report: `~/temp/agent/audit-providers/report.txt`.
 
 ### P1: the Bedrock ledger records completed calls only
 
-Status: open.
-873 Bedrock streams ended unledgered across the logs (cut and overrun);
-`bedrockIsDry` has no margin for calls in flight,
-and the ledger reads 6.97 USD left.
+Status: fixed 2026-09-28, each part guarded red first and mutation-checked.
+The ledger is the only guard on the owner's card, and it noted completed calls with usage only;
+`bedrockIsDry` read dry at zero while the meter is read once a 60 s freshness window.
+
+- Every billed attempt: `2a108dfb3` (guard `e33396294`).
+    The retry ladder tells its caller of every attempt that delivered something and failed,
+    retried ones included, before any rethrow (`onAbandonedAttempt`, `transient-retry.ts`):
+    a reply the whole-message check refused counts its whole body,
+    a stream that ended early what its error says it read.
+    Bedrock writes each at its bound
+    (no more prompt tokens than body bytes, no more completion tokens than `max_tokens`),
+    marked `abandoned-bound`, on the SPEND line and in the ledger (`bedrock-bound-ledger.ts`),
+    since whether Bedrock bills output past a cancel is unmeasured and an under-read is the failure.
+    OpenRouter writes its reckoned line per attempt; it wrapped the whole ladder,
+    so an attempt refused and retried inside it left no line.
+- No usage: `107763dbb` (guard `2770e9ce7`).
+    A whole call whose stream carried no usage block is written at its bound, marked `unreported-bound`.
+    Latent: none of 190,009 logged Bedrock calls lacked usage.
+- Margin: `7cfd5ae4b` (guard `73e70bfab`).
+    Bedrock reads dry with 1.33 USD left: the most spend any span of one freshness window
+    plus the longest Bedrock stream on record (363,790 ms) held over every pass-run log
+    (`p1-window-measure2-runs.mjs`) is 1.3245 USD over 822 calls (XingZ628).
+    Per-call reservations were considered and not taken:
+    the cached reading, not the calls in flight, is what lets a run spend past zero.
+- Reckoned share: `a88a87b11` (guard `4364caf88`).
+    The reading carries `reckonedUsd` and the METERS line `bedrockReckonedUsd`,
+    so a reader sees how much of what is left rests on reckoning.
+- One-time correction of the live ledger, 2026-09-28 (`p1-ledger-correction.ts`).
+    1,055 Bedrock streams in pass-run logs never reached it
+    (344 on gemma-4-26b-a4b, 693 on gemma-4-e2b, 14 on gpt-oss-120b, 4 on gemma-4-31b):
+    cut, overrun, or completed with no SPEND line after, an attempt the whole-message check refused.
+    Each is reckoned at its model's 99th-percentile prompt over paired calls,
+    and its generated characters at the model's 10th-percentile characters per token.
+    1.3184 USD, four lines marked `abandoned`; remaining 6.3413 to 5.0229 USD.
+    The file before is kept beside it (`bedrock-spend.jsonl.before-p1-correction-2026-09-28T141153.313Z`).
+    A conservative reckoning, not a bound: request bodies are not stored, so no byte count exists for them.
+
+Mutation check (`p1-mutants.json`, `p1b-mutants.json`):
+the ladder never telling, ignoring a refused body, telling only after the self-ended rethrow,
+OpenRouter not reporting, Bedrock not ledgering an abandoned attempt or a call without usage,
+the bound's prompt at a quarter of the bytes or its completion at zero,
+the ledger not summing the reckoned share or accepting any mark,
+and dryness at zero are each caught; the control survives.
+The first run's verdict on the no-usage mutant was a false survival (see the mutation harness in the process mistakes).
+Cache: the margin moves a Gemma call to OpenRouter sooner as Bedrock nears its credit, the class P9 accounted;
+rides inside all six versions with an account in each; same slice-cache check, same result.
 
 ### P2: the recovery round never re-asks a seat that answered unreadably before the last round
 
@@ -1919,7 +1971,20 @@ Status: open.
 
 ### P7: abandoned-spend estimates mix units
 
-Status: open.
+Status: fixed 2026-09-28.
+`7a6635976` (guard `bd8e8ef86`): overrun and degenerate endings carry `rawChars`,
+the raw wire characters delivered, which `deliveredCharsOf` now returns for every error;
+they returned one channel's decoded count, about a hundredth of it (`completion=5` for 1,633 content characters).
+The reckoning never passes the `max_tokens` the call sent.
+Card ratios re-measured (`1f5f5e47c`, kept to pass-run logs in `63455c32b`, `p7-openrouter-measure-runs.mjs`):
+mercury carried 137 where it measures 0.9 over 37,120 streams (it bills far more tokens than it streams);
+deepseek-v4.1-flash and mimo carried none (228 and 93); kimi 140, minimax 130, glm-5.3-flash 302,
+gemma-4-26b-a4b-it 292, gpt-oss-120b 286; the unmeasured default is their median, 184.
+The OpenRouter meter stays authoritative; the run spend meter now reads truer,
+so the per-run spend ceiling (`corpus-run/pass-stop-before-next.ts`) can stop new entries sooner.
+Mutation check (`p1-mutants.json`, `p1b-mutants.json`): a channel count in place of the raw one on either error,
+the drain dropping the raw count, and an uncapped reckoning are each caught.
+No cache moves: nothing a cached answer depends on reads the reckoning.
 
 ### P8: a complete JSON value followed by more text is lost
 
@@ -1973,8 +2038,10 @@ no test covers every client body for thinking parameters.
 
 ### P12: log lines that cannot be attributed
 
-Status: open (with A11).
-Retry lines never name the model;
+Status: open (with A11); the retry lines are fixed.
+Retry lines never named the model: fixed in `dc156524b` (guard `db3dae27d`, mutation-checked);
+the retry line and the stated-wait line open with the exchange label.
+Open:
 "ms to quorum" printed when quorum never stood;
 `EveryProviderDryError` omits Bedrock;
 `run-config.ts` says Qwen is withheld whenever Synthetic is dry.
@@ -2863,9 +2930,10 @@ and its header compares generations 1 and 2 with 4.
 
 ### D17: the recovery round re-asks only the last round's unreadable seats
 
-Status: open (tracked as P2).
-`stage-quorum.ts` sets `unreadable = answeredBadly` each round,
-so a seat that answered unreadably in an earlier round is not re-asked; the README now states this behaviour.
+Status: fixed with P2 (`005692e11`, guard `3549b74be`);
+the README described the old behaviour until the P1 documentation commit, which now says what P2 does.
+`stage-quorum.ts` set `unreadable = answeredBadly` each round,
+so a seat that answered unreadably in an earlier round was not re-asked.
 
 ### D18: repo docs name a corpus variable nothing reads
 
