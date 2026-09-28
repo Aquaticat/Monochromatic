@@ -194,6 +194,52 @@ export function requireArray(
 }
 
 /**
+ Reads a required list of strings, throwing at the first entry that is not
+ one and naming its position.
+
+ The polish, polish gate, contest ballot and consolidation-part readers each
+ kept their own copy of this (audit area six, 2026-09-28).
+
+ @param value - value to check
+
+ @param path - dotted path for error message; an entry's path is this with
+ its position in brackets
+
+ @returns Value as a list of strings
+
+ @throws {@link ArtifactParseError} when the value is not an array, or an
+ entry is not a string
+
+ @example
+ ```ts
+ const findings = requireStringList({ value: record.findings, path: 'polish.findings', },);
+ ```
+ */
+export function requireStringList(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): readonly string[] {
+  return requireArray({
+    value,
+    path,
+  },)
+    .map(function readOne(
+      entry,
+      at,
+    ): string {
+      return requireString({
+        value: entry,
+        path: `${path}[${String(at,)}]`,
+      },);
+    },);
+}
+
+/**
  Reads a required count, throwing on any other shape.
  
  Rejects fractions and negatives as well as non-numbers, because every count

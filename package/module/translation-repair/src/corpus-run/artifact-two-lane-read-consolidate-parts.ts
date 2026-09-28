@@ -4,6 +4,7 @@ import {
   requireArray,
   requireString,
   requireRecord,
+  requireStringList,
 } from '../artifact-guard.ts';
 import type {
   ArtifactConsolidateSlice,
@@ -208,19 +209,10 @@ export function parseVerdict(
       path: `${path}.modelId`,
     },),
     kind: record.kind,
-    findings: requireArray({
+    findings: requireStringList({
       value: record.findings,
       path: `${path}.findings`,
-    },)
-      .map(function readFinding(
-        entry,
-        at,
-      ): string {
-        return requireString({
-          value: entry,
-          path: `${path}.findings[${String(at,)}]`,
-        },);
-      },),
+    },),
   };
 }
 
@@ -286,7 +278,7 @@ export function parseGateBallot(
       value: record.unsupported,
       path: `${path}.unsupported`,
     },),
-    unsupportedRaw: requireStrings({
+    unsupportedRaw: requireStringList({
       value: record.unsupportedRaw,
       path: `${path}.unsupportedRaw`,
     },),
@@ -294,7 +286,7 @@ export function parseGateBallot(
       value: record.dropped,
       path: `${path}.dropped`,
     },),
-    droppedRaw: requireStrings({
+    droppedRaw: requireStringList({
       value: record.droppedRaw,
       path: `${path}.droppedRaw`,
     },),
@@ -374,46 +366,6 @@ function requireGateChoices(
       at,
     ): GateBallot['choice'] {
       return requireGateChoice({
-        value: entry,
-        path: `${path}[${String(at,)}]`,
-      },);
-    },);
-}
-
-/**
- Reads a list of recorded strings.
- 
- @param value - list as recorded
- 
- @param path - dotted path for error messages
- 
- @returns Strings in the order recorded
- 
- @throws {@link ArtifactParseError} when an entry is not a string
- 
- @example
- ```ts
- const raw = requireStrings({ value: record.droppedRaw, path, },);
- ```
- */
-function requireStrings(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): readonly string[] {
-  return requireArray({
-    value,
-    path,
-  },)
-    .map(function readOne(
-      entry,
-      at,
-    ): string {
-      return requireString({
         value: entry,
         path: `${path}[${String(at,)}]`,
       },);

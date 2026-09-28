@@ -6,6 +6,7 @@ import {
   requireArray,
   requireRecord,
   requireString,
+  requireStringList,
 } from '../artifact-guard.ts';
 import type {
   ArchiveVerdict,
@@ -36,46 +37,6 @@ const ARCHIVE_VERDICTS: readonly ArchiveVerdict[] = [
   'publishable',
   'flawed',
 ];
-
-/**
- Reads one list of strings a judge wrote.
- 
- @param value - recorded list
- 
- @param path - dotted path of that list
- 
- @returns Strings it carries
- 
- @throws {@link ArtifactParseError} when it is not a list of strings
- 
- @example
- ```ts
- const reasons = parseStringList({ value, path, },);
- ```
- */
-function parseStringList(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): readonly string[] {
-  return requireArray({
-    value,
-    path,
-  },)
-    .map(function readOne(
-      one,
-      position,
-    ): string {
-      return requireString({
-        value: one,
-        path: `${path}[${String(position,)}]`,
-      },);
-    },);
-}
 
 /**
  Reads one list of candidate names a judge wrote.
@@ -209,7 +170,7 @@ export function parseContestBallot(
       value: ballot.unsupported,
       path: `${path}.unsupported`,
     },),
-    unsupportedRaw: parseStringList({
+    unsupportedRaw: requireStringList({
       value: ballot.unsupportedRaw,
       path: `${path}.unsupportedRaw`,
     },),
@@ -217,7 +178,7 @@ export function parseContestBallot(
       value: ballot.dropped,
       path: `${path}.dropped`,
     },),
-    droppedRaw: parseStringList({
+    droppedRaw: requireStringList({
       value: ballot.droppedRaw,
       path: `${path}.droppedRaw`,
     },),

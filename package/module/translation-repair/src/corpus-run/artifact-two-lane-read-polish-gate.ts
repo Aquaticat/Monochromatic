@@ -5,6 +5,7 @@ import {
   requireCount,
   requireRecord,
   requireString,
+  requireStringList,
 } from '../artifact-guard.ts';
 import type { ConsolidationPolishGateOutcome, } from '../consolidation-polish-gate-stage.ts';
 import type {
@@ -22,47 +23,6 @@ const POLISH_CHOICES: readonly PolishChoice[] = [
   'base',
   'neither',
 ];
-
-/**
- Reads string list.
- 
- @param value - unknown list
- 
- @param path - artifact path
- 
- @returns Strings in stored order
- 
- @example
- ```ts
- const values = parseStringList({ value, path, });
- ```
- */
-function parseStringList(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): readonly string[] {
-  /**
-   Unknown rows before string validation.
-   */
-  const rows = requireArray({
-    value,
-    path,
-  },);
-  return rows.map(function readOne(
-    entry,
-    at,
-  ): string {
-    return requireString({
-      value: entry,
-      path: `${path}[${String(at,)}]`,
-    },);
-  },);
-}
 
 /**
  Reads polish candidate choice.
@@ -146,7 +106,7 @@ function parsePolishBallot(
   /**
    Candidate names ballot marked unsupported.
    */
-  const unsupportedNames = parseStringList({
+  const unsupportedNames = requireStringList({
     value: record.unsupported,
     path: `${path}.unsupported`,
   },);
@@ -162,7 +122,7 @@ function parsePolishBallot(
   /**
    Candidate names ballot marked dropped.
    */
-  const droppedNames = parseStringList({
+  const droppedNames = requireStringList({
     value: record.dropped,
     path: `${path}.dropped`,
   },);
@@ -181,12 +141,12 @@ function parsePolishBallot(
       path: `${path}.choice`,
     },),
     unsupported,
-    unsupportedRaw: parseStringList({
+    unsupportedRaw: requireStringList({
       value: record.unsupportedRaw,
       path: `${path}.unsupportedRaw`,
     },),
     dropped,
-    droppedRaw: parseStringList({
+    droppedRaw: requireStringList({
       value: record.droppedRaw,
       path: `${path}.droppedRaw`,
     },),
@@ -296,7 +256,7 @@ export function parsePolishGate(
     ships,
     ballots,
     usable,
-    findings: parseStringList({
+    findings: requireStringList({
       value: record.findings,
       path: `${path}.findings`,
     },),

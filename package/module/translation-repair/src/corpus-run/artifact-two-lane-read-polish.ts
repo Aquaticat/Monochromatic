@@ -1,58 +1,17 @@
 import { requireExactKeys, } from '../artifact-exact-guard.ts';
 import {
   ArtifactParseError,
-  requireArray,
   requireBoolean,
   requireCount,
   requireRecord,
   requireString,
+  requireStringList,
 } from '../artifact-guard.ts';
 import type { ArtifactConsolidationPolish, } from './artifact-two-lane-consolidate.ts';
 import { parseNaturalnessReview, } from './artifact-two-lane-read-naturalness-review.ts';
 import { parsePolishGate, } from './artifact-two-lane-read-polish-gate.ts';
 
 //region Artifact consolidation polish read
-
-/**
- Reads string list.
- 
- @param value - unknown list
- 
- @param path - artifact path
- 
- @returns Strings in stored order
- 
- @example
- ```ts
- const values = parseStringList({ value, path, });
- ```
- */
-function parseStringList(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): readonly string[] {
-  /**
-   Unknown rows before string validation.
-   */
-  const rows = requireArray({
-    value,
-    path,
-  },);
-  return rows.map(function readOne(
-    entry,
-    at,
-  ): string {
-    return requireString({
-      value: entry,
-      path: `${path}[${String(at,)}]`,
-    },);
-  },);
-}
 
 /**
  Reads generation-six post-consolidation polish record.
@@ -234,11 +193,11 @@ export function parseConsolidationPolish(
     proposedText,
     text,
     changed,
-    refinersHeard: parseStringList({
+    refinersHeard: requireStringList({
       value: record.refinersHeard,
       path: `${path}.refinersHeard`,
     },),
-    contributors: parseStringList({
+    contributors: requireStringList({
       value: record.contributors,
       path: `${path}.contributors`,
     },),
@@ -259,7 +218,7 @@ export function parseConsolidationPolish(
         },),
       }
       : {}),
-    findings: parseStringList({
+    findings: requireStringList({
       value: record.findings,
       path: `${path}.findings`,
     },),
