@@ -30,6 +30,7 @@ import {
   laneContestRunShape,
   laneContestSliceKey,
 } from './lane-contest-key.ts';
+import type { LaneContestSliceSeating, } from './lane-contest-slice-seating.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
@@ -224,7 +225,10 @@ export async function persistLaneContestOutcome(
  
  @param fanOut - seats a contest round asks: the window of quorum plus one
  by default, or the whole bench a fixture scripting every seat asks for
- 
+
+ @param beforeSlice - awaited before each slice starts, handing it the judges
+ it runs on; none keeps the given ones
+
  @returns One record per contested slice, in comparison-row order
  
  @example
@@ -250,6 +254,7 @@ export async function contestDocumentLanes(
     overlap = 1,
     l,
     fanOut,
+    beforeSlice,
   }: {
     readonly client: SyntheticClient;
     readonly projected: ProjectedLanes;
@@ -280,6 +285,7 @@ export async function contestDocumentLanes(
     readonly overlap?: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly beforeSlice?: () => Promise<LaneContestSliceSeating>;
   },
 ): Promise<readonly ArtifactContestSlice[]> {
   /**
@@ -349,6 +355,8 @@ export async function contestDocumentLanes(
         lane: 'contest',
         sliceIndex: row.sliceIndex,
         run: async function contestInContext(): Promise<ArtifactContestSlice> {
+          if (beforeSlice !== undefined)
+            await beforeSlice();
           /**
            Original of this slice, which every ledger row carries.
            */

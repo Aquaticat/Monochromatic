@@ -125,6 +125,15 @@ export {
   laneContestRunShape,
   laneContestSliceKey,
 } from './lane-contest-key.ts';
+export { type LaneContestSliceSeating, } from './lane-contest-slice-seating.ts';
+export {
+  type ContestHooks,
+  contestHooksFor,
+} from './corpus-run/pass-contest-reseat.ts';
+export {
+  type Reseated,
+  reseatHookFor,
+} from './corpus-run/pass-reseat-hook.ts';
 export {
   type ArchiveVerdict,
   buildLaneContestMessages,

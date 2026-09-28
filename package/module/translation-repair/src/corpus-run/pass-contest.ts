@@ -11,6 +11,7 @@ import { openLaneContestCache, } from './lane-contest-cache-store.ts';
 import { archiveDisputeNotesOf, } from '../archive-dispute.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
+import { contestHooksFor, } from './pass-contest-reseat.ts';
 import { readJudgeSeats, } from './run-seats-read.ts';
 
 //region Corpus pass lane contest
@@ -131,6 +132,14 @@ export async function runPassContest(
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     overlap,
+    // EVERY SLICE RE-SEATS UNDER A HOLD (ledger X12,
+    // `pass-contest-reseat.ts`).
+    beforeSlice: contestHooksFor({
+      client,
+      signal,
+      l,
+    },)
+      .beforeSlice,
     l,
   },);
 }
