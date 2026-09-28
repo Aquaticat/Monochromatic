@@ -3373,7 +3373,7 @@ that half was wrong and `6d9b361b4` took it out again (M37).
 
 ### X12: the lane contest, the preparation and the picture readings never re-seat under a hold
 
-Status: lane contest, picture readings and insertion admission fixed; the preparation stays open.
+Status: fixed in every phase: lane contest, picture readings, insertion admission and preparation.
 Contest: prep `4bd530922`, red guards `5acdd36c6`, fix `2a0ee0272`
 (mutation checked with a control, seven mutants caught).
 `contestHooksFor` (`corpus-run/pass-contest-reseat.ts`) re-reads the late judges while a hold runs
@@ -3409,8 +3409,34 @@ under its line cap, and so a test drives the wiring: X14). The coverage stage ca
 Mutation checked with a control, then the full suite (0 FAIL, 1271 PASS): four mutants caught, one survived,
 the new phase leaning on another bench, since only some phases' benches were pinned;
 `c2adcfdbf` pins the whole table, which caught it and a lane contest bench mutant.
-Still open: `preparePassEntry` (attestation, pairing, archive review) reads its roster once
-and has no per-item hook; X13, which it waited on, is fixed.
+Preparation: prep `aa635056a`, red guards `f891b358e`, fix `92556ba44`, guards completed in `d00123df3`.
+`preparePassEntry` asked its attestation, every section and block pairing round
+and every archive block review of the roster read before it.
+`preparationHooksFor` (`corpus-run/pass-prepare-reseat.ts`) re-reads the roster under a hold
+under the `preparation` phase, and `runPassPreparation`, the seam `runPassEntry` now calls, wires it.
+One `beforeItem` hook reaches every site that asks: `prepareDocumentPairWithRoster` reads it before the section round
+and before each section's block round, `repairArchiveBlocks` before each block,
+and `attestPassReferences` (`corpus-run/pass-attest-references.ts`) before the attestation,
+only when the original links somewhere. The pairing keys fold the roster that answers (X13),
+so a re-seated round is keyed by it.
+The first mutation run (control survived) caught six mutants and left four more alive besides the attestation site.
+The pairing fixture never bought a section round, its hook handed one constant roster
+so a block round reusing the section round's seating passed, and the seam fixture left no archive block unclaimed.
+The phase table mutant survived only because the spec left out `corpus-run/run-seats-wait.unit.test.ts` (M41).
+`d00123df3` rebuilt the pairing and review guards on a hook alternating two disjoint rosters,
+requiring every call to ask the roster last handed over and each round to be reached,
+and added a seam case whose archive carries an unclaimed block.
+The attestation had no guard a fixture could reach, since `preparePassEntry` read the linked pages off the web.
+`attestPassReferences` now takes the round out of it with a required hook (`keepBench` for a caller with none,
+since the repo models absence without nullish unions),
+and `preparePassEntry` takes an injected reference reader, as it takes `readPictures`,
+so a case drives the whole preparation and requires every call to ask the roster the hook hands over.
+The second run, with a control, caught all fourteen mutants, including the attestation wiring,
+an unlinked original still asking, and the injected reader ignored;
+the full suite then passed (0 FAIL, 1278 PASS).
+All four call sites are guarded.
+The one wiring a type guards rather than a test is omitting `beforeItem` at `attestPassReferences`,
+which fails the type check; replacing it with `keepBench` is the tested mutant.
 
 Found as:
 The fifth stage of the H5 family.
@@ -3452,8 +3478,11 @@ It must land before the preparation half of X12, or a re-seated section resumes 
 
 ### X14: no test drives a pass seam
 
-Status: contest, consolidation and insertion admission seams guarded; the picture and lanes seams stay open.
-The insertion admission seam (`admitPassInsertions`, X12) is driven the same way in `2fbb7ec24`.
+Status: contest, consolidation, insertion admission and preparation seams guarded;
+the picture and lanes seams stay open.
+The insertion admission seam (`admitPassInsertions`, X12) is driven the same way in `2fbb7ec24`,
+and the preparation seam (`runPassPreparation`, X12) in `f891b358e` for the pairing
+and `d00123df3` for the archive review.
 `runPassContest`, `runPassConsolidation`, `readSeatedPictures` and `runPassEntry` wire each phase's hook
 and bench into its driver, and none had a test, so a seam dropping its hook survived every guard
 (the picture seam mutant in X12).
@@ -3465,6 +3494,23 @@ Mutation checked with a control: both seam mutants caught.
 Still open: `readSeatedPictures` reaches the pinned corpus (`gatherEntryPictures`)
 and shells out to `dwebp` and `tesseract` (`readImageWithOcr`) with no way to hand either in,
 and the lanes hooks are spread into `runDocumentLanes` inside `runPassEntry`, which no test drives.
+
+### X15: the pairing keys are not injective
+
+Status: open; next after X12.
+Both pairing keys, `roundKey` (`prepare-section-round.ts`)
+and `blockPairingQuestionKey` (`block-pairing-question-key.ts`),
+join the texts of both sides with NUL and mark the side boundary with one more NUL element,
+so an empty text beside the boundary aliases across it:
+original `[a, '']` against translation `[c]` and original `[a]` against translation `['', c]` hash the same bytes.
+The block key's TSDoc names only an embedded NUL as its aliasing path,
+and keeps its layout so that every key without pictures keeps its historical bytes;
+X13 moved every pairing key inside version 3, so no historical bytes remain to keep,
+and no slice-cache file postdates the version 3 bump, so an injective layout orphans nothing.
+Whether a section or block text can be empty is not measured; an injective encoding removes the question.
+
+Found as:
+Reading `prepare-section-round.ts` whole after its raw NUL bytes had hidden it from every line search (M40).
 
 ## Process mistakes in this audit
 
@@ -3509,6 +3555,7 @@ and once reading the suite after D20 (`rg --count FAIL log ; rg --count PASS log
 During X2 an edit script was patched with an inline `python3 - <<'EOF'` heredoc chained after `sed`,
 where scripts go through the Write tool and run in a call of their own.
 Once more during H9 (`rg --files-with-matches <term> <clone> ; rg --files-with-matches <term> <other clone>`).
+Once more during X12's preparation half, in a positive control (`rg <scan> <scratch> <src> ; echo "rg exit $?"`).
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -3647,6 +3694,43 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M42: red guards whose fixtures never reached two of the sites they guarded
+
+Status: happened 2026-09-28 in X12's preparation half; the guards rebuilt in `d00123df3`.
+`f891b358e` guarded four call sites.
+Its pairing fixture had sections of equal shape, so no section round was bought,
+and its hook handed one constant roster, so a block round reusing an earlier seating passed;
+its seam fixture paired every archive block, so the review never ran.
+Every guard went red before the fix and green after it,
+which proved only that some site was fixed: the M29 family, a red that says nothing about the site its label names.
+Prevention: a guard over several sites asserts that each site is reached
+(one assertion per site, as `sectionRoundAsked` and `blockRoundAsked` now are),
+and a hook under test hands a different roster at each call, so reusing an earlier reading fails.
+
+### M41: a mutation spec that left out the test pinning the mutated table
+
+Status: happened 2026-09-28 in X12's preparation half; the mutant was caught once the file was listed.
+The first preparation spec mutated the `preparation` row of `BENCHES_BY_PHASE`
+but listed only the preparation's own tests;
+`corpus-run/run-seats-wait.unit.test.ts`, which pins the whole table since `c2adcfdbf`, was not among them,
+so the mutant survived and read as a gap in the guards.
+Prevention: for every mutant, search the tests for the mutated token and list every file naming it;
+report a survivor only after that search.
+
+### M40: a source file with raw NUL bytes, skipped by every line search
+
+Status: fixed in `aacf919eb`, 2026-09-28.
+`prepare-section-round.ts` carried two raw NUL bytes as its key separator since `3e93519df` (2026-08-23),
+so `rg` and `grep` treated it as binary and printed one "binary file matches" notice in place of its lines.
+Every line search over `src` since then got that notice, or nothing once piped through a filter;
+X13's fix edited the key beside the raw bytes without noticing them,
+and this audit's outline of the file came back empty until an unfiltered search printed the notice.
+Prevention: a "binary file matches" notice from a search over source is a finding, never noise.
+A scan for control bytes other than tab, newline and carriage return
+(`rg --text --files-with-matches '[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]'`, positive-controlled on a scratch file)
+found no other file in the package outside `node_modules`, `dist` and `.cache` after the fix,
+and belongs in the pre-launch checklist.
 
 ### M39: a key change committed on a census of callers, and a commit message and its correction garbled
 
@@ -3811,6 +3895,8 @@ every hash is resolved with `git rev-parse` in the same command that uses it.
 Once more on 2026-09-27, in the page-agreement docs:
 a hash no command had produced was written into this ledger as a red guard's,
 and caught on reading the edit back, before any commit.
+Once more on 2026-09-28: `c1dd889b5` said the preparation hook now takes `BenchSeating`
+before any preparation hook existed (it came in `aa635056a`); a commit comment on it corrects the message.
 
 ### M14: a reproduction check committed without a positive control
 
