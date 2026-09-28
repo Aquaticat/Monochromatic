@@ -6,6 +6,7 @@ import {
   type ExtractedCompletion,
   MalformedCompletionError,
 } from './completion-shape.ts';
+import { ssePayloadOf, } from './sse-data-line.ts';
 
 /**
  Logger root for the Anthropic completion reader.
@@ -39,11 +40,6 @@ const l = contextRoot({ tag: 'translation-repair', },);
 // THINKING IS DISCARDED HERE ON PURPOSE. `thinking_delta` is the model's
 // private channel; `anthropic-delta-scan.ts` routes it to the guards that watch
 // for a runaway, and this file reads only the answer.
-
-/**
- Prefix marking a line that carries an event payload.
- */
-const DATA_PREFIX = 'data:';
 
 /**
  Event ending a well-formed message.
@@ -91,31 +87,6 @@ type AnthropicFold = {
    */
   readonly completionTokens: number[];
 };
-
-/**
- Payload of one line, empty for anything that is not an event.
- 
- @param rawLine - one line of the drained body
- 
- @returns Payload text, trimmed, empty when this line carries none
- 
- @example
- ```ts
- const payload = dataPayloadOf('data: {"type":"ping"}',);
- ```
- */
-function dataPayloadOf(rawLine: string,): string {
-  /**
-   Line without surrounding whitespace and carriage returns.
-   */
-  const line = rawLine.trim();
-
-  if (!line.startsWith(DATA_PREFIX,))
-    return '';
-  return line
-    .slice(DATA_PREFIX.length,)
-    .trim();
-}
 
 /**
  Reads one string field off a parsed object.
@@ -453,7 +424,7 @@ export function requireAnthropicTerminator(
       /**
        Payload of this line, empty for a line carrying no event.
        */
-      const payload = dataPayloadOf(rawLine,);
+      const payload = ssePayloadOf({ line: rawLine, },);
       return payload.includes(`"${TERMINATOR}"`,);
     },);
 
@@ -511,7 +482,7 @@ export function extractAnthropicCompletion(
     /**
      Event payload of this line; empty lines fold nothing.
      */
-    const payload = dataPayloadOf(rawLine,);
+    const payload = ssePayloadOf({ line: rawLine, },);
     if (payload === '')
       continue;
     if (payload === DONE_SENTINEL)

@@ -3,6 +3,8 @@ import {
   isJsonRecord,
 } from './json-guard.ts';
 
+import { ssePayloadOf, } from './sse-data-line.ts';
+
 //region Stream delta scan
 // PULLS GENERATED TEXT OUT OF A STREAM AS IT ARRIVES, which is what makes
 // `watchForDegeneration` usable at all: the detector must be fed generated
@@ -57,29 +59,6 @@ import {
 // Unreadable frames are COUNTED rather than swallowed, and the count is
 // reported, so a provider that changes its wire format shows up as a rising
 // number instead of as silence.
-
-/**
- Prefix marking a line that carries a payload.
- 
- NO TRAILING SPACE, deliberately, and this is a conformance requirement rather
- than a guess about any one sender. The event-stream parsing algorithm says of
- a field's value: "If value starts with a U+0020 SPACE character, remove it
- from value." So `data: {...}` and `data:{...}` are THE SAME MESSAGE, and a
- reader that accepts only the spaced form is simply wrong, whatever this
- provider happens to emit today.
- 
- Spelling the prefix with the space would skip the tight form as though it
- were a comment, and skip it SILENTLY, since only `data:` lines are ever
- counted as unreadable. This repository has already paid for that shape of
- trap once: `runner-closure.ts` carries four import spellings because the tight
- form produced a false null that looked like a self-contained bundle.
- */
-const DATA_PREFIX = 'data:';
-
-/**
- Single optional space a sender may put after the colon.
- */
-const OPTIONAL_SPACE = ' ';
 
 /**
  Payload the provider sends to mark the end of a stream, which is not JSON.
@@ -423,27 +402,9 @@ export function scanStreamDeltas(): DeltaScanner {
    */
   function readLine({ line, }: { readonly line: string; },): readonly ChannelDelta[] {
     /**
-     Line without the carriage return a server may pair with its newline.
+     Payload this line carries, empty for a comment or another field.
      */
-    const clean = line.endsWith('\r',) ? line.slice(
-      0,
-      -1,
-    ) : line;
-
-    if (!clean.startsWith(DATA_PREFIX,))
-      return [];
-
-    /**
-     Everything after the colon, which may begin with one optional space.
-     */
-    const afterColon = clean.slice(DATA_PREFIX.length,);
-
-    /**
-     Payload proper, with that one space removed if it was sent.
-     */
-    const payload = afterColon.startsWith(OPTIONAL_SPACE,)
-      ? afterColon.slice(OPTIONAL_SPACE.length,)
-      : afterColon;
+    const payload = ssePayloadOf({ line, },);
     if (payload === DONE_PAYLOAD)
       return [];
 

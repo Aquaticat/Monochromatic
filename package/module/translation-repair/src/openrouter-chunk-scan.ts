@@ -1,5 +1,7 @@
 import { isJsonRecord, } from './json-guard.ts';
 
+import { ssePayloadOf, } from './sse-data-line.ts';
+
 //region OpenRouter chunk scan
 // EVERY PARSED CHUNK OF A DRAINED CHAT COMPLETIONS STREAM, for the readers
 // that want one field off the gateway's envelope rather than the generated
@@ -10,11 +12,6 @@ import { isJsonRecord, } from './json-guard.ts';
 // Synthetic and reports only text and token counts. Adding gateway-specific
 // fields to `ExtractedCompletion` would make every other reader carry values
 // it cannot fill.
-
-/**
- Prefix marking a line that carries an event payload.
- */
-const DATA_PREFIX = 'data:';
 
 /**
  Every chunk of one drained stream that parses as a JSON object, in arrival
@@ -41,17 +38,9 @@ export function openRouterChunksOf(
     .split('\n',)
     .flatMap(function chunkOf(rawLine,): readonly Readonly<Record<string, unknown>>[] {
       /**
-       Line without surrounding whitespace and carriage returns.
+       Payload of this line; the sentinel and blanks carry no JSON.
        */
-      const line = rawLine.trim();
-      if (!line.startsWith(DATA_PREFIX,))
-        return [];
-      /**
-       Payload after the prefix; the sentinel and blanks carry no JSON.
-       */
-      const payload = line
-        .slice(DATA_PREFIX.length,)
-        .trim();
+      const payload = ssePayloadOf({ line: rawLine, },);
       if (!payload.startsWith('{',))
         return [];
       /**

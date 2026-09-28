@@ -11,6 +11,8 @@ import {
   isJsonRecord,
 } from './json-guard.ts';
 
+import { ssePayloadOf, } from './sse-data-line.ts';
+
 //region Streamed completion
 // SSE reassembly for streamed chat completions. The provider is finicky without
 // streaming, and streaming also defeats fetch's default headers timeout: headers
@@ -18,11 +20,6 @@ import {
 // transport drains the whole event stream to text; this module folds the events
 // back into one completion. Reasoning deltas are dropped (content is the answer
 // channel), refusal deltas accumulate into the first-class refusal field.
-
-/**
- SSE field prefix carrying event payloads.
- */
-const DATA_PREFIX = 'data:';
 
 /**
  Terminal sentinel payload closing an OpenAI-compatible stream.
@@ -133,31 +130,6 @@ function foldChunk(
 }
 
 /**
- Reads one SSE line's data payload;
- empty for lines that carry none.
- 
- @param rawLine - one line of the drained stream
- 
- @returns Payload after the data prefix, or empty
- 
- @example
- ```ts
- dataPayloadOf('data: [DONE]',);
- ```
- */
-function dataPayloadOf(rawLine: string,): string {
-  /**
-   Line without surrounding whitespace and carriage returns.
-   */
-  const line = rawLine.trim();
-  if (!line.startsWith(DATA_PREFIX,))
-    return '';
-  return line
-    .slice(DATA_PREFIX.length,)
-    .trim();
-}
-
-/**
  Refuses a body whose event stream never reached its terminator.
  
  SPLIT OUT SO THE RETRY LADDER CAN ASK IT TOO, on the same grounds as the
@@ -182,7 +154,7 @@ export function requireStreamTerminator(
   const sawDone = bodyText
     .split('\n',)
     .some(function isDone(rawLine,): boolean {
-      return dataPayloadOf(rawLine,) === DONE_SENTINEL;
+      return ssePayloadOf({ line: rawLine, },) === DONE_SENTINEL;
     },);
 
   if (!sawDone) {
@@ -232,7 +204,7 @@ export function extractStreamedCompletion(
     /**
      Event payload of this line; empty and sentinel lines fold nothing.
      */
-    const payload = dataPayloadOf(rawLine,);
+    const payload = ssePayloadOf({ line: rawLine, },);
     if ((payload === '') || (payload === DONE_SENTINEL))
       continue;
 

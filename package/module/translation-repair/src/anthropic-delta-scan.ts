@@ -7,6 +7,8 @@ import type {
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
 
+import { ssePayloadOf, } from './sse-data-line.ts';
+
 //region Anthropic delta scan
 // The SAME `DeltaScanner` the OpenAI-shaped path produces, fed by Anthropic
 // Messages events instead.
@@ -34,19 +36,9 @@ import { isJsonRecord, } from './json-guard.ts';
 // robust against a server that reorders or omits the `event:` line.
 
 /**
- Prefix marking a line that carries an event payload.
- */
-const DATA_PREFIX = 'data:';
-
-/**
  Logger root for this scanner.
  */
 const l = contextRoot({ tag: 'translation-repair', },);
-
-/**
- One optional space servers put between the colon and the payload.
- */
-const OPTIONAL_SPACE = ' ';
 
 /**
  Sentinel OpenRouter's Messages endpoint appends after `message_stop`,
@@ -459,29 +451,9 @@ export function scanAnthropicDeltas(): DeltaScanner {
     { line, }: { readonly line: string; },
   ): readonly ChannelDelta[] {
     /**
-     Line without the carriage return a server may pair with its newline.
+     Payload this line carries, empty for a comment or another field.
      */
-    const clean = line.endsWith('\r',)
-      ? line.slice(
-        0,
-        -1,
-      )
-      : line;
-
-    if (!clean.startsWith(DATA_PREFIX,))
-      return [];
-
-    /**
-     Everything after the colon, which may begin with one optional space.
-     */
-    const afterColon = clean.slice(DATA_PREFIX.length,);
-
-    /**
-     Payload proper, with that one space removed if it was sent.
-     */
-    const payload = afterColon.startsWith(OPTIONAL_SPACE,)
-      ? afterColon.slice(OPTIONAL_SPACE.length,)
-      : afterColon;
+    const payload = ssePayloadOf({ line, },);
 
     if (payload === '')
       return [];

@@ -9,6 +9,7 @@
 // finished with before a reply becomes a value the pipeline reads.
 
 export { extractStreamedCompletion, } from './stream-completion.ts';
+export { ssePayloadOf, } from './sse-data-line.ts';
 export { drainBody, } from './stream-drain.ts';
 export {
   reportStreamProgress,
