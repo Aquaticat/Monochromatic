@@ -65,7 +65,7 @@ export const READING_INSTRUCTION: string = 'Transcribe every word visible in thi
   + 'judged by its colour, its tail and the edge it hugs rather than where its text starts, since a '
   + 'wide bubble fills the width and still belongs to one side; write [sticker] or [image] on its '
   + 'own line where a message is a picture rather than words. Do not '
-  + 'translate, summarise, describe the image, or add any commentary. If you cannot read the image, '
+  + 'translate, summarize, describe the image, or add any commentary. If you cannot read the image, '
   + 'say so plainly and say nothing else.';
 
 /**
