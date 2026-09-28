@@ -267,4 +267,5 @@ The offline numerical mechanism is tested at the recorded scope.
 No semantic head has been fitted,
 no fresh semantic corpus has been queried,
 and no calibrated probability or production model is selected.
-Next: freeze fresh grouped source episodes and references before feature collection.
+Next:
+ freeze fresh grouped source episodes and references before feature collection.
