@@ -147,6 +147,7 @@ export {
   communityTermsIn,
   type RenderingCandidate,
 } from './community-glossary.ts';
+export { textCarriesForm, } from './glossary-match.ts';
 export { pageNameLines, } from './page-name-glossary.ts';
 export {
   RENDERING_GLOSSARY,

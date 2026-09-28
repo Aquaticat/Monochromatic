@@ -6,8 +6,10 @@
  the costume and becoming the doll) shipped on one page as a game of becoming
  a doll, and English "doll up" means dressing smartly. 治愈 (the fan sense of
  healing, as in 治愈系) first led with "comforted"; the owner disagreed
- (2026-09-27), since the page writes 安慰 where it means comfort and
- "healing" is the fandom's own English, so "healed" leads.
+ (2026-09-27), since "healing" is the fandom's own English and the archive
+ reads "healed", so "healed" leads. The contrast with 安慰 that this guard,
+ the entry and the handover once gave the owner was a misquotation: the page
+ writes 安抚, never 安慰 (ledger C6).
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -67,13 +69,15 @@ await describe({
   name: 'kigurumi and fan words the community glossary renders (class one hundred eighty-four)',
   children: [
     it({
-      name: 'SEEDS 变娃 with "put on the kigurumi" first and 治愈 with "healed" first, set apart from 安慰',
+      name: 'SEEDS 变娃 with "put on the kigurumi" first and 治愈 with "healed" first, with no contrast to 安慰, '
+        + 'a word the kigurumi page never writes (ledger C6: it writes 安抚)',
       fn: async () => {
         expect(firstRendering({ term: '变娃', },),).toBe('put on the kigurumi',);
         expect(firstRendering({ term: '治愈', },),).toBe('healed',);
         expect(COMMUNITY_GLOSSARY.find(function isTerm(entry,): boolean {
           return entry.term === '治愈';
-        },)?.why,).toContain('安慰',);
+        },)?.why,).not
+          .toContain('安慰',);
       },
     },),
     it({
