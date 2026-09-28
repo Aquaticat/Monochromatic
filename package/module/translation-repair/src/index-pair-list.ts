@@ -1,3 +1,5 @@
+import type { IndexPair, } from './pair-agreement.ts';
+
 //region Index pair list
 // The shape every pairing answer and its cache record share: a list of
 // correspondences, each naming one index on each side. The block pairing
@@ -5,26 +7,6 @@
 // (`pair-sections-read.ts`) and the slice cache (`slice-cache-store.ts`) each
 // kept their own copy of this test (audit area six, 2026-09-28); a cache that
 // accepted what the wire refuses would hand a stage a pairing no model gave.
-
-/**
- One correspondence, an index on each side.
-
- @example
- ```ts
- const pair: IndexPair = { source: 0, target: 1, };
- ```
- */
-export type IndexPair = {
-  /**
-   Original-side index.
-   */
-  readonly source: number;
-
-  /**
-   Translation-side index.
-   */
-  readonly target: number;
-};
 
 /**
  Whether a parsed value is a list of correspondences.

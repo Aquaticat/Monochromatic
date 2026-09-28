@@ -94,10 +94,7 @@ export {
   parseDocument,
   type RepairDocument,
 } from './parse-document.ts';
-export {
-  type IndexPair,
-  isIndexPairList,
-} from './index-pair-list.ts';
+export { isIndexPairList, } from './index-pair-list.ts';
 export { groupNodes, } from './group-nodes.ts';
 export {
   AlignedIndexError,
