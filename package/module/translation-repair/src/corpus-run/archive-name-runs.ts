@@ -8,7 +8,7 @@ import {
   inProse,
   protectedRanges,
 } from './prose-ranges.ts';
-import { isAsciiAlphanumeric, } from '../ascii-letters.ts';
+import { continuesLatinWord, } from '../latin-letters.ts';
 
 //region Archive name runs
 // The scans class one hundred thirty-six reads a page with (`archive-name-
@@ -39,8 +39,8 @@ export type NameRun = {
 
 /**
  Whether a run starting at one offset stands mid-sentence: the nearest
- character before it past spaces is a letter, a digit, a comma or a
- semicolon.
+ character before it past spaces is a letter (accented or not), a digit, a
+ combining mark, a comma or a semicolon.
 
  @param text - text under scan
 
@@ -73,7 +73,7 @@ export function midSentence(
     .trimEnd()
     .at(-1,)
     ?? '';
-  return isAsciiAlphanumeric({ character: last, },) || MID_SENTENCE_BEFORE.has(last,);
+  return continuesLatinWord({ character: last, },) || MID_SENTENCE_BEFORE.has(last,);
 }
 
 /**
@@ -206,10 +206,12 @@ export function phraseOccurrences(
     at + 1,
   )) {
     /**
-     Whether a letter or digit touches the match on either side.
+     Whether a letter, digit or combining mark touches the match on either
+     side: a mark after it would sit on the match's last letter, making it
+     another word.
      */
-    const glued = isAsciiAlphanumeric({ character: text.charAt(at - 1,), },)
-      || isAsciiAlphanumeric({ character: text.charAt(at + needle.length,), },);
+    const glued = continuesLatinWord({ character: text.charAt(at - 1,), },)
+      || continuesLatinWord({ character: text.charAt(at + needle.length,), },);
     if (glued || onHeadingLine({
       text,
       at,

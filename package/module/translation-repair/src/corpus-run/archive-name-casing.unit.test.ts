@@ -193,5 +193,36 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'READS an accented word before a name as mid-sentence, and an accented letter touching a phrase as another word (ledger B18)',
+      fn: async () => {
+        // With ASCII letters only, the name after `café` read as opening a
+        // sentence, so neither use counted, and `hallō` or `ōmaowu` read as the
+        // phrase in lower case, which vetoed the name.
+        const restored = restoreArchiveNameCasing({
+          slices: [
+            pair({
+              sliceIndex: 0,
+              target: 'We napped at the café Maowu Yarn Hall[^1] at noon.',
+            },),
+            pair({
+              sliceIndex: 1,
+              target: 'The kittens met at the café Maowu Yarn Hall again.',
+            },),
+            pair({
+              sliceIndex: 2,
+              target: 'The maowu yarn hallō and the ōmaowu yarn hall are other words.',
+            },),
+          ],
+          replacements: [
+            {
+              sliceIndex: 0,
+              replacementText: 'We napped at the café Maowu yarn hall[^1] around noon.',
+            },
+          ],
+        },);
+        expect(textsOf({ rows: restored.replacements, },),).toEqual(['We napped at the café Maowu Yarn Hall[^1] around noon.',],);
+      },
+    },),
   ],
 },);
