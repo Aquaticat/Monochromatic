@@ -445,6 +445,32 @@ so its catch came from the previous mutant's stale build;
 rerun as a valid mutant beside the control, it was caught.
 A mutant whose build fails proves nothing, so the harness now reports a failed build as no verdict.
 
+## Glossary re-probe
+
+Probe: `~/temp/agent/audit-glossary-fix/x363-reprobe.mjs`
+(output `x363-reprobe.out`, glossary data, ids and counts only)
+and `x363-form-sites.mjs` (paths and line numbers only).
+Run 2026-09-28 over every current entry (15 community and fandom, 41 rendering) against all 92 pinned originals,
+with the real floor (`communityTermFindings`) over all 92 human archives
+and the 214 settled pipeline pages of the entries carrying each term.
+Since the probes of 2026-09-26, five entries are new (爆柜, 跨性别圈, 矫正中心, 矫正学校, 螐),
+化作 is gone and ` OD` became `OD`; each new entry has one carrier, the page it was written from.
+The human archives fire on eight entries, the set of 2026-09-26 but for four changes:
+化作 removed, mikaela_khara's 药娘 now an organization's name (`f3cd0ef83`),
+zhangyubaka's "correctional school" refused on purpose (R-series),
+and spike0qy's "jk skirt", since the class one hundred eighty-six matcher reads the page's `JK裙` as the term
+and the owner's forms refuse that rendering.
+On the settled pages every fire is the term left untranslated
+(OD written bare, 滑档 and 炸柜 in Han, 螐 on XingZ60's pages: the H9 defect)
+or a refused form.
+Eleven refused forms fire there that the probes of 2026-09-26 never listed, all on shi_Yumiaoya's pages;
+one site of each was read against the original, and each renders its own term wrongly:
+the 药娘 forms render 小药娘 (the owner's "trans woman" or "trans girl"),
+"across different communities" renders 在跨圈内, the 逆子 forms drop the "son" of the father's quoted insult,
+and the 滑档 tier slides are R4's own refusals.
+No global refusal ignores context in the task's named cases:
+交往 is R-series, and 治愈 refuses no form, while 治愈率 is on no pinned original (three carry 治愈).
+
 ## Consolidation gate
 
 ### G1: the gate sheet says choosing an ineligible standing stops the entry
@@ -1554,6 +1580,14 @@ queued after the findings that change a run's output.
 a coverage sample shows `isPaymentRefusal`, `statedWaitMsOf`, `routedJson`,
 `secondOpinionsFrom` and others never called,
 and the decision reply's refusal branches never exercised.
+Recounted 2026-09-28 with the same script: 94 of 1,248, the barrels having grown;
+`reseatHookFor` (X12) is among them though every hook builder's test runs it.
+The count has two blind spots, so it is neither a floor nor a ceiling of untested code:
+it reads `export function` declarations only (never `export const`),
+and it counts a name mentioned anywhere in a test as tested, while a function called only through another is uncounted.
+The work waits on a measurement of execution rather than names:
+the unit suite under `NODE_V8_COVERAGE`, with function entries that never ran intersected with the barrel exports,
+then a case per branch of each function on that list (TCV).
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
