@@ -149,5 +149,33 @@ await describe({
         expect(result.findings,).toStrictEqual([],);
       },
     },),
+
+    it({
+      name: 'NAMES NO HOLD for a claim filed neutral that the panel rejects, since only an acceptance was held',
+      fn: async () => {
+        /** Claim filed neutral. */
+        const claimMember = member({ suffix: 'yarn', severity: 'neutral', },);
+        /** Ballot refuting the claim. */
+        const refuting: PanelBallot = {
+          verdicts: { [claimMember.claimId]: { vote: 'unsupported', }, },
+          mergeOpinions: {},
+          findings: [],
+        };
+        /** Unanimous rejection. */
+        const result = tallyVotes({
+          configuredPanelists: 3,
+          clusters: [
+            {
+              clusterId: `cluster/${claimMember.claimId}`,
+              position: 10,
+              members: [claimMember,],
+            },
+          ],
+          ballots: { a: refuting, b: refuting, c: refuting, },
+        },);
+        expect(result.issues[0]?.status,).toBe('rejected',);
+        expect(result.findings,).toStrictEqual([],);
+      },
+    },),
   ],
 },);
