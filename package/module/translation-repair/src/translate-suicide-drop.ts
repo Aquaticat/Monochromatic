@@ -2,7 +2,10 @@ import {
   blocksOf,
   withoutComments,
 } from './translate-address-drop.ts';
-import { isAsciiLetter, } from './ascii-letters.ts';
+import {
+  isLatinLetter,
+  isLatinLetterOrMark,
+} from './latin-letters.ts';
 
 //region A suicide the passage names
 // CLASS ONE HUNDRED FIFTY (shi_Yumiaoya36, 2026-09-26). The original states a
@@ -149,7 +152,9 @@ const HAND_NOUNS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- Every run of ASCII letters in a text, lower-cased, in order.
+ Every run of Latin letters in a text, lower-cased, in order: a word opens on
+ a letter, accented or not, and goes on through letters and combining marks
+ (ledger B18).
 
  @param text - rendering, comments already cut
 
@@ -170,7 +175,13 @@ function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
    */
   let current = '';
   for (const character of text) {
-    if (isAsciiLetter({ character, },)) {
+    /**
+     Whether the character opens a word or goes on with the one being read.
+     */
+    const inWord = (current === '')
+      ? isLatinLetter({ character, },)
+      : isLatinLetterOrMark({ character, },);
+    if (inWord) {
       current += character.toLowerCase();
       continue;
     }
