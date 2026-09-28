@@ -585,6 +585,12 @@ selector,
 provider adoption,
 or deployment is selected.
 
+The completed fitted phase retains `feature/pretest-initial.json` and its locked-test counterpart.
+If process state is lost,
+inspect retained evidence and process identity rather than rerunning completed controllers.
+Original reserved scenarios remain unopened and unused,
+with no overlap claim against that uninspected bank.
+
 ## Next bounded representation question
 
 Do not retune the completed candidate against its now-exposed test outcomes.
@@ -615,8 +621,24 @@ private input,
 original reserved scenario,
 new provider,
 or production change is part of that mechanism probe.
-Its create-new progress artifact is `feature/pretest-initial.json`;
-if process state is lost,
-inspect retained evidence and process identity rather than rerunning the controller.
-Original reserved scenarios remain unopened and unused,
-with no overlap claim against that uninspected bank.
+
+The [concrete-hypothesis protocol](../planning/pi-auto-mode-voyage-concrete-hypotheses.md)
+is now frozen at private source `51bd56c` and input/control checkpoint `da3c181`.
+Its 137-file manifest SHA-256 is
+`c6940e471d710546e33beef1260028687cc92c62f92be1c8cda7965b5b00203b`.
+`proc_e633` passed exact single-field-change checks,
+full-policy/source preservation,
+reference exclusion,
+JSON destination-grammar controls,
+real repeat/reverse bodies,
+contrast/collision controls,
+and preparation/aggregate clocks with an isolated deadline omission.
+The query,
+claim definition,
+policy,
+model,
+and request flags remain unchanged;
+only each hypothesis's symbolic operation reference is instantiated.
+The probe remains sixteen calls,
+raw coordinates only,
+with no fitting or held-out validation claim.

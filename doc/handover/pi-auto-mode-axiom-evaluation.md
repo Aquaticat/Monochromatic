@@ -1004,11 +1004,23 @@ The user's actual Voyage data-use opt-out setting remains uninspected.
 
 The bounded Drex access and semantic phases are complete at their recorded scopes.
 No diagnostic Drex band qualified and no extra Drex call or calibration follows automatically.
-Voyage task #48 completed its frozen phase and is closing the result documentation.
+Voyage task #48 completed its frozen phase and result-document checks at main `9e29118f6`.
 No confidence band qualified despite improved proper losses.
 Task #52 is a separate no-fitting mechanism probe:
 put code-established operation/resource/destination text directly into the hypotheses,
 then test whether the known opposite-reference collisions separate.
+The [concrete-hypothesis protocol](../planning/pi-auto-mode-voyage-concrete-hypotheses.md)
+is frozen at source `51bd56c` and input/control checkpoint `da3c181`.
+Manifest SHA-256:
+`c6940e471d710546e33beef1260028687cc92c62f92be1c8cda7965b5b00203b`.
+`proc_e633` passed single-field isolation,
+full-policy/source preservation,
+reference and JSON-grammar checks,
+repeat/reverse bodies,
+contrast/collision controls,
+and shared clocks with an omitted-deadline control.
+The planned sixteen calls use only exposed development examples;
+true explicit-prohibition contrasts are outside this focused scope.
 Do not retune the completed candidate on its exposed test data.
 Do not resume Q16 or Laya #34.
 
