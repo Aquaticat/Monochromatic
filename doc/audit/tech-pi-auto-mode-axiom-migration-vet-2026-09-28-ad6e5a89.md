@@ -322,6 +322,7 @@ The numerical mechanism and fresh corpus are prepared at their recorded scopes.
 No semantic head has been fitted,
 no fresh semantic source has been queried,
 and no calibrated probability or production model is selected.
-Next: freeze the exact feature client,
+Next:
+ freeze the exact feature client,
 fit/evaluation command tree,
 and test-release gate before starting the declared collection.
