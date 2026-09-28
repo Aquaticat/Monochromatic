@@ -798,7 +798,8 @@ Consolidation half in `84aa1ce86` (red guards `01c8bbad8`, further guards `2f849
 builds the writers, slate judges and naturalness roles `pass-consolidate.ts` builds, and keeps them once the hold ends;
 `consolidateDocument` seats each slice on that roster and keys it by it (`shapeFor`),
 so a slice nobody re-seated keys as before and no cache version moves.
-Mutation checked with a control: eleven mutants caught.
+Mutation checked with a control: eight H5 mutants caught
+(the same runs caught three X11 mutants, two of them on the self-certification fold M37 later reverted).
 Three survived the first guards (the driver handing a re-seated slice the starting judges or polish roles,
 and the run shape keying the starting polish), because no judging or polish round ran under a client
 that answered nothing usable; a role-answering client with a no-hook control now proves those rounds are asked.
@@ -3372,7 +3373,22 @@ that half was wrong and `6d9b361b4` took it out again (M37).
 
 ### X12: the lane contest, the preparation and the picture readings never re-seat under a hold
 
-Status: open.
+Status: lane contest half fixed; the preparation, the picture readings and the insertion admission stay open.
+Contest: prep `4bd530922`, red guards `5acdd36c6`, fix `2a0ee0272`
+(mutation checked with a control, seven mutants caught).
+`contestHooksFor` (`corpus-run/pass-contest-reseat.ts`) re-reads the late judges while a hold runs
+and keeps them once it ends; `contestDocumentLanes` seats and keys each slice on them (`shapeFor`),
+so a slice nobody re-seated keys as before and no cache version moves.
+The three copies of the hold-and-memo re-seat are now one, `reseatHookFor` (`corpus-run/pass-reseat-hook.ts`):
+the consolidation hook moved onto it in `09839c622` and the lanes hook in `df601d839`,
+after `f60abcb15` pinned that each lane keeps its own seating.
+`awaitBenchQuorum` lost its last caller with them and was removed in `c2e74caeb`,
+with the `run-seats-read.ts` comment that said every driver asks it.
+Still open: `preparePassEntry` (pairing, archive review), `readPassVisualEvidence` (the picture readings)
+and `decidePassInsertionAdmission`, which runs per source-only slice on the lanes' reading
+(the census counts its holds under the lanes), each read their bench once and have no per-item hook.
+
+Found as:
 The fifth stage of the H5 family.
 `runPassContest` reads its judges once and `contestDocumentLanes` has no per-slice hook,
 so a dry-out inside the contest leaves every later slice on the judges read before it,
