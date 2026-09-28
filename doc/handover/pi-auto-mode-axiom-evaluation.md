@@ -282,6 +282,17 @@ normalization,
 repeat,
 or automatic interview resumption follows.
 
+A candidate-scope question offered stopping Voyage's primary-assessor investigation at this bounded finding
+or defining a separate composed-estimator study before further design.
+The first option was recommended,
+not adopted.
+The question tool was aborted;
+no user answer or additional authorization was received.
+Do not infer either choice,
+fit or train a mapping,
+expand model calls,
+or resume Q16 from that interruption.
+
 ## Sequencing correction
 
 The user stopped the integration-policy interview and asked whether investigation of Laya,
