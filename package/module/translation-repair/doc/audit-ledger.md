@@ -888,7 +888,13 @@ so its "no judge bought" assertion held whatever was bought.
 
 ### E5: floor refusals and panel votes the log cannot explain
 
-Status: the log half fixed; the reason per panel verdict is put to the owner.
+Status: fixed.
+The reason per panel verdict in `f2cd70ece` (red guard `413a441a0`), after the owner chose "Reason before vote":
+the sheet asks for the reason first and shows it first in the reply shape,
+the schema requires it and declares it before the vote,
+a missing or blank reason is the finding `missing-reason (n)` while the vote still counts,
+every stored panel ballot keeps it, and the log has one line per ballot beside the issue's decision.
+Repair slice cache version 33, since the sheet is not in the run shape; no slice had been cached under 32.
 Floors and the repair turn in `d69a456de` (red guard `58b993f81`):
 the translate floor warns per withheld candidate with the rule's reason,
 the consolidation floor names proposals withheld beside survivors (it logged only the all-refused case),
