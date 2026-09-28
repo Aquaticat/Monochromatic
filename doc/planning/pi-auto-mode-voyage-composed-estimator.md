@@ -422,7 +422,54 @@ No fresh semantic corpus has been queried and no semantic head is fitted yet.
 Numerical controls do not establish truth estimation,
 calibration,
 or an active abstention profile.
-The fresh grouped corpus and references must be frozen next.
+The fresh grouped corpus and references have now been frozen before feature queries.
+
+## Fresh corpus and evaluation freeze
+
+The corpus manifest is
+`~/temp/agent/voyage-probability-heads-2026-09-28/corpus/manifest.json`,
+SHA-256 `e59f9ac8f70811a1d05654d6c6014584019653b68617e4a3b909b81144fc0eb0`.
+Source checkpoints `7df4553`,
+`e060d26`,
+and `5b66861` preserve authored wording,
+reference construction,
+and the fixed evaluation plan.
+Actual parser/structured projection,
+reference/group invariants,
+syntax rejections,
+and an isolated partition-guard omission passed in `proc_5cd1`.
+A positive-controlled exact-text comparison found no overlap with 58 unique texts in the named prior input banks.
+
+Each partition contains 36 sources within three complete episode groups,
+not 36 independent episodes.
+Request/prose siblings and family variants stay together.
+Semantic families recur across partitions;
+this is not family-disjoint or OOD evidence.
+Each role has 18 rows,
+including six positive and twelve negative references.
+The same agent authored wording and labels,
+and the fixed class prevalence does not represent deployment sampling.
+
+The schedule contains 84 fit/validation calls including fit-only repeat/order controls,
+then 36 locked-test calls after candidate coefficients/preprocessing and the evaluator are frozen.
+The fixed candidate proceeds to test even if validation is unfavorable;
+no coefficient,
+regularization,
+label,
+or template rescue follows validation/test outcomes.
+
+Evaluation uses stable unpenalized log loss and Brier score against fit-prevalence baselines,
+role/operation/family/episode slices,
+fixed probability bins,
+and the declared 80/20,
+90/10,
+and 95/05 diagnostics.
+Report accepted-subset calibration observations as well as overall observations.
+Empty subsets have unavailable metrics,
+not invented values.
+No production threshold or active selector is chosen.
+No fresh semantic source has been queried yet.
+The exact feature-client and fit/evaluation execution manifest remain the next preparation step.
 
 ## Later validation boundary
 

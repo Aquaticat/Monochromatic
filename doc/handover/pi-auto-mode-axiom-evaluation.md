@@ -423,12 +423,37 @@ completed-continuation SHA-256 is
 `659406e39bb4d7bfa25360ac439151a14fee32f9c49b7258d28f13af5e2460af`.
 No fresh semantic source was queried or semantic probability head fitted.
 
-Next is task #47:
-freeze fresh grouped source episodes and predeclared references.
-Task #48 owns feature collection,
+Task #47 has now frozen fresh source episodes and references in
+`~/temp/agent/voyage-probability-heads-2026-09-28/corpus/manifest.json`.
+Manifest SHA-256:
+`e59f9ac8f70811a1d05654d6c6014584019653b68617e4a3b909b81144fc0eb0`.
+Sources `7df4553`,
+`e060d26`,
+and `5b66861` retain authoring,
+construction,
+and the fixed evaluation plan.
+`proc_5cd1` passed projection,
+reference/group checks,
+known-overlap and syntax controls,
+and an isolated partition-guard omission.
+There was no exact overlap with 58 unique texts in the named prior input banks.
+
+Each partition contains 36 sources but only three episode groups.
+All family variants and request/prose siblings of an episode stay together;
+semantic families still recur across partitions.
+Each role has 18 rows with six positive and twelve negative references.
+This is a designed synthetic prevalence,
+not deployment calibration data or independent human labeling.
+No original reserved case is released.
+
+The schedule is 84 fit/validation calls including fit-only repeat/order controls,
+then 36 locked-test calls after the candidate artifact/evaluator are frozen.
+Validation and test cannot change coefficients or regularization in this phase.
+Task #48 next freezes the exact feature client and fitting/evaluation command tree,
+then owns collection,
 semantic-head fitting,
-and locked evaluation after that freeze.
-The tested numerical solver is not evidence of semantic accuracy or calibration.
+and locked evaluation.
+The tested numerical solver and authored corpus are not evidence of semantic accuracy or calibration.
 
 ## Sequencing correction
 

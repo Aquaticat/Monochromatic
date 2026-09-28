@@ -261,11 +261,67 @@ Completed-continuation SHA-256:
 `659406e39bb4d7bfa25360ac439151a14fee32f9c49b7258d28f13af5e2460af`.
 No external numerical dependency or model call was added.
 
+## Fresh corpus freeze
+
+The fresh corpus and evaluation choices are frozen in
+`~/temp/agent/voyage-probability-heads-2026-09-28/corpus/manifest.json`.
+Its SHA-256 is
+`e59f9ac8f70811a1d05654d6c6014584019653b68617e4a3b909b81144fc0eb0`.
+Authoring source is `7df4553`,
+constructed references/control source is `e060d26`,
+and the fixed study plan/control evidence is `5b66861`.
+No new feature query preceded this freeze.
+
+Each of fit,
+validation,
+and locked test contains 36 selected sources grouped into three complete resource/operation episodes.
+All request/prose siblings and semantic-family variants stay in their episode's partition.
+These are not 36 independent episodes.
+Semantic families recur across partitions;
+this is not a family-disjoint or OOD benchmark.
+Each source-kind/axiom role has 18 rows per partition,
+with six positive and twelve negative references.
+That prevalence is chosen by the synthetic design,
+not sampled from deployment.
+The same agent authored language and labels;
+independent human annotation is not claimed.
+
+`proc_5cd1` passed actual parser/structured-input projection,
+reference-matrix checks,
+group separation,
+and syntax-boundary rejection controls.
+A separately retained source-partition-guard omission accepted the deliberately misplaced row,
+while the original rejected it.
+The corpus had no exact text overlap with 58 unique selected-source texts in the named prior semantic/control input banks;
+a known-overlap positive control passed.
+This does not establish semantic novelty or knowledge of model pretraining.
+No represented command or original reserved scenario was executed or queried.
+
+The fixed initial schedule is 84 fit/validation feature calls including repeat/order controls,
+then 36 locked-test calls.
+Each source pair shares five seconds;
+client retries remain zero.
+The coefficient/preprocessing artifact and evaluator must be frozen before test release.
+Validation cannot change this phase's coefficients or regularization.
+Test release does not require a favorable validation result:
+the one predeclared candidate is evaluated without rescue tuning.
+
+Report stable unpenalized log loss and Brier score against each role's fit-prevalence baseline,
+role/operation/family/episode slices,
+fixed probability bins,
+and the declared 80/20,
+90/10,
+and 95/05 diagnostics on both overall and accepted subsets.
+Empty subsets remain unavailable metrics,
+not fabricated calibration estimates.
+No production threshold or selector is selected.
+
 ## Current outcome
 
-The offline numerical mechanism is tested at the recorded scope.
+The numerical mechanism and fresh corpus are prepared at their recorded scopes.
 No semantic head has been fitted,
-no fresh semantic corpus has been queried,
+no fresh semantic source has been queried,
 and no calibrated probability or production model is selected.
-Next:
- freeze fresh grouped source episodes and references before feature collection.
+Next: freeze the exact feature client,
+fit/evaluation command tree,
+and test-release gate before starting the declared collection.
