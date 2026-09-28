@@ -360,25 +360,34 @@ export function createBedrockClient(
         : deadline.callSignal;
 
       /**
-       The card's stream bound, armed inside the slot beside the deadline;
-       absent where the card measured none. Its cut is a
-       `StreamBoundError`, which the router reads to hold Bedrock out for
-       this model.
-       */
-      using bound = streamBoundMs === 'unbounded'
-        ? undefined
-        : armStreamBound({
-          signal: deadlineSignal,
-          boundMs: streamBoundMs,
-          label: servedId,
-        },);
+       Transport each attempt of the ladder runs through: the card's stream
+       bound armed around that one attempt, where the card measured one. Its
+       cut is a `StreamBoundError`, which the ladder never retries and the
+       router reads to hold Bedrock out for this model.
 
-      /**
-       Signal the exchange honors: bound-joined when armed.
+       PER ATTEMPT, NOT PER LADDER (ledger P13, 2026-09-28): the bound is a
+       measurement of one stream (class one hundred forty-eight), and armed
+       once around the ladder it counted a failed attempt and its backoff
+       against the retry, so a healthy second stream could be cut and read as
+       Bedrock queueing the model. The five cuts in the run logs each ran a
+       single attempt to 60 s, so none was hit yet.
        */
-      const exchangeSignal = bound === undefined
-        ? deadlineSignal
-        : bound.callSignal;
+      const attemptTransport: ModelTransport = (streamBoundMs === 'unbounded')
+        ? transport
+        : async function boundedAttempt(exchange,): Promise<TransportReply> {
+          /**
+           This attempt's bound, forwarding the deadline's abort into it.
+           */
+          using bound = armStreamBound({
+            signal: exchange.signal,
+            boundMs: streamBoundMs,
+            label: servedId,
+          },);
+          return await transport({
+            ...exchange,
+            signal: bound.callSignal,
+          },);
+        };
 
       /**
        Messages as they go on the wire, carrying this call's own response
@@ -425,7 +434,7 @@ export function createBedrockClient(
        Raw reply from the transport seam, retried on transient statuses.
        */
       const reply = await exchangeWithRetry({
-        transport,
+        transport: attemptTransport,
         exchange: {
           url: bedrockChatUrlFor({
             baseUrl,
@@ -435,7 +444,7 @@ export function createBedrockClient(
           method: 'POST',
           headers,
           bodyJson,
-          signal: exchangeSignal,
+          signal: deadlineSignal,
           // Conditional spread keeps the knob absent instead of undefined.
           ...(request.maxAnswerChars === undefined
             ? {}

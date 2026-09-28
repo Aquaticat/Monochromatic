@@ -6,6 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { contextRoot, } from './log-context.ts';
 import { SyntheticHttpError, } from './completion-shape.ts';
+import { isStreamBoundCut, } from './stream-bound.ts';
 import { isSelfEndedStream, } from './stream-overrun.ts';
 import { retryAfterMsOf, } from './retry-stated-wait.ts';
 import type { ModelTransport, } from './synthetic-transport.ts';
@@ -326,6 +327,16 @@ async function attemptExchange(
     // drain could throw. A guard added later updates `isSelfEndedStream` and
     // this site keeps working.
     if (isSelfEndedStream({ error, },))
+      throw error;
+
+    // NOR IS A STREAM THE CARD'S BOUND CUT (ledger P13, 2026-09-28). The bound
+    // is armed around each attempt, inside the transport, so it never aborts
+    // the signal the check above reads; a retry would wait in the same queue,
+    // and the router has to see the cut to hold the provider out for the
+    // model. Asked apart from `isSelfEndedStream` because the drain wraps a
+    // bound cut in its cut-short error, which keeps the partial text, and
+    // only this walk down the cause chain finds it there.
+    if (isStreamBoundCut({ error, },))
       throw error;
 
     return {
