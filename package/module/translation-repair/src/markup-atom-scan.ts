@@ -41,6 +41,26 @@ export type MarkupAtomKind =
   | 'tag';
 
 /**
+ How the editor sheet names each kind, in the order it lists them.
+
+ A RECORD OVER EVERY KIND, so a kind the gate starts refusing cannot go
+ unnamed on the sheet: a gate the editor is never told about refuses edits
+ the editor had no way to avoid.
+
+ @example
+ ```ts
+ const name = MARKUP_ATOM_SHEET_NAMES['inline-code'];
+ ```
+ */
+export const MARKUP_ATOM_SHEET_NAMES: Readonly<Record<MarkupAtomKind, string>> = {
+  'footnote-reference': 'footnote markers like [^1]',
+  'link-destination': 'link destinations',
+  'mdx-expression': 'expressions in braces',
+  'inline-code': 'inline code in backticks',
+  tag: 'tags',
+};
+
+/**
  One markup atom, as the exact bytes that must survive.
 
  @example

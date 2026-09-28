@@ -17,6 +17,7 @@ import {
 
 import {
   buildEditorMessages,
+  MARKUP_ATOM_SHEET_NAMES,
   messageText,
 } from '../dist/final/node/index.mjs';
 
@@ -62,6 +63,30 @@ await describe({
         expect(content.includes('====== ORIGINAL ======',),).toBe(true,);
         expect(content.includes('\n===== ',),).toBe(false,);
         expect(content.includes(RULED_SOURCE,),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'markup rule (ledger L4)',
+  children: [
+    it({
+      name: 'NAMES on the editor sheet every markup kind the preservation gate refuses to lose, since a gate '
+        + 'the editor is never told about refuses edits it had no way to avoid',
+      fn: async () => {
+        /** The system turn, which carries the rules. */
+        const [system,] = buildEditorMessages({ sourceText: '猫。', targetText: 'Cat.', envelopes: [], issues: [], },)
+          .messages;
+        /** The rules as text. */
+        const rules = (system === undefined) ? '' : messageText({ message: system, },);
+        expect(
+          Object.values(MARKUP_ATOM_SHEET_NAMES,)
+            .filter(function unnamed(name,) {
+              return !rules.includes(name,);
+            },),
+        ).toStrictEqual([],);
+        expect(rules,).toContain('accuracy/addition issue quotes',);
       },
     },),
   ],

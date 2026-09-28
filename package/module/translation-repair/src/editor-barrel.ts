@@ -29,6 +29,7 @@ export {
 } from './licensed-quotes.ts';
 export { lostMarkupAtoms, } from './markup-atom-preservation.ts';
 export {
+  MARKUP_ATOM_SHEET_NAMES,
   type MarkupAtom,
   type MarkupAtomKind,
   scanMarkupAtoms,
