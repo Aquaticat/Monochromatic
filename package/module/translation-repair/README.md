@@ -183,7 +183,10 @@ and the rendering glossaries (`src/rendering-glossary*.ts`) seed Canadian forms 
 The sheets reach only slices a lane rewrites,
 so a page-assembly pass (`canadianizePage`, `src/corpus-run/canadian-forms.ts`)
 also reads every slice as the page will carry it, the untouched ones included,
-writes day-first dates month first
+writes every date month first
+(day first, year first, a range sharing one month, an abbreviated month),
+with the month in full, no ordinal suffix and the year set off by commas on both sides
+("On 4th May 2024 the cat" becomes "On May 4, 2024, the cat"),
 and respells a closed list of lower-case words (colour, centre, grey, licorice, realize and others),
 outside front matter, markup, attributes, links, code, comments and spans sealed as the English original;
 each change prints `canadian-form-rewritten`.

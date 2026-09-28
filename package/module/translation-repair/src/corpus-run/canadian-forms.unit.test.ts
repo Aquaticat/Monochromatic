@@ -218,7 +218,7 @@ await describe({
     },),
     it({
       name: 'READS EACH SHAPE\'S EDGES: a month and year with no day, a period that ends the sentence or only '
-        + 'the abbreviation, a pair, a hyphen after a date, a bare day\'s article, and "I" after the month',
+        + 'the abbreviation, a pair, a hyphen after a date, a bare day\'s article, "I" after the month, and a day right after a tag',
       fn: async () => {
         expect([
           rewritten({ text: 'The cats were adopted between Nov 2023 and Feb. 2024.', },),
@@ -231,6 +231,7 @@ await describe({
           rewritten({ text: 'The cat missed the 4 May deadline.', },),
           rewritten({ text: 'On 4 May I fed the cat.', },),
           rewritten({ text: '😺4 May', },),
+          rewritten({ text: 'The cat napped on <b>4 May</b>.', },),
         ],).toEqual([
           'The cats were adopted between November 2023 and February 2024.',
           'August 8, 2018, was hot.',
@@ -242,6 +243,7 @@ await describe({
           'The cat missed the May 4 deadline.',
           'On May 4 I fed the cat.',
           '😺May 4',
+          'The cat napped on <b>May 4</b>.',
         ],);
       },
     },),
