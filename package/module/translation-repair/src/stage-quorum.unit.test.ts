@@ -1196,6 +1196,86 @@ await describe({
     },),
 
     it({
+      name: 'NUDGES A REPLY CUT AT THE LENGTH LIMIT APART FROM ONE OFF THE SHAPE (ledger P10): the recovery round '
+        + 'told a model its reply "did not match the required response shape" when the cap had cut it before its '
+        + 'answer, which was 74 of the 75 cap-cut deepseek replies on Hyper',
+      fn: async () => {
+        /** Last message of each seat's nudged ask, by seat. */
+        const nudges: Record<string, string> = {};
+        /** Seat whose first reply the length limit cut. */
+        const cutShort = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
+        /** Seat whose first reply parsed to nothing the guard reads. */
+        const offShape = SEAT_SYNTHETIC_VISION_WITHHELD;
+        /** Client scripting the three seats. */
+        const client: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('chatText unused',);
+          },
+          chatJson: async <ValueT,>(
+            request: ChatJsonRequest<ValueT>,
+          ): Promise<ChatJsonOutcome<ValueT>> => {
+            /** Whether this ask carries anything past the stage's own prompt. */
+            const nudged = request.messages.length > 1;
+            if (nudged)
+              nudges[request.modelId] = JSON.stringify(request.messages.at(-1,)?.content ?? '',);
+            if ((request.modelId === cutShort) && (!nudged)) {
+              return {
+                kind: 'schema-mismatch',
+                rawText: '',
+                reason: 'truncated-completion',
+                detail: 'provider reported a truncating completion',
+              };
+            }
+            if ((request.modelId === offShape) && (!nudged)) {
+              return {
+                kind: 'schema-mismatch',
+                rawText: 'purr',
+                reason: 'unparseable-json',
+                detail: 'scripted unparseable answer',
+              };
+            }
+            /** Scripted payload for the answering call. */
+            const scripted: unknown = { meow: request.modelId, };
+            if (!request.validate(scripted,))
+              throw new Error('scripted payload failed the guard',);
+            return {
+              kind: 'ok',
+              value: scripted,
+              rawText: JSON.stringify(scripted,),
+            };
+          },
+          quotas: async () => {
+            throw new Error('quotas unused',);
+          },
+        };
+        /** Gather over the three seats. */
+        const gather = await gatherStageVoices({
+          client,
+          modelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR, cutShort, offShape,],
+          messages: [{ role: 'user', content: 'meow', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 1_000,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'gate',
+          l,
+          graceMs: RECOVERY_GRACE_MS,
+        },);
+        expect({
+          heard: gather.voices.length,
+          cutShortNudged: cutShort in nudges,
+          offShapeNudged: offShape in nudges,
+          apart: nudges[cutShort] !== nudges[offShape],
+        },).toEqual({
+          heard: 3,
+          cutShortNudged: true,
+          offShapeNudged: true,
+          apart: true,
+        },);
+      },
+    },),
+
+    it({
       name: 'REFUSES to re-ask a voice that never answered, since a model still '
         + 'thinking is bought a second deadline and not a second answer',
       fn: async () => {
