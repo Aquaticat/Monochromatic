@@ -78,8 +78,24 @@ function readingLetters({ rendering, }: { readonly rendering: string; },): strin
 }
 
 /**
- Finding for one signer a candidate left in Han or wrote with no meaning, or
- nothing.
+ Letters of the parenthetical a writer may echo instead of a meaning: the
+ words a finding or the house rule uses for one. The one wrong meaning that
+ can be predicted, so the one refused; any other text is the writer's
+ reading of the handle.
+ */
+const PLACEHOLDER_MEANINGS: ReadonlySet<string> = new Set([
+  'meaning',
+  'literalmeaning',
+  'itsmeaning',
+  'itsliteralmeaning',
+  'literalmeaninginenglish',
+  'itsliteralmeaninginenglish',
+  'meaninginenglish',
+],);
+
+/**
+ Finding for one signer a candidate left in Han, wrote with no meaning, or
+ glossed with a placeholder, or nothing.
 
  @param name - signer as the original signs it
 
@@ -109,22 +125,21 @@ function signerFinding(
    What the candidate wrote, without any meaning after it.
    */
   const bare = withoutGloss({ rendering: rendered, },);
+  // AN INSTRUCTION WITH THE HOUSE RULE'S OWN EXAMPLE, never a template: a
+  // quoted "(its literal meaning)" is the text a writer copies back.
   /**
-   How the page keeps the meaning, said in every finding.
+   What to write, said in every finding.
    */
-  const placement = 'the page keeps the meaning at its first appearance and drops it after that';
-  if (carriesHan({ text: bare, },)) {
-    return [
-      `The signature names ${name} and your translation leaves it in Han. Romanize the handle as it is `
-        + `read, with its literal meaning in parentheses: "${reading} (its literal meaning in English)"; ${placement}.`,
-    ];
-  }
-  if ((bare === rendered) && (readingLetters({ rendering: bare, },) === readingLetters({ rendering: reading, },))) {
-    return [
-      `The signature names ${name} and your translation writes "${bare}" with no literal meaning. Write it `
-        + `as "${reading} (its literal meaning in English)"; ${placement}.`,
-    ];
-  }
+  const instruction = `Write ${reading}, followed by what ${name} means in English in parentheses, as the house `
+    + 'rule writes Jinxin (Brocade Heart); the page keeps the meaning at its first appearance and drops it after that.';
+  if (carriesHan({ text: bare, },))
+    return [`The signature names ${name} and your translation leaves it in Han. ${instruction}`,];
+  if (readingLetters({ rendering: bare, },) !== readingLetters({ rendering: reading, },))
+    return [];
+  if (bare === rendered)
+    return [`The signature names ${name} and your translation writes "${bare}" with no literal meaning. ${instruction}`,];
+  if (PLACEHOLDER_MEANINGS.has(readingLetters({ rendering: rendered.slice(bare.length,), },),))
+    return [`The signature names ${name} and the parentheses after "${bare}" hold a placeholder, not a meaning. ${instruction}`,];
   return [];
 }
 
