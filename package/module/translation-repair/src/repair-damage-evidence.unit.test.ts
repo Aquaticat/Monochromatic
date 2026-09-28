@@ -106,6 +106,7 @@ await describe({
           lane: { chunks: [
             {
               sliceIndex: 1,
+              accuracyPatchSelected: true,
               introducedDefects: {
                 regions: [
                   regionOf({
@@ -124,13 +125,17 @@ await describe({
             },
             {
               sliceIndex: 2,
+              accuracyPatchSelected: true,
               introducedDefects: {
                 regions: [
                   regionOf({ claims: [claimOf({ admissibility: 'unanchored', evidence: 'nowhere', },),], },),
                 ],
               },
             },
-            { sliceIndex: 3, },
+            {
+              sliceIndex: 3,
+              accuracyPatchSelected: false,
+            },
           ], },
         },);
         expect([...bySlice.keys(),],).toEqual([1,],);
@@ -151,6 +156,7 @@ await describe({
           lane: { chunks: [
             {
               sliceIndex: 1,
+              accuracyPatchSelected: true,
               introducedDefects: {
                 regions: [
                   regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'she runs', },),], },),
@@ -169,6 +175,7 @@ await describe({
             },
             {
               sliceIndex: 2,
+              accuracyPatchSelected: false,
               refinementDefects: {
                 regions: [
                   regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'she shares', },),], },),
@@ -188,6 +195,44 @@ await describe({
         ],);
         expect(bySlice.get(2,),).toEqual([
           '- hf:moonshotai/Kimi-K3 [tense] on the naturalness rewrite quotes "she shares": the page holds past tense',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT the accuracy repair\'s claims where its patch lost (ledger L7): the repair lane then '
+        + 'ships the archive or its rewrite, never the patched text the probe quoted, as XingZ6014 slice 3 '
+        + 'showed the contest damage its candidate did not carry',
+      fn: async () => {
+        const bySlice = damageClaimLinesBySlice({
+          lane: { chunks: [
+            {
+              sliceIndex: 3,
+              accuracyPatchSelected: false,
+              introducedDefects: {
+                regions: [
+                  regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'she came out', },),], },),
+                ],
+              },
+            },
+            {
+              sliceIndex: 4,
+              accuracyPatchSelected: false,
+              introducedDefects: {
+                regions: [
+                  regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'she runs', },),], },),
+                ],
+              },
+              refinementDefects: {
+                regions: [
+                  regionOf({ claims: [claimOf({ admissibility: 'corroborated', evidence: 'she naps', },),], },),
+                ],
+              },
+            },
+          ], },
+        },);
+        expect([...bySlice.keys(),],).toEqual([4,],);
+        expect(bySlice.get(4,),).toEqual([
+          '- hf:moonshotai/Kimi-K3 [tense] on the naturalness rewrite quotes "she naps": the page holds past tense',
         ],);
       },
     },),
