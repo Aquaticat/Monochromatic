@@ -1,4 +1,7 @@
-import { requireExactKeys, } from '../artifact-exact-guard.ts';
+import {
+  requireExactKeys,
+  requireIndexPairList,
+} from '../artifact-exact-guard.ts';
 import {
   ArtifactParseError,
   requireArray,
@@ -54,73 +57,6 @@ export type ParsedBlockPairing = {
    */
   readonly kind: 'unrecorded';
 };
-
-/**
- Reads one section's agreed correspondences.
- 
- @param value - pairs as the section carries them
- 
- @param path - dotted path for error messages
- 
- @returns Pairs this section names, in the order recorded
- 
- @throws {@link ArtifactParseError} when a pair is the wrong shape or carries
- a key this version does not name
- 
- @example
- ```ts
- const pairs = parseSectionPairs({ value: record.pairs, path, },);
- ```
- */
-function parseSectionPairs(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): ArtifactSectionPairing['pairs'] {
-  return requireArray({
-    value,
-    path,
-  },)
-    .map(function readPair(
-      entry,
-      at,
-    ): ArtifactSectionPairing['pairs'][number] {
-      /**
-       Where this pair is reported from.
-       */
-      const entryPath = `${path}[${String(at,)}]`;
-
-      /**
-       Pair as a record.
-       */
-      const record = requireRecord({
-        value: entry,
-        path: entryPath,
-      },);
-      requireExactKeys({
-        record,
-        allowed: [
-          'source',
-          'target',
-        ],
-        path: entryPath,
-      },);
-      return {
-        source: requireCount({
-          value: record.source,
-          path: `${entryPath}.source`,
-        },),
-        target: requireCount({
-          value: record.target,
-          path: `${entryPath}.target`,
-        },),
-      };
-    },);
-}
 
 /**
  Refuses a section whose pairs could not have come from a roster reply.
@@ -307,7 +243,7 @@ export function parseBlockPairing(
       /**
        Correspondences agreed for it.
        */
-      const pairs = parseSectionPairs({
+      const pairs = requireIndexPairList({
         value: record.pairs,
         path: `${entryPath}.pairs`,
       },);

@@ -1,8 +1,9 @@
-import { requireExactKeys, } from '../artifact-exact-guard.ts';
+import {
+  requireExactKeys,
+  requireIndexPairList,
+} from '../artifact-exact-guard.ts';
 import {
   ArtifactParseError,
-  requireArray,
-  requireCount,
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
@@ -58,73 +59,6 @@ export type ParsedSectionPairing = {
    */
   readonly kind: 'unrecorded';
 };
-
-/**
- Reads the pairs a supplied section pairing committed to.
- 
- @param value - pairs as the artifact carries them
- 
- @param path - dotted path for error messages
- 
- @returns Pairs in the order recorded
- 
- @throws {@link ArtifactParseError} when a pair is the wrong shape or carries
- a key this version does not name
- 
- @example
- ```ts
- const pairs = parseSectionCorrespondences({ value: record.pairs, path, },);
- ```
- */
-function parseSectionCorrespondences(
-  {
-    value,
-    path,
-  }: {
-    readonly value: unknown;
-    readonly path: string;
-  },
-): readonly ArtifactSectionCorrespondence[] {
-  return requireArray({
-    value,
-    path,
-  },)
-    .map(function readPair(
-      entry,
-      at,
-    ): ArtifactSectionCorrespondence {
-      /**
-       Where this pair is reported from.
-       */
-      const entryPath = `${path}[${String(at,)}]`;
-
-      /**
-       Pair as a record.
-       */
-      const record = requireRecord({
-        value: entry,
-        path: entryPath,
-      },);
-      requireExactKeys({
-        record,
-        allowed: [
-          'source',
-          'target',
-        ],
-        path: entryPath,
-      },);
-      return {
-        source: requireCount({
-          value: record.source,
-          path: `${entryPath}.source`,
-        },),
-        target: requireCount({
-          value: record.target,
-          path: `${entryPath}.target`,
-        },),
-      };
-    },);
-}
 
 /**
  Refuses a pairing no section round could have agreed.
@@ -250,7 +184,7 @@ export function parseSectionPairing(
   /**
    Pairs the supplied pairing committed to.
    */
-  const pairs = parseSectionCorrespondences({
+  const pairs = requireIndexPairList({
     value: record.pairs,
     path: `${path}.pairs`,
   },);

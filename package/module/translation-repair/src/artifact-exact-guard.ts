@@ -1,8 +1,11 @@
 import {
   ArtifactParseError,
+  requireArray,
+  requireCount,
   requireRecord,
   requireString,
 } from './artifact-guard.ts';
+import type { IndexPair, } from './pair-agreement.ts';
 import type { ArtifactJsonValue, } from './corpus-run/artifact-two-lane-contract.ts';
 import {
   isJsonArray,
@@ -307,6 +310,80 @@ export function requireOpenRecord(
     value,
     path,
   },);
+}
+
+/**
+ Reads a required list of index pairs, each an exact `{ source, target }`
+ record of two counts.
+
+ The two section-pairing readers of artifact version 2
+ (`artifact-two-lane-read-pairing.ts` for the block pairing within each
+ section, `artifact-two-lane-read-section-pairing.ts` for the sections
+ themselves) each kept their own copy (audit area six, 2026-09-28).
+
+ @param value - value to check
+
+ @param path - dotted path for error message; an entry's path is this with
+ its position in brackets
+
+ @returns Pairs in stored order
+
+ @throws {@link ArtifactParseError} when the value is not an array, an entry
+ is not a record of exactly those two keys, or either is not a count
+
+ @example
+ ```ts
+ const pairs = requireIndexPairList({ value: record.pairs, path: 'pairing.pairs', },);
+ ```
+ */
+export function requireIndexPairList(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): readonly IndexPair[] {
+  return requireArray({
+    value,
+    path,
+  },)
+    .map(function readPair(
+      entry,
+      at,
+    ): IndexPair {
+      /**
+       Where this pair is reported from.
+       */
+      const entryPath = `${path}[${String(at,)}]`;
+
+      /**
+       Pair as a record.
+       */
+      const record = requireRecord({
+        value: entry,
+        path: entryPath,
+      },);
+      requireExactKeys({
+        record,
+        allowed: [
+          'source',
+          'target',
+        ],
+        path: entryPath,
+      },);
+      return {
+        source: requireCount({
+          value: record.source,
+          path: `${entryPath}.source`,
+        },),
+        target: requireCount({
+          value: record.target,
+          path: `${entryPath}.target`,
+        },),
+      };
+    },);
 }
 
 //endregion Artifact exact guards
