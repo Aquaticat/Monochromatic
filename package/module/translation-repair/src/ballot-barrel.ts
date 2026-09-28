@@ -26,6 +26,10 @@ export {
   type ResolutionBallot,
   tallyResolutionChecks,
 } from './tally-resolution.ts';
+// WHICH BALLOTS COUNT AS HEARD (ledger L8): a ballot or report carrying no
+// usable verdict is no voice, so the gather re-asks its seat.
+export { usablePanelBallotFor, } from './adjudicate-wire.ts';
+export { usableResolutionReportFor, } from './resolution-wire.ts';
 
 /**
  Slate shapes the selection stage decides over.

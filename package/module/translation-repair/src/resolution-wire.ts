@@ -276,6 +276,43 @@ export function isResolutionReportWire(value: unknown,): value is ResolutionRepo
 }
 
 /**
+ Guard for a report the gather may count as a heard checker: a wire report
+ carrying at least one known verdict on an issue the sheet showed.
+ 
+ LEDGER L8: `isResolutionReportWire` accepts `{"checks": []}`, a report
+ checking only issue numbers the sheet never showed, and one whose only
+ verdict is no verdict at all, so each counted as heard and closed a round
+ (XingZ6014 slice 87 resolved an issue on the one other ballot). Such a
+ report carries no voice, so the gather reads it as unreadable and the
+ recovery round re-asks the seat. A report usable on some issues is heard,
+ and abstains on the rest at tally time.
+ 
+ @param issueCount - issues the sheet showed, numbered from one
+ 
+ @returns Guard over parsed model JSON
+ 
+ @example
+ ```ts
+ const gather = await gatherStageVoices({ ..., validate: usableResolutionReportFor({ issueCount: 2, },), },);
+ ```
+ */
+export function usableResolutionReportFor(
+  { issueCount, }: { readonly issueCount: number; },
+): (value: unknown,) => value is ResolutionReportWire {
+  return function isUsableResolutionReport(value: unknown,): value is ResolutionReportWire {
+    if (!isResolutionReportWire(value,))
+      return false;
+    return value
+      .checks
+      .some(function checksShownIssue(check,): boolean {
+        return (check.issue >= 1)
+          && (check.issue <= issueCount)
+          && isResolutionVerdict(check.verdict,);
+      },);
+  };
+}
+
+/**
  Structured-output constraint for checker calls;
  client-side validation through {@link isResolutionReportWire} stays
  regardless, because per-model schema strictness is unverified.

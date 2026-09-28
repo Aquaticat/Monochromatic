@@ -14,7 +14,7 @@ import {
 } from './resolution-authorship.ts';
 import {
   buildResolutionMessages,
-  isResolutionReportWire,
+  usableResolutionReportFor,
   RESOLUTION_RESPONSE_FORMAT,
 } from './resolution-wire.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
@@ -137,7 +137,10 @@ export async function runCheckerStage(
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,
     responseFormat: RESOLUTION_RESPONSE_FORMAT,
-    validate: isResolutionReportWire,
+    validate: usableResolutionReportFor({
+      issueCount: plan.issueIds
+        .length,
+    },),
     stage: 'checker',
     l,
   },);

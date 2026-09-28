@@ -181,6 +181,43 @@ export function isPanelBallotWire(value: unknown,): value is PanelBallotWire {
 }
 
 /**
+ Guard for a ballot the gather may count as a heard voice: a wire ballot
+ carrying at least one verdict with a known vote on a claim the packet showed.
+ 
+ LEDGER L8: `isPanelBallotWire` accepts `{"verdicts": []}`, a ballot voting
+ only on claim numbers the packet never showed, and one whose only vote is
+ no vote at all ("minor"), so each counted as heard and closed a round whose
+ tally then abstained on every claim (TianqiChen66616 slice 3 landed a claim
+ in needs-human on two votes). Such a ballot carries no voice, so the gather
+ reads it as unreadable and the recovery round re-asks the seat. A ballot
+ usable on some claims is heard, and abstains on the rest at tally time.
+ 
+ @param claimCount - claims the packet showed, numbered from one
+ 
+ @returns Guard over parsed model JSON
+ 
+ @example
+ ```ts
+ const gather = await gatherStageVoices({ ..., validate: usablePanelBallotFor({ claimCount: 3, },), },);
+ ```
+ */
+export function usablePanelBallotFor(
+  { claimCount, }: { readonly claimCount: number; },
+): (value: unknown,) => value is PanelBallotWire {
+  return function isUsablePanelBallot(value: unknown,): value is PanelBallotWire {
+    if (!isPanelBallotWire(value,))
+      return false;
+    return value
+      .verdicts
+      .some(function votesOnShownClaim(verdict,): boolean {
+        return (verdict.claim >= 1)
+          && (verdict.claim <= claimCount)
+          && isPanelVoteState(verdict.vote,);
+      },);
+  };
+}
+
+/**
  Structured-output constraint for panel calls;
  client-side validation through {@link isPanelBallotWire} stays regardless,
  because per-model schema strictness is unverified.

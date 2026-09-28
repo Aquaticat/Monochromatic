@@ -15,7 +15,7 @@ import {
 } from './adjudicate-prompt.ts';
 import {
   ADJUDICATION_RESPONSE_FORMAT,
-  isPanelBallotWire,
+  usablePanelBallotFor,
   resolvePanelBallot,
 } from './adjudicate-wire.ts';
 import type { ClaimCluster, } from './aggregate-claims.ts';
@@ -329,7 +329,10 @@ export async function runPanelStage(
         signal,
         exchangeTimeoutMs: perCallTimeoutMs,
         responseFormat: ADJUDICATION_RESPONSE_FORMAT,
-        validate: isPanelBallotWire,
+        validate: usablePanelBallotFor({
+          claimCount: plan.claimIds
+            .length,
+        },),
         stage: 'panel',
         l: packetLogger,
       },);
