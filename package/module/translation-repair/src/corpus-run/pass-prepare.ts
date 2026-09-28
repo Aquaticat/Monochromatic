@@ -11,16 +11,8 @@ import {
   keepBench,
 } from '../bench-seating.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
-import {
-  corpusNameLines,
-  readCorpusNames,
-} from '../corpus-name-index.ts';
-import { lookupCacheDir, } from '../lookup-cache.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
-import { workTitleLookupLines, } from '../work-title-lookup.ts';
-import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
-import { citedReferenceBlock, } from '../cited-reference-lookup.ts';
-import { referenceCacheDir, } from '../reference-cache.ts';
+import { corpusNameLines, } from '../corpus-name-index.ts';
+import type { PassOutsideReads, } from './pass-outside-reads.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
   openPairingCache,
@@ -46,76 +38,6 @@ import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 // Each re-preparation is the structural consequence of having edited the
 // archive, not a rejection-driven re-ask; blocks still unclaimed after the
 // last become findings (doc/planning/translation-repair-no-loop-design.md).
-
-/**
- The clock a lookup record is stamped with.
- 
- @returns Now
- 
- @example
- ```ts
- const stamped = wallClock().toISOString();
- ```
- */
-function wallClock(): Date {
-  return new Date();
-}
-
-/**
- Reads what the pages an original links say, empty when it links nowhere or
- nothing could be read.
-
- @example
- ```ts
- const readReferences: PassReferenceReader = readCitedReferences;
- ```
- */
-export type PassReferenceReader = (
-  input: {
-    readonly sourceText: string;
-    readonly signal: AbortSignal;
-    readonly l: Logger;
-  },
-) => Promise<string>;
-
-/**
- The run's reference reader: each page bought once over the web and cached
- durably (class thirty-five, the owner's decision of 2026-09-16).
-
- @param sourceText - the original, whose links are read
-
- @param signal - entry deadline and caller abort
-
- @param l - entry logger
-
- @returns What the linked pages say, empty when there are none or no key to read them with
-
- @example
- ```ts
- const referenceLines = await readCitedReferences({ sourceText, signal, l, },);
- ```
- */
-function readCitedReferences(
-  {
-    sourceText,
-    signal,
-    l,
-  }: {
-    readonly sourceText: string;
-    readonly signal: AbortSignal;
-    readonly l: Logger;
-  },
-): Promise<string> {
-  return citedReferenceBlock({
-    sourceText,
-    apiKey: process.env[EXA_API_KEY_VAR] ?? '',
-    dir: referenceCacheDir({ env: process.env, },),
-    signal,
-    fetchFn: fetch,
-    now: wallClock,
-    logger: l,
-  },);
-}
 
 /**
  Prepares one pass entry with cached roster pairing and publication safety.
@@ -145,15 +67,15 @@ function readCitedReferences(
  @param beforeItem - one per-item hook for every stage that asks the roster, so
  once a hold re-seats it the later stages stay re-seated (ledger X12)
 
- @param readReferences - reader of the pages the original links, the run's
- web reader when absent; injected, as `readPictures` is, so a test can drive
- the attestation round without the network
+ @param outsideReads - what the preparation reads from outside the
+ pipeline, required so no caller inherits the run's keys and caches by
+ leaving it out (ledger X19): `RUN_OUTSIDE_READS` in a run
 
  @returns Prepared slices and pairing findings
  
  @example
  ```ts
- const paired = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, });
+ const paired = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads: RUN_OUTSIDE_READS, });
  ```
  */
 export async function preparePassEntry(
@@ -170,7 +92,7 @@ export async function preparePassEntry(
     l,
     readPictures,
     beforeItem,
-    readReferences,
+    outsideReads,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entryId: string;
@@ -184,7 +106,7 @@ export async function preparePassEntry(
     readonly l: Logger;
     readonly readPictures?: PassVisualEvidenceReader;
     readonly beforeItem?: () => Promise<BenchSeating>;
-    readonly readReferences?: PassReferenceReader;
+    readonly outsideReads: PassOutsideReads;
   }>,
 ): Promise<PairedPreparation> {
   l.debug(`${preparePassEntry.name}: preparing entry ${entryId}`,);
@@ -234,14 +156,10 @@ export async function preparePassEntry(
    for both preparations so a corrected archive does not change what the
    sheets are told about a title.
    */
-  const workTitleLines = await workTitleLookupLines({
+  const workTitleLines = await outsideReads.workTitles({
     sourceText,
-    apiKey: process.env[EXA_API_KEY_VAR] ?? '',
-    dir: lookupCacheDir({ env: process.env, },),
     signal,
-    fetchFn: fetch,
-    now: wallClock,
-    logger: l,
+    l,
   },);
   /**
    How the corpus renders the people of other entries this original names
@@ -251,7 +169,7 @@ export async function preparePassEntry(
    */
   const corpusNameContext = corpusNameLines({
     text: sourceText,
-    names: await readCorpusNames({ pin: RUN_CORPUS_PIN, },),
+    names: await outsideReads.corpusNames(),
     ownId: entryId,
   },);
   /**
@@ -280,7 +198,7 @@ export async function preparePassEntry(
    a detail the archive took from a cited reference is not deleted as an
    addition.
    */
-  const referenceLines = await (readReferences ?? readCitedReferences)({
+  const referenceLines = await outsideReads.references({
     sourceText,
     signal,
     l,

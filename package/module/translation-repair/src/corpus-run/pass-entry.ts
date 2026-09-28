@@ -32,6 +32,7 @@ import { unfilledPageFindings, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
 import { createPassPictureReader, } from './pass-seated-pictures.ts';
+import { RUN_OUTSIDE_READS, } from './pass-outside-reads.ts';
 import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 import {
   openEntryCaches,
@@ -237,6 +238,7 @@ async function runEntryPipeline(
       // is the archive as prepared, never these bytes.
       targetText: entry.targetText,
       signal: deadline.callSignal,
+      outsideReads: RUN_OUTSIDE_READS,
     },);
     /**
      Archive after preparation-stage review corrections.

@@ -101,10 +101,14 @@ export {
   assertVisualEvidenceComplete,
   VisualEvidenceInterruptedError,
 } from './corpus-run/visual-evidence-completeness.ts';
+export { preparePassEntry, } from './corpus-run/pass-prepare.ts';
 export {
+  type PassCorpusNameReader,
+  type PassOutsideReads,
   type PassReferenceReader,
-  preparePassEntry,
-} from './corpus-run/pass-prepare.ts';
+  type PassWorkTitleReader,
+  RUN_OUTSIDE_READS,
+} from './corpus-run/pass-outside-reads.ts';
 export { attestPassReferences, } from './corpus-run/pass-attest-references.ts';
 export {
   type LanesSeating,

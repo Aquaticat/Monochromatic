@@ -37,6 +37,8 @@ import {
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 
+import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+
 /**
  Pairing roster accepted by canned client.
  */
@@ -237,6 +239,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: 5_000,
           l,
+          outsideReads: NO_OUTSIDE_READS,
         },);
         await rm(dir, { recursive: true, force: true, },);
 
@@ -271,6 +274,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: 5_000,
           l,
+          outsideReads: NO_OUTSIDE_READS,
           readPictures: async ({ slices, },) => {
             expect(slices.some(function namesChat(slice,): boolean {
               return slice.source.text.includes('chat.webp',);

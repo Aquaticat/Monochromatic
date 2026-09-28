@@ -52,6 +52,8 @@ import {
   runPassPreparation,
 } from '../../dist/final/node/index.mjs';
 
+import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+
 /**
  Logger the seams write to, whose lines are not under test.
  */
@@ -607,6 +609,7 @@ async function preparationAsked({ later, }: { readonly later: BudgetView; },): P
     sourceText: `${SOURCE}\n\n它梦见了鱼。`,
     targetText: `${ARCHIVE}\n\nIt dreamed of fish.`,
     signal: AbortSignal.timeout(30_000,),
+    outsideReads: NO_OUTSIDE_READS,
   },);
   return asked;
 }
@@ -678,6 +681,7 @@ async function archiveReviewAsked({ later, }: { readonly later: BudgetView; },):
     sourceText: `${SOURCE}\n\n它梦见了鱼。`,
     targetText: `${ARCHIVE}\n\nIt dreamed of fish.\n\nThe cat won an award.`,
     signal: AbortSignal.timeout(30_000,),
+    outsideReads: NO_OUTSIDE_READS,
   },);
   return reviewed;
 }

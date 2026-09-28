@@ -15,8 +15,9 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   translateSliceInput,
   type PairedSectionRecord,
-  workTitlesOf,
 } from '../../dist/final/node/index.mjs';
+
+import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 
 const roster = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER] as const;
 const l = tagged({ tag: 'pass-footnote-lifecycle-test' });
@@ -53,8 +54,8 @@ await describe({
         await using owned = { [Symbol.asyncDispose]: async (): Promise<void> => {
           await rm(entryCacheDir, { recursive: true, force: true });
         } };
-        // This call returns before lookup I/O. Model I/O uses only the injected transport.
-        expect(workTitlesOf({ text: sourceText })).toEqual([]);
+        // Model I/O uses only the injected transport, and the preparation reads
+        // nothing from outside the pipeline (ledger X19).
         const calls: { readonly phase: string; readonly body: string; }[] = [];
         const archiveText = `${archiveBody}\n\n${protectedOriginal ? '<!-- 以下内容原文为英文 -->\n\n' : ''}${crossed ? crossedDefinitions : archiveDefinitions}`;
         const expectedText = protectedOriginal ? archiveText : finalText;
@@ -73,7 +74,8 @@ await describe({
         const generation = `sha256-tree-v1:${'f'.repeat(64)}`;
         assertPipelineDigest(generation);
         const input = { client, entryId: 'invented-footnote-entry', entryCacheDir, pipelineDigest: generation,
-          modelIds: roster, sourceText, targetText: archiveText, signal: new AbortController().signal, exchangeTimeoutMs: 5_000, l };
+          modelIds: roster, sourceText, targetText: archiveText, signal: new AbortController().signal, exchangeTimeoutMs: 5_000, l,
+          outsideReads: NO_OUTSIDE_READS };
         const cold = await preparePassEntry(input);
         expect(cold.prepared.targetText).toBe(expectedText);
         expect(calls.map(call => call.phase)).toEqual(protectedOriginal ? ['initial', 'initial'] : ['initial', 'initial', 'changed', 'changed']);

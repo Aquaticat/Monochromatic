@@ -38,6 +38,8 @@ import {
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 
+import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+
 /**
  Logger the preparation writes to, whose lines are not under test.
  */
@@ -170,7 +172,7 @@ async function prepared({ sourceText, }: { readonly sourceText: string; },) {
     exchangeTimeoutMs: 5_000,
     l,
     beforeItem: async (): Promise<BenchSeating> => ({ modelIds: RESEATED, }),
-    readReferences: async () => '',
+    outsideReads: NO_OUTSIDE_READS,
   },);
   return {
     identityContext: paired.prepared.identityContext ?? '',

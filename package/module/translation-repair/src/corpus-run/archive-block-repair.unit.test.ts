@@ -46,6 +46,8 @@ import {
   type UnclaimedTargetBlock,
 } from '../../dist/final/node/index.mjs';
 
+import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+
 /** Four-seat review and selection roster. */
 const ROSTER = [
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -314,6 +316,7 @@ await describe({
           signal: new AbortController().signal,
           exchangeTimeoutMs: 5_000,
           l,
+          outsideReads: NO_OUTSIDE_READS,
         },);
         await rm(dir, { recursive: true, force: true, },);
 

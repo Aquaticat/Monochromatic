@@ -40,6 +40,8 @@ import {
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
 
+import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+
 /**
  Logger the round writes to, whose lines are not under test.
  */
@@ -332,7 +334,10 @@ async function preparationAsked(
     exchangeTimeoutMs: 5_000,
     l,
     beforeItem,
-    readReferences: async () => REFERENCE_LINES,
+    outsideReads: {
+      ...NO_OUTSIDE_READS,
+      references: async () => REFERENCE_LINES,
+    },
   },);
   return {
     asked,

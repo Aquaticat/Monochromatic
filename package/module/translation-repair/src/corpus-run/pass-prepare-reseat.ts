@@ -10,6 +10,7 @@ import {
   type Reseated,
   reseatHookFor,
 } from './pass-reseat-hook.ts';
+import type { PassOutsideReads, } from './pass-outside-reads.ts';
 import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import type { RunClient, } from './run-client-contract.ts';
@@ -126,11 +127,14 @@ export function preparationHooksFor(
 
  @param signal - entry deadline and caller abort
 
+ @param outsideReads - what the preparation reads from outside the pipeline
+ (ledger X19): `RUN_OUTSIDE_READS` in a run
+
  @returns Prepared slices and pairing findings
 
  @example
  ```ts
- const paired = await runPassPreparation({ client, entryId, entryCacheDir, pipelineDigest, readPictures, sourceText, targetText, signal, },);
+ const paired = await runPassPreparation({ client, entryId, entryCacheDir, pipelineDigest, readPictures, sourceText, targetText, signal, outsideReads: RUN_OUTSIDE_READS, },);
  ```
  */
 export async function runPassPreparation(
@@ -143,6 +147,7 @@ export async function runPassPreparation(
     sourceText,
     targetText,
     signal,
+    outsideReads,
   }: {
     readonly client: RunClient;
     readonly entryId: string;
@@ -152,6 +157,7 @@ export async function runPassPreparation(
     readonly sourceText: string;
     readonly targetText: string;
     readonly signal: AbortSignal;
+    readonly outsideReads: PassOutsideReads;
   },
 ): Promise<PairedPreparation> {
   /**
@@ -188,6 +194,7 @@ export async function runPassPreparation(
       l,
     },)
       .beforeItem,
+    outsideReads,
   },);
 }
 
