@@ -17,6 +17,7 @@ import {
 import {
   CORPUS_CLONE_DIR_VAR,
   CORPUS_COMMIT_VAR,
+  corpusPinOverrideNote,
   readCorpusPinSetting,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
@@ -181,6 +182,34 @@ await describe({
         expect(
           commitRefusal({ commit: 'g'.repeat(40,), },) instanceof StatedRefusalError,
         ).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: corpusPinOverrideNote.name,
+  children: [
+    it({
+      name: 'SAYS NOTHING FOR THE BUILT-IN PIN, and names each overridden half with its source (ledger D13: the '
+        + 'setting was kept for launch logs and no launch printed it)',
+      fn: async () => {
+        /**
+         The note under each environment.
+         */
+        const notes = [
+          {},
+          { commit: 'b'.repeat(40,), },
+          { cloneDir: '/cats/fixture/clone', },
+        ].map(function noteUnder(dials,): string {
+          using cleanup = pinEnvironment(dials,);
+          return corpusPinOverrideNote({ setting: readCorpusPinSetting({ fallback: FALLBACK_PIN, },), },);
+        },);
+        expect(notes,).toEqual([
+          '',
+          `CORPUS PIN OVERRIDDEN: clone /cats/corpus/clone from fallback, commit ${'b'.repeat(40,)} from ${CORPUS_COMMIT_VAR}`,
+          `CORPUS PIN OVERRIDDEN: clone /cats/fixture/clone from ${CORPUS_CLONE_DIR_VAR}, commit ${'a'.repeat(40,)} from fallback`,
+        ],);
       },
     },),
   ],

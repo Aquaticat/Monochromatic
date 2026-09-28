@@ -64,8 +64,10 @@ import {
   readHeadSha,
   resolveRunsDir,
   RUN_CORPUS_PIN,
+  RUN_CORPUS_PIN_SETTING,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { corpusPinOverrideNote, } from './corpus-pin-override.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import {
   assertRequiredProvidersReady,
@@ -484,6 +486,15 @@ async function runCorpusPass(): Promise<void> {
     console.log(graceNote,);
   if (writerNote !== '')
     console.log(writerNote,);
+
+  // Nor which corpus (ledger D13): a pass read under an overridden clone or
+  // commit settles a fixture's pages, not the pinned corpus's.
+  /**
+   The corpus pin's launch line, empty for the built-in pin.
+   */
+  const pinNote = corpusPinOverrideNote({ setting: RUN_CORPUS_PIN_SETTING, },);
+  if (pinNote !== '')
+    console.log(pinNote,);
 
   if (!capOutlastsOneCall({
     capMs: HARD_CAP_MS,

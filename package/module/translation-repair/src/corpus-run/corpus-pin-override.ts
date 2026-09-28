@@ -150,4 +150,33 @@ export function readCorpusPinSetting(
   };
 }
 
+/**
+ Names where the corpus pin came from when a launch overrode either half, so
+ a run's log says which corpus it read (ledger D13: the setting was kept "for
+ launch logs" and no launch printed it).
+
+ EMPTY FOR THE BUILT-IN PIN, like the other override notes a pass prints
+ after its START line: a line on every launch saying nothing changed would
+ bury the one that says something did.
+
+ @param setting - the resolved pin beside where each half came from
+
+ @returns The launch line, or empty when neither half was overridden
+
+ @example
+ ```ts
+ const note = corpusPinOverrideNote({ setting: RUN_CORPUS_PIN_SETTING, },);
+ ```
+ */
+export function corpusPinOverrideNote(
+  { setting, }: { readonly setting: CorpusPinSetting; },
+): string {
+  if ((setting.cloneDirSource === 'fallback') && (setting.commitSource === 'fallback'))
+    return '';
+  return `CORPUS PIN OVERRIDDEN: clone ${setting.pin
+    .cloneDir} from ${setting.cloneDirSource}, `
+    + `commit ${setting.pin
+      .commitSha} from ${setting.commitSource}`;
+}
+
 //endregion Corpus pin override

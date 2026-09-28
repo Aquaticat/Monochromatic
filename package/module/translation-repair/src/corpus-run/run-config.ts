@@ -934,7 +934,8 @@ export const RUN_CALL_CONFIG: RunCallConfig = {
 
 /**
  Corpus read location and commit with any environment override applied,
- beside where each half came from, for launch logs.
+ beside where each half came from, for the launch line
+ `corpusPinOverrideNote` makes of it.
  */
 export const RUN_CORPUS_PIN_SETTING: CorpusPinSetting = readCorpusPinSetting({
   fallback: {

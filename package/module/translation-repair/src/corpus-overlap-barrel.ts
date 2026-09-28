@@ -15,6 +15,7 @@ export {
   CORPUS_COMMIT_VAR,
   type CorpusPinSetting,
   type CorpusPinSource,
+  corpusPinOverrideNote,
   readCorpusPinSetting,
 } from './corpus-run/corpus-pin-override.ts';
 
