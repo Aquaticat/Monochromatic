@@ -1052,6 +1052,27 @@ role/polarity,
 collision,
 temporal,
 and deadline controls before the twenty-eight-call tranche.
+`proc_ca33` completed all calls and shared clocks;
+`proc_7968` rechecked raw evidence and the combined analysis without further calls.
+Raw result `f3bc49d` has SHA-256
+`7d5123ff10fbaa7cda551050ae2ca0a91d612278003921244e34d11b7b6a1cb4`.
+Across the complete exposed concrete bank,
+96 shared-source margin comparisons yielded 93 reference-consistent orders,
+3 ties,
+and 0 inversions.
+The tied margins had distinct raw pairs/common levels.
+No opposite-reference coordinate group was found within a role or role/operation.
+All six cross-clause and twelve prohibition contrasts ordered consistently.
+Eight contemporary abstract raw-pair comparisons matched the old abstract values,
+including the still-tied `.env`/`.env.template` read-prose pair.
+These are raw-feature observations,
+not probabilities or calibration.
+
+Next are #54 and #55:
+freeze fully fresh 36-source fit/validation/test partitions with nine episode groups per partition,
+then fit the same four fixed-objective heads on the unchanged concrete coordinates in the same offline sandbox.
+The new phase remains 108 core plus twelve fit-only controls,
+with no tuning from validation and a fresh locked test.
 Do not retune the completed candidate on its exposed test data.
 Do not resume Q16 or Laya #34.
 

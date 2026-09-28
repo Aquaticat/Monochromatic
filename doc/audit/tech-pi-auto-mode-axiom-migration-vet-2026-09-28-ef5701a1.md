@@ -691,5 +691,56 @@ full-role/polarity comparisons,
 positive/negative collision controls,
 temporal-control sensitivity,
 and shared clocks with an isolated deadline omission.
-The twenty-eight calls remain separately bounded;
-no result is inferred before dispatch.
+`proc_ca33` completed the twenty-eight calls and 112 new raw scores,
+with zero retries and every shared clock met.
+Observed pair times were `858.905780000001` to `1429.293231` ms;
+reported usage totaled 1,306,764 tokens.
+
+The combined concrete bank contains 36 exposed sources and 72 axiom pairs across two runs.
+Its 96 within-cell true/false margin comparisons gave 93 reference-consistent orders,
+3 ties,
+and 0 inversions.
+Comparisons share source observations and are not independent trials or classification predictions.
+The tied cells were cache/request positive relation,
+cache/request prohibition,
+and transfer/prose positive relation.
+Each tied margin retained a distinct full raw pair and common level.
+No exact opposite-reference coordinate group was found within a role or role/operation in this combined bank.
+Positive and negative detector controls passed;
+this null count does not establish general separability.
+
+All six direct-positive/cross-clause contrasts and all twelve direct/broad-prohibition versus no-ban contrasts
+had reference-consistent margin ordering.
+All eight temporal abstract raw-pair comparisons matched the retained abstract values.
+The abstract `.env`/`.env.template` read-prose pair remained tied at `0.5390625`/`0.54296875`,
+while its concrete observations were distinct.
+Serving weights,
+cache independence,
+and future stability remain unverified.
+
+Raw result commit: `f3bc49d`.
+Result SHA-256:
+`7d5123ff10fbaa7cda551050ae2ca0a91d612278003921244e34d11b7b6a1cb4`.
+`proc_7968` rebuilt bodies,
+reparsed responses,
+rechecked source/policy,
+and recomputed the complete analysis without further calls.
+`proc_7543` derived totals and the tied-pair ledger without changing evidence.
+No fitting,
+probability head application,
+cutoff,
+or production profile was produced.
+
+The bounded no-fitting phase is complete.
+The next fitting phase keeps the same authorized four local heads,
+fixed objective,
+public/synthetic scope,
+and offline 2 GiB/2-CPU/60-second limits.
+It will freeze fully fresh 36-source fit,
+validation,
+and locked-test partitions before queries,
+using nine episode groups per partition and keeping siblings together.
+The concrete wording stays unchanged.
+The intended schedule remains 108 core plus twelve fit-only repeat/order calls;
+no old exposed bank becomes fresh validation,
+and no validation-driven tuning or original reserved-scenario release follows.
