@@ -829,6 +829,27 @@ await describe({
         ],);
       },
     },),
+
+    it({
+      name: 'REFUSES an edit whose lost atom only a refused edit wrote, which takes a second round: the '
+        + 'first edit loses a reference no edit writes, and the second loses the one only the first wrote',
+      fn: async () => {
+        const outcome = twoEdits({
+          targetText: 'The cat[^1] napped. The kitten[^3] played.',
+          firstBase: 'The cat[^1] napped.',
+          firstNew: 'The cat[^3] napped.',
+          secondNew: 'The kitten played.',
+          secondHashStale: false,
+        },);
+        expect(outcome.applied,).toHaveLength(0,);
+        expect(outcome.rejected.map(function toReason(rejection,): string {
+          return rejection.reason;
+        },),).toStrictEqual([
+          'preservation-lost-markup (footnote-reference)',
+          'preservation-lost-markup (footnote-reference)',
+        ],);
+      },
+    },),
   ],
 },);
 
