@@ -1949,8 +1949,20 @@ a neutral "correctly renders" claim accepted and cut into an envelope.
 
 ### L6: the lane contest runs on insertion slices the repair lane does not apply to
 
-Status: open.
+Status: open; measured and designed 2026-09-28, deferred past the TianqiChen666 launch,
+since no TianqiChen666 run contested such a slice (its archive has every passage).
 31 wasted contests on XingZ6014.
+Across the 240 contested artifacts under the agent runs,
+952 contests ran on slices whose repair outcome is `not-applicable` (every one an archive-absent insertion):
+931 went to the translate lane, 5 settled neither and were consolidated,
+and 16 missed quorum, where the consolidation found no standing text and nothing shipped,
+so those 16 inserted passages are missing from their pages.
+Excluding such rows from the contest would also skip the consolidation and polish,
+which run only on contested slices, and those are the passages no human translated.
+Design: from a new artifact generation, such a row takes a deterministic `sole-lane` verdict naming the lane that applies,
+with no roster asked;
+the consolidation treats it as a win for that lane, the would-ship reader ships that lane's wording,
+and a reader of an older generation reads the contests it recorded.
 
 ### L7: the lane contest is shown probe claims about a patch that lost
 
