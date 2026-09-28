@@ -37,6 +37,7 @@ export {
   sliceRatios,
   type SliceSize,
   sliceSizeOf,
+  sliceSizesOf,
 } from './displacement-ratio.ts';
 export {
   isPlausibleSlice,

@@ -9,7 +9,7 @@ import {
   readCorpusFile,
 } from '../corpus-source.ts';
 import { classifyDisplacement, } from '../displacement-class.ts';
-import { sliceSizeOf, } from '../displacement-ratio.ts';
+import { sliceSizesOf, } from '../displacement-ratio.ts';
 import { prepareDocumentPair, } from '../document-preparation.ts';
 import {
   createRunClient,
@@ -168,15 +168,7 @@ async function drawEntry(
    What the screen makes of their sizes.
    */
   const displacement = classifyDisplacement({
-    slices: prepared.slices
-      .map(function toSizes(slice,) {
-        return sliceSizeOf({
-          sourceText: slice.source
-            .text,
-          targetText: slice.target
-            .text,
-        },);
-      },),
+    slices: sliceSizesOf({ slices: prepared.slices, },),
   },);
 
   /**

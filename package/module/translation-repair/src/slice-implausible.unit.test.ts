@@ -22,6 +22,7 @@ import {
   isPlausibleSlice,
   sliceImplausibility,
   sliceSizeOf,
+  sliceSizesOf,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -282,6 +283,22 @@ await describe({
         },);
         expect(size.targetChars,).toBe(0,);
         expect(size.targetBlocks,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'SIZES EVERY SLICE OF A PREPARATION in slice order, each as sliceSizeOf reads it',
+      fn: async () => {
+        /**
+         Two slices, the second an insertion anchor with no original.
+         */
+        const slices = [
+          { source: { text: '猫在睡觉。', }, target: { text: 'The cat naps.', }, },
+          { source: { text: '', }, target: { text: 'A kitten waits.\n\nThen it naps.', }, },
+        ];
+        expect(sliceSizesOf({ slices, },),).toEqual(slices.map(function sizeOf(slice,) {
+          return sliceSizeOf({ sourceText: slice.source.text, targetText: slice.target.text, },);
+        },),);
+        expect(sliceSizesOf({ slices, },)[1]?.targetBlocks,).toBe(2,);
       },
     },),
   ],

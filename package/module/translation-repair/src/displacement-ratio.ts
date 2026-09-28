@@ -200,6 +200,40 @@ export function sliceSizeOf(
 }
 
 /**
+ Sizes of every slice of a preparation, in slice order.
+
+ The displacement probe and the window trial each mapped their slices
+ through `sliceSizeOf` with their own copy of this (audit area six,
+ 2026-09-28).
+
+ @param slices - prepared slices, each with its two texts
+
+ @returns Each slice's size
+
+ @example
+ ```ts
+ const sizes = sliceSizesOf({ slices: prepared.slices, },);
+ ```
+ */
+export function sliceSizesOf(
+  { slices, }: {
+    readonly slices: readonly {
+      readonly source: { readonly text: string; };
+      readonly target: { readonly text: string; };
+    }[];
+  },
+): readonly SliceSize[] {
+  return slices.map(function toSizes(slice,): SliceSize {
+    return sliceSizeOf({
+      sourceText: slice.source
+        .text,
+      targetText: slice.target
+        .text,
+    },);
+  },);
+}
+
+/**
  One slice's size reading with the ratio it implies.
  
  @example

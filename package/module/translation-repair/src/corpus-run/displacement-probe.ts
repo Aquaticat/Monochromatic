@@ -5,7 +5,7 @@ import {
   type DocumentDisplacement,
   type RelocationCandidate,
 } from '../displacement-class.ts';
-import { sliceSizeOf, } from '../displacement-ratio.ts';
+import { sliceSizesOf, } from '../displacement-ratio.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import {
   resolveRunsDir,
@@ -123,15 +123,7 @@ function readEntry(
    Sizes of both sides per slice, classified.
    */
   const reading = classifyDisplacement({
-    slices: prepared.slices
-      .map(function toSizes(slice,) {
-        return sliceSizeOf({
-          sourceText: slice.source
-            .text,
-          targetText: slice.target
-            .text,
-        },);
-      },),
+    slices: sliceSizesOf({ slices: prepared.slices, },),
   },);
   return {
     entryId,
