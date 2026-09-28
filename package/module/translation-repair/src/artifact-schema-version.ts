@@ -31,7 +31,8 @@ import {
 /**
  First schema generation there has ever been.
  
- NOT WHAT THE PASS WRITES, which is `ARTIFACT_SCHEMA_VERSION_V7` and has been
+ NOT WHAT THE PASS WRITES, which is `ARTIFACT_SCHEMA_VERSION_V14`
+ (`corpus-run/artifact-two-lane-contract.ts`, ledger D2) and has been
  a two-lane generation since `settleEntry` moved to one. This was called
  `SETTLED_ARTIFACT_SCHEMA_VERSION` and documented as the generation the pass
  writes, which stopped being true at that move; it is renamed rather than
@@ -44,6 +45,10 @@ import {
  A version that does NOT move on a shape change is the failure this field
  exists to end, so say so here when a field is added compatibly.
  
+ VERSIONS 10 TO 14 are recorded at their constants in
+ `corpus-run/artifact-two-lane-contract.ts`, each saying what moved from the one
+ before; the history here stops at 9 because the constants moved there.
+
  VERSION 9, 2026-08-28: absolute review may drive two bounded corrections;
  each transition binds rejected text, canonical findings, and gated text digests.
  

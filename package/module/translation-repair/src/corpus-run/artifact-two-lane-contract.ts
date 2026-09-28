@@ -33,7 +33,8 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
 // a syntax check as a verification.
 
 /**
- Generation this contract describes, and the one the pass writes.
+ Generation twelve, which sealed the archive-original spans; the pass writes
+ generation fourteen (`ARTIFACT_SCHEMA_VERSION_V14`).
  
  A LITERAL rather than a reference to the writer's current version, so the
  type says which generation it is and a later bump cannot quietly re-label it.
@@ -61,8 +62,10 @@ export const ARTIFACT_SCHEMA_VERSION_V12 = 12;
 export const ARTIFACT_SCHEMA_VERSION_V13 = 13;
 
 /**
- Generation fourteen records the effective wider bench for every naturalness
- review, so windowed and confirmation rounds retain their runtime quorum.
+ Generation fourteen, the one the pass writes (`artifact-two-lane-build.ts`,
+ `pass-schema-guard.ts`): it records the effective wider bench for every
+ naturalness review, so windowed and confirmation rounds retain their runtime
+ quorum.
  */
 export const ARTIFACT_SCHEMA_VERSION_V14 = 14;
 
