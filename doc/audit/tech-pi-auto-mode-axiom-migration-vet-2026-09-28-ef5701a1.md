@@ -1,0 +1,250 @@
+# Pi auto-mode bounded Drex evaluation
+
+## Metadata
+
+- Status:
+   in progress;
+   bounded added-candidate Drex evaluation,
+   no adoption recommendation.
+- Started:
+   2026-09-28.
+- Last updated:
+   2026-09-28.
+- Subject:
+   Pi auto-mode axiom migration.
+- Owner:
+   `auto-mode-drex-bounded-evaluation`.
+- Governing skill commit:
+   `a05818ad70a40e5769a36de669697ba109891b31`.
+- Governing skill SHA-256:
+   `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`.
+- Compatibility fingerprint:
+   `ef5701a1742e46a37acbba740e60ab78b73691072dd670f346f963068696175a`.
+- Prior compatible report:
+   none;
+   the previous context predates the newly named Nace Drex candidate and supplied credential.
+- Scope override:
+   user-authorized Laya,
+   relevant Voyage products/models,
+   Jev,
+   direct Respan Lite/free and limited Pro observations, local Voyage-feature probability heads, and bounded public/synthetic Nace Drex evaluation.
+- Rubric:
+   not scored;
+   no finalist ranking or production adoption.
+
+Fingerprint input,
+with sorted keys and set-valued arrays:
+
+```json
+{
+  "baseCategories": [
+    "inspectable-open-source-local",
+    "managed-service"
+  ],
+  "deployment": {
+    "candidateHost": "Linux x86_64 workstation",
+    "fitting": {
+      "cpuLimit": 2,
+      "credentials": false,
+      "memoryGiB": 2,
+      "network": false,
+      "wallClockSecondsPerFit": 60
+    },
+    "platformScope": "first workstation only",
+    "runtime": null
+  },
+  "hardConstraints": [
+    "Additional manual approvals acceptable",
+    "All task-relevant assessment content is authorized for LLM Gateway/Jev and Respan span evaluation",
+    "Complete current AGENTS.md and stale-result invalidation",
+    "Dashboard/account-settings access is declined; no Mac fallback for this task",
+    "Established parser facts remain code-owned; no raw Bash reconstruction by models",
+    "Five-second total assessment budget including at most one transport retry",
+    "Laya Voyage Jev Respan and newly named Nace Drex may receive bounded candidate evaluation; prefer direct Respan Lite and preserve limited prior OpenRouter scope",
+    "Local probability-head and preprocessing fitting is limited to public synthetic Voyage features; no Drex training, private Nace or Voyage uploads, reserved-scenario release, production cutoffs or deployment",
+    "Models estimate narrow axioms; deterministic code owns actions",
+    "Nace Drex evaluation uses the named key with public synthetic full-policy inputs only; no credit purchase or billing/account mutation",
+    "No implementation before final shared-understanding confirmation",
+    "No unrelated bulk export, ongoing capture, raw-history commits, or base-model training; public synthetic local probability-head fitting is authorized",
+    "Preserve safety boundaries and human grant provenance",
+    "Private input authorization remains LLM Gateway/Jev and direct Respan; limited OpenRouter Pro comparison uses frozen synthetic inputs and complete current policy only",
+    "User reports zero direct Respan balance; no direct paid Pro calls or billing mutation; recommend top-up only from measured Pro benefit",
+    "Voyage inference volume authorized as needed for this task; freeze finite research phases before querying",
+    "Zero coding-plan judge calls including fallback"
+  ],
+  "incumbent": "pi-plugin-auto-mode@0.0.2",
+  "overlays": [
+    "high-trust-execution",
+    "incumbent-replacement",
+    "native-model-runtime",
+    "sensitive-data"
+  ],
+  "schemaVersion": 1,
+  "scope": "Authorized axiom assessors and deterministic-policy migration; no product implementation",
+  "subject": "Pi auto-mode axiom migration",
+  "trustBoundary": "Tool-call authorization over private runtime input with explicit human grant provenance"
+}
+```
+
+## Authorized scope and sequencing
+
+The user asked to also evaluate Nace Drex and supplied the named environment credential
+`AUTO_MODE_NACE_DREX_API_KEY`.
+This authorizes bounded public/synthetic API investigation,
+not private Drex uploads,
+Drex training,
+credit purchases,
+account changes,
+or production integration.
+The earlier private-input consent remains specific to LLM Gateway/Jev and direct Respan.
+Voyage's local-head fitting and usage authorization remain intact,
+but its unfinished task #48 is paused while the newly supplied Drex resource is exercised.
+The original reserved scenarios,
+Q16,
+and the paused Laya source branch remain untouched.
+
+The [Voyage fitting context](tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ad6e5a89.md)
+is preserved unchanged.
+Its numerical solver and fresh corpus are frozen;
+no semantic head has been fitted or fresh semantic feature source queried.
+The mathematical four-head consumer process `proc_9b8c` exited successfully,
+but its detailed output remains to be inspected after Drex's supplied resource is exercised.
+No completed model study is restarted.
+
+## Candidate and initial source ledger
+
+Drex is a managed service with a first-party HTTP client in private scratch,
+not an installed third-party SDK or local model runtime.
+The user named it explicitly.
+This is an added-candidate investigation,
+not saturated discovery,
+a finalist ranking,
+or an adoption recommendation.
+Jev,
+Respan,
+Voyage,
+and paused Laya evidence retain their existing scopes.
+
+One literal discovery query ran through Radius:
+`Nace AI Drex API documentation inference authentication probabilities model context pricing privacy terms`.
+Search ID:
+`search_ae1185d209e3fce2b568dcda45fd600d`.
+Its unrelated Drexo AI and Neuralwatt results were not treated as Nace sources.
+Official documentation links then supplied the API and legal pages.
+The product-page render failure is not evidence that the API or model is unavailable.
+
+Primary sources inspected on 2026-09-28:
+
+- [Drex API](https://drex.nace.ai/docs).
+- [Model-list contract](https://drex.nace.ai/docs/api-reference/models).
+- [Evaluation contract](https://drex.nace.ai/docs/api-reference/systemone).
+- [Question schemas](https://drex.nace.ai/docs/guides/questions).
+- [State](https://drex.nace.ai/docs/guides/state).
+- [Reading answers](https://drex.nace.ai/docs/guides/reading-answers).
+- [Models](https://drex.nace.ai/docs/reference/models).
+- [Limits](https://drex.nace.ai/docs/reference/limits).
+- [Drex terms](https://drex.nace.ai/terms).
+- [Drex privacy](https://drex.nace.ai/privacy).
+- [Incorporated Nace terms](https://www.nace.ai/policies/terms-of-service).
+- [Incorporated Nace privacy](https://www.nace.ai/policies/privacy-policy).
+
+## Supplied-resource check
+
+The owned controller is
+`~/temp/agent/nace-drex-auto-mode-eval-2026-09-28/check-resource.mjs`,
+source commit `8ba1ef6`.
+It made one documented `GET https://drex.nace.ai/v1/models`,
+using only the named key through scoped fresh-environment mise execution.
+The key was not printed or persisted.
+The response was bounded to 65,536 bytes,
+with a fifteen-second transport ceiling and no retry.
+No assessment input or billing mutation was sent.
+
+`proc_91ad` returned HTTP 200 in `571.782634` ms,
+with a 561-byte response listing `drex-v1.0`,
+`drex-v1.1`,
+and `drex-latest` pointing to `drex-v1.1`.
+Raw credential-scrubbed evidence is `resource-initial.json`.
+This establishes metadata-route authentication only,
+not scoring entitlement,
+balance,
+semantic quality,
+or a deadline guarantee.
+
+## Interface and version boundary
+
+The official API accepts state plus named typed questions at `POST /v1/systemone`.
+`noul` is documented as a probability of yes;
+it is not a final action verdict.
+Existing independent positive-relation and explicit-prohibition questions therefore have a documented schema fit.
+Their semantic quality and calibration still require measurement.
+No model should reconstruct parser-established Bash facts.
+
+The docs specify 262,144 bytes for serialized state plus questions and a 32,768-token long-input route.
+They explicitly say `drex-v1.1` serves up to 4,096 tokens,
+then sends longer requests to `drex-v1.0`,
+which the response `model` names.
+The same pages also contain general statements that pinned versions always serve themselves.
+Do not resolve that tension by assuming the requested version answered.
+The canary must retain complete current policy and record the returned version.
+No policy shortening or summarization is permitted to obtain a v1.1 result.
+Actual serving weights remain unverified even when a label is valid.
+
+The limits page also gives conflicting accounts of whether invalid-body requests count against rate limits.
+No rate-limit or overload behavior has been qualified.
+Its fifty-five-second service timeout does not replace the user's five-second complete assessment limit.
+
+## Terms and data boundary
+
+Drex-specific terms and privacy were updated on 2026-09-25 and state that they control Drex-specific conflicts.
+Section 6 of the Drex terms replaces the parent improvement clause:
+request content and answers are kept in operational logs for no more than thirty days,
+without model training or improvement use.
+The privacy notice identifies United States processing,
+Vercel operational logs,
+Modal/AWS model execution,
+and named account/billing/analytics providers.
+These are vendor commitments,
+not independently verified operational behavior.
+No private-input authorization is inferred from them.
+
+Parent terms section 4(g) expressly allows designated-API automation.
+Section 4(b) restricts competing products and reverse engineering;
+no model extraction or Drex-output training is planned.
+Section 5 requires independently verifying outputs before consequential reliance.
+The user's acceptance of a TypeSafe clause does not settle this separate vendor's adoption terms.
+The referenced Acceptable Use Policy and remaining service/adoption gates remain open.
+
+Drex terms advertise $0.04 per million input tokens,
+while the model reference lists v1.1 at $0.05 and v1.0 at $0.04.
+No charge,
+credit entitlement,
+or billing remedy is inferred from those pages.
+Do not top up or change billing.
+
+## Frozen next probe boundary
+
+Prepare a two-call full-policy canary using an already exposed public/synthetic read request and approved-prose pair.
+Preserve the existing narrow question definitions and structured-input projection.
+Request `drex-v1.1` and predeclare only the documented v1.0/v1.1 response labels as observable routes;
+attribute each result to the returned label,
+not the requested marketing version.
+Both calls share five seconds through preparation,
+transport,
+parsing,
+and final source/policy freshness.
+Use zero retries and stop on the first protocol failure.
+
+The purpose is scoring access,
+full-policy handling,
+route identity,
+and budget evidence.
+It is not a semantic qualification study,
+calibration profile,
+threshold selection,
+or automatic deployment.
+Freeze the exact source,
+input bodies,
+references,
+response checks,
+and local controls before dispatch.

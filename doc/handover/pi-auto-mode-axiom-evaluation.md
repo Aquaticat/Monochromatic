@@ -31,8 +31,44 @@ Current references:
 
 - [Axiom architecture and interview answers](../planning/pi-auto-mode-axioms.md).
 - [Effect and authorization contract](../planning/pi-auto-mode-effect-contract.md).
-- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ad6e5a89.md).
+- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
+
+## Added Drex candidate and current priority
+
+The user asked to also evaluate Nace Drex and supplied `AUTO_MODE_NACE_DREX_API_KEY`.
+Task #50 takes priority under the newly supplied-resource rule.
+Task #48's Voyage feature/fitting pipeline is paused without discarding its frozen solver or corpus.
+No new Voyage semantic call or semantic-head fit has run.
+The mathematical four-head consumer process `proc_9b8c` succeeded,
+but detailed output review remains pending after Drex's resource is exercised.
+
+Drex input scope is public/synthetic plus complete current public policy only.
+No private Drex upload,
+Drex training,
+account/billing mutation,
+or production integration is authorized.
+Existing private-input consent stays specific to LLM Gateway/Jev and direct Respan.
+Q16 and Laya #34 remain paused.
+
+The first documented model-list request returned HTTP 200 in `571.782634` ms,
+listing `drex-v1.0`,
+`drex-v1.1`,
+and `drex-latest` mapped to v1.1.
+Evidence is `~/temp/agent/nace-drex-auto-mode-eval-2026-09-28/resource-initial.json`,
+controller `8ba1ef6`,
+and `proc_91ad`.
+This verifies metadata authentication,
+not scoring entitlement or quality.
+
+Official API documentation describes a 4,096-token v1.1 path and v1.0 handling of longer requests,
+while also making general pinned-version statements.
+The planned full-policy canary must record the returned model without truncating policy or crediting v1.0 evidence to v1.1.
+Both selected-source calls share five seconds,
+with zero retries and no final policy decision.
+The new audit fingerprint is
+`ef5701a1742e46a37acbba740e60ab78b73691072dd670f346f963068696175a`;
+the Voyage `ad6e5a89` context remains archived unchanged.
 
 ## Gateway input authorization and access boundary
 
@@ -2079,8 +2115,9 @@ Only scoped documentation was committed in the main worktree.
 Unrelated music-player work and `tmp/` must not be reset or cleaned.
 
 The current authorization-context audit fingerprint is
-`ad6e5a89b84b5e6dd1bd1ef79e496f2928b5cc622771e16a61b5637693bf96fa`.
-It records local-head fitting and task-relevant Voyage usage authorization.
+`ef5701a1742e46a37acbba740e60ab78b73691072dd670f346f963068696175a`.
+It adds bounded public/synthetic Nace Drex evaluation while preserving Voyage fitting authorization.
+The `ad6e5a89b84b5e6dd1bd1ef79e496f2928b5cc622771e16a61b5637693bf96fa` Voyage context remains preserved.
 The pre-fitting `80e67cc07b2eb898054d15ddd04e91bb689fbb4c8ebb77aee5c4ba3cd6f9a8d2` context remains preserved.
 Commit `de7a5a1e5` records that bounded Pro/OpenRouter authorization context.
 The initial Respan `d5b5b9cdfae6f38c9958ab2eaf7d39b8026b9bb3ed61965bcefbf56451de9170`
