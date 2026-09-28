@@ -24,10 +24,10 @@ Its trigram overlap against the model readings is 0.019 and 0.023 on one asset a
 while those models agree with each other at 0.643 and 0.785.
 It is not missing the text:
 on the first asset it returns 405 characters against their 390 and 394.
-It reads the same text and gets the GLYPHS wrong,
+It reads the same text and gets the **glyphs** wrong,
 which leaves length intact and destroys overlap,
 so letting it vote would refuse readings that are fine.
-What it is reliable at is PRESENCE,
+What it is reliable at is **presence**,
 six of six against the models in both directions.
 
 Noise can clear its line:

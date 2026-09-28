@@ -36,7 +36,7 @@ each uses an empty export as given.
     The top results reach every sheet as `web lookup` lines in the identity context,
     beside the `note` and `editor comment` lines carrying both pages' footnotes and editors' comments,
     and the house policy says what each kind licenses.
-    OPTIONAL:
+    Optional:
     unset means one warning per entry naming how many titles went unlooked-up,
     and nothing else changes.
     Every lookup is cached durably under `TRANSLATION_REPAIR_LOOKUP_CACHE_DIR`,
@@ -63,7 +63,7 @@ each uses an empty export as given.
 -   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
     Bearer token for the second provider,
     Charm Hyper.
-    OPTIONAL AND LOUD:
+    Optional and loud:
     a run starts on whichever provider keys are present,
     an absent provider is marked dry before routing so its seats are unavailable,
     and every key absent is a stated refusal naming the variables (exit 6).
@@ -198,14 +198,14 @@ Do not read a run with a dark seat as a comparison of the roster.
     printing `SPEND CEILING reached`;
     entries already running finish.
     Unset and blank are the built-in;
-    an unreadable or negative value is REFUSED at launch for the same reason the entry ceiling's is;
+    an unreadable or negative value is refused at launch for the same reason the entry ceiling's is;
     zero is allowed and means start nothing,
     which is how the guard is shown to fire on a live run at no cost.
     A run that overrides logs `SPEND CEILING OVERRIDDEN`.
 -   `TRANSLATION_REPAIR_HARD_CAP_MINUTES`.
     Overrides the per-entry ceiling,
     a positive number of minutes.
-    A value that is not one is REFUSED rather than replaced by the default,
+    A value that is not one is refused rather than replaced by the default,
     including `30m`,
     which `parseFloat` would have read as 30:
     a ceiling is what stops a runaway entry,
@@ -225,12 +225,12 @@ Do not read a run with a dark seat as a comparison of the roster.
     It is warned rather than refused,
     because cutting mid-exchange is exactly what a test of the stall path wants.
 
-The cap ends an ATTEMPT rather than an entry.
+The cap ends an **attempt** rather than an entry.
 An entry the cap cut goes to the back of the queue and is attempted again inside the same invocation,
 against the same frozen pipeline digest,
 so an entry too large for one attempt no longer needs a relaunch per attempt.
 
-A re-attempt is EARNED rather than automatic.
+A re-attempt is **earned** rather than automatic.
 The pass counts the entry's cache records before and after each attempt,
 and re-queues only when that count grew.
 An attempt that bought nothing logs `STALLED` and the entry is dropped for this invocation,
@@ -308,8 +308,8 @@ passed after `--`:
     so a hand-picked entry never joins a pool that later draws treat as natural accumulation.
     A flag with no value,
     or one whose value parses to no id at all,
-    is REFUSED:
-    a flag that parsed to nothing would run the WHOLE corpus,
+    is refused:
+    a flag that parsed to nothing would run the **whole** corpus,
     which is the opposite of what was asked and expensive to discover afterwards.
     A restricted run logs `ONLY` and the ids it took.
 
@@ -353,7 +353,7 @@ it computed its pipeline digest once at startup and stamps that digest into ever
 so its artifacts name files that are no longer on disk,
 and its page cannot say whether the change that prompted the rebuild worked.
 
-The rule is ALWAYS KILL AND RELAUNCH,
+The rule is **always kill and relaunch**,
 the owner's on 2026-09-06.
 When source changes while a pass is running,
 kill the pass by pid,

@@ -5,7 +5,7 @@ Part of [the package README](../README.md).
 ## Repetition the pipeline introduced
 
 Every per-slice instrument in this package is structurally blind to a passage said twice,
-because each works inside ONE slice and the duplication is inside no single slice.
+because each works inside **one** slice and the duplication is inside no single slice.
 Two checks run at assembly,
 where the whole document is visible.
 Neither spends quota:
@@ -17,7 +17,7 @@ in refrains,
 names and deliberate echoes,
 so a standalone "says it twice" rule would fire on all of them.
 Counting against the archive asks the only question worth asking,
-whether the pipeline ADDED a repetition,
+whether the pipeline **added** a repetition,
 and inherits the author's own judgement about acceptable repetition for free.
 
 ### Document scale, with a content gate
@@ -30,7 +30,7 @@ Without that gate the check returns mostly noise.
 ### Adjacent slices, with no content gate
 
 `findAdjacentRepetitions` asks a much narrower question:
-did two CONSECUTIVE slices ship the same wording,
+did two **consecutive** slices ship the same wording,
 which the archive did not repeat.
 
 It has no content gate,
@@ -42,7 +42,7 @@ Measured over every settled artifact carrying a delivery ledger,
 it fires once in twenty-two lane readings,
 and that once is the known damage.
 
-Both checks run in BOTH lanes.
+Both checks run in **both** lanes.
 Writing a slice from its source rather than editing an incumbent does not stop a lane saying the same thing twice.
 
 Findings carry the slice pair and the measurements and never the wording,

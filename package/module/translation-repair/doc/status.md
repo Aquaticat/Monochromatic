@@ -83,7 +83,7 @@ with zero policy declines,
 so all three misses are critics failing to see a seeded omission
 rather than the panel correctly ruling one a source defect.
 
-That figure is NOT the configured roster's recall,
+That figure is **not** the configured roster's recall,
 and the run says so itself.
 One model returned schema-invalid output 312 times across five roles during it,
 and the critic stage never once reached its full roster:
@@ -126,7 +126,7 @@ The one reproducible shortfall class
 (long omissions restored compressed) drove a rule now promoted into the baseline editor prompt:
 enumerate the omitted source sentences clause by clause.
 
-Milestone three (detection precision) is NOT met.
+Milestone three (detection precision) is **not** met.
 Its gate is human-graded precision of at least 0.9 over a stratified sample of accepted issues.
 Round three was graded on 2026-08-12 and returned 0.791 strict,
 0.810 excluded,
@@ -150,7 +150,7 @@ they say the ensemble finds seeded defects,
 not that what it reports is right.
 Nothing here should be taken as evidence that an accepted issue is a real one until this gate is measured and passes.
 
-The REPAIR half is not fit to be measured yet,
+The **repair** half is not fit to be measured yet,
 and that is a finding rather than a gap in the schedule.
 Round three's repair sheet was deliberately left ungraded:
 reading it showed repairs that fix their claim while deleting nearby source-supported content,
@@ -170,9 +170,9 @@ and the checker stage's resolution rate is a stage self-report,
 which is why repair quality is graded on its own human sheet instead.
 
 Status on 2026-08-26.
-The whole-package audit closed on a measured tally and every MAJOR and MINOR it filed landed with a guard shown
+The whole-package audit closed on a measured tally and every major and minor finding it filed landed with a guard shown
 to fail when its fix is removed.
-The production readiness signal was then put to the owner and REJECTED,
+The production readiness signal was then put to the owner and rejected,
 because the published pages had not been read by anyone:
 "Not yet.
 You didn't even look at its actual output."

@@ -101,11 +101,11 @@ mise run //package/module/translation-repair:producer-calibrate -- 10
 mise run //package/module/translation-repair:editor-calibrate -- 14
 ```
 
-`producer-calibrate` ranks WRITERS.
+`producer-calibrate` ranks **writers**.
 It drives the translate stage:
 a model writing English from Chinese with nothing in front of it but the source.
 
-`editor-calibrate` ranks EDITORS,
+`editor-calibrate` ranks **editors**,
 and reports the refiner standing off the same spend.
 It keeps four slices in flight and waits 300000 ms on stragglers after quorum,
 both the owner's decisions of 2026-08-26 on the five calibration arms
@@ -131,7 +131,7 @@ a value that is not a positive number leaves the default,
 and the retry ladder separately waits as long as a refusal's "try again in Ns" asks.
 The window starts empty at launch,
 so a launch within an hour of a heavy run is refused until that run's requests leave the window.
-The WRITER rounds,
+The **writer** rounds,
 editor,
 refiner,
 translate and consolidate,
@@ -176,7 +176,7 @@ mise run //package/module/translation-repair:editor-standing-read -- <run dir> [
 It spends nothing and touches no model.
 Four things bound what it can say.
 
-It is OBSERVATIONAL.
+It is **observational**.
 Only models that held a seat ever wrote a candidate,
 so it ranks whoever was seated and is silent about everyone else.
 An absent model is unmeasured,
@@ -184,19 +184,19 @@ not last.
 That is the survivorship the controlled calibrations exist to defeat,
 which is why this corroborates them and never replaces them.
 
-It NEVER POOLS ACROSS PIPELINE DIGESTS,
+It **never pools across pipeline digests**,
 because two builds are two configurations and a figure summed over both describes neither.
 Each digest is reported alone with its entry count,
 which is the denominator that governs:
 rounds inside one entry are correlated.
 
-It REFUSES AN ARTIFACT FROM AN EARLIER ROSTER,
+It **refuses an artifact from an earlier roster**,
 by name.
 Model ids are a closed set,
 and reading an id the roster no longer seats as though it were current would let a standing mix two rosters silently.
 Those artifacts are counted apart from malformed ones and named with the exact path that held the departed id.
 
-It SEPARATES AN EARLIER SCHEMA FROM A DEFECT.
+It **separates an earlier schema from a defect**.
 A repair result whose `chunks` field is absent entirely was settled before the lane recorded rounds at all.
 That record is complete and correct for the build that wrote it;
 it simply cannot answer this question.
@@ -220,11 +220,11 @@ none malformed.
 
 Three things on the report decide whether a standing means anything.
 
-The COUNTS beside each share.
+The **counts** beside each share.
 A share with no denominator cannot be told from a share one ballot wide,
 and a lead smaller than its denominator supports is not a lead.
 
-The SLICES that paid in,
+The **slices** that paid in,
 printed as `from N of M slices`.
 Adjudicated is not accepted:
 a slice can buy ten critics and a ten-model panel,
@@ -232,7 +232,7 @@ have its issues rejected at the accept gate,
 and contribute nothing to an editor standing.
 A standing drawn entirely from one slice reads identically to one drawn evenly from six without this line.
 
-The models the table DOES NOT DESCRIBE,
+The models the table **does not describe**,
 named at the end.
 A standing carries a row only for a model somebody voted on,
 so every other seated model vanishes,
@@ -242,15 +242,15 @@ During a provider outage that is half the roster.
 Three different things put a seated model outside the table,
 and the calibrations name them apart rather than reporting one absence (`#263`):
 
--   WROTE AND WAS NEVER VOTED ON.
-    Its text reached a slate and no disinterested ballot was cast over it,
+-   `WROTE AND WAS NEVER VOTED ON` names a seat whose text reached a slate
+    with no disinterested ballot cast over it,
     which is what a slice where every producer proposed the same wording does:
     it ships unjudged.
     That evidence is already paid for,
     and more slices are what would separate it.
 
--   ANSWERED AND WAS NEVER SLATED.
-    At least one usable answer of its was heard and none became a candidate a judge saw:
+-   `ANSWERED AND WAS NEVER SLATED` names a seat with at least one usable answer heard
+    and none a candidate a judge saw:
     a rewriter that leaves a paragraph as it stands,
     or whose rewrite is dropped before judging.
     Re-running it buys the same again;
@@ -258,8 +258,7 @@ and the calibrations name them apart rather than reporting one absence (`#263`):
     Arm A of 2026-08-26 reported such a seat as silent beside a `SEAT` line saying it had answered 31 of 31,
     which is the misreport this state exists to end.
 
--   ANSWERED NOTHING USABLE.
-    No usable answer of its was heard at the seat.
+-   `ANSWERED NOTHING USABLE` names a seat with no usable answer heard.
     A provider out of budget,
     a refused sheet and a call that timed out all look identical from the report,
     and the `SEAT` lines and the run log name which.
@@ -277,7 +276,7 @@ as `covers N of M seats`,
 so a table narrowed by an outage cannot read as a full roster comparison.
 
 A standing,
-a slate or an answer list naming a model the run never seated is REFUSED,
+a slate or an answer list naming a model the run never seated is refused,
 because coverage of one roster cannot be read off another.
 
 ## Editor credit and refiner credit are separate columns

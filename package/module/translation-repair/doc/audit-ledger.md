@@ -1242,7 +1242,7 @@ The floor refuses a run of Han (with any kana and 々 inside it) in the candidat
 read outside `protectedRanges` with comments and title-floor-accepted titles cut.
 It excuses a parenthesized gloss, a kana line with no Latin letter (a Japanese quotation kept beside its English),
 and a run the original and the page both carry.
-THE FLOOR IS RELATIVE TO THE PAGE, chosen so the archive's deliberate keeps (the 澪 a name is written with,
+**The floor is relative to the page**, chosen so the archive's deliberate keeps (the 澪 a name is written with,
 Japanese lyric lines, a hidden line inside an element) do not fail their own slices;
 it refuses Han a candidate adds, not Han the archive already carries from the original.
 It runs with the untranslated floor in both the readable and unparseable branches (the F-5 lesson),
@@ -2323,7 +2323,7 @@ An HTML comment translated or deleted on untranslated-text claims (XingZ60 s6, s
 One footnote lost on a link-convention and omission claim (shihai4h s33) was not selected;
 the package defines no rule text for `policy/link-convention`, so it stays unclassified.
 
-CORRECTED THE SAME DAY: the first version of this entry called the `DottedNumber` rewrites the damage the ruling names,
+Corrected the same day: the first version of this entry called the `DottedNumber` rewrites the damage the ruling names,
 reading claim category and tag shape without the source (M31).
 Against the corpus source page (`l4-source-carried.mjs`, pin a41fc607),
 the archive's `DottedNumber` props are not in the source on all six regions,
@@ -2339,7 +2339,7 @@ a set compare in place of the multiset, escapes ignored, a spaced footnote label
 and the sheet dropping a kind are each caught; the comment-wording control survives.
 Cache: rides inside repair version 33 with an account in `repair-slice-key.ts`.
 
-REFINED FOR QUALITY the same day, under the owner's standing directive (`design-commitments.md`):
+Refined for quality the same day, under the owner's standing directive (`design-commitments.md`):
 guard `9df194059` and `550603cfe`, fix `b07f8ac48`, sheet `ab84cbfd7`.
 `markupDelta` (`markup-atom-preservation.ts`) keeps a loss unexcused unless an addition quote licenses it,
 or the translation authored the atom (the source does not carry it), it is an expression, inline code or tag,
@@ -2567,7 +2567,7 @@ a worse majority in place of one ballot, dropping the status filter, and crediti
 the comment-wording control survives.
 Cache: rides inside refine version 5 with an account in `refine-slice-key.ts`.
 
-THE PROBE ROLLS A REWRITE BACK, decided for quality under the owner's standing directive
+**The probe rolls a rewrite back**, decided for quality under the owner's standing directive
 (guard `9e01c7133`, fix `d41ad44c4`).
 Measured over every run (`l11-probe-census.mjs`): 175 of 2,144 kept rewrites carried a claim the screen admitted
 (151 added damage, 25 removal), against 409 of 3,081 accuracy reports;

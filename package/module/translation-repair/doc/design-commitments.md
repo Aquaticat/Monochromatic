@@ -35,7 +35,7 @@ Part of [the package README](../README.md).
   Model and corpus text reaches those sheets fenced (`fenceForMarkdown`),
   since a replacement is arbitrary text crossing into
   Markdown grammar and can otherwise invent a heading or a grade box.
-  A sheet is READ before it is handed to anyone,
+  A sheet is **read** before it is handed to anyone,
   item by item,
   including the reasoning it shows the grader.
   A sheet whose generator ran is not a sheet that asks a sensible question:
@@ -47,9 +47,9 @@ Part of [the package README](../README.md).
   Sheets print no issue ids,
   deliberately,
   because a hash is noise a human has to read past,
-  so grades are joined back to machine verdicts BY POSITION.
+  so grades are joined back to machine verdicts **by position**.
   Seed and corpus pin cannot carry that join alone:
-  the draw is deterministic in its seed but not in its POOL,
+  the draw is deterministic in its seed but not in its **pool**,
   and the pool grows with every entry that settles,
   so one seed at one commit names different items at different times.
   Two draws can then agree on seed,
@@ -81,15 +81,14 @@ Part of [the package README](../README.md).
   the probe was nearly silent instead:
   2438 of 2571 prober verdicts found nothing,
   and the raise rate barely moved with how much text the edit removed.
-  READ THAT AS HISTORY,
-  NOT AS THE PROBE'S BEHAVIOUR.
-  Those verdicts were produced under a question that made the pre-edit TRANSLATION the standard of accuracy,
-  asking whether the replacement introduced a defect the BEFORE text did not have.
+  **Read that as history, not as the probe's behaviour.**
+  Those verdicts were produced under a question that made the pre-edit **translation** the standard of accuracy,
+  asking whether the replacement introduced a defect the **before** text did not have.
   Read back,
   every claim it produced argued from that text,
   and one reported a corrected mistranslation as damage,
-  so the figure measures whether an edit CHANGED anything rather than whether it damaged anything.
-  The question is now anchored on the ORIGINAL,
+  so the figure measures whether an edit **changed** anything rather than whether it damaged anything.
+  The question is now anchored on the **original**,
   and every probe figure taken before that change is withdrawn.
   Under the new question,
   on a twenty-region draw read against the Chinese,
@@ -321,7 +320,7 @@ Part of [the package README](../README.md).
   An edit whose issue drew at least one worse ballot is stripped from the patch,
   and the reduced patch faces one more checker round before it ships;
   a not-fixed edit with no worse ballot stays (ledger L3).
-  CORRECTED AFTER THE RULING: the question put the stripped share at 40 of the 691 issues,
+  Corrected after the ruling: the question put the stripped share at 40 of the 691 issues,
   counting only the ties and the worse majority;
   at least one worse ballot is 58 issues in 31 patches over every run,
   and 15 issues in 6 of 51 patches on TianqiChen666 (`ride-along-split.mjs`, recounted 2026-09-28).
@@ -332,7 +331,7 @@ Part of [the package README](../README.md).
   "Recheck the rewrite".
   The rewrite faces a checker round against the slice's accepted issues and the regression probe,
   and a rewrite the checkers find worse keeps the text before it (ledger L11).
-  DECIDED FOR QUALITY, 2026-09-28, under the standing directive below:
+  Decided for quality, 2026-09-28, under the standing directive below:
   a rewrite the regression probe admits a claim against keeps the text before it too;
   175 of 2,144 kept rewrites carried one, and a graded reading of flagged regions found six of ten true.
 - **Inside a licensed quote, an edit keeps the markup atoms its issue does not license it to remove.**
@@ -341,7 +340,7 @@ Part of [the package README](../README.md).
   "Markup atoms".
   Footnote references, link destinations, MDX expressions, inline code and tags survive every edit
   except a removal an addition issue names; prose damage inside the quote stays with the checkers (ledger L4).
-  REFINED FOR QUALITY, 2026-09-28, under the standing directive below:
+  Refined for quality, 2026-09-28, under the standing directive below:
   a replay of the ruling's wording refused 24 recorded edits, 17 of which re-marked markup or moved it rather than lost it.
   Markup the source carries survives; an atom one edit drops and another edit of the same patch writes has survived;
   an MDX expression, inline code or tag the translation authored may be re-marked (same kind, or into markup the source carries)
@@ -353,20 +352,20 @@ Part of [the package README](../README.md).
   "Enable with the nudge".
   The re-ask carries the recovery nudge, so its prompt digest differs from the first ask's
   and prompt uniqueness holds (ledger P9).
-  REFINED FOR QUALITY, 2026-09-28, under the standing directive below:
+  Refined for quality, 2026-09-28, under the standing directive below:
   the re-ask's nudge is worded apart from the stage recovery round's,
   since the round re-asks every seat still unreadable and a shared wording would make its prompt
   this re-ask's digest, answered from the claims with the reply that already failed;
   and a refusal-shaped reply is re-asked elsewhere too, with a nudge neutral on why the reply could not be used.
 - **A reply the length limit cut is re-asked as cut, not as off the shape.**
-  DECIDED FOR QUALITY, 2026-09-28, under the standing directive below (ledger P10):
+  Decided for quality, 2026-09-28, under the standing directive below (ledger P10):
   the recovery round told every unreadable seat its reply "did not match the required response shape",
   while 74 of the 75 cap-cut deepseek-v4.1-flash replies on Hyper had streamed no content at all.
   Each cause now has its own wording (`src/recovery-nudge.ts`);
   the cut one names the length limit and asks for the answer within it, keeping any working brief,
   which is prose in the prompt and never a reasoning parameter on the wire.
 - **A claim the panel settles at neutral asks for no edit; the sheets define every severity.**
-  DECIDED FOR QUALITY, 2026-09-28, under the standing directive below (ledger L5):
+  Decided for quality, 2026-09-28, under the standing directive below (ledger L5):
   neutral asserts no defect, yet 28 accepted neutral issues shipped an edit, 8 of them claims calling the rendering correct.
   The tally holds such an acceptance for a human; the critic and panel sheets define minor, major and critical after MQM
   and neutral as a finding a human should see that names no defect in the translation;

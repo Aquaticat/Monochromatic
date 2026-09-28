@@ -40,7 +40,7 @@ is shown nothing extra and is asked exactly what it was asked before this existe
 The window creates a second way to do harm,
 and the editor sheet names it.
 Removing a repetition that the neighbouring translation already holds is correct.
-Removing anything on the grounds that a neighbour OUGHT to hold it is not,
+Removing anything on the grounds that a neighbour **ought** to hold it is not,
 because the neighbour may never produce it and the document then loses the passage entirely.
 Zero occurrences is a worse outcome than two.
 

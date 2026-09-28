@@ -71,7 +71,7 @@ and a former version of this section had Charm Hyper backwards.
 There is one meter per provider,
 in `PROVIDER_ORDER` (Synthetic, Bedrock, Hyper, OpenRouter; `src/provider-name.ts`).
 
-Charm Hyper is a PREPAID BALANCE,
+Charm Hyper is a **prepaid balance**,
 priced per token and per model.
 `GET /v1/credits` returns `balance`,
 which `parseHyperCredits` reads and the `METERS` line prints as `hyperBalance`.
@@ -82,7 +82,7 @@ during and after a pass,
 and reached `10000` on 2026-08-25 only because credits were bought.
 A reader who hits `hyperBalance=0` and waits is waiting for something that has not been observed to happen.
 
-Synthetic is a SUBSCRIPTION ALLOWANCE,
+Synthetic is a **subscription allowance**,
 weekly and five-hourly,
 which the `METERS` line prints as `syntheticWeekly` and `syntheticFiveHour`.
 That one does refill on its own schedule,
@@ -185,7 +185,7 @@ or none after it,
 is reported open rather than as a number,
 since it may have started before the record or may still be running.
 
-Every figure is availability WHEN WE WERE ASKING,
+Every figure is availability **when we were asking**,
 not availability.
 That is the quantity that prices a seat,
 and it is not the same thing.

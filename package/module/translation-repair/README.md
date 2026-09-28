@@ -208,7 +208,7 @@ The convention covers translated pages only, not the repository's own prose
 ## Operating a corpus pass
 
 This file describes the design.
-To RUN the pipeline over the corpus,
+To run the pipeline over the corpus,
 follow [the corpus pass runbook](../../../doc/runbook/translation-repair-corpus-pass.md),
 which carries the environment,
 the launch,
@@ -296,7 +296,7 @@ and the page carries no text there.
 Under the no-loop design of 2026-09-01 an insertion is recovered supplementary content,
 so its absence is a gap rather than a missing required page.
 A passage admitted for translation when a provider outage leaves every translator unheard is different:
-the entry stops INCOMPLETE and keeps its slice cache for a later run.
+the entry stops `INCOMPLETE` and keeps its slice cache for a later run.
 
 ## Contract
 
@@ -389,7 +389,7 @@ const result = await repairTranslation({
   and degradation findings.
   When no candidate demonstrably beats the input,
   the input is returned unchanged with its unresolved issues.
-- Every issue record also carries WHAT WAS WRITTEN for it,
+- Every issue record also carries **what was written** for it,
   so repair quality can be judged apart from whether the issue was real.
   `repairRegions` records replaced regions rather than per-issue repairs,
   because envelopes merge overlapping and touching evidence,
