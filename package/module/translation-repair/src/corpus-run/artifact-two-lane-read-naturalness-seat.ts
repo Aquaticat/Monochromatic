@@ -6,7 +6,7 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
-import { rosterQuorumSize, } from '../roster-quorum-size.ts';
+import { reachableQuorum, } from '../stage-reachable-quorum.ts';
 import type {
   ArtifactNaturalnessFinding,
   ArtifactNaturalnessReviewRound,
@@ -283,9 +283,12 @@ export function uniqueNaturalnessFindings(
  @param seats - every requested reviewer seat
  
  @param quorumOver - explicit wider basis, or legacy interpretation from recorded seats
- 
+
+ @param unreachable - bench seats the review counted out of reach (ledger
+ E3), none in a record written before it counted them
+
  @returns Verdict implied by quorum and rejection
- 
+
  @example
  ```ts
  const verdict = naturalnessVerdictOf({ seats, });
@@ -295,9 +298,11 @@ export function naturalnessVerdictOf(
   {
     seats,
     quorumOver = seats.length,
+    unreachable = 0,
   }: {
     readonly seats: readonly ArtifactNaturalnessReviewSeat[];
     readonly quorumOver?: number;
+    readonly unreachable?: number;
   },
 ): ArtifactNaturalnessReviewRound['verdict'] {
   /**
@@ -307,10 +312,15 @@ export function naturalnessVerdictOf(
     return seat.status !== 'unusable';
   },);
   /**
-   Same exact-half quorum runtime used for requested roster.
+   The same quorum the stage closed on: half the bench, or the reachable
+   share of it where seats were out of reach, which with none out of reach
+   is exactly the exact-half quorum every earlier record was decided by.
    */
-  const quorumNeeded = rosterQuorumSize({ rosterSize: quorumOver, },);
-  if (usable.length < quorumNeeded)
+  const { needed, } = reachableQuorum({
+    benchSize: quorumOver,
+    unreachable,
+  },);
+  if (usable.length < needed)
     return 'quorum-not-met';
   if (usable.some(function rejects(seat,): boolean {
     return seat.status === 'unacceptable';

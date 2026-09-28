@@ -20,6 +20,7 @@ import {
   readConsolidationPolishBallot,
 } from './consolidation-polish-gate-wire.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
+import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -195,7 +196,10 @@ export async function gateConsolidationPolish(
   /**
    One outcome per requested voice.
    */
-  const { outcomes, } = await runWindowedRounds({
+  const {
+    outcomes,
+    quorum,
+  } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildConsolidationPolishGateMessages({ subject, },),
@@ -247,11 +251,21 @@ export async function gateConsolidationPolish(
     ships,
     ballots,
     usable: ballots.length,
-    findings: (ballots.length < CONSOLIDATION_POLISH_GATE_QUORUM)
-      ? [
-        `consolidation-polish-gate heard ${String(ballots.length,)} usable ballots, below ${String(CONSOLIDATION_POLISH_GATE_QUORUM,)} needed to settle`,
-      ]
-      : [],
+    findings: [
+      ...((ballots.length < CONSOLIDATION_POLISH_GATE_QUORUM)
+        ? [
+          `consolidation-polish-gate heard ${String(ballots.length,)} usable ballots, below ${String(CONSOLIDATION_POLISH_GATE_QUORUM,)} needed to settle`,
+        ]
+        : []),
+      // A SHORT BENCH IS SAID IN THE FINDINGS, as the gathers say it (ledger X8).
+      ...(quorum.short
+        ? [shortBenchStageFinding({
+          stage: 'consolidation-polish-gate',
+          quorum,
+          benchSize: modelIds.length,
+        },),]
+        : []),
+    ],
   };
 }
 

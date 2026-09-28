@@ -16,6 +16,7 @@ import {
 import { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
+import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RoundOutcome, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -211,7 +212,10 @@ export async function pairBlocksWithRoster(
   /**
    Every voice's reply, heard or lost.
    */
-  const { outcomes, } = await runWindowedRounds({
+  const {
+    outcomes,
+    quorum,
+  } = await runWindowedRounds({
     client,
     modelIds,
     messages,
@@ -225,7 +229,10 @@ export async function pairBlocksWithRoster(
     ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
 
-  return readBlockPairingOutcomes({
+  /**
+   What the replies came to.
+   */
+  const read = readBlockPairingOutcomes({
     outcomes,
     modelIds,
     sourceCount: sourceBlocks.length,
@@ -233,6 +240,20 @@ export async function pairBlocksWithRoster(
     ...((freeOrder === undefined) ? {} : { freeOrder, }),
     l: pl,
   },);
+  // A SHORT BENCH IS SAID IN THE FINDINGS, as the gathers say it (ledger X8).
+  return quorum.short
+    ? {
+      ...read,
+      findings: [
+        ...read.findings,
+        shortBenchStageFinding({
+          stage: 'block-pairing',
+          quorum,
+          benchSize: modelIds.length,
+        },),
+      ],
+    }
+    : read;
 }
 
 //endregion Block pairing stage

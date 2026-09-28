@@ -17,6 +17,7 @@ import {
   readLaneContestBallot,
 } from './lane-contest-wire.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
+import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -379,7 +380,10 @@ export async function contestLaneSlice(
   /**
    One reply per voice, heard or lost.
    */
-  const { outcomes, } = await runWindowedRounds({
+  const {
+    outcomes,
+    quorum,
+  } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildLaneContestMessages({ subject, },),
@@ -451,9 +455,19 @@ export async function contestLaneSlice(
     choice,
     ballots: recorded,
     usable: recorded.length,
-    findings: (ballots.length < LANE_CONTEST_QUORUM)
-      ? [ `lane-contest heard ${String(ballots.length,)} usable ballots, below the ${String(LANE_CONTEST_QUORUM,)} needed to settle`, ]
-      : [],
+    findings: [
+      ...((ballots.length < LANE_CONTEST_QUORUM)
+        ? [ `lane-contest heard ${String(ballots.length,)} usable ballots, below the ${String(LANE_CONTEST_QUORUM,)} needed to settle`, ]
+        : []),
+      // A SHORT BENCH IS SAID IN THE FINDINGS, as the gathers say it (ledger X8).
+      ...(quorum.short
+        ? [shortBenchStageFinding({
+          stage: 'lane-contest',
+          quorum,
+          benchSize: modelIds.length,
+        },),]
+        : []),
+    ],
   };
 }
 

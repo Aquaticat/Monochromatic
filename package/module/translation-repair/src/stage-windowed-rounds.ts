@@ -68,6 +68,77 @@ export type WindowedRounds<ValueT,> = Readonly<{
 }>;
 
 /**
+ Whether the router refused this seat for want of a wet provider.
+
+ @param outcome - one seat's outcome
+
+ @returns Whether the seat was out of reach rather than lost
+
+ @example
+ ```ts
+ const refused = outcomes.filter(refusedByRouter,).length;
+ ```
+ */
+function refusedByRouter<ValueT,>(outcome: RoundOutcome<ValueT>,): boolean {
+  /**
+   What came back for the seat.
+   */
+  const { voice, } = outcome;
+  return (!voice.heard) && voice.unreachable;
+}
+
+/**
+ Names the quorum windowed rounds closed on, and says so in the log when the
+ bench was short of its quorum.
+
+ @param stage - stage the rounds served
+
+ @param quorumOver - bench the quorum was taken over
+
+ @param closing - quorum as the rounds closed, and the seats out of reach
+
+ @param l - stage logger
+
+ @returns That quorum and count, unchanged
+
+ @example
+ ```ts
+ return { outcomes, ...closedOn({ stage, quorumOver, closing, l, },), };
+ ```
+ */
+function closedOn(
+  {
+    stage,
+    quorumOver,
+    closing,
+    l,
+  }: {
+    readonly stage: string;
+    readonly quorumOver: number;
+    readonly closing: Readonly<{
+      quorum: ReachableQuorum;
+      unreachable: number;
+    }>;
+    readonly l: Logger;
+  },
+): Readonly<{
+  quorum: ReachableQuorum;
+  unreachable: number;
+}> {
+  /**
+   Quorum the rounds closed on.
+   */
+  const { quorum, } = closing;
+  if (quorum.short) {
+    l.warn(
+      `${stage}: closed on a short bench, ${String(quorum.reachable,)} of ${String(quorumOver,)} seats `
+        + `within reach, quorum ${String(quorum.needed,)} of ${String(quorum.benchQuorum,)}`,
+    );
+  }
+  return closing;
+}
+
+/**
  Asks a bench through windowed rounds and returns one outcome per seat
  asked.
  
@@ -139,16 +210,58 @@ export async function runWindowedRounds<ValueT,>(
   }>,
 ): Promise<WindowedRounds<ValueT>> {
   /**
-   Quorum the rounds are sized on.
+   Bench seats this stage may not ask at all, which are out of its reach as
+   surely as a refused seat is: a confirmation asks only the seats its
+   discovery asked, at the discovery's quorum.
    */
-  const quorum = reachableQuorum({
-    benchSize: quorumOver,
-    unreachable: 0,
-  },);
+  const unaskable = Math.max(
+    0,
+    quorumOver - modelIds.length,
+  );
   /**
-   Voices that quorum needs.
+   Quorum over the bench once the seats the router has refused are known.
+
+   @param refused - seats the router refused so far
+
+   @returns Quorum and every seat it counted out of reach
+
+   @example
+   ```ts
+   const closing = quorumWith(refusedSeats.size,);
+   ```
    */
-  const heardNeeded = quorum.needed;
+  function quorumWith(refused: number,): Pick<WindowedRounds<ValueT>, 'quorum' | 'unreachable'> {
+    /**
+     Seats out of reach, refused or never askable.
+     */
+    const unreachable = refused + unaskable;
+    return {
+      quorum: reachableQuorum({
+        benchSize: quorumOver,
+        unreachable,
+      },),
+      unreachable,
+    };
+  }
+  /**
+   Voices the quorum needs once the seats the router has refused are known.
+
+   @param refused - seats the router refused so far
+
+   @returns Heard voices the rounds wait for
+
+   @example
+   ```ts
+   const heardNeeded = neededWith(refusedSeats.size,);
+   ```
+   */
+  function neededWith(refused: number,): number {
+    /**
+     Quorum as the bench now reads.
+     */
+    const { quorum, } = quorumWith(refused,);
+    return quorum.needed;
+  }
   /**
    Everything a round needs except who to ask and how many to wait for.
    */
@@ -165,14 +278,26 @@ export async function runWindowedRounds<ValueT,>(
     ...((graceMs === undefined) ? {} : { graceMs, }),
   };
   if (fanOut === 'whole-bench') {
+    /**
+     The one round's outcomes, one per seat.
+     */
+    const outcomes = await runGatherRound<ValueT>({
+      ...roundRequest,
+      modelIds,
+      heardNeeded: neededWith(0,),
+    },);
+    /**
+     Seats the router refused in that round.
+     */
+    const refused = outcomes.filter(refusedByRouter,);
     return {
-      outcomes: await runGatherRound<ValueT>({
-        ...roundRequest,
-        modelIds,
-        heardNeeded,
+      outcomes,
+      ...closedOn({
+        stage,
+        quorumOver,
+        closing: quorumWith(refused.length,),
+        l,
       },),
-      quorum,
-      unreachable: 0,
     };
   }
 
@@ -192,7 +317,19 @@ export async function runWindowedRounds<ValueT,>(
    Seats heard so far.
    */
   const heardSeats = new Set<RosterModelId>();
+  /**
+   Seats the router refused, which no retry round asks again.
+   */
+  const refusedSeats = new Set<RosterModelId>();
   for (let round = 0; round <= STAGE_RETRY_ROUNDS; round += 1) {
+    // SIZED BEFORE EVERY ROUND on the seats that could still answer (ledger
+    // X8): a seat the router refused is no voice to wait for, so a bench it
+    // left short closes on its reachable share instead of chasing a quorum
+    // those seats cannot reach through every retry round.
+    /**
+     Voices the quorum needs as the bench now reads.
+     */
+    const heardNeeded = neededWith(refusedSeats.size,);
     if ((heardSeats.size >= heardNeeded) || (pending.length === 0))
       break;
     /**
@@ -240,12 +377,14 @@ export async function runWindowedRounds<ValueT,>(
       );
       if (voice.heard)
         heardSeats.add(modelId,);
+      else if (voice.unreachable)
+        refusedSeats.add(modelId,);
       // A seat that answered unreadably had its chance, and a seat the router
       // refused has no wet provider until the next seat reading; only a seat
       // lost in transport or to the grace is owed another ask. The refused
       // seat was re-asked every retry round until 2026-09-27, the
       // `hulicaijia` defect `stage-quorum.ts` fixed on 2026-09-09.
-      else if ((!voice.answered) && (!voice.unreachable))
+      else if (!voice.answered)
         pending.push(modelId,);
     }
   }
@@ -257,8 +396,12 @@ export async function runWindowedRounds<ValueT,>(
       const outcome = latest.get(modelId,);
       return (outcome === undefined) ? [] : [outcome,];
     },),
-    quorum,
-    unreachable: 0,
+    ...closedOn({
+      stage,
+      quorumOver,
+      closing: quorumWith(refusedSeats.size,),
+      l,
+    },),
   };
 }
 

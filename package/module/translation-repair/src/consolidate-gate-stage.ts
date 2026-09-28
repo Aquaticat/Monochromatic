@@ -17,6 +17,7 @@ import {
   readConsolidateGateBallot,
 } from './consolidate-gate-wire.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
+import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -222,7 +223,10 @@ export async function gateConsolidatedSlice(
   /**
    One reply per voice, heard or lost.
    */
-  const { outcomes, } = await runWindowedRounds({
+  const {
+    outcomes,
+    quorum,
+  } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildConsolidateGateMessages({ subject, },),
@@ -284,9 +288,19 @@ export async function gateConsolidatedSlice(
     ships,
     ballots,
     usable: ballots.length,
-    findings: (ballots.length < CONSOLIDATE_GATE_QUORUM)
-      ? [ `consolidate-gate heard ${String(ballots.length,)} usable ballots, below the ${String(CONSOLIDATE_GATE_QUORUM,)} needed to settle`, ]
-      : [],
+    findings: [
+      ...((ballots.length < CONSOLIDATE_GATE_QUORUM)
+        ? [ `consolidate-gate heard ${String(ballots.length,)} usable ballots, below the ${String(CONSOLIDATE_GATE_QUORUM,)} needed to settle`, ]
+        : []),
+      // A SHORT BENCH IS SAID IN THE FINDINGS, as the gathers say it (ledger X8).
+      ...(quorum.short
+        ? [shortBenchStageFinding({
+          stage: 'consolidate-gate',
+          quorum,
+          benchSize: modelIds.length,
+        },),]
+        : []),
+    ],
   };
 }
 

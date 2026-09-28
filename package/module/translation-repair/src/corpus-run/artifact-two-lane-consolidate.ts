@@ -212,6 +212,12 @@ export type ArtifactNaturalnessReviewRound = {
   readonly quorumOver?: number;
 
   /**
+   Bench seats the review counted out of reach (ledger E3), absent in records
+   written before it counted them, which read as none.
+   */
+  readonly unreachable?: number;
+
+  /**
    Digest binding review to exact candidate bytes.
    */
   readonly candidateDigest: string;

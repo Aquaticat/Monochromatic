@@ -72,7 +72,12 @@ export function parseNaturalnessReviewRound(
   requireExactKeys({
     record,
     allowed: [
-      ...(quorumBasisRequired ? ['quorumOver',] : []),
+      ...(quorumBasisRequired
+        ? [
+          'quorumOver',
+          'unreachable',
+        ]
+        : []),
       'candidateDigest',
       ...(paragraphDigestsRequired ? ['candidateText',] : []),
       'paragraphCount',
@@ -208,11 +213,28 @@ export function parseNaturalnessReviewRound(
     },);
   }
   /**
-   Verdict recomputed using the same wider basis as the producing stage.
+   Bench seats the review counted out of reach, recorded since ledger E3 and
+   none in a record written before; never more than the bench.
+   */
+  const unreachable = (quorumBasisRequired && (record.unreachable !== undefined))
+    ? requireCount({
+      value: record.unreachable,
+      path: `${path}.unreachable`,
+    },)
+    : 0;
+  if (unreachable > quorumOver) {
+    throw new ArtifactParseError({
+      path: `${path}.unreachable`,
+      reason: `at most the ${String(quorumOver,)} seats of the bench`,
+    },);
+  }
+  /**
+   Verdict recomputed using the same basis as the producing stage.
    */
   const verdict = naturalnessVerdictOf({
     seats,
     quorumOver,
+    unreachable,
   },);
   if (record.verdict !== verdict) {
     throw new ArtifactParseError({
@@ -248,6 +270,7 @@ export function parseNaturalnessReviewRound(
   }
   return {
     ...(quorumBasisRequired ? { quorumOver, } : {}),
+    ...((record.unreachable === undefined) ? {} : { unreachable, }),
     candidateDigest,
     ...(paragraphDigestsRequired ? { candidateText, } : {}),
     paragraphCount,

@@ -20,6 +20,7 @@ import {
 } from './pair-sections-wire.ts';
 import { agreePairs, } from './pair-agreement.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
+import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -264,7 +265,10 @@ export async function pairSectionsWithRoster(
   /**
    Every voice's reply, heard or lost.
    */
-  const { outcomes, } = await runWindowedRounds({
+  const {
+    outcomes,
+    quorum,
+  } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildSectionPairingMessages({
@@ -295,9 +299,16 @@ export async function pairSectionsWithRoster(
     .length;
 
   /**
-   Findings accumulated while reading replies.
+   Findings accumulated while reading replies, opening with a short bench
+   where the router left one, as the gathers say it (ledger X8).
    */
-  const findings: string[] = [];
+  const findings: string[] = quorum.short
+    ? [shortBenchStageFinding({
+      stage: 'section-pairing',
+      quorum,
+      benchSize: modelIds.length,
+    },),]
+    : [];
 
   /**
    Pairings that survived the reader, one per usable voice.

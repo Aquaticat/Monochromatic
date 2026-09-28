@@ -19,7 +19,6 @@ import {
   NaturalnessQuorumError,
   validNaturalnessQuorum,
 } from './naturalness-quorum.ts';
-import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -69,7 +68,7 @@ export type AbsoluteNaturalnessReviewVerdict =
  
  @example
  ```ts
- const review: AbsoluteNaturalnessReviewOutcome = { quorumOver: 0, candidateDigest: 'sha256:abc', candidateText: '', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
+ const review: AbsoluteNaturalnessReviewOutcome = { quorumOver: 0, unreachable: 0, candidateDigest: 'sha256:abc', candidateText: '', paragraphCount: 0, paragraphDigests: [], seats: [], usable: 0, verdict: 'quorum-not-met', findings: [] };
  ```
  */
 export type AbsoluteNaturalnessReviewOutcome = {
@@ -77,6 +76,14 @@ export type AbsoluteNaturalnessReviewOutcome = {
    Effective wider bench size, retained independently of seats the window asked.
    */
   readonly quorumOver: number;
+
+  /**
+   Bench seats the quorum counted out of reach: seats the router refused for
+   want of a wet provider, and bench seats this review could not ask
+   (ledger E3). The quorum is the reachable share of the bench where these
+   leave it short of half.
+   */
+  readonly unreachable: number;
 
   /**
    Digest binding review to exact candidate bytes.
@@ -225,10 +232,6 @@ export async function reviewAbsoluteNaturalness(
     },);
   }
   /**
-   Exact-half usable voices required to approve and start straggler grace.
-   */
-  const quorumNeeded = rosterQuorumSize({ rosterSize: quorumOver, },);
-  /**
    Structurally correctable paragraphs shown to every reviewer.
    */
   const paragraphCount = subject.paragraphs
@@ -241,9 +244,21 @@ export async function reviewAbsoluteNaturalness(
       return hashContent({ content: paragraph, },);
     },);
   /**
-   Every requested outcome after every seat has settled or reached deadline.
+   Every requested outcome after every seat has settled or reached deadline,
+   the quorum the rounds closed on, and the seats they counted out of reach.
+
+   SIZED ON THE SEATS THAT COULD ANSWER (ledger E3; the short-bench rule of
+   2026-09-09): usable voices must reach half the bench, or the reachable
+   share of it where the router refused seats or, for a confirmation, where
+   the seats asked are fewer than the bench. XingZ624 closed a confirmation
+   3 of 5 usable against a quorum of 4 over 8 with two seats refused out of
+   budget; the reachable share is 2.
    */
-  const { outcomes, } = await runWindowedRounds({
+  const {
+    outcomes,
+    quorum,
+    unreachable,
+  } = await runWindowedRounds({
     client,
     modelIds,
     messages: buildAbsoluteNaturalnessReviewMessages({
@@ -320,7 +335,7 @@ export async function reviewAbsoluteNaturalness(
    Fail-closed verdict: thin review cannot approve, and any rejection blocks.
    */
   const verdict: AbsoluteNaturalnessReviewVerdict = (usableSeats.length
-      < quorumNeeded)
+      < quorum.needed)
     ? 'quorum-not-met'
     : usableSeats.some(function rejected(seat,): boolean {
       return seat.status === 'unacceptable';
@@ -377,11 +392,13 @@ export async function reviewAbsoluteNaturalness(
     .join(';',);
   rl.info(
     `absolute naturalness review: ${String(usableSeats.length,)}/${String(modelIds.length,)} usable, ${verdict}, `
-      + `quorumNeeded=${String(quorumNeeded,)} quorumOver=${String(quorumOver,)}, `
-      + `seats=${seatSummary}, uniqueFindings=${String(findings.length,)}`,
+      + `quorumNeeded=${String(quorum.needed,)} quorumOver=${String(quorumOver,)} unreachable=${
+        String(unreachable,)
+      }, seats=${seatSummary}, uniqueFindings=${String(findings.length,)}`,
   );
   return {
     quorumOver,
+    unreachable,
     candidateDigest: hashContent({ content: subject.candidateText, },),
     candidateText: subject.candidateText,
     paragraphCount,

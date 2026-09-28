@@ -213,6 +213,7 @@ await describe({
           const acceptable = index === (texts.length - 1);
           return {
             quorumOver: 2,
+            unreachable: 0,
             candidateDigest: hashContent({ content: text, },),
             candidateText: text,
             paragraphCount: 1,
