@@ -147,8 +147,16 @@ function panelClient(
           marker: 'scripted voice loss',
         };
       }
-      if (!request.validate(scripted,))
-        throw new Error('scripted ballot failed the panel guard',);
+      // A BALLOT THE STAGE'S GUARD REJECTS comes back as the real clients
+      // return it, a schema mismatch, so the gather reads it as unreadable.
+      if (!request.validate(scripted,)) {
+        return {
+          kind: 'schema-mismatch',
+          rawText: JSON.stringify(scripted,),
+          reason: 'caller-guard-rejected',
+          detail: 'content parsed as JSON but failed the caller schema guard',
+        };
+      }
       return {
         kind: 'ok',
         value: scripted,
@@ -327,12 +335,18 @@ await describe({
         + 'rather than being dropped between the fan-out and the tally',
       fn: async () => {
         /**
-         Stage where every panelist numbered a claim off the sheet.
+         Stage where every panelist voted on the claim and also numbered one
+         off the sheet.
          */
         const result = await runStage({
           client: panelClient({
             ballotFor: () => ({
               verdicts: [
+                {
+                  claim: 1,
+                  vote: 'supported',
+                  severity: 'major',
+                },
                 {
                   claim: 9,
                   vote: 'supported',
@@ -345,8 +359,48 @@ await describe({
         },);
 
         expect(result.heardPanelists,).toBe(PANELISTS.length,);
-        expect(result.findings.length,).toBeGreaterThan(0,);
-        expect(result.issues[0]?.status,).not.toBe('accepted',);
+        expect(result.findings.some(function namesOffSheet(finding,): boolean {
+          return finding.includes('verdict-index-out-of-range (9)',);
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'DOES NOT COUNT A BALLOT WITH NO USABLE VERDICT as a heard voice (ledger L8): an empty ballot, '
+        + 'one voting only on claims never shown and one whose only vote is no vote at all each leave the '
+        + 'round short, so the recovery round re-asks rather than closing on a silent seat',
+      fn: async () => {
+        /**
+         Unusable ballot by panelist: empty, off the sheet, and an unknown vote.
+         */
+        const unusable: Readonly<Record<string, unknown>> = {
+          [PANELISTS[0]]: { verdicts: [], },
+          [PANELISTS[1]]: {
+            verdicts: [{
+              claim: 9,
+              vote: 'supported',
+            },],
+          },
+          [PANELISTS[2]]: {
+            verdicts: [{
+              claim: 1,
+              vote: 'minor',
+            },],
+          },
+        };
+
+        /**
+         Stage where no panelist cast a usable verdict.
+         */
+        const result = await runStage({
+          client: panelClient({
+            ballotFor: (modelId,) => unusable[modelId],
+          },),
+          clusters: [soloCluster({ suffix: 'waking', },),],
+        },);
+
+        expect(result.heardPanelists,).toBe(0,);
+        expect(result.issues[0]?.status,).toBe('needs-human',);
       },
     },),
 

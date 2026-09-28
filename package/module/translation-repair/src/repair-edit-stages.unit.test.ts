@@ -116,8 +116,16 @@ function checkerClient(
           detail: 'scripted voice loss',
         };
       }
-      if (!request.validate(scripted,))
-        throw new Error('scripted report failed the resolution guard',);
+      // A REPORT THE STAGE'S GUARD REJECTS comes back as the real clients
+      // return it, a schema mismatch, so the gather reads it as unreadable.
+      if (!request.validate(scripted,)) {
+        return {
+          kind: 'schema-mismatch',
+          rawText: JSON.stringify(scripted,),
+          reason: 'caller-guard-rejected',
+          detail: 'content parsed as JSON but failed the caller schema guard',
+        };
+      }
       return {
         kind: 'ok',
         value: scripted,
@@ -435,12 +443,17 @@ await describe({
         + 'and the tally',
       fn: async () => {
         /**
-         Stage where every checker names an issue number off the sheet.
+         Stage where every checker judged the issue and also named an issue
+         number off the sheet.
          */
         const result = await runStage({
           client: checkerClient({
             reportFor: () => ({
               checks: [
+                {
+                  issue: 1,
+                  verdict: 'not-fixed',
+                },
                 {
                   issue: 9,
                   verdict: 'fixed',
@@ -452,7 +465,47 @@ await describe({
         },);
 
         expect(result.heardCheckers,).toBe(CHECKERS.length,);
-        expect(result.findings.length,).toBeGreaterThan(0,);
+        expect(result.findings.some(function namesOffSheet(finding,): boolean {
+          return finding.includes('(9)',);
+        },),).toBe(true,);
+        expect(result.tallies['adjudicated/tense']?.resolved,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'DOES NOT COUNT A REPORT WITH NO USABLE CHECK as a heard checker (ledger L8): XingZ6014 slice 87 '
+        + 'closed its round on a heard report that checked nothing, and resolved an issue on the other ballot',
+      fn: async () => {
+        /**
+         Unusable report by checker: empty, off the sheet, and an unknown verdict.
+         */
+        const unusable: Readonly<Record<string, unknown>> = {
+          [CHECKERS[0]]: { checks: [], },
+          [CHECKERS[1]]: {
+            checks: [{
+              issue: 9,
+              verdict: 'fixed',
+            },],
+          },
+          [CHECKERS[2]]: {
+            checks: [{
+              issue: 1,
+              verdict: 'mostly',
+            },],
+          },
+        };
+
+        /**
+         Stage where no checker cast a usable check.
+         */
+        const result = await runStage({
+          client: checkerClient({
+            reportFor: (modelId,) => unusable[modelId],
+          },),
+          issues: [catIssue({ issueId: 'adjudicated/tense', },),],
+        },);
+
+        expect(result.heardCheckers,).toBe(0,);
         expect(result.tallies['adjudicated/tense']?.resolved,).toBe(false,);
       },
     },),
