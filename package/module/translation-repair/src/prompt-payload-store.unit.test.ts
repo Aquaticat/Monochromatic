@@ -130,6 +130,49 @@ await describe({
     },),
 
     it({
+      name: 'REPLAYS WHICH PROVIDER SERVED A PAYLOAD, since a resumed run that lost it could not re-ask '
+        + 'elsewhere and would answer differently from the run it resumes (ledger P9)',
+      fn: async () => {
+        await using dir = await temporaryDirectory();
+        const store = promptPayloadStore({ dir: dir.path, },);
+        const first = promptUniqueClient({
+          inner: {
+            chatText: async () => (
+              {
+                text: 'The cat slept.',
+                servedBy: 'hyper',
+              }
+            ),
+            chatJson: async () => {
+              throw new Error('chatJson bypassed by prompt payload reader',);
+            },
+            quotas: async () => {
+              throw new Error('quotas unused by prompt payload fixture',);
+            },
+          },
+          store,
+        },);
+        await first.chatText(REQUEST,);
+
+        const resumed = promptUniqueClient({
+          inner: {
+            chatText: async () => {
+              throw new Error('resumed client must not call provider',);
+            },
+            chatJson: async () => {
+              throw new Error('chatJson bypassed by prompt payload reader',);
+            },
+            quotas: async () => {
+              throw new Error('quotas unused by prompt payload fixture',);
+            },
+          },
+          store,
+        },);
+        expect((await resumed.chatText(REQUEST,)).servedBy,).toBe('hyper',);
+      },
+    },),
+
+    it({
       name: 'REFUSES CORRUPTED DURABLE PAYLOAD rather than recalling provider',
       fn: async () => {
         await using dir = await temporaryDirectory();

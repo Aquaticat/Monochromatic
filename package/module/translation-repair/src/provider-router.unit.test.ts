@@ -1033,6 +1033,53 @@ await describe({
     },),
 
     it({
+      name: 'TAGS a routed reply with the provider that served it, and serves a hinted re-ask on another '
+        + 'provider, which is what lets the uniqueness wrapper re-ask elsewhere (ledger P9)',
+      fn: async () => {
+        const { callers, called, } = stubProviders({},);
+        const { budgets, } = stubBudgets({},);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+        },);
+        const plain = await client.chatText({
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          messages: MESSAGES,
+          signal: SIGNAL,
+        },);
+        const elsewhere = await client.chatText({
+          modelId: SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          messages: MESSAGES,
+          signal: SIGNAL,
+          otherThan: 'synthetic',
+        },);
+        expect(plain.servedBy,).toBe('synthetic',);
+        expect(elsewhere.servedBy,).toBe('hyper',);
+        expect(called,).toEqual(['synthetic', 'hyper',],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a hinted re-ask where no other provider serving the model has budget, rather than '
+        + 'serving it on the provider it was hinted away from',
+      fn: async () => {
+        const { callers, called, } = stubProviders({},);
+        const { budgets, } = stubBudgets({ dry: { openrouter: true, }, },);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+        },);
+        await expect(client.chatText({
+          modelId: SEAT_HYPER_ONLY,
+          messages: MESSAGES,
+          signal: SIGNAL,
+          otherThan: 'hyper',
+        },),).rejects.toThrow(NoProviderForModelError,);
+        expect(called,).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'reads a routed answer through the same ladder every provider uses',
       fn: async () => {
         const { callers, } = stubProviders({ status: { synthetic: 429, }, },);

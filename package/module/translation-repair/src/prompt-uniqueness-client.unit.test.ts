@@ -13,11 +13,30 @@ import {
 import {
   MalformedCompletionError,
   modelPromptDigest,
+  NoProviderForModelError,
   promptUniqueClient,
+  RECOVERY_NUDGE,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatTextRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Guard accepting any string, so a quoted JSON string is a usable answer and
+ anything that is not JSON is not.
+
+ @param value - parsed reply
+
+ @returns Whether it is a string
+
+ @example
+ ```ts
+ isStringAnswer('windowsill',);
+ ```
+ */
+function isStringAnswer(value: unknown,): value is string {
+  return (typeof value) === 'string';
+}
 
 /**
  Exact prompt reused across boundary cases.
@@ -212,6 +231,78 @@ await describe({
         expect(await second,).toEqual({ text: 'single payload', },);
         expect(await first,).toEqual({ text: 'single payload', },);
         expect(providerCalls,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'RE-ASKS ANOTHER PROVIDER WITH A NUDGE when the reply could not be used (ledger P9, owner '
+        + '2026-09-28 "Enable with the nudge"): the nudged prompt is a new digest routed away from the '
+        + 'provider that served the first, and both exchanges stay claimed',
+      fn: async () => {
+        /** Every request that crossed the wrapper, in order. */
+        const asked: ChatTextRequest[] = [];
+        const inner: SyntheticClient = {
+          chatText: async (request,) => {
+            asked.push(request,);
+            return (asked.length === 1)
+              ? { text: 'not-json', servedBy: 'synthetic', }
+              : { text: '"windowsill"', servedBy: 'hyper', };
+          },
+          chatJson: async () => {
+            throw new Error('chatJson bypassed by prompt payload reader',);
+          },
+          quotas: async () => {
+            throw new Error('quotas unused by prompt uniqueness fixture',);
+          },
+        };
+        const client = promptUniqueClient({ inner, },);
+        const outcome = await client.chatJson({ ...REQUEST, validate: isStringAnswer, },);
+        expect(outcome.kind,).toBe('ok',);
+        expect(asked,).toHaveLength(2,);
+        expect(asked[1]?.otherThan,).toBe('synthetic',);
+        expect(asked[1]?.messages.slice(0, -1,),).toStrictEqual(REQUEST.messages,);
+
+        // A WORDING OF ITS OWN, so the stage recovery round's nudged prompt is
+        // still a new digest rather than a replay of this re-ask.
+        expect(asked[1]?.messages.at(-1,),).not.toStrictEqual(RECOVERY_NUDGE,);
+
+        // Asked again, both answers come from the claims.
+        const again = await client.chatJson({ ...REQUEST, validate: isStringAnswer, },);
+        expect(again.kind,).toBe('ok',);
+        expect(asked,).toHaveLength(2,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE FIRST ANSWER when no other provider can take the re-ask, and releases the nudged '
+        + 'prompt, so a later ask of the same question may still buy it',
+      fn: async () => {
+        /** Every request that crossed the wrapper, in order. */
+        const asked: ChatTextRequest[] = [];
+        const inner: SyntheticClient = {
+          chatText: async (request,) => {
+            asked.push(request,);
+            if (asked.length === 2)
+              throw new NoProviderForModelError({ modelId: request.modelId, reason: 'no other provider', },);
+            return (asked.length === 1)
+              ? { text: 'not-json', servedBy: 'synthetic', }
+              : { text: '"windowsill"', servedBy: 'hyper', };
+          },
+          chatJson: async () => {
+            throw new Error('chatJson bypassed by prompt payload reader',);
+          },
+          quotas: async () => {
+            throw new Error('quotas unused by prompt uniqueness fixture',);
+          },
+        };
+        const client = promptUniqueClient({ inner, },);
+        const first = await client.chatJson({ ...REQUEST, validate: isStringAnswer, },);
+        expect(first.kind,).toBe('schema-mismatch',);
+        expect(asked,).toHaveLength(2,);
+
+        const later = await client.chatJson({ ...REQUEST, validate: isStringAnswer, },);
+        expect(later.kind,).toBe('ok',);
+        expect(asked,).toHaveLength(3,);
       },
     },),
   ],
