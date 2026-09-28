@@ -48,9 +48,7 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
-  ContributorCompletenessError,
   type DestinationCheck,
-  DroppedDestinationError,
   type ChunkPair,
   fixedPagePath,
   publishFixedPage,
@@ -738,7 +736,8 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES TARGET CONTRIBUTOR RENAMING before writing page',
+      name: 'SHIPS A PAGE RENAMING A CONTRIBUTOR and reports the defect, since a settled page ships with its '
+        + 'defects reported (the owner, 2026-09-27)',
       fn: async () => {
         await using tree = await throwawayTree();
         /**
@@ -790,9 +789,9 @@ await describe({
           },
         } as WouldShipSource;
         /**
-         Publication attempt that must fail before atomic write.
+         The publication, which ships the page and reports the renaming.
          */
-        const refused = publishFixedPage({
+        const published = await publishFixedPage({
           artifact,
           slices: [pairOver({
             target: {
@@ -809,15 +808,13 @@ await describe({
           publishDir: tree.publishDir,
           l: tagged({ tag: 'publish-test', },),
         },);
-        await expect(refused,).rejects.toBeInstanceOf(ContributorCompletenessError,);
-        /**
-         Path contributor-invalid page must never reach.
-         */
-        const refusedPath = fixedPagePath({
-          publishDir: tree.publishDir,
-          entryId: 'BookshopContributors',
-        },);
-        expect(existsSync(refusedPath,),).toBe(false,);
+        expect(published.defects.map(function checkOf({ check, },): string {
+          return check;
+        },),).toStrictEqual(['contributor-names',],);
+        expect(await readFile(
+          published.path,
+          'utf8',
+        ),).toBe(renamed,);
       },
     },),
 
@@ -908,75 +905,64 @@ await describe({
   name: `${publishFixedPage.name} destinations`,
   children: [
     it({
-      name: 'PAUSES source destination loss before writing page',
+      name: 'SHIPS A PAGE DROPPING A SOURCE DESTINATION and reports the defect, since a settled page ships '
+        + 'with its defects reported (the owner, 2026-09-27; ledger E1)',
       fn: async () => {
         await using tree = await throwawayTree();
-        const path = fixedPagePath({
-          publishDir: tree.publishDir,
-          entryId: 'BookshopCat',
-        },);
-        let thrown: unknown;
-        try {
-          await publishFixedPage({
-            artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
-            slices: documentSlices(),
-            archiveText: ARCHIVE,
-            sourceText: `${SOURCE_PAGE}\n她的主页：https://example.org/tabby。\n`,
-            entryId: 'BookshopCat',
-            publishDir: tree.publishDir,
-            l: tagged({ tag: 'publish-test', },),
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
 
-        expect(thrown,).toBeInstanceOf(DroppedDestinationError,);
-        expect((thrown as DroppedDestinationError).droppedCount,).toBe(1);
-        expect(existsSync(path,),).toBe(false,);
+        /**
+         The publication, which ships the page and reports the loss.
+         */
+        const published = await publishFixedPage({
+          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+          slices: documentSlices(),
+          archiveText: ARCHIVE,
+          sourceText: `${SOURCE_PAGE}\n她的主页：https://example.org/tabby。\n`,
+          entryId: 'BookshopCat',
+          publishDir: tree.publishDir,
+          l: tagged({ tag: 'publish-test', },),
+        },);
+
+        expect(published.defects.map(function checkOf({ check, },): string {
+          return check;
+        },),).toStrictEqual(['destinations',],);
+        expect(published.destinations.dropped.length,).toBe(1,);
+        expect(existsSync(published.path,),).toBe(true,);
       },
     },),
 
     it({
-      name: 'NAMES THE SLICE whose original carries a destination the page drops, and whether its archive '
-        + 'span and its shipped text carry it, so a refusal can be traced (ledger E1: XingZ6011 lost '
-        + '96 minutes to a refusal that named neither)',
+      name: 'NAMES THE SLICE whose original carries a destination the page drops, so the reported defect can '
+        + 'be traced (ledger E1: XingZ6011 lost 96 minutes to a refusal that named neither)',
       fn: async () => {
         await using tree = await throwawayTree();
         /**
          The original's middle, linking her page.
          */
         const linkedSource = '她睡在收银台上。她的主页：https://example.org/tabby。';
-        let thrown: unknown;
-        try {
-          await publishFixedPage({
-            artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
-            slices: documentSlices().map(function linkMiddle(pair,): ChunkPair {
-              return (pair.target.sliceIndex === 1)
-                ? pairOver({
-                  target: { ...pair.target, },
-                  sourceText: linkedSource,
-                },)
-                : pair;
-            },),
-            archiveText: ARCHIVE,
-            sourceText: `${SOURCE_PAGE}\n${linkedSource}\n`,
-            entryId: 'BookshopCat',
-            publishDir: tree.publishDir,
-            l: tagged({ tag: 'publish-test', },),
-          },);
-        }
-        catch (error) {
-          thrown = error;
-        }
 
-        expect(thrown,).toBeInstanceOf(DroppedDestinationError,);
-        expect((thrown as DroppedDestinationError).traces,).toStrictEqual([{
-          sourceSlices: [1,],
-          archiveSlices: [],
-          shippedSlices: [],
-        },],);
-        expect(String(thrown,).includes('slice 1',),).toBe(true,);
+        /**
+         The publication, which ships the page and reports where the loss sits.
+         */
+        const published = await publishFixedPage({
+          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+          slices: documentSlices().map(function linkMiddle(pair,): ChunkPair {
+            return (pair.target.sliceIndex === 1)
+              ? pairOver({
+                target: { ...pair.target, },
+                sourceText: linkedSource,
+              },)
+              : pair;
+          },),
+          archiveText: ARCHIVE,
+          sourceText: `${SOURCE_PAGE}\n${linkedSource}\n`,
+          entryId: 'BookshopCat',
+          publishDir: tree.publishDir,
+          l: tagged({ tag: 'publish-test', },),
+        },);
+
+        expect(published.defects.length,).toBe(1,);
+        expect(published.defects[0]?.message.includes('slice 1',),).toBe(true,);
       },
     },),
 
