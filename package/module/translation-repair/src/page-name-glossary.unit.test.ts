@@ -112,5 +112,49 @@ await describe({
         expect(lines,).toEqual([],);
       },
     },),
+    it({
+      name: 'READS ONLY WHAT THE PAGE SHOWS: a heading or link inside the front matter, an HTML or JSX comment or '
+        + 'a code fence neither pairs nor shifts the heading order (ledger E10)',
+      fn: async () => {
+        const lines = pageNameLines({
+          sourceText: [
+            '---',
+            'title: "[黑猫](https://example.invalid/fm)"',
+            '---',
+            '',
+            '<!--',
+            '# 旧标题',
+            '[白猫](https://example.invalid/comment)',
+            '-->',
+            '',
+            '{/* [花猫](https://example.invalid/jsx) */}',
+            '',
+            '```',
+            '# 代码里的猫',
+            '```',
+            '',
+            '## 午睡',
+            '',
+            '猫睡了。',
+          ].join('\n',),
+          targetText: [
+            '---',
+            'title: "[Black Cat](https://example.invalid/fm)"',
+            '---',
+            '',
+            '<!--',
+            '[Snowball](https://example.invalid/comment)',
+            '-->',
+            '',
+            '{/* [Patches](https://example.invalid/jsx) */}',
+            '',
+            '## The Nap',
+            '',
+            'The cat slept.',
+          ].join('\n',),
+        },);
+        expect(lines.slice(1,),).toEqual(['- 午睡 (heading): "The Nap"',],);
+      },
+    },),
   ],
 },);
