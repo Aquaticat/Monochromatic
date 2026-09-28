@@ -52,6 +52,7 @@ import {
   RUN_SEATS,
   seatTallyClient,
 } from '../seat-tally.ts';
+import { refusingCulledSeats, } from '../culled-seat-guard.ts';
 import type { QuotaSnapshot, } from '../synthetic-quota.ts';
 import { resolveGit, } from './git-command.ts';
 
@@ -1192,7 +1193,13 @@ export function createRunClient(
   return {
     ...promptUniqueClient({
       inner: seatTallyClient({
-        inner: routed,
+        // THE OWNER'S CULL AT THE DOOR (ledger P4): a culled model is refused
+        // before any provider is asked, whatever path named it, and tallied
+        // as the seat that threw.
+        inner: refusingCulledSeats({
+          inner: routed,
+          culled: OWNER_CULLED,
+        },),
         tally: RUN_SEATS,
       },),
       ...((promptPayloadDir === undefined)
