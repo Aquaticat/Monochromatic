@@ -100,8 +100,10 @@ not an independently checked invoice.
 
 The retained response contains only `type` and `noul` for each answer:
 
-- `positive_relation`: `0.6700895`.
-- `explicit_prohibition`: `0.027236922`.
+- `positive_relation`:
+   `0.6700895`.
+- `explicit_prohibition`:
+   `0.027236922`.
 
 These equal the direct Lite present-probability fields on this one matched span.
 The offline comparison detected a deliberately changed scalar as different.
