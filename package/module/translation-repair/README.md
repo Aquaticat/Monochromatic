@@ -247,8 +247,10 @@ The page ships regardless (`doc/design-commitments.md`),
 and each check names what it found:
 `archive-original`, `contributor-names`, `destinations`, `front-matter` and `headings`
 are the publish-time content checks,
-and `no-valid-wording` names slices where no wording passed the deterministic rule,
-so the archive's own wording stayed.
+`no-valid-wording` names slices where no wording passed the deterministic rule,
+so the archive's own wording stayed,
+and `page-agreement` names a page that does not carry what its artifact says ships,
+which is a defect in page assembly, not in the text.
 Each defect's message is in the run log at warn,
 under `publish: shipping with defect <check>:`,
 and names ids, counts and slice indices only.

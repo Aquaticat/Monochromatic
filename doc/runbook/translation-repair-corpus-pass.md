@@ -543,7 +543,9 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     `archive-original`, `contributor-names`, `destinations`, `front-matter` and `headings`
     are the publish-time content checks;
     `no-valid-wording` names slices where no wording passed the deterministic rule,
-    so the archive's own wording stayed.
+    so the archive's own wording stayed;
+    `page-agreement` names a page that does not carry what its artifact says ships,
+    which is a defect in page assembly, not in the text.
     Each defect's message is in the run log at `warn` under `publish: shipping with defect`,
     naming ids, counts and slice indices only.
     A checkout that predates 2026-09-27 refused such entries instead,

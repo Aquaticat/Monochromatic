@@ -799,7 +799,9 @@ now runs through `corpus-run/publish-defects.ts`:
 its own refusal becomes a defect that is logged and printed as a `DEFECTS` line beside the tally,
 anything else it throws still stops the entry,
 and the page ships.
-A page that does not parse, or that disagrees with its artifact, still refuses.
+A page that does not parse still refuses.
+A page that disagrees with its artifact refused too until the owner ruled the same day that it ships reported
+(`page-agreement`, fixed in `e5bd9a95b`, red guard `87aa58047`).
 
 Found as:
 `corpus-run/publish-fixed.ts` threw after all spending;
@@ -2275,6 +2277,9 @@ Its message said A13, A14 and K5 were already in the ledger; they were recorded 
 The first attempt at that comment named a full hash typed out by hand, which GitHub refused as no commit.
 Prevention: a commit message states only what `git show --stat` of that commit shows;
 every hash is resolved with `git rev-parse` in the same command that uses it.
+Once more on 2026-09-27, in the page-agreement docs:
+a hash no command had produced was written into this ledger as a red guard's,
+and caught on reading the edit back, before any commit.
 
 ### M14: a reproduction check committed without a positive control
 
