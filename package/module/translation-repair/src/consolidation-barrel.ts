@@ -57,6 +57,7 @@ export {
   type ConsolidationHooks,
   consolidationHooksFor,
 } from './corpus-run/pass-consolidate-reseat.ts';
+export { consolidationPolishConfiguration, } from './consolidation-polish-config.ts';
 export {
   type ConsolidationNaturalnessAudit,
   type ConsolidationNaturalnessCorrectionAudit,
