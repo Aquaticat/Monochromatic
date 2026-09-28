@@ -1480,7 +1480,8 @@ Meow meow meow meow.
     it({
       name: 'WITHDRAWS a repair that would break a footnote spanning two '
         + 'slices, and records its issue as withdrawn rather than shipped. The '
-        + 'per-envelope footnote gate cannot see this: the definition lives in '
+        + 'per-envelope markup gate lets the marker go, since an addition claim '
+        + 'quotes it (ledger L4), and cannot see that the definition lives in '
         + 'a slice the editor was never shown',
       fn: async () => {
         /**
@@ -1511,11 +1512,16 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies[^1].
         /**
          Issue whose quote CONTAINS the marker, so the envelope cut for it
          covers the marker and the editor's replacement drops it.
+
+         AN ADDITION CLAIM, the one kind whose quote licenses a marker's
+         removal at the envelope gate (ledger L4). On any other claim that gate
+         now refuses the edit before assembly, and this case would test the
+         envelope gate instead of the cross-slice check it exists for.
          */
         const markerBearingIssue = {
-          category: 'accuracy/mistranslation',
+          category: 'accuracy/addition',
           severity: 'major',
-          summary: 'Chasing butterflies is rendered as hating them.',
+          summary: 'The hatred of butterflies is added; the original has the cat enjoy chasing them.',
           sourceQuote: '猫猫也喜欢追蝴蝶〔1〕。',
           targetQuote: 'The cat hates butterflies[^1].',
         };
