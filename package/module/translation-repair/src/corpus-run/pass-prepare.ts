@@ -22,6 +22,10 @@ import { repairArchiveBlocks, } from './archive-block-repair.ts';
 import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
 import { passArchiveText, } from './pass-archive.ts';
 import { attestPassReferences, } from './pass-attest-references.ts';
+import {
+  openPageTitleCache,
+  passPageTitles,
+} from './pass-page-titles.ts';
 import { frontMatterAuthorityOf, } from './archive-front-matter.ts';
 import { relabelArchiveFootnotes, } from './pass-footnote-relabel.ts';
 import type { PairedReading, } from '../image-reading-pair.ts';
@@ -184,12 +188,33 @@ export async function preparePassEntry(
     }`,
   );
   /**
-   Evidence lines bought or read outside preparation, the same for both
-   preparations.
+   One rendering of each title the original repeats that the archive leaves
+   unpaired (ledger H16), settled once by the bench on the roster the hook
+   hands over and cached durably, the same lines for every preparation so a
+   corrected archive does not change what the sheets are told about a title.
+   */
+  const pageTitles = await passPageTitles({
+    client,
+    modelIds,
+    beforeItem: beforeItem ?? keepBench,
+    sourceText,
+    targetText: archiveText,
+    cache: await openPageTitleCache({
+      dir: entryCacheDir,
+      generation: pipelineDigest,
+    },),
+    signal,
+    exchangeTimeoutMs,
+    l,
+  },);
+  /**
+   Evidence lines bought or read outside preparation, the same for every
+   preparation.
    */
   const contextLines = [
     ...workTitleLines,
     ...corpusNameContext,
+    ...pageTitles.lines,
   ];
   /**
    What the pages the original links say (class thirty-five, the owner's
@@ -352,12 +377,22 @@ export async function preparePassEntry(
     },)
     : labelled;
   /**
-   Findings so far: the preparation's and the relabel's.
+   What the evidence rounds reported, the same for every preparation and so
+   carried on every way out (ledger X18: the way out through a corrected
+   archive once rebuilt its findings and dropped the attestation's).
+   */
+  const evidenceFindings = [
+    ...attestation.findings,
+    ...pageTitles.findings,
+  ];
+  /**
+   Findings so far: the preparation's, the relabel's and the evidence
+   rounds'.
    */
   const sightedFindings = [
     ...sightedPaired.findings,
     ...relabel.findings,
-    ...attestation.findings,
+    ...evidenceFindings,
   ];
   /**
    Unclaimed blocks not already licensed unchanged.
@@ -417,6 +452,7 @@ export async function preparePassEntry(
     findings: [
       ...secondPaired.findings,
       ...relabel.findings,
+      ...evidenceFindings,
       ...repaired.findings,
       ...(remaining.length === 0
         ? []
