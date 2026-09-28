@@ -21,7 +21,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import {
   floorConsolidateSlate,
@@ -29,9 +32,41 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Logger these hand to the stage, whose output is not what is under test.
+ Logger the cases that do not read the log hand to the stage.
  */
 const l = tagged({ tag: 'consolidate-floor-test', },);
+
+/**
+ Logger keeping every line it is handed, for the cases that read the log.
+
+ @param lines - sink each emitted line is appended to
+
+ @returns Logger writing only to that sink
+
+ @example
+ ```ts
+ const said: string[] = [];
+ const captured = capturingLogger({ lines: said, },);
+ ```
+ */
+function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
+  /**
+   Retains one emitted line.
+   */
+  function keep(line: string,): void {
+    lines.push(line,);
+  }
+
+  return {
+    debug: keep,
+    error: keep,
+    fatal: keep,
+    info: keep,
+    trace: keep,
+    warn: keep,
+    flush: async function flush(): Promise<void> {},
+  };
+}
 
 /**
  Builds one checked proposal.
@@ -127,6 +162,46 @@ await describe({
         if (floor.kind !== 'proposals')
           throw new Error('proposals by construction',);
         expect(floor.validModelIds,).toStrictEqual(['hf:cat/Cat-A', 'hf:cat/Cat-C',],);
+      },
+    },),
+
+    it({
+      name: 'SAYS IN THE RUN LOG WHICH PROPOSALS IT WITHHELD when some survive (ledger E5): only the '
+        + 'all-refused case was logged, so a slate that lost voices here read as a judged slate of '
+        + 'fewer voices with nothing naming the guard that removed them',
+      fn: async () => {
+        /**
+         Lines the floor wrote.
+         */
+        const said: string[] = [];
+        floorConsolidateSlate({
+          validity: [
+            checkedAs({ modelId: 'hf:cat/Cat-A', valid: true, },),
+            checkedAs({ modelId: 'hf:cat/Cat-B', valid: false, },),
+            checkedAs({ modelId: 'hf:cat/Cat-C', valid: false, },),
+          ],
+          l: capturingLogger({ lines: said, },),
+        },);
+
+        expect(said,).toHaveLength(1,);
+        expect(said[0],).toContain('hf:cat/Cat-B, hf:cat/Cat-C',);
+        expect(said[0],).not.toContain('hf:cat/Cat-A',);
+      },
+    },),
+
+    it({
+      name: 'SAYS NOTHING when every proposal passed, so a withheld line marks a thinned slate only',
+      fn: async () => {
+        /**
+         Lines the floor wrote.
+         */
+        const said: string[] = [];
+        floorConsolidateSlate({
+          validity: [checkedAs({ modelId: 'hf:cat/Cat-A', valid: true, },),],
+          l: capturingLogger({ lines: said, },),
+        },);
+
+        expect(said,).toStrictEqual([],);
       },
     },),
 

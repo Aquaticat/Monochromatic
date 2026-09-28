@@ -12,6 +12,7 @@
  @module
  */
 
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -22,6 +23,39 @@ import {
   floorTranslateVoices,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Logger keeping every line it is handed, so a case can read the run log a
+ withheld candidate leaves.
+
+ @param lines - sink each emitted line is appended to
+
+ @returns Logger writing only to that sink
+
+ @example
+ ```ts
+ const said: string[] = [];
+ const l = capturingLogger({ lines: said, },);
+ ```
+ */
+function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
+  /**
+   Retains one emitted line.
+   */
+  function keep(line: string,): void {
+    lines.push(line,);
+  }
+
+  return {
+    debug: keep,
+    error: keep,
+    fatal: keep,
+    info: keep,
+    trace: keep,
+    warn: keep,
+    flush: async function flush(): Promise<void> {},
+  };
+}
 
 /**
  Original: a heading and a paragraph.
@@ -87,6 +121,7 @@ await describe({
           sourceText: SOURCE_TEXT,
           incumbentText: '',
           lineStructured: false,
+          l: capturingLogger({ lines: [], },),
         },);
         expect(floored.voices
           .map(function idOf(voice,): string {
@@ -111,9 +146,50 @@ await describe({
           sourceText: SOURCE_TEXT,
           incumbentText: '',
           lineStructured: false,
+          l: capturingLogger({ lines: [], },),
         },);
         expect(floored.voices.length,).toBe(1,);
         expect(floored.findings,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'SAYS IN THE RUN LOG which candidate it withheld and why (ledger E5): the finding reaches '
+        + 'only the artifact, and a slice whose slate thinned read in the log as judges choosing among '
+        + 'fewer voices with nothing naming the rule that removed one',
+      fn: async () => {
+        /**
+         Lines the floor wrote.
+         */
+        const said: string[] = [];
+        const floored = floorTranslateVoices({
+          voices: [
+            heard({
+              modelId: 'hf:cat/Cat-A',
+              translation: GOOD_TEXT,
+            },),
+            heard({
+              modelId: 'hf:cat/Cat-B',
+              translation: MERGED_TEXT,
+            },),
+          ],
+          sourceText: SOURCE_TEXT,
+          incumbentText: '',
+          lineStructured: false,
+          l: capturingLogger({ lines: said, },),
+        },);
+        /**
+         The rule's reason as the artifact's finding carries it.
+         */
+        const [finding,] = floored.findings;
+        /**
+         Prefix the finding names the withheld model under.
+         */
+        const prefix = 'translate-candidate-refused (hf:cat/Cat-B): ';
+        expect(finding?.startsWith(prefix,),).toBe(true,);
+        expect(finding?.length,).toBeGreaterThan(prefix.length,);
+        expect(said,).toHaveLength(1,);
+        expect(said[0],).toContain('withheld hf:cat/Cat-B',);
+        expect(said[0],).toContain(finding?.slice(prefix.length,),);
       },
     },),
   ],

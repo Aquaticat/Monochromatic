@@ -13,7 +13,10 @@
  @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -138,6 +141,39 @@ function repairClient(
 }
 
 /**
+ Logger keeping every line it is handed, so a case can read the run log a
+ refused candidate leaves.
+
+ @param lines - sink each emitted line is appended to
+
+ @returns Logger writing only to that sink
+
+ @example
+ ```ts
+ const said: string[] = [];
+ const captured = capturingLogger({ lines: said, },);
+ ```
+ */
+function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
+  /**
+   Retains one emitted line.
+   */
+  function keep(line: string,): void {
+    lines.push(line,);
+  }
+
+  return {
+    debug: keep,
+    error: keep,
+    fatal: keep,
+    info: keep,
+    trace: keep,
+    warn: keep,
+    flush: async function flush(): Promise<void> {},
+  };
+}
+
+/**
  Runs one candidate through validation and any follow-up it earns.
  
  @param translation - what the translator returned
@@ -151,9 +187,12 @@ function repairClient(
  
  @param pageText - text the candidate replaces, left to the incumbent by
  default because that is what a translator replaces
- 
+
+ @param said - sink for every line the repair logs, for the cases that read
+ the run log; the shared logger otherwise
+
  @returns Final voices, findings, and what the follow-up call saw
- 
+
  @example
  ```ts
  const { findings, } = await runRepair({ translation, answer, },);
@@ -166,12 +205,14 @@ async function runRepair(
     sourceText = SOURCE_TEXT,
     incumbentText = '',
     pageText = incumbentText,
+    said,
   }: {
     readonly translation: string;
     readonly answer: unknown;
     readonly sourceText?: string;
     readonly incumbentText?: string;
     readonly pageText?: string;
+    readonly said?: string[];
   },
 ) {
   /**
@@ -202,7 +243,7 @@ async function runRepair(
     priorMessages: PRIOR_MESSAGES,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
-    l,
+    l: (said === undefined) ? l : capturingLogger({ lines: said, },),
   },);
   return {
     repaired,
@@ -558,6 +599,54 @@ await describe({
         },);
         expect(log.calls,).toBe(1,);
         expect(repaired.findings.join('\n',),).toContain('PAGE AS IT STANDS',);
+      },
+    },),
+
+    it({
+      name: 'SAYS IN THE RUN LOG what the rule found and how the author answered, on every branch '
+        + '(ledger E5): only a taken revision was logged, so a candidate sent back and then kept, '
+        + 'defended or lost left the log with nothing between its gather line and the judges',
+      fn: async () => {
+        /**
+         Each follow-up answer beside the line its branch must leave.
+         */
+        const branches = [
+          {
+            answer: { resolution: 'unable', translation: '', explanation: 'the cat has no heading', },
+            line: `${TRANSLATOR} answered unable`,
+          },
+          {
+            answer: { resolution: 'as-intended', translation: '', explanation: 'the cat merged it', },
+            line: `${TRANSLATOR} answered as-intended`,
+          },
+          {
+            answer: { resolution: 'revised', translation: MERGED_TEXT, explanation: 'the cat tried', },
+            line: `${TRANSLATOR}: revision still fails the publication rule`,
+          },
+          {
+            answer: { nonsense: true, },
+            line: `${TRANSLATOR} gave no usable answer to its findings`,
+          },
+        ] as const;
+        /**
+         Lines each branch logged, beside the line it owes.
+         */
+        const logged = await Promise.all(branches.map(async function logOf({ answer, line, },) {
+          /**
+           Lines this branch's repair wrote.
+           */
+          const said: string[] = [];
+          await runRepair({ translation: MERGED_TEXT, answer, said, },);
+          return { line, said, };
+        },),);
+        for (const { line, said, } of logged) {
+          expect(said.some(function sent(entry,) {
+            return entry.includes(`${TRANSLATOR}: candidate fails the publication rule`,);
+          },),).toBe(true,);
+          expect(said.some(function answered(entry,) {
+            return entry.includes(line,);
+          },),).toBe(true,);
+        }
       },
     },),
   ],
