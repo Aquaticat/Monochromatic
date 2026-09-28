@@ -412,6 +412,153 @@ await describe({
 },);
 
 /**
+ One edit over an envelope that is wholly a licensed quote, which is how
+ production cuts them: envelopes and licensed quotes are the same quotes
+ (ledger L4), so the bulk and distinctive rules measure nothing there.
+
+ @param baseText - archive text of the envelope, all of it quoted
+
+ @param newText - what the editor writes over it
+
+ @returns Outcome of the enforced application
+
+ @example
+ ```ts
+ const outcome = editInsideQuote({ baseText: 'The cat napped[^1].', newText: 'The cat slept.', },);
+ ```
+ */
+function editInsideQuote(
+  {
+    baseText,
+    newText,
+  }: {
+    readonly baseText: string;
+    readonly newText: string;
+  },
+) {
+  /**
+   The one envelope, over the whole text.
+   */
+  const envelope = {
+    envelopeId: 'envelope/quoted',
+    startOffset: 0,
+    endOffset: baseText.length,
+    baseText,
+    baseHash: hashContent({ content: baseText, },),
+    issueIds: ['adjudicated/quoted',],
+  };
+  return applyPatchOperations({
+    targetText: baseText,
+    envelopes: [envelope,],
+    operations: [{
+      envelopeId: envelope.envelopeId,
+      baseHash: envelope.baseHash,
+      newText,
+    },],
+    preservation: {
+      mode: 'enforce',
+      licensedQuotes: new Map([[envelope.envelopeId, [baseText,],],],),
+    },
+  },);
+}
+
+/**
+ One markup atom an edit inside a licensed quote drops or changes, which the
+ gate must refuse whatever the issue says, except an addition's removal.
+ */
+type LostAtomCase = {
+  /**
+   Which kind of atom the case loses.
+   */
+  readonly kind: string;
+
+  /**
+   Archive text carrying the atom.
+   */
+  readonly baseText: string;
+
+  /**
+   Edit that loses or changes it.
+   */
+  readonly newText: string;
+};
+
+/**
+ One case per kind the owner named: footnote references, link destinations,
+ MDX expressions, inline code and tags.
+ */
+const LOST_ATOM_CASES: readonly LostAtomCase[] = [
+  {
+    kind: 'footnote reference',
+    baseText: 'The cat napped[^1] all afternoon.',
+    newText: 'The cat slept all afternoon.',
+  },
+  {
+    kind: 'link destination',
+    baseText: 'She met [the tabby](https://example.org/cat_(tabby)) at noon.',
+    newText: 'She met [the tabby](https://example.org/cat) at noon.',
+  },
+  {
+    kind: 'MDX expression',
+    baseText: 'The cat {/* keeper note: fed twice */} slept by the door.',
+    newText: 'The cat slept by the door.',
+  },
+  {
+    kind: 'inline code',
+    baseText: 'Type `meow` to call the cat.',
+    newText: 'Type meow to call the cat.',
+  },
+  {
+    kind: 'tag',
+    baseText: 'The cat <Paw side="left" /> slept by the door.',
+    newText: 'The cat slept by the door.',
+  },
+];
+
+await describe({
+  name: 'markup atoms inside a licensed quote (ledger L4)',
+  children: [
+    ...LOST_ATOM_CASES.map(function toCase({ kind, baseText, newText, },) {
+      return it({
+        name: `REJECTS an edit that loses a ${kind} inside the quote its issue licensed, where the bulk and `
+          + 'distinctive rules measure nothing (residual tokens were 0 on 536 of 540 regions): the owner ruled '
+          + '2026-09-28 that markup atoms survive every edit except a removal an addition issue names',
+        fn: async () => {
+          const outcome = editInsideQuote({ baseText, newText, },);
+          expect(outcome.applied,).toHaveLength(0,);
+          expect(outcome.rejected[0]?.reason,).toContain('preservation-lost-markup',);
+          expect(outcome.patchedText,).toBe(baseText,);
+        },
+      },);
+    },),
+
+    it({
+      name: 'APPLIES an edit inside the quote that rewords the prose and keeps every atom, the control that '
+        + 'shows the refusals are about the atoms',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'The cat napped[^1] by `meow` and [the door](https://example.org/door).',
+          newText: 'The cat slept[^1] by `meow` and [the door](https://example.org/door).',
+        },);
+        expect(outcome.applied,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'APPLIES an edit that gains an atom, since the measured gains are omission fixes restoring a '
+        + 'footnote reference, a link destination or a tag',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'The cat slept by the door.',
+          newText: 'The cat slept by the door[^2].',
+        },);
+        expect(outcome.applied,).toHaveLength(1,);
+      },
+    },),
+  ],
+},);
+
+/**
  Curly-quoted document, the convention the restoration reads.
  */
 const CURLY_TEXT = 'The cat’s bowl stays full. It chases red butterflies.';
