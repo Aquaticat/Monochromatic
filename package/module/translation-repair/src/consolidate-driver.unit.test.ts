@@ -1992,6 +1992,53 @@ function seatRecordingClient(
   };
 }
 
+/**
+ Writers and judges a hook hands back after a dry-out, none of them the
+ driver's own.
+ */
+const RESEATED: readonly RosterModelId[] = [
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+];
+
+/**
+ Drives one contested slice against a cache that answers every key, and
+ records the key the driver looked up.
+
+ @param beforeSlice - hook handing the slice its seating, none for a driver
+ with no hook
+
+ @returns Keys the driver looked up, in order
+
+ @example
+ ```ts
+ const keys = await keysLookedUp({},);
+ ```
+ */
+async function keysLookedUp(
+  { beforeSlice, }: { readonly beforeSlice?: () => Promise<ConsolidateSliceSeating>; },
+): Promise<readonly string[]> {
+  /**
+   Every key the driver asked the cache for.
+   */
+  const looked: string[] = [];
+  /**
+   Cache answering every key with a settlement, so nothing is bought.
+   */
+  const everyKeyRecorded = {
+    get: function recordKey(key: string,): ConsolidationSettlement {
+      looked.push(key,);
+      return settlementReaching({ terminal: 'incumbent-only', },);
+    },
+  };
+  await driveWith({
+    contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+    resumed: everyKeyRecorded as unknown as ReadonlyMap<string, ConsolidationSettlement>,
+    ...((beforeSlice === undefined) ? {} : { beforeSlice, }),
+  },);
+  return looked;
+}
+
 await describe({
   name: `${consolidateDocument.name} re-seated under a hold (ledger H5)`,
   children: [
@@ -2003,27 +2050,63 @@ await describe({
          Seat of every call the driver made.
          */
         const asked: RosterModelId[] = [];
-        /**
-         Writers and judges the hook hands back, none of them the driver's own.
-         */
-        const reseated: readonly RosterModelId[] = [
-          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-        ];
         await driveWith({
           contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
           client: seatRecordingClient({ asked, },),
           beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
             roster: {
-              modelIds: reseated,
-              judgeModelIds: reseated,
+              modelIds: RESEATED,
+              judgeModelIds: RESEATED,
             },
           }),
         },);
         expect(asked.length,).toBeGreaterThan(0,);
         expect(asked.filter(function outsideRoster(seat,): boolean {
-          return !reseated.includes(seat,);
+          return !RESEATED.includes(seat,);
         },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'KEYS A RE-SEATED SLICE BY THE ROSTER IT RUNS ON, so a settlement the roster read before the '
+        + 'dry-out reached is never resumed for it, while a hook handing back the starting roster keys '
+        + 'the slice as a driver with no hook does',
+      fn: async () => {
+        /**
+         Keys a driver with no hook looks up.
+         */
+        const starting = await keysLookedUp({},);
+        /**
+         Keys looked up when the hook re-seats the slice elsewhere.
+         */
+        const moved = await keysLookedUp({
+          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+            roster: {
+              modelIds: RESEATED,
+              judgeModelIds: RESEATED,
+            },
+          }),
+        },);
+        /**
+         Keys looked up when the hook hands back the roster the driver started on.
+         */
+        const kept = await keysLookedUp({
+          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+            roster: {
+              modelIds: ROSTER,
+              judgeModelIds: ROSTER,
+            },
+          }),
+        },);
+        expect({
+          lookups: [starting.length, moved.length, kept.length,],
+          movedDiffers: moved[0] !== starting[0],
+          keptMatches: kept[0] === starting[0],
+        },).toEqual({
+          lookups: [1, 1, 1,],
+          movedDiffers: true,
+          keptMatches: true,
+        },);
       },
     },),
   ],
