@@ -529,5 +529,46 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'READS BACK EVERY MARK A WRITER PASSES, listed here apart from the shared list: a mutant dropping '
+        + '`unreported-bound` from `SPEND_RECKONINGS` passed every runtime test, with only the type check to catch it',
+      fn: async () => {
+        /**
+         Marks the writers pass today: `openrouter-abandoned-spend.ts` the first,
+         `bedrock-client.ts` through `bedrock-bound-ledger.ts` the other two.
+         */
+        const written = ['abandoned', 'abandoned-bound', 'unreported-bound',] as const;
+        expect(written.map(function readBack(mark,): unknown {
+          /**
+           What the reader made of a line carrying this mark.
+           */
+          const reading = readSpendLine({
+            line: reportSpend({
+              provider: 'bedrock',
+              label: 'google.gemma-4-e2b',
+              extracted: {
+                text: '',
+                usage: {
+                  prompt_tokens: 64,
+                  completion_tokens: 8,
+                },
+              },
+              estimated: mark,
+            },),
+          },);
+          return ((typeof reading) === 'object') ? reading : `${mark} read as ${reading}`;
+        },),).toEqual(written.map(function expected(mark,): unknown {
+          return {
+            provider: 'bedrock',
+            model: 'google.gemma-4-e2b',
+            prompt: 64,
+            completion: 8,
+            costUsd: 'unreported',
+            reckoning: mark,
+          };
+        },),);
+      },
+    },),
   ],
 },);
