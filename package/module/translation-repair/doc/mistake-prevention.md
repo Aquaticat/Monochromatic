@@ -155,11 +155,22 @@ and tests pass `NO_OUTSIDE_READS` (`corpus-run/pass-outside-reads.test-fixture.t
 What happened: helpers were copied rather than imported (three private Han tests and code-point counters,
 one with a guard that can never fail), and two heading readers disagreed about HTML headings (M44, X20).
 
-The rule: before writing a helper, `rg` the package for one that does the job
-(for example `rg 'function \w*(codePoint|Han|heading)' src`) and import it.
+Audit area six then found the family package-wide (ledger B1 to B15): 31 groups of function bodies kept in two to
+six files, among them two readings of one event stream, five span-rewrite appliers under three contracts,
+and a benchmark grader whose re-carved slices ran one behind the run's (B10).
+Declaring the shared type for one merge duplicated a type another module already exported (M47).
 
-What enforces it: habit;
-the shared helpers (`code-points.ts`, `han-only-text.ts`, `page-headings.ts`) say so in their headers.
+The rule: before writing a helper or declaring a type, `rg` the package for its name and for its shape
+(for example `rg 'function \w*(codePoint|Han|heading)' src`, or the field names together) and import what is there.
+A copy that must stay separate (an artifact version's frozen rule) says so where it stands,
+naming the live copy and the check that compares them.
+Code that claims to rebuild what the pipeline built (slices, sheets, verdicts) calls the pipeline's own function,
+or measures its agreement over the corpus and records the result.
+
+What enforces it: `duplicate-bodies.mjs` (`~/temp/agent/audit-glossary-fix/`) found the groups;
+nothing in the package fails on a new one yet.
+The shared helpers (`code-points.ts`, `han-only-text.ts`, `page-headings.ts`, `index-pair-list.ts`,
+`sse-data-line.ts`, `corpus-run/span-rewrites.ts`) say so in their headers.
 
 ## Lint and edits
 
@@ -168,6 +179,9 @@ lint run on changed files only (M10), its warnings unread (M23), or an autofix c
 a file split at the line cap left comments naming the old file (M17).
 
 The rule: read a region with the Read tool before editing it.
+Lint, type check and the named tests run after the final edit of a commit, in that order,
+and the commit follows only a clean run of all three (M46).
+Neither the type check nor the linter reports an unused import here, so a removal counts the removed names' uses.
 Commit before `--fix` and read the diff after it for anything but layout.
 A split searches `src`, tests and `doc` for the old file's name and repoints every hit in the same commit.
 The line cap is met by splitting by concern, never by reformatting or disabling the rule.

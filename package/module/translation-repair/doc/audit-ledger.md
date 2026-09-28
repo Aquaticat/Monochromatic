@@ -3792,6 +3792,115 @@ because only the repair lane's twin (`repair-assemble-slice-match.unit.test.ts`)
 `translate-assemble-slice-match.unit.test.ts` now kills that mutant (2 failures)
 and an inverted slice match (3 failures); its control survives.
 
+### B6: two HTML-comment finding tests beside a third inline
+
+Status: fixed in `c92394058`, 2026-09-28.
+`archive-original-note.ts`, `entry-notes.ts` and `footnote-protected-ranges.ts` each spelled out the two comment kinds;
+`isCommentFinding` in `parse-document.ts`, where the kinds are defined, now serves all three,
+with a test over every finding kind.
+
+### B7: two readings of one event stream, and a data prefix spelled with its space
+
+Status: fixed in `91ff1e779` and `440eb0c0d`, 2026-09-28.
+The live delta scanners (`stream-delta-scan.ts`, `anthropic-delta-scan.ts`) read `data:` lines by the event-stream
+format (one trailing carriage return dropped, the field name at the line start, one optional space removed),
+while the three readers folding the drained body (`stream-completion.ts`, `anthropic-completion.ts`,
+`openrouter-chunk-scan.ts`) trimmed every surrounding space first.
+A line the format does not count as an event (one indented before `data:`) reached the answer
+while the runaway guards never saw it.
+`ssePayloadOf` in `sse-data-line.ts` now serves all five;
+mutants restoring either trim, keeping the carriage return, or stripping every space each fail 2 assertions.
+A sixth reader, `requireBedrockStreamEnd` (`bedrock-stream-end.ts`), looked for its usage chunk under `data: `
+with the space, so a usage chunk sent as `data:{...}` never counted and a whole stream was refused as cut off;
+it now reads through the same function, and a test sending the tight form fails when the spaced prefix is restored.
+
+### B8: five span-rewrite appliers under three contracts
+
+Status: fixed in `8f590d8e8`, 2026-09-28.
+The name casing sorted its rewrites and dropped any overlapping an earlier one;
+the Canadian forms sorted and trusted a comment that dates and spellings never overlap;
+the pinyin tones applied rewrites in the order parentheses were read, sorted or not;
+the casing restore and the tag attribute restore relied on their callers' order.
+An unsorted or overlapping set splices behind the cursor and repeats page text.
+`applySpanRewrites` in `corpus-run/span-rewrites.ts` orders by start, the longer first, and withholds overlaps
+for all five; mutants dropping the sort, the tie-break or the overlap rule each fail its test.
+Nested parentheses in a pinyin probe produced no duplicate rewrite, so no page is known to have hit the defect.
+
+### B9: small shared helpers kept twice
+
+Status: fixed, 2026-09-28, each with the tests naming its callers passing.
+
+- `longestRunOf` (`character-run.ts`) for the Markdown and prompt fences, which counted runs of different characters
+  with one body (`304ae283d`); its test counts an astral character by code point.
+- `runEnd` and `runStart` moved to `corpus-run/text-runs.ts`, and the pinyin pass's private `scanEnd` copy removed
+  (`c147db8cc`).
+- `chunkLabel` exported from `chunk-document.ts` for `coverage-candidates.ts` and `prepare-section-round.ts`
+  (`f96ade088`; the 46 test files touching sectioning pass).
+- `sliceSizesOf` (`displacement-ratio.ts`) for the displacement probe and the window trial (`d80ebe034`).
+- `describeBlocks` and `sameShape` from `translate-validate-blocks.ts` for the archive revision shape check,
+  over the same `BlockShape` (`6a80392c6`; 54 test files pass).
+- `bothHalvesInserted` (`container-half-pairs.ts`) for lone-half withholding and insertion admission (`957a5ab3e`).
+- `slicesInOrder` in `heading-collision-restore.ts` and a new `rowsChangedBy` (`assembly-page-text.ts`)
+  for the casing and name gloss restores (`4006a55d4`).
+
+### B10: probes and a benchmark grader that re-carved slices and claimed to match the pipeline
+
+Status: fixed in `87e42628a` and `2732a2c4e` (red guard `a00128524`), 2026-09-28.
+Measured over the 92 pinned pairs (`~/temp/agent/audit-glossary-fix/probe-slicing-extra.mjs`),
+aligning sections and subdividing them matches `prepareDocumentPair` in order on every pair
+except the front-matter slice the preparation leads with, so a re-carve's slice numbers run one behind the run's.
+The relabel probes find their slice by text, so no result moved; they now take the preparation's slices.
+The recall benchmark's `gradeSeedDetection` indexed issue records, which carry the run's slice numbers,
+into such a re-carve: on any document with visible front matter (all 92 pinned pairs) every issue read the next slice,
+so an accepted issue at a seed was scored undetected.
+It now slices through `prepareDocumentPair` as `repairTranslation` does;
+a test with front matter was red before and passes after,
+and the older grader test builds its expected slices the same way.
+The bench sample keeps its own carve: its line-structure flags agree with the preparation's on all 1,259 comparable
+slices (`bench-line-structure-parity.mjs`), it leaves the front-matter slice out, and its numbering is its own.
+The slice census and the translate probe measure shapes and texts, not run indices, and stay.
+
+### B11: correspondence-list checks kept three times, and a type declared twice
+
+Status: fixed in `010e36bc5`, `84c748aba` and `74f56d2bf`, 2026-09-28.
+`pair-blocks-wire.ts`, `pair-sections-read.ts` and `corpus-run/slice-cache-store.ts` each tested
+the integer `{ source, target }` list shape; `isIndexPairList` and `isIndexPairingWire` (`index-pair-list.ts`)
+now serve them, with a test covering ten refused shapes.
+`010e36bc5` declared its own `IndexPair` while `pair-agreement.ts` already exported the same shape,
+and the package failed its type check at that commit; `84c748aba` uses the existing type (M47).
+
+### B12: four provider clients with identical limiter and JSON plumbing
+
+Status: fixed in `23ae677be`, 2026-09-28.
+Bedrock, Hyper, OpenRouter and Synthetic each kept `limiterFor` and `chatJson`;
+each `chatJson` forwarded four named request fields by hand, so `otherThan` never reached a JSON exchange
+(harmless today: the cross-provider re-ask goes through `chatText`).
+`perModelLimiter` and `chatJsonThrough`, which forwards the whole request but its validator, now serve all four;
+the 25 client test files pass and a direct test pins the forwarding.
+
+### B13: two renderings of prior failed corrections
+
+Status: fixed in `4830317ef`, 2026-09-28.
+`renderPriorCorrections` (`refine-selection-context.ts`) now serves the refine context and the consolidation gate.
+Prompt text, so measured rather than read (`sheet-bytes.mjs`): hashes of all 38 rendered-sheets fixture sheets
+and of both sheets with two prior corrections are identical before and after;
+a one-word change to the rendering, as a positive control, moved all three hashes.
+
+### B14: artifact readers with private string-list and pair-list readers
+
+Status: fixed in `8c897d1cc` and `657a81dbe`, 2026-09-28.
+`requireStringList` (`artifact-guard.ts`) replaces four private readers and one inline copy;
+`requireIndexPairList` (`artifact-exact-guard.ts`) replaces the two section-pairing readers' whole-function copies.
+Both readers read one artifact version, so sharing keeps the freeze. The 43 artifact test files pass.
+
+### B15: frozen copies kept on purpose
+
+Status: kept, annotated in `c0d0eb22a`, 2026-09-28.
+`judgeTwoLaneSlice` beside `judgeSlice` (`artifact-two-lane-comparison.ts` already said why)
+and `uniqueNaturalnessFindings` beside the live `uniqueFindings`:
+each reader copy is an artifact version's rule, recomputed on read and refused on disagreement,
+so merging would remove the check. Both naturalness sites now say so.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing, recorded for the prevention doc.
@@ -3840,6 +3949,8 @@ Once more during X20 (`rg <old reader> src/ ; mise run build > log`), a leftover
 and twice during X17: `git diff | rg --count <long lines> ; true`, to force a zero exit when nothing matched,
 the same form recorded above once already, and `rg --count FAIL log ; rg --count PASS log` reading the suite,
 where `rg --count FAIL log || true` then a second call is the recorded form.
+Once more during audit area six (B14), counting call sites after removing four readers
+(`remove-functions.mjs <file> && rg --count <old name> <files> ; rg --count <other name> <file>`).
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -3984,6 +4095,23 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M47: a type declared while the same shape was already exported under the same name
+
+Status: happened 2026-09-28 (B11), fixed in the next commit.
+`index-pair-list.ts` declared `IndexPair { source, target }` for the shared correspondence-list guard,
+in a change whose whole purpose was removing copies; `pair-agreement.ts` already exported that type by that name.
+Prevention (the prevention doc's copies family): before declaring a type or helper,
+search for its name and for its shape (`rg 'type <Name>\b'`, and the field names together),
+and reuse what is there.
+
+### M46: a commit whose type check ran before its last edit
+
+Status: happened 2026-09-28; `010e36bc5` failed the package's type check, fixed by `84c748aba`.
+The type check ran after the guard's first edits; the barrel export added last collided with an existing export,
+and lint and the tests passed, so nothing caught it before the commit, which named no breakage.
+Prevention: lint, type check and the named tests run after the final edit of a commit, in that order,
+and a commit follows only a clean run of all three.
 
 ### M45: a lint over an empty file list read as clean
 
