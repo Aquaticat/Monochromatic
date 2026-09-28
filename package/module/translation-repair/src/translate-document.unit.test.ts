@@ -1349,6 +1349,55 @@ On the windowsill there is being a bird.
       },
     },),
     it({
+      name: 'KEEPS NO ARCHIVE THE PUBLICATION RULE REFUSES, so the judges\' replacement goes on to the '
+        + 'consolidation instead of an archive it will refuse as a standing (ledger X6: 47 such archives in the '
+        + 'run logs, 46 lacking a link the original carries and 1 keeping the untranslated pronoun, the floor '
+        + 'this fixture trips)',
+      fn: async () => {
+        const { result, } = await runDriver({
+          sourceText: `## 第一节
+
+其一：TA睡了。
+
+## 第二节
+
+窗台上有一只鸟。
+`,
+          targetText: `## Section one
+
+But we must remember that TA, the cat sleeping on the windowsill, has been there `
+            + `since the spring, and the household has arranged itself around `
+            + `that habit rather than against it, which is the sort of thing `
+            + `nobody writes down until it is gone.
+
+## Section two
+
+On the windowsill there is being a bird.
+`,
+        },);
+
+        /**
+         Slice whose archive keeps the untranslated pronoun.
+         */
+        const [ineligibleArchive,] = result.slices;
+        expect({
+          refused: result.refusedSliceCount,
+          disposition: ineligibleArchive?.disposition,
+          replaced: ineligibleArchive?.outputText
+            .includes(FRESH,),
+          recorded: ineligibleArchive?.findings
+            .some(function isIneligibleArchive(finding,): boolean {
+              return finding.startsWith('translate-archive-ineligible',);
+            },),
+        },).toEqual({
+          refused: 0,
+          disposition: 'stage-result',
+          replaced: true,
+          recorded: true,
+        },);
+      },
+    },),
+    it({
       name: 'names the slice each refusal is FOR, even when two slices share one '
         + 'settled record. Identical sections ask one question, so the second '
         + 'resumes the first\'s record and is stamped with its own index; a '
