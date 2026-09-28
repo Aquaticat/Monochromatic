@@ -2270,6 +2270,20 @@ Prevention: a census that calls a helper reads the helper's type doc for every f
 and prints one decoded example of what it counts (ids and code points only) before it prints a total;
 a result where every item lands in one bucket is a defect in the census until shown otherwise.
 
+### M25: floors and sheets changed a cached stage's decisions with no cache version moved
+
+Status: corrected in `66703994a`, which moved the translate cache to 15 and the consolidation cache to 20,
+with the repair cache's version 33 account naming what rode inside it, 2026-09-27.
+The translate and consolidation versions landed at 02:34 (`bd98bdc70`);
+after them the F-series floors, the Han residue floor, the sheets reading the declared names and house rules,
+the reachable quorum and the A17 signer floor all changed what those stages ask or accept, and none moved a number;
+the repair lane had four more such changes after its version 32 (03:34).
+No harm reached a page, and only by luck: no run cached a slice after 00:26 that day.
+Each version file says the bump is enforced by nothing and was missed before.
+Prevention: a commit that changes a floor, a sheet, a threshold or a settlement rule in the translate, consolidation
+or repair path names in its message which cache version it moves, or why none moves;
+and before any run launches, the versions are checked against `git log` since each one last moved.
+
 ### M15: a finding carried and a fix started against an owner ruling
 
 Status: corrected; the ruling is now in `doc/design-commitments.md`.

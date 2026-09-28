@@ -305,8 +305,9 @@ await describe({
         // standing to the polish as an objection correction. Version 18 ships a
         // slate declined twice there by preference, its reasons to the polish.
         // Version 19 refuses disputed wordings and keys the dispute note.
+        // Version 20 carries every floor, sheet and quorum change made after 19.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'd878148715ff3a34866a8602c8ba988ac6fe986d5f2cd45bb4cc53da9d8d865b',
+          'fef96fe78f54f88e65a11b66fbe6980e03ed2883c3c43945afc4b3af3929c24e',
         );
       },
     },),
