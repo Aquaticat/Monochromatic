@@ -59,6 +59,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  claims on a slice whose patch lost, since the repair candidate there never
  carried the patched text (ledger L7); checked on 2026-09-28: still no
  slice-cache file newer than 00:26 on 2026-09-27.
+
+ Rides inside 6 too: every gather now keeps a seat that answered unreadably
+ out of the same-prompt retry rounds and re-asks each such seat, whichever
+ round it came in, in the nudged recovery round (ledger P2, `005692e11`),
+ which changes whose voices a round closes on; checked on 2026-09-28: still no
+ slice-cache file newer than 00:26 on 2026-09-27.
  */
 export const LANE_CONTEST_CACHE_VERSION = 6;
 

@@ -336,6 +336,12 @@ import type { RepairModels, } from './repair-contract.ts';
  verdict on its sheet is no heard voice, so the gather re-asks the seat rather
  than closing the round on it (ledger L8, `abfc69393`); checked on 2026-09-28:
  still no slice-cache file newer than 00:26 on 2026-09-27.
+
+ Rides inside 33 too: every gather now keeps a seat that answered unreadably
+ out of the same-prompt retry rounds and re-asks each such seat, whichever
+ round it came in, in the nudged recovery round (ledger P2, `005692e11`),
+ which changes whose voices a round closes on; checked on 2026-09-28: still no
+ slice-cache file newer than 00:26 on 2026-09-27.
  */
 export const SLICE_CACHE_VERSION = 33;
 /**

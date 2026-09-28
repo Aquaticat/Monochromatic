@@ -1816,7 +1816,13 @@ and the ledger reads 6.97 USD left.
 
 ### P2: the recovery round never re-asks a seat that answered unreadably before the last round
 
-Status: open.
+Status: fixed in `005692e11` (guard `3549b74be`; mutation checked with a control).
+A seat that answered unreadably now waits for the nudged recovery round, which re-asks every seat still unreadable
+whichever round it came in; the retry rounds no longer re-send it the same prompt,
+which the prompt-uniqueness client answers from memory or disk with the same bytes.
+Two older cases scripted unreadable answers that cleared on a same-prompt re-ask, which no run can do,
+and now script the retry rounds' weather as transport failures.
+Rides inside all six cache versions.
 `stage-quorum.ts` overwrites the unreadable list each round and returns the seat to `pending`,
 where the prompt-uniqueness cache answers it with the same bytes;
 TianqiChen66620 slice 15's gate settled on neither 2 to 2 with one such voice lost.
