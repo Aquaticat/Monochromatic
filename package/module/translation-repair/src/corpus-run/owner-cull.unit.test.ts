@@ -22,6 +22,7 @@ import {
   type BudgetView,
   judgeSeatsFor,
   OWNER_CULLED,
+  RECALL_JUDGE_MODEL_IDS,
   ROSTER_MODEL_IDS,
   RUN_LATE_JUDGES,
   RUN_MODELS,
@@ -74,10 +75,14 @@ await describe({
             RUN_MODELS.checkerModelIds,
             RUN_MODELS.editorModelIds,
             RUN_MODELS.refinerModelIds ?? [],
+            // The recall benchmark's judges (ledger P4): its default named the
+            // culled seat two days after the cull, since nothing derived it.
+            RECALL_JUDGE_MODEL_IDS,
           ]
         ) {
           expect(bench.includes(SEAT_SYNTHETIC_TEXT_EVERYWHERE,),).toBe(false,);
         }
+        expect(RECALL_JUDGE_MODEL_IDS.length,).toBeGreaterThan(0,);
       },
     },),
     it({
