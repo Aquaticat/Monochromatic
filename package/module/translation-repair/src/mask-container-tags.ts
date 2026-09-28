@@ -1,3 +1,5 @@
+import { inlineContainerTags, } from './inline-container-tags.ts';
+
 //region Lone container tag masking
 // A container's opening tag is owned by the first block inside it and its
 // closing tag by the last (`container-extents.ts`), so a container whose
@@ -53,6 +55,32 @@ type TagLine = LoneContainerTag & {
    */
   readonly endOffset: number;
 };
+
+/**
+ One tag the pairing reads: a whole tag line, carried so it can be masked,
+ or an opener or closer inside another line, which only partners one.
+ */
+type PairingTag = Readonly<{
+  /**
+   Whether the tag opens or closes its element.
+   */
+  kind: 'open' | 'close';
+
+  /**
+   Element name as written.
+   */
+  name: string;
+
+  /**
+   Offset of the tag's first character.
+   */
+  startOffset: number;
+
+  /**
+   The tag line itself, absent for an inline tag.
+   */
+  line?: TagLine;
+}>;
 
 /**
  Whether a character can start an element name.
@@ -229,16 +257,18 @@ function tagLinesOf({ text, }: { readonly text: string; },): readonly TagLine[] 
  const lone = unpairedOf({ lines, },);
  ```
  */
-function unpairedOf({ lines, }: { readonly lines: readonly TagLine[]; },): readonly TagLine[] {
+function unpairedOf<const TagT extends Pick<TagLine, 'kind' | 'name' | 'startOffset'>,>(
+  { lines, }: { readonly lines: readonly TagT[]; },
+): readonly TagT[] {
   /**
    Openers not yet closed, innermost last.
    */
-  const open: TagLine[] = [];
+  const open: TagT[] = [];
 
   /**
    Closers with no opener before them.
    */
-  const strayClosers: TagLine[] = [];
+  const strayClosers: TagT[] = [];
   for (const line of lines) {
     if (line.kind === 'open') {
       open.push(line,);
@@ -291,9 +321,59 @@ export function maskLoneContainerTags(
   readonly tags: readonly LoneContainerTag[];
 } {
   /**
-   Tag lines with no partner in this slice.
+   Lines that are one container tag and nothing else, the only ones masked.
    */
-  const lone = unpairedOf({ lines: tagLinesOf({ text, },), },);
+  const lines = tagLinesOf({ text, },);
+  /**
+   Openers and closers of those names inside other lines, which partner a
+   tag line as surely as another tag line does (ledger X10).
+   */
+  const inline = inlineContainerTags({
+    text,
+    names: new Set(lines.map(function nameOf({ name, },): string {
+      return name;
+    },),),
+    covered: lines.map(function rangeOf({
+      startOffset,
+      endOffset,
+    },): readonly [
+      number,
+      number,
+    ] {
+      return [
+        startOffset,
+        endOffset,
+      ] as const;
+    },),
+  },);
+  /**
+   Every tag the pairing reads, in document order: the tag lines, each
+   carrying itself so an unpaired one can be masked, and the inline tags,
+   which only partner one.
+   */
+  const pairing: readonly PairingTag[] = [
+    ...lines.map(function asPairing(line,): PairingTag {
+      return {
+        kind: line.kind,
+        name: line.name,
+        startOffset: line.startOffset,
+        line,
+      };
+    },),
+    ...inline,
+  ].toSorted(function byOffset(
+    left: PairingTag,
+    right: PairingTag,
+  ): number {
+    return left.startOffset - right.startOffset;
+  },);
+  /**
+   Tag lines with no partner anywhere in this slice.
+   */
+  const lone = unpairedOf({ lines: pairing, },)
+    .flatMap(function tagLineOf({ line, },): readonly TagLine[] {
+      return (line === undefined) ? [] : [line,];
+    },);
   if (lone.length === 0)
     return {
       masked: text,

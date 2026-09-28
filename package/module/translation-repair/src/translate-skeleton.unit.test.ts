@@ -479,7 +479,11 @@ await describe({
         + 'blanked the closer as unpartnered and left the opener with no end, and the slice read as '
         + 'unparseable while the document read it whole',
       fn: async () => {
-        expect(atomsOf({ text: '<blockquote><span>The cat naps.</span>\n</blockquote>', },),).toEqual([],);
+        // THE SHAPE THE ENTRY HAS: the opener and a self-closing component on
+        // one line, which the grammar reads as flow, and the closer alone.
+        expect(atomsOf({
+          text: '<blockquote><CatQuote lines={["The cat naps.", "She wakes at four."]} />\n</blockquote>',
+        },),).toEqual([],);
         // The closer with no opener anywhere is still masked and carried.
         expect(atomsOf({ text: 'The cat naps.\n\n</blockquote>', },),).toEqual([
           {
