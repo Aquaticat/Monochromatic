@@ -17,9 +17,10 @@ local history inspection,
 and synthetic evaluation are authorized.
 Do not commit raw histories or start ongoing transcript capture.
 Training and separately rented compute require further authorization.
-The user now authorizes all task-relevant assessment content through LLM Gateway to Jev,
-including private or sensitive content.
-This supersedes the earlier no-private-input restriction for that route;
+The user authorizes all task-relevant assessment content through LLM Gateway to Jev
+and explicitly expanded that consent to Respan,
+including private or sensitive content for the named evaluation.
+This supersedes the earlier no-private-input restriction for those routes;
 it does not request unrelated bulk exports or authorize other recipients.
 Public/synthetic API probes using the supplied credentials remain authorized.
 Complete current `AGENTS.md` must be preserved,
@@ -29,7 +30,7 @@ Current references:
 
 - [Axiom architecture and interview answers](../planning/pi-auto-mode-axioms.md).
 - [Effect and authorization contract](../planning/pi-auto-mode-effect-contract.md).
-- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md).
+- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
 ## Gateway input authorization and access boundary
@@ -72,6 +73,37 @@ Todo #24 records this authorization/context change;
 #14 no longer depends on dashboard access.
 Candidate qualification and final shared-design confirmation remain incomplete.
 No `AGENTS.md` edit is authorized by this clarification.
+
+## Respan candidate and input authorization
+
+The user added `AUTO_MODE_RESPAN_API_KEY`,
+asked to also assess `span-01-lite`,
+reported `span-01-free` as another name,
+and supplied `respan.ai`.
+The user then explicitly expanded the existing input consent to Respan.
+Do not ask for that same consent again.
+The alias and API contract remain to verify from current provider evidence.
+The scoped root-mise check found the key without exposing its value;
+read-only API authentication remains the first resource-verification step after identifying the documented route.
+
+This is an additive candidate change,
+not permission to restart the paused ONNX source expansion.
+All task-relevant assessment content may be sent through the named Respan evaluation route,
+including private or sensitive content.
+No assessed action,
+training,
+other recipient,
+unrelated export/capture,
+raw-history commit,
+hardware/rented-compute allocation,
+or production change follows.
+The Gateway metadata-only logging statement does not establish Respan's logging behavior.
+
+Task #39 checks the supplied resource before unrelated work.
+The new audit context is `d5b5b9cdfae6f38c9958ab2eaf7d39b8026b9bb3ed61965bcefbf56451de9170`;
+the prior `51edb8223a030345de584932d5273ecd90ead6753011d84fefb7b9505f218d67` report is preserved unchanged.
+Finish task #38's result bookkeeping after that resource check,
+without rerunning its completed model batch.
 
 ## Sequencing correction
 
@@ -263,11 +295,12 @@ Do not reopen these choices:
 
 - Authorized candidates are Laya,
   relevant Voyage products/models,
-  and Jev.
-  Prefer LLM Gateway over OpenRouter.
+  Jev,
+  and Respan's user-named `span-01-lite` / `span-01-free`.
+  Prefer LLM Gateway over OpenRouter where applicable.
 - Additional manual approvals are acceptable.
   First deployment is this Linux workstation.
-- The later gateway input authorization supersedes Q8 A for LLM Gateway/Jev:
+- The later input authorizations supersede Q8 A for LLM Gateway/Jev and the named Respan evaluation:
   all task-relevant assessment content is authorized,
   including private or sensitive content.
   No dashboard access will be provided;
@@ -502,7 +535,7 @@ not completed;
 its evidence and unresolved gates remain intact.
 The user subsequently asked to continue working after that narrower proposal.
 Task #35 completed the bounded candidate checkpoint at `5d247532a`.
-The [current decision checkpoint](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md)
+The [three-candidate checkpoint](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md)
 keeps adoption unqualified and stops the ONNX/source-build expansion.
 Task #36's frozen Jev live batch then completed in `proc_647a`:
 cache removal took 977.2364449999999 milliseconds,
@@ -554,8 +587,15 @@ and 72 scalars;
 and one is an explicitly declared anchor excluded from minimum new-coverage credit.
 It requires zero resolved semantic errors and some correct true/false coverage for every source/predicate role,
 while reporting operation-specific coverage without imposing an automation-rate target.
-No semantic-study model call has occurred yet.
-Freeze cases,
+The frozen semantic batch subsequently completed in `proc_5f18`,
+with raw results at private `c7df3c1`.
+The 0.95/0.05 diagnostic band met the finite benchmark gate;
+no production threshold was selected.
+Postcheck `proc_30a8` succeeded by notification,
+but its output and final result documentation remain pending while task #39 verifies the newly supplied resource.
+Do not repeat the completed study.
+For any separately authorized future study,
+freeze cases,
 reference labels,
 scoring,
 acceptance criteria,
