@@ -98,6 +98,33 @@ const SLICES = [
   },),
 ];
 
+/**
+ Windows of every slice, each side's document being its slices joined, as
+ preparation's is wherever every definition sits in some slice.
+
+ @param slices - prepared pairs in document order
+
+ @returns Window per stamped index
+
+ @example
+ ```ts
+ const windows = windowsOf({ slices: SLICES, },);
+ ```
+ */
+function windowsOf({ slices, }: { readonly slices: readonly ChunkPair[]; },): ReturnType<typeof sliceNeighbourContexts> {
+  return sliceNeighbourContexts({
+    slices,
+    sourceText: slices.map(function sourceOf(slice,) {
+      return slice.source.text;
+    },)
+      .join('\n\n',),
+    targetText: slices.map(function targetOf(slice,) {
+      return slice.target.text;
+    },)
+      .join('\n\n',),
+  },);
+}
+
 //endregion Fixtures
 
 await describe({
@@ -107,7 +134,7 @@ await describe({
       name: 'APPENDS the definition a slice cites from outside its window, continuation line included, each side from its own document',
       fn: async () => {
         /** Window of the first slice, whose note is defined four slices on. */
-        const beside = sliceNeighbourContexts({ slices: SLICES, },)
+        const beside = windowsOf({ slices: SLICES, },)
           .get(0,);
 
         expect(beside?.sourceText,).toBe(`她的哥哥给她带来一根羽毛。\n\n${SOURCE_NOTE_ONE}`,);
@@ -119,7 +146,7 @@ await describe({
       name: 'REPEATS NOTHING the window already shows: the slice beside the definitions sees them once',
       fn: async () => {
         /** Window of the fourth slice, whose neighbour holds the definitions. */
-        const beside = sliceNeighbourContexts({ slices: SLICES, },)
+        const beside = windowsOf({ slices: SLICES, },)
           .get(3,);
 
         expect(beside?.sourceText,).toBe(`白胡子数着外面的鸟。[^3]\n\n${SOURCE_NOTE_ONE}\n[^2]: 鱼是妈妈买的。`,);
@@ -130,7 +157,7 @@ await describe({
       name: 'ADDS NOTHING for a label no slice defines, nor for a slice citing nothing',
       fn: async () => {
         /** Every window. */
-        const windows = sliceNeighbourContexts({ slices: SLICES, },);
+        const windows = windowsOf({ slices: SLICES, },);
 
         expect(windows.get(2,)?.sourceText,).toBe('她的哥哥给她带来一根羽毛。\n\n晚饭是鱼。[^2]',);
         expect(windows.get(1,)?.incumbentText,).toBe(
@@ -143,7 +170,7 @@ await describe({
       name: 'READS A DEFINITION LINE AS NO CITATION: the slice holding the notes gains nothing from its own labels',
       fn: async () => {
         /** Window of the last slice. */
-        const beside = sliceNeighbourContexts({ slices: SLICES, },)
+        const beside = windowsOf({ slices: SLICES, },)
           .get(4,);
 
         expect(beside?.sourceText,).toBe('晚饭是鱼。[^2]',);
@@ -165,7 +192,7 @@ await describe({
           },),
         ];
         /** Window of the first slice. */
-        const beside = sliceNeighbourContexts({ slices, },)
+        const beside = windowsOf({ slices, },)
           .get(0,);
 
         expect(beside?.sourceText,).toBe('猫咪伸了个懒腰。\n\n[^a]: 第一段。\n\n    第二段。',);
@@ -187,10 +214,35 @@ await describe({
           pairOf({ sliceIndex: 4, source: '[^1]: 注释。', target: '[^1]: A note.', },),
         ];
         /** Every window. */
-        const windows = sliceNeighbourContexts({ slices, },);
+        const windows = windowsOf({ slices, },);
 
         expect(windows.get(0,)?.sourceText,).toBe('猫咪<u1>伸了个懒腰</u1>。\n\n[^1]: 注释。',);
         expect(windows.get(1,)?.incumbentText,).toBe('[^1] The cat yawned.\n\nThe cat fell asleep.',);
+      },
+    },),
+
+    it({
+      name: 'READS DEFINITIONS FROM THE WHOLE DOCUMENT, since preparation keeps notes an archive translator added in no slice at all (shihai4h slices 33 and 37 cite notes 5 and 7, defined only in the archive text)',
+      fn: async () => {
+        /** Three slices whose middle translation cites a note no slice holds. */
+        const slices = [
+          pairOf({ sliceIndex: 0, source: '猫咪伸了个懒腰。', target: 'The cat stretched.', },),
+          pairOf({ sliceIndex: 1, source: '猫咪打了个哈欠。', target: 'The cat yawned.[^5]', },),
+          pairOf({ sliceIndex: 2, source: '猫咪睡着了。', target: 'The cat fell asleep.', },),
+        ];
+        /** Archive text holding the note after its last slice. */
+        const targetText = 'The cat stretched.\n\nThe cat yawned.[^5]\n\nThe cat fell asleep.\n\n[^5]: Quoted from the cat diary.';
+        /** Every window. */
+        const windows = sliceNeighbourContexts({
+          slices,
+          sourceText: '猫咪伸了个懒腰。\n\n猫咪打了个哈欠。\n\n猫咪睡着了。',
+          targetText,
+        },);
+
+        expect(windows.get(1,)?.incumbentText,).toBe(
+          'The cat stretched.\n\nThe cat fell asleep.\n\n[^5]: Quoted from the cat diary.',
+        );
+        expect(windows.get(1,)?.sourceText,).toBe('猫咪伸了个懒腰。\n\n猫咪睡着了。',);
       },
     },),
   ],
