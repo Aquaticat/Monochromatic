@@ -2,25 +2,14 @@
 import { readRunJson, } from '../run-json-read.ts';
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { ArtifactParseError, } from '../artifact-guard.ts';
-import {
-  alignDocumentSections,
-  type ChunkPair,
-} from '../chunk-document.ts';
+import type { ChunkPair, } from '../chunk-document.ts';
 import {
   type CorpusPin,
   readCorpusFile,
 } from '../corpus-source.ts';
-import { parseDocument, } from '../parse-document.ts';
+import { prepareDocumentPair, } from '../document-preparation.ts';
 import type { RepairRegion, } from '../repair-region.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
-import {
-  assertSliceIndexing,
-  reindexSlicePair,
-} from '../slice-indexing.ts';
-import {
-  SLICE_CHAR_BUDGET,
-  subdivideChunkPair,
-} from '../slice-pair.ts';
 import { readArtifactRecords, } from './probe-relabel-artifact.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 
@@ -180,50 +169,20 @@ export function locateSlice(
   readonly baselineText: string;
 } {
   /**
-   Aligned chunk pairs, rebuilt exactly as the pipeline builds them.
+   Slices of the pair, from the deterministic preparation itself.
+
+   THE PREPARATION, NOT A COPY OF IT (audit area six, 2026-09-28). This probe
+   and its control re-carved by aligning sections and subdividing them, which
+   matched the preparation on all 92 pinned pairs except for the front-matter
+   slice the preparation leads with, so the copy's slice numbers ran one
+   behind the run's. Nothing here reads a number, since the slice is found by
+   its text, but a copy that claims to be the pipeline and is not is how a
+   later measurement goes wrong.
    */
-  const alignment = alignDocumentSections({
-    source: parseDocument({ text: sourceText, },),
-    target: parseDocument({ text: targetText, },),
+  const { slices, } = prepareDocumentPair({
+    sourceText,
+    targetText,
   },);
-
-  /**
-   Paragraph-bound slices across every aligned section.
-   
-   STAMPED FROM THE FINISHED ORDER rather than from arithmetic handed to
-   subdivision, which is what `reindexSlicePair` exists for. This used to pass
-   the PAIR index as the base, so every section restamped from its own number:
-   pair 1's first slice claimed 1, which pair 0's second slice already held.
-   Nothing here reads a stamp, since the slice is found by its text, which is
-   why that went unseen rather than wrong.
-   */
-  const slices = alignment.pairs
-    .flatMap(function carve(pair,): readonly ChunkPair[] {
-      return subdivideChunkPair({
-        pair,
-        sourceText,
-        targetText,
-        // Whatever subdivision counts from is overwritten below, so this is a
-        // starting point rather than an answer.
-        baseIndex: 0,
-        budget: SLICE_CHAR_BUDGET,
-      },);
-    },)
-    .map(function stamp(
-      slice,
-      slicePosition,
-    ): ChunkPair {
-      return reindexSlicePair({
-        slice,
-        slicePosition,
-      },);
-    },);
-
-  // `prepareDocumentPair` asks this of every production slicing, and this probe
-  // deliberately bypasses it to re-carve exactly what the run carved. Asking
-  // here keeps the bypass from also bypassing the invariant, so a stamping that
-  // drifts again is refused rather than carried into a comparison.
-  assertSliceIndexing({ slices, },);
 
   /**
    First slice whose translation carries the replaced text.

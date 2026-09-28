@@ -1,26 +1,17 @@
 
 import { readRunJson, } from '../run-json-read.ts';
-import { alignDocumentSections, } from '../chunk-document.ts';
 import {
   type CorpusPin,
   readCorpusFile,
 } from '../corpus-source.ts';
-import { parseDocument, } from '../parse-document.ts';
+import { prepareDocumentPair, } from '../document-preparation.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
-import {
-  SLICE_CHAR_BUDGET,
-  subdivideChunkPair,
-} from '../slice-pair.ts';
 import {
   type ArtifactRecord,
   readArtifactRecords,
 } from './probe-relabel-artifact.ts';
 import type { RelabelCase, } from './probe-relabel-case.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
-import {
-  assertSliceIndexing,
-  reindexSlicePair,
-} from '../slice-indexing.ts';
 
 //region Probe relabel control
 // Builds the arm that decides whether the damaged-region result means anything.
@@ -218,34 +209,13 @@ export async function gatherControlCases(
     },);
 
     /**
-     Slices of this entry, rebuilt as the pipeline builds them.
+     Slices of this entry, from the deterministic preparation itself; see
+     `probe-relabel-case.ts` for why not a copy of it.
      */
-    const slices = alignDocumentSections({
-      source: parseDocument({ text: sourceText, },),
-      target: parseDocument({ text: targetText, },),
-    },)
-      .pairs
-      .flatMap(function toSlices(pair,) {
-        return subdivideChunkPair({
-          pair,
-          sourceText,
-          targetText,
-          // Overwritten below; see `probe-relabel-case.ts`, which documents
-          // the pair-index mistake this used to make too.
-          baseIndex: 0,
-          budget: SLICE_CHAR_BUDGET,
-        },);
-      },)
-      .map(function stamp(
-        slice,
-        slicePosition,
-      ) {
-        return reindexSlicePair({
-          slice,
-          slicePosition,
-        },);
-      },);
-    assertSliceIndexing({ slices, },);
+    const { slices, } = prepareDocumentPair({
+      sourceText,
+      targetText,
+    },);
 
     /**
      Replaced length of this entry's damaged region, the length to match.
