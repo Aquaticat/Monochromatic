@@ -3,6 +3,7 @@ import {
   declaredNameNote,
   type DeclaredNamePair,
 } from './linked-title-declared-name.ts';
+import { visibleText, } from './page-visible-text.ts';
 
 //region Page name glossary
 // CLASS SEVENTY-ONE (mikaela_khara, 2026-09-19). The author's handle 铨铨
@@ -449,21 +450,20 @@ export function pageNameLines(
    */
   const named = new Set<string>();
   /**
+   What each page shows, which is all the names it renders (ledger E10: the
+   front matter, comments and code fences paired names and shifted headings).
+   */
+  const shown = {
+    sourceText: visibleText({ text: sourceText, },),
+    targetText: visibleText({ text: targetText, },),
+  };
+  /**
    Pairs, links first, one per source text.
    */
   const pairs = [
-    ...linkedTextPairs({
-      sourceText,
-      targetText,
-    },),
-    ...signaturePairs({
-      sourceText,
-      targetText,
-    },),
-    ...headingPairs({
-      sourceText,
-      targetText,
-    },),
+    ...linkedTextPairs(shown,),
+    ...signaturePairs(shown,),
+    ...headingPairs(shown,),
   ].filter(function firstOnly(pair,): boolean {
     if (named.has(pair.source,))
       return false;
