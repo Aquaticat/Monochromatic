@@ -35,6 +35,7 @@ import {
   type BudgetView,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  createPassPictureReader,
   type DocumentLanesResult,
   judgeSeatsFor,
   makeInsertionChunk,
@@ -139,6 +140,9 @@ const LOST_SEAT = (function lostSeat(): RosterModelId {
 
  @param answer - reply every call is given, which the sheet may refuse
 
+ @param reading - what every picture reader transcribes, for a case that
+ reads pictures; a text call throws without it
+
  @returns Client to drive a seam with
 
  @example
@@ -152,8 +156,10 @@ function viewChangingClient(
     asked,
     reviewed,
     answer,
+    reading,
   }: {
     readonly later: BudgetView;
+    readonly reading?: string;
     readonly asked: RosterModelId[];
     readonly reviewed?: RosterModelId[];
     readonly answer: string;
@@ -174,8 +180,11 @@ function viewChangingClient(
       hyper: 0,
       openrouter: 0,
     }),
-    chatText: async () => {
-      throw new Error('chatText not used',);
+    chatText: async (request,) => {
+      if (reading === undefined)
+        throw new Error('chatText not used',);
+      asked.push(request.modelId,);
+      return { text: reading, };
     },
     chatJson: async <ValueT,>(
       request: ChatJsonRequest<ValueT>,
@@ -835,6 +844,120 @@ await describe({
           controlAskedLost: true,
           movedAskedAny: true,
           movedAskedLost: [],
+        },);
+      },
+    },),
+  ],
+},);
+
+/**
+ The one picture the pictures case reads.
+ */
+const PICTURE = 'noticeboard.webp';
+
+/**
+ What the stand-in OCR and every reader find on that picture.
+ */
+const PICTURE_TEXT = '走失猫咪 Mittens，虎斑，请电 555 0134。';
+
+/**
+ The one seat the dry-out takes from the picture readers.
+ */
+const LOST_READER_SEAT = (function lostReaderSeat(): RosterModelId {
+  /**
+   Readers while Synthetic is dry.
+   */
+  const dry = new Set(judgeSeatsFor({ dry: SYNTHETIC_DRY, },).readers,);
+  /**
+   Readers the dry-out takes.
+   */
+  const lost = judgeSeatsFor({ dry: ALL_WET, },).readers.filter(function gone(seat,): boolean {
+    return !dry.has(seat,);
+  },);
+  if (lost.length === 0)
+    throw new Error('the fixture views seat the same readers, so the pictures case cannot tell a wired hook apart',);
+  return lost[0] as RosterModelId;
+})();
+
+/**
+ Reads the one picture through the entry's picture reader, the bytes and the
+ OCR handed in so nothing reaches the corpus or the local OCR tools.
+
+ @param later - view every reading after the pictures' own answers
+
+ @returns Seats the readers' calls asked
+
+ @example
+ ```ts
+ const asked = await picturesAsked({ later: SYNTHETIC_DRY, },);
+ ```
+ */
+async function picturesAsked({ later, }: { readonly later: BudgetView; },): Promise<readonly RosterModelId[]> {
+  /**
+   Seat of every call.
+   */
+  const asked: RosterModelId[] = [];
+  /**
+   Entry abort the readings honour.
+   */
+  const signal = AbortSignal.timeout(30_000,);
+  /**
+   The entry's picture reader over stand-in sources.
+   */
+  const readPictures = createPassPictureReader({
+    client: viewChangingClient({
+      later,
+      asked,
+      answer: '{}',
+      reading: PICTURE_TEXT,
+    },),
+    entryId: 'CatEntry',
+    cache: {
+      resumed: new Map(),
+      persist: async () => {},
+    },
+    signal,
+    l,
+    pictureSources: {
+      gather: async () => new Map([[PICTURE, new Uint8Array([1, 2, 3,],),],],),
+      readOcr: async () => ({
+        kind: 'read',
+        text: PICTURE_TEXT,
+      }),
+    },
+  },);
+  await readPictures({
+    slices: prepareDocumentPair({
+      sourceText: `小猫在窗台上睡觉。\n\n<PhotoScroll photos={[ '\${path}/photos/${PICTURE}' ]} />\n`,
+      targetText: ARCHIVE,
+    },).slices,
+  },);
+  return asked;
+}
+
+await describe({
+  name: 'pictures seam re-seats under a hold (ledger X14)',
+  children: [
+    it({
+      name: 'THE PICTURES SEAM WIRES ITS HOOK: a picture after a dry-out is read by the readers the hook re-read, '
+        + 'never the seat the dry-out took, which a reading whose view never changes does ask',
+      fn: async () => {
+        /**
+         Seats asked while every provider stays wet.
+         */
+        const control = await picturesAsked({ later: ALL_WET, },);
+        /**
+         Seats asked once Synthetic reads dry after the pictures' own reading.
+         */
+        const moved = await picturesAsked({ later: SYNTHETIC_DRY, },);
+        expect({
+          controlAskedLost: control.includes(LOST_READER_SEAT,),
+          movedAskedAny: moved.length > 0,
+          movedAskedLost: moved.includes(LOST_READER_SEAT,),
+        },).toEqual({
+          controlAskedLost: true,
+          movedAskedAny: true,
+          movedAskedLost: false,
         },);
       },
     },),
