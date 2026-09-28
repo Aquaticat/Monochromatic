@@ -945,7 +945,7 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
 
 ### H16: a term repeated in slices judged apart has no shared rendering where the archive has none
 
-Status: open, found fixing H9.
+Status: fixed 2026-09-28; found fixing H9.
 Each slice is written and judged alone.
 Where the archive renders a passage, its English anchors every slice;
 where it does not (a partial archive, as XingZ60's poem), a term the original repeats
@@ -980,6 +980,20 @@ through the hook the attestation uses (X12), cached, and carries it as evidence 
 it restores and enforces nothing, since the judges keep deciding headings (owner, 2026-09-21, `page-name-glossary.ts`).
 Kept out of H16: the Latin case drift, which is X16,
 and 同居者 turning plural, one page's translation slip rather than a missing mechanism.
+Built 2026-09-28, pieces `ea61cbd4c` and `5df6fc632`, red guard `31c7d3f00`, wiring `d80f56866`:
+`repeatedTitleSpans` (`page-title-spans.ts`) reads the spans off what the page shows, listed by where each first stands
+(`d9a306602`, M44); `settlePageTitles` (`page-title-lexicon-stage.ts`) asks the roster once under the house rules,
+compares renderings without case, spacing or wrapping quotes, keeps the one most voices gave
+(the earliest seat breaking a tie) and leaves out a title no voice rendered;
+`passPageTitles` (`corpus-run/pass-page-titles.ts`) reads the hook only when the page repeats such a title,
+and stores a heard round in its own registered namespace (`page-titles.`) under `PAGE_TITLE_CACHE_VERSION` 1,
+keyed by the original, the titles and the roster that answered; a round nobody answered is not stored.
+The preparation carries the lines after the corpus-name block, and the round's finding on every way out (X18).
+Mutation checked with a control: 34 of 37 mutants caught on the first run, then the full suite (0 FAIL);
+the three left (a nested HTML heading read whole, the key dropping its version, the key naming the starting roster)
+had guards that could not fail, and `5f64cbe91` makes each fail, all three caught on the second run.
+X16 corrects one line of the measurement above: `Z60` opens a quoted line,
+and within a page each name-like token ships in one casing.
 
 ### Process mistakes, classes 93 to 185
 
@@ -3610,6 +3624,98 @@ Reading `prepare-section-round.ts` whole after its raw NUL bytes had hidden it f
 The golden file also cited a scratch baseline (`question-baseline-QWeptI`, from `62cedf6fa`) that no longer exists;
 the recapture removed that line.
 
+### X16: a handle or a community's name varies in case across unanchored slices
+
+Status: measured 2026-09-28; no floor, decided for quality.
+Found measuring H16: on XingZ60's newest settled artifact a handle ships as `z60` and `Z60`,
+and a community's name as `limelight` and `Limelight`, on slices no archive English anchors.
+Measured over the newest settled artifact of 39 entries (`~/temp/agent/audit-glossary-fix/x16-case-drift.mjs`):
+of 279 Latin tokens the originals write that ship, 16 ship in two casings away from a sentence start,
+and reading where each minority form stands (the character before it, never the token) shows
+most sit inside a URL or path, or open a quoted line after `>` (XingZ60's `Z60` among them);
+the mid-sentence ones are ordinary English words, where casing follows grammar and titles.
+Restricted to tokens that are not lowercase dictionary words (`x16-floor-reach.mjs`, URLs left out):
+73 ship, 7 ship in a casing the original never uses (on 6 pages), and each is consistent within its page.
+A deterministic floor forcing the original's casing cannot tell a person's handle,
+which keeps its spelling (house rule: HiYku, wing, Mikä), from a brand an original types in lowercase,
+whose English styling is capitalized; it would enforce the wrong English as often as the right one.
+The handle case is already a house rule every sheet carries, so nothing is added.
+
+### X17: the rendered-sheets fixture claims every model-facing sheet and holds fifteen
+
+Status: open, found wiring H16.
+`rendered-sheets.test-fixture.ts` says it renders "EVERY MODEL-FACING SHEET" so a guard about what the models read
+checks every sheet at once;
+it holds fifteen and omits the reference attestation and its confirmation, the section and block pairing rounds,
+the archive block review and its selection slate, and the picture reading.
+The house-rule and Canadian-spelling guards that read it have never read those sheets.
+
+### X18: the preparation dropped the attestation's findings when the archive was corrected
+
+Status: fixed in `d80f56866` (red guard `5f4863f32`), 2026-09-28.
+`preparePassEntry` (`corpus-run/pass-prepare.ts`) has three ways out:
+no unclaimed block, an archive the review leaves standing, and an archive corrected and prepared again.
+The first two carried the reference attestation's findings; the third rebuilt its findings
+from the re-preparation, the relabel and the review, and dropped them.
+The attestation's and the page title lexicon's findings now form one `evidenceFindings` list on every way out.
+The guard drives all three returns and asserts each is reached (the M42 prevention):
+its first fixture, on a two-seat roster, never reached the third, since the correction slate kept the archive,
+and the reach assertion said so before any verdict was read;
+both seats wrote the one revision, each vote for it weighs `SELF_VOTE_WEIGHT` (1/2),
+and 1 falls short of `MIN_SELECTION_WEIGHT` (2) (`candidate-select-model.ts`);
+on four seats, as the older correction test uses, the slate selects the revision.
+
+Found as:
+Reading the returns while wiring H16's lexicon findings into them.
+
+### X19: a unit test bought a live web search and wrote the real lookup cache
+
+Status: fixed in `d82dfe559`, 2026-09-28.
+`preparePassEntry` read three things outside the pipeline itself:
+the work-title lookup and the cited references, each with the Exa key from `process.env` and a cache under `~/.cache`,
+and the corpus names at the pin.
+The unit suite runs under the root `mise.toml`, which decrypts `.env.local.json`,
+so the key is set in every test process (checked as a boolean: `TRANSLATION_REPAIR_EXA_API_KEY` is non-empty).
+H16's red guard (`31c7d3f00`) prepared an original naming an invented title through that path:
+the preparation bought one Exa search for it
+and wrote the answer to `~/.cache/translation-repair/lookup/84fcabcd8c13….json` at 15:42.
+The five other lookup records whose titles a fixture also names are corpus titles live runs bought.
+The three reads now come through `PassOutsideReads` (`corpus-run/pass-outside-reads.ts`),
+required by `preparePassEntry` and `runPassPreparation`;
+the run hands over `RUN_OUTSIDE_READS`, and every test hands over `NO_OUTSIDE_READS`
+(`pass-outside-reads.test-fixture.ts`) or a reader of its own, so a test that leaves the seam out does not compile.
+`pass-outside-reads.unit.test.ts` drives the wiring: each reader asked once about the original,
+and what each returns reaching the sheets.
+The footnote-lifecycle test had worked around the same hazard by asserting its original names no title;
+that assertion gave way to the fixture.
+The stray record could not be removed from this session (the removal was refused);
+it holds only the invented title's search, and the owner can delete it.
+
+### X20: the page-name glossary reads Markdown headings and not HTML ones
+
+Status: fixed in `ee39e2ba5` (red guard `84b9822d8`, order and levels pinned in `197f8b811`), 2026-09-28.
+`page-headings.ts` now holds the one Markdown and HTML heading reader the glossary and the page title spans share,
+each heading placed where it stands, and the glossary pairs each kind among itself under the same-count rule,
+listed by where the original's heading stands, so an HTML heading only one side carries costs no Markdown pair.
+Over the 92 pinned pairs the built `pageNameLines` gains heading lines on `aiyysk` (2) and `mikaela_khara` (1)
+and nowhere else (`~/temp/agent/audit-glossary-fix/x20-verify.mjs`).
+Mutation checked with a control, then the full suite (0 FAIL): over X20 and H16's three earlier survivors,
+nine of eleven mutants were caught at once; the two left, a heading the archive keeps in the original's words
+and markers with no space after them, had no fixture that could fail;
+`801b09420` adds one for each, and the rerun, with its control, caught both.
+
+Found as:
+Reading the glossary's heading reader beside the page title spans' while fixing H16.
+`headingsOf` (`page-name-glossary.ts`) read ATX headings only, so an archive's rendering of an HTML heading
+never reached the sheets as a page name.
+Measured at the pin (`~/temp/agent/audit-glossary-fix/x20-html-headings.mjs`):
+3 of 92 pairs carry HTML headings with Han in the original, 13 headings;
+on `aiyysk` (2) and `mikaela_khara` (1) the archive carries the same count of HTML headings,
+so those three are pairs the glossary misses;
+XingZ60's 10 against the archive's 6 pair nothing by the glossary's same-count rule either way.
+No page has a line of seven or more `#`, which `headingsOf` read as a heading and CommonMark does not,
+so the shared reader, which stops at six, reads the corpus as the old one did.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing, recorded for the prevention doc.
@@ -3654,6 +3760,7 @@ During X2 an edit script was patched with an inline `python3 - <<'EOF'` heredoc 
 where scripts go through the Write tool and run in a call of their own.
 Once more during H9 (`rg --files-with-matches <term> <clone> ; rg --files-with-matches <term> <other clone>`).
 Once more during X12's preparation half, in a positive control (`rg <scan> <scratch> <src> ; echo "rg exit $?"`).
+Once more during X20 (`rg <old reader> src/ ; mise run build > log`), a leftover check chained to the build.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -3777,6 +3884,12 @@ So no answer cached under an earlier question can be served under any current nu
 Of the 153 non-test source commits since the earliest of them, 37 are named by an account and 116 by none
 (the script prints each with its subject and the versions set before it);
 they ride inside every version by the same fact, and each version's TSDoc now says so, dated.
+Rerun 2026-09-28 over seven constants, with the page title lexicon's `PAGE_TITLE_CACHE_VERSION` 1 (`ea61cbd4c`)
+added to the script and the repair version now 34 (`ef20e7978`):
+`find ... -newermt '2026-09-27 00:20'` gives the same 18 files, all by 00:26 that day, and none since,
+so every number still holds what it names.
+The page title lines and X20's heading pairs reach the slices through the identity context,
+which all five slice keys hash, and never reach a pairing sheet, whose key does not carry them.
 
 ### M29: a red guard asked a function that never reads the entry it guards
 
@@ -3792,6 +3905,53 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M45: a lint over an empty file list read as clean
+
+Status: happened 2026-09-28 while fixing X19; caught by the next command's output.
+The file list for the lint came from `git status --short -- .` run in the package directory,
+which cli-git's `require-root` guard refused, so the list was empty;
+the lint that read it printed "Found 0 warnings and 0 errors".
+The earlier run over the same empty list had printed findings in exactly the changed files,
+so the wrapper with no file argument lints something wider, and a clean result from it says nothing about the list.
+Prevention: a command that consumes a generated list prints the list's line count in the same call first
+(`wc --lines`), and git runs from the repository root (the M1 family's git rule).
+The same hour the slice-cache age check (M28) wrote its output to `slice-cache-newer.out` under the tree it searched,
+a name its own `-path '*slice-cache*'` matched, and printed one file written "today";
+reading the path showed it was the output itself, before any conclusion was drawn.
+Prevention: a probe writes its output outside the tree it searches, or under a name its pattern cannot match.
+
+### M44: a detector that said one order and kept another, guarded by a fixture that could not tell
+
+Status: happened 2026-09-28 in H16's `page-title-spans.ts`; fixed in `d9a306602`.
+`repeatedTitleSpans` said it listed titles by first appearance,
+and tallied every heading, then every HTML heading, then every 《》 and 【】 span, wherever each stood.
+Its order test used 《》 alone, one marker kind, so it passed either way: the M42 family, a guard whose fixture
+cannot reach the difference its label names.
+The same file copied a private code-point counter, with a `character !== ''` guard that a `for…of` over a string
+can never fail, from `page-name-glossary.ts` and `corpus-name-index.ts`,
+beside a shared `codePointCount` (`code-points.ts`) that says it exists so no copy drifts;
+`67243edae` removes all three copies and the three private copies of the Han test.
+The rewrite then slipped a regex into the heading reader (RG1), caught on reading the diff before lint.
+Prevention: before writing a helper, `rg` the package for one that does the job
+(`rg 'function \w*(codePoint|Han|heading)' src`);
+an order claim is tested with a fixture mixing every source the order draws from.
+
+
+### M43: a unit test run under the run's keys reached the live web
+
+Status: happened 2026-09-28 with H16's red guard; fixed structurally in `d82dfe559` (X19).
+The guard drove `preparePassEntry` end to end with an original naming a title,
+and nothing in the test said which of the preparation's reads leave the process.
+The suite inherits every decrypted key from the root `mise.toml`,
+so the preparation's own lookup bought a search and wrote a record to the real cache (X19).
+The same hazard had been met once before and handled in one test only,
+by asserting its fixture named no title (`pass-footnote-lifecycle.unit.test.ts`).
+Prevention: a new test that drives a production entry point lists the reads that entry point makes
+outside the process (`process.env`, `fetch`, `homedir()`, a pinned corpus) before it first runs,
+and hands each a fixture; a seam that reaches the network or a real cache is required, never optional,
+so the type checker refuses a test that forgets it.
+
 
 ### M42: red guards whose fixtures never reached two of the sites they guarded
 
@@ -4004,6 +4164,10 @@ The same day `d00123df3` was typed `test` while it also changed production code
 (`attestPassReferences`, the injected reference reader, `keepBench`); a commit comment names the right type.
 Prevention for the type: read `git diff --cached --stat` before choosing it;
 any file outside tests makes the commit more than `test`.
+Once more on 2026-09-28: `67243edae` wrote "(#368)" in its subject, the audit's task-list number,
+which on GitHub is an unrelated file-enforcer issue; commit comment 202472839 corrects it.
+Prevention for references: a commit message names a GitHub issue only after `gh issue view` shows it is the one meant,
+and never a task-list number.
 
 ### M14: a reproduction check committed without a positive control
 
