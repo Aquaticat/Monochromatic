@@ -367,6 +367,13 @@ import type { RepairModels, } from './repair-contract.ts';
  L4, the owner's ruling of 2026-09-28, `b5338610e` and `c4a4fbb62`), which
  changes the editor's question and which edits a chunk may apply; checked on
  2026-09-28: still no slice-cache file newer than 00:26 on 2026-09-27.
+
+ Rides inside 33 too: the same gate refined for quality, letting an edit
+ re-mark markup the translation authored and move an atom between envelopes,
+ reading the whole source document, re-applied by the worse-voted strip, and
+ stated on the editor sheet (ledger L4, `b07f8ac48` and `ab84cbfd7`), which
+ changes the editor's question and which edits a chunk may apply; checked on
+ 2026-09-28: still no slice-cache file newer than 00:26 on 2026-09-27.
  */
 export const SLICE_CACHE_VERSION = 33;
 /**

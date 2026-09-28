@@ -2091,6 +2091,28 @@ a set compare in place of the multiset, escapes ignored, a spaced footnote label
 and the sheet dropping a kind are each caught; the comment-wording control survives.
 Cache: rides inside repair version 33 with an account in `repair-slice-key.ts`.
 
+REFINED FOR QUALITY the same day, under the owner's standing directive (`design-commitments.md`):
+guard `9df194059` and `550603cfe`, fix `b07f8ac48`, sheet `ab84cbfd7`.
+`markupDelta` (`markup-atom-preservation.ts`) keeps a loss unexcused unless an addition quote licenses it,
+or the translation authored the atom (the source does not carry it), it is an expression, inline code or tag,
+and the edit wrote, one for one, an atom of the same kind or one the source carries in its place.
+Footnote references and link destinations (`MARKUP_IDENTIFIER_KINDS`) have no such excuse:
+the source often carries no footnote at all, so every archive reference would read as authored.
+`settleMarkupMoves` then reads the patch as a whole: an unexcused loss another standing edit writes has survived;
+the settlement is a fixed point, since refusing an edit withdraws what it wrote.
+It runs over the edits every per-edit gate passed (`apply-patch-markup.ts`), and refusals stay in input order.
+The gate reads the whole source document where the chunk has it (`documentSourceText`), else the chunk's source,
+and the replay below measured only the document case.
+`EditorStageResult.preservation` carries the gate, and the L3 strip re-applies it to the kept edits,
+since the kept side of a move whose writer was stripped has lost its atom.
+The editor sheet's markup rule states the refined rule, both lists built from `MARKUP_IDENTIFIER_KINDS`.
+Reach, replayed with the built functions per slice against the corpus page (`l4-replay-settled.mjs`):
+7 of 5,733 refused, the pure removals (three deleted comments, the three footnote references, the MDX expression),
+against 24 under the ruling's wording; 41 regions have no corpus source page and were read as all-authored.
+Mutation check (`l4b-mutants.json`): no re-marking excuse, identifiers re-markable, copied markup re-markable,
+same-kind pairing only, no move settlement, a single settlement round, the strip skipping the gate,
+the strip dropping its new refusals, and the sheet lists inverted are each caught; the comment-wording control survives.
+
 ### L5: wrong panel acceptances
 
 Status: open.
