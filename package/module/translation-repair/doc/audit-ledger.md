@@ -790,8 +790,19 @@ provider replies misclassified.
 
 ### E1: destination loss is caught only at publish, and the refusal names neither destination nor slice
 
-Status: the diagnostic half fixed in `7668c6ce7`; the remedy is put to the owner (2026-09-27).
-`corpus-run/publish-fixed.ts` throws after all spending;
+Status: fixed.
+The diagnostic half in `7668c6ce7`;
+the remedy in `cc6762f46` (red guard `d8009bfb1`),
+following the owner's ruling of 2026-09-27 that a settled page ships with its defects reported.
+Every publish-time content check (front matter, archive original, contributor names, destinations, headings)
+now runs through `corpus-run/publish-defects.ts`:
+its own refusal becomes a defect that is logged and printed as a `DEFECTS` line beside the tally,
+anything else it throws still stops the entry,
+and the page ships.
+A page that does not parse, or that disagrees with its artifact, still refuses.
+
+Found as:
+`corpus-run/publish-fixed.ts` threw after all spending;
 no page-assembly pass names a destination;
 `corpus-run/destinations-line.ts` and `corpus-run/pass-entry.ts` claim the addresses are in the run log,
 false on the refusal path.
