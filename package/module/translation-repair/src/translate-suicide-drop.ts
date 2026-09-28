@@ -4,14 +4,15 @@ import {
 } from './translate-address-drop.ts';
 
 //region A suicide the passage names
-// CLASS ONE HUNDRED FIFTY (shi_Yumiaoya36, 2026-09-26). The original's
-// 于 1 月 16 日凌晨吞下大量药物自杀 is a suicide attempt she survived (six
-// days in intensive care, then she woke), and the page shipped "she overdosed
-// in the early hours of January 16": the attempt the original states was
-// gone, and the means the house rule keeps vague stood in its place. The
-// polish round chose "attempted suicide by overdosing" 2.5 to 2 with two
-// ballots citing the survived-attempt rule, and the polish gate settled on
-// neither, so the base shipped. The house rule says a survived attempt is
+// CLASS ONE HUNDRED FIFTY (shi_Yumiaoya36, 2026-09-26). The original states a
+// suicide attempt she survived (six days in intensive care, then she woke),
+// and the page shipped a sentence naming only the means: the attempt the
+// original states was gone, and the means the house rule keeps vague stood in
+// its place. The polish round chose a rendering that said the attempt 2.5 to 2
+// with two ballots citing the survived-attempt rule, and the polish gate
+// settled on neither, so the base shipped. (The original's sentence and both
+// renderings named the means; they are left out here under the same house
+// rule, ledger X3.) The house rule says a survived attempt is
 // still an attempt and the page says she attempted suicide or tried to end her
 // life; a rendering with no wording for suicide at all has dropped what the
 // ORIGINAL states and is refused before any judge reads it, as a dropped
@@ -342,7 +343,7 @@ function quotesPublishedWork({ block, }: { readonly block: string; },): boolean 
 
  @example
  ```ts
- const findings = droppedSuicideFindings({ sourceText: '她自杀了。', candidateText: 'She overdosed.', },);
+ const findings = droppedSuicideFindings({ sourceText: '她自杀了。', candidateText: 'She passed away.', },);
  ```
  */
 export function droppedSuicideFindings(
