@@ -63,6 +63,14 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  meter beside the metre (ledger K13, `403db3c6e`). It costs nothing: the
  newest slice-cache file under the agent runs was written at 00:26 on
  2026-09-27, before version 5 landed at 03:34.
+
+ The glossary audit's grammatical English house rule, which now states the
+ doubled preposition (ledger R5, `357f534b7`), reaches the refiner's sheet and
+ rides inside 5 too, checked on 2026-09-28 against the newest slice-cache file
+ under the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20
+ that day, none after 00:27). The refiner reads no glossary floor and no
+ COMMUNITY RENDERINGS block; the glossary's terms, renderings and whys reach
+ it through the identity context, which the key hashes.
  */
 export const REFINE_CACHE_VERSION = 5;
 

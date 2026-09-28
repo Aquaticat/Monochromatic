@@ -114,6 +114,16 @@ import type { SliceReplacement, } from './splice-slices.ts';
  reads now look past a JSX comment, a stray quote mark and a lone backtick
  (ledger K7, `1873b23dc` and `dc325d847`), so the floor sees Han it missed
  behind them.
+
+ The glossary audit's corrections ride inside 15 too (ledger C3 to R16,
+ `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
+ the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20 that
+ day, none after 00:27). The source-carry floor refuses forms it passed and
+ passes forms it refused (a slide onto a tier, "fossil-fuel car", "turned into
+ in"), and no key reads a refused form; the COMMUNITY RENDERINGS block on the
+ select sheets now counts a rendering inflected and bounded; and the
+ grammatical English house rule states the doubled preposition. The terms,
+ renderings and whys reach the identity context, which the key hashes.
  */
 export const TRANSLATE_SLICE_CACHE_VERSION = 15;
 

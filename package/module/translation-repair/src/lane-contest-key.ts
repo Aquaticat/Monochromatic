@@ -45,6 +45,15 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  Contest ballots were cached under version 5 on fifteen days between
  2026-09-07 and 2026-09-27, each under that day's sheet, so a resumed run
  could read ballots cast on a question no longer asked.
+
+ The glossary audit's corrections ride inside 6 too (ledger C3 to R16,
+ `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
+ the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20 that
+ day, none after 00:27): the eligibility floor refuses and passes other forms,
+ the COMMUNITY RENDERINGS block on the contest sheet counts a rendering
+ inflected and bounded, and the grammatical English house rule states the
+ doubled preposition. The terms, renderings and whys reach the identity
+ context, which the key hashes.
  */
 export const LANE_CONTEST_CACHE_VERSION = 6;
 

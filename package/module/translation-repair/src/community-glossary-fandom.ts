@@ -67,12 +67,14 @@ export const FANDOM_GLOSSARY: readonly CommunityTerm[] = [
   // report on the hobby: 偶装玩家会将穿上偶装称作"变娃"); English "doll up"
   // means dressing smartly, so it is refused, every form of it since ledger
   // C5 (the why named "doll up" while the floor refused only "dolled up").
-  // 治愈 first led with "comforted"; the owner disagreed (2026-09-27), since
-  // "healing" is the fandom's own English for 治愈系 and the archive reads
-  // "those she has healed". It leads with "healed" and refuses nothing. The
-  // entry, its guard and the handover also told the owner that the same page
-  // writes 安慰 where it means comfort; it writes 安抚, never 安慰 (ledger C6),
-  // so no contrast with 安慰 stands.
+  // 治愈 first led with "comforted"; the owner wrote "I kinda disagree here"
+  // (2026-09-27) and gave no reason, so it leads with "healed" and refuses
+  // nothing. The reasons this comment once gave as the owner's were the
+  // change's own: "healing" is the fandom's English for 治愈系, and the archive
+  // reads "those she has healed" (ledger H3). The entry, its guard and the
+  // handover also told the owner that the same page writes 安慰 where it means
+  // comfort; it writes 安抚, never 安慰 (ledger C6), so no contrast with 安慰
+  // stands.
   {
     term: '变娃',
     // A MULTI-WORD RENDERING INFLECTS INSIDE, where the ending the matcher

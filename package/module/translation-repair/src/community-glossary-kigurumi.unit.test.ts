@@ -5,11 +5,12 @@
  community join the fandom glossary. 变娃 (the performers' word for putting on
  the costume and becoming the doll) shipped on one page as a game of becoming
  a doll, and English "doll up" means dressing smartly. 治愈 (the fan sense of
- healing, as in 治愈系) first led with "comforted"; the owner disagreed
- (2026-09-27), since "healing" is the fandom's own English and the archive
- reads "healed", so "healed" leads. The contrast with 安慰 that this guard,
- the entry and the handover once gave the owner was a misquotation: the page
- writes 安抚, never 安慰 (ledger C6).
+ healing, as in 治愈系) first led with "comforted"; the owner wrote "I kinda
+ disagree here" (2026-09-27), so "healed" leads ("healing" is the fandom's own
+ English, and the archive reads "healed"; those reasons are the change's, not
+ the owner's, ledger H3). The contrast with 安慰 that this guard, the entry and
+ the handover once gave the owner was a misquotation: the page writes 安抚,
+ never 安慰 (ledger C6).
 
  Cat-themed invention throughout; no corpus content appears here.
 

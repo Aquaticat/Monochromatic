@@ -322,6 +322,15 @@ import type { RepairModels, } from './repair-contract.ts';
  (ledger K13, `403db3c6e`) reaches the critic, editor and panel sheets and
  rides inside too, checked on 2026-09-28: still no slice-cache file newer
  than 00:26 on 2026-09-27.
+
+ The glossary audit's corrections ride inside 33 too (ledger C3 to R16,
+ `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
+ the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20 that
+ day, none after 00:27): the COMMUNITY RENDERINGS block the editor and the
+ introduced-defect probe read counts a rendering inflected and bounded, and
+ the grammatical English house rule on the critic, editor and panel sheets
+ states the doubled preposition. The terms, renderings and whys reach the
+ identity context, which the key hashes.
  */
 export const SLICE_CACHE_VERSION = 33;
 /**

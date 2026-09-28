@@ -54,7 +54,8 @@ whether a registered name falls under it is the owner's call.
 
 ### C3: departures ignore inflection
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`, stems guarded in `36e7a4c30`).
+Renderings now match bounded and inflected (`renderingSpans`: s, es, d, ed, ing, a final e dropped, a final y turned), so "heal", "soothe" and "cure" carry every form and "atrium" is not Atri; multi-word renderings that inflect inside ("becoming the doll") are listed, and 药娘 takes "transgender girl".
 `communityRenderingDepartures` names a departure for "Healing views",
 "How hard this mental illness is to cure",
 "becoming the doll",
@@ -76,7 +77,8 @@ Guard: 猫被治愈 with "The cat was comforted and secured" names a departure.
 
 ### C5: whys promise refusals the refused forms do not carry
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`).
+Every form was replayed over the 364 archives and settled pages first: the new refusals fire only on thirteen settled shi_Yumiaoya pages that shipped a "child" for 逆子, one that shipped "HRT girl", one that shipped "across different communities", and none else. 头壳's bare "her head" stays with the judges and the why says so: a slice that names the head mask can name the wearer's head too, and on the ten settled TianqiChen666 pages every "her head" was "her headpiece" save one "inside her head", which the floor refuses.
 变娃 passes "doll up",
 "dolls up",
 "dolled-up";
@@ -91,7 +93,7 @@ Guard: one cat fixture per gap.
 
 ### C6: false or page-specific whys and comments shown to the models
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89` flips the kigurumi test that pinned 安慰).
 
 - 炸柜's why pairs it with throwing away the medication,
     true of XIEPT2 only and false on mikaela_khara.
@@ -118,7 +120,7 @@ Status: open (task #372).
 
 ### C7: sibling spellings missing
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`); 爆柜 takes Anilovr's archive "outed", 跨性别圈 GLaDOSister's "trans community".
 爆柜 (Anilovr) and 跨性别圈 (GLaDOSister) have no entries.
 
 ### C8: comments cut on the floor side only
@@ -135,7 +137,7 @@ the other the raw one.
 
 ### C10: terms match inside other words
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`) by an `enclosingWords` field beside `properNameContexts`; "trans circle" alone stands, inflecting to "trans circles".
 自切 inside 各自切,
 亲自切,
 独自切.
@@ -166,7 +168,7 @@ and 写 MOD pass.
 
 ### R2: 燃油车 refuses "fossil-fuel car"
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`): "fossil-fuel car" and "fossil-fuel vehicle" are renderings, which excuse the refused form they overlap.
 
 ### R3: 未成年 "minor trans" fires inside transgression, translation, transfer
 
@@ -174,7 +176,7 @@ Status: fixed in `cc96eca77` (boundaries, and "minor transgender" added).
 
 ### R4: 滑档 refuses ordinary motion verbs
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`): every refused slide lands on a tier; the replay found nineteen settled shi_Yumiaoya pages that shipped one of them and no ordinary motion verb refused.
 "slipped into a low mood",
 "tears slid down her face"
 and "slid to the floor" are refused.
@@ -182,46 +184,46 @@ Fix: key the refusals on the tier.
 
 ### R5: 化作 "turned into in " refuses grammatical English and is a sentence lesson
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`); `rendering-glossary-grammar.ts` and its test are gone.
 "That butterfly is what the kitten turned into in spring" is refused.
 Fix: move the lesson to `GRAMMATICAL_ENGLISH_RULE` and correct the comment.
 
 ### R6: 摆烂's why prescribes one page's sentence
 
-Status: open (task #372).
+Status: fixed in `357f534b7`: the why covers taking it easy and no longer prescribes one sentence; "slacked off" stays refused under the house rule that names it slang.
 On lxy "stopped trying" is a mistranslation of 偶尔摆烂.
 "slack off" register is an owner question.
 
 ### R7: 矫正中心 and 矫正学校 missing
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`); zhangyubaka's archive "correctional school" is refused, the prison reading 矫正机构's why already names.
 
 ### R8: 师范学院's why promises an official-name exception the floor refuses
 
-Status: open (task #372).
+Status: fixed in `357f534b7`: no promise in the why; a named institution would take a `properNameContexts` entry, and the pin carries none.
 "normal school" is dated English,
 not a calque.
 
 ### R9: three whys write "gaokao" while 高考's line refuses it
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`); the guard exempts a form the entry refuses itself, which its why quotes to refuse.
 Guard: no why carries a form another entry refuses.
 
 ### R10: 亲友 "close friends" fires inside "close friendships"
 
-Status: open (task #371, task #372).
+Status: fixed in `cc96eca77` by boundaries; the re-probe of 2026-09-28 passes "close friendships".
 
 ### R11: 交往 lists "dated" on the one page where it never means dating
 
-Status: open (task #372).
+Status: fixed in `357f534b7`; the pin carries 交往 four times, all on aiyysk, never of romance.
 
 ### R12: 抢救's renderings carry "intensive care"
 
-Status: open (task #372).
+Status: fixed in `357f534b7`; "resuscitation" and "salvage" join the renderings where the passage means them.
 
 ### R13: sentence lessons and page-specific whys in word entries
 
-Status: open (task #372).
+Status: fixed in `357f534b7`: 学霸, 未成年, 志愿填写 and 三剑客 carry word-level whys.
 学霸 (属性),
 未成年,
 志愿填写,
@@ -237,7 +239,7 @@ Status: fixed in `cc96eca77` by boundaries.
 
 ### R15: refusal gaps
 
-Status: open (task #372).
+Status: fixed in `357f534b7` (guard `8da383b89`); `JK裙` already passed under the class one hundred eighty-six matcher.
 "type II diabetic",
 "diabetes type II",
 "threatens her life",
@@ -245,7 +247,7 @@ Status: open (task #372).
 
 ### R16: false or stale comments
 
-Status: open (task #372).
+Status: fixed in `357f534b7` and the planning doc: 初中 stands nine times on five entries (a Xu_Yushu reader comment was counted as an archive passage), one 激素 paragraph writes 药物 (the other 药 is inside 药娘), 交往 stands four times, and the sheet line reads `- OD:`.
 初中 counts,
 激素 "two of them also write 药物",
 the planning doc's 交往 count,
@@ -425,6 +427,17 @@ The replay respells it.
 24 caught at first, and the two survivors (the combining-accent branch, the JSX-comment skip)
 were caught once `18c2bc00f` gave them cases only they can pass.
 A first run reported every mutant alive because its filter dropped every assertion line (M27).
+
+## Glossary entry-content mutation check
+
+23 fixes of `357f534b7` broken one at a time, with an unchanged-source control that must pass:
+all 23 caught by `glossary-entry-content.unit.test.ts`,
+`community-glossary-kigurumi.unit.test.ts` or `rendering-glossary-calques.unit.test.ts`.
+The inflected stems and the "d" ending had no case until `36e7a4c30`.
+One mutant (the 安慰 contrast restored) first broke the build with an apostrophe inside a string literal,
+so its catch came from the previous mutant's stale build;
+rerun as a valid mutant beside the control, it was caught.
+A mutant whose build fails proves nothing, so the harness now reports a failed build as no verdict.
 
 ## Consolidation gate
 
@@ -756,9 +769,9 @@ The probe calls providers and prints no sheet, so no live run was made for this.
 
 ### H3: the 治愈 misquote
 
-Status: owner told 2026-09-27; the comment,
-why and `community-glossary-kigurumi.unit.test.ts` still carry 安慰 (task #372).
-The comment also calls the reasons the owner's,
+Status: fixed in `357f534b7` (the 安慰 contrast) and in the commit that closes H3 in this ledger
+(the reasons, now given as the change's own); the owner was told 2026-09-27.
+The comment also called the reasons the owner's,
 though the owner wrote only "I kinda disagree here".
 
 ### H4: the repair lane's own sheets never see the archive dispute
@@ -2449,6 +2462,21 @@ Prevention: M25's pre-launch check lists every `*CACHE_VERSION` constant in `src
 (`rg 'CACHE_VERSION[A-Z_]* = ' src`), not the ones remembered,
 and for each one runs `git log` since it last moved over every file its stage's sheet or floors import,
 the shared house rules and prose ranges included.
+
+### M29: a red guard asked a function that never reads the entry it guards
+
+Status: caught before the fix landed, 2026-09-28; the guard was rewritten in `357f534b7`.
+The R11 and R12 guards of `8da383b89` asked `communityRenderingDepartures` whether "dated" and "intensive care"
+still counted as renderings of 交往 and 抢救,
+but the departures block reads the community glossary only,
+and both words are in the rendering glossary,
+whose renderings reach the identity-context lines and nothing else.
+The guards were red before the fix and would have stayed red after it,
+so their red proved nothing about the finding.
+Prevention: a red guard is read case by case before the fix
+(each failing case must fail for the reason its label names),
+and after the fix every case must turn green;
+a case that stays red after the fix is a guard defect, not a fix defect.
 
 ### M15: a finding carried and a fix started against an owner ruling
 

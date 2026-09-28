@@ -108,6 +108,15 @@ import type { LaneText, } from './translate-candidates.ts';
  sheet this stage shows; and the prose ranges the Han-residue floor reads,
  which a proposal is held to, now look past a JSX comment, a stray quote mark
  and a lone backtick (ledger K7, `1873b23dc` and `dc325d847`).
+
+ The glossary audit's corrections ride inside 20 too (ledger C3 to R16,
+ `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
+ the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20 that
+ day, none after 00:27): the source-carry floor a proposal is held to refuses
+ and passes other forms, the COMMUNITY RENDERINGS block on the gate and the
+ polish gate counts a rendering inflected and bounded, and the grammatical
+ English house rule states the doubled preposition. The terms, renderings and
+ whys reach the identity context, which the key hashes.
  */
 export const CONSOLIDATE_CACHE_VERSION = 20;
 
