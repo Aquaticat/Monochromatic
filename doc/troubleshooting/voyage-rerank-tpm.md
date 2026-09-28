@@ -10,7 +10,8 @@ starting with its request-source call.
 The response reported:
 
 > You have exceeded the project's Tokens Per Minute (TPM) rate limit of 4,000,000 tokens per minute for rerank-3.
-> In the minute before this request, you used 3,971,647 tokens.
+> In the minute before this request,
+>  you used 3,971,647 tokens.
 
 The owned collector then emitted:
 
