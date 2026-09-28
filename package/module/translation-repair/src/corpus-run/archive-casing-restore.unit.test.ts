@@ -144,5 +144,43 @@ await describe({
         expect(restored.findings,).toEqual([],);
       },
     },),
+    it({
+      name: 'READS an accented name as one word, composed or with a combining accent, and restores its capitals (ledger B18)',
+      fn: async () => {
+        // An ASCII letter test split `CHÂTEAU` at its accent into `CH` and
+        // `TEAU`, and the shipped `Château` into `Ch` and a lower-case `teau`,
+        // so the name was never read and never restored.
+        for (const accent of ['Â', 'A\u{0302}',]) {
+          /**
+           Archive slices writing the station in capitals, body and footnote.
+           */
+          const slices = [
+            pair({
+              sliceIndex: 0,
+              target: `The cats waited at CH${accent}TEAU Station[^1].`,
+            },),
+            pair({
+              sliceIndex: 1,
+              target: `[^1]: CH${accent}TEAU Station is where the kittens nap.`,
+            },),
+          ];
+          /**
+           Pass over a page whose body wrote the station title case.
+           */
+          const restored = restoreArchiveCasing({
+            slices,
+            replacements: [
+              {
+                sliceIndex: 0,
+                replacementText: `The cats waited at Ch${accent.toLowerCase()}teau Station[^1].`,
+              },
+            ],
+          },);
+          expect(restored.replacements.map(function textOf(row,): string {
+            return row.replacementText;
+          },),).toEqual([`The cats waited at CH${accent}TEAU Station[^1].`,],);
+        }
+      },
+    },),
   ],
 },);

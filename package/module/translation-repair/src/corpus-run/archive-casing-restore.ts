@@ -9,7 +9,10 @@ import {
   applySpanRewrites,
   type SpanRewrite,
 } from './span-rewrites.ts';
-import { isAsciiLetter, } from '../ascii-letters.ts';
+import {
+  isLatinLetter,
+  isLatinLetterOrMark,
+} from '../latin-letters.ts';
 
 //region Archive casing restore
 // THE ONE HUNDRED AND TWENTY-FIRST CLASS (mikaela17, 2026-09-25). The archive
@@ -100,7 +103,9 @@ export type LatinWord = {
 };
 
 /**
- Every run of Latin letters in a text, by one index scan.
+ Every run of Latin letters in a text, by one index scan. A run opens on a
+ letter, accented or not, and goes on through letters and combining marks,
+ so `Pokémon` is one word whether its accent is composed or not (ledger B18).
 
  @param text - text under scan
 
@@ -119,7 +124,7 @@ export function latinWords(
    */
   const words: LatinWord[] = [];
   for (let at = 0; at < text.length;) {
-    if (!isAsciiLetter({ character: text.charAt(at,), },)) {
+    if (!isLatinLetter({ character: text.charAt(at,), },)) {
       at += 1;
       continue;
     }
@@ -127,7 +132,7 @@ export function latinWords(
      Where this run starts.
      */
     const start = at;
-    while ((at < text.length) && isAsciiLetter({ character: text.charAt(at,), },))
+    while ((at < text.length) && isLatinLetterOrMark({ character: text.charAt(at,), },))
       at += 1;
     words.push({
       word: text.slice(
