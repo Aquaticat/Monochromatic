@@ -1,3 +1,4 @@
+import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -5,6 +6,7 @@ import {
   namesIn,
 } from './directory-listing.ts';
 import {
+  ENGLISH_PAGE_FILE,
   FIXED_TREE_DIR,
   PEOPLE_DIR,
 } from './publish-fixed.ts';
@@ -116,12 +118,56 @@ export async function settledEntryIds(
 }
 
 /**
+ Whether an entry's directory in the published tree holds its page.
+
+ @param peopleDir - people directory of the published tree
+
+ @param entryId - entry to look for
+
+ @returns Whether the page file is there
+
+ @example
+ ```ts
+ const there = await carriesPage({ peopleDir, entryId, },);
+ ```
+ */
+async function carriesPage(
+  {
+    peopleDir,
+    entryId,
+  }: {
+    readonly peopleDir: string;
+    readonly entryId: string;
+  },
+): Promise<boolean> {
+  try {
+    await access(join(
+      peopleDir,
+      entryId,
+      ENGLISH_PAGE_FILE,
+    ),);
+    return true;
+  }
+  catch (error) {
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
+      return false;
+    throw error;
+  }
+}
+
+/**
  Lists the entries a run published, by the pages it wrote.
- 
+
+ BY THE PAGE FILE, NOT THE ENTRY'S DIRECTORY (ledger A16b). A directory whose
+ page is gone read as published, so the entry was paired as matched, its read
+ then failed, and the report said `REFUSED by Error` where it should have said
+ the entry was settled and never published.
+
  @param runsDir - run directory holding the fixed tree
- 
+
  @returns Entry ids, sorted, or why the published tree could not be read
- 
+
  @example
  ```ts
  const published = await publishedEntryIds({ runsDir, },);
@@ -131,23 +177,51 @@ export async function publishedEntryIds(
   { runsDir, }: { readonly runsDir: string; },
 ): Promise<DirectoryReading> {
   /**
-   Everything the people directory of the fixed tree holds.
+   People directory of the fixed tree.
    */
-  const reading = await namesIn({
-    dir: join(
-      runsDir,
-      FIXED_TREE_DIR,
-      PEOPLE_DIR,
-    ),
-  },);
+  const peopleDir = join(
+    runsDir,
+    FIXED_TREE_DIR,
+    PEOPLE_DIR,
+  );
+  /**
+   Everything it holds.
+   */
+  const reading = await namesIn({ dir: peopleDir, },);
 
   if (reading.kind === 'unreadable')
     return reading;
 
+  /**
+   Entry directories the people directory holds.
+   */
+  const { names, } = reading;
+
+  /**
+   Each entry directory beside whether it holds its page.
+   */
+  const carried = await Promise.all(names.map(async function check(entryId,): Promise<{
+    readonly entryId: string;
+    readonly hasPage: boolean;
+  }> {
+    return {
+      entryId,
+      hasPage: await carriesPage({
+        peopleDir,
+        entryId,
+      },),
+    };
+  },),);
+
   return {
     kind: 'read',
-    names: reading
-      .names
+    names: carried
+      .filter(function holdsPage({ hasPage, },): boolean {
+        return hasPage;
+      },)
+      .map(function idOf({ entryId, },): string {
+        return entryId;
+      },)
       .toSorted(),
   };
 }

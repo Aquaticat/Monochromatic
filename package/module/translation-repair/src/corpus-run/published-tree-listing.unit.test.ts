@@ -132,8 +132,8 @@ async function runSettling(
  
  @param runsDir - run directory to publish into
  
- @param entryIds - entry directories to create under the people directory
- 
+ @param entryIds - entries to write a page for under the people directory
+
  @example
  ```ts
  await publishInto({ runsDir, entryIds: ['Mittens',], },);
@@ -149,14 +149,26 @@ async function publishInto(
   },
 ): Promise<void> {
   await Promise.all(entryIds.map(async function makeOne(entryId,): Promise<void> {
+    /**
+     The entry's directory in the published tree.
+     */
+    const entryDir = join(
+      runsDir,
+      FIXED_TREE,
+      PEOPLE,
+      entryId,
+    );
     await mkdir(
-      join(
-        runsDir,
-        FIXED_TREE,
-        PEOPLE,
-        entryId,
-      ),
+      entryDir,
       { recursive: true, },
+    );
+    await writeFile(
+      join(
+        entryDir,
+        'page.en.md',
+      ),
+      'A cat naps.\n',
+      'utf8',
     );
   },),);
 }
@@ -309,6 +321,29 @@ await describe({
             'Mittens',
             'Whiskers',
           ],);
+      },
+    },),
+
+    it({
+      name: 'SKIPS an entry directory whose page is gone, so the entry reads as unpublished rather than as '
+        + 'a page that fails to read (ledger A16b)',
+      fn: async () => {
+        const runsDir = await runSettling({ names: [], },);
+        await publishInto({
+          runsDir,
+          entryIds: ['Mittens',],
+        },);
+        await mkdir(
+          join(
+            runsDir,
+            FIXED_TREE,
+            PEOPLE,
+            'Whiskers',
+          ),
+          { recursive: true, },
+        );
+        expect(namesOf({ reading: await publishedEntryIds({ runsDir, },), },),)
+          .toEqual(['Mittens',],);
       },
     },),
 
