@@ -226,6 +226,23 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
     why: 'remarks meant to push someone into line; English says she was pressured or nagged, and "pressured remarks" '
       + 'is word for word',
   },
+  // LEDGER H9 (XingZ60, 2026-09-28). The XingZ6014 page gave the poem's 螐儿
+  // two treatments, a bird in one slice and an unnamed crawling creature in
+  // another: each slice was judged alone, and the partial archive carries no
+  // English for the poem to follow. The rare character is a dictionary word;
+  // the author's own note says it reads as insect or bird, so one rendering
+  // with that note keeps both readings where two renderings lose the pun.
+  {
+    term: '螐',
+    renderings: [
+      'caterpillar',
+      'little caterpillar',
+    ],
+    refusedForms: [],
+    why: 'a rare character for a caterpillar-like insect (as in 螐蠋, a large caterpillar); a writer may pun it on 鸟儿, '
+      + '"little bird", and say so in a note, so the page renders it one way wherever it stands and lets the note '
+      + 'carry the bird',
+  },
 ];
 
 //endregion Wording renderings
