@@ -3,7 +3,7 @@ import {
   SectionPairingError,
   type SectionPairingWire,
 } from './pair-sections-wire.ts';
-import { isIndexPairList, } from './index-pair-list.ts';
+import { isIndexPairingWire, } from './index-pair-list.ts';
 
 //region Section pairing reader
 // REFUSES RATHER THAN REPAIRS, for the reason the block reader gives: a pairing
@@ -36,18 +36,7 @@ import { isIndexPairList, } from './index-pair-list.ts';
  ```
  */
 export function isSectionPairingWire(value: unknown,): value is SectionPairingWire {
-  if ((typeof value) !== 'object')
-    return false;
-  if (value === null)
-    return false;
-  if (!('pairs' in value))
-    return false;
-
-  /**
-   Candidate pair list, still unknown in shape.
-   */
-  const { pairs, } = value;
-  return isIndexPairList(pairs,);
+  return isIndexPairingWire(value,);
 }
 
 /**

@@ -48,4 +48,34 @@ export function isIndexPairList(value: unknown,): value is readonly IndexPair[] 
   },);
 }
 
+/**
+ Whether a parsed model reply has the shape of a pairing: an object whose
+ `pairs` is a list of correspondences.
+
+ The block and section pairing readers each kept this outer check around
+ their own copy of the list test (audit area six, 2026-09-28); both name
+ their own wire type and delegate here.
+
+ @param value - parsed model reply
+
+ @returns Whether it carries a `pairs` list of integer index pairs
+
+ @example
+ ```ts
+ isIndexPairingWire({ pairs: [], },); // true
+ isIndexPairingWire({ pairs: 'none', },); // false
+ ```
+ */
+export function isIndexPairingWire(
+  value: unknown,
+): value is { readonly pairs: readonly IndexPair[]; } {
+  if ((typeof value) !== 'object')
+    return false;
+  if (value === null)
+    return false;
+  if (!('pairs' in value))
+    return false;
+  return isIndexPairList(value.pairs,);
+}
+
 //endregion Index pair list
