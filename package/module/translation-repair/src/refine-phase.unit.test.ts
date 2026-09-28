@@ -59,6 +59,12 @@ const SMOOTH_TEXT =
   'The cat sunbathes on the windowsill every afternoon, and when the light moves across the floor she follows it without hurry.';
 
 /**
+ Repaired text shorter than the lane's minimum paragraph, so it is never
+ offered to a rewriter.
+ */
+const SHORT_TEXT = 'The cat naps on the windowsill.';
+
+/**
  Original the refinement is checked against.
  */
 const SOURCE_TEXT = '猫猫每天下午都在窗台上晒太阳。';
@@ -1041,7 +1047,11 @@ await describe({
         + 'the last slice in document order was ineligible and asked nobody',
       fn: async () => {
         /**
-         Eligible first outcome followed by non-translation standing outcome.
+         Eligible first outcome followed by one too short to refine.
+
+         SHORT RATHER THAN STANDING AS NON-TRANSLATION, which this case used
+         until ledger L15: standing votes no longer keep a slice from the
+         rewriters, so they no longer make one ineligible.
          */
         const eligible = settledOutcome({
           resolvedIssueIds: [],
@@ -1050,7 +1060,7 @@ await describe({
         const ineligible: ChunkRepairOutcome = {
           ...eligible,
           sliceIndex: 1,
-          nonTranslationStanding: true,
+          repairedText: SHORT_TEXT,
         };
 
         /**
@@ -1066,16 +1076,16 @@ await describe({
           },
           target: {
             sliceIndex: 1,
-            text: REPAIRED_TEXT,
+            text: SHORT_TEXT,
             startOffset: REPAIRED_TEXT.length + 2,
-            endOffset: (REPAIRED_TEXT.length * 2) + 2,
+            endOffset: REPAIRED_TEXT.length + 2 + SHORT_TEXT.length,
             nodes: [],
           },
         };
         const phase = await runRefinePhase({
           declaredNames: [],
           client: scriptedPhase({ checkerVerdict: 'fixed', },),
-          targetText: `${REPAIRED_TEXT}\n\n${REPAIRED_TEXT}`,
+          targetText: `${REPAIRED_TEXT}\n\n${SHORT_TEXT}`,
           slices: [
             ...SLICES,
             second,

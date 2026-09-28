@@ -1,30 +1,22 @@
 /**
- Tests for the one rule of the naturalness lane's slice settler that nothing
- else in the suite defends.
- 
- WHY THIS FILE IS SHORT ON PURPOSE. `refine-phase.unit.test.ts` already drives
- this function through the phase above it and proves the rules that matter
- most: that a refinement losing a previously resolved issue rolls the whole
- slice back to `T1`, that a rolled-back slice names no refiner, and that a
- refinement-only change reaches the shipped text. Removing the rollback guard
- fails two of those cases. Repeating them here would restate proven work.
- 
- WHAT NOTHING DEFENDED, found by mutation rather than by reading: the
- NON-TRANSLATION EARLY RETURN. Deleting it left the whole suite green.
- 
- That return is what keeps a slice the critics ruled non-translation out of
- the rewriter's hands. Such a slice shipped deliberately untouched, and asking
- a model to make it read more naturally is asking it to undo that decision on
- exactly the passages the pipeline was least willing to touch. Nothing
- downstream would notice: the rewrite would arrive as an ordinary refinement,
- pass the same guards every refinement passes, and ship.
- 
- SO THE CASE IS A CLIENT THAT REFUSES TO BE CALLED. A slice standing as
- non-translation must settle without reaching it. The control beside it flips
- that one field and shows the same fixture DOES reach the client, so the null
- result means "the early return held" rather than "this fixture was never
- going to buy anything".
- 
+ Tests that the naturalness lane's slice settler does not stop on the critics'
+ non-translation votes (ledger L15).
+
+ WHY THIS FILE WAS WRONG. It was written on 2026-08-24 to defend an early
+ return that deleting left the whole suite green, on the reading that a slice
+ the critics ruled non-translation "shipped deliberately untouched". That had
+ stopped being true on 2026-08-16: question 3, answer B
+ (`doc/decision/translation-repair-question-answers.md`) keeps critics as
+ evidence "rather than deciding anything", removes every early return they
+ owned, and `05ff9791e` stopped `repairChunk` returning its input unchanged
+ when the votes stand. This early return was the one left: over every
+ artifact, 10 of 6,150 slices had standing votes, the repair lane changed 8
+ of them, and none of the 9 in runs that refine was refined.
+
+ SO BOTH CASES REACH THE CLIENT. A client that throws on any exchange makes
+ reaching a model observable; a slice standing as non-translation must reach
+ it exactly as the same slice without the ruling does.
+
  Fixtures are cat-themed invention. No corpus content appears here.
  
  @module
@@ -200,31 +192,25 @@ await describe({
   name: settleRefinedSlice.name,
   children: [
     it({
-      name: 'BUYS NOTHING FOR A SLICE STANDING AS NON-TRANSLATION, against a '
-        + 'client that throws on any exchange. Such a slice shipped '
-        + 'deliberately untouched, and rewriting it for fluency would undo '
-        + 'that decision on exactly the passages the pipeline was least '
-        + 'willing to touch',
+      name: 'REACHES THE CLIENT for a slice standing as non-translation: the votes are evidence for the judges, '
+        + 'not a stop (question 3, answer B), so the lane asks its rewriter as it would for any slice',
       fn: async () => {
         /**
          Settlement of a slice the critics ruled non-translation.
          */
         const settled = await settleWith({ nonTranslationStanding: true, },);
 
-        expect(settled.asked,).toBe(false,);
+        expect(settled.asked,).toBe(true,);
+        expect(settled.findings,)
+          .toContain(`stage-voice-lost (refiner ${REFINER})`,);
         expect(settled.refinedBy,).toEqual([],);
         expect(settled.refinersHeard,).toEqual([],);
-        expect(settled.findings,).toEqual([],);
-        expect(settled.outcome.repairedText,).toBe(REPAIRED_TEXT,);
       },
     },),
 
     it({
-      name: 'REACHES THE CLIENT for the same slice once it no longer stands '
-        + 'as non-translation, which is the control proving the case above '
-        + 'reports a rule holding rather than a fixture that was never going '
-        + 'to buy anything. The refiner stage catches the refusal and records '
-        + 'it as a lost voice, so what the client saw is legible in the '
+      name: 'REACHES THE CLIENT for the same slice without the ruling, the same way. The refiner stage '
+        + 'catches the refusal and records it as a lost voice, so what the client saw is legible in the '
         + 'findings rather than in an exception',
       fn: async () => {
         /**
