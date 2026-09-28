@@ -67,6 +67,7 @@ export {
 export {
   ARCHIVE_BLOCK_SELECTION_CRITERIA,
   buildArchiveBlockReviewMessages,
+  isArchiveBlockReviewWire,
 } from './archive-block-review-wire.ts';
 export {
   archiveBlockIdentity,
