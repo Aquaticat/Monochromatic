@@ -790,12 +790,28 @@ provider replies misclassified.
 
 ### E1: destination loss is caught only at publish, and the refusal names neither destination nor slice
 
-Status: open.
+Status: the diagnostic half fixed in `7668c6ce7`; the remedy is put to the owner (2026-09-27).
 `corpus-run/publish-fixed.ts` throws after all spending;
 no page-assembly pass names a destination;
 `corpus-run/destinations-line.ts` and `corpus-run/pass-entry.ts` claim the addresses are in the run log,
 false on the refusal path.
 XingZ6011 lost 96.3 min to it on 2026-09-26.
+The refusal now logs each dropped address with the slices whose original, archive span and shipped text carry it,
+and its message names the source slices.
+
+Measured on 2026-09-27 over the 246 stored artifacts whose carve reproduces, 461 source destinations inside a slice:
+302 carried by both the archive span and the shipped text,
+151 missing from the archive span and restored by the shipped text,
+5 missing from both and dropped by the page, all from August runs before the either-rendering rule of 2026-09-04
+(wangzihao980 slices 3 and 4 written by a lane, Toka_ls slice 13 left to the archive),
+3 missing from both and carried elsewhere on the page,
+and none carried by the archive and lost by the shipped text.
+So the live failure is an archive sentence without the link shipping,
+and a take-back to the archive would never have helped.
+Refused entries leave no artifact, so they are counted from run logs:
+seven real entries were refused at publish for one dropped destination each
+(luxuanwen3, Mio, shi_Yumiaoya twice, XingZ60 three times),
+after 53 to 136 minutes each, about 10.3 hours in all.
 
 ### E2: the reader-protection bullet prescribes "she ended her life" for deaths and attempts alike
 
