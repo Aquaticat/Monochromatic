@@ -153,6 +153,32 @@ await describe({
     },),
 
     it({
+      name: 'SHIPS THE ARCHIVE, CARRYING NO TEXT, where no wording passed the rule (owner, 2026-09-27, '
+        + '"Keep archive, ship"), ahead of an incumbent that stood in: on a disputed slice the stand-in '
+        + 'is the repair lane\'s text, which the rule refused too, and the archive is what the ruling '
+        + 'keeps. The reader takes the archive from the comparison row, so a silent archive stays silent '
+        + 'rather than becoming an empty string written into the page',
+      fn: async () => {
+        for (const incumbentStandsIn of [
+          false,
+          true,
+        ]) {
+          const slice = describeConsolidateSlice({
+            sliceIndex: 5,
+            settlement: {
+              ...settledAs({ terminal: 'incumbent-only', text: STANDING_TEXT, },),
+              archiveKept: true,
+            },
+            incumbentStandsIn,
+          },);
+
+          expect(slice.terminal,).toBe('incumbent-only',);
+          expect(slice.shipped,).toStrictEqual({ kind: 'archive', },);
+        }
+      },
+    },),
+
+    it({
       name: 'READS THE TERMINAL RATHER THAN COMPARING TEXT, so a consolidation that agreed with the '
         + 'standing text everywhere but was still settled as a change is recorded as one. Deriving '
         + 'this from a string comparison would re-decide at the record what the wrap already decided, '

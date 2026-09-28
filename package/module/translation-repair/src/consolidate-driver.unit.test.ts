@@ -1892,6 +1892,28 @@ await describe({
     },),
 
     it({
+      name: 'NEVER CACHES A SLICE THAT KEPT THE ARCHIVE because no wording passed the rule (owner, '
+        + '2026-09-27, "Keep archive, ship"). The mark saying so lives on the settlement a run bought, so '
+        + 'a copy resumed without it would ship the lane text the rule refused. Refused even where the '
+        + 'standing claims endorsement, so this rests on no coupling two files away',
+      fn: async () => {
+        expect(consolidationWorthResuming({
+          settlement: {
+            ...settlementFor({ terminal: 'incumbent-only', },),
+            archiveKept: true,
+          },
+        },),).toBe(false,);
+        expect(consolidationWorthResuming({
+          settlement: {
+            ...settlementFor({ terminal: 'no-standing-text', },),
+            archiveKept: true,
+          },
+          standingMayShip: false,
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'REFUSES TO CACHE JUDGES THAT DECLINED TO SETTLE, and caches judges that decided, which is '
         + 'the same distinction one stage earlier: translate-retry.ts buys a second judging for '
         + 'exactly declined-indecision and declined-rejection and records the settled decline under a '

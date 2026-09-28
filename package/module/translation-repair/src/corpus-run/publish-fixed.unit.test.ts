@@ -406,6 +406,49 @@ function artifactWithAnUnfilledAnchor(): WouldShipSource {
 }
 
 /**
+ Builds an artifact whose consolidation kept the archive at slice 1 because
+ no wording there passed the rule (owner, 2026-09-27, "Keep archive, ship"),
+ over a contest that chose the translate lane's refused wording.
+
+ @param incumbentKind - whether the archive holds wording at this slice
+
+ @returns Artifact the publisher reads
+
+ @example
+ ```ts
+ const artifact = artifactKeepingTheArchive({ incumbentKind: 'present', },);
+ ```
+ */
+function artifactKeepingTheArchive(
+  { incumbentKind, }: { readonly incumbentKind: 'present' | 'absent'; },
+): WouldShipSource {
+  return {
+    ...artifactShipping({
+      translateText: DECIDED_MIDDLE,
+      incumbentKind,
+    },),
+    consolidation: {
+      kind: 'settled',
+      slices: [
+        {
+          sliceIndex: 1,
+          terminal: 'incumbent-only',
+          shipped: { kind: 'archive', },
+          rewrapped: false,
+          demoted: false,
+          verdicts: [],
+          gate: { kind: 'not-asked', },
+          polish: {
+            kind: 'not-run',
+            reason: 'unsafe-baseline',
+          },
+        },
+      ],
+    },
+  } as unknown as WouldShipSource;
+}
+
+/**
  Throwaway tree root for one case.
  
  @returns Root nothing outside the case writes into, plus how to remove it
@@ -703,6 +746,71 @@ await describe({
         },);
 
         expect(published.text,).toBe(ARCHIVE,);
+      },
+    },),
+
+    it({
+      name:
+        'SHIPS THE ARCHIVE AT A SLICE WHERE NO WORDING PASSED THE RULE, over the lane the contest '
+        + 'chose, and reports it (owner, 2026-09-27, "Keep archive, ship"). Over present wording the '
+        + 'page reads as the archive there; over an anchor the archive left silent, nothing is written, '
+        + 'since an empty string at an anchor the original speaks is a passage lost to the splice',
+      fn: async () => {
+        /**
+         Both archive states, each published into its own tree.
+         */
+        const outcomes = await Promise.all(([
+          {
+            incumbentKind: 'present',
+            slices: documentSlices(),
+          },
+          {
+            incumbentKind: 'absent',
+            slices: documentSlicesWithAGap(),
+          },
+        ] as const).map(async function publishKeepingTheArchive(
+          {
+            incumbentKind,
+            slices,
+          }: {
+            readonly incumbentKind: 'present' | 'absent';
+            readonly slices: readonly ChunkPair[];
+          },
+        ): Promise<{
+          readonly text: string;
+          readonly checks: readonly string[];
+          readonly message: string;
+        }> {
+          await using tree = await throwawayTree();
+          /**
+           The publication, which ships the archive at slice 1 and reports it.
+           */
+          const published = await publishFixedPage({
+            artifact: artifactKeepingTheArchive({ incumbentKind, },),
+            slices,
+            archiveText: ARCHIVE,
+            sourceText: SOURCE_PAGE,
+            entryId: 'BookshopCat',
+            publishDir: tree.publishDir,
+            l: tagged({ tag: 'publish-test', },),
+          },);
+          return {
+            text: await readFile(
+              published.path,
+              'utf8',
+            ),
+            checks: published.defects.map(function checkOf({ check, },): string {
+              return check;
+            },),
+            message: published.defects[0]?.message ?? '',
+          };
+        },),);
+        for (const outcome of outcomes) {
+          expect(outcome.text,).toBe(ARCHIVE,);
+          expect(outcome.checks,).toStrictEqual(['no-valid-wording',],);
+          expect(outcome.message,).toContain('slice 1',);
+        }
+        expect(outcomes.length,).toBe(2,);
       },
     },),
 

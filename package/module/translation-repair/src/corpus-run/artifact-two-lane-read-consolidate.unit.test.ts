@@ -291,6 +291,62 @@ await describe({
     },),
 
     it({
+      name: 'READS THE ARCHIVE KEPT where no wording passed the rule, under a terminal that kept what '
+        + 'stood, and refuses it under a consolidated terminal or carrying text of its own: the archive '
+        + 'it names is the comparison row\'s, so text here would be a second copy that could disagree '
+        + '(owner, 2026-09-27, "Keep archive, ship")',
+      fn: async () => {
+        /**
+         One slice as the driver records it.
+         */
+        const archiveSlice = {
+          ...FLOORED_SLICE,
+          shipped: { kind: 'archive', },
+        };
+        const read = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [archiveSlice,],
+          },
+          laneSelection: contestOf({ sliceIndexes: [1,], },),
+        },);
+        expect(read.reason,).toBe('',);
+        expect(read.kind,).toBe('settled',);
+
+        const consolidated = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...archiveSlice,
+                terminal: 'consolidated',
+              },
+            ],
+          },
+          laneSelection: contestOf({ sliceIndexes: [1,], },),
+        },);
+        expect(consolidated.kind,).toBe('refused',);
+
+        const carryingText = readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              {
+                ...archiveSlice,
+                shipped: {
+                  kind: 'archive',
+                  text: 'The cat naps in the window.',
+                },
+              },
+            ],
+          },
+          laneSelection: contestOf({ sliceIndexes: [1,], },),
+        },);
+        expect(carryingText.kind,).toBe('refused',);
+      },
+    },),
+
+    it({
       name: 'REFUSES TEXT FROM A SLICE THAT SETTLED ON NO CHANGE, which would write a passage into '
         + 'the document that no round decided on. The terminal and the shipped kind answer the same '
         + 'question, so a record disagreeing with itself about it is not a record of anything',

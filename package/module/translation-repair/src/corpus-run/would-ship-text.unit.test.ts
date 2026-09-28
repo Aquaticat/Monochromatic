@@ -196,6 +196,48 @@ function firstReadingOf(
   },);
 }
 
+/**
+ Builds a source whose contest chose the translate lane and whose
+ consolidation then kept the archive, because no wording passed the rule
+ (owner, 2026-09-27, "Keep archive, ship").
+
+ @param row - comparison row carrying the archive at this slice
+
+ @returns Source the reader accepts
+
+ @example
+ ```ts
+ const source = archiveKeptOver({ row: rowWith(), },);
+ ```
+ */
+function archiveKeptOver(
+  { row, }: { readonly row: Record<string, unknown>; },
+): WouldShipSource {
+  return sourceWith({
+    row,
+    consolidation: {
+      kind: 'settled',
+      slices: [
+        {
+          ...keptStanding({ terminal: 'incumbent-only', },),
+          shipped: { kind: 'archive', },
+        },
+      ],
+    },
+    laneSelection: {
+      kind: 'contested',
+      slices: [
+        contestedWith({
+          verdict: {
+            kind: 'lane-won',
+            lane: 'translate',
+          },
+        },),
+      ],
+    },
+  },);
+}
+
 await describe({
   name: wouldShipTextFor.name,
   children: [
@@ -359,6 +401,32 @@ await describe({
       expect(reading.kind,).toBe('wording',);
       expect(reading.kind === 'wording' ? reading.text : '',).toBe(ARCHIVE_NAP,);
       expect(reading.kind === 'wording' ? reading.decidedBy : '',).toBe('consolidation',);
+    },
+  },),
+
+  it({
+    name:
+      'STANDS THE ARCHIVE where no wording passed the rule, over the lane the contest chose, and '
+      + 'leaves a silent archive silent rather than writing an empty string into the page (owner, '
+      + '2026-09-27, "Keep archive, ship")',
+    fn: async () => {
+      expect(firstReadingOf({ source: archiveKeptOver({ row: rowWith(), },), },),).toStrictEqual({
+        kind: 'wording',
+        text: ARCHIVE_NAP,
+        decidedBy: 'archive',
+      },);
+      expect(firstReadingOf({
+        source: archiveKeptOver({
+          row: rowWith({
+            incumbentKind: 'absent',
+            incumbentText: '',
+          },),
+        },),
+      },),).toStrictEqual({
+        kind: 'nothing-ships',
+        reason: 'no-valid-wording-and-archive-silent',
+        incumbentKind: 'absent',
+      },);
     },
   },),
 

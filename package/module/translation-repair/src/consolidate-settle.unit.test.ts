@@ -1110,33 +1110,36 @@ await describe({
         expect(served.gate,).toBeGreaterThan(0,);
 
         /**
-         Calls the unoffered settlement bought before it threw.
+         Calls the unoffered settlement bought.
          */
         const unofferedServed = {
           judge: 0,
           gate: 0,
         };
         /**
-         What the unoffered settlement threw.
+         Settlement where no lane text is on offer either.
          */
-        let unoffered: unknown;
-        try {
-          await settleWith({
-            voices: [],
-            validity: [],
-            standingText: '',
-            standingEligible: false,
-            served: unofferedServed,
-          },);
-        } catch (error) {
-          unoffered = error;
-        }
-        // WITHOUT A LANE TEXT NO VALID PROPOSAL EXISTS, so the owner's rule of
-        // 2026-09-04 fails the slice at once, unbought (ledger E4). It used to
-        // settle as no-standing-text, and the final naturalness check stopped
-        // the entry at persist after every later slice was bought.
-        expect(unoffered instanceof ConsolidationStandingIneligibleError,).toBe(true,);
-        expect((unoffered as ConsolidationStandingIneligibleError).message,).toContain('no-standing-text',);
+        const unoffered = await settleWith({
+          voices: [],
+          validity: [],
+          standingText: '',
+          standingEligible: false,
+          served: unofferedServed,
+        },);
+        // WITHOUT A LANE TEXT NO WORDING PASSES THE RULE, so the slice keeps the
+        // archive's and the page ships with it reported (owner, 2026-09-27, "Keep
+        // archive, ship"; ledger E4), unbought. It used to settle with no polish,
+        // and the final naturalness check stopped the entry at persist after
+        // every later slice was bought.
+        expect(unoffered.settled.terminal,).toBe('no-standing-text',);
+        expect(unoffered.settled.archiveKept,).toBe(true,);
+        expect(unoffered.settled.findings.some(function namesIt(finding,): boolean {
+          return finding.startsWith('no-valid-wording',);
+        },),).toBe(true,);
+        expect(unoffered.settled.polish,).toStrictEqual({
+          kind: 'not-run',
+          reason: 'unsafe-baseline',
+        },);
         expect(unofferedServed,).toStrictEqual({
           judge: 0,
           gate: 0,
@@ -1374,34 +1377,86 @@ await describe({
     },),
 
     it({
-      name: 'FAILS THE SLICE AT ONCE when the standing is ineligible and no proposal survived the floor, '
-        + 'before any judge is bought',
+      name: 'KEEPS THE ARCHIVE when the standing is ineligible and no proposal survived the floor, before '
+        + 'any judge is bought, and the page ships with it reported (owner, 2026-09-27, "Keep archive, '
+        + 'ship"; until then this case stopped the entry)',
       fn: async () => {
         /**
-         What the settlement threw.
-         */
-        let thrown: unknown;
-        /**
-         Calls served before the throw, held here because a settlement that
-         throws returns nothing to read them from; reading them off a return
-         left this check at its initial zero whatever was bought.
+         Calls served, held here so a settlement that throws would still show
+         what it bought; reading them off a return left this check at its
+         initial zero whatever was bought.
          */
         const served = {
           judge: 0,
           gate: 0,
         };
-        try {
-          await settleWith({
-            voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
-            validity: [validityOf({ modelId: ROSTER[0], valid: false, },),],
-            standingEligible: false,
-            served,
-          },);
-        } catch (error) {
-          thrown = error;
-        }
-        expect(thrown instanceof ConsolidationStandingIneligibleError,).toBe(true,);
-        expect((thrown as ConsolidationStandingIneligibleError).message,).toContain('incumbent-only',);
+        const { settled, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: false, },),],
+          standingEligible: false,
+          served,
+        },);
+        expect(settled.terminal,).toBe('incumbent-only',);
+        expect(settled.archiveKept,).toBe(true,);
+        expect(settled.findings.some(function namesIt(finding,): boolean {
+          return finding.startsWith('no-valid-wording',);
+        },),).toBe(true,);
+        expect(settled.polish,).toStrictEqual({
+          kind: 'not-run',
+          reason: 'unsafe-baseline',
+        },);
+        expect(served,).toStrictEqual({
+          judge: 0,
+          gate: 0,
+        },);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE ARCHIVE when the gate settles on the refused standing, here through a wrap that '
+        + 'erased the only difference: the proposal the floor was told is valid is the refused standing '
+        + 'itself, so what the gate leaves in place is wording the rule refused',
+      fn: async () => {
+        const { settled, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: STANDING, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: 1, },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+          standingEligible: false,
+        },);
+        expect(settled.terminal,).toBe('wrap-erased-difference',);
+        expect(settled.archiveKept,).toBe(true,);
+        expect(settled.polish,).toStrictEqual({
+          kind: 'not-run',
+          reason: 'unsafe-baseline',
+        },);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE ARCHIVE when the withheld slate reaches the judges with no candidate at all, the '
+        + 'absence the judged round raises over an ineligible standing: the one proposal the floor '
+        + 'passed says nothing, so nothing is left to choose',
+      fn: async () => {
+        /**
+         Calls served.
+         */
+        const served = {
+          judge: 0,
+          gate: 0,
+        };
+        const { settled, } = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: '', },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          standingEligible: false,
+          served,
+        },);
+        expect(settled.terminal,).toBe('slate-unjudged-standing',);
+        expect(settled.archiveKept,).toBe(true,);
+        expect(settled.polish,).toStrictEqual({
+          kind: 'not-run',
+          reason: 'unsafe-baseline',
+        },);
         expect(served,).toStrictEqual({
           judge: 0,
           gate: 0,
