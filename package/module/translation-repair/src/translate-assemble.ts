@@ -7,6 +7,7 @@ import {
   type AdjacentSliceText,
 } from './assembly-adjacent-repetition.ts';
 import { repetitionFindings, } from './assembly-repetition.ts';
+import { repetitionLogLines, } from './assembly-damage-log.ts';
 import {
   assertReplacementsChange,
   deriveShippedIndices,
@@ -253,6 +254,17 @@ export function assembleTranslation(
     shipped,
     withdrawn,
   },);
+
+  // WHERE A REPETITION STANDS (ledger L12): the finding counts it and names
+  // no slice, so the log names the slices and the phrase.
+  for (
+    const line of repetitionLogLines({
+      archiveText: prepared.targetText,
+      shippedText: guarded.assembledText,
+      shippedSlices,
+    },)
+  )
+    l.warn(line,);
 
   return {
     translatedText: guarded.assembledText,

@@ -82,7 +82,7 @@ export type ContentSurvival = {
  const words = lettersOnlyWords({ text: 'Tabby-cat, dozing.', },);
  ```
  */
-function lettersOnlyWords({ text, }: { readonly text: string; },): readonly string[] {
+export function lettersOnlyWords({ text, }: { readonly text: string; },): readonly string[] {
   /**
    Words closed so far.
    */
@@ -188,6 +188,40 @@ export function measureContentSurvival(
     kept,
     lost: distinctive.length - kept,
   };
+}
+
+/**
+ Distinctive archive words the assembled document no longer carries, for the
+ log line that names where they were (ledger L12); the finding stays counts.
+
+ @param archiveText - translation as it stood before the pipeline ran
+
+ @param shippedText - assembled document the lane produced
+
+ @returns Lost words in archive order, each once
+
+ @example
+ ```ts
+ const lost = lostDistinctiveWords({ archiveText, shippedText, },);
+ ```
+ */
+export function lostDistinctiveWords(
+  {
+    archiveText,
+    shippedText,
+  }: {
+    readonly archiveText: string;
+    readonly shippedText: string;
+  },
+): readonly string[] {
+  /**
+   Every word the shipped document carries, for membership tests.
+   */
+  const shipped = new Set(lettersOnlyWords({ text: shippedText, },),);
+  return distinctiveWords({ archiveText, },)
+    .filter(function isLost(word,): boolean {
+      return !shipped.has(word,);
+    },);
 }
 
 /**

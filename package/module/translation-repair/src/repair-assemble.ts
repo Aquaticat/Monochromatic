@@ -6,6 +6,10 @@ import {
   type AdjacentSliceText,
 } from './assembly-adjacent-repetition.ts';
 import { contentSurvivalFindings, } from './assembly-content-survival.ts';
+import {
+  contentLossLogLines,
+  repetitionLogLines,
+} from './assembly-damage-log.ts';
 import { repetitionFindings, } from './assembly-repetition.ts';
 import {
   assertReplacementsChange,
@@ -224,6 +228,32 @@ export function assembleRepair(
       String(shippedSliceCount,)
     }/${String(outcomes.length,)} slices changed, ${String(issues.length,)} issues`,
   );
+
+  // WHERE THE DOCUMENT-SCALE DAMAGE IS (ledger L12): the findings below count
+  // it and name no slice, so the log names the slices, the phrase and the words.
+  for (
+    const line of repetitionLogLines({
+      archiveText: targetText,
+      shippedText: guarded.assembledText,
+      shippedSlices,
+    },)
+  )
+    l.warn(line,);
+  for (
+    const line of contentLossLogLines({
+      archiveText: targetText,
+      shippedText: guarded.assembledText,
+      archiveSlices: slices.map(function toArchive(slice,) {
+        return {
+          sliceIndex: slice.target
+            .sliceIndex,
+          text: slice.target
+            .text,
+        };
+      },),
+    },)
+  )
+    l.info(line,);
 
   return {
     sliceCritics: buildSliceCriticRecords({ outcomes, },),
