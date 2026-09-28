@@ -1387,7 +1387,7 @@ cross-slice passes decide on a page the footnote guard may still change.
 
 ### A16: low items
 
-Status: A16a fixed; open for page republishing and the verifier's exit (A16b, A16c).
+Status: fixed (A16a to A16c); the write order is kept by design.
 A lane wording's triple newline ships: not a defect.
 Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdown doesn't care",
 recorded in `doc/design-commitments.md`.
@@ -1429,7 +1429,23 @@ so such a page ships and is reported, never refused.
 
 #### A16b: the verifier exits 1 on findings
 
-Status: open.
+Status: fixed in `354f6bae7` (red guard `bd7c555b7`), `6898f1768` and `e52de1f23`.
+The verifier exits 0 on every finding and 2 only for a run it cannot read,
+each finding line names the pass that repairs it,
+and a disagreement over an artifact another build settled prints `READ BY ANOTHER BUILD`.
+Driving the built CLI for the guard found a further defect:
+`publishedEntryIds` listed entry directories, not page files,
+so an entry whose page was gone read as published, paired as matched,
+and printed `REFUSED by Error` instead of `SETTLED AND NEVER PUBLISHED`;
+it now lists entries by their page file.
+The `DECLINED AND PUBLISHED ANYWAY` line promises that the next pass removes the page,
+and a declined entry is never visited again,
+so the pass's republish step now removes every page standing for a declined entry (`6898f1768`).
+The runbook's expected lines had drifted from the real output (`declined=<n>`, the closing line's wording)
+and now match it; the three `pass-entry.ts` references (M17) and a fourth,
+`artifact-two-lane-project.unit.test.ts` naming it as the artifact builder's only caller,
+now name `pass-entry-persist.ts` and `pass-entry-artifact.ts`.
+Earlier state, kept for the record:
 Owner, 2026-09-27: `verify-published` prints every finding and exits 0,
 keeping exit 2 for a run it could not read at all.
 Its messages also promise what no longer holds once a pass republishes
@@ -2062,7 +2078,7 @@ with its positive control, before the question is asked.
 
 ### M17: a file split at the line cap, with comments elsewhere still naming the old file
 
-Status: open under A16b.
+Status: corrected in `e52de1f23` (four references, one more than first counted).
 `pass-entry.ts` was split at its line budget and the write order moved to `pass-entry-persist.ts`,
 yet `published-page-check.ts`, `verify-published.ts` and a `publish-fixed.unit.test.ts` case name still
 credit `pass-entry.ts` with it.
