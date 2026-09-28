@@ -2695,6 +2695,20 @@ Prevention: a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
 
+### M30: quality calls put to the owner as design questions
+
+Status: caught by the owner, 2026-09-28; the directive is recorded in `design-commitments.md`.
+After the L4 replay, the fix-shaped refusals and the L11 probe's role went to the owner as two option sets
+with a recommended option that saved effort (keep the gate as built; keep the probe in shadow).
+Each set differed only in what ships, so the answer was fixed by the goal:
+"Do not try to save effort and just do the option that would result in best quality of the end result",
+now a standing directive.
+An earlier instance of the same shape: the P9 question recommended deleting the re-ask, and the owner chose to enable it.
+Prevention: before asking, name what the options differ in;
+if it is only the quality of the end result, build the best option unasked and record why;
+ask only when a quality choice conflicts with an earlier ruling or the options differ in something else.
+Effort, code size and wall clock never rank an option first.
+
 ### M15: a finding carried and a fix started against an owner ruling
 
 Status: corrected; the ruling is now in `doc/design-commitments.md`.

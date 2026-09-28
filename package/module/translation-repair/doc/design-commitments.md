@@ -344,3 +344,13 @@ Part of [the package README](../README.md).
   "Enable with the nudge".
   The re-ask carries the recovery nudge, so its prompt digest differs from the first ask's
   and prompt uniqueness holds (ledger P9).
+- **The quality of the end result decides; a choice made for it is not a design decision.**
+  Owner, 2026-09-28, standing directive, answering two questions put as design choices
+  (which fix-shaped refusals the L4 markup gate should let through, and whether the L11 probe stays in shadow):
+  "Do not try to save effort and just do the option that would result in best quality of the end result",
+  and "I want to make 'prefer quality of the end result' a standing directive
+  and decisions that are made for quality and don't conflict with other decisions aren't design decisions."
+  A choice whose options differ in the quality of what ships is decided for quality, recorded, and built, never asked;
+  effort, code size and wall clock are not reasons to take the lesser option.
+  A question goes to the owner only when a quality choice conflicts with an earlier ruling
+  or the options differ in something other than quality.
