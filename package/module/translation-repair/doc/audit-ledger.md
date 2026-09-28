@@ -3964,6 +3964,17 @@ Done so far, each with the same admitted characters as before unless stated:
   The page-assembly guard replayed old against new over 222 settled artifacts on their own slicing
   (`page-assembly-letter-replay.mjs`) differs on none; lowering the pass's `MIN_USES` makes it differ on one,
   so the replay can see this pass.
+- `00a22f08e`: the name-casing pass's `midSentence` and glued-match check read Latin letters, digits and marks.
+  A name after `café` now counts as mid-sentence, and an occurrence running on into `ō` or `ū` is another word;
+  over the corpus `phraseOccurrences` drops one such false occurrence in each of 2 inputs, and no page changes.
+- `218720cfe`: the address floor's word scan reads Latin letters; the pre-letter build refused a rendering
+  addressing a cat named `Heřmánek` as if it said "he", and the current build accepts it.
+  No finding changes over 131 source and target pairs; a control removing `you` makes 20 differ.
+- `340b56ef5`: the suicide-method floor's word scan, the same; no finding changes, and a control breaking
+  the suicide stem makes 21 differ.
+- `3e28464fa`: those three scans were one scan in three copies; `latinWordSpans` and `lowerCaseLatinWords`
+  in `latin-letters.ts` replace them, matching HEAD on every measure above.
+  Mutants making the shared scan ASCII at the start or in the loop are caught by 6 assertions each.
 
 The census bounds every switch: the characters an ASCII test and a Latin letter-or-mark test disagree on
 occur in 2 of 92 sources (7 characters), 9 of 92 archive pages (20) and 2 of 40 settled pages (4).
@@ -4176,6 +4187,26 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M52: a positive control applied by line number after an edit moved the line
+
+Status: happened 2026-09-28 (B18); caught because the control read 0, and rerun.
+The suicide floor's control rewrote its stem with `sed` addressed by line 53,
+read from the file before the switch's import grew by three lines;
+the `sed` matched nothing, the harness reported no difference, and a null control is no control.
+Rerun by pattern with the replacement counted first, the control made 21 of 131 pairs differ.
+Prevention: a control edit is addressed by the text it changes, never by a line number,
+and the command counts the changed text (`rg --count-matches`) before the measurement runs.
+
+### M51: a command batched with the write it read
+
+Status: happened 2026-09-28 (B18); no harm, caught the same minute.
+A new mutation spec was written in the same batch as the command that ran it;
+the spec's name already existed from B4, the write was refused because the old file had not been read,
+and the runner ran the old spec, which mutated and restored page-assembly files and reported on them.
+Against the rule that a call depending on another's output waits for it (repository rule EDR).
+Prevention: a command reading a file written in the same response runs in a later call,
+and each new scratch spec takes a name not used before (`ls` the name first).
 
 ### M50: a mutation runner that read a crashed test run as a survivor
 

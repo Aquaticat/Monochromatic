@@ -38,11 +38,13 @@ Every step is a command whose output is read, not a memory of having done it.
 What happened: `;` joined commands dozens of times, so a failed step's successor ran anyway and hid which failed;
 heredocs and inline `python3 -c` scripts were chained to other commands;
 foreground sleeps and do-nothing calls waited on background work;
-git ran outside the repository root and cli-git refused it (M1, M14, M38).
+git ran outside the repository root and cli-git refused it (M1, M14, M38);
+a command ran in the same batch as the write it read, and ran a stale file of the same name (M51).
 
 The rule: a Bash call holds at most three steps joined by `&&`, never `;`, never a shell loop.
 A report that must run after a failing command is `a || b`.
-An edit script goes through the Write tool and runs in a call of its own.
+An edit script goes through the Write tool and runs in a call of its own,
+in a later response than the write, under a name no earlier script used.
 Git runs from the repository root or with `git -C`.
 While a background task runs, the turn ends; a notification arrives when it finishes.
 
@@ -58,7 +60,8 @@ matched a word the message carries twice (M34);
 used fixtures that never reached the sites they named (M42, X18's first fixture),
 or that could not tell the claimed order from another (M44);
 and mutation runs could not report a catch, or left out the test pinning the mutated token (M27, M41),
-or read a test run that crashed before any verdict as a survivor (M50).
+or read a test run that crashed before any verdict as a survivor (M50);
+and a positive control addressed by line number changed nothing and read as a null (M52).
 
 The rule: a red guard is read case by case before the fix, and each case must fail for the reason its name gives;
 after the fix every case turns green.
@@ -70,6 +73,7 @@ and lists every test file naming the mutated token (`rg` the tests first);
 a survivor is a guard defect until a test that can fail is added and the mutant is caught.
 A run that ends without a verdict (a crash, a signal, a timeout) is a result of its own, never a pass,
 and a harness carries one control for each outcome it reports.
+A control edit is addressed by the text it changes, and its change is counted before the measurement runs.
 
 What enforces it: the mutation harness in each fix's record, run with a control;
 the reach assertions in the preparation, seam and evidence guards.
