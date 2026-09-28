@@ -83,6 +83,13 @@ await describe({
           sourceText: '## 左右\n\n<h3 align="center">猫之歌</h3>\n\n猫唱歌。\n',
           targetText: '## Conflict\n\nThe cat sings.\n',
         },);
+        /**
+         Page whose HTML heading stands before its Markdown one.
+         */
+        const htmlFirst = pageNameLines({
+          sourceText: '<h3 align="center">猫之歌</h3>\n\n## 左右\n\n猫唱歌。\n',
+          targetText: '<h3 align="center">Song of the Cat</h3>\n\n## Conflict\n\nThe cat sings.\n',
+        },);
         expect({
           htmlPaired: both.includes('- 猫之歌 (heading): "Song of the Cat"',),
           markdownPaired: both.includes('- 左右 (heading): "Conflict"',),
@@ -90,11 +97,18 @@ await describe({
           htmlUnpaired: htmlDropped.some(function namesSong(line,): boolean {
             return line.startsWith('- 猫之歌',);
           },),
+          inPageOrder: htmlFirst.filter(function isHeadingLine(line,): boolean {
+            return line.includes(' (heading): ',);
+          },),
         },).toEqual({
           htmlPaired: true,
           markdownPaired: true,
           markdownKept: true,
           htmlUnpaired: false,
+          inPageOrder: [
+            '- 猫之歌 (heading): "Song of the Cat"',
+            '- 左右 (heading): "Conflict"',
+          ],
         },);
       },
     },),

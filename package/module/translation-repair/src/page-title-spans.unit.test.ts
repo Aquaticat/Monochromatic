@@ -109,6 +109,12 @@ await describe({
       },
     },),
     it({
+      name: 'LEAVES AN <h7> TAG, which HTML has no heading level for',
+      fn: async () => {
+        expect(spansOf({ sourceText: '<h7>猫之歌</h7>\n\n<h7>猫之歌</h7>\n', },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'LEAVES A LINE OF SEVEN MARKERS, which is no heading',
       fn: async () => {
         expect(spansOf({ sourceText: '####### 猫之歌\n\n小猫唱了《猫之歌》。\n', },),).toEqual([],);
