@@ -34,7 +34,56 @@ Current references:
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
-## Current concrete-head result
+## Authorized operation-conditioned comparison
+
+The user accepted the proposed experiment with "Okay so do it."
+Tasks #57 to #60 implement that research comparison,
+not production adoption.
+The [fixed same-data protocol](../planning/pi-auto-mode-voyage-operation-calibration.md)
+is retained in `~/temp/agent/voyage-operation-heads-2026-09-28`,
+protocol commit `a75dd9f`.
+Plan SHA-256:
+`1cf1161ee117e51191e8483786510eac38d09e573812b0a6358edefa3102a8aa`.
+Arithmetic/boundary checks passed with zero calls or fitting.
+
+The planned shared corpus has 324 core sources,
+108 per partition,
+with 27 episode groups per partition.
+Twelve fit-only repeat/order calls make 336 total calls:
+228 pretest and 108 test.
+Pooled control has four 54-row heads;
+operation-conditioned candidate has twelve eighteen-row heads.
+Each head's numeric inputs remain its own margin and level.
+Code-owned operation selects conditional heads;
+unknown operations reject without fallback.
+
+Both use the unchanged unit-penalty summed-loss solver,
+with separate bounded offline fits and shared raw inputs.
+Both must be locked before the one shared test,
+regardless of validation success;
+both inferences count inside the five-second source-pair clock.
+Source-kind/axiom independence,
+fixed confidence bands,
+complete policy,
+recipient-specific consent,
+and all existing prohibitions remain intact.
+The comparison also changes parameter count,
+normalization,
+per-head sample count,
+and effective per-row penalty;
+no pure operation-label causal attribution is promised.
+
+Next is the dual-consumer/control implementation in the new private repository,
+then fresh corpus and complete listed-code/input freeze before any feature query.
+No new provider,
+private input,
+base-model training,
+original reserved-bank access,
+`AGENTS.md` mutation,
+production change,
+or Q16/Laya restart is authorized.
+
+## Completed concrete-head result
 
 Tasks #54 and #55 completed the fresh concrete-coordinate probability-head study.
 The [result and freeze-scope record](../planning/pi-auto-mode-voyage-concrete-fit.md)
@@ -116,9 +165,9 @@ This changes the frozen four-head design and requires a new protocol,
 not hidden per-operation thresholds.
 Current operation slices have six fit rows per head;
 read-language ordering inversions remain.
-No operation-conditioned model is fitted,
-no new API schedule is selected,
-and no improvement is claimed before measurement.
+At the model-free diagnosis checkpoint no operation-conditioned model or new API schedule was selected.
+The user subsequently authorized the separately recorded same-data comparison;
+no improvement is claimed before measurement.
 Details and exact collision witnesses are in the
 [concrete-head result](../planning/pi-auto-mode-voyage-concrete-fit.md#what-the-result-means-for-the-next-experiment).
 

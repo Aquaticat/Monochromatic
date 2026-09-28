@@ -964,4 +964,52 @@ and [consumer-boundary troubleshooting record](../troubleshooting/voyage-relevan
 retain the source trace,
 witnesses,
 and recommendation limits.
-No new feature schedule or fitted conditional candidate is selected.
+No new feature schedule or fitted conditional candidate was selected at that diagnosis checkpoint.
+
+### Authorized same-data conditioning comparison
+
+The user accepted the proposed comparison with "Okay so do it."
+The [new fixed protocol](../planning/pi-auto-mode-voyage-operation-calibration.md)
+is retained in `~/temp/agent/voyage-operation-heads-2026-09-28` at `a75dd9f`.
+Plan SHA-256:
+`1cf1161ee117e51191e8483786510eac38d09e573812b0a6358edefa3102a8aa`.
+`test:plan` passed arithmetic and release-boundary checks without calls or fitting.
+The broad `ef5701a1` authorization fingerprint remains compatible:
+recipient scope,
+resource constraints,
+and no-production boundary do not change.
+
+The finite shared feature schedule is 324 core sources plus twelve fit-only repeat/order calls,
+228 pretest and 108 test.
+Each partition has 108 fresh sources in 27 episode groups.
+Pooled control uses four 54-row heads;
+operation-conditioned candidate uses twelve eighteen-row heads.
+All raw features are shared,
+with only each axiom's own margin/level as numeric coordinates.
+Code-owned operation selects conditional heads;
+unknown operations reject before transport with no pooled fallback.
+
+Retain the same first-party numerical solver and unit-penalty summed-loss objective.
+Fit each variant once in a separate offline 2 GiB/2-CPU/zero-swap/sixty-second sandbox invocation.
+Both source/input/variant/image identities and both candidates must be bound before the single test,
+regardless of validation results.
+Both predictions belong inside the paired five-second budget.
+No threshold,
+wording,
+reference,
+or coefficient tuning from validation/test.
+
+The experiment compares complete specified estimators:
+parameter count,
+head-specific normalization,
+sample count,
+and effective per-row regularization also differ.
+No pure causal effect of operation information alone is claimed.
+Required controls cover variant/routing/input identity,
+unknown operations,
+old-shape rejection,
+paired row alignment,
+both inference clocks,
+and overlap against named exposed banks with positive controls.
+Fresh collisions and shared-observation limitations are predeclared diagnostics.
+No new feature call or semantic fit has run in this comparison.
