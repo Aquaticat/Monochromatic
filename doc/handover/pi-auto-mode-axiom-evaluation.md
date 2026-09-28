@@ -87,7 +87,18 @@ This establishes scoring access/routing/budget on these exposed examples,
 not semantic qualification or calibration.
 The [route-label troubleshooting note](../troubleshooting/drex-model-route-label.md) preserves the boundary.
 
-Task #51 next freezes a 36-call v1.0 semantic study on the existing 18-profile bank.
+Task #51 froze a 36-call v1.0 semantic study on the existing 18-profile bank.
+Private source is `203c63b`,
+input/control checkpoint `a6d979d`,
+and the 63-file manifest SHA-256 is
+`ec3d07aaa1d4575a940e20e5e672837560a3adf4d272d0a77ee422151affe723`.
+`proc_eb1c` passed source/policy,
+strict version,
+positive/negative/anchor-sensitive scoring,
+and deadline controls with isolated omissions.
+The [Drex semantic protocol](../planning/pi-auto-mode-drex-qualification.md) records the exact gate.
+The tranche is prepared for dispatch;
+no live result is inferred.
 The read canary pair and shared original transfer anchor do not count toward novel coverage;
 all errors still count.
 No private input,

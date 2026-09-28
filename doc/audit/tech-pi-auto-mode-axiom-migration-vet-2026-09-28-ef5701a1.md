@@ -317,3 +317,32 @@ not a standalone current AUP.
 This does not prove that no AUP exists.
 Its identification and the other uncompleted service/adoption gates remain open;
 no additional private-data consent is inferred.
+
+## Frozen v1.0 semantic tranche
+
+[The semantic protocol](../planning/pi-auto-mode-drex-qualification.md) fixes 18 profiles,
+36 serial calls,
+and 72 Noul values at explicit `drex-v1.0`.
+Source `203c63b` and input/control checkpoint `a6d979d` are retained under
+`~/temp/agent/nace-drex-auto-mode-eval-2026-09-28/semantic`.
+The 63-file manifest SHA-256 is
+`ec3d07aaa1d4575a940e20e5e672837560a3adf4d272d0a77ee422151affe723`.
+
+`proc_eb1c` passed actual source projection/full-policy preservation,
+strict v1.0 response identity,
+positive/error/abstention/anchor gate controls,
+preparation-expiry zero-dispatch,
+late-aggregate rejection,
+and isolated error/coverage/anchor/deadline omissions.
+The reference booleans and questions are unchanged.
+The shared original transfer anchor plus both read-canary sources are excluded from novel coverage;
+33 source texts remain under that rule and every error still counts.
+
+No private input,
+original reserved scenario,
+Drex training,
+provider fallback,
+production threshold,
+or policy action is in scope.
+The fixed tranche is prepared for dispatch;
+results are not yet inferred.
