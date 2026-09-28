@@ -24,6 +24,7 @@ import {
   type InsertionCandidate,
   type InsertionCoverageRow,
 } from './insertion-coverage-model.ts';
+import type { CoverageSeating, } from './insertion-admission-seating.ts';
 
 //region Pass insertion admission
 // Production proof for writing source-only passages into a memorial page.
@@ -52,6 +53,9 @@ import {
  @param perCallTimeoutMs - deadline per coverage exchange
  
  @param l - entry logger
+
+ @param beforeCandidate - awaited before each candidate's coverage question,
+ handing it the roster it is asked of; none keeps the given one (ledger X12)
  
  @returns Admitted positions and count-only evidence for every candidate
  
@@ -72,6 +76,7 @@ export async function decidePassInsertionAdmission(
     signal,
     perCallTimeoutMs,
     l,
+    beforeCandidate,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
@@ -80,6 +85,7 @@ export async function decidePassInsertionAdmission(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly beforeCandidate?: () => Promise<CoverageSeating>;
   }>,
 ): Promise<InsertionAdmission> {
   /**
@@ -195,6 +201,8 @@ export async function decidePassInsertionAdmission(
         .dropped
         .length;
 
+      if (beforeCandidate !== undefined)
+        await beforeCandidate();
       /**
        Roster verdict independent of pairing and shortfall.
        */

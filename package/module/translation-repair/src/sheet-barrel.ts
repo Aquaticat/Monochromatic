@@ -125,6 +125,12 @@ export {
   translateReseatFor,
 } from './corpus-run/pass-reseat.ts';
 export {
+  admitPassInsertions,
+  type InsertionHooks,
+  insertionHooksFor,
+} from './corpus-run/pass-insertion-reseat.ts';
+export { type CoverageSeating, } from './corpus-run/insertion-admission-seating.ts';
+export {
   type BenchName,
   type JudgeSeatPhase,
   phaseBenches,

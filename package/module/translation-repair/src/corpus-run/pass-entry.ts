@@ -21,7 +21,7 @@ import type {
   EntryOutcome,
 } from './pass-entry-contract.ts';
 import { foldCarriedInsertions, } from './insertion-carried-fold.ts';
-import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
+import { admitPassInsertions, } from './pass-insertion-reseat.ts';
 import { runPassConsolidation, } from './pass-consolidate.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import { tallyCaughtEntry, } from './entry-error-outcome.ts';
@@ -285,14 +285,13 @@ async function runEntryPipeline(
      whole target, independent of pairing;
      page shortfall or a missing destination supplies second corroboration.
      */
-    const admissionAsRead = await decidePassInsertionAdmission({
+    const admissionAsRead = await admitPassInsertions({
       client,
       prepared: paired,
       modelIds: seats.roster,
       overlap,
       signal: deadline.callSignal,
-      perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-      l: tagged({ tag: entry.id, },),
+      entryId: entry.id,
     },);
 
     /**

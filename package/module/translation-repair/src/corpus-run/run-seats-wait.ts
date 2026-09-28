@@ -66,6 +66,7 @@ export type BenchName =
 export type JudgeSeatPhase =
   | 'preparation'
   | 'pictures'
+  | 'insertion admission'
   | 'lanes'
   | 'translate lane'
   | 'lane contest'
@@ -80,11 +81,15 @@ export type JudgeSeatPhase =
  (the writing benches since the fifteenth class, `run-seats-floor.ts`); the translate lane
  needs its writers and its slate judges; the contest judges with the wide
  bench; consolidation writes with the roster and judges with the slate and
- gates with the late bench, of which the slate is the narrower.
+ gates with the late bench, of which the slate is the narrower. The
+ insertion admission, which asks the roster whether the archive already
+ covers each source-only passage, re-reads its seats under a hold as its own
+ phase (ledger X12) and leans on the wide bench, as the preparation does.
  */
 const BENCHES_BY_PHASE: Readonly<Record<JudgeSeatPhase, readonly BenchName[]>> = {
   preparation: ['wide',],
   pictures: ['readers',],
+  'insertion admission': ['wide',],
   lanes: [
     'wide',
     'editors',
