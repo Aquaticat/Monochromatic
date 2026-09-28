@@ -23,6 +23,7 @@ import {
   drainBody,
   StreamCutShortError,
   StreamDegenerateError,
+  StreamOverrunError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -30,6 +31,12 @@ import {
  under test here is the other guard entirely.
  */
 const ROOMY_MS = 600_000;
+
+/**
+ Characters in each piece `streamOf` hands over; every fixture here is ASCII,
+ so a piece decodes to exactly this many characters.
+ */
+const PIECE_CHARS = 4_096;
 
 /**
  Builds one server-sent event frame carrying text on one channel.
@@ -227,6 +234,94 @@ async function drainOutcome(
 await describe({
   name: drainBody.name,
   children: [
+    it({
+      name: 'CARRIES THE RAW CHARACTERS DELIVERED on both errors it ends a call with (ledger P7): the '
+        + 'abandoned-spend reckoning divides raw wire characters by a raw-characters-per-token ratio, and '
+        + 'an overrun or a degenerate ending carried only one channel\'s decoded count, about a '
+        + 'hundredth of the raw figure',
+      fn: async () => {
+        /**
+         Varied answer text, so the overrun bound ends the call and repetition does not.
+         */
+        const answering = streamOf({
+          raw: Array.from(
+            { length: 30_000, },
+            function answer(_unused, at,): string {
+              return frameOf({
+                channel: 'content',
+                text: `Cat ${String(at,)} sat on mat ${String(at * 7,)}. `,
+              },);
+            },
+          ).join('',),
+        },);
+
+        using overrunGuard = armIdleGuard({
+          label: 'hf:whiskers',
+          firstByteMs: ROOMY_MS,
+          idleMs: ROOMY_MS,
+        },);
+
+        /**
+         Drain of the varied answer under a small content bound.
+         */
+        const overrun = await (async function drainUnderBound(): Promise<unknown> {
+          try {
+            return await drainBody({
+              response: answering.response,
+              guard: overrunGuard,
+              callerSignal: new AbortController().signal,
+              label: 'hf:whiskers',
+              maxAnswerChars: 2_000,
+            },);
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+        if (!(overrun instanceof StreamOverrunError))
+          throw new Error('an overrun by construction',);
+
+        /**
+         A model thinking the same sentence forever.
+         */
+        const repeating = streamOf({
+          raw: Array.from(
+            { length: 30_000, },
+            function think(): string {
+              return frameOf({
+                channel: 'reasoning',
+                text: 'I will output. ',
+              },);
+            },
+          ).join('',),
+        },);
+
+        using degenerateGuard = armIdleGuard({
+          label: 'hf:whiskers',
+          firstByteMs: ROOMY_MS,
+          idleMs: ROOMY_MS,
+        },);
+
+        /**
+         What the drain did with the repetition.
+         */
+        const outcome = await drainOutcome({
+          response: repeating.response,
+          guard: degenerateGuard,
+        },);
+        if ((outcome.kind !== 'raised') || (!(outcome.error instanceof StreamDegenerateError)))
+          throw new Error('a degeneration error by construction',);
+
+        expect({
+          overrunRaw: overrun.rawChars,
+          degenerateRaw: outcome.error.rawChars,
+        },).toEqual({
+          overrunRaw: answering.pulled() * PIECE_CHARS,
+          degenerateRaw: repeating.pulled() * PIECE_CHARS,
+        },);
+      },
+    },),
+
     it({
       name: 'ENDS A RUNAWAY CALL rather than draining it, which is the whole point: the provider '
         + 'does not end these and no token cap bounds them, so this is the only place the call can '
