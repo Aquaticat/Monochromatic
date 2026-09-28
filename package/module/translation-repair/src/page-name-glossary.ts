@@ -4,6 +4,11 @@ import {
   type DeclaredNamePair,
 } from './linked-title-declared-name.ts';
 import { visibleText, } from './page-visible-text.ts';
+import {
+  htmlHeadings,
+  markdownHeadings,
+  type PlacedText,
+} from './page-headings.ts';
 import { carriesHan, } from './han-only-text.ts';
 import { codePointCount, } from './code-points.ts';
 
@@ -270,49 +275,81 @@ function signaturePairs(
 }
 
 /**
- Heading texts of a document in order, the markers off.
+ Pairs read off one kind of heading, in order, when both documents carry the
+ same count of it; a differing count is a section one side never carried, and
+ the order is then no alignment.
 
- @param text - whole document
+ @param source - the original's headings of that kind, in page order
 
- @returns Every ATX heading's text
+ @param target - the archive's headings of that kind, in page order
+
+ @returns Each Han heading the archive renders otherwise, with where the original's stands
 
  @example
  ```ts
- headingsOf({ text: '## 左右\n\n猫在门口犹豫。', },); // ['左右']
+ const pairs = pairsInOrder({ source: markdownHeadings({ text: sourceText, },), target: markdownHeadings({ text: targetText, },), },);
  ```
  */
-function headingsOf({ text, }: { readonly text: string; },): readonly string[] {
-  return text
-    .split('\n',)
-    .flatMap(function toHeading(line,): readonly string[] {
-      if (!line.startsWith('#',))
-        return [];
-      for (let depth = 0; depth <= line.length; depth += 1) {
-        if (line.charAt(depth,) === '#')
-          continue;
-        if (line.charAt(depth,) !== ' ')
-          return [];
-        /**
-         Text after the markers.
-         */
-        const heading = line.slice(depth,);
-        return [heading.trim(),];
-      }
+function pairsInOrder(
+  {
+    source,
+    target,
+  }: {
+    readonly source: readonly PlacedText[];
+    readonly target: readonly PlacedText[];
+  },
+): readonly {
+  readonly at: number;
+  readonly name: PageName;
+}[] {
+  if ((source.length === 0) || (source.length !== target.length))
+    return [];
+  return source.flatMap(function toPair(
+    heading,
+    index,
+  ): readonly {
+    readonly at: number;
+    readonly name: PageName;
+  }[] {
+    /**
+     Archive's heading at the same position.
+     */
+    const rendering = target[index]
+      ?.text;
+    if ((rendering === undefined) || (rendering === '')
+      || (rendering === heading.text))
       return [];
-    },);
+    if (!carriesHan({ text: heading.text, },))
+      return [];
+    return [{
+      at: heading.at,
+      name: {
+        source: heading.text,
+        rendering,
+        evidence: 'heading',
+      },
+    },];
+  },);
 }
 
 /**
- Pairs read off the headings, in order, when both documents carry the same
- count; a differing count is a section one side never carried, and the order
- is then no alignment.
+ Pairs read off the headings: Markdown headings among themselves and HTML
+ headings among themselves, each by order under the same-count rule, listed
+ by where the original's heading stands.
+
+ TWO STREAMS, NOT ONE (ledger X20). The glossary read Markdown headings only,
+ so an archive's rendering of an HTML heading never reached the sheets: at the
+ pin, 3 of 92 originals carry HTML headings with Han, and on aiyysk (2) and
+ mikaela_khara (1) the archive carries the same count. Counting both kinds in
+ one order would let an HTML heading only one side carries unpair every
+ Markdown heading on the page.
 
  THE JUDGES KEEP DECIDING HEADINGS (owner, 2026-09-21, on 左右 shipped as
  "Left and Right" over the archive's "Conflict" on two hulicaijia passes):
  the archive's wording is evidence the sheet carries, not a restore, since
  the literal reading winning is the judges' world knowledge falling short.
- Measured over the pinned corpus: 81 of 92 pages carry the same heading
- count on both sides, 225 pairs.
+ Measured over the pinned corpus: 81 of 92 pages carry the same Markdown
+ heading count on both sides, 225 pairs.
 
  @param sourceText - whole original document
 
@@ -334,36 +371,25 @@ function headingPairs(
     readonly targetText: string;
   },
 ): readonly PageName[] {
-  /**
-   Source headings in order.
-   */
-  const source = headingsOf({ text: sourceText, },);
-  /**
-   Archive headings in order.
-   */
-  const target = headingsOf({ text: targetText, },);
-  if ((source.length === 0) || (source.length !== target.length))
-    return [];
-  return source.flatMap(function toPair(
-    heading,
-    at,
-  ): readonly PageName[] {
-    /**
-     Archive's heading at the same position.
-     */
-    const rendering = target[at];
-    if (rendering === undefined)
-      return [];
-    if ((rendering === '') || (rendering === heading))
-      return [];
-    if (!carriesHan({ text: heading, },))
-      return [];
-    return [{
-      source: heading,
-      rendering,
-      evidence: 'heading',
-    },];
-  },);
+  return [
+    ...pairsInOrder({
+      source: markdownHeadings({ text: sourceText, },),
+      target: markdownHeadings({ text: targetText, },),
+    },),
+    ...pairsInOrder({
+      source: htmlHeadings({ text: sourceText, },),
+      target: htmlHeadings({ text: targetText, },),
+    },),
+  ]
+    .toSorted(function byPlace(
+      left,
+      right,
+    ): number {
+      return left.at - right.at;
+    },)
+    .map(function nameOf(placed,): PageName {
+      return placed.name;
+    },);
 }
 
 /**

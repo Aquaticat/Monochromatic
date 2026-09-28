@@ -1,5 +1,10 @@
 import { codePointCount, } from './code-points.ts';
 import { carriesHan, } from './han-only-text.ts';
+import {
+  htmlHeadings,
+  markdownHeadings,
+  type PlacedText,
+} from './page-headings.ts';
 import { pairedPageNames, } from './page-name-glossary.ts';
 import { visibleText, } from './page-visible-text.ts';
 
@@ -17,7 +22,8 @@ import { visibleText, } from './page-visible-text.ts';
 // 「…」 where the same words stand in one of those elsewhere on the page, since
 // 「」 alone marks quotations and dialogue far more often than titles.
 //
-// LISTED IN PAGE ORDER. Every span keeps the offset it stands at, and titles
+// LISTED IN PAGE ORDER. Every span keeps the offset it stands at (the heading
+// readers are the page-name glossary's too, `page-headings.ts`), and titles
 // are listed by where they first stand; the first version listed every
 // heading before any 《》 span wherever each stood, while saying it listed by
 // first appearance.
@@ -26,11 +32,6 @@ import { visibleText, } from './page-visible-text.ts';
  Longest span read as a title, in code points; a longer one is a sentence.
  */
 const LONGEST_TITLE = 24;
-
-/**
- Highest HTML heading level.
- */
-const DEEPEST_HEADING = 6;
 
 /**
  One title the page repeats and the archive leaves unpaired.
@@ -50,26 +51,6 @@ export type RepeatedTitleSpan = {
    Marked places it stands on the page.
    */
   readonly occurrences: number;
-};
-
-/**
- One marked span and where it stands.
-
- @example
- ```ts
- const placed: PlacedSpan = { span: '猫之歌', at: 3, };
- ```
- */
-type PlacedSpan = {
-  /**
-   Text a reader sees inside the marks.
-   */
-  readonly span: string;
-
-  /**
-   Offset of the span's opening mark on what the page shows.
-   */
-  readonly at: number;
 };
 
 /**
@@ -125,11 +106,11 @@ function spansBetween(
     readonly open: string;
     readonly close: string;
   },
-): readonly PlacedSpan[] {
+): readonly PlacedText[] {
   /**
    Spans found.
    */
-  const spans: PlacedSpan[] = [];
+  const spans: PlacedText[] = [];
   for (
     let at = text.indexOf(open,);
     at !== (-1);
@@ -148,7 +129,7 @@ function spansBetween(
     if (end === (-1))
       break;
     spans.push({
-      span: shownText({ span: text.slice(
+      text: shownText({ span: text.slice(
         at + open.length,
         end,
       ), },),
@@ -156,125 +137,6 @@ function spansBetween(
     },);
   }
   return spans;
-}
-
-/**
- Markdown heading texts, the markers off, by one scan over line starts.
-
- @param text - page text
-
- @returns Every ATX heading's text and where its line starts, in page order
-
- @example
- ```ts
- markdownHeadings({ text: '## 猫之歌\n\n喵。', },); // 猫之歌 at 0
- ```
- */
-function markdownHeadings({ text, }: { readonly text: string; },): readonly PlacedSpan[] {
-  /**
-   Headings found.
-   */
-  const headings: PlacedSpan[] = [];
-  for (let start = 0; start <= text.length;) {
-    /**
-     End of this line, the text's end for the last.
-     */
-    const newline = text.indexOf(
-      '\n',
-      start,
-    );
-    /**
-     This line.
-     */
-    const line = text.slice(
-      start,
-      (newline === (-1)) ? text.length : newline,
-    );
-    /**
-     Heading markers opening the line, counted by a cursor.
-     */
-    let depth = 0;
-    while (line.charAt(depth,) === '#')
-      depth += 1;
-    if ((depth >= 1) && (depth <= DEEPEST_HEADING)
-      && (line.charAt(depth,) === ' ')) {
-      headings.push({
-        span: line.slice(depth,)
-          .trim(),
-        at: start,
-      },);
-    }
-    if (newline === (-1))
-      break;
-    start = newline + 1;
-  }
-  return headings;
-}
-
-/**
- HTML heading texts (`<h1>` to `<h6>`), where the heading holds no nested tag.
-
- @param text - page text
-
- @returns Every such heading's text and where its tag opens, in page order
-
- @example
- ```ts
- htmlHeadings({ text: '<h3 align="center">猫之歌</h3>', },); // 猫之歌 at 0
- ```
- */
-function htmlHeadings({ text, }: { readonly text: string; },): readonly PlacedSpan[] {
-  /**
-   Headings found.
-   */
-  const headings: PlacedSpan[] = [];
-  for (
-    let at = text.indexOf('<h',);
-    at !== (-1);
-    at = text.indexOf(
-      '<h',
-      at + 1,
-    )
-  ) {
-    /**
-     Heading level, NaN where `<h` opens another tag.
-     */
-    const level = Math.trunc(
-      Number(text.charAt(at + 2,),),
-    );
-    if (!((level >= 1) && (level <= DEEPEST_HEADING)))
-      continue;
-    /**
-     End of the opening tag.
-     */
-    const opened = text.indexOf(
-      '>',
-      at,
-    );
-    /**
-     Start of the closing tag.
-     */
-    const closing = text.indexOf(
-      `</h${String(level,)}>`,
-      opened,
-    );
-    if ((opened === (-1)) || (closing === (-1)))
-      break;
-    /**
-     Heading content.
-     */
-    const inner = text.slice(
-      opened + 1,
-      closing,
-    );
-    if (!inner.includes('<',)) {
-      headings.push({
-        span: inner.trim(),
-        at,
-      },);
-    }
-  }
-  return headings;
 }
 
 /**
@@ -327,7 +189,7 @@ export function repeatedTitleSpans(
    Those spans' texts, for the quotation rule.
    */
   const titles = new Set(titled.map(function textOf(placed,): string {
-    return placed.span;
+    return placed.text;
   },),);
   /**
    Quoted spans that repeat a title.
@@ -338,7 +200,7 @@ export function repeatedTitleSpans(
     close: '」',
   },)
     .filter(function repeatsTitle(placed,): boolean {
-      return titles.has(placed.span,);
+      return titles.has(placed.text,);
     },);
   /**
    Titles the page-name glossary already carries.
@@ -366,8 +228,8 @@ export function repeatedTitleSpans(
         placed,
       ) {
         seen.set(
-          placed.span,
-          (seen.get(placed.span,) ?? 0) + 1,
+          placed.text,
+          (seen.get(placed.text,) ?? 0) + 1,
         );
         return seen;
       },
