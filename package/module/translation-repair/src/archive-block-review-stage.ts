@@ -16,8 +16,10 @@ import {
 } from './archive-block-selection-evidence.ts';
 import {
   type ArchiveBlockReviewWire,
+  ARCHIVE_BLOCK_DECLINE_CONSEQUENCE,
   ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
   ARCHIVE_BLOCK_SELECTION_CRITERIA,
+  ARCHIVE_BLOCK_SELECTION_TASK,
   buildArchiveBlockReviewMessages,
   isArchiveBlockReviewWire,
 } from './archive-block-review-wire.ts';
@@ -306,7 +308,7 @@ export async function runArchiveBlockReviewStage(
     candidates,
     judgeModelIds: modelIds,
     sourceText,
-    task: 'Choose whether to retain or correct one unclaimed English archive block for publication.',
+    task: ARCHIVE_BLOCK_SELECTION_TASK,
     criteria: ARCHIVE_BLOCK_SELECTION_CRITERIA,
     evidence: archiveBlockSelectionEvidence({
       sourceText,
@@ -316,7 +318,7 @@ export async function runArchiveBlockReviewStage(
       candidates,
       priorFindings,
     },),
-    declineConsequence: 'The original archive block ships unchanged, with this decline recorded as a finding.',
+    declineConsequence: ARCHIVE_BLOCK_DECLINE_CONSEQUENCE,
     signal,
     perCallTimeoutMs: exchangeTimeoutMs,
     l: reviewLog,

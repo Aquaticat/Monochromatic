@@ -73,4 +73,13 @@ export {
   workOfModel,
 } from './corpus-run/ledger-read.ts';
 
+// What a judge is told a decline does, exported so the rendered-sheets
+// fixture renders every slate from the texts the judges read (ledger X17).
+export {
+  CHUNK_DECLINE_CONSEQUENCE,
+  KEEPS_TRUSTED_TEXT,
+  LEAVES_PASSAGE_UNTRANSLATED,
+  SHIPS_BY_PREFERENCE,
+} from './select-decline-consequence.ts';
+
 //endregion Ballot barrel

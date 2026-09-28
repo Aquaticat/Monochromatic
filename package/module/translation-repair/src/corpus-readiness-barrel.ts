@@ -65,11 +65,17 @@ export {
   runArchiveBlockReviewStage,
 } from './archive-block-review-stage.ts';
 export {
+  ARCHIVE_BLOCK_DECLINE_CONSEQUENCE,
   ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
   ARCHIVE_BLOCK_SELECTION_CRITERIA,
+  ARCHIVE_BLOCK_SELECTION_TASK,
   buildArchiveBlockReviewMessages,
   isArchiveBlockReviewWire,
 } from './archive-block-review-wire.ts';
+export {
+  archiveBlockSelectionEvidence,
+  withArchiveOriginal,
+} from './archive-block-selection-evidence.ts';
 export {
   archiveBlockIdentity,
   repairArchiveBlocks,

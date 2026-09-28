@@ -181,6 +181,18 @@ export const ARCHIVE_BLOCK_SELECTION_CRITERIA: readonly string[] = [
 ];
 
 /**
+ Task the correction slate asks about one unclaimed archive block, named
+ beside its criteria so the rendered-sheets fixture reads what the judges
+ read (ledger X17).
+ */
+export const ARCHIVE_BLOCK_SELECTION_TASK: string = 'Choose whether to retain or correct one unclaimed English archive block for publication.';
+
+/**
+ What the correction slate tells its judges a decline does.
+ */
+export const ARCHIVE_BLOCK_DECLINE_CONSEQUENCE: string = 'The original archive block ships unchanged, with this decline recorded as a finding.';
+
+/**
  Structured output constraint for archive-block reviews.
  */
 export const ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
