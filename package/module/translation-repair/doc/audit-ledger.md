@@ -3373,7 +3373,7 @@ that half was wrong and `6d9b361b4` took it out again (M37).
 
 ### X12: the lane contest, the preparation and the picture readings never re-seat under a hold
 
-Status: lane contest half fixed; the preparation, the picture readings and the insertion admission stay open.
+Status: lane contest and picture readings fixed; the preparation and the insertion admission stay open.
 Contest: prep `4bd530922`, red guards `5acdd36c6`, fix `2a0ee0272`
 (mutation checked with a control, seven mutants caught).
 `contestHooksFor` (`corpus-run/pass-contest-reseat.ts`) re-reads the late judges while a hold runs
@@ -3389,9 +3389,21 @@ The translate hook reading under the lanes phase survived the first run, since n
 (Hyper and OpenRouter dry: the lanes phase finds the editors and refiners short, the translate lane nothing).
 `awaitBenchQuorum` lost its last caller with them and was removed in `c2e74caeb`,
 with the `run-seats-read.ts` comment that said every driver asks it.
-Still open: `preparePassEntry` (pairing, archive review), `readPassVisualEvidence` (the picture readings)
+Pictures: prep `3ef2e210d`, red guards `fcd16ce66`, fix `d69db363a`.
+`picturesHooksFor` (`corpus-run/pass-pictures-reseat.ts`) re-reads the readers while a hold runs;
+`readDocumentPictures` reads and keys each picture by them, and `readSeatedPictures` builds one hook per call,
+since each call reads the seats afresh. The picture key has no version and already folded the readers.
+Mutation checked with a control, then the full suite (0 FAIL, 1266 PASS): four mutants caught, two survived.
+The hook reading under another phase survived because no view tells the pictures, lane contest
+and consolidation phases apart; `1fa856e0d` asserts each hook's logged re-seat line with its exact phase,
+which caught all four phase mutants and a helper logging no phase.
+The seam dropping the hook survived because no test drives a pass seam: X14.
+The census counts holds after the pictures reading under the pictures, so its 11 in 3 logs is an upper bound:
+the sighted pairing and the archive review run after the readings on the preparation's reading.
+Still open: `preparePassEntry` (attestation, pairing, archive review)
 and `decidePassInsertionAdmission`, which runs per source-only slice on the lanes' reading
-(the census counts its holds under the lanes), each read their bench once and have no per-item hook.
+(the census counts its holds under the lanes); each reads its bench once and has no per-item hook.
+The pairing half waits on X13.
 
 Found as:
 The fifth stage of the H5 family.
@@ -3406,6 +3418,38 @@ lane contest 222 in 12 logs, preparation 25 in 4, pictures 11 in 3
 (consolidation 983 in 25, lanes 353 in 42, translate lane 115 in 14, all three now re-seating).
 With the consolidation hook re-seating, `awaitBenchQuorum` has no production caller left,
 and `corpus-run/run-seats-read.ts` still says every driver asks it before each chunk.
+
+### X13: the pairing keys carry no roster
+
+Status: open.
+The same defect X11 fixed in the consolidation key.
+`blockPairingQuestionKey` (`block-pairing-question-key.ts`) and the section round's `roundKey`
+(`prepare-section-round.ts`) hash the version and the texts only.
+The pipeline digest the pairing caches are opened under covers the static roster,
+since any change to `corpus-run/run-config.ts` rebuilds `dist`,
+but not a dry reading's subset: `pass-entry.ts` seats `preparationSeats.roster`,
+and a section paired by a subset resumes on the full bench under the same generation and key.
+Both rounds persist once any voice was usable (`usable > 0`), so a one-voice answer is kept as well.
+Neither the keys' TSDoc nor `doc/decision/llm-assisted-block-pairing.md` rules that pairing is roster-independent.
+Pairing answers live beside the slice caches (`slice-cache/<entry>/pairing.*.json`);
+version 3 was set in `d614a0c1d` at 00:30 on 2026-09-28, after the newest slice-cache file (00:26 on 2026-09-27),
+so none was written under 3 and the roster can ride inside it.
+It must land before the preparation half of X12, or a re-seated section resumes the old bench's answer.
+
+### X14: no test drives a pass seam
+
+Status: contest and consolidation seams guarded; the picture and lanes seams stay open.
+`runPassContest`, `runPassConsolidation`, `readSeatedPictures` and `runPassEntry` wire each phase's hook
+and bench into its driver, and none had a test, so a seam dropping its hook survived every guard
+(the picture seam mutant in X12).
+`76142da2c` exports the contest and consolidation seams, and `6371fd9ff` drives each against a client
+whose view turns Synthetic dry after the phase's own reading, under a hold:
+only a wired hook keeps the seat the dry-out took from being asked,
+and a control whose view never changes shows that seat is asked otherwise.
+Mutation checked with a control: both seam mutants caught.
+Still open: `readSeatedPictures` reaches the pinned corpus (`gatherEntryPictures`)
+and shells out to `dwebp` and `tesseract` (`readImageWithOcr`) with no way to hand either in,
+and the lanes hooks are spread into `runDocumentLanes` inside `runPassEntry`, which no test drives.
 
 ## Process mistakes in this audit
 
@@ -3588,6 +3632,17 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M38: stray marker lines in guard scripts, stripped by a pattern that ate indentation
+
+Status: happened 2026-09-28, three times; fixed in `6ebd37697` and before the other commits.
+The scripts that wrote the X12 guards and the X14 seam test carried stray `"""` lines inside TSDoc blocks.
+Two scripts removed them with `replaceAll('   """\n', '')`, which on a nine-space line also took six spaces
+of indentation from the line after, leaving TSDoc closers at fifteen spaces:
+one landed in `5acdd36c6`, five more were caught before their commit by a search for over-indented closers.
+No check reads indentation (X9), and lint passed each time.
+Prevention: remove a stray line whole (`sed '/^\s*"""$/d'`), never by a substring;
+after any scripted edit, search the touched files for over-indented `*/` lines and for the marker itself.
 
 ### M37: a key component added from a flag's name
 
