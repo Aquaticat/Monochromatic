@@ -390,7 +390,7 @@ export async function readImagePair(
   // unreadable pictures. `allSettled` swallows every ask a teardown rejected,
   // so a stop arriving mid-reading would otherwise return `no-reader-available`
   // and let the document settle without the readings the run was told to stop
-  // gathering. This is the guard `runStageRound` places after its own
+  // gathering. This is the guard `runGatherRound` places after its own
   // `allSettled`, for the same reason.
   signal.throwIfAborted();
 

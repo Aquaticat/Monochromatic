@@ -41,7 +41,7 @@ import type { BlockPair, } from './pair-blocks-wire.ts';
 // ONLY A PAIRING THAT PLACED EVERY ORIGINAL DECLINES ANYTHING. A reply that
 // leaves an original block unaccounted for did not finish reading the pair, and
 // its silences are gaps rather than decisions. The empty pairing is the case
-// that forces this: `pairBlocksAcrossRoster` returns no pairs when no voice was
+// that forces this: `pairBlocksWithRoster` returns no pairs when no voice was
 // usable, the caller passes that straight through, and without this gate EVERY
 // translation block would count as declined and the whole section would leave
 // review at once.

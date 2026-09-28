@@ -16,12 +16,12 @@ import {
 import { ARTIFACT_SCHEMA_VERSION_V1, } from './artifact-schema-version.ts';
 
 //region Artifact key vocabulary
-// Which spelling of three keys a settled artifact uses, chosen by the
+// Which spelling of four keys a settled artifact uses, chosen by the
 // generation the file records rather than guessed from what it contains.
 //
 // Generations 1 and 2 spelled these keys with `chunk`, in the same records that
 // already spelled `sliceCount` and `withdrawnSliceCount` with `slice`, about
-// the same things. Generation 4 spells all of them `slice`. Nothing else about
+// the same things. Generation 4 onward spells all of them `slice`. Nothing else about
 // the shape moved across any of it, which is why one table of four names covers
 // the whole difference and there is no second reader family.
 //
@@ -46,7 +46,7 @@ import { ARTIFACT_SCHEMA_VERSION_V1, } from './artifact-schema-version.ts';
  Keys whose spelling moved between generations, under the names the rest of
  this package uses for them.
  
- SPELLED OUT AS THREE FIELDS rather than carried as a map from new name to old
+ SPELLED OUT AS FOUR FIELDS rather than carried as a map from new name to old
  name, so a reader that names a key this table does not cover fails to compile
  instead of reading `undefined` off a lookup and asking the artifact for a key
  called `undefined`.
@@ -101,7 +101,7 @@ export const CHUNK_SPELLED_KEYS: ArtifactKeyVocabulary = {
 };
 
 /**
- Spelling generation 3 writes, which is the one the code uses throughout.
+ Spelling generation 4 onward writes, which is the one the code uses throughout.
  
  @example
  ```ts
@@ -182,7 +182,7 @@ export class UnknownArtifactGenerationError extends Error {
  
  @param version - generation an artifact records
  
- @returns Spelling that generation used for all three keys
+ @returns Spelling that generation used for all four keys
  
  @throws {@link UnknownArtifactGenerationError} when no spelling is recorded
  for that generation
