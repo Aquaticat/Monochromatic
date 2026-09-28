@@ -123,8 +123,13 @@ A production version requirement remains a separate gate.
 
 Do not shorten or summarize policy to manufacture a v1.1 result.
 The full-policy requirement remains unchanged.
-An explicitly requested v1.0 semantic study is the next frozen measurement,
-not an already verified direct-pin result at this checkpoint.
+The subsequent [36-call semantic study](../planning/pi-auto-mode-drex-qualification.md)
+explicitly requested v1.0 and received v1.0 labels throughout.
+That verifies the direct-pin path only for the recorded calls.
+Its tradeoff is explicit:
+it measures v1.0 rather than v1.1,
+and its tested semantic profile failed the predeclared gate.
+A correct model label alone does not establish suitability.
 
 ## What does not work
 

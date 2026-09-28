@@ -40,8 +40,16 @@ The user asked to also evaluate Nace Drex and supplied `AUTO_MODE_NACE_DREX_API_
 Task #50 takes priority under the newly supplied-resource rule.
 Task #48's Voyage feature/fitting pipeline is paused without discarding its frozen solver or corpus.
 No new Voyage semantic call or semantic-head fit has run.
-The mathematical four-head consumer process `proc_9b8c` succeeded,
-but detailed output review remains pending after Drex's resource is exercised.
+The mathematical four-head consumer process `proc_9b8c` was reviewed after Drex's resource was exercised.
+It passed frozen-reference,
+fit-only row/feature,
+partition-omission,
+and four-head toy convergence controls.
+Result SHA-256:
+`24883888f0e9cdfa1c2c31928d915d1211904902013ed7653d5df09ae6c4389f`.
+The immutable fit-base image is
+`6f45a4444f866fd6ff13665b85258f8bd9dfb366ee9476dcb6c14a6bde34ea6d`.
+No semantic head is fitted.
 
 Drex input scope is public/synthetic plus complete current public policy only.
 No private Drex upload,
@@ -97,10 +105,34 @@ strict version,
 positive/negative/anchor-sensitive scoring,
 and deadline controls with isolated omissions.
 The [Drex semantic protocol](../planning/pi-auto-mode-drex-qualification.md) records the exact gate.
-The tranche is prepared for dispatch;
-no live result is inferred.
+`proc_9450` completed all 18 profiles,
+36 calls,
+and 72 scalars with zero retries;
+all models were v1.0 and all shared clocks passed.
+`proc_b0d1` rechecked raw bodies/responses,
+source/policy freshness,
+and the diagnostic report without another API call.
+Raw result is `9bdf3fa`,
+SHA-256 `cc3d89ed87a33b542912a52f858bd18bbcc683114247502fc16f37cd2241abf5`.
+
+No diagnostic band passed:
+
+- 80/20: 47 correct, 5 wrong, 20 unresolved; all errors were cross-clause positive-relation false positives.
+- 90/10: 37 correct, 0 wrong, 35 unresolved; no request positive-relation false case resolved.
+- 95/05: 19 correct, 0 wrong, 53 unresolved; request positive relations were all unresolved,
+  and request prohibition lacked novel false coverage.
+
 The read canary pair and shared original transfer anchor do not count toward novel coverage;
 all errors still count.
+No post-hoc cutoff is fitted.
+This result does not exclude all Drex thresholds,
+templates,
+auxiliary roles,
+or future models;
+v1.1 semantics remain unmeasured for full-policy input.
+After result-document verification,
+resume authorized Voyage task #48,
+not Q16 or the paused Laya branch.
 No private input,
 training,
 reserved-scenario release,
