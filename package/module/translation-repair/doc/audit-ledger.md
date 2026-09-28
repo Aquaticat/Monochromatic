@@ -2015,7 +2015,13 @@ a withdrawn text also becomes a stand-in.
 
 ### L3: edits the checkers did not confirm ship inside a selected patch
 
-Status: owner ruled 2026-09-28, "Revert worse-voted, recheck" (`design-commitments.md`); implementation pending; measured 2026-09-28.
+Status: fixed in `69c149471` (guards `737ebf9cc`, `84255894a`; mutation checked with a control, five mutants caught),
+on the owner's ruling of 2026-09-28, "Revert worse-voted, recheck" (`design-commitments.md`); measured 2026-09-28.
+An edit whose issue the checkers did not confirm and at least one voted worse is stripped by envelope,
+and the reduced patch is proved once more (`repair-worse-strip.ts`):
+58 issues in 31 patches over every run, 15 in 6 of 51 on TianqiChen666,
+where the owner question had said 40, counting only ties and the worse majority.
+Rides inside the repair cache version 33 with a written account.
 TianqiChen66616 slice 3 shipped "it left a trace of her turned to ash" (one ballot worse),
 the patch having won on one resolved minor omission.
 Across every run, 345 of 2,148 selected patches carried at least one edit whose issue the checkers did not confirm,

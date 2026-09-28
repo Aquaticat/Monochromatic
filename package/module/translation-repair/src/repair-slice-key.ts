@@ -353,6 +353,13 @@ import type { RepairModels, } from './repair-contract.ts';
  for that ballot rather than as a lost voice (ledger P13, `a991ef1e1`), which
  changes the quorum a select round closes on; checked on 2026-09-28: still no
  slice-cache file newer than 00:26 on 2026-09-27.
+
+ Rides inside 33 too: a winning patch sheds every edit whose issue the
+ checkers did not confirm and at least one voted worse, and the reduced patch
+ is proved once more (ledger L3, the owner's ruling of 2026-09-28,
+ `69c149471`), which changes the text a chunk ships and its checker record;
+ checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ 2026-09-27.
  */
 export const SLICE_CACHE_VERSION = 33;
 /**
