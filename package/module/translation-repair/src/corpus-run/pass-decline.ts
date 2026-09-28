@@ -1,3 +1,5 @@
+import { rm, } from 'node:fs/promises';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
@@ -11,6 +13,7 @@ import type {
   EntryOutcome,
 } from './pass-entry-contract.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
+import { fixedPagePath, } from './publish-fixed.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Pass decline
@@ -41,11 +44,57 @@ export function entryArchiveOriginalOf(
 }
 
 /**
+ Removes a page standing for an entry the pipeline declines, which only a
+ crash between an earlier page write and its artifact write leaves (ledger
+ A16c).
+
+ @param publishDir - root of the mirrored tree
+
+ @param entryId - entry declined
+
+ @returns Whether a page stood there
+
+ @throws Whatever the removal raised other than ENOENT, since a page left
+ standing would ship where the archive must
+
+ @example
+ ```ts
+ const removed = await removeLeftoverPage({ publishDir, entryId, },);
+ ```
+ */
+async function removeLeftoverPage(
+  {
+    publishDir,
+    entryId,
+  }: {
+    readonly publishDir: string;
+    readonly entryId: string;
+  },
+): Promise<boolean> {
+  try {
+    await rm(fixedPagePath({
+      publishDir,
+      entryId,
+    },),);
+    return true;
+  }
+  catch (error) {
+    if (Error.isError(error,) && ('code' in error)
+      && (error.code === 'ENOENT'))
+      return false;
+    throw error;
+  }
+}
+
+/**
  Records that the pipeline declined an entry, and says so on the run log and
  the tally.
- 
+
  RECORDED, NEVER SILENT: the record is what the next pass skips on, and the
- archive page stands as the output, untouched.
+ archive page stands as the output, untouched. A PAGE AN EARLIER CRASH LEFT
+ GOES FIRST, before the record: a crash between the two then leaves the page
+ gone and the entry still pending, never a recorded decline with a page
+ standing that no later pass would revisit.
  
  @param entry - entry declined
  
@@ -72,7 +121,7 @@ export async function recordEntryDecline(
   {
     entry,
     declinedDir,
-    publishDir: _publishDir,
+    publishDir,
     tip,
     pipelineDigest,
     note,
@@ -87,6 +136,15 @@ export async function recordEntryDecline(
     readonly startedAt: number;
   },
 ): Promise<EntryOutcome> {
+  /**
+   Entry logger.
+   */
+  const el = tagged({ tag: entry.id, },);
+  if (await removeLeftoverPage({
+    publishDir,
+    entryId: entry.id,
+  },))
+    el.warn(`entry ${entry.id}: removed a page an earlier crash left, since the archive's note says the archive ships`,);
   await writeDeclinedEntry({
     declinedDir,
     record: {
@@ -99,11 +157,10 @@ export async function recordEntryDecline(
       note,
     },
   },);
-  tagged({ tag: entry.id, },)
-    .info(
-      `ARCHIVE ORIGINAL entry=${entry.id}: the archive's note says the whole page is the author's own `
-        + `English (${note}), so the pipeline declines to repair it and the archive stands`,
-    );
+  el.info(
+    `ARCHIVE ORIGINAL entry=${entry.id}: the archive's note says the whole page is the author's own `
+      + `English (${note}), so the pipeline declines to repair it and the archive stands`,
+  );
   console.log(
     `TALLY ${entry.id} status=DECLINED reason=archive-original ms=${String(Date.now() - startedAt,)}`,
   );
