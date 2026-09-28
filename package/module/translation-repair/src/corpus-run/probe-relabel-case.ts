@@ -1,4 +1,3 @@
-
 import { readRunJson, } from '../run-json-read.ts';
 import type { AdjudicatedIssue, } from '../adjudicate-model.ts';
 import { ArtifactParseError, } from '../artifact-guard.ts';

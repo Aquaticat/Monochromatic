@@ -1,4 +1,3 @@
-
 import { readRunJson, } from '../run-json-read.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';

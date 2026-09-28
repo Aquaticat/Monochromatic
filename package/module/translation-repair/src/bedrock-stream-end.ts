@@ -1,4 +1,3 @@
-
 import { contextRoot, } from './log-context.ts';
 import type { BedrockStreamEnd, } from './bedrock-catalog.ts';
 import { MalformedCompletionError, } from './completion-shape.ts';
