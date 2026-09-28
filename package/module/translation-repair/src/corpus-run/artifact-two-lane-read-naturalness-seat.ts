@@ -14,6 +14,16 @@ import type {
 } from './artifact-two-lane-consolidate.ts';
 
 //region Artifact absolute naturalness seat read
+// DELIBERATELY DUPLICATED, and checked rather than trusted, on the grounds
+// `artifact-two-lane-comparison.ts` gives for the lane verdict.
+// `uniqueNaturalnessFindings` is this artifact version's rule for a round's
+// aggregate findings, and `absolute-naturalness-review-stage.ts` keeps the
+// live rule (`uniqueFindings`) with the same body. The round reader recomputes
+// the aggregate with this copy and refuses a file whose stored findings
+// disagree, so a change to the live rule stops a corpus pass instead of
+// quietly reinterpreting artifacts already on disk. Merging the two would
+// remove that check (the duplicate-body census flagged the pair on
+// 2026-09-28, audit area six).
 
 /**
  Reads paragraph-located finding.

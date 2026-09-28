@@ -128,6 +128,12 @@ export type AbsoluteNaturalnessReviewOutcome = {
 
 /**
  Removes exact duplicate located findings while preserving roster order.
+
+ THE ARTIFACT READER KEEPS ITS OWN COPY ON PURPOSE
+ (`uniqueNaturalnessFindings`, `artifact-two-lane-read-naturalness-seat.ts`):
+ it is the stored artifact version's rule, and the reader refuses a file this
+ rule's output disagrees with, so a change here shows up rather than
+ rewriting what old artifacts mean.
  
  @param findings - model findings in roster order
  
