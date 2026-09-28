@@ -45,6 +45,25 @@ import {
 // A MODEL THE MEASUREMENT HOLDS NO COMPLETED CALL FOR takes the pooled 99th
 // percentile (13,082) until its own calls are read, as Mercury 2.5 did
 // between its seating and 20:05 UTC on 2026-09-09.
+//
+// RE-READ ON 2026-09-28 (ledger P10) over the pass-run logs alone, 499,820
+// completed calls; the caps and the pooled numbers stand. Every call since the
+// caps went on the wire carries its cap, so a re-read can confirm a cap or
+// lower it and never shows a longer answer. The pool it gives (p90 2,607, p99
+// 10,822) is mostly such capped calls, nearly a third of them from the two
+// Bedrock Gemma seats (147,775 calls, p50 near 75), and lowering the floor to
+// it would cut writer answers for nothing. Seven seat and provider pairs now
+// run to their cap on more than one percent of calls since then, against
+// "under one percent" in the table: `hf:zai-org/GLM-5.3-Flash` on Synthetic
+// 4.85 (97 of its 100 with no content), `minimax-m3` on Hyper 4.06 (157 of
+// 162), `google.gemma-4-31b` on Bedrock 2.34 (all 5 with content, over 214
+// calls), `deepseek-v4.1-flash` on Hyper 1.85 (74 of 75 with none),
+// Qwen3.8-27B on Synthetic 1.75 (185 of 197), `glm-5.3` on Hyper 1.46 (23 of
+// 25), and GLM-5.3-Flash on OpenRouter 1.15 (233 of its 239 with no stream
+// line to pair). Where a cut call pairs with its stream, nearly every one
+// streamed no content: a reasoning runaway, which is what the cap is for. A
+// longer cap buys a longer runaway, and the recovery round re-asks them; the
+// Gemma 31B cuts are the exception, five answers over a thin sample.
 
 /**
  Pooled 90th percentile of completion tokens over every completed call in

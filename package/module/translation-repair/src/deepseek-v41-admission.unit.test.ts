@@ -61,12 +61,13 @@ await describe({
       },
     }),
     it({
-      name: 'retains the pooled cap rather than copying Flash0731 completion distribution',
+      name: 'carries a cap measured on its own calls, not a pooled placeholder (ledger P10): the card named the '
+        + 'pooled 99th as "no completed-call distribution of its own yet" after 67,353 calls of its own',
       fn: async () => {
         const modelId = nonNullishOrThrow(ROSTER_MODEL_IDS.find(id => id === MODEL));
         const hyper = nonNullishOrThrow(Object.values(HYPER_MODELS).find(info => info.id === MODEL));
-        // The pooled figure is measured in `completion-cap.ts`; its test checks the name resolves to it.
-        expect(MODEL_CARDS[modelId].completionCap).toBe('pooled-p99');
+        // The measurement and its reading are on the card and in `completion-cap.ts`.
+        expect(typeof MODEL_CARDS[modelId].completionCap).toBe('number');
         // Under the measured answer bound, so Hyper asks for the model's own ceiling.
         expect(answerCeilingFor({ modelId: hyper.id })).toBe(hyper.maxOutputLength);
       },

@@ -71,7 +71,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       rawCharsPerToken: 302,
     },
     // Hyper p99 over 886 calls; Synthetic 16,342 over 4,775; OpenRouter
-    // 13,070 over 1,853.
+    // 13,070 over 1,853 (the 2026-09-09 table).
     completionCap: 18_316,
     // Owner, 2026-09-02: "Unseat GLM-5.3-Flash as a judge, keep it as editor".
     // Off Synthetic since 2026-09-24 (class one hundred eighteen): over the
@@ -102,7 +102,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       maxOutputLength: 128_000,
     },
     // Synthetic p99 over 7,312 calls; OpenRouter 11,127 over 4,538; Hyper
-    // 10,541 over 1,921.
+    // 10,541 over 1,921 (the 2026-09-09 table).
     completionCap: 20_894,
     // Off the OpenRouter catalog since 2026-09-09: 24 percent of its calls
     // there were abandoned and billed to the end.
@@ -136,7 +136,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       rawCharsPerToken: 140,
     },
     // Hyper p99 over 2,777 calls; OpenRouter 8,254 over 488; Synthetic
-    // 4,350 over 7,051.
+    // 4,350 over 7,051 (the 2026-09-09 table).
     completionCap: 10_921,
     // Withheld from OpenRouter on cost (owner, 2026-09-03: 3 and 15 USD per
     // million); too slow in the select seats when Hyper serves it
@@ -186,7 +186,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 0.618,
     },
     // Own p99 at most 3,649 (Hyper, 2,479 calls) over 21,111 calls on four
-    // providers, under the pooled 90th.
+    // providers, under the pooled 90th (the 2026-09-09 table).
     completionCap: 'pooled-p90',
     // Producer calibration of 2026-09-01: 5 of 207 disinterested ballots,
     // z -4.53 against the pooled null.
@@ -228,7 +228,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // since 2026-09-21 (ledger P7, 2026-09-28).
       rawCharsPerToken: 130,
     },
-    // Hyper p99 over 27,361 calls; OpenRouter 718 over 6,657.
+    // Hyper p99 over 27,361 calls; OpenRouter 718 over 6,657 (the
+    // 2026-09-09 table).
     completionCap: 10_822,
     holds: [],
   },
@@ -267,7 +268,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       completionUsdPerMillion: 0.4,
     },
     // Own p99 at most 483 over 16,251 calls on three providers, under the
-    // pooled 90th.
+    // pooled 90th (the 2026-09-09 table).
     completionCap: 'pooled-p90',
     holds: [],
   },
@@ -277,7 +278,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       readsImages: false,
       maxOutputLength: 262_144,
     },
-    // OpenRouter p99 over 2,673 calls; Hyper 17,118 over 3,343.
+    // OpenRouter p99 over 2,673 calls; Hyper 17,118 over 3,343 (the
+    // 2026-09-09 table).
     completionCap: 22_067,
     // The roster's slowest voice in every measured role (2026-09-01); off
     // the OpenRouter catalog since 2026-09-09.
@@ -351,8 +353,17 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // since 2026-09-21; all time reads 257 (ledger P7, 2026-09-28).
       rawCharsPerToken: 228,
     },
-    // Approved 2026-09-11; no completed-call distribution of its own yet.
-    completionCap: 'pooled-p99',
+    // HYPER'S 99TH PERCENTILE IS THE CAP ITSELF (ledger P10, 2026-09-28).
+    // The card said "no completed-call distribution of its own yet" long
+    // after it had one. Over pass-run logs since the caps went on the wire,
+    // 75 of 4,062 Hyper calls ran to 13,082 and 74 of them streamed no
+    // content, a reasoning runaway the cap exists to stop; OpenRouter's p99
+    // is 7,531 over 63,291, and of its 237 calls at the cap the 70 that pair
+    // with a stream line are 69 runaways and one answer. A capped call cannot
+    // show a longer one, so the rule's highest p99 reads as "at least one
+    // percent ran into it", not as a length the model needs; the number is
+    // the pooled 99th it rode before, now its own.
+    completionCap: 13_082,
     // Judge seats on the fidelity probe of 2026-09-11. Writes since the
     // 40-round producer calibration of 2026-09-19 (29 of 121 disinterested
     // ballots over 27 candidates, z +0.79 against a 21.0 percent pooled
@@ -377,7 +388,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       promptUsdPerMillion: 0.04,
       completionUsdPerMillion: 0.08,
     },
-    // Own p99 483 over 5,506 Bedrock calls, under the pooled 90th.
+    // Own p99 483 over 5,506 Bedrock calls, under the pooled 90th (the
+    // 2026-09-09 table).
     completionCap: 'pooled-p90',
     holds: [],
   },
@@ -394,7 +406,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       promptUsdPerMillion: 0.14,
       completionUsdPerMillion: 0.4,
     },
-    // Bedrock p99 over 125 calls, the thinnest measurement in the table.
+    // Bedrock p99 over 125 calls, the thinnest measurement in the 2026-09-09
+    // table.
     completionCap: 8_194,
     // Stayed out of the judge seats on the 2026-09-07 fidelity probe; reads
     // pictures since the 2026-09-08 transcription measurement. Checks since
@@ -418,7 +431,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // 2026-09-28).
       rawCharsPerToken: 0.9,
     },
-    // Own p99 3,063 over 136 OpenRouter calls, under the pooled 90th.
+    // Own p99 3,063 over 136 OpenRouter calls, under the pooled 90th (read
+    // at 20:05 UTC on 2026-09-09).
     completionCap: 'pooled-p90',
     // Seated as a writer by the calibration of 2026-09-09 (z -0.43); the
     // calibration of 2026-09-19 read it below the pooled null (10 of 108
@@ -452,7 +466,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // streams, all since 2026-09-21 (ledger P7, 2026-09-28).
       rawCharsPerToken: 93,
     },
-    // No completed-call distribution of its own yet.
+    // 78 completed calls on OpenRouter, p99 1,719, under the 100 calls the
+    // rule reads (`completion-cap.ts`; ledger P10, 2026-09-28).
     completionCap: 'pooled-p99',
     // Owner, 2026-09-27: approved on OpenRouter with Mimo v2.6 Pro. Checks
     // since the checker benchmark that day: through the run client 81 of 85
