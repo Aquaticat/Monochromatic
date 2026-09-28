@@ -1,3 +1,5 @@
+import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+
 //region Channel marker tails
 // A provider emits special tokens of the shape `<|word|>` and filters them out
 // of streamed content. The filter is not atomic across event boundaries, so
@@ -95,10 +97,7 @@ function isMarkerBodyCharacter(
     readonly character: string;
   },
 ): boolean {
-  return ((character >= 'a') && (character <= 'z'))
-    || ((character >= 'A') && (character <= 'Z'))
-    || ((character >= '0') && (character <= '9'))
-    || (character === '_');
+  return isAsciiAlphanumeric({ character, },) || (character === '_');
 }
 
 /**

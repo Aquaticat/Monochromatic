@@ -1,3 +1,4 @@
+import { isAsciiDigit, } from './ascii-letters.ts';
 import { withoutComments, } from './translate-address-drop.ts';
 
 //region Closing quotation marks with no opening one
@@ -120,7 +121,7 @@ function straightDoubleRole(
    */
   const after = text.charAt(index + 1,);
   // A digit before it makes it an inch mark, not a quotation.
-  if ((before >= '0') && (before <= '9'))
+  if (isAsciiDigit({ character: before, },))
     return 'unread';
   /**
    Whether the side before prints nothing or is opening punctuation.

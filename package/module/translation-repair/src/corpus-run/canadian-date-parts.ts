@@ -14,6 +14,7 @@ import {
   type YearPart,
 } from './canadian-date-words.ts';
 
+import { isAsciiDigit, } from '../ascii-letters.ts';
 import { runEnd, } from './text-runs.ts';
 
 //region Canadian date parts
@@ -25,24 +26,6 @@ import { runEnd, } from './text-runs.ts';
  No-break space, which may stand between a date's words.
  */
 const NO_BREAK_SPACE = '\u00A0';
-
-/**
- Whether one character is an ASCII digit.
-
- @param character - one UTF-16 unit
-
- @returns Whether it is 0 to 9
-
- @example
- ```ts
- isDigit({ character: '4', },); // true
- ```
- */
-export function isDigit(
-  { character, }: { readonly character: string; },
-): boolean {
-  return (character >= '0') && (character <= '9');
-}
 
 /**
  Whether one character is a letter in any script with case.
@@ -78,7 +61,7 @@ export function isCasedLetter(
 export function continuesWord(
   { character, }: { readonly character: string; },
 ): boolean {
-  return isDigit({ character, },) || isCasedLetter({ character, },);
+  return isAsciiDigit({ character, },) || isCasedLetter({ character, },);
 }
 
 /**
@@ -156,7 +139,7 @@ export function readDay(
   const digitsEnd = runEnd({
     text,
     from: at,
-    keeps: isDigit,
+    keeps: isAsciiDigit,
   },);
   /**
    How many digits the day carries.
@@ -284,7 +267,7 @@ export function readYear(
   const end = runEnd({
     text,
     from: at,
-    keeps: isDigit,
+    keeps: isAsciiDigit,
   },);
   if (((end - at) !== YEAR_DIGITS) || continuesWord({ character: text.charAt(end,), },))
     return NO_PART;
@@ -325,7 +308,7 @@ export function yearAfter(
 ): YearPart | NoPart | RefusedPart {
   if (continuesWord({ character: text.charAt(at,), },))
     return REFUSED_PART;
-  if ((!isDateSpace({ character: text.charAt(at,), },)) || (!isDigit({ character: text.charAt(at + 1,), },)))
+  if ((!isDateSpace({ character: text.charAt(at,), },)) || (!isAsciiDigit({ character: text.charAt(at + 1,), },)))
     return NO_PART;
   /**
    Where the digits after the space end.
@@ -333,7 +316,7 @@ export function yearAfter(
   const digitsEnd = runEnd({
     text,
     from: at + 1,
-    keeps: isDigit,
+    keeps: isAsciiDigit,
   },);
   if ((digitsEnd - (at + 1)) < YEAR_DIGITS)
     return NO_PART;

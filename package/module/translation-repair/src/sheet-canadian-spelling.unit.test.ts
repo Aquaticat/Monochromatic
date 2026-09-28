@@ -15,6 +15,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { isAsciiLetter, } from '../dist/final/node/index.mjs';
 import { renderedSheets, } from './rendered-sheets.test-fixture.ts';
 
 /**
@@ -76,22 +77,6 @@ const NON_CANADIAN_FORMS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- Whether a character is an ASCII letter, so a word goes on through it.
-
- @param character - one character of a sheet
-
- @returns True for a to z in either case
-
- @example
- ```ts
- isLetter({ character: 'a', },); // true
- ```
- */
-function isLetter({ character, }: { readonly character: string; },): boolean {
-  return ((character >= 'a') && (character <= 'z')) || ((character >= 'A') && (character <= 'Z'));
-}
-
-/**
  Every word of a text, lower-cased, in order.
 
  A LINEAR PASS that closes a word at each character that is no letter.
@@ -117,7 +102,7 @@ function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
       read,
       character,
     ): string[] {
-      if (isLetter({ character, },)) {
+      if (isAsciiLetter({ character, },)) {
         read[read.length - 1] = `${read.at(-1,) ?? ''}${character.toLowerCase()}`;
         return read;
       }

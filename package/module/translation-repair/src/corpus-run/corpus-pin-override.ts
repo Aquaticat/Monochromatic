@@ -1,5 +1,6 @@
 import { isAbsolute, } from 'node:path';
 
+import { isLowerHexDigit, } from '../ascii-letters.ts';
 import type { CorpusPin, } from '../corpus-source.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
@@ -92,7 +93,7 @@ function isFullCommitSha(
   // Indexed scan instead of iteration: sha positions are single code units,
   // and grapheme-aware decomposition would hide a multi-unit intruder.
   for (let position = 0; position < written.length; position += 1) {
-    if (!'0123456789abcdef'.includes(written.charAt(position,),))
+    if (!isLowerHexDigit({ character: written.charAt(position,), },))
       return false;
   }
   return true;

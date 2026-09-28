@@ -1,5 +1,5 @@
 import { nameProjection, } from './declared-name-survival.ts';
-import { isAsciiLetter, } from './ascii-letters.ts';
+import { isAsciiAlphanumeric, } from './ascii-letters.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import {
   type Link,
@@ -60,13 +60,7 @@ const HANDLE_PUNCTUATION: ReadonlySet<string> = new Set([
  ```
  */
 function isHandleCharacter({ character, }: { readonly character: string; },): boolean {
-  /**
-   Whether it is an ASCII digit.
-   */
-  const digit = (character >= '0') && (character <= '9');
-  return isAsciiLetter({ character, },)
-    || digit
-    || HANDLE_PUNCTUATION.has(character,);
+  return isAsciiAlphanumeric({ character, },) || HANDLE_PUNCTUATION.has(character,);
 }
 
 /**

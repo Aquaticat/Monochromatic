@@ -1,3 +1,5 @@
+import { isAsciiDigit, } from './ascii-letters.ts';
+
 //region Fidelity alteration
 // The fixture that asks whether the judges read THE ORIGINAL, rather than
 // whether they read well.
@@ -40,28 +42,6 @@ const MIN_DIGITS = 2;
 const REPLACEMENT_TRIES = 9;
 
 /**
- Digits this fixture recognizes, which are the ones a Chinese source carries
- unchanged into English.
- */
-const DIGITS = '0123456789';
-
-/**
- Whether one character is one of {@link DIGITS}.
- 
- @param character - single character to test
- 
- @returns Whether it is an ASCII digit
- 
- @example
- ```ts
- const digit = isDigit({ character: '4', },);
- ```
- */
-function isDigit({ character, }: { readonly character: string; },): boolean {
-  return DIGITS.includes(character,);
-}
-
-/**
  Every maximal run of digits in a passage, in the order they appear.
  
  @param text - passage to scan
@@ -96,7 +76,7 @@ export function digitRuns({ text, }: { readonly text: string; },): readonly stri
     /**
      Whether the scan is inside a run.
      */
-    const inRun = (character !== '') && isDigit({ character, },);
+    const inRun = isAsciiDigit({ character, },);
     if (inRun && (runStart === (-1)))
       runStart = cursor;
 

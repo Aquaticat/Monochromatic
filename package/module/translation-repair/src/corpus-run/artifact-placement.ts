@@ -1,5 +1,6 @@
 import { readdir, } from 'node:fs/promises';
 
+import { isLowerHexDigit, } from '../ascii-letters.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { isDigestShaped, } from './pipeline-digest.ts';
@@ -51,19 +52,10 @@ function isObjectId({ value, }: { readonly value: string; },): boolean {
     return false;
 
   for (const character of value) {
-    /**
-     Whether it is one of `0` to `9`.
-     */
-    const isDigit = (character >= '0') && (character <= '9');
-
-    /**
-     Whether it is one of `a` to `f`. Uppercase is refused deliberately: git
-     writes lowercase, so an uppercase id came from somewhere else, and two
-     spellings of one commit would count as two generations.
-     */
-    const isLowerHex = (character >= 'a') && (character <= 'f');
-
-    if ((!isDigit) && (!isLowerHex))
+    // Upper case is refused deliberately: git writes lower case, so an
+    // upper-case id came from somewhere else, and two spellings of one commit
+    // would count as two generations.
+    if (!isLowerHexDigit({ character, },))
       return false;
   }
 

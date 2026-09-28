@@ -1,5 +1,6 @@
 import { createHash, } from 'node:crypto';
 
+import { isLowerHexDigit, } from './ascii-letters.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
@@ -134,7 +135,7 @@ export function assertPreparationIdentity(
     },);
   }
   for (const character of hex) {
-    if (!'0123456789abcdef'.includes(character,)) {
+    if (!isLowerHexDigit({ character, },)) {
       throw new PreparationIdentityError({
         message: `identity carries a character no digest can: ${character}`,
       },);

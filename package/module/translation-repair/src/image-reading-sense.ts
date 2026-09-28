@@ -79,22 +79,6 @@ const REFUSAL_PHRASES: readonly string[] = [
 ];
 
 /**
- Whether a character is a digit.
- 
- @param character - character to weigh
- 
- @returns Whether it is a digit
- 
- @example
- ```ts
- const digit = isDigit({ character: '4', },);
- ```
- */
-function isDigit({ character, }: { readonly character: string; },): boolean {
-  return (character >= '0') && (character <= '9');
-}
-
-/**
  Why a reading was refused, or that it was not.
  
  @example

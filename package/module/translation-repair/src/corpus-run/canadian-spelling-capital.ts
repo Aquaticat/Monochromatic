@@ -1,7 +1,5 @@
-import {
-  isCasedLetter,
-  isDigit,
-} from './canadian-date-parts.ts';
+import { isAsciiDigit, } from '../ascii-letters.ts';
+import { isCasedLetter, } from './canadian-date-parts.ts';
 import {
   isWordCharacter,
   lineStartOf,
@@ -136,7 +134,7 @@ export function startsWithCapital(
 function opensLine(
   { character, }: { readonly character: string; },
 ): boolean {
-  return LINE_OPENERS.has(character,) || isDigit({ character, },);
+  return LINE_OPENERS.has(character,) || isAsciiDigit({ character, },);
 }
 
 /**

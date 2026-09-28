@@ -1,3 +1,5 @@
+import { isAsciiDigit, } from './ascii-letters.ts';
+
 //region Stated retry wait
 // The wait a provider's refusal names in its own body ("try again in 2h25m18s"),
 // read by one forward scan. Split from `transient-retry.ts`, which sleeps it,
@@ -111,24 +113,6 @@ const WAIT_UNIT_MS: ReadonlyMap<string, number> = new Map([
 const NOT_FOUND = -1;
 
 /**
- Whether one character is an ASCII digit.
- 
- @param character - one character, or empty past the end of the text
- 
- @returns Whether it is `0` to `9`
- 
- @example
- ```ts
- const digit = isDigit('7',);
- ```
- */
-function isDigit(character: string,): boolean {
-  return (character.length === 1)
-    && (character >= '0')
-    && (character <= '9');
-}
-
-/**
  Index just past the run of digits starting at `from`.
  
  @param text - text to scan
@@ -152,7 +136,7 @@ function digitRunEnd(
   },
 ): number {
   for (let cursor = from; cursor < text.length; cursor += 1) {
-    if (!isDigit(text[cursor] ?? '',))
+    if (!isAsciiDigit({ character: text[cursor] ?? '', },))
       return cursor;
   }
   return text.length;
@@ -283,7 +267,7 @@ function readWaitPart(
   /**
    Past a decimal fraction, where one follows.
    */
-  const numberEnd = ((text.charAt(wholeEnd,) === '.') && isDigit(text.charAt(wholeEnd + 1,),))
+  const numberEnd = ((text.charAt(wholeEnd,) === '.') && isAsciiDigit({ character: text.charAt(wholeEnd + 1,), },))
     ? digitRunEnd({
       text,
       from: wholeEnd + 1,

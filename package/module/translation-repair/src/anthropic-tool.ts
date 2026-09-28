@@ -1,3 +1,4 @@
+import { isAsciiAlphanumeric, } from './ascii-letters.ts';
 
 //region Anthropic tool
 // THE ANSWER TOOL, described twice on purpose.
@@ -30,13 +31,17 @@
 const SCHEMA_INDENT = 2;
 
 /**
- Characters the Messages API accepts in a tool name.
+ Characters the Messages API accepts in a tool name besides ASCII letters and
+ digits.
  
- SPELLED OUT RATHER THAN MATCHED, because a character-class regex over an
+ TESTED RATHER THAN MATCHED, because a character-class regex over an
  externally supplied name is exactly the shape `RG1` asks to be written as a
  scan instead, and a scan over a name this short costs nothing.
  */
-const NAME_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
+const NAME_MARKS: ReadonlySet<string> = new Set([
+  '_',
+  '-',
+],);
 
 /**
  Longest tool name the Messages API accepts.
@@ -185,7 +190,7 @@ export function answerToolName(
     },);
 
   for (const character of name) {
-    if (!NAME_CHARACTERS.includes(character,))
+    if ((!isAsciiAlphanumeric({ character, },)) && (!NAME_MARKS.has(character,)))
       throw new UnnameableToolError({
         detail: 'schema name carries a character outside letters, digits, underscore and hyphen',
       },);

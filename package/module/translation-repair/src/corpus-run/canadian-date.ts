@@ -1,8 +1,8 @@
+import { isAsciiDigit, } from '../ascii-letters.ts';
 import {
   continuesWord,
   isCasedLetter,
   isDateSpace,
-  isDigit,
 } from './canadian-date-parts.ts';
 import {
   readMonthFirst,
@@ -247,7 +247,7 @@ function readingAt(
     text,
     at: state.at,
   };
-  if (isDigit({ character, },)) {
+  if (isAsciiDigit({ character, },)) {
     if (!opensDate({
       text,
       state,

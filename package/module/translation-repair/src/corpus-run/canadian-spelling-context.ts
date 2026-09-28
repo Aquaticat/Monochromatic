@@ -1,7 +1,5 @@
-import {
-  isCasedLetter,
-  isDigit,
-} from './canadian-date-parts.ts';
+import { isAsciiDigit, } from '../ascii-letters.ts';
+import { isCasedLetter, } from './canadian-date-parts.ts';
 import { isCombiningMark, } from '../latin-letters.ts';
 import {
   runEnd,
@@ -194,7 +192,7 @@ function carriesDottedName(
      Character after the dot.
      */
     const next = token.charAt(at + 1,);
-    if (isCasedLetter({ character: next, },) || isDigit({ character: next, },))
+    if (isCasedLetter({ character: next, },) || isAsciiDigit({ character: next, },))
       return true;
   }
   return false;
@@ -299,8 +297,8 @@ export function besideNonProse(
     /**
      Whether a letter or digit stands past the neighbour.
      */
-    const farWord = isCasedLetter({ character: side.far, },) || isDigit({ character: side.far, },);
-    if (isDigit({ character: side.neighbour, },) || NON_PROSE_NEIGHBOURS.has(side.neighbour,))
+    const farWord = isCasedLetter({ character: side.far, },) || isAsciiDigit({ character: side.far, },);
+    if (isAsciiDigit({ character: side.neighbour, },) || NON_PROSE_NEIGHBOURS.has(side.neighbour,))
       return true;
     if ((side.neighbour === '_') || (side.neighbour === '.'))
       return farWord;

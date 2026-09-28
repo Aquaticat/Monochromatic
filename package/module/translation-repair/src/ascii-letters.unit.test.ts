@@ -16,6 +16,7 @@ import {
   isAsciiAlphanumeric,
   isAsciiDigit,
   isAsciiLetter,
+  isLowerHexDigit,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -29,6 +30,9 @@ const PROBES: readonly string[] = [
   'Z',
   '0',
   '9',
+  'f',
+  'g',
+  'F',
   '`',
   '{',
   '@',
@@ -52,7 +56,7 @@ await describe({
       fn: async () => {
         expect(PROBES.filter(function letter(character,): boolean {
           return isAsciiLetter({ character, },);
-        },),).toEqual(['a', 'z', 'A', 'Z',],);
+        },),).toEqual(['a', 'z', 'A', 'Z', 'f', 'g', 'F',],);
       },
     },),
     it({
@@ -63,7 +67,15 @@ await describe({
         },),).toEqual(['0', '9',],);
         expect(PROBES.filter(function alphanumeric(character,): boolean {
           return isAsciiAlphanumeric({ character, },);
-        },),).toEqual(['a', 'z', 'A', 'Z', '0', '9',],);
+        },),).toEqual(['a', 'z', 'A', 'Z', '0', '9', 'f', 'g', 'F',],);
+      },
+    },),
+    it({
+      name: 'ADMITS 0 to 9 and a to f as lower-case hexadecimal, and refuses upper case and g',
+      fn: async () => {
+        expect(PROBES.filter(function lowerHex(character,): boolean {
+          return isLowerHexDigit({ character, },);
+        },),).toEqual(['a', '0', '9', 'f',],);
       },
     },),
   ],

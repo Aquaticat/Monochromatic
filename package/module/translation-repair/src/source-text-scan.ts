@@ -1,3 +1,5 @@
+import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+
 //region Source text scan
 // Index scans over this package's own formatted source: matching brackets,
 // splitting at depth zero, dropping comments, finding a whole identifier.
@@ -31,11 +33,7 @@ const CLOSER: Readonly<Record<string, string>> = {
  ```
  */
 export function isIdentifierCharacter({ character, }: { readonly character: string; },): boolean {
-  if (character === '')
-    return false;
-  return ((character >= 'a') && (character <= 'z'))
-    || ((character >= 'A') && (character <= 'Z'))
-    || ((character >= '0') && (character <= '9'))
+  return isAsciiAlphanumeric({ character, },)
     || (character === '_')
     || (character === '$');
 }

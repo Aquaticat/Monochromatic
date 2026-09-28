@@ -6,6 +6,7 @@ export {
   isAsciiAlphanumeric,
   isAsciiDigit,
   isAsciiLetter,
+  isLowerHexDigit,
 } from './ascii-letters.ts';
 export { longestRunOf, } from './character-run.ts';
 export { isHanCharacter, } from './han-only-text.ts';

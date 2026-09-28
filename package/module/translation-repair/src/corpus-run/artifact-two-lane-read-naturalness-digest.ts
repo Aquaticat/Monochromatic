@@ -1,4 +1,5 @@
 import { requireExactKeys, } from '../artifact-exact-guard.ts';
+import { isLowerHexDigit, } from '../ascii-letters.ts';
 import {
   ArtifactParseError,
   requireArray,
@@ -52,11 +53,6 @@ function reviewedParagraphsOf(
 const SHA256_HEX_LENGTH = 64;
 
 /**
- Characters allowed in lowercase hexadecimal digest.
- */
-const LOWER_HEX_CHARACTERS = '0123456789abcdef';
-
-/**
  Checks lowercase hexadecimal SHA-256 shape without regular expression.
  
  @param value - candidate digest
@@ -69,7 +65,7 @@ function isLowerHexDigest(
   if (value.length !== SHA256_HEX_LENGTH)
     return false;
   for (let index = 0; index < value.length; index += 1) {
-    if (!LOWER_HEX_CHARACTERS.includes(value.charAt(index,),))
+    if (!isLowerHexDigit({ character: value.charAt(index,), },))
       return false;
   }
   return true;

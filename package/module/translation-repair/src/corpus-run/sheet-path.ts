@@ -1,6 +1,8 @@
 import { stat, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { isAsciiAlphanumeric, } from '../ascii-letters.ts';
+
 //region Grading sheet path
 // Decides where a grading sheet is written, and refuses to write over one that
 // may already carry human grades.
@@ -21,15 +23,18 @@ import { join, } from 'node:path';
 // that is meant to be redrawn as the pool grows.
 
 /**
- Characters a draw seed may contribute to a file name.
+ Characters a draw seed may contribute to a file name besides ASCII letters
+ and digits.
  
  The seed reaches a path, so it crosses into filesystem grammar where `/` and
  `..` mean traversal rather than text. Seeds are developer-set constants today,
  which is an argument for the check being cheap, not for omitting it.
  */
-const SEED_ALLOWED_CHARS = new Set(
-  'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-',
-);
+const SEED_MARKS: ReadonlySet<string> = new Set([
+  '.',
+  '_',
+  '-',
+],);
 
 /**
  Composes the refuse-to-clobber message, joined from lines rather than
@@ -193,7 +198,7 @@ function isSeedSafe({ seed, }: { readonly seed: string; },): boolean {
   if (seed === '')
     return false;
   for (let index = 0; index < seed.length; index += 1)
-    if (!SEED_ALLOWED_CHARS.has(seed.charAt(index,),))
+    if ((!isAsciiAlphanumeric({ character: seed.charAt(index,), },)) && (!SEED_MARKS.has(seed.charAt(index,),)))
       return false;
   return true;
 }

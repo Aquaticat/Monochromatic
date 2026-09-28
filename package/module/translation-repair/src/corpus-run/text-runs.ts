@@ -19,7 +19,7 @@
 
  @example
  ```ts
- runEnd({ text: '12 May', from: 0, keeps: isDigit, },); // 2
+ runEnd({ text: '12 May', from: 0, keeps: isAsciiDigit, },); // 2
  ```
  */
 export function runEnd(

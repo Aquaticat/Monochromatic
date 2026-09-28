@@ -1,5 +1,6 @@
 import { pinyin, } from 'pinyin-pro';
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
+import { isAsciiLetter, } from '../ascii-letters.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import { isHanCharacter, } from '../han-only-text.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
@@ -95,8 +96,7 @@ type ToneRewrite = {
 function inPinyin(
   { character, }: { readonly character: string; },
 ): boolean {
-  return ((character >= 'a') && (character <= 'z'))
-    || ((character >= 'A') && (character <= 'Z'))
+  return isAsciiLetter({ character, },)
     || TONE_MARKED.has(character,)
     || (character === 'ü')
     || SYLLABLE_BREAKS.has(character,);

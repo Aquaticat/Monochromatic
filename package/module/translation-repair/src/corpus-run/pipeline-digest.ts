@@ -8,6 +8,8 @@ import {
   relative,
 } from 'node:path';
 
+import { isLowerHexDigit, } from '../ascii-letters.ts';
+
 //region Pipeline digest
 // WHICH BYTES RAN, as against which commit happened to be checked out.
 //
@@ -261,19 +263,10 @@ export function isDigestShaped(
     return false;
 
   for (const character of hex) {
-    /**
-     Whether it is one of `0` to `9`.
-     */
-    const isDigit = (character >= '0') && (character <= '9');
-
-    /**
-     Whether it is one of `a` to `f`. Uppercase is refused because this module
-     only ever emits lowercase, so another spelling came from elsewhere and
-     would count as a second generation.
-     */
-    const isLowerHex = (character >= 'a') && (character <= 'f');
-
-    if ((!isDigit) && (!isLowerHex))
+    // Upper case is refused because this module only ever emits lower case,
+    // so another spelling came from elsewhere and would count as a second
+    // generation.
+    if (!isLowerHexDigit({ character, },))
       return false;
   }
 

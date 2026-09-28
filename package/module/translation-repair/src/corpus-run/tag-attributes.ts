@@ -1,4 +1,7 @@
-import { isAsciiLetter, } from '../ascii-letters.ts';
+import {
+  isAsciiAlphanumeric,
+  isAsciiLetter,
+} from '../ascii-letters.ts';
 
 //region Tag attributes
 // A JSX OR HTML TAG READ FOR ITS QUOTED ATTRIBUTES, by index scan: the name
@@ -133,11 +136,7 @@ export type TagReading = {
  ```
  */
 function isNamePart({ character, }: { readonly character: string; },): boolean {
-  if (isAsciiLetter({ character, },))
-    return true;
-  if ((character >= '0') && (character <= '9'))
-    return true;
-  return NAME_MARKS.has(character,);
+  return isAsciiAlphanumeric({ character, },) || NAME_MARKS.has(character,);
 }
 
 /**
