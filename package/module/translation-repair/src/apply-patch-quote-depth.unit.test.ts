@@ -132,6 +132,34 @@ await describe({
     },),
 
     it({
+      name: 'LEAVES ALONE a region\'s first line when the region starts mid-line, since its markers lie outside it and a leading > there is words',
+      fn: async () => {
+        /** A quoted line ending in an emoticon. */
+        const text = '> The cat purred >>_<< happily.';
+        /** Where the region starts, at the emoticon. */
+        const start = text.indexOf('>>_<<',);
+        /** The edit, keeping the emoticon. */
+        const outcome = editOne({ targetText: text, start, end: text.length, newText: '>>_<< very happily.', },);
+
+        expect(outcome.patchedText,).toBe('> The cat purred >>_<< very happily.',);
+      },
+    },),
+
+    it({
+      name: 'KEEPS the nesting of the line a mid-line region starts in',
+      fn: async () => {
+        /** A line quoted two levels deep. */
+        const nested = '> > The kitten said hi.';
+        /** Where the region starts, inside it. */
+        const start = nested.indexOf('hi.',);
+        /** The edit, adding a line at the same depth. */
+        const outcome = editOne({ targetText: nested, start, end: nested.length, newText: 'hi.\n> > Then it slept.', },);
+
+        expect(outcome.patchedText,).toBe('> > The kitten said hi.\n> > Then it slept.',);
+      },
+    },),
+
+    it({
       name: 'KEEPS nesting the original has',
       fn: async () => {
         /** The edit, nesting as the original does. */
