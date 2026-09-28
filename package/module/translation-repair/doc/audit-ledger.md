@@ -2414,7 +2414,7 @@ the preservation-check claims.
 
 ### L14: smaller items
 
-Status: (a), (c) and (d) fixed; (b) open.
+Status: (a) to (d) fixed; (e) open.
 
 #### L14(a): the resolution checker sheet carried none of the panel's evidence
 
@@ -2475,7 +2475,46 @@ says sheet additions need evidence first.
 
 #### L14(b): editors write neighbouring text into an envelope
 
-Status: open.
+Status: fixed in `49d3c285b`, guarded red first in `8408e8864`.
+The audit reported editors writing neighbouring text into a region and the chunk judges choosing it
+(CuspariaKLSY11 slice 3, shihai4h2 slice 28), and that neither shipped.
+
+What was measured (`~/temp/agent/audit-glossary-fix/l14b-census.mjs` and its siblings):
+56 of 6,222 chunk candidates over 266 artifacts carried a sentence of 12 characters or more
+more often than the slice's archive English did,
+in 43 of 2,476 rounds;
+the judges selected such a candidate 3 times;
+and Carena0442 slice 14 on carena-rerun-20260902 (a schema 9 build) shipped two such sentences
+through a repair-lane win, so "neither shipped" does not hold for the family.
+Some of the 56 are noise: URL and link fragments the sentence splitter cut at a period,
+and one blockquote line accounts for 9.
+The editor sheet shows the whole TRANSLATION and the whole ORIGINAL (rendered 2026-09-28),
+so a rule about text outside the region asks for nothing the editor cannot check.
+
+What was not measured: the class the audit described,
+neighbouring ORIGINAL content re-translated into a region in new words.
+A verbatim census against the adjacent slices' archive English found none,
+and its positive control failed:
+at CuspariaKLSY11 slice 3 the selected candidate repeats no sentence and no 4-word phrase,
+and shares none with the neighbouring slice,
+so string matching cannot see that class, and the zero is not evidence of its absence.
+The fix rests on the audit's reading of that class and on the measured verbatim family.
+
+The fix:
+the editor sheet says a region carries only what the ORIGINAL says at that place,
+and that a sentence the TRANSLATION already carries outside it,
+or content a NEARBY ORIGINAL passage says,
+goes in only where the ORIGINAL says it again, as a refrain the TRANSLATION rendered once;
+the faithfulness test both editor selections read says the same of candidates.
+Conditioned on the ORIGINAL because the omission rules say to translate ALL of the missing content,
+and a refrain the archive rendered once is such content.
+Mutation check: the unwired editor rule, the rule without its condition,
+and the dropped judge line are each caught; the control survived.
+Cache: rides inside repair 34, same check, same result.
+
+Candidate kept out: prefer, among indecision fallbacks, a patch that repeats no sentence.
+Its one measured case is XingZ631 slice 37,
+where the indecision fallback carried a repeat, the repair was lost, and the slate endorsed the standing text.
 
 #### L14(c): `selectChunkPatch` wording on declines
 
@@ -2508,6 +2547,20 @@ so a round that declines keeps the trusted text there.
 Mutation check: the unwired constant, the dropped unanimity, the unstated fallback,
 and an indecision that keeps the existing English are each caught; the control survived.
 Cache: rides inside repair 34, same check, same result.
+
+#### L14(e): a repaired text repeating a sentence no recorded stage wrote
+
+Status: open, found while measuring L14(b).
+In 9 slices the repaired text carries a sentence more often than the archive English
+while no chunk candidate of the slice does and no repair region's replacement carries it:
+6 whose rounds were chunk and envelope selection
+(Mio12-20260910, Mio16-20260916 and Mio21-20260916 slice 14, Mio20-20260916 slice 15, TianqiChen66613 slice 12, XingZ626 slice 44),
+2 with a refinement round (XingZ628 slice 53, XingZ631 slice 54),
+and 1 refined without an accuracy patch (XingZ6010 slice 38).
+At Mio12-20260910 slice 14 the repeated sentence is 12 characters,
+absent from the archive English and from both candidates,
+and the repaired text is 36 characters longer than the selected candidate,
+so a step after selection wrote it (`~/temp/agent/audit-glossary-fix/l14b-origin.mjs`, `l14b-mio.mjs`).
 
 #### L14(d): model-written and quoted text rendered raw on line-based sheets
 

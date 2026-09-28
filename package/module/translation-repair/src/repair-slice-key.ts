@@ -433,6 +433,10 @@ import type { RepairModels, } from './repair-contract.ts';
  Rides inside 34 too: the chunk selection tells its judges that a decline
  counts as no vote and keeps the existing English only when every judge
  declines (ledger L14(c), `e7e530564`); same check, same result.
+
+ Rides inside 34 too: the editor sheet and both editor selections say that
+ saying something twice adds content unless the ORIGINAL says it again at
+ that place (ledger L14(b), `49d3c285b`); same check, same result.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**
