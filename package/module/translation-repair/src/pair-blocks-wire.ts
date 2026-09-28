@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { isIndexPairList, } from './index-pair-list.ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Block pairing wire
@@ -272,28 +273,7 @@ export function isBlockPairingWire(value: unknown,): value is BlockPairingWire {
    Candidate pair list, still unknown in shape.
    */
   const { pairs, } = value;
-  if (!Array.isArray(pairs,))
-    return false;
-  return pairs
-    .every(function isPair(entry: unknown,): boolean {
-      if ((typeof entry) !== 'object')
-        return false;
-      if (entry === null)
-        return false;
-      if (!('source' in entry))
-        return false;
-      if (!('target' in entry))
-        return false;
-
-      /**
-       Candidate indices, still unknown in type.
-       */
-      const {
-        source,
-        target,
-      } = entry;
-      return Number.isInteger(source,) && Number.isInteger(target,);
-    },);
+  return isIndexPairList(pairs,);
 }
 
 /**

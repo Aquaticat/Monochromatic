@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 
 import { everyStageHeard, } from '../stage-silence.ts';
 import { isJsonRecord, } from '../json-guard.ts';
+import { isIndexPairList, } from '../index-pair-list.ts';
 import type { PairedSectionRecord, } from '../pair-blocks-stage.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
 import type { PairedDocumentRecord, } from '../pair-sections-stage.ts';
@@ -210,27 +211,7 @@ export async function openSliceCache(
  ```
  */
 function isPairList(value: unknown,): value is readonly BlockPair[] {
-  if (!Array.isArray(value,))
-    return false;
-  return value.every(function isPair(entry: unknown,): boolean {
-    if ((typeof entry) !== 'object')
-      return false;
-    if (entry === null)
-      return false;
-    if (!('source' in entry))
-      return false;
-    if (!('target' in entry))
-      return false;
-
-    /**
-     Candidate indices, still unknown in type.
-     */
-    const {
-      source,
-      target,
-    } = entry;
-    return Number.isInteger(source,) && Number.isInteger(target,);
-  },);
+  return isIndexPairList(value,);
 }
 
 /**

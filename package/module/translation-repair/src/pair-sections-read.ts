@@ -3,6 +3,7 @@ import {
   SectionPairingError,
   type SectionPairingWire,
 } from './pair-sections-wire.ts';
+import { isIndexPairList, } from './index-pair-list.ts';
 
 //region Section pairing reader
 // REFUSES RATHER THAN REPAIRS, for the reason the block reader gives: a pairing
@@ -46,28 +47,7 @@ export function isSectionPairingWire(value: unknown,): value is SectionPairingWi
    Candidate pair list, still unknown in shape.
    */
   const { pairs, } = value;
-  if (!Array.isArray(pairs,))
-    return false;
-  return pairs
-    .every(function isPair(entry: unknown,): boolean {
-      if ((typeof entry) !== 'object')
-        return false;
-      if (entry === null)
-        return false;
-      if (!('source' in entry))
-        return false;
-      if (!('target' in entry))
-        return false;
-
-      /**
-       Candidate indices, still unknown in type.
-       */
-      const {
-        source,
-        target,
-      } = entry;
-      return Number.isInteger(source,) && Number.isInteger(target,);
-    },);
+  return isIndexPairList(pairs,);
 }
 
 /**
