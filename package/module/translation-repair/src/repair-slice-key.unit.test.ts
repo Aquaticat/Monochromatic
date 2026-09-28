@@ -152,6 +152,23 @@ await describe({
       },
     },),
     it({
+      name: 'MOVES THE KEY WHERE CHECKER SELF-CERTIFICATION IS REFUSED, and only there (ledger X11): it decides '
+        + 'who may check a refinement, and production has permitted it since 2026-08-23, so a permitted or '
+        + 'unstated flag keys as every settled slice did',
+      fn: async () => {
+        /**
+         Key under the fixture, which states no flag.
+         */
+        const settled = keyed({ runShape: repairRunShape({ models: MODELS, },), },);
+        expect([
+          keyed({ runShape: repairRunShape({ models: { ...MODELS, checkerSelfCertificationPermitted: true, }, },), },)
+            === settled,
+          keyed({ runShape: repairRunShape({ models: { ...MODELS, checkerSelfCertificationPermitted: false, }, },), },)
+            === settled,
+        ],).toEqual([true, false,],);
+      },
+    },),
+    it({
       name:
         'moves the key for every input a resumed slice would be wrong about: the roster, the '
         + 'thresholds, the declared names, either text, and the line-structure verdict the '

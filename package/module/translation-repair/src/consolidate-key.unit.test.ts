@@ -82,6 +82,25 @@ await describe({
     },),
 
     it({
+      name: 'SEPARATES SLATE JUDGES from the writers they judge (ledger X11): the same writers under another '
+        + 'judging bench are another question, since the judges decide which consolidation ships, and a '
+        + 'settlement a bench since unseated reached must not resume',
+      fn: async () => {
+        expect(consolidateRunShape({
+          modelIds: ROSTER,
+          judgeModelIds: [ROSTER[0],],
+          declaredNamePairs: [],
+        },),).not.toBe(
+          consolidateRunShape({
+            modelIds: ROSTER,
+            judgeModelIds: [ROSTER[1],],
+            declaredNamePairs: [],
+          },),
+        );
+      },
+    },),
+
+    it({
       name: 'SEPARATES FINAL POLISH CONFIGURATION from consolidation without naturalness stage',
       fn: async () => {
         expect(consolidateRunShape({

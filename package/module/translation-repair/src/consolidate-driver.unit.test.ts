@@ -53,6 +53,8 @@ import {
   TranslationRepairInterruptedError,
   type ArchiveDispute,
   type ArtifactContestSlice,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type ConsolidateSliceSeating,
   type ConsolidationSettlement,
   type ConsolidationTerminal,
@@ -1949,6 +1951,79 @@ await describe({
         expect(consolidationWorthResuming({
           settlement: settlementFor({ terminal: 'slate-unjudged-standing', decision: 'sole-candidate', },),
         },),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+/**
+ Builds a client that records which roster seat every call asked and answers
+ each with nothing a sheet can read, so every voice is lost after it was asked.
+
+ @param asked - sink for the seat of every call, in order
+
+ @returns Client to drive with
+
+ @example
+ ```ts
+ const client = seatRecordingClient({ asked: [], },);
+ ```
+ */
+function seatRecordingClient(
+  { asked, }: { readonly asked: RosterModelId[]; },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText not used',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      asked.push(request.modelId,);
+      return {
+        kind: 'schema-mismatch',
+        rawText: 'no sheet can read this',
+        detail: 'fixture answers nothing usable',
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas not used',);
+    },
+  };
+}
+
+await describe({
+  name: `${consolidateDocument.name} re-seated under a hold (ledger H5)`,
+  children: [
+    it({
+      name: 'SEATS A SLICE ON THE ROSTER ITS HOOK RETURNS, as both lanes seat theirs, so writers re-read '
+        + 'after a provider dry-out are the ones the slice asks rather than the roster read before it',
+      fn: async () => {
+        /**
+         Seat of every call the driver made.
+         */
+        const asked: RosterModelId[] = [];
+        /**
+         Writers and judges the hook hands back, none of them the driver's own.
+         */
+        const reseated: readonly RosterModelId[] = [
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        ];
+        await driveWith({
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+          client: seatRecordingClient({ asked, },),
+          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+            roster: {
+              modelIds: reseated,
+              judgeModelIds: reseated,
+            },
+          }),
+        },);
+        expect(asked.length,).toBeGreaterThan(0,);
+        expect(asked.filter(function outsideRoster(seat,): boolean {
+          return !reseated.includes(seat,);
+        },),).toEqual([],);
       },
     },),
   ],

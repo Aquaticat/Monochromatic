@@ -23,8 +23,11 @@ import {
 
 import {
   type BudgetView,
+  consolidationHooksFor,
+  consolidationPolishConfiguration,
   judgeSeatsFor,
   lanesHooksFor,
+  prepareDocumentPair,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_OPENROUTER_ONLY,
   SEAT_OPENROUTER_ONLY_CHECKER,
@@ -216,6 +219,88 @@ await describe({
           afterHold: { translateModels, },
           reads: 1,
         },);
+      },
+    },),
+  ],
+},);
+
+/**
+ A two-paragraph page the consolidation's naturalness roles read.
+ */
+const PREPARED = prepareDocumentPair({
+  sourceText: '猫在窗边睡着了。\n\n它梦见了鱼。',
+  targetText: 'The cat fell asleep by the window.\n\nIt dreamed of fish.',
+},);
+
+await describe({
+  name: `${consolidationHooksFor.name} (ledger H5)`,
+  children: [
+    it({
+      name: 'RE-SEATS THE CONSOLIDATION before a slice while a hold runs, as it does both lanes, handing the '
+        + 'slice the reading\'s writers, slate judges and naturalness roles, and keeps that roster once the '
+        + 'hold has ended',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        rig.holds.synthetic = DRY_HOLD_MS;
+        const hooks = consolidationHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          prepared: PREPARED,
+          l,
+        },);
+        /**
+         Seating the hook hands the slice under the hold.
+         */
+        const underHold = await hooks.beforeSlice();
+        rig.holds.synthetic = 0;
+        /**
+         Seating handed over once the hold has ended.
+         */
+        const afterHold = await hooks.beforeSlice();
+        /**
+         What a reading of this view seats.
+         */
+        const seats = judgeSeatsFor({ dry: BEDROCK_AND_OPENROUTER, },);
+        /**
+         Naturalness roles that reading configures, as `pass-consolidate.ts` builds them.
+         */
+        const polish = consolidationPolishConfiguration({
+          prepared: PREPARED,
+          models: seats.repairModels,
+          gateModelIds: seats.lateJudges,
+        },);
+        /**
+         Roster the slice should run on.
+         */
+        const roster = {
+          modelIds: seats.writers,
+          judgeModelIds: seats.slateJudges,
+          ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
+        };
+        expect({
+          underHold,
+          afterHold,
+          reads: rig.counter.reads,
+        },).toEqual({
+          underHold: { roster, },
+          afterHold: { roster, },
+          reads: 1,
+        },);
+      },
+    },),
+    it({
+      name: 'COSTS NOTHING while nothing is held: no dryness read and no roster, so the slice keeps the one '
+        + 'the consolidation started on',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        const hooks = consolidationHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          prepared: PREPARED,
+          l,
+        },);
+        expect(await hooks.beforeSlice(),).toEqual({},);
+        expect(rig.counter.reads,).toBe(0,);
       },
     },),
   ],
