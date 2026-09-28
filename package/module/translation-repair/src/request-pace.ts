@@ -3,6 +3,7 @@ import { setTimeout as sleepFor, } from 'node:timers/promises';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from './log-context.ts';
+import { StatedRefusalError, } from './stated-refusal.ts';
 
 //region Request pace
 // A sliding-window pacer that lets at most `perWindow` requests START in any
@@ -284,7 +285,11 @@ export function createRequestPace(
  
  @param env - environment to read
  
- @returns Positive number from the variable, else the default
+ @returns Positive number from the variable, or the default when it is unset
+
+ @throws {@link StatedRefusalError} when the variable is set and is not a
+ positive number, as every other dial refuses (ledger D14): a mistyped rate
+ that fell back to the account limit ran a launch at a pace nobody asked for
  
  @example
  ```ts
@@ -301,10 +306,17 @@ export function hyperRequestsPerHour(
   if (raw === '')
     return HYPER_REQUESTS_PER_HOUR;
   /**
-   Parsed value.
+   Parsed value. `Number` rather than `parseFloat`, which would read a leading
+   number out of a typo such as `300/h`.
    */
   const parsed = Number(raw,);
-  return (Number.isFinite(parsed,) && (parsed > 0)) ? parsed : HYPER_REQUESTS_PER_HOUR;
+  if ((!Number.isFinite(parsed,)) || (parsed <= 0)) {
+    throw new StatedRefusalError({
+      says: `${HYPER_REQUESTS_PER_HOUR_VAR} must be a positive number of requests per hour, and `
+        + `${JSON.stringify(raw,)} is not; leave it unset for the account limit of ${String(HYPER_REQUESTS_PER_HOUR,)}`,
+    },);
+  }
+  return parsed;
 }
 
 //endregion Request pace
