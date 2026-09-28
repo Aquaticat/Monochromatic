@@ -174,5 +174,24 @@ await describe({
         );
       },
     },),
+
+    it({
+      name: 'READS A LINE OPENING WITH A MARKER AS A CITATION, since only a colon after the label makes a definition, and counts no other markup as a citation',
+      fn: async () => {
+        /** Five slices: the first opens with its marker, the second holds a tag, the last defines the note. */
+        const slices = [
+          pairOf({ sliceIndex: 0, source: '[^1]猫咪打了个哈欠。', target: '[^1] The cat yawned.', },),
+          pairOf({ sliceIndex: 1, source: '猫咪<u1>伸了个懒腰</u1>。', target: 'The cat <u1>stretched</u1>.', },),
+          pairOf({ sliceIndex: 2, source: '猫咪睡着了。', target: 'The cat fell asleep.', },),
+          pairOf({ sliceIndex: 3, source: '猫咪醒了。', target: 'The cat woke up.', },),
+          pairOf({ sliceIndex: 4, source: '[^1]: 注释。', target: '[^1]: A note.', },),
+        ];
+        /** Every window. */
+        const windows = sliceNeighbourContexts({ slices, },);
+
+        expect(windows.get(0,)?.sourceText,).toBe('猫咪<u1>伸了个懒腰</u1>。\n\n[^1]: 注释。',);
+        expect(windows.get(1,)?.incumbentText,).toBe('[^1] The cat yawned.\n\nThe cat fell asleep.',);
+      },
+    },),
   ],
 },);
