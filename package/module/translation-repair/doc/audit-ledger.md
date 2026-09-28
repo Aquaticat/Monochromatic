@@ -2404,13 +2404,46 @@ ballot irregularities never logged.
 
 ### L13: stale TSDoc and comments
 
-Status: open.
-"must ship unchanged",
-"Nothing ships from any of them",
-"judges that wrote none of them",
-"no stage decided by a single model",
-the dispute header,
-the preservation-check claims.
+Status: fixed in `99dc48335`; one item was code, now L15.
+Each site was read against the code before rewording, and two claims beyond the audit's were wrong too.
+
+- `chunk-critic-phase.ts`: `votesStand` said the slice "must ship unchanged" and its example returned unchanged;
+    standing votes are evidence since question 3, answer B (2026-08-16).
+    `heardCriticIds` said it was "what it was asked"; it is who was heard.
+- `repair-contract.ts`: `nonTranslationStanding` said the slice "shipped unchanged"
+    and fed a "document-level block"; the dominance finding reports and blocks nothing.
+- `house-policy.ts`: the measuring sheets were said to decide nothing that ships;
+    checker ballots decide resolution, strip worse-voted edits (L3) and roll rewrites back (L11),
+    and an admitted probe claim rolls a naturalness rewrite back.
+- `repair-editor-stage.ts`: "judges that wrote none of them" (editors sit among the judges at the self-vote weight);
+    also "a decline ships the fallback repair" and "only when no editor produced an operation",
+    both wrong since a unanimous decline returns the untouched text (L14(c));
+    and a `@throws` naming "every judge also edits", which the roster check never refuses.
+- `editor-ensemble.ts`: "producers are removed downstream", twice; they vote at the self-vote weight.
+- `stage-quorum.ts`: "no stage decided by a single model" was said to be held by the quorum;
+    the quorum is a retry target, and a gather short after every round proceeds on what it heard.
+- `preservation-check.ts` and the version 12 note in `repair-slice-key.ts`: the token gate was described as
+    what rejects damaging edits; L4 measured that it sees almost nothing, since envelopes are the licensed quotes.
+- The dispute header (`archive-dispute.ts`) and the damage-evidence note (`repair-damage-evidence.ts`)
+    were already rewritten by L2 and L7.
+- `refine-slice-settle.ts:187`: "shipped deliberately untouched" was a comment on code that acted on it (L15).
+
+### L15: the refinement lane still stopped on standing non-translation votes
+
+Status: fixed in `f77363387`, guarded red first in `d601ebec6`; found while fixing L13.
+`settleRefinedSlice` returned a slice unrefined when its non-translation votes stood,
+on the reading that such a slice shipped deliberately untouched.
+Question 3, answer B (`doc/decision/translation-repair-question-answers.md`, 2026-08-16)
+keeps critics as evidence "rather than deciding anything" and removes every early return they owned,
+and `05ff9791e` removed the repair lane's the same day; this one was left,
+and `refine-slice-settle.unit.test.ts` was written on 2026-08-24 to defend it on the stale reading.
+Over every artifact (`~/temp/agent/audit-glossary-fix/l13-standing-census.mjs`),
+10 of 6,150 slices had standing votes, the repair lane changed 8 of them,
+and none of the 9 in runs that refine was refined.
+The settle test now expects the rewriter to be asked for a standing slice as for any other;
+the phase test that used a standing slice to mean "ineligible" uses one too short to refine.
+Mutation check: restoring the early return is caught; the control survived.
+Cache: rides inside refine 5, same check, same result.
 
 ### L14: smaller items
 

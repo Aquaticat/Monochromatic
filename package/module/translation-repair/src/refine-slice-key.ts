@@ -138,6 +138,10 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  back; checked again on 2026-09-28: the only slice-cache file not older than
  00:26 on 2026-09-27 is the consolidation entry written that minute.
 
+ Rides inside 5 too: a slice whose non-translation votes stand is refined
+ like any other (ledger L15, `f77363387`), where a stored settlement for one
+ records the lane skipped; same check, same result.
+
  Rides inside 5 too: claim summaries fold onto one line on the probe and
  recheck sheets the phase sends (ledger L14(d), `3be658509`); same check, same
  result.
