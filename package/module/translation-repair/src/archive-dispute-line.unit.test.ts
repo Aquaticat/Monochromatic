@@ -12,6 +12,10 @@
  was never seen (0 of 1,132 fully resolved disputes over every artifact), and
  now cannot happen.
 
+ The refused-wording finding a translate author reads had the same slip: it
+ said the checkers did not confirm the repair lane's text of a slice the
+ assembly withdrew.
+
  Fixtures are cat-themed invention.
 
  @module
@@ -24,8 +28,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   type AdjudicatedIssue,
+  type ArchiveDispute,
   archiveDisputesOf,
   describeArchiveDispute,
+  disputedWordingsOf,
   hashContent,
 } from '../dist/final/node/index.mjs';
 
@@ -70,7 +76,7 @@ const ADDITION: AdjudicatedIssue = {
 };
 
 /**
- The dispute line for one settled chunk.
+ The one dispute read off a settled chunk.
 
  @param repairedText - what the repair lane settled on
 
@@ -80,14 +86,16 @@ const ADDITION: AdjudicatedIssue = {
 
  @param withdrawn - whether the assembly withdrew the slice
 
- @returns Eligibility and the line
+ @returns Dispute the chunk carries
+
+ @throws Error when the addition disputes nothing, a broken fixture
 
  @example
  ```ts
- const { eligible, line, } = disputeFor({ repairedText: REPAIRED, changed: true, resolved: true, withdrawn: false, },);
+ const dispute = onlyDispute({ repairedText: REPAIRED, changed: true, resolved: true, withdrawn: false, },);
  ```
  */
-function disputeFor(
+function onlyDispute(
   {
     repairedText,
     changed,
@@ -99,7 +107,7 @@ function disputeFor(
     readonly resolved: boolean;
     readonly withdrawn: boolean;
   },
-): { readonly eligible: boolean; readonly line: string; } {
+): ArchiveDispute {
   /**
    The one dispute read off the chunk.
    */
@@ -117,10 +125,61 @@ function disputeFor(
   },).get(0,);
   if (dispute === undefined)
     throw new Error('the addition did not dispute the archive',);
+  return dispute;
+}
+
+/**
+ The dispute line for one settled chunk.
+
+ @param chunk - settlement, as {@link onlyDispute} reads it
+
+ @returns Eligibility and the line
+
+ @example
+ ```ts
+ const { eligible, line, } = disputeFor({ repairedText: REPAIRED, changed: true, resolved: true, withdrawn: false, },);
+ ```
+ */
+function disputeFor(
+  chunk: Parameters<typeof onlyDispute>[0],
+): { readonly eligible: boolean; readonly line: string; } {
+  /**
+   The one dispute read off the chunk.
+   */
+  const dispute = onlyDispute(chunk,);
   return {
     eligible: dispute.standInEligible,
     line: describeArchiveDispute({ dispute, },),
   };
+}
+
+/**
+ Why the refused-wording finding says the repair lane's text cannot ship.
+
+ @param chunk - settlement, as {@link onlyDispute} reads it
+
+ @returns Reason attached to the repair lane's text
+
+ @throws Error when the repair lane's text is not refused, a broken fixture
+
+ @example
+ ```ts
+ const reason = repairRefusalReason({ repairedText: REPAIRED, changed: true, resolved: false, withdrawn: false, },);
+ ```
+ */
+function repairRefusalReason(
+  chunk: Parameters<typeof onlyDispute>[0],
+): string {
+  /**
+   Refused wording that is the repair lane's text.
+   */
+  const refused = disputedWordingsOf({ dispute: onlyDispute(chunk,), archiveText: ARCHIVE, },)
+    .find(function isRepairText(wording,): boolean {
+      return wording.text === chunk.repairedText;
+    },);
+  if (refused === undefined)
+    throw new Error('the repair lane\'s text was not refused',);
+  return refused.reason;
 }
 
 await describe({
@@ -168,6 +227,30 @@ await describe({
           says: true,
           blamesCheckers: false,
         },);
+      },
+    },),
+    it({
+      name: 'a withdrawn slice\'s refused repair text tells the author the assembly withdrew it, not that the checkers '
+        + 'failed to confirm it',
+      fn: async () => {
+        /**
+         Reason the author reads.
+         */
+        const reason = repairRefusalReason({ repairedText: REPAIRED, changed: true, resolved: true, withdrawn: true, },);
+        expect({ withdrew: reason.includes('withdrew',), blamesCheckers: reason.includes('checkers',), },).toEqual({
+          withdrew: true,
+          blamesCheckers: false,
+        },);
+      },
+    },),
+    it({
+      name: 'an unresolved slice\'s refused repair text tells the author the checkers did not confirm it',
+      fn: async () => {
+        /**
+         Reason the author reads.
+         */
+        const reason = repairRefusalReason({ repairedText: REPAIRED, changed: true, resolved: false, withdrawn: false, },);
+        expect(reason.includes('the checkers did not confirm',),).toBe(true,);
       },
     },),
     it({
