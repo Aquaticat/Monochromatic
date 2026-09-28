@@ -20,6 +20,7 @@ import { leakedEscapeFindings, } from './translate-escape-leak.ts';
 import { sourceCarryFindings, } from './translate-source-carry.ts';
 import { sheetLeakFindings, } from './translate-sheet-leak.ts';
 import { untranslatedOrResidueFindings, } from './translate-han-residue.ts';
+import { signerHandleFindings, } from './translate-signer-handle.ts';
 import {
   readSliceSkeleton,
   type SliceSkeleton,
@@ -267,6 +268,12 @@ export function validateTranslatedSlice(
         candidateText,
         pageText,
       },),
+      ...signerHandleFindings({
+        sourceText,
+        candidateText,
+        pageText,
+        declared,
+      },),
       ...compareLineCounts({
         lineStructured,
         sourceText,
@@ -394,6 +401,13 @@ export function validateTranslatedSlice(
       sourceText,
       candidateText,
       pageText,
+    },),
+    // LEDGER A17: a Han signer left in Han or romanized with no meaning.
+    ...signerHandleFindings({
+      sourceText,
+      candidateText,
+      pageText,
+      declared,
     },),
     ...compareLineCounts({
       lineStructured,

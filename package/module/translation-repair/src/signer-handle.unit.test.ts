@@ -2,7 +2,7 @@
  Guards ledger A17: a signer's handle the ORIGINAL writes in Han and no
  declared or archive rendering covers is romanized with its literal meaning in
  parentheses (owner, 2026-09-22; the house policy's handle rule). Over the
- stored artifacts, 75 of the 82 such page signers shipped bare everywhere they
+ stored artifacts, 45 of the 51 such page signers shipped bare everywhere they
  were rendered, since no floor asked a writer for the gloss and the page passes
  cannot invent one; and a handle the archive also left in Han passed the Han
  residue floor, whose page excuse covers it. Cat-themed invention throughout;
