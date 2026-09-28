@@ -50,9 +50,10 @@ const FAST_POLICY = {
 };
 
 /**
- Retry policy whose reach, the widest backoff window it grants on its own,
- covers the one-second wait Hyper's hourly refusal names, so the ladder
- sleeps that wait instead of ending on it.
+ Retry policy whose reach, the longest stated wait it sleeps in one backoff
+ (1.2 s: its whole span rounded up to the next doubling), covers the
+ one-second wait Hyper's hourly refusal names, so the ladder sleeps that wait
+ instead of ending on it.
  */
 const WAIT_POLICY = {
   limit: 2,

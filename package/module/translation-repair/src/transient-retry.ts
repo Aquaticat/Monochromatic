@@ -144,13 +144,24 @@ function backoffDelayMs(
 }
 
 /**
- Longest backoff a policy grants on its own: the full exponential window of
- its last retry. A refusal naming a wait past it is the provider naming its
+ Longest stated wait the ladder sleeps in one backoff: the ladder's whole
+ span, every retry's full window added together, rounded up to the next
+ doubling. A refusal naming a wait past it is the provider naming its
  return, which no retry inside the ladder would live to see.
- 
+
+ NOT THE WIDEST WINDOW OF ANY ONE RETRY, as this said until the ledger's P13
+ (2026-09-28): the retry after attempt `a` jitters inside `baseMs * 2 ** a`,
+ so the last retry's window is half this reach (8 s under the shipped policy
+ against a reach of 16 s). The value is the one the ladder has run on since
+ `31e67a100` and the one its suite pins: 277 of 57,803 logged backoffs slept
+ a stated wait between the two, each of which the old wording would have
+ ended the ladder on and handed to the router's hold of the whole provider.
+ No retry line names its model (ledger P12), so whether those retries then
+ succeeded is unmeasured, and the behavior stays as it ran.
+
  @param policy - retry pacing in force
- 
- @returns Milliseconds of the widest window
+
+ @returns Milliseconds of the ladder's reach
  
  @example
  ```ts
@@ -426,7 +437,7 @@ export async function exchangeWithRetry(
       const statedWaitMs = retryAfterMsOf({ bodyText: reply.bodyText, },);
 
       /**
-       Widest window this ladder would grant on its own.
+       Longest stated wait this ladder sleeps in one backoff.
        */
       const reachMs = longestBackoffMs({ policy, },);
       // A WAIT PAST THE LADDER'S REACH IS THE PROVIDER NAMING ITS RETURN, and
