@@ -2054,7 +2054,7 @@ Cache: rides inside all six versions, with an account in each.
 
 ### P10: the deepseek-v4.1-flash card is stale against its own measurement rule
 
-Status: the card and the nudge fixed 2026-09-28, each guarded and mutation-checked; the census command is open.
+Status: fixed 2026-09-28: the card, the nudge and the census, each guarded and mutation-checked.
 The card named the pooled 99th percentile as "no completed-call distribution of its own yet" after 67,353 calls,
 and the recovery round told a model whose reply the cap cut that its shape was wrong.
 
@@ -2090,8 +2090,18 @@ the deepseek card back on the placeholder, and the all-dry refusal without its s
 the control survives.
 Cache: the cut-short nudge changes what such a seat is asked, so it rides inside all six versions
 with an account in each (`dd2d454ab`); same slice-cache check, same result.
-Open: the census kept as a command (`p10-cap-measure.mjs` and `p10-cap-cuts.mjs` made a package task with a fixture test),
-named in the pre-launch checks, since a unit test cannot read the logs and a dated test would be a time bomb.
+The census: `89f642614`, since a unit test cannot read the logs and a dated test would be a time bomb.
+`mise run cap-census -- <logs or directories>` re-reads the rule over pass-run logs per seat and provider,
+counts the capped calls that ran to the cap by whether their stream carried content,
+and flags a card on the pooled 99th that the rule can now read, a rule reading off the card,
+and cuts over one percent on a provider with enough calls to say.
+Its first run matched the scratch measurement (499,820 calls; deepseek on Hyper 75 of 4,062 at the cap, 74 with no content),
+and showed two flag defects before commit: the placeholder flag fired on the pooled 90th,
+which is a measured floor, and the cut flag fired on Kimi-K3's 20 OpenRouter calls; both fixed with cases.
+Setup step 6 of the corpus-pass runbook runs it, and its filter was run on the real output.
+Mutation check (`p14-mutants.json`): a wide pairing window, pairing any stream outcome, keeping reckoned lines,
+the rule ignoring the call minimum or the floor, cuts counted from before the caps,
+the placeholder read off any pool, and the cut flag on a thin sample are each caught; the control survives.
 
 ### P11: owner-rule enforcement relies on absence rather than a guard
 
@@ -2198,12 +2208,26 @@ Rides inside the translate (15), repair (33) and refine (5) cache versions with 
 
 ### P14: the spend report reads reckoned lines as measured calls
 
-Status: open, found 2026-09-28 while scoping the P10 census.
+Status: fixed in `44b392cb1` (guard `be030df79`; mutation checked with a control), found 2026-09-28 while scoping the P10 census.
 `spend-read.ts` never reads the `estimated=` field, so `spend-report` counts every reckoned `SPEND` line
 (an abandoned OpenRouter attempt, and since P1 a Bedrock attempt at its bound) as a call the provider reported,
 with the reckoned tokens and cost summed in.
 2,178 such lines sit in 138 top-level logs under the agent directory.
-The writer changed under P1 and P7; the reader did not.
+The writer changed under P1 and P7; the reader did not, though the writer's own TSDoc said the mark was there
+"so a reader can total such lines beside the others or apart".
+`readSpendLine` now reads the mark into `reckoning` (an unknown mark is a damaged record),
+the tally counts `reckonedCalls` per seat, and `spend-report` names them per seat and in a run line;
+on shihai4h2 two of GLM-5.3-Flash's 207 calls were reckoned.
+The marks live once in `spend-line.ts` (`SPEND_RECKONINGS`, `isSpendReckoning`), which the Bedrock ledger reads too,
+so a mark added to the writer cannot go unread by either.
+The red guard's probe read the reckoned line with no mark, the seat with no reckoned count,
+and a mark the package never writes as a clean record.
+Mutation check (`p14-mutants.json`): the reader ignoring the mark or accepting an unknown one,
+and the tally ignoring it, are each caught.
+The shared list missing a mark survived, since every case iterated the list or used one mark
+and only the type check would have refused it;
+`6b683e98e` lists the marks the writers pass apart from the list, and the rerun (`p14b-mutants.json`) catches it.
+No cache moves: nothing a stage reads depends on the spend reader.
 
 ## Repair lane
 
@@ -3228,6 +3252,9 @@ two commands no `&&` joined.
 Once more while closing P6 (`rg <transcript> | head ; rg <transcript> | sort | head`),
 looking up how earlier ledger commits were render-checked,
 and once during P10 (`rg <run> | head ; ls <agent dir> | rg`), after that entry was committed.
+While the P14 mutation run went, a foreground `sleep 1 && tail <log>` and two more checks of its log,
+against the rules that forbid a foreground sleep and any call while a background task runs;
+the task notifies on completion, so the wait is to end the turn.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
