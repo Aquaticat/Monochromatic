@@ -3382,6 +3382,11 @@ so a slice nobody re-seated keys as before and no cache version moves.
 The three copies of the hold-and-memo re-seat are now one, `reseatHookFor` (`corpus-run/pass-reseat-hook.ts`):
 the consolidation hook moved onto it in `09839c622` and the lanes hook in `df601d839`,
 after `f60abcb15` pinned that each lane keeps its own seating.
+The migrations were mutation checked with a control, followed by the full suite (0 FAIL, 1264 PASS):
+eight mutants caught, one of them only after `87c3d7aaf`.
+The translate hook reading under the lanes phase survived the first run, since no case told the phases apart;
+`87c3d7aaf` does, under the one view of all sixteen that separates them
+(Hyper and OpenRouter dry: the lanes phase finds the editors and refiners short, the translate lane nothing).
 `awaitBenchQuorum` lost its last caller with them and was removed in `c2e74caeb`,
 with the `run-seats-read.ts` comment that said every driver asks it.
 Still open: `preparePassEntry` (pairing, archive review), `readPassVisualEvidence` (the picture readings)

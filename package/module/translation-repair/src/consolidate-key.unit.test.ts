@@ -303,7 +303,8 @@ await describe({
         + 'moved on 2026-08-22 for line-structure judging and on 2026-08-28 for target-authoritative '
         + 'metadata contributor spelling, final body polish, target body contributor authority, and '
         + 'source-grammar calque removal, absolute naturalness review, required correction mode, and second bounded correction, then on 2026-08-29 for '
-        + 'render-aware absolute review, rejected-base correction prompts, absolute correction eligibility, exact-half participation, continuous correction, distinct confirmation responsibility, rejected-strategy threading, durable payload replay, and contributor authority flooring. These policies are not text fields, '
+        + 'render-aware absolute review, rejected-base correction prompts, absolute correction eligibility, exact-half participation, continuous correction, distinct confirmation responsibility, rejected-strategy threading, durable payload replay, and contributor authority flooring, '
+        + 'and on 2026-09-28 for the slate judges beside the writers (ledger X11). These policies are not text fields, '
         + 'so comparing two calls would not notice a stale settlement, which is why this pins a value',
       fn: async () => {
         // THE LITERAL MOVED TWICE ON 2026-08-29. Its fixture roster first
