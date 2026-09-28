@@ -848,7 +848,11 @@ export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
  clears the observed p99 by 64 percent and the observed maximum by 53 percent,
  while keeping a worst-case stage bounded. `STAGE_RETRY_ROUNDS` allows four
  deadlines in one stage, so this caps a pathological stage near 24 minutes
- against the 90 minute per-entry ceiling, where 480_000 would put it past 32.
+ (the recovery round after them waits only a straggler window), where 480_000
+ would put it past 32. The per-entry ceiling it was weighed against was 90
+ minutes when this was written; it has been 420 since 2026-08-17
+ (`HARD_CAP_MINUTES` in `corpus-pass.ts`), and this comment said 90 until
+ ledger D6.
  Raising it should also REDUCE retry rounds by losing fewer voices, so the
  worst case gets rarer as well as no worse.
  
