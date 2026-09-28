@@ -2036,7 +2036,8 @@ which counts against reverting unconfirmed envelopes with no recheck of the comp
 
 ### L4: the editor preservation gate can never reject anything
 
-Status: owner ruled 2026-09-28, "Markup atoms" (`design-commitments.md`); implementation pending; measured 2026-09-28.
+Status: fixed in `b5338610e` and `c4a4fbb62` (guard `01d8bfd4c`); owner ruled 2026-09-28, "Markup atoms" (`design-commitments.md`);
+measured 2026-09-28.
 Envelopes and licensed quotes are the same quotes;
 `residualTokens` is 0 on 536 of 540 regions.
 Replayed over 5,733 recorded repair regions, the structural atoms an edit changed are mostly gains an omission fix restores
@@ -2046,6 +2047,41 @@ with damage (a footnote lost on a quotation-mark claim, MDX braces lost on mistr
 The damage this finding names (a gloss dropped, a handle and a name replaced, an attribution deleted)
 is prose inside the licensed quote, which no markup gate sees,
 so what the gate should protect inside a quote is a design choice, not a measurement.
+
+`markup-atom-scan.ts` reads footnote references, link destinations, MDX expressions, inline code and tags
+(comments included) out of an envelope fragment in one left-to-right scan:
+a code span is consumed whole, a backslash escapes, parentheses and braces nest,
+and a construct the fragment edge cuts off yields no atom.
+Footnote labels follow GFM's call tokenizer, which refuses an empty label, a bracket, a space or a line ending.
+`markup-atom-preservation.ts` compares the atoms as a multiset, since an accuracy edit may move a reference to its clause;
+an atom inside a quote an addition claim made may go, claim by claim rather than issue by issue (`buildRemovableQuotes`).
+`applyPatchOperations` refuses a loss as `preservation-lost-markup (<kinds>)`, naming kinds, never atom text.
+The editor sheet's markup rule is built from `MARKUP_ATOM_SHEET_NAMES`, a Record over every kind,
+so the sheet names each kind the gate enforces; before, it named footnote markers only.
+One `ADDITION_CATEGORY` in `issue-taxonomy.ts` replaces the private copies in `reference-attest-claims.ts` and `archive-dispute.ts`.
+
+Reach, replayed with the built gate over the same 5,733 regions (`l4-replay.mjs`):
+24 refused, none of them by the typography restoration;
+15 regions that lose an atom pass on an addition quote.
+Positive control: 39 regions lose an atom by plain set difference, 24 plus 15.
+The refused regions by shape (`l4-refused-markup.mjs`, markup only):
+footnote references lost on quotation-mark claims (hulicaijia s34, shihai4h s29), both withdrawn;
+an MDX expression dropped on a mistranslation claim (shihai4h s38, shipped);
+`DottedNumber` component props rewritten on number-format claims (XingZ60 s34, s39, s41; three shipped);
+these are the damage the ruling names.
+Three shapes look like fixes the ruling's wording also refuses:
+inline code the source renders as a heading tag, converted to that tag (XingZ60 s87 and s88, two shipped);
+a spelling fix inside a `PhotoScroll` prop, whose captions are visible text (noname s9, shipped);
+and two footnote references swapped between clauses across two envelopes (yuki418330012 s6, shipped).
+An HTML comment translated or deleted on untranslated-text claims (XingZ60 s6, six shipped) is invisible to readers either way.
+One footnote lost on a link-convention and omission claim (shihai4h s33) was not selected;
+the package defines no rule text for `policy/link-convention`, so it stays unclassified.
+The three fix-shaped refusals go to the owner with the probe-reading question from L11.
+
+Mutation check (`l4-mutants.json`): the gate off, the addition licence ignored, every claim licensing removal,
+a set compare in place of the multiset, escapes ignored, a spaced footnote label accepted,
+and the sheet dropping a kind are each caught; the comment-wording control survives.
+Cache: rides inside repair version 33 with an account in `repair-slice-key.ts`.
 
 ### L5: wrong panel acceptances
 

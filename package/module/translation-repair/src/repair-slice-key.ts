@@ -360,6 +360,13 @@ import type { RepairModels, } from './repair-contract.ts';
  `69c149471`), which changes the text a chunk ships and its checker record;
  checked on 2026-09-28: still no slice-cache file newer than 00:26 on
  2026-09-27.
+
+ Rides inside 33 too: the editor preservation gate refuses an edit that loses
+ a footnote reference, link destination, MDX expression, inline code or tag
+ no addition claim quoted, and the editor sheet names every such kind (ledger
+ L4, the owner's ruling of 2026-09-28, `b5338610e` and `c4a4fbb62`), which
+ changes the editor's question and which edits a chunk may apply; checked on
+ 2026-09-28: still no slice-cache file newer than 00:26 on 2026-09-27.
  */
 export const SLICE_CACHE_VERSION = 33;
 /**
