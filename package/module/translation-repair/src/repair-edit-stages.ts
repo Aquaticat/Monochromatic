@@ -17,6 +17,7 @@ import {
   usableResolutionReportFor,
   RESOLUTION_RESPONSE_FORMAT,
 } from './resolution-wire.ts';
+import { logBallotIrregularities, } from './ballot-irregularity-log.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
@@ -175,6 +176,12 @@ export async function runCheckerStage(
       ];
     },),
   );
+
+  logBallotIrregularities({
+    ballots,
+    stage: 'checker',
+    l,
+  },);
 
   /**
    Quorum degradation plus ballot irregularities across heard checkers.

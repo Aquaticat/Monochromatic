@@ -24,6 +24,7 @@ import {
   mapOverlapped,
   type OverlappedRow,
 } from './overlapped-map.ts';
+import { logBallotIrregularities, } from './ballot-irregularity-log.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { tallyVotes, } from './tally-votes.ts';
@@ -355,6 +356,11 @@ export async function runPanelStage(
           ];
         },),
       );
+      logBallotIrregularities({
+        ballots,
+        stage: 'panel',
+        l: packetLogger,
+      },);
       /**
        Configured electorate remains unchanged even if another packet hears different seats.
        */
