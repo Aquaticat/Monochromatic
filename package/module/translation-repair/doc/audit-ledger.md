@@ -3901,6 +3901,27 @@ and `uniqueNaturalnessFindings` beside the live `uniqueFindings`:
 each reader copy is an artifact version's rule, recomputed on read and refused on disagreement,
 so merging would remove the check. Both naturalness sites now say so.
 
+### B16: 41 import bindings nothing referenced, and no check that reports one
+
+Status: fixed in `3817a99c9`, 2026-09-28; the missing check is repository configuration, outside the package.
+`noUnusedLocals` is off in `package/config/typescript/tsconfig.options.json` and the linter reports none either,
+so the provider-client merge (B12) left four `p-limit` imports behind unnoticed until counted.
+A parser census over the package's 1,837 source and test files (`~/temp/agent/audit-glossary-fix/unused-imports.mjs`)
+found 41 bindings no code references; 36 are removed across 24 files,
+and the 5 kept are TSDoc `{@link}` targets (`ArtifactParseError` in three readers, `FidelityReferenceError`,
+`IssueEvidenceConflictError`). The census now reports those 5 and nothing else.
+
+### B17: the TSDoc example scan closed a fence on any three backticks
+
+Status: fixed in `7cc4ac642`, 2026-09-28; found by the full suite.
+`exampleCodeOf` (`tsdoc-example-scan.ts`) took the next three backticks anywhere as the closing fence,
+where CommonMark closes only on a line of backticks alone, at least as long as the opener.
+`longestRunOf`'s example, whose string quoted a fence, was cut short and read as leaving out `character`,
+and the package-wide scan failed; the merge (`304ae283d`) had passed its own tests,
+and the suite that caught it ran once, after the audit-area-six commits.
+The scan now reads fences line by line; a fixture quoting a fence passes, the same fixture missing a key is still found,
+and a mutant restoring the old close fails 2 assertions. The suite after it: 0 FAIL, 1,301 PASS lines.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing, recorded for the prevention doc.
