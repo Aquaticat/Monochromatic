@@ -2,9 +2,14 @@ import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { rewriteEverySlice, } from './page-slice-rewrite.ts';
+import { runEnd, } from './canadian-date-parts.ts';
 import { monthFirstDates, } from './canadian-date.ts';
+import { isWordCharacter, } from './canadian-spelling-context.ts';
 import { canadianSpellings, } from './canadian-spelling.ts';
-import { protectedRanges, } from './prose-ranges.ts';
+import {
+  inProse,
+  protectedRanges,
+} from './prose-ranges.ts';
 
 //region Canadian forms
 // CLASS ONE HUNDRED THIRTY-FOUR (hulicaijia19, 2026-09-25): the page is
@@ -30,19 +35,98 @@ type FormRewrite = {
 };
 
 /**
+ Lower-case words an original writes in English in its prose (ledger K9: a
+ quoted English sentence kept its spelling on the page only if nothing
+ respelled it), outside its markup, attributes and code.
+
+ @param source - original slice
+
+ @returns Its English words in lower case
+
+ @example
+ ```ts
+ englishWordsOf({ source: '她写道“my favorite color”。', },); // Set { 'my', 'favorite', 'color' }
+ ```
+ */
+function englishWordsOf(
+  { source, }: { readonly source: string; },
+): ReadonlySet<string> {
+  /**
+   The original's non-prose ranges.
+   */
+  const ranges = protectedRanges({ text: source, },);
+  /**
+   Every run of word characters, with its offsets.
+   */
+  const words: {
+    readonly word: string;
+    readonly start: number;
+    readonly end: number;
+  }[] = [];
+  for (let at = 0; at < source.length;) {
+    /**
+     Where the next word ends, or the cursor where none starts here.
+     */
+    const end = runEnd({
+      text: source,
+      from: at,
+      keeps: isWordCharacter,
+    },);
+    if (end > at) {
+      words.push({
+        word: source.slice(
+          at,
+          end,
+        )
+          .toLowerCase(),
+        start: at,
+        end,
+      },);
+    }
+    at = Math.max(
+      end,
+      at + 1,
+    );
+  }
+  return new Set(words
+    .filter(function inOriginalProse({
+      start,
+      end,
+    },): boolean {
+      return inProse({
+        ranges,
+        start,
+        end,
+      },);
+    },)
+    .map(function wordOf({ word, },): string {
+      return word;
+    },),);
+}
+
+/**
  Rewrites one text's dates and spellings the Canadian way.
 
  @param text - text as the page would carry it
+
+ @param source - the original slice, whose own English words keep their
+ spelling
 
  @returns Rewritten text and each change as "from" to "to"
 
  @example
  ```ts
- canadianizeText({ text: 'On 4 May the cat ate liquorice.', },).text; // 'On May 4 the cat ate licorice.'
+ canadianizeText({ text: 'On 4 May the cat ate liquorice.', source: '5月4日猫吃了甘草糖。', },).text; // 'On May 4 the cat ate licorice.'
  ```
  */
 export function canadianizeText(
-  { text, }: { readonly text: string; },
+  {
+    text,
+    source,
+  }: {
+    readonly text: string;
+    readonly source: string;
+  },
 ): {
   readonly text: string;
   readonly changed: readonly string[];
@@ -63,6 +147,7 @@ export function canadianizeText(
     ...canadianSpellings({
       text,
       ranges,
+      kept: englishWordsOf({ source, },),
     },),
   ].toSorted(function byStart(
     left,

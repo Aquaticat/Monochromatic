@@ -1,0 +1,151 @@
+//region Canadian spelling pairs
+// Words outside the stem families, each with its Canadian spelling, lower
+// case. Every one has no second sense a respelling could damage: "meter" (a
+// device), "check" (to verify), "tire" (to weary), "license" and "practise"
+// (verbs), "analyses" and "paralyses" (plural nouns) are left to the judges.
+// Where Canadian sources disagree the house policy's source decides: McGill's
+// language guidelines write "counsellor, not counselor", "enrolment, not
+// enrollment" and "program, not programme"; they are silent on "fulfil" and
+// "skilful", which the Ryerson (Toronto Metropolitan) guide writes "fulfill"
+// and "skillful", so those stand as written. "instalment" rests on the Ryerson
+// guide alone.
+
+/**
+ American or British spelling to the Canadian one, lower case.
+ */
+export const CANADIAN_PAIRS: Readonly<Record<string, string>> = {
+  // -re
+  center: 'centre',
+  centers: 'centres',
+  centered: 'centred',
+  theater: 'theatre',
+  theaters: 'theatres',
+  fiber: 'fibre',
+  fibers: 'fibres',
+  liter: 'litre',
+  liters: 'litres',
+  kilometer: 'kilometre',
+  kilometers: 'kilometres',
+  centimeter: 'centimetre',
+  centimeters: 'centimetres',
+  millimeter: 'millimetre',
+  millimeters: 'millimetres',
+  somber: 'sombre',
+  caliber: 'calibre',
+  saber: 'sabre',
+  specter: 'spectre',
+  luster: 'lustre',
+  meager: 'meagre',
+  maneuver: 'manoeuvre',
+  maneuvers: 'manoeuvres',
+  maneuvered: 'manoeuvred',
+  ocher: 'ochre',
+  sepulcher: 'sepulchre',
+  // A doubled l before a suffix.
+  counselor: 'counsellor',
+  counselors: 'counsellors',
+  counseling: 'counselling',
+  counseled: 'counselled',
+  traveled: 'travelled',
+  traveling: 'travelling',
+  traveler: 'traveller',
+  travelers: 'travellers',
+  canceled: 'cancelled',
+  canceling: 'cancelling',
+  labeled: 'labelled',
+  labeling: 'labelling',
+  modeled: 'modelled',
+  modeling: 'modelling',
+  fueled: 'fuelled',
+  fueling: 'fuelling',
+  leveled: 'levelled',
+  leveling: 'levelling',
+  signaled: 'signalled',
+  signaling: 'signalling',
+  marveled: 'marvelled',
+  marveling: 'marvelling',
+  marvelous: 'marvellous',
+  quarreled: 'quarrelled',
+  quarreling: 'quarrelling',
+  jeweler: 'jeweller',
+  jewelers: 'jewellers',
+  jewelry: 'jewellery',
+  dialed: 'dialled',
+  dialing: 'dialling',
+  equaled: 'equalled',
+  equaling: 'equalling',
+  channeled: 'channelled',
+  channeling: 'channelling',
+  tunneled: 'tunnelled',
+  shoveled: 'shovelled',
+  rivaled: 'rivalled',
+  groveled: 'grovelled',
+  pedaled: 'pedalled',
+  totaled: 'totalled',
+  woolen: 'woollen',
+  enrollment: 'enrolment',
+  enrollments: 'enrolments',
+  installment: 'instalment',
+  installments: 'instalments',
+  // -yse
+  analyse: 'analyze',
+  analysed: 'analyzed',
+  analysing: 'analyzing',
+  paralyse: 'paralyze',
+  paralysed: 'paralyzed',
+  paralysing: 'paralyzing',
+  // British forms Canadian English writes the American way.
+  aluminium: 'aluminum',
+  judgement: 'judgment',
+  judgements: 'judgments',
+  maths: 'math',
+  programme: 'program',
+  programmes: 'programs',
+  pajamas: 'pyjamas',
+  mustache: 'moustache',
+  tyre: 'tire',
+  tyres: 'tires',
+  kerb: 'curb',
+  sceptic: 'skeptic',
+  sceptics: 'skeptics',
+  sceptical: 'skeptical',
+  scepticism: 'skepticism',
+  oestrogen: 'estrogen',
+  haemorrhage: 'hemorrhage',
+  haemoglobin: 'hemoglobin',
+  anaemia: 'anemia',
+  anaemic: 'anemic',
+  paediatric: 'pediatric',
+  paediatrician: 'pediatrician',
+  oesophagus: 'esophagus',
+  diarrhoea: 'diarrhea',
+  foetus: 'fetus',
+  foetal: 'fetal',
+  leukaemia: 'leukemia',
+  orthopaedic: 'orthopedic',
+  anaesthesia: 'anesthesia',
+  anaesthetic: 'anesthetic',
+  gynaecology: 'gynecology',
+  gynaecologist: 'gynecologist',
+  oedema: 'edema',
+  // American forms Canadian English writes the British way.
+  gray: 'grey',
+  grays: 'greys',
+  grayish: 'greyish',
+  graying: 'greying',
+  catalog: 'catalogue',
+  catalogs: 'catalogues',
+  defense: 'defence',
+  defenses: 'defences',
+  offense: 'offence',
+  offenses: 'offences',
+  liquorice: 'licorice',
+  // CLASS ONE HUNDRED SIXTY-NINE (TianqiChen6667, 2026-09-26): "she used this
+  // id on basically all of her social media platforms" for 这个id. The pinned
+  // archive writes ID on three pages and lowercase id on none, and the
+  // psychoanalytic id appears nowhere in the corpus, so the word has no second
+  // sense a respelling could damage here.
+  id: 'ID',
+};
+
+//endregion Canadian spelling pairs

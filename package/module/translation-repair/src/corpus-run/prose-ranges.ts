@@ -94,6 +94,155 @@ function pastMarker(
 }
 
 /**
+ Where a run of backticks starting at one offset ends.
+
+ @param text - text under scan
+
+ @param from - offset of the run's first backtick
+
+ @returns Offset just past the run
+
+ @example
+ ```ts
+ backtickRunEnd({ text: '``x', from: 0, },); // 2
+ ```
+ */
+function backtickRunEnd(
+  {
+    text,
+    from,
+  }: {
+    readonly text: string;
+    readonly from: number;
+  },
+): number {
+  for (let at = from; at < text.length; at += 1) {
+    if (text.charAt(at,) !== '`')
+      return at;
+  }
+  return text.length;
+}
+
+/**
+ Where an inline code span opened by the backtick run at one offset ends: at
+ the next run of exactly as many backticks inside the same paragraph
+ (CommonMark). A run with no such partner is literal text (ledger K7: a stray
+ backtick shielded the rest of the text, and a double-backtick span closed at
+ the single backtick inside it).
+
+ @param text - text under scan
+
+ @param at - offset of the run's first backtick
+
+ @returns Offset just past the closing run, or minus one where the run is
+ literal
+
+ @example
+ ```ts
+ codeSpanEnd({ text: '``a `b` c`` d', at: 0, },); // 11
+ ```
+ */
+function codeSpanEnd(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): number {
+  /**
+   The opening run's length.
+   */
+  const length = backtickRunEnd({
+    text,
+    from: at,
+  },) - at;
+  /**
+   Where the paragraph ends, past which no span closes.
+   */
+  const blankLine = text.indexOf(
+    '\n\n',
+    at,
+  );
+  /**
+   Offset no closing run may start at or past.
+   */
+  const limit = (blankLine === (-1)) ? text.length : blankLine;
+  for (let from = at + length; from < limit;) {
+    /**
+     Next backtick at or after the cursor.
+     */
+    const close = text.indexOf(
+      '`',
+      from,
+    );
+    if ((close === (-1)) || (close >= limit))
+      return -1;
+    /**
+     Where that run ends.
+     */
+    const closeEnd = backtickRunEnd({
+      text,
+      from: close,
+    },);
+    if ((closeEnd - close) === length)
+      return closeEnd;
+    from = closeEnd;
+  }
+  return -1;
+}
+
+/**
+ Where a JavaScript comment opening at one offset ends.
+
+ @param text - text under scan
+
+ @param at - offset under the cursor
+
+ @returns Offset just past a block comment's close or a line comment's line,
+ or minus one where no comment opens here
+
+ @example
+ ```ts
+ jsCommentEnd({ text: "/* cat's *\/ x", at: 0, },); // 11
+ ```
+ */
+function jsCommentEnd(
+  {
+    text,
+    at,
+  }: {
+    readonly text: string;
+    readonly at: number;
+  },
+): number {
+  if (text.startsWith(
+    '/*',
+    at,
+  )) {
+    return pastMarker({
+      text,
+      marker: '*/',
+      from: at + 2,
+    },);
+  }
+  if (!text.startsWith(
+    '//',
+    at,
+  ))
+    return -1;
+  /**
+   Where the line comment's line ends.
+   */
+  const newline = text.indexOf(
+    '\n',
+    at,
+  );
+  return (newline === (-1)) ? text.length : newline;
+}
+
+/**
  Where a tag or JSX expression opened at one offset ends: the first `>` (for
  a tag) or the matching `}` (for an expression) outside quotes and nested
  braces.
@@ -132,6 +281,21 @@ function pastConstruct(
     at: from + 1,
   };
   while (state.at < text.length) {
+    /**
+     Where a comment opening here ends, inside an expression, where quote
+     marks are prose (ledger K7: "{/* cat's note *\/}" opened a quote that
+     never closed and shielded the rest of the text).
+     */
+    const commentEnd = ((state.quote === '') && ((!isTag) || (state.depth > 0)))
+      ? jsCommentEnd({
+        text,
+        at: state.at,
+      },)
+      : -1;
+    if (commentEnd !== (-1)) {
+      state.at = commentEnd;
+      continue;
+    }
     /**
      Character under the cursor.
      */
@@ -234,12 +398,14 @@ function constructEnd(
    Character under the cursor.
    */
   const character = text.charAt(at,);
-  if (character === '`')
-    return pastMarker({
-      text,
-      marker: '`',
-      from: at + 1,
-    },);
+  if (character === '`') {
+    return (text.charAt(at - 1,) === '`')
+      ? -1
+      : codeSpanEnd({
+        text,
+        at,
+      },);
+  }
   if ((character === '<') && opensTag({
     text,
     at,

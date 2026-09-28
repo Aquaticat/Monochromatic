@@ -72,7 +72,7 @@ function pair(
 }
 
 /**
- Rewrites one text and returns only the text.
+ Rewrites one text whose original carries no English, and returns only the text.
 
  @param text - text to rewrite
 
@@ -86,7 +86,10 @@ function pair(
 function rewritten(
   { text, }: { readonly text: string; },
 ): string {
-  return canadianizeText({ text, },).text;
+  return canadianizeText({
+    text,
+    source: '她打盹。',
+  },).text;
 }
 
 await describe({

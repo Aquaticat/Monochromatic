@@ -71,7 +71,9 @@ const NEVER_RESPELLED = [
   'compromise',
   'vigorous',
   'glamorous',
-  'odorless',
+  'humorist',
+  'honorific',
+  'vaporize',
 ];
 
 await describe({
