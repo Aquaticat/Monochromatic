@@ -1444,7 +1444,26 @@ a disagreement is today's reading of an older settlement and must say so.
 
 #### A16c: no pass republishes a missing or disagreeing page
 
-Status: open.
+Status: fixed in `3872729e1` (guard `498ddff1b`, shared fixture `ae21bcbf8`)
+and, for the decline, `f98b2d87f` (prep `791e23e17`, red guard `2224ea2d7`).
+Before any entry runs, `pass-republish.ts` judges every settled page with `page-agreement.ts`,
+the verifier's own judgement since `2ce0e9f07`,
+and `page-republish.ts` re-carves each missing or disagreeing one with the artifact's recipe,
+over the archive the artifact stored,
+and republishes it; a moved carve or a publish-time page check leaves the page and logs the class name.
+The step sits after the `--plan` return and the build-generation guards.
+A decline removes a leftover page before it writes its record.
+Over scratch copies of all 214 stored pages:
+137 agree, 51 are republished and every one then agrees
+(49 differ from the old page only in typography, 2 by a blank line at a seam),
+23 are left by the front-matter check, 2 by the destination check and 1 by a corpus read.
+A first version spliced into the corpus copy instead of the stored archive;
+the census caught it (shihai4h came out 9 characters short, and 23 carves read as moved),
+since the pass reshapes the archive before it carves (`passArchiveText`, a heading relabel, `repairArchiveBlocks`).
+At the user boundary, a real `corpus-pass --only mikaela_khara` in a scratch copy of mikaela17 with its page deleted,
+nothing pending, rewrote the page, spent nothing and exited 0,
+and `verify-published` then found 1 of 1 pages carrying every wording at the expected length.
+Earlier state, kept for the record:
 Owner, 2026-09-27: a pass starting in a runs directory rewrites from its artifact any page that is missing
 or that differs from what the artifact says ships.
 Following from that rule and the archive-note rule,
@@ -1478,6 +1497,19 @@ No floor refuses a candidate that leaves a handle in Han
 (`translate-untranslated.ts` refuses only a whole slice returned untranslated),
 so the writers are never asked for the gloss.
 The fix belongs at the writers: a floor naming the declared handle a candidate left in Han.
+
+### A18: the rendering audit rebuilds a carve over the corpus copy, not the archive the run carved
+
+Status: open (found while fixing A16c).
+`readArtifactSubjects` in `rendering-audit-settled-input.ts` reads the archive English at the artifact's commit
+and carves over it,
+but a pass reshapes the archive before it carves (`passArchiveText`, a heading relabel, `repairArchiveBlocks`),
+and the artifact stores the text it carved.
+The same mistake in the first republish read 23 of 77 stored carves as moved and left shihai4h's page 9 characters short;
+carving over the stored archive reproduced all 23.
+The audit's own reproduction check reports the moved carves as departures from the run
+(hulicaijia's `71 slices rebuilt where the run recorded 72` among them),
+so the rendering audit refuses artifacts whose carve it would reproduce.
 
 ## Providers, routing and seating
 
