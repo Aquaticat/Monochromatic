@@ -1,3 +1,4 @@
+import { codePointCount, } from './code-points.ts';
 import { carriesHan, } from './han-only-text.ts';
 import { pairedPageNames, } from './page-name-glossary.ts';
 import { visibleText, } from './page-visible-text.ts';
@@ -15,6 +16,11 @@ import { visibleText, } from './page-visible-text.ts';
 // A TITLE IS A MARKED SPAN: heading text (Markdown or HTML), 《…》, 【…】, or
 // 「…」 where the same words stand in one of those elsewhere on the page, since
 // 「」 alone marks quotations and dialogue far more often than titles.
+//
+// LISTED IN PAGE ORDER. Every span keeps the offset it stands at, and titles
+// are listed by where they first stand; the first version listed every
+// heading before any 《》 span wherever each stood, while saying it listed by
+// first appearance.
 
 /**
  Longest span read as a title, in code points; a longer one is a sentence.
@@ -44,6 +50,26 @@ export type RepeatedTitleSpan = {
    Marked places it stands on the page.
    */
   readonly occurrences: number;
+};
+
+/**
+ One marked span and where it stands.
+
+ @example
+ ```ts
+ const placed: PlacedSpan = { span: '猫之歌', at: 3, };
+ ```
+ */
+type PlacedSpan = {
+  /**
+   Text a reader sees inside the marks.
+   */
+  readonly span: string;
+
+  /**
+   Offset of the span's opening mark on what the page shows.
+   */
+  readonly at: number;
 };
 
 /**
@@ -82,11 +108,11 @@ function shownText({ span, }: { readonly span: string; },): string {
 
  @param close - closing marker
 
- @returns Each span's shown text, in order
+ @returns Each span's shown text and where it opens, in page order
 
  @example
  ```ts
- spansBetween({ text: '《猫》与《狗》', open: '《', close: '》', },); // ['猫', '狗']
+ spansBetween({ text: '《猫》与《狗》', open: '《', close: '》', },); // 猫 at 0, 狗 at 4
  ```
  */
 function spansBetween(
@@ -99,11 +125,11 @@ function spansBetween(
     readonly open: string;
     readonly close: string;
   },
-): readonly string[] {
+): readonly PlacedSpan[] {
   /**
    Spans found.
    */
-  const spans: string[] = [];
+  const spans: PlacedSpan[] = [];
   for (
     let at = text.indexOf(open,);
     at !== (-1);
@@ -121,42 +147,68 @@ function spansBetween(
     );
     if (end === (-1))
       break;
-    spans.push(shownText({ span: text.slice(
-      at + open.length,
-      end,
-    ), },),);
+    spans.push({
+      span: shownText({ span: text.slice(
+        at + open.length,
+        end,
+      ), },),
+      at,
+    },);
   }
   return spans;
 }
 
 /**
- Markdown heading texts, the markers off.
+ Markdown heading texts, the markers off, by one scan over line starts.
 
  @param text - page text
 
- @returns Every ATX heading's text
+ @returns Every ATX heading's text and where its line starts, in page order
 
  @example
  ```ts
- markdownHeadings({ text: '## 猫之歌\n\n喵。', },); // ['猫之歌']
+ markdownHeadings({ text: '## 猫之歌\n\n喵。', },); // 猫之歌 at 0
  ```
  */
-function markdownHeadings({ text, }: { readonly text: string; },): readonly string[] {
-  return text
-    .split('\n',)
-    .flatMap(function toHeading(line,): readonly string[] {
-      // The markers are single ASCII units, so an index walks them.
-      for (let depth = 0; depth < line.length; depth += 1) {
-        if (line.charAt(depth,) === '#')
-          continue;
-        if ((depth === 0) || (depth > DEEPEST_HEADING)
-          || (line.charAt(depth,) !== ' '))
-          return [];
-        return [line.slice(depth,)
-          .trim(),];
-      }
-      return [];
-    },);
+function markdownHeadings({ text, }: { readonly text: string; },): readonly PlacedSpan[] {
+  /**
+   Headings found.
+   */
+  const headings: PlacedSpan[] = [];
+  for (let start = 0; start <= text.length;) {
+    /**
+     End of this line, the text's end for the last.
+     */
+    const newline = text.indexOf(
+      '\n',
+      start,
+    );
+    /**
+     This line.
+     */
+    const line = text.slice(
+      start,
+      (newline === (-1)) ? text.length : newline,
+    );
+    /**
+     Heading markers opening the line, counted by a cursor.
+     */
+    let depth = 0;
+    while (line.charAt(depth,) === '#')
+      depth += 1;
+    if ((depth >= 1) && (depth <= DEEPEST_HEADING)
+      && (line.charAt(depth,) === ' ')) {
+      headings.push({
+        span: line.slice(depth,)
+          .trim(),
+        at: start,
+      },);
+    }
+    if (newline === (-1))
+      break;
+    start = newline + 1;
+  }
+  return headings;
 }
 
 /**
@@ -164,18 +216,18 @@ function markdownHeadings({ text, }: { readonly text: string; },): readonly stri
 
  @param text - page text
 
- @returns Every such heading's text
+ @returns Every such heading's text and where its tag opens, in page order
 
  @example
  ```ts
- htmlHeadings({ text: '<h3 align="center">猫之歌</h3>', },); // ['猫之歌']
+ htmlHeadings({ text: '<h3 align="center">猫之歌</h3>', },); // 猫之歌 at 0
  ```
  */
-function htmlHeadings({ text, }: { readonly text: string; },): readonly string[] {
+function htmlHeadings({ text, }: { readonly text: string; },): readonly PlacedSpan[] {
   /**
    Headings found.
    */
-  const headings: string[] = [];
+  const headings: PlacedSpan[] = [];
   for (
     let at = text.indexOf('<h',);
     at !== (-1);
@@ -215,34 +267,14 @@ function htmlHeadings({ text, }: { readonly text: string; },): readonly string[]
       opened + 1,
       closing,
     );
-    if (!inner.includes('<',))
-      headings.push(inner.trim(),);
+    if (!inner.includes('<',)) {
+      headings.push({
+        span: inner.trim(),
+        at,
+      },);
+    }
   }
   return headings;
-}
-
-/**
- Code points in a text, counted by walking it.
-
- @param text - text to count
-
- @returns Code points
-
- @example
- ```ts
- codePointCount({ text: '猫😺', },); // 2
- ```
- */
-function codePointCount({ text, }: { readonly text: string; },): number {
-  /**
-   Code points seen.
-   */
-  const seen = { count: 0, };
-  for (const character of text) {
-    if (character !== '')
-      seen.count += 1;
-  }
-  return seen.count;
 }
 
 /**
@@ -254,7 +286,7 @@ function codePointCount({ text, }: { readonly text: string; },): number {
 
  @param targetText - whole archive document
 
- @returns Repeated titles in order of first appearance
+ @returns Repeated titles in order of where each first stands
 
  @example
  ```ts
@@ -292,9 +324,11 @@ export function repeatedTitleSpans(
     },),
   ];
   /**
-   Those spans, for the quotation rule.
+   Those spans' texts, for the quotation rule.
    */
-  const titles = new Set(titled,);
+  const titles = new Set(titled.map(function textOf(placed,): string {
+    return placed.span;
+  },),);
   /**
    Quoted spans that repeat a title.
    */
@@ -303,8 +337,8 @@ export function repeatedTitleSpans(
     open: '「',
     close: '」',
   },)
-    .filter(function repeatsTitle(span,): boolean {
-      return titles.has(span,);
+    .filter(function repeatsTitle(placed,): boolean {
+      return titles.has(placed.span,);
     },);
   /**
    Titles the page-name glossary already carries.
@@ -314,24 +348,31 @@ export function repeatedTitleSpans(
     targetText,
   },);
   /**
-   Marked places per title, in order of first appearance.
+   Marked places per title, in order of where each first stands.
    */
   const counts = [
     ...titled,
     ...quoted,
-  ].reduce(
-    function tally(
-      seen,
-      span,
-    ) {
-      seen.set(
-        span,
-        (seen.get(span,) ?? 0) + 1,
-      );
-      return seen;
-    },
-    new Map<string, number>(),
-  );
+  ]
+    .toSorted(function byPlace(
+      left,
+      right,
+    ): number {
+      return left.at - right.at;
+    },)
+    .reduce(
+      function tally(
+        seen,
+        placed,
+      ) {
+        seen.set(
+          placed.span,
+          (seen.get(placed.span,) ?? 0) + 1,
+        );
+        return seen;
+      },
+      new Map<string, number>(),
+    );
   return [...counts.entries(),]
     .filter(function repeatedAndUnpaired([span, occurrences,],): boolean {
       return (occurrences >= 2)

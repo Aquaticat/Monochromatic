@@ -131,5 +131,14 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'LISTS BY PLACE ACROSS MARKERS: a 《》 title before a later heading comes first',
+      fn: async () => {
+        expect(spansOf({ sourceText: '小猫读了《鱼之梦》。\n\n## 猫之歌\n\n《猫之歌》之后又是《鱼之梦》。\n', },),).toEqual([
+          { source: '鱼之梦', occurrences: 2, },
+          { source: '猫之歌', occurrences: 2, },
+        ],);
+      },
+    },),
   ],
 },);
