@@ -914,3 +914,52 @@ or production change follows.
 This does not reject every possible Voyage estimator or auxiliary role.
 The original reserved bank remains untouched;
 Q16 and Laya #34 remain paused.
+
+### Practical implication from the model-free postmortem
+
+The user's "Okay, and?" required an engineering implication rather than another metrics-only closeout.
+Task #56 inspected the retained concrete-head evidence only.
+`diagnose-permission-features.mjs` at private `36e688a`
+passed collision/order positive and negative controls and checked frozen evidence hashes,
+raw coordinates,
+and reference bindings.
+`diagnose-operation-conditioning.mjs` at `dbd1b8f` then exposed operation-local slices.
+Neither command made a model call,
+fitted parameters,
+searched thresholds,
+or inspected the original reserved bank.
+
+Three opposite-reference full-coordinate groups occur inside positive-relation roles;
+all cross operation kinds.
+There is no exact same-operation conflict in this bank.
+One false transfer-scope grant and one true local-read grant returned the same support/complement pair,
+`0.80859375`/`0.80078125`,
+and therefore the same approved-prose positive probability,
+`0.32495985746353645`.
+The owned caller selects a head by source kind and axiom,
+not operation.
+A deterministic head of those unchanged inputs cannot distinguish that pair,
+regardless of threshold or refitting.
+This proves a limitation for collided rows,
+not the cause of every abstention or impossibility of useful selective coverage.
+
+The proposed next research direction is calibration conditioned on code-established operation kind,
+keeping margin/level as each head's numeric inputs.
+Use a pooled control and conditioned candidate on the same fresh data,
+then freeze both before a new test.
+This is a proposed change from the four-head protocol,
+not a hidden operation-specific threshold or an adopted estimator.
+At the current sample size,
+each separate operation head would have six fit rows and two positives;
+slicing alone does not establish sufficient evidence.
+Current frozen scores also retain one request/read and two prose/read inversions across the combined partitions.
+Each comes from 72 comparisons sharing eighteen observations,
+not independent trials.
+Conditioning is therefore not yet a verified fix for read-language errors.
+
+The [concrete-head result](../planning/pi-auto-mode-voyage-concrete-fit.md#what-the-result-means-for-the-next-experiment)
+and [consumer-boundary troubleshooting record](../troubleshooting/voyage-relevance-axiom-boundary.md#concrete-hypotheses-still-collide-across-operation-kinds)
+retain the source trace,
+witnesses,
+and recommendation limits.
+No new feature schedule or fitted conditional candidate is selected.

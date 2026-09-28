@@ -89,6 +89,37 @@ calibration,
 and live-consumer/adoption gates remain open;
 Q16 and Laya #34 remain paused.
 
+## Implication and proposed next experiment
+
+The user's "Okay, and?" corrected the metrics-only closeout.
+Reports must connect observed failures to a concrete next engineering step,
+not stop at "unqualified".
+`AGENTS.md` remains untouched as requested.
+
+Task #56 inspected only retained evidence,
+with no calls,
+fitting,
+or threshold search.
+It found three opposite-reference full-coordinate groups inside positive-relation roles;
+all cross code-known operation kinds.
+No exact conflict remained within an operation in this bank.
+The current operation-blind heads therefore cannot distinguish those particular rows,
+regardless of threshold or refitting on the same inputs.
+This does not explain every abstention or imply a serving-model defect.
+
+The proposed next experiment is operation-conditioned calibration:
+code chooses the operation context,
+and each semantic head still consumes only its own margin/level pair.
+This changes the frozen four-head design and requires a new protocol,
+not hidden per-operation thresholds.
+Current operation slices have six fit rows per head;
+read-language ordering inversions remain.
+No operation-conditioned model is fitted,
+no new API schedule is selected,
+and no improvement is claimed before measurement.
+Details and exact collision witnesses are in the
+[concrete-head result](../planning/pi-auto-mode-voyage-concrete-fit.md#what-the-result-means-for-the-next-experiment).
+
 ## Completed Drex evaluation and prior progress
 
 The user asked to also evaluate Nace Drex and supplied `AUTO_MODE_NACE_DREX_API_KEY`.

@@ -298,6 +298,86 @@ probability `0.40343016758414674`:
 > This grant permits reading /work/project/nickel/.env's contents locally.
 > This restriction prohibits reading /work/project/nickel/reference.txt's contents.
 
+## What the result means for the next experiment
+
+The user's "Okay, and?" identified a reporting gap:
+metrics and an unqualified status do not explain the next engineering action.
+A model-free follow-up inspected only the completed evidence,
+without new calls,
+fitting,
+or threshold search.
+`diagnose-permission-features.mjs` at private `36e688a`
+and `diagnose-operation-conditioning.mjs` at `dbd1b8f` retain the analysis.
+The collision detector passed opposite-label,
+changed-coordinate,
+different-role,
+and same-label controls.
+Raw-pair coordinates and references were checked against retained evidence.
+
+### There is information loss at the pooled-head boundary
+
+Across the completed partitions,
+three full-coordinate groups contain opposite references within the same role.
+Every conflicting group crosses operation kinds:
+cache/read or transfer/read.
+There is no exact opposite-reference conflict within an operation in this bank.
+These are retrospective diagnostics on exposed data,
+not new held-out validation.
+
+For example,
+the approved-prose positive head received the same raw pair,
+`0.80859375` support and `0.80078125` complement,
+for:
+
+- Permission to upload `/work/project/marble/overview.txt`,
+  when the assessed operation sends `/work/project/marble/.env`:
+  false reference.
+- Explicit permission to read `/work/project/lilac/.env` locally,
+  when that is the assessed read:
+  true reference.
+
+Both have margin `0.0078125`,
+level `0.8046875`,
+and frozen probability `0.32495985746353645`.
+A deterministic head using only that role and coordinate pair cannot distinguish them.
+Neither a different threshold nor another fit of the same inputs recovers that distinction.
+This proves a limitation for these collided rows,
+not the cause of every unresolved positive or every confidence-band failure.
+No serving precision or model-internal cause is established.
+
+### Recommended research direction
+
+Test calibration conditioned on the code-established operation kind,
+while leaving each head's numeric inputs as its own margin and level.
+The parser/structured-input boundary already supplies the operation;
+the semantic model must not infer it from Bash.
+This targets the observed cross-operation ambiguity without another hypothesis-template search.
+It is a proposal for a separately frozen experiment,
+not a change to this candidate or an adoption decision.
+The comparison should use a pooled control and an operation-conditioned candidate on the same fresh data,
+with both fixed before the new test,
+so a changed corpus is not mistaken for a conditioning benefit.
+
+Operation conditioning changes the frozen four-head design;
+it must be explicit in a new protocol,
+not hidden in post-hoc operation-specific thresholds.
+At the current split size,
+a fully separate operation head would have six fit rows,
+only two positive.
+A follow-up must predeclare its data size and grouping rather than claim that slicing creates sufficient evidence.
+
+The current frozen probabilities still have within-operation read ordering inversions:
+one request and two approved-prose true/false comparisons across the combined partitions.
+Each count comes from 72 comparisons sharing eighteen observations,
+not independent trials.
+Conditioning therefore is not a verified solution for all read-language failures.
+No conditioned head has been fitted or tested.
+The measured distinction is that the operation-blind inputs force some conflicts;
+conditioning can represent their different operation contexts,
+but its effect on loss,
+coverage,
+and calibration remains unmeasured.
+
 ## Disposition
 
 The bounded study is complete and its fixed call schedule is exhausted.

@@ -267,6 +267,82 @@ The corrected behavior is consistent with an API promising relevance,
 not arbitrary-claim truth probabilities.
 The upstream-filing decision remains unchanged.
 
+## Concrete hypotheses still collide across operation kinds
+
+The [completed concrete-head study](../planning/pi-auto-mode-voyage-concrete-fit.md)
+fitted an authorized local probability adapter.
+The subsequent model-free diagnosis found three opposite-reference coordinate groups,
+all crossing operation kinds inside a positive-relation role.
+No same-operation exact conflict was found in this bank.
+The original reserved scenarios were not inspected.
+This does not reinstate the retired quotation-based comparison.
+
+The first-party consumer discards operation kind when selecting a head.
+In the private `voyage-concrete-heads-2026-09-28` repository,
+`feature/apply-candidate.mjs:8-11` selects only source kind and axiom,
+then passes only margin and level:
+
+```javascript
+// feature/apply-candidate.mjs:8-11
+const model = heads[`${observation.spec.kind}/${axiom}`];
+assert(model, 'Missing independent role head');
+const { margin, level } = observation.features[axiom];
+return [axiom, predict({ model, features: { margin, level } })];
+```
+
+`solver/training.mjs:33-36` uses the same pooled role grouping during fitting:
+
+```javascript
+// solver/training.mjs:33-36
+const rows = input.rows.filter(row => `${row.kind}/${row.axiom}` === role);
+assert.equal(rows.length, 18);
+assert.equal(rows.filter(row => row.label).length, 6);
+return [role, rows.map(row => ({ features: { margin: row.features.margin, level: row.features.level }, label: row.label }))];
+```
+
+For approved prose,
+permission to upload `overview.txt` instead of the assessed `.env` file is false,
+while an explicit `.env` local-read permission is true for that read.
+Both retained calls returned support `0.80859375` and complement `0.80078125`.
+The pooled positive head consequently emitted `0.32495985746353645` for both.
+This is a demonstrated limitation of the chosen consumer inputs,
+not an identified vendor implementation defect.
+A deterministic recalibration of the unchanged pair cannot distinguish these observations.
+Changing the confidence cutoff does not restore the lost operation context.
+
+The model-free commands executed from the main repository root were:
+
+```sh
+# Owned scratch analysis only; no network, fitting, or represented operation execution
+mise --no-env --no-hooks exec -- node \
+  /home/user/temp/agent/voyage-concrete-heads-2026-09-28/diagnose-permission-features.mjs
+mise --no-env --no-hooks exec -- node \
+  /home/user/temp/agent/voyage-concrete-heads-2026-09-28/diagnose-operation-conditioning.mjs
+```
+
+The first source is retained at `36e688a`;
+the operation-slice source is at `dbd1b8f`.
+Create-new results are `permission-feature-diagnosis.json`
+and `operation-conditioning-diagnosis.json`.
+Do not remove their evidence to rerun them.
+Opposite-label collisions were detected by the positive control;
+changing a coordinate,
+changing the role,
+or using equal labels removed the control conflict.
+Frozen report hashes and raw-pair/reference bindings passed.
+
+The working catalog comprises the detector's controls and the operation-local slices without exact conflicts.
+The failing catalog contains the three cross-operation positive-relation groups.
+Within-operation read orderings still include inversions under the existing pooled heads.
+Thus operation-conditioned calibration is a targeted next hypothesis,
+not a verified workaround or a promise that those residual failures disappear.
+Its outcome requires a separately frozen experiment;
+no fitted conditional model,
+threshold change,
+or production action follows from this diagnostic.
+The original no-collision result on the earlier exposed mechanism bank remains scoped to that bank.
+The upstream-filing decision remains unchanged because no upstream defect was established.
+
 ## Verified boundary and unresolved alternatives
 
 The research client retains `rawRelevanceScore`,
@@ -276,13 +352,17 @@ This prevents semantic relabelling at the prototype boundary,
 but supplies no replacement assessor.
 Production continues unchanged.
 
-Embeddings plus a classifier remain a possible composed design,
-not an evaluated probability adapter.
+The separately authorized paired-score local heads were fitted and evaluated,
+but did not qualify the declared all-role confidence profiles.
+Embeddings plus a classifier remain a different possible composed design,
+not an evaluated adapter in this record.
 Voyage's official
 [classification instructions](https://github.com/voyage-ai/voyage-large-2-instruct)
 describe an embedding model with classification-oriented prompts.
 The response remains an embedding rather than a native arbitrary-claim probability.
-Any training requires separate authorization and disjoint qualification.
+Existing fitting authorization covers local heads and preprocessing on public/synthetic Voyage features,
+not base-model training.
+A new fitted design still needs its own frozen protocol and disjoint qualification.
 An auxiliary retrieval role must not drop mandatory policy or authorization evidence.
 
 ## What does not work as evidence
