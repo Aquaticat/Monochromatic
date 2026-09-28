@@ -193,4 +193,28 @@ export function containerHalfPairs(
   return pairs;
 }
 
+/**
+ Whether both halves of a pair are source-only slices.
+
+ The assembly's lone-half withholding and the pass's insertion admission
+ each kept their own copy of this test (audit area six, 2026-09-28).
+
+ @param pair - container halves in two slices
+
+ @returns True when the archive carries neither half
+
+ @example
+ ```ts
+ const inserted = containerHalfPairs({ slices, },).filter(function inserted(pair,): boolean {
+   return bothHalvesInserted({ pair, },);
+ },);
+ ```
+ */
+export function bothHalvesInserted({ pair, }: { readonly pair: ContainerHalfPair; },): boolean {
+  return pair.open
+    .insertion
+    && pair.close
+    .insertion;
+}
+
 //endregion Container half pairs

@@ -1,5 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import {
+  bothHalvesInserted,
   type ContainerHalfPair,
   containerHalfPairs,
 } from './container-half-pairs.ts';
@@ -38,32 +39,6 @@ type LoneHalf = {
    */
   readonly partner: number;
 };
-
-/**
- Whether both halves of a pair are source-only slices.
-
- @param pair - container halves in two slices
-
- @returns True when the archive carries neither half
-
- @example
- ```ts
- const inserted = pairs.filter(bothInserted);
- ```
- */
-function bothInserted(pair: ContainerHalfPair,): boolean {
-  /**
-   Whether the opening half's slice has no archive text.
-   */
-  const openInserted = pair.open
-    .insertion;
-  /**
-   Whether the closing half's slice has no archive text.
-   */
-  const closeInserted = pair.close
-    .insertion;
-  return openInserted && closeInserted;
-}
 
 /**
  Withholds every container half whose partner half ships nothing.
@@ -110,7 +85,9 @@ export function withholdLoneContainerHalves(
    Halves to withhold, each beside the partner that ships nothing.
    */
   const lone = containerHalfPairs({ slices, },)
-    .filter(bothInserted,)
+    .filter(function inserted(pair,): boolean {
+      return bothHalvesInserted({ pair, },);
+    },)
     .flatMap(function unpartnered(pair,): readonly LoneHalf[] {
       /**
        Slice index of the opening half.
