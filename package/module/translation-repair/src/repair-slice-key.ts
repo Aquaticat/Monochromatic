@@ -399,7 +399,14 @@ import type { RepairModels, } from './repair-contract.ts';
  claim naming nothing wrong is no issue, and ask a supporter to lift a real
  defect filed neutral (`severity-scale.ts`), none of which
  `repairRunShape` hashes. `REFINE_CACHE_VERSION` needs no move for the
- tally: its key hashes the adjudicated issues, status included.
+ tally: its key hashes the adjudicated issues, status included. The pass
+ retired those 28 files when TianqiChen66621's artifact landed, so the bump
+ turned out to guard nothing on disk; it stays, since it was right when made.
+
+ Rides inside 34: the declared-identity rule says a footnote marker carries
+ its note, on the critic, panel, editor and introduced-defect probe sheets
+ (ledger L5, `868e848d3`); checked on 2026-09-28 after TianqiChen66621: no
+ slice-cache file newer than 00:26 on 2026-09-27 remains.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**

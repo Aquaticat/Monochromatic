@@ -119,6 +119,13 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).
+
+ Rides inside 5 too: the declared-identity rule says a footnote marker
+ carries its note, and it reaches the introduced-defect probe the refine
+ phase runs (ledger L5, `868e848d3`). Checked on 2026-09-28 after
+ TianqiChen66621: that run wrote slice-cache files from 06:26 to 06:49 and
+ the pass retired them when its artifact landed, so still no slice-cache file
+ newer than 00:26 on 2026-09-27 remains to be served under this number.
  */
 export const REFINE_CACHE_VERSION = 5;
 
