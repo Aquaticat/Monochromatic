@@ -524,7 +524,7 @@ export async function exchangeWithRetry(
       // until the named instant.
       if (statedWaitMs > reachMs) {
         rl.warn(
-          `HTTP ${String(reply.status,)} names its return in ${String(statedWaitMs,)}ms, past this `
+          `${exchange.label}: HTTP ${String(reply.status,)} names its return in ${String(statedWaitMs,)}ms, past this `
             + `ladder's reach of ${String(reachMs,)}ms; ending the ladder`,
         );
         return reply;
@@ -554,8 +554,11 @@ export async function exchangeWithRetry(
       },),
       (reply === undefined) ? 0 : retryAfterMsOf({ bodyText: reply.bodyText, },),
     );
+    // THE CALL IS NAMED (ledger P12): 3,864 "stream ended without its [DONE]
+    // terminator ... retrying" lines across the logs named no model, so none
+    // could be pinned on a model or a provider.
     rl.warn(
-      `${failureLabel}; retrying in ${String(backoffMs,)}ms (attempt ${
+      `${exchange.label}: ${failureLabel}; retrying in ${String(backoffMs,)}ms (attempt ${
         String(attempt + 1,)
       } of ${String(policy.limit + 1,)})`,
     );
