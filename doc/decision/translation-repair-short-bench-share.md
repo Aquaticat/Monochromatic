@@ -160,8 +160,9 @@ and closed 3 of 5 usable against a quorum of 4 with `glm-5.3` and Qwen3.8-27B re
     which is exactly the exact-half quorum those rounds were decided by.
 - The other five stages carry `stage-short-bench (<stage> reachable r of n, quorum q)` in their findings,
     as the gathers do.
-- Counting the seats a confirmation may not ask as out of reach follows from the two settled rules
-    (the reachable share sizes every gather; a confirmation asks only the discovery's seats)
-    rather than from an answer in these words, and is open to the owner's veto.
+- Counting the seats a confirmation may not ask as out of reach was taken first from the two settled rules
+    (the reachable share sizes every gather; a confirmation asks only the discovery's seats),
+    then put to the owner the same day, who chose "Count as out of reach"
+    over counting only the seats the router refused.
     With nothing refused the confirmation's quorum is unchanged;
     it drops to the reachable share only where the seats it may ask cannot meet the bench quorum.

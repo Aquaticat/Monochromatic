@@ -275,8 +275,11 @@ Part of [the package README](../README.md).
   a page that does not parse still refuses, since it would break the site build.
   Measured before the ruling: seven real entries were refused for one dropped link destination each,
   about 10.3 hours of settling discarded (ledger E1).
-  The check that a page carries what its artifact says ships is not one of these:
-  it guards the assembly itself, and a page failing it is a defect in the code, not in the text.
+  The check that a page carries what its artifact says ships joined them by a second answer:
+  asked the same day whether a page failing it, which is a defect in the assembly code rather than in the text,
+  should still refuse with the archive's page shipping in its place,
+  the owner chose "Ship with defect reported".
+  It had fired in no real run (the 8 run logs naming it were all test suites).
 - **A slice with no valid wording keeps the archive's, and the page ships.**
   Owner, 2026-09-27, asked whether an entry keeps stopping at once
   when no wording for a slice passes the deterministic rule
@@ -291,3 +294,19 @@ Part of [the package README](../README.md).
   Measured before the ruling: 18 real entries stopped on this refusal from 2026-09-04 to 2026-09-27,
   about 34.3 hours in all, most on terminals later rulings already turned into shipping the slate's choice;
   on the build of the ruling, one real stop was of the kind still reachable (yulianNyanner, `incumbent-only`, 0.48 hours).
+- **A confirmation sizes its quorum on the seats it could ask and reach.**
+  Owner, 2026-09-27, asked whether the bench seats a naturalness confirmation may not ask
+  (it asks only its discovery's seats) count as out of reach when its quorum is sized,
+  as a seat the router refuses does under the 2026-09-09 short-bench rule:
+  "Count as out of reach".
+  With nothing refused, or with asked seats able to meet the bench quorum, nothing changes;
+  in XingZ624's shape (5 of 8 asked, 2 refused) the confirmation decides on 2 of its 3 reachable voices
+  rather than closing `quorum-not-met` (ledger E3).
+- **A panel verdict gives its reason before its vote.**
+  Owner, 2026-09-27, asked whether each issue-panel verdict carries a reason,
+  and if so before or after the vote, told that no panel bench exists
+  and that the last panel-sheet change moved support from 72% to 65% on one run per arm:
+  "Reason before vote".
+  Measured before the ruling over 265 stored artifacts:
+  about 783 panel verdicts per entry, and 167 characters on average for the reasons other stages' ballots carry.
+  The reason is stored with the ballot and logged beside the issue's decision (ledger E5).
