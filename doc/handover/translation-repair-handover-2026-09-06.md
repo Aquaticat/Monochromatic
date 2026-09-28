@@ -4902,9 +4902,21 @@ each read off the pass log and the shipped page:
     TianqiChen666 patches); L11, the naturalness rewrite of the archive after a lost patch shipping with no
     checker round (106 of 125 TianqiChen666 refinements, 75 with accepted issues); L4, what the editor's
     preservation gate should protect inside a licensed quote; P9, the cross-provider re-ask against prompt
-    uniqueness. NEXT, IN ORDER: P8 (a complete JSON value followed by more text is lost, about four voices per
-    TianqiChen666 run), P13's decision-seat context (30,203 of 32,000 tokens before `ce824d933` added the house
-    rules), P5, X6, H5, then L5, L10, L14, L12, L13 and the D series. DEFERRED PAST THE LAUNCH: L6 (task 401).
+    uniqueness. LANDED SINCE, 2026-09-28, each red-guarded first and mutation checked with a control: P8, a
+    complete JSON value followed by text read (`cac097368`); P13 closed (decision seats read as out of reach,
+    including a state the endpoint refuses with HTTP 400 `max_tokens_exceeded`, `a991ef1e1`; the retry
+    backoff ends on the caller's abort, `169b51e8a`; the Bedrock stream bound per attempt, `b1a4f4b9e`; the two
+    preferred-endpoint cards priced at the endpoint bought, `7ceffe055`; the payment-clear item refuted by the
+    logs, `de673c843`); P5, a quoted editorial-context review admitted (`8e994bc77`); X6, no translate refusal
+    keeps an archive the publication rule refuses (`6445a2e35`; reach on the lane-agreement path unmeasured, and
+    no TianqiChen666 run refused anything in that lane); H5's translate half, the translate lane re-seats under
+    a hold (`29a424b76`). H5's consolidation half is DEFERRED past the launch: no hold began inside a
+    consolidation phase in any TianqiChen666 run (983 did in 25 of 4,121 logs), and per-slice seating there must
+    fold the slice's bench into its key, since `consolidateRunShape` folds the roster once. A full suite at
+    `bc69e2336` is running; the one before it failed only on a test pinning the old DeepSeek price.
+    NEXT, IN ORDER: the owner batch (L3, L4, L11, P9), then #395's cache check and the TianqiChen666 launch;
+    after it L5, L10, L14, L12, L13 and the D series. DEFERRED PAST THE LAUNCH: L6 (task 401), H5's
+    consolidation half.
     Probe scripts, the single-file runner (`run-files.ts`) and the mutation harness (`mutants.ts`, JSON spec)
     live in `~/temp/agent/audit-glossary-fix/`, which survives a reboot; the scratchpad did not.
     AUDIT IN PROGRESS (owner 2026-09-27: "audit the whole translation-repair pkg for all the mistakes we've
