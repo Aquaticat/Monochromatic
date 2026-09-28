@@ -107,6 +107,20 @@ export const CAPITALISED_EXCLUDED: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ Words that name the psychoanalytic frame, in lower case: where a text
+ carries one, a bare "id" is Freud's and keeps its spelling (ledger H14).
+ */
+export const FREUDIAN_WORDS: ReadonlySet<string> = new Set([
+  'ego',
+  'egos',
+  'superego',
+  'freud',
+  'freudian',
+  'psychoanalysis',
+  'psychoanalytic',
+],);
+
+/**
  Words a title-case heading writes in lower case.
  */
 export const TITLE_SMALL_WORDS: ReadonlySet<string> = new Set([

@@ -10,10 +10,12 @@ import {
   besideNonProse,
   isWordCharacter,
   runStart,
+  wordsOf,
 } from './canadian-spelling-context.ts';
 import {
   CANADIAN_SPELLINGS,
   CAPITALISED_EXCLUDED,
+  FREUDIAN_WORDS,
   MOTHER_WORDS,
   POSSESSIVE_DETERMINERS,
 } from './canadian-spelling-words.ts';
@@ -333,6 +335,18 @@ export function canadianSpellings(
   },
 ): readonly SpellingRewrite[] {
   /**
+   Words that keep their spelling here: the original's English, and "id"
+   where the text names the psychoanalytic frame it belongs to (ledger H14:
+   beside the ego and the superego, "id" is Freud's, not a handle).
+   */
+  const held: ReadonlySet<string> = wordsOf({ text, },)
+    .isDisjointFrom(FREUDIAN_WORDS,)
+    ? kept
+    : new Set([
+      ...kept,
+      'id',
+    ],);
+  /**
    Rewrites found so far.
    */
   const rewrites: SpellingRewrite[] = [];
@@ -364,7 +378,7 @@ export function canadianSpellings(
       text,
       start,
       end: at,
-      kept,
+      kept: held,
     },);
     if ((to !== from) && inProse({
       ranges,

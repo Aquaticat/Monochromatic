@@ -173,6 +173,49 @@ export function lineStartOf(
 }
 
 /**
+ Every word a text carries, in lower case.
+
+ @param text - text under scan
+
+ @returns Its words
+
+ @example
+ ```ts
+ wordsOf({ text: 'The id, the Ego.', },); // Set { 'the', 'id', 'ego' }
+ ```
+ */
+export function wordsOf(
+  { text, }: { readonly text: string; },
+): ReadonlySet<string> {
+  /**
+   Words found so far.
+   */
+  const words = new Set<string>();
+  for (let at = 0; at < text.length;) {
+    /**
+     Where a word starting here ends, or the cursor where none starts.
+     */
+    const end = runEnd({
+      text,
+      from: at,
+      keeps: isWordCharacter,
+    },);
+    if (end > at) {
+      words.add(text.slice(
+        at,
+        end,
+      )
+        .toLowerCase(),);
+    }
+    at = Math.max(
+      end,
+      at + 1,
+    );
+  }
+  return words;
+}
+
+/**
  Whether a token carries a dot with a letter or digit after it, as a file
  name or a domain does.
 
