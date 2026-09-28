@@ -4,7 +4,10 @@ import type { BlockShape, } from './translate-skeleton.ts';
 // The block half of `validateTranslatedSlice`, split from `translate-validate.ts`
 // at its line budget along the seam it already had: these helpers compare a
 // candidate's block skeleton with the floor it must carry and write the
-// findings, and the validator calls only `compareBlocks`.
+// findings, and the validator calls only `compareBlocks`. The archive block
+// review's shape check (`archive-revision-shape.ts`) reads the same two
+// helpers, `describeBlocks` and `sameShape`, rather than its own copies of
+// them (audit area six, 2026-09-28).
 /**
  Renders one block for a finding.
  
@@ -33,7 +36,7 @@ function describeBlock(shape: BlockShape,): string {
  const label = describeBlocks({ blocks, },);
  ```
  */
-function describeBlocks({ blocks, }: { readonly blocks: readonly BlockShape[]; },): string {
+export function describeBlocks({ blocks, }: { readonly blocks: readonly BlockShape[]; },): string {
   if (blocks.length === 0)
     return 'nothing';
   return blocks.map(describeBlock,)
@@ -107,7 +110,7 @@ function appearsInOrder(
  sameShape({ left: source, right: candidate, },);
  ```
  */
-function sameShape(
+export function sameShape(
   {
     left,
     right,

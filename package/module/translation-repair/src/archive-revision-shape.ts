@@ -1,7 +1,8 @@
+import { readSliceSkeleton, } from './translate-skeleton.ts';
 import {
-  type BlockShape,
-  readSliceSkeleton,
-} from './translate-skeleton.ts';
+  describeBlocks,
+  sameShape,
+} from './translate-validate-blocks.ts';
 
 //region Archive revision shape
 // THE SEVENTY-SEVENTH CLASS (zheermao2, 2026-09-21). The archive block review
@@ -20,79 +21,6 @@ import {
  Finding prefix a revision withheld on shape is recorded under.
  */
 export const REVISION_SHAPE_REFUSED = 'archive-revision-refused';
-
-/**
- Renders one block for a finding.
-
- @param shape - block to describe
-
- @returns Kind with its distinguishing detail
-
- @example
- ```ts
- const label = describeBlock({ kind: 'heading', detail: 'level 2', },);
- ```
- */
-function describeBlock(shape: BlockShape,): string {
-  return (shape.detail === '') ? shape.kind : `${shape.kind} (${shape.detail})`;
-}
-
-/**
- Renders a block sequence for a finding.
-
- @param blocks - blocks in document order
-
- @returns Comma-separated description, or a word for none
-
- @example
- ```ts
- const label = describeBlocks({ blocks, },);
- ```
- */
-function describeBlocks({ blocks, }: { readonly blocks: readonly BlockShape[]; },): string {
-  if (blocks.length === 0)
-    return 'nothing';
-  return blocks.map(describeBlock,)
-    .join(', ',);
-}
-
-/**
- Whether two block sequences match block for block by kind and detail.
-
- @param left - one sequence
-
- @param right - other sequence
-
- @returns Whether every block has a counterpart of its kind and detail at its index
-
- @example
- ```ts
- const same = sameBlocks({ left: block.blocks, right: revision.blocks, },);
- ```
- */
-function sameBlocks(
-  {
-    left,
-    right,
-  }: {
-    readonly left: readonly BlockShape[];
-    readonly right: readonly BlockShape[];
-  },
-): boolean {
-  return (left.length === right.length)
-    && left.every(function matches(
-      block,
-      index,
-    ): boolean {
-      /**
-       Counterpart block in the other sequence.
-       */
-      const other = right[index];
-      return (other !== undefined)
-        && (other.kind === block.kind)
-        && (other.detail === block.detail);
-    },);
-}
 
 /**
  Why a revision cannot replace the block it revises, when its shape is not
@@ -156,7 +84,7 @@ export function revisionShapeFindings(
    */
   const revisionShapes = revision.skeleton
     .blocks;
-  if (sameBlocks({
+  if (sameShape({
     left: blockShapes,
     right: revisionShapes,
   },))
