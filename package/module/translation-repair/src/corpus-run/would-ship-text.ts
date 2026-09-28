@@ -65,6 +65,7 @@ export type WouldShipDecider =
  */
 export type WouldShipSilence =
   | 'page-assembly-withdrew-and-archive-silent'
+  | 'no-valid-wording-and-archive-silent'
   | 'contest-declined-and-archive-silent'
   | 'contest-unasked-and-archive-silent'
   | 'lanes-agreed-on-no-wording';
@@ -356,6 +357,14 @@ type ConsolidationContribution =
   }
   | {
     /**
+     No wording passed the deterministic rule here, so the archive keeps the
+     slice over whatever the lane contest chose (owner, 2026-09-27, "Keep
+     archive, ship").
+     */
+    readonly kind: 'archive-kept';
+  }
+  | {
+    /**
      This stage replaced nothing here, so whatever stood still stands.
      */
     readonly kind: 'replaced-nothing';
@@ -464,6 +473,8 @@ function consolidatedWordingAt(
   const { shipped, } = slice;
   if (shipped.kind === 'unchanged')
     return { kind: 'replaced-nothing', };
+  if (shipped.kind === 'archive')
+    return { kind: 'archive-kept', };
 
   return {
     kind: 'wording',
@@ -596,6 +607,13 @@ export function wouldShipTextFor(
       text: consolidated.text,
       decidedBy: 'consolidation',
     };
+  // THE ARCHIVE KEEPS A SLICE NO WORDING PASSED, read from this row so a
+  // silent archive stays a named silence rather than an empty string.
+  if (consolidated.kind === 'archive-kept')
+    return archiveStandsOr({
+      row,
+      silence: 'no-valid-wording-and-archive-silent',
+    },);
 
   /**
    Which lane ships, or that nobody has been asked over this entry yet.

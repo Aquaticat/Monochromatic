@@ -84,6 +84,23 @@ export function parseShipped(
     }
     return { kind: 'unchanged', };
   }
+  // THE ARCHIVE KEPT CARRIES NO TEXT (owner, 2026-09-27, "Keep archive,
+  // ship"): its wording is the comparison row's, so text here would be a
+  // second copy free to disagree with it.
+  if (record.kind === 'archive') {
+    requireExactKeys({
+      record,
+      allowed: ['kind',],
+      path,
+    },);
+    if (replaces) {
+      throw new ArtifactParseError({
+        path,
+        reason: 'a slice whose terminal is consolidated ships its consolidation, not the archive',
+      },);
+    }
+    return { kind: 'archive', };
+  }
   if (record.kind === 'incumbent') {
     requireExactKeys({
       record,
@@ -110,7 +127,7 @@ export function parseShipped(
   if (record.kind !== 'consolidated') {
     throw new ArtifactParseError({
       path: `${path}.kind`,
-      reason: 'one of consolidated, incumbent, unchanged',
+      reason: 'one of archive, consolidated, incumbent, unchanged',
     },);
   }
   requireExactKeys({

@@ -100,6 +100,19 @@ export type ArtifactConsolidateShipped =
   }
   | {
     /**
+     No wording for this slice passed the deterministic rule, so the archive
+     keeps it (owner, 2026-09-27, "Keep archive, ship"), whatever the lane
+     contest or a stand-in left.
+
+     CARRIES NO TEXT. The archive is the comparison row's, and a reader takes
+     it from there, so a silent archive stays a named silence rather than an
+     empty string written into the page, and no second copy can disagree
+     with the row.
+     */
+    readonly kind: 'archive';
+  }
+  | {
+    /**
      Nothing here replaces what the lane contest left, whether because the
      floor refused the slate, the judges kept the standing text, the gate
      did, the wrap erased the difference, or the contest named neither lane.
@@ -487,8 +500,59 @@ function artifactPolishOf(
 }
 
 /**
+ Names what one settled slice ships.
+
+ IN THIS ORDER, and the order is the rule. A consolidation that won ships
+ itself. Where no wording passed the rule the archive keeps the slice (owner,
+ 2026-09-27, "Keep archive, ship"), ahead of an incumbent that stood in: on a
+ disputed slice the stand-in is the repair lane's text, which the rule refused
+ too. An incumbent that stood in for an ineligible standing and was kept ships
+ as text (owner, 2026-09-09). Else nothing replaces what the lane contest left.
+
+ WHETHER A CONSOLIDATION WON is read off the terminal rather than off `ships`
+ or off the text differing from the standing text, because only the terminal
+ distinguishes a consolidation that won from a wrap that erased the
+ difference, and only it separates both from a contest that named neither
+ lane and left the settlement's text empty.
+
+ @param settlement - what the stage settled
+
+ @param incumbentStandsIn - whether the standing was the incumbent standing in
+
+ @returns What the slice ships
+
+ @example
+ ```ts
+ const shipped = shippedBy({ settlement, incumbentStandsIn: false, },);
+ ```
+ */
+function shippedBy(
+  {
+    settlement,
+    incumbentStandsIn,
+  }: {
+    readonly settlement: ConsolidationSettlement;
+    readonly incumbentStandsIn: boolean;
+  },
+): ArtifactConsolidateShipped {
+  if (settlement.terminal === 'consolidated')
+    return {
+      kind: 'consolidated',
+      text: settlement.text,
+    };
+  if (settlement.archiveKept === true)
+    return { kind: 'archive', };
+  if (incumbentStandsIn)
+    return {
+      kind: 'incumbent',
+      text: settlement.text,
+    };
+  return { kind: 'unchanged', };
+}
+
+/**
  Reads the artifact's record out of what the consolidation stage returned.
- 
+
  @param sliceIndex - slice this answers
  
  @param settlement - what the stage settled
@@ -520,36 +584,13 @@ export function describeConsolidateSlice(
    the settlement so the branch below is one member step rather than two.
    */
   const { gate, } = settlement;
-
-  /**
-   Whether this slice replaces anything. Read off the terminal rather than
-   off `ships` or off the text differing from the standing text, because
-   only the terminal distinguishes a consolidation that won from a wrap that
-   erased the difference, and only it separates both from a contest that
-   named neither lane and left the settlement's text empty.
-   */
-  const consolidated = settlement.terminal === 'consolidated';
-
-  /**
-   What this slice ships: the consolidation where one won, the incumbent
-   where it stood in for an ineligible standing and was kept, else nothing
-   beyond what the lane contest left.
-   */
-  const shipped: ArtifactConsolidateShipped = consolidated
-    ? {
-      kind: 'consolidated',
-      text: settlement.text,
-    }
-    : (incumbentStandsIn
-      ? {
-        kind: 'incumbent',
-        text: settlement.text,
-      }
-      : { kind: 'unchanged', });
   return {
     sliceIndex,
     terminal: settlement.terminal,
-    shipped,
+    shipped: shippedBy({
+      settlement,
+      incumbentStandsIn,
+    },),
     rewrapped: settlement.rewrapped,
     demoted: settlement.demoted,
     verdicts: settlement.verdicts,
