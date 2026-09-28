@@ -5,7 +5,10 @@ import {
   activeFootnoteMarkers,
   footnoteMarkerLabels,
 } from './active-footnote-markers.ts';
-import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
+import {
+  normalizeFootnoteIdentifier,
+  relabelsFootnote,
+} from './footnote-identifier.ts';
 import type { FootnoteLabelRewrite, } from './footnote-label-rewrite.ts';
 import { retainedFootnoteLabels, } from './footnote-retained-labels.ts';
 
@@ -183,8 +186,7 @@ export function closeFootnoteRelabel(
    */
   const rewrites: readonly FootnoteLabelRewrite[] = [
     ...established.filter(function changes(relation,): boolean {
-      return normalizeFootnoteIdentifier({ identifier: relation.from, },)
-        !== normalizeFootnoteIdentifier({ identifier: relation.to, },);
+      return relabelsFootnote({ relation, },);
     },),
     ...retained.map(function displaced(move,): FootnoteLabelRewrite {
       return {

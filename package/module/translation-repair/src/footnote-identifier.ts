@@ -86,4 +86,34 @@ export function normalizeFootnoteIdentifier(
     .toLowerCase();
 }
 
+/**
+ Whether a label relation names another footnote, as against respelling
+ the one it starts from.
+
+ The relabel planner, its closure, and the pass that reports the relabel
+ each kept their own copy of this test (audit area six, 2026-09-28); three
+ copies of what counts as a move could disagree about which rewrites exist.
+
+ @param relation - label as the archive writes it and label it would carry
+
+ @returns True when the two labels fold to different footnotes
+
+ @example
+ ```ts
+ relabelsFootnote({ relation: { from: 'Note', to: 'note', }, },); // false
+ relabelsFootnote({ relation: { from: '1', to: '2', }, },); // true
+ ```
+ */
+export function relabelsFootnote(
+  { relation, }: {
+    readonly relation: {
+      readonly from: string;
+      readonly to: string;
+    };
+  },
+): boolean {
+  return normalizeFootnoteIdentifier({ identifier: relation.from, },)
+    !== normalizeFootnoteIdentifier({ identifier: relation.to, },);
+}
+
 //endregion Footnote identifier

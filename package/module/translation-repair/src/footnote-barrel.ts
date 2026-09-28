@@ -51,7 +51,10 @@ export {
   scanGfmReferenceLiterals,
   type TextMarkerHit,
 } from './footnote-graph.ts';
-export { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
+export {
+  normalizeFootnoteIdentifier,
+  relabelsFootnote,
+} from './footnote-identifier.ts';
 export type {
   FootnoteConvention,
   FootnoteDefinitionHit,

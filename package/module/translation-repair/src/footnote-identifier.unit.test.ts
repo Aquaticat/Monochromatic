@@ -17,6 +17,7 @@ import {
 import {
   normalizeFootnoteIdentifier,
   parseDocument,
+  relabelsFootnote,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -134,6 +135,19 @@ await describe({
         ]) {
           expect(parsedIdentifier(identifier,),).toBe(fold(identifier,),);
         }
+      },
+    },),
+    it({
+      name: 'A RELABEL MOVES A NOTE only when the two labels fold to different footnotes',
+      fn: async () => {
+        expect([
+          { from: 'Whisker', to: 'whisker', },
+          { from: 'Nap  Time', to: 'nap time', },
+          { from: '1', to: '2', },
+          { from: 'Paw', to: 'Claw', },
+        ].map(function moves(relation,): boolean {
+          return relabelsFootnote({ relation, },);
+        },),).toEqual([false, false, true, true,],);
       },
     },),
   ],

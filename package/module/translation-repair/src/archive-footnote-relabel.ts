@@ -4,7 +4,10 @@ import {
   activeFootnoteMarkers,
   footnoteMarkerLabels,
 } from './active-footnote-markers.ts';
-import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
+import {
+  normalizeFootnoteIdentifier,
+  relabelsFootnote,
+} from './footnote-identifier.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
 import { sliceFootnoteLabels, } from './footnote-slice-labels.ts';
 
@@ -248,8 +251,7 @@ export function mapLabels(
    Only changes of logical identity need rewriting; positive identity evidence remains separate.
    */
   const map = distinct.filter(function changes(relation,): boolean {
-    return normalizeFootnoteIdentifier({ identifier: relation.from, },)
-      !== normalizeFootnoteIdentifier({ identifier: relation.to, },);
+    return relabelsFootnote({ relation, },);
   },);
   if (map.length === 0)
     return {

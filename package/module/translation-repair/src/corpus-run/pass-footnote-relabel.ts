@@ -15,7 +15,7 @@ import {
 import { applyFootnoteRelabel, } from '../archive-footnote-relabel.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { DefinitionLabelPair, } from '../pair-definition-order.ts';
-import { normalizeFootnoteIdentifier, } from '../footnote-identifier.ts';
+import { relabelsFootnote, } from '../footnote-identifier.ts';
 import { readClosedRelabel, } from './pass-footnote-relabel-read.ts';
 
 //region Pass footnote relabel
@@ -219,8 +219,7 @@ function attemptArchiveFootnoteRelabel(
    Supplied correspondence rewrites, distinct from identity evidence and operational displacement.
    */
   const correspondenceRewrites = correspondences.filter(function changes(relation,): boolean {
-    return normalizeFootnoteIdentifier({ identifier: relation.from, },)
-      !== normalizeFootnoteIdentifier({ identifier: relation.to, },);
+    return relabelsFootnote({ relation, },);
   },);
   if (correspondenceRewrites.length > 0) {
     /**
