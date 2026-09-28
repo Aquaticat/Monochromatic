@@ -188,7 +188,11 @@ function servedIdFor(
  operation is unbounded because the provider publishes no ceiling
  
  @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
- 
+
+ @param streamBoundMsOverride - one stream bound for every model this client
+ serves in place of each catalog entry's; absent reads the catalog, and
+ recorded tests set it so a bound can be crossed in milliseconds
+
  @returns Client surface with chatText, chatJson, and credits
  
  @example
@@ -204,6 +208,7 @@ export function createBedrockClient(
     baseUrl = BEDROCK_MANTLE_BASE_URL,
     perModelConcurrency = BEDROCK_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
+    streamBoundMsOverride,
   }: {
     readonly apiKey: string;
     readonly ledger: BedrockLedger;
@@ -211,6 +216,7 @@ export function createBedrockClient(
     readonly baseUrl?: string;
     readonly perModelConcurrency?: number;
     readonly retryPolicy?: RetryPolicy;
+    readonly streamBoundMsOverride?: number;
   },
 ): BedrockClient {
   /**
@@ -299,8 +305,14 @@ export function createBedrockClient(
      */
     const {
       streamEnd,
-      streamBoundMs,
+      streamBoundMs: catalogBoundMs,
     } = BEDROCK_MODELS[servedId];
+
+    /**
+     Bound this call runs under: the test override where one is set, else
+     the catalog's.
+     */
+    const streamBoundMs = streamBoundMsOverride ?? catalogBoundMs;
 
     /**
      Refuses a success reply whose stream never ended the way this route

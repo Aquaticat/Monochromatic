@@ -10,6 +10,8 @@
  @module
  */
 
+import { setTimeout as sleepFor, } from 'node:timers/promises';
+
 import {
   describe,
   expect,
@@ -20,6 +22,7 @@ import {
   BedrockModelNotServedError,
   COMPLETION_CAP,
   createBedrockClient,
+  isStreamBoundCut,
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_TEXT_BEDROCK,
@@ -107,6 +110,55 @@ const GPT_OSS_STREAM = [
  Abort signal every call here carries.
  */
 const SIGNAL = new AbortController().signal;
+
+/**
+ Stream bound the bound cases run under, short enough to cross in a test.
+ */
+const TEST_BOUND_MS = 300;
+
+/**
+ How long each attempt in the bound cases takes: inside the bound on its
+ own, past it with a second attempt added.
+ */
+const ATTEMPT_MS = 200;
+
+/**
+ Asks the Gemma route once and reads the outcome as data.
+
+ @param client - client under test
+
+ @returns Answer text, empty on a failure, and whether the failure was a
+ stream bound cut
+
+ @example
+ ```ts
+ const outcome = await boundedAsk({ client, },);
+ ```
+ */
+async function boundedAsk(
+  { client, }: { readonly client: ReturnType<typeof createBedrockClient>; },
+): Promise<{ readonly text: string; readonly cut: boolean; }> {
+  try {
+    /**
+     Reply when the call completes.
+     */
+    const reply = await client.chatText({
+      modelId: SEAT_HYPER_TEXT_BEDROCK,
+      messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+      signal: SIGNAL,
+    },);
+    return {
+      text: reply.text,
+      cut: false,
+    };
+  }
+  catch (error) {
+    return {
+      text: '',
+      cut: isStreamBoundCut({ error, },),
+    };
+  }
+}
 
 /**
  In-memory ledger recording what the client notes and answering a fixed
@@ -426,6 +478,93 @@ await describe({
         expect(outcome.kind,).toBe('ok',);
         if (outcome.kind === 'ok')
           expect(outcome.value.spot,).toBe('sunbeam',);
+      },
+    },),
+
+    it({
+      name: 'GIVES EACH ATTEMPT THE WHOLE STREAM BOUND, so a retry after a slow transient failure is not cut by '
+        + 'the time the failed attempt spent (ledger P13: the bound was armed once around the retry ladder)',
+      fn: async () => {
+        /**
+         Attempts the transport saw.
+         */
+        const calls = { count: 0, };
+        const client = createBedrockClient({
+          apiKey: 'test-key',
+          ledger: memoryLedger({},).ledger,
+          baseUrl: 'https://mantle.invalid',
+          transport: async function slowFailureThenWhole(exchange,) {
+            calls.count += 1;
+            await sleepFor(
+              ATTEMPT_MS,
+              undefined,
+              { signal: exchange.signal, },
+            );
+            return (calls.count === 1)
+              ? {
+                status: 503,
+                bodyText: 'busy',
+              }
+              : {
+                status: 200,
+                bodyText: GEMMA_STREAM,
+              };
+          },
+          retryPolicy: {
+            limit: 1,
+            baseMs: 1,
+          },
+          streamBoundMsOverride: TEST_BOUND_MS,
+        },);
+        expect({
+          ...(await boundedAsk({ client, },)),
+          calls: calls.count,
+        },).toEqual({
+          text: '{"spot":"sunbeam"}',
+          cut: false,
+          calls: 2,
+        },);
+      },
+    },),
+
+    it({
+      name: 'NEVER RETRIES A STREAM THE BOUND CUT, since the cut is this system\'s own end and the router holds '
+        + 'Bedrock out for the model on it',
+      fn: async () => {
+        /**
+         Attempts the transport saw.
+         */
+        const calls = { count: 0, };
+        const client = createBedrockClient({
+          apiKey: 'test-key',
+          ledger: memoryLedger({},).ledger,
+          baseUrl: 'https://mantle.invalid',
+          transport: async function queuedPastTheBound(exchange,) {
+            calls.count += 1;
+            await sleepFor(
+              TEST_BOUND_MS * 2,
+              undefined,
+              { signal: exchange.signal, },
+            );
+            return {
+              status: 200,
+              bodyText: GEMMA_STREAM,
+            };
+          },
+          retryPolicy: {
+            limit: 2,
+            baseMs: 1,
+          },
+          streamBoundMsOverride: TEST_BOUND_MS,
+        },);
+        expect({
+          ...(await boundedAsk({ client, },)),
+          calls: calls.count,
+        },).toEqual({
+          text: '',
+          cut: true,
+          calls: 1,
+        },);
       },
     },),
   ],
