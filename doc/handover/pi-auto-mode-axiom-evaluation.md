@@ -73,8 +73,27 @@ per-head sample count,
 and effective per-row penalty;
 no pure operation-label causal attribution is promised.
 
-Next is the dual-consumer/control implementation in the new private repository,
-then fresh corpus and complete listed-code/input freeze before any feature query.
+The dual consumer/control implementation is verified through private `937543d`,
+with syntax check source `48d6e33`.
+`proc_594a` passed bounded numerical routing/omission controls;
+`proc_7353` passed actual toy input entrypoints and rejected a variant mismatch.
+Fit-base image:
+`ff61e55d24a48a49bfb296d1eacf8343aef2b9c9e6453957aa57fa2605dbf61a`.
+`proc_58b1` passed paired evaluation,
+release gates,
+and both in-clock candidate paths.
+`proc_e007` passed review-driven corpus-reference/raw-row anchors,
+independent candidate-file fixtures,
+and distinct-axiom-column mutation checks.
+`test:data-gates` and `test:syntax` passed.
+The original `proc_33bf` syntax failure is retained;
+no model call preceded its correction.
+These are local/numeric controls,
+not semantic evaluation.
+Next is #59:
+new 324-source corpus,
+fresh projections and labels,
+then the complete listed-code/input freeze before any feature query.
 No new provider,
 private input,
 base-model training,

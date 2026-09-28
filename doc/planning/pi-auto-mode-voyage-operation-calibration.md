@@ -177,3 +177,53 @@ new dependency/provider,
 coding-plan judge,
 production implementation,
 or automatic Q16/Laya restart is included.
+
+## Verified consumer checkpoint
+
+The dual consumers and control suite are implemented in the private repository.
+`proc_594a` passed both declared numerical toy shapes in the resource-limited sandbox,
+including an isolated operation-reference guard omission.
+Real fitting base:
+`ff61e55d24a48a49bfb296d1eacf8343aef2b9c9e6453957aa57fa2605dbf61a`.
+Control image:
+`e40096140e6c770ee621d6fc3f96a814c6fd3e2e14ca71e62a6eada9b18edd0f`.
+The first-party numerical solver bytes remain unchanged.
+
+`proc_7353` exercised both actual fit-mode input readers on shared byte-bound numeric toy inputs,
+reproduced the earlier control heads,
+and rejected a mismatched variant inside the sandbox.
+Valid-entrypoint image:
+`8fa2cbae677789d6bfac98a990ad50688da7ed71e74c27ebb6e65fc13b0b2c2f`.
+These fits use numerical fixtures,
+not semantic sources or provider results.
+
+`proc_58b1` passed paired evaluator,
+all-head routing,
+candidate release,
+and two-candidate clock controls.
+A late second variant was rejected;
+an isolated omitted-deadline copy accepted that fixture.
+Unknown operation fixtures dispatched no request.
+`test:data-gates` verified shared feature joins,
+repeat exclusion,
+positive four-role/twelve-cell gates,
+and stricter-gate failure with an absent operation cell.
+
+Independent review found missing direct corpus anchors and insufficiently independent toy fixtures.
+At `e82226c`,
+the gate was strengthened to bind the actual corpus manifest and references,
+reconstruct canonical fit rows from verified features,
+and compare both expectations against that source.
+Standalone candidates and the bundle now use independent fixture objects.
+Distinct axiom-column checks detect a deliberately incorrect column lookup.
+`proc_e007` passed the new mutation controls and revised release-gate suite.
+`937543d` retains review dispositions and receipts.
+
+The initial `proc_33bf` failed on an extra closing parenthesis in newly authored `pairSlices`;
+`consumer-control-initial-failure.json` preserves that pre-execution failure.
+It was corrected before any control result or model call.
+`test:syntax` subsequently parsed all 44 current owned JavaScript entrypoints successfully.
+Completed prior-study controllers and evidence were not rerun or overwritten.
+
+Fresh corpus construction and the final listed-code/input freeze remain the next gate.
+No semantic feature call or semantic-head fit has run for this comparison.

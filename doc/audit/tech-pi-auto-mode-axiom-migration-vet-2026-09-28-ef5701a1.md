@@ -1013,3 +1013,44 @@ both inference clocks,
 and overlap against named exposed banks with positive controls.
 Fresh collisions and shared-observation limitations are predeclared diagnostics.
 No new feature call or semantic fit has run in this comparison.
+
+### Verified dual-consumer controls
+
+Private `937543d` retains the completed consumer-control evidence and independent-review dispositions.
+`proc_594a` passed both numeric toy fit shapes inside the declared sandbox,
+including an operation-reference guard omission.
+The real fitting base is
+`ff61e55d24a48a49bfb296d1eacf8343aef2b9c9e6453957aa57fa2605dbf61a`.
+`proc_7353` exercised both actual fit-mode input readers on shared byte-bound toy data,
+reproduced their expected heads,
+and rejected a mismatched variant inside the sandbox.
+These are numerical fixtures,
+not semantic sources or fresh provider results.
+
+`proc_58b1` passed paired evaluation,
+every-head routing,
+candidate locks,
+and both inference paths in the real assessment clock.
+The late second variant was rejected;
+a separately named omitted-deadline module accepted that control.
+Unknown operations dispatched no request.
+Positive and negative four-role/twelve-cell coverage and data-join controls passed.
+
+Independent review strengthened the candidate gate at `e82226c`:
+corpus manifest/reference hashes externally anchor both expected reference arrays;
+canonical numeric fit rows are reconstructed from verified pretest evidence;
+standalone and bundled candidates are independently instantiated in controls;
+distinct axiom-column fixtures expose a wrong-column mutation.
+`proc_e007` passed those controls and the revised gate regression suite.
+A source scan confirmed 216 numeric rows per partition,
+228 pretest calls,
+and 108 test calls;
+old local-control inputs are not new corpus data.
+
+The initial `proc_33bf` Node parser error came from an extra closing parenthesis in new `pairSlices`.
+`consumer-control-initial-failure.json` preserves it;
+the correction preceded any control result or provider call.
+`test:syntax` then parsed all 44 current owned JavaScript entrypoints.
+The [consumer checkpoint](../planning/pi-auto-mode-voyage-operation-calibration.md#verified-consumer-checkpoint)
+records source/image identities and remaining fresh-corpus freeze work.
+No semantic feature call or semantic-head fit has run.
