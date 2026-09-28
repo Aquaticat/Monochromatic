@@ -416,6 +416,13 @@ import type { RepairModels, } from './repair-contract.ts';
  deepest quote its context allows (class one hundred eighty-seven,
  `58287ebe3` and `05a18ed02`), which changes the text an edit ships; same
  check, same result.
+
+ Rides inside 34 too: the resolution checkers read the declared names with
+ their rules, the cited references and each claim's quotes, on the proof and
+ its worse-vote recheck (ledger L14, `resolution-sheet-evidence.ts`), which
+ changes the ballots that decide resolution and strip edits; checked again on
+ 2026-09-28: the only slice-cache file not older than 00:26 on 2026-09-27 is
+ the consolidation entry written that minute.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**

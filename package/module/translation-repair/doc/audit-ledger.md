@@ -911,6 +911,14 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     Prevention: a call that would do nothing is not made; while waiting on a background task, make no tool call.
     During P9 a `;` joined a lint count to the commit of the red guard,
     and the staging read only the count of expected type errors, not the full summary (read afterwards: those six only).
+    During L14(a) three more:
+    `build && run-files ; tail` put a `;` before reading the build log,
+    a heredoc edit script was followed in the same call by `sed ... ; rg`,
+    and the runner's exit status was trusted as a test verdict (`run-files.ts` exits 0 on failing files;
+    its per-file `exit=` lines are the verdict).
+    The heredoc repeat came after the rule "a Bash call that holds `<<` holds nothing else" was recorded,
+    so the prevention stays the same and is now applied without exception:
+    edit scripts go through the Write tool and run alone.
 - A capped search taken as complete (QRY): before `7ceffe055` changed two card prices,
     the search for tests pinning the old ones ran through `head --lines=10`,
     which cut off `deepseek-v41-admission.unit.test.ts`; the full suite caught it and `bc69e2336` fixed it.
@@ -2399,10 +2407,82 @@ the preservation-check claims.
 
 ### L14: smaller items
 
+Status: (a) fixed; (b), (c) and (d) open.
+
+#### L14(a): the resolution checker sheet carried none of the panel's evidence
+
+Status: fixed in `fe0fc1f13`, guarded red first in `01a2dc31f`.
+The sheet showed the ORIGINAL,
+the REVISED TRANSLATION,
+and each claim's category, severity and summary.
+The panel that accepted each issue also read the DECLARED NAMES block with its rules,
+the cited references,
+and the claim's own quotes.
+Checker `worse` ballots strip an edit (L3) and roll a rewrite back (L11),
+so a checker that could not see a declaration could count a declared handle kept as written as damage.
+The M32 step came first: `buildResolutionMessages` is the whole sheet
+(`runCheckerStage` sends `plan.messages` unchanged),
+and it took no identity or reference parameter,
+so no other path could have carried either.
+
+The fix (`resolution-sheet-evidence.ts`):
+the declared names before the documents,
+with `DECLARED_IDENTITY_RULES` and one checker line
+(a revision moving a declared rendering away from its declared value is worse);
+the cited references after the revised translation,
+with a checker line that a referenced detail is never a reason for worse
+and that the references never reopen an accepted issue,
+since the panel judged with them and the reference screen already voided attested additions;
+and each claim's quotes, JSON-encoded,
+the TRANSLATION side labelled as the text before this revision.
+The encoding is measured need:
+349 of 45,860 claim quotes over 266 artifacts span more than one line
+(`~/temp/agent/audit-glossary-fix/l14-summary-newlines.mjs`).
+Rules ride with their blocks, as on the introduced-defect probe (H8),
+so a page declaring nothing and linking nowhere reads the rules it always did.
+The stage, the repair proof and its worse-vote recheck, and the refinement recheck all forward both contexts.
+
+Guards: `resolution-sheet-evidence.unit.test.ts` (the builder)
+and `checker-evidence-threading.unit.test.ts` (each caller, both directions).
+Two guard defects surfaced while greening them.
+The threading control's fixture had a heading,
+and preparation writes the archive's rendering of a heading into the identity context,
+so the control page declared a name and its checker sheet was rightly shown the block
+(`ab7ad54f0`; a `prepareDocumentPair` probe confirmed the heading-less fixture yields neither context).
+The mutation check (24 mutants, control surviving) left one survivor:
+a fence chosen without the declared names,
+because the fence case gave the references the longer run of equals signs,
+and a fence clearing that run cleared the identity's too;
+one sheet per context now carries the run alone (`b507cbf28`), and both fence mutants are caught.
+Cache: rides inside repair 34 and refine 5,
+checked on 2026-09-28:
+the only slice-cache file not older than 00:26 on 2026-09-27 is the consolidation entry written that minute.
+
+Scope kept out, as a candidate rather than bundled:
+the probe's sheet also carries the neighbouring window and community renderings,
+and the checker sheet carries neither.
+The panel's measured regression from adding sheet content (`NEARBY_RULE` in `adjudicate-prompt.ts`)
+says sheet additions need evidence first.
+
+#### L14(b): editors write neighbouring text into an envelope
+
 Status: open.
-The resolution checker sheet has no identity, references or claim quotes;
-editors write neighbouring text into an envelope;
-`selectChunkPatch` tells judges a decline keeps the trusted text while an indecision ships the strongest patch.
+
+#### L14(c): `selectChunkPatch` wording on declines
+
+Status: open.
+It tells judges a decline keeps the trusted text while an indecision ships the strongest patch.
+
+#### L14(d): model-written and quoted text rendered raw on line-based sheets
+
+Status: open, found while fixing L14(a).
+The panel sheet renders each evidence quote raw after `- evidence (SIDE): `,
+and both the panel and checker sheets render each claim summary raw.
+349 quotes and 3 of 23,714 summaries over every artifact carry a line break,
+so their later lines stand as unlabelled lines between claims.
+None opened a `CLAIM`, `GROUP`, `ISSUE` or `REGION` line in the artifacts measured,
+but a quote or summary may,
+and a forged opening line renumbers every ballot after it.
 
 ## Docs and comments against code
 
