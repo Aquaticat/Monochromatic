@@ -1,9 +1,9 @@
-import { createHash, } from 'node:crypto';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   alignDocumentSections,
   blockPairingQuestion,
   type ChunkPair,
+  pairingQuestionKey,
   parseDocument,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -43,7 +43,7 @@ function parent({ sourceText, targetText, }: {
 }
 
 await describe({ name: blockPairingQuestion.name, children: [
-  it({ name: 'preserves the established numbered texts and version-three cache key', fn: async (): Promise<void> => {
+  it({ name: 'numbers the texts and keys the question on them, its roster and no pictures', fn: async (): Promise<void> => {
     /** Complete source and archive paragraphs. */
     const pair = parent({ sourceText: '猫睡了。\n\n它喜欢盒子。', targetText: 'The cat slept.\n\nShe loves boxes.', },);
     /** Actual shared question. */
@@ -51,9 +51,13 @@ await describe({ name: blockPairingQuestion.name, children: [
     expect(question.sourceBlocks,).toEqual([{ index: 0, text: '猫睡了。', }, { index: 1, text: '它喜欢盒子。', },]);
     expect(question.targetBlocks,).toEqual([{ index: 0, text: 'The cat slept.', }, { index: 1, text: 'She loves boxes.', },]);
     expect(question.freeOrder,).toEqual({ source: new Set(), target: new Set(), });
-    expect(question.key,).toBe(createHash('sha256',)
-      .update(`3\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.\u0000\u0000\u0000roster\u0000${  ROSTER.join('\u0000',)}`, 'utf8',)
-      .digest('hex',));
+    expect(question.key,).toBe(pairingQuestionKey({
+      question: 'block',
+      sourceTexts: ['猫睡了。', '它喜欢盒子。',],
+      targetTexts: ['The cat slept.', 'She loves boxes.',],
+      pictureContext: '',
+      modelIds: ROSTER,
+    },),);
   }, },),
   it({ name: 'numbers definition exemptions within the current parent on each side', fn: async (): Promise<void> => {
     /** Definitions have different local indexes on the two sides. */

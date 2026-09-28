@@ -1,4 +1,3 @@
-import { createHash, } from 'node:crypto';
 import { mkdtemp, readFile, readdir, rm, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
@@ -8,6 +7,7 @@ import {
   assertPipelineDigest,
   createSyntheticClient,
   hashContent,
+  pairingQuestionKey,
   parseDocument,
   prepareDocumentPair,
   preparePassEntry,
@@ -31,8 +31,14 @@ const crossedPairs = [{ source: 0, target: 0 }, { source: 1, target: 2 }, { sour
 function cacheKey(targetText: string): string {
   const originals = parseDocument({ text: sourceText }).nodes;
   const targets = parseDocument({ text: targetText }).nodes;
-  // The roster that answers closes the key (ledger X13).
-  return createHash('sha256').update(['3', ...originals.map(node => node.text), '\0', ...targets.map(node => node.text), '\0', 'roster', ...roster].join('\0')).digest('hex');
+  // The roster that answers is part of the key (ledger X13), and one encoder builds it (ledger X15).
+  return pairingQuestionKey({
+    question: 'block',
+    sourceTexts: originals.map(node => node.text),
+    targetTexts: targets.map(node => node.text),
+    pictureContext: '',
+    modelIds: roster,
+  });
 }
 
 await describe({

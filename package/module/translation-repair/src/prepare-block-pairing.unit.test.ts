@@ -1,10 +1,10 @@
-import { createHash, } from 'node:crypto';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   alignDocumentSections,
   blockPairingQuestion,
   createSyntheticClient,
+  pairingQuestionKey,
   parseDocument,
   prepareBlockPairing,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -69,7 +69,13 @@ await describe({
         expect(cold.findings.join(' ')).toContain('section 7 paired 2 of 2');
         const [storedRecord] = f.writes;
         if (storedRecord === undefined) throw new Error('expected persisted parent record');
-        const expectedKey = createHash('sha256').update(`3\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.\u0000\u0000\u0000roster\u0000${  roster.join('\u0000')}`, 'utf8').digest('hex');
+        const expectedKey = pairingQuestionKey({
+          question: 'block',
+          sourceTexts: ['猫睡了。', '它喜欢盒子。'],
+          targetTexts: ['The cat slept.', 'She loves boxes.'],
+          pictureContext: '',
+          modelIds: roster,
+        });
         expect(storedRecord.key).toBe(expectedKey);
         expect(storedRecord.serialized).toBe(JSON.stringify({ pairs: [{ source: 0, target: 0 }, { source: 1, target: 1 }], findings: cold.findings }));
         const warm = await prepareBlockPairing(f.input);

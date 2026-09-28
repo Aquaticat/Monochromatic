@@ -49,6 +49,11 @@
  so a pairing one bench settled is never resumed for another; every key
  moves, and none was written under 3. Same check, same result.
 
+ Rides inside 3 too: both keys serialize their material as one JSON value
+ through `pairingQuestionKey` (ledger X15), so no two questions share a key,
+ and every key moves again; checked on 2026-09-28: still no slice-cache file
+ newer than 00:26 on 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (task #395, ledger M28): 3 was set
  in `d614a0c1d` at 00:30 on 2026-09-28, after the newest slice-cache file under the
  agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
@@ -58,7 +63,7 @@
 
  @example
  ```ts
- const material = [PAIRING_CACHE_VERSION, sourceText, targetText,];
+ const material = JSON.stringify({ version: PAIRING_CACHE_VERSION, question, source, target, pictures, roster, },);
  ```
  */
 export const PAIRING_CACHE_VERSION = 3;

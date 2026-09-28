@@ -95,7 +95,7 @@ export function blockPairingQuestion(
     };
   },);
   /**
-   Existing key encoding, including its explicit side separator.
+   Key naming this question, one per question (ledger X15).
    */
   const key = blockPairingQuestionKey({
     sourceBlocks,

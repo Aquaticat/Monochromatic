@@ -1,5 +1,3 @@
-import { createHash, } from 'node:crypto';
-
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -17,7 +15,7 @@ import type {
   NumberedSection,
   SectionPair,
 } from './pair-sections-wire.ts';
-import { PAIRING_CACHE_VERSION, } from './pairing-cache-version.ts';
+import { pairingQuestionKey, } from './pairing-question-key.ts';
 import type { RepairDocument, } from './parse-document.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -178,10 +176,10 @@ function deterministicRefuses(
  
  @param targetSections - translation sections as the sheet numbers them
  
- @param modelIds - roster that answers the question, folded in last, so a round one bench
+ @param modelIds - roster that answers the question, so a round one bench
  settled is never resumed for another (ledger X13)
- 
- @returns Cache key for this pairing question
+
+ @returns Cache key for this pairing question, one per question (ledger X15)
  
  @example
  ```ts
@@ -199,24 +197,17 @@ function roundKey(
     readonly modelIds: readonly RosterModelId[];
   },
 ): string {
-  return createHash('sha256',)
-    .update(
-      [
-        String(PAIRING_CACHE_VERSION,),
-        ...sourceSections.map(function toText(section,): string {
-          return section.text;
-        },),
-        '\u0000',
-        ...targetSections.map(function toText(section,): string {
-          return section.text;
-        },),
-        '\u0000',
-        'roster',
-        ...modelIds,
-      ].join('\u0000',),
-      'utf8',
-    )
-    .digest('hex',);
+  return pairingQuestionKey({
+    question: 'section',
+    sourceTexts: sourceSections.map(function toText(section,): string {
+      return section.text;
+    },),
+    targetTexts: targetSections.map(function toText(section,): string {
+      return section.text;
+    },),
+    pictureContext: '',
+    modelIds,
+  },);
 }
 
 /**
