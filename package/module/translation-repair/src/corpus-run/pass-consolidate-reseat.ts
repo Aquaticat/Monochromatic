@@ -1,13 +1,14 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import { shortestHold, } from '../budget-hold-wait.ts';
 import type { ConsolidateSliceSeating, } from '../consolidate-slice-seating.ts';
 import { consolidationPolishConfiguration, } from '../consolidation-polish-config.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import {
-  readJudgeSeats,
-  type SeatReadingClient,
-} from './run-seats-read.ts';
+  type Reseated,
+  reseatHookFor,
+} from './pass-reseat-hook.ts';
+import type { JudgeSeats, } from './run-seats.ts';
+import type { SeatReadingClient, } from './run-seats-read.ts';
 
 //region Consolidation re-seating
 // THE CONSOLIDATION'S PER-SLICE HOOK, split out of `pass-consolidate.ts` so a
@@ -22,8 +23,9 @@ import {
 // one hundred thirteen had each fixed for one repair stage at a time. While a
 // hold runs it reads the seats again, which waits out the hold where the bench
 // cannot reach quorum, builds the roster `pass-consolidate.ts` builds from that
-// reading, and keeps handing it over once the hold has ended. While nothing is
-// held it costs one synchronous read of the holds.
+// reading, and keeps handing it over once the hold has ended
+// (`pass-reseat-hook.ts`). While nothing is held it costs one synchronous read
+// of the holds.
 
 /**
  Hook the consolidation driver calls before each slice.
@@ -36,6 +38,60 @@ import {
 export type ConsolidationHooks = {
   readonly beforeSlice: () => Promise<ConsolidateSliceSeating>;
 };
+
+/**
+ What the consolidation takes from a seat reading: the writers, slate judges
+ and naturalness roles, as `pass-consolidate.ts` seats them.
+
+ @param seats - benches as of this slice
+
+ @param prepared - page whose guard facts the naturalness roles carry
+
+ @returns Roster the slice runs on, beside the line naming it
+
+ @example
+ ```ts
+ const { seating, line, } = consolidationSeatingOf({ seats, prepared, },);
+ ```
+ */
+function consolidationSeatingOf(
+  {
+    seats,
+    prepared,
+  }: {
+    readonly seats: JudgeSeats;
+    readonly prepared: PreparedDocumentPair;
+  },
+): Reseated<ConsolidateSliceSeating> {
+  /**
+   Naturalness roles that reading configures.
+   */
+  const polish = consolidationPolishConfiguration({
+    prepared,
+    models: seats.repairModels,
+    gateModelIds: seats.lateJudges,
+  },);
+  /**
+   Writers the slice runs on, for the line.
+   */
+  const writers = seats.writers
+    .join(',',);
+  /**
+   Slate judges the slice runs on, for the line.
+   */
+  const judges = seats.slateJudges
+    .join(',',);
+  return {
+    seating: {
+      roster: {
+        modelIds: seats.writers,
+        judgeModelIds: seats.slateJudges,
+        ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
+      },
+    },
+    line: `slice re-seated under a hold: writers=${writers} slateJudges=${judges} polish=${polish.kind}`,
+  };
+}
 
 /**
  Builds the consolidation's per-slice hook.
@@ -69,56 +125,22 @@ export function consolidationHooksFor(
     readonly l: Logger;
   },
 ): ConsolidationHooks {
-  /**
-   Seating as last read under a hold, handed to every slice after it; empty
-   until a hold has run, which keeps the roster the consolidation started on.
-   */
-  const latest: { seating: ConsolidateSliceSeating; } = { seating: {}, };
   return {
-    beforeSlice: async function beforeConsolidationSlice(): Promise<ConsolidateSliceSeating> {
-      if (shortestHold({ holds: client.providerHolds(), },) === 0)
-        return latest.seating;
-      /**
-       Benches as of this slice, the reading waiting out a named hold when the
-       slate cannot reach quorum.
-       */
-      const seats = await readJudgeSeats({
-        client,
-        phase: 'consolidation',
-        signal,
-        l,
-      },);
-      /**
-       Naturalness roles that reading configures.
-       */
-      const polish = consolidationPolishConfiguration({
-        prepared,
-        models: seats.repairModels,
-        gateModelIds: seats.lateJudges,
-      },);
-      latest.seating = {
-        roster: {
-          modelIds: seats.writers,
-          judgeModelIds: seats.slateJudges,
-          ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
-        },
-      };
-      /**
-       Writers the slice runs on, for the line.
-       */
-      const writers = seats.writers
-        .join(',',);
-      /**
-       Slate judges the slice runs on, for the line.
-       */
-      const judges = seats.slateJudges
-        .join(',',);
-      l.info(
-        `JUDGE SEATS phase=consolidation slice re-seated under a hold: writers=${writers} `
-          + `slateJudges=${judges} polish=${polish.kind}`,
-      );
-      return latest.seating;
-    },
+    beforeSlice: reseatHookFor<ConsolidateSliceSeating>({
+      client,
+      signal,
+      phase: 'consolidation',
+      unseated: {},
+      seatingOf: function seatingOfThisPage(
+        { seats, }: { readonly seats: JudgeSeats; },
+      ): Reseated<ConsolidateSliceSeating> {
+        return consolidationSeatingOf({
+          seats,
+          prepared,
+        },);
+      },
+      l,
+    },),
   };
 }
 
