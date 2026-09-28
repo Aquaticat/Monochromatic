@@ -450,7 +450,20 @@ export function createProviderBudgets(
    Whether a payment refusal still holds a provider dry: its meter has not
    moved since. A meter that has moved clears the mark, whichever way it
    moved, since the refusal was about the balance it read then.
-   
+
+   DOWNWARD IS A CLEARING MOVE, NOT A MISTAKE (checked for the ledger's P13,
+   2026-09-28). Of 230 payment refusals in the run logs, 198 came from
+   OpenRouter while its meter read wet, at 0.01 to 1.94 USD, and they refuse
+   what the balance leaves once the calls in flight have reserved their
+   share: 8 bodies name `in_flight_budget_exhausted` ("Retry after in-flight
+   requests settle"), and the rest ask for up to 131,072 tokens and are told
+   1,844 to 84,651 are affordable. A settling call lowers the balance by what
+   it cost and frees the larger reservation it held, so holding the mark
+   until the balance rises would keep OpenRouter dry for the rest of a run
+   that can still afford smaller calls. The cost measured the same day: 28
+   refusals came back after a downward move, each a refused call that bought
+   nothing.
+
    @param provider - provider to check
    
    @param levels - what every meter reads now
