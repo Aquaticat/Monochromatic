@@ -371,7 +371,7 @@ Part of [the package README](../README.md).
   The tally holds such an acceptance for a human; the critic and panel sheets define minor, major and critical after MQM
   and neutral as a finding a human should see that names no defect in the translation;
   the panel votes down a claim naming nothing wrong and lifts a real defect filed neutral to minor.
-  This refines the 2026-09-26 ruling "Major+ accuracy" without contradicting it:
+  This refines the 2026-09-27 ruling "Major+ accuracy" without contradicting it:
   that ruling concerned accuracy claims other than additions, and kept additions disputing "at any severity"
   as the option's wording said; an accepted addition can no longer settle at neutral,
   so in effect an addition disputes the archive from minor up, and one no supporter finds a defect in disputes nothing.

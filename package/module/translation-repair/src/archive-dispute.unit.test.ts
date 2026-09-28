@@ -147,7 +147,7 @@ await describe({
       },
     },),
     it({
-      name: 'NAMES A DISPUTE where an accepted accuracy claim of major severity or worse stands alone, and where an accepted addition is minor (class one hundred seventy-six, owner answer 2026-09-26: "Major+ accuracy")',
+      name: 'NAMES A DISPUTE where an accepted accuracy claim of major severity or worse stands alone, and where an accepted addition is minor (class one hundred seventy-six, owner answer 2026-09-27: "Major+ accuracy")',
       fn: async () => {
         // THE FAILURE THIS CLOSES. TianqiChen66610 slice 13: the repair lane's
         // adjudicators accepted major mistranslation claims against the

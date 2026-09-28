@@ -64,8 +64,8 @@ import {
 // decides most of them.
 //
 // READ AT EACH PHASE BOUNDARY (lanes, lane contest, consolidation), because a
-// provider can run dry inside an entry: XIEPT2 read wet at 08:16, Synthetic
-// ran dry at 08:19, and a once-per-entry reading left the Hyper-slow seat
+// provider can run dry inside an entry: XIEPT2 read wet at 08:16 UTC on
+// 2026-09-03, Synthetic ran dry at 08:19, and a once-per-entry reading left the Hyper-slow seat
 // asked for three and a half hours, abandoned in 102 judge calls.
 //
 // AN UNREADABLE VIEW SEATS THE FULL BENCH. A budget read that fails is not

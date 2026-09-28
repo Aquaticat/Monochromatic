@@ -11,7 +11,7 @@ import { reachOf, } from '../roster-reach.ts';
 // WHETHER A PHASE'S BENCHES CAN SETTLE AT ALL, read before the phase starts.
 //
 // THE THIRTEENTH CLASS, found by the third hakureico pass of 2026-09-07. Hyper
-// named its return in 538 s at 21:57 and `markRefused` held it out for exactly
+// named its return in 538 s at 21:57 UTC and `markRefused` held it out for exactly
 // that (the twelfth class working as built). Bedrock stayed wet, so nothing
 // waited: the translate lane started at 21:58 with every Hyper-only writer
 // refused as `NoProviderForModelError` in the same millisecond, the lane

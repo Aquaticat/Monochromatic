@@ -88,7 +88,7 @@ export const UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING: string = 'undecided-gate-shi
  Finding recorded on a settlement whose gate settled on neither rendering
  over an eligible standing every contest ballot called flawed, so the
  proposal the slate chose shipped (class one hundred seventy-seven,
- TianqiChen66610 slice 13, owner answer 2026-09-26: "Slate's choice").
+ TianqiChen66610 slice 13, owner answer 2026-09-27: "Slate's choice").
  */
 export const FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING: string = 'undecided-gate-ships-proposal (standing flawed '
   + 'by every contest ballot): the gate settled on neither rendering over a standing every contest ballot called '
@@ -251,7 +251,7 @@ export function keepTheArchive(
  valid proposal.
 
  CLASS ONE HUNDRED SEVENTY-SEVEN (TianqiChen66610 slice 13, owner answer
- 2026-09-26: "Slate's choice"). The standing was eligible, but every contest
+ 2026-09-27: "Slate's choice"). The standing was eligible, but every contest
  ballot had called it flawed; the class one hundred six run-off ran, the slate
  chose a valid proposal, and the gate tied 2 to 2, so the condemned archive
  shipped. A standing the whole contest condemned is no conservative default
