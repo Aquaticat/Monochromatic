@@ -3373,7 +3373,7 @@ that half was wrong and `6d9b361b4` took it out again (M37).
 
 ### X12: the lane contest, the preparation and the picture readings never re-seat under a hold
 
-Status: lane contest and picture readings fixed; the preparation and the insertion admission stay open.
+Status: lane contest, picture readings and insertion admission fixed; the preparation stays open.
 Contest: prep `4bd530922`, red guards `5acdd36c6`, fix `2a0ee0272`
 (mutation checked with a control, seven mutants caught).
 `contestHooksFor` (`corpus-run/pass-contest-reseat.ts`) re-reads the late judges while a hold runs
@@ -3400,10 +3400,17 @@ which caught all four phase mutants and a helper logging no phase.
 The seam dropping the hook survived because no test drives a pass seam: X14.
 The census counts holds after the pictures reading under the pictures, so its 11 in 3 logs is an upper bound:
 the sighted pairing and the archive review run after the readings on the preparation's reading.
-Still open: `preparePassEntry` (attestation, pairing, archive review)
-and `decidePassInsertionAdmission`, which runs per source-only slice on the lanes' reading
-(the census counts its holds under the lanes); each reads its bench once and has no per-item hook.
-The pairing half waits on X13.
+Insertion admission: prep `c087e6e33`, red guards `2fbb7ec24`, fix `105e81220`.
+`decidePassInsertionAdmission` asked every source-only candidate of the roster the lanes read.
+`insertionHooksFor` (`corpus-run/pass-insertion-reseat.ts`) re-reads the roster under a hold
+under its own `insertion admission` phase, which leans on the wide bench as the preparation does,
+and `admitPassInsertions`, the seam `runPassEntry` now calls, wires it (split out to keep `pass-entry.ts`
+under its line cap, and so a test drives the wiring: X14). The coverage stage caches nothing.
+Mutation checked with a control, then the full suite (0 FAIL, 1271 PASS): four mutants caught, one survived,
+the new phase leaning on another bench, since only some phases' benches were pinned;
+`c2adcfdbf` pins the whole table, which caught it and a lane contest bench mutant.
+Still open: `preparePassEntry` (attestation, pairing, archive review) reads its roster once
+and has no per-item hook; X13, which it waited on, is fixed.
 
 Found as:
 The fifth stage of the H5 family.
@@ -3445,7 +3452,8 @@ It must land before the preparation half of X12, or a re-seated section resumes 
 
 ### X14: no test drives a pass seam
 
-Status: contest and consolidation seams guarded; the picture and lanes seams stay open.
+Status: contest, consolidation and insertion admission seams guarded; the picture and lanes seams stay open.
+The insertion admission seam (`admitPassInsertions`, X12) is driven the same way in `2fbb7ec24`.
 `runPassContest`, `runPassConsolidation`, `readSeatedPictures` and `runPassEntry` wire each phase's hook
 and bench into its driver, and none had a test, so a seam dropping its hook survived every guard
 (the picture seam mutant in X12).
