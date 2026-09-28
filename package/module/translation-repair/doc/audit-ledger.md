@@ -833,7 +833,13 @@ class one hundred twenty-four's later sentence contradicts it.
 
 ### E3: stages running their own rounds count unreachable seats in their quorum
 
-Status: open.
+Status: fixed with X8 in `29baade8f` (prep `a107c7486`, red guards `a6cbd8fc5`, legacy fixture `78d6540f8`),
+recorded as the second 2026-09-27 addendum of `doc/decision/translation-repair-short-bench-share.md` at the repo root.
+The review now decides on the reachable share and records `unreachable` in its round;
+the reader recomputes the verdict from it and reads a round without it as none out of reach.
+The agreement census over the 214 stored pages was unchanged by the reader change (137 agree, 77 disagree, 0 refused).
+
+Found as:
 `absolute-naturalness-review-stage.ts` sizes on `modelIds.length`,
 so a false "quorum not met" skips the confirmation;
 `pair-blocks-stage.ts` and `pair-sections-stage.ts` time their grace the same way.
@@ -2074,7 +2080,11 @@ re-asked a seat no wet provider served in every retry round
 
 ### X8: windowed stages size quorum over the seated bench
 
-Status: open.
+Status: fixed with E3 in `29baade8f` (red guards `a6cbd8fc5`):
+`runWindowedRounds` re-sizes its quorum with `reachableQuorum` before every round,
+and the five stages beside the naturalness review carry `stage-short-bench` in their findings.
+
+Found as:
 `runWindowedRounds` takes `heardNeeded` from `rosterQuorumSize` over the seated bench
 and never applies `reachableQuorum`,
 though the 2026-09-09 addendum of `doc/decision/translation-repair-short-bench-share.md`
