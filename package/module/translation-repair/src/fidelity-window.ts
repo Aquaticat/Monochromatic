@@ -56,6 +56,9 @@ import { windowWithCitedFootnotes, } from './cited-footnote-definitions.ts';
  
  @param slicePosition - POSITION IN `slices`, never a stamped `sliceIndex`
  
+ @param documentText - whole original, whose footnote definitions the slice
+ may cite from outside every slice
+ 
  @returns Neighbouring source text, empty when the slice stands alone
  
  @throws {@link RangeError} when `slicePosition` is not a position in `slices`,
@@ -63,16 +66,18 @@ import { windowWithCitedFootnotes, } from './cited-footnote-definitions.ts';
  
  @example
  ```ts
- const contextText = neighbouringSource({ slices, slicePosition, },);
+ const contextText = neighbouringSource({ slices, slicePosition, documentText: prepared.sourceText, },);
  ```
  */
 export function neighbouringSource(
   {
     slices,
     slicePosition,
+    documentText,
   }: {
     readonly slices: readonly ChunkPair[];
     readonly slicePosition: number;
+    readonly documentText: string;
   },
 ): string {
   if ((!Number.isInteger(slicePosition,))
@@ -114,10 +119,7 @@ export function neighbouringSource(
     citingText: current?.source
       .text
       ?? '',
-    documentTexts: slices.map(function sourceOf(slice,): string {
-      return slice.source
-        .text;
-    },),
+    documentText,
   },);
 }
 
@@ -154,6 +156,9 @@ export function neighbouringSource(
  
  @param slicePosition - POSITION IN `slices`, never a stamped `sliceIndex`
  
+ @param documentText - whole archive, whose footnote definitions the slice may
+ cite from outside every slice, as an archive translator's own notes do
+ 
  @returns Neighbouring archive text, empty when the slice stands alone
  
  @throws {@link RangeError} when `slicePosition` is not a position in `slices`,
@@ -161,16 +166,18 @@ export function neighbouringSource(
  
  @example
  ```ts
- const besideText = neighbouringIncumbent({ slices, slicePosition, },);
+ const besideText = neighbouringIncumbent({ slices, slicePosition, documentText: prepared.targetText, },);
  ```
  */
 export function neighbouringIncumbent(
   {
     slices,
     slicePosition,
+    documentText,
   }: {
     readonly slices: readonly ChunkPair[];
     readonly slicePosition: number;
+    readonly documentText: string;
   },
 ): string {
   if ((!Number.isInteger(slicePosition,))
@@ -212,10 +219,7 @@ export function neighbouringIncumbent(
     citingText: current?.target
       .text
       ?? '',
-    documentTexts: slices.map(function targetOf(slice,): string {
-      return slice.target
-        .text;
-    },),
+    documentText,
   },);
 }
 
@@ -262,15 +266,28 @@ export type SliceNeighbourContext = {
  @param slices - prepared pairs in document order, which is what makes a window
  positional rather than a lookup
  
+ @param sourceText - whole original, for the footnotes a slice cites
+ 
+ @param targetText - whole archive, for the footnotes a slice cites, including
+ notes an archive translator added that sit in no slice
+ 
  @returns Window per stamped chunk index
  
  @example
  ```ts
- const windows = sliceNeighbourContexts({ slices, },);
+ const windows = sliceNeighbourContexts({ slices, sourceText, targetText, },);
  ```
  */
 export function sliceNeighbourContexts(
-  { slices, }: { readonly slices: readonly ChunkPair[]; },
+  {
+    slices,
+    sourceText,
+    targetText,
+  }: {
+    readonly slices: readonly ChunkPair[];
+    readonly sourceText: string;
+    readonly targetText: string;
+  },
 ): ReadonlyMap<number, SliceNeighbourContext> {
   return new Map(slices.map(function nameSliceWindow(
     slice,
@@ -286,10 +303,12 @@ export function sliceNeighbourContexts(
         sourceText: neighbouringSource({
           slices,
           slicePosition,
+          documentText: sourceText,
         },),
         incumbentText: neighbouringIncumbent({
           slices,
           slicePosition,
+          documentText: targetText,
         },),
       },
     ];

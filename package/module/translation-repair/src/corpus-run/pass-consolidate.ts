@@ -145,6 +145,8 @@ export async function runPassConsolidation(
     },),
     neighbourContextBySlice: sliceNeighbourContexts({
       slices: prepared.slices,
+      sourceText: prepared.sourceText,
+      targetText: prepared.targetText,
     },),
     ...((prepared.identityContext === undefined)
       ? {}

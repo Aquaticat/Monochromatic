@@ -309,6 +309,7 @@ export async function repairPreparedDocument(
    */
   const phase = await refineSettledSlices({
     client,
+    sourceText: prepared.sourceText,
     targetText,
     slices,
     outcomes,

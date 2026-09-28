@@ -167,6 +167,7 @@ export async function settleRepairSlice(
   const neighbouringSourceText = neighbouringSource({
     slices: prepared.slices,
     slicePosition,
+    documentText: prepared.sourceText,
   },);
 
   /**
@@ -175,6 +176,7 @@ export async function settleRepairSlice(
   const neighbouringIncumbentText = neighbouringIncumbent({
     slices: prepared.slices,
     slicePosition,
+    documentText: prepared.targetText,
   },);
 
   /**

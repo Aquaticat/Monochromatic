@@ -11,8 +11,10 @@ import {
 // issues the panel accepted there named a footnote, an attribution, a credit
 // or a citation. The fidelity window now ends with the definition of every
 // label the slice cites that neither the slice nor its window defines, each
-// side from its own document, so every sheet showing the window shows the
-// note beside the marker.
+// side from its own WHOLE document, so every sheet showing the window shows
+// the note beside the marker. The whole document, not the slices: on
+// shihai4h the original has no footnotes and the archive translator's ten
+// notes sit in no slice, so slice texts alone missed the very case found.
 //
 // THE REVERSE CASE IS LEFT OUT ON PURPOSE. A slice holding a definition whose
 // citation is outside the window (19 source slices on the latest artifact of
@@ -172,31 +174,31 @@ function footnoteDefinitions({ text, }: { readonly text: string; },): ReadonlyMa
 
 /**
  Definitions of the footnotes a slice cites that nothing shown with it
- defines, found in the other slices of the same side.
+ defines, found in the whole document of the same side.
 
  @param citingText - slice whose citations are read
 
  @param shownText - slice and window together, whose definitions are already
    on the sheet
 
- @param documentTexts - every slice of the same side, in document order
+ @param documentText - whole document of the same side, which holds notes preparation keeps in no slice
 
  @returns Definitions joined line by line, empty when nothing is missing
 
  @example
  ```ts
- const notes = citedFootnoteDefinitions({ citingText, shownText, documentTexts, },);
+ const notes = citedFootnoteDefinitions({ citingText, shownText, documentText, },);
  ```
  */
 function citedFootnoteDefinitions(
   {
     citingText,
     shownText,
-    documentTexts,
+    documentText,
   }: {
     readonly citingText: string;
     readonly shownText: string;
-    readonly documentTexts: readonly string[];
+    readonly documentText: string;
   },
 ): string {
   /**
@@ -227,20 +229,16 @@ function citedFootnoteDefinitions(
     return '';
 
   /**
-   Definitions each slice of the side holds, in document order.
+   Definitions the side's whole document holds.
    */
-  const perSlice = documentTexts.map(function definitionsOf(text,): ReadonlyMap<string, string> {
-    return footnoteDefinitions({ text, },);
-  },);
+  const defined = footnoteDefinitions({ text: documentText, },);
   return missing
     .flatMap(function toDefinition(label,): readonly string[] {
       /**
-       First slice defining the label.
+       Definition of the label, when the document has one.
        */
-      const holder = perSlice.find(function defines(definitions,): boolean {
-        return definitions.has(label,);
-      },);
-      return (holder === undefined) ? [] : [holder.get(label,) ?? '',];
+      const definition = defined.get(label,);
+      return (definition === undefined) ? [] : [definition,];
     },)
     .join('\n',);
 }
@@ -253,24 +251,24 @@ function citedFootnoteDefinitions(
 
  @param citingText - the slice itself, on the same side
 
- @param documentTexts - every slice of that side, in document order
+ @param documentText - whole document of that side
 
  @returns Window text, followed by the missing definitions when there are any
 
  @example
  ```ts
- const window = windowWithCitedFootnotes({ windowText, citingText, documentTexts, },);
+ const window = windowWithCitedFootnotes({ windowText, citingText, documentText, },);
  ```
  */
 export function windowWithCitedFootnotes(
   {
     windowText,
     citingText,
-    documentTexts,
+    documentText,
   }: {
     readonly windowText: string;
     readonly citingText: string;
-    readonly documentTexts: readonly string[];
+    readonly documentText: string;
   },
 ): string {
   /**
@@ -279,7 +277,7 @@ export function windowWithCitedFootnotes(
   const notes = citedFootnoteDefinitions({
     citingText,
     shownText: `${citingText}\n\n${windowText}`,
-    documentTexts,
+    documentText,
   },);
   return [
     windowText,

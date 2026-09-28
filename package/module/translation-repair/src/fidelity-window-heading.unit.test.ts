@@ -8,6 +8,13 @@ import {
   sliceNeighbourContexts,
 } from '../dist/final/node/index.mjs';
 
+/**
+ Whole-document text these fixtures pass: none of them cites a footnote, so
+ the window has no definition to add from either document (ledger L5).
+ */
+const NOTE_FREE_DOCUMENT = '';
+
+
 /** Nonconsecutive stamps keep array positions distinct from result keys. */
 const STAMP_STEP = 10;
 
@@ -47,20 +54,20 @@ await describe({
       name: 'INCLUDES the dated body after the immediate heading on both sides of the pair',
       fn: async () => {
         const slices = pairs(['Current.', '## Friends', 'In April 2022 her friend came out to her.', 'Later unrelated prose.'],);
-        const source = neighbouringSource({ slices, slicePosition: 0, },);
-        const archive = neighbouringIncumbent({ slices, slicePosition: 0, },);
+        const source = neighbouringSource({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },);
+        const archive = neighbouringIncumbent({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },);
         expect(source,).toBe('## Friends\n\nIn April 2022 her friend came out to her.',);
         expect(archive,).toBe('archive 1\n\narchive 2',);
         expect(source,).not.toContain('Later unrelated',);
-        expect(sliceNeighbourContexts({ slices, },).get(STAMP_STEP,),).toEqual({ sourceText: source, incumbentText: archive, },);
+        expect(sliceNeighbourContexts({ slices, sourceText: NOTE_FREE_DOCUMENT, targetText: NOTE_FREE_DOCUMENT, },).get(STAMP_STEP,),).toEqual({ sourceText: source, incumbentText: archive, },);
       },
     },),
     it({
       name: 'DOES NOT reach backward through the current section heading',
       fn: async () => {
         const slices = pairs(['Previous section body.', '## Current section', 'Current body.'],);
-        expect(neighbouringSource({ slices, slicePosition: 2, },),).toBe('## Current section',);
-        expect(neighbouringIncumbent({ slices, slicePosition: 2, },),).toBe('archive 1',);
+        expect(neighbouringSource({ slices, slicePosition: 2, documentText: NOTE_FREE_DOCUMENT, },),).toBe('## Current section',);
+        expect(neighbouringIncumbent({ slices, slicePosition: 2, documentText: NOTE_FREE_DOCUMENT, },),).toBe('archive 1',);
       },
     },),
     it({
@@ -68,8 +75,8 @@ await describe({
       fn: async () => {
         const media = '<PhotoScroll photos={["picture.webp"]} />';
         const slices = pairs(['Current.', '## Pictures', media, 'Distant prose.'],);
-        expect(neighbouringSource({ slices, slicePosition: 0, },),).toBe(`## Pictures\n\n${media}`,);
-        expect(neighbouringIncumbent({ slices, slicePosition: 0, },),).toBe('archive 1\n\narchive 2',);
+        expect(neighbouringSource({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe(`## Pictures\n\n${media}`,);
+        expect(neighbouringIncumbent({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('archive 1\n\narchive 2',);
       },
     },),
     ...['## Another section', '## Another section\n\nIts body.', '',].map(function barrier(text) {
@@ -77,8 +84,8 @@ await describe({
         name: `STOPS after the first heading when the next slice is ${JSON.stringify(text,)}`,
         fn: async () => {
           const slices = pairs(['Current.', '## Boundary', text, 'Distant prose.'],);
-          expect(neighbouringSource({ slices, slicePosition: 0, },),).toBe('## Boundary',);
-          expect(neighbouringIncumbent({ slices, slicePosition: 0, },),).toBe('archive 1',);
+          expect(neighbouringSource({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('## Boundary',);
+          expect(neighbouringIncumbent({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('archive 1',);
         },
       },);
     },),
@@ -89,8 +96,8 @@ await describe({
           .map(function removeNodes(slice, index): ChunkPair {
             return index === 2 ? { ...slice, source: { ...slice.source, nodes: [], }, } : slice;
           },);
-        expect(neighbouringSource({ slices, slicePosition: 0, },),).toBe('## Boundary\n\nUnknown but present body.',);
-        expect(neighbouringIncumbent({ slices, slicePosition: 0, },),).toBe('archive 1\n\narchive 2',);
+        expect(neighbouringSource({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('## Boundary\n\nUnknown but present body.',);
+        expect(neighbouringIncumbent({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('archive 1\n\narchive 2',);
       },
     },),
     it({
@@ -100,10 +107,10 @@ await describe({
           .map(function metadata(slice, index): ChunkPair {
             return index === 2 ? { ...slice, syntax: 'front-matter', } : slice;
           },);
-        expect(neighbouringSource({ slices, slicePosition: 0, },),).toBe('## Boundary',);
-        expect(neighbouringIncumbent({ slices, slicePosition: 0, },),).toBe('archive 1',);
-        expect(neighbouringSource({ slices, slicePosition: 2, },),).toBe('',);
-        expect(neighbouringIncumbent({ slices, slicePosition: 2, },),).toBe('',);
+        expect(neighbouringSource({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('## Boundary',);
+        expect(neighbouringIncumbent({ slices, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('archive 1',);
+        expect(neighbouringSource({ slices, slicePosition: 2, documentText: NOTE_FREE_DOCUMENT, },),).toBe('',);
+        expect(neighbouringIncumbent({ slices, slicePosition: 2, documentText: NOTE_FREE_DOCUMENT, },),).toBe('',);
       },
     },),
     it({
@@ -113,22 +120,22 @@ await describe({
         const unknown = base.map(function unstructured(slice, index): ChunkPair {
           return index === 1 ? { ...slice, source: { ...slice.source, nodes: [], }, } : slice;
         },);
-        expect(neighbouringSource({ slices: unknown, slicePosition: 0, },),).toBe('## Unproven heading',);
+        expect(neighbouringSource({ slices: unknown, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('## Unproven heading',);
         const metadata = base.map(function mark(slice, index): ChunkPair {
           return index === 1 ? { ...slice, syntax: 'front-matter', } : slice;
         },);
-        expect(neighbouringSource({ slices: metadata, slicePosition: 0, },),).toBe('',);
-        expect(neighbouringIncumbent({ slices: metadata, slicePosition: 0, },),).toBe('',);
+        expect(neighbouringSource({ slices: metadata, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('',);
+        expect(neighbouringIncumbent({ slices: metadata, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('',);
       },
     },),
     it({
       name: 'PRESERVES ordinary neighbors and a final heading without a following body',
       fn: async () => {
         const slices = pairs(['Before.', 'Current.', 'After.', 'Farther.'],);
-        expect(neighbouringSource({ slices, slicePosition: 1, },),).toBe('Before.\n\nAfter.',);
-        expect(neighbouringIncumbent({ slices, slicePosition: 1, },),).toBe('archive 0\n\narchive 2',);
+        expect(neighbouringSource({ slices, slicePosition: 1, documentText: NOTE_FREE_DOCUMENT, },),).toBe('Before.\n\nAfter.',);
+        expect(neighbouringIncumbent({ slices, slicePosition: 1, documentText: NOTE_FREE_DOCUMENT, },),).toBe('archive 0\n\narchive 2',);
         const lastHeading = pairs(['Current.', '## End'],);
-        expect(neighbouringSource({ slices: lastHeading, slicePosition: 0, },),).toBe('## End',);
+        expect(neighbouringSource({ slices: lastHeading, slicePosition: 0, documentText: NOTE_FREE_DOCUMENT, },),).toBe('## End',);
       },
     },),
   ],

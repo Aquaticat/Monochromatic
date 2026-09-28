@@ -507,6 +507,7 @@ async function runPhase(
       ...((dissent === undefined) ? {} : { dissent, }),
       ...((probeClaim === undefined) ? {} : { probeClaim, }),
     },),
+    sourceText: SOURCE_TEXT,
     targetText: REPAIRED_TEXT,
     slices: SLICES,
     outcomes: [settledOutcome({ resolvedIssueIds, authorship, unresolvedIssues, },),],
@@ -910,6 +911,7 @@ await describe({
             inner: scriptedPhase({ checkerVerdict: 'fixed', },),
             calls,
           },),
+          sourceText: SOURCE_TEXT,
           targetText: REPAIRED_TEXT,
           slices: SLICES,
           outcomes: [settledOutcome({
@@ -986,6 +988,7 @@ await describe({
             inner: scriptedPhase({ checkerVerdict: 'fixed', },),
             activity: serial,
           },),
+          sourceText: SOURCE_TEXT,
           targetText: `${REPAIRED_TEXT}\n\n${REPAIRED_TEXT}`,
           slices: twoSlices,
           outcomes,
@@ -1012,6 +1015,7 @@ await describe({
             inner: scriptedPhase({ checkerVerdict: 'fixed', },),
             activity: overlapped,
           },),
+          sourceText: SOURCE_TEXT,
           targetText: `${REPAIRED_TEXT}\n\n${REPAIRED_TEXT}`,
           slices: twoSlices,
           outcomes,
@@ -1075,6 +1079,7 @@ await describe({
         const phase = await runRefinePhase({
           declaredNames: [],
           client: scriptedPhase({ checkerVerdict: 'fixed', },),
+          sourceText: SOURCE_TEXT,
           targetText: `${REPAIRED_TEXT}\n\n${REPAIRED_TEXT}`,
           slices: [
             ...SLICES,
@@ -1140,6 +1145,7 @@ await describe({
         const phase = await runRefinePhase({
           declaredNames: [],
           client: scriptedPhase({ checkerVerdict: 'fixed', },),
+          sourceText: SOURCE_TEXT,
           targetText: SMOOTH_TEXT,
           slices: archiveSlices,
           outcomes: [accuracy,],
@@ -1172,6 +1178,7 @@ await describe({
             inner: scriptedPhase({ checkerVerdict: 'fixed', },),
             calls,
           },),
+          sourceText: SOURCE_TEXT,
           targetText: REPAIRED_TEXT,
           slices: SLICES,
           outcomes: [
@@ -1220,6 +1227,7 @@ await describe({
             },
             quotas: inner.quotas,
           },
+          sourceText: SOURCE_TEXT,
           targetText: REPAIRED_TEXT,
           slices: SLICES,
           outcomes: [settledOutcome({ resolvedIssueIds: [], authorship: NO_MODEL_WROTE_THE_FIXTURE, },),],
@@ -1302,6 +1310,7 @@ await describe({
             },
             quotas: inner.quotas,
           },
+          sourceText: SOURCE_TEXT,
           targetText: REPAIRED_TEXT,
           slices: SLICES,
           outcomes: [settledOutcome({
@@ -1416,6 +1425,7 @@ async function runCachedPhase(
       inner: scriptedPhase({ checkerVerdict: 'fixed', },),
       calls,
     },),
+    sourceText: SOURCE_TEXT,
     targetText: REPAIRED_TEXT,
     slices: SLICES,
     outcomes: [settledOutcome({ resolvedIssueIds: [], authorship: NO_MODEL_WROTE_THE_FIXTURE, },),],
@@ -1568,6 +1578,7 @@ async function runReseatedPhase(
       },
       quotas: inner.quotas,
     },
+    sourceText: SOURCE_TEXT,
     targetText: REPAIRED_TEXT,
     slices: SLICES,
     outcomes: [settledOutcome({

@@ -252,6 +252,7 @@ async function keysKept(
    */
   const phase = await refineSettledSlices({
     client,
+    sourceText: SOURCE_PARAGRAPH,
     targetText: ARCHIVE_PARAGRAPH,
     slices: SLICES,
     outcomes: OUTCOMES,

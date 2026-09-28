@@ -144,6 +144,7 @@ async function drawEntry(
 ): Promise<{
   readonly picks: readonly TrialSlice[];
   readonly slices: readonly ChunkPair[];
+  readonly sourceText: string;
 }> {
   /**
    Both sides, absent when this entry carries only one.
@@ -153,6 +154,7 @@ async function drawEntry(
     return {
       picks: [],
       slices: [],
+      sourceText: '',
     };
   }
 
@@ -190,6 +192,7 @@ async function drawEntry(
     return {
       picks: [],
       slices: prepared.slices,
+      sourceText: prepared.sourceText,
     };
   }
 
@@ -206,6 +209,7 @@ async function drawEntry(
       },),
     ],
     slices: prepared.slices,
+    sourceText: prepared.sourceText,
   };
 }
 
@@ -343,6 +347,7 @@ async function main(): Promise<void> {
       const outcome = await runPick({
         client: witnessed.passed ? client : witness.client,
         slices: drawn.slices,
+        sourceText: drawn.sourceText,
         pick,
         entryId,
         protocol,

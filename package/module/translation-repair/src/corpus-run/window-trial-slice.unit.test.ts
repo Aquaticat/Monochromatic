@@ -39,6 +39,13 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
+ Whole original these fixtures pass: none of them cites a footnote, so the
+ window has no definition to add from it (ledger L5).
+ */
+const NOTE_FREE_DOCUMENT = '';
+
+
+/**
  Logger the arms write to.
  */
 const l = tagged({ tag: 'window-trial-slice-test', },);
@@ -285,6 +292,7 @@ await describe({
         const rows = await runSliceArms({
           client: rig.client,
           slices: SLICES,
+          sourceText: NOTE_FREE_DOCUMENT,
           sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
@@ -314,6 +322,7 @@ await describe({
         await runSliceArms({
           client: rig.client,
           slices: SLICES,
+          sourceText: NOTE_FREE_DOCUMENT,
           sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
@@ -345,6 +354,7 @@ await describe({
         await runSliceArms({
           client: rig.client,
           slices: SLICES,
+          sourceText: NOTE_FREE_DOCUMENT,
           sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
@@ -375,6 +385,7 @@ await describe({
         const rows = await runSliceArms({
           client: rig.client,
           slices: SLICES,
+          sourceText: NOTE_FREE_DOCUMENT,
           sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
@@ -408,6 +419,7 @@ await describe({
         const rows = await runSliceArms({
           client: rig.client,
           slices: SLICES,
+          sourceText: NOTE_FREE_DOCUMENT,
           sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
@@ -446,6 +458,7 @@ await describe({
         await runSliceArms({
           client: first.client,
           slices: SLICES,
+          sourceText: NOTE_FREE_DOCUMENT,
           sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
@@ -465,6 +478,7 @@ await describe({
         const rows = await runSliceArms({
           client: second.client,
           slices: SLICES,
+          sourceText: NOTE_FREE_DOCUMENT,
           sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
@@ -495,6 +509,7 @@ await describe({
         const rows = await runSliceArms({
           client: rig.client,
           slices: SLICES,
+          sourceText: NOTE_FREE_DOCUMENT,
           sliceIndex: 1,
           sliceClass: 'relocation',
           entryId: 'Mittens',
@@ -525,6 +540,7 @@ await describe({
         const attempt = runSliceArms({
           client: rig.client,
           slices: [SLICES[1] as ChunkPair,],
+          sourceText: NOTE_FREE_DOCUMENT,
           sliceIndex: 0,
           sliceClass: 'relocation',
           entryId: 'Mittens',
