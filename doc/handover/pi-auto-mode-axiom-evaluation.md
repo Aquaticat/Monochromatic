@@ -16,7 +16,8 @@ Private prototypes,
 local history inspection,
 and synthetic evaluation are authorized.
 Do not commit raw histories or start ongoing transcript capture.
-Training and separately rented compute require further authorization.
+Only the newly approved local Voyage-feature probability heads and preprocessing statistics may be fitted.
+Base-model training and separately rented compute still require further authorization.
 The user authorizes all task-relevant assessment content through LLM Gateway to Jev
 and explicitly expanded that consent to Respan,
 including private or sensitive content for the named evaluation.
@@ -30,7 +31,7 @@ Current references:
 
 - [Axiom architecture and interview answers](../planning/pi-auto-mode-axioms.md).
 - [Effect and authorization contract](../planning/pi-auto-mode-effect-contract.md).
-- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-80e67cc0.md).
+- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ad6e5a89.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
 ## Gateway input authorization and access boundary
@@ -293,7 +294,8 @@ This selects composed-estimator research,
 not a production model,
 threshold,
 or implementation.
-The offered B boundary still requires separate authorization before parameter fitting or training.
+The offered B boundary required separate authorization before parameter fitting or training.
+The user subsequently granted the scoped local-head fitting authorization recorded in this section.
 Private Voyage inputs,
 reserved scenarios,
 new providers,
@@ -313,7 +315,8 @@ no cross-axiom normalization or probability interpretation is allowed.
 
 A future per-role regularized logistic head would be supervised truth estimation,
 not automatic conversion of relevance.
-Fitting and production cutoffs remain unauthorized.
+The user has now approved scoped local-head fitting;
+production cutoffs remain unauthorized.
 Abstention and probability quality must be validated on accepted cases,
 with fresh group-separated data before deployment claims.
 The first planned no-fitting mechanism test targets four existing read profiles,
@@ -368,27 +371,35 @@ All paired sets were within five seconds;
 observed durations were `861.5615699999998` to `1410.065077` ms.
 The [mechanism result](../planning/pi-auto-mode-voyage-composed-estimator.md#mechanism-result)
 records the full vectors and limitations.
-The proposed logistic adapter remains unfitted;
-separate authorization is still required before any parameter fitting or training.
+The proposed logistic adapter remains unfitted at the mechanism checkpoint.
+The user has subsequently authorized only the scoped local-head fitting phase,
+not base-model training or deployment.
 No automatic template revision,
 larger model batch,
 or deployment follows.
 
-A next fitting experiment is proposed,
-not authorized:
-at most 120 public/synthetic Voyage feature calls,
-including fresh fit,
-selection/calibration,
-and locked test partitions plus predeclared controls.
-Only local probability heads would be fitted,
+The user approved the next local-head fitting experiment and added:
+"Yes. You can run Voyage as much as you like."
+Voyage inference volume is authorized as needed for the task;
+120 calls is an initial planning bound,
+not a user-imposed global ceiling.
+Each phase still needs a finite frozen schedule,
+fresh fit/selection-calibration/locked-test partitions,
+predeclared controls,
+and stop conditions.
+
+Only local probability heads and their preprocessing statistics may be fitted,
 CPU-only within 2 GiB and 2 CPUs,
 network/credential-free with a 60-second per-fit ceiling.
 No Voyage weight training,
-private input,
+private Voyage input,
 original reserved case,
 production cutoff,
+new provider,
 or deployment is included.
-Do not start this stage without the separate fitting authorization retained in option B's boundary.
+The new fitting-context fingerprint is
+`ad6e5a89b84b5e6dd1bd1ef79e496f2928b5cc622771e16a61b5637693bf96fa`;
+the pre-fitting audit remains preserved unchanged.
 
 ## Sequencing correction
 
@@ -2014,8 +2025,10 @@ Only scoped documentation was committed in the main worktree.
 Unrelated music-player work and `tmp/` must not be reset or cleaned.
 
 The current authorization-context audit fingerprint is
-`80e67cc07b2eb898054d15ddd04e91bb689fbb4c8ebb77aee5c4ba3cd6f9a8d2`.
-Commit `de7a5a1e5` records the bounded Pro/OpenRouter authorization context.
+`ad6e5a89b84b5e6dd1bd1ef79e496f2928b5cc622771e16a61b5637693bf96fa`.
+It records local-head fitting and task-relevant Voyage usage authorization.
+The pre-fitting `80e67cc07b2eb898054d15ddd04e91bb689fbb4c8ebb77aee5c4ba3cd6f9a8d2` context remains preserved.
+Commit `de7a5a1e5` records that bounded Pro/OpenRouter authorization context.
 The initial Respan `d5b5b9cdfae6f38c9958ab2eaf7d39b8026b9bb3ed61965bcefbf56451de9170`
 and pre-Respan `51edb8223a030345de584932d5273ecd90ead6753011d84fefb7b9505f218d67` contexts remain preserved.
 The historical `4a2938840ff56544f24ad0d2dd543431c94baa1e18db815adb8ee68af297ea8d` report is also archived,

@@ -10,8 +10,10 @@ This document selects a concrete research design,
 not a production provider,
 probability profile,
 or deployment.
-Parameter fitting and training still require separate authorization before execution.
-The first stage does neither.
+The first mechanism stage performed no fitting or training.
+The user subsequently approved scoped local-head and preprocessing fitting and added:
+"Yes. You can run Voyage as much as you like."
+Base-model training and production use remain unauthorized.
 Private Voyage inputs,
 original reserved scenarios,
 new providers,
@@ -332,18 +334,20 @@ The feature mechanism produced additional distinguishing information on the targ
 It has not produced an estimator of truth probability.
 The logistic adapter remains unfitted,
 and no selector or production cutoff is active.
-Any fitting stage still needs separate authorization and fresh group-separated evidence.
-No automatic larger run,
-template hunt,
-or training follows.
+These mechanism observations did not themselves authorize fitting.
+The user subsequently granted the scoped authorization described in the fitting phase.
+Fresh group-separated evidence is still required.
+No outcome-driven template hunt or production use follows.
 
-## Proposed next authorization
+## Authorized fitting phase
 
-The next proposed experiment would fit only the local probability heads,
+The user approved fitting only the local probability heads and preprocessing statistics,
 not Voyage's model weights.
-It is not authorized or running.
+Voyage inference volume is authorized as needed for the task.
+This does not authorize indefinite or outcome-driven test expansion;
+every research phase still freezes its schedule and stopping conditions.
 
-Proposed ceiling:
+Initial phase planning bound:
 120 Voyage feature calls on fresh public/synthetic inputs,
 with complete policy,
 no retries,
@@ -372,12 +376,22 @@ private upload,
 reserved-scenario query,
 base-model fine-tuning,
 or deployed approval path is included.
-If authorization is not granted,
-stop with the unfitted design and mechanism evidence already retained.
+The 120-call figure is not a user-imposed global usage ceiling.
+Additional task-relevant phases may be planned within the new volume authorization,
+but their questions,
+inputs,
+and stop conditions must be frozen before querying.
+The [fitting-context audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ad6e5a89.md)
+records the new authority without rewriting the pre-fitting report.
 
 ## Later validation boundary
 
-Any fitting stage needs new authorization and its own frozen protocol.
+Scoped local-head fitting is authorized;
+each phase still requires its own frozen protocol.
+Broader training,
+private input,
+reserved-scenario release,
+and production use are not implied.
 Use independently predeclared references,
 never Jev or Respan outputs as teaching labels.
 The already queried examples remain development diagnostics;
