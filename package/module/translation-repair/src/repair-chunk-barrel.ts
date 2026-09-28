@@ -19,6 +19,7 @@ export {
   recordIssuesWithFilers,
 } from './claim-filers.ts';
 export { repairChunk, } from './repair-chunk.ts';
+export { settleShippedPatch, } from './repair-chunk-settle.ts';
 export { frontMatterRepairOutcome, } from './front-matter-repair.ts';
 export {
   type ChunkVerdict,
