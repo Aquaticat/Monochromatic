@@ -252,14 +252,18 @@ and the ballot records what the judge holds against it;
 until then it said choosing the standing stops the entry,
 which stopped being true when that class shipped the slate's choice past such a preference.
 
-## When the consolidation slate ties over an ineligible standing
+## When the consolidation slate declines
 
 A consolidation slate whose standing was withheld as ineligible has nothing to keep on a decline,
 so since class fifty-five (2026-09-18) it is judged through the translate lane's challenge:
-a tie or rejection is re-asked once under `decline-challenge`,
-narrowed to the candidates that drew a ballot,
+a tie or rejection is challenged once under `decline-challenge`,
+run off over the candidates that drew a ballot and again while each round narrows them (class eighty-two),
 with `translate-declined-retried` and the run-off finding recorded.
-A slate over an eligible standing keeps its single round and its standing on a decline.
+A challenge that declines with nothing left to narrow ships the candidate the judges preferred
+(owner, 2026-09-27, "Preference + polish"); until then it stopped the entry.
+A slate over an eligible standing keeps its single round and its standing on a decline,
+except where every contest ballot called the archive flawed (class one hundred six, 2026-09-24):
+there a tie is run off too, and the standing still ships where that run-off ends undecided.
 
 ## When the consolidate gate cannot decide over an ineligible standing
 

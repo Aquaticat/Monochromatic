@@ -70,9 +70,14 @@ export type JudgedRound =
  a slate that had nothing wrong with it. The translate lane has re-asked a
  declined slate under `decline-challenge` since class fifty-three, with a
  run-off over the candidates the tie backed; the consolidation gets the
- same second round only where a decline would stop the entry. An eligible
- standing keeps the single round, because there a decline keeps text the
- contest already endorsed.
+ same second round wherever the standing is withheld, and a challenge that
+ declines with nothing left to narrow ships the judges' preference (owner,
+ 2026-09-27, "Preference + polish"). An eligible standing keeps the single
+ round, because there a decline keeps text the contest already endorsed,
+ except where every contest ballot called the archive flawed
+ (`runoffOverStanding`, class one hundred six), where a tie is run off too.
+ This said the eligible standing always kept the single round until ledger
+ H10.
 
  @param client - provider client the round borrows
 
