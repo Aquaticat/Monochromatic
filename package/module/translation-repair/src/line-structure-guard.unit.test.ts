@@ -197,6 +197,19 @@ await describe({
     },),
 
     it({
+      name: 'READS A LINE WHOSE LETTERS ARE ALL ACCENTED as the original\'s own English beside its Han line, so a '
+        + 'rendering owes the pair one line; ASCII letters alone saw no English in "Å" and refused the rendering '
+        + 'for merging two lines (ledger B18)',
+      fn: async () => {
+        expect(compareLineCounts({
+          lineStructured: true,
+          sourceText: '猫住在北方的小村。\nÅ',
+          candidateText: 'The cat lived in a small northern village: Å.',
+        },).length,).toBe(0,);
+      },
+    },),
+
+    it({
       name:
         'IGNORES BLANK LINES ON BOTH SIDES, since they separate blocks rather than carry text. A '
         + 'rendering that writes a different number of them has merged nothing, and faulting it would '

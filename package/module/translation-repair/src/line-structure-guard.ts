@@ -2,6 +2,7 @@ import {
   type BilingualPair,
   pairBoundFindings,
 } from './bilingual-pair-bound.ts';
+import { isLatinLetter, } from './latin-letters.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
 import {
   carriesContent,
@@ -67,8 +68,10 @@ function carriesHan({ line, }: { readonly line: string; },): boolean {
 }
 
 /**
- Whether a line carries a Latin letter and no Han character: an English line
- the original itself wrote.
+ Whether a line carries a Latin letter, accented or not, and no Han character:
+ an English line the original itself wrote. A line whose letters are all
+ accented read as carrying none while the test took ASCII letters only
+ (ledger B18).
  
  @param line - one line
  
@@ -83,7 +86,7 @@ function isOwnEnglish({ line, }: { readonly line: string; },): boolean {
   if (carriesHan({ line, },))
     return false;
   for (const character of line) {
-    if (((character >= 'a') && (character <= 'z')) || ((character >= 'A') && (character <= 'Z')))
+    if (isLatinLetter({ character, },))
       return true;
   }
   return false;
