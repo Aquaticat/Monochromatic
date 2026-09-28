@@ -136,6 +136,7 @@ export async function prepareBlockPairing(
   } = blockPairingQuestion({
     pair,
     pictureContext,
+    modelIds,
   },);
   /**
    Relations and findings a past round stored under this question's key.

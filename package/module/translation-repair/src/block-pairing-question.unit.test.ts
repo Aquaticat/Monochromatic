@@ -5,7 +5,14 @@ import {
   blockPairingQuestion,
   type ChunkPair,
   parseDocument,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Roster every question here is asked of, which the key folds in (ledger X13).
+ */
+const ROSTER = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,] as const;
 
 /**
  Builds one complete parser-backed parent without transport.
@@ -40,19 +47,19 @@ await describe({ name: blockPairingQuestion.name, children: [
     /** Complete source and archive paragraphs. */
     const pair = parent({ sourceText: '猫睡了。\n\n它喜欢盒子。', targetText: 'The cat slept.\n\nShe loves boxes.', },);
     /** Actual shared question. */
-    const question = blockPairingQuestion({ pair, },);
+    const question = blockPairingQuestion({ pair, modelIds: ROSTER, },);
     expect(question.sourceBlocks,).toEqual([{ index: 0, text: '猫睡了。', }, { index: 1, text: '它喜欢盒子。', },]);
     expect(question.targetBlocks,).toEqual([{ index: 0, text: 'The cat slept.', }, { index: 1, text: 'She loves boxes.', },]);
     expect(question.freeOrder,).toEqual({ source: new Set(), target: new Set(), });
     expect(question.key,).toBe(createHash('sha256',)
-      .update('3\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.', 'utf8',)
+      .update(`3\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.\u0000\u0000\u0000roster\u0000${  ROSTER.join('\u0000',)}`, 'utf8',)
       .digest('hex',));
   }, },),
   it({ name: 'numbers definition exemptions within the current parent on each side', fn: async (): Promise<void> => {
     /** Definitions have different local indexes on the two sides. */
     const pair = parent({ sourceText: '猫[^a]。\n\n[^a]: 盒子。\n\n[^b]: 枕头。', targetText: '[^z]: Pillow.\n\n[^y]: Box.', },);
     /** Definition sets must follow parsed positions, not label spelling. */
-    const question = blockPairingQuestion({ pair, },);
+    const question = blockPairingQuestion({ pair, modelIds: ROSTER, },);
     expect([...question.freeOrder.source,],).toEqual([1, 2,]);
     expect([...question.freeOrder.target,],).toEqual([0, 1,]);
     expect(question.sourceBlocks.map(block => block.index,),).toEqual([0, 1, 2,]);
@@ -62,19 +69,19 @@ await describe({ name: blockPairingQuestion.name, children: [
     /** Initial parent and derived current question. */
     const pair = parent({ sourceText: '猫。\n\n盒子。', targetText: 'Cat.\n\nBox.', },);
     /** Existing identity to compare with positive changes. */
-    const original = blockPairingQuestion({ pair, },);
+    const original = blockPairingQuestion({ pair, modelIds: ROSTER, },);
     /** Reordered nodes must not retain the old key. */
     const reordered = { ...pair, [side]: { ...pair[side], nodes: pair[side].nodes.toReversed(), }, };
-    expect(blockPairingQuestion({ pair: reordered, },).key,).not.toBe(original.key,);
+    expect(blockPairingQuestion({ pair: reordered, modelIds: ROSTER, },).key,).not.toBe(original.key,);
     /** Changed node text must reach numbering and identity together. */
     const changed = { ...pair, [side]: { ...pair[side], nodes: pair[side].nodes.map(node => ({ ...node, text: `${node.text}！`, })), }, };
-    expect(blockPairingQuestion({ pair: changed, },).key,).not.toBe(original.key,);
+    expect(blockPairingQuestion({ pair: changed, modelIds: ROSTER, },).key,).not.toBe(original.key,);
   }, },)),
   it({ name: 'does not normalize embedded quotes, escapes or line endings', fn: async (): Promise<void> => {
     /** Parser-authorized bytes, not prompt or JSON interpolation. */
     const pair = parent({ sourceText: '“猫” \\[note]。\r\n第二行。', targetText: '“Cat” \\[note].\r\nSecond line.', },);
     /** Question copies each exact parsed node without interpreting its syntax. */
-    const question = blockPairingQuestion({ pair, },);
+    const question = blockPairingQuestion({ pair, modelIds: ROSTER, },);
     expect(question.sourceBlocks,).toEqual(pair.source.nodes.map((node, index,) => ({ index, text: node.text, })),);
     expect(question.targetBlocks,).toEqual(pair.target.nodes.map((node, index,) => ({ index, text: node.text, })),);
   }, },),
@@ -84,7 +91,7 @@ await describe({ name: blockPairingQuestion.name, children: [
     /** Empty source is representable without buying a question. */
     const empty = { ...pair, source: { ...pair.source, nodes: [], text: '', }, };
     /** Construction describes input, never an acquired relation. */
-    const question = blockPairingQuestion({ pair: empty, },);
+    const question = blockPairingQuestion({ pair: empty, modelIds: ROSTER, },);
     expect(question.sourceBlocks,).toEqual([],);
     expect([...question.freeOrder.source,],).toEqual([],);
     expect(question.targetBlocks,).toEqual([{ index: 0, text: 'Cat.', },]);

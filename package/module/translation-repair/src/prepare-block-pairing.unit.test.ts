@@ -69,7 +69,7 @@ await describe({
         expect(cold.findings.join(' ')).toContain('section 7 paired 2 of 2');
         const [storedRecord] = f.writes;
         if (storedRecord === undefined) throw new Error('expected persisted parent record');
-        const expectedKey = createHash('sha256').update('3\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.', 'utf8').digest('hex');
+        const expectedKey = createHash('sha256').update(`3\u0000猫睡了。\u0000它喜欢盒子。\u0000\u0000\u0000The cat slept.\u0000She loves boxes.\u0000\u0000\u0000roster\u0000${  roster.join('\u0000')}`, 'utf8').digest('hex');
         expect(storedRecord.key).toBe(expectedKey);
         expect(storedRecord.serialized).toBe(JSON.stringify({ pairs: [{ source: 0, target: 0 }, { source: 1, target: 1 }], findings: cold.findings }));
         const warm = await prepareBlockPairing(f.input);
@@ -96,7 +96,7 @@ await describe({
         const f = fixture();
         const initial = await prepareBlockPairing(f.input);
         if (initial.kind !== 'paired') throw new Error('expected cacheable initial pairing');
-        f.stored.set(blockPairingQuestion({ pair: f.input.pair }).key, { pairs: [], findings: ['historical unresolved parent'], });
+        f.stored.set(blockPairingQuestion({ pair: f.input.pair, modelIds: roster }).key, { pairs: [], findings: ['historical unresolved parent'], });
         const result = await prepareBlockPairing(f.input);
         expect(result.kind).toBe('fallback');
         expect(result.findings).toEqual(['historical unresolved parent']);
@@ -166,7 +166,7 @@ await describe({
         const f = fixture({ sourceText: '[^1]: 猫。\n\n[^2]: 盒子。', targetText: '[^b]: Box.\n\n[^a]: Cat.' });
         const initial = await prepareBlockPairing(f.input);
         if (initial.kind !== 'paired') throw new Error('expected cacheable definition pairing');
-        f.stored.set(blockPairingQuestion({ pair: f.input.pair }).key, { pairs: [{ source: 0, target: 1 }, { source: 1, target: 0 }], findings: [] });
+        f.stored.set(blockPairingQuestion({ pair: f.input.pair, modelIds: roster }).key, { pairs: [{ source: 0, target: 1 }, { source: 1, target: 0 }], findings: [] });
         const result = await prepareBlockPairing(f.input);
         if (result.kind !== 'paired') throw new Error('expected explicit definition-separated map entry');
         expect(result.pairs).toEqual([]);

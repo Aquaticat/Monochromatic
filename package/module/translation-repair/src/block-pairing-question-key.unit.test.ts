@@ -3,6 +3,9 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   blockPairingQuestion,
   blockPairingQuestionKey,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ContentChunk,
   type DocumentNode,
 } from '../dist/final/node/index.mjs';
@@ -14,21 +17,25 @@ type KeyCase = {
   readonly key: string;
 };
 
-// These golden keys were captured from the built implementation before extraction, and captured again
-// when PAIRING_CACHE_VERSION moved to 3 (2026-09-28, ledger M28).
+// These golden keys were captured from the built implementation before extraction, captured again
+// when PAIRING_CACHE_VERSION moved to 3 (2026-09-28, ledger M28), and again when the roster that
+// answers joined the key under ROSTER (2026-09-28, ledger X13).
 // question-baseline-QWeptI retains its runtime entry hash, deciding source hashes and full protocols.
+// Roster every golden key is taken under.
+const ROSTER = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER,] as const;
+
 const cases: readonly KeyCase[] = [
-  { name: 'both empty', source: [], target: [], key: 'def623e539be18ca61118ac894a09b7b65ce73d6346e2c4c61647c87cf262f16' },
-  { name: 'source empty', source: [], target: ['Cat'], key: '4f9898f3a4c15e72e37dcd00ad59e7c7027b881959ac11cc8fe71a966d12a4de' },
-  { name: 'target empty', source: ['Cat'], target: [], key: 'f4d1d2a42756dc6a04d00ab7ad5720cdb9ce8368ccc14b4549b21594831ae368' },
-  { name: 'simple', source: ['Cat'], target: ['Chat'], key: '0bcdf52fedc008cd6088a9b9d909cb507211a2ab4dd565b5829faf39dd1273b3' },
-  { name: 'reversed sides', source: ['Chat'], target: ['Cat'], key: '99032f6c7cea13972b06559bb3ba4afed156b0745c3855bcd63e7fe3ba223873' },
-  { name: 'empty block text', source: [''], target: [''], key: 'aefdd0e83582680169740d208f2741b2737567299a648aad6a295855d4f2a450' },
-  { name: 'Unicode and astral text', source: ['猫😺'], target: ['chaté'], key: 'aafb1078dd919b60e95f1e48571a0d8d1a462902c887817b37289672c7868f8f' },
-  { name: 'embedded NUL left boundary', source: ['Cat\u0000Dog', 'Owl'], target: ['Chat'], key: 'cbf44f3cc0ec2e030e268bd2cf168146c89e64884bdf9881aa71f121e81e9edc' },
-  { name: 'embedded NUL right boundary', source: ['Cat', 'Dog\u0000Owl'], target: ['Chat'], key: 'cbf44f3cc0ec2e030e268bd2cf168146c89e64884bdf9881aa71f121e81e9edc' },
-  { name: 'syntax boundaries', source: ['```\nCat "quote" \\ tail', '</script>\n## Cat'], target: ["Chat 'quoted'\n````"], key: '19b388b78a492c1568c3263fb1b46c97a6eac902c1e08b74e50acff293d6f578' },
-  { name: 'multiple blocks', source: ['Cat', 'Dog', 'Owl'], target: ['Chat', 'Chien'], key: '4e331430ebe0f1754bd0dc90fe71f9757a4af0e62934af13bb66a03641c4d86d' },
+  { name: 'both empty', source: [], target: [], key: '6fb5bd859a6e5a35c23f2874c9c200e8fd7ccc0f844968967723d0306678e80a' },
+  { name: 'source empty', source: [], target: ['Cat'], key: '96f8cc8395148704dee9dee7588e701e6313ff4ac8c8a2b9f3dc2a9f2d101535' },
+  { name: 'target empty', source: ['Cat'], target: [], key: 'ff0fde94e4e2c5aa30ff0f2b601d1181adcb4f4059a87b4ff94f39cd0a3a5f75' },
+  { name: 'simple', source: ['Cat'], target: ['Chat'], key: 'e9dd1537df1f031193c2eb4c8fdaba6841ef3cda30d079ab82076b75e3a6522b' },
+  { name: 'reversed sides', source: ['Chat'], target: ['Cat'], key: 'aa4eb43710cf6f65f0583721bf634aef612eaf74035564981e7194b535b8893c' },
+  { name: 'empty block text', source: [''], target: [''], key: '821423ed8d76382e09672b053cd0c452d2924285d33c95f18a2a94579f1f3107' },
+  { name: 'Unicode and astral text', source: ['猫😺'], target: ['chaté'], key: 'cb7aafeebcc4439b2e7f61353305b3e6990250254b3b5c2ee7b54d05ce69d0ba' },
+  { name: 'embedded NUL left boundary', source: ['Cat\u0000Dog', 'Owl'], target: ['Chat'], key: 'acdb94030e6948f82b5bf9ff34bc6ea6c1a2403e13c7b7939e2e8eabaaafd14a' },
+  { name: 'embedded NUL right boundary', source: ['Cat', 'Dog\u0000Owl'], target: ['Chat'], key: 'acdb94030e6948f82b5bf9ff34bc6ea6c1a2403e13c7b7939e2e8eabaaafd14a' },
+  { name: 'syntax boundaries', source: ['```\nCat "quote" \\ tail', '</script>\n## Cat'], target: ["Chat 'quoted'\n````"], key: '1c6fddd283203b576f068ab166f7f9bec3aee059686d9dca274e3eeee968b0f3' },
+  { name: 'multiple blocks', source: ['Cat', 'Dog', 'Owl'], target: ['Chat', 'Chien'], key: 'cf8db86265e5c064cf820d366690e948e1a70590e8e8803309c6bdc33107de00' },
 ];
 
 function chunk(texts: readonly string[]): ContentChunk {
@@ -56,13 +63,27 @@ await describe({ name: '', children: [
       fn: async () => {
         const sourceBlocks = [{ index: 0, text: 'Cat' }];
         const targetBlocks = [{ index: 0, text: 'Chat' }];
-        const bare = blockPairingQuestionKey({ sourceBlocks, targetBlocks });
-        expect(bare).toBe('0bcdf52fedc008cd6088a9b9d909cb507211a2ab4dd565b5829faf39dd1273b3');
-        const sighted = blockPairingQuestionKey({ sourceBlocks, targetBlocks, pictureContext: 'PICTURE nap.webp' });
+        const bare = blockPairingQuestionKey({ sourceBlocks, targetBlocks, modelIds: ROSTER });
+        expect(bare).toBe('e9dd1537df1f031193c2eb4c8fdaba6841ef3cda30d079ab82076b75e3a6522b');
+        const sighted = blockPairingQuestionKey({ sourceBlocks, targetBlocks, pictureContext: 'PICTURE nap.webp', modelIds: ROSTER });
         expect(sighted).not.toBe(bare);
         const pair = { source: chunk(['Cat']), target: chunk(['Chat']) };
-        expect(blockPairingQuestion({ pair, pictureContext: 'PICTURE nap.webp' }).key).toBe(sighted);
-        expect(blockPairingQuestion({ pair, pictureContext: '' }).key).toBe(bare);
+        expect(blockPairingQuestion({ pair, pictureContext: 'PICTURE nap.webp', modelIds: ROSTER }).key).toBe(sighted);
+        expect(blockPairingQuestion({ pair, pictureContext: '', modelIds: ROSTER }).key).toBe(bare);
+      },
+    }),
+  ] }),
+  describe({ name: 'roster in the key (ledger X13, 2026-09-28)', children: [
+    it({
+      name: 'moves the key for another roster, so a pairing one bench settled is never resumed for another',
+      fn: async () => {
+        const sourceBlocks = [{ index: 0, text: 'Cat' }];
+        const targetBlocks = [{ index: 0, text: 'Chat' }];
+        const settled = blockPairingQuestionKey({ sourceBlocks, targetBlocks, modelIds: ROSTER });
+        expect(blockPairingQuestionKey({ sourceBlocks, targetBlocks, modelIds: [...ROSTER] })).toBe(settled);
+        expect(blockPairingQuestionKey({
+          sourceBlocks, targetBlocks, modelIds: [SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_VISION_NO_OPENROUTER],
+        })).not.toBe(settled);
       },
     }),
   ] }),
@@ -71,9 +92,9 @@ await describe({ name: '', children: [
     fn: async () => {
       const sourceBlocks = source.map((text, index) => ({ index, text }));
       const targetBlocks = target.map((text, index) => ({ index, text }));
-      expect(blockPairingQuestionKey({ sourceBlocks, targetBlocks })).toBe(key);
+      expect(blockPairingQuestionKey({ sourceBlocks, targetBlocks, modelIds: ROSTER })).toBe(key);
       const pair = { source: chunk(source), target: chunk(target) };
-      expect(blockPairingQuestion({ pair }).key).toBe(key);
+      expect(blockPairingQuestion({ pair, modelIds: ROSTER }).key).toBe(key);
     },
   })) }),
 ] });

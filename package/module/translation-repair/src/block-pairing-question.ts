@@ -5,6 +5,7 @@ import type {
   NumberedBlock,
 } from './pair-blocks-wire.ts';
 import { definitionIndexes, } from './pair-definition-order.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Current parent question identity
 // A cold section and a resumed one must number and key exactly the same blocks.
@@ -15,7 +16,7 @@ import { definitionIndexes, } from './pair-definition-order.ts';
  
  @example
  ```ts
- const question = blockPairingQuestion({ pair, });
+ const question = blockPairingQuestion({ pair, modelIds, });
  ```
  */
 export type BlockPairingQuestion = {
@@ -44,21 +45,25 @@ export type BlockPairingQuestion = {
  @param pair - complete current parent whose parsed nodes define local indexes
  
  @param pictureContext - transcripts the sheet is shown, part of the key when non-empty
+
+ @param modelIds - roster that answers the question, part of the key (ledger X13)
  
  @returns Numbered text, definition exemptions and existing cache identity
  
  @example
  ```ts
- const { sourceBlocks, targetBlocks, freeOrder, key, } = blockPairingQuestion({ pair, });
+ const { sourceBlocks, targetBlocks, freeOrder, key, } = blockPairingQuestion({ pair, modelIds, });
  ```
  */
 export function blockPairingQuestion(
   {
     pair,
     pictureContext,
+    modelIds,
   }: {
     readonly pair: ChunkPair;
     readonly pictureContext?: string;
+    readonly modelIds: readonly RosterModelId[];
   },
 ): BlockPairingQuestion {
   /**
@@ -96,6 +101,7 @@ export function blockPairingQuestion(
     sourceBlocks,
     targetBlocks,
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
+    modelIds,
   });
   return {
     sourceBlocks,

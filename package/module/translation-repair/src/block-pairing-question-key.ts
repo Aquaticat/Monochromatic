@@ -1,6 +1,7 @@
 import { createHash, } from 'node:crypto';
 import type { NumberedBlock, } from './pair-blocks-wire.ts';
 import { PAIRING_CACHE_VERSION, } from './pairing-cache-version.ts';
+import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Block-pairing cache key
 
@@ -20,21 +21,27 @@ import { PAIRING_CACHE_VERSION, } from './pairing-cache-version.ts';
  (class thirty-four, 2026-09-16: a pairing bought without the pictures must not answer
  the question asked with them)
 
+ @param modelIds - roster that answers the question, folded in last, so a pairing one
+ bench settled is never resumed for another (ledger X13, 2026-09-28: a section a dry
+ reading paired on a subset resumed on the full bench)
+
  @returns Historical lowercase SHA-256 cache key, not an injective question identity
 
  @example
  ```ts
- const key = blockPairingQuestionKey({ sourceBlocks, targetBlocks });
+ const key = blockPairingQuestionKey({ sourceBlocks, targetBlocks, modelIds, });
  ```
  */
 export function blockPairingQuestionKey({
   sourceBlocks,
   targetBlocks,
   pictureContext = '',
+  modelIds,
 }: {
   readonly sourceBlocks: readonly NumberedBlock[];
   readonly targetBlocks: readonly NumberedBlock[];
   readonly pictureContext?: string;
+  readonly modelIds: readonly RosterModelId[];
 }): string {
   return createHash('sha256',)
     .update(
@@ -50,6 +57,9 @@ export function blockPairingQuestionKey({
             'pictures',
             pictureContext,
           ]),
+        '\u0000',
+        'roster',
+        ...modelIds,
       ].join('\u0000',),
       'utf8',
     )
