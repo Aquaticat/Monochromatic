@@ -62,6 +62,23 @@ const NO_HOLDS = {
 const DRY_HOLD_MS = 300_000;
 
 /**
+ Synthetic and Bedrock wet, Hyper and OpenRouter dry: the one view under which
+ the lanes phase finds benches short (the editors and the refiners) and the
+ translate lane finds none (measured 2026-09-28 over all sixteen views).
+ */
+const HYPER_AND_OPENROUTER_DRY: BudgetView = {
+  synthetic: false,
+  bedrock: false,
+  hyper: true,
+  openrouter: true,
+};
+
+/**
+ A hold short enough for a case to wait it out.
+ */
+const SHORT_HOLD_MS = 40;
+
+/**
  Logger the hooks write to.
  */
 const l = tagged({ tag: 'pass-reseat-test', },);
@@ -250,6 +267,41 @@ await describe({
           repairSeated: true,
           translate: {},
           reads: 1,
+        },);
+      },
+    },),
+    it({
+      name: 'READS EACH LANE UNDER ITS OWN PHASE: with Hyper and OpenRouter dry and Hyper held, the editors and '
+        + 'refiners the lanes phase leans on are short while the translate lane\'s translators and select '
+        + 'judges are not, so the translate lane seats on one read and the repair lane waits the hold out '
+        + 'and stops the entry',
+      fn: async () => {
+        const rig = viewClient({ view: HYPER_AND_OPENROUTER_DRY, },);
+        rig.holds.hyper = SHORT_HOLD_MS;
+        const hooks = lanesHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          entryId: 'mittens',
+        },);
+        /**
+         Seating the translate lane takes under the hold.
+         */
+        const translate = await hooks.beforeSlice({ lane: 'translate', },);
+        /**
+         Dryness reads the translate lane's seating took.
+         */
+        const translateReads = rig.counter.reads;
+        await expect(hooks.beforeSlice({ lane: 'repair', },),)
+          .rejects
+          .toThrow('writing bench unreachable at lanes: editors',);
+        expect({
+          translateSeated: translate.translateModels !== undefined,
+          translateReads,
+          repairReads: rig.counter.reads - translateReads,
+        },).toEqual({
+          translateSeated: true,
+          translateReads: 1,
+          repairReads: 2,
         },);
       },
     },),
