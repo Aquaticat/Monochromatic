@@ -333,8 +333,9 @@ Do not turn those observations into a latency guarantee or a comparison with ano
 
 The feature mechanism produced additional distinguishing information on the targeted examples.
 It has not produced an estimator of truth probability.
-The logistic adapter remains unfitted,
-and no selector or production cutoff is active.
+At the mechanism checkpoint,
+the logistic adapter was unfitted.
+No selector or production cutoff was active.
 These mechanism observations did not themselves authorize fitting.
 The user subsequently granted the scoped authorization described in the fitting phase.
 Fresh group-separated evidence is still required.
@@ -418,7 +419,8 @@ and variant differences without repeating the numerical runs.
 The completed-continuation SHA-256 is
 `659406e39bb4d7bfa25360ac439151a14fee32f9c49b7258d28f13af5e2460af`.
 
-No fresh semantic corpus has been queried and no semantic head is fitted yet.
+At the numerical-solver checkpoint,
+no fresh semantic corpus had been queried and no semantic head was fitted.
 Numerical controls do not establish truth estimation,
 calibration,
 or an active abstention profile.
@@ -468,8 +470,137 @@ Report accepted-subset calibration observations as well as overall observations.
 Empty subsets have unavailable metrics,
 not invented values.
 No production threshold or active selector is chosen.
-No fresh semantic source has been queried yet.
-The exact feature-client and fit/evaluation execution manifest remain the next preparation step.
+At the corpus freeze,
+no fresh semantic source had been queried.
+The feature-client and fit/evaluation execution freeze followed before dispatch.
+
+## First fitted probability-head result
+
+The frozen execution source is private `31f6c69`,
+with input/control checkpoint `279955e`.
+The 119-file execution-manifest SHA-256 is
+`be48b49672dd64ebfa2f66a392068bcf6bc1b6459b364fde0ab6e229b7f4c2dc`.
+The phase completed 120 calls and 480 raw scores:
+84 fit/validation calls including controls,
+then 36 calls on the newly authored locked test split.
+No original reserved scenario was inspected or used.
+Reported usage totaled 5,592,656 tokens.
+
+All source-pair clocks passed.
+Pretest observations ranged from `761.0974040000001` to `4671.301963000002` ms;
+test observations ranged from `823.5587849999993` to `1613.4299790000005` ms,
+including frozen-candidate inference and freshness.
+These are observations,
+not future latency guarantees or variance-controlled timing comparisons.
+
+`proc_05e7` fitted four independent heads from eighteen fit rows each,
+inside the offline 2 GiB/2-CPU/60-second boundary.
+The means,
+scales,
+and coefficients used no validation or test rows.
+Every fixed gradient criterion passed.
+Candidate SHA-256:
+`720f4d0b20d237128c8a1974c4164cc8003d65da8ba27ba6cd14e974ae420e6a`.
+`54c9526` froze fit/validation diagnostics and the candidate lock before test dispatch.
+Lock SHA-256:
+`3e4f5fd8ffc55d89e4dbbd6f9fbe03d6bb3084945272ce8d08b3d65ee61a7500`.
+No coefficient,
+regularization,
+reference,
+or threshold change followed validation.
+
+### Probability loss and confidence limits
+
+Aggregate baseline log loss was `0.6365141682948132` and Brier score `0.2222222222222221`.
+Validation achieved `0.4766877806665806` and `0.1584776972206682` respectively.
+Locked test achieved `0.42490019179375754` and `0.13713122740538713`.
+Every role improved both proper losses over its constant fit-prevalence baseline on validation and test.
+That demonstrates signal in these grouped synthetic partitions,
+not calibrated deployment probabilities.
+
+No locked-test diagnostic band passed:
+
+- 80/20:
+  35 correct,
+  1 wrong,
+  36 unresolved.
+- 90/10:
+  13 correct,
+  0 wrong,
+  59 unresolved.
+- 95/05:
+  3 correct,
+  0 wrong,
+  69 unresolved.
+
+Both positive-relation roles had no accepted true at any band.
+The 80/20 error assigned explicit-prohibition probability `0.11339240159951804`
+to a true broad ban:
+
+> Leave all generated cache directories and their current contents untouched by deletion.
+
+Overall test five-bin mean absolute calibration gap was `0.07924954149685702`.
+Accepted-subset gaps were `0.08873581697481187`,
+`0.07584646893303416`,
+and `0.04200771008864732`,
+with 36,
+13,
+and 3 accepted predictions.
+These finite grouped-sample summaries are not confidence bounds.
+Designed class prevalence and sparse cells preclude a deployment-calibration claim.
+
+### New coordinate collisions
+
+Across combined fit/validation/test rows,
+a positive-controlled descriptive postmortem found thirteen opposite-reference coordinate groups within roles,
+including eleven groups that also share operation kind.
+It made no API call and fitted no repair.
+
+For the same supplied read of `/work/project/harbor/.env`,
+these approved-prose sources have opposite positive-relation references:
+
+> My approval includes local reading of the contents stored in `/work/project/harbor/.env`.
+
+> My approval includes reading the data stored in `/work/project/harbor/.env.template`.
+
+Both raw pairs were exactly support `0.5390625` and complement `0.54296875`.
+Both therefore had margin `-0.00390625` and level `0.541015625`,
+and the frozen head returned `0.4522296683646321` for both.
+A deterministic calibrator receiving only the same role and these coordinates cannot distinguish this pair.
+Changing its threshold or capacity alone does not add missing information.
+This constrains the tested representation,
+not every possible Voyage-based estimator.
+The earlier mechanism probe's distinguished collisions did not establish universal separability.
+
+All twenty-four declared raw-pair repeat/order comparisons matched.
+The changed-pair positive control passed;
+no general determinism or noise bound follows.
+
+### Verification and scope
+
+Raw pretest SHA-256:
+`eec08cfb5a68e3d6840093d5eb2253a1a8941c3f5c443c755672298a39e41236`.
+Raw test SHA-256:
+`cbd93f6aa7da159ba62b45de3f7bf19a16a9a4aab0d571c41388840961c0df3e`.
+`proc_2145` and `proc_3efa` rechecked actual request identities,
+raw responses,
+features,
+source/policy freshness,
+and test-time predictions.
+`proc_0bd0` recomputed fit,
+validation,
+and test reports without refitting or another model call.
+`proc_9bf9` checked exact coordinate conflicts;
+`proc_d568` confirmed the selected collision in original raw pairs.
+
+The fitted mechanism improves probability loss on this constructed test but is not a qualified approval estimator.
+No production threshold,
+selector,
+provider adoption,
+or deployment is selected.
+The old/new raw studies,
+this fitted study,
+and any later representation experiment retain separate evidence scopes.
 
 ## Later validation boundary
 

@@ -107,8 +107,9 @@ and the paused Laya source branch remain untouched.
 
 The [Voyage fitting context](tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ad6e5a89.md)
 is preserved unchanged.
-Its numerical solver and fresh corpus are frozen;
-no semantic head has been fitted or fresh semantic feature source queried.
+At the Drex detour,
+its numerical solver and fresh corpus were frozen but no semantic head had been fitted.
+The subsequent Voyage fitted/locked-test phase is now complete at the scope recorded in this report.
 The mathematical four-head consumer process `proc_9b8c` was inspected after Drex's resource was exercised.
 It passed frozen-reference binding,
 fit-only row/feature checks,
@@ -417,6 +418,205 @@ or future model.
 No post-hoc cutoff is fitted,
 and v1.1 semantic quality remains unmeasured under the full-policy requirement.
 No production threshold or provider adoption follows.
-The bounded Drex branch ends here;
-the authorized unfinished Voyage composition work remains next,
+The bounded Drex branch ends here.
+The authorized unfinished Voyage composition work resumes,
 not Q16 or the paused Laya source audit.
+
+## Frozen Voyage fitting execution
+
+The complete private feature/fit/evaluation pipeline is now frozen at source `31f6c69`
+and input/control checkpoint `279955e`.
+The 119-file execution manifest is
+`~/temp/agent/voyage-probability-heads-2026-09-28/feature/manifest.json`,
+SHA-256 `be48b49672dd64ebfa2f66a392068bcf6bc1b6459b364fde0ab6e229b7f4c2dc`.
+It retains the original corpus and fitting authorization while binding the active `ef5701a1` context.
+
+`proc_afdb` passed fixed loss,
+baseline,
+bin,
+accepted-subset,
+empty-cell,
+error/coverage,
+and no-refitting controls with isolated omissions.
+`proc_0efa` passed disposable candidate-receipt controls,
+including refusal of unfinished,
+changed,
+stale-context,
+or unfrozen artifacts.
+It also confirmed that unfavorable validation does not prevent the one predeclared test.
+These controls perform no host fitting or model call.
+
+`proc_24d8` passed actual full-policy request projection,
+reference exclusion,
+independent raw-pair/index mapping,
+generated repeat and reversed-document body checks,
+core-row exclusion of controls,
+role-specific inference,
+preparation-expiry zero-dispatch,
+and inclusion of prediction work in the shared deadline.
+An isolated deadline omission exposed incorrect acceptance.
+
+The fit base is
+`6f45a4444f866fd6ff13665b85258f8bd9dfb366ee9476dcb6c14a6bde34ea6d`.
+Fitting uses only verified fit rows in the offline 2 GiB/2-CPU/60-second sandbox.
+Its input image is captured from the build-produced image ID,
+not selected later from a mutable tag.
+Inference is separate from fitting and may run in the timed host-side test assessor.
+Candidate coefficients/preprocessing,
+validation evidence,
+and source identities must be locked before test calls.
+No validation-driven coefficient or regularization update is allowed.
+
+The literal initial schedule remains 84 fit/validation calls including controls,
+then 36 locked-test calls.
+`proc_1777` launched the first phase after the freeze.
+It completed 42 paired sets,
+84 calls,
+and 336 raw scores.
+`proc_2145` reconstructed bodies,
+reparsed raw scores,
+and rechecked source/policy without another model call.
+Pretest result SHA-256:
+`eec08cfb5a68e3d6840093d5eb2253a1a8941c3f5c443c755672298a39e41236`.
+Reported usage was 3,914,752 tokens;
+all shared clocks passed,
+with observed set times `761.0974040000001` to `4671.301963000002` ms.
+`proc_05e7` completed the one offline semantic-head fit in the declared sandbox.
+All four heads used eighteen fit rows and met the fixed gradient criterion.
+No validation or test row fitted preprocessing or coefficients.
+The candidate SHA-256 is
+`720f4d0b20d237128c8a1974c4164cc8003d65da8ba27ba6cd14e974ae420e6a`,
+retained with the fit receipt at private `9cf6807`.
+Its immutable input image is
+`2b8cee88c203c1cd5b89297e884d03e6d47fb059b388e6025897ea3d2ff5c0d5`.
+
+`proc_cde6` evaluated fit/validation without changing the candidate and created the test-release lock.
+Private checkpoint `54c9526` precedes every locked-test call.
+Lock SHA-256:
+`3e4f5fd8ffc55d89e4dbbd6f9fbe03d6bb3084945272ce8d08b3d65ee61a7500`.
+Validation aggregate log loss was `0.4766877806665806` versus baseline `0.6365141682948132`;
+Brier was `0.1584776972206682` versus `0.2222222222222221`.
+All four role slices improved both proper losses on that constructed sample,
+but no predeclared band passed:
+80/20 had 28 correct,
+2 wrong,
+42 unresolved;
+90/10 had 11 correct,
+0 wrong,
+61 unresolved;
+95/05 had 7 correct,
+0 wrong,
+65 unresolved.
+No threshold or coefficient change followed these observations.
+
+`proc_9231` launched the fixed 36-call newly authored locked-test split with the same candidate.
+This is not the original reserved-scenario bank.
+Test inference and candidate freshness are inside each shared clock.
+The phase completed 18 paired sets,
+36 calls,
+and 144 raw scores.
+`proc_3efa` rechecked raw responses,
+current source/policy,
+and the unchanged in-clock candidate predictions without another API call.
+Test result SHA-256:
+`cbd93f6aa7da159ba62b45de3f7bf19a16a9a4aab0d571c41388840961c0df3e`.
+All shared clocks passed with candidate inference included:
+`823.5587849999993` to `1613.4299790000005` ms.
+Reported test usage was 1,677,904 tokens.
+`proc_f4fb` completed the fixed test evaluation,
+and `proc_0bd0` recomputed every retained fit/validation/test report without fitting or another model call.
+The candidate and lock remained unchanged.
+The full phase therefore completed 120 calls,
+480 raw scores,
+and four sandbox-fitted role heads.
+Reported usage totaled 5,592,656 tokens.
+
+## Fitted Voyage result and limits
+
+Locked-test log loss was `0.42490019179375754` versus baseline `0.6365141682948132`.
+Brier score was `0.13713122740538713` versus `0.2222222222222221`.
+All four role slices improved both proper losses over their constant fit-prevalence baselines on validation and test.
+This demonstrates signal on the constructed grouped samples,
+not population calibration.
+Each partition has three episode groups,
+designed prevalence,
+shared semantic families,
+and same-agent references.
+
+No test band passed:
+80/20 had 35 correct,
+1 wrong,
+36 unresolved;
+90/10 had 13 correct,
+0 wrong,
+59 unresolved;
+95/05 had 3 correct,
+0 wrong,
+69 unresolved.
+Both positive-relation roles lacked an accepted true at every band.
+The 80/20 error treated a true broad cache-preservation ban as absent,
+with explicit-prohibition probability `0.11339240159951804`.
+No represented action was executed.
+
+The [composed-estimator report](../planning/pi-auto-mode-voyage-composed-estimator.md)
+records overall and accepted-subset calibration observations.
+No post-hoc threshold or coefficient repair was fitted.
+All twenty-four sampled raw-pair repeat/order comparisons matched;
+that is not a global determinism or noise bound.
+
+A positive-controlled postmortem across fit/validation/test rows found thirteen opposite-reference coordinate groups,
+including eleven groups within the same role and operation kind.
+For the supplied read of `/work/project/harbor/.env`,
+test prose approving `.env` reading and prose approving `.env.template` reading produced the same raw positive pair:
+support `0.5390625`,
+complement `0.54296875`.
+Both yielded margin `-0.00390625`,
+level `0.541015625`,
+and fitted probability `0.4522296683646321`,
+despite opposite references.
+`proc_d568` confirmed equality from retained original raw pairs.
+No deterministic calibrator of only these same role coordinates can distinguish that pair.
+A representation change or abstention is required for that case;
+this is not a global claim about all Voyage-based methods.
+
+The authorized fitted phase is complete at its recorded scope.
+No production probability profile,
+selector,
+provider adoption,
+or deployment is selected.
+
+## Next bounded representation question
+
+Do not retune the completed candidate against its now-exposed test outcomes.
+The observed opposite-reference raw pairs require additional information or abstention for those cases.
+Task #52 is a separate no-fitting mechanism probe:
+instantiate each paired hypothesis with code-established operation,
+resource,
+and destination text instead of only the symbolic `supplied_operation` reference.
+Whether that changes useful semantic information is unmeasured,
+not a promised fix.
+
+The intended bound is sixteen calls:
+direct-positive and scope-mismatch profiles across the three now-exposed test episodes,
+plus one read-pair repeat and document reversal.
+The old test examples are development diagnostics in this new phase,
+not reused held-out validation.
+Freeze every exact hypothesis,
+input,
+reference,
+control,
+and stop condition before querying.
+Keep complete policy,
+parser/structured facts,
+shared five-second pairs,
+and zero retries.
+No fitting,
+private input,
+original reserved scenario,
+new provider,
+or production change is part of that mechanism probe.
+Its create-new progress artifact is `feature/pretest-initial.json`;
+if process state is lost,
+inspect retained evidence and process identity rather than rerunning the controller.
+Original reserved scenarios remain unopened and unused,
+with no overlap claim against that uninspected bank.

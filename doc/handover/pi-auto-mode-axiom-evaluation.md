@@ -34,12 +34,14 @@ Current references:
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
-## Added Drex candidate and current priority
+## Completed Drex evaluation and current progress
 
 The user asked to also evaluate Nace Drex and supplied `AUTO_MODE_NACE_DREX_API_KEY`.
-Task #50 takes priority under the newly supplied-resource rule.
-Task #48's Voyage feature/fitting pipeline is paused without discarding its frozen solver or corpus.
-No new Voyage semantic call or semantic-head fit has run.
+Task #50 took priority under the newly supplied-resource rule and completed the bounded access checkpoint.
+Task #51 completed the native v1.0 semantic study.
+Voyage task #48 then resumed and completed its frozen fit/validation/locked-test phase:
+120 calls and four fitted local heads,
+without a production-qualified profile.
 The mathematical four-head consumer process `proc_9b8c` was reviewed after Drex's resource was exercised.
 It passed frozen-reference,
 fit-only row/feature,
@@ -49,7 +51,8 @@ Result SHA-256:
 `24883888f0e9cdfa1c2c31928d915d1211904902013ed7653d5df09ae6c4389f`.
 The immutable fit-base image is
 `6f45a4444f866fd6ff13665b85258f8bd9dfb366ee9476dcb6c14a6bde34ea6d`.
-No semantic head is fitted.
+Those were toy controls;
+the subsequent semantic fit and locked test are recorded in the current checkpoint.
 
 Drex input scope is public/synthetic plus complete current public policy only.
 No private Drex upload,
@@ -142,9 +145,8 @@ templates,
 auxiliary roles,
 or future models;
 v1.1 semantics remain unmeasured for full-policy input.
-After result-document verification,
-resume authorized Voyage task #48,
-not Q16 or the paused Laya branch.
+Voyage task #48 subsequently completed its authorized fitted experiment.
+Neither Q16 nor the paused Laya branch resumed.
 No private input,
 training,
 reserved-scenario release,
@@ -568,13 +570,11 @@ No original reserved case is released.
 The schedule is 84 fit/validation calls including fit-only repeat/order controls,
 then 36 locked-test calls after the candidate artifact/evaluator are frozen.
 Validation and test cannot change coefficients or regularization in this phase.
-Task #48 is paused for the newly supplied Drex candidate.
-When resumed,
-it freezes the exact feature client and fitting/evaluation command tree,
-then owns collection,
-semantic-head fitting,
-and locked evaluation.
-The tested numerical solver and authored corpus are not evidence of semantic accuracy or calibration.
+Task #48 paused for Drex and then resumed.
+It froze the feature client and fitting/evaluation command tree,
+completed collection and semantic-head fitting,
+and evaluated the unchanged candidate on the newly authored locked split.
+Numerical controls alone were not treated as semantic accuracy or calibration evidence.
 
 ## Sequencing correction
 
@@ -1004,7 +1004,12 @@ The user's actual Voyage data-use opt-out setting remains uninspected.
 
 The bounded Drex access and semantic phases are complete at their recorded scopes.
 No diagnostic Drex band qualified and no extra Drex call or calibration follows automatically.
-Resume authorized Voyage task #48 after the result-document checks.
+Voyage task #48 completed its frozen phase and is closing the result documentation.
+No confidence band qualified despite improved proper losses.
+Task #52 is a separate no-fitting mechanism probe:
+put code-established operation/resource/destination text directly into the hypotheses,
+then test whether the known opposite-reference collisions separate.
+Do not retune the completed candidate on its exposed test data.
 Do not resume Q16 or Laya #34.
 
 Voyage's corpus manifest remains
@@ -1013,7 +1018,19 @@ Its fixed study plan retains the original `ad6e5a89` authorization context;
 the current `ef5701a1` context preserves that Voyage authority and adds only bounded public/synthetic Drex evaluation.
 Do not rewrite the old manifest merely to replace its historical context identifier.
 
-The private Voyage feature protocol/assessor is adapted but not yet query-frozen.
+The private Voyage feature/fit/evaluation pipeline is now query-frozen at source `31f6c69`
+and input/control checkpoint `279955e`.
+The 119-file execution-manifest SHA-256 is
+`be48b49672dd64ebfa2f66a392068bcf6bc1b6459b364fde0ab6e229b7f4c2dc`.
+`proc_afdb`,
+`proc_0efa`,
+and `proc_24d8` passed the fixed evaluator,
+locked-candidate,
+encoder,
+real reverse/repeat body,
+raw-coordinate,
+and shared-clock/inference controls,
+including isolated omissions.
 The four-head offline consumer passed its mathematical controls in `proc_9b8c`.
 Fit-base image:
 `6f45a4444f866fd6ff13665b85258f8bd9dfb366ee9476dcb6c14a6bde34ea6d`.
@@ -1022,17 +1039,62 @@ Control result SHA-256:
 These are toy features,
 not fitted semantic heads.
 
-Before Voyage queries,
-finish the feature-client controls,
-fit-input/parameter artifact preparation,
-fixed evaluator,
-and test-release gate.
-Freeze that execution manifest.
-Then collect the declared fit/validation features,
-fit only in the offline sandbox,
-lock the candidate/evaluator,
-and perform the single locked-test phase.
-No fresh semantic Voyage source has been queried yet.
+`proc_1777` completed the 84-call pretest feature phase:
+42 source pairs and 336 raw scores.
+`proc_2145` reconstructed requests,
+reparsed raw responses,
+and rechecked current source/policy without another model call.
+Raw pretest is `7541145`,
+SHA-256 `eec08cfb5a68e3d6840093d5eb2253a1a8941c3f5c443c755672298a39e41236`.
+All shared clocks passed;
+observed times were `761.0974040000001` to `4671.301963000002` ms.
+These are not future latency guarantees.
+
+`proc_721b` prepared only fit-partition numeric rows.
+`proc_f8b2` captured the build-produced fit-input image ID:
+`2b8cee88c203c1cd5b89297e884d03e6d47fb059b388e6025897ea3d2ff5c0d5`.
+Its input SHA-256 is
+`0d0cb186d432c3c1b2e4725e025c922f952deed6922e8df7bdab16f85a4aad63`.
+`proc_05e7` completed the single offline semantic-head fit.
+All four heads used eighteen fit rows and passed the fixed gradient criterion.
+Candidate SHA-256:
+`720f4d0b20d237128c8a1974c4164cc8003d65da8ba27ba6cd14e974ae420e6a`.
+`proc_cde6` evaluated fit/validation without tuning and froze the candidate at `54c9526`.
+Lock SHA-256:
+`3e4f5fd8ffc55d89e4dbbd6f9fbe03d6bb3084945272ce8d08b3d65ee61a7500`.
+
+`proc_9231` completed 36 locked-test calls on the newly authored split,
+not the original reserved-scenario bank.
+`proc_3efa` rechecked raw features and in-clock predictions.
+Test-result SHA-256:
+`cbd93f6aa7da159ba62b45de3f7bf19a16a9a4aab0d571c41388840961c0df3e`.
+All clocks passed with inference included,
+`823.5587849999993` to `1613.4299790000005` ms.
+`proc_0bd0` recomputed all probability diagnostics without fitting or further calls.
+
+Locked-test log loss was `0.42490019179375754` versus baseline `0.6365141682948132`;
+Brier was `0.13713122740538713` versus `0.2222222222222221`.
+Every role improved both losses on validation and test,
+but no band qualified:
+80/20 had 35 correct/1 wrong/36 unresolved;
+90/10 had 13/0/59;
+95/05 had 3/0/69.
+Both positive-relation roles lacked an accepted true at every band.
+The 80/20 error missed an explicit broad cache-preservation ban.
+
+`proc_9bf9` found thirteen opposite-reference coordinate groups across all partitions,
+including eleven sharing role and operation kind.
+`proc_d568` confirmed one in the original raw pairs:
+for a read of `/work/project/harbor/.env`,
+prose allowing `.env` reading and prose allowing `.env.template` reading both gave support `0.5390625`,
+complement `0.54296875`,
+and fitted probability `0.4522296683646321`,
+with opposite references.
+A different calibrator of those same inputs cannot distinguish that pair.
+The [composed-estimator result](../planning/pi-auto-mode-voyage-composed-estimator.md)
+retains all losses,
+accepted-subset calibration observations,
+and limitations.
 
 ### Historical bounded-checkpoint sequence
 
