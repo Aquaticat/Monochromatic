@@ -8,7 +8,10 @@ import {
   normalizePunctuation,
 } from './quote-normalize.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
-import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+import {
+  continuesLatinWord,
+  isLatinWordCharacter,
+} from './latin-letters.ts';
 
 //region Quote location
 // Deterministic evidence anchoring: find a critic's quote in the document,
@@ -178,8 +181,9 @@ function needlePreview(
   const flat = collapseLineBreaks({ text: needle, },);
 
   /**
-   Latin tokens in it, counted as runs of ASCII letters and digits in one
-   linear pass.
+   Latin tokens in it, counted as runs of Latin letters and digits in one
+   linear pass; a combining mark goes on with the token before it, so
+   `Château` is one token however its accent is written (ledger B18).
    */
   const counted = {
     tokens: 0,
@@ -189,7 +193,9 @@ function needlePreview(
     /**
      Whether this character continues a token.
      */
-    const inToken = isAsciiAlphanumeric({ character, },);
+    const inToken = counted.inToken
+      ? continuesLatinWord({ character, },)
+      : isLatinWordCharacter({ character, },);
     if (inToken && (!counted.inToken))
       counted.tokens += 1;
     counted.inToken = inToken;

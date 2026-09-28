@@ -316,6 +316,24 @@ await describe({
       },
     },),
 
+    it({
+      name: 'COUNTS an accented word as one Latin token, accent composed or combining, and a digit run as '
+        + 'another (ledger B18)',
+      fn: async () => {
+        // ASCII runs alone counted `Émile` as `mile`, `Château` as two runs and
+        // `Cafe` plus a combining acute as `Cafe` then nothing.
+        const located = locateQuote({
+          document: WRAPPED,
+          side: 'target',
+          quote: 'Émile, Château, Cafe\u{0301} 9',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'quote-not-found (target) needle=23 chars, 4 Latin tokens',
+        },);
+      },
+    },),
+
     //endregion Soft line breaks
 
     //region Block-crossing splits
