@@ -152,6 +152,10 @@ await describe({
             },
           },),
           modelIds: ROSTER,
+          // WHOLE BENCH, PINNED (ledger X2): this case scripts seats by name, and
+          // the window picks its seats by a hash of the prompt, so rewording the
+          // fixture would change which scripted seat is heard.
+          fanOut: 'whole-bench',
           sourceText: SOURCE_TEXT,
           archiveText: ARCHIVE_TEXT,
           referenceContext: REFERENCE_CONTEXT,
@@ -178,6 +182,10 @@ await describe({
             confirmation: { [ROSTER[2] ?? '']: { confirmed: [1,], }, },
           },),
           modelIds: ROSTER,
+          // WHOLE BENCH, PINNED (ledger X2): this case scripts seats by name, and
+          // the window picks its seats by a hash of the prompt, so rewording the
+          // fixture would change which scripted seat is heard.
+          fanOut: 'whole-bench',
           sourceText: SOURCE_TEXT,
           archiveText: ARCHIVE_TEXT,
           referenceContext: REFERENCE_CONTEXT,
@@ -199,6 +207,10 @@ await describe({
             confirmation: {},
           },),
           modelIds: ROSTER,
+          // WHOLE BENCH, PINNED (ledger X2): this case scripts seats by name, and
+          // the window picks its seats by a hash of the prompt, so rewording the
+          // fixture would change which scripted seat is heard.
+          fanOut: 'whole-bench',
           sourceText: SOURCE_TEXT,
           archiveText: ARCHIVE_TEXT,
           referenceContext: REFERENCE_CONTEXT,

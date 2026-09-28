@@ -26,6 +26,7 @@ import {
   type ReferenceAttestWire,
 } from './reference-attest-wire.ts';
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
+import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -91,6 +92,9 @@ export type ReferenceAttestation = {
  
  @param l - stage logger
  
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for
+ 
  @returns Details to attest and the findings of the round
  
  @example
@@ -112,6 +116,7 @@ async function confirmCandidates(
     signal,
     exchangeTimeoutMs,
     l,
+    fanOut,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -123,6 +128,7 @@ async function confirmCandidates(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<{
   readonly details: readonly AttestedDetail[];
@@ -152,6 +158,7 @@ async function confirmCandidates(
     validate: isReferenceAttestConfirmWire,
     stage: 'reference-attest-confirm',
     l,
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
   /**
    Voices heard on the confirmation.
@@ -226,6 +233,10 @@ async function confirmCandidates(
 
  @param l - entry logger
 
+ @param fanOut - seats each round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for, since
+ which seats the window picks follows a hash of the prompt (ledger X2)
+
  @returns Attested details, their sheet lines and findings
 
  @example
@@ -243,6 +254,7 @@ export async function attestCitedReferences(
     signal,
     exchangeTimeoutMs,
     l,
+    fanOut,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -252,6 +264,7 @@ export async function attestCitedReferences(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
   }>,
 ): Promise<ReferenceAttestation> {
   /**
@@ -278,6 +291,7 @@ export async function attestCitedReferences(
     validate: isReferenceAttestWire,
     stage: 'reference-attest',
     l: al,
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
   /**
    Voices heard.
@@ -367,6 +381,7 @@ export async function attestCitedReferences(
     signal,
     exchangeTimeoutMs,
     l: al,
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
   /**
    Lines the sheets carry.
