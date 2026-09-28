@@ -1927,15 +1927,29 @@ a withdrawn text also becomes a stand-in.
 
 ### L3: edits the checkers did not confirm ship inside a selected patch
 
-Status: open.
+Status: open, an owner question (batched with L4 and L11); measured 2026-09-28.
 TianqiChen66616 slice 3 shipped "it left a trace of her turned to ash" (one ballot worse),
 the patch having won on one resolved minor omission.
+Across every run, 345 of 2,148 selected patches carried at least one edit whose issue the checkers did not confirm,
+691 such issues: 1 on a worse majority, 39 on a fixed and worse tie, 651 on not-fixed;
+on the TianqiChen666 runs 18 of 51, 49 issues, none on a worse majority.
+A worse-majority floor would therefore catch almost nothing.
+No ruling covers it: the owner's L2 answer rules on the standing after a lost repair, not on a winning patch's contents,
+and `design-commitments.md` commits that every stage changing shipped text is audited,
+which counts against reverting unconfirmed envelopes with no recheck of the composite.
 
 ### L4: the editor preservation gate can never reject anything
 
-Status: open.
+Status: open, an owner question on scope (batched with L3 and L11); measured 2026-09-28.
 Envelopes and licensed quotes are the same quotes;
 `residualTokens` is 0 on 536 of 540 regions.
+Replayed over 5,733 recorded repair regions, the structural atoms an edit changed are mostly gains an omission fix restores
+(footnote references, link destinations, tags);
+the losses mix addition removals (footnotes and inline code on `accuracy/addition` claims)
+with damage (a footnote lost on a quotation-mark claim, MDX braces lost on mistranslation claims).
+The damage this finding names (a gloss dropped, a handle and a name replaced, an attribution deleted)
+is prose inside the licensed quote, which no markup gate sees,
+so what the gate should protect inside a quote is a design choice, not a measurement.
 
 ### L5: wrong panel acceptances
 
@@ -2002,7 +2016,11 @@ Status: open.
 
 ### L11: refinement on a slice whose patch lost gets no recheck
 
-Status: open (class one hundred eight's open half, with H4).
+Status: open (class one hundred eight's open half, with H4), an owner question batched with L3 and L4;
+measured 2026-09-28.
+Across every run, 1,218 of 2,144 refined slices were rewrites of the archive after the accuracy patch lost,
+457 of them on slices with panel-accepted issues the rewrite was never shown, and none had a checker round;
+on the TianqiChen666 runs 106 of 125, 75 with accepted issues.
 
 ### L12: logging gaps in the repair lane
 
