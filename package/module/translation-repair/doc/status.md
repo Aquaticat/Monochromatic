@@ -2,7 +2,46 @@
 
 Part of [the package README](../README.md).
 
-## Where it stands on 2026-09-24
+## Where the whole-package audit stands on 2026-09-27
+
+The owner asked on 2026-09-27 for every mistake ever made in this package to be found, fixed and recorded,
+with no finding too small; the findings, their fixes and the process mistakes (M entries) are in
+[the audit ledger](audit-ledger.md), and the owner's rulings in [the design commitments](design-commitments.md).
+No corpus run has been launched since the audit began:
+the next is TianqiChen666, started only once no fix is still owed before it.
+
+Landed late on 2026-09-27, each with a guard shown red first and the full suite green after:
+
+- A slice with no valid wording keeps the archive and the page ships, reported on the `DEFECTS` line
+    (owner, "Keep archive, ship"; ledger E4).
+- A page that disagrees with its artifact ships with the defect reported (owner, "Ship with defect reported").
+- The windowed stages and the naturalness review size their quorum on the seats that could answer,
+    a confirmation's unaskable seats counted out of reach (owner, "Count as out of reach"; ledger E3 and X8).
+- Every floor refusal, repair-turn outcome and panel decision reaches the run log,
+    and each panel verdict gives its reason before its vote (owner, "Reason before vote"; ledger E5).
+- A Han signer left in Han or romanized with no literal meaning is refused (ledger A17).
+- E6 was a documentation error: integrity is relative to the archive, now said and pinned.
+
+Cache versions: translate 15, consolidation 20, repair 33.
+All three moved on 2026-09-27 past changes that had not moved them (ledger M25);
+nothing had been cached under the versions they replace, so nothing was discarded,
+and every slice the next run buys is bought under today's rules.
+
+The reason-before-vote change is measured at TianqiChen666:
+its panel support rate (supported votes over all panel votes) against TianqiChen66620's,
+one run per arm as `doc/audit/the-damage-no-instrument-was-catching.md` at the repo root compared the last sheet change,
+with the direction, not the size, as the evidence.
+The baseline, read from TianqiChen66620's slice cache (it settled no artifact):
+270 of 464 panel ballots supported, 58.2%, over 110 issues in 36 of its 110 cached slices.
+A drop of the size that change caused (72% to 65% on one entry) is reported to the owner with the reasons it cites.
+
+Still open in the ledger, in the order they are being taken:
+X10 (a slice carved through an element), the test-suite findings (T, H13, H15, E8, E9),
+the Canadian-forms findings (K1 to K13, H14), the glossary content findings (C, R),
+and the provider, repair-lane and documentation findings (P, L, D, X, E10 to E12),
+then the package-local prevention doc for the M families.
+
+## Where it stood on 2026-09-24
 
 The sections `Milestone and generation history`,
 `Superseded consolidation cache generation 14 operation history`

@@ -310,3 +310,6 @@ Part of [the package README](../README.md).
   Measured before the ruling over 265 stored artifacts:
   about 783 panel verdicts per entry, and 167 characters on average for the reasons other stages' ballots carry.
   The reason is stored with the ballot and logged beside the issue's decision (ledger E5).
+  Its effect on votes is measured at the next run, TianqiChen666,
+  as the share of panel ballots voting supported against TianqiChen66620's,
+  one run per arm (`doc/status.md`, the 2026-09-27 section).
