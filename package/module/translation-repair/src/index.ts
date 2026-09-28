@@ -11,20 +11,6 @@ export {
   UnpositionedNodeError,
 } from './document-node.ts';
 export {
-  buildFootnoteGraph,
-  scanFullwidthMarkers,
-  scanGfmReferenceLiterals,
-  type TextMarkerHit,
-} from './footnote-graph.ts';
-export { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
-export type {
-  FootnoteConvention,
-  FootnoteDefinitionHit,
-  FootnoteGraph,
-  FootnoteGraphFinding,
-  FootnoteReferenceHit,
-} from './footnote-model.ts';
-export {
   type FrontMatterBlock,
   FrontMatterParseError,
   splitFrontMatter,
@@ -300,6 +286,7 @@ export * from './recall-barrel.ts';
 export * from './refine-barrel.ts';
 export * from './repair-chunk-barrel.ts';
 export * from './sheet-barrel.ts';
+export * from './text-barrel.ts';
 export * from './stage-barrel.ts';
 export * from './translate-barrel.ts';
 export * from './consolidation-barrel.ts';

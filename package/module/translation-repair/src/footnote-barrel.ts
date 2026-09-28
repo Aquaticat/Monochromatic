@@ -44,4 +44,20 @@ export {
   type RelabelledArchive,
 } from './corpus-run/pass-footnote-relabel.ts';
 
+// The footnote graph and its model, moved here from `index.ts` at its line budget.
+export {
+  buildFootnoteGraph,
+  scanFullwidthMarkers,
+  scanGfmReferenceLiterals,
+  type TextMarkerHit,
+} from './footnote-graph.ts';
+export { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
+export type {
+  FootnoteConvention,
+  FootnoteDefinitionHit,
+  FootnoteGraph,
+  FootnoteGraphFinding,
+  FootnoteReferenceHit,
+} from './footnote-model.ts';
+
 //endregion Footnote barrel
