@@ -152,4 +152,79 @@ export function continuesLatinWord({ character, }: { readonly character: string;
   return isLatinWordCharacter({ character, },) || isCombiningMark({ character, },);
 }
 
+/**
+ One run of Latin letters and where it starts.
+ */
+export type LatinWord = {
+  readonly word: string;
+  readonly start: number;
+};
+
+/**
+ Every run of Latin letters in a text, with where each starts, by one index
+ scan. A run opens on a letter, accented or not, and goes on through letters
+ and combining marks, so `Château` is one word whether its accent is composed
+ or not. The opening letter is taken before the run's loop, so the scan always
+ advances (ledger M50).
+
+ The casing restores and the address and suicide-method floors each kept a
+ copy of this scan (ledger B18).
+
+ @param text - text under scan
+
+ @returns Runs in order, as written
+
+ @example
+ ```ts
+ latinWordSpans({ text: 'MAOWU Station', },); // [{ word: 'MAOWU', start: 0 }, { word: 'Station', start: 6 }]
+ ```
+ */
+export function latinWordSpans({ text, }: { readonly text: string; },): readonly LatinWord[] {
+  /**
+   Runs read so far.
+   */
+  const words: LatinWord[] = [];
+  for (let at = 0; at < text.length;) {
+    if (!isLatinLetter({ character: text.charAt(at,), },)) {
+      at += 1;
+      continue;
+    }
+    /**
+     Where this run starts.
+     */
+    const start = at;
+    at += 1;
+    while ((at < text.length) && isLatinLetterOrMark({ character: text.charAt(at,), },))
+      at += 1;
+    words.push({
+      word: text.slice(
+        start,
+        at,
+      ),
+      start,
+    },);
+  }
+  return words;
+}
+
+/**
+ Every run of Latin letters in a text, lower-cased, in order, so a word is
+ matched whole and never inside another.
+
+ @param text - text under scan
+
+ @returns Lower-cased words in order
+
+ @example
+ ```ts
+ lowerCaseLatinWords({ text: 'May you, yes you!', },); // ['may', 'you', 'yes', 'you']
+ ```
+ */
+export function lowerCaseLatinWords({ text, }: { readonly text: string; },): readonly string[] {
+  return latinWordSpans({ text, },)
+    .map(function lowered({ word, },): string {
+    return word.toLowerCase();
+  },);
+}
+
 //endregion Latin letters

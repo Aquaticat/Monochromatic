@@ -1,7 +1,9 @@
 /**
  Tests the Latin letter tests the package's prose scanners share (audit area
  six): each block at its edges, the characters just outside them, the two
- Latin-1 signs, and the Greek and Cyrillic letters a kaomoji carries.
+ Latin-1 signs, and the Greek and Cyrillic letters a kaomoji carries; and
+ the word scan built on them, over accented words opening, inside and
+ decomposed.
 
  @module
  */
@@ -18,6 +20,8 @@ import {
   isLatinLetter,
   isLatinLetterOrMark,
   isLatinWordCharacter,
+  latinWordSpans,
+  lowerCaseLatinWords,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -151,6 +155,34 @@ await describe({
           '\u{036F}',
           '\u{1E00}',
           '\u{1EFF}',
+        ],);
+      },
+    },),
+    it({
+      name: 'SCANS words that open on, carry or end in an accent, composed or combining, as one word each, where they start',
+      fn: async () => {
+        // An ASCII scan read `Heřmánek` as `He`, `m` and `nek`, and `Åhe` as
+        // `he` from its second letter.
+        expect(latinWordSpans({ text: 'Heřmánek met Åhe at the Cafe\u{0301}.', },),).toEqual([
+          { word: 'Heřmánek', start: 0, },
+          { word: 'met', start: 9, },
+          { word: 'Åhe', start: 13, },
+          { word: 'at', start: 17, },
+          { word: 'the', start: 20, },
+          { word: 'Cafe\u{0301}', start: 24, },
+        ],);
+      },
+    },),
+    it({
+      name: 'SPLITS at digits, apostrophes, spaces, other scripts, and a combining mark with no letter before it',
+      fn: async () => {
+        expect(lowerCaseLatinWords({ text: 'Cat9lives don\'t 猫猫 ω\u{0301}x (・ω・) Z', },),).toEqual([
+          'cat',
+          'lives',
+          'don',
+          't',
+          'x',
+          'z',
         ],);
       },
     },),

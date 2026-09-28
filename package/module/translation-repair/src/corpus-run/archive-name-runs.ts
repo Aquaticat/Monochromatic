@@ -1,14 +1,16 @@
 import {
   isTitleCase,
-  type LatinWord,
-  latinWords,
   onHeadingLine,
 } from './archive-casing-restore.ts';
 import {
   inProse,
   protectedRanges,
 } from './prose-ranges.ts';
-import { continuesLatinWord, } from '../latin-letters.ts';
+import {
+  continuesLatinWord,
+  type LatinWord,
+  latinWordSpans,
+} from '../latin-letters.ts';
 
 //region Archive name runs
 // The scans class one hundred thirty-six reads a page with (`archive-name-
@@ -95,7 +97,7 @@ export function titleRuns(
    Runs of title-case words, each a list of its words; a word in any other
    casing closes the run before it.
    */
-  const groups: readonly (readonly LatinWord[])[] = latinWords({ text, },)
+  const groups: readonly (readonly LatinWord[])[] = latinWordSpans({ text, },)
     .reduce<LatinWord[][]>(
       function group(
         built,

@@ -2,10 +2,7 @@ import {
   blocksOf,
   withoutComments,
 } from './translate-address-drop.ts';
-import {
-  isLatinLetter,
-  isLatinLetterOrMark,
-} from './latin-letters.ts';
+import { lowerCaseLatinWords, } from './latin-letters.ts';
 
 //region A suicide the passage names
 // CLASS ONE HUNDRED FIFTY (shi_Yumiaoya36, 2026-09-26). The original states a
@@ -150,49 +147,6 @@ const HAND_NOUNS: ReadonlySet<string> = new Set([
   'hand',
   'hands',
 ]);
-
-/**
- Every run of Latin letters in a text, lower-cased, in order: a word opens on
- a letter, accented or not, and goes on through letters and combining marks
- (ledger B18).
-
- @param text - rendering, comments already cut
-
- @returns Words in order
-
- @example
- ```ts
- wordsOf({ text: 'She tried to end her life.', },); // ['she', 'tried', 'to', 'end', 'her', 'life']
- ```
- */
-function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
-  /**
-   Words found so far.
-   */
-  const words: string[] = [];
-  /**
-   Letters of the word being read.
-   */
-  let current = '';
-  for (const character of text) {
-    /**
-     Whether the character opens a word or goes on with the one being read.
-     */
-    const inWord = (current === '')
-      ? isLatinLetter({ character, },)
-      : isLatinLetterOrMark({ character, },);
-    if (inWord) {
-      current += character.toLowerCase();
-      continue;
-    }
-    if (current !== '')
-      words.push(current,);
-    current = '';
-  }
-  if (current !== '')
-    words.push(current,);
-  return words;
-}
 
 /**
  Whether the words at an offset close on one of some nouns: an optional
@@ -367,7 +321,7 @@ export function droppedSuicideFindings(
   },);
   if (named.length === 0)
     return [];
-  if (saysSuicide({ words: wordsOf({ text: withoutComments({ text: candidateText, },), },), },))
+  if (saysSuicide({ words: lowerCaseLatinWords({ text: withoutComments({ text: candidateText, },), },), },))
     return [];
   return [
     `Your translation drops the suicide the ORIGINAL names: the ORIGINAL passage writes ${named.join(' and ',)}, and your translation carries no wording for suicide at all. A death by suicide is said to be a suicide, and a survived attempt is still an attempt: say that the person attempted suicide or tried to end their life, with the pronoun the page uses for them, keeping the means as vague as the house rule asks.`,

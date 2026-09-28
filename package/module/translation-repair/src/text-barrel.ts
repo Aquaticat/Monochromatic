@@ -16,6 +16,9 @@ export {
   isLatinLetter,
   isLatinLetterOrMark,
   isLatinWordCharacter,
+  type LatinWord,
+  latinWordSpans,
+  lowerCaseLatinWords,
 } from './latin-letters.ts';
 export { isIdeograph, } from './preservation-tokens.ts';
 export {

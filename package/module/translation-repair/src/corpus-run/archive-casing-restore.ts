@@ -9,10 +9,7 @@ import {
   applySpanRewrites,
   type SpanRewrite,
 } from './span-rewrites.ts';
-import {
-  isLatinLetter,
-  isLatinLetterOrMark,
-} from '../latin-letters.ts';
+import { latinWordSpans, } from '../latin-letters.ts';
 
 //region Archive casing restore
 // THE ONE HUNDRED AND TWENTY-FIRST CLASS (mikaela17, 2026-09-25). The archive
@@ -95,60 +92,6 @@ export function onHeadingLine(
 }
 
 /**
- One run of Latin letters and where it starts.
- */
-export type LatinWord = {
-  readonly word: string;
-  readonly start: number;
-};
-
-/**
- Every run of Latin letters in a text, by one index scan. A run opens on a
- letter, accented or not, and goes on through letters and combining marks,
- so `Pokémon` is one word whether its accent is composed or not (ledger B18).
-
- @param text - text under scan
-
- @returns Runs in order
-
- @example
- ```ts
- latinWords({ text: 'MAOWU Station', },); // [{ word: 'MAOWU', start: 0 }, { word: 'Station', start: 6 }]
- ```
- */
-export function latinWords(
-  { text, }: { readonly text: string; },
-): readonly LatinWord[] {
-  /**
-   Runs read so far.
-   */
-  const words: LatinWord[] = [];
-  for (let at = 0; at < text.length;) {
-    if (!isLatinLetter({ character: text.charAt(at,), },)) {
-      at += 1;
-      continue;
-    }
-    /**
-     Where this run starts.
-     */
-    const start = at;
-    // The opening letter is taken before the loop, so the run always advances
-    // whatever the loop's test admits.
-    at += 1;
-    while ((at < text.length) && isLatinLetterOrMark({ character: text.charAt(at,), },))
-      at += 1;
-    words.push({
-      word: text.slice(
-        start,
-        at,
-      ),
-      start,
-    },);
-  }
-  return words;
-}
-
-/**
  Words the archive writes in capitals at least twice and in no other casing
  anywhere.
 
@@ -168,7 +111,7 @@ function capitalForms(
    Every spelling the archive uses for a word, keyed by the word in capitals,
    with how often each spelling occurs.
    */
-  const spellings = latinWords({ text: archiveText, },)
+  const spellings = latinWordSpans({ text: archiveText, },)
     .filter(function inProse({ start, },): boolean {
       return !onHeadingLine({
         text: archiveText,
@@ -277,7 +220,7 @@ function recase(
   /**
    Words to rewrite, in order.
    */
-  const targets = latinWords({ text, },)
+  const targets = latinWordSpans({ text, },)
     .filter(function restorable({
       word,
       start,

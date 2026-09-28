@@ -2,10 +2,7 @@ import {
   addressCount,
   hanThirdPersonCount,
 } from './translate-address-original.ts';
-import {
-  isLatinLetter,
-  isLatinLetterOrMark,
-} from './latin-letters.ts';
+import { lowerCaseLatinWords, } from './latin-letters.ts';
 
 //region Second-person address the passage carries
 // CLASS NINETY-SEVEN (yingying5, 2026-09-23). The original's closing wish
@@ -158,77 +155,6 @@ export function blocksOf({ text, }: { readonly text: string; },): readonly strin
 }
 
 /**
- Every run of Latin letters in a text, lower-cased, so a pronoun is matched
- as a whole word and never inside another: a run opens on a letter, accented
- or not, and goes on through letters and combining marks, so `you` inside
- `youé` is no pronoun (ledger B18).
-
- @param text - candidate text
-
- @returns Words in order
-
- @example
- ```ts
- latinWords({ text: 'May you, yes you!', },); // ['may', 'you', 'yes', 'you']
- ```
- */
-function latinWords({ text, }: { readonly text: string; },): readonly string[] {
-  /**
-   Words found so far.
-   */
-  const words: string[] = [];
-  for (let start = 0; start < text.length; start += 1) {
-    if (!isLatinLetter({ character: text.charAt(start,), },))
-      continue;
-    /**
-     Offset just past this word.
-     */
-    const end = wordEnd({
-      text,
-      start,
-    },);
-    words.push(text.slice(
-      start,
-      end,
-    )
-      .toLowerCase(),);
-    start = end;
-  }
-  return words;
-}
-
-/**
- Offset just past the run of Latin letters and combining marks starting at
- an offset.
-
- @param text - text being scanned
-
- @param start - offset of the run's first letter
-
- @returns Offset of the first character that is no letter, or the length
-
- @example
- ```ts
- wordEnd({ text: 'you!', start: 0, },); // 3
- ```
- */
-function wordEnd(
-  {
-    text,
-    start,
-  }: {
-    readonly text: string;
-    readonly start: number;
-  },
-): number {
-  for (let at = start; at < text.length; at += 1) {
-    if (!isLatinLetterOrMark({ character: text.charAt(at,), },))
-      return at;
-  }
-  return text.length;
-}
-
-/**
  How many third-person pronouns an original passage writes: the Han ones,
  and the romanised TA or ta.
 
@@ -245,7 +171,7 @@ function thirdPersonCount({ text, }: { readonly text: string; },): number {
   /**
    Romanised third-person pronouns among the passage's Latin words.
    */
-  const romanised = latinWords({ text, },)
+  const romanised = lowerCaseLatinWords({ text, },)
     .filter(function isTa(word,): boolean {
       return word === 'ta';
     },);
@@ -305,7 +231,7 @@ function switchedBlock(
   /**
    Words of the rendering's block.
    */
-  const words = latinWords({ text: rendering, },);
+  const words = lowerCaseLatinWords({ text: rendering, },);
   if (words.some(function secondPerson(word,): boolean {
     return SECOND_PERSON.has(word,);
   },))
