@@ -188,9 +188,12 @@ The constant fit-prevalence baseline has log loss `0.6365141682948132`
 and Brier `0.2222222222222221` on each constructed partition.
 The candidate's log loss and Brier were:
 
-- Fit: `0.22667627927365175` and `0.05989153711704769`.
-- Validation: `0.19037282892773663` and `0.05138624733195122`.
-- Test: `0.20367026825072396` and `0.05649030415346677`.
+- Fit:
+   `0.22667627927365175` and `0.05989153711704769`.
+- Validation:
+   `0.19037282892773663` and `0.05138624733195122`.
+- Test:
+   `0.20367026825072396` and `0.05649030415346677`.
 
 Every role improved both sample proper losses against that constant baseline on validation and test.
 No uncertainty interval or workload-level improvement is established.
@@ -207,9 +210,18 @@ The request positive-relation head accepted no true reference at any validation 
 
 Test counts were:
 
-- 80/20: 51 correct, 0 wrong, 21 unresolved.
-- 90/10: 37 correct, 0 wrong, 35 unresolved.
-- 95/05: 28 correct, 0 wrong, 44 unresolved.
+- 80/20:
+   51 correct,
+   0 wrong,
+   21 unresolved.
+- 90/10:
+   37 correct,
+   0 wrong,
+   35 unresolved.
+- 95/05:
+   28 correct,
+   0 wrong,
+   44 unresolved.
 
 Approved-prose positive relation accepted no true reference at any test band.
 Its six true references scored `0.32495985746353645` to `0.6497014503253993`.
@@ -227,10 +239,21 @@ For 80/20,
 90/10,
 and 95/05 accepted subsets respectively:
 
-- Counts: 51, 37, 28.
-- Log losses: `0.06799556443320656`, `0.03264842774742186`, `0.016203601592327487`.
-- Brier: `0.0076468145561177266`, `0.001929368755484137`, `0.0004218595723619165`.
-- Mean absolute bin gaps: `0.06376012505008574`, `0.03163174499057504`, `0.015987796606792438`.
+- Counts:
+   51,
+   37, 28.
+- Log losses:
+   `0.06799556443320656`,
+   `0.03264842774742186`,
+   `0.016203601592327487`.
+- Brier:
+   `0.0076468145561177266`,
+   `0.001929368755484137`,
+   `0.0004218595723619165`.
+- Mean absolute bin gaps:
+   `0.06376012505008574`,
+   `0.03163174499057504`,
+   `0.015987796606792438`.
 
 These are constructed-sample diagnostics,
 not confidence bounds.
@@ -264,8 +287,10 @@ probability `0.32495985746353645`:
 `nickel-read/positive-with-unrelated-ban/request`,
 probability `0.29728011580631564`:
 
-> For /work/project/nickel/.env, read the file contents locally.
-> For /work/project/nickel/reference.txt, do not read the file contents.
+> For /work/project/nickel/.env,
+>  read the file contents locally.
+> For /work/project/nickel/reference.txt,
+>  do not read the file contents.
 
 `nickel-read/positive-with-unrelated-ban/approved-prose`,
 probability `0.40343016758414674`:

@@ -41,8 +41,10 @@ The [result and freeze-scope record](../planning/pi-auto-mode-voyage-concrete-fi
 contains the exact evidence identities,
 role/operation/group diagnostics,
 and residual examples.
-Private root: `~/temp/agent/voyage-concrete-heads-2026-09-28`.
-Final recomputation checkpoint: `e9547e8`.
+Private root:
+ `~/temp/agent/voyage-concrete-heads-2026-09-28`.
+Final recomputation checkpoint:
+ `e9547e8`.
 
 The fixed 120 calls and one offline four-head fit completed without tuning from validation/test.
 Every shared five-second clock passed,
