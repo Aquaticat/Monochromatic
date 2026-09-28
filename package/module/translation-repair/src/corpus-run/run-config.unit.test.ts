@@ -32,12 +32,15 @@ import { join, } from 'node:path';
 import {
   createRunClient,
   HYPER_MESSAGES_URL,
+  NoProviderForModelError,
+  OWNER_CULLED,
   readHeadSha,
   resolveRunsDir,
   RUN_SEATS,
   RunConfigError,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
@@ -634,9 +637,16 @@ const MESSAGES = [
 ];
 
 /**
- Seat the first provider serves under its own catalog name.
+ Seat the first provider serves under its own catalog name. Not the
+ every-provider fixture seat, which is the model the owner culled on
+ 2026-09-24 and which the run client refuses (ledger P4).
  */
-const SHARED_SEAT = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
+const SHARED_SEAT = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
+
+/**
+ Seat the owner culled from every role, which every provider still serves.
+ */
+const CULLED_SEAT = SEAT_SYNTHETIC_TEXT_EVERYWHERE;
 
 /**
  Seat only the second provider serves: a Charm Hyper endpoint label.
@@ -665,7 +675,7 @@ async function askSeat(
     modelId,
   }: {
     readonly client: ReturnType<typeof createRunClient>;
-    readonly modelId: typeof SHARED_SEAT | typeof SECOND_ONLY_SEAT;
+    readonly modelId: typeof CULLED_SEAT | typeof SHARED_SEAT | typeof SECOND_ONLY_SEAT;
   },
 ): Promise<unknown> {
   try {
@@ -800,6 +810,40 @@ await describe({
         expect(RUN_SEATS.dark().map(function toId(count,): string {
           return count.modelId;
         },),).toStrictEqual([SECOND_ONLY_SEAT,],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SEAT THE OWNER CULLED without calling any provider (ledger P4): the cull held on every '
+        + 'bench the run derives, and a path that named the seat itself, the recall benchmark\'s default '
+        + 'judges, would have bought it; the refusal is the one a round reads as an unreachable seat',
+      fn: async () => {
+        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
+        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
+        using _fresh = withFreshRunSeats();
+
+        /**
+         Transport recording where any call went.
+         */
+        const { transport, urls, } = recordingTransport();
+
+        /**
+         What the culled seat's call came to.
+         */
+        const came = await askSeat({
+          client: createRunClient({ transport, },),
+          modelId: CULLED_SEAT,
+        },);
+
+        expect({
+          culled: OWNER_CULLED.has(CULLED_SEAT,),
+          refused: came instanceof NoProviderForModelError,
+          chatted: urls.some(isFirstProviderChat,) || urls.includes(HYPER_MESSAGES_URL,),
+        },).toEqual({
+          culled: true,
+          refused: true,
+          chatted: false,
+        },);
       },
     },),
   ],
