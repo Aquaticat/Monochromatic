@@ -901,6 +901,11 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     after the prevention was already recorded; the script then ran in its own call.
     A prevention the same session repeats is not yet a habit:
     a Bash call that holds `<<` holds nothing else, and a script goes through the Write tool.
+    After the restart, during L5's footnote fix, two more:
+    a foreground `sleep 1 && true` as a placeholder while a mutation run finished,
+    and `build > log 2>&1 ; tsc | rg` so the type check would run even if the build failed.
+    Neither was needed: a background task notifies when it ends,
+    and a build failure is itself the answer the type check would have given.
     During P9 a `;` joined a lint count to the commit of the red guard,
     and the staging read only the count of expected type errors, not the full summary (read afterwards: those six only).
 - A capped search taken as complete (QRY): before `7ceffe055` changed two card prices,
@@ -2196,30 +2201,34 @@ so its precision over accepted issues reads higher by construction on runs from 
 
 #### Footnote definitions outside the slice
 
-Status: in progress; census done, design chosen, no code yet.
-The critic sheet shows the slice pair, its neighbours, the declared names and the cited references;
-the panel also gets the whole original (`documentSourceText`), but no sheet gets the translation's footnote definitions,
-and the critic gets neither side's.
-A slice citing `[^5]` whose definition sits at the page end reads as if the attribution the note carries were dropped
-(sh2 slices 33 and 37).
-Census over every artifact under the agent runs (`l5-footnote-census.mjs`, all runs, repeats included):
-342 of 6,261 slices cite a source footnote defined outside the slice, 171 a target one;
-the panel accepted 318 issues on those slices,
-74 of them omission or addition claims (XingZ60 slice 44 recurs in a dozen runs, mostly not selected),
-and 85 accepted issues there name a footnote, attribution, credit, citation or translator, or quote a `[^` marker.
-Not yet measured: how many cite a definition outside the fidelity window rather than only outside the slice,
-and how many slices hold a definition whose every citation is outside the window
-(`l5-footnote-window.mjs`, written, not run: the auto-mode classifier failed before the restart).
+Status: premise refuted; the window change is reverted (`80a18dd53`); the remedy is the note rule's framing, below.
+The audit said no sheet shows footnote definitions, so a slice citing `[^5]` read as if the attribution
+the note carries were dropped (sh2 slices 33 and 37).
+That was never checked against a rendered sheet, and it is false:
+`entry-notes.ts` has carried every footnote definition of both documents,
+as "ORIGINAL note" and "ARCHIVE note" lines of the DECLARED NAMES block, to every sheet since `12ed82cee` (2026-09-02).
+shihai4h ran on 2026-09-26; its original has no footnotes and the archive's ten notes sit in no slice,
+and the shipped extractor turns all ten, notes 5 and 7 included, into ARCHIVE note lines
+(`l5-sh2-notes.mjs`; the artifact does not store the identity context, so this is the extractor rerun, not the sheet read back).
 
-Design, decided for quality: `neighbouringSource` and `neighbouringIncumbent` in `fidelity-window.ts`
-append, after the window's text, the definition of every footnote label the current slice cites
-that neither the slice nor the window defines, each side from its own document.
-Every sheet that shows the nearby block then carries them (critic, panel, editor, the translate lane's sheets),
-and the repair, refine and translate keys hash the window text,
-so only the slices it changes re-key and no version moves.
-The reverse case (a slice holding a definition whose citing sentence is outside the window) waits on the measurement.
-Next: run the window census, red guard in `fidelity-window.unit.test.ts` (or a sibling),
-fix, mutation check, account in the three key TSDocs as an input change, ledger.
+What the notes lacked is standing, not presence.
+`DECLARED_IDENTITY_RULES` tells every sheet the note lines "establish vocabulary and titles for the terms they name
+and nothing else", and that the block "is evidence about naming ONLY";
+nothing says what a footnote marker carries.
+That framing is inferred, not measured, to be why the sh2 claims were accepted:
+those runs predate stored ballot reasons, so what the panel thought cannot be read.
+The census still measures how many slices the framing matters for
+(`l5-footnote-census.mjs`, every run, repeats included):
+342 of 6,261 slices cite a source footnote defined outside the slice, 171 a target one;
+the panel accepted 318 issues on those slices, 74 of them omission or addition claims,
+and 85 name a footnote, attribution, credit, citation or translator, or quote a `[^` marker.
+Those 85 stayed accepted with the notes on the sheet,
+which fits the framing story and fits some of them being legitimate; they are not the fix's yield.
+
+The reverted change (`b0dd42341` to `13b936c90`, seven commits over 21 files) ended each slice's fidelity window
+with the definitions it cites from outside the window, first from the slices, then from each whole document.
+Its wire guard passed with every lane's documents replaced by the empty string or by the other side's text,
+because the notes reached the sheets through the DECLARED NAMES block regardless; that is what exposed the premise (M32).
 
 #### Remaining L5 sub-items
 
@@ -2866,6 +2875,17 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M32: a fix that supplies context a model lacks, built without reading the sheet it goes on
+
+Status: caught the same day, 2026-09-28, by a wire guard's surviving mutants; reverted in `80a18dd53`.
+L5's footnote item said no sheet shows footnote definitions, and seven commits over 21 files threaded
+whole-document footnote definitions into every lane's window on that premise.
+One rendered sheet refutes it: every footnote definition of both documents has been on every sheet since `12ed82cee`.
+The wire guard's fixture case checked the window, not the sheet, so it certified the wrong object,
+and `l5-render.mjs`, the pattern that would have shown it, already existed in the same session.
+Prevention: a fix that gives a model context it "lacks" starts by rendering the actual sheet for the case
+and searching it for that content; only an absence seen on the rendered sheet licenses the fix.
 
 ### M31: replay refusals classified as damage from claim category and tag shape
 
