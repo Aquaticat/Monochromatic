@@ -320,12 +320,30 @@ type DissentingChecker = {
 };
 
 /**
+ A claim of damage every prober makes against the rewrite, quoting one side.
+ */
+type ProbeClaim = {
+  /**
+   Wording quoted from the rewrite, for damage it added; empty otherwise.
+   */
+  readonly evidence: string;
+
+  /**
+   Wording quoted from the text it replaced, for content it dropped; empty
+   otherwise.
+   */
+  readonly omittedText: string;
+};
+
+/**
  Client scripting the rewriter, the judges, and the recheck.
 
  @param checkerVerdict - verdict every checker casts during the recheck
 
  @param dissent - one checker casting another verdict, where a case needs a
  split bench
+
+ @param probeClaim - claim every prober makes, none by default
 
  @returns Client usable by the phase
 
@@ -338,9 +356,11 @@ function scriptedPhase(
   {
     checkerVerdict,
     dissent,
+    probeClaim,
   }: {
     readonly checkerVerdict: string;
     readonly dissent?: DissentingChecker;
+    readonly probeClaim?: ProbeClaim;
   },
 ): SyntheticClient {
   return {
@@ -389,15 +409,25 @@ function scriptedPhase(
         : stage === 'introduced_defect_report'
         ? {
           checks: [
-            {
-              region: 1,
-              verdict: 'no-introduced-defect-found',
-              category: '',
-              severity: '',
-              evidence: '',
-              omittedText: '',
-              reason: '',
-            },
+            (probeClaim === undefined)
+              ? {
+                region: 1,
+                verdict: 'no-introduced-defect-found',
+                category: '',
+                severity: '',
+                evidence: '',
+                omittedText: '',
+                reason: '',
+              }
+              : {
+                region: 1,
+                verdict: 'introduced-defect',
+                category: 'accuracy/mistranslation',
+                severity: 'major',
+                evidence: probeClaim.evidence,
+                omittedText: probeClaim.omittedText,
+                reason: 'scripted',
+              },
           ],
         }
         : {
@@ -441,6 +471,9 @@ function scriptedPhase(
 
  @param dissent - one checker casting another verdict, none by default
 
+ @param probeClaim - claim every prober makes against the rewrite, none by
+ default
+
  @returns Phase result
 
  @example
@@ -456,6 +489,7 @@ async function runPhase(
     authorship = NO_MODEL_WROTE_THE_FIXTURE,
     unresolvedIssues = [],
     dissent,
+    probeClaim,
   }: {
     readonly resolvedIssueIds: readonly string[];
     readonly checkerVerdict: string;
@@ -463,6 +497,7 @@ async function runPhase(
     readonly authorship?: IssueAuthorship;
     readonly unresolvedIssues?: readonly UnresolvedIssue[];
     readonly dissent?: DissentingChecker;
+    readonly probeClaim?: ProbeClaim;
   },
 ) {
   return runRefinePhase({
@@ -470,6 +505,7 @@ async function runPhase(
     client: scriptedPhase({
       checkerVerdict,
       ...((dissent === undefined) ? {} : { dissent, }),
+      ...((probeClaim === undefined) ? {} : { probeClaim, }),
     },),
     targetText: REPAIRED_TEXT,
     slices: SLICES,
@@ -683,6 +719,47 @@ await describe({
         },);
         expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
         expect(Object.keys(phase.outcomes[0]?.recheckReadings ?? {},).length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'ROLLS BACK a rewrite the damage probe admits a claim against (ledger L11, decided for quality): '
+        + '175 of 2,144 kept rewrites carried one, and a reading of every such region found six of ten true, '
+        + 'so keeping them shipped more damage than rolling back loses fluency',
+      fn: async function anAdmittedAddedDamageClaimRollsBack() {
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          checkerVerdict: 'fixed',
+          probeClaim: { evidence: 'sunbathes on the windowsill', omittedText: '', },
+        },);
+        expect(phase.outcomes[0]?.repairedText,).toBe(REPAIRED_TEXT,);
+        expect(phase.outcomes[0]?.changed,).toBe(false,);
+        expect(phase.outcomes[0]?.refined,).toBe(false,);
+        expect(
+          phase.findings
+            .some(function namesProbeRollback(finding,) {
+              return finding.startsWith('refine-rolled-back-by-probe',);
+            },),
+        ).toBe(true,);
+
+        // NO REPORT AGAINST TEXT THAT NO LONGER SHIPS: the lane contest reads
+        // this field as damage evidence against the repair candidate, whose text
+        // is T1 again.
+        expect(phase.outcomes[0]?.refinementDefects,).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'ROLLS BACK a rewrite the probe admits a removal claim against, the other shape an admitted claim '
+        + 'takes: content the text before it carried and the rewrite dropped',
+      fn: async function anAdmittedRemovalClaimRollsBack() {
+        const phase = await runPhase({
+          resolvedIssueIds: [],
+          checkerVerdict: 'fixed',
+          probeClaim: { evidence: '', omittedText: 'without any hurry at all', },
+        },);
+        expect(phase.outcomes[0]?.repairedText,).toBe(REPAIRED_TEXT,);
+        expect(phase.outcomes[0]?.refinementDefects,).toBeUndefined();
       },
     },),
 
