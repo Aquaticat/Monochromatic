@@ -528,14 +528,23 @@ export async function runGatherRound<ValueT,>(
    */
   const finishedAt = Date.now();
 
+  /**
+   The round's timing after its total: time to quorum and in grace where
+   quorum stood, and that it never stood otherwise (ledger P12). A round that
+   never reaches quorum stops waiting once nothing is pending, so its
+   "quorum" mark is only when the last ask settled, and the grace after it
+   is nothing.
+   */
+  const timing = (heard >= heardNeeded)
+    ? `${String(quorumAt - startedAt,)}ms to quorum, ${String(finishedAt - quorumAt,)}ms in grace`
+    : `no quorum (${String(heard,)} of ${String(heardNeeded,)} needed), every ask settled`;
+
   // IDS, COUNTS AND DURATIONS ONLY, like every other line a corpus run emits:
   // the stage label, the roster size and the clock. A run directory holds
   // unlicensed corpus wording, and this line is written on every gather.
   l.info(
     `${stage} round: ${String(heard,)}/${String(outcomes.length,)} heard, `
-      + `${String(finishedAt - startedAt,)}ms total, `
-      + `${String(quorumAt - startedAt,)}ms to quorum, `
-      + `${String(finishedAt - quorumAt,)}ms in grace`,
+      + `${String(finishedAt - startedAt,)}ms total, ${timing}`,
   );
 
   return outcomes;
