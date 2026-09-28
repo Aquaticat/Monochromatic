@@ -284,7 +284,7 @@ await describe({
       fn: async () => {
         expect(retryAfterMsOf({ bodyText: 'Please try again in 3s.', },),).toBe(3_000,);
         expect(retryAfterMsOf({ bodyText: 'try again in s', },),).toBe(0,);
-        expect(retryAfterMsOf({ bodyText: 'try again in 12 minutes', },),).toBe(0,);
+        expect(retryAfterMsOf({ bodyText: 'try again in 12 minutes', },),).toBe(720_000,);
         expect(retryAfterMsOf({ bodyText: 'busy', },),).toBe(0,);
         // The daily wording writes hours, minutes and seconds in one run.
         expect(retryAfterMsOf({ bodyText: 'Please try again in 14m40s.', },),).toBe(880_000,);
@@ -649,6 +649,27 @@ await describe({
 
         expect(raised,).toBeInstanceOf(StreamOverrunError,);
         expect(calls.count,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'READS A STATED WAIT in any case, in milliseconds before minutes, in words and with a fraction, '
+        + 'and names none for a unit it does not know (ledger E11)',
+      fn: async () => {
+        expect([
+          retryAfterMsOf({ bodyText: 'Upstream rate limited. Try again in 60s.', },),
+          retryAfterMsOf({ bodyText: 'try again in 500ms', },),
+          retryAfterMsOf({ bodyText: 'Please try again in 1 minute 30 seconds.', },),
+          retryAfterMsOf({ bodyText: 'try again in 1.5s', },),
+          retryAfterMsOf({ bodyText: 'TRY AGAIN IN 2 HOURS', },),
+          retryAfterMsOf({ bodyText: 'try again in 3 fortnights', },),
+        ],).toEqual([
+          60_000,
+          500,
+          90_000,
+          1_500,
+          7_200_000,
+          0,
+        ],);
       },
     },),
   ],
