@@ -515,7 +515,10 @@ function gateBallot({ choice, }: { readonly choice: string; },): string {
  @param gateReply - body every gate voice returns
  
  @param producedFindings - what gathering and repairing recorded
- 
+
+ @param served - counter the caller holds, so a case whose settlement throws
+ can still read what was bought before the throw
+
  @returns Settlement beside the calls each round served
  
  @example
@@ -536,6 +539,10 @@ async function settleWith(
     standingRefusal,
     laneTexts = [],
     runoffOverStanding = false,
+    served = {
+      judge: 0,
+      gate: 0,
+    },
   }: {
     readonly voices: readonly {
       readonly modelId: FixtureModelId;
@@ -573,16 +580,17 @@ async function settleWith(
      over an eligible standing is run off (class one hundred six).
      */
     readonly runoffOverStanding?: boolean;
+
+    /**
+     Calls each route served, which every case asserts on; a case expecting
+     a throw passes its own, since nothing is returned to read it from.
+     */
+    readonly served?: {
+      judge: number;
+      gate: number;
+    };
   },
 ) {
-  /**
-   Calls each route served, which every case asserts on.
-   */
-  const served = {
-    judge: 0,
-    gate: 0,
-  };
-
   /**
    Every slate judge's request, for the cases reading what was shown.
    */
@@ -1102,16 +1110,37 @@ await describe({
         expect(served.gate,).toBeGreaterThan(0,);
 
         /**
-         Without a lane text the empty standing still ends the slice unbought.
+         Calls the unoffered settlement bought before it threw.
          */
-        const unoffered = await settleWith({
-          voices: [],
-          validity: [],
-          standingText: '',
-          standingEligible: false,
+        const unofferedServed = {
+          judge: 0,
+          gate: 0,
+        };
+        /**
+         What the unoffered settlement threw.
+         */
+        let unoffered: unknown;
+        try {
+          await settleWith({
+            voices: [],
+            validity: [],
+            standingText: '',
+            standingEligible: false,
+            served: unofferedServed,
+          },);
+        } catch (error) {
+          unoffered = error;
+        }
+        // WITHOUT A LANE TEXT NO VALID PROPOSAL EXISTS, so the owner's rule of
+        // 2026-09-04 fails the slice at once, unbought (ledger E4). It used to
+        // settle as no-standing-text, and the final naturalness check stopped
+        // the entry at persist after every later slice was bought.
+        expect(unoffered instanceof ConsolidationStandingIneligibleError,).toBe(true,);
+        expect((unoffered as ConsolidationStandingIneligibleError).message,).toContain('no-standing-text',);
+        expect(unofferedServed,).toStrictEqual({
+          judge: 0,
+          gate: 0,
         },);
-        expect(unoffered.settled.terminal,).toBe('no-standing-text',);
-        expect(unoffered.served.judge,).toBe(0,);
       },
     },),
 
@@ -1353,22 +1382,30 @@ await describe({
          */
         let thrown: unknown;
         /**
-         Calls served before the throw.
+         Calls served before the throw, held here because a settlement that
+         throws returns nothing to read them from; reading them off a return
+         left this check at its initial zero whatever was bought.
          */
-        let judged = 0;
+        const served = {
+          judge: 0,
+          gate: 0,
+        };
         try {
-          const { served, } = await settleWith({
+          await settleWith({
             voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
             validity: [validityOf({ modelId: ROSTER[0], valid: false, },),],
             standingEligible: false,
+            served,
           },);
-          judged = served.judge;
         } catch (error) {
           thrown = error;
         }
         expect(thrown instanceof ConsolidationStandingIneligibleError,).toBe(true,);
         expect((thrown as ConsolidationStandingIneligibleError).message,).toContain('incumbent-only',);
-        expect(judged,).toBe(0,);
+        expect(served,).toStrictEqual({
+          judge: 0,
+          gate: 0,
+        },);
       },
     },),
 
