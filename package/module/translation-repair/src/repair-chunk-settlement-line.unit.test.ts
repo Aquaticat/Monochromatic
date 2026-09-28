@@ -10,6 +10,11 @@
  
  The line is emitted at `info` and never returned, so nothing downstream can
  catch a wrong one; this file is where it is read.
+
+ WHY "UNCHANGED" NOW SAYS WHICH (ledger L12). The word covered three
+ settlements: the archive beat the patch on the measurements, the patch won
+ and wrote no byte, and the patch won and was refused for dropping a declared
+ name. The log could not tell a lost repair from one that wrote nothing.
  
  Fixtures are cat-themed invention. No corpus content appears here.
  
@@ -55,6 +60,8 @@ await describe({
         expect(describeChunkSettlement({
           sliceIndex: SLICE_INDEX,
           changed: true,
+          patchSelected: true,
+          refused: false,
           ...COUNTS,
         },),).toBe(
           'chunk 7: repaired, 1/2 served accepted issues resolved (3 accepted, 4 unenveloped)',
@@ -62,17 +69,46 @@ await describe({
       },
     },),
     it({
-      name:
-        'SAYS UNCHANGED where the wording that ships is the archive`s own, since the counts either '
-        + 'side of that word can be identical in both cases: a slice whose accepted issues were all '
-        + 'resolved by an envelope that wrote no byte reads exactly like one that was rewritten',
+      name: 'SAYS THE ARCHIVE WON where the patch lost on the measurements',
       fn: async () => {
         expect(describeChunkSettlement({
           sliceIndex: SLICE_INDEX,
           changed: false,
+          patchSelected: false,
+          refused: false,
           ...COUNTS,
         },),).toBe(
-          'chunk 7: unchanged, 1/2 served accepted issues resolved (3 accepted, 4 unenveloped)',
+          'chunk 7: unchanged, the archive won, 1/2 served accepted issues resolved (3 accepted, 4 unenveloped)',
+        );
+      },
+    },),
+    it({
+      name: 'SAYS THE PATCH WROTE NOTHING where it won and its operations left the archive\'s wording standing',
+      fn: async () => {
+        expect(describeChunkSettlement({
+          sliceIndex: SLICE_INDEX,
+          changed: false,
+          patchSelected: true,
+          refused: false,
+          ...COUNTS,
+        },),).toBe(
+          'chunk 7: unchanged, the patch won and wrote nothing, 1/2 served accepted issues resolved '
+            + '(3 accepted, 4 unenveloped)',
+        );
+      },
+    },),
+    it({
+      name: 'SAYS THE PATCH WAS REFUSED where it won and dropped a declared name',
+      fn: async () => {
+        expect(describeChunkSettlement({
+          sliceIndex: SLICE_INDEX,
+          changed: false,
+          patchSelected: true,
+          refused: true,
+          ...COUNTS,
+        },),).toBe(
+          'chunk 7: unchanged, the patch won and was refused for dropping a declared name, 1/2 served '
+            + 'accepted issues resolved (3 accepted, 4 unenveloped)',
         );
       },
     },),
