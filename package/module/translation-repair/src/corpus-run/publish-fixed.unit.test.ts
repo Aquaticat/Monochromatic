@@ -150,7 +150,13 @@ const ARCHIVE_LINKED = `${OPENING}${ARCHIVE_MIDDLE}${CLOSING_LINKED}`;
  ```
  */
 function pairOver(
-  { target, }: { readonly target: Record<string, unknown>; },
+  {
+    target,
+    sourceText = '她睡在收银台上。',
+  }: {
+    readonly target: Record<string, unknown>;
+    readonly sourceText?: string;
+  },
 ): ChunkPair {
   return {
     source: {
@@ -158,7 +164,7 @@ function pairOver(
       nodes: [],
       startOffset: 0,
       endOffset: 0,
-      text: '她睡在收银台上。',
+      text: sourceText,
     },
     target,
   } as unknown as ChunkPair;
@@ -928,6 +934,49 @@ await describe({
         expect(thrown,).toBeInstanceOf(DroppedDestinationError,);
         expect((thrown as DroppedDestinationError).droppedCount,).toBe(1);
         expect(existsSync(path,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE SLICE whose original carries a destination the page drops, and whether its archive '
+        + 'span and its shipped text carry it, so a refusal can be traced (ledger E1: XingZ6011 lost '
+        + '96 minutes to a refusal that named neither)',
+      fn: async () => {
+        await using tree = await throwawayTree();
+        /**
+         The original's middle, linking her page.
+         */
+        const linkedSource = '她睡在收银台上。她的主页：https://example.org/tabby。';
+        let thrown: unknown;
+        try {
+          await publishFixedPage({
+            artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+            slices: documentSlices().map(function linkMiddle(pair,): ChunkPair {
+              return (pair.target.sliceIndex === 1)
+                ? pairOver({
+                  target: { ...pair.target, },
+                  sourceText: linkedSource,
+                },)
+                : pair;
+            },),
+            archiveText: ARCHIVE,
+            sourceText: `${SOURCE_PAGE}\n${linkedSource}\n`,
+            entryId: 'BookshopCat',
+            publishDir: tree.publishDir,
+            l: tagged({ tag: 'publish-test', },),
+          },);
+        }
+        catch (error) {
+          thrown = error;
+        }
+
+        expect(thrown,).toBeInstanceOf(DroppedDestinationError,);
+        expect((thrown as DroppedDestinationError).traces,).toStrictEqual([{
+          sourceSlices: [1,],
+          archiveSlices: [],
+          shippedSlices: [],
+        },],);
+        expect(String(thrown,).includes('slice 1',),).toBe(true,);
       },
     },),
 
