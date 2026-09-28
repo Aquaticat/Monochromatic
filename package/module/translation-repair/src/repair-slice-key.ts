@@ -309,6 +309,15 @@ import type { RepairModels, } from './repair-contract.ts';
  version 31 was spent to prevent. It costs nothing beyond version 32: the
  newest of the 14,596 slice-cache files under the agent runs was written at
  00:26 that day, before version 32 existed.
+
+ EVERY REPAIR-LANE CHANGE SINCE VERSION 32 RIDES INSIDE 33, checked rather
+ than assumed, since none of them moved the number when it landed (ledger
+ M25): the panel sheet reading the declared names (`a32739504`), the editors
+ and their selections reading them and the references (`f16d5e8bf`), the
+ introduced-defect probe reading them with the community renderings and the
+ apparatus rule (`b6df6d5ee`), and the editor and checker removing an accepted
+ addition rather than softening it (`d91b338d7`). The checkers seated in the
+ benchmark's order (`f10de5198`) change the roster, which is key input.
  */
 export const SLICE_CACHE_VERSION = 33;
 /**

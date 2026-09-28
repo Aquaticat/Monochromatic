@@ -90,8 +90,24 @@ import type { SliceReplacement, } from './splice-slices.ts';
  copied candidate, stands the repair lane's text in only where the checkers
  confirmed every disputing issue resolved, and keys the dispute note (owner,
  2026-09-27, "No eligible standing").
+
+ VERSION 15, the same day, for every change to what this lane asks or
+ accepts after version 14 landed at 02:34, none of which moved the number
+ (ledger M25). The floors: the address floor (F-1), the suicide floor (F-4),
+ the floors that need no grammar on an unreadable original (F-5), the
+ line-structure floor (F-7), the sheet-leak floor (F-8), the neutral-pronoun
+ floor (F-9), glossary floors inside an accepted Han title (F-11), Han left
+ standing in English prose (F-3, `078939ac7`) and a Han signer left in Han or
+ romanized with no meaning (A17, `7ec9669bd`). The sheets: the declared names
+ fenced on every sheet, the house rules and the apparatus kinds as one list,
+ the line rule shown to the translate probe, and the contest reading line
+ structure. The lane contest, a windowed stage, sizes its quorum on the
+ reachable bench (ledger X8). A slice settled before any of these could resume
+ with a candidate the floors now refuse. It costs nothing: the newest of the
+ 14,596 slice-cache files under the agent runs was written at 00:26 that day,
+ before version 14 existed.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 14;
+export const TRANSLATE_SLICE_CACHE_VERSION = 15;
 
 /**
  Models the translate lane seats.

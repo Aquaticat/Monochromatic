@@ -88,8 +88,21 @@ import type { LaneText, } from './translate-candidates.ts';
  (owner, 2026-09-27, "No eligible standing"). Version 18 stood the repair
  lane's text in for the archive whatever the checkers said, and keyed a
  disputed slice like an undisputed one.
+
+ VERSION 20, the same day, for every change to what this stage asks or
+ accepts after version 19 landed at 02:34, none of which moved the number
+ (ledger M25): the floors a proposal is held to (F-1 to F-11, Han left in
+ prose, a Han signer left in Han or romanized with no meaning), the gate and
+ the polish gate reading the page and line rules, the refiner and writer no
+ longer keeping what the house rules render, the naturalness review reading
+ the house rules, the windowed gates and the naturalness review sizing their
+ quorum on the reachable bench (ledger E3 and X8), and a slice with no valid
+ wording keeping the archive, which is never persisted. A settlement written
+ before any of these could resume past a floor it now fails. It costs
+ nothing: no slice-cache file under the agent runs was written after 00:26
+ that day, before version 19 existed.
  */
-export const CONSOLIDATE_CACHE_VERSION = 19;
+export const CONSOLIDATE_CACHE_VERSION = 20;
 
 /**
  What a line-structured slice appends to its key material.
