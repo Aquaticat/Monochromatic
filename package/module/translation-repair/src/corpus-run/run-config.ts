@@ -1202,8 +1202,14 @@ export function createRunClient(
   );
 
   return {
-    ...promptUniqueClient({
-      inner: seatTallyClient({
+    // THE TALLY SITS OUTSIDE THE UNIQUENESS WRAPPER (ledger P6), where a JSON
+    // call settles as the outcome its caller gets. Inside it, the tally saw
+    // only the `chatText` the wrapper buys JSON through, so every reply that
+    // arrived counted as usable ("SEAT inception/mercury-2.5 asked=1007
+    // usable=1007 unusable=0" beside 40 schema losses). A replayed payload
+    // counts as an ask, since its answer is this run's evidence all the same.
+    ...seatTallyClient({
+      inner: promptUniqueClient({
         // THE OWNER'S CULL AT THE DOOR (ledger P4): a culled model is refused
         // before any provider is asked, whatever path named it, and tallied
         // as the seat that threw.
@@ -1211,11 +1217,11 @@ export function createRunClient(
           inner: routed,
           culled: OWNER_CULLED,
         },),
-        tally: RUN_SEATS,
+        ...((promptPayloadDir === undefined)
+          ? {}
+          : { store: promptPayloadStore({ dir: promptPayloadDir, },), }),
       },),
-      ...((promptPayloadDir === undefined)
-        ? {}
-        : { store: promptPayloadStore({ dir: promptPayloadDir, },), }),
+      tally: RUN_SEATS,
     },),
     providerDryness: budgets.read,
     providerHolds: budgets.holds,

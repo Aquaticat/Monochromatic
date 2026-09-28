@@ -28,7 +28,11 @@ import type { RosterModelId, } from './roster-id.ts';
 //
 // THIS IS THE ONE PLACE EVERY CALL PASSES. The client every corpus-run command
 // uses is built by one factory, so wrapping it here reaches all of them at
-// once, and the report is printed by the refusal boundary they all share. A
+// once, and the report is printed by the refusal boundary they all share. IT
+// WRAPS THE OUTERMOST CLIENT, the one callers hold (ledger P6): a wrapper that
+// buys JSON through `chatText` and reads the reply itself hides every reading
+// from a tally beneath it, which then counts each reply that arrived as
+// usable. A
 // seat is DARK when it was asked at least once and never once produced a usable
 // answer, which is the signature of a provider that cannot serve it, a key that
 // was never injected, or a model that answers nothing readable; a seat that
