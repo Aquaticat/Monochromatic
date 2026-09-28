@@ -448,6 +448,16 @@ async function main(): Promise<void> {
     },);
     if (carve.kind !== 'settled')
       log.info(`${entryId}: skipped, ${carve.kind} artifact records no recipe`,);
+    // A CARVE THAT MOVED IS STILL MEASURED, and said to be: the readings then
+    // describe slices the run did not see.
+    if (carve.kind === 'settled') {
+      /**
+       Whether the re-carve is the run's own.
+       */
+      const { reproduction, } = carve;
+      if (reproduction.kind === 'moved')
+        log.warn(`${entryId}: re-carve is not the run's (${reproduction.detail}); its readings measure other slices`,);
+    }
     return {
       entryId,
       carve,

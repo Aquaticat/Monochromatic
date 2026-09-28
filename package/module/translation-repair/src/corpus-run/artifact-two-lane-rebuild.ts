@@ -259,12 +259,23 @@ export function recipeOf(
  
  @param artifact - parsed artifact naming the recipe
  
+ CARVES OVER THE ARCHIVE THE ARTIFACT STORED (ledger A18). A pass reshapes
+ the archive before it carves (`passArchiveText`, a heading relabel,
+ `repairArchiveBlocks`) and the artifact stores the text it carved, so the
+ corpus copy at the artifact's commit is carved only for an artifact written
+ before that text was stored. Carving the corpus copy read 23 of 77 stored
+ carves as moved that the stored archive reproduces, and left shihai4h's
+ republished page 9 characters short.
+
+ @param artifact - parsed artifact naming the recipe
+
  @param sourceText - whole original, as read at the artifact's own commit
- 
- @param targetText - whole translation, likewise
- 
+
+ @param targetText - archive English at the artifact's own commit, carved
+ only where the artifact predates storing the text it carved
+
  @returns Preparation and the recipe halves that had to be defaulted
- 
+
  @example
  ```ts
  const rebuilt = rebuildPreparation({ artifact, sourceText, targetText, },);
@@ -274,7 +285,7 @@ export function rebuildPreparation(
   {
     artifact,
     sourceText,
-    targetText,
+    targetText: corpusTarget,
   }: {
     readonly artifact: ParsedTwoLaneArtifact;
     readonly sourceText: string;
@@ -292,9 +303,16 @@ export function rebuildPreparation(
   /**
    Whose front matter the recorded slicing carried, read off the file and
    never recomputed: a later change to the rule must not re-slice an older
-   file.
+   file; and the archive the run carved, where the file kept it.
    */
-  const { frontMatterAuthority, } = artifact.preparation;
+  const {
+    frontMatterAuthority,
+    archiveText: storedArchive,
+  } = artifact.preparation;
+  /**
+   Archive text the carve runs over.
+   */
+  const targetText = (storedArchive.kind === 'stored') ? storedArchive.text : corpusTarget;
   /**
    Slicing carved from the recipe.
    */

@@ -305,16 +305,21 @@ await describe({
         },);
 
         /**
-         Rebuild over an archive that since gained a paragraph, standing in
-         for any change that moves the carve under a complete recipe.
+         Rebuild over an original whose paired section has since changed,
+         standing in for any change that moves the carve under a complete
+         recipe. The original, not the archive: the rebuild carves the archive
+         the artifact stored (ledger A18), so only the original can drift.
          */
         const rebuilt = rebuildPreparation({
           artifact: writeAndRead({
             prepared: crossed,
             strip: [],
           },),
-          sourceText: SOURCE_DOC,
-          targetText: `${TARGET_DOC}\nThe cat naps again.\n`,
+          sourceText: SOURCE_DOC.replace(
+            '猫猫在窗台上睡觉。',
+            '猫猫在窗台上睡了一整天。',
+          ),
+          targetText: TARGET_DOC,
         },);
         expect(rebuilt.unrecorded,).toEqual([],);
         expect(rebuilt.reproduction.kind,).toBe('moved',);

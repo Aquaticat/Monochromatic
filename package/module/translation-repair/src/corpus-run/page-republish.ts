@@ -240,29 +240,18 @@ async function rebuildPage(
     /**
      The pair as it stood when the artifact was settled.
      */
-    const pair = await readPair({
+    const {
+      sourceText,
+      targetText: corpusTarget,
+    } = await readPair({
       entryId: artifact.id,
       corpusSha: artifact.corpusSha,
     },);
     /**
-     The original page.
-     */
-    const { sourceText, } = pair;
-    /**
-     What the run carved and spliced into.
-     */
-    const { archiveText: storedArchive, } = artifact.preparation;
-    // THE STORED ARCHIVE, NOT THE CORPUS COPY, where the artifact kept one: the
-    // pass reshapes the archive before it carves (`passArchiveText`, a heading
-    // relabel, `repairArchiveBlocks`), and shihai4h's page came out 9
-    // characters short, every wording in place, when spliced into the corpus
-    // copy instead.
-    /**
-     Archive text the page is spliced into.
-     */
-    const targetText = (storedArchive.kind === 'stored') ? storedArchive.text : pair.targetText;
-    /**
-     The carve the artifact's recipe gives over that pair.
+     The carve the artifact's recipe gives, over the archive the run carved:
+     the one the artifact stored where it kept one (ledger A18), since the
+     pass reshapes the archive before it carves and shihai4h's page came out 9
+     characters short, every wording in place, spliced into the corpus copy.
      */
     const {
       prepared,
@@ -270,7 +259,7 @@ async function rebuildPage(
     } = rebuildPreparation({
       artifact,
       sourceText,
-      targetText,
+      targetText: corpusTarget,
     },);
     if (reproduction.kind === 'moved') {
       return {
@@ -282,7 +271,7 @@ async function rebuildPage(
     await publishFixedPage({
       artifact,
       slices: prepared.slices,
-      archiveText: targetText,
+      archiveText: prepared.targetText,
       sourceText,
       entryId: artifact.id,
       publishDir,

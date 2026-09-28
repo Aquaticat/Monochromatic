@@ -9,13 +9,13 @@ import {
   type CorpusPin,
   readCorpusFile,
 } from '../corpus-source.ts';
-import {
-  prepareDocumentPair,
-  type PreparedDocumentPair,
-} from '../document-preparation.ts';
+import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { readRunJson, } from '../run-json-read.ts';
+import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import {
   type PairingRecipe,
+  type RebuildReproduction,
+  rebuildPreparation,
   recipeOf,
 } from './artifact-two-lane-rebuild.ts';
 import { ARTIFACTS_DIR, } from './published-tree-listing.ts';
@@ -35,6 +35,12 @@ import { ARTIFACTS_DIR, } from './published-tree-listing.ts';
 // THE PIN COMES FROM THE ARTIFACT, as the rendering audit's does: the run pin
 // can move, and a recipe recorded against one commit describes that commit's
 // pair of documents, not whatever the pin now names.
+//
+// THE CARVE IS `rebuildPreparation`'S, not a second one here (ledger F-6, A18).
+// A carve of its own called `prepareDocumentPair` without the front-matter
+// authority and the seal the artifact's generation carved with, shifting slice
+// indices by one on archive-authority entries, and over the corpus copy rather
+// than the archive the pass reshaped and stored.
 
 /**
  What the settled artifacts directory says about one entry's recipe.
@@ -59,6 +65,12 @@ export type SettledRecipe = {
    Pairing recipe the artifact records, with the halves it lacks named.
    */
   readonly recipe: PairingRecipe;
+
+  /**
+   The artifact itself, which also records the flags and the archive the
+   run carved (ledger F-6, A18).
+   */
+  readonly artifact: ParsedTwoLaneArtifact;
 } | {
   /**
    An artifact exists but predates the two-lane shape, so it records no
@@ -97,7 +109,8 @@ export type SettledCarve = {
   readonly sourceText: string;
 
   /**
-   Whole translation at that commit.
+   Archive text the carve ran over: the one the artifact stored, which the
+   pass reshaped before carving, else the corpus copy at that commit.
    */
   readonly targetText: string;
 
@@ -110,6 +123,11 @@ export type SettledCarve = {
    Recipe that produced it, with any defaulted halves named.
    */
   readonly recipe: PairingRecipe;
+
+  /**
+   Whether the carve is the run's own, read off the rows the run recorded.
+   */
+  readonly reproduction: RebuildReproduction;
 } | {
   /**
    An artifact exists but records no recipe.
@@ -244,6 +262,7 @@ export async function readSettledRecipe(
     kind: 'settled',
     corpusSha: artifact.corpusSha,
     recipe: recipeOf({ artifact, },),
+    artifact,
   };
 }
 
@@ -308,24 +327,24 @@ export async function carveSettled(
   ],);
 
   /**
-   Recipe halves to supply.
+   The carve the artifact's recipe, flags and stored archive give.
    */
   const {
-    sectionPairing,
-    blockPairings,
-  } = settled.recipe;
+    prepared,
+    reproduction,
+  } = rebuildPreparation({
+    artifact: settled.artifact,
+    sourceText,
+    targetText,
+  },);
   return {
     kind: 'settled',
     corpusSha: settled.corpusSha,
     sourceText,
-    targetText,
-    prepared: prepareDocumentPair({
-      sourceText,
-      targetText,
-      ...((sectionPairing === undefined) ? {} : { sectionPairing, }),
-      ...((blockPairings === undefined) ? {} : { blockPairings, }),
-    },),
+    targetText: prepared.targetText,
+    prepared,
     recipe: settled.recipe,
+    reproduction,
   };
 }
 
