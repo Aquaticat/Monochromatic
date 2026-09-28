@@ -2368,13 +2368,23 @@ and with the archive as incumbent on an unresolved dispute the texts would be id
 
 ### X6: the translate lane's refusals keep an archive the floor refuses
 
-Status: open.
+Status: fixed in `6445a2e35` (guard `ee3a551e3`; mutation checked with a control, three mutants caught).
 `translate-slice.ts` gates its alignment, quote-loss and declared-name refusals on the slice having archive wording,
 not on that wording passing the floor,
 so a replacement refused there ships the floor-refused archive as the lane's text
 (shihai4h2 slice 14 kept a 1665-code-point archive against a 102-character source);
 the consolidation then refuses it as a standing.
 The disputed case no longer does this; the floor-refused case needs the stage's eligibility on the record.
+Measured 2026-09-28 over 975 run logs (`~/temp/agent/audit-glossary-fix/x6-census.mjs`):
+of 1,771 translate refusals, up to 47 were followed by the consolidation refusing that slice's standing,
+46 for a link the original carries and 1 for the untranslated pronoun;
+"up to" because the census cannot tell which lane the refused standing came from.
+The slice now asks `validateTranslatedSlice` the consolidation's standing question from the same inputs
+(`translate-archive-floor.ts`), and a refused archive is kept by no refusal:
+the judges' replacement goes on, the record carries `translate-archive-ineligible`, and a log line gives the rule's reason.
+A first fixture put a link in the original, which re-paired the section as an insertion and failed for the wrong reason;
+the guard uses the pronoun floor, which reads only the text.
+Rides inside the translate cache version 15 with a written account.
 
 ### X7: windowed stages re-ask a seat the router refused
 

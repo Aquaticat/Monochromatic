@@ -141,6 +141,12 @@ import type { SliceReplacement, } from './splice-slices.ts';
  for that ballot rather than as a lost voice (ledger P13, `a991ef1e1`), which
  changes the quorum a select round closes on; checked on 2026-09-28: still no
  slice-cache file newer than 00:26 on 2026-09-27.
+
+ Rides inside 15 too: no alignment, quote-loss or declared-name refusal keeps
+ an archive the publication rule refuses, and such a slice carries
+ `translate-archive-ineligible` (ledger X6, `6445a2e35`), which changes a
+ refused slice's text and findings; checked on 2026-09-28: still no
+ slice-cache file newer than 00:26 on 2026-09-27.
  */
 export const TRANSLATE_SLICE_CACHE_VERSION = 15;
 
