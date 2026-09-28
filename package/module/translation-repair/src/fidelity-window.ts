@@ -1,5 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { fidelityWindowPositions, } from './fidelity-window-positions.ts';
+import { windowWithCitedFootnotes, } from './cited-footnote-definitions.ts';
 
 //region Fidelity window
 // How much of the ORIGINAL a judge is shown, which `#107` turned into a
@@ -36,7 +37,10 @@ import { fidelityWindowPositions, } from './fidelity-window-positions.ts';
  neighbor omitted the dated narrative deciding who disclosed to whom. Include
  exactly the following non-heading body, stopping at another heading or
  metadata. Never extend backward through a heading into an earlier section.
- Ordinary neighbors remain unchanged; no arbitrary document scan is allowed.
+ Ordinary neighbors remain unchanged; no arbitrary document scan is allowed,
+ save one (ledger L5): the definition of every footnote the slice cites and
+ neither it nor the window defines ends the window, so a sheet showing the
+ marker shows the note (`cited-footnote-definitions.ts`).
  
  WHY AN OUT-OF-RANGE INDEX THROWS rather than returning nothing. Both indices
  miss, so the natural answer is the empty string, which is exactly the value
@@ -88,24 +92,33 @@ export function neighbouringSource(
   const current = slices[slicePosition];
   if (current?.syntax === 'front-matter')
     return '';
-  return fidelityWindowPositions({
-    slices,
-    slicePosition,
-  },)
-    .map(function toText(neighbour,): string {
-      /**
-       That slice, absent at either end of the document.
-       */
-      const beside = slices[neighbour];
-      if ((beside === undefined) || (beside.syntax === 'front-matter'))
-        return '';
-      return beside.source
+  return windowWithCitedFootnotes({
+    windowText: fidelityWindowPositions({
+      slices,
+      slicePosition,
+    },)
+      .map(function toText(neighbour,): string {
+        /**
+         That slice, absent at either end of the document.
+         */
+        const beside = slices[neighbour];
+        if ((beside === undefined) || (beside.syntax === 'front-matter'))
+          return '';
+        return beside.source
+          .text;
+      },)
+      .filter(function present(text,): boolean {
+        return text !== '';
+      },)
+      .join('\n\n',),
+    citingText: current?.source
+      .text
+      ?? '',
+    documentTexts: slices.map(function sourceOf(slice,): string {
+      return slice.source
         .text;
-    },)
-    .filter(function present(text,): boolean {
-      return text !== '';
-    },)
-    .join('\n\n',);
+    },),
+  },);
 }
 
 /**
@@ -177,24 +190,33 @@ export function neighbouringIncumbent(
   const current = slices[slicePosition];
   if (current?.syntax === 'front-matter')
     return '';
-  return fidelityWindowPositions({
-    slices,
-    slicePosition,
-  },)
-    .map(function toText(neighbour,): string {
-      /**
-       That slice, absent at either end of the document.
-       */
-      const beside = slices[neighbour];
-      if ((beside === undefined) || (beside.syntax === 'front-matter'))
-        return '';
-      return beside.target
+  return windowWithCitedFootnotes({
+    windowText: fidelityWindowPositions({
+      slices,
+      slicePosition,
+    },)
+      .map(function toText(neighbour,): string {
+        /**
+         That slice, absent at either end of the document.
+         */
+        const beside = slices[neighbour];
+        if ((beside === undefined) || (beside.syntax === 'front-matter'))
+          return '';
+        return beside.target
+          .text;
+      },)
+      .filter(function present(text,): boolean {
+        return text !== '';
+      },)
+      .join('\n\n',),
+    citingText: current?.target
+      .text
+      ?? '',
+    documentTexts: slices.map(function targetOf(slice,): string {
+      return slice.target
         .text;
-    },)
-    .filter(function present(text,): boolean {
-      return text !== '';
-    },)
-    .join('\n\n',);
+    },),
+  },);
 }
 
 /**
