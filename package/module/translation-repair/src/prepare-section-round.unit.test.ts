@@ -20,8 +20,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   buySectionPairing,
+  chunkByHeadings,
   createSyntheticClient,
   isSectionPairingWire,
+  pairingQuestionKey,
   parseDocument,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -195,6 +197,25 @@ function countingClient({ reply, }: { readonly reply: string; },) {
       },
     },),
   };
+}
+
+/**
+ Reads a document's sections the way the round numbers them.
+
+ @param text - whole document
+
+ @returns Each heading-bounded section's text, in document order
+
+ @example
+ ```ts
+ const texts = sectionTextsOf({ text: SOURCE_TEXT, },);
+ ```
+ */
+function sectionTextsOf({ text, }: { readonly text: string; },): readonly string[] {
+  return chunkByHeadings({ document: parseDocument({ text, },), },)
+    .map(function toText(chunk,): string {
+      return chunk.text;
+    },);
 }
 
 /**
@@ -387,6 +408,23 @@ await describe({
           calls: OTHER_ROSTER.length,
           keysDiffer: true,
         },);
+      },
+    },),
+
+    it({
+      name: 'KEYS THE ROUND AS A SECTION QUESTION over the sections\' texts and its roster (ledger X15), '
+        + 'so no block round\'s store could ever serve it',
+      fn: async () => {
+        const { persisted, } = await runRound({},);
+        expect([...persisted.keys(),],).toEqual([
+          pairingQuestionKey({
+            question: 'section',
+            sourceTexts: sectionTextsOf({ text: SOURCE_TEXT, },),
+            targetTexts: sectionTextsOf({ text: TARGET_TEXT, },),
+            pictureContext: '',
+            modelIds: ROSTER,
+          },),
+        ],);
       },
     },),
 
