@@ -63,6 +63,11 @@ await describe({
           sourceText: '## 左右\n\n猫在门口犹豫。\n\n## 回见\n\n猫走了。\n',
           targetText: '## Conflict\n\nThe cat hesitates at the door.\n',
         },),).toEqual([],);
+        // A heading the archive left in the original's words renders nothing.
+        expect(pageNameLines({
+          sourceText: '## 左右\n\n猫在门口犹豫。\n',
+          targetText: '## 左右\n\nThe cat hesitates at the door.\n',
+        },),).toEqual([],);
       },
     },),
     it({
