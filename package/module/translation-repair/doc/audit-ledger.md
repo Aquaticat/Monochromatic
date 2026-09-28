@@ -838,6 +838,16 @@ Status: open.
 so a false "quorum not met" skips the confirmation;
 `pair-blocks-stage.ts` and `pair-sections-stage.ts` time their grace the same way.
 `reachableQuorum` exists (`stage-reachable-quorum.ts`).
+Measured on 2026-09-27 over the 265 stored artifacts:
+59 of 4567 naturalness reviews closed `quorum-not-met`, every one with 2 to 4 usable seats,
+an upper bound on the harm, since a review record cannot tell a seat the router refused from one lost in transport.
+XingZ624 shows the shape live:
+a review of 5 seats taken over a bench of 8 (a confirmation asks only the discovery's seats)
+closed 3 of 5 usable against a quorum of 4,
+with `glm-5.3` and Qwen3.8-27B refused as out of budget during it.
+The lane contest and both gates decide on two ballots, so there the bench quorum only drives how long rounds chase seats;
+the review alone decides on it, and its reader recomputes the verdict from `quorumOver`,
+so a fix changes the record and the reader together.
 
 ### E4: an empty standing with no valid lane text fails at publish, not at once
 
