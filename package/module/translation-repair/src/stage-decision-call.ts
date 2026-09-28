@@ -2,11 +2,13 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { isDecisionStateOverContext, } from './decision-context-refusal.ts';
 import type {
   DecisionAnswer,
   DecisionQuestion,
   DecisionState,
 } from './decision-contract.ts';
+import { decisionsCardOf, } from './model-card-derive.ts';
 import { NoProviderForModelError, } from './provider-router.ts';
 // TYPE-ONLY AND DELIBERATELY CIRCULAR: `stage-call.ts` calls into this file
 // for a decision seat and this file names its voice type. Erased before
@@ -100,20 +102,26 @@ export async function attemptDecisionCall<ValueT,>(
    transport.
    */
   const { decide, } = client;
+  // A SEAT NO ROUND CAN ASK IS OUT OF REACH (ledger P13, 2026-09-28), as a
+  // seat the router refuses is: marked reachable, it sized the quorum as a
+  // voice that could come and was re-asked every retry round, to the same
+  // loss. Both cases are latent (no run log holds either line), since only
+  // the select benches seat a decision seat and every select stage threads
+  // its question.
   if (decision === undefined) {
-    l.warn(`${stage} ${modelId}: a decision seat asked a stage with no typed question, voice lost`,);
+    l.warn(`${stage} ${modelId}: a decision seat asked a stage with no typed question, seat out of reach`,);
     return {
       heard: false,
       answered: false,
-      unreachable: false,
+      unreachable: true,
     };
   }
   if (decide === undefined) {
-    l.warn(`${stage} ${modelId}: a decision seat with no decisions client, voice lost`,);
+    l.warn(`${stage} ${modelId}: a decision seat with no decisions client, seat out of reach`,);
     return {
       heard: false,
       answered: false,
-      unreachable: false,
+      unreachable: true,
     };
   }
   try {
@@ -149,6 +157,31 @@ export async function attemptDecisionCall<ValueT,>(
     // Aborts must always win so user steering can stop a fan-out.
     if (signal.aborted)
       throw error;
+
+    if (isDecisionStateOverContext({ error, },)) {
+      // THE BALLOT, NOT THE SEAT, IS PAST REACH (ledger P13): the endpoint
+      // refuses a state longer than the seat's context, so this gather sizes
+      // its quorum without the seat and never re-asks it, and the next
+      // ballot asks it again.
+      /**
+       State as the wire carried it, measured for the log line.
+       */
+      const stateJson = JSON.stringify(decision.state,);
+
+      /**
+       Seat's context in tokens, as its card records it.
+       */
+      const { contextLength, } = decisionsCardOf({ modelId, },);
+      l.warn(
+        `${stage} ${modelId}: the endpoint refused a state of ${String(stateJson.length,)} characters as past `
+          + `the seat's ${String(contextLength,)}-token context, seat out of reach for this ballot`,
+      );
+      return {
+        heard: false,
+        answered: false,
+        unreachable: true,
+      };
+    }
 
     /**
      Whether the router refused the call because the decisions endpoint
