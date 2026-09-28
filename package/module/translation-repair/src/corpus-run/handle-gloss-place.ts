@@ -6,6 +6,7 @@ import {
   withRewrittenText,
 } from './assembly-page-text.ts';
 import { nameAuthorities, } from './contributor-name-authorities.ts';
+import { continuesLatinWord, } from '../latin-letters.ts';
 
 //region Handle gloss place
 // CLASS EIGHTY-EIGHT (XingZ624, 2026-09-23). The house rule (class
@@ -79,7 +80,10 @@ type Appearance = {
 
  @param character - character beside the rendering, empty at a text edge
 
- @returns True for a Latin letter or a digit
+ @returns True for a Latin letter, a digit, or a combining mark on the
+ rendering's last letter. The test once took any cased letter, so a kaomoji's
+ Greek or Cyrillic letter beside a handle made it part of a word, while a
+ combining accent on the handle's last letter did not (ledger B18).
 
  @example
  ```ts
@@ -87,13 +91,7 @@ type Appearance = {
  ```
  */
 function continuesWord({ character, }: { readonly character: string; },): boolean {
-  if (character === '')
-    return false;
-  /**
-   Whether the character is a Latin letter or a digit.
-   */
-  const lowered = character.toLowerCase();
-  return (lowered !== character.toUpperCase()) || ((character >= '0') && (character <= '9'));
+  return continuesLatinWord({ character, },);
 }
 
 /**

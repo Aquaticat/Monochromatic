@@ -184,6 +184,31 @@ await describe({
       },
     },),
     it({
+      name: 'READS a rendering whose last letter carries a combining accent as another word, so the gloss never '
+        + 'lands between a letter and its accent; a cased test read the mark as no letter (ledger B18)',
+      fn: async () => {
+        /**
+         Credits where the first one writes a different word, `Yumaó` with a separate accent.
+         */
+        const replacements = [
+          {
+            sliceIndex: 1,
+            replacementText: '> Lyrics one\n\n<p style="text-align: end;">—— Yumao\u{0301} [Delusion] “Song One”</p>',
+          },
+          {
+            sliceIndex: 2,
+            replacementText: '> Lyrics two\n\n'
+              + '<p style="text-align: end;">—— Yumao (Rain Cat) [Delusion] “Song Two”</p>',
+          },
+        ];
+        const placed = placeHandleGlosses({
+          slices: CREDITED,
+          replacements,
+        },);
+        expect(bySlice({ replacements: placed.replacements, },),).toEqual(bySlice({ replacements, },),);
+      },
+    },),
+    it({
       name: 'LEAVES a page whose gloss already stands at the first appearance alone, and one the bench never '
         + 'glossed',
       fn: async () => {
