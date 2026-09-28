@@ -3956,8 +3956,19 @@ Done so far, each with the same admitted characters as before unless stated:
 - `4197af843`: the inline letter-or-digit, digit and lower-case hex tests route through `ascii-letters.ts`;
   one of the digit tests (`image-reading-sense.ts`) was never called.
 - `1c3286271`: eight source files opened with a blank line, each since its first commit.
+- `8d88a08e1` and `f4aa85d9a`: the casing restore's `latinWords` opens a word on a Latin letter and continues
+  through letters and combining marks, and takes the opening letter before its continue loop,
+  which the mutation check showed could otherwise hang the pass (M50).
+  Old against new (`~/temp/agent/audit-glossary-fix/letter-harness.mjs`): `latinWords` differs on exactly
+  the 11 inputs the census names, `titleRuns` on 4.
+  The page-assembly guard replayed old against new over 222 settled artifacts on their own slicing
+  (`page-assembly-letter-replay.mjs`) differs on none; lowering the pass's `MIN_USES` makes it differ on one,
+  so the replay can see this pass.
 
-Still to do: the prose scanners switch to Latin letters one at a time, each measured old against new
+The census bounds every switch: the characters an ASCII test and a Latin letter-or-mark test disagree on
+occur in 2 of 92 sources (7 characters), 9 of 92 archive pages (20) and 2 of 40 settled pages (4).
+
+Still to do: the other prose scanners switch to Latin letters one at a time, each measured old against new
 over the pinned sources, archive targets and settled pages;
 and the three `opensTag` copies move to what the MDX compiler reads after `<`
 (`micromark-extension-mdx-jsx`: a space, tab or line end leaves it text;
@@ -4165,6 +4176,21 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M50: a mutation runner that read a crashed test run as a survivor
+
+Status: happened 2026-09-28 (B18); the runner fixed the same hour.
+`mutants.ts` (`~/temp/agent/audit-glossary-fix/`) counted `[FAIL]` lines only.
+A mutant giving the casing scan an ASCII-only continue test made it loop forever on a word opening with `Â`;
+the test process died of memory exhaustion before printing any verdict, and the runner reported the mutant SURVIVED.
+Reproduced by hand, it was a hang, not a survivor, and it exposed a real hazard in the scan (fixed in `f4aa85d9a`).
+Earlier survivors were each closed by an added test, so no past verdict let a gap stand;
+a crash read as a survivor only ever cost an unneeded test.
+The runner now counts a non-zero exit, a signal or a timeout (180 s) as a failure and names it,
+and a control that reproduces the hang reads as caught (SIGABRT).
+Prevention: a harness's verdict counts only outcomes it can observe;
+a run that ends without a verdict is a result of its own, never read as a pass,
+and each harness gets one control per outcome it reports.
 
 ### M49: a commit message that named a cause before it was looked up
 

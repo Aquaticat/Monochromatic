@@ -57,7 +57,8 @@ asked a function that never reads the entry guarded (M29);
 matched a word the message carries twice (M34);
 used fixtures that never reached the sites they named (M42, X18's first fixture),
 or that could not tell the claimed order from another (M44);
-and mutation runs could not report a catch, or left out the test pinning the mutated token (M27, M41).
+and mutation runs could not report a catch, or left out the test pinning the mutated token (M27, M41),
+or read a test run that crashed before any verdict as a survivor (M50).
 
 The rule: a red guard is read case by case before the fix, and each case must fail for the reason its name gives;
 after the fix every case turns green.
@@ -67,6 +68,8 @@ An order or a precedence claim is tested with a fixture mixing every source it d
 Every mutation run opens with a control that must survive,
 and lists every test file naming the mutated token (`rg` the tests first);
 a survivor is a guard defect until a test that can fail is added and the mutant is caught.
+A run that ends without a verdict (a crash, a signal, a timeout) is a result of its own, never a pass,
+and a harness carries one control for each outcome it reports.
 
 What enforces it: the mutation harness in each fix's record, run with a control;
 the reach assertions in the preparation, seam and evidence guards.
@@ -114,13 +117,14 @@ What enforces it: habit; `rendered-sheets.test-fixture.ts` renders every sheet s
 ## Commit messages
 
 What happened: messages claimed records not yet written, named hashes typed by hand,
-chose `test` for a commit that changed production code, and named a task-list number as a GitHub issue
-(M16, M39).
+chose `test` for a commit that changed production code, named a task-list number as a GitHub issue,
+and gave a cause that no command had yet shown (M16, M39, M49).
 
 The rule: a message states only what `git show --stat` of that commit shows;
 the type follows `git diff --cached --stat` (any file outside tests makes it more than `test`);
 every hash is resolved with `git rev-parse` in the command that uses it;
-an issue number goes in only after `gh issue view` shows it is the one meant.
+an issue number goes in only after `gh issue view` shows it is the one meant;
+a cause goes in only after the command that shows it (blame, log, a probe) has run.
 Before the commit runs, read the message for `#` followed by digits:
 this audit's task list numbers its items like issues, and two commits named a task as an issue within one hour.
 An inaccurate message is never amended: a commit comment corrects it.
