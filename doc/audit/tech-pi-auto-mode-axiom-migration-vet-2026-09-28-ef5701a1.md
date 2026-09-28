@@ -1091,7 +1091,86 @@ SHA-256 `db1ca9345a4e373cab696446cf839f2e731ab8db023cc7731e1c7e802df491de`.
 It retains the disclosed non-hermetic host boundary.
 
 No semantic feature request or semantic-head fit preceded the freezes.
-The next authorized step is the fixed 228-call pretest,
-both separate offline fits,
-both-candidate lock,
-and 108-call shared fresh test.
+The fixed 228-call pretest was launched as `proc_85e9`.
+It stopped under its declared policy on Voyage HTTP 429,
+not on a measured estimator-quality failure.
+The [TPM troubleshooting record](../troubleshooting/voyage-rerank-tpm.md)
+retains the exact provider diagnostic,
+first-party source trace,
+public documentation,
+and remediation boundaries.
+
+### Original stopped phase
+
+The response reported a four-million-token-per-minute project limit
+and 3,971,647 tokens used in the preceding minute.
+The public basic-tier table differs;
+no account tier,
+billing,
+other traffic,
+or limiter algorithm is inferred.
+No dashboard,
+account mutation,
+or quota request occurred.
+
+Private `f55135c` retains 111 completed pairs,
+222 successful calls,
+and 10,379,854 reported tokens.
+All accepted-pair clocks passed at `788.933422999995` to `1388.999078` ms.
+One request was rejected in the next pair,
+with no successful response in that pair.
+Three validation pairs remained;
+no semantic fit or test call occurred.
+The rejected request's usage is unknown.
+Original result SHA-256:
+`4c66b3af553ea510fa85baa6f91ae8dfb83a372ced26c49d1356ba9045fe6bb6`.
+Its state remains stopped.
+
+`verify-stopped-prefix.mjs` at `12f0e20` reconstructed every retained body,
+response,
+raw coordinate,
+source/policy identity,
+schedule-prefix member,
+and pair deadline.
+The changed-score control passed.
+The forensic receipt explicitly reports an incomplete phase,
+not a successful original pretest.
+
+### Explicit paced continuation freeze
+
+The separate `recovery/` namespace preserves all original stopped/frozen files.
+Its fixed new ceiling is six missing pretest calls and the original 108 unqueried test calls.
+No completed request is replayed or half-pair spliced.
+The zero-success rejected pair is explicitly restarted as a new assessment;
+this is not zero retries across collection windows.
+Successful completion would produce 336 scored requests plus the original rejected attempt.
+
+Each new live phase waits seventy seconds after its verified start,
+then at least four seconds after each completed pair before starting another.
+Those research waits are separate from each unchanged five-second assessment clock,
+not qualification of live-guard queue latency.
+A further refusal stops without an automatic retry or further continuation.
+Global account capacity and serving stability remain unverified.
+
+New composed pretest evidence must bind the forensically verified prefix and complete suffix,
+pass ordinary full reconstruction,
+and receive explicit admission before either fit.
+Candidate metadata binds admission bytes.
+Both unchanged estimators still share all inputs and remain locked before test.
+Multiple collection windows and original-window-only repeat controls are disclosed.
+
+`proc_d51e` passed local pacing,
+no-replay,
+no-half-pair,
+exact-order,
+and incomplete-evidence controls.
+`proc_1435` passed actual assembly,
+full verification,
+admission,
+and reader integration in a disposable mock namespace,
+including altered-evidence rejection.
+The first fixture-directory failure `proc_98f4` is preserved separately and involved no live collector.
+`proc_65b9` parsed nineteen continuation JavaScript files and froze 34 listed files at `2f7ecf7`.
+Recovery manifest SHA-256:
+`6ea3ec5230ee939ea3a108a03657aa2389a666db7a151183a973e478bdc841ba`.
+No new feature request or semantic fit preceded this freeze.

@@ -104,11 +104,59 @@ Corpus freeze `bba0ac2` has SHA-256
 Execution freeze `55c7236` binds 295 listed files,
 SHA-256 `db1ca9345a4e373cab696446cf839f2e731ab8db023cc7731e1c7e802df491de`.
 No semantic feature call or semantic fit preceded those freezes.
-Next is #60:
-228 shared pretest calls,
-both separate offline fits,
-both-candidate lock,
-then 108 shared fresh test calls.
+Task #60's original pretest `proc_85e9` stopped on Voyage HTTP 429 after 111 completed pairs,
+222 successful calls,
+and one rejected request with no successful response in that pair.
+Three validation pairs remain;
+no semantic fit or test call occurred.
+Private `f55135c` preserves the stopped raw result,
+SHA-256 `4c66b3af553ea510fa85baa6f91ae8dfb83a372ced26c49d1356ba9045fe6bb6`.
+It must remain stopped and must not be overwritten or rerun.
+The forensic verifier at `12f0e20` reconstructed the complete retained prefix,
+with changed-score sensitivity,
+and explicitly reports an incomplete phase.
+
+Task #61 prepares an explicit continuation in the separate `recovery/` namespace.
+It schedules only the three missing complete pairs and original 54 unqueried test pairs,
+with no completed-request replay or half-pair splicing.
+Each new live phase waits seventy seconds after its own start,
+then four seconds after each completed pair before beginning the next.
+Research waits are separate from the unchanged five-second assessment clock;
+this is not qualified live-guard queue latency.
+A new composed pretest requires full reconstruction and an admission receipt before fitting;
+both models bind that receipt and are locked before test.
+If completed,
+account for 336 scored requests plus the original rejected attempt,
+whose token usage is unknown.
+
+`proc_d51e` passed local pacing/provenance controls with zero new calls or fits.
+`proc_1435` passed actual assembly,
+ordinary full verification,
+admission,
+and the new reader in a disposable mock namespace.
+Missing or changed admission,
+suffix,
+and original stopped evidence were rejected;
+candidate metadata also binds admission bytes.
+`proc_98f4` found a missing directory in the initial fixture layout,
+not a live collector failure;
+its fixture and diagnostic are retained.
+`proc_65b9` verified original identities,
+parsed nineteen continuation JavaScript files,
+and froze 34 listed files at `2f7ecf7`.
+Recovery manifest SHA-256:
+`6ea3ec5230ee939ea3a108a03657aa2389a666db7a151183a973e478bdc841ba`.
+No new live call or semantic fit preceded that freeze.
+Next resume #60 through `recovery/collect.mjs suffix`,
+not the original stopped collector.
+After complete suffix collection,
+assemble,
+fully verify,
+and admit the new pretest before both fits.
+The [rate-limit record](../troubleshooting/voyage-rerank-tpm.md)
+preserves provider diagnostics,
+source trace,
+and recovery limits.
 No new provider,
 private input,
 base-model training,
