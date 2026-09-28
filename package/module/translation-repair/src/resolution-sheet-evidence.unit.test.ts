@@ -327,25 +327,30 @@ await describe({
         + 'block',
       fn: async () => {
         /**
-         Identity and references each carrying a longer run of equals signs
-         than any other text on the sheet.
+         Run of equals signs longer than any other text on the sheet carries.
          */
-        const ruled = {
-          identityContext: `${IDENTITY_CONTEXT}\n======`,
-          referenceContext: `${REFERENCE_CONTEXT}\n=======`,
-        };
-        const { user, } = sheetFor(ruled,);
+        const rule = '=======';
         /**
-         Fence the sheet opens with.
+         One sheet per context, that context ALONE carrying the run: with both
+         on one sheet, a fence chosen against either clears the other's run
+         too, and dropping one context from the choice went unnoticed
+         (mutation check, 2026-09-28).
          */
-        const fence = user.split(' ',)[0] ?? '';
-        expect({
-          identity: ruled.identityContext.includes(fence,),
-          reference: ruled.referenceContext.includes(fence,),
-        },).toEqual({
-          identity: false,
-          reference: false,
-        },);
+        const ruled = [
+          { identityContext: `${IDENTITY_CONTEXT}\n${rule}`, },
+          { referenceContext: `${REFERENCE_CONTEXT}\n${rule}`, },
+        ];
+        expect(ruled.map(function reproduces(evidence,) {
+          /**
+           Fence the sheet opens with.
+           */
+          const fence = sheetFor(evidence,).user
+            .split(' ',)[0] ?? '';
+          return rule.includes(fence,);
+        },),).toEqual([
+          false,
+          false,
+        ],);
       },
     },),
   ],
