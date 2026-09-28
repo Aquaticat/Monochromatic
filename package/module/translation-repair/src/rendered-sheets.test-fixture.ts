@@ -8,6 +8,7 @@ import {
   buildCriticMessages,
   buildEditorMessages,
   buildLaneContestMessages,
+  buildPageTitleLexiconMessages,
   buildRefineMessages,
   buildRenderingAuditMessages,
   buildResolutionMessages,
@@ -348,6 +349,15 @@ export function renderedSheets(): readonly RenderedSheet[] {
       name: 'resolution',
       text: joined({
         messages: resolutionPlan.messages,
+      },),
+    },
+    {
+      name: 'page title lexicon',
+      text: joined({
+        messages: buildPageTitleLexiconMessages({
+          sourceText: SOURCE,
+          titles: ['猫之歌',],
+        },),
       },),
     },
   ];

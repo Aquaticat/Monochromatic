@@ -1,0 +1,284 @@
+/**
+ Tests for the page title lexicon (ledger H16): the one question, the reply
+ guard, how the bench's renderings settle into one per title, and the lines
+ the sheets carry.
+
+ Fixtures are cat-themed invention; no corpus content appears here.
+
+ @module
+ */
+
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  buildPageTitleLexiconMessages,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  isPageTitleLexiconWire,
+  pageTitleLines,
+  type RosterModelId,
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  settlePageTitles,
+  type SyntheticClient,
+} from '../dist/final/node/index.mjs';
+
+/**
+ Logger the stage writes to, whose lines are not under test.
+ */
+const l = tagged({ tag: 'page-title-lexicon-test', },);
+
+/**
+ Three seats, in roster order.
+ */
+const ROSTER: readonly RosterModelId[] = [
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY,
+];
+
+/**
+ Original naming two titles more than once.
+ */
+const SOURCE = '## 猫之歌\n\n小猫唱了《猫之歌》，又读了《鱼之梦》和《鱼之梦》。\n';
+
+/**
+ The two titles, in order of first appearance.
+ */
+const SPANS = [
+  { source: '猫之歌', occurrences: 2, },
+  { source: '鱼之梦', occurrences: 2, },
+];
+
+/**
+ Builds a client answering each seat with its scripted reply, recording the seats asked.
+
+ @param replies - reply per seat; a seat without one answers no titles
+
+ @param asked - sink for the seat of every call
+
+ @returns Client serving only structured calls
+
+ @example
+ ```ts
+ const client = scriptedClient({ replies: {}, asked: [], },);
+ ```
+ */
+function scriptedClient(
+  {
+    replies,
+    asked,
+  }: {
+    readonly replies: Readonly<Record<string, unknown>>;
+    readonly asked: RosterModelId[];
+  },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText not used',);
+    },
+    chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
+      asked.push(request.modelId,);
+      /**
+       Scripted reply for this seat.
+       */
+      const value = replies[request.modelId] ?? { titles: [], };
+      if (!request.validate(value,))
+        throw new Error('scripted reply failed validator',);
+      return { kind: 'ok', value, rawText: JSON.stringify(value,), };
+    },
+    quotas: async () => {
+      throw new Error('quotas not used',);
+    },
+  };
+}
+
+/**
+ Settles the fixture's titles over scripted replies, asking every seat.
+
+ @param replies - reply per seat
+
+ @returns Settled lexicon beside the seats asked
+
+ @example
+ ```ts
+ const { lexicon, asked, } = await settled({ replies: {}, },);
+ ```
+ */
+async function settled(
+  { replies, }: { readonly replies: Readonly<Record<string, unknown>>; },
+) {
+  /**
+   Seat of every call.
+   */
+  const asked: RosterModelId[] = [];
+  /**
+   What the round settled.
+   */
+  const lexicon = await settlePageTitles({
+    client: scriptedClient({ replies, asked, },),
+    modelIds: ROSTER,
+    sourceText: SOURCE,
+    spans: SPANS,
+    signal: new AbortController().signal,
+    exchangeTimeoutMs: 5_000,
+    l,
+    fanOut: 'whole-bench',
+  },);
+  return {
+    lexicon,
+    asked,
+  };
+}
+
+await describe({
+  name: 'page title lexicon wire (ledger H16)',
+  children: [
+    it({
+      name: 'ASKS ONE QUESTION with the numbered titles, the fenced original and the house rules',
+      fn: async () => {
+        /**
+         The request.
+         */
+        const [system, user,] = buildPageTitleLexiconMessages({ sourceText: SOURCE, titles: ['猫之歌', '鱼之梦',], },);
+        expect({
+          houseRules: system?.content.includes('House rules this corpus is written under',),
+          numbered: user?.content.includes('1. 猫之歌\n2. 鱼之梦',),
+          original: user?.content.includes(SOURCE,),
+        },).toEqual({
+          houseRules: true,
+          numbered: true,
+          original: true,
+        },);
+      },
+    },),
+    it({
+      name: 'ADMITS a list of numbered renderings and REFUSES a reply missing a rendering or numbering by fraction',
+      fn: async () => {
+        expect({
+          wellFormed: isPageTitleLexiconWire({ titles: [{ title: 1, rendering: 'Song of the Cat', },], },),
+          empty: isPageTitleLexiconWire({ titles: [], },),
+          noRendering: isPageTitleLexiconWire({ titles: [{ title: 1, },], },),
+          fraction: isPageTitleLexiconWire({ titles: [{ title: 1.5, rendering: 'Song', },], },),
+          noList: isPageTitleLexiconWire({ renderings: [], },),
+        },).toEqual({
+          wellFormed: true,
+          empty: true,
+          noRendering: false,
+          fraction: false,
+          noList: false,
+        },);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${settlePageTitles.name} (ledger H16)`,
+  children: [
+    it({
+      name: 'ASKS NOBODY for a page that repeats no unpaired title',
+      fn: async () => {
+        /**
+         Seat of every call.
+         */
+        const asked: RosterModelId[] = [];
+        /**
+         What the round settled.
+         */
+        const lexicon = await settlePageTitles({
+          client: scriptedClient({ replies: {}, asked, },),
+          modelIds: ROSTER,
+          sourceText: SOURCE,
+          spans: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect({ asked, titles: lexicon.titles, heard: lexicon.heard, },).toEqual({ asked: [], titles: [], heard: 0, },);
+      },
+    },),
+    it({
+      name: 'KEEPS THE RENDERING MOST VOICES GAVE, comparing without case, spacing or wrapping quotes',
+      fn: async () => {
+        const { lexicon, } = await settled({
+          replies: {
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { titles: [{ title: 1, rendering: 'Cat Song', },], },
+            [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: '“Song of the Cat”', },], },
+            [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: 'song of  the cat', },], },
+          },
+        },);
+        expect(lexicon.titles,).toEqual([
+          { source: '猫之歌', occurrences: 2, rendering: 'Song of the Cat', voices: 2, heard: 3, },
+        ],);
+      },
+    },),
+    it({
+      name: 'BREAKS A TIE BY THE EARLIEST SEAT ON THE ROSTER, so a resumed page reads the same answer',
+      fn: async () => {
+        const { lexicon, } = await settled({
+          replies: {
+            [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 2, rendering: 'Dream of Fish', },], },
+            [SEAT_HYPER_ONLY]: { titles: [{ title: 2, rendering: 'The Fish Dream', },], },
+          },
+        },);
+        expect(lexicon.titles,).toEqual([
+          { source: '鱼之梦', occurrences: 2, rendering: 'The Fish Dream', voices: 1, heard: 3, },
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A TITLE NO VOICE RENDERED, and reports how many settled',
+      fn: async () => {
+        const { lexicon, } = await settled({
+          replies: {
+            [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: 'Song of the Cat', }, { title: 2, rendering: '  ', },], },
+          },
+        },);
+        expect({
+          sources: lexicon.titles.map(function sourceOf(title,): string {
+            return title.source;
+          },),
+          reported: lexicon.findings.includes('page title lexicon settled 1 of 2 repeated titles from 3 voices',),
+        },).toEqual({
+          sources: ['猫之歌',],
+          reported: true,
+        },);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${pageTitleLines.name} (ledger H16)`,
+  children: [
+    it({
+      name: 'CARRIES A HEADING AND ONE LINE PER SETTLED TITLE, and nothing when none settled',
+      fn: async () => {
+        /**
+         Lines for one settled title.
+         */
+        const lines = pageTitleLines({
+          titles: [{ source: '猫之歌', occurrences: 3, rendering: 'Song of the Cat', voices: 2, heard: 3, },],
+        },);
+        expect({
+          count: lines.length,
+          headed: lines[0]?.startsWith('TITLES THIS PAGE REPEATS THAT THE ARCHIVE DOES NOT RENDER',),
+          line: lines[1],
+          none: pageTitleLines({ titles: [], },),
+        },).toEqual({
+          count: 2,
+          headed: true,
+          line: '- 猫之歌 (3 places on the page): "Song of the Cat" (2 of 3 voices)',
+          none: [],
+        },);
+      },
+    },),
+  ],
+},);
