@@ -57,6 +57,10 @@ export {
   type ConsolidationHooks,
   consolidationHooksFor,
 } from './corpus-run/pass-consolidate-reseat.ts';
+// The pass seam and the client it takes, for the tests that drive the hooks'
+// wiring (ledger X14).
+export { runPassConsolidation, } from './corpus-run/pass-consolidate.ts';
+export { type RunClient, } from './corpus-run/run-client-contract.ts';
 export { consolidationPolishConfiguration, } from './consolidation-polish-config.ts';
 export {
   type ConsolidationNaturalnessAudit,

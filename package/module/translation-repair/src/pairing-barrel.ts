@@ -130,6 +130,8 @@ export {
   type ContestHooks,
   contestHooksFor,
 } from './corpus-run/pass-contest-reseat.ts';
+// The pass seam, for the test that drives the hook's wiring (ledger X14).
+export { runPassContest, } from './corpus-run/pass-contest.ts';
 export {
   type Reseated,
   reseatHookFor,
