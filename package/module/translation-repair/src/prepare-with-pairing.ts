@@ -22,6 +22,7 @@ import { prepareBlockPairing, } from './prepare-block-pairing.ts';
 import { buySectionPairing, } from './prepare-section-round.ts';
 import type { AttestedDetail, } from './reference-attest-match.ts';
 import type { SliceCache, } from './slice-cache.ts';
+import type { BenchSeating, } from './bench-seating.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Preparation with roster pairing
@@ -109,6 +110,10 @@ export type PairedPreparation = {
  block-pairing sheet so an archive block translating a picture is left
  unpaired (class thirty-four); absent before the pictures are read
  
+ @param beforeSection - awaited before the section round and before each section's
+ block round, handing it the roster it is asked of; none keeps the given one
+ (ledger X12)
+ 
  @returns Preparation built on the roster's pairing, and its findings
  
  @example
@@ -134,6 +139,7 @@ export async function prepareDocumentPairWithRoster(
     frontMatterAuthority,
     sealArchiveOriginal,
     pictureReadings,
+    beforeSection,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -151,6 +157,7 @@ export async function prepareDocumentPairWithRoster(
     readonly frontMatterAuthority?: FrontMatterAuthority;
     readonly sealArchiveOriginal?: boolean;
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
+    readonly beforeSection?: () => Promise<BenchSeating>;
   }>,
 ): Promise<PairedPreparation> {
   /**
@@ -169,6 +176,8 @@ export async function prepareDocumentPairWithRoster(
    Whole translation document, parsed beside the source.
    */
   const target = parseDocument({ text: targetText, },);
+  if (beforeSection !== undefined)
+    await beforeSection();
   /**
    Section correspondence is bought only where the deterministic aligner refused.
    Block questions require this alignment to exist before they can be posed.
@@ -214,6 +223,8 @@ export async function prepareDocumentPairWithRoster(
   for (const [pairIndex, pair,] of alignment.pairs
     .entries()) {
     /* oxlint-disable no-await-in-loop -- parent rounds remain sequential rather than multiplying the provider fanout */
+    if (beforeSection !== undefined)
+      await beforeSection();
     /**
      This section's pairing, from structure, the cache or the roster.
      */

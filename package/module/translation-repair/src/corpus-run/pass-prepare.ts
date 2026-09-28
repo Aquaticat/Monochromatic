@@ -6,6 +6,7 @@ import {
   type PairedPreparation,
   prepareDocumentPairWithRoster,
 } from '../prepare-with-pairing.ts';
+import type { BenchSeating, } from '../bench-seating.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import {
   corpusNameLines,
@@ -82,6 +83,9 @@ function wallClock(): Date {
  
  @param readPictures - shared entry reader supplying picture support before archive review
  
+ @param beforeItem - one per-item hook for every stage that asks the roster, so
+ once a hold re-seats it the later stages stay re-seated (ledger X12)
+ 
  @returns Prepared slices and pairing findings
  
  @example
@@ -102,6 +106,7 @@ export async function preparePassEntry(
     exchangeTimeoutMs,
     l,
     readPictures,
+    beforeItem,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entryId: string;
@@ -114,6 +119,7 @@ export async function preparePassEntry(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly readPictures?: PassVisualEvidenceReader;
+    readonly beforeItem?: () => Promise<BenchSeating>;
   }>,
 ): Promise<PairedPreparation> {
   l.debug(`${preparePassEntry.name}: preparing entry ${entryId}`,);
@@ -297,6 +303,7 @@ export async function preparePassEntry(
       frontMatterAuthority,
       sealArchiveOriginal: true,
       ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
+      ...((beforeItem === undefined) ? {} : { beforeSection: beforeItem, }),
     },);
   }
   /**
@@ -406,6 +413,7 @@ export async function preparePassEntry(
     signal,
     exchangeTimeoutMs,
     l,
+    ...((beforeItem === undefined) ? {} : { beforeBlock: beforeItem, }),
   },);
   if (repaired.targetText === relabel.archiveText) {
     return {

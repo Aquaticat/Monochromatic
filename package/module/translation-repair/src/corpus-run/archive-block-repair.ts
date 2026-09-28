@@ -5,6 +5,7 @@ import { runArchiveBlockReviewStage, } from '../archive-block-review-stage.ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import type { UnclaimedTargetBlock, } from '../document-preparation.ts';
 import { hashContent, } from '../document-node.ts';
+import type { BenchSeating, } from '../bench-seating.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 
 //region Archive block repair
@@ -204,6 +205,9 @@ function removalSpan(
  
  @param l - pass logger
  
+ @param beforeBlock - awaited before each block's review, handing it the roster it
+ is asked of; none keeps the given one (ledger X12)
+ 
  @returns Revised text, retained identities, and audit findings
  
  @example
@@ -221,6 +225,7 @@ export async function repairArchiveBlocks(
     signal,
     exchangeTimeoutMs,
     l,
+    beforeBlock,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -230,6 +235,7 @@ export async function repairArchiveBlocks(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly beforeBlock?: () => Promise<BenchSeating>;
   }>,
 ): Promise<ArchiveBlocksRepairOutcome> {
   /**
@@ -265,6 +271,10 @@ export async function repairArchiveBlocks(
       block.startOffset,
       block.endOffset,
     );
+    if (beforeBlock !== undefined) {
+      // oxlint-disable-next-line no-await-in-loop -- Blocks settle in document order, each asked of the bench as it stands.
+      await beforeBlock();
+    }
     /**
      Stage-local retained or revised outcome.
      */

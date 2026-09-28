@@ -130,6 +130,11 @@ export {
   insertionHooksFor,
 } from './corpus-run/pass-insertion-reseat.ts';
 export {
+  type PreparationHooks,
+  preparationHooksFor,
+  runPassPreparation,
+} from './corpus-run/pass-prepare-reseat.ts';
+export {
   type BenchName,
   type JudgeSeatPhase,
   phaseBenches,

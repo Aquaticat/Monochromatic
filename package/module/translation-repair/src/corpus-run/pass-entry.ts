@@ -10,7 +10,7 @@ import {
   recordEntryDecline,
 } from './pass-decline.ts';
 import type { RunClient, } from './run-client-contract.ts';
-import { preparePassEntry, } from './pass-prepare.ts';
+import { runPassPreparation, } from './pass-prepare-reseat.ts';
 import { frontMatterSliceIndexes, } from '../front-matter-slice.ts';
 import { settledPageArtifact, } from './pass-page-assembly.ts';
 import { assertPageGuards, } from './pass-page-guards.ts';
@@ -39,7 +39,6 @@ import {
   retireSettledEntryCache,
 } from './pass-entry-caches.ts';
 import { RUN_PER_CALL_TIMEOUT_MS, } from './run-config.ts';
-import { readJudgeSeats, } from './run-seats-read.ts';
 import { readLanesSeats, } from './pass-reseat.ts';
 
 //region Pass entry
@@ -188,18 +187,6 @@ async function runEntryPipeline(
     },);
 
     /**
-     The roster preparation asks, read off the meters first of all
-     (`run-seats.ts`): a withheld model pairs no blocks and reviews no
-     archive either, and the pairing round is the entry's first purchase.
-     */
-    const preparationSeats = await readJudgeSeats({
-      client,
-      phase: 'preparation',
-      signal: deadline.callSignal,
-      l: tagged({ tag: entry.id, },),
-    },);
-
-    /**
      Entry-scoped evidence reader shared by archive review and final slices.
      */
     const readPictures = createPassPictureReader({
@@ -232,24 +219,25 @@ async function runEntryPipeline(
      further at any weight. Six of eleven slices there paired unrelated
      paragraphs, and every stage downstream then behaved correctly on wrong
      input. A section the roster cannot pair keeps the scorer and says so.
+
+     THE SEATS ARE READ INSIDE (`pass-prepare-reseat.ts`), off the meters
+     first of all, and every stage that asks the roster re-seats under a hold
+     (ledger X12).
      */
     const {
       prepared: paired,
       findings: pairingFindings,
-    } = await preparePassEntry({
+    } = await runPassPreparation({
       client,
       entryId: entry.id,
       entryCacheDir,
       pipelineDigest,
-      modelIds: preparationSeats.roster,
       readPictures,
       sourceText: entry.sourceText,
       // Normalized inside (`pass-prepare.ts`): the archive both deciders judge
       // is the archive as prepared, never these bytes.
       targetText: entry.targetText,
       signal: deadline.callSignal,
-      exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-      l: tagged({ tag: entry.id, },),
     },);
     /**
      Archive after preparation-stage review corrections.
