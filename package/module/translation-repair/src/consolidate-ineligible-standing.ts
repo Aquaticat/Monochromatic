@@ -132,8 +132,8 @@ export class ConsolidationStandingIneligibleError extends Error {
   ) {
     super(
       `slice ${String(sliceIndex,)}: the standing text failed the deterministic publication rule and the `
-        + `consolidation left nothing valid to ship (${terminal}); the page would be refused at assembly, so the `
-        + 'entry stops here',
+        + `consolidation left nothing valid to ship (${terminal}), so the entry stops here, before any later slice `
+        + 'is bought',
       // Conditional spread keeps cause absent when none was supplied.
       ...((cause === undefined) ? [] : [{ cause, },]),
     );

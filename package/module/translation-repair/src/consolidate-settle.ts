@@ -436,7 +436,20 @@ export async function settleConsolidation(
   // 2026-09-04 asks for (the best valid proposal, else fail at once), so the
   // empty standing is withheld exactly as an ineligible one is and the lane
   // texts are judged below.
+  //
+  // AND WITHOUT ONE NO VALID PROPOSAL EXISTS, so the same rule fails the slice
+  // here (ledger E4), as the incumbent-only exit below does. This exit used
+  // to settle regardless, and with no polish to record the final naturalness
+  // check stopped the entry at persist, after every later slice was bought.
+  // An empty standing passes the rule only over a blank original, where
+  // keeping nothing is the right rendering; the pinned corpus carves no such
+  // slice (0 of 1259, 2026-09-27).
   if ((standingText === '') && (laneTexts.length === 0)) {
+    requireShippableTerminal({
+      standingEligible,
+      terminal: 'no-standing-text',
+      sliceIndex,
+    },);
     sl.warn('consolidation: no standing text to judge against, so the slice keeps what it had',);
     return {
       terminal: 'no-standing-text',
