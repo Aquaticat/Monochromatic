@@ -26,21 +26,38 @@ import {
   type WouldShipSource,
   wouldShipTextPerSlice,
 } from './would-ship-text.ts';
-import { assertFrontMatterComplete, } from './front-matter-completeness.ts';
-import { assertArchiveOriginalComplete, } from './archive-original-completeness.ts';
+import {
+  assertFrontMatterComplete,
+  FrontMatterCompletenessError,
+} from './front-matter-completeness.ts';
+import {
+  ArchiveOriginalCompletenessError,
+  assertArchiveOriginalComplete,
+} from './archive-original-completeness.ts';
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import { refusePageThatDisagrees, } from './published-page-check.ts';
-import { assertContributorNamesComplete, } from './contributor-completeness.ts';
+import {
+  assertContributorNamesComplete,
+  ContributorCompletenessError,
+} from './contributor-completeness.ts';
 import {
   assertDestinationsComplete,
+  DroppedDestinationError,
   traceDroppedDestinations,
 } from './destination-completeness.ts';
 import {
   type DestinationCheck,
   droppedDestinations,
 } from './dropped-destinations.ts';
-import { assertHeadingsStayDistinct, } from './heading-distinctness.ts';
+import {
+  assertHeadingsStayDistinct,
+  CollapsedHeadingError,
+} from './heading-distinctness.ts';
 import { assertPageParses, } from './page-grammar.ts';
+import {
+  type PublishDefect,
+  publishDefects,
+} from './publish-defects.ts';
 
 /**
  Directory under a runs dir holding the published corpus tree.
@@ -250,6 +267,7 @@ export async function publishFixedPage(
 ): Promise<{
   readonly path: string;
   readonly destinations: DestinationCheck;
+  readonly defects: readonly PublishDefect[];
 }> {
   /**
    What each slice contributes, silent slices included.
@@ -263,25 +281,6 @@ export async function publishFixedPage(
     targetText: archiveText,
     slices,
     replacements,
-  },);
-
-  assertFrontMatterComplete({
-    entryId,
-    sourceText,
-    archiveText,
-    pageText,
-    slices,
-  },);
-  assertArchiveOriginalComplete({
-    entryId,
-    archiveText,
-    pageText,
-    spans: archiveOriginalSpans,
-  },);
-  assertContributorNamesComplete({
-    entryId,
-    archiveText,
-    pageText,
   },);
 
   // BEFORE THE WRITE, so a page that disagrees with its artifact publishes
@@ -317,7 +316,7 @@ export async function publishFixedPage(
     replacements,
   },);
   // THE ADDRESSES GO TO THE RUN LOG, where `destinations-line.ts` says they
-  // are; the refusal's message carries slice indices only.
+  // are; the defect's message carries slice indices only.
   for (const [
     at,
     address,
@@ -334,19 +333,81 @@ export async function publishFixedPage(
         + `shipped text in [${(trace?.shippedSlices ?? []).join(', ',)}]`,
     );
   }
-  assertDestinationsComplete({
-    entryId,
-    destinations,
-    traces,
+  // THE CONTENT CHECKS REPORT, THEY DO NOT REFUSE (the owner, 2026-09-27): a
+  // settled page ships with every failed check named in the run log and on
+  // its tally (`publish-defects.ts`). Two different source headings rendered
+  // as one is among them, a defect no slice floor can see since a slice holds
+  // one heading (yulianNyanner, 2026-09-06).
+  /**
+   Failed content checks the page ships with.
+   */
+  const defects = publishDefects({
+    steps: [
+      {
+        check: 'front-matter',
+        refusal: FrontMatterCompletenessError,
+        run: function frontMatter(): void {
+          assertFrontMatterComplete({
+            entryId,
+            sourceText,
+            archiveText,
+            pageText,
+            slices,
+          },);
+        },
+      },
+      {
+        check: 'archive-original',
+        refusal: ArchiveOriginalCompletenessError,
+        run: function archiveOriginal(): void {
+          assertArchiveOriginalComplete({
+            entryId,
+            archiveText,
+            pageText,
+            spans: archiveOriginalSpans,
+          },);
+        },
+      },
+      {
+        check: 'contributor-names',
+        refusal: ContributorCompletenessError,
+        run: function contributorNames(): void {
+          assertContributorNamesComplete({
+            entryId,
+            archiveText,
+            pageText,
+          },);
+        },
+      },
+      {
+        check: 'destinations',
+        refusal: DroppedDestinationError,
+        run: function destinationsKept(): void {
+          assertDestinationsComplete({
+            entryId,
+            destinations,
+            traces,
+          },);
+        },
+      },
+      {
+        check: 'headings',
+        refusal: CollapsedHeadingError,
+        run: function headingsDistinct(): void {
+          assertHeadingsStayDistinct({
+            entryId,
+            sourceText,
+            pageText,
+          },);
+        },
+      },
+    ],
   },);
-
-  // TWO DIFFERENT SOURCE HEADINGS RENDERED AS ONE is a defect no slice floor
-  // can see, since a slice holds one heading (yulianNyanner, 2026-09-06).
-  assertHeadingsStayDistinct({
-    entryId,
-    sourceText,
-    pageText,
-  },);
+  for (const {
+    check,
+    message,
+  } of defects)
+    l.warn(`publish: shipping with defect ${check}: ${message}`,);
 
   // A PAGE THE GRAMMAR REFUSES is a defect every slice floor passed, since the
   // would-ship reading runs after them; the yulianNyanner page of 2026-09-06
@@ -380,6 +441,7 @@ export async function publishFixedPage(
   return {
     path,
     destinations,
+    defects,
   };
 }
 

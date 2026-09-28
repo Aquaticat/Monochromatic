@@ -24,9 +24,11 @@ import { foldCarriedInsertions, } from './insertion-carried-fold.ts';
 import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
 import { runPassConsolidation, } from './pass-consolidate.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
-import { destinationsLine, } from './destinations-line.ts';
 import { tallyCaughtEntry, } from './entry-error-outcome.ts';
-import { persistSettledEntry, } from './pass-entry-persist.ts';
+import {
+  persistSettledEntry,
+  printSettledLines,
+} from './pass-entry-persist.ts';
 import { unfilledPageFindings, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
@@ -503,28 +505,23 @@ async function runEntryPipeline(
     // second, a crash between the two writes would leave that entry done forever
     // with no page ever produced; written first, every entry the pass calls
     // settled has its page, by construction rather than by luck.
-    /**
-     Where the page went and what it carries of the source's destinations.
-     */
-    const destinations = await persistSettledEntry({
-      artifact,
-      slices: prepared.slices,
-      archiveText: settledArchiveText,
-      sourceText: entry.sourceText,
+    printSettledLines({
       entryId: entry.id,
-      publishDir,
-      artifactsDir,
-      l: tagged({ tag: entry.id, },),
-      ...((prepared.archiveOriginalSpans === undefined)
-        ? {}
-        : { archiveOriginalSpans: prepared.archiveOriginalSpans, }),
+      tally,
+      published: await persistSettledEntry({
+        artifact,
+        slices: prepared.slices,
+        archiveText: settledArchiveText,
+        sourceText: entry.sourceText,
+        entryId: entry.id,
+        publishDir,
+        artifactsDir,
+        l: tagged({ tag: entry.id, },),
+        ...((prepared.archiveOriginalSpans === undefined)
+          ? {}
+          : { archiveOriginalSpans: prepared.archiveOriginalSpans, }),
+      },),
     },);
-    console.log(tally,);
-    // COUNTS ONLY ON STDOUT; the addresses themselves are in the run log.
-    console.log(destinationsLine({
-      entryId: entry.id,
-      destinations,
-    },),);
     return { kind: 'settled', };
   }
   catch (error) {

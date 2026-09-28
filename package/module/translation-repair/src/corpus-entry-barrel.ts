@@ -57,5 +57,12 @@ export {
   type RepublishRow,
   republishSettledPages,
 } from './corpus-run/page-republish.ts';
+export {
+  defectsLine,
+  type PublishCheck,
+  type PublishCheckStep,
+  type PublishDefect,
+  publishDefects,
+} from './corpus-run/publish-defects.ts';
 
 //endregion Corpus entry barrel

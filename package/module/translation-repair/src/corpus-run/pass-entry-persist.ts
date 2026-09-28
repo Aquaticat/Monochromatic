@@ -7,9 +7,14 @@ import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
+import { destinationsLine, } from './destinations-line.ts';
 import type { DestinationCheck, } from './dropped-destinations.ts';
 import { assertFinalNaturalnessComplete, } from './final-naturalness-completeness.ts';
 import { finalSelectionFindings, } from './final-selection-completeness.ts';
+import {
+  defectsLine,
+  type PublishDefect,
+} from './publish-defects.ts';
 import { publishFixedPage, } from './publish-fixed.ts';
 
 //region Pass entry persistence
@@ -35,11 +40,12 @@ import { publishFixedPage, } from './publish-fixed.ts';
  
  @param l - entry logger
  
- @returns Destination comparison from published page
- 
+ @returns Destination comparison from the published page, and the content
+ checks it shipped failing
+
  @example
  ```ts
- const destinations = await persistSettledEntry({ artifact, slices, archiveText, sourceText, entryId, publishDir, artifactsDir, l, },);
+ const { destinations, defects, } = await persistSettledEntry({ artifact, slices, archiveText, sourceText, entryId, publishDir, artifactsDir, l, },);
  ```
  */
 export async function persistSettledEntry(
@@ -64,7 +70,10 @@ export async function persistSettledEntry(
     readonly l: Logger;
     readonly archiveOriginalSpans?: readonly ArchiveOriginalSpan[];
   }>,
-): Promise<DestinationCheck> {
+): Promise<{
+  readonly destinations: DestinationCheck;
+  readonly defects: readonly PublishDefect[];
+}> {
   // FIRST MUTATION SITS BELOW THIS LINE. A contest decline is not approval;
   // it ships as recorded evidence the reading judges, never as a refusal.
   for (const finding of finalSelectionFindings({ artifact, },))
@@ -95,7 +104,59 @@ export async function persistSettledEntry(
       2,
     )}\n`,
   },);
-  return published.destinations;
+  return {
+    destinations: published.destinations,
+    defects: published.defects,
+  };
+}
+
+/**
+ Prints the lines a pass writes to stdout for one settled entry: its tally,
+ its destination counts, and the content checks its page shipped failing.
+
+ COUNTS ONLY ON STDOUT; the addresses themselves are in the run log. Split out
+ of `pass-entry.ts` at its line budget when the defects line joined them.
+
+ @param entryId - entry settled
+
+ @param tally - its tally line
+
+ @param published - what persisting it reported
+
+ @example
+ ```ts
+ printSettledLines({ entryId, tally, published: await persistSettledEntry({ ... },), },);
+ ```
+ */
+export function printSettledLines(
+  {
+    entryId,
+    tally,
+    published,
+  }: {
+    readonly entryId: string;
+    readonly tally: string;
+    readonly published: Readonly<{
+      destinations: DestinationCheck;
+      defects: readonly PublishDefect[];
+    }>;
+  },
+): void {
+  console.log(tally,);
+  console.log(destinationsLine({
+    entryId,
+    destinations: published.destinations,
+  },),);
+  /**
+   Defects line, empty for a clean page.
+   */
+  const defects = defectsLine({
+    entryId,
+    defects: published.defects,
+  },);
+  // A PAGE THAT SHIPPED WITH DEFECTS says so beside its tally, for a grep.
+  if (defects !== '')
+    console.log(defects,);
 }
 
 //endregion Pass entry persistence
