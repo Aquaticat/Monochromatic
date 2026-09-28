@@ -30,7 +30,7 @@ Current references:
 
 - [Axiom architecture and interview answers](../planning/pi-auto-mode-axioms.md).
 - [Effect and authorization contract](../planning/pi-auto-mode-effect-contract.md).
-- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28.md).
+- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-80e67cc0.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
 ## Gateway input authorization and access boundary
@@ -82,9 +82,15 @@ reported `span-01-free` as another name,
 and supplied `respan.ai`.
 The user then explicitly expanded the existing input consent to Respan.
 Do not ask for that same consent again.
-The alias and API contract remain to verify from current provider evidence.
-The scoped root-mise check found the key without exposing its value;
-read-only API authentication remains the first resource-verification step after identifying the documented route.
+Current first-party documentation maps Lite to `span-01-free` and Pro to `span-01-pro`.
+The direct scoring route is `POST https://api.respan.ai/api/v1/scores`,
+returning native present/absent/not-observable probability triples.
+Do not treat not-observable as absence or silently normalize it away.
+Metadata status and filtered-model routes returned `403` with the provided key and `401` with invalid controls.
+The controllers withheld the actual error wording,
+so the cause is unknown.
+No further metadata retry is planned;
+one frozen free scoring call will test the actual interface and retain sanitized error detail.
 
 This is an additive candidate change,
 not permission to restart the paused ONNX source expansion.
@@ -99,10 +105,24 @@ hardware/rented-compute allocation,
 or production change follows.
 The Gateway metadata-only logging statement does not establish Respan's logging behavior.
 
+The user reports zero Respan balance and authorizes limited initial Pro tests through OpenRouter.
+Direct Lite/free remains first;
+no paid direct Pro call,
+billing change,
+or automatic top-up is permitted.
+Recommend topping up only if measured Pro benefit warrants it.
+OpenRouter inputs are limited to separately frozen synthetic payloads plus complete current policy,
+not blanket private-history routing or fallback.
+Reported low OpenRouter rate limits remain unverified.
+
 Task #39 checks the supplied resource before unrelated work.
-The new audit context is `d5b5b9cdfae6f38c9958ab2eaf7d39b8026b9bb3ed61965bcefbf56451de9170`;
-the prior `51edb8223a030345de584932d5273ecd90ead6753011d84fefb7b9505f218d67` report is preserved unchanged.
-Finish task #38's result bookkeeping after that resource check,
+The active audit context is `80e67cc07b2eb898054d15ddd04e91bb689fbb4c8ebb77aee5c4ba3cd6f9a8d2`;
+the earlier Respan context and all prior reports remain unchanged.
+A public raw GitHub fetch matched all 42,677 bytes of current policy.
+The immediate free scoring probe uses synthetic wording plus that verified-public policy,
+with freshness rechecked before dispatch and release.
+The current audit records unresolved terms and data-handling questions without revoking existing input consent.
+Finish task #38's result bookkeeping after the scoring resource check,
 without rerunning its completed model batch.
 
 ## Sequencing correction
