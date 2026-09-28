@@ -1193,7 +1193,9 @@ Status: fixed in `75900e601` (oxlint does not flag an unused `using` binding), `
 
 ### T3: tests pinning wrong or retired behaviour
 
-Status: partly fixed.
+Status: fixed in `36c3576e0` and `07b88949e`, with S6 (`e7e3f9c17`) for the silent-original test;
+checked on 2026-09-27: no test named here still claims a stopped entry or the owner's whole handle rule,
+and the behaviour gap the restore test pinned is A17, fixed at the floors in `7ec9669bd`.
 The two standing tests are renamed to what they assert;
 the restore test no longer claims the owner's whole rule, and the behaviour gap it pinned is A17;
 `dropped-covers-the-page.unit.test.ts` moves with S6.
