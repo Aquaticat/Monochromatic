@@ -15,6 +15,10 @@ import {
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
 } from './page-apparatus-clause.ts';
 import { selectFence, } from './prompt-fence.ts';
+import {
+  flattenSpace,
+  indentContinuation,
+} from './sheet-line-text.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import {
   DECLARED_IDENTITY_RULES,
@@ -130,7 +134,10 @@ function evidenceLine(
   if (span.startOffset === span.endOffset)
     return `- evidence (${sideLabel}): insertion point, content claimed missing here`;
 
-  return `- evidence (${sideLabel}): ${span.quotedText}`;
+  return `- evidence (${sideLabel}): ${indentContinuation({
+    text: span.quotedText,
+    indent: '  ',
+  },)}`;
 }
 
 /**
@@ -250,8 +257,8 @@ export function buildAdjudicationMessages(
   .category}
 - claimed severity: ${member.claim
   .severity}
-- summary: ${member.claim
-  .summary}
+- summary: ${flattenSpace({ text: member.claim
+  .summary, },)}
 ${evidence}`;
     },);
 

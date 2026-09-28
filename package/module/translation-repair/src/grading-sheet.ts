@@ -2,6 +2,7 @@ import {
   type GradingCandidate,
   SIZE_BANDS,
 } from './sample-grading.ts';
+import { flattenSpace, } from './sheet-line-text.ts';
 
 //region Grading sheet rendering
 // Renders a drawn sample into a human grading sheet: a header stating the
@@ -28,7 +29,7 @@ function quoteLine(quotes: readonly string[],): string {
     return '(none)';
   return quotes
     .map(function quoted(text,) {
-      return `“${text}”`;
+      return `“${flattenSpace({ text, },)}”`;
     },)
     .join(' · ',);
 }
@@ -60,7 +61,7 @@ function renderCandidate(
     `### ${String(index,)}. grade: [ ]  (Y = real defect · N = false positive)`,
     `- entry: ${candidate.entryId} · band: ${candidate.band}`,
     `- category: ${candidate.category} · severity: ${candidate.severity}`,
-    `- claim: ${candidate.summary}`,
+    `- claim: ${flattenSpace({ text: candidate.summary, },)}`,
     `- zh source: ${sourceLine(candidate,)}`,
     `- en target: ${quoteLine(candidate.targetQuotes,)}`,
   ].join('\n',);

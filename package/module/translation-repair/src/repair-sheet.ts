@@ -5,6 +5,7 @@ import type {
   GradableRepairRegion,
   GradingCandidate,
 } from './sample-grading.ts';
+import { flattenSpace, } from './sheet-line-text.ts';
 
 //region Repair grading sheet
 // The SECOND sheet: whether the text the pipeline wrote actually fixes the
@@ -225,10 +226,7 @@ function quoteList(
     return '(nothing quoted on this side)';
   return quotes
     .map(function quoted(text,) {
-      return `“${text.replaceAll(
-        '\n',
-        ' ',
-      )}”`;
+      return `“${flattenSpace({ text, },)}”`;
     },)
     .join(' · ',);
 }
@@ -270,7 +268,7 @@ function renderCandidate(
 
   return [
     `### ${String(index,)}. ${candidate.entryId} · ${candidate.band}`,
-    `- claim: ${candidate.summary}`,
+    `- claim: ${flattenSpace({ text: candidate.summary, },)}`,
     // The original is what "does it fix it" is answered against, so the zh
     // evidence belongs on this sheet too rather than only on the detection
     // sheet the grader has by then set aside.

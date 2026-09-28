@@ -4,6 +4,7 @@ import {
   type IntroducedDefectCheckWire,
   isIntroducedDefectVerdict,
 } from './introduced-defect-wire.ts';
+import { flattenSpace, } from './sheet-line-text.ts';
 
 //region Introduced-defect screening
 // The deterministic half of the probe. A prober claiming the edit introduced a
@@ -155,40 +156,6 @@ export type RegionDefectTally = {
    */
   readonly claims: readonly ScreenedDefectClaim[];
 };
-
-/**
- Collapses whitespace runs to single spaces and trims, so a quote that differs
- from the text only in wrapping still matches.
- 
- Written as a linear scan rather than a pattern: the rule is one predicate per
- character with one bit of carried state, which reads more plainly this way
- and cannot backtrack over adversarial input.
- 
- @param text - text to normalize
- 
- @returns Text with whitespace runs collapsed
- 
- @example
- ```ts
- flattenSpace({ text: 'The  cat\n naps', },);
- ```
- */
-export function flattenSpace({ text, }: { readonly text: string; },): string {
-  /**
-   Characters kept so far, whitespace already collapsed.
-   */
-  const kept: string[] = [];
-  for (const character of text) {
-    if (character.trim() !== '') {
-      kept.push(character,);
-      continue;
-    }
-    if (kept.at(-1,) !== ' ')
-      kept.push(' ',);
-  }
-  return kept.join('',)
-    .trim();
-}
 
 /**
  Decides what a claim's anchors prove about one region.

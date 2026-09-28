@@ -17,6 +17,7 @@ import {
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { flattenSpace, } from './sheet-line-text.ts';
 
 //region Editor prompt
 // One prompt per editor model per chunk: the document pair plus numbered
@@ -235,8 +236,8 @@ function regionBlock(
       return issue.claims
         .map(function toSummary(member,) {
         return `- issue (${member.claim
-          .category}, ${issue.severity}): ${member.claim
-            .summary}`;
+          .category}, ${issue.severity}): ${flattenSpace({ text: member.claim
+            .summary, },)}`;
       },);
     },);
 

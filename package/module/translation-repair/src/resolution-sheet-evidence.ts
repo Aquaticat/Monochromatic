@@ -1,5 +1,6 @@
 import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import type { SpanAnchor, } from './issue-model.ts';
+import { flattenSpace, } from './sheet-line-text.ts';
 
 //region Resolution sheet evidence
 // WHAT THE CHECKER SHEET SHOWS BESIDE THE DOCUMENTS (ledger L14, 2026-09-28).
@@ -62,6 +63,39 @@ export const CHECKER_REFERENCE_RULE: string = 'Cited references, when that block
   + ' still fixed only by removing its detail.';
 
 /**
+ A quote as a JSON string that holds no line break of any kind.
+
+ `JSON.stringify` escapes line feed, carriage return, vertical tab and form
+ feed, and leaves next line, line separator and paragraph separator raw; none
+ of the 45,860 quotes over every artifact carried one, and a reader taking one
+ as a line end would see the quote open a line (ledger L14(d)).
+
+ @param text - quote to encode
+
+ @returns JSON string literal on one line
+
+ @example
+ ```ts
+ const encoded = jsonLine({ text: 'hunts\u2028at noon', },);
+ ```
+ */
+function jsonLine({ text, }: { readonly text: string; },): string {
+  return JSON.stringify(text,)
+    .replaceAll(
+      '\u0085',
+      String.raw`\u0085`,
+    )
+    .replaceAll(
+      '\u2028',
+      String.raw`\u2028`,
+    )
+    .replaceAll(
+      '\u2029',
+      String.raw`\u2029`,
+    );
+}
+
+/**
  One evidence line under a claim.
 
  @param span - anchored evidence the critic quoted
@@ -81,7 +115,7 @@ function resolutionEvidenceLine({ span, }: { readonly span: SpanAnchor; },): str
   const place = (span.side === 'source') ? 'the ORIGINAL' : 'the TRANSLATION before this revision';
   if (span.startOffset === span.endOffset)
     return `  - insertion point in ${place}: the claim says content is missing there`;
-  return `  - quoted from ${place}: ${JSON.stringify(span.quotedText,)}`;
+  return `  - quoted from ${place}: ${jsonLine({ text: span.quotedText, },)}`;
 }
 
 /**
@@ -114,8 +148,8 @@ export function resolutionIssueBlock(
     .flatMap(function toLines(member,) {
       return [
         `- (${member.claim
-          .category}, ${issue.severity}): ${member.claim
-            .summary}`,
+          .category}, ${issue.severity}): ${flattenSpace({ text: member.claim
+            .summary, },)}`,
         ...member.claim
           .spans
           .map(function toLine(span,) {

@@ -19,12 +19,15 @@ export {
 } from './introduced-defect-wire.ts';
 export {
   type ClaimAdmissibility,
-  flattenSpace,
   type RegionDefectTally,
   screenEvidence,
   screenIntroducedDefects,
   type ScreenedDefectClaim,
 } from './introduced-defect-screen.ts';
+export {
+  flattenSpace,
+  indentContinuation,
+} from './sheet-line-text.ts';
 export {
   EMPTY_INTRODUCED_DEFECT_REPORT,
   type IntroducedDefectReport,

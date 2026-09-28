@@ -4,6 +4,7 @@ import type { AdjudicatedIssue, } from './adjudicate-model.ts';
 import { panelClause, } from './claim-panel-voters.ts';
 import type { ClaimAttribution, } from './critic-attribution.ts';
 import type { IssueClaim, } from './issue-model.ts';
+import { flattenSpace, } from './sheet-line-text.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Claim filers
@@ -115,7 +116,7 @@ function claimBody(
     readonly claim: IssueClaim;
   },
 ): string {
-  return `${claim.category} ${claim.severity}: ${claim.summary}`;
+  return `${claim.category} ${claim.severity}: ${flattenSpace({ text: claim.summary, },)}`;
 }
 
 /**

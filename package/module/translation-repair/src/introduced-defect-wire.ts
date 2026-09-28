@@ -17,6 +17,7 @@ import {
 import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import { APPARATUS_KINDS, } from './page-apparatus-clause.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { flattenSpace, } from './sheet-line-text.ts';
 import type { RepairRegion, } from './repair-region.ts';
 
 //region Introduced-defect probe wire
@@ -346,8 +347,8 @@ function renderPriorIssues(
       return issue.claims
         .map(function toLine(member,) {
           return `- (${member.claim
-            .category}, ${issue.severity}): ${member.claim
-              .summary}`;
+            .category}, ${issue.severity}): ${flattenSpace({ text: member.claim
+              .summary, },)}`;
         },);
     },);
   if (lines.length === 0)
