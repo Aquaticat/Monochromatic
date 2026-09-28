@@ -51,6 +51,7 @@ import {
   type DestinationCheck,
   type ChunkPair,
   fixedPagePath,
+  type PublishDefect,
   publishFixedPage,
   PublishedPageDisagreesError,
   shippableReplacements,
@@ -954,28 +955,28 @@ await describe({
 },);
 
 await describe({
-  name: `${publishFixedPage.name} refuses a page that disagrees with its artifact`,
+  name: `${publishFixedPage.name} ships a page that disagrees with its artifact, with the defect reported`,
   children: [
     it({
       name:
-        'WRITES NOTHING AT ALL when the artifact and the archive disagree about what a slice covers, '
-        + 'rather than publishing a page no artifact accounts for. The refusal has to happen before '
-        + 'the write: `pass-entry-persist.ts` publishes BEFORE it settles precisely so that an artifact '
-        + 'existing means a page exists, and a page written then refused would invert that',
+        'WRITES THE PAGE AND NAMES THE DISAGREEMENT when the artifact and the archive disagree about '
+        + 'what a slice covers (owner, 2026-09-27, "Ship with defect reported"). It used to refuse the '
+        + 'entry, so the archive\'s page shipped in its place; the check is one-sided, so a failure is a '
+        + 'defect in assembly, and it now ships on the `DEFECTS` line like the content checks',
       fn: async () => {
         await using tree = await throwawayTree();
 
         /**
-         Where this case would have published.
+         Where this case publishes.
          */
         const { publishDir, } = tree;
 
         /**
-         Whatever the publisher raised, caught so its class can be checked.
+         What the publisher returned, or raised.
          */
-        const refusal = await (async (): Promise<unknown> => {
+        const outcome = await (async (): Promise<unknown> => {
           try {
-            await publishFixedPage({
+            return await publishFixedPage({
               artifact: artifactOverstatingTheArchive(),
               slices: documentSlices(),
               archiveText: ARCHIVE,
@@ -984,26 +985,31 @@ await describe({
               publishDir,
               l: tagged({ tag: 'publish-test', },),
             },);
-            return undefined;
           } catch (error) {
             return error;
           }
         })();
 
-        expect(refusal,).toBeInstanceOf(PublishedPageDisagreesError,);
-
-        // NOTHING ON DISK, which is the half a reader of the throw alone would
-        // not learn. A guard that raised after `writeFileAtomic` would satisfy
-        // the assertion above and still leave the page behind.
+        expect(outcome,).not.toBeInstanceOf(PublishedPageDisagreesError,);
         /**
-         Where the page would have landed had the guard let it through.
+         The page-agreement defects the publisher reported.
          */
-        const wouldBeAt = fixedPagePath({
+        const reported = ((outcome as { readonly defects?: readonly PublishDefect[]; }).defects ?? [])
+          .filter(function isAgreement({ check, },): boolean {
+            return check === 'page-agreement';
+          },);
+        expect(reported,).toHaveLength(1,);
+        expect(reported[0]?.message,).toContain('characters off',);
+
+        /**
+         Where the page landed.
+         */
+        const writtenAt = fixedPagePath({
           publishDir,
           entryId: 'BookshopCat',
         },);
 
-        expect(existsSync(wouldBeAt,),).toBe(false,);
+        expect(existsSync(writtenAt,),).toBe(true,);
       },
     },),
   ],
