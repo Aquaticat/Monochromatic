@@ -29,6 +29,7 @@ import {
   BEDROCK_LEDGER_PATH_VAR,
   BedrockCreditOverrideError,
   bedrockCreditUsdFrom,
+  BEDROCK_DRY_MARGIN_USD,
   bedrockIsDry,
   bedrockLedgerPathFrom,
   BedrockLedgerShapeError,
@@ -178,8 +179,39 @@ await describe({
     },),
 
     it({
-      name: 'GOES DRY PAST THE CREDIT, with the ledger reading below zero rather than clamped, so the '
-        + 'meter says how far past the line the calls in flight went',
+      name: 'GOES DRY WITH THE MARGIN STILL LEFT (ledger P1): the meter is read once a freshness window, and '
+        + 'calls started inside one land after it, so a balance at the margin is already spent',
+      fn: async () => {
+        await inScratch(async function body(dir,) {
+          /**
+           Ledger one call above the margin.
+           */
+          const ledger = createBedrockLedger({
+            path: join(
+              dir,
+              'bedrock-spend.jsonl',
+            ),
+            creditUsd: BEDROCK_DRY_MARGIN_USD + 0.25,
+          },);
+          /**
+           Reading before the call.
+           */
+          const before = bedrockIsDry({ credits: await ledger.read(), },);
+          await ledger.note(callCosting({ usd: 0.25, },),);
+          expect({
+            before,
+            after: bedrockIsDry({ credits: await ledger.read(), },),
+          },).toEqual({
+            before: false,
+            after: true,
+          },);
+        },);
+      },
+    },),
+
+    it({
+      name: 'READS BELOW ZERO rather than clamped, so the meter says how far past the line the calls in '
+        + 'flight went',
       fn: async () => {
         await inScratch(async function body(dir,) {
           /**
@@ -193,7 +225,6 @@ await describe({
             creditUsd: 0.3,
           },);
           await ledger.note(callCosting({ usd: 0.25, },),);
-          expect(bedrockIsDry({ credits: await ledger.read(), },),).toBe(false,);
           await ledger.note(callCosting({ usd: 0.25, },),);
 
           /**
