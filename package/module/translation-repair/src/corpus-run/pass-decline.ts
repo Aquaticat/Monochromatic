@@ -50,7 +50,9 @@ export function entryArchiveOriginalOf(
  @param entry - entry declined
  
  @param declinedDir - directory the record is written into
- 
+
+ @param publishDir - root of the mirrored tree, where no page may stand for it
+
  @param tip - repository head the pass runs at
  
  @param pipelineDigest - built pipeline that declined it
@@ -63,13 +65,14 @@ export function entryArchiveOriginalOf(
  
  @example
  ```ts
- return recordEntryDecline({ entry, declinedDir, tip, pipelineDigest, note, startedAt: t0, },);
+ return recordEntryDecline({ entry, declinedDir, publishDir, tip, pipelineDigest, note, startedAt: t0, },);
  ```
  */
 export async function recordEntryDecline(
   {
     entry,
     declinedDir,
+    publishDir: _publishDir,
     tip,
     pipelineDigest,
     note,
@@ -77,6 +80,7 @@ export async function recordEntryDecline(
   }: {
     readonly entry: CorpusPair;
     readonly declinedDir: string;
+    readonly publishDir: string;
     readonly tip: string;
     readonly pipelineDigest: PipelineDigest;
     readonly note: string;

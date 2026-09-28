@@ -19,6 +19,7 @@ export type {
   EntryOutcome,
 } from './corpus-run/pass-entry-contract.ts';
 export { settleEntry, } from './corpus-run/pass-entry.ts';
+export { recordEntryDecline, } from './corpus-run/pass-decline.ts';
 export {
   DECLINED_DIR,
   DeclinedEntriesUnreadableError,

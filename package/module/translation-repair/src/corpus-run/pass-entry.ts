@@ -158,6 +158,7 @@ async function runEntryPipeline(
       return await recordEntryDecline({
         entry,
         declinedDir,
+        publishDir,
         tip,
         pipelineDigest,
         note: archiveOriginal.note,
