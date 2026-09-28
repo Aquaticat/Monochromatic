@@ -101,6 +101,13 @@ import type { LaneText, } from './translate-candidates.ts';
  before any of these could resume past a floor it now fails. It costs
  nothing: no slice-cache file under the agent runs was written after 00:26
  that day, before version 19 existed.
+
+ Two later changes ride inside 20 on the same reasoning, checked on
+ 2026-09-28 against that newest file: the house rules' "-re" line names the
+ meter that measures beside the metre (ledger K13, `403db3c6e`), on every
+ sheet this stage shows; and the prose ranges the Han-residue floor reads,
+ which a proposal is held to, now look past a JSX comment, a stray quote mark
+ and a lone backtick (ledger K7, `1873b23dc` and `dc325d847`).
  */
 export const CONSOLIDATE_CACHE_VERSION = 20;
 

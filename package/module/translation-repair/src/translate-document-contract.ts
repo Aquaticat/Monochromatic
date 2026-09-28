@@ -106,6 +106,14 @@ import type { SliceReplacement, } from './splice-slices.ts';
  with a candidate the floors now refuse. It costs nothing: the newest of the
  14,596 slice-cache files under the agent runs was written at 00:26 that day,
  before version 14 existed.
+
+ Two later changes ride inside 15 on the same reasoning, checked on
+ 2026-09-28 against that newest file: the house rules' "-re" line names the
+ meter that measures beside the metre (ledger K13, `403db3c6e`), on every
+ writing and judging sheet; and the prose ranges the Han-residue floor (F-3)
+ reads now look past a JSX comment, a stray quote mark and a lone backtick
+ (ledger K7, `1873b23dc` and `dc325d847`), so the floor sees Han it missed
+ behind them.
  */
 export const TRANSLATE_SLICE_CACHE_VERSION = 15;
 

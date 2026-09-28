@@ -29,8 +29,24 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  deterministic eligibility excludes one lane.
  
  VERSION 5 excludes candidate that drops target-authoritative contributor form.
+
+ VERSION 6 (2026-09-28): version 5 landed on 2026-08-29, and nothing moved it
+ through a month of changes to what the judges are asked and how their
+ rounds close (ledger M28): the rewrite probe's corroborated claims
+ (`b2a39c09a`, `2530537a2`), the eligibility floor's named findings
+ (`558b46e11`, `1ff4cb31d`), windowed rounds (`33a023445`) and rounds sized on
+ the seats that could answer (`a107c7486`, `29baade8f`), the community
+ glossary and rendered line structure (`b7a0b4f5f`, `1a6ebbf62`, `a0fd3cc7c`,
+ `070db03dd`), cited references (`20a7272dc`), the dispute note (`85ed2881f`,
+ `07170adf0`), apparatus (`7ad1b8ec7`, `2472ec48e`, `e7e3f9c17`), the size note
+ (`d94f6787b`), declared names inside linked titles (`645ed9d62`), Canadian
+ spelling (`b45000747`), every house rule the judging sheet carries, and the
+ prose ranges the eligibility floor's Han-residue check reads (ledger K7).
+ Contest ballots were cached under version 5 on fifteen days between
+ 2026-09-07 and 2026-09-27, each under that day's sheet, so a resumed run
+ could read ballots cast on a question no longer asked.
  */
-export const LANE_CONTEST_CACHE_VERSION = 5;
+export const LANE_CONTEST_CACHE_VERSION = 6;
 
 /**
  Everything about this run that changes what the judges are ASKED, folded into

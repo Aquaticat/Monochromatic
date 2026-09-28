@@ -91,8 +91,9 @@ await describe({
         // MOVED ON 2026-08-29 when the fixture roster replaced GLM-5.2 with
         // GLM-5.3-Flash, then when excluded-lane participation stopped waiting
         // for every roster seat. Version 5 floors complete-form contributor
-        // authority. Roster identity is explicit key material.
-        expect(key,).toBe('031cfaf106b0f6e9849e3a1cd0c5a7a42d08b56155cd362e940649d166d107cb',);
+        // authority. Roster identity is explicit key material. Version 6
+        // (2026-09-28, ledger M28) re-keys every ballot cast under version 5.
+        expect(key,).toBe('22b200076781a68d442ca0cbb44402d054cd064d156adb7309ddca729af45afb',);
       },
     },),
     it({

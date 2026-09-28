@@ -51,6 +51,18 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  VERSION 5 (2026-09-27) moves with the retention recheck: one cast checker
  ballot no longer resolves an issue (`MIN_RESOLUTION_BALLOTS`), so a
  refinement retained on one confirming ballot is now rolled back.
+
+ EVERY CHANGE TO THE REFINER'S QUESTION SINCE VERSION 5 RIDES INSIDE IT,
+ checked on 2026-09-28 rather than assumed, since none moved the number when
+ it landed (ledger M28): the house rules the refiner's sheet carries keeping
+ OD unnamed as a means (`112b399a5`), one DECLARED NAMES label fenced on every
+ sheet (`ed9b37403`), the judge precedence sentence (`fa892a7da`), the refiner
+ no longer keeping what the house rules render (`81962c75a`) and treating a
+ house correction as an improvement (`091307d14`), one house-form list
+ (`fa949b78f`), the introduced-defect probe's reading (`b6df6d5ee`), and the
+ meter beside the metre (ledger K13, `403db3c6e`). It costs nothing: the
+ newest slice-cache file under the agent runs was written at 00:26 on
+ 2026-09-27, before version 5 landed at 03:34.
  */
 export const REFINE_CACHE_VERSION = 5;
 

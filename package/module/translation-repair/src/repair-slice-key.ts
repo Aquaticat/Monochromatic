@@ -317,7 +317,11 @@ import type { RepairModels, } from './repair-contract.ts';
  introduced-defect probe reading them with the community renderings and the
  apparatus rule (`b6df6d5ee`), and the editor and checker removing an accepted
  addition rather than softening it (`d91b338d7`). The checkers seated in the
- benchmark's order (`f10de5198`) change the roster, which is key input.
+ benchmark's order (`f10de5198`) change the roster, which is key input. The
+ house rules' "-re" line naming the meter that measures beside the metre
+ (ledger K13, `403db3c6e`) reaches the critic, editor and panel sheets and
+ rides inside too, checked on 2026-09-28: still no slice-cache file newer
+ than 00:26 on 2026-09-27.
  */
 export const SLICE_CACHE_VERSION = 33;
 /**
