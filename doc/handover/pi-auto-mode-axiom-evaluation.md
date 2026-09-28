@@ -215,10 +215,11 @@ The user instead asked:
 "Have you looked at Voyage-rerank?"
 Q16 remains unanswered and the design interview is paused.
 
-Voyage has interface and raw-feature evidence only:
+At the Q16 interruption,
+Voyage had only the historical interface/raw-feature evidence:
 4 `rerank-3` requests over 10 documents with complete policy.
-It has not received equivalent corrected parser-first semantic qualification,
-and no relevance-to-axiom-probability mapping is validated.
+It had not received a corrected parser-first semantic-feature study.
+No relevance-to-axiom-probability mapping was validated.
 The quotation-based quality conclusions remain withdrawn.
 Do not treat Voyage as fully qualified or categorically unusable.
 The [Voyage fit record](../planning/pi-auto-mode-voyage-fit.md) and retained raw artifact were rechecked.
@@ -232,7 +233,7 @@ or paused Laya source work follows merely from this clarification.
 The user then requested continuation after a system crash.
 Commit `8edcade70` and clean retained experiment repositories were verified;
 a missing process-manager record did not trigger a repeated study.
-Task #41 now freezes a corrected Voyage raw-feature check under
+Task #41 completed a corrected Voyage raw-feature check under
 `~/temp/agent/voyage-semantic-controls-2026-09-28`.
 Source `af607b3` and input/control freeze `a101ca4` precede live calls.
 Local controls `proc_9f53` passed without networking.
@@ -251,6 +252,35 @@ private Voyage upload,
 reserved-case query,
 or automatic repeat is authorized.
 The design interview remains paused.
+
+`proc_3099` completed all 17 frozen calls with zero retries.
+Eight of twelve diagnostic query groups strictly separated true and false references;
+cache/request positive relation and three read-side groups had ties or inversions.
+The final four-call envelope took `3753.4803429999993` ms on this attempt.
+For the same `.env` reading claim,
+the direct request and the filename/README cross-clause request both scored `0.66015625`.
+A `.env.example` request scored higher at `0.67578125`.
+These are corrected language-scope findings,
+not the withdrawn quotation test or an observed tool action.
+
+Private `26445eb` retains raw results;
+`proc_83da` rechecked current policy,
+all frozen sources,
+request/document bytes,
+raw responses,
+indices,
+and ordering summaries without another model call.
+`fd05a3b` retains the verified summary and README.
+The [completed Voyage feature result](../planning/pi-auto-mode-voyage-fit.md#completed-corrected-result)
+records all counts and limits.
+Voyage demonstrated semantic ranking signal,
+but the tested representation did not fully separate all contrasts
+and no truth-probability mapping or deployed auxiliary role is qualified.
+No training,
+threshold fitting,
+normalization,
+repeat,
+or automatic interview resumption follows.
 
 ## Sequencing correction
 

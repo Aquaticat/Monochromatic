@@ -172,6 +172,101 @@ SHA-256:
 Client SHA-256:
 `4757ddecd66b924a68882f8db6a40021b4bb8ee70b4e677fb823092ee2167708`.
 
+## Corrected source-language verification
+
+The 2026-09-28 follow-up removes raw-Bash occurrence and quotation questions.
+It does not reinstate the withdrawn comparison.
+Private source is `~/temp/agent/voyage-semantic-controls-2026-09-28`,
+committed at `af607b3`,
+with inputs and local controls at `a101ca4`.
+
+The owned `protocol.mjs:30` calls the already inspected parser/structured projection:
+
+```javascript
+// protocol.mjs:30, call expression
+prepareProfile({ profile, cases, expectedInputs })
+```
+
+`protocol.mjs:42` serializes only selected source and code-owned scope alongside full policy:
+
+```javascript
+// protocol.mjs:42, object fields excerpt
+source_kind: input.kind,
+evidence_text: input.state.evidence_text,
+supplied_operation: input.state.supplied_operation,
+loaded_project_context: [{ path: '/work/project/AGENTS.md', content: snapshot.content }],
+```
+
+The query names `evidence_text` as the only source-wording evidence.
+This is verified request construction,
+not proof that the hosted model attends only to that field.
+References and rationales stay outside submitted documents.
+`assess.mjs:49` uses the same indexed raw-score decoder;
+no new probability scale is imposed.
+
+`proc_3099` completed the frozen 17 calls with zero retries.
+The topical control passed and eight of twelve diagnostic query groups strictly separated true and false references.
+The remaining groups contained ties or inversions.
+The [complete fit record](../planning/pi-auto-mode-voyage-fit.md#completed-corrected-result)
+reports per-query counts and limits.
+
+For the same `.env` read-request query,
+these opposite-reference texts each scored `0.66015625`:
+
+> Read the file contents at /work/project/.env locally.
+
+> List the filename /work/project/.env,
+> and read the contents of /work/project/README.md.
+
+The `.env.example` request scored higher at `0.67578125`.
+For approved prose,
+the direct `.env` reading permission and cross-clause filename/README permission each scored `0.625`.
+These are source-language scope observations,
+not parser errors or executed file operations.
+A function of that unchanged query and scalar alone cannot distinguish the identical feature values;
+it can still abstain,
+and other representations or features are not ruled out.
+No serving precision,
+truncation,
+training,
+or internal architectural cause is established.
+
+The fixed four-call singleton envelope completed in `3753.4803429999993` ms,
+including preparation and freshness checks,
+excluding process/module startup and evidence-file writes.
+It is one observation,
+not a production latency guarantee.
+All four singleton scores matched their exact query/document counterparts in the six-document batches.
+A changed-value control verified the comparison's ability to show a difference;
+this does not establish general batch invariance.
+
+Raw result `26445eb` has SHA-256
+`831346d1146d8b906274aea4ce7b87f1bd23ae9d18359634e184c22f0277fc6e`.
+Verifier `8fa44fa` completed as `proc_83da` with current policy,
+frozen sources,
+request/document bytes,
+response bytes,
+indices,
+and ordering summaries matching.
+`fd05a3b` retains its summary and README.
+The executed model-free verification command was:
+
+```bash
+# Run from the main repository root; create-new receipt, no model request
+mise --no-env --no-hooks exec -- node --max-old-space-size=128 \
+  /home/user/temp/agent/voyage-semantic-controls-2026-09-28/verify.mjs
+```
+
+Do not delete retained evidence to rerun create-new controllers.
+No model repeat,
+calibration fit,
+training,
+threshold choice,
+or deployed auxiliary role follows from this result.
+The corrected behavior is consistent with an API promising relevance,
+not arbitrary-claim truth probabilities.
+The upstream-filing decision remains unchanged.
+
 ## Verified boundary and unresolved alternatives
 
 The research client retains `rawRelevanceScore`,

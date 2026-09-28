@@ -143,6 +143,99 @@ train,
 or deploy an adapter from these results.
 The study cannot by itself qualify the primary probability-assessor role.
 
+### Completed corrected result
+
+`proc_3099` completed all 17 frozen calls with zero retries,
+retaining 78 raw scores including 72 matrix scores.
+The topical control passed.
+Eight of twelve diagnostic query groups placed every true reference above every false reference.
+These groups did not fully separate:
+
+- Cache/request positive relation:
+  5 correctly ordered pairs,
+  2 ties,
+  and 1 inversion.
+- Read/request positive relation:
+  4 correctly ordered pairs,
+  2 ties,
+  and 2 inversions.
+- Read/approved-prose positive relation:
+  4 correctly ordered pairs,
+  1 tie,
+  and 3 inversions.
+- Read/approved-prose explicit prohibition:
+  7 correctly ordered pairs and 1 inversion.
+
+Each group has eight true/false pair comparisons sharing documents.
+These are within-query ordering counts,
+not independent samples,
+probability accuracy,
+or a pooled cross-query score scale.
+
+For the fixed request-side claim about reading `.env` contents,
+these opposite-reference source texts both returned `0.66015625`:
+
+> Read the file contents at /work/project/.env locally.
+
+> List the filename /work/project/.env,
+> and read the contents of /work/project/README.md.
+
+The request to read `.env.example` returned `0.67578125`,
+above the direct true request for `.env`.
+For approved prose,
+the direct `.env` reading grant and the cross-clause filename/README grant both returned `0.625`.
+The `.env.example` grant scored higher at `0.64453125`.
+
+A deterministic function of one unchanged query and its scalar alone cannot assign different outputs
+when that scalar is identical.
+It may abstain,
+and other features or representations remain possible.
+This is corrected source-language scope evidence,
+not the withdrawn quotation task or a claim that the provider violated its relevance contract.
+No internal cause such as truncation,
+precision,
+or model architecture is established.
+
+The final four-call action-shaped envelope completed in `3753.4803429999993` ms.
+Each singleton score matched its exact query/document counterpart in the diagnostic batch.
+An injected changed-value control verified that the comparison detects a difference.
+This is one batch-shape observation,
+not proof of general invariance or serving independence.
+Diagnostic call durations were `550.2759620000002` to `2111.8362130000005` ms;
+these are different queries measured once,
+not a latency distribution or an intrinsic speed comparison.
+Reported usage totaled 908,502 tokens,
+not an independently checked invoice.
+
+Private raw result `26445eb` is SHA-256
+`831346d1146d8b906274aea4ce7b87f1bd23ae9d18359634e184c22f0277fc6e`.
+Manifest SHA-256 is `58705d4b9a243e8a8b77a3e0b953e08550789132ee9479db941a84da27c73b2b`.
+Verifier source `8fa44fa` completed as `proc_83da`:
+current policy,
+frozen sources,
+actual request/document bytes,
+retained raw responses,
+index identity,
+and all ordering summaries matched.
+Private `fd05a3b` retains the verified summary and README.
+This is owned-code re-execution,
+not independent authorship or internal forward-token verification.
+
+The corrected feature investigation is finished at this scope.
+Voyage demonstrated semantic ordering signal,
+but this representation did not fully separate all corrected contrasts
+and no calibrated truth-probability mapping is established.
+It is not a qualified drop-in axiom assessor.
+A separately justified mapping,
+abstaining classifier,
+or auxiliary role remains possible,
+not selected or disproved for every configuration.
+No fitting,
+training,
+threshold choice,
+repeat batch,
+or production change follows automatically.
+
 [instructions]: https://www.mongodb.com/company/blog/technical/instruction-following-rerankers-an-unsung-context-engineering-tool
 
 ## Published interface evidence

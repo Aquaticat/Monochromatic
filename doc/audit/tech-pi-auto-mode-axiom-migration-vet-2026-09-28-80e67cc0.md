@@ -448,6 +448,62 @@ failed ordering constrains the tested increasing-scalar representation,
 not every possible Voyage model or composed classifier.
 Neither outcome alone qualifies the primary probability-assessor role.
 
+## Corrected Voyage feature result
+
+The frozen 17-call study completed as `proc_3099` with zero retries.
+It retained 78 raw scores,
+including 72 source-language diagnostic scores.
+Eight of twelve query groups strictly separated true and false references.
+The other groups were cache/request positive relation,
+read/request positive relation,
+read/approved-prose positive relation,
+and read/approved-prose explicit prohibition.
+Their within-query pair counts are reported in the
+[completed fit record](../planning/pi-auto-mode-voyage-fit.md#completed-corrected-result),
+not pooled into a cross-query probability score.
+
+For the fixed `.env` read-request query,
+the direct reading request and the filename/README cross-clause request both returned `0.66015625`.
+The `.env.example` request returned the higher value `0.67578125`.
+These opposite-reference collisions and inversions concern source-language scope,
+not raw Bash structure or executed actions.
+A function of that query and scalar alone cannot distinguish the identical values;
+abstention,
+additional features,
+and other representations remain possible.
+No internal model cause is established.
+
+The final four-call action-shaped envelope completed in `3753.4803429999993` ms.
+All singleton scores matched their exact diagnostic query/document counterparts in this one comparison;
+a changed-value control verified that the comparison detects a difference.
+No general batch invariance or latency guarantee follows.
+The service reported 908,502 total tokens.
+
+Private raw result `26445eb` is SHA-256
+`831346d1146d8b906274aea4ce7b87f1bd23ae9d18359634e184c22f0277fc6e`.
+Verifier `8fa44fa` completed as `proc_83da`,
+rechecking current policy,
+frozen source,
+request/document bodies,
+retained responses,
+indices,
+and ordinal summaries.
+Private `fd05a3b` retains its verified summary and README.
+No additional model call was made for verification.
+
+This completes the corrected feature investigation,
+not a truth-probability mapping or adoption qualification.
+Voyage has observed semantic ranking signal,
+but the tested scalar representation did not separate every contrast.
+No fitting,
+training,
+normalization,
+threshold selection,
+repeat,
+or auxiliary deployment is selected.
+The design interview remains paused;
+Q16 remains unanswered.
+
 ## Current outcome
 
 Direct Lite scoring access is established,
