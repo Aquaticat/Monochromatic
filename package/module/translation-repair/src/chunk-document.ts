@@ -289,7 +289,9 @@ export function chunkByHeadings(
 }
 
 /**
- Reads the label the aligner reasons over for one chunk.
+ Reads the label the aligner reasons over for one chunk: its heading, or
+ empty for a preamble. The coverage candidates and the section round kept
+ their own copies (audit area six, 2026-09-28); this one serves all three.
  
  A heading chunk carries its heading text; a preamble chunk carries an EMPTY
  label. Building units this way makes UNIT INDEX EQUAL CHUNK INDEX by
@@ -306,7 +308,7 @@ export function chunkByHeadings(
  const label = chunkLabel(chunk,);
  ```
  */
-function chunkLabel(chunk: ContentChunk,): string {
+export function chunkLabel(chunk: ContentChunk,): string {
   /**
    Leading node, which is the heading when the chunk has one.
    */

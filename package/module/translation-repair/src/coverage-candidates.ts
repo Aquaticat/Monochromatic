@@ -3,6 +3,7 @@ import { alignHeadingsForced, } from './align-headings-forced.ts';
 import {
   alignDocumentSections,
   chunkByHeadings,
+  chunkLabel,
   type ContentChunk,
 } from './chunk-document.ts';
 import type { RepairDocument, } from './parse-document.ts';
@@ -67,26 +68,6 @@ export type CoverageCandidate = {
    */
   readonly sourceText: string;
 };
-
-/**
- Heading text of a chunk, or empty for a preamble.
- 
- @param chunk - section to label
- 
- @returns Its heading, or empty
- 
- @example
- ```ts
- const label = chunkLabel({ chunk, },);
- ```
- */
-function chunkLabel({ chunk, }: { readonly chunk: ContentChunk; },): string {
-  /**
-   Leading node, which is the heading when the chunk has one.
-   */
-  const [first,] = chunk.nodes;
-  return ((first !== undefined) && (first.kind === 'heading')) ? first.text : '';
-}
 
 /**
  Whether two sides pair by index without consulting the matcher.
@@ -169,10 +150,10 @@ function unpairedSections(
 
   return alignHeadingsForced({
     sourceHeadings: sourceChunks.map(function toLabel(chunk,): string {
-      return chunkLabel({ chunk, },);
+      return chunkLabel(chunk,);
     },),
     targetHeadings: targetChunks.map(function toLabel(chunk,): string {
-      return chunkLabel({ chunk, },);
+      return chunkLabel(chunk,);
     },),
   },)
     .flatMap(function toCandidate(step,): readonly CoverageCandidate[] {

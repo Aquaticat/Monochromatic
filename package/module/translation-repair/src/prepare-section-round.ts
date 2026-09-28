@@ -5,6 +5,7 @@ import { alignHeadingsForced, } from './align-headings-forced.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import {
   chunkByHeadings,
+  chunkLabel,
   type ContentChunk,
 } from './chunk-document.ts';
 import {
@@ -93,26 +94,6 @@ function asNumbered(
 }
 
 /**
- Reads a section's heading, which is what the aligner scores.
- 
- @param chunk - one heading-bounded section
- 
- @returns Its heading, blank for a preamble that has none
- 
- @example
- ```ts
- const label = sectionLabel(chunk,);
- ```
- */
-function sectionLabel(chunk: ContentChunk,): string {
-  /**
-   Leading node, which is the heading when the section has one.
-   */
-  const [first,] = chunk.nodes;
-  return ((first !== undefined) && (first.kind === 'heading')) ? first.text : '';
-}
-
-/**
  Whether the deterministic aligner leaves any section without a partner.
  
  @param sourceChunks - original sections in document order
@@ -157,8 +138,12 @@ function deterministicRefuses(
     return false;
 
   return alignHeadingsForced({
-    sourceHeadings: sourceChunks.map(sectionLabel,),
-    targetHeadings: targetChunks.map(sectionLabel,),
+    sourceHeadings: sourceChunks.map(function sourceLabel(chunk,): string {
+      return chunkLabel(chunk,);
+    },),
+    targetHeadings: targetChunks.map(function targetLabel(chunk,): string {
+      return chunkLabel(chunk,);
+    },),
   },)
     .some(function unpaired(step,): boolean {
       return step.kind !== 'paired';
