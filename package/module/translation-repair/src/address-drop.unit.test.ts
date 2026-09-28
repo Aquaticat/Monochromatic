@@ -186,14 +186,19 @@ await describe({
       },
     },),
     it({
-      name: 'READS an accented name as one word, so Heřmánek holds no "he", while a real "she" beside it is still refused '
-        + '(ledger B18)',
+      name: 'READS an accented name as one word, so Heřmánek and Åhe hold no "he", while a real "she" beside one is '
+        + 'still refused (ledger B18)',
       fn: async () => {
         // With ASCII letters only, `Heřmánek` read as `he`, `m` and `nek`, and
-        // the floor refused a rendering that addressed the cat by name.
+        // `Åhe` as `he` past its first letter, and the floor refused a
+        // rendering that addressed the cat by name.
         expect(validateTranslatedSlice({
           sourceText: ADDRESSED,
           candidateText: 'Tomorrow morning, Heřmánek still has to come chase that yellow butterfly in the yard with me!',
+        },).kind,).toBe('valid',);
+        expect(validateTranslatedSlice({
+          sourceText: ADDRESSED,
+          candidateText: 'Tomorrow morning, Åhe still has to come chase that yellow butterfly in the yard with me!',
         },).kind,).toBe('valid',);
         expect(validateTranslatedSlice({
           sourceText: ADDRESSED,
