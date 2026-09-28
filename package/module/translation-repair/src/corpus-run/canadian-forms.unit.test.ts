@@ -166,14 +166,14 @@ await describe({
           rewritten({ text: 'The vet visit moved to 4 May.', },),
           rewritten({ text: '- 4 May: the cat napped.', },),
           rewritten({ text: 'The cat napped—4 May, to be exact.', },),
-          rewritten({ text: 'On 4 May the cat napped.', },),
+          rewritten({ text: 'On\u00a04 May the cat napped.', },),
         ],).toEqual([
           'The cat stayed until May 4.',
           'The shelter was closed till May 4.',
           'The vet visit moved to May 4.',
           '- May 4: the cat napped.',
           'The cat napped—May 4, to be exact.',
-          'On May 4 the cat napped.',
+          'On\u00a0May 4 the cat napped.',
         ],);
       },
     },),

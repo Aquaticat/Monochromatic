@@ -1,4 +1,23 @@
 import {
+  continuesWord,
+  isCasedLetter,
+  isDateSpace,
+  isDigit,
+} from './canadian-date-parts.ts';
+import {
+  readMonthFirst,
+  readYearFirst,
+} from './canadian-date-read-leading.ts';
+import {
+  readDayFirst,
+  readRange,
+} from './canadian-date-read.ts';
+import {
+  type DateReading,
+  NO_PART,
+  type NoPart,
+} from './canadian-date-words.ts';
+import {
   inProse,
   type ProtectedRange,
 } from './prose-ranges.ts';
@@ -7,55 +26,24 @@ import {
 // CLASS ONE HUNDRED THIRTY-FOUR (hulicaijia19, 2026-09-25): the page is
 // Canadian English, which writes a date month first ("April 29", "March 13,
 // 2024"), yet the archive's "29th April" and "On 4 May" stood beside the
-// bench's "March 13" on one page. A day number (1 to 31, with or without its
-// ordinal suffix) followed by a full month name is rewritten month first, a
-// year after it taking a comma. A day that closes a range ("1st to 3rd June")
-// stands aside, since moving its month would split the range.
+// bench's "March 13" on one page. Every date in the text's prose is read and
+// written month first, its month in full, with no ordinal suffix, and with its
+// year set off by commas on both sides.
+//
+// The audit of 2026-09-26 (ledger K1, K2, K4, K8) found the first pass wrote
+// "March 13, 2024 in a box" with no closing comma, left a day-first date
+// after "until", "to" or a dash, split "1st\nto 3rd June", mixed the orders of
+// "3 June to 5 July", left "December 29th", "2023 Feb 25th" and "4 Sept
+// 2024", wrote "the May 4" from "the 4th May", and rewrote "5 May beetles"
+// and "4 May2024". The readers in `canadian-date-read.ts` and
+// `canadian-date-read-leading.ts` read each shape whole instead.
 
 /**
- Months by their English names, capitalised as the page writes them.
- */
-const MONTHS: ReadonlySet<string> = new Set([
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-],);
-
-/**
- Suffixes an ordinal day may carry.
- */
-const ORDINAL_SUFFIXES: readonly string[] = [
-  'st',
-  'nd',
-  'rd',
-  'th',
-];
-
-/**
- Words that make the day after them the end of a range.
- */
-const RANGE_WORDS: ReadonlySet<string> = new Set([
-  'to',
-  'and',
-  'through',
-  'until',
-  'till',
-],);
-
-/**
- Characters that may stand right before a day number in prose.
+ Characters that may stand right before a date's first digit in prose.
  */
 const DAY_OPENERS: ReadonlySet<string> = new Set([
   ' ',
+  '\u00A0',
   '\n',
   '\t',
   '(',
@@ -66,22 +54,47 @@ const DAY_OPENERS: ReadonlySet<string> = new Set([
   '*',
   '_',
   '[',
+  '>',
+  '–',
+  '—',
 ],);
 
 /**
- Highest day of a month.
+ First UTF-16 unit that ends a surrogate pair, as an emoji before a date
+ does.
  */
-const LAST_DAY = 31;
+const FIRST_LOW_SURROGATE = 0xDC_00;
 
 /**
- Digits a year carries.
+ Last UTF-16 unit that ends a surrogate pair.
  */
-const YEAR_DIGITS = 4;
+const LAST_LOW_SURROGATE = 0xDF_FF;
 
 /**
- Most digits a day number carries.
+ Article a day-first date may carry before its ordinal day, in either case.
  */
-const DAY_DIGITS = 2;
+const ARTICLES: ReadonlySet<string> = new Set([
+  'the',
+  'The',
+],);
+
+/**
+ Length of the article.
+ */
+const ARTICLE_LENGTH = 3;
+
+/**
+ Readers a date opening with a digit is tried against, in order: a year
+ opens a year-first date, and a day a range before it opens a lone date.
+ */
+const DIGIT_READERS: readonly ((place: {
+  readonly text: string;
+  readonly at: number;
+},) => DateReading | NoPart)[] = [
+  readYearFirst,
+  readRange,
+  readDayFirst,
+];
 
 /**
  One date rewritten, with the span it covered.
@@ -94,248 +107,164 @@ export type DateRewrite = {
 };
 
 /**
- What reading a date at one offset found.
+ Where the scan stands: the offset under the cursor and the end of the last
+ date read, from which a bare hyphen may open the next ("2 June-3 July").
  */
-type DateReading =
-  | {
-    readonly kind: 'date';
-    readonly rewrite: DateRewrite
-  }
-  | { readonly kind: 'none'; };
+type ScanState = {
+  at: number;
+  lastEnd: number;
+};
 
 /**
- Reading where no day-first date starts.
- */
-const NO_DATE: DateReading = { kind: 'none', };
-
-/**
- Whether one character is an ASCII digit.
-
- @param character - one UTF-16 unit
-
- @returns Whether it is 0 to 9
-
- @example
- ```ts
- isDigit({ character: '4', },); // true
- ```
- */
-function isDigit(
-  { character, }: { readonly character: string; },
-): boolean {
-  return (character >= '0') && (character <= '9');
-}
-
-/**
- Whether one character is a letter in any script with case.
-
- @param character - one UTF-16 unit
-
- @returns Whether it changes under case mapping
-
- @example
- ```ts
- isCasedLetter({ character: 'M', },); // true
- ```
- */
-function isCasedLetter(
-  { character, }: { readonly character: string; },
-): boolean {
-  return character.toLowerCase() !== character.toUpperCase();
-}
-
-/**
- Where a run of characters one test keeps ends.
+ Whether a digit at one offset may open a date: at the text's start, after a
+ space, an opening mark, a dash or an emoji, or after a hyphen that directly
+ follows the date read before it.
 
  @param text - text under scan
 
- @param from - where the run starts
+ @param state - where the scan stands, the digit under the cursor
 
- @param keeps - test each character of the run passes
-
- @returns Offset of the first character the test refuses, or the text's length
+ @returns Whether a date may start there
 
  @example
  ```ts
- runEnd({ text: '12 May', from: 0, keeps: isDigit, },); // 2
+ opensDate({ text: 'napped—4 May', state: { at: 7, lastEnd: -1, }, },); // true
  ```
  */
-function runEnd(
+function opensDate(
   {
     text,
-    from,
-    keeps,
+    state,
   }: {
     readonly text: string;
-    readonly from: number;
-    readonly keeps: (character: { readonly character: string; },) => boolean;
+    readonly state: Readonly<ScanState>;
+  },
+): boolean {
+  /**
+   UTF-16 unit before the digit.
+   */
+  const code = text.charCodeAt(state.at - 1,);
+  /**
+   Character before the digit.
+   */
+  const before = text.charAt(state.at - 1,);
+  /**
+   Whether the digit follows an emoji or another character outside the
+   basic plane.
+   */
+  const afterPair = (code >= FIRST_LOW_SURROGATE) && (code <= LAST_LOW_SURROGATE);
+  /**
+   Whether a hyphen joins the digit to the date just read.
+   */
+  const afterDate = (before === '-') && ((state.at - 1) === state.lastEnd);
+  return (state.at === 0) || DAY_OPENERS.has(before,)
+    || afterPair
+    || afterDate;
+}
+
+/**
+ Where a date's rewrite starts: at an article that belongs to it ("the"
+ or "The" as a word of its own, one space before an ordinal day, after the
+ last date read), or at the date.
+
+ @param text - text under scan
+
+ @param state - where the scan stands, the date's first digit under the cursor
+
+ @param reading - date read there
+
+ @returns Offset the rewrite starts at
+
+ @example
+ ```ts
+ rewriteStart({ text: 'on the 4th May', state: { at: 7, lastEnd: -1, }, reading, },); // 3
+ ```
+ */
+function rewriteStart(
+  {
+    text,
+    state,
+    reading,
+  }: {
+    readonly text: string;
+    readonly state: Readonly<ScanState>;
+    readonly reading: DateReading;
   },
 ): number {
-  for (let at = from; at < text.length; at += 1) {
-    if (!keeps({ character: text.charAt(at,), },))
-      return at;
-  }
-  return text.length;
+  /**
+   Where the article would start.
+   */
+  const start = state.at - 1 - ARTICLE_LENGTH;
+  /**
+   Whether the article stands there as a word of its own.
+   */
+  const article = ARTICLES.has(text.slice(
+    start,
+    state.at - 1,
+  ),) && !continuesWord({ character: text.charAt(start - 1,), },);
+  /**
+   Whether the article may be dropped with the date.
+   */
+  const drops = reading.takesArticle && (start >= 0) && (start > state.lastEnd)
+    && isDateSpace({ character: text.charAt(state.at - 1,), },);
+  return (drops && article) ? start : state.at;
 }
 
 /**
- Whether the word before one offset makes a day there the end of a range.
+ Reads the date starting at one offset, whichever shape it takes.
 
  @param text - text under scan
 
- @param at - offset of the day number
+ @param state - where the scan stands
 
- @returns Whether a range word or dash precedes it
-
- @example
- ```ts
- closesRange({ text: '1st to 3rd June', at: 7, },); // true
- ```
- */
-function closesRange(
-  {
-    text,
-    at,
-  }: {
-    readonly text: string;
-    readonly at: number;
-  },
-): boolean {
-  /**
-   Text before the day, trailing spaces cut.
-   */
-  const before = text.slice(
-    0,
-    at,
-  )
-    .trimEnd();
-  /**
-   Last character before the day.
-   */
-  const last = before.at(-1);
-  if ((last === '-') || (last === '–')
-    || (last === '—'))
-    return true;
-  /**
-   Last word before the day.
-   */
-  const word = before.slice(before.lastIndexOf(' ',) + 1,)
-    .toLowerCase();
-  return RANGE_WORDS.has(word,);
-}
-
-/**
- Reads a day-first date starting at one offset.
-
- @param text - text under scan
-
- @param at - offset of the first digit
-
- @returns The rewrite, or none where no day-first date starts here
+ @returns The date, or no part where none starts there
 
  @example
  ```ts
- readDate({ text: 'On 4 May', at: 3, },); // { kind: 'date', rewrite: { start: 3, end: 8, from: '4 May', to: 'May 4' } }
+ readingAt({ text: 'On 4 May', state: { at: 3, lastEnd: -1, }, },);
  ```
  */
-function readDate(
+function readingAt(
   {
     text,
-    at,
+    state,
   }: {
     readonly text: string;
-    readonly at: number;
+    readonly state: Readonly<ScanState>;
   },
-): DateReading {
+): DateReading | NoPart {
   /**
-   Where the day's digits end.
+   Character under the cursor.
    */
-  const dayEnd = runEnd({
+  const character = text.charAt(state.at,);
+  /**
+   Where the date would start, for the readers.
+   */
+  const place = {
     text,
-    from: at,
-    keeps: isDigit,
-  },);
-  /**
-   The day number.
-   */
-  const day = Number(text.slice(
-    at,
-    dayEnd,
-  ),);
-  if (((dayEnd - at) > DAY_DIGITS) || (day < 1)
-    || (day > LAST_DAY))
-    return NO_DATE;
-  /**
-   Ordinal suffix standing after the digits, or the empty string.
-   */
-  const suffix = ORDINAL_SUFFIXES.find(function stands(candidate,): boolean {
-    return text.startsWith(
-      candidate,
-      dayEnd,
-    );
-  },) ?? '';
-  /**
-   Where the space before the month stands.
-   */
-  const gap = dayEnd + suffix.length;
-  if (text.charAt(gap,) !== ' ')
-    return NO_DATE;
-  /**
-   Where the month's letters end.
-   */
-  const monthEnd = runEnd({
-    text,
-    from: gap + 1,
-    keeps: isCasedLetter,
-  },);
-  /**
-   The word after the day.
-   */
-  const month = text.slice(
-    gap + 1,
-    monthEnd,
-  );
-  if (!MONTHS.has(month,))
-    return NO_DATE;
-  /**
-   Where a year after the month would end.
-   */
-  const yearEnd = monthEnd + 1
-    + YEAR_DIGITS;
-  /**
-   Whether a four-digit year stands after the month and ends there.
-   */
-  const hasYear = (text.charAt(monthEnd,) === ' ')
-    && (runEnd({
-      text,
-      from: monthEnd + 1,
-      keeps: isDigit,
-    },) === yearEnd);
-  /**
-   Where the rewritten span ends.
-   */
-  const end = hasYear ? yearEnd : monthEnd;
-  return {
-    kind: 'date',
-    rewrite: {
-      start: at,
-      end,
-      from: text.slice(
-        at,
-        end,
-      ),
-      to: hasYear
-        ? `${month} ${String(day,)}, ${text.slice(
-          monthEnd + 1,
-          yearEnd,
-        )}`
-        : `${month} ${String(day,)}`,
-    },
+    at: state.at,
   };
+  if (isDigit({ character, },)) {
+    if (!opensDate({
+      text,
+      state,
+    },))
+      return NO_PART;
+    return DIGIT_READERS.reduce<DateReading | NoPart>(
+      function firstFound(found, reader,): DateReading | NoPart {
+        return (found.kind === 'date') ? found : reader(place,);
+      },
+      NO_PART,
+    );
+  }
+  return (isCasedLetter({ character, },) && !continuesWord({ character: text.charAt(state.at - 1,), },))
+    ? readMonthFirst(place,)
+    : NO_PART;
 }
 
 /**
- Every day-first date in a text's prose, rewritten month first.
+ Every date in a text's prose that Canadian English writes differently,
+ rewritten month first.
 
  @param text - text under scan
 
@@ -361,38 +290,56 @@ export function monthFirstDates(
    Rewrites found so far.
    */
   const rewrites: DateRewrite[] = [];
-  for (let at = 0; at < text.length; at += 1) {
-    /**
-     Character before the candidate day.
-     */
-    const before = text.charAt(at - 1,);
-    if ((!isDigit({ character: text.charAt(at,), },)) || ((at > 0) && (!DAY_OPENERS.has(before,))))
-      continue;
+  /**
+   Where the scan stands.
+   */
+  const state: ScanState = {
+    at: 0,
+    lastEnd: -1,
+  };
+  while (state.at < text.length) {
     /**
      The date starting here, if any.
      */
-    const reading = readDate({
+    const reading = readingAt({
       text,
-      at,
+      state,
     },);
-    if (reading.kind === 'none')
-      continue;
     /**
-     The rewrite that date takes.
+     Where its rewrite would start.
      */
-    const { rewrite, } = reading;
-    if (closesRange({
-      text,
-      at,
-    },)
-      || (!inProse({
-        ranges,
-        start: rewrite.start,
-        end: rewrite.end,
-      },)))
+    const start = (reading.kind === 'date')
+      ? rewriteStart({
+        text,
+        state,
+        reading,
+      },)
+      : state.at;
+    if ((reading.kind === 'none') || !inProse({
+      ranges,
+      start,
+      end: reading.end,
+    },)) {
+      state.at += 1;
       continue;
-    rewrites.push(rewrite,);
-    at = rewrite.end - 1;
+    }
+    /**
+     The date as written.
+     */
+    const from = text.slice(
+      start,
+      reading.end,
+    );
+    if (from !== reading.to) {
+      rewrites.push({
+        start,
+        end: reading.end,
+        from,
+        to: reading.to,
+      },);
+    }
+    state.at = reading.end;
+    state.lastEnd = reading.end;
   }
   return rewrites;
 }
