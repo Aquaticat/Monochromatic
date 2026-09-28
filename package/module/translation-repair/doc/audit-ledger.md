@@ -896,6 +896,11 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     and a `;` before an `echo` closing a TianqiChen666 refusal count;
     after the crash that heredoc slip repeated during L11 (the edit script for `refine-slice-settle.ts`).
     Prevention: write a script with the Write tool and run it in its own call.
+    During L5 the heredoc slip came back once more:
+    a heredoc wrote the sheet-wiring script `l5-sheets.mjs` with an `echo` on the next line,
+    after the prevention was already recorded; the script then ran in its own call.
+    A prevention the same session repeats is not yet a habit:
+    a Bash call that holds `<<` holds nothing else, and a script goes through the Write tool.
     During P9 a `;` joined a lint count to the commit of the red guard,
     and the staging read only the count of expected type errors, not the full summary (read afterwards: those six only).
 - A capped search taken as complete (QRY): before `7ceffe055` changed two card prices,
@@ -2140,13 +2145,54 @@ the strip dropping its new refusals, and the sheet lists inverted are each caugh
 
 ### L5: wrong panel acceptances
 
-Status: open.
-Glosses of works outside the panel's apparatus list;
+Status: partly fixed; the sub-items below each carry their own status.
+Found in the audit:
+glosses of works outside the panel's apparatus list;
 a supplied object outside its forced-difference line;
 footnote-carried attributions judged dropped;
 an MDX editor comment deleted;
 鲨鲨 (a plush shark) taken for a person;
 a neutral "correctly renders" claim accepted and cut into an envelope.
+
+#### Neutral acceptances
+
+Status: fixed, one fix in two parts, both needed.
+Measured over every artifact under the agent runs (`l5-neutral-census.mjs`, `l5-neutral-kinds.mjs`, `l5-neutral-affirm.mjs`):
+41 of 9,532 accepted repair-lane issues had settled at neutral, over 30 runs;
+32 cut a region, 28 shipped an edit, and 26 of those the checkers called resolved.
+Eight were claims whose own summary called the rendering accurate or correct, with no negation
+(seven on hulicaijia, one on Carena0442); one of them, on hulicaijia19, shipped an edit.
+Others were real small losses filed neutral: the same noname omission of a nuance was filed neutral and fixed in six runs.
+Neutral is the severity that asserts no defect (`issue-taxonomy.ts`), and neither sheet defined any severity.
+
+The tally part (`e87e353ae`, guards `266a0891a`, `aa7f4e360`, `c53d5c717`):
+an acceptance settled at neutral is held as needs-human, with a `neutral-held-for-human (claim)` finding,
+so it reaches no editor, envelope, checker ballot, recheck round or archive dispute.
+A single supporter re-grading to a real severity lifts the upper median out of neutral and keeps the acceptance.
+Mutation checked with a control: the severity test, the returned status, the dropped finding,
+and a finding raised for any vote (caught only after `aa7f4e360` added the rejected case).
+
+The sheet part (`fb6c06cca`, `severity-scale.ts`, guard `925b85a8f`;
+cache account `ef20e7978`, `SLICE_CACHE_VERSION` 34):
+both sheets define the scale, minor, major and critical after MQM
+(https://www.themqm.org/guidance/values-and-scores/, read 2026-09-28)
+and neutral in the pipeline's own words, since MQM's neutral marks a spot where "a different solution is warranted";
+the critic is told a claim naming nothing wrong is no issue;
+the panel votes such a claim unsupported, with interpretive ambiguity and suspected source errors kept outside that rule;
+and a supporter lifts a real defect filed neutral to at least minor.
+Without the sheet part the tally part alone would regress the real small fixes filed neutral.
+Mutation checked with a control: dropping either sheet's scale, either rule, the re-grade rule,
+a scale line or the carve-out each fails a guard.
+
+Expected but unmeasured (QAB):
+defining major and critical may move how many accuracy issues the panel settles at major or worse,
+which the archive dispute reads;
+the next run's artifacts measure it against the census above.
+Because an accepted addition can no longer settle at neutral,
+the dispute rule's "addition at any severity" now means any severity from minor up in effect
+(`design-commitments.md` records this as a quality refinement of the 2026-09-26 ruling).
+The cross-check's needs-human now also holds a supported majority at neutral,
+so its precision over accepted issues reads higher by construction on runs from this version.
 
 ### L6: the lane contest runs on insertion slices the repair lane does not apply to
 

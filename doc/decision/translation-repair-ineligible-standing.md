@@ -190,6 +190,24 @@ and the decline named `slate-declined-standing`.
 - Guard shown to fail first (`c6ec06788`),
     fixed in `adca69d4e`.
 
+## Addendum 2026-09-28, nineteenth: no accepted claim settles at neutral
+
+Decided for quality under the owner's standing directive of 2026-09-28
+("prefer quality of the end result"),
+by the whole-package audit
+(`package/module/translation-repair/doc/audit-ledger.md`, L5).
+
+- Neutral is the severity that asserts no defect.
+    The tally now holds an acceptance the panel settled at neutral as needs-human,
+    so it disputes no archive.
+- The seventeenth addendum's "an accepted `accuracy/addition` claim still disputes at any severity" stands as worded;
+    since no accepted claim settles at neutral any more, in effect an addition disputes from minor up.
+    Five accepted neutral additions over every run could dispute an archive before.
+- The critic and panel sheets now define the severity scale
+    (minor, major and critical after MQM),
+    which the eleventh addendum's major-or-worse rule reads;
+    the effect on how many slices it disputes is measured on the next run.
+
 ## Addendum 2026-09-27, eighteenth: a slice with no valid wording keeps the archive, and the page ships
 
 Owner's answer of 2026-09-27 ("Keep archive, ship"),

@@ -358,6 +358,16 @@ Part of [the package README](../README.md).
   since the round re-asks every seat still unreadable and a shared wording would make its prompt
   this re-ask's digest, answered from the claims with the reply that already failed;
   and a refusal-shaped reply is re-asked elsewhere too, with a nudge neutral on why the reply could not be used.
+- **A claim the panel settles at neutral asks for no edit; the sheets define every severity.**
+  DECIDED FOR QUALITY, 2026-09-28, under the standing directive below (ledger L5):
+  neutral asserts no defect, yet 28 accepted neutral issues shipped an edit, 8 of them claims calling the rendering correct.
+  The tally holds such an acceptance for a human; the critic and panel sheets define minor, major and critical after MQM
+  and neutral as a finding a human should see that names no defect in the translation;
+  the panel votes down a claim naming nothing wrong and lifts a real defect filed neutral to minor.
+  This refines the 2026-09-26 ruling "Major+ accuracy" without contradicting it:
+  that ruling concerned accuracy claims other than additions, and kept additions disputing "at any severity"
+  as the option's wording said; an accepted addition can no longer settle at neutral,
+  so in effect an addition disputes the archive from minor up, and one no supporter finds a defect in disputes nothing.
 - **The quality of the end result decides; a choice made for it is not a design decision.**
   Owner, 2026-09-28, standing directive, answering two questions put as design choices
   (which fix-shaped refusals the L4 markup gate should let through, and whether the L11 probe stays in shadow):
