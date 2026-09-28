@@ -1,3 +1,5 @@
+import { longestRunOf, } from './character-run.ts';
+
 //region Prompt fence
 // Choosing a fence no enclosed text can reproduce.
 //
@@ -38,25 +40,10 @@ export const FENCE_CHARACTER = '=';
  ```
  */
 export function longestFenceRun(text: string,): number {
-  /**
-   Best and running run lengths across one linear pass.
-   */
-  const counters = {
-    best: 0,
-    current: 0,
-  };
-  for (const character of text) {
-    if (character !== FENCE_CHARACTER) {
-      counters.current = 0;
-      continue;
-    }
-    counters.current += 1;
-    counters.best = Math.max(
-      counters.best,
-      counters.current,
-    );
-  }
-  return counters.best;
+  return longestRunOf({
+    text,
+    character: FENCE_CHARACTER,
+  },);
 }
 
 /**
