@@ -2128,6 +2128,42 @@ Also during A11, a wrap script matched the first line of a multi-line signature 
 the diff showed it before anything was committed, and the four files were restored from HEAD.
 Prevention for scripted rewrites: print each located boundary and read the diff before lint or commit.
 Once more during A12b (`<test> | rg ... ; echo done`).
+Twice during E1 and E4:
+`<test> > log 2>&1 ; rg --count` to capture a test's output,
+and a heredoc appended to a test file with the lint command on the next line,
+two commands no `&&` joined.
+
+### M19: a suite run against a stale build after a mutation was restored
+
+Status: caught the same hour, 2026-09-27 (E1).
+The package's `test:unit` task runs the tests against `dist` without building;
+only `buildAndTest` builds first.
+After a mutation check the source was restored with `git checkout --`
+and the suite launched through `test:unit`,
+so it ran against the mutant's build and reported its two guards failing.
+Prevention: every suite run goes through `buildAndTest`,
+and so does any single test file run after a source change,
+through `mise run build` first.
+
+### M20: docs naming a log line the code never writes
+
+Status: corrected, 2026-09-27 (E4).
+The README and the corpus-pass runbook both said dropped addresses reach the run log at `info`
+under `publish: dropped destination`;
+no such line exists, and the real one is at `warn`,
+reading `entry <id>: page drops source destination <address>`.
+Prevention: before a doc names a log line, a message or an output line,
+`rg` the source for the exact string and copy it from there.
+
+### M21: a check that could not fail
+
+Status: corrected in `d2f0e07ef` (E4).
+A test asserting that a throwing settlement bought no judge read its counter off the return value,
+which a throw never delivers,
+so the assertion held at its initial zero whatever was bought.
+A parser test named "listing the two it does" had pinned three kinds, and later four.
+Prevention: a counter or state a throwing path must leave untouched is held by the test outside the call;
+test names describe the property, not a count that the next change makes false.
 
 ### M15: a finding carried and a fix started against an owner ruling
 
