@@ -2097,7 +2097,9 @@ while every gate reads it as a refusal (`translate-stage.ts` keeps the incumbent
 `lane-contest-eligibility.ts`, `consolidate-lane-offer.ts`, `consolidate-standing-verdict.ts`
 and `consolidation-polish-round.ts` accept only `valid`),
 and a candidate that mirrors the cut fails the strict grammar itself and is refused as unparseable.
-The slice can therefore never settle, and the entry stops.
+The slice can therefore never settle, and the entry stopped;
+since the owner's ruling of 2026-09-27 ("Keep archive, ship") no wording passing the rule keeps the archive there,
+so the entry ships with the slice on its `DEFECTS` line, but the slice is never improved.
 The root is the carve cutting an element; once carving keeps elements whole,
 `unknown` means an original the upstream MDX compile would also refuse, where refusing is right.
 One slice of 1,277 in the replay; no run has reached it (no settled artifact exists for the entry).
