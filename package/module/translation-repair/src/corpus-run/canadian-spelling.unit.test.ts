@@ -197,12 +197,12 @@ await describe({
         + 'ID (ledger H14)',
       fn: async () => {
         expect([
-          respelled({ text: 'The cat wrote idée, ide\u0301e and idō.', },),
+          respelled({ text: 'The cat wrote idée, ide\u0301e and idō to Sa\u0301id.', },),
           respelled({ text: 'The cat used id3 tags and 3id.', },),
           respelled({ text: 'See [^id] for the cat.', },),
           respelled({ text: 'See [id] for the cat.', },),
         ],).toEqual([
-          'The cat wrote idée, ide\u0301e and idō.',
+          'The cat wrote idée, ide\u0301e and idō to Sa\u0301id.',
           'The cat used id3 tags and 3id.',
           'See [^id] for the cat.',
           'See [ID] for the cat.',
@@ -219,6 +219,7 @@ await describe({
           respelled({ text: '``code `color` here`` and favorite', },),
           respelled({ text: 'A `color\n\nand her favorite` toy.', },),
           respelled({ text: '<Cat name={cat\'s} /> Her favorite color was gray.', },),
+          respelled({ text: '{/* the cat\'s note */} Her \'favorite\' color was gray.', },),
           respelled({ text: '<Paw alt="the cat\n> favorite paw" /> Her color.', },),
         ],).toEqual([
           '{/* cat\'s note */} Her favourite colour was grey.',
@@ -226,6 +227,7 @@ await describe({
           '``code `color` here`` and favourite',
           'A `colour\n\nand her favourite` toy.',
           '<Cat name={cat\'s} /> Her favourite colour was grey.',
+          '{/* the cat\'s note */} Her \'favourite\' colour was grey.',
           '<Paw alt="the cat\n> favorite paw" /> Her colour.',
         ],);
       },
