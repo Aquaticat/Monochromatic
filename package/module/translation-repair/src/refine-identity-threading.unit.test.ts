@@ -265,7 +265,6 @@ async function rewriterSheets(
 
   await refineSettledSlices({
     client,
-    sourceText: SOURCE_PARAGRAPH,
     targetText: ARCHIVE_PARAGRAPH,
     slices: SLICES,
     outcomes: OUTCOMES,

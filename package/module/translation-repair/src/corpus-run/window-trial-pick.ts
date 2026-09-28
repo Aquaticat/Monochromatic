@@ -58,9 +58,6 @@ export type PickOutcome = {
  
  @param slices - every prepared slice of this entry, for the window
  
- @param sourceText - whole original, whose footnote definitions the window
- carries (ledger L5)
- 
  @param pick - slice to buy, with its class label
  
  @param entryId - entry it belongs to
@@ -90,7 +87,6 @@ export async function runPick(
   {
     client,
     slices,
-    sourceText,
     pick,
     entryId,
     protocol,
@@ -103,7 +99,6 @@ export async function runPick(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slices: readonly ChunkPair[];
-    readonly sourceText: string;
     readonly pick: TrialSlice;
     readonly entryId: string;
     readonly protocol: string;
@@ -124,7 +119,6 @@ export async function runPick(
       rows: await runSliceArms({
         client,
         slices,
-        sourceText,
         sliceIndex: pick.sliceIndex,
         sliceClass: pick.sliceClass,
         entryId,

@@ -44,9 +44,6 @@ import { TRIAL_ARMS, } from './window-trial-report.ts';
  
  @param slices - every prepared slice of this entry, for the window
  
- @param sourceText - whole original, whose footnote definitions the window
- carries (ledger L5)
- 
  @param sliceIndex - position of the slice under trial
  
  @param sliceClass - class the screen flagged, or the control label
@@ -82,7 +79,6 @@ export async function runSliceArms(
   {
     client,
     slices,
-    sourceText,
     sliceIndex,
     sliceClass,
     entryId,
@@ -96,7 +92,6 @@ export async function runSliceArms(
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly slices: readonly ChunkPair[];
-    readonly sourceText: string;
     readonly sliceIndex: number;
     readonly sliceClass: string;
     readonly entryId: string;
@@ -176,7 +171,6 @@ export async function runSliceArms(
   const neighbouringSourceText = neighbouringSource({
     slices,
     slicePosition: sliceIndex,
-    documentText: sourceText,
   },);
   // TRIMMED, not compared against the empty string. A window of blank lines is a
   // window in name only: the wide sheet would differ from the narrow one by

@@ -135,12 +135,6 @@ export async function persistRefinePhaseSlice(
  @param slices - prepared pairs used to refuse unknown indices and derive
  neighbouring fidelity window
  
- @param documentSourceText - whole original, whose footnote definitions the
- window carries (ledger L5)
- 
- @param documentTargetText - whole archive, whose footnote definitions the
- window carries, including notes an archive translator added in no slice
- 
  @param models - stage rosters deciding rewrite and checks
  
  @param reseat - reads the checker seating as of now, so the recheck and the
@@ -180,8 +174,6 @@ export async function persistRefinePhaseSlice(
    client,
    outcome,
    slices,
-   documentSourceText,
-   documentTargetText,
    models,
    refinerModelIds,
    runShape,
@@ -200,8 +192,6 @@ export async function settleRefinePhaseSlice(
     client,
     outcome,
     slices,
-    documentSourceText,
-    documentTargetText,
     models,
     reseat,
     refinerModelIds,
@@ -218,8 +208,6 @@ export async function settleRefinePhaseSlice(
     readonly client: SyntheticClient;
     readonly outcome: ChunkRepairOutcome;
     readonly slices: readonly ChunkPair[];
-    readonly documentSourceText: string;
-    readonly documentTargetText: string;
     readonly models: RepairModels;
     readonly reseat?: () => Promise<RepairSliceSeating>;
     readonly refinerModelIds: readonly RosterModelId[];
@@ -267,12 +255,10 @@ export async function settleRefinePhaseSlice(
     neighbouringSourceText: neighbouringSource({
       slices,
       slicePosition: outcome.sliceIndex,
-      documentText: documentSourceText,
     },),
     neighbouringIncumbentText: neighbouringIncumbent({
       slices,
       slicePosition: outcome.sliceIndex,
-      documentText: documentTargetText,
     },),
   };
 

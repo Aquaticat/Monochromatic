@@ -73,9 +73,6 @@ export type RefinePhaseResult = {
  
  @param client - injected model client
  
- @param sourceText - whole original, whose footnote definitions a slice's
- window carries (ledger L5)
- 
  @param targetText - archive translation used to assemble accuracy text
  
  @param slices - prepared pairs in document order
@@ -118,7 +115,6 @@ export type RefinePhaseResult = {
  ```ts
  const phase = await runRefinePhase({
    client,
-   sourceText,
    targetText,
    slices,
    outcomes,
@@ -134,7 +130,6 @@ export type RefinePhaseResult = {
 export async function runRefinePhase(
   {
     client,
-    sourceText,
     targetText,
     slices,
     outcomes,
@@ -150,7 +145,6 @@ export async function runRefinePhase(
     l,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
-    readonly sourceText: string;
     readonly targetText: string;
     readonly slices: readonly ChunkPair[];
     readonly outcomes: readonly ChunkRepairOutcome[];
@@ -224,8 +218,6 @@ export async function runRefinePhase(
         client,
         outcome,
         slices,
-        documentSourceText: sourceText,
-        documentTargetText: targetText,
         models,
         ...((reseat === undefined) ? {} : { reseat, }),
         refinerModelIds,

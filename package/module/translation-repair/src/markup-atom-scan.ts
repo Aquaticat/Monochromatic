@@ -396,7 +396,7 @@ function tagEnd({
  isFootnoteLabel({ label: '1', },);
  ```
  */
-export function isFootnoteLabel({ label, }: { readonly label: string; },): boolean {
+function isFootnoteLabel({ label, }: { readonly label: string; },): boolean {
   if (label === '')
     return false;
   for (const character of label) {

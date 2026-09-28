@@ -154,7 +154,7 @@ function prepare(
   }: {
     readonly marks: readonly { readonly source: string; readonly archive: string; }[];
   },
-): { readonly slices: readonly ChunkPair[]; readonly sourceText: string; readonly targetText: string; } {
+): { readonly slices: readonly ChunkPair[]; readonly targetText: string; } {
   /**
    Archive wording of each slice, in document order.
    */
@@ -168,10 +168,6 @@ function prepare(
   const documentText = targets.join(GAP,);
 
   return {
-    sourceText: marks.map(function toOriginal(mark,): string {
-      return original({ mark: mark.source, },);
-    },)
-      .join(GAP,),
     targetText: documentText,
     slices: marks.map(function toSlice(mark, index,): ChunkPair {
       /**
@@ -313,7 +309,7 @@ async function probeSheets(
     readonly marks: readonly { readonly source: string; readonly archive: string; }[];
   },
 ): Promise<readonly ProbeSheet[]> {
-  const { slices, sourceText, targetText, } = prepare({ marks, },);
+  const { slices, targetText, } = prepare({ marks, },);
 
   /**
    User sheet of every probe exchange, in order.
@@ -393,7 +389,6 @@ async function probeSheets(
 
   await runRefinePhase({
     client,
-    sourceText,
     targetText,
     slices,
     outcomes: slices.map(function toOutcome(slice,): ChunkRepairOutcome {

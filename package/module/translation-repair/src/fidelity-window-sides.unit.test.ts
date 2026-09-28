@@ -36,13 +36,6 @@ import {
   sliceNeighbourContexts,
 } from '../dist/final/node/index.mjs';
 
-/**
- Whole-document text these fixtures pass: none of them cites a footnote, so
- the window has no definition to add from either document (ledger L5).
- */
-const NOTE_FREE_DOCUMENT = '';
-
-
 //region Fixtures
 
 /**
@@ -124,7 +117,7 @@ await describe({
         /**
          Window of the middle slice, which has a neighbour each way.
          */
-        const beside = sliceNeighbourContexts({ slices: SLICES, sourceText: NOTE_FREE_DOCUMENT, targetText: NOTE_FREE_DOCUMENT, },)
+        const beside = sliceNeighbourContexts({ slices: SLICES, },)
           .get(11,);
 
         expect(beside?.sourceText,).toBe('小猫在窗台上睡到中午。\n\n白胡子数着外面的鸟。',);
@@ -141,7 +134,7 @@ await describe({
         /**
          Window of the first slice, which has no neighbour before it.
          */
-        const beside = sliceNeighbourContexts({ slices: SLICES, sourceText: NOTE_FREE_DOCUMENT, targetText: NOTE_FREE_DOCUMENT, },)
+        const beside = sliceNeighbourContexts({ slices: SLICES, },)
           .get(10,);
 
         expect(beside?.sourceText,).toBe('她的哥哥给她带来一根羽毛。',);

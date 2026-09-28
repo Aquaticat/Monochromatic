@@ -36,13 +36,6 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Whole-document text these fixtures pass: none of them cites a footnote, so
- the window has no definition to add from either document (ledger L5).
- */
-const NOTE_FREE_DOCUMENT = '';
-
-
-/**
  Logger the trial writes its progress to.
  */
 const l = tagged({ tag: 'fidelity-window-test', },);
@@ -143,7 +136,6 @@ await describe({
         expect(neighbouringSource({
           slices: SLICES,
           slicePosition: 1,
-          documentText: NOTE_FREE_DOCUMENT,
         },),).toBe('小猫在窗台上睡觉。\n\n\n傍晚她回到炉火旁。\n',);
       },
     },),
@@ -154,7 +146,6 @@ await describe({
         expect(neighbouringSource({
           slices: SLICES,
           slicePosition: 0,
-          documentText: NOTE_FREE_DOCUMENT,
         },),).toBe('她看着外面的鸟。\n',);
       },
     },),
@@ -165,7 +156,6 @@ await describe({
         expect(neighbouringSource({
           slices: SLICES,
           slicePosition: 2,
-          documentText: NOTE_FREE_DOCUMENT,
         },),).toBe('她看着外面的鸟。\n',);
       },
     },),
@@ -179,7 +169,6 @@ await describe({
             sliceIndex: 0,
           },),],
           slicePosition: 0,
-          documentText: NOTE_FREE_DOCUMENT,
         },),).toBe('',);
       },
     },),
@@ -192,7 +181,6 @@ await describe({
           return neighbouringSource({
             slices: SLICES,
             slicePosition: SLICES.length,
-            documentText: NOTE_FREE_DOCUMENT,
           },);
         },).toThrow(RangeError,);
       },
@@ -228,7 +216,6 @@ await describe({
             slices: stamped,
             slicePosition: stamped[0]?.source
               .sliceIndex ?? 0,
-            documentText: NOTE_FREE_DOCUMENT,
           },);
         },);
 
@@ -245,7 +232,6 @@ await describe({
           return neighbouringSource({
             slices: SLICES,
             slicePosition: -1,
-            documentText: NOTE_FREE_DOCUMENT,
           },);
         },).toThrow(RangeError,);
       },
@@ -539,7 +525,6 @@ await describe({
         const beside = neighbouringIncumbent({
           slices: TRANSLATED,
           slicePosition: 1,
-          documentText: NOTE_FREE_DOCUMENT,
         },);
 
         expect(beside.includes('window sill',),).toBe(true,);
@@ -557,7 +542,6 @@ await describe({
         const beside = neighbouringIncumbent({
           slices: TRANSLATED,
           slicePosition: 0,
-          documentText: NOTE_FREE_DOCUMENT,
         },);
 
         expect(beside.includes('the stove',),).toBe(false,);
@@ -577,7 +561,6 @@ await describe({
             neighbouringIncumbent({
               slices: TRANSLATED,
               slicePosition: TRANSLATED.length,
-              documentText: NOTE_FREE_DOCUMENT,
             },);
             return 'returned';
           }

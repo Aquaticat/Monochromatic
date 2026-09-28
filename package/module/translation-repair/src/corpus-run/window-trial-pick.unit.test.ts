@@ -34,13 +34,6 @@ import {
 } from '../../dist/final/node/index.mjs';
 
 /**
- Whole original these fixtures pass: none of them cites a footnote, so the
- window has no definition to add from it (ledger L5).
- */
-const NOTE_FREE_DOCUMENT = '';
-
-
-/**
  Logger the pick writes to.
  */
 const l = tagged({ tag: 'window-trial-pick-test', },);
@@ -175,7 +168,6 @@ await describe({
         const outcome = await runPick({
           client: throwingClient({ error: new Error('unused', ), },),
           slices: LONE,
-          sourceText: NOTE_FREE_DOCUMENT,
           pick: {
             entryId: 'Mittens',
             sliceIndex: 0,
@@ -201,7 +193,6 @@ await describe({
         const outcome = await runPick({
           client: throwingClient({ error: new Error('unused', ), },),
           slices: LONE,
-          sourceText: NOTE_FREE_DOCUMENT,
           pick: {
             entryId: 'Mittens',
             sliceIndex: 0,
