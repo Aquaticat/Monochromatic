@@ -44,7 +44,11 @@ import {
   firstRoundWindow,
   persistConsolidationSettlement,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_DECISIONS,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SLICE_COST_MARKER,
@@ -56,6 +60,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ConsolidateSliceSeating,
+  type ConsolidationPolishConfig,
   type ConsolidationSettlement,
   type ConsolidationTerminal,
   type ProjectedLanes,
@@ -637,6 +642,10 @@ function settlementReaching(
  
  @param frontMatterSlices - syntax-bearing metadata positions
  
+ @param judgeModelIds - starting slate judges, the writers when not given
+
+ @param polishConfig - starting naturalness roles, none when not given
+
  @param overlap - most contested slices in flight
  
  @param activity - optional successful-call overlap instrument
@@ -665,6 +674,8 @@ async function driveWith(
     pictureContextBySlice = new Map(),
     neighbourContextBySlice = new Map(),
     modelIds = ROSTER,
+    judgeModelIds,
+    polishConfig,
     overlap = 1,
     beforeSlice,
     activity,
@@ -683,6 +694,8 @@ async function driveWith(
     readonly pictureContextBySlice?: ReadonlyMap<number, string>;
     readonly neighbourContextBySlice?: ReadonlyMap<number, SliceNeighbourContext>;
     readonly modelIds?: readonly RosterModelId[];
+    readonly judgeModelIds?: readonly RosterModelId[];
+    readonly polishConfig?: ConsolidationPolishConfig;
     readonly overlap?: number;
     readonly beforeSlice?: () => Promise<ConsolidateSliceSeating>;
     readonly activity?: ConsolidationConcurrency;
@@ -747,6 +760,8 @@ async function driveWith(
     projected,
     contests,
     modelIds,
+    ...((judgeModelIds === undefined) ? {} : { judgeModelIds, }),
+    ...((polishConfig === undefined) ? {} : { polishConfig, }),
     frontMatterSlices,
     cache,
     signal,
@@ -1994,12 +2009,89 @@ function seatRecordingClient(
 
 /**
  Writers and judges a hook hands back after a dry-out, none of them the
- driver's own.
+ driver's own; three, so a refiner among them can still be selected.
  */
 const RESEATED: readonly RosterModelId[] = [
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 ];
+
+/**
+ Naturalness roles seated on the given seats, with no guard facts: the first
+ refines, and all of them judge and gate, which lets the refiner's text reach
+ the selection minimum however it grades its own.
+
+ @param seats - seats the roles sit on
+
+ @returns Polish configuration for a roster
+
+ @example
+ ```ts
+ const polish = polishOn({ seats: RESEATED, },);
+ ```
+ */
+function polishOn({ seats, }: { readonly seats: readonly RosterModelId[]; },): ConsolidationPolishConfig {
+  return {
+    refinerModelIds: seats.slice(0, 1,),
+    judgeModelIds: seats,
+    gateModelIds: seats,
+    declaredNames: [],
+    definitions: '',
+  };
+}
+
+/**
+ Builds a client that records which seat every call asked and answers each
+ producer, slate judge and gate usefully, so the slate is judged and the
+ winner gated and polished. Rounds whose sheet takes another answer lose the
+ voice after it was asked.
+
+ @param asked - sink for the seat of every call, in order
+
+ @returns Client to drive with
+
+ @example
+ ```ts
+ const client = roleAnsweringClient({ asked: [], },);
+ ```
+ */
+function roleAnsweringClient(
+  { asked, }: { readonly asked: RosterModelId[]; },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText not used',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      asked.push(request.modelId,);
+      /**
+       Everything the call sends, which is where the sheet lives.
+       */
+      const sent = JSON.stringify(request,);
+      /**
+       Reply this round is given, told apart as `answeringClient` tells it.
+       */
+      const rawText = sent.includes('translation_report',)
+        ? JSON.stringify({ translation: 'A cat asleep in the sun.', },)
+        : (sent.includes(GATE_MARKER,)
+          ? JSON.stringify({ choice: 'standing', unsupported: [], dropped: [], reason: 'the original supports it', },)
+          : JSON.stringify({ best: 1, reason: 'it says what the original says', },));
+      /**
+       That reply as the sheet parses it.
+       */
+      const value: unknown = JSON.parse(rawText,);
+      return request.validate(value,)
+        ? { kind: 'ok', value, rawText, }
+        : { kind: 'schema-mismatch', rawText, detail: 'fixture answers another sheet', };
+    },
+    quotas: async () => {
+      throw new Error('quotas not used',);
+    },
+  };
+}
 
 /**
  Drives one contested slice against a cache that answers every key, and
@@ -2068,6 +2160,64 @@ await describe({
     },),
 
     it({
+      name: 'SEATS THE SLATE JUDGES AND NATURALNESS ROLES ITS HOOK RETURNS TOO, after a control proves a '
+        + 'slice with no hook asks the starting judges and polish roles, each on a seat no other role holds',
+      fn: async () => {
+        /**
+         Starting roster: writers, judges and polish roles each on their own seat.
+         */
+        const starting = {
+          judgeModelIds: [SEAT_HYPER_ONLY,],
+          polishConfig: polishOn({
+            seats: [
+              SEAT_OPENROUTER_ONLY,
+              SEAT_OPENROUTER_DECISIONS,
+              SEAT_OPENROUTER_ONLY_CHECKER,
+            ],
+          },),
+        };
+        /**
+         Seat of every call a driver with no hook made.
+         */
+        const control: RosterModelId[] = [];
+        await driveWith({
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+          client: roleAnsweringClient({ asked: control, },),
+          ...starting,
+        },);
+        /**
+         Seat of every call the re-seated driver made.
+         */
+        const asked: RosterModelId[] = [];
+        await driveWith({
+          contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+          client: roleAnsweringClient({ asked, },),
+          ...starting,
+          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+            roster: {
+              modelIds: RESEATED,
+              judgeModelIds: RESEATED,
+              polishConfig: polishOn({ seats: RESEATED, },),
+            },
+          }),
+        },);
+        expect({
+          controlAskedJudges: control.includes(SEAT_HYPER_ONLY,),
+          controlAskedPolish: control.includes(SEAT_OPENROUTER_ONLY,),
+          reseatedAskedAny: asked.length > 0,
+          outsideRoster: asked.filter(function outsideRoster(seat,): boolean {
+            return !RESEATED.includes(seat,);
+          },),
+        },).toEqual({
+          controlAskedJudges: true,
+          controlAskedPolish: true,
+          reseatedAskedAny: true,
+          outsideRoster: [],
+        },);
+      },
+    },),
+
+    it({
       name: 'KEYS A RE-SEATED SLICE BY THE ROSTER IT RUNS ON, so a settlement the roster read before the '
         + 'dry-out reached is never resumed for it, while a hook handing back the starting roster keys '
         + 'the slice as a driver with no hook does',
@@ -2098,14 +2248,29 @@ await describe({
             },
           }),
         },);
+        /**
+         Keys looked up when the hook keeps the writers and judges but seats
+         naturalness roles the driver started without.
+         */
+        const polished = await keysLookedUp({
+          beforeSlice: async (): Promise<ConsolidateSliceSeating> => ({
+            roster: {
+              modelIds: ROSTER,
+              judgeModelIds: ROSTER,
+              polishConfig: polishOn({ seats: RESEATED, },),
+            },
+          }),
+        },);
         expect({
-          lookups: [starting.length, moved.length, kept.length,],
+          lookups: [starting.length, moved.length, kept.length, polished.length,],
           movedDiffers: moved[0] !== starting[0],
           keptMatches: kept[0] === starting[0],
+          polishedDiffers: polished[0] !== starting[0],
         },).toEqual({
-          lookups: [1, 1, 1,],
+          lookups: [1, 1, 1, 1,],
           movedDiffers: true,
           keptMatches: true,
+          polishedDiffers: true,
         },);
       },
     },),
