@@ -159,16 +159,28 @@ export async function readDocumentPictures(
     }
 
     /* oxlint-disable no-await-in-loop -- current cache protocol settles each picture before advancing so restart has one ordered frontier; replacement DAG must preserve restart while exposing independent assets */
-    if (beforePicture !== undefined)
-      await beforePicture();
+    // A PICTURE IS READ BY THE READERS ITS HOOK HANDS OVER (ledger X12,
+    // 2026-09-28), as every phase that buys item by item seats its items: the
+    // readings read their bench once, so a dry-out inside them left every
+    // later picture on the readers read before it.
+    /**
+     Seating the hook hands this picture: readers read under a hold, or none,
+     which keeps those the readings started on.
+     */
+    const seating: PictureReaderSeating = (beforePicture === undefined) ? {} : await beforePicture();
+    /**
+     Readers this picture is read by.
+     */
+    const pictureReaders = seating.readerModelIds ?? readerModelIds;
     /**
      Where this reading is stored, derived from what it was asked rather than
      from what came back: readings are not deterministic, and a key over their
-     text would miss on every run.
+     text would miss on every run. The readers are in it, so a re-seated
+     picture is keyed by those that read it.
      */
     const key = imageReadingKey({
       bytes,
-      readerModelIds,
+      readerModelIds: pictureReaders,
     },);
 
     /**
@@ -191,7 +203,7 @@ export async function readDocumentPictures(
     const paired = await readImagePair({
       readOcr,
       client,
-      readerModelIds,
+      readerModelIds: pictureReaders,
       bytes,
       assetName,
       signal,
