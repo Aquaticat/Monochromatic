@@ -534,6 +534,79 @@ real action/grant/branch freshness,
 or Pi manual/headless behavior.
 They do not authorize production implementation or qualify the complete consumer deadline.
 
+## Bounded preparation-inclusive budget check
+
+After the scope correction,
+task #36 reused existing development inputs instead of opening another source-audit branch.
+Private root:
+`~/temp/agent/auto-mode-semantic-controls-2026-09-27/budget`.
+Source `0576589` and freeze `bd65fa7` precede the live batch.
+Each operation profile combines request and eligible-prose sources,
+with both sequential calls and all four questions sharing one five-second clock.
+Each call still receives only its own selected text source and supplied operation,
+plus complete current policy.
+
+The clock includes actual parser or structured-read projection,
+fixture eligibility,
+question construction,
+source/policy freshness,
+serialization,
+transport,
+response validation,
+and aggregate construction.
+Process/module startup and research-log writes remain outside this warm-assessment envelope.
+Standard command identity,
+alias bindings,
+and eligible human authority remain fixture assumptions.
+No final policy decision or assessed operation executes.
+
+Local controls `proc_b912` passed valid profiles,
+preparation expiry before dispatch,
+and rejection of a late second response.
+Removing the committed final deadline check exposed acceptance of a late aggregate;
+original source remained unchanged.
+These controls used injected clocks and mocked responses,
+not model calls or real credentials.
+
+Live batch `proc_647a` completed its frozen profiles:
+
+- Cache removal took 977.2364449999999 milliseconds across both selected sources.
+- Structured read took 675.6790840000001 milliseconds across both selected sources.
+- Parsed transfer took 702.3758939999998 milliseconds across both selected sources.
+
+There were six client calls,
+twelve probability scalars,
+and no client retry.
+Usage was 64,053 input and 246 output tokens.
+Every call included the complete 42,677-byte policy,
+SHA-256 `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+Raw results are private `236e36c`;
+SHA-256 `b5e4de5972b5f9368feb801216d6fbde4b5f4fd74e113fc4d6a021eb6c0f1025`.
+Host-side recheck `proc_4bb3` passed current policy/source hashes,
+actual serializer/body reconstruction,
+and identity with the corresponding prior-tranche request bodies.
+Its retained summary is private `36bb87b`.
+This is a separate execution,
+not independent authorship.
+
+The known false-reference cross-clause prose prohibition returned 0.58.
+Do not turn that into a final-action error rate,
+select a threshold from this batch,
+or claim a repeatability band or serving independence.
+The result closes this experimental preparation-envelope timing question only.
+It does not qualify semantic accuracy,
+calibration,
+live authority collection,
+all effect families,
+final policy decisions,
+or production latency guarantees.
+The live batch is finished;
+no repeat,
+prompt tuning,
+reserved-case query,
+new runtime,
+or additional model call follows automatically.
+
 ## Historical shared control and question-set measurements
 
 The existing fifteen-scenario batch remains development evidence.

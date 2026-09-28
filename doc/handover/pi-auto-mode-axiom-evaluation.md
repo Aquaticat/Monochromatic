@@ -501,15 +501,52 @@ Task #34 is paused,
 not completed;
 its evidence and unresolved gates remain intact.
 The user subsequently asked to continue working after that narrower proposal.
-Task #35 consolidates candidate evidence and identifies only unknowns that could change the decision.
+Task #35 completed the bounded candidate checkpoint at `5d247532a`.
 The [current decision checkpoint](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-27.md)
-keeps adoption unqualified and prioritizes a bounded Jev preparation-inclusive budget check.
-Use existing development fixtures and the existing client,
-not another runtime or audit framework.
-Stop after the frozen batch or its first contract/deadline failure;
-do not tune prompts,
+keeps adoption unqualified and stops the ONNX/source-build expansion.
+Task #36's frozen Jev live batch then completed in `proc_647a`:
+cache removal took 977.2364449999999 milliseconds,
+structured read took 675.6790840000001 milliseconds,
+and parsed transfer took 702.3758939999998 milliseconds.
+Each profile included preparation and both selected-source calls under one shared five-second clock.
+Process/module startup and research-log writes were excluded.
+There were six client calls and twelve scalars,
+with no client retry or assessed operation.
+Complete current policy was retained in every call.
+
+Local shared-clock and guard-omission controls passed in `proc_b912`.
+Host-side recheck `proc_4bb3` verified current policy/source identities and actual request bodies,
+including identity with the corresponding prior-tranche bodies.
+Private budget checkpoints are `0576589`,
+`bd65fa7`,
+`236e36c`,
+and `36bb87b`.
+The known false-reference prohibition returned 0.58;
+semantic qualification and calibration remain open.
+These are tested warm preparation envelopes,
+not live authority,
+full policy-finalizer,
+accuracy,
+or production latency qualification.
+The batch is finished.
+The aggregate audit edit is temporarily blocked by task #37:
+its updater raised `Report amendment point changed` before writing,
+leaving an owned lock with PID `326366`,
+recorded start `2026-09-28T00:31:04.142Z`,
+and unchanged report hash.
+The failed replacement payload is preserved;
+a corrected payload has been checked against the unchanged report.
+`proc_6110` only signals when the thirty-minute age can be rechecked.
+Recovery must still verify recorded age,
+absent owner,
+lock identity,
+and report identity;
+no model call or source-audit expansion is part of that bookkeeping.
+Next scope must address the remaining semantic qualification/design gate,
+not automatically add experiments or resume source tracing.
+Do not tune prompts,
 choose thresholds,
-or query reserved scenarios.
+or query reserved scenarios from this batch.
 No candidate choice or production implementation is authorized by this continuation.
 No constraint is waived,
 and old process-completion notifications do not authorize resuming the paused source expansion.
