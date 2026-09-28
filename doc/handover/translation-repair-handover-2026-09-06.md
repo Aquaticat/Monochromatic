@@ -4914,9 +4914,21 @@ each read off the pass log and the shipped page:
     consolidation phase in any TianqiChen666 run (983 did in 25 of 4,121 logs), and per-slice seating there must
     fold the slice's bench into its key, since `consolidateRunShape` folds the roster once. A full suite at
     `bc69e2336` is running; the one before it failed only on a test pinning the old DeepSeek price.
-    NEXT, IN ORDER: the owner batch (L3, L4, L11, P9), then #395's cache check and the TianqiChen666 launch;
-    after it L5, L10, L14, L12, L13 and the D series. DEFERRED PAST THE LAUNCH: L6 (task 401), H5's
-    consolidation half.
+    THE OWNER BATCH LANDED, 2026-09-28, each red-guarded and mutation checked with a control: L3, worse-voted
+    unconfirmed edits stripped and rechecked (`69c149471`); L11, a rewrite after a lost patch rechecked against
+    every accepted issue it leaves open (`462c514ee`); L4, markup atoms kept inside a licensed quote (`b5338610e`,
+    `c4a4fbb62`); P9, an unusable reply re-asked on another provider, nudged, through the uniqueness wrapper's
+    claims (`7011d72cc`). THE OWNER'S STANDING DIRECTIVE (`design-commitments.md`): "prefer quality of the end
+    result"; a choice made for quality that conflicts with no ruling is decided, recorded and built, not asked
+    (M30). Under it: L4 refined so authored markup may be re-marked and atoms may move between envelopes, which
+    replays 24 refusals down to the 7 pure removals (`b07f8ac48`, `ab84cbfd7`; M31 records the DottedNumber
+    misreading); L11's probe rolls back a rewrite it admits a claim against (`d41ad44c4`, 175 of 2,144 kept
+    rewrites flagged, a graded six of ten true); P9's nudge worded apart from the recovery round's. #395 found
+    every cache version set after the newest slice-cache file and none written since (`097e5ecde`,
+    `9a3f28b30`). A full suite at `9a3f28b30` passed, 1,228 cases. TIANQICHEN66621 LAUNCHED on
+    `.frozen-dist-9a3f28b30`, pid 431565, log `~/temp/agent/TianqiChen66621.log`, with a waiter.
+    NEXT: read TianqiChen66621 when it ends; after it L5, L10, L14, L12, L13 and the D series. DEFERRED PAST
+    THE LAUNCH: L6 (task 401), H5's consolidation half.
     Probe scripts, the single-file runner (`run-files.ts`) and the mutation harness (`mutants.ts`, JSON spec)
     live in `~/temp/agent/audit-glossary-fix/`, which survives a reboot; the scratchpad did not.
     AUDIT IN PROGRESS (owner 2026-09-27: "audit the whole translation-repair pkg for all the mistakes we've
