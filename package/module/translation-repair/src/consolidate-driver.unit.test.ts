@@ -39,7 +39,6 @@ import {
   consolidateDocument,
   consolidateRunShape,
   consolidateSliceKey,
-  ConsolidationStandingIneligibleError,
   consolidationWorthResuming,
   createSyntheticClient,
   firstRoundWindow,

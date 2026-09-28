@@ -169,7 +169,7 @@ await describe({
 
     it({
       name: 'REFUSES a shipped kind this version does not name, listing the '
-        + 'two it does',
+        + 'ones it does',
       fn: async () => {
         const refusalOfThirdKind = caught(function thirdKind() {
           parseShipped({
@@ -183,7 +183,7 @@ await describe({
         expect((refusalOfThirdKind as Error).message,)
           .toContain('consolidation.slices[0].shipped.kind',);
         expect((refusalOfThirdKind as Error).message,)
-          .toContain('one of consolidated, incumbent, unchanged',);
+          .toContain('one of archive, consolidated, incumbent, unchanged',);
       },
     },),
 

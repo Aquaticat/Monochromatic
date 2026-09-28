@@ -12,7 +12,6 @@ import {
 
 import {
   CollapsedHeadingError,
-  ConsolidationStandingIneligibleError,
   ContributorCompletenessError,
   DroppedDestinationError,
   entryErrorOutcome,
@@ -33,7 +32,6 @@ await describe({
   name: entryErrorOutcome.name,
   children: [
     ...([
-      new ConsolidationStandingIneligibleError({ sliceIndex: 1, terminal: 'incumbent-only', }),
       new ContributorCompletenessError({ entryId: 'Cat', droppedCount: 1, }),
       new DroppedDestinationError({
         entryId: 'Cat',

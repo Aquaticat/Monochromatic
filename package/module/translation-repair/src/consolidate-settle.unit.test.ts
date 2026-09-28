@@ -30,7 +30,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   buildTranslateCandidates,
-  ConsolidationStandingIneligibleError,
   createSyntheticClient,
   describeSlate,
   INELIGIBLE_STANDING_WITHHELD_FINDING,

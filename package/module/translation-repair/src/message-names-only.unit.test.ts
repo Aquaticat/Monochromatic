@@ -75,7 +75,6 @@ const MARKED_CLASSES: readonly string[] = [
   'CheckerQuorumError',
   'CollapsedHeadingError',
   'ConsolidationLedgerGapError',
-  'ConsolidationStandingIneligibleError',
   'ContributorCompletenessError',
   'CorpusReadError',
   'CreditsShapeError',

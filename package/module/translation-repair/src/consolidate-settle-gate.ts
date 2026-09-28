@@ -123,11 +123,10 @@ export function gateObjectionsOf(
  
  @param l - stage logger
  
- @returns What ships, and every round that decided it
- 
- @throws {@link import('./consolidate-ineligible-standing.ts').ConsolidationStandingIneligibleError}
- when the gate keeps a standing the deterministic gate refused
- 
+ @returns What ships, and every round that decided it; a gate keeping a
+ standing the deterministic rule refused leaves the archive kept (owner,
+ 2026-09-27, "Keep archive, ship")
+
  @example
  ```ts
  const settled = await gateAndShip({ client, judgeModelIds, subject, decided, standingText, lineStructured, floor, verdicts, sliceIndex, standingMayShip, standingEligible, identity, signal, perCallTimeoutMs, l, },);

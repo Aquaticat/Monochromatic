@@ -112,60 +112,6 @@ export const NO_VALID_WORDING_FINDING: string = 'no-valid-wording: no wording fo
   + 'deterministic publication rule, so the archive keeps it and the page ships with it reported';
 
 /**
- Raised when a slice's standing text has failed the deterministic gate and
- the settlement still ends with nothing valid to ship.
- */
-export class ConsolidationStandingIneligibleError extends Error {
-  /**
-   Declares this message safe to forward: it names a slice index and a
-   terminal state, never a passage.
-   */
-  readonly messageNamesOnly: true = true;
-
-  /**
-   Slice whose settlement ended with nothing shippable.
-   */
-  readonly sliceIndex: number;
-
-  /**
-   Names the slice and how its settlement ended.
-   
-   @param sliceIndex - prepared position of the slice
-   
-   @param terminal - how the settlement ended, which says whether the slate
-   was empty, declined, or gated back to the standing
-   
-   @param cause - the judges' own refusal, when a decline is what ended it
-   
-   @example
-   ```ts
-   throw new ConsolidationStandingIneligibleError({ sliceIndex: 0, terminal: 'slate-declined-standing', },);
-   ```
-   */
-  constructor(
-    {
-      sliceIndex,
-      terminal,
-      cause,
-    }: {
-      readonly sliceIndex: number;
-      readonly terminal: ConsolidationTerminal;
-      readonly cause?: unknown;
-    },
-  ) {
-    super(
-      `slice ${String(sliceIndex,)}: the standing text failed the deterministic publication rule and the `
-        + `consolidation left nothing valid to ship (${terminal}), so the entry stops here, before any later slice `
-        + 'is bought',
-      // Conditional spread keeps cause absent when none was supplied.
-      ...((cause === undefined) ? [] : [{ cause, },]),
-    );
-    this.name = 'ConsolidationStandingIneligibleError';
-    this.sliceIndex = sliceIndex;
-  }
-}
-
-/**
  What the slate offers as its incumbent: the standing text when it may
  ship, nothing when the gate has refused it.
  
