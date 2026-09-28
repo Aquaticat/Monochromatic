@@ -425,6 +425,9 @@ await describe({
 
  @param removableQuotes - quotes an addition claim made, none by default
 
+ @param sourceText - original the markup is checked against, none by
+ default, which makes every atom one the translation authored
+
  @returns Outcome of the enforced application
 
  @example
@@ -437,10 +440,12 @@ function editInsideQuote(
     baseText,
     newText,
     removableQuotes = [],
+    sourceText = '',
   }: {
     readonly baseText: string;
     readonly newText: string;
     readonly removableQuotes?: readonly string[];
+    readonly sourceText?: string;
   },
 ) {
   /**
@@ -466,6 +471,98 @@ function editInsideQuote(
       mode: 'enforce',
       licensedQuotes: new Map([[envelope.envelopeId, [baseText,],],],),
       removableQuotes: new Map([[envelope.envelopeId, removableQuotes,],],),
+      sourceText,
+    },
+  },);
+}
+
+/**
+ Two edits over two envelopes of one text, each wholly quoted, for the cases
+ where one edit writes the atom the other drops.
+
+ @param targetText - text holding both envelopes, first then second
+
+ @param firstBase - first envelope's text, at the start of the target
+
+ @param firstNew - edit over the first envelope
+
+ @param secondNew - edit over the second envelope, which is the rest of the
+ target after one space
+
+ @param secondHashStale - whether the second edit echoes a wrong base hash,
+ so another gate refuses it
+
+ @returns Outcome of the enforced application
+
+ @example
+ ```ts
+ const outcome = twoEdits({ targetText, firstBase, firstNew, secondNew, secondHashStale: false, },);
+ ```
+ */
+function twoEdits(
+  {
+    targetText,
+    firstBase,
+    firstNew,
+    secondNew,
+    secondHashStale,
+  }: {
+    readonly targetText: string;
+    readonly firstBase: string;
+    readonly firstNew: string;
+    readonly secondNew: string;
+    readonly secondHashStale: boolean;
+  },
+) {
+  /**
+   Second envelope's text, after the separating space.
+   */
+  const secondBase = targetText.slice(firstBase.length + 1,);
+
+  /**
+   The two envelopes in document order.
+   */
+  const envelopes = [
+    {
+      envelopeId: 'envelope/first',
+      startOffset: 0,
+      endOffset: firstBase.length,
+      baseText: firstBase,
+      baseHash: hashContent({ content: firstBase, },),
+      issueIds: ['adjudicated/first',],
+    },
+    {
+      envelopeId: 'envelope/second',
+      startOffset: firstBase.length + 1,
+      endOffset: targetText.length,
+      baseText: secondBase,
+      baseHash: hashContent({ content: secondBase, },),
+      issueIds: ['adjudicated/second',],
+    },
+  ];
+  return applyPatchOperations({
+    targetText,
+    envelopes,
+    operations: [
+      {
+        envelopeId: 'envelope/first',
+        baseHash: hashContent({ content: firstBase, },),
+        newText: firstNew,
+      },
+      {
+        envelopeId: 'envelope/second',
+        baseHash: secondHashStale ? 'stale' : hashContent({ content: secondBase, },),
+        newText: secondNew,
+      },
+    ],
+    preservation: {
+      mode: 'enforce',
+      licensedQuotes: new Map([
+        ['envelope/first', [firstBase,],],
+        ['envelope/second', [secondBase,],],
+      ],),
+      removableQuotes: new Map(),
+      sourceText: 'The cat[^1] and the kitten[^2].',
     },
   },);
 }
@@ -623,6 +720,112 @@ await describe({
           newText: 'See the tabby and the kitten today.',
         },);
         expect(outcome.rejected[0]?.reason,).toBe('preservation-lost-markup (link-destination)',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: 'markup the translation authored, and moves between envelopes (ledger L4, refined for quality)',
+  children: [
+    it({
+      name: 'APPLIES an edit that re-marks inline code the translation authored into the heading tag the '
+        + 'source carries: two shipped edits on XingZ60 did exactly this, and the ruling\'s wording refused them',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'See `The Cat` below.',
+          newText: 'See <h3 align="center">The Cat</h3> below.',
+          sourceText: '<h3 align="center">猫</h3>',
+        },);
+        expect(outcome.applied,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'APPLIES an edit that sets a component prop the translation rewrote back to the source\'s own '
+        + 'value: five of six DottedNumber edits refused under the wording restored the source props',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'Paws: <DottedNumber n="1,5" /> today.',
+          newText: 'Paws: <DottedNumber n="1.5" /> today.',
+          sourceText: '爪子：<DottedNumber n="1.5" />',
+        },);
+        expect(outcome.applied,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'APPLIES a spelling fix inside a component prop the translation authored, whose captions are '
+        + 'visible text the checkers judge like prose',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: '<PhotoScroll photos={["A cat napping in teh sun"]} />',
+          newText: '<PhotoScroll photos={["A cat napping in the sun"]} />',
+          sourceText: '<PhotoScroll photos={["晒太阳的猫"]} />',
+        },);
+        expect(outcome.applied,).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a change to a component prop the source carries, which is copied markup that must '
+        + 'survive whatever the claim',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'Paws: <DottedNumber n="1.5" /> today.',
+          newText: 'Paws: <DottedNumber n="1,5" /> today.',
+          sourceText: '爪子：<DottedNumber n="1.5" />',
+        },);
+        expect(outcome.rejected[0]?.reason,).toBe('preservation-lost-markup (tag)',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a relabelled footnote reference even where the source carries no footnote, since a '
+        + 'label is an identifier no checker judges',
+      fn: async () => {
+        const outcome = editInsideQuote({
+          baseText: 'The cat[^1] napped.',
+          newText: 'The cat[^3] napped.',
+        },);
+        expect(outcome.rejected[0]?.reason,).toBe('preservation-lost-markup (footnote-reference)',);
+      },
+    },),
+
+    it({
+      name: 'APPLIES two edits that swap footnote references between clauses, since each atom one edit '
+        + 'drops the other writes and the patch keeps both (yuki418330012 slice 6)',
+      fn: async () => {
+        const outcome = twoEdits({
+          targetText: 'The cat[^2] napped. The kitten[^1] played.',
+          firstBase: 'The cat[^2] napped.',
+          firstNew: 'The cat[^1] napped.',
+          secondNew: 'The kitten[^2] played.',
+          secondHashStale: false,
+        },);
+        expect(outcome.applied,).toHaveLength(2,);
+        expect(outcome.patchedText,).toBe('The cat[^1] napped. The kitten[^2] played.',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES one side of such a swap when another gate refuses the other side, since the atom it '
+        + 'dropped is then written nowhere',
+      fn: async () => {
+        const outcome = twoEdits({
+          targetText: 'The cat[^2] napped. The kitten[^1] played.',
+          firstBase: 'The cat[^2] napped.',
+          firstNew: 'The cat[^1] napped.',
+          secondNew: 'The kitten[^2] played.',
+          secondHashStale: true,
+        },);
+        expect(outcome.applied,).toHaveLength(0,);
+        expect(outcome.rejected.map(function toReason(rejection,): string {
+          return rejection.reason;
+        },),).toStrictEqual([
+          'preservation-lost-markup (footnote-reference)',
+          'stale-base-hash',
+        ],);
       },
     },),
   ],

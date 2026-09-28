@@ -35,6 +35,10 @@ export {
   scanMarkupAtoms,
 } from './markup-atom-scan.ts';
 export {
+  stripWorseVotedEdits,
+  type WorseStrip,
+} from './repair-worse-strip.ts';
+export {
   applyCandidate,
   selectChunkPatch,
   selectPerEnvelope,
