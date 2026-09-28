@@ -362,9 +362,55 @@ No further Pro call or top-up recommendation follows from this canary.
 The [OpenRouter contract finding](../troubleshooting/openrouter-respan-decisions-contract.md)
 records both distinct failures and the verified boundaries.
 
+## Native Lite semantic result
+
+The frozen study completed all 18 profiles and 36 calls in `proc_cbe7`,
+with every paired profile inside its shared five-second deadline.
+Private raw result `b15df3e` is SHA-256
+`6fd914e4a8ffbabac3ef9cfabff3e3f63d6de42e014e3bcae36e6c6505e0621b`.
+Model-free recheck `proc_5210` passed current policy,
+source identities,
+actual request-body reconstruction,
+and rescoring.
+Private `558f064` retains the verified summary and README.
+
+No frozen diagnostic band passed:
+
+- Per-channel cutoff `0.8` yielded 58 correct,
+  1 wrong,
+  and 13 uncertain labels.
+- Cutoff `0.9` yielded 39 correct,
+  1 wrong,
+  and 32 uncertain labels.
+- Cutoff `0.95` yielded 5 correct,
+  none wrong,
+  and 67 uncertain labels.
+
+All bands missed minimum non-anchor role coverage.
+At `0.8` and `0.9`,
+no approved-prose positive relation resolved correctly true.
+At `0.95`,
+only prohibitions resolved true and no estimate resolved false.
+Zero errors with that abstention pattern did not qualify the profile.
+
+The resolved error assigned present mass `0.911335` to transferring `.env` externally
+when the selected request said to read `.env` locally and transfer `README.md` instead.
+This is source-language scope binding,
+not a Bash-parser error or an executed transfer.
+No internal model cause is established.
+The [completed result record](../planning/pi-auto-mode-respan-qualification.md#completed-result)
+retains all native components,
+counts,
+clock boundaries,
+and limitations.
+
 ## Current outcome
 
-Direct Lite scoring access is established for the corrected synthetic canary.
+Direct Lite scoring access is established,
+but its tested semantic representation and diagnostic bands did not qualify.
+Jev's tested `0.95` binary profile passed its own bounded gate;
+wire framing and uncertainty contracts differ,
+so this is not an intrinsic model ranking or production calibration.
 Pro returned a retained diagnostic response,
 but a complete live-budget pass and native probability mapping remain unqualified.
 Its measured benefit is not established.
@@ -374,7 +420,7 @@ top-up recommendation,
 or implementation is selected.
 Jev result documentation is finalized without a new model call.
 
-Task #40 freezes the [direct Lite semantic protocol](../planning/pi-auto-mode-respan-qualification.md),
+Task #40 completed the [direct Lite semantic protocol](../planning/pi-auto-mode-respan-qualification.md),
 reusing the existing Jev matrix and pre-query references without reading its model outputs.
 Private source `e931518` and input/control freeze `4104ade` precede candidate queries.
 Local controls `proc_02ba` passed,
@@ -387,8 +433,8 @@ All 61 source/input files are hash-frozen.
 An exact-match positive control verified that the differently worded canary has no literal source-text overlap.
 The original anchor remains excluded from novel coverage.
 
-At most 36 direct free calls will score 72 native triples.
-Each request/prose pair shares five seconds,
+The completed study made 36 direct free calls and retained 72 native triples.
+Each request/prose pair shared five seconds,
 with zero retries and first-failure stop.
 Both present and absent mass use the existing upper diagnostic cutoffs;
 not-observable mass is retained,

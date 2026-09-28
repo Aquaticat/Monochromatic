@@ -146,7 +146,7 @@ Do not invent an absence probability or discard not-observable mass.
 Task #38's result documentation is finalized after the scoring resource check,
 without rerunning its model batch.
 
-Task #40 is the bounded direct Lite semantic study,
+Task #40 completed the bounded direct Lite semantic study,
 using Jev's existing 18-profile matrix and pre-query references,
 not Jev outputs or new scenarios.
 Private source `e931518` and input/control freeze `4104ade` precede live queries.
@@ -174,6 +174,39 @@ threshold selection,
 training,
 reserved-scenario query,
 or source-audit restart is part of this study.
+
+`proc_cbe7` completed all 36 calls within the paired-profile deadlines.
+Private `b15df3e` retains the raw result;
+`proc_5210` verified all current source/policy hashes,
+actual native bodies,
+and rescoring;
+`558f064` retains the verified summary and README.
+At per-channel cutoffs `0.8`,
+`0.9`,
+and `0.95`,
+correct/wrong/uncertain counts were respectively 58/1/13,
+39/1/32,
+and 5/0/67.
+No band met minimum role coverage.
+At `0.8` and `0.9`,
+no approved-prose positive relation resolved correctly true.
+At `0.95`,
+only prohibitions resolved true and no estimate resolved false.
+The resolved error assigned `0.911335` present mass to sending `.env` externally when the request
+said to read `.env` locally and send `README.md` instead.
+No tool action occurred and no internal model cause is established.
+
+The [completed Lite result](../planning/pi-auto-mode-respan-qualification.md#completed-result)
+records full identities and limits.
+This tested Lite profile failed its finite gate;
+Jev's tested `0.95` profile passed its own finite gate.
+Different wire framing and native uncertainty handling prevent an intrinsic model-ranking claim.
+No band was tuned,
+no repeat is planned,
+and no provider is adopted.
+Overall service/privacy,
+production calibration,
+and live-authority qualification remain open.
 
 ## Sequencing correction
 
