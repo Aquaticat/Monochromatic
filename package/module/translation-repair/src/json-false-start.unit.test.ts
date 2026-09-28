@@ -88,11 +88,13 @@ await describe({
           parsed: true,
           value: { cat: '喵', },
           abandoned: 0,
+          trailing: 0,
         },);
         expect(parseAnswerJson({ text: '{"best": 1{"best": 1}', },),).toEqual({
           parsed: true,
           value: { best: 1, },
           abandoned: 10,
+          trailing: 0,
         },);
         /**
          A cut reply, which no start inside it completes.

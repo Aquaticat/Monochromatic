@@ -286,6 +286,11 @@ export function readJsonOutcome<ValueT,>(
       } chars`,
     );
   }
+  if (attempt.trailing > 0) {
+    rl.warn(
+      `${modelId}: json trailing text: read the value before ${String(attempt.trailing,)} trailing chars (ledger P8)`,
+    );
+  }
 
   /**
    Parsed content awaiting the caller's guard.

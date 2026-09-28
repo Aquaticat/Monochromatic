@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { readJsonBeforeTrailingText, } from './json-leading-value.ts';
 import { contextRoot, } from './log-context.ts';
 import { parseModelJson, } from './model-content.ts';
 
@@ -105,11 +106,22 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
 }
 
 /**
- Parses an answer as a whole, and past a false start when the whole fails.
+ Parses an answer as a whole; where the whole fails, past a false start; and
+ where that fails too, as the value it opens with when more text follows
+ (ledger P8).
+ 
+ THE FALSE START BEFORE THE LEADING VALUE: a reply of two whole objects is
+ the model revising its answer, and the replay of 587,102 stored replies on
+ 2026-09-28 found 18 such, the first empty or missing a field the second
+ carries, so the later object is the answer and the false-start reader, which
+ reads to the end of the text, already takes it. Trailing prose defeats that
+ reader, since no brace inside the window starts JSON that runs to the end,
+ and the leading value then recovers the answer (919 replies in that replay).
  
  @param text - fence-stripped answer channel
  
- @returns Parsed value with the abandoned length (zero for a whole parse), or failure detail
+ @returns Parsed value with the abandoned and trailing lengths (zero for a
+ whole parse), or failure detail
  
  @example
  ```ts
@@ -121,6 +133,7 @@ export function parseAnswerJson({ text, }: { readonly text: string; },):
     readonly parsed: true;
     readonly value: unknown;
     readonly abandoned: number;
+    readonly trailing: number;
   }
   | {
     readonly parsed: false;
@@ -137,6 +150,7 @@ export function parseAnswerJson({ text, }: { readonly text: string; },):
       parsed: true,
       value: whole.value,
       abandoned: 0,
+      trailing: 0,
     };
   }
 
@@ -144,8 +158,25 @@ export function parseAnswerJson({ text, }: { readonly text: string; },):
    Reading past an abandoned opening, when there is one.
    */
   const past = readJsonPastFalseStart({ text, },);
+  if (past.parsed) {
+    return {
+      ...past,
+      trailing: 0,
+    };
+  }
 
-  return past.parsed ? past : whole;
+  /**
+   The value the answer opens with, when text follows it.
+   */
+  const leading = readJsonBeforeTrailingText({ text, },);
+  return leading.parsed
+    ? {
+      parsed: true,
+      value: leading.value,
+      abandoned: 0,
+      trailing: leading.trailing,
+    }
+    : whole;
 }
 
 //endregion Json false start

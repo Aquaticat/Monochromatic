@@ -96,5 +96,23 @@ await describe({
         expect(parseAnswerJson({ text: 'The cat says {"nap": 1}', },).parsed,).toBe(false,);
       },
     },),
+    it({
+      name: 'COUNTS the trailing characters for the log, and reads the LAST of two whole values, the model\'s '
+        + 'revision, as the false-start reader always has',
+      fn: async () => {
+        expect(parseAnswerJson({ text: '{"best": 2}\nThat is my pick.', },),).toEqual({
+          parsed: true,
+          value: { best: 2, },
+          abandoned: 0,
+          trailing: 17,
+        },);
+        expect(parseAnswerJson({ text: '{} {"best": 3}', },),).toEqual({
+          parsed: true,
+          value: { best: 3, },
+          abandoned: 3,
+          trailing: 0,
+        },);
+      },
+    },),
   ],
 },);
