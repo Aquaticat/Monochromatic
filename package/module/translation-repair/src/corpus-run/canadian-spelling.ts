@@ -1,4 +1,3 @@
-import { runEnd, } from './canadian-date-parts.ts';
 import {
   insideEmphasis,
   inTitleCaseHeading,
@@ -9,9 +8,12 @@ import {
 import {
   besideNonProse,
   isWordCharacter,
-  runStart,
   wordsOf,
 } from './canadian-spelling-context.ts';
+import {
+  runEnd,
+  runStart,
+} from './text-runs.ts';
 import {
   CANADIAN_SPELLINGS,
   CAPITALISED_EXCLUDED,

@@ -6,9 +6,9 @@ import {
   monthStartsName,
   readDay,
   readMonth,
-  runEnd,
   yearAfter,
 } from './canadian-date-parts.ts';
+import { runEnd, } from './text-runs.ts';
 import {
   type DateReading,
   type DayPart,

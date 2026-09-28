@@ -13,6 +13,7 @@ import {
 } from './prose-ranges.ts';
 
 import { applySpanRewrites, } from './span-rewrites.ts';
+import { runEnd, } from './text-runs.ts';
 
 //region Pinyin tone
 // CLASS ONE HUNDRED THIRTY-SEVEN (hulicaijia20, 2026-09-25): the archive's
@@ -135,40 +136,6 @@ function isSpace(
   { character, }: { readonly character: string; },
 ): boolean {
   return character === ' ';
-}
-
-/**
- Where a run of characters one test keeps ends.
-
- @param text - text under scan
-
- @param from - where the run starts
-
- @param keeps - test each character of the run passes
-
- @returns Offset of the first character the test refuses, or the text's length
-
- @example
- ```ts
- scanEnd({ text: '  x', from: 0, keeps: isSpace, },); // 2
- ```
- */
-function scanEnd(
-  {
-    text,
-    from,
-    keeps,
-  }: {
-    readonly text: string;
-    readonly from: number;
-    readonly keeps: (character: { readonly character: string; },) => boolean;
-  },
-): number {
-  for (let at = from; at < text.length; at += 1) {
-    if (!keeps({ character: text.charAt(at,), },))
-      return at;
-  }
-  return text.length;
 }
 
 /**
@@ -346,7 +313,7 @@ function pairRewrites(
   /**
    Where the Han run ends.
    */
-  const hanEnd = scanEnd({
+  const hanEnd = runEnd({
     text,
     from: hanStart,
     keeps: isHanCharacter,
@@ -356,7 +323,7 @@ function pairRewrites(
   /**
    Where the pinyin run starts, past the comma and its spaces.
    */
-  const pinyinStart = scanEnd({
+  const pinyinStart = runEnd({
     text,
     from: hanEnd + 1,
     keeps: isSpace,
@@ -364,7 +331,7 @@ function pairRewrites(
   /**
    Where the pinyin run ends.
    */
-  const pinyinEnd = scanEnd({
+  const pinyinEnd = runEnd({
     text,
     from: pinyinStart,
     keeps: inPinyin,
@@ -380,7 +347,7 @@ function pairRewrites(
   /**
    Whether the run carries a tone mark, the sign it is written as pinyin.
    */
-  const marked = scanEnd({
+  const marked = runEnd({
     text,
     from: pinyinStart,
     keeps: unmarked,

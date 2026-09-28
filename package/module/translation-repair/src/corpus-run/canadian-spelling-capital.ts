@@ -1,13 +1,15 @@
 import {
   isCasedLetter,
   isDigit,
-  runEnd,
 } from './canadian-date-parts.ts';
 import {
   isWordCharacter,
   lineStartOf,
-  runStart,
 } from './canadian-spelling-context.ts';
+import {
+  runEnd,
+  runStart,
+} from './text-runs.ts';
 import {
   NAME_TITLES,
   TITLE_SMALL_WORDS,

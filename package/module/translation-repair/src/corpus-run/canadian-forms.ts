@@ -2,7 +2,7 @@ import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { rewriteEverySlice, } from './page-slice-rewrite.ts';
-import { runEnd, } from './canadian-date-parts.ts';
+import { runEnd, } from './text-runs.ts';
 import { monthFirstDates, } from './canadian-date.ts';
 import { isWordCharacter, } from './canadian-spelling-context.ts';
 import { canadianSpellings, } from './canadian-spelling.ts';

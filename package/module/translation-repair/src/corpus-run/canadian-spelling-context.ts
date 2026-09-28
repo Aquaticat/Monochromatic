@@ -1,8 +1,11 @@
 import {
   isCasedLetter,
   isDigit,
-  runEnd,
 } from './canadian-date-parts.ts';
+import {
+  runEnd,
+  runStart,
+} from './text-runs.ts';
 
 //region Canadian spelling context
 // What stands beside a listed word decides whether it is prose the pass may
@@ -106,41 +109,6 @@ function isTokenCharacter(
   { character, }: { readonly character: string; },
 ): boolean {
   return (character !== '') && (character.trim() !== '');
-}
-
-/**
- Where a run of characters one test keeps starts, reading back from one
- offset.
-
- @param text - text under scan
-
- @param from - offset just past the run
-
- @param keeps - test each character of the run passes
-
- @returns Offset of the run's first character
-
- @example
- ```ts
- runStart({ text: 'the cat', from: 7, keeps: isCasedLetter, },); // 4
- ```
- */
-export function runStart(
-  {
-    text,
-    from,
-    keeps,
-  }: {
-    readonly text: string;
-    readonly from: number;
-    readonly keeps: (character: { readonly character: string; },) => boolean;
-  },
-): number {
-  for (let at = from; at > 0; at -= 1) {
-    if (!keeps({ character: text.charAt(at - 1,), },))
-      return at;
-  }
-  return 0;
 }
 
 /**

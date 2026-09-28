@@ -14,6 +14,8 @@ import {
   type YearPart,
 } from './canadian-date-words.ts';
 
+import { runEnd, } from './text-runs.ts';
+
 //region Canadian date parts
 // Reads one part of a date at a time: a day, a month, a year, and what may
 // stand around them. `canadian-date-read.ts` puts the parts together into the
@@ -96,40 +98,6 @@ export function isDateSpace(
   { character, }: { readonly character: string; },
 ): boolean {
   return (character === ' ') || (character === NO_BREAK_SPACE);
-}
-
-/**
- Where a run of characters one test keeps ends.
-
- @param text - text under scan
-
- @param from - where the run starts
-
- @param keeps - test each character of the run passes
-
- @returns Offset of the first character the test refuses, or the text's length
-
- @example
- ```ts
- runEnd({ text: '12 May', from: 0, keeps: isDigit, },); // 2
- ```
- */
-export function runEnd(
-  {
-    text,
-    from,
-    keeps,
-  }: {
-    readonly text: string;
-    readonly from: number;
-    readonly keeps: (character: { readonly character: string; },) => boolean;
-  },
-): number {
-  for (let at = from; at < text.length; at += 1) {
-    if (!keeps({ character: text.charAt(at,), },))
-      return at;
-  }
-  return text.length;
 }
 
 /**
