@@ -1,6 +1,11 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import type { SliceSyntax, } from './chunk-document.ts';
 import type { ConsolidateGateOutcome, } from './consolidate-gate-stage.ts';
-import type { ConsolidationTerminal, } from './consolidate-settle.ts';
+import type {
+  ConsolidationSettlement,
+  ConsolidationTerminal,
+} from './consolidate-settle.ts';
+import { unpolishedBaseline, } from './consolidation-polish-skip.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 import type { SliceValidation, } from './translate-validate.ts';
 
@@ -45,6 +50,16 @@ import type { SliceValidation, } from './translate-validate.ts';
 // not withhold the entry over it. A standing that has NOT passed the gate was
 // never going to ship, and the page guard was going to say so after the run
 // had been paid for.
+//
+// THE OWNER'S RULING OF 2026-09-27 REPLACES "ELSE FAIL THE SLICE AT ONCE":
+// asked whether an entry keeps stopping where no wording for a slice passes
+// the rule, given that a stopped entry leaves the archive's whole page live,
+// that slice included, the owner chose "Keep archive, ship". Every exit that
+// stopped the entry now settles through {@link keepTheArchive}: the slice
+// keeps exactly what the archive has there, nothing where it is silent, the
+// page ships with every other repair, and the publish step reports the slice.
+// The first half of the 2026-09-04 rule stands, so a valid proposal is still
+// preferred wherever one exists.
 
 /**
  Finding recorded on a settlement whose standing was withheld from the slate.
@@ -87,6 +102,14 @@ export const FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING: string = 'undecided-ga
 export const GATE_PREFERRED_INELIGIBLE_STANDING_FINDING: string = 'gate-preferred-ineligible-standing: the gate '
   + 'preferred a standing text that failed the deterministic publication rule, which cannot ship, so the proposal '
   + 'the slate judges chose ships as the best valid text; the gate ballots name what they held against it';
+
+/**
+ Finding recorded on a settlement where no wording passed the deterministic
+ rule, so the archive keeps the slice (owner, 2026-09-27, "Keep archive,
+ ship").
+ */
+export const NO_VALID_WORDING_FINDING: string = 'no-valid-wording: no wording for this slice passed the '
+  + 'deterministic publication rule, so the archive keeps it and the page ships with it reported';
 
 /**
  Raised when a slice's standing text has failed the deterministic gate and
@@ -182,44 +205,89 @@ export function slateIncumbentFor(
 }
 
 /**
- Refuses a settlement that would ship an ineligible standing text.
- 
- ASKED AT EVERY EXIT THAT KEEPS THE STANDING: the empty floor, the judges'
- decline, and the gate's refusal of the consolidation they chose. A
- `consolidated` terminal ships fresh wording the floor passed, which is the
- one outcome the rule allows.
- 
+ Whether a settlement about to end this way leaves no wording the rule
+ passed, so the archive keeps the slice.
+
+ ASKED AT EVERY EXIT THAT KEEPS THE STANDING: the empty floor, the missing
+ standing, the judges' absent slate, and the gate's refusal of the
+ consolidation they chose. A `consolidated` terminal ships fresh wording the
+ floor passed, which is the one outcome that needs no archive.
+
  @param standingEligible - whether the standing passed the deterministic gate
- 
+
  @param terminal - how the settlement is about to end
- 
- @param sliceIndex - prepared position of the slice, for the error
- 
- @throws {@link ConsolidationStandingIneligibleError} when the standing is
- ineligible and the terminal keeps it
- 
+
+ @returns Whether nothing the settlement holds may ship
+
  @example
  ```ts
- requireShippableTerminal({ standingEligible, terminal: 'consolidated', sliceIndex, },);
+ const keep = nothingValidShips({ standingEligible, terminal: 'incumbent-only', },);
  ```
  */
-export function requireShippableTerminal(
+export function nothingValidShips(
   {
     standingEligible,
     terminal,
-    sliceIndex,
   }: {
     readonly standingEligible: boolean;
     readonly terminal: ConsolidationTerminal;
-    readonly sliceIndex: number;
   },
-): void {
-  if (standingEligible || (terminal === 'consolidated'))
-    return;
-  throw new ConsolidationStandingIneligibleError({
+): boolean {
+  return (!standingEligible) && (terminal !== 'consolidated');
+}
+
+/**
+ Settles a slice whose every wording the deterministic rule refused by
+ keeping the archive's (owner, 2026-09-27, "Keep archive, ship").
+
+ THE SETTLEMENT KEEPS ITS TERMINAL, which still says which round ended it;
+ the mark and the finding say what ships. Its text stays the refused
+ standing, since the archive this slice keeps is the comparison row's, which
+ the artifact reads, and on a disputed slice the incumbent here is the
+ repair lane's stand-in rather than the archive.
+
+ @param settlement - what the stage settled, before any polish
+
+ @param syntax - explicit syntax role, which decides the not-run reason the
+ final naturalness check requires
+
+ @param sliceIndex - prepared position of the slice, for the log
+
+ @param l - stage logger, told that the archive keeps the slice
+
+ @returns Settlement marked archive-kept, with its finding and a not-run polish
+
+ @example
+ ```ts
+ return keepTheArchive({ settlement, syntax: subject.syntax, sliceIndex, l, },);
+ ```
+ */
+export function keepTheArchive(
+  {
+    settlement,
+    syntax,
     sliceIndex,
-    terminal,
-  },);
+    l,
+  }: {
+    readonly settlement: ConsolidationSettlement;
+    readonly syntax?: SliceSyntax;
+    readonly sliceIndex: number;
+    readonly l: Logger;
+  },
+): ConsolidationSettlement {
+  l.warn(
+    `slice ${String(sliceIndex,)}: no wording passed the deterministic publication rule (${settlement.terminal}); `
+      + 'the archive keeps this slice and the page ships with it reported',
+  );
+  return {
+    ...settlement,
+    archiveKept: true,
+    findings: [
+      ...settlement.findings,
+      NO_VALID_WORDING_FINDING,
+    ],
+    polish: unpolishedBaseline((syntax === undefined) ? {} : { syntax, },),
+  };
 }
 
 /**

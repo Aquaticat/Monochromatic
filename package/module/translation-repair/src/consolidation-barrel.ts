@@ -89,10 +89,13 @@ export {
   INELIGIBLE_STANDING_WITHHELD_FINDING,
   FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING,
   GATE_PREFERRED_INELIGIBLE_STANDING_FINDING,
+  keepTheArchive,
+  NO_VALID_WORDING_FINDING,
+  nothingValidShips,
   UNDECIDED_GATE_SHIPS_PROPOSAL_FINDING,
-  requireShippableTerminal,
   slateIncumbentFor,
 } from './consolidate-ineligible-standing.ts';
+export { unpolishedBaseline, } from './consolidation-polish-skip.ts';
 export {
   readStandingVerdict,
   type StandingVerdict,

@@ -20,12 +20,12 @@ import {
   verdictsOf,
 } from './consolidate-settle-context.ts';
 import {
-  ConsolidationStandingIneligibleError,
   INELIGIBLE_STANDING_WITHHELD_FINDING,
-  requireShippableTerminal,
+  keepTheArchive,
+  nothingValidShips,
   slateIncumbentFor,
 } from './consolidate-ineligible-standing.ts';
-import { TranslateAbsenceError, } from './translate-absence.ts';
+import { judgeConsolidationSlate, } from './consolidate-settle-judge.ts';
 import { applyFinalPolish, } from './consolidation-polish-apply.ts';
 import type {
   ConsolidationPolish,
@@ -38,8 +38,6 @@ import {
   buildTranslateCandidates,
   type LaneText,
 } from './translate-candidates.ts';
-import { judgeTranslateSlate, } from './translate-judge.ts';
-import { judgeSlateWithRetry, } from './translate-retry.ts';
 import type {
   TranslateDecision,
   TranslateStageResult,
@@ -278,6 +276,18 @@ export type ConsolidationSettlement = {
    Final body naturalness decision, absent on exits before final candidate.
    */
   readonly polish?: ConsolidationPolish;
+
+  /**
+   Present where no wording for this slice passed the deterministic rule, so
+   the archive keeps it (owner, 2026-09-27, "Keep archive, ship"); absent on
+   every other settlement.
+
+   `text` IS THEN THE REFUSED STANDING, not what ships: the artifact names
+   the archive, which its comparison row carries. Never cached
+   (`consolidationWorthResuming`), since a copy resumed without this mark
+   would ship the refused text.
+   */
+  readonly archiveKept?: true;
 };
 
 /**
@@ -437,21 +447,18 @@ export async function settleConsolidation(
   // empty standing is withheld exactly as an ineligible one is and the lane
   // texts are judged below.
   //
-  // AND WITHOUT ONE NO VALID PROPOSAL EXISTS, so the same rule fails the slice
-  // here (ledger E4), as the incumbent-only exit below does. This exit used
-  // to settle regardless, and with no polish to record the final naturalness
-  // check stopped the entry at persist, after every later slice was bought.
-  // An empty standing passes the rule only over a blank original, where
-  // keeping nothing is the right rendering; the pinned corpus carves no such
-  // slice (0 of 1259, 2026-09-27).
+  // AND WITHOUT ONE NO WORDING PASSES THE RULE, so the archive keeps the slice
+  // (owner, 2026-09-27, "Keep archive, ship"; ledger E4), as at the
+  // incumbent-only exit below. This exit used to settle with no polish, and
+  // the final naturalness check stopped the entry at persist after every later
+  // slice was bought. An empty standing passes the rule only over a blank
+  // original, where keeping nothing is the right rendering; the pinned corpus
+  // carves no such slice (0 of 1259, 2026-09-27).
   if ((standingText === '') && (laneTexts.length === 0)) {
-    requireShippableTerminal({
-      standingEligible,
-      terminal: 'no-standing-text',
-      sliceIndex,
-    },);
-    sl.warn('consolidation: no standing text to judge against, so the slice keeps what it had',);
-    return {
+    /**
+     The settlement this exit ends in.
+     */
+    const settlement: ConsolidationSettlement = {
       terminal: 'no-standing-text',
       text: standingText,
       floor,
@@ -460,6 +467,19 @@ export async function settleConsolidation(
       demoted: false,
       findings: producedFindings,
     };
+    if (nothingValidShips({
+      standingEligible,
+      terminal: settlement.terminal,
+    },)) {
+      return keepTheArchive({
+        settlement,
+        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+        sliceIndex,
+        l: sl,
+      },);
+    }
+    sl.warn('consolidation: no standing text to judge against, so the slice keeps what it had',);
+    return settlement;
   }
 
   // A SLATE WITH NOTHING VALID ON IT ENDS HERE, before either round is bought.
@@ -468,22 +488,32 @@ export async function settleConsolidation(
   // with lane texts to offer is not that slate: the lanes passed the rule
   // (class forty, 2026-09-17), so the judges are asked.
   if ((floor.kind === 'incumbent-only') && (laneTexts.length === 0)) {
-    requireShippableTerminal({
-      standingEligible,
+    /**
+     The settlement this exit ends in.
+     */
+    const settlement: ConsolidationSettlement = {
       terminal: 'incumbent-only',
-      sliceIndex,
-    },);
+      text: standingText,
+      floor,
+      verdicts,
+      rewrapped: false,
+      demoted: false,
+      findings: producedFindings,
+    };
+    if (nothingValidShips({
+      standingEligible,
+      terminal: settlement.terminal,
+    },)) {
+      return keepTheArchive({
+        settlement,
+        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+        sliceIndex,
+        l: sl,
+      },);
+    }
     return await applyFinalPolish({
       client,
-      settlement: {
-        terminal: 'incumbent-only',
-        text: standingText,
-        floor,
-        verdicts,
-        rewrapped: false,
-        demoted: false,
-        findings: producedFindings,
-      },
+      settlement,
       subject,
       lineStructured,
       sliceIndex,
@@ -578,122 +608,86 @@ export async function settleConsolidation(
   },);
 
   /**
-   What the slate judges settled.
-   
-   A DECLINE WITH THE STANDING WITHHELD IS NAMED AS WHAT IT IS. The judge
-   reports an absent incumbent as a passage the archive never carried; here
-   the passage exists and failed the gate, so that error is re-raised under
-   the ineligible standing's own name with the judge's refusal as its cause.
-   
-   A TIE WITH THE STANDING WITHHELD IS CHALLENGED ONCE (class fifty-five,
-   XingZ605 slice 13, 2026-09-18): four valid proposals, the judges 2 to 2
-   between two renderings, and the decline stopped the entry at 4h08m over
-   a slate that had nothing wrong with it. The translate lane has re-asked a
-   declined slate under `decline-challenge` since class fifty-three, with a
-   run-off over the candidates the tie backed; the consolidation gets the
-   same second round only where a decline would stop the entry. An eligible
-   standing keeps the single round, because there a decline keeps text the
-   contest already endorsed.
+   What the slate judges settled, or the absence they raised over a withheld
+   standing (`consolidate-settle-judge.ts`).
    */
-  const decided = await (async function judged(): Promise<TranslateStageResult> {
+  const judgedRound = await judgeConsolidationSlate({
+    client,
+    judgeModelIds,
+    subject,
+    built,
+    survivors: survivingVoices.length,
+    producedFindings,
+    standingEligible,
+    incumbent,
+    identity,
+    evidence,
+    lineStructured,
+    challenged,
+    sliceIndex,
+    signal,
+    perCallTimeoutMs,
+    l: sl,
+  },);
+  if (judgedRound.kind === 'absent') {
     /**
-     Everything one slate judging takes, built once so the challenged and
-     the single-round asks cannot drift apart.
+     What the judging raised, with its reason and the round's findings.
      */
-    const judging: Parameters<typeof judgeTranslateSlate>[0] = {
-        client,
-        produced: {
-          candidates: built.candidates,
+    const { absence, } = judgedRound;
+    return keepTheArchive({
+      // The absence carries the judged round's findings, which already hold
+      // the produce half's, so they are not added again.
+      settlement: {
+        terminal: SLATE_TERMINALS[absence.reason],
+        text: standingText,
+        floor,
+        verdicts,
+        rewrapped: false,
+        demoted: false,
+        findings: absence.findings,
+      },
+      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+      sliceIndex,
+      l: sl,
+    },);
+  }
 
-          // SURVIVORS RATHER THAN VOICES HEARD, because this number exists to
-          // tell the judges how thin the slate they are deciding over is, and
-          // a refused proposal is not on it. A census reading this for
-          // transport health would misread a refusal as a lost voice;
-          // `verdicts` is what separates them.
-          heardTranslators: survivingVoices.length,
-
-          findings: [
-            ...producedFindings,
-            ...(standingEligible ? [] : [INELIGIBLE_STANDING_WITHHELD_FINDING,]),
-            ...built.findings,
-          ],
-        },
-        judgeModelIds,
-        sourceText: subject.sourceText,
-        incumbentText: incumbent.incumbentText,
-
-        // PRESENT WHENEVER THE STANDING MAY SHIP, ABSENT WHEN THE GATE REFUSED
-        // IT. What the judges fall back on at this stage is `standingText`,
-        // not the archive's own wording, and the `standingText === ''` exit
-        // above returns `no-standing-text` before any judge is bought; so a
-        // slate reaching this call has a text to keep unless that text is
-        // ineligible, in which case there is nothing to keep and a decline
-        // ends the slice. Threading the slice's own `incumbentKind` here would
-        // say something different and wrong: an anchor whose lanes both
-        // produced wording has a standing text to fall back on even though
-        // the archive holds none.
-        incumbentKind: incumbent.incumbentKind,
-        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
-        ...identity,
-        // WHAT THE PRODUCERS WERE SHOWN, forwarded rather than recomputed.
-        // `#176` put the pictures in front of the producers and left the
-        // judges blind, which is worse than both being blind: a producer that
-        // used a picture correctly then looked to its judge like one
-        // inventing detail.
-        ...evidence,
-        // THE SAME FLAG THE PRODUCERS WERE GIVEN, which this function has held
-        // since it was written and passed to nobody. `#176` gave it to the
-        // consolidation producers; leaving the judges out of it would have the
-        // judges mark down exactly the unmerging the producers were told to do.
-        lineStructured,
-        // WORDING THAT CANNOT SHIP IS WITHHELD, NOT ABSENT (owner answer
-        // 2026-09-27, "Preference + polish"): the judges are told a declined
-        // slate still ships by preference, and a challenge round declined
-        // with nothing left to narrow does, where it stopped the entry.
-        withheldStanding: !standingEligible,
-        signal,
-        perCallTimeoutMs,
-        l: sl,
-      };
-    try {
-      return challenged
-        ? await judgeSlateWithRetry({ judging, },)
-        : await judgeTranslateSlate(judging,);
-    }
-    catch (error) {
-      // Only a slate with nothing to ship reaches here now: no candidate, or
-      // no voice heard.
-      if ((standingEligible) || (!(error instanceof TranslateAbsenceError)))
-        throw error;
-      throw new ConsolidationStandingIneligibleError({
-        sliceIndex,
-        terminal: SLATE_TERMINALS[error.reason],
-        cause: error,
-      },);
-    }
-  })();
+  /**
+   What the slate judges decided.
+   */
+  const { decided, } = judgedRound;
 
   // THE JUDGES CHOOSING THE INCUMBENT ENDS IT. There is no consolidation to
   // gate, and asking the gate anyway would buy ballots about the text that is
   // already in place.
   if (decided.origin !== 'fresh') {
-    requireShippableTerminal({
-      standingEligible,
+    /**
+     The settlement this exit ends in.
+     */
+    const settlement: ConsolidationSettlement = {
       terminal: SLATE_TERMINALS[decided.decision],
-      sliceIndex,
-    },);
+      text: standingText,
+      floor,
+      verdicts,
+      decided,
+      rewrapped: false,
+      demoted: false,
+      findings: decided.findings,
+    };
+    if (nothingValidShips({
+      standingEligible,
+      terminal: settlement.terminal,
+    },)) {
+      return keepTheArchive({
+        settlement,
+        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+        sliceIndex,
+        l: sl,
+      },);
+    }
     return await applyFinalPolish({
       client,
-      settlement: {
-        terminal: SLATE_TERMINALS[decided.decision],
-        text: standingText,
-        floor,
-        verdicts,
-        decided,
-        rewrapped: false,
-        demoted: false,
-        findings: decided.findings,
-      },
+      settlement,
       subject,
       lineStructured,
       sliceIndex,

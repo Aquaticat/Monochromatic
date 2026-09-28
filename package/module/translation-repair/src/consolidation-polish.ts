@@ -13,6 +13,7 @@ import {
   reviewParagraphsOf,
   runConsolidationPolishRound,
 } from './consolidation-polish-round.ts';
+import { unpolishedBaseline, } from './consolidation-polish-skip.ts';
 import type { RefineStageMode, } from './refine-selection-context.ts';
 
 export type {
@@ -157,18 +158,8 @@ export async function polishConsolidation(
     readonly l: Logger;
   }>,
 ): Promise<ConsolidationPolish> {
-  if (syntax === 'front-matter') {
-    return {
-      kind: 'not-run',
-      reason: 'front-matter',
-    };
-  }
-  if (!eligible) {
-    return {
-      kind: 'not-run',
-      reason: 'unsafe-baseline',
-    };
-  }
+  if ((syntax === 'front-matter') || (!eligible))
+    return unpolishedBaseline((syntax === undefined) ? {} : { syntax, },);
   if (config === undefined) {
     return {
       kind: 'not-run',

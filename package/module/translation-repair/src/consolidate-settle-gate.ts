@@ -5,7 +5,8 @@ import type { SyntheticClient, } from './chat-contract.ts';
 import { gateConsolidatedSlice, } from './consolidate-gate-stage.ts';
 import type { GateBallot, } from './consolidate-gate-wire.ts';
 import {
-  requireShippableTerminal,
+  keepTheArchive,
+  nothingValidShips,
   shipPastForfeitStanding,
 } from './consolidate-ineligible-standing.ts';
 import type {
@@ -223,11 +224,43 @@ export async function gateAndShip(
   const terminal: ConsolidationTerminal = (wrapped.ships === 'consolidated')
     ? 'consolidated'
     : (wrapped.demoted ? 'wrap-erased-difference' : 'gate-kept-standing');
-  requireShippableTerminal({
+
+  /**
+   The settlement the gate ends in.
+   */
+  const settlement: ConsolidationSettlement = {
+    terminal,
+    text: wrapped.text,
+    floor,
+    verdicts,
+    decided,
+    gate: gated,
+    rewrapped: wrapped.rewrapped,
+    demoted: wrapped.demoted,
+
+    // The judged round already carries the produce half's findings, so
+    // adding them again here would report one voice loss twice.
+    findings: [
+      ...decided.findings,
+      ...gated.findings,
+    ],
+  };
+  // A GATE LEAVING THE REFUSED STANDING IN PLACE leaves no wording the rule
+  // passed, so the archive keeps the slice (owner, 2026-09-27, "Keep archive,
+  // ship"); `shipPastForfeitStanding` has already turned every gate verdict it
+  // can into the slate's choice, so only a wrap that erased the difference
+  // reaches here.
+  if (nothingValidShips({
     standingEligible,
     terminal,
-    sliceIndex,
-  },);
+  },)) {
+    return keepTheArchive({
+      settlement,
+      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+      sliceIndex,
+      l,
+    },);
+  }
 
   /**
    How the slate shipped past two declines, absent where it chose.
@@ -235,23 +268,7 @@ export async function gateAndShip(
   const { shippedPastDecline, } = decided;
   return await applyFinalPolish({
     client,
-    settlement: {
-      terminal,
-      text: wrapped.text,
-      floor,
-      verdicts,
-      decided,
-      gate: gated,
-      rewrapped: wrapped.rewrapped,
-      demoted: wrapped.demoted,
-
-      // The judged round already carries the produce half's findings, so
-      // adding them again here would report one voice loss twice.
-      findings: [
-        ...decided.findings,
-        ...gated.findings,
-      ],
-    },
+    settlement,
     subject,
     lineStructured,
     sliceIndex,
