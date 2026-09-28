@@ -299,10 +299,13 @@ export const TRANSLATOR_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 't
  owner's decision of 2026-09-03 after a morning in which it left every judge
  seat outright: served by Hyper it reasons past the round window (30 of 34
  translate-lane select rounds cut on XIEPT2), served by Synthetic it answers
- (25 of 28 on Toka_ls). `run-seats.ts` reads Synthetic's meter before each
- phase and withholds the seat while Synthetic is dry; these static benches
- are the Synthetic-wet ones. `hf:moonshotai/Kimi-K3` is likewise withheld
- from the select seats alone while Synthetic is dry (`HYPER_SLOW_SELECT_JUDGES`).
+ (25 of 28 on Toka_ls). `run-seats.ts` reads the meters before each phase
+ and withholds the seat while Hyper is the provider that would serve it, that
+ is while Synthetic is dry and Hyper is wet; with both dry no provider serves
+ it, and a round reads it as unreachable and hands its place on (ledger P12
+ corrected "while Synthetic is dry"). These static benches are the
+ Synthetic-wet ones. `hf:moonshotai/Kimi-K3` is likewise withheld from the
+ select seats alone while Hyper would serve it (`HYPER_SLOW_SELECT_JUDGES`).
  */
 const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 'wide-seat-dropped', },);
 
