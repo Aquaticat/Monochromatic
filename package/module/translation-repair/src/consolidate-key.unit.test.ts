@@ -325,8 +325,10 @@ await describe({
         // slate declined twice there by preference, its reasons to the polish.
         // Version 19 refuses disputed wordings and keys the dispute note.
         // Version 20 carries every floor, sheet and quorum change made after 19.
+        // On 2026-09-28 the run shape took the slate judges beside the writers
+        // (ledger X11), which moved this literal inside 20.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'fef96fe78f54f88e65a11b66fbe6980e03ed2883c3c43945afc4b3af3929c24e',
+          'a064184d393fb07074c43421adbc8ff6d6c71bbdbe808f0de34244f3bade9467',
         );
       },
     },),

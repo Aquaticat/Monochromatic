@@ -155,6 +155,12 @@ import type { LaneText, } from './translate-candidates.ts';
  whose voices a round hears; checked on 2026-09-28: still no slice-cache
  file newer than 00:26 on 2026-09-27.
 
+ Rides inside 20 too: the run shape carries the slate judges beside the
+ writers (ledger X11), which left it when `9a7d48354` split them from the
+ writers on 2026-09-02, so a settlement another judging bench reached never
+ resumes; every key moves, and none was written under 20. Checked on
+ 2026-09-28: still no slice-cache file newer than 00:26 on 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (task #395, ledger M28): 20 was set
  in `66703994a` at 22:56 on 2026-09-27, after the newest slice-cache file under the
  agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
@@ -225,7 +231,11 @@ const LANE_TEXTS_KEY_LABEL = 'lane-texts';
  `perCallTimeoutMs` is deliberately ABSENT, on the reasoning every other lane
  gives: it changes how long a voice has to answer, not what it is asked.
  
- @param modelIds - roster asked to produce, judge and gate
+ @param modelIds - writers asked to produce, and the judges where none are named
+
+ @param judgeModelIds - slate judges and gate, which decide what ships, so a
+ settlement another bench reached never resumes (ledger X11: they left the key
+ when `9a7d48354` split them from the writers on 2026-09-02)
 
  @param identityContext - names and handles both documents declare
 
@@ -249,6 +259,7 @@ const LANE_TEXTS_KEY_LABEL = 'lane-texts';
 export function consolidateRunShape(
   {
     modelIds,
+    judgeModelIds = modelIds,
     identityContext,
     referenceContext,
     polishConfig,
@@ -264,6 +275,7 @@ export function consolidateRunShape(
 ): string {
   return JSON.stringify([
     modelIds,
+    judgeModelIds,
     identityContext ?? '',
     ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
     ...((polishConfig === undefined)

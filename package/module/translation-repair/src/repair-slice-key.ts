@@ -452,6 +452,10 @@ import type { RepairModels, } from './repair-contract.ts';
  Rides inside 34 too: the editor sheet and both editor selections say that
  saying something twice adds content unless the ORIGINAL says it again at
  that place (ledger L14(b), `49d3c285b`); same check, same result.
+
+ Rides inside 34 too: the run shape carries checker self-certification where
+ it is refused (ledger X11); production has permitted it since 2026-08-23,
+ so no key a production run writes moves.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**
@@ -528,6 +532,10 @@ export function repairRunShape(
     // ONLY WHERE THE ORIGINAL LINKS SOMEWHERE, so the 33 entries that cite
     // nothing keep the keys their slices were settled under.
     ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
+    // ONLY WHERE CHECKER SELF-CERTIFICATION IS REFUSED (ledger X11): it
+    // decides who may check a refinement, and production has permitted it
+    // since 2026-08-23, so every settled slice keeps its key.
+    ...((models.checkerSelfCertificationPermitted === false) ? ['checker-self-certification-refused',] : []),
   ],);
 }
 

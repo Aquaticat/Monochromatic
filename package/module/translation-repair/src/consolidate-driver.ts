@@ -209,6 +209,7 @@ export async function consolidateDocument(
    */
   const runShape = consolidateRunShape({
     modelIds,
+    judgeModelIds,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((polishConfig === undefined) ? {} : { polishConfig, }),
