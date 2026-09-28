@@ -1966,7 +1966,13 @@ and a reader of an older generation reads the contests it recorded.
 
 ### L7: the lane contest is shown probe claims about a patch that lost
 
-Status: open.
+Status: fixed in `3bed8241d` (guard `11c1e92d8`; mutation checked with a control).
+`damageClaimLinesBySlice` read every chunk's accuracy probe,
+so XingZ6014 slice 3 showed the judges damage quoting "she came out as trans"
+that the repair candidate, the archive after a lost patch, never carried.
+The accuracy repair's claims now need `accuracyPatchSelected`;
+the naturalness rewrite's stand either way.
+Rides inside `LANE_CONTEST_CACHE_VERSION` 6.
 
 ### L8: a heard ballot with no usable verdict still counts toward quorum
 
