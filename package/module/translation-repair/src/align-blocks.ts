@@ -1,4 +1,9 @@
 import type { DocumentNode, } from './document-node.ts';
+import {
+  continuesLatinWord,
+  foldLatinWord,
+  isLatinWordCharacter,
+} from './latin-letters.ts';
 
 //region Block alignment
 // Paragraph pairing used to assume that equal node counts mean one-to-one
@@ -80,84 +85,19 @@ export const FALLBACK_EXPANSION = 1.8;
 const MIN_TOKEN_LENGTH = 2;
 
 /**
- Code point of `0`, the low end of the ASCII digit range.
- */
-const DIGIT_ZERO = 48;
+ Extracts the script-neutral tokens of one block by a single linear scan: runs
+ of Latin letters and digits, each folded (`foldLatinWord`), so a name written
+ with its accent, a separate one or none is one token. Deliberately excludes
+ CJK, whose characters carry meaning individually and would match across
+ unrelated blocks. A scan rather than a pattern: the rule is "runs of Latin
+ letters and digits", which an index walk states directly and runs in one pass
+ with no backtracking on adversarial input. The runs took ASCII letters and
+ digits only until ledger B18, which cut every accented word at its accent.
 
-/**
- Code point of `9`, the high end of the ASCII digit range.
- */
-const DIGIT_NINE = 57;
-
-/**
- Code point of `A`, the low end of the uppercase ASCII range.
- */
-const UPPER_A = 65;
-
-/**
- Code point of `Z`, the high end of the uppercase ASCII range.
- */
-const UPPER_Z = 90;
-
-/**
- Code point of `a`, the low end of the lowercase ASCII range.
- */
-const LOWER_A = 97;
-
-/**
- Code point of `z`, the high end of the lowercase ASCII range.
- */
-const LOWER_Z = 122;
-
-/**
- Stand-in code point for a position past the text's end. Zero is never a
- token unit, so the final flush iteration reads as a boundary.
- */
-const NOT_A_TOKEN_UNIT = 0;
-
-/**
- Whether a character can start or continue a script-neutral token: ASCII
- letters and digits. Deliberately excludes CJK, whose characters carry
- meaning individually and would match across unrelated blocks.
- 
- @param code - UTF-16 code unit to classify
- 
- @returns Whether the unit belongs to a token
- 
- @example
- ```ts
- isTokenUnit('a'.charCodeAt(0,),);
- ```
- */
-function isTokenUnit(code: number,): boolean {
-  /**
-   Whether the unit is an ASCII digit.
-   */
-  const isDigit = (code >= DIGIT_ZERO) && (code <= DIGIT_NINE);
-
-  /**
-   Whether the unit is an uppercase ASCII letter.
-   */
-  const isUpper = (code >= UPPER_A) && (code <= UPPER_Z);
-
-  /**
-   Whether the unit is a lowercase ASCII letter.
-   */
-  const isLower = (code >= LOWER_A) && (code <= LOWER_Z);
-  return isDigit || isUpper
-    || isLower;
-}
-
-/**
- Extracts the script-neutral tokens of one block by a single linear scan.
- A scan rather than a pattern: the rule is "runs of ASCII alphanumerics",
- which an index walk states directly and runs in one pass with no
- backtracking on adversarial input.
- 
  @param text - block text to tokenize
- 
- @returns Lowercased tokens, deduplicated
- 
+
+ @returns Folded tokens, deduplicated
+
  @example
  ```ts
  const tokens = tokenize({ text: 'She played THE FINALS in 2023.', },);
@@ -173,28 +113,37 @@ export function tokenize({ text, }: { readonly text: string; },): ReadonlySet<st
    Start index of the run currently being scanned.
    */
   let runStart = -1;
+  // One step past the end, where `charAt` reads empty, closes the last run.
   for (let index = 0; index <= text.length; index += 1) {
     /**
-     Whether this position continues a token; the extra final iteration
-     flushes a run that ends at the text's end.
+     Code unit under the cursor, empty past the end.
      */
-    const inToken = (index < text.length)
-      && isTokenUnit(text.codePointAt(index,) ?? NOT_A_TOKEN_UNIT,);
+    const character = text.charAt(index,);
 
-    if (inToken && (runStart < 0)) {
-      runStart = index;
+    /**
+     Whether this position opens a token or goes on with the open one.
+     */
+    const inToken = (runStart < 0)
+      ? isLatinWordCharacter({ character, },)
+      : continuesLatinWord({ character, },);
+
+    if (inToken) {
+      if (runStart < 0)
+        runStart = index;
       continue;
     }
-    if ((!inToken) && (runStart >= 0)) {
+    if (runStart >= 0) {
       /**
-       Completed run.
+       Completed run, folded.
        */
-      const token = text.slice(
-        runStart,
-        index,
-      );
+      const token = foldLatinWord({
+        word: text.slice(
+          runStart,
+          index,
+        ),
+      },);
       if (token.length >= MIN_TOKEN_LENGTH)
-        tokens.add(token.toLowerCase(),);
+        tokens.add(token,);
       runStart = -1;
     }
   }

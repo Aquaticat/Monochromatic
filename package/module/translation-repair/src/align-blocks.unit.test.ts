@@ -57,7 +57,7 @@ await describe({
       name: tokenize.name,
       children: [
         it({
-          name: 'collects ascii word and digit runs, lowercased and deduplicated',
+          name: 'collects Latin word and digit runs, lowercased and deduplicated',
           fn: async () => {
             expect(
               [ ...tokenize({ text: 'Mittens played THE FINALS in 2023, mittens!', },), ],
@@ -83,6 +83,22 @@ await describe({
           name: 'drops single characters, which collide constantly',
           fn: async () => {
             expect([ ...tokenize({ text: 'a b cd', },), ],).toEqual([ 'cd', ],);
+          },
+        },),
+
+        it({
+          name: 'folds an accented word to one token, opening or carrying the accent, composed or combining, '
+            + 'which ASCII runs cut at the accent (ledger B18)',
+          fn: async () => {
+            expect([ ...tokenize({ text: 'Émile napped in the Château, the cha\u{0302}teau and à Chateau', },), ],)
+              .toEqual([
+                'emile',
+                'napped',
+                'in',
+                'the',
+                'chateau',
+                'and',
+              ],);
           },
         },),
       ],
