@@ -2068,15 +2068,23 @@ The refused regions by shape (`l4-refused-markup.mjs`, markup only):
 footnote references lost on quotation-mark claims (hulicaijia s34, shihai4h s29), both withdrawn;
 an MDX expression dropped on a mistranslation claim (shihai4h s38, shipped);
 `DottedNumber` component props rewritten on number-format claims (XingZ60 s34, s39, s41; three shipped);
-these are the damage the ruling names.
-Three shapes look like fixes the ruling's wording also refuses:
 inline code the source renders as a heading tag, converted to that tag (XingZ60 s87 and s88, two shipped);
 a spelling fix inside a `PhotoScroll` prop, whose captions are visible text (noname s9, shipped);
 and two footnote references swapped between clauses across two envelopes (yuki418330012 s6, shipped).
 An HTML comment translated or deleted on untranslated-text claims (XingZ60 s6, six shipped) is invisible to readers either way.
 One footnote lost on a link-convention and omission claim (shihai4h s33) was not selected;
 the package defines no rule text for `policy/link-convention`, so it stays unclassified.
-The three fix-shaped refusals go to the owner with the probe-reading question from L11.
+
+CORRECTED THE SAME DAY: the first version of this entry called the `DottedNumber` rewrites the damage the ruling names,
+reading claim category and tag shape without the source (M31).
+Against the corpus source page (`l4-source-carried.mjs`, pin a41fc607),
+the archive's `DottedNumber` props are not in the source on all six regions,
+and the edit's props are the source's own on five: those edits restore the original's props.
+Every refused atom was classified the same way:
+the lost footnote references, MDX expression and deleted comments are pure removals with nothing written in their place;
+the inline code, the `PhotoScroll` prop, the comments rewritten and the `DottedNumber` props are markup the translation authored
+(the source does not carry it), which the edit re-marked, into the source's own form where the source carries one;
+and the two swapped footnote references are the source's, each written by the other envelope's edit.
 
 Mutation check (`l4-mutants.json`): the gate off, the addition licence ignored, every claim licensing removal,
 a set compare in place of the multiset, escapes ignored, a spaced footnote label accepted,
@@ -2694,6 +2702,16 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M31: replay refusals classified as damage from claim category and tag shape
+
+Status: caught the same day, 2026-09-28, before the owner question was answered; the L4 entry is corrected.
+The L4 replay's refusals were sorted into damage and fixes by their claim category and markup shape,
+and the `DottedNumber` prop rewrites on number-format claims went down as damage, in the ledger and in the owner question.
+Compared with the corpus source page, five of the six restore the source's own props.
+Prevention: a gate replay's refusals are classified against the source they are meant to protect
+(is the lost atom the source's, and is what the edit wrote the source's?) before any is called damage;
+a category name says what a critic claimed, not what the edit did.
 
 ### M30: quality calls put to the owner as design questions
 

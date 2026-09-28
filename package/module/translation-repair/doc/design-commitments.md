@@ -338,6 +338,12 @@ Part of [the package README](../README.md).
   "Markup atoms".
   Footnote references, link destinations, MDX expressions, inline code and tags survive every edit
   except a removal an addition issue names; prose damage inside the quote stays with the checkers (ledger L4).
+  REFINED FOR QUALITY, 2026-09-28, under the standing directive below:
+  a replay of the ruling's wording refused 24 recorded edits, 17 of which re-marked markup or moved it rather than lost it.
+  Markup the source carries survives; an atom one edit drops and another edit of the same patch writes has survived;
+  an MDX expression, inline code or tag the translation authored may be re-marked (same kind, or into markup the source carries)
+  but never dropped; a footnote reference or link destination has no such excuse, since a label or address is an identifier
+  no checker judges. The addition removal stays the one licensed loss.
 - **A reply no one could read is re-asked on another provider, nudged.**
   Owner, 2026-09-28, asked what becomes of the router's cross-provider re-ask,
   which never ran because the prompt-uniqueness wrapper bypasses it:
