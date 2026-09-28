@@ -2160,7 +2160,22 @@ The trailing-comma drift in some test files is not a finding:
 
 ### X10: a slice carved through an element can never settle, and the stages disagree on `unknown`
 
-Status: open, with #379 (carving).
+Status: fixed in `a499a2fc2` (red guard `f4736eed4`, whose fixture was corrected in the fix; mutation checked).
+The carve was not the cause: NIGHT81473140 slice 22 holds the whole element,
+an opener and a self-closing component with an expression attribute on one line and the closer on the next,
+and the document and the slice both parse it whole.
+The lone-container masker (`mask-container-tags.ts`) paired whole tag lines only,
+so it blanked the closer as unpartnered and left the opener with no end;
+it now pairs against openers and closers of the same names anywhere in the slice (`inline-container-tags.ts`)
+and masks only a tag line left unpaired.
+The deterministic carve of all 92 entries now has 0 of 1,259 slices whose source or translation the slice grammar refuses.
+The stages still disagree on `unknown`, which after this fix means an original the grammar refuses whole,
+where the page would fail the upstream compile as well; none occurs in the pinned corpus, and no change is made there.
+The first red guard used a fixture that is not valid MDX even whole (a `span` on the opener line),
+so it failed for a reason other than the defect; the fix commit replaced it with the entry's shape
+and the mutation check (pre-fix masker, rebuilt) showed the corrected case failing.
+
+Found as (the diagnosis below blamed the carve and was wrong):
 NIGHT81473140 slice 22 of the deterministic carve opens a `<blockquote>` that closes in a later slice,
 so the strict grammar refuses the original (`end-tag-mismatch` at 1:1) and the verdict is `unknown`.
 The producers read `unknown` as a pass (`translate-floor.ts` keeps any voice not `invalid`;
