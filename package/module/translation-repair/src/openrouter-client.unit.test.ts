@@ -267,9 +267,10 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS MiniMax M3 off Parasail and ModelRun on the wire: the body\'s provider.ignore '
-        + 'carries the catalog row\'s slugs, so the endpoint that answers into the reasoning channel and '
-        + 'the one that times out in-stream are never routed to',
+      name: 'KEEPS MiniMax M3 off Parasail and ModelRun and asks Together then CoreWeave on the wire: the '
+        + 'body\'s provider.ignore carries the catalog row\'s slugs, so the endpoint that answers into the '
+        + 'reasoning channel and the one that times out in-stream are never routed to, and provider.order '
+        + 'names the measured endpoints ahead of the price sort (ledger H12)',
       fn: async () => {
         const { client, exchanges, } = recordedClient({},);
         await client.chatText({
@@ -297,6 +298,7 @@ await describe({
               'parasail',
               'modelrun',
             ],
+            order: ['together', 'coreweave',],
           },
         },);
       },

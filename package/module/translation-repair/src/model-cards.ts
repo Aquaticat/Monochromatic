@@ -217,13 +217,30 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       maxOutputLength: 512_000,
       promptUsdPerMillion: 0.3,
       completionUsdPerMillion: 1.2,
-      // Parasail and ModelRun cut a quarter or more of at least twenty
-      // streams on 2026-09-03 and 2026-09-04.
+      // Parasail answered into the reasoning channel and left content empty
+      // (2026-09-03); ModelRun timed out 119 of 300 streams in-stream on
+      // 2026-09-04 (`d55d83082`). This said both "cut a quarter or more of at
+      // least twenty streams" until ledger H12.
       ignoredEndpoints: [
         'parasail',
         'modelrun',
       ],
-      preferredEndpoints: [],
+      // TOGETHER, THEN COREWEAVE, NAMED AHEAD OF THE PRICE SORT (ledger H12,
+      // 2026-09-28). Ignoring one endpoint at a time left the price sort to
+      // pick the next, unmeasured. Only three endpoints in the listing of
+      // 2026-09-28 support structured outputs, which OpenRouter routes a
+      // schema request to alone (provider-selection docs): CoreWeave, Together
+      // and the ignored ModelRun, all FP4 (Together's own model table says FP4
+      // where OpenRouter lists it unknown), so precision does not choose
+      // between them. Over pass-run logs from 2026-09-21 to 2026-09-28 Together
+      // served 7,601 streams, p50 1.9 s and p90 5.5 s, 18 not completed;
+      // CoreWeave 37,870, p50 2.7 s and p90 9.7 s, 99 not completed. Observed,
+      // not controlled for load. Together costs 0.30 and 1.20 a million, the
+      // prices below; CoreWeave 0.23 and 0.96. Fallbacks stay allowed.
+      preferredEndpoints: [
+        'together',
+        'coreweave',
+      ],
       // Raw characters per completion token over pass-run logs, median of 45,307 streams
       // since 2026-09-21 (ledger P7, 2026-09-28).
       rawCharsPerToken: 130,

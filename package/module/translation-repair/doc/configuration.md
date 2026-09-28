@@ -95,7 +95,10 @@ each uses an empty export as given.
     A card whose `preferredEndpoints` is not empty also sends `order`,
     which names those endpoints ahead of the price sort and leaves `allow_fallbacks` unset:
     Wafer for `hf:zai-org/GLM-5.3-Flash` and Morph for `deepseek-v4.1-flash`, both since 2026-09-23,
-    because the price sort had landed those seats on endpoints that reason at length by default.
+    because the price sort had landed those seats on endpoints that reason at length by default;
+    Together then CoreWeave for `minimax-m3` since 2026-09-28 (ledger H12),
+    the only structured-output endpoints left once the two ignores apply, both FP4,
+    with Together the faster over the week before.
     Such a card carries its preferred endpoint's listed price, not the model's cheapest listing,
     since that is the endpoint the seat buys;
     only the abandoned-spend estimate reads the card's OpenRouter price
