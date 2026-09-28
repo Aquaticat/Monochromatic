@@ -63,14 +63,24 @@ and only a queried result carries the seats' final outcomes.
 From 2026-09-10 to 2026-09-15 this package grew a provider-free preparation layer
 for preparing writer-calibration inputs without calling a provider.
 It held frozen parent selection and its evidence readers
-(`readFrozenPreparationSelection`, `readPreparationSelectionEvidence`),
+(`readFrozenPreparationSelection`,
+`readPreparationSelectionEvidence`),
 root-input reconstruction (`buildPreparationRootInputs`),
-preparation attempts, receipts, occurrences and definition relations
-(`createPreparationAttempt`, `verifyPreparationAttempt`, `readPreparationReceipt`,
-`readPreparationOccurrence`, `readRegisteredPreparationParent`, `readPreparationDefinitionRelations`),
-pairing qualification and request capture (`qualifyPreparedBlockPairing`, `captureBlockPairingRequests`),
-and a sealed producer-input runner (`runProducerInputComparison`, `ProducerInputComparisonError`)
-with its build outputs `producer-prepare.mjs`, `producer-bootstrap.json`,
+preparation attempts,
+receipts,
+occurrences and definition relations
+(`createPreparationAttempt`,
+`verifyPreparationAttempt`,
+`readPreparationReceipt`,
+`readPreparationOccurrence`,
+`readRegisteredPreparationParent`,
+`readPreparationDefinitionRelations`),
+pairing qualification and request capture (`qualifyPreparedBlockPairing`,
+`captureBlockPairingRequests`),
+and a sealed producer-input runner (`runProducerInputComparison`,
+`ProducerInputComparisonError`)
+with its build outputs `producer-prepare.mjs`,
+`producer-bootstrap.json`,
 `producer-input-comparison.mjs` and `sealed-runtime.json`.
 The `runtime:seal` and `bootstrap:seal` tasks built the sealed runtime and the bootstrap,
 and the package's `test:unit` task depended on `bootstrap:seal`.

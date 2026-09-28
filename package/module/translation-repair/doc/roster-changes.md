@@ -28,10 +28,13 @@ on XingZ607 Morph answered its judge calls at 11 s median,
 DeepInfra at 45 s with 89 of the 97 cut streams,
 Wafer at 26 s with the rest,
 and on DeepInfra the seat set the quorum time in 553 of 2,320 rounds
-(the pass log's heading on routing `deepseek-v4.1-flash` off DeepInfra and Wafer, dated 2026-09-19).
+(the pass log's heading on routing `deepseek-v4.1-flash` off DeepInfra and Wafer,
+dated 2026-09-19).
 On 2026-09-23 the price sort fell to endpoints that reason at length by default,
-so the card also ignores OpenInference (class ninety-one, XingZ624 and XingZ625),
-DekaLLM and Sail Research (class ninety-three, XingZ626),
+so the card also ignores OpenInference (class ninety-one,
+XingZ624 and XingZ625),
+DekaLLM and Sail Research (class ninety-three,
+XingZ626),
 and its `preferredEndpoints` names Morph ahead of the price sort.
 Class ninety-three also names Wafer ahead of the price sort for `hf:zai-org/GLM-5.3-Flash`.
 The request shape is under `TRANSLATION_REPAIR_OPENROUTER_API_KEY` in [Configuration](configuration.md).
@@ -140,7 +143,8 @@ live `/quotas` remains authoritative.
 See `doc/troubleshooting/synthetic-rate-limit-default-drift.md`.
 
 `hf:openai/gpt-oss-120b` left every role on 2026-09-24 at the owner's instruction
-("That particular model got cause and effect wrong. Cull it.",
+("That particular model got cause and effect wrong.
+Cull it.",
 then "cull it from every role"):
 its card carries the hold `owner-culled`,
 `RUN_ROSTER` and the readers filter it,
@@ -157,13 +161,19 @@ The checker seats were measured on 2026-09-27
 Each candidate answered the resolution sheet for 85 settled fixes
 and for the same 85 issues against the unchanged archive text,
 where not fixed is certain.
-The order is Qwen3.8-27B, Mimo v2.6 Flash, Kimi-K3, `google.gemma-4-31b` and Mercury 2.5,
+The order is Qwen3.8-27B,
+Mimo v2.6 Flash,
+Kimi-K3,
+`google.gemma-4-31b` and Mercury 2.5,
 and a reading seats the first three a wet provider serves.
-`gemma-4-26b-a4b-it` left the checker role, and only that role,
+`gemma-4-26b-a4b-it` left the checker role,
+and only that role,
 for calling 40 of the 85 unchanged texts fixed;
 `google.gemma-4-e2b` left the substitute seat for calling 50 of the 85 real fixes not fixed.
-The owner approved Mimo v2.6 Flash, Mimo v2.6 Pro and Solar Mini 4 on OpenRouter the same day.
-Mimo v2.6 Flash joined with a card that holds it out of every judge, writer and reader seat until measured there.
+The owner approved Mimo v2.6 Flash,
+Mimo v2.6 Pro and Solar Mini 4 on OpenRouter the same day.
+Mimo v2.6 Flash joined with a card that holds it out of every judge,
+writer and reader seat until measured there.
 Mimo v2.6 Pro read below Flash on both halves while sharing 8 of its 9 errors,
 and Solar Mini 4 called 78 of the 85 unchanged texts fixed;
 neither holds a card.

@@ -84,26 +84,39 @@ each uses an empty export as given.
     Every request carries `provider: { zdr: true, require_parameters: true, sort: 'price', ignore: [...] }`
     (`OPENROUTER_PROVIDER_PREFERENCES` and `openRouterProviderPreferencesFor` in `src/openrouter-catalog.ts`),
     so only zero-data-retention endpoints that support `response_format` may serve a passage,
-    and among those the cheapest serves (`sort: 'price'` since 2026-09-09, the owner's instruction to stop bleeding).
+    and among those the cheapest serves (`sort: 'price'` since 2026-09-09,
+    the owner's instruction to stop bleeding).
     The card's `ignoredEndpoints` (`src/model-cards.ts`) keeps a measured-broken or measured-slow upstream off the wire:
     Parasail and ModelRun for `minimax-m3`
-    (Parasail since 2026-09-03, when it answered into the reasoning channel and left content empty;
-    ModelRun since 2026-09-04, when it timed out 119 of 300 streams in-stream
+    (Parasail since 2026-09-03,
+    when it answered into the reasoning channel and left content empty;
+    ModelRun since 2026-09-04,
+    when it timed out 119 of 300 streams in-stream
     while CoreWeave answered the same schema request 4 of 4),
-    and DeepInfra, Wafer, OpenInference, DekaLLM and Sail Research for `deepseek-v4.1-flash`
-    (the first two after XingZ607 on 2026-09-18, the last three after XingZ624 to XingZ626 on 2026-09-23).
+    and DeepInfra,
+    Wafer,
+    OpenInference,
+    DekaLLM and Sail Research for `deepseek-v4.1-flash`
+    (the first two after XingZ607 on 2026-09-18,
+    the last three after XingZ624 to XingZ626 on 2026-09-23).
     A card whose `preferredEndpoints` is not empty also sends `order`,
     which names those endpoints ahead of the price sort and leaves `allow_fallbacks` unset:
-    Wafer for `hf:zai-org/GLM-5.3-Flash` and Morph for `deepseek-v4.1-flash`, both since 2026-09-23,
+    Wafer for `hf:zai-org/GLM-5.3-Flash` and Morph for `deepseek-v4.1-flash`,
+    both since 2026-09-23,
     because the price sort had landed those seats on endpoints that reason at length by default;
     Together then CoreWeave for `minimax-m3` since 2026-09-28 (ledger H12),
-    the only structured-output endpoints left once the two ignores apply, both FP4,
+    the only structured-output endpoints left once the two ignores apply,
+    both FP4,
     with Together the faster over the week before.
-    Such a card carries its preferred endpoint's listed price, not the model's cheapest listing,
+    Such a card carries its preferred endpoint's listed price,
+    not the model's cheapest listing,
     since that is the endpoint the seat buys;
     only the abandoned-spend estimate reads the card's OpenRouter price
-    (ledger P13, 2026-09-28: both cards had carried a price no call of theirs paid).
-    The ignores once kept for DeepSeek V4 Flash, `hf:Qwen/Qwen3.8-27B` and `glm-5.3` left with their OpenRouter rows:
+    (ledger P13,
+    2026-09-28:
+    both cards had carried a price no call of theirs paid).
+    The ignores once kept for DeepSeek V4 Flash,
+    `hf:Qwen/Qwen3.8-27B` and `glm-5.3` left with their OpenRouter rows:
     the last two have been off the OpenRouter catalog since 2026-09-09 (`openrouter-dropped` on their cards),
     and DeepSeek V4 Flash left the roster on 2026-09-16.
     Slugs are the ones `GET /api/v1/providers` lists,
@@ -257,7 +270,8 @@ section `Historical writer and editor runners`.
 -   `TRANSLATION_REPAIR_SLICE_OVERLAP`.
     How many slices a driver keeps in flight at once.
     The corpus pass defaults to 4 (`PASS_OVERLAP` in `src/corpus-run/pass-overlap.ts`,
-    `doc/decision/translation-repair-pass-overlap.md`, 2026-09-06),
+    `doc/decision/translation-repair-pass-overlap.md`,
+    2026-09-06),
     and so does the editor calibration (`CALIBRATION_OVERLAP` in `src/corpus-run/slice-overlap.ts`);
     `1` reproduces the sequential driver.
     The pass reads it once per entry and prints `OVERLAP <id> value=N source=...`,
@@ -278,7 +292,9 @@ section `Historical writer and editor runners`.
 
 -   `TRANSLATION_REPAIR_WRITER_GRACE_MS`.
     The same window for the writer rounds alone
-    (editor, refiner, translate and consolidation producers),
+    (editor,
+    refiner,
+    translate and consolidation producers),
     since a cut writer voice is a whole candidate lost.
     Built in at 180000 (`WRITER_GRACE_MS` in `src/writer-grace-override.ts`,
     the owner's decision of 2026-09-06 in `doc/decision/translation-repair-straggler-grace.md`);
@@ -295,7 +311,8 @@ section `Historical writer and editor runners`.
     the rest queue in arrival order instead of being refused with HTTP 429.
     Defaults to 1,000,
     the account's limit as the owner stated it (`HYPER_REQUESTS_PER_HOUR` in `src/request-pace.ts`).
-    It is read once, when the Hyper client is built.
+    It is read once,
+    when the Hyper client is built.
     Unlike every other dial here,
     a value that is not a positive number is not refused:
     it silently leaves the default.
@@ -415,8 +432,10 @@ because a run against the wrong corpus would record its conclusions as the pinne
 A settled artifact records the commit it read as `corpusSha` (`src/corpus-run/pass-entry-artifact.ts`),
 so an overridden run's artifacts name the commit they came from.
 When either half comes from the environment,
-`corpus-pass` prints a `CORPUS PIN OVERRIDDEN` line at launch naming the clone, the commit and where each came from
-(`corpusPinOverrideNote`, ledger D13);
+`corpus-pass` prints a `CORPUS PIN OVERRIDDEN` line at launch naming the clone,
+the commit and where each came from
+(`corpusPinOverrideNote`,
+ledger D13);
 record both values with the run's provenance all the same.
 
 Production `corpus-pass` has no pull-request flag;
@@ -454,7 +473,8 @@ and readers refuse to mix generations unless told to.
 ## Schema generations, which the drift opt-in does not cover
 
 The pass writes schema generation 14
-(`ARTIFACT_SCHEMA_VERSION_V14`, `src/corpus-run/artifact-two-lane-build.ts`),
+(`ARTIFACT_SCHEMA_VERSION_V14`,
+`src/corpus-run/artifact-two-lane-build.ts`),
 and refuses to resume into a directory holding another one (`src/corpus-run/pass-schema-guard.ts`).
 That refusal is separate from the build guard in `Pooling artifacts across builds`
 and is not waved past by `TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT`:

@@ -4,44 +4,79 @@ Part of [the package README](../README.md).
 
 ## Where the whole-package audit stands on 2026-09-27
 
-The owner asked on 2026-09-27 for every mistake ever made in this package to be found, fixed and recorded,
-with no finding too small; the findings, their fixes and the process mistakes (M entries) are in
-[the audit ledger](audit-ledger.md), and the owner's rulings in [the design commitments](design-commitments.md).
+The owner asked on 2026-09-27 for every mistake ever made in this package to be found,
+fixed and recorded,
+with no finding too small;
+the findings,
+their fixes and the process mistakes (M entries) are in
+[the audit ledger](audit-ledger.md),
+and the owner's rulings in [the design commitments](design-commitments.md).
 No corpus run has been launched since the audit began:
-the next is TianqiChen666, started only once no fix is still owed before it.
+the next is TianqiChen666,
+started only once no fix is still owed before it.
 
-Landed late on 2026-09-27, each with a guard shown red first and the full suite green after:
+Landed late on 2026-09-27,
+each with a guard shown red first and the full suite green after:
 
-- A slice with no valid wording keeps the archive and the page ships, reported on the `DEFECTS` line
-    (owner, "Keep archive, ship"; ledger E4).
-- A page that disagrees with its artifact ships with the defect reported (owner, "Ship with defect reported").
+- A slice with no valid wording keeps the archive and the page ships,
+  reported on the `DEFECTS` line
+    (owner,
+  "Keep archive,
+  ship";
+  ledger E4).
+- A page that disagrees with its artifact ships with the defect reported (owner,
+  "Ship with defect reported").
 - The windowed stages and the naturalness review size their quorum on the seats that could answer,
-    a confirmation's unaskable seats counted out of reach (owner, "Count as out of reach"; ledger E3 and X8).
-- Every floor refusal, repair-turn outcome and panel decision reaches the run log,
-    and each panel verdict gives its reason before its vote (owner, "Reason before vote"; ledger E5).
+    a confirmation's unaskable seats counted out of reach (owner,
+  "Count as out of reach";
+  ledger E3 and X8).
+- Every floor refusal,
+  repair-turn outcome and panel decision reaches the run log,
+    and each panel verdict gives its reason before its vote (owner,
+  "Reason before vote";
+  ledger E5).
 - A Han signer left in Han or romanized with no literal meaning is refused (ledger A17).
-- E6 was a documentation error: integrity is relative to the archive, now said and pinned.
+- E6 was a documentation error:
+  integrity is relative to the archive,
+  now said and pinned.
 
-Cache versions: translate 15, consolidation 20, repair 33.
+Cache versions:
+translate 15,
+consolidation 20,
+repair 33.
 All three moved on 2026-09-27 past changes that had not moved them (ledger M25);
-nothing had been cached under the versions they replace, so nothing was discarded,
+nothing had been cached under the versions they replace,
+so nothing was discarded,
 and every slice the next run buys is bought under today's rules.
 
 The reason-before-vote change is measured at TianqiChen666:
 its panel support rate (supported votes over all panel votes) against TianqiChen66620's,
 one run per arm as `doc/audit/the-damage-no-instrument-was-catching.md` at the repo root compared the last sheet change,
-with the direction, not the size, as the evidence.
-The baseline, read from TianqiChen66620's slice cache (it settled no artifact):
-270 of 464 panel ballots supported, 58.2%, over 110 issues in 36 of its 110 cached slices.
+with the direction,
+not the size,
+as the evidence.
+The baseline,
+read from TianqiChen66620's slice cache (it settled no artifact):
+270 of 464 panel ballots supported,
+58.2%,
+over 110 issues in 36 of its 110 cached slices.
 A drop of the size that change caused (72% to 65% on one entry) is reported to the owner with the reasons it cites.
 
-Still open in the ledger on the evening of 2026-09-28, read off each entry's status line:
-T8 (exported functions with no test, recounted with its blind spots),
-T9 (every test run writes a log into `node_modules`, owned by `module-logger`, issue #576),
-and L6 (the lane contest on insertion slices, designed and deferred past the next launch);
+Still open in the ledger on the evening of 2026-09-28,
+read off each entry's status line:
+T8 (exported functions with no test,
+recounted with its blind spots),
+T9 (every test run writes a log into `node_modules`,
+owned by `module-logger`,
+issue #576),
+and L6 (the lane contest on insertion slices,
+designed and deferred past the next launch);
 M1 and M6 recur.
-Every other finding the ledger names is fixed, measured and decided, or ruled on by the owner.
-The mistakes are grouped by family, with the checklist before a run launches,
+Every other finding the ledger names is fixed,
+measured and decided,
+or ruled on by the owner.
+The mistakes are grouped by family,
+with the checklist before a run launches,
 in [Preventing this package's mistakes](mistake-prevention.md).
 
 ## Where it stood on 2026-09-24
@@ -52,7 +87,8 @@ and `Terminal quality-refusal audit, 2026-08-29 (superseded)`
 are history and stay as evidence.
 The current operating state is kept in the handover
 (`doc/handover/translation-repair-handover-2026-09-06.md`,
-"2026-09-24, 04:30 UTC" and "What to do next")
+"2026-09-24,
+04:30 UTC" and "What to do next")
 and every read page in the pass log
 (`doc/planning/translation-repair-openrouter-2026-09-03.md`).
 In one paragraph:

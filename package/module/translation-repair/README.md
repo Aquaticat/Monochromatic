@@ -108,10 +108,12 @@ Dependency edges still serialize work whose prompt consumes prior output.
 Concurrency and request-rate limits are separate constraints and must be measured separately.
 Production uses 5 Synthetic slots per active model (`SYNTHETIC_PER_MODEL_CONCURRENCY` in `src/synthetic-client.ts`,
 measured on 2026-08-30 with four active models).
-A run now routes two roster models to Synthetic, `hf:Qwen/Qwen3.8-27B` and `hf:moonshotai/Kimi-K3`,
+A run now routes two roster models to Synthetic,
+`hf:Qwen/Qwen3.8-27B` and `hf:moonshotai/Kimi-K3`,
 so Synthetic exposes 10 aggregate slots:
 `hf:zai-org/GLM-5.3-Flash` is withheld from Synthetic (`synthetic-withheld` on its card)
-and `hf:openai/gpt-oss-120b` left every role (`owner-culled`), both on 2026-09-24.
+and `hf:openai/gpt-oss-120b` left every role (`owner-culled`),
+both on 2026-09-24.
 A width-10 gpt-oss arm returned 3 HTTP 429 responses,
 so model size does not justify a larger setting.
 Hyper has no local concurrency ceiling;
@@ -168,42 +170,91 @@ or become quality outcome.
 
 The page is written in Canadian English (en_CA),
 in spelling and in vocabulary
-(owner, 2026-09-25: "The convention is and should be en_CA.").
+(owner,
+2026-09-25:
+"The convention is and should be en_CA.").
 Spelling follows the Canadian Press Stylebook and the Canadian Oxford:
-colour, centre, travelled, counsellor, realize, analyze, cheque, program, advisor.
+colour,
+centre,
+travelled,
+counsellor,
+realize,
+analyze,
+cheque,
+program,
+advisor.
 Vocabulary takes the Canadian word where varieties differ:
-gas, not petrol;
-Grade 12, not Year 12;
-math, not maths.
-Dates are written month first (April 29, March 13, 2024), never day first.
+gas,
+not petrol;
+Grade 12,
+not Year 12;
+math,
+not maths.
+Dates are written month first (April 29,
+March 13,
+2024),
+never day first.
 The rule lives in `HOUSE_POLICY_BLOCK` (`src/house-policy.ts`),
 which every writing and judging sheet carries,
 and the rendering glossaries (`src/rendering-glossary*.ts`) seed Canadian forms only;
 `src/canadian-english-policy.unit.test.ts` and `src/canadian-forms-policy.unit.test.ts` guard both.
 The sheets reach only slices a lane rewrites,
-so a page-assembly pass (`canadianizePage`, `src/corpus-run/canadian-forms.ts`)
-also reads every slice as the page will carry it, the untouched ones included,
+so a page-assembly pass (`canadianizePage`,
+`src/corpus-run/canadian-forms.ts`)
+also reads every slice as the page will carry it,
+the untouched ones included,
 writes every date month first
-(day first, year first, a range sharing one month, an abbreviated month),
-with the month in full, no ordinal suffix and the year set off by commas on both sides
-("On 4th May 2024 the cat" becomes "On May 4, 2024, the cat"),
+(day first,
+year first,
+a range sharing one month,
+an abbreviated month),
+with the month in full,
+no ordinal suffix and the year set off by commas on both sides
+("On 4th May 2024 the cat" becomes "On May 4,
+2024,
+the cat"),
 and respells a closed list of words with no second sense
-(the -our and -ise families with their inflections, and pairs such as centre, counsellor, enrolment,
-grey, licorice, judgment and program; `src/corpus-run/canadian-spelling-words.ts`),
-outside front matter, tags, attributes, link destinations, code, comments,
-identifiers, paths and spans sealed as the English original;
+(the -our and -ise families with their inflections,
+and pairs such as centre,
+counsellor,
+enrolment,
+grey,
+licorice,
+judgment and program;
+`src/corpus-run/canadian-spelling-words.ts`),
+outside front matter,
+tags,
+attributes,
+link destinations,
+code,
+comments,
+identifiers,
+paths and spans sealed as the English original;
 each change prints `canadian-form-rewritten`.
-Where Canadian sources disagree, McGill's language guidelines decide
-(counsellor, enrolment, program), and fulfill and skillful, on which McGill is silent, stand as written.
-Names, titles and quoted English keep their own spelling:
-a capital mid-sentence, after a title such as "Mr.", before another capital,
-in a sentence-case heading, in emphasis or in capitals throughout is kept,
+Where Canadian sources disagree,
+McGill's language guidelines decide
+(counsellor,
+enrolment,
+program),
+and fulfill and skillful,
+on which McGill is silent,
+stand as written.
+Names,
+titles and quoted English keep their own spelling:
+a capital mid-sentence,
+after a title such as "Mr.",
+before another capital,
+in a sentence-case heading,
+in emphasis or in capitals throughout is kept,
 while a capital that opens a sentence or styles a title-case heading is respelled with its capital
 ("## The Cat’s Favor" becomes "## The Cat’s Favour"),
 and a word the slice's original itself writes in English keeps its spelling.
 "Mum" becomes "mom" after a possessive and as a capitalised form of address.
-The convention covers translated pages only, not the repository's own prose
-(owner, 2026-09-25: "Translated pages only").
+The convention covers translated pages only,
+not the repository's own prose
+(owner,
+2026-09-25:
+"Translated pages only").
 
 ## Operating a corpus pass
 
@@ -220,7 +271,8 @@ none of which spends quota or calls a model:
 
 - `verify-published` reads the published tree back against the artifacts that produced it,
   prints every page that disagrees with what its artifact promised and every artifact with no page,
-  and exits 0, since a run always ships;
+  and exits 0,
+  since a run always ships;
   it exits 2 only for a run it could not read at all.
   The next pass started in the runs directory rewrites each such page from its artifact.
 - `meter-report` says what each provider was doing while the run was asking,
@@ -232,7 +284,8 @@ none of which spends quota or calls a model:
   and counts subscription seats without pricing them;
   a call written as a reckoning rather than reported by the wire is named per seat (ledger P14).
 - `cap-census` re-reads the completion cap rule over pass-run logs before a launch,
-  per seat and provider, with how many capped calls ran to the cap and whether they carried content,
+  per seat and provider,
+  with how many capped calls ran to the cap and whether they carried content,
   and flags a card still on the pooled placeholder (ledger P10).
 - `ledger-report` says who produced each candidate and how often judges chose it.
   Its `--model` view prints corpus wording,
@@ -254,7 +307,8 @@ the line then ends with `destinations-archive-rendering`,
 and with `destinations-both-renderings` when the page carries the original's and the archive's for one reference.
 The addresses themselves go to the run log at warn,
 one line per address reading `entry <id>: page drops source destination <address>`
-with the slices that carry it in the original, the archive and the shipped text,
+with the slices that carry it in the original,
+the archive and the shipped text,
 never to stdout.
 A dropped destination from a wording both deciders approved is a finding,
 not a late publish rewrite.
@@ -262,15 +316,20 @@ not a late publish rewrite.
 A page that ships with a defect also prints `DEFECTS <id> checks=<a>,<b>` after its `DESTINATIONS` line.
 The page ships regardless (`doc/design-commitments.md`),
 and each check names what it found:
-`archive-original`, `contributor-names`, `destinations`, `front-matter` and `headings`
+`archive-original`,
+`contributor-names`,
+`destinations`,
+`front-matter` and `headings`
 are the publish-time content checks,
 `no-valid-wording` names slices where no wording passed the deterministic rule,
 so the archive's own wording stayed,
 and `page-agreement` names a page that does not carry what its artifact says ships,
-which is a defect in page assembly, not in the text.
+which is a defect in page assembly,
+not in the text.
 Each defect's message is in the run log at warn,
 under `publish: shipping with defect <check>:`,
-and names ids, counts and slice indices only.
+and names ids,
+counts and slice indices only.
 A page that does not parse still refuses.
 The neutral pronoun the sources write as `TA`,
 `Ta` or `ta` renders as singular they:
@@ -285,11 +344,13 @@ whole-document coverage must call it absent,
 then page shortfall or a destination missing from target admits translation.
 A source-only passage the coverage round finds carried inside the neighbouring paired slice's archive span
 is folded into that neighbour at the admission (`corpus-run/insertion-carried-fold.ts`;
-where the archive spread it over both neighbours, into the one holding the larger share),
+where the archive spread it over both neighbours,
+into the one holding the larger share),
 so both lanes write it as part of the slice that carries it and the publish guard has nothing to find.
 
 A source passage still unfilled after the single translation round and its one follow-up
-ships as a recorded gap, not a refusal:
+ships as a recorded gap,
+not a refusal:
 the artifact records it (`lanes.translate.unfilled`),
 the log names each one (`corpus-run/pass-entry.ts`),
 and the page carries no text there.
@@ -330,20 +391,28 @@ const result = await repairTranslation({
   selection judges,
   and resolution checkers.
   A stage that gathers voices (`gatherStageVoices` in `src/stage-quorum.ts`)
-  needs a quorum of at least half its roster, rounded up;
+  needs a quorum of at least half its roster,
+  rounded up;
   when the router has refused seats for want of a wet provider and fewer than that remain,
-  the quorum is half the reachable seats, rounded up, and at least two (`src/stage-reachable-quorum.ts`).
+  the quorum is half the reachable seats,
+  rounded up,
+  and at least two (`src/stage-reachable-quorum.ts`).
   Each round asks a window of what quorum still needs plus one spare seat,
   from a bench rotated by the prompt (`src/stage-fanout-window.ts`),
   and a window seat the router refuses for want of a wet provider
   hands its place in that round to the next seat not yet asked (`runGatherRound` in `src/stage-round.ts`);
   up to three retry rounds (`STAGE_RETRY_ROUNDS`) ask the seats not yet asked before the ones lost,
   and never re-ask a seat the router refused,
-  nor a seat whose answer arrived but could not be read, since the same prompt returns the same bytes.
-  Once the rounds end, one recovery round re-asks every seat whose answer could not be read,
+  nor a seat whose answer arrived but could not be read,
+  since the same prompt returns the same bytes.
+  Once the rounds end,
+  one recovery round re-asks every seat whose answer could not be read,
   whichever round it came in (ledger P2),
-  with a note naming what happened: a reply the length limit cut, or one off the shape asked for
-  (`src/recovery-nudge.ts`, ledger P10).
+  with a note naming what happened:
+  a reply the length limit cut,
+  or one off the shape asked for
+  (`src/recovery-nudge.ts`,
+  ledger P10).
   A stage still short of quorum proceeds on what it heard and records the shortfall as findings.
   The six stages that record every seat's own outcome
   take the same window and retry rounds through `runWindowedRounds` (`src/stage-windowed-rounds.ts`),
@@ -454,7 +523,8 @@ one file per subject:
   when redaction happens.
 - [The audit ledger](doc/audit-ledger.md):
   every finding of the whole-package audit of 2026-09-27 and after,
-  with its measurement, its fix and its guard,
+  with its measurement,
+  its fix and its guard,
   and every mistake made while fixing.
 - [Preventing this package's mistakes](doc/mistake-prevention.md):
   the ledger's mistakes grouped by family,

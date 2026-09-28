@@ -81,7 +81,8 @@ Part of [the package README](../README.md).
   the probe was nearly silent instead:
   2438 of 2571 prober verdicts found nothing,
   and the raise rate barely moved with how much text the edit removed.
-  **Read that as history, not as the probe's behaviour.**
+  **Read that as history,
+  not as the probe's behaviour.**
   Those verdicts were produced under a question that made the pre-edit **translation** the standard of accuracy,
   asking whether the replacement introduced a defect the **before** text did not have.
   Read back,
@@ -218,12 +219,15 @@ Part of [the package README](../README.md).
   since a probe that reads rephrasing as
   damage would flag every refinement the lane ships and would look identical to a clean run while doing it.
 - **Whitespace Markdown renders the same is not a defect.**
-  Owner, 2026-09-27:
-  "There is no need to eliminate extra newlines, because markdown doesn't care."
+  Owner,
+  2026-09-27:
+  "There is no need to eliminate extra newlines,
+  because markdown doesn't care."
   A run of blank lines where the archive has one,
   or a wording whose edge newlines differ from its archive span's,
   renders as the archive does,
-  so no pass, floor or finding acts on it.
+  so no pass,
+  floor or finding acts on it.
   Spacing that changes rendering is another matter:
   a list's items loose or tight (`list-spread-restore.ts`),
   or two paragraphs joined by a single newline.
@@ -235,9 +239,11 @@ Part of [the package README](../README.md).
   so the fold keeps each published page on one line-ending convention,
   and a stray CR shows in diffs and tools even where Markdown renders it alike.
 - **A run always ships.**
-  Owner, 2026-09-27,
+  Owner,
+  2026-09-27,
   rejecting a `verify-published` that would refuse a run over a page no artifact records:
-  "One of the rules is no matter what, we must ship."
+  "One of the rules is no matter what,
+  we must ship."
   A check reports what it finds and repairs what it can;
   it never withholds a run's pages.
   A page whose artifact a crash lost between the two writes (`publish-fixed.ts`) therefore ships,
@@ -255,132 +261,238 @@ Part of [the package README](../README.md).
   so the archive ships as the archive's note says it must.
   That question told the owner no page had ever disagreed with its artifact,
   a count that had only checked pages exist (ledger M18).
-  Judged by the build of 2026-09-27, 77 of the 214 stored pages disagree,
+  Judged by the build of 2026-09-27,
+  77 of the 214 stored pages disagree,
   every one written after the publish-time agreement check existed and so agreeing with its own build:
   the would-ship reader applies `restoreTypography` when it reads,
-  and two later fixes there (class 181, punctuation inside a closing quote;
-  class 147, a nested quotation curled as a pair) account for 69 of them.
-  Told this, the owner chose again, the same day,
+  and two later fixes there (class 181,
+  punctuation inside a closing quote;
+  class 147,
+  a nested quotation curled as a pair) account for 69 of them.
+  Told this,
+  the owner chose again,
+  the same day,
   that a pass rewrites such pages to the running build's reading:
   a page that does not parse stays as it was and is reported.
   A pass meets an older build's pages only on a resume the operator opted into,
   since the build-generation guard refuses one otherwise.
 - **A settled page ships with its defects reported.**
-  Owner, 2026-09-27, asked whether the publish-time checks keep refusing a settled entry
-  (front matter, sealed English originals, contributor names, link destinations, merged headings,
-  and whether the page parses), with the archive's page shipping in its place:
+  Owner,
+  2026-09-27,
+  asked whether the publish-time checks keep refusing a settled entry
+  (front matter,
+  sealed English originals,
+  contributor names,
+  link destinations,
+  merged headings,
+  and whether the page parses),
+  with the archive's page shipping in its place:
   "Ship with the defect".
-  The page ships and each failed check is reported, in the run log and on a line a grep over a pass totals;
-  a page that does not parse still refuses, since it would break the site build.
-  Measured before the ruling: seven real entries were refused for one dropped link destination each,
+  The page ships and each failed check is reported,
+  in the run log and on a line a grep over a pass totals;
+  a page that does not parse still refuses,
+  since it would break the site build.
+  Measured before the ruling:
+  seven real entries were refused for one dropped link destination each,
   about 10.3 hours of settling discarded (ledger E1).
   The check that a page carries what its artifact says ships joined them by a second answer:
-  asked the same day whether a page failing it, which is a defect in the assembly code rather than in the text,
+  asked the same day whether a page failing it,
+  which is a defect in the assembly code rather than in the text,
   should still refuse with the archive's page shipping in its place,
   the owner chose "Ship with defect reported".
   It had fired in no real run (the 8 run logs naming it were all test suites).
-- **A slice with no valid wording keeps the archive's, and the page ships.**
-  Owner, 2026-09-27, asked whether an entry keeps stopping at once
+- **A slice with no valid wording keeps the archive's,
+  and the page ships.**
+  Owner,
+  2026-09-27,
+  asked whether an entry keeps stopping at once
   when no wording for a slice passes the deterministic rule
-  (the lanes', the consolidations' and the archive's, or the archive has nothing there),
-  given that a stopped entry leaves the archive's whole page live, that slice included:
-  "Keep archive, ship".
-  The slice keeps exactly what the archive has there, nothing where the archive is silent,
+  (the lanes',
+  the consolidations' and the archive's,
+  or the archive has nothing there),
+  given that a stopped entry leaves the archive's whole page live,
+  that slice included:
+  "Keep archive,
+  ship".
+  The slice keeps exactly what the archive has there,
+  nothing where the archive is silent,
   the page ships with every other repair,
   and the slice is reported on the `DEFECTS` line.
   This replaces the "else fail the slice at once" half of the rule of 2026-09-04;
-  its first half stands, so a valid proposal is still preferred wherever one exists.
-  Measured before the ruling: 18 real entries stopped on this refusal from 2026-09-04 to 2026-09-27,
-  about 34.3 hours in all, most on terminals later rulings already turned into shipping the slate's choice;
-  on the build of the ruling, one real stop was of the kind still reachable (yulianNyanner, `incumbent-only`, 0.48 hours).
+  its first half stands,
+  so a valid proposal is still preferred wherever one exists.
+  Measured before the ruling:
+  18 real entries stopped on this refusal from 2026-09-04 to 2026-09-27,
+  about 34.3 hours in all,
+  most on terminals later rulings already turned into shipping the slate's choice;
+  on the build of the ruling,
+  one real stop was of the kind still reachable (yulianNyanner,
+  `incumbent-only`,
+  0.48 hours).
 - **A confirmation sizes its quorum on the seats it could ask and reach.**
-  Owner, 2026-09-27, asked whether the bench seats a naturalness confirmation may not ask
+  Owner,
+  2026-09-27,
+  asked whether the bench seats a naturalness confirmation may not ask
   (it asks only its discovery's seats) count as out of reach when its quorum is sized,
   as a seat the router refuses does under the 2026-09-09 short-bench rule:
   "Count as out of reach".
-  With nothing refused, or with asked seats able to meet the bench quorum, nothing changes;
-  in XingZ624's shape (5 of 8 asked, 2 refused) the confirmation decides on 2 of its 3 reachable voices
+  With nothing refused,
+  or with asked seats able to meet the bench quorum,
+  nothing changes;
+  in XingZ624's shape (5 of 8 asked,
+  2 refused) the confirmation decides on 2 of its 3 reachable voices
   rather than closing `quorum-not-met` (ledger E3).
 - **A panel verdict gives its reason before its vote.**
-  Owner, 2026-09-27, asked whether each issue-panel verdict carries a reason,
-  and if so before or after the vote, told that no panel bench exists
+  Owner,
+  2026-09-27,
+  asked whether each issue-panel verdict carries a reason,
+  and if so before or after the vote,
+  told that no panel bench exists
   and that the last panel-sheet change moved support from 72% to 65% on one run per arm:
   "Reason before vote".
   Measured before the ruling over 265 stored artifacts:
-  about 783 panel verdicts per entry, and 167 characters on average for the reasons other stages' ballots carry.
+  about 783 panel verdicts per entry,
+  and 167 characters on average for the reasons other stages' ballots carry.
   The reason is stored with the ballot and logged beside the issue's decision (ledger E5).
-  Its effect on votes is measured at the next run, TianqiChen666,
+  Its effect on votes is measured at the next run,
+  TianqiChen666,
   as the share of panel ballots voting supported against TianqiChen66620's,
-  one run per arm (`doc/status.md`, the 2026-09-27 section).
-- **A winning patch sheds the edits a checker voted worse, and the rest is rechecked.**
-  Owner, 2026-09-28, asked what happens to edits inside a selected repair patch whose issues the checkers did not confirm
-  (345 of 2,148 patches over every run, 18 of 51 on TianqiChen666;
-  691 such issues: 651 not fixed, 39 on a fixed and worse tie, 1 on a worse majority):
-  "Revert worse-voted, recheck".
+  one run per arm (`doc/status.md`,
+  the 2026-09-27 section).
+- **A winning patch sheds the edits a checker voted worse,
+  and the rest is rechecked.**
+  Owner,
+  2026-09-28,
+  asked what happens to edits inside a selected repair patch whose issues the checkers did not confirm
+  (345 of 2,148 patches over every run,
+  18 of 51 on TianqiChen666;
+  691 such issues:
+  651 not fixed,
+  39 on a fixed and worse tie,
+  1 on a worse majority):
+  "Revert worse-voted,
+  recheck".
   An edit whose issue drew at least one worse ballot is stripped from the patch,
   and the reduced patch faces one more checker round before it ships;
   a not-fixed edit with no worse ballot stays (ledger L3).
-  Corrected after the ruling: the question put the stripped share at 40 of the 691 issues,
+  Corrected after the ruling:
+  the question put the stripped share at 40 of the 691 issues,
   counting only the ties and the worse majority;
   at least one worse ballot is 58 issues in 31 patches over every run,
-  and 15 issues in 6 of 51 patches on TianqiChen666 (`ride-along-split.mjs`, recounted 2026-09-28).
+  and 15 issues in 6 of 51 patches on TianqiChen666 (`ride-along-split.mjs`,
+  recounted 2026-09-28).
 - **A rewrite after a lost patch is rechecked before it ships.**
-  Owner, 2026-09-28, asked what happens when the naturalness stage rewrites the archive
-  after the accuracy patch lost, which shipped with no checker round
-  (1,218 of 2,144 refined slices over every run; 106 of 125 on TianqiChen666, 75 over accepted issues):
+  Owner,
+  2026-09-28,
+  asked what happens when the naturalness stage rewrites the archive
+  after the accuracy patch lost,
+  which shipped with no checker round
+  (1,218 of 2,144 refined slices over every run;
+  106 of 125 on TianqiChen666,
+  75 over accepted issues):
   "Recheck the rewrite".
   The rewrite faces a checker round against the slice's accepted issues and the regression probe,
   and a rewrite the checkers find worse keeps the text before it (ledger L11).
-  Decided for quality, 2026-09-28, under the standing directive below:
+  Decided for quality,
+  2026-09-28,
+  under the standing directive below:
   a rewrite the regression probe admits a claim against keeps the text before it too;
-  175 of 2,144 kept rewrites carried one, and a graded reading of flagged regions found six of ten true.
-- **Inside a licensed quote, an edit keeps the markup atoms its issue does not license it to remove.**
-  Owner, 2026-09-28, asked what the editor's preservation gate should protect inside a quote an edit may change,
+  175 of 2,144 kept rewrites carried one,
+  and a graded reading of flagged regions found six of ten true.
+- **Inside a licensed quote,
+  an edit keeps the markup atoms its issue does not license it to remove.**
+  Owner,
+  2026-09-28,
+  asked what the editor's preservation gate should protect inside a quote an edit may change,
   where it could never reject anything:
   "Markup atoms".
-  Footnote references, link destinations, MDX expressions, inline code and tags survive every edit
-  except a removal an addition issue names; prose damage inside the quote stays with the checkers (ledger L4).
-  Refined for quality, 2026-09-28, under the standing directive below:
-  a replay of the ruling's wording refused 24 recorded edits, 17 of which re-marked markup or moved it rather than lost it.
-  Markup the source carries survives; an atom one edit drops and another edit of the same patch writes has survived;
-  an MDX expression, inline code or tag the translation authored may be re-marked (same kind, or into markup the source carries)
-  but never dropped; a footnote reference or link destination has no such excuse, since a label or address is an identifier
-  no checker judges. The addition removal stays the one licensed loss.
-- **A reply no one could read is re-asked on another provider, nudged.**
-  Owner, 2026-09-28, asked what becomes of the router's cross-provider re-ask,
+  Footnote references,
+  link destinations,
+  MDX expressions,
+  inline code and tags survive every edit
+  except a removal an addition issue names;
+  prose damage inside the quote stays with the checkers (ledger L4).
+  Refined for quality,
+  2026-09-28,
+  under the standing directive below:
+  a replay of the ruling's wording refused 24 recorded edits,
+  17 of which re-marked markup or moved it rather than lost it.
+  Markup the source carries survives;
+  an atom one edit drops and another edit of the same patch writes has survived;
+  an MDX expression,
+  inline code or tag the translation authored may be re-marked (same kind,
+  or into markup the source carries)
+  but never dropped;
+  a footnote reference or link destination has no such excuse,
+  since a label or address is an identifier
+  no checker judges.
+  The addition removal stays the one licensed loss.
+- **A reply no one could read is re-asked on another provider,
+  nudged.**
+  Owner,
+  2026-09-28,
+  asked what becomes of the router's cross-provider re-ask,
   which never ran because the prompt-uniqueness wrapper bypasses it:
   "Enable with the nudge".
-  The re-ask carries the recovery nudge, so its prompt digest differs from the first ask's
+  The re-ask carries the recovery nudge,
+  so its prompt digest differs from the first ask's
   and prompt uniqueness holds (ledger P9).
-  Refined for quality, 2026-09-28, under the standing directive below:
+  Refined for quality,
+  2026-09-28,
+  under the standing directive below:
   the re-ask's nudge is worded apart from the stage recovery round's,
   since the round re-asks every seat still unreadable and a shared wording would make its prompt
-  this re-ask's digest, answered from the claims with the reply that already failed;
-  and a refusal-shaped reply is re-asked elsewhere too, with a nudge neutral on why the reply could not be used.
-- **A reply the length limit cut is re-asked as cut, not as off the shape.**
-  Decided for quality, 2026-09-28, under the standing directive below (ledger P10):
+  this re-ask's digest,
+  answered from the claims with the reply that already failed;
+  and a refusal-shaped reply is re-asked elsewhere too,
+  with a nudge neutral on why the reply could not be used.
+- **A reply the length limit cut is re-asked as cut,
+  not as off the shape.**
+  Decided for quality,
+  2026-09-28,
+  under the standing directive below (ledger P10):
   the recovery round told every unreadable seat its reply "did not match the required response shape",
   while 74 of the 75 cap-cut deepseek-v4.1-flash replies on Hyper had streamed no content at all.
   Each cause now has its own wording (`src/recovery-nudge.ts`);
-  the cut one names the length limit and asks for the answer within it, keeping any working brief,
+  the cut one names the length limit and asks for the answer within it,
+  keeping any working brief,
   which is prose in the prompt and never a reasoning parameter on the wire.
-- **A claim the panel settles at neutral asks for no edit; the sheets define every severity.**
-  Decided for quality, 2026-09-28, under the standing directive below (ledger L5):
-  neutral asserts no defect, yet 28 accepted neutral issues shipped an edit, 8 of them claims calling the rendering correct.
-  The tally holds such an acceptance for a human; the critic and panel sheets define minor, major and critical after MQM
+- **A claim the panel settles at neutral asks for no edit;
+  the sheets define every severity.**
+  Decided for quality,
+  2026-09-28,
+  under the standing directive below (ledger L5):
+  neutral asserts no defect,
+  yet 28 accepted neutral issues shipped an edit,
+  8 of them claims calling the rendering correct.
+  The tally holds such an acceptance for a human;
+  the critic and panel sheets define minor,
+  major and critical after MQM
   and neutral as a finding a human should see that names no defect in the translation;
   the panel votes down a claim naming nothing wrong and lifts a real defect filed neutral to minor.
   This refines the 2026-09-27 ruling "Major+ accuracy" without contradicting it:
-  that ruling concerned accuracy claims other than additions, and kept additions disputing "at any severity"
-  as the option's wording said; an accepted addition can no longer settle at neutral,
-  so in effect an addition disputes the archive from minor up, and one no supporter finds a defect in disputes nothing.
-- **The quality of the end result decides; a choice made for it is not a design decision.**
-  Owner, 2026-09-28, standing directive, answering two questions put as design choices
-  (which fix-shaped refusals the L4 markup gate should let through, and whether the L11 probe stays in shadow):
+  that ruling concerned accuracy claims other than additions,
+  and kept additions disputing "at any severity"
+  as the option's wording said;
+  an accepted addition can no longer settle at neutral,
+  so in effect an addition disputes the archive from minor up,
+  and one no supporter finds a defect in disputes nothing.
+- **The quality of the end result decides;
+  a choice made for it is not a design decision.**
+  Owner,
+  2026-09-28,
+  standing directive,
+  answering two questions put as design choices
+  (which fix-shaped refusals the L4 markup gate should let through,
+  and whether the L11 probe stays in shadow):
   "Do not try to save effort and just do the option that would result in best quality of the end result",
   and "I want to make 'prefer quality of the end result' a standing directive
   and decisions that are made for quality and don't conflict with other decisions aren't design decisions."
-  A choice whose options differ in the quality of what ships is decided for quality, recorded, and built, never asked;
-  effort, code size and wall clock are not reasons to take the lesser option.
+  A choice whose options differ in the quality of what ships is decided for quality,
+  recorded,
+  and built,
+  never asked;
+  effort,
+  code size and wall clock are not reasons to take the lesser option.
   A question goes to the owner only when a quality choice conflicts with an earlier ruling
   or the options differ in something other than quality.

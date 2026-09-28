@@ -2,7 +2,10 @@
 
 Every finding of the whole-package audit the owner asked for on 2026-09-27
 ("audit the whole translation-repair pkg for all the mistakes we've made and fix all of them",
-"Mistakes made, ever, for this pkg, not just today").
+"Mistakes made,
+ever,
+for this pkg,
+not just today").
 Each finding carries where it is,
 the evidence,
 the fix,
@@ -18,15 +21,23 @@ which is never committed.
 
 ## Community and fandom glossaries
 
-Probes: `~/temp/agent/audit-community-glossary/`
-(`corpus-floor`, `overreach`, `probe-floor`, `probe-163`, `probe-more`).
-Files: `src/community-glossary.ts`,
+Probes:
+`~/temp/agent/audit-community-glossary/`
+(`corpus-floor`,
+`overreach`,
+`probe-floor`,
+`probe-163`,
+`probe-more`).
+Files:
+`src/community-glossary.ts`,
 `src/community-glossary-fandom.ts`,
 `src/translate-community-term.ts`.
 
 ### C1: refused forms match as raw substrings
 
-Status: fixed in `cc96eca77` (guard `glossary-match.unit.test.ts`), "head mask" added to 头壳.
+Status:
+fixed in `cc96eca77` (guard `glossary-match.unit.test.ts`),
+"head mask" added to 头壳.
 `renderingCarries` and `refusedFormIn` in `src/translate-community-term.ts` check no word boundary,
 and a rendering excuses a refused form only when it opens inside the occurrence and runs past its end.
 The built floor refuses "inside her head mask",
@@ -37,15 +48,22 @@ The built floor refuses "inside her head mask",
 "Atri was dictatorial"
 and "Arona came from Badalona".
 头壳's own why calls the object a "full head mask".
-Fix: match Latin forms at ASCII letter and digit boundaries,
+Fix:
+match Latin forms at ASCII letter and digit boundaries,
 excuse an occurrence any accepted rendering overlaps at any position,
 add "head mask" to 头壳.
-Guard: 小猫戴着头壳 passes "inside her head mask" and "inside her headgear" and refuses "inside her head";
+Guard:
+小猫戴着头壳 passes "inside her head mask" and "inside her headgear" and refuses "inside her head";
 亚托莉在猫舍 passes "Atri napped near the laboratories".
 
 ### C2: the 药娘 floor refuses a registered company name
 
-Status: fixed in `f3cd0ef83`, guarded in `6fbcfa2d8` (owner, 2026-09-27: "Allow it, because it's the proper name of an org.").
+Status:
+fixed in `f3cd0ef83`,
+guarded in `6fbcfa2d8` (owner,
+2026-09-27:
+"Allow it,
+because it's the proper name of an org.").
 mikaela_khara names a registered company 小药娘网络科技 (`page.md` lines 194 and 202);
 the archive writes "XiaoYaoNiang(XYN)" and its translator's note gives the English name "XYN (Tianjin) Technology".
 The floor refuses the archive and every mikaela run that rendered the name.
@@ -54,34 +72,62 @@ whether a registered name falls under it is the owner's call.
 
 ### C3: departures ignore inflection
 
-Status: fixed in `357f534b7` (guard `8da383b89`, stems guarded in `36e7a4c30`).
-Renderings now match bounded and inflected (`renderingSpans`: s, es, d, ed, ing, a final e dropped, a final y turned), so "heal", "soothe" and "cure" carry every form and "atrium" is not Atri; multi-word renderings that inflect inside ("becoming the doll") are listed, and 药娘 takes "transgender girl".
+Status:
+fixed in `357f534b7` (guard `8da383b89`,
+stems guarded in `36e7a4c30`).
+Renderings now match bounded and inflected (`renderingSpans`:
+s,
+es,
+d,
+ed,
+ing,
+a final e dropped,
+a final y turned),
+so "heal",
+"soothe" and "cure" carry every form and "atrium" is not Atri;
+multi-word renderings that inflect inside ("becoming the doll") are listed,
+and 药娘 takes "transgender girl".
 The new rendering end was not replayed over the archives as the refusals were:
-it reaches only the COMMUNITY RENDERINGS block, evidence the judges weigh,
-so a looser count ("masked" as 头壳's "mask") costs a departure line, never a refusal.
+it reaches only the COMMUNITY RENDERINGS block,
+evidence the judges weigh,
+so a looser count ("masked" as 头壳's "mask") costs a departure line,
+never a refusal.
 `communityRenderingDepartures` names a departure for "Healing views",
 "How hard this mental illness is to cure",
 "becoming the doll",
 "transgender girl"
 and the MeowBot233 archive's own "soothing views".
 The block text says "A rendering may inflect".
-Fix: add inflected renderings after each lead rendering (the kigurumi guard pins 治愈's lead "healed"),
+Fix:
+add inflected renderings after each lead rendering (the kigurumi guard pins 治愈's lead "healed"),
 never a bare "heal" (it sits inside "health"),
 and match at boundaries.
-Guard: 猫可以治愈人 with "a healing cat" and 猫是药娘 with "a transgender girl" name no departure.
+Guard:
+猫可以治愈人 with "a healing cat" and 猫是药娘 with "a transgender girl" name no departure.
 
 ### C4: renderings count as present inside unrelated words
 
-Status: fixed in `cc96eca77`.
+Status:
+fixed in `cc96eca77`.
 "cured" inside "secured",
 "outed" inside "shouted",
 "atri" inside "psychiatric" hide real departures.
-Guard: 猫被治愈 with "The cat was comforted and secured" names a departure.
+Guard:
+猫被治愈 with "The cat was comforted and secured" names a departure.
 
 ### C5: whys promise refusals the refused forms do not carry
 
-Status: fixed in `357f534b7` (guard `8da383b89`).
-Every form was replayed over the 364 archives and settled pages first: the new refusals fire only on thirteen settled shi_Yumiaoya pages that shipped a "child" for 逆子, one that shipped "HRT girl", one that shipped "across different communities", and none else. 头壳's bare "her head" stays with the judges and the why says so: a slice that names the head mask can name the wearer's head too, and on the ten settled TianqiChen666 pages every "her head" was "her headpiece" save one "inside her head", which the floor refuses.
+Status:
+fixed in `357f534b7` (guard `8da383b89`).
+Every form was replayed over the 364 archives and settled pages first:
+the new refusals fire only on thirteen settled shi_Yumiaoya pages that shipped a "child" for 逆子,
+one that shipped "HRT girl",
+one that shipped "across different communities",
+and none else.
+头壳's bare "her head" stays with the judges and the why says so:
+a slice that names the head mask can name the wearer's head too,
+and on the ten settled TianqiChen666 pages every "her head" was "her headpiece" save one "inside her head",
+which the floor refuses.
 变娃 passes "doll up",
 "dolls up",
 "dolled-up";
@@ -92,13 +138,18 @@ Every form was replayed over the 364 archives and settled pages first: the new r
 and tone-marked "Yào Niáng";
 逆子 passes "rebellious child",
 the form class one hundred fifty-one shipped twice.
-Guard: one cat fixture per gap.
+Guard:
+one cat fixture per gap.
 
 ### C6: false or page-specific whys and comments shown to the models
 
-Status: fixed in `357f534b7` (guard `8da383b89` flips the kigurumi test that pinned 安慰);
-the root planning doc and handover, which repeated the misquotation to the owner, were corrected on 2026-09-28
-in the commit that records this line (the page's only 安慰 is in a reader-comment JSON; `page.md` line 89 writes 安抚).
+Status:
+fixed in `357f534b7` (guard `8da383b89` flips the kigurumi test that pinned 安慰);
+the root planning doc and handover,
+which repeated the misquotation to the owner,
+were corrected on 2026-09-28
+in the commit that records this line (the page's only 安慰 is in a reader-comment JSON;
+`page.md` line 89 writes 安抚).
 
 - 炸柜's why pairs it with throwing away the medication,
     true of XIEPT2 only and false on mikaela_khara.
@@ -125,24 +176,33 @@ in the commit that records this line (the page's only 安慰 is in a reader-comm
 
 ### C7: sibling spellings missing
 
-Status: fixed in `357f534b7` (guard `8da383b89`); 爆柜 takes Anilovr's archive "outed", 跨性别圈 GLaDOSister's "trans community".
+Status:
+fixed in `357f534b7` (guard `8da383b89`);
+爆柜 takes Anilovr's archive "outed",
+跨性别圈 GLaDOSister's "trans community".
 爆柜 (Anilovr) and 跨性别圈 (GLaDOSister) have no entries.
 
 ### C8: comments cut on the floor side only
 
-Status: fixed in `cc96eca77`.
+Status:
+fixed in `cc96eca77`.
 The floor cuts HTML comments;
 `communityRenderingDepartures` and the sheet term lines do not.
 
 ### C9: the two floor messages name the term differently
 
-Status: fixed in `cc96eca77` (the term is now `OD`, so both messages name it alike).
+Status:
+fixed in `cc96eca77` (the term is now `OD`,
+so both messages name it alike).
 One uses the trimmed term,
 the other the raw one.
 
 ### C10: terms match inside other words
 
-Status: fixed in `357f534b7` (guard `8da383b89`) by an `enclosingWords` field beside `properNameContexts`; "trans circle" alone stands, inflecting to "trans circles".
+Status:
+fixed in `357f534b7` (guard `8da383b89`) by an `enclosingWords` field beside `properNameContexts`;
+"trans circle" alone stands,
+inflecting to "trans circles".
 自切 inside 各自切,
 亲自切,
 独自切.
@@ -150,86 +210,134 @@ Status: fixed in `357f534b7` (guard `8da383b89`) by an `enclosingWords` field be
 
 ## Rendering glossaries
 
-Probes: `~/temp/agent/audit-rendering-glossary/`.
-Files: `src/rendering-glossary*.ts`.
+Probes:
+`~/temp/agent/audit-rendering-glossary/`.
+Files:
+`src/rendering-glossary*.ts`.
 
 ### R1: " OD" misses lowercase and line-start OD, and SHIPPED
 
-Status: fixed in `cc96eca77`; the three false comments corrected there and in this ledger.
+Status:
+fixed in `cc96eca77`;
+the three false comments corrected there and in this ledger.
 hulicaijia opens a paragraph with `OD`;
 XingZ60 writes lowercase `od` four times.
-XingZ6014 shipped "I hate od, / so once z60 started od,"
-and XingZ6010 "I hate od, / … started od'ing".
+XingZ6014 shipped "I hate od,
+/ so once z60 started od,"
+and XingZ6010 "I hate od,
+/ … started od'ing".
 The comment claiming every OD stands after a space is false in `src/rendering-glossary.ts`,
 `src/rendering-glossary-owner-forms.unit.test.ts`
 and the planning doc.
 " OD" also matches inside " ODE".
-Fix: case-insensitive Latin-token matching for terms that carry Latin letters,
+Fix:
+case-insensitive Latin-token matching for terms that carry Latin letters,
 on the source and on the Han-kept check.
-Guard: 小猫讨厌 od and a line-start OD are refused when kept;
+Guard:
+小猫讨厌 od and a line-start OD are refused when kept;
 "an odd cat",
 "recited an ode"
 and 写 MOD pass.
 
 ### R2: 燃油车 refuses "fossil-fuel car"
 
-Status: fixed in `357f534b7` (guard `8da383b89`): "fossil-fuel car" and "fossil-fuel vehicle" are renderings, which excuse the refused form they overlap.
+Status:
+fixed in `357f534b7` (guard `8da383b89`):
+"fossil-fuel car" and "fossil-fuel vehicle" are renderings,
+which excuse the refused form they overlap.
 
 ### R3: 未成年 "minor trans" fires inside transgression, translation, transfer
 
-Status: fixed in `cc96eca77` (boundaries, and "minor transgender" added).
+Status:
+fixed in `cc96eca77` (boundaries,
+and "minor transgender" added).
 
 ### R4: 滑档 refuses ordinary motion verbs
 
-Status: fixed in `357f534b7` (guard `8da383b89`): every refused slide lands on a tier; the replay found nineteen settled shi_Yumiaoya pages that shipped one of them and no ordinary motion verb refused.
+Status:
+fixed in `357f534b7` (guard `8da383b89`):
+every refused slide lands on a tier;
+the replay found nineteen settled shi_Yumiaoya pages that shipped one of them and no ordinary motion verb refused.
 "slipped into a low mood",
 "tears slid down her face"
 and "slid to the floor" are refused.
-Fix: key the refusals on the tier.
+Fix:
+key the refusals on the tier.
 
 ### R5: 化作 "turned into in " refuses grammatical English and is a sentence lesson
 
-Status: fixed in `357f534b7` (guard `8da383b89`); `rendering-glossary-grammar.ts` and its test are gone.
+Status:
+fixed in `357f534b7` (guard `8da383b89`);
+`rendering-glossary-grammar.ts` and its test are gone.
 "That butterfly is what the kitten turned into in spring" is refused.
-Fix: move the lesson to `GRAMMATICAL_ENGLISH_RULE` and correct the comment.
+Fix:
+move the lesson to `GRAMMATICAL_ENGLISH_RULE` and correct the comment.
 
 ### R6: 摆烂's why prescribes one page's sentence
 
-Status: fixed in `357f534b7`: the why covers taking it easy and no longer prescribes one sentence; "slacked off" stays refused under the house rule that names it slang
-(`src/house-policy.ts:79`: "The English adds no slang of its own either (gearhead, slacked off)").
+Status:
+fixed in `357f534b7`:
+the why covers taking it easy and no longer prescribes one sentence;
+"slacked off" stays refused under the house rule that names it slang
+(`src/house-policy.ts:79`:
+"The English adds no slang of its own either (gearhead,
+slacked off)").
 On lxy "stopped trying" is a mistranslation of 偶尔摆烂.
 "slack off" register is an owner question.
 
 ### R7: 矫正中心 and 矫正学校 missing
 
-Status: fixed in `357f534b7` (guard `8da383b89`); zhangyubaka's archive "correctional school" is refused, the prison reading 矫正机构's why already names.
+Status:
+fixed in `357f534b7` (guard `8da383b89`);
+zhangyubaka's archive "correctional school" is refused,
+the prison reading 矫正机构's why already names.
 
 ### R8: 师范学院's why promises an official-name exception the floor refuses
 
-Status: fixed in `357f534b7`: no promise in the why; a named institution would take a `properNameContexts` entry, and the pin carries none.
+Status:
+fixed in `357f534b7`:
+no promise in the why;
+a named institution would take a `properNameContexts` entry,
+and the pin carries none.
 "normal school" is dated English,
 not a calque.
 
 ### R9: three whys write "gaokao" while 高考's line refuses it
 
-Status: fixed in `357f534b7` (guard `8da383b89`); the guard exempts a form the entry refuses itself, which its why quotes to refuse.
-Guard: no why carries a form another entry refuses.
+Status:
+fixed in `357f534b7` (guard `8da383b89`);
+the guard exempts a form the entry refuses itself,
+which its why quotes to refuse.
+Guard:
+no why carries a form another entry refuses.
 
 ### R10: 亲友 "close friends" fires inside "close friendships"
 
-Status: fixed in `cc96eca77` by boundaries; the re-probe of 2026-09-28 passes "close friendships".
+Status:
+fixed in `cc96eca77` by boundaries;
+the re-probe of 2026-09-28 passes "close friendships".
 
 ### R11: 交往 lists "dated" on the one page where it never means dating
 
-Status: fixed in `357f534b7`; the pin carries 交往 four times, all on aiyysk, never of romance.
+Status:
+fixed in `357f534b7`;
+the pin carries 交往 four times,
+all on aiyysk,
+never of romance.
 
 ### R12: 抢救's renderings carry "intensive care"
 
-Status: fixed in `357f534b7`; "resuscitation" and "salvage" join the renderings where the passage means them.
+Status:
+fixed in `357f534b7`;
+"resuscitation" and "salvage" join the renderings where the passage means them.
 
 ### R13: sentence lessons and page-specific whys in word entries
 
-Status: fixed in `357f534b7`: 学霸, 未成年, 志愿填写 and 三剑客 carry word-level whys.
+Status:
+fixed in `357f534b7`:
+学霸,
+未成年,
+志愿填写 and 三剑客 carry word-level whys.
 学霸 (属性),
 未成年,
 志愿填写,
@@ -237,7 +345,8 @@ Status: fixed in `357f534b7`: 学霸, 未成年, 志愿填写 and 三剑客 carr
 
 ### R14: refusal overreach without boundaries
 
-Status: fixed in `cc96eca77` by boundaries.
+Status:
+fixed in `cc96eca77` by boundaries.
 "wish form" in "a wish formed",
 "threatened her life" in "lifelong",
 "head of year" in "ahead of year-end",
@@ -245,7 +354,9 @@ Status: fixed in `cc96eca77` by boundaries.
 
 ### R15: refusal gaps
 
-Status: fixed in `357f534b7` (guard `8da383b89`); `JK裙` already passed under the class one hundred eighty-six matcher.
+Status:
+fixed in `357f534b7` (guard `8da383b89`);
+`JK裙` already passed under the class one hundred eighty-six matcher.
 "type II diabetic",
 "diabetes type II",
 "threatens her life",
@@ -253,7 +364,12 @@ Status: fixed in `357f534b7` (guard `8da383b89`); `JK裙` already passed under t
 
 ### R16: false or stale comments
 
-Status: fixed in `357f534b7` and the planning doc: 初中 stands nine times on five entries (a Xu_Yushu reader comment was counted as an archive passage), one 激素 paragraph writes 药物 (the other 药 is inside 药娘), 交往 stands four times, and the sheet line reads `- OD:`.
+Status:
+fixed in `357f534b7` and the planning doc:
+初中 stands nine times on five entries (a Xu_Yushu reader comment was counted as an archive passage),
+one 激素 paragraph writes 药物 (the other 药 is inside 药娘),
+交往 stands four times,
+and the sheet line reads `- OD:`.
 初中 counts,
 激素 "two of them also write 药物",
 the planning doc's 交往 count,
@@ -261,8 +377,10 @@ the double space before " OD" on the sheet.
 
 ## Canadian forms passes
 
-Probes: `~/temp/agent/audit-canadian/`.
-Files: `src/corpus-run/canadian-date.ts`,
+Probes:
+`~/temp/agent/audit-canadian/`.
+Files:
+`src/corpus-run/canadian-date.ts`,
 `src/corpus-run/canadian-spelling.ts`,
 `src/corpus-run/canadian-forms.ts`,
 `src/corpus-run/prose-ranges.ts`,
@@ -270,33 +388,48 @@ Files: `src/corpus-run/canadian-date.ts`,
 
 ### K1: the date rewrite drops the comma after the year, and a test asserts it
 
-Status: fixed in `e9065faef` and `2efc90630` (guards `68d86f733`).
-aiyysk1 and aiyysk2 shipped "February 9, 2024 was Lunar New Year’s Eve."
+Status:
+fixed in `e9065faef` and `2efc90630` (guards `68d86f733`).
+aiyysk1 and aiyysk2 shipped "February 9,
+2024 was Lunar New Year’s Eve."
 The Language Portal of Canada requires a comma after the year when the sentence continues.
-`canadian-forms.unit.test.ts` expects "March 13, 2024 in a box".
+`canadian-forms.unit.test.ts` expects "March 13,
+2024 in a box".
 Every full date the pass reads now takes the closing comma where a word follows its year
 (`closingComma` in `src/corpus-run/canadian-date-parts.ts`),
-including a month-first date the page already wrote ("December 21, 2023 the cat").
+including a month-first date the page already wrote ("December 21,
+2023 the cat").
 The replay over the 364 archive and settled pages adds it at both aiyysk pages and at the archive.
 
 ### K2: `closesRange` gets ranges wrong
 
-Status: fixed in `e9065faef` and `2efc90630` (guards `68d86f733`).
+Status:
+fixed in `e9065faef` and `2efc90630` (guards `68d86f733`).
 Splits a range across a line break,
 skips "until 4 May" and a list item "- 4 May:",
 and mixes orders when both ends carry a month.
 `closesRange` is gone.
 `readRange` (`src/corpus-run/canadian-date-read.ts`) reads a range or pair of days sharing one month
-("1st to 3rd June", "4th or 5th May") whole and writes it once, month first, keeping the join as written,
+("1st to 3rd June",
+"4th or 5th May") whole and writes it once,
+month first,
+keeping the join as written,
 line break included;
-a range whose ends both carry a month is two dates, each rewritten.
-A day after "until", "till" or "to" is a date like any other,
-and a no-break space, an en dash, an em dash, a `>` and an emoji now open one.
-A hyphen opens one only right after the date before it ("2 June-3 July"), so "COVID-19 May" stays.
+a range whose ends both carry a month is two dates,
+each rewritten.
+A day after "until",
+"till" or "to" is a date like any other,
+and a no-break space,
+an en dash,
+an em dash,
+a `>` and an emoji now open one.
+A hyphen opens one only right after the date before it ("2 June-3 July"),
+so "COVID-19 May" stays.
 
 ### K3: the closed word list leaves non-Canadian forms, including ones the house policy names
 
-Status: fixed in `1873b23dc` (guards `8ef3bdaec`).
+Status:
+fixed in `1873b23dc` (guards `8ef3bdaec`).
 Missing inflections of listed stems,
 "judgement" and "summarise" shipped on XingZ6012 to XingZ6014,
 "counselor",
@@ -304,70 +437,128 @@ Missing inflections of listed stems,
 "my mum".
 The list is now built from -our and -ise stem families,
 each crossed only with endings that keep the Canadian letter
-(`src/corpus-run/canadian-spelling-stems.ts`: "honourable" but "honorary", "humourless" but "humorous"),
+(`src/corpus-run/canadian-spelling-stems.ts`:
+"honourable" but "honorary",
+"humourless" but "humorous"),
 plus explicit pairs (`canadian-spelling-pairs.ts`).
-Where Canadian sources split, McGill's language guidelines, the house policy's source, decide:
-"counsellor, not counselor", "enrolment, not enrollment", "program, not programme";
-"fulfill" and "skillful", on which McGill is silent and the Ryerson guide writes with two l's, stand.
+Where Canadian sources split,
+McGill's language guidelines,
+the house policy's source,
+decide:
+"counsellor,
+not counselor",
+"enrolment,
+not enrollment",
+"program,
+not programme";
+"fulfill" and "skillful",
+on which McGill is silent and the Ryerson guide writes with two l's,
+stand.
 "mum" becomes "mom" after a possessive and as a capitalised form of address.
-A replay over the 364 archive and settled pages makes 52 distinct respellings, every one correct
-(counselor 39, enrollment 25, harbor 9, splendor 7, quarreled 6, marginalised 4 and the -ise verbs among them),
+A replay over the 364 archive and settled pages makes 52 distinct respellings,
+every one correct
+(counselor 39,
+enrollment 25,
+harbor 9,
+splendor 7,
+quarreled 6,
+marginalised 4 and the -ise verbs among them),
 and leaves only forms Canadian shares or the owner's sources leave open.
-A test holds 25 words that must never change (humorous, humoral, honorary, laborious, coloration,
-analyses, paralyses, meter, check, tire, license, practice, fulfill, skillful, the root -ise words and others).
+A test holds 25 words that must never change (humorous,
+humoral,
+honorary,
+laborious,
+coloration,
+analyses,
+paralyses,
+meter,
+check,
+tire,
+license,
+practice,
+fulfill,
+skillful,
+the root -ise words and others).
 
 ### K4: ordinal and year-first dates left alone
 
-Status: fixed in `e9065faef` and `2efc90630` (guards `68d86f733`).
+Status:
+fixed in `e9065faef` and `2efc90630` (guards `68d86f733`).
 `readMonthFirst` and `readYearFirst` (`src/corpus-run/canadian-date-read-leading.ts`)
 drop a month-first ordinal's suffix ("December 29th"),
-write a year-first date month first ("2023 Feb 25th", "2023, 31 Mar."),
-and spell an abbreviated month out, with or without a day ("4 Sept 2024", "Nov 2023").
+write a year-first date month first ("2023 Feb 25th",
+"2023,
+31 Mar."),
+and spell an abbreviated month out,
+with or without a day ("4 Sept 2024",
+"Nov 2023").
 A year-first date is read only where its day carries a suffix or ends the clause,
 so "In 2021 May 4 was a Tuesday" stays;
 every year-first date in the pinned archive carries a suffix.
 A comma-joined year before a day-first date is joined only where the date ends its clause,
-so "In 2020, 4 May was a holiday" becomes "In 2020, May 4 was a holiday".
-The replay on `2efc90630` rewrites 269 dates across the 364 pages and leaves no day-first, month-first ordinal,
-year-first, unclosed-year or abbreviated-month date in prose.
+so "In 2020,
+4 May was a holiday" becomes "In 2020,
+May 4 was a holiday".
+The replay on `2efc90630` rewrites 269 dates across the 364 pages and leaves no day-first,
+month-first ordinal,
+year-first,
+unclosed-year or abbreviated-month date in prose.
 
 ### K5: withdrawn slices ship raw archive text
 
-Status: fixed in `3497e0041` (prep `ab4373cd2`, guards `4014d49c4` and `66fe334ce`).
+Status:
+fixed in `3497e0041` (prep `ab4373cd2`,
+guards `4014d49c4` and `66fe334ce`).
 The page passes and the footnote guard now run again over the rows left once the guard takes a row back,
 until a round takes nothing back (`corpus-run/page-assembly-rounds.ts`);
-the withdrawal stays recorded, and a row a pass wrote over the archive text wins over it.
-No stored artifact carries an instance: of 265, only shi_Yumiaoya7 withdraws a slice, an anchor with no archive text.
-Guard output is byte-identical to the build before on six stored artifacts, shi_Yumiaoya7 among them.
+the withdrawal stays recorded,
+and a row a pass wrote over the archive text wins over it.
+No stored artifact carries an instance:
+of 265,
+only shi_Yumiaoya7 withdraws a slice,
+an anchor with no archive text.
+Guard output is byte-identical to the build before on six stored artifacts,
+shi_Yumiaoya7 among them.
 `restoredOnly` drops the Canadian row of a withdrawn slice and the archive text ships unconverted.
 
 ### K6: the house policy writes "capitalised" and "judgement"
 
-Status: fixed in `b45000747`; `sheet-canadian-spelling.unit.test.ts` now reads every rendered sheet.
+Status:
+fixed in `b45000747`;
+`sheet-canadian-spelling.unit.test.ts` now reads every rendered sheet.
 Its spelling test checks four forms.
 
 ### K7: `prose-ranges.ts` protects too much
 
-Status: fixed in `1873b23dc` and `dc325d847` (guards `8ef3bdaec`, `18c2bc00f`).
+Status:
+fixed in `1873b23dc` and `dc325d847` (guards `8ef3bdaec`,
+`18c2bc00f`).
 A quote mark inside a JSX comment and a stray backtick protect the rest of the text.
-A JSX expression now skips its comments, a quote mark with no partner on its line inside an expression
+A JSX expression now skips its comments,
+a quote mark with no partner on its line inside an expression
 is a stray apostrophe (a tag's attribute value may still run on across lines),
-and a backtick run closes only at a run of the same length inside its paragraph, else it is literal (CommonMark).
-The Han-residue floor reads these ranges too, so the change rides inside translate 15 and consolidation 20
+and a backtick run closes only at a run of the same length inside its paragraph,
+else it is literal (CommonMark).
+The Han-residue floor reads these ranges too,
+so the change rides inside translate 15 and consolidation 20
 and moved lane contest to 6 (M28).
 
 ### K8: small wrong rewrites
 
-Status: dates fixed in `e9065faef` and `2efc90630` (guards `68d86f733`);
+Status:
+dates fixed in `e9065faef` and `2efc90630` (guards `68d86f733`);
 accented neighbours fixed under H14.
 "5 May beetles",
 "the 4th May",
 "4 May2024",
 accented neighbours.
-A day-first month followed by a listed compound ("May beetles", "March hare")
-or a capitalised word ("June Carter", "April Fools’") is no date;
+A day-first month followed by a listed compound ("May beetles",
+"March hare")
+or a capitalised word ("June Carter",
+"April Fools’") is no date;
 "I" and a capital after an abbreviation's period are exempt.
-No day-first date in the 364 pages is followed by a capitalised word, so the rule costs nothing there.
+No day-first date in the 364 pages is followed by a capitalised word,
+so the rule costs nothing there.
 An ordinal day's article and "of" go with it ("the 4th of May" is "May 4");
 a bare day keeps its article ("the 4 May deadline" is "the May 4 deadline").
 A month or year running into digits or letters refuses the date.
@@ -376,106 +567,166 @@ the Canadian form tests failed every time.
 
 ### K9: quoted lowercase English is respelled though the README says it is kept
 
-Status: fixed in `1873b23dc` (guard `8ef3bdaec`).
+Status:
+fixed in `1873b23dc` (guard `8ef3bdaec`).
 Every page rewrite now receives the slice's original (`page-slice-rewrite.ts`),
 and a word the original writes in English in its prose keeps its spelling.
-No pinned source carries a listed English word outside markup attributes, so the corpus holds no instance;
+No pinned source carries a listed English word outside markup attributes,
+so the corpus holds no instance;
 the unit case and its mutant are the evidence.
 
 ### K10: underscore and slash edges
 
-Status: fixed in `1873b23dc` (guard `8ef3bdaec`).
-An underscore or a dot stops a word only with a letter or digit on its far side (an identifier, a file name);
+Status:
+fixed in `1873b23dc` (guard `8ef3bdaec`).
+An underscore or a dot stops a word only with a letter or digit on its far side (an identifier,
+a file name);
 a slash stops it only inside a token that reads as a path or address
-(a leading `/`, `~`, `./` or `../`, a dotted name, a colon, an equals sign or a backslash).
+(a leading `/`,
+`~`,
+`./` or `../`,
+a dotted name,
+a colon,
+an equals sign or a backslash).
 No corpus instance.
 
 ### K11: capitalized listed words at a sentence start are never respelled
 
-Status: fixed in `1873b23dc` and `70a2a73ca` (guard `8ef3bdaec`, cases `031275d29`).
-A capital opening a sentence, a paragraph or a marked line, or styling a title-case heading,
+Status:
+fixed in `1873b23dc` and `70a2a73ca` (guard `8ef3bdaec`,
+cases `031275d29`).
+A capital opening a sentence,
+a paragraph or a marked line,
+or styling a title-case heading,
 is respelled and keeps its capital
 (`canadian-spelling-capital.ts`).
-A capital mid-sentence, after a title or an initial, before another capital,
-in a sentence-case heading, in emphasis or in capitals throughout still names someone or a work;
+A capital mid-sentence,
+after a title or an initial,
+before another capital,
+in a sentence-case heading,
+in emphasis or in capitals throughout still names someone or a work;
 "Gray" and "Id" stay capitalised as names wherever they stand.
 A line that only continues its paragraph opens no sentence.
-No sentence-start instance in the corpus; see K14 for the heading instance.
+No sentence-start instance in the corpus;
+see K14 for the heading instance.
 
 ### K12: test names claim more than they check
 
-Status: fixed in `403db3c6e`.
-The audit's specifics were not recorded, so the Canadian test names were read afresh against their checks.
+Status:
+fixed in `403db3c6e`.
+The audit's specifics were not recorded,
+so the Canadian test names were read afresh against their checks.
 Three overclaimed:
-"LEAVES markup, links, code, comments and emphasis untouched" (link text and emphasised lower-case words are rewritten),
+"LEAVES markup,
+links,
+code,
+comments and emphasis untouched" (link text and emphasised lower-case words are rewritten),
 "RESPELLS the closed word list in lower case" (capitals now respell too),
 and "the house policy writes its own words in Canadian spelling" (it checks four -ise forms;
 `sheet-canadian-spelling.unit.test.ts` checks every word).
 
 ### K13: the house policy's "-re" line omits "meter" the device
 
-Status: fixed in `403db3c6e`; accounted inside translate 15, consolidation 20, repair 33 and refine 5.
+Status:
+fixed in `403db3c6e`;
+accounted inside translate 15,
+consolidation 20,
+repair 33 and refine 5.
 The line now names metre for the unit and meter for the device that measures.
 
 ### K14: a title-case heading is never respelled
 
-Status: fixed in `1873b23dc` (guard `8ef3bdaec`).
-Found by the spelling census of 2026-09-28: the pinned archive's `Chinatsu_Suzuki/page.en.md:29`,
-a section heading translating its original's line 29, carries an American -or spelling in title case,
+Status:
+fixed in `1873b23dc` (guard `8ef3bdaec`).
+Found by the spelling census of 2026-09-28:
+the pinned archive's `Chinatsu_Suzuki/page.en.md:29`,
+a section heading translating its original's line 29,
+carries an American -or spelling in title case,
 and the first pass took the capital for a name.
-Title case makes capitals styling, so a listed word there is respelled with its capital;
+Title case makes capitals styling,
+so a listed word there is respelled with its capital;
 a sentence-case heading's mid-line capital still names someone.
 The replay respells it.
 
 ### Spelling mutation check
 
-26 guards broken one at a time, with an unchanged-source control that must pass:
-24 caught at first, and the two survivors (the combining-accent branch, the JSX-comment skip)
+26 guards broken one at a time,
+with an unchanged-source control that must pass:
+24 caught at first,
+and the two survivors (the combining-accent branch,
+the JSX-comment skip)
 were caught once `18c2bc00f` gave them cases only they can pass.
 A first run reported every mutant alive because its filter dropped every assertion line (M27).
 
 ## Glossary entry-content mutation check
 
-23 fixes of `357f534b7` broken one at a time, with an unchanged-source control that must pass:
+23 fixes of `357f534b7` broken one at a time,
+with an unchanged-source control that must pass:
 all 23 caught by `glossary-entry-content.unit.test.ts`,
 `community-glossary-kigurumi.unit.test.ts` or `rendering-glossary-calques.unit.test.ts`.
 The inflected stems and the "d" ending had no case until `36e7a4c30`.
 One mutant (the 安慰 contrast restored) first broke the build with an apostrophe inside a string literal,
 so its catch came from the previous mutant's stale build;
-rerun as a valid mutant beside the control, it was caught.
-A mutant whose build fails proves nothing, so the harness now reports a failed build as no verdict.
+rerun as a valid mutant beside the control,
+it was caught.
+A mutant whose build fails proves nothing,
+so the harness now reports a failed build as no verdict.
 
 ## Glossary re-probe
 
-Probe: `~/temp/agent/audit-glossary-fix/x363-reprobe.mjs`
-(output `x363-reprobe.out`, glossary data, ids and counts only)
+Probe:
+`~/temp/agent/audit-glossary-fix/x363-reprobe.mjs`
+(output `x363-reprobe.out`,
+glossary data,
+ids and counts only)
 and `x363-form-sites.mjs` (paths and line numbers only).
-Run 2026-09-28 over every current entry (15 community and fandom, 41 rendering) against all 92 pinned originals,
+Run 2026-09-28 over every current entry (15 community and fandom,
+41 rendering) against all 92 pinned originals,
 with the real floor (`communityTermFindings`) over all 92 human archives
 and the 214 settled pipeline pages of the entries carrying each term.
-Since the probes of 2026-09-26, five entries are new (爆柜, 跨性别圈, 矫正中心, 矫正学校, 螐),
-化作 is gone and ` OD` became `OD`; each new entry has one carrier, the page it was written from.
-The human archives fire on eight entries, the set of 2026-09-26 but for four changes:
-化作 removed, mikaela_khara's 药娘 now an organization's name (`f3cd0ef83`),
+Since the probes of 2026-09-26,
+five entries are new (爆柜,
+跨性别圈,
+矫正中心,
+矫正学校,
+螐),
+化作 is gone and ` OD` became `OD`;
+each new entry has one carrier,
+the page it was written from.
+The human archives fire on eight entries,
+the set of 2026-09-26 but for four changes:
+化作 removed,
+mikaela_khara's 药娘 now an organization's name (`f3cd0ef83`),
 zhangyubaka's "correctional school" refused on purpose (R-series),
-and spike0qy's "jk skirt", since the class one hundred eighty-six matcher reads the page's `JK裙` as the term
+and spike0qy's "jk skirt",
+since the class one hundred eighty-six matcher reads the page's `JK裙` as the term
 and the owner's forms refuse that rendering.
 On the settled pages every fire is the term left untranslated
-(OD written bare, 滑档 and 炸柜 in Han, 螐 on XingZ60's pages: the H9 defect)
+(OD written bare,
+滑档 and 炸柜 in Han,
+螐 on XingZ60's pages:
+the H9 defect)
 or a refused form.
-Eleven refused forms fire there that the probes of 2026-09-26 never listed, all on shi_Yumiaoya's pages;
-one site of each was read against the original, and each renders its own term wrongly:
+Eleven refused forms fire there that the probes of 2026-09-26 never listed,
+all on shi_Yumiaoya's pages;
+one site of each was read against the original,
+and each renders its own term wrongly:
 the 药娘 forms render 小药娘 (the owner's "trans woman" or "trans girl"),
-"across different communities" renders 在跨圈内, the 逆子 forms drop the "son" of the father's quoted insult,
+"across different communities" renders 在跨圈内,
+the 逆子 forms drop the "son" of the father's quoted insult,
 and the 滑档 tier slides are R4's own refusals.
 No global refusal ignores context in the task's named cases:
-交往 is R-series, and 治愈 refuses no form, while 治愈率 is on no pinned original (three carry 治愈).
+交往 is R-series,
+and 治愈 refuses no form,
+while 治愈率 is on no pinned original (three carry 治愈).
 
 ## Consolidation gate
 
 ### G1: the gate sheet says choosing an ineligible standing stops the entry
 
-Status: fixed in `0b8788dae`; decision addenda thirteen to fifteen record the owner's answers.
+Status:
+fixed in `0b8788dae`;
+decision addenda thirteen to fifteen record the owner's answers.
 Since class one hundred eighty-five (`419605ff4`) a gate preferring an ineligible standing ships the slate's choice,
 but `buildConsolidateGateMessages` still says 'Choosing "standing" stops this entry with no page',
 and the `standingEligible` TSDoc in `src/consolidate-settle-gate.ts` says a gate keeping it ends the slice.
@@ -484,31 +735,40 @@ whether the gate should still run there is an owner question.
 
 ## Rule text and sheet consistency
 
-Probes: `~/temp/agent/audit-policy-text/` and `~/temp/agent/audit-sheets/`
-(rendered sheets under `sheets/` and `rendered/`, a sheet-by-block matrix in `report.txt`).
+Probes:
+`~/temp/agent/audit-policy-text/` and `~/temp/agent/audit-sheets/`
+(rendered sheets under `sheets/` and `rendered/`,
+a sheet-by-block matrix in `report.txt`).
 Paths are under `src/`.
 
 ### S1: the translate writer keeps the existing translation's tense, against the house tense rule on the same sheet
 
-Status: fixed in `00eed316e` (guard `b16350d39`), with the translate writer's no-addition rule.
+Status:
+fixed in `00eed316e` (guard `b16350d39`),
+with the translate writer's no-addition rule.
 `translate-wire.ts` says "KEEP THE TENSE OF THE EXISTING TRANSLATION where one is shown";
 `house-policy.ts` says a life told in the present is brought to the past.
 Class eighty-five fixed the same wording on the consolidation writer only,
 and `tense-authority-reaches-every-sheet.unit.test.ts` pins the wrong wording.
-Fix: the consolidation writer's ordered tense rule.
+Fix:
+the consolidation writer's ordered tense rule.
 
 ### S2: production translate writers never see ARCHIVE RENDERING DISPUTED
 
-Status: fixed in `9858a7acb` (guard `translate-produce-dispute.unit.test.ts`).
+Status:
+fixed in `9858a7acb` (guard `translate-produce-dispute.unit.test.ts`).
 `translate-stage-repair.ts` spreads `archiveDisputeNote` into `produceTranslateSlate`,
 which never declares or forwards it;
 a capturing client shows 0 of 2 translator sheets carry the note.
 Tests exercise only the builder.
-Fix: declare and forward it; guard through `produceTranslateSlate`.
+Fix:
+declare and forward it;
+guard through `produceTranslateSlate`.
 
 ### S3: the typed decision seat (Jev) votes without the house rules or community renderings
 
-Status: fixed in `ce824d933` (guard `decision-seat-policy.unit.test.ts`).
+Status:
+fixed in `ce824d933` (guard `decision-seat-policy.unit.test.ts`).
 `selectDecision` in `candidate-select-decision.ts` builds criteria,
 evidence and candidates only;
 the chat seat carries `JUDGE_POLICY_BLOCK` and `communityRenderingsBlock`.
@@ -518,24 +778,41 @@ the fix carries the policy in the decision state (about 4k tokens against a 32k 
 
 ### S4: the adjudication panel has no identity context
 
-Status: fixed; the panel sheet carries the fenced DECLARED NAMES block and the shared declared-identity rules
-(`declared-identity-rule.ts`, moved out of the critic), threaded from `repairChunk` through `runPanelStage`;
-guarded end to end in `repair-translation.unit.test.ts`, shown red with the thread cut.
+Status:
+fixed;
+the panel sheet carries the fenced DECLARED NAMES block and the shared declared-identity rules
+(`declared-identity-rule.ts`,
+moved out of the critic),
+threaded from `repairChunk` through `runPanelStage`;
+guarded end to end in `repair-translation.unit.test.ts`,
+shown red with the thread cut.
 `buildAdjudicationMessages` takes no `identityContext`,
 so a claim against a declared name can be supported and dispute the archive.
 
 ### S5: the apparatus list differs across six sheets
 
-Status: fixed (`e7e3f9c17`, `2329042f4`, `914ccb21d`).
+Status:
+fixed (`e7e3f9c17`,
+`2329042f4`,
+`914ccb21d`).
 `APPARATUS_KINDS` in `page-apparatus-clause.ts` is the one list,
 the union of every kind any sheet named;
-the critic, the panel, the contest, the writers' clause, the archive block review,
+the critic,
+the panel,
+the contest,
+the writers' clause,
+the archive block review,
 its selector (`ARCHIVE_BLOCK_SELECTION_CRITERIA`)
 and the dispute note read it,
-and the critic, the panel and the selector gained `NARRATIVE_DETAIL_IS_NOT_APPARATUS`.
-Guards: `apparatus-kinds.unit.test.ts`, the selection-prompt assertion in `archive-block-review-stage.unit.test.ts`.
+and the critic,
+the panel and the selector gained `NARRATIVE_DETAIL_IS_NOT_APPARATUS`.
+Guards:
+`apparatus-kinds.unit.test.ts`,
+the selection-prompt assertion in `archive-block-review-stage.unit.test.ts`.
 Left as measured:
-the block review's deterministic `editorial-context` check still counts only fixed-prefix, contributor, image and comment blocks,
+the block review's deterministic `editorial-context` check still counts only fixed-prefix,
+contributor,
+image and comment blocks,
 so a reviewer calling a gloss block `editorial-context` is not counted;
 the block then ships as the archive wrote it unless a revise vote wins selection,
 and the selector now reads the apparatus kinds.
@@ -548,60 +825,83 @@ the panel,
 archive block review
 and its selector each list different kinds;
 critic and panel keep "only when WRONG".
-Fix: one shared kinds constant with the narrative bound on every sheet that files,
+Fix:
+one shared kinds constant with the narrative bound on every sheet that files,
 votes on or writes against the archive.
 
 ### S6: `CONTEST_POLICY` still says keep what the Chinese is silent about
 
-Status: fixed (`e7e3f9c17`, `fa892a7da`).
+Status:
+fixed (`e7e3f9c17`,
+`fa892a7da`).
 The silent-keeps sentence covers page apparatus and whole regions
 and says a narrative detail the archive adds to a passage is not kept on the archive's word;
 the judge tail's precedence sentence names "a criterion or any other rule you have been given".
-Guards: `dropped-covers-the-page.unit.test.ts`, `contest-ballot-wire.unit.test.ts`, `decision-seat-policy.unit.test.ts`.
+Guards:
+`dropped-covers-the-page.unit.test.ts`,
+`contest-ballot-wire.unit.test.ts`,
+`decision-seat-policy.unit.test.ts`.
 Original finding:
-"Where the Chinese is SILENT rather than contradicting, dropping it is a fault of this kind,
+"Where the Chinese is SILENT rather than contradicting,
+dropping it is a fault of this kind,
 and keeping it is correct" sits beside `NARRATIVE_DETAIL_IS_NOT_APPARATUS`;
 the CuspariaKLSY11 gate ballot kept "took medication that night" on that wording.
 The JUDGE tail's precedence line names criteria this sheet lacks.
 
 ### S7: `SIZE_NOTE_POLICY` calls silent surplus in any far-longer rendering page content
 
-Status: fixed (`d94f6787b`).
+Status:
+fixed (`d94f6787b`).
 Silent surplus is page content only where the archive rendering also carries it;
-surplus the archive does not carry, a passage repeated or looping included, is unsupported.
-Guard: `contest-size-note.unit.test.ts`.
+surplus the archive does not carry,
+a passage repeated or looping included,
+is unsupported.
+Guard:
+`contest-size-note.unit.test.ts`.
 Original finding:
 The note exists for a looping candidate,
 and its sentence tells the judge the loop's surplus is page content.
 
 ### S8: the narrative bound and the cited-reference rule have no precedence
 
-Status: fixed (`914ccb21d`).
+Status:
+fixed (`914ccb21d`).
 Both reference rules say an event or a characterization a cited reference states is covered,
 since the narrative bound is about detail no source states,
 and that reader protection outranks the references;
 `TRANSLATE_ATTESTED_RULE` says reader protection outranks the attested details;
 the dispute note says the adjudicators weighed the references before accepting the claim.
-Guard: `reference-precedence.unit.test.ts`.
+Guard:
+`reference-precedence.unit.test.ts`.
 Original finding:
 A characterization a cited reference states is ACCURATE on one rule and an addition on the other;
 neither limits reader protection
-(`cited-reference-rule.ts`, `TRANSLATE_ATTESTED_RULE`, `misreadingRule`).
+(`cited-reference-rule.ts`,
+`TRANSLATE_ATTESTED_RULE`,
+`misreadingRule`).
 
 ### S9: reader-protection bullet contradicts itself on "took medication"
 
-Status: resolved by the owner, 2026-09-27: "took medication" is not replicable and may stay (`9eba04abb`).
+Status:
+resolved by the owner,
+2026-09-27:
+"took medication" is not replicable and may stay (`9eba04abb`).
 `house-policy.ts` keeps "took medication" vague as a method
 and allows "at most that she had taken medication" for any medication tied to a death.
-Proposed condition: the allowance holds only where medication was not the means.
+Proposed condition:
+the allowance holds only where medication was not the means.
 
 ### S10: the refiner keeps "any word left in the original language" and every date unchanged
 
-Status: fixed.
+Status:
+fixed.
 The block-level precedence sentence landed in `e8f0b0369`;
 `81962c75a` rewrites the refiner's survival sentence in both branches to name the house form
 and adds to the translate writer that a name the archive left in Han is not a rendering to keep.
-Guards: `house-policy-wording.unit.test.ts`, `consolidate-objection-polish.unit.test.ts`, `translate-wire.unit.test.ts`.
+Guards:
+`house-policy-wording.unit.test.ts`,
+`consolidate-objection-polish.unit.test.ts`,
+`translate-wire.unit.test.ts`.
 Original finding:
 Contradicts the house block on Han,
 Ta,
@@ -614,26 +914,35 @@ seven other sheets carry the block with no precedence sentence.
 
 ### S11: the polish gate's preface was read as licensing the base's tense
 
-Status: fixed (`091307d14`).
+Status:
+fixed (`091307d14`).
 The preface calls a present-tense line of the life in the base a tense the house rules correct,
 never a reason to keep the base;
 `HOUSE_CORRECTION_IS_AN_IMPROVEMENT` in `polish-gate-house-rules.ts` tells the comparative and objection gates
 to prefer a polish that only applies a house rule,
 and the comparative refiner is told such a paragraph is a rewrite to make.
-Guards: `consolidation-polish-gate.unit.test.ts`, `house-policy-wording.unit.test.ts`.
+Guards:
+`consolidation-polish-gate.unit.test.ts`,
+`house-policy-wording.unit.test.ts`.
 Original finding:
 "a present-tense line about their life is the base's choice" was quoted by a TianqiChen66616 ballot;
 the comparative policy never prefers a polish whose only change is a house correction.
 
 ### S12: the polish gate lacks blocks the consolidate gate carries
 
-Status: fixed (`1a004389a`).
-`candidate-judge-rules.ts` holds the contest's declared-names lines (moved out of `CONTEST_POLICY`, text byte-identical),
-an apparatus rule in candidate vocabulary, and a judge line clause;
-the polish gate reads all three, the community renderings block and the dispute note,
+Status:
+fixed (`1a004389a`).
+`candidate-judge-rules.ts` holds the contest's declared-names lines (moved out of `CONTEST_POLICY`,
+text byte-identical),
+an apparatus rule in candidate vocabulary,
+and a judge line clause;
+the polish gate reads all three,
+the community renderings block and the dispute note,
 threaded `applyFinalPolish` to `polishConsolidation` to `runConsolidationPolishRound` to the gate subject.
 The bilingual clause arrives with the line clause (S15).
-Guards: `polish-gate-page-rules.unit.test.ts`, the dispute assertion in `consolidation-polish-apply.unit.test.ts`.
+Guards:
+`polish-gate-page-rules.unit.test.ts`,
+the dispute assertion in `consolidation-polish-apply.unit.test.ts`.
 Original finding:
 Apparatus,
 name scope,
@@ -643,26 +952,37 @@ bilingual clause.
 
 ### S13: the absolute naturalness review has no house rules yet its findings are required fixes
 
-Status: fixed (`3e4cf0441`).
+Status:
+fixed (`3e4cf0441`).
 The review splices `MEASUREMENT_POLICY_BLOCK` with its own verdict line,
 drops "deliberate source-language kinship terms" for "a term the house rules keep in English letters with its gloss",
 and counts a departure from a house rule of form as a material defect.
-Guard: `naturalness-review-sheet.unit.test.ts`.
+Guard:
+`naturalness-review-sheet.unit.test.ts`.
 Original finding:
 It tells the reviewer to preserve source-language kinship terms,
 against the house rendering of 姐姐.
 
 ### S14: the editor sheet has no identity context or cited references
 
-Status: fixed (`a8f5cb490` export prep, `fa949b78f` criteria, `f16d5e8bf` evidence).
+Status:
+fixed (`a8f5cb490` export prep,
+`fa949b78f` criteria,
+`f16d5e8bf` evidence).
 The editor sheet shows the declared names with `DECLARED_IDENTITY_RULES`,
-the cited references with their rule, and the community renderings the translation lacks;
+the cited references with their rule,
+and the community renderings the translation lacks;
 both editor selections read the declared names and references through `repairSelectionSourceEvidence`.
-The envelope criterion's tense now follows the house tense rule, not the surrounding English;
+The envelope criterion's tense now follows the house tense rule,
+not the surrounding English;
 both editor faithfulness criteria carry the declared-name exemption and `PAGE_APPARATUS_IS_KEPT`;
 every refine selection mode reads `HOUSE_FORM_CORRECTION_KEEPS_MEANING`.
-`house-form-corrections.ts` holds the one house-form list the polish gate, refiner, review and refine selection share.
-Guards: `selection-criteria-house.unit.test.ts`, `editor-page-evidence.unit.test.ts`.
+`house-form-corrections.ts` holds the one house-form list the polish gate,
+refiner,
+review and refine selection share.
+Guards:
+`selection-criteria-house.unit.test.ts`,
+`editor-page-evidence.unit.test.ts`.
 Original finding:
 Its selection judges see community departures the editors were never told of.
 The editor and refine selection criteria lag the slate criteria,
@@ -670,32 +990,45 @@ and "Fits the surrounding text in register and tense" makes the surrounding Engl
 
 ### S15: the bilingual and line-structure rules are missing on the contest and both gates
 
-Status: fixed (`1a004389a` for the polish gate, `070db03dd` for the lane contest and the consolidate gate).
+Status:
+fixed (`1a004389a` for the polish gate,
+`070db03dd` for the lane contest and the consolidate gate).
 `JUDGE_LINE_STRUCTURE_CLAUSE` carries the bilingual clause;
 both subjects take a required `lineStructured`,
 and the lane contest key appends a mark when the rule governs.
-Guard: `judge-line-structure.unit.test.ts`.
+Guard:
+`judge-line-structure.unit.test.ts`.
 
 ### S16: the picture scope rule never reached the consolidation writer or the slate
 
-Status: fixed (`efa502d21`).
+Status:
+fixed (`efa502d21`).
 The consolidation writer reads `TRANSLATE_PICTURE_SCOPE_RULE` when it shows pictures;
-the translate judge, which also judges the consolidation slate, reads `JUDGE_PICTURE_SCOPE_RULE` in the pictures label.
-Guards: `consolidate-wire.unit.test.ts`, `document-pictures-reach-the-wire.unit.test.ts`.
+the translate judge,
+which also judges the consolidation slate,
+reads `JUDGE_PICTURE_SCOPE_RULE` in the pictures label.
+Guards:
+`consolidate-wire.unit.test.ts`,
+`document-pictures-reach-the-wire.unit.test.ts`.
 
 ### S17: the consolidation slate is told a decline leaves the passage untranslated where it stops the entry
 
-Status: fixed with the fifteenth addendum
-(`select-decline-consequence.ts`: a withheld standing tells the judges a declined slate ships by preference).
+Status:
+fixed with the fifteenth addendum
+(`select-decline-consequence.ts`:
+a withheld standing tells the judges a declined slate ships by preference).
 `candidate-select-wire.ts` via `translate-judge.ts`.
-The translate lane told the same falsehood over an archive the floor refuses, fixed in the same change.
+The translate lane told the same falsehood over an archive the floor refuses,
+fixed in the same change.
 
 ### S18: measurement sheets drift
 
-Status: fixed.
+Status:
+fixed.
 The rendering audit's tense line and the measurement tail's attempts and places landed in `e8f0b0369`;
 `b6df6d5ee` gives the introduced-defect probe's drop rule the apparatus exception.
-Guard: `probe-page-rules.unit.test.ts`.
+Guard:
+`probe-page-rules.unit.test.ts`.
 Original finding:
 The rendering audit counts a tense English supplies as `altered-time`;
 the introduced-defect probe says dropping wording the ORIGINAL never had is a correct repair,
@@ -705,20 +1038,29 @@ not attempts or a place that was the means.
 
 ### S19: house-policy wording defects
 
-Status: fixed. Most bullets were already fixed in the current text (the corner-bracket example, italic titles, positional words,
-first-person contributors, "trans girl", English letters for terms, Canadian spellings in rule text);
+Status:
+fixed.
+Most bullets were already fixed in the current text (the corner-bracket example,
+italic titles,
+positional words,
+first-person contributors,
+"trans girl",
+English letters for terms,
+Canadian spellings in rule text);
 the OD rule now keeps OD unnamed where it is the means of a death or an attempt,
 and `KEPT_SUBJECT_RULE` makes I (or that person) the one who does it.
 
 - "OD is overdose" is prescribed where OD is a suicide method (Susiethegamer),
     which reader protection keeps vague.
 - The corner-bracket rule contradicts its own 「盐田姐姐」 example.
-- Titles: the rule says quotation marks,
+- Titles:
+  the rule says quotation marks,
     the archive and `archive-italic-title-restore.ts` use italics (owner call).
 - The positional-word rule reads as a ban on "earlier",
     "below" and "above" in any sense.
 - "Entries are written in the third person" against first-person contributors.
-- "MtF is trans woman, as 药娘 is" omits the owner's "trans girl".
+- "MtF is trans woman,
+  as 药娘 is" omits the owner's "trans girl".
 - "kept and glossed" does not forbid Han in English prose;
     runs shipped "大证 (…)".
 - Non-Canadian spellings in rule text:
@@ -728,17 +1070,21 @@ and `KEPT_SUBJECT_RULE` makes I (or that person) the one who does it.
     "characterise",
     "humor",
     "judgement".
-- `KEPT_SUBJECT_RULE` grammar: "says that I (or that person) does it".
+- `KEPT_SUBJECT_RULE` grammar:
+  "says that I (or that person) does it".
 
 ### S20: smaller sheet defects
 
-Status: fixed, item by item.
+Status:
+fixed,
+item by item.
 The attested-details rule licenses only the attested details and the apparatus from the existing translation;
 the critic and editor foreign-phrase rules carry one shared sentence taking names and titles out of their scope,
 and the Han residue floor passes a Japanese phrase with its English gloss after it (would-ship refusals 68 to 66);
 the restoration judge is told references come from archives written before the house rules;
 the dispute note names non-translation and is fenced on the contest and gate;
-the identity block is labelled DECLARED NAMES and fenced on every sheet, and the house policy names it so.
+the identity block is labelled DECLARED NAMES and fenced on every sheet,
+and the house policy names it so.
 The translate writer's "does not already carry" reopens archive narrative;
 the critic's foreign-phrase rule conflicts with the title rule;
 the restoration judge states a false reason;
@@ -754,15 +1100,26 @@ slice 9 was not reached.
 
 ## History, classes 93 to 185
 
-Notes: `~/temp/agent/audit-history-93-185/notes.md`
-(families F1 to F19, a per-class list, probes `probe-siblings.mjs`, `fixture-corpus.mjs`, `guard-order.mjs`,
+Notes:
+`~/temp/agent/audit-history-93-185/notes.md`
+(families F1 to F19,
+a per-class list,
+probes `probe-siblings.mjs`,
+`fixture-corpus.mjs`,
+`guard-order.mjs`,
 `verify-hashes.mjs`).
 All 95 recorded guard commits precede their fixes;
 of 221 cited hashes only `0e0bd1a8c` (named in `811d908a9`'s message) does not resolve.
 
 ### H1: a rejection of every valid proposal still stops the entry
 
-Status: fixed in `ee6d31e88`, guarded in `37128bf6c` (owner, 2026-09-27, "Preference + polish"); only a slate with no candidate or no voice heard still stops, having nothing to ship.
+Status:
+fixed in `ee6d31e88`,
+guarded in `37128bf6c` (owner,
+2026-09-27,
+"Preference + polish");
+only a slate with no candidate or no voice heard still stops,
+having nothing to ship.
 `translate-runoff-tie.ts` breaks only a challenge round's tie;
 any other decline throws,
 and `consolidate-settle.ts` turns it into `ConsolidationStandingIneligibleError` over an ineligible standing
@@ -770,11 +1127,14 @@ and `consolidate-settle.ts` turns it into `ConsolidationStandingIneligibleError`
 
 ### H2: the lane contest winner is validated without `lineStructured`
 
-Status: fixed in `a0fd3cc7c`, guarded in `b867b3180`.
+Status:
+fixed in `a0fd3cc7c`,
+guarded in `b867b3180`.
 `lane-contest-eligibility.ts` passes `declared` only;
 with the class one hundred two fixture the floor says invalid and `laneContestChoiceVerdict` says it may ship.
 
-What that cost, read from the code rather than assumed:
+What that cost,
+read from the code rather than assumed:
 the verdict gates only persistence and the log line in `lane-contest-driver.ts`,
 and the consolidation's `readStandingVerdict` does pass `lineStructured`,
 so the merged winner never shipped unrefused;
@@ -783,70 +1143,107 @@ which is what the verdict exists to prevent.
 
 The fix makes `lineStructured` required on `laneContestChoiceVerdict` and `laneContestChoiceMayShip`,
 and threads `prepared.lineStructuredSliceIndices` through `runPassContest` and `contestDocumentLanes`.
-Required rather than defaulted, because the defect was an optional flag reading false where a caller left it off.
+Required rather than defaulted,
+because the defect was an optional flag reading false where a caller left it off.
 The guards are a verdict case and a driver case (merged winner of a governed slice not persisted;
-the same winner persisted where no rule governs; the line-keeping lane persisted where one does);
+the same winner persisted where no rule governs;
+the line-keeping lane persisted where one does);
 removing the flag from the validation call turned both red at their `mayShip` and `persisted` assertions.
 
 The same family was checked across the package:
-every other production `validateTranslatedSlice`, `laneTextsForSlate`, `repairInvalidCandidates` and
+every other production `validateTranslatedSlice`,
+`laneTextsForSlate`,
+`repairInvalidCandidates` and
 `buildTranslateMessages` caller passes `lineStructured`,
 the two front-matter calls in `lane-contest-eligibility.ts` return before any line check,
-and `corpus-run/translate-probe.ts`, the `#70` prototype still runnable as the `translate-probe` task, omitted it.
+and `corpus-run/translate-probe.ts`,
+the `#70` prototype still runnable as the `translate-probe` task,
+omitted it.
 The probe now decides governance with the pipeline's own `governedSliceIndices` over its section and slices.
-Replayed offline over its entry, none of its three probed slices is governed,
+Replayed offline over its entry,
+none of its three probed slices is governed,
 so its sheet is unchanged there;
 the positive control (a governed two-line slice) adds 882 characters of line rule to the sheet.
-The probe calls providers and prints no sheet, so no live run was made for this.
+The probe calls providers and prints no sheet,
+so no live run was made for this.
 
 ### H3: the 治愈 misquote
 
-Status: fixed in `357f534b7` (the 安慰 contrast) and `f6cf6679b`
-(the reasons, now given as the change's own); the owner was told 2026-09-27.
+Status:
+fixed in `357f534b7` (the 安慰 contrast) and `f6cf6679b`
+(the reasons,
+now given as the change's own);
+the owner was told 2026-09-27.
 The comment also called the reasons the owner's,
 though the owner wrote only "I kinda disagree here".
 
 ### H4: the repair lane's own sheets never see the archive dispute
 
-Status: fixed (`d91b338d7`).
+Status:
+fixed (`d91b338d7`).
 The editor and the checker read `ADDITION_IS_REMOVED_NOT_SOFTENED` (`addition-repair-rule.ts`):
-an accepted addition is fixed only by removing the detail, and a softer restatement keeps it,
+an accepted addition is fixed only by removing the detail,
+and a softer restatement keeps it,
 which the checker answers not-fixed.
 Class one hundred eight measured the repair lane softening an accepted invented event into milder wording.
-Guard: `addition-repair-rule.unit.test.ts`.
+Guard:
+`addition-repair-rule.unit.test.ts`.
 
 ### H5: the translate lane and the consolidation never re-seat under a hold
 
-Status: fixed.
-Translate half in `29a424b76` (guard `3d9079ea7`; mutation checked with a control, three mutants caught).
-Consolidation half in `84aa1ce86` (red guards `01c8bbad8`, further guards `2f8499b4d` and `81555e22e`):
+Status:
+fixed.
+Translate half in `29a424b76` (guard `3d9079ea7`;
+mutation checked with a control,
+three mutants caught).
+Consolidation half in `84aa1ce86` (red guards `01c8bbad8`,
+further guards `2f8499b4d` and `81555e22e`):
 `consolidationHooksFor` (`corpus-run/pass-consolidate-reseat.ts`) reads the seats while a hold runs,
-builds the writers, slate judges and naturalness roles `pass-consolidate.ts` builds, and keeps them once the hold ends;
+builds the writers,
+slate judges and naturalness roles `pass-consolidate.ts` builds,
+and keeps them once the hold ends;
 `consolidateDocument` seats each slice on that roster and keys it by it (`shapeFor`),
 so a slice nobody re-seated keys as before and no cache version moves.
-Mutation checked with a control: eight H5 mutants caught
-(the same runs caught three X11 mutants, two of them on the self-certification fold M37 later reverted).
+Mutation checked with a control:
+eight H5 mutants caught
+(the same runs caught three X11 mutants,
+two of them on the self-certification fold M37 later reverted).
 Three survived the first guards (the driver handing a re-seated slice the starting judges or polish roles,
-and the run shape keying the starting polish), because no judging or polish round ran under a client
-that answered nothing usable; a role-answering client with a no-hook control now proves those rounds are asked.
-The lane contest, the preparation and the picture readings have the same gap: X12.
+and the run shape keying the starting polish),
+because no judging or polish round ran under a client
+that answered nothing usable;
+a role-answering client with a no-hook control now proves those rounds are asked.
+The lane contest,
+the preparation and the picture readings have the same gap:
+X12.
 
 Found as:
 `corpus-run/pass-reseat.ts` and `corpus-run/pass-consolidate.ts` only wait.
-The fourth stage of one family: classes one hundred three, one hundred nine and one hundred thirteen
+The fourth stage of one family:
+classes one hundred three,
+one hundred nine and one hundred thirteen
 fixed re-seating for one repair stage at a time.
 The per-slice hook now reads the seats while a hold runs for either lane and keeps each lane's latest roster;
-the lanes driver passes a translate roster through, and `translateDocument` seats the slice on it
-and keys it by that roster (`shapeFor`), so no cache version moves: a slice nobody re-seated keys as before.
-The consolidation half waits on a design: `consolidateRunShape` folds the roster into every key once,
+the lanes driver passes a translate roster through,
+and `translateDocument` seats the slice on it
+and keys it by that roster (`shapeFor`),
+so no cache version moves:
+a slice nobody re-seated keys as before.
+The consolidation half waits on a design:
+`consolidateRunShape` folds the roster into every key once,
 so per-slice seating there must fold each slice's bench into its key.
-Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/h5-census.mjs`): no hold began inside a consolidation phase
-in any TianqiChen666 run (9 holds in 20 logs, none inside), against 983 inside in 25 of 4,121 logs overall.
+Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/h5-census.mjs`):
+no hold began inside a consolidation phase
+in any TianqiChen666 run (9 holds in 20 logs,
+none inside),
+against 983 inside in 25 of 4,121 logs overall.
 
 ### H6: the absolute naturalness review is shown wrapped prose and no house rules
 
-Status: fixed with S13 (`3e4cf0441`).
-The subject takes a required `lineStructured`; on prose the wire folds each paragraph for display only.
+Status:
+fixed with S13 (`3e4cf0441`).
+The subject takes a required `lineStructured`;
+on prose the wire folds each paragraph for display only.
 The subject's texts stay exact:
 `absolute-naturalness-review-stage.ts` digests them
 and `corpus-run/artifact-two-lane-read-naturalness-digest.ts` recomputes those digests from the shipped text,
@@ -854,32 +1251,48 @@ so folding the subject would have broken every artifact read.
 
 ### H7: the consolidation writer and the translate judge see picture transcripts with no scope rule
 
-Status: fixed with S16 (`efa502d21`).
+Status:
+fixed with S16 (`efa502d21`).
 
 ### H8: the introduced-defect probe has no declared names or glossary
 
-Status: fixed (`b6df6d5ee`).
+Status:
+fixed (`b6df6d5ee`).
 The probe shows the declared names with their rules and the community renderings over each region's BEFORE and AFTER;
-`runIntroducedDefectProbe` and `proveRepairedChunk` take a required `identityContext` string, empty for none,
+`runIntroducedDefectProbe` and `proveRepairedChunk` take a required `identityContext` string,
+empty for none,
 since the repo forbids nullish unions and an optional field would let a caller omit it silently.
-Guard: `probe-page-rules.unit.test.ts`.
+Guard:
+`probe-page-rules.unit.test.ts`.
 
 ### H9: observations left unbuilt after the owner said to fix everything
 
-Status: re-checked 2026-09-28 on XingZ6014's page (the latest XingZ60 page, 2026-09-26);
-the one that stood is fixed in `b1dcdc00b`, and the gap behind it is H16.
+Status:
+re-checked 2026-09-28 on XingZ6014's page (the latest XingZ60 page,
+2026-09-26);
+the one that stood is fixed in `b1dcdc00b`,
+and the gap behind it is H16.
 Every observation is XingZ60's.
-同类 now reads "the same kind", and 更多人 is not in the original:
-the nearest clause (更多其他的相似点, `page.md:311`) is rendered in full.
+同类 now reads "the same kind",
+and 更多人 is not in the original:
+the nearest clause (更多其他的相似点,
+`page.md:311`) is rendered in full.
 The album's title reads the same in its heading and its attribution.
 Both 雨狸 signatures still give a bare-pinyin handle and one keeps 妄想症 in Han,
-but today's floors refuse both renderings (`validateTranslatedSlice`: Han residue and signer handle,
-then signer handle), so the next XingZ60 run cannot ship them.
-螐儿 still took two treatments, a bird in one slice and an unnamed crawling creature in another,
-which no floor sees; the rendering glossary now carries 螐 with its dictionary meaning
+but today's floors refuse both renderings (`validateTranslatedSlice`:
+Han residue and signer handle,
+then signer handle),
+so the next XingZ60 run cannot ship them.
+螐儿 still took two treatments,
+a bird in one slice and an unnamed crawling creature in another,
+which no floor sees;
+the rendering glossary now carries 螐 with its dictionary meaning
 and a why saying the author's note carries the bird reading
-(guard `rendering-glossary-rare-word.unit.test.ts`; disabling the entry fails it, the control survives).
-Only XingZ60 writes the character, so only its slices re-key.
+(guard `rendering-glossary-rare-word.unit.test.ts`;
+disabling the entry fails it,
+the control survives).
+Only XingZ60 writes the character,
+so only its slices re-key.
 The observations as first recorded:
 更多人 omitted,
 螐 in three treatments and the album in two forms,
@@ -888,10 +1301,13 @@ The observations as first recorded:
 
 ### H10: stale statements against the code
 
-Status: fixed in `8c1681836`.
+Status:
+fixed in `8c1681836`.
 Both also missed that since class one hundred six a tie over an eligible standing every contest ballot
-called flawed is run off, that a run-off repeats while it narrows (class eighty-two),
-and that a challenge declining with nothing left to narrow ships the judges' preference (owner, 2026-09-27);
+called flawed is run off,
+that a run-off repeats while it narrows (class eighty-two),
+and that a challenge declining with nothing left to narrow ships the judges' preference (owner,
+2026-09-27);
 the TSDoc was in `consolidate-settle-judge.ts`.
 `doc/slice-context.md` says a slate over an eligible standing keeps its single round on a decline
 and that a tie or rejection is re-asked once;
@@ -899,43 +1315,75 @@ the TSDoc in `consolidate-settle.ts` says the same.
 
 ### H11: the address floor counts the 你 in 迷你
 
-Status: fixed with F-1 in `d0c788468` (`addressesNobody` in `translate-address-original.ts`, guarded in `address-drop.unit.test.ts`).
+Status:
+fixed with F-1 in `d0c788468` (`addressesNobody` in `translate-address-original.ts`,
+guarded in `address-drop.unit.test.ts`).
 
 ### H12: minimax-m3 ignores OpenRouter endpoints one at a time and names none measured
 
-Status: fixed in `db1d285c6` (red guard `6f31a3479`): the card sends `provider.order` Together then CoreWeave,
-fallbacks allowed, as the DeepSeek and GLM cards name theirs.
-Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/h12-endpoints.mjs`, pass-run logs only):
-since the 2026-09-04 ignores the price sort sent 59,745 streams to CoreWeave, 9,177 to Together and 8 to Venice.
-The listing of 2026-09-28 marks structured outputs on CoreWeave, Together and ModelRun alone,
+Status:
+fixed in `db1d285c6` (red guard `6f31a3479`):
+the card sends `provider.order` Together then CoreWeave,
+fallbacks allowed,
+as the DeepSeek and GLM cards name theirs.
+Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/h12-endpoints.mjs`,
+pass-run logs only):
+since the 2026-09-04 ignores the price sort sent 59,745 streams to CoreWeave,
+9,177 to Together and 8 to Venice.
+The listing of 2026-09-28 marks structured outputs on CoreWeave,
+Together and ModelRun alone,
 and OpenRouter routes a `response_format` request only to endpoints supporting it (provider-selection docs);
-all three are FP4 (Together's own model table, where OpenRouter lists it unknown),
-and the fp8 endpoints, the model's own among them, list no structured outputs.
-Over 2026-09-21 to 2026-09-28 Together served 7,601 streams at p50 1.9 s and p90 5.5 s, 18 not completed;
-CoreWeave 37,870 at p50 2.7 s and p90 9.7 s, 99 not completed; observed, not controlled for load.
-Precision being equal, speed chose the order; Together's listed price (0.30 and 1.20) is the card's.
+all three are FP4 (Together's own model table,
+where OpenRouter lists it unknown),
+and the fp8 endpoints,
+the model's own among them,
+list no structured outputs.
+Over 2026-09-21 to 2026-09-28 Together served 7,601 streams at p50 1.9 s and p90 5.5 s,
+18 not completed;
+CoreWeave 37,870 at p50 2.7 s and p90 9.7 s,
+99 not completed;
+observed,
+not controlled for load.
+Precision being equal,
+speed chose the order;
+Together's listed price (0.30 and 1.20) is the card's.
 The ignore comment said both ignored endpoints "cut a quarter or more of at least twenty streams";
 `d55d83082` measured Parasail answering into the reasoning channel with content empty
-and ModelRun timing out 119 of 300 streams in-stream, and the comment now says so.
-No cache version moves: routing is in no key.
-Mutation check: emptying the named endpoints and swapping their order were each caught by four cases
-across the catalog and client tests; the control survived; the full suite then ran green (0 of 1260 failing).
+and ModelRun timing out 119 of 300 streams in-stream,
+and the comment now says so.
+No cache version moves:
+routing is in no key.
+Mutation check:
+emptying the named endpoints and swapping their order were each caught by four cases
+across the catalog and client tests;
+the control survived;
+the full suite then ran green (0 of 1260 failing).
 
 ### H13: the seeds test pins the whole term list
 
-Status: fixed in `992d6c984` (properties and named renderings, the owner's 药娘 and 治愈 included).
+Status:
+fixed in `992d6c984` (properties and named renderings,
+the owner's 药娘 and 治愈 included).
 `community-glossary.unit.test.ts` went red three times on additions.
 
 ### H14: Freud's "id" becomes "ID"
 
-Status: fixed in `a17296fec` (guard `6527efaf2`), with its neighbours in `1873b23dc` (guards `8ef3bdaec`, `18c2bc00f`).
-A text naming the ego, the superego, Freud or psychoanalysis keeps a bare "id" as written;
-"id" inside a longer word ("idée", with a separate accent too), beside a digit or in a footnote label also stays.
+Status:
+fixed in `a17296fec` (guard `6527efaf2`),
+with its neighbours in `1873b23dc` (guards `8ef3bdaec`,
+`18c2bc00f`).
+A text naming the ego,
+the superego,
+Freud or psychoanalysis keeps a bare "id" as written;
+"id" inside a longer word ("idée",
+with a separate accent too),
+beside a digit or in a footnote label also stays.
 A mutant dropping the Freudian hold fails the guard.
 
 ### H15: fixtures carry corpus text
 
-Status: fixed in `98054d72b` (every file below rewritten with invention).
+Status:
+fixed in `98054d72b` (every file below rewritten with invention).
 `address-drop.unit.test.ts` (two fixtures),
 `consolidation-polish-gate.unit.test.ts`,
 `rendering-glossary-idiom.unit.test.ts`,
@@ -945,54 +1393,108 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
 
 ### H16: a term repeated in slices judged apart has no shared rendering where the archive has none
 
-Status: fixed 2026-09-28; found fixing H9.
+Status:
+fixed 2026-09-28;
+found fixing H9.
 Each slice is written and judged alone.
-Where the archive renders a passage, its English anchors every slice;
-where it does not (a partial archive, as XingZ60's poem), a term the original repeats
+Where the archive renders a passage,
+its English anchors every slice;
+where it does not (a partial archive,
+as XingZ60's poem),
+a term the original repeats
 reaches each slice's bench with nothing saying how the others rendered it.
-The page-name glossary covers names and linked titles the archive pairs, and the rendering glossary covers
-dictionary words someone has entered; a coined or rare term outside both can ship in as many forms as slices.
-H9's entry closes the one instance read; the general mechanism waits on a measurement of how often
+The page-name glossary covers names and linked titles the archive pairs,
+and the rendering glossary covers
+dictionary words someone has entered;
+a coined or rare term outside both can ship in as many forms as slices.
+H9's entry closes the one instance read;
+the general mechanism waits on a measurement of how often
 a repeated term ships in more than one form.
-Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/h16-count.mjs`, `h16-terms.mjs`):
-42 entries have a settled artifact, and on each one's newest, 768 slices carry 75 with no archive English;
+Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/h16-count.mjs`,
+`h16-terms.mjs`):
+42 entries have a settled artifact,
+and on each one's newest,
+768 slices carry 75 with no archive English;
 only XingZ60 (32 of 121) and shi_Yumiaoya (11 of 18) have two or more
 (XIEPT2's 25 of 35 is a stub run of 2026-09-03).
 The deterministic preparation cannot widen the count to all 92 pairs:
-an unanchored slice is an insertion chunk, made only after the roster's pairing and the insertion admission.
-Over those two pages, 103 rare Han n-grams (on at most two pinned originals) recur across two or more unanchored slices;
-read against the shipped text, most are ordinary phrasing, and the repeated terms are names, titles
-and a few community words, most shipped in one form.
+an unanchored slice is an insertion chunk,
+made only after the roster's pairing and the insertion admission.
+Over those two pages,
+103 rare Han n-grams (on at most two pinned originals) recur across two or more unanchored slices;
+read against the shipped text,
+most are ordinary phrasing,
+and the repeated terms are names,
+titles
+and a few community words,
+most shipped in one form.
 The divergences are concentrated in title-marked spans no archive anchors:
-one of XingZ60's section titles ships in three forms (heading, attribution and footnote,
-one of them bare pinyin and one garbled), another differs by an article between heading and attribution,
+one of XingZ60's section titles ships in three forms (heading,
+attribution and footnote,
+one of them bare pinyin and one garbled),
+another differs by an article between heading and attribution,
 a pseudonym in brackets is kept in Han in one signature and rendered in the other (today's floors refuse the Han),
-and a handle and a community's name vary in case (`z60` and `Z60`, `limelight` and `Limelight`);
+and a handle and a community's name vary in case (`z60` and `Z60`,
+`limelight` and `Limelight`);
 shi_Yumiaoya's 同居者 turns plural in the slice after the one that names a single person.
-So the defect is real and bounded: repeated titles and names on unanchored slices,
+So the defect is real and bounded:
+repeated titles and names on unanchored slices,
 which the page-name glossary would cover if the archive paired them.
-Bound over all 92 pairs (`h16-bound.mjs`): 8 pages carry 16 title-marked spans
-(ATX or HTML heading text, 《…》, 【…】, and 「…」 equal to one of those) on two or more places
-that the page-name glossary does not pair; XingZ60 carries 6 of them.
-Decided 2026-09-28 for quality, against no ruling:
-the preparation settles one English rendering per such span once per page, asking its roster
-through the hook the attestation uses (X12), cached, and carries it as evidence lines after the page-name block;
-it restores and enforces nothing, since the judges keep deciding headings (owner, 2026-09-21, `page-name-glossary.ts`).
-Kept out of H16: the Latin case drift, which is X16,
-and 同居者 turning plural, one page's translation slip rather than a missing mechanism.
-Built 2026-09-28, pieces `ea61cbd4c` and `5df6fc632`, red guard `31c7d3f00`, wiring `d80f56866`:
-`repeatedTitleSpans` (`page-title-spans.ts`) reads the spans off what the page shows, listed by where each first stands
-(`d9a306602`, M44); `settlePageTitles` (`page-title-lexicon-stage.ts`) asks the roster once under the house rules,
-compares renderings without case, spacing or wrapping quotes, keeps the one most voices gave
+Bound over all 92 pairs (`h16-bound.mjs`):
+8 pages carry 16 title-marked spans
+(ATX or HTML heading text,
+《…》,
+【…】,
+and 「…」 equal to one of those) on two or more places
+that the page-name glossary does not pair;
+XingZ60 carries 6 of them.
+Decided 2026-09-28 for quality,
+against no ruling:
+the preparation settles one English rendering per such span once per page,
+asking its roster
+through the hook the attestation uses (X12),
+cached,
+and carries it as evidence lines after the page-name block;
+it restores and enforces nothing,
+since the judges keep deciding headings (owner,
+2026-09-21,
+`page-name-glossary.ts`).
+Kept out of H16:
+the Latin case drift,
+which is X16,
+and 同居者 turning plural,
+one page's translation slip rather than a missing mechanism.
+Built 2026-09-28,
+pieces `ea61cbd4c` and `5df6fc632`,
+red guard `31c7d3f00`,
+wiring `d80f56866`:
+`repeatedTitleSpans` (`page-title-spans.ts`) reads the spans off what the page shows,
+listed by where each first stands
+(`d9a306602`,
+M44);
+`settlePageTitles` (`page-title-lexicon-stage.ts`) asks the roster once under the house rules,
+compares renderings without case,
+spacing or wrapping quotes,
+keeps the one most voices gave
 (the earliest seat breaking a tie) and leaves out a title no voice rendered;
 `passPageTitles` (`corpus-run/pass-page-titles.ts`) reads the hook only when the page repeats such a title,
 and stores a heard round in its own registered namespace (`page-titles.`) under `PAGE_TITLE_CACHE_VERSION` 1,
-keyed by the original, the titles and the roster that answered; a round nobody answered is not stored.
-The preparation carries the lines after the corpus-name block, and the round's finding on every way out (X18).
-Mutation checked with a control: 34 of 37 mutants caught on the first run, then the full suite (0 FAIL);
-the three left (a nested HTML heading read whole, the key dropping its version, the key naming the starting roster)
-had guards that could not fail, and `5f64cbe91` makes each fail, all three caught on the second run.
-X16 corrects one line of the measurement above: `Z60` opens a quoted line,
+keyed by the original,
+the titles and the roster that answered;
+a round nobody answered is not stored.
+The preparation carries the lines after the corpus-name block,
+and the round's finding on every way out (X18).
+Mutation checked with a control:
+34 of 37 mutants caught on the first run,
+then the full suite (0 FAIL);
+the three left (a nested HTML heading read whole,
+the key dropping its version,
+the key naming the starting roster)
+had guards that could not fail,
+and `5f64cbe91` makes each fail,
+all three caught on the second run.
+X16 corrects one line of the measurement above:
+`Z60` opens a quoted line,
 and within a page each name-like token ships in one casing.
 
 ### Process mistakes, classes 93 to 185
@@ -1000,42 +1502,67 @@ and within a page each name-like token ships in one casing.
 - Passes ran a stale build (a nested `cp` copy),
     launched from uncommitted trees,
     or launched on builds whose full suite was red
-    (hulicaijia30, shi_Yumiaoya38, TianqiChen66614, TianqiChen66618, TianqiChen6663, yingying9).
+    (hulicaijia30,
+  shi_Yumiaoya38,
+  TianqiChen66614,
+  TianqiChen66618,
+  TianqiChen6663,
+  yingying9).
 - A failing test was reported inside a `[PASS]` count and never fixed
-    (the `lane-contest-stage` grace case, five times).
+    (the `lane-contest-stage` grace case,
+  five times).
 - A suite ran on a build other than the one committed (class one hundred fifty).
-- `[PASS]` counts before 2026-09-26 counted describe blocks, not tests.
+- `[PASS]` counts before 2026-09-26 counted describe blocks,
+  not tests.
 - A commit message names a hash that does not exist (`811d908a9` names `0e0bd1a8c`).
-- Doc facts not taken from the source (launch times, counts, a stale handover line).
+- Doc facts not taken from the source (launch times,
+  counts,
+  a stale handover line).
 - Class one hundred forty-eight's fix has no planning-doc entry.
-- Launch mistakes: a wrong entry id,
+- Launch mistakes:
+  a wrong entry id,
     a waiter watching the old pid,
     a build in the run's cgroup killed by systemd-oomd.
 - Results claimed without a validated probe (the en_CA scan's false positives;
     class one hundred ten not replayed on real texts).
-- Evidence misquoted to the owner and rulings misread (治愈's 安慰; class fifty-four's reading of "else fail").
-- Shell rule slips in this session: a `;` in a suite command and in a test command;
-    on 2026-09-28 two more, before a `PIPESTATUS` echo and between two `rg` probes;
+- Evidence misquoted to the owner and rulings misread (治愈's 安慰;
+  class fifty-four's reading of "else fail").
+- Shell rule slips in this session:
+  a `;` in a suite command and in a test command;
+    on 2026-09-28 two more,
+  before a `PIPESTATUS` echo and between two `rg` probes;
     then a `;` between two `rg --count` probes of the built declarations,
     a heredoc that wrote a script followed by an unchained command that ran it,
     and a `;` before an `echo` closing a TianqiChen666 refusal count;
     after the crash that heredoc slip repeated during L11 (the edit script for `refine-slice-settle.ts`).
-    Prevention: write a script with the Write tool and run it in its own call.
+    Prevention:
+  write a script with the Write tool and run it in its own call.
     During L5 the heredoc slip came back once more:
     a heredoc wrote the sheet-wiring script `l5-sheets.mjs` with an `echo` on the next line,
-    after the prevention was already recorded; the script then ran in its own call.
+    after the prevention was already recorded;
+  the script then ran in its own call.
     A prevention the same session repeats is not yet a habit:
-    a Bash call that holds `<<` holds nothing else, and a script goes through the Write tool.
-    After the restart, during L5's footnote fix, two more:
+    a Bash call that holds `<<` holds nothing else,
+  and a script goes through the Write tool.
+    After the restart,
+  during L5's footnote fix,
+  two more:
     a foreground `sleep 1 && true` as a placeholder while a mutation run finished,
     and `build > log 2>&1 ; tsc | rg` so the type check would run even if the build failed.
-    Neither was needed: a background task notifies when it ends,
+    Neither was needed:
+  a background task notifies when it ends,
     and a build failure is itself the answer the type check would have given.
-    Then the placeholder came back as `sleep 0 2>/dev/null ; true` after a doc edit, a sleep and a `;` in one call
+    Then the placeholder came back as `sleep 0 2>/dev/null ; true` after a doc edit,
+  a sleep and a `;` in one call
     that did nothing at all.
-    Prevention: a call that would do nothing is not made; while waiting on a background task, make no tool call.
+    Prevention:
+  a call that would do nothing is not made;
+  while waiting on a background task,
+  make no tool call.
     During P9 a `;` joined a lint count to the commit of the red guard,
-    and the staging read only the count of expected type errors, not the full summary (read afterwards: those six only).
+    and the staging read only the count of expected type errors,
+  not the full summary (read afterwards:
+  those six only).
     During L14(a) three more:
     `build && run-files ; tail` put a `;` before reading the build log,
     a heredoc edit script was followed in the same call by `sed ... ; rg`,
@@ -1046,38 +1573,60 @@ and within a page each name-like token ships in one casing.
     edit scripts go through the Write tool and run alone.
     During L12 three more:
     a call chained four `&&` steps where three is the limit;
-    a `git add && git commit` ran from the package directory, which cli-git's `require-root` guard refused
+    a `git add && git commit` ran from the package directory,
+  which cli-git's `require-root` guard refused
     (git commands run from the repository root or with `git -C`);
     and a two-line test fix went through `python3 -c` in the call rather than a script written with the Write tool.
-    Prevention: count the `&&` before sending,
+    Prevention:
+  count the `&&` before sending,
     start every git call with `cd -- <repo root>` or `git -C`,
     and treat an inline `-c` script as the heredoc slip in another form.
     During P1 the do-nothing placeholder came back as a background `sleep 1` while a mutation run finished.
-- A census read logs it should not have (QIV): the first P7 card ratios and P1 counts read every `.log`
-    under the agent directory, where unit-test suites and prototype test logs carry fixture `SPEND` and stream lines;
+- A census read logs it should not have (QIV):
+  the first P7 card ratios and P1 counts read every `.log`
+    under the agent directory,
+  where unit-test suites and prototype test logs carry fixture `SPEND` and stream lines;
     mimo's median moved from 126 to 93 once kept to pass-run logs.
-    Prevention: a log census keeps logs that open with `START tip=` and says so in its header.
+    Prevention:
+  a log census keeps logs that open with `START tip=` and says so in its header.
 - The mutation harness (`mutants.ts`) counted only failures that said `AssertionError`,
-    so a mutant that made a test throw anything else read as a survivor (P1's no-usage mutant, a `TypeError`).
-    Survivals reported before 2026-09-28 may be false; catches were not. It now counts every failing test line.
-- The Write tool also strips trailing spaces, so an edit script's literal holding a TSDoc blank line
-    that carries spaces never matches the file; the scripts build those lines in code.
+    so a mutant that made a test throw anything else read as a survivor (P1's no-usage mutant,
+  a `TypeError`).
+    Survivals reported before 2026-09-28 may be false;
+  catches were not.
+  It now counts every failing test line.
+- The Write tool also strips trailing spaces,
+  so an edit script's literal holding a TSDoc blank line
+    that carries spaces never matches the file;
+  the scripts build those lines in code.
 - The Write tool decodes `\u2028` and `\u2029` in the content it is given into the raw characters
-    (it left `\u0085` as text), so a source file written with those escapes held raw line separators,
+    (it left `\u0085` as text),
+  so a source file written with those escapes held raw line separators,
     which `no-multi-str` flagged in `sheet-line-text.ts` and which reached `sheet-line-text.unit.test.ts` unflagged.
-    Found by reading the bytes; fixed by a Python pass writing the escape text.
-    Prevention: a file whose source must spell a line separator as an escape is written or patched by a script
-    that builds the escape from its parts, then checked with `rg` for the raw characters,
+    Found by reading the bytes;
+  fixed by a Python pass writing the escape text.
+    Prevention:
+  a file whose source must spell a line separator as an escape is written or patched by a script
+    that builds the escape from its parts,
+  then checked with `rg` for the raw characters,
     against a positive control that proves the search can match one.
-- A capped search taken as complete (QRY): before `7ceffe055` changed two card prices,
+- A capped search taken as complete (QRY):
+  before `7ceffe055` changed two card prices,
     the search for tests pinning the old ones ran through `head --lines=10`,
-    which cut off `deepseek-v41-admission.unit.test.ts`; the full suite caught it and `bc69e2336` fixed it.
-    Prevention: a search whose empty or short result licenses a change runs uncapped.
+    which cut off `deepseek-v41-admission.unit.test.ts`;
+  the full suite caught it and `bc69e2336` fixed it.
+    Prevention:
+  a search whose empty or short result licenses a change runs uncapped.
 
 ## History, classes 1 to 92 and before numbering
 
-Notes: `~/temp/agent/audit-history-1-92/`
-(`notes-classes-01-44.md`, `notes-classes-45-76.md`, `verify-hashes.out`: 213 cited hashes, none missing).
+Notes:
+`~/temp/agent/audit-history-1-92/`
+(`notes-classes-01-44.md`,
+`notes-classes-45-76.md`,
+`verify-hashes.out`:
+213 cited hashes,
+none missing).
 Families found there:
 narrow fix leaving siblings,
 a gate or tie stopping the entry over a valid proposal,
@@ -1096,18 +1645,25 @@ provider replies misclassified.
 
 ### E1: destination loss is caught only at publish, and the refusal names neither destination nor slice
 
-Status: fixed.
+Status:
+fixed.
 The diagnostic half in `7668c6ce7`;
 the remedy in `cc6762f46` (red guard `d8009bfb1`),
 following the owner's ruling of 2026-09-27 that a settled page ships with its defects reported.
-Every publish-time content check (front matter, archive original, contributor names, destinations, headings)
+Every publish-time content check (front matter,
+archive original,
+contributor names,
+destinations,
+headings)
 now runs through `corpus-run/publish-defects.ts`:
 its own refusal becomes a defect that is logged and printed as a `DEFECTS` line beside the tally,
 anything else it throws still stops the entry,
 and the page ships.
 A page that does not parse still refuses.
 A page that disagrees with its artifact refused too until the owner ruled the same day that it ships reported
-(`page-agreement`, fixed in `e5bd9a95b`, red guard `87aa58047`).
+(`page-agreement`,
+fixed in `e5bd9a95b`,
+red guard `87aa58047`).
 
 Found as:
 `corpus-run/publish-fixed.ts` threw after all spending;
@@ -1115,37 +1671,52 @@ no page-assembly pass names a destination;
 `corpus-run/destinations-line.ts` and `corpus-run/pass-entry.ts` claim the addresses are in the run log,
 false on the refusal path.
 XingZ6011 lost 96.3 min to it on 2026-09-26.
-The refusal now logs each dropped address with the slices whose original, archive span and shipped text carry it,
+The refusal now logs each dropped address with the slices whose original,
+archive span and shipped text carry it,
 and its message names the source slices.
 
-Measured on 2026-09-27 over the 246 stored artifacts whose carve reproduces, 461 source destinations inside a slice:
+Measured on 2026-09-27 over the 246 stored artifacts whose carve reproduces,
+461 source destinations inside a slice:
 302 carried by both the archive span and the shipped text,
 151 missing from the archive span and restored by the shipped text,
-5 missing from both and dropped by the page, all from August runs before the either-rendering rule of 2026-09-04
-(wangzihao980 slices 3 and 4 written by a lane, Toka_ls slice 13 left to the archive),
+5 missing from both and dropped by the page,
+all from August runs before the either-rendering rule of 2026-09-04
+(wangzihao980 slices 3 and 4 written by a lane,
+Toka_ls slice 13 left to the archive),
 3 missing from both and carried elsewhere on the page,
 and none carried by the archive and lost by the shipped text.
 So the live failure is an archive sentence without the link shipping,
 and a take-back to the archive would never have helped.
-Refused entries leave no artifact, so they are counted from run logs:
+Refused entries leave no artifact,
+so they are counted from run logs:
 seven real entries were refused at publish for one dropped destination each
-(luxuanwen3, Mio, shi_Yumiaoya twice, XingZ60 three times),
-after 53 to 136 minutes each, about 10.3 hours in all.
+(luxuanwen3,
+Mio,
+shi_Yumiaoya twice,
+XingZ60 three times),
+after 53 to 136 minutes each,
+about 10.3 hours in all.
 
 ### E2: the reader-protection bullet prescribes "she ended her life" for deaths and attempts alike
 
-Status: fixed in `e8f0b0369`.
+Status:
+fixed in `e8f0b0369`.
 The bullet opens on "a death or an attempt" and its sample says "the page says that she ended her life",
 the class seventy-nine shape;
 class one hundred twenty-four's later sentence contradicts it.
 
 ### E3: stages running their own rounds count unreachable seats in their quorum
 
-Status: fixed with X8 in `29baade8f` (prep `a107c7486`, red guards `a6cbd8fc5`, legacy fixture `78d6540f8`),
+Status:
+fixed with X8 in `29baade8f` (prep `a107c7486`,
+red guards `a6cbd8fc5`,
+legacy fixture `78d6540f8`),
 recorded as the second 2026-09-27 addendum of `doc/decision/translation-repair-short-bench-share.md` at the repo root.
 The review now decides on the reachable share and records `unreachable` in its round;
 the reader recomputes the verdict from it and reads a round without it as none out of reach.
-The agreement census over the 214 stored pages was unchanged by the reader change (137 agree, 77 disagree, 0 refused).
+The agreement census over the 214 stored pages was unchanged by the reader change (137 agree,
+77 disagree,
+0 refused).
 
 Found as:
 `absolute-naturalness-review-stage.ts` sizes on `modelIds.length`,
@@ -1153,24 +1724,33 @@ so a false "quorum not met" skips the confirmation;
 `pair-blocks-stage.ts` and `pair-sections-stage.ts` time their grace the same way.
 `reachableQuorum` exists (`stage-reachable-quorum.ts`).
 Measured on 2026-09-27 over the 265 stored artifacts:
-59 of 4567 naturalness reviews closed `quorum-not-met`, every one with 2 to 4 usable seats,
-an upper bound on the harm, since a review record cannot tell a seat the router refused from one lost in transport.
+59 of 4567 naturalness reviews closed `quorum-not-met`,
+every one with 2 to 4 usable seats,
+an upper bound on the harm,
+since a review record cannot tell a seat the router refused from one lost in transport.
 XingZ624 shows the shape live:
 a review of 5 seats taken over a bench of 8 (a confirmation asks only the discovery's seats)
 closed 3 of 5 usable against a quorum of 4,
 with `glm-5.3` and Qwen3.8-27B refused as out of budget during it.
-The lane contest and both gates decide on two ballots, so there the bench quorum only drives how long rounds chase seats;
-the review alone decides on it, and its reader recomputes the verdict from `quorumOver`,
+The lane contest and both gates decide on two ballots,
+so there the bench quorum only drives how long rounds chase seats;
+the review alone decides on it,
+and its reader recomputes the verdict from `quorumOver`,
 so a fix changes the record and the reader together.
 
 ### E4: an empty standing with no valid lane text fails at publish, not at once
 
-Status: fixed, in two steps.
+Status:
+fixed,
+in two steps.
 First in `d9cb910e4` (red guard `d2f0e07ef`),
 which made the slice fail at once under the owner's rule of 2026-09-04;
 then the owner ruled the same day that such a slice keeps the archive and the page ships
-("Keep archive, ship", `doc/design-commitments.md`),
-fixed in `7f79ada48`, `002f21f43` and `e7d409fdd` (red guards `4acd8bd40`),
+("Keep archive,
+ship",
+`doc/design-commitments.md`),
+fixed in `7f79ada48`,
+`002f21f43` and `e7d409fdd` (red guards `4acd8bd40`),
 recorded as the eighteenth addendum of `doc/decision/translation-repair-ineligible-standing.md` at the repo root.
 
 Found as:
@@ -1182,7 +1762,8 @@ after every later slice had been bought.
 XingZ60 lost about 3.0 hours that way on 2026-09-22 (slice 89),
 on the variant with a lane text on offer that class eighty-seven fixed.
 An empty standing passes the rule only over a blank original,
-which the pinned corpus never carves (0 of 1259 deterministic slices, 2026-09-27),
+which the pinned corpus never carves (0 of 1259 deterministic slices,
+2026-09-27),
 and such a slice still keeps nothing.
 Since the naturalness check of 2026-08-28,
 no stored artifact carries a `no-standing-text` slice;
@@ -1194,20 +1775,28 @@ so its "no judge bought" assertion held whatever was bought.
 
 ### E5: floor refusals and panel votes the log cannot explain
 
-Status: fixed.
-The reason per panel verdict in `f2cd70ece` (red guard `413a441a0`), after the owner chose "Reason before vote":
+Status:
+fixed.
+The reason per panel verdict in `f2cd70ece` (red guard `413a441a0`),
+after the owner chose "Reason before vote":
 the sheet asks for the reason first and shows it first in the reply shape,
 the schema requires it and declares it before the vote,
 a missing or blank reason is the finding `missing-reason (n)` while the vote still counts,
-every stored panel ballot keeps it, and the log has one line per ballot beside the issue's decision.
-Repair slice cache version 33, since the sheet is not in the run shape; no slice had been cached under 32.
+every stored panel ballot keeps it,
+and the log has one line per ballot beside the issue's decision.
+Repair slice cache version 33,
+since the sheet is not in the run shape;
+no slice had been cached under 32.
 Floors and the repair turn in `d69a456de` (red guard `58b993f81`):
 the translate floor warns per withheld candidate with the rule's reason,
 the consolidation floor names proposals withheld beside survivors (it logged only the all-refused case),
 and `repairOneCandidate` logs every branch that changes a candidate's fate,
 where it had logged only a taken revision.
-The panel in `b8aea8ecf` (red guard `f12a29a3d`, lint repair `f83c4a6b6`, see M23):
-one line per issue with its status, severity and every member claim's weights,
+The panel in `b8aea8ecf` (red guard `f12a29a3d`,
+lint repair `f83c4a6b6`,
+see M23):
+one line per issue with its status,
+severity and every member claim's weights,
 where the stage logged only its packet count;
 a claim with no tally says so rather than reading as zeros.
 Who voted what was already in the artifact (`AdjudicatedIssue.readings`).
@@ -1215,32 +1804,44 @@ Who voted what was already in the artifact (`AdjudicatedIssue.readings`).
 Found as:
 `translate-produce.ts` returns floor refusals as findings with no log line;
 a panel verdict carries no reason.
-The second half is a wire change (`PanelVerdictWire` has claim, vote and severity only),
+The second half is a wire change (`PanelVerdictWire` has claim,
+vote and severity only),
 measured on 2026-09-27 over the 265 stored artifacts:
 about 783 panel verdicts per entry (207,394 ballots),
 and the reasons other stages' ballots carry average 167 characters.
-A reason placed before the vote can move votes, and no panel bench exists to measure that:
-the last panel-sheet change was judged by paired entry runs, one run per arm
+A reason placed before the vote can move votes,
+and no panel bench exists to measure that:
+the last panel-sheet change was judged by paired entry runs,
+one run per arm
 (`doc/audit/the-damage-no-instrument-was-catching.md` at the repo root).
 
 ### E6: a malformed archive competes in repair selection as though it parsed
 
-Status: not a defect in behaviour; the docs that claimed one are corrected, and the equality is pinned in `c62aa9ac8`.
+Status:
+not a defect in behaviour;
+the docs that claimed one are corrected,
+and the equality is pinned in `c62aa9ac8`.
 `repair-chunk-verdict.ts` passes `UNCHANGED_MEASUREMENTS` with `integrityOk` true,
 and that is the honest measurement:
 `measurePatchedCandidate` asks whether a candidate is no worse than the archive on grammar downgrades and broken footnotes,
 and the repair lane's baseline is the archive itself (`repair-chunk-evidence.ts`),
 so the archive against itself is intact however it parses.
 The claim came from `selectRepairCandidate`'s TSDoc (`2e2694680`),
-which read `integrityOk` as absolute, as its own field doc did ("still parses", "front matter intact", which nothing measures).
+which read `integrityOk` as absolute,
+as its own field doc did ("still parses",
+"front matter intact",
+which nothing measures).
 The guard in `chunk-measure.unit.test.ts` fails when integrity is made absolute (mutation checked).
 A patch that repairs an archive's structure gains no integrity rank for it;
-it gains rank only through an accepted issue the checkers find resolved, which is the lexicographic order as settled.
+it gains rank only through an accepted issue the checkers find resolved,
+which is the lexicographic order as settled.
 See M22.
 
 ### E7: the sheet-leak label list has fallen behind the sheets
 
-Status: fixed with F-8; a fenced block no longer depends on the list.
+Status:
+fixed with F-8;
+a fenced block no longer depends on the list.
 `translate-sheet-leak.ts` lists seven labels;
 `REJECTED CANDIDATE N`,
 `WHAT THE JUDGES FOUND`
@@ -1248,56 +1849,85 @@ and `PRIOR FAILED CONSOLIDATION STRATEGY` are fenced but not listed.
 
 ### E8: more fixtures paraphrase corpus content
 
-Status: fixed in `98054d72b` (every file below rewritten with invention).
+Status:
+fixed in `98054d72b` (every file below rewritten with invention).
 `archive-footnote-relabel.unit.test.ts`,
 `pair-definition-order.unit.test.ts`,
 `coverage-verdict.unit.test.ts` (names from the corpus).
 
 ### E9: tests pin roster sizes to literals
 
-Status: fixed in `87f95d62f` (no provider spelling for two roster models; the contract's checker floor).
+Status:
+fixed in `87f95d62f` (no provider spelling for two roster models;
+the contract's checker floor).
 `roster-reach.unit.test.ts`,
 `corpus-run/owner-cull.unit.test.ts`.
 
 ### E10: the page-name glossary reads raw documents
 
-Status: fixed in `7a434cb1b` (guard `5640c50e7`).
+Status:
+fixed in `7a434cb1b` (guard `5640c50e7`).
 `page-name-glossary.ts` does no front-matter split and no comment or code-fence masking.
-Measured over the 92 pinned entries before the fix: 5 read differently.
-Four gained a pair only from an editor's comment or the front matter (two contributor links, two note lines read as headings),
+Measured over the 92 pinned entries before the fix:
+5 read differently.
+Four gained a pair only from an editor's comment or the front matter (two contributor links,
+two note lines read as headings),
 and windward0032 lost three real heading pairs because a heading-like line inside a comment broke the count alignment.
-The glossary now reads `visibleText` (`src/page-visible-text.ts`): the body with HTML comments, JSX comments and fenced code blanked.
-After it, raw and masked readings agree on all 92.
-Page-name lines are identity context, which every stage that shows them hashes, so only those entries re-key.
+The glossary now reads `visibleText` (`src/page-visible-text.ts`):
+the body with HTML comments,
+JSX comments and fenced code blanked.
+After it,
+raw and masked readings agree on all 92.
+Page-name lines are identity context,
+which every stage that shows them hashes,
+so only those entries re-key.
 A mutant reading the raw text fails the guard.
 
 ### E11: the retry-wait parser is case-sensitive and knows only h, m and s
 
-Status: fixed in `7a285b2f2` (guard `041e0a0d4`); latent.
+Status:
+fixed in `7a285b2f2` (guard `041e0a0d4`);
+latent.
 Every provider refusal in the run logs is Hyper's lower-case h/m/s form.
-The parser read the first letter after a number as the unit, so a glued "500ms" would have read as 500 minutes,
+The parser read the first letter after a number as the unit,
+so a glued "500ms" would have read as 500 minutes,
 and an existing case pinned "12 minutes" as no wait.
-Units are now whole letter runs (ms, s, m, h and their words), with decimals and joined parts,
-in `src/retry-stated-wait.ts`. A mutant dropping case folding fails the guard.
+Units are now whole letter runs (ms,
+s,
+m,
+h and their words),
+with decimals and joined parts,
+in `src/retry-stated-wait.ts`.
+A mutant dropping case folding fails the guard.
 
 ### E12: the English-original recognizer is a list of exact wordings
 
-Status: fixed in `f91f561b9` (guard `3d028c76b`); latent.
-The module comment promised that every note read is logged with its reading; no code logged one (the M20 family).
+Status:
+fixed in `f91f561b9` (guard `3d028c76b`);
+latent.
+The module comment promised that every note read is logged with its reading;
+no code logged one (the M20 family).
 A note naming an original and English in a wording no mark knows now reads `unmarked-original-claim`,
-seals nothing, since a guessed seal could decline a whole page, and is warned about by the pass
-(`entryArchiveOriginalOf`, which logs every note's reading).
-Over the 92 pinned entries every decision is unchanged, 61 notes are logged,
-and the one unmarked claim is hakureico's quotes note, which names no span and still seals nothing.
+seals nothing,
+since a guessed seal could decline a whole page,
+and is warned about by the pass
+(`entryArchiveOriginalOf`,
+which logs every note's reading).
+Over the 92 pinned entries every decision is unchanged,
+61 notes are logged,
+and the one unmarked claim is hakureico's quotes note,
+which names no span and still seals nothing.
 A mutant that never reads the claim fails the guard.
 
 ### Process mistakes, classes 1 to 92 and before
 
 - A suite called green when red (`e7307d304` for `d70087757`) and a miscounted `[PASS]` total.
-- Runs launched on red builds (CuspariaKLSY3 on a real defect; others red on fixtures),
+- Runs launched on red builds (CuspariaKLSY3 on a real defect;
+  others red on fixtures),
     on stale builds (two green runs that never executed the new code),
     or with the wrong roster or entry id.
-- Results claimed without reading the output (the owner: "You didn't even look at its actual output.")
+- Results claimed without reading the output (the owner:
+  "You didn't even look at its actual output.")
     and reads that declared no defect where one stood.
 - Early fixes committed their tests inside the fix;
     red-first commits start with class five.
@@ -1305,109 +1935,190 @@ A mutant that never reads the claim fails the guard.
 - A mechanical lint autofix changed behaviour (`92c5192ee`).
 - A question put to the owner whose example contradicted its label (class eighty-three).
 - Observations recorded and not fixed that later became classes
-    (84, 85, 75 and 76, 79, 67 and 68, 71, 106).
+    (84,
+  85,
+  75 and 76,
+  79,
+  67 and 68,
+  71,
+  106).
 
 ## Floor replay over archives and settled pages
 
-Probes: `~/temp/agent/audit-floor-replay/`
-(`replay.mjs`, `fires.json`, `classification.json`, `controls.json`, `page-checks.json`, `han-residue.json`).
-Archive against itself: 1277 slices, 75 refused;
-every settled would-ship slice: 5520 slices, 233 refused,
+Probes:
+`~/temp/agent/audit-floor-replay/`
+(`replay.mjs`,
+`fires.json`,
+`classification.json`,
+`controls.json`,
+`page-checks.json`,
+`han-residue.json`).
+Archive against itself:
+1277 slices,
+75 refused;
+every settled would-ship slice:
+5520 slices,
+233 refused,
 every true fire from a run built before its floor.
 
 ### F-1: the address floor refuses correct English whenever any third-person pronoun appears anywhere in the slice
 
-Status: fixed; the floor reads block by block and refuses only a surplus third-person pronoun.
+Status:
+fixed;
+the floor reads block by block and refuses only a surplus third-person pronoun.
 Replayed old against new over 1,264 archive slices and 3,975 would-ship slices
-(`~/temp/agent/audit-floor-replay/address-replay.mjs`): refusals 25 to 13, none added.
-Cleared: every false refusal named here but lintong s1,
-plus Huasheng s3 (an address rendered by name, no pronoun in its place),
-MTF_0615 s8, Rentable_A s4 and windward0032 s4, s15 and s18 (omissions the judges read).
-Kept: the person switches (Huasheng s7, Mizuki_Yuuki s5, yingying s2 twice, XingZ60 s110 and s112),
-the indirect-speech conversions this finding counted as switches (Xu_Yushu s12, shihai4h s15),
+(`~/temp/agent/audit-floor-replay/address-replay.mjs`):
+refusals 25 to 13,
+none added.
+Cleared:
+every false refusal named here but lintong s1,
+plus Huasheng s3 (an address rendered by name,
+no pronoun in its place),
+MTF_0615 s8,
+Rentable_A s4 and windward0032 s4,
+s15 and s18 (omissions the judges read).
+Kept:
+the person switches (Huasheng s7,
+Mizuki_Yuuki s5,
+yingying s2 twice,
+XingZ60 s110 and s112),
+the indirect-speech conversions this finding counted as switches (Xu_Yushu s12,
+shihai4h s15),
 Xu_Yushu s28 (an omitted quote whose refusal asks for it back),
-lintong s1 (the count's limit: a generic 你 beside a subject-dropped description),
-and mikaela_khara s17, whose would-ship text belongs to another slice (the F-6 carving).
+lintong s1 (the count's limit:
+a generic 你 beside a subject-dropped description),
+and mikaela_khara s17,
+whose would-ship text belongs to another slice (the F-6 carving).
 The `thirdPerson` filter in `droppedAddressFindings` scans the whole slice;
 the header names 干干你的 as left to the judges and the built floor refuses it.
-Also counted as addresses: 迷你,
+Also counted as addresses:
+迷你,
 你们好,
 你追我赶,
 你我,
 generic 你.
-False archive refusals: BI4PBV s3, Zha_Ke s3 (a vocative), Y1Ran s18, Xu_Yushu s15, lintong s1;
-hulicaijia8 and hulicaijia13 had "“Sis! What's wrong!” I kept calling out to her" refused.
-Fix: refuse only a surplus of third-person pronouns over the original's own,
+False archive refusals:
+BI4PBV s3,
+Zha_Ke s3 (a vocative),
+Y1Ran s18,
+Xu_Yushu s15,
+lintong s1;
+hulicaijia8 and hulicaijia13 had "“Sis!
+What's wrong!”
+I kept calling out to her" refused.
+Fix:
+refuse only a surplus of third-person pronouns over the original's own,
 and drop the non-address patterns.
 
 ### F-2: publication checks cannot re-verify pages an earlier build published
 
-Status: closed by A16b and A16c, by the owner's choice rather than by the fix first proposed.
+Status:
+closed by A16b and A16c,
+by the owner's choice rather than by the fix first proposed.
 `inArchiveTypography` re-applies today's typography to old artifacts,
 so 77 of 209 pages built before class one hundred eighty-one no longer reproduce by splice.
-Fix first proposed: record the per-slice text shipped at publish and verify against it.
-Re-measured on 2026-09-27 as 77 of 214 (A16c), and put to the owner,
+Fix first proposed:
+record the per-slice text shipped at publish and verify against it.
+Re-measured on 2026-09-27 as 77 of 214 (A16c),
+and put to the owner,
 who chose that a pass rewrites such pages to the running build's reading.
 `verify-published` now names such a disagreement `READ BY ANOTHER BUILD` with both digests,
-and a pass resumed in the directory republishes the page, after which it verifies;
+and a pass resumed in the directory republishes the page,
+after which it verifies;
 a record proving an old page equals what its own build shipped would serve no reader,
 since the page is rewritten rather than kept.
 
 ### F-3: no floor refuses a Han name or line left in English prose
 
-Status: fixed; the floor in `translate-han-residue.ts`, the identity flag in `identity-han-items.ts`.
-shihai4h2 shipped "Wrong,\n小柿子." (the archive has "Wrong.");
+Status:
+fixed;
+the floor in `translate-han-residue.ts`,
+the identity flag in `identity-han-items.ts`.
+shihai4h2 shipped "Wrong,\n小柿子."
+(the archive has "Wrong.");
 the identity context shows the archive's untranslated Han alias as the English declaration.
-Fix: a Han-residue floor outside comments,
+Fix:
+a Han-residue floor outside comments,
 code,
-destinations and attributes, excusing a parenthesized gloss;
+destinations and attributes,
+excusing a parenthesized gloss;
 mark a Han-only TRANSLATION value as untranslated.
 
 The floor refuses a run of Han (with any kana and 々 inside it) in the candidate's prose,
 read outside `protectedRanges` with comments and title-floor-accepted titles cut.
-It excuses a parenthesized gloss, a kana line with no Latin letter (a Japanese quotation kept beside its English),
+It excuses a parenthesized gloss,
+a kana line with no Latin letter (a Japanese quotation kept beside its English),
 and a run the original and the page both carry.
-**The floor is relative to the page**, chosen so the archive's deliberate keeps (the 澪 a name is written with,
-Japanese lyric lines, a hidden line inside an element) do not fail their own slices;
-it refuses Han a candidate adds, not Han the archive already carries from the original.
+**The floor is relative to the page**,
+chosen so the archive's deliberate keeps (the 澪 a name is written with,
+Japanese lyric lines,
+a hidden line inside an element) do not fail their own slices;
+it refuses Han a candidate adds,
+not Han the archive already carries from the original.
 It runs with the untranslated floor in both the readable and unparseable branches (the F-5 lesson),
-and a copied original is named once, by the untranslated floor.
+and a copied original is named once,
+by the untranslated floor.
 
 Measured with a prototype over the census (`~/temp/agent/audit-floor-replay/han-residue-census.mjs`,
-`han-residue-prototype.mjs`), then with the built floor (`han-residue-port.mjs`), no per-slice delta:
+`han-residue-prototype.mjs`),
+then with the built floor (`han-residue-port.mjs`),
+no per-slice delta:
 of 1,264 archive slices 14 carry Han in prose and 4 are refused;
 of 3,975 would-ship slices 98 carry Han and 68 are refused.
 The four archive refusals are one entry's quotations the archive left untranslated
 and respelt in traditional characters where the original writes simplified (一抹陽光 against 一抹阳光),
-so on those slices the incumbent cannot stand in and a lane must translate them: chosen, not overlooked.
+so on those slices the incumbent cannot stand in and a lane must translate them:
+chosen,
+not overlooked.
 Every would-ship refusal matches a house rule:
-handles left in Han (小柿子, 锦心, 雨狸, 洁澄天奏 and others), terms (大证, 贴贴, 药娘),
-titles, a corner-bracketed word, and the Chinese half of a pair the original gives in both languages.
+handles left in Han (小柿子,
+锦心,
+雨狸,
+洁澄天奏 and others),
+terms (大证,
+贴贴,
+药娘),
+titles,
+a corner-bracketed word,
+and the Chinese half of a pair the original gives in both languages.
 
-Two mistakes surfaced on the way, both fixed.
+Two mistakes surfaced on the way,
+both fixed.
 A bracketed title carrying both Han and Latin letters (《舞萌DX》) fell between the Han title floor,
-which reads Han-only titles, and the Latin title floor, which reads Latin-only ones,
+which reads Han-only titles,
+and the Latin title floor,
+which reads Latin-only ones,
 each header naming the other;
 a pin asserted a bare 《Nyan物语》 in English prose valid.
 `withoutGlossedTitles` now cuts every glossed title carrying Han,
 so a glossed mixed title passes as a glossed Han-only title does and a bare one is refused by the residue floor.
 And the first port of the floor iterated a line by code point against flags indexed by UTF-16 unit,
 which would have shifted every flag after a character outside the basic plane;
-lint caught the spread, and a guard now pins the alignment.
+lint caught the spread,
+and a guard now pins the alignment.
 
 The identity line now names each TRANSLATION item written in Han alone as still in Han and no English rendering,
-item by item, since the shihai4h value mixes Han items with a Latin one (`小柿子, 猫小泪, u3`).
+item by item,
+since the shihai4h value mixes Han items with a Latin one (`小柿子, 猫小泪, u3`).
 
 ### F-4: the suicide floor refuses ordinary English and its census counted entries, not slices
 
-Status: fixed; an attempt on a life, a death by one's own hand after a death word,
-and an attributed quotation of a published work pass, and the finding no longer says "she".
+Status:
+fixed;
+an attempt on a life,
+a death by one's own hand after a death word,
+and an attributed quotation of a published work pass,
+and the finding no longer says "she".
 Replayed old against new over the same 5,239 slices
-(`~/temp/agent/audit-floor-replay/floor-replay.mjs droppedSuicideFindings`): refusals 11 to 8, none added;
-the three cleared are the correct English this finding names (one phrasing, one quotation in two builds),
+(`~/temp/agent/audit-floor-replay/floor-replay.mjs droppedSuicideFindings`):
+refusals 11 to 8,
+none added;
+the three cleared are the correct English this finding names (one phrasing,
+one quotation in two builds),
 and each of the eight kept drops or blurs the word.
 The header's entry census is corrected by the slice replay.
-"Died by her own hand" had no replay case; it is guarded by an invented one.
+"Died by her own hand" had no replay case;
+it is guarded by an invented one.
 Refuses "attempts on her own life",
 "died by her own hand",
 and a canonical English quotation whose Chinese added 自杀;
@@ -1415,114 +2126,194 @@ the message hardcodes "she".
 
 ### F-5: a source the strict grammar refuses turns off floors that need no grammar
 
-Status: fixed for the floors; the disagreement over `unknown` moves to X10.
-The untranslated, line-count and neutral-pronoun floors run before `unknown` is returned.
+Status:
+fixed for the floors;
+the disagreement over `unknown` moves to X10.
+The untranslated,
+line-count and neutral-pronoun floors run before `unknown` is returned.
 `validateTranslatedSlice` returns `unknown` before the untranslated,
 line-count and neutral-pronoun checks;
 stages disagree on what `unknown` means.
 
 ### F-6: `carveSettled` does not carve as the pipeline did
 
-Status: fixed in `c7f534353` (red guard `83f35d955`), with A18.
-It omits `includeFrontMatter`, `frontMatterAuthority` and `sealArchiveOriginal`,
+Status:
+fixed in `c7f534353` (red guard `83f35d955`),
+with A18.
+It omits `includeFrontMatter`,
+`frontMatterAuthority` and `sealArchiveOriginal`,
 shifting slice indices by one on archive-authority entries.
-`carveSettled` now carves through `rebuildPreparation`, which reads every flag off the artifact,
-so the probes, the rendering audit and republishing share one carve,
+`carveSettled` now carves through `rebuildPreparation`,
+which reads every flag off the artifact,
+so the probes,
+the rendering audit and republishing share one carve,
 and it reports whether the carve reproduces the run's rows (the displacement probe warns when it does not).
-`includeFrontMatter` defaults to true, so only the authority and the seal moved a carve;
-the guard carves an archive-authority entry, which the old code sliced with an extra metadata slice.
+`includeFrontMatter` defaults to true,
+so only the authority and the seal moved a carve;
+the guard carves an archive-authority entry,
+which the old code sliced with an extra metadata slice.
 
 ### F-7: the line-structure floor counts HTML comment lines
 
-Status: fixed; content lines are read outside comments and one line reads "1 line".
-Replayed (`floor-replay.mjs compareLineCounts`): refusals 23 to 21, the two cleared being these slices, none added.
+Status:
+fixed;
+content lines are read outside comments and one line reads "1 line".
+Replayed (`floor-replay.mjs compareLineCounts`):
+refusals 23 to 21,
+the two cleared being these slices,
+none added.
 yulianNyanner s8 and s12 archives refused;
 the message prints "1 lines".
 
 ### F-8: the sheet-leak floor misses six labels its own sheets print
 
-Status: fixed with E7; every fenced header line is refused whatever its label,
+Status:
+fixed with E7;
+every fenced header line is refused whatever its label,
 and the list gains the missing heads for unfenced copies.
-The guard calls the floor directly: through the composed verdict the added block is refused by the block comparison first,
+The guard calls the floor directly:
+through the composed verdict the added block is refused by the block comparison first,
 which hid the gap.
-Replayed (`floor-replay.mjs sheetLeakFindings`): no refusal before or after, so the fence rule refuses no page text.
+Replayed (`floor-replay.mjs sheetLeakFindings`):
+no refusal before or after,
+so the fence rule refuses no page text.
 
 ### F-9: the neutral-pronoun floor never reads the original
 
-Status: fixed; the floor takes the original and asks only where it writes TA, Ta or ta.
-Replayed (`floor-replay.mjs neutralPronounFindings`): the same four refusals before and after,
-each on an original that writes the pronoun; the false ones were constructed controls, now guarded.
-"The TA graded the cat's homework." (助教) and "Ta!" are refused.
+Status:
+fixed;
+the floor takes the original and asks only where it writes TA,
+Ta or ta.
+Replayed (`floor-replay.mjs neutralPronounFindings`):
+the same four refusals before and after,
+each on an original that writes the pronoun;
+the false ones were constructed controls,
+now guarded.
+"The TA graded the cat's homework."
+(助教) and "Ta!"
+are refused.
 
 ### F-10: `assertHeadingsStayDistinct` goes silent when heading counts differ
 
-Status: fixed; a page heading repeated more often than the original repeats any heading refuses whatever the counts.
+Status:
+fixed;
+a page heading repeated more often than the original repeats any heading refuses whatever the counts.
 Measured (`~/temp/agent/audit-floor-replay/heading-replay.mjs`) over 92 archive pages and 213 fixed run pages:
-only yuliannyanner3 refused, as before.
+only yuliannyanner3 refused,
+as before.
 A first version counted one heading as a repeat and would have refused yingying's archive and 12 runs
-(an added heading on an original with none); caught by the measurement before commit.
+(an added heading on an original with none);
+caught by the measurement before commit.
 
 ### F-11: the glossary floors refuse a glossed Han title the title floor allows
 
-Status: fixed; the glossary floors read the candidate with the accepted title occurrences cut.
-Latent: no replayed slice carries such a title, and the community floor adds no refusal.
+Status:
+fixed;
+the glossary floors read the candidate with the accepted title occurrences cut.
+Latent:
+no replayed slice carries such a title,
+and the community floor adds no refusal.
 
 ### F-12: low items
 
-Status: the first two fixed; the plausible pair measured and closed, no gap in the current build.
+Status:
+the first two fixed;
+the plausible pair measured and closed,
+no gap in the current build.
 `ArchiveOriginalCompletenessError` stores neither entry nor span;
-the declared-link floor refuses Zhihu @-mentions the archive rendered as the user's slug; owner, 2026-09-27, "Account handle": an @-mention of a declared person may carry the account handle the page writes under the same link.
+the declared-link floor refuses Zhihu @-mentions the archive rendered as the user's slug;
+owner,
+2026-09-27,
+"Account handle":
+an @-mention of a declared person may carry the account handle the page writes under the same link.
 
-The error now carries `entryId`, `spanIndex`, `startOffset` and `endOffset` as fields, and its message the offsets (guard shown red with one field unset).
-The declared-link floor passes a rendering whose link text, under the href of an original @-mention of the declared person,
-carries an @-handle the page writes under that href, and its finding offers the handle;
+The error now carries `entryId`,
+`spanIndex`,
+`startOffset` and `endOffset` as fields,
+and its message the offsets (guard shown red with one field unset).
+The declared-link floor passes a rendering whose link text,
+under the href of an original @-mention of the declared person,
+carries an @-handle the page writes under that href,
+and its finding offers the handle;
 a link naming the person without a mention still owes the declared form.
-Measured through the composed verdict: the GLaDOSister s8 and Kotori s8 archives went from refused to passing;
-zhangyubaka s18 is refused first by the suicide floor, one of its eight kept refusals.
+Measured through the composed verdict:
+the GLaDOSister s8 and Kotori s8 archives went from refused to passing;
+zhangyubaka s18 is refused first by the suicide floor,
+one of its eight kept refusals.
 
-The plausible pair, read from the code:
-a lanes-agreed text is the translate lane's delivered text, which is a candidate `translate-floor.ts` passed
-through `validateTranslatedSlice` with `lineStructured`, `declared` and `disputedWordings`,
-and then only the semantic wrap, which splits prose lines, never joins them, and skips governed slices;
+The plausible pair,
+read from the code:
+a lanes-agreed text is the translate lane's delivered text,
+which is a candidate `translate-floor.ts` passed
+through `validateTranslatedSlice` with `lineStructured`,
+`declared` and `disputedWordings`,
+and then only the semantic wrap,
+which splits prose lines,
+never joins them,
+and skips governed slices;
 a repair-lane text ships otherwise only through the contest verdict (line structure read since H2)
-or the consolidation's `readStandingVerdict`, both of which call the floor.
+or the consolidation's `readStandingVerdict`,
+both of which call the floor.
 So the repair lane not calling `validateTranslatedSlice` leaves no unfloored path to the page.
 Re-flooring every would-ship wording of the settled artifacts with today's floors
 (`~/temp/agent/audit-floor-replay/refloor-by-decider.mjs`) refuses 163 of 1,961 contest winners,
-51 of 853 consolidations, 11 of 269 lanes-agreed texts, 82 of 909 polishes and 7 of 163 page-assembly rows;
+51 of 853 consolidations,
+11 of 269 lanes-agreed texts,
+82 of 909 polishes and 7 of 163 page-assembly rows;
 those artifacts were written by builds before the floors this audit added or tightened,
-so the numbers measure how far the floors moved, not a live gap.
-Plausible, unproven: nothing re-floors a lanes-agreed would-ship text,
+so the numbers measure how far the floors moved,
+not a live gap.
+Plausible,
+unproven:
+nothing re-floors a lanes-agreed would-ship text,
 and the repair lane never calls `validateTranslatedSlice`.
 
 ## Test suite
 
-Probes: `~/temp/agent/audit-tests/`
-(a runtime harness logging every `expect` that runs, `scan-corpus.mjs` and `classify-hits.mjs` for corpus text,
-`run-container.mjs` for load runs, `magic-*.tsv`, `untested-dist-functions.tsv`, `coverage-holes.txt`).
+Probes:
+`~/temp/agent/audit-tests/`
+(a runtime harness logging every `expect` that runs,
+`scan-corpus.mjs` and `classify-hits.mjs` for corpus text,
+`run-container.mjs` for load runs,
+`magic-*.tsv`,
+`untested-dist-functions.tsv`,
+`coverage-holes.txt`).
 
 ### T1: an assertion that never runs
 
-Status: fixed in `9603ff7a8`; shown to fail with chunk inheritance disabled (3 of 4 slices governed).
+Status:
+fixed in `9603ff7a8`;
+shown to fail with chunk inheritance disabled (3 of 4 slices governed).
 `document-preparation.unit.test.ts` "inherits the line-structure verdict from the enclosing CHUNK":
-its loop runs zero times, because the verse fixture is too short to subdivide.
+its loop runs zero times,
+because the verse fixture is too short to subdivide.
 
 ### T2: vacuous checks and catch-only asserts
 
-Status: fixed in `75900e601` (oxlint does not flag an unused `using` binding), `5955c9d8e` and `38f59b737`.
+Status:
+fixed in `75900e601` (oxlint does not flag an unused `using` binding),
+`5955c9d8e` and `38f59b737`.
 32 `expect(<using binding>).not.toBe(undefined)` on disposables that are always objects
-(`writer-grace-override`, `corpus-run/slice-overlap`, `grace-override`, `corpus-run/pass-entry`,
+(`writer-grace-override`,
+`corpus-run/slice-overlap`,
+`grace-override`,
+`corpus-run/pass-entry`,
 `corpus-run/artifact-pool-names`);
 `assembly-content-survival.unit.test.ts` has no boundary case for its six-letter floor or its two-use cap;
 `prompt-uniqueness-client.unit.test.ts` asserts only inside `catch`.
 
 ### T3: tests pinning wrong or retired behaviour
 
-Status: fixed in `36c3576e0` and `07b88949e`, with S6 (`e7e3f9c17`) for the silent-original test;
-checked on 2026-09-27: no test named here still claims a stopped entry or the owner's whole handle rule,
-and the behaviour gap the restore test pinned is A17, fixed at the floors in `7ec9669bd`.
+Status:
+fixed in `36c3576e0` and `07b88949e`,
+with S6 (`e7e3f9c17`) for the silent-original test;
+checked on 2026-09-27:
+no test named here still claims a stopped entry or the owner's whole handle rule,
+and the behaviour gap the restore test pinned is A17,
+fixed at the floors in `7ec9669bd`.
 The two standing tests are renamed to what they assert;
-the restore test no longer claims the owner's whole rule, and the behaviour gap it pinned is A17;
+the restore test no longer claims the owner's whole rule,
+and the behaviour gap it pinned is A17;
 `dropped-covers-the-page.unit.test.ts` moves with S6.
 `dropped-covers-the-page.unit.test.ts` pins the silent-original wording of S6;
 `corpus-run/contributor-name-restore.unit.test.ts` pins handle restorations
@@ -1533,64 +2324,110 @@ under a name citing the owner's "with the literal translation in parentheses";
 
 ### T4: corpus text and real personal data in about 45 test files
 
-Status: fixtures fixed in `98054d72b` (58 test files).
-A rescan on 2026-09-27 (`~/temp/agent/audit-tests/scan-corpus.mjs`, previous hits kept as `*-before.json`)
-left shared markup, public facts, glossary entries that are dictionary terms by design,
+Status:
+fixtures fixed in `98054d72b` (58 test files).
+A rescan on 2026-09-27 (`~/temp/agent/audit-tests/scan-corpus.mjs`,
+previous hits kept as `*-before.json`)
+left shared markup,
+public facts,
+glossary entries that are dictionary terms by design,
 and corpus quotes in comments and test names that cite an incident
-(for example `name-gloss-restore.unit.test.ts:3`, `owner-cull.unit.test.ts:4`);
+(for example `name-gloss-restore.unit.test.ts:3`,
+`owner-cull.unit.test.ts:4`);
 those wait for the owner's sanitization pass after the project.
-A real birth date and hometown, a suicide-site sentence, method sentences, self-harm scars,
-real names, handles and entry ids, and verbatim or near-verbatim corpus lines,
+A real birth date and hometown,
+a suicide-site sentence,
+method sentences,
+self-harm scars,
+real names,
+handles and entry ids,
+and verbatim or near-verbatim corpus lines,
 many under a header claiming "no corpus content appears here".
-`package.json` `files` includes `src`, so the tests would ship with the package.
+`package.json` `files` includes `src`,
+so the tests would ship with the package.
 The owner said sanitization of the repository comes after the project;
-the fixture rule (cat-themed invention) stands, so these are fixed as fixtures.
+the fixture rule (cat-themed invention) stands,
+so these are fixed as fixtures.
 
 ### T5: flaky timing
 
-Status: fixed; the finding text below the measurements is as first recorded.
-The contest case's delayed seats never answer, on an abortable timer: 5 of 5 pass at 0.2 CPU
+Status:
+fixed;
+the finding text below the measurements is as first recorded.
+The contest case's delayed seats never answer,
+on an abortable timer:
+5 of 5 pass at 0.2 CPU
 (`~/temp/agent/audit-tests/t5-fix-summary.log`).
 The naturalness-review sibling measured 5 of 5 at 0.2 CPU before any change and is left as it is:
-its fake answers in microtasks, so the race read into it does not occur.
-Real sleeps removed: the `stage-quorum` stall (30.49 s to 0.51 s),
+its fake answers in microtasks,
+so the race read into it does not occur.
+Real sleeps removed:
+the `stage-quorum` stall (30.49 s to 0.51 s),
 the contest driver's production backoff (27.4 s to 0.55 s),
 and the client's malformed-body case (11.98 s to 0.76 s).
-`consolidate-driver` ran 10.24 s, 0.77 s after the fix:
+`consolidate-driver` ran 10.24 s,
+0.77 s after the fix:
 its two positive controls ("reaches the roster" cases) passed only because
 five production backoffs outlasted `driveWith`'s 5 s abort,
-so they asserted a timeout, not a roster call;
+so they asserted a timeout,
+not a roster call;
 they now count transport calls under a zero-retry client and assert the observed exits.
 A sweep of all 729 test files for timers of 500 ms or more
 (`~/temp/agent/audit-repair/long-timer-sweep.json`) found three more real waits:
-the `benchmark` fake's two 2 s waits, now a fake clock the benchmark reads (`544169f98`, 2.36 s to 0.59 s),
-the `stage-round-refill` slow seat, now abortable (`9441af9de`, 1.94 s to 0.46 s),
-and `transient-retry`'s backoff, which is the behaviour under test and stays.
+the `benchmark` fake's two 2 s waits,
+now a fake clock the benchmark reads (`544169f98`,
+2.36 s to 0.59 s),
+the `stage-round-refill` slow seat,
+now abortable (`9441af9de`,
+1.94 s to 0.46 s),
+and `transient-retry`'s backoff,
+which is the behaviour under test and stays.
 Long `settleWithin` and `armCallDeadline` timers are armed and cleared and cost no wall time.
-The shapes read into the rest were measured, 8 runs each at 0.2 CPU
-(`~/temp/agent/audit-tests/t5-rest-summary.log`, `t5-peak-summary.log`):
-`synthetic-client`, `hyper-client`, `provider-router`, `transient-retry`, `budget-hold-wait`,
+The shapes read into the rest were measured,
+8 runs each at 0.2 CPU
+(`~/temp/agent/audit-tests/t5-rest-summary.log`,
+`t5-peak-summary.log`):
+`synthetic-client`,
+`hyper-client`,
+`provider-router`,
+`transient-retry`,
+`budget-hold-wait`,
 `refine-phase` and `lane-contest-driver` passed 8 of 8 and are left as they are
-(a floor on a wait only grows under load; the `transient-retry` ceiling is a daily refusal's wait).
-`stage-round` failed 1 of 8: time to the first answer (398 ms) passed the 250 ms grace it was compared with;
-it is now anchored on when the first voice really answered (`c10d62663`), 16 of 16 after.
+(a floor on a wait only grows under load;
+the `transient-retry` ceiling is a daily refusal's wait).
+`stage-round` failed 1 of 8:
+time to the first answer (398 ms) passed the 250 ms grace it was compared with;
+it is now anchored on when the first voice really answered (`c10d62663`),
+16 of 16 after.
 `consolidate-driver` failed 1 of 8 on the T6 order check this audit added,
-ordered by 20 ms against 5 ms sleeps; both overlap cases now order by a gate (`d76d2424a`, M11),
+ordered by 20 ms against 5 ms sleeps;
+both overlap cases now order by a gate (`d76d2424a`,
+M11),
 16 of 16 each at 0.2 CPU after (`t5-gate-summary.log`).
 `lane-contest-stage.unit.test.ts` "RECORDS RAW HALF-QUORUM BALLOTS" fails 2 of 5 at 0.2 CPU
-(positive control: the `podman run` in `~/temp/agent/audit-tests/run-container.mjs`);
-its sibling case, the naturalness-review grace case,
-settle-by-timer checks in `synthetic-client`, `hyper-client` and `provider-router`,
+(positive control:
+the `podman run` in `~/temp/agent/audit-tests/run-container.mjs`);
+its sibling case,
+the naturalness-review grace case,
+settle-by-timer checks in `synthetic-client`,
+`hyper-client` and `provider-router`,
 and the driver trio's `peak` checks are the same shape by reading;
-wall-clock floors in `transient-retry`, `budget-hold-wait`, `stage-round` and the benchmark have no slack.
-Real sleeps: `stage-quorum` waits 30 s ignoring the abort signal;
+wall-clock floors in `transient-retry`,
+`budget-hold-wait`,
+`stage-round` and the benchmark have no slack.
+Real sleeps:
+`stage-quorum` waits 30 s ignoring the abort signal;
 `synthetic-client` and `lane-contest-driver` run production backoff.
 
 ### T6: names claiming more than they check
 
-Status: fixed in `292939dab`, `6baf52dbe`, `bc80c8c14` and `6d7d83c1b`,
+Status:
+fixed in `292939dab`,
+`6baf52dbe`,
+`bc80c8c14` and `6d7d83c1b`,
 whose order checks were timing-ordered and are made deterministic in `d76d2424a` (M11);
-the "trio" is two files (refine phase, consolidation driver) whose names claim the second call answers first.
+the "trio" is two files (refine phase,
+consolidation driver) whose names claim the second call answers first.
 `bedrock-catalog` "EVERY ROUTE" checks one route;
 `synthetic-catalog` pins a literal price;
 `block-pairing-protocol` compares a wrapper to its own builder;
@@ -1598,138 +2435,224 @@ the driver trio never asserts the second call answers first.
 
 ### T7: magic numbers
 
-Status: fixed in `c0ce1a2c5`, `7a4d521ed`, `962770574`, `04a9f499a` and `e2c887ee7`;
+Status:
+fixed in `c0ce1a2c5`,
+`7a4d521ed`,
+`962770574`,
+`04a9f499a` and `e2c887ee7`;
 `roster-reach` under E9.
-`roster-reach`, `request-pace`, `synthetic-catalog`, `deepseek-v41-admission`, `synthetic-client`, `repair-slice-key`,
+`roster-reach`,
+`request-pace`,
+`synthetic-catalog`,
+`deepseek-v41-admission`,
+`synthetic-client`,
+`repair-slice-key`,
 `anthropic-request` (a cap that should be computed from the exported caps),
 and vote weights not derived from exported constants in `candidate-select` and `candidate-select-decision`.
-The rule applied: a measured provider fact or owner limit is pinned once, where it is owned
-(`hyper-catalog`, the GLM wire facts, the account limit in `request-pace`), with its source named;
+The rule applied:
+a measured provider fact or owner limit is pinned once,
+where it is owned
+(`hyper-catalog`,
+the GLM wire facts,
+the account limit in `request-pace`),
+with its source named;
 every other test derives from the export.
-Kept as pins, deliberately: `repair-slice-key`'s key literals, which exist to fail when a key changes,
+Kept as pins,
+deliberately:
+`repair-slice-key`'s key literals,
+which exist to fail when a key changes,
 and `request-pace`'s account limit.
 `completion-cap` gained the only check that a pooled card name resolves to one shared figure;
-before, the DeepSeek test's 13,082 literal was its only cover.
+before,
+the DeepSeek test's 13,082 literal was its only cover.
 
 ### T8: untested exported functions
 
-Status: open; recounted 2026-09-27 at 79 of 1,178 barrel-exported functions
-(`~/temp/agent/audit-repair/untested-exports.mjs`, list in `untested-exports.json`),
+Status:
+open;
+recounted 2026-09-27 at 79 of 1,178 barrel-exported functions
+(`~/temp/agent/audit-repair/untested-exports.mjs`,
+list in `untested-exports.json`),
 queued after the findings that change a run's output.
 76 public functions named by no test;
-a coverage sample shows `isPaymentRefusal`, `statedWaitMsOf`, `routedJson`,
+a coverage sample shows `isPaymentRefusal`,
+`statedWaitMsOf`,
+`routedJson`,
 `secondOpinionsFrom` and others never called,
 and the decision reply's refusal branches never exercised.
-Recounted 2026-09-28 with the same script: 94 of 1,248, the barrels having grown;
+Recounted 2026-09-28 with the same script:
+94 of 1,248,
+the barrels having grown;
 `reseatHookFor` (X12) is among them though every hook builder's test runs it.
-The count has two blind spots, so it is neither a floor nor a ceiling of untested code:
+The count has two blind spots,
+so it is neither a floor nor a ceiling of untested code:
 it reads `export function` declarations only (never `export const`),
-and it counts a name mentioned anywhere in a test as tested, while a function called only through another is uncounted.
+and it counts a name mentioned anywhere in a test as tested,
+while a function called only through another is uncounted.
 The work waits on a measurement of execution rather than names:
-the unit suite under `NODE_V8_COVERAGE`, with function entries that never ran intersected with the barrel exports,
+the unit suite under `NODE_V8_COVERAGE`,
+with function entries that never ran intersected with the barrel exports,
 then a case per branch of each function on that list (TCV).
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
-Status: open, owned by `module-logger` (issue #576, measurements added 2026-09-27).
-1,220,455 files there; the tests are not hermetic.
-Measured on 2026-09-27: most of that count is the deliberate `translation-repair-runs*` run directories;
+Status:
+open,
+owned by `module-logger` (issue #576,
+measurements added 2026-09-27).
+1,220,455 files there;
+the tests are not hermetic.
+Measured on 2026-09-27:
+most of that count is the deliberate `translation-repair-runs*` run directories;
 the logs themselves are 34,919 top-level `*.log.jsonl` files (846 MB with the runs),
 about 22 added per unit suite run,
 and the logger's file sink (`package/module/logger/src/sink/file.ts`) reads no switch that could turn it off in tests.
 
 ## Page assembly and the corpus-run driver
 
-Probes: `~/temp/agent/audit-assembly/`
-(`replay2.out`, `categorize.out`, `chain-probe.out`, `fixtures.out`, `seats-probe.mjs`, `tally-check.out`,
+Probes:
+`~/temp/agent/audit-assembly/`
+(`replay2.out`,
+`categorize.out`,
+`chain-probe.out`,
+`fixtures.out`,
+`seats-probe.mjs`,
+`tally-check.out`,
 `findings.txt`).
 Replaying stored decisions through the current reader reproduces 93 recent pages byte for byte;
 the other 41 differ only by typography code that changed after they ran.
 
 ### A1: an archive "Under Construction" placeholder ships, replacing a source heading on 8 pages
 
-Status: fixed in `6a0a8cbf6`.
+Status:
+fixed in `6a0a8cbf6`.
 `archive-stub.ts` now reads a paragraph under blockquote markers and inside one code span,
 and knows the token `under construction`.
 A census over the 92 archives strips exactly two paragraphs,
 XIEPT2 line 8 `(To-Do)` and XingZ60 line 358;
-dogesir_'s "To be continued!" (the person's own words) and mikaela_khara's 未完待续 are no placeholders and stay.
-XingZ60's archive ends at 三句承题, so the source sections after it are source-only and left to pairing.
-`corpus-run/archive-stub.ts` knows `to-do`, `todo`, `tbd`, `wip` in one bracket layer;
+dogesir_'s "To be continued!"
+(the person's own words) and mikaela_khara's 未完待续 are no placeholders and stay.
+XingZ60's archive ends at 三句承题,
+so the source sections after it are source-only and left to pairing.
+`corpus-run/archive-stub.ts` knows `to-do`,
+`todo`,
+`tbd`,
+`wip` in one bracket layer;
 XingZ60's archive writes ``>>> `Under Construction` ``,
 all 17 shipped XingZ60 pages carry it,
 and 8 have no rendering of the source heading 七句破题.
 
 ### A2: a Han handle left in English prose (with F-3)
 
-Status: fixed with F-3; the shape is refused at validation, and the identity line no longer offers the Han as English.
+Status:
+fixed with F-3;
+the shape is refused at validation,
+and the identity line no longer offers the Han as English.
 shihai4h1 and shihai4h2 shipped "Wrong,\n小柿子."
 
 ### A3: CRLF from a model wording ships inside an LF page
 
-Status: fixed in `f582157a9`.
+Status:
+fixed in `f582157a9`.
 `corpus-run/line-ending-fold.ts` folds every replacement first in the page-assembly guard,
-before any other pass reads it, and records each changed slice as a row the page carries.
+before any other pass reads it,
+and records each changed slice as a row the page carries.
 mikaela17 lines 223 to 225 end in `\r`;
 `foldCarriageReturns` runs only at the corpus read.
 
 ### A4: archive link destinations rewritten to the source's Chinese-site ones
 
-Status: fixed by the page-assembly pass `corpus-run/archive-destination-restore.ts`; owner, 2026-09-27, "Archive's English": where the archive links the English counterpart of the original's destination, the page keeps the archive's destination. Measured: 12 archive-only destinations in 92 entries, 3 of them localized (two zh.wikipedia to en.wikipedia, one source.android.google.cn to source.android.com) and 2 differing only by www.
+Status:
+fixed by the page-assembly pass `corpus-run/archive-destination-restore.ts`;
+owner,
+2026-09-27,
+"Archive's English":
+where the archive links the English counterpart of the original's destination,
+the page keeps the archive's destination.
+Measured:
+12 archive-only destinations in 92 entries,
+3 of them localized (two zh.wikipedia to en.wikipedia,
+one source.android.google.cn to source.android.com) and 2 differing only by www.
 shihai4h2 links PTSD to zh.wikipedia where the archive links en.wikipedia;
 aiyysk links source.android.google.cn where the archive links source.android.com.
 
 The pass pairs the links of a slice whose original and archive carry equal counts by position,
 and keeps a replacement only where the original destination appears nowhere on the archive page,
-the archive destination nowhere in the original, and the original destination is replaced one way.
+the archive destination nowhere in the original,
+and the original destination is replaced one way.
 Over 92 entries it reads six replacements:
-the three localizations, a `www.` host, twitter.com to x.com, and a moved path on one host,
-the last three the same kind of deliberate archive choice, kept under the same answer and open to the owner's veto;
+the three localizations,
+a `www.` host,
+twitter.com to x.com,
+and a moved path on one host,
+the last three the same kind of deliberate archive choice,
+kept under the same answer and open to the owner's veto;
 a swap of two destinations both sides carry (noname3031) is left alone.
-Replayed over settled artifacts it changes shihai4h s21, aiyysk s76 and s77, and luxuanwen3 s1.
+Replayed over settled artifacts it changes shihai4h s21,
+aiyysk s76 and s77,
+and luxuanwen3 s1.
 
 ### A5: seats with no wet provider are seated anyway
 
-Status: kept by decision; its costs fixed under P3 and L1.
+Status:
+kept by decision;
+its costs fixed under P3 and L1.
 `corpus-run/run-seats.ts` `seated()` returns true on `NO_PROVIDER`;
 TianqiChen66620 seated Qwen3.8-27B and glm-5.3 with no provider serving them,
 logged 360 `NoProviderForModelError` lines,
 and counted both in every quorum denominator.
-This is the owner's rule of 2026-09-09 (`doc/decision/translation-repair-short-bench-share.md`, "The rule"):
+This is the owner's rule of 2026-09-09 (`doc/decision/translation-repair-short-bench-share.md`,
+"The rule"):
 a seat no wet provider serves stays on the judge benches,
 so the quorum and the `stage-short-bench` findings mark a page decided on a thin bench.
 Withholding it would hide exactly that.
-Its costs were the round-0 place a refusal spent (P3, fixed)
-and the checker bench it left short (L1, fixed);
+Its costs were the round-0 place a refusal spent (P3,
+fixed)
+and the checker bench it left short (L1,
+fixed);
 what remains is the log volume of one refusal line per ask.
 
 ### A6: the handle-gloss pass moves a link title's translation onto a handle
 
-Status: fixed in `2c6e42c27`.
-A parenthesis holding a bracket, a nested parenthesis, a backtick, a tag or `://` is no gloss,
+Status:
+fixed in `2c6e42c27`.
+A parenthesis holding a bracket,
+a nested parenthesis,
+a backtick,
+a tag or `://` is no gloss,
 and that appearance stands as the writer left it.
 The first fixture was vacuous (the authority step never read the linked signer);
-the positive control led to a prose-link fixture, which reproduced the bug.
-The fixed-point test passes on the old build too, so it guards the property only.
-Reading replaced slices only is by design: the archive's own text is never rewritten.
-`handle-gloss-place.ts` accepts any same-line parenthesis, link text included,
+the positive control led to a prose-link fixture,
+which reproduced the bug.
+The fixed-point test passes on the old build too,
+so it guards the property only.
+Reading replaced slices only is by design:
+the archive's own text is never rewritten.
+`handle-gloss-place.ts` accepts any same-line parenthesis,
+link text included,
 reads only replaced slices,
 and is not at a fixed point when run twice.
 
 ### A7: deterministic page refusals are labelled `ERROR` and re-attempted
 
-Status: fixed in `b11fd5409`.
-`entry-error-outcome.ts` omits `CollapsedHeadingError`, `UnparseablePageError`, `PublishedPageDisagreesError`,
+Status:
+fixed in `b11fd5409`.
+`entry-error-outcome.ts` omits `CollapsedHeadingError`,
+`UnparseablePageError`,
+`PublishedPageDisagreesError`,
 `UnansweredContestSliceError` and `SliceSpliceError` from the stopped set.
 
 ### A8: the README says an unfilled passage fails the entry; the code ships it as a gap
 
-Status: fixed in `d721449e2`.
+Status:
+fixed in `d721449e2`.
 The README now says an unfilled passage ships as a recorded gap and an outage stops the entry `INCOMPLETE`.
 
 ### A9: the `DONE` line undercounts on a resume into a directory holding a decline
 
-Status: fixed in `ead0a2d98` (prep `517facb2d`, guard `4127bfdcb`).
+Status:
+fixed in `ead0a2d98` (prep `517facb2d`,
+guard `4127bfdcb`).
 The pass skipped entries with an artifact or a decline,
 then reported artifacts after the run less the size of that set.
 The guard went red on the old formula with 0 where the run finished two entries,
@@ -1739,8 +2662,11 @@ and counts the ids new to it.
 
 ### A9b: the decline listing reads an unlistable directory as no declines
 
-Status: fixed in `150819e64` (guard `325f2d732`, found while fixing A9).
-`declinedEntryIds` returned no declines on any listing failure (EACCES, ENOTDIR),
+Status:
+fixed in `150819e64` (guard `325f2d732`,
+found while fixing A9).
+`declinedEntryIds` returned no declines on any listing failure (EACCES,
+ENOTDIR),
 which would re-run every declined entry and drop it from `verify-published`'s count,
 and it counted a directory named like a record,
 the drift `pass-settled.ts` already records for artifacts.
@@ -1748,67 +2674,108 @@ It now lists with file types and throws `DeclinedEntriesUnreadableError` on ever
 
 ### A10: `TALLY` `pageChanged` reads before typography
 
-Status: fixed in `e0354d62d` (guard `48c573f20`).
-The `TALLY` now reads each slice through `wouldShipTextPerSlice`, as the publisher does.
-Replayed over the stored artifacts: hulicaijia31 34 to 31 and hulicaijia20 41 to 40, the audit's page counts;
+Status:
+fixed in `e0354d62d` (guard `48c573f20`).
+The `TALLY` now reads each slice through `wouldShipTextPerSlice`,
+as the publisher does.
+Replayed over the stored artifacts:
+hulicaijia31 34 to 31 and hulicaijia20 41 to 40,
+the audit's page counts;
 TianqiChen66610 and TianqiChen66614 unchanged.
-The test fixture now states `archiveText` and `pageAssembly`, which the contract requires.
+The test fixture now states `archiveText` and `pageAssembly`,
+which the contract requires.
 
 ### A11: logging gaps
 
-Status: fixed.
-The slice cache persists atomically and warns on a file that does not parse (`972682353`, guard `03af65966`).
-The attempt store warns on each reset and each count read as zero, and writes atomically (`b9d5c8009`, guard `e68733836`).
+Status:
+fixed.
+The slice cache persists atomically and warns on a file that does not parse (`972682353`,
+guard `03af65966`).
+The attempt store warns on each reset and each count read as zero,
+and writes atomically (`b9d5c8009`,
+guard `e68733836`).
 `src/log-context.ts` (`907805225`) carries an `AsyncLocalStorage` context:
 the pass runs each entry under its name and pipeline,
-and the repair, translate, contest and consolidation drivers run each slice under its lane and index (`99c35e526`).
+and the repair,
+translate,
+contest and consolidation drivers run each slice under its lane and index (`99c35e526`).
 Every module root logger reads it (`842c1feff`),
 the repair and translate lane loggers add the slice to every line,
 and ledger rounds record it and are written atomically (`fdcd003ef`).
-Guards: three calls queued behind one `p-limit` slot each write a `SPEND` line naming their own slice (`d0e912a0c`),
+Guards:
+three calls queued behind one `p-limit` slot each write a `SPEND` line naming their own slice (`d0e912a0c`),
 so the provider queue keeps the context;
-the lanes' lines at overlap 2 (`d14346bb4`); a ledger round's context (`2e5d2ab38`);
-and a source scan that fails on a plain module root (`07151e084`), which finds all 41 on the tree before `842c1feff`.
+the lanes' lines at overlap 2 (`d14346bb4`);
+a ledger round's context (`2e5d2ab38`);
+and a source scan that fails on a plain module root (`07151e084`),
+which finds all 41 on the tree before `842c1feff`.
 The consolidation driver's slice body was indented against its nesting (the X9 shape) and is now indented to it.
 Client-layer loggers carry no entry
-(3279 of 5914 lines of `TianqiChen66616.log`, `SPEND` lines among them);
+(3279 of 5914 lines of `TianqiChen66616.log`,
+`SPEND` lines among them);
 the repair and translate lanes' lines carry no slice under overlap;
 `slice-cache-namespace.ts` swallows a `SyntaxError`;
 `attempt-store.ts` resets a malformed attempts file silently and writes it non-atomically;
-ledger records carry no entry, slice, lane or generation.
+ledger records carry no entry,
+slice,
+lane or generation.
 
 ### A12: `rebuildPreparation` silently fails to reproduce a folded entry
 
-Status: fixed in `7c444de3e` (prep `f46f5a7b7`, guard `27e9ec7ea`).
+Status:
+fixed in `7c444de3e` (prep `f46f5a7b7`,
+guard `27e9ec7ea`).
 mikaela15 records 34 slices and rebuilds to 32 with nothing named.
-Attributed: mikaela15 settled at `caac222a6`, before `a43c5d88d` (class one hundred twelve) read an interior gap
-unplaced on both sides as one merge; its section 2 leaves original blocks 3 to 7 unpaired,
+Attributed:
+mikaela15 settled at `caac222a6`,
+before `a43c5d88d` (class one hundred twelve) read an interior gap
+unplaced on both sides as one merge;
+its section 2 leaves original blocks 3 to 7 unpaired,
 which the run carved as source-only slices and today's slicer merges.
-The artifact also records the carve after the carried-insertion fold, and nothing records the fold:
+The artifact also records the carve after the carried-insertion fold,
+and nothing records the fold:
 TianqiChen66614 rebuilds with position 13 moved (its log folds slice 15 into 14 and shifts 14's original into 13).
 `RebuiltPreparation` claimed an empty gap list meant the run's own carve;
-it now carries `reproduction`, read off the recorded rows (`artifact-two-lane-rebuild-rows.ts`),
+it now carries `reproduction`,
+read off the recorded rows (`artifact-two-lane-rebuild-rows.ts`),
 naming the first departure.
-`2c4207912` first read it off the recorded identity, which called every settled artifact moved
-(see A12b); a commit comment on it records the correction.
-Over stored artifacts: mikaela16, mikaela17 and TianqiChen66610 reproduce;
-mikaela15 (32 of 34), hulicaijia31 (71 of 72) and TianqiChen66614 (position 13) move.
+`2c4207912` first read it off the recorded identity,
+which called every settled artifact moved
+(see A12b);
+a commit comment on it records the correction.
+Over stored artifacts:
+mikaela16,
+mikaela17 and TianqiChen66610 reproduce;
+mikaela15 (32 of 34),
+hulicaijia31 (71 of 72) and TianqiChen66614 (position 13) move.
 
 ### A12b: the rendering audit refuses every settled artifact
 
-Status: fixed in `da9ca20b0` and `487146cd2` (guard `ce97e60a2`, repin `d280961b0`; found while fixing A12).
+Status:
+fixed in `da9ca20b0` and `487146cd2` (guard `ce97e60a2`,
+repin `d280961b0`;
+found while fixing A12).
 `verifySettled` required the recorded preparation identity,
 which also hashes the declared names as the run's build worded them,
-and the recorded alignment findings, which include the roster pairing rounds' own (mikaela16's six);
-a rebuild reproduces neither, so mikaela16, mikaela17 and TianqiChen66610,
-whose rows match slice for slice, all printed `REFUSED` on `preparation.identity`.
+and the recorded alignment findings,
+which include the roster pairing rounds' own (mikaela16's six);
+a rebuild reproduces neither,
+so mikaela16,
+mikaela17 and TianqiChen66610,
+whose rows match slice for slice,
+all printed `REFUSED` on `preparation.identity`.
 A rebuild is now verified by its rows and by `verifyArtifactMeasurements`
-(slice count, document sizes, alignment pairs, each lane's slice count);
+(slice count,
+document sizes,
+alignment pairs,
+each lane's slice count);
 the identity and findings checks stay in `verifyArtifactAgainstPreparation` for a preparation the run itself built.
 
 ### A13: the consolidation cache key omits the dispute note and the declared name pairs
 
-Status: fixed in `c8f2a2af3` (prep `bcf31dae2`, guard `69d47d61f`).
+Status:
+fixed in `c8f2a2af3` (prep `bcf31dae2`,
+guard `69d47d61f`).
 Identity and reference context are in the run shape already,
 and the dispute note has been in the slice key since X5.
 The declared name pairs reached the key only through the identity context,
@@ -1817,8 +2784,11 @@ which renders the same front matter name and alias fields in other words;
 
 ### A14: stale comments and README claims
 
-Status: fixed in `55d895820`.
-"As the page will carry it" (README, `canadian-forms.ts`, `page-slice-rewrite.ts`) is true since the K5 rounds,
+Status:
+fixed in `55d895820`.
+"As the page will carry it" (README,
+`canadian-forms.ts`,
+`page-slice-rewrite.ts`) is true since the K5 rounds,
 so those lines stand.
 "No stage assembles a document",
 "as the page will carry it" for withdrawn slices,
@@ -1829,7 +2799,8 @@ and every pass rewrite logged as "trimmed".
 
 ### A15: withdrawn-slice siblings of K5
 
-Status: fixed with K5 in `3497e0041`.
+Status:
+fixed with K5 in `3497e0041`.
 A withheld container half enters the rounds as a withdrawn row does,
 and a row a pass writes for it wins over the withholding;
 cross-slice passes now decide on the page the guard leaves.
@@ -1838,14 +2809,23 @@ cross-slice passes decide on a page the footnote guard may still change.
 
 ### A16: low items
 
-Status: fixed (A16a to A16c); the write order is kept by design.
-A lane wording's triple newline ships: not a defect.
-Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdown doesn't care",
+Status:
+fixed (A16a to A16c);
+the write order is kept by design.
+A lane wording's triple newline ships:
+not a defect.
+Owner,
+2026-09-27:
+"There is no need to eliminate extra newlines,
+because markdown doesn't care",
 recorded in `doc/design-commitments.md`.
-Measured before the ruling: 30 of 272 published pages carry a run of three newlines, most where the archive does too;
+Measured before the ruling:
+30 of 272 published pages carry a run of three newlines,
+most where the archive does too;
 a wording whose trailing newline the archive span lacks adds one at the seam (XingZ616 slice 78),
 and one that drops it joins no paragraphs (the page still carries the separator).
-Asked the same day, the owner kept the A3 carriage-return fold.
+Asked the same day,
+the owner kept the A3 carriage-return fold.
 
 #### A16a: the runs lock judged liveness by pid alone
 
@@ -1853,51 +2833,73 @@ A lock left by a killed pass named a pid the kernel later hands to any process,
 and after a reboot pids start again from the bottom;
 the lock then read as held by that unrelated process,
 and the refusal told the operator the holder was alive.
-Fixed in `ebf768e66` (prep `dc6826f6b`, red guard `0eac33216`):
-the lock records host, boot, pid namespace and start ticks (`process-identity.ts`),
-is taken over only on positive evidence (a later boot, a free pid, another start time),
+Fixed in `ebf768e66` (prep `dc6826f6b`,
+red guard `0eac33216`):
+the lock records host,
+boot,
+pid namespace and start ticks (`process-identity.ts`),
+is taken over only on positive evidence (a later boot,
+a free pid,
+another start time),
 holds when another namespace or machine took it,
 and the refusal states how it judged (`runs-lock-holder.ts`).
-Every one of the 96 locks on disk predates the fields and judges as gone by pid, as the old code did;
-all of them come from killed runs, since every run directory holding an artifact had released its lock.
+Every one of the 96 locks on disk predates the fields and judges as gone by pid,
+as the old code did;
+all of them come from killed runs,
+since every run directory holding an artifact had released its lock.
 That fix compared hostnames before boot ids,
-and `os.hostname()` can change within one boot (DHCP, `hostnamectl`),
+and `os.hostname()` can change within one boot (DHCP,
+`hostnamectl`),
 after which every stale lock on the machine would read as another machine's and hold forever.
 Fixed in `25ae252a1` (red guard committed just before it):
-a boot id is random per boot, so equal boot ids prove the same machine,
+a boot id is random per boot,
+so equal boot ids prove the same machine,
 and the hostname decides only between a later boot here (gone) and another machine (held).
-This host's static and kernel hostnames agree today (`bazzite`), so no lock here met that order.
+This host's static and kernel hostnames agree today (`bazzite`),
+so no lock here met that order.
 
 #### Write order: kept by design
 
 The page is written before the artifact,
 because a pass skips an entry once its artifact exists,
-so publishing first makes "done implies published" true by construction (`publish-fixed.ts`, `pass-entry-persist.ts`).
+so publishing first makes "done implies published" true by construction (`publish-fixed.ts`,
+`pass-entry-persist.ts`).
 A crash between the two writes leaves a page no artifact records;
-none exists among the 214 pages in 372 run directories (a planted page was found, as a positive control).
+none exists among the 214 pages in 372 run directories (a planted page was found,
+as a positive control).
 The owner then ruled that a run always ships (`doc/design-commitments.md`),
-so such a page ships and is reported, never refused.
+so such a page ships and is reported,
+never refused.
 
 #### A16b: the verifier exits 1 on findings
 
-Status: fixed in `354f6bae7` (red guard `bd7c555b7`), `6898f1768` and `e52de1f23`.
+Status:
+fixed in `354f6bae7` (red guard `bd7c555b7`),
+`6898f1768` and `e52de1f23`.
 The verifier exits 0 on every finding and 2 only for a run it cannot read,
 each finding line names the pass that repairs it,
 and a disagreement over an artifact another build settled prints `READ BY ANOTHER BUILD`.
 Driving the built CLI for the guard found a further defect:
-`publishedEntryIds` listed entry directories, not page files,
-so an entry whose page was gone read as published, paired as matched,
+`publishedEntryIds` listed entry directories,
+not page files,
+so an entry whose page was gone read as published,
+paired as matched,
 and printed `REFUSED by Error` instead of `SETTLED AND NEVER PUBLISHED`;
 it now lists entries by their page file.
 The `DECLINED AND PUBLISHED ANYWAY` line promises that the next pass removes the page,
 and a declined entry is never visited again,
 so the pass's republish step now removes every page standing for a declined entry (`6898f1768`).
-The runbook's expected lines had drifted from the real output (`declined=<n>`, the closing line's wording)
-and now match it; the three `pass-entry.ts` references (M17) and a fourth,
+The runbook's expected lines had drifted from the real output (`declined=<n>`,
+the closing line's wording)
+and now match it;
+the three `pass-entry.ts` references (M17) and a fourth,
 `artifact-two-lane-project.unit.test.ts` naming it as the artifact builder's only caller,
 now name `pass-entry-persist.ts` and `pass-entry-artifact.ts`.
-Earlier state, kept for the record:
-Owner, 2026-09-27: `verify-published` prints every finding and exits 0,
+Earlier state,
+kept for the record:
+Owner,
+2026-09-27:
+`verify-published` prints every finding and exits 0,
 keeping exit 2 for a run it could not read at all.
 Its messages also promise what no longer holds once a pass republishes
 (`SETTLED AND NEVER PUBLISHED ... A resumed pass skips it`),
@@ -1911,61 +2913,101 @@ a disagreement is today's reading of an older settlement and must say so.
 
 #### A16c: no pass republishes a missing or disagreeing page
 
-Status: fixed in `3872729e1` (guard `498ddff1b`, shared fixture `ae21bcbf8`)
-and, for the decline, `f98b2d87f` (prep `791e23e17`, red guard `2224ea2d7`).
-Before any entry runs, `pass-republish.ts` judges every settled page with `page-agreement.ts`,
+Status:
+fixed in `3872729e1` (guard `498ddff1b`,
+shared fixture `ae21bcbf8`)
+and,
+for the decline,
+`f98b2d87f` (prep `791e23e17`,
+red guard `2224ea2d7`).
+Before any entry runs,
+`pass-republish.ts` judges every settled page with `page-agreement.ts`,
 the verifier's own judgement since `2ce0e9f07`,
 and `page-republish.ts` re-carves each missing or disagreeing one with the artifact's recipe,
 over the archive the artifact stored,
-and republishes it; a moved carve or a publish-time page check leaves the page and logs the class name.
+and republishes it;
+a moved carve or a publish-time page check leaves the page and logs the class name.
 The step sits after the `--plan` return and the build-generation guards.
 A decline removes a leftover page before it writes its record.
 Over scratch copies of all 214 stored pages:
-137 agree, 51 are republished and every one then agrees
-(49 differ from the old page only in typography, 2 by a blank line at a seam),
-23 are left by the front-matter check, 2 by the destination check and 1 by a corpus read.
+137 agree,
+51 are republished and every one then agrees
+(49 differ from the old page only in typography,
+2 by a blank line at a seam),
+23 are left by the front-matter check,
+2 by the destination check and 1 by a corpus read.
 A first version spliced into the corpus copy instead of the stored archive;
-the census caught it (shihai4h came out 9 characters short, and 23 carves read as moved),
-since the pass reshapes the archive before it carves (`passArchiveText`, a heading relabel, `repairArchiveBlocks`).
-At the user boundary, a real `corpus-pass --only mikaela_khara` in a scratch copy of mikaela17 with its page deleted,
-nothing pending, rewrote the page, spent nothing and exited 0,
+the census caught it (shihai4h came out 9 characters short,
+and 23 carves read as moved),
+since the pass reshapes the archive before it carves (`passArchiveText`,
+a heading relabel,
+`repairArchiveBlocks`).
+At the user boundary,
+a real `corpus-pass --only mikaela_khara` in a scratch copy of mikaela17 with its page deleted,
+nothing pending,
+rewrote the page,
+spent nothing and exited 0,
 and `verify-published` then found 1 of 1 pages carrying every wording at the expected length.
-Earlier state, kept for the record:
-Owner, 2026-09-27: a pass starting in a runs directory rewrites from its artifact any page that is missing
+Earlier state,
+kept for the record:
+Owner,
+2026-09-27:
+a pass starting in a runs directory rewrites from its artifact any page that is missing
 or that differs from what the artifact says ships.
 Following from that rule and the archive-note rule,
 a decline removes a page an earlier crash left for the entry.
 The first answer rested on a count that had only checked pages exist (M18).
-The agreement census, `page-agreement.ts` over the 214 stored pages with the build of 2026-09-27:
-137 agree at their weighed length and 77 disagree, and the extracted verdict matches the old composition on all 214.
-None of the 77 predates `c36d597b5` (2026-08-24), which refuses a disagreeing page before it is written,
+The agreement census,
+`page-agreement.ts` over the 214 stored pages with the build of 2026-09-27:
+137 agree at their weighed length and 77 disagree,
+and the extracted verdict matches the old composition on all 214.
+None of the 77 predates `c36d597b5` (2026-08-24),
+which refuses a disagreeing page before it is written,
 so each agreed with its own build.
 The would-ship reader applies `restoreTypography` at read time,
-and two fixes of 2026-09-26 changed it: `768408d1d` sets closing punctuation inside a quote (class 181),
+and two fixes of 2026-09-26 changed it:
+`768408d1d` sets closing punctuation inside a quote (class 181),
 `f4adc4c9f` curls a nested quotation as a pair (class 147).
 By where each missing wording first departs from its page:
 33 only by punctuation the reader now sets inside a closing quote,
-20 only by a quote it now curls, 16 by both;
+20 only by a quote it now curls,
+16 by both;
 6 carry every wording and are a character long or short,
-and 2 depart elsewhere too (a straight double quote, and one letter).
-Told this, the owner chose again that a pass rewrites such pages to the running build's reading
+and 2 depart elsewhere too (a straight double quote,
+and one letter).
+Told this,
+the owner chose again that a pass rewrites such pages to the running build's reading
 (`doc/design-commitments.md`).
 
 ### A17: a handle every writer left in Han ships romanised with no literal meaning
 
-Status: fixed in `7ec9669bd` (red guard `4945f97cd`), found while fixing T3.
-`translate-signer-handle.ts` is a text floor in `validateTranslatedSlice`, on the parsed and the grammar-free path:
-at a signature the original signs in Han, with no Latin rendering on the aligned archive signature and no declared pair,
-a candidate left in Han, or writing the handle reading with no meaning in parentheses
-(letters alone, so spacing, capitals and tone marks do not matter), is sent back naming the reading to gloss.
-The Han residue floor (`078939ac7`, after this entry was filed) already refused Han in prose,
-but excused Han the archive also carries, and asked for no meaning.
-Measured over 262 stored artifacts: 45 of the 51 page signers the archive never rendered in Latin
-shipped with no meaning anywhere, shihai4h's runs of 2026-09-26 among them.
-Replayed over 671 signature rows the floor refuses 0 of 480 archives, 48 of 670 translate-lane texts,
+Status:
+fixed in `7ec9669bd` (red guard `4945f97cd`),
+found while fixing T3.
+`translate-signer-handle.ts` is a text floor in `validateTranslatedSlice`,
+on the parsed and the grammar-free path:
+at a signature the original signs in Han,
+with no Latin rendering on the aligned archive signature and no declared pair,
+a candidate left in Han,
+or writing the handle reading with no meaning in parentheses
+(letters alone,
+so spacing,
+capitals and tone marks do not matter),
+is sent back naming the reading to gloss.
+The Han residue floor (`078939ac7`,
+after this entry was filed) already refused Han in prose,
+but excused Han the archive also carries,
+and asked for no meaning.
+Measured over 262 stored artifacts:
+45 of the 51 page signers the archive never rendered in Latin
+shipped with no meaning anywhere,
+shihai4h's runs of 2026-09-26 among them.
+Replayed over 671 signature rows the floor refuses 0 of 480 archives,
+48 of 670 translate-lane texts,
 2 of 480 repair-lane texts and 60 of 670 shipped wordings.
 A first census read each signer through `Signature.nameStart` and `nameEnd` as offsets into the slice;
-they are offsets into the signature's line, so it counted 75 of 82 over wrong names
+they are offsets into the signature's line,
+so it counted 75 of 82 over wrong names
 until the floor's own guard failed on the same misreading (M24).
 
 Found as:
@@ -1978,24 +3020,35 @@ so when every writer left the handle in Han the page ships the bare pinyin.
 No floor refuses a candidate that leaves a handle in Han
 (`translate-untranslated.ts` refuses only a whole slice returned untranslated),
 so the writers are never asked for the gloss.
-The fix belongs at the writers: a floor naming the declared handle a candidate left in Han.
+The fix belongs at the writers:
+a floor naming the declared handle a candidate left in Han.
 
 ### A18: the rendering audit rebuilds a carve over the corpus copy, not the archive the run carved
 
-Status: fixed in `c7f534353` (red guard `83f35d955`), at the root:
+Status:
+fixed in `c7f534353` (red guard `83f35d955`),
+at the root:
 `rebuildPreparation` carves over the archive the artifact stored,
 and over the corpus copy only for an artifact written before that text was stored,
-so the rendering audit, `carveSettled` (F-6) and republishing all carve as the run did.
-Re-carving all 265 stored artifacts with the fix: 246 reproduce the run's rows and 15 move,
-each with a cause already recorded (mikaela15's class 112 slicer change, TianqiChen666's unrecorded fold,
-and the August pairing experiments), and 4 cannot be read (3 artifacts that do not parse, 1 corpus read);
+so the rendering audit,
+`carveSettled` (F-6) and republishing all carve as the run did.
+Re-carving all 265 stored artifacts with the fix:
+246 reproduce the run's rows and 15 move,
+each with a cause already recorded (mikaela15's class 112 slicer change,
+TianqiChen666's unrecorded fold,
+and the August pairing experiments),
+and 4 cannot be read (3 artifacts that do not parse,
+1 corpus read);
 hulicaijia31 now reproduces.
 The A12 guard had stood in for a moved carve with an archive that gained a paragraph,
-which the stored archive now overrides; it now changes the original instead.
+which the stored archive now overrides;
+it now changes the original instead.
 Found while fixing A16c.
 `readArtifactSubjects` in `rendering-audit-settled-input.ts` reads the archive English at the artifact's commit
 and carves over it,
-but a pass reshapes the archive before it carves (`passArchiveText`, a heading relabel, `repairArchiveBlocks`),
+but a pass reshapes the archive before it carves (`passArchiveText`,
+a heading relabel,
+`repairArchiveBlocks`),
 and the artifact stores the text it carved.
 The same mistake in the first republish read 23 of 77 stored carves as moved and left shihai4h's page 9 characters short;
 carving over the stored archive reproduced all 23.
@@ -2005,64 +3058,108 @@ so the rendering audit refuses artifacts whose carve it would reproduce.
 
 ## Providers, routing and seating
 
-Probes and full report: `~/temp/agent/audit-providers/report.txt`.
+Probes and full report:
+`~/temp/agent/audit-providers/report.txt`.
 
 ### P1: the Bedrock ledger records completed calls only
 
-Status: fixed 2026-09-28, each part guarded red first and mutation-checked.
-The ledger is the only guard on the owner's card, and it noted completed calls with usage only;
+Status:
+fixed 2026-09-28,
+each part guarded red first and mutation-checked.
+The ledger is the only guard on the owner's card,
+and it noted completed calls with usage only;
 `bedrockIsDry` read dry at zero while the meter is read once a 60 s freshness window.
 
-- Every billed attempt: `2a108dfb3` (guard `e33396294`).
+- Every billed attempt:
+  `2a108dfb3` (guard `e33396294`).
     The retry ladder tells its caller of every attempt that delivered something and failed,
-    retried ones included, before any rethrow (`onAbandonedAttempt`, `transient-retry.ts`):
+    retried ones included,
+  before any rethrow (`onAbandonedAttempt`,
+  `transient-retry.ts`):
     a reply the whole-message check refused counts its whole body,
     a stream that ended early what its error says it read.
     Bedrock writes each at its bound
-    (no more prompt tokens than body bytes, no more completion tokens than `max_tokens`),
-    marked `abandoned-bound`, on the `SPEND` line and in the ledger (`bedrock-bound-ledger.ts`),
+    (no more prompt tokens than body bytes,
+  no more completion tokens than `max_tokens`),
+    marked `abandoned-bound`,
+  on the `SPEND` line and in the ledger (`bedrock-bound-ledger.ts`),
     since whether Bedrock bills output past a cancel is unmeasured and an under-read is the failure.
-    OpenRouter writes its reckoned line per attempt; it wrapped the whole ladder,
+    OpenRouter writes its reckoned line per attempt;
+  it wrapped the whole ladder,
     so an attempt refused and retried inside it left no line.
-- No usage: `107763dbb` (guard `2770e9ce7`).
-    A whole call whose stream carried no usage block is written at its bound, marked `unreported-bound`.
-    Latent: none of 190,009 logged Bedrock calls lacked usage.
-- Margin: `7cfd5ae4b` (guard `73e70bfab`).
-    Bedrock reads dry with 1.33 USD left: the most spend any span of one freshness window
+- No usage:
+  `107763dbb` (guard `2770e9ce7`).
+    A whole call whose stream carried no usage block is written at its bound,
+  marked `unreported-bound`.
+    Latent:
+  none of 190,009 logged Bedrock calls lacked usage.
+- Margin:
+  `7cfd5ae4b` (guard `73e70bfab`).
+    Bedrock reads dry with 1.33 USD left:
+  the most spend any span of one freshness window
     plus the longest Bedrock stream on record (363,790 ms) held over every pass-run log
     (`p1-window-measure2-runs.mjs`) is 1.3245 USD over 822 calls (XingZ628).
     Per-call reservations were considered and not taken:
-    the cached reading, not the calls in flight, is what lets a run spend past zero.
-- Reckoned share: `a88a87b11` (guard `4364caf88`).
+    the cached reading,
+  not the calls in flight,
+  is what lets a run spend past zero.
+- Reckoned share:
+  `a88a87b11` (guard `4364caf88`).
     The reading carries `reckonedUsd` and the `METERS` line `bedrockReckonedUsd`,
     so a reader sees how much of what is left rests on reckoning.
-- One-time correction of the live ledger, 2026-09-28 (`p1-ledger-correction.ts`).
+- One-time correction of the live ledger,
+  2026-09-28 (`p1-ledger-correction.ts`).
     1,055 Bedrock streams in pass-run logs never reached it
-    (344 on gemma-4-26b-a4b, 693 on gemma-4-e2b, 14 on gpt-oss-120b, 4 on gemma-4-31b):
-    cut, overrun, or completed with no `SPEND` line after, an attempt the whole-message check refused.
+    (344 on gemma-4-26b-a4b,
+  693 on gemma-4-e2b,
+  14 on gpt-oss-120b,
+  4 on gemma-4-31b):
+    cut,
+  overrun,
+  or completed with no `SPEND` line after,
+  an attempt the whole-message check refused.
     Each is reckoned at its model's 99th-percentile prompt over paired calls,
     and its generated characters at the model's 10th-percentile characters per token.
-    1.3184 USD, four lines marked `abandoned`; remaining 6.3413 to 5.0229 USD.
+    1.3184 USD,
+  four lines marked `abandoned`;
+  remaining 6.3413 to 5.0229 USD.
     The file before is kept beside it (`bedrock-spend.jsonl.before-p1-correction-2026-09-28T141153.313Z`).
-    A conservative reckoning, not a bound: request bodies are not stored, so no byte count exists for them.
+    A conservative reckoning,
+  not a bound:
+  request bodies are not stored,
+  so no byte count exists for them.
 
-Mutation check (`p1-mutants.json`, `p1b-mutants.json`):
-the ladder never telling, ignoring a refused body, telling only after the self-ended rethrow,
-OpenRouter not reporting, Bedrock not ledgering an abandoned attempt or a call without usage,
+Mutation check (`p1-mutants.json`,
+`p1b-mutants.json`):
+the ladder never telling,
+ignoring a refused body,
+telling only after the self-ended rethrow,
+OpenRouter not reporting,
+Bedrock not ledgering an abandoned attempt or a call without usage,
 the bound's prompt at a quarter of the bytes or its completion at zero,
 the ledger not summing the reckoned share or accepting any mark,
-and dryness at zero are each caught; the control survives.
+and dryness at zero are each caught;
+the control survives.
 The first run's verdict on the no-usage mutant was a false survival (see the mutation harness in the process mistakes).
-Cache: the margin moves a Gemma call to OpenRouter sooner as Bedrock nears its credit, the class P9 accounted;
-rides inside all six versions with an account in each; same slice-cache check, same result.
+Cache:
+the margin moves a Gemma call to OpenRouter sooner as Bedrock nears its credit,
+the class P9 accounted;
+rides inside all six versions with an account in each;
+same slice-cache check,
+same result.
 
 ### P2: the recovery round never re-asks a seat that answered unreadably before the last round
 
-Status: fixed in `005692e11` (guard `3549b74be`; mutation checked with a control).
-A seat that answered unreadably now waits for the nudged recovery round, which re-asks every seat still unreadable
-whichever round it came in; the retry rounds no longer re-send it the same prompt,
+Status:
+fixed in `005692e11` (guard `3549b74be`;
+mutation checked with a control).
+A seat that answered unreadably now waits for the nudged recovery round,
+which re-asks every seat still unreadable
+whichever round it came in;
+the retry rounds no longer re-send it the same prompt,
 which the prompt-uniqueness client answers from memory or disk with the same bytes.
-Two older cases scripted unreadable answers that cleared on a same-prompt re-ask, which no run can do,
+Two older cases scripted unreadable answers that cleared on a same-prompt re-ask,
+which no run can do,
 and now script the retry rounds' weather as transport failures.
 Rides inside all six cache versions.
 `stage-quorum.ts` overwrites the unreadable list each round and returns the seat to `pending`,
@@ -2071,257 +3168,449 @@ TianqiChen66620 slice 15's gate settled on neither 2 to 2 with one such voice lo
 
 ### P3: seats the phase knows are unreachable fill the round-0 window
 
-Status: fixed with guard `9466786dc`, fix `84a6caa02`.
+Status:
+fixed with guard `9466786dc`,
+fix `84a6caa02`.
 Every retry round 1 had one or two refused seats in round 0.
 The first reading of this entry said rounds then ran to the 360 s deadline;
-that was wrong: no round in TianqiChen66619 or TianqiChen66620 ran past 181 s.
-The real cost: a seat refused in the same millisecond spent the round's spare place,
+that was wrong:
+no round in TianqiChen66619 or TianqiChen66620 ran past 181 s.
+The real cost:
+a seat refused in the same millisecond spent the round's spare place,
 so the round waited for its slowest reachable voice with no grace or fell through to a retry round.
-TianqiChen66620 closed 269 of 421 rounds a seat short with no grace, 2,852 s of the 4,575 s its rounds took.
+TianqiChen66620 closed 269 of 421 rounds a seat short with no grace,
+2,852 s of the 4,575 s its rounds took.
 A refused window seat now hands its place to the next pending seat within the round
-(`runGatherRound` `reserve`), and the seat stays on the bench as the 2026-09-09 rule has it.
+(`runGatherRound` `reserve`),
+and the seat stays on the bench as the 2026-09-09 rule has it.
 
 ### P4: the recall benchmark still seats gpt-oss-120b
 
-Status: fixed 2026-09-28, each part guarded red first and mutation-checked.
+Status:
+fixed 2026-09-28,
+each part guarded red first and mutation-checked.
 The owner's cull of 2026-09-24 held on every derived bench,
 and nothing stopped a path that named the seat itself.
 
-- Recall judges: `460ceb8f4` (guard `b522c3e83`).
+- Recall judges:
+  `460ceb8f4` (guard `b522c3e83`).
     `DEFAULT_JUDGE_MODEL_IDS` listed three judges by hand and still named `hf:openai/gpt-oss-120b`.
     The benchmark now takes its judges from its caller (`judgeModelIds` is required),
-    and the recall benchmark passes `RECALL_JUDGE_MODEL_IDS`, the wide seats the run derives,
+    and the recall benchmark passes `RECALL_JUDGE_MODEL_IDS`,
+  the wide seats the run derives,
     which every seating rule and the cull reach.
-- The run client: `9fd80fb28` (guard `6e935644b`).
+- The run client:
+  `9fd80fb28` (guard `6e935644b`).
     `refusingCulledSeats` (`culled-seat-guard.ts`) wraps the routed client
     and throws the `NoProviderForModelError` a round reads as an unreachable seat,
-    before any provider is asked, on `chatText`, `chatJson` and `decide` alike.
-    Catalog reach is unchanged: the card stays for the catalogs and fixtures, and `reachOf` reports what serves a model,
+    before any provider is asked,
+  on `chatText`,
+  `chatJson` and `decide` alike.
+    Catalog reach is unchanged:
+  the card stays for the catalogs and fixtures,
+  and `reachOf` reports what serves a model,
     while the refusal says the owner does not seat it.
 
-Mutation check (`p4-mutants.json`): the guard never refusing, the run client unguarded,
-and the recall bench naming the culled model are each caught; the control survives.
-No cache moves: no derived bench seated the culled model since the cull, so no cached answer came from it.
+Mutation check (`p4-mutants.json`):
+the guard never refusing,
+the run client unguarded,
+and the recall bench naming the culled model are each caught;
+the control survives.
+No cache moves:
+no derived bench seated the culled model since the cull,
+so no cached answer came from it.
 
 ### P5: the archive-block-review guard rejects a shape its prompt never forbids
 
-Status: fixed in `8e994bc77` (guard `930096761`; mutation checked with a control).
+Status:
+fixed in `8e994bc77` (guard `930096761`;
+mutation checked with a control).
 All 11 guard rejections in five runs are editorial-context with a non-empty `sourceQuote`.
 The prompt asks for "exact source support or empty" and never ties the empty value to that disposition,
-and nothing reads an editorial-context quote: the stage checks the block itself.
+and nothing reads an editorial-context quote:
+the stage checks the block itself.
 `dc51b02d9` fixed the same slip for `revise` on 2026-09-09 and left this one,
 the guard-stricter-than-its-prompt family.
-Only source-supported retention now needs an anchor. Archive-block reviews are not cached, so no version moved.
+Only source-supported retention now needs an anchor.
+Archive-block reviews are not cached,
+so no version moved.
 
 ### P6: the seat tally cannot see an unusable reply
 
-Status: fixed in `27bc9f951` (guard `a30b43761`; mutation checked with a control).
+Status:
+fixed in `27bc9f951` (guard `a30b43761`;
+mutation checked with a control).
 `SEAT inception/mercury-2.5 asked=1007 usable=1007 unusable=0` beside 40 schema losses.
-The tally sat inside `promptUniqueClient`, which buys every JSON reply through `chatText` and reads it itself,
+The tally sat inside `promptUniqueClient`,
+which buys every JSON reply through `chatText` and reads it itself,
 so the tally saw text arrive and counted it usable.
 It now wraps the client callers hold and settles each JSON call as the outcome its caller gets:
-the nudged re-ask elsewhere (P9) is inside that one call, and a replayed payload counts as an ask,
+the nudged re-ask elsewhere (P9) is inside that one call,
+and a replayed payload counts as an ask,
 since its answer is the run's evidence all the same.
 The red guard read `asked 2, usable 1, unusable 0` for one unreadable answer:
-the second ask was the nudged re-ask, which the second provider refused, counted as a seat that threw.
-Mutation check (`p6-mutants.json`): the tally back inside the wrapper,
-and a tally reading every JSON outcome as usable, are each caught.
-No cache moves: the tally reads outcomes and writes nothing a stage reads.
+the second ask was the nudged re-ask,
+which the second provider refused,
+counted as a seat that threw.
+Mutation check (`p6-mutants.json`):
+the tally back inside the wrapper,
+and a tally reading every JSON outcome as usable,
+are each caught.
+No cache moves:
+the tally reads outcomes and writes nothing a stage reads.
 
 ### P7: abandoned-spend estimates mix units
 
-Status: fixed 2026-09-28.
-`7a6635976` (guard `bd8e8ef86`): overrun and degenerate endings carry `rawChars`,
-the raw wire characters delivered, which `deliveredCharsOf` now returns for every error;
-they returned one channel's decoded count, about a hundredth of it (`completion=5` for 1,633 content characters).
+Status:
+fixed 2026-09-28.
+`7a6635976` (guard `bd8e8ef86`):
+overrun and degenerate endings carry `rawChars`,
+the raw wire characters delivered,
+which `deliveredCharsOf` now returns for every error;
+they returned one channel's decoded count,
+about a hundredth of it (`completion=5` for 1,633 content characters).
 The reckoning never passes the `max_tokens` the call sent.
-Card ratios re-measured (`1f5f5e47c`, kept to pass-run logs in `63455c32b`, `p7-openrouter-measure-runs.mjs`):
+Card ratios re-measured (`1f5f5e47c`,
+kept to pass-run logs in `63455c32b`,
+`p7-openrouter-measure-runs.mjs`):
 mercury carried 137 where it measures 0.9 over 37,120 streams (it bills far more tokens than it streams);
-deepseek-v4.1-flash and mimo carried none (228 and 93); kimi 140, minimax 130, glm-5.3-flash 302,
-gemma-4-26b-a4b-it 292, gpt-oss-120b 286; the unmeasured default is their median, 184.
-The OpenRouter meter stays authoritative; the run spend meter now reads truer,
+deepseek-v4.1-flash and mimo carried none (228 and 93);
+kimi 140,
+minimax 130,
+glm-5.3-flash 302,
+gemma-4-26b-a4b-it 292,
+gpt-oss-120b 286;
+the unmeasured default is their median, 184.
+The OpenRouter meter stays authoritative;
+the run spend meter now reads truer,
 so the per-run spend ceiling (`corpus-run/pass-stop-before-next.ts`) can stop new entries sooner.
-Mutation check (`p1-mutants.json`, `p1b-mutants.json`): a channel count in place of the raw one on either error,
-the drain dropping the raw count, and an uncapped reckoning are each caught.
-No cache moves: nothing a cached answer depends on reads the reckoning.
+Mutation check (`p1-mutants.json`,
+`p1b-mutants.json`):
+a channel count in place of the raw one on either error,
+the drain dropping the raw count,
+and an uncapped reckoning are each caught.
+No cache moves:
+nothing a cached answer depends on reads the reckoning.
 
 ### P8: a complete JSON value followed by more text is lost
 
-Status: fixed in `cac097368` (guard `e86cd9f44`; mutation checked with a control).
-36 in five runs, 760 across all logs, mostly mercury.
-The stored TianqiChen666 replies of that shape trail a hyphen line, a sentence or a stray fence,
+Status:
+fixed in `cac097368` (guard `e86cd9f44`;
+mutation checked with a control).
+36 in five runs,
+760 across all logs,
+mostly mercury.
+The stored TianqiChen666 replies of that shape trail a hyphen line,
+a sentence or a stray fence,
 every one with the stop reason.
-`parseAnswerJson` now reads the whole answer, then past a false start, then the value the answer opens with.
-Replayed over 587,102 stored replies: 919 recovered and none read differently.
+`parseAnswerJson` now reads the whole answer,
+then past a false start,
+then the value the answer opens with.
+Replayed over 587,102 stored replies:
+919 recovered and none read differently.
 A first ordering put the leading value before the false start and read 18 replies differently:
-each held two whole objects, the first empty or missing a field the second carries,
+each held two whole objects,
+the first empty or missing a field the second carries,
 so the later object is the answer and the false start stays first.
 Rides inside all six cache versions.
 
 ### P9: the router's cross-provider re-ask never runs in production
 
-Status: fixed in `7011d72cc` (guard `4d16f4318`); owner ruled 2026-09-28, "Enable with the nudge" (`design-commitments.md`).
+Status:
+fixed in `7011d72cc` (guard `4d16f4318`);
+owner ruled 2026-09-28,
+"Enable with the nudge" (`design-commitments.md`).
 `promptUniqueClient` buys every JSON reply through `chatText` and reads it itself,
-so the router's `chatJson`, where the re-ask lived, was never called in a run.
+so the router's `chatJson`,
+where the re-ask lived,
+was never called in a run.
 The router now tags each reply with the provider that served it (`servedBy`)
 and serves a request carrying `otherThan` on another wet provider serving the model
-(`routedTextElsewhere`, reusing the second-opinion routing, the slot take and the budget-refusal handling),
+(`routedTextElsewhere`,
+reusing the second-opinion routing,
+the slot take and the budget-refusal handling),
 throwing `NoProviderForModelError` where none can take it.
 The uniqueness wrapper re-asks a reply that could not be used through its own claim path (`nudged-reask.ts`),
 so the nudged exchange is claimed and stored like the first and a resumed run replays both;
-the payload store replays the tag, and a payload stored before it existed is not re-asked.
-The first answer stands when the re-ask cannot happen or fails, and the nudged prompt's claim is released.
-Decided for quality, recorded under the commitment: the re-ask carries `CROSS_PROVIDER_NUDGE`,
-worded apart from the recovery round's `RECOVERY_NUDGE`, since a shared wording would make the round's prompt
-this re-ask's digest, answered from the claims with the reply that already failed;
-and it fires on a refusal-shaped reply as on a schema mismatch, as the router's never-run re-ask did,
+the payload store replays the tag,
+and a payload stored before it existed is not re-asked.
+The first answer stands when the re-ask cannot happen or fails,
+and the nudged prompt's claim is released.
+Decided for quality,
+recorded under the commitment:
+the re-ask carries `CROSS_PROVIDER_NUDGE`,
+worded apart from the recovery round's `RECOVERY_NUDGE`,
+since a shared wording would make the round's prompt
+this re-ask's digest,
+answered from the claims with the reply that already failed;
+and it fires on a refusal-shaped reply as on a schema mismatch,
+as the router's never-run re-ask did,
 with a nudge neutral on why the reply could not be used.
 `NoProviderForModelError` moved to its own module so the re-ask can raise it without an import cycle.
-Reach (`p9-reach.mjs`, every log under the agent directory, unit-test logs included):
-157,945 unusable-reply lines, 122,593 on models another provider serves today;
-the TianqiChen666 logs hold 134, so the re-ask adds at most a few exchanges per run.
-Mutation check (`p9-mutants.json`): the re-ask bypassing the claims, never re-asking, sharing the recovery nudge,
-dropping the hint, the router ignoring the hint or dropping the tag, and the store dropping the tag are each caught;
+Reach (`p9-reach.mjs`,
+every log under the agent directory,
+unit-test logs included):
+157,945 unusable-reply lines,
+122,593 on models another provider serves today;
+the TianqiChen666 logs hold 134,
+so the re-ask adds at most a few exchanges per run.
+Mutation check (`p9-mutants.json`):
+the re-ask bypassing the claims,
+never re-asking,
+sharing the recovery nudge,
+dropping the hint,
+the router ignoring the hint or dropping the tag,
+and the store dropping the tag are each caught;
 the comment-wording control survives.
-Cache: rides inside all six versions, with an account in each.
+Cache:
+rides inside all six versions,
+with an account in each.
 
 ### P10: the deepseek-v4.1-flash card is stale against its own measurement rule
 
-Status: fixed 2026-09-28: the card, the nudge and the census, each guarded and mutation-checked.
+Status:
+fixed 2026-09-28:
+the card,
+the nudge and the census,
+each guarded and mutation-checked.
 The card named the pooled 99th percentile as "no completed-call distribution of its own yet" after 67,353 calls,
 and the recovery round told a model whose reply the cap cut that its shape was wrong.
 
-- The cap: `4943d74d5`.
-    Re-read over pass-run logs alone (`p10-cap-measure.mjs`, `p10-cap-cuts.mjs`), 499,820 completed calls.
-    By the rule (the highest provider p99 with at least 100 calls, floored at the pooled 90th),
-    deepseek-v4.1-flash reads 13,082 on Hyper, the cap itself: 75 of 4,062 Hyper calls ran to it, 74 with no content.
-    OpenRouter reads 7,531 over 63,291; of its 237 calls at the cap, the 70 that pair with a stream line are
+- The cap:
+  `4943d74d5`.
+    Re-read over pass-run logs alone (`p10-cap-measure.mjs`,
+  `p10-cap-cuts.mjs`),
+  499,820 completed calls.
+    By the rule (the highest provider p99 with at least 100 calls,
+  floored at the pooled 90th),
+    deepseek-v4.1-flash reads 13,082 on Hyper,
+  the cap itself:
+  75 of 4,062 Hyper calls ran to it,
+  74 with no content.
+    OpenRouter reads 7,531 over 63,291;
+  of its 237 calls at the cap,
+  the 70 that pair with a stream line are
     69 runaways and one answer.
-    The card now carries `13_082` as its own number; the runtime value does not move.
-    Mimo keeps the pool with its 78 calls named, under the 100 the rule reads.
+    The card now carries `13_082` as its own number;
+  the runtime value does not move.
+    Mimo keeps the pool with its 78 calls named,
+  under the 100 the rule reads.
     Every other card's cap comment now says it is the 2026-09-09 reading.
-- Why the caps stand (`completion-cap.ts`, re-read paragraph).
-    Every call since 2026-09-09 carries its cap, so a re-read can confirm or lower a cap and never shows a longer answer.
+- Why the caps stand (`completion-cap.ts`,
+  re-read paragraph).
+    Every call since 2026-09-09 carries its cap,
+  so a re-read can confirm or lower a cap and never shows a longer answer.
     Seven seat and provider pairs run to their cap on more than one percent of calls since then,
-    against the table's "under one percent", and where a cut call pairs with its stream nearly every one streamed no content.
-    The re-read's pool (p90 2,607, p99 10,822) is mostly capped calls, nearly a third of them Bedrock Gemma,
+    against the table's "under one percent",
+  and where a cut call pairs with its stream nearly every one streamed no content.
+    The re-read's pool (p90 2,607,
+  p99 10,822) is mostly capped calls,
+  nearly a third of them Bedrock Gemma,
     so the pooled constants stay.
-    The re-read's scope differs from the 2026-09-09 table's (pass-run logs only, where the table read every log),
+    The re-read's scope differs from the 2026-09-09 table's (pass-run logs only,
+  where the table read every log),
     which is why Kimi-K3 on Hyper reads 8,496 against the table's 10,921 and minimax-m3 on Hyper 12,207
-    (pre-cap calls) against 10,822; neither is a defect, and no cap moves on them.
-- The nudge: `ce0ef7b51` (guard `0be7b4437`), decided for quality (`design-commitments.md`).
+    (pre-cap calls) against 10,822;
+  neither is a defect,
+  and no cap moves on them.
+- The nudge:
+  `ce0ef7b51` (guard `0be7b4437`),
+  decided for quality (`design-commitments.md`).
     A lost voice that answered carries its cause (`cut-short` for `truncated-completion` or `truncated-thinking`,
-    `off-shape` otherwise), and the recovery round asks each cause with its own wording (`recovery-nudge.ts`),
+    `off-shape` otherwise),
+  and the recovery round asks each cause with its own wording (`recovery-nudge.ts`),
     both groups in one window.
-    The off-shape wording is unchanged, so a stored payload for it still replays.
+    The off-shape wording is unchanged,
+  so a stored payload for it still replays.
     The red guard's probe read both seats re-asked and heard with the same nudge.
-    The cross-provider re-ask keeps its neutral wording, which is true of a cut reply too.
+    The cross-provider re-ask keeps its neutral wording,
+  which is true of a cut reply too.
 
-Mutation check (`p10-mutants.json`): one wording for both causes, a cause that never reads cut,
-one blind to cut thinking, the stage call dropping the cause, the round ignoring it or dropping the cut group,
-the deepseek card back on the placeholder, and the all-dry refusal without its split sentence are each caught;
+Mutation check (`p10-mutants.json`):
+one wording for both causes,
+a cause that never reads cut,
+one blind to cut thinking,
+the stage call dropping the cause,
+the round ignoring it or dropping the cut group,
+the deepseek card back on the placeholder,
+and the all-dry refusal without its split sentence are each caught;
 the control survives.
-Cache: the cut-short nudge changes what such a seat is asked, so it rides inside all six versions
-with an account in each (`dd2d454ab`); same slice-cache check, same result.
-The census: `89f642614`, since a unit test cannot read the logs and a dated test would be a time bomb.
+Cache:
+the cut-short nudge changes what such a seat is asked,
+so it rides inside all six versions
+with an account in each (`dd2d454ab`);
+same slice-cache check,
+same result.
+The census:
+`89f642614`,
+since a unit test cannot read the logs and a dated test would be a time bomb.
 `mise run cap-census -- <logs or directories>` re-reads the rule over pass-run logs per seat and provider,
 counts the capped calls that ran to the cap by whether their stream carried content,
-and flags a card on the pooled 99th that the rule can now read, a rule reading off the card,
+and flags a card on the pooled 99th that the rule can now read,
+a rule reading off the card,
 and cuts over one percent on a provider with enough calls to say.
-Its first run matched the scratch measurement (499,820 calls; deepseek on Hyper 75 of 4,062 at the cap, 74 with no content),
-and showed two flag defects before commit: the placeholder flag fired on the pooled 90th,
-which is a measured floor, and the cut flag fired on Kimi-K3's 20 OpenRouter calls; both fixed with cases.
-Setup step 6 of the corpus-pass runbook runs it, and its filter was run on the real output.
-Mutation check (`p14-mutants.json`): a wide pairing window, pairing any stream outcome, keeping reckoned lines,
-the rule ignoring the call minimum or the floor, cuts counted from before the caps,
-the placeholder read off any pool, and the cut flag on a thin sample are each caught; the control survives.
+Its first run matched the scratch measurement (499,820 calls;
+deepseek on Hyper 75 of 4,062 at the cap,
+74 with no content),
+and showed two flag defects before commit:
+the placeholder flag fired on the pooled 90th,
+which is a measured floor,
+and the cut flag fired on Kimi-K3's 20 OpenRouter calls;
+both fixed with cases.
+Setup step 6 of the corpus-pass runbook runs it,
+and its filter was run on the real output.
+Mutation check (`p14-mutants.json`):
+a wide pairing window,
+pairing any stream outcome,
+keeping reckoned lines,
+the rule ignoring the call minimum or the floor,
+cuts counted from before the caps,
+the placeholder read off any pool,
+and the cut flag on a thin sample are each caught;
+the control survives.
 
 ### P11: owner-rule enforcement relies on absence rather than a guard
 
-Status: fixed in `0baa4cb41`; green on arrival, since every body already kept the rules, so the mutation check is its proof.
+Status:
+fixed in `0baa4cb41`;
+green on arrival,
+since every body already kept the rules,
+so the mutation check is its proof.
 Qwen3.8-27B and glm-5.3 stayed off OpenRouter only because their cards lacked an OpenRouter block;
-the no-thinking, no-budget, always-`max_tokens` rules were read only on the Hyper and OpenRouter bodies.
-`owner-body-rules.unit.test.ts` reads every request body all four clients send, text and schema calls,
-for `max_tokens` present and no `thinking`, `budget_tokens`, `reasoning_effort`, `reasoning` or `include_reasoning` key at any depth,
+the no-thinking,
+no-budget,
+always-`max_tokens` rules were read only on the Hyper and OpenRouter bodies.
+`owner-body-rules.unit.test.ts` reads every request body all four clients send,
+text and schema calls,
+for `max_tokens` present and no `thinking`,
+`budget_tokens`,
+`reasoning_effort`,
+`reasoning` or `include_reasoning` key at any depth,
 and checks that every seat in `OPENROUTER_DROPPED_SEATS` has no OpenRouter block and no OpenRouter reach.
 `reachOf` and the OpenRouter picture check now read `OPENROUTER_DROPPED_SEATS` too.
-Mutation check (`p4-mutants.json`): thinking on the Synthetic body, a budget on the Hyper body,
-a reasoning effort on the OpenRouter body, and no `max_tokens` on the Bedrock body are each caught.
+Mutation check (`p4-mutants.json`):
+thinking on the Synthetic body,
+a budget on the Hyper body,
+a reasoning effort on the OpenRouter body,
+and no `max_tokens` on the Bedrock body are each caught.
 The mutant dropping the new reach condition survives by construction:
-no card carries both an OpenRouter block and a drop, and the card case fails first if one ever does.
-No cache moves: no dropped seat had OpenRouter reach, so no route changed.
+no card carries both an OpenRouter block and a drop,
+and the card case fails first if one ever does.
+No cache moves:
+no dropped seat had OpenRouter reach,
+so no route changed.
 
 ### P12: log lines that cannot be attributed
 
-Status: fixed 2026-09-28, each code part guarded red first and mutation-checked; A11 is its own entry.
+Status:
+fixed 2026-09-28,
+each code part guarded red first and mutation-checked;
+A11 is its own entry.
 
-- Retry lines never named the model: `dc156524b` (guard `db3dae27d`).
+- Retry lines never named the model:
+  `dc156524b` (guard `db3dae27d`).
     The retry line and the stated-wait line open with the exchange label.
-- "ms to quorum" printed when quorum never stood: `6d27dab11` (guard `f03900948`).
+- "ms to quorum" printed when quorum never stood:
+  `6d27dab11` (guard `f03900948`).
     Such a round now says `no quorum (heard of needed needed), every ask settled`,
-    since its "quorum" mark was only when the last ask settled, and the grace after it was nothing.
-- `EveryProviderDryError` omitted Bedrock: `dc6bd8321` (guard `0857bf052`).
-    It lists Bedrock among the providers out of budget, says its credit is never topped up,
+    since its "quorum" mark was only when the last ask settled,
+  and the grace after it was nothing.
+- `EveryProviderDryError` omitted Bedrock:
+  `dc6bd8321` (guard `0857bf052`).
+    It lists Bedrock among the providers out of budget,
+  says its credit is never topped up,
     and cites the meters the router decided on where it said "no reading cited".
-    The first guard checked the whole message for "Bedrock", which the refill sentence also carries,
+    The first guard checked the whole message for "Bedrock",
+  which the refill sentence also carries,
     and the mutant dropping Bedrock from the list survived (`p6-mutants.json`);
     `5cf2889ea` reads every provider in the clause before "Nothing further can be bought",
     and `p12b-mutants.json` catches that mutant and one dropping Hyper.
-- `run-config.ts` said Qwen is withheld whenever Synthetic is dry: `ab923b266`, a comment.
-    `run-seats.ts` withholds it while Hyper would serve it, Synthetic dry and Hyper wet;
+- `run-config.ts` said Qwen is withheld whenever Synthetic is dry:
+  `ab923b266`,
+  a comment.
+    `run-seats.ts` withholds it while Hyper would serve it,
+  Synthetic dry and Hyper wet;
     with both dry no provider serves it and a round reads it as unreachable.
 
-Mutation check (`p6-mutants.json`, `p12b-mutants.json`): a round reading as quorate whatever it heard,
-the list without Bedrock or Hyper, the refill sentence without Bedrock, the refusal without its reading,
-and the reading with dry and wet swapped are each caught; the controls survive.
-No cache moves: log lines and a refusal message only.
+Mutation check (`p6-mutants.json`,
+`p12b-mutants.json`):
+a round reading as quorate whatever it heard,
+the list without Bedrock or Hyper,
+the refill sentence without Bedrock,
+the refusal without its reading,
+and the reading with dry and wet swapped are each caught;
+the controls survive.
+No cache moves:
+log lines and a refusal message only.
 
 ### P13: low items
 
-Status: closed 2026-09-28; five sub-items fixed, one refuted with evidence.
+Status:
+closed 2026-09-28;
+five sub-items fixed,
+one refuted with evidence.
 
 #### Retry backoff and caller abort
 
-Fixed in `169b51e8a` (guard `b0cd02da1`; mutation checked with a control).
+Fixed in `169b51e8a` (guard `b0cd02da1`;
+mutation checked with a control).
 The ladder slept its backoff on a timer no signal could end and read the abort after it,
 so an aborted or timed-out call held its seat for up to the ladder's 16 s reach.
 The sleep now takes the exchange signal and returns at once on its abort.
-While there, `9c10b0a6c` corrected the ladder's reach wording:
-`longestBackoffMs` returns `baseMs * 2 ** limit` (16 s), which its TSDoc, call site, test policy
+While there,
+`9c10b0a6c` corrected the ladder's reach wording:
+`longestBackoffMs` returns `baseMs * 2 ** limit` (16 s),
+which its TSDoc,
+call site,
+test policy
 and `31e67a100` all called the last retry's widest window (8 s).
-The code value is what the suite pins; 277 of 57,803 logged backoffs slept a stated wait between the two,
-and with no model on retry lines (P12) their outcome is unmeasured, so the wording moved and the behavior stayed.
+The code value is what the suite pins;
+277 of 57,803 logged backoffs slept a stated wait between the two,
+and with no model on retry lines (P12) their outcome is unmeasured,
+so the wording moved and the behavior stayed.
 
 #### Payment refusal clearing on a downward meter move
 
-Refuted, recorded at the rule in `de673c843`.
-Of 230 payment refusals in the run logs, 198 came from OpenRouter at a wet meter (0.01 to 1.94 USD),
+Refuted,
+recorded at the rule in `de673c843`.
+Of 230 payment refusals in the run logs,
+198 came from OpenRouter at a wet meter (0.01 to 1.94 USD),
 refusing what the balance leaves after in-flight reservations:
-8 bodies name `in_flight_budget_exhausted`, the rest ask for up to 131,072 tokens and are told 1,844 to 84,651 are affordable.
+8 bodies name `in_flight_budget_exhausted`,
+the rest ask for up to 131,072 tokens and are told 1,844 to 84,651 are affordable.
 A settling call lowers the balance while freeing its larger reservation,
 so clearing only on a rise would hold OpenRouter dry for the rest of a run;
 the rule's measured cost is 28 refusals after a downward move.
 
 #### Bedrock stream bound across the retry ladder
 
-Fixed in `b1a4f4b9e` (guard `684df9e91`, with the `streamBoundMsOverride` test seam; mutation checked with a control).
+Fixed in `b1a4f4b9e` (guard `684df9e91`,
+with the `streamBoundMsOverride` test seam;
+mutation checked with a control).
 The bound is a one-stream measurement (class 148) but was armed once around `exchangeWithRetry`.
-It now wraps each attempt inside the transport, and the ladder rethrows a bound cut, found through the cause chain,
+It now wraps each attempt inside the transport,
+and the ladder rethrows a bound cut,
+found through the cause chain,
 so the router still holds Bedrock out for the model.
-Latent: all five run cuts ran a single attempt to 60 s.
+Latent:
+all five run cuts ran a single attempt to 60 s.
 
 #### Card prices against the endpoint bought
 
-Fixed in `7ceffe055`, with no guard (no offline oracle holds the live listing).
+Fixed in `7ceffe055`,
+with no guard (no offline oracle holds the live listing).
 GLM-5.3-Flash carried DeepInfra's 0.075 and 0.25 while all 253 of its calls on the three latest TianqiChen666 runs went to Wafer,
 listed 2026-09-28 at 0.9 and 0.5;
 DeepSeek V4.1 Flash carried the catalog's 0.3 and 1.2 while 812 of 817 went to Morph,
 listed at 0.12 and 0.468 and charged at 0.662 to 0.674 of that.
-Only the abandoned-spend estimate reads these; `configuration.md` now says a preferred-endpoint card carries that endpoint's price.
+Only the abandoned-spend estimate reads these;
+`configuration.md` now says a preferred-endpoint card carries that endpoint's price.
 
 #### Decision seats past reach
 
-Fixed in `a991ef1e1` (guard `cabfa82f4`; mutation checked with a control, five mutants caught):
+Fixed in `a991ef1e1` (guard `cabfa82f4`;
+mutation checked with a control,
+five mutants caught):
 decision-seat structural losses marked reachable,
 and decision-seat prompts reaching 30,203 of a 32,000-token context
 after `ce824d933` added the house rules with no size check.
@@ -2332,171 +3621,321 @@ never a decision on a truncated state.
 The same probes measured the house rules at 4,085 tokens (17,493 characters),
 Han text at one token a character and English at 4.2 characters a token;
 4 of the 13,878 Jev prompts in the run logs would now pass the context.
-Not a launch gate: the largest TianqiChen666 Jev prompt was 4,779 tokens, from a build before `ce824d933`.
-The endpoint is the tokenizer, so nothing estimates a state's size:
-that refusal, a stage with no typed question and a client with no decisions transport
-now read as out of reach, so the gather sizes its quorum without the seat and never re-asks it
+Not a launch gate:
+the largest TianqiChen666 Jev prompt was 4,779 tokens,
+from a build before `ce824d933`.
+The endpoint is the tokenizer,
+so nothing estimates a state's size:
+that refusal,
+a stage with no typed question and a client with no decisions transport
+now read as out of reach,
+so the gather sizes its quorum without the seat and never re-asks it
 (the 2026-09-09 short-bench rule and the owner's "Count as out of reach").
-Rides inside the translate (15), repair (33) and refine (5) cache versions with written accounts.
+Rides inside the translate (15),
+repair (33) and refine (5) cache versions with written accounts.
 
 ### P14: the spend report reads reckoned lines as measured calls
 
-Status: fixed in `44b392cb1` (guard `be030df79`; mutation checked with a control), found 2026-09-28 while scoping the P10 census.
-`spend-read.ts` never reads the `estimated=` field, so `spend-report` counts every reckoned `SPEND` line
-(an abandoned OpenRouter attempt, and since P1 a Bedrock attempt at its bound) as a call the provider reported,
+Status:
+fixed in `44b392cb1` (guard `be030df79`;
+mutation checked with a control),
+found 2026-09-28 while scoping the P10 census.
+`spend-read.ts` never reads the `estimated=` field,
+so `spend-report` counts every reckoned `SPEND` line
+(an abandoned OpenRouter attempt,
+and since P1 a Bedrock attempt at its bound) as a call the provider reported,
 with the reckoned tokens and cost summed in.
 2,178 such lines sit in 138 top-level logs under the agent directory.
-The writer changed under P1 and P7; the reader did not, though the writer's own TSDoc said the mark was there
+The writer changed under P1 and P7;
+the reader did not,
+though the writer's own TSDoc said the mark was there
 "so a reader can total such lines beside the others or apart".
 `readSpendLine` now reads the mark into `reckoning` (an unknown mark is a damaged record),
-the tally counts `reckonedCalls` per seat, and `spend-report` names them per seat and in a run line;
+the tally counts `reckonedCalls` per seat,
+and `spend-report` names them per seat and in a run line;
 on shihai4h2 two of GLM-5.3-Flash's 207 calls were reckoned.
-The marks live once in `spend-line.ts` (`SPEND_RECKONINGS`, `isSpendReckoning`), which the Bedrock ledger reads too,
+The marks live once in `spend-line.ts` (`SPEND_RECKONINGS`,
+`isSpendReckoning`),
+which the Bedrock ledger reads too,
 so a mark added to the writer cannot go unread by either.
-The red guard's probe read the reckoned line with no mark, the seat with no reckoned count,
+The red guard's probe read the reckoned line with no mark,
+the seat with no reckoned count,
 and a mark the package never writes as a clean record.
-Mutation check (`p14-mutants.json`): the reader ignoring the mark or accepting an unknown one,
-and the tally ignoring it, are each caught.
-The shared list missing a mark survived, since every case iterated the list or used one mark
+Mutation check (`p14-mutants.json`):
+the reader ignoring the mark or accepting an unknown one,
+and the tally ignoring it,
+are each caught.
+The shared list missing a mark survived,
+since every case iterated the list or used one mark
 and only the type check would have refused it;
-`6b683e98e` lists the marks the writers pass apart from the list, and the rerun (`p14b-mutants.json`) catches it.
-No cache moves: nothing a stage reads depends on the spend reader.
+`6b683e98e` lists the marks the writers pass apart from the list,
+and the rerun (`p14b-mutants.json`) catches it.
+No cache moves:
+nothing a stage reads depends on the spend reader.
 
 ## Repair lane
 
-Probes and notes: `~/temp/agent/audit-repair/notes.md`
-(`seat-probe.mjs`, `regress-check.mjs`, `dispute-standin.mjs`, `ride-along.mjs`, `preservation-vacuous.mjs`).
+Probes and notes:
+`~/temp/agent/audit-repair/notes.md`
+(`seat-probe.mjs`,
+`regress-check.mjs`,
+`dispute-standin.mjs`,
+`ride-along.mjs`,
+`preservation-vacuous.mjs`).
 
 ### L1: every checker verdict rests on two voices
 
-Status: fixed: the ballot floor with guard `8c4fc28e1`, fix `30e66051e`;
-the measured bench with guard `f037a3eae`, fix `f10de5198`.
-Qwen3.8-27B is seated as a checker with no provider serving it, so every reading is 2 of 3;
+Status:
+fixed:
+the ballot floor with guard `8c4fc28e1`,
+fix `30e66051e`;
+the measured bench with guard `f037a3eae`,
+fix `f10de5198`.
+Qwen3.8-27B is seated as a checker with no provider serving it,
+so every reading is 2 of 3;
 a 1 to 1 split is the most common outcome,
 `regressed` never fired though checkers voted `worse` 55 times,
-and XingZ6014 slice 87 resolved an issue on one ballot, which shipped.
-Measured on 2026-09-27: 759 of 8,788 recorded checker readings over 403 run directories resolved on one cast ballot,
+and XingZ6014 slice 87 resolved an issue on one ballot,
+which shipped.
+Measured on 2026-09-27:
+759 of 8,788 recorded checker readings over 403 run directories resolved on one cast ballot,
 756 inside a selected patch.
-The checker benchmark (85 settled fixes, and the same 85 issues against the unchanged archive text)
-scored the bench that dominant reading seated, `gemma-4-26b-a4b-it` and `google.gemma-4-e2b` with Qwen3.8-27B unserved,
+The checker benchmark (85 settled fixes,
+and the same 85 issues against the unchanged archive text)
+scored the bench that dominant reading seated,
+`gemma-4-26b-a4b-it` and `google.gemma-4-e2b` with Qwen3.8-27B unserved,
 at 35 fixes resolved and 9 unchanged texts wrongly resolved;
-the all-wet bench scored 82 and 4, and every bench of three from the measured order 81 or 82 and 2 to 5.
-Fixed two ways: one cast ballot resolves nothing (`MIN_RESOLUTION_BALLOTS`,
-`SLICE_CACHE_VERSION` 32, `REFINE_CACHE_VERSION` 5),
+the all-wet bench scored 82 and 4,
+and every bench of three from the measured order 81 or 82 and 2 to 5.
+Fixed two ways:
+one cast ballot resolves nothing (`MIN_RESOLUTION_BALLOTS`,
+`SLICE_CACHE_VERSION` 32,
+`REFINE_CACHE_VERSION` 5),
 and the bench is the first three of `RUN_CHECKER_ORDER` a wet provider serves,
 padded with unserved ranked seats only while fewer than three are served.
-`regressed` keeps no floor: it only ranks a candidate and never ships text.
+`regressed` keeps no floor:
+it only ranks a candidate and never ships text.
 
 ### L2: the archive-dispute stand-in is the archive's own wording whenever the repair lost
 
-Status: fixed with guard `23cbbdaaa` (owner answer 2026-09-27, "No eligible standing");
-sixteenth addendum of `doc/decision/translation-repair-ineligible-standing.md`, read issue by issue
-(the stand-in stands only where the checkers confirmed every disputing issue resolved: 1 of 87 measured).
+Status:
+fixed with guard `23cbbdaaa` (owner answer 2026-09-27,
+"No eligible standing");
+sixteenth addendum of `doc/decision/translation-repair-ineligible-standing.md`,
+read issue by issue
+(the stand-in stands only where the checkers confirmed every disputing issue resolved:
+1 of 87 measured).
 60 of 87 disputed slices;
 the translate lane then keeps it as lane agreement and no contest runs;
 a withdrawn text also becomes a stand-in.
 
 ### L3: edits the checkers did not confirm ship inside a selected patch
 
-Status: fixed in `69c149471` (guards `737ebf9cc`, `84255894a`; mutation checked with a control, five mutants caught),
-on the owner's ruling of 2026-09-28, "Revert worse-voted, recheck" (`design-commitments.md`); measured 2026-09-28.
+Status:
+fixed in `69c149471` (guards `737ebf9cc`,
+`84255894a`;
+mutation checked with a control,
+five mutants caught),
+on the owner's ruling of 2026-09-28,
+"Revert worse-voted,
+recheck" (`design-commitments.md`);
+measured 2026-09-28.
 An edit whose issue the checkers did not confirm and at least one voted worse is stripped by envelope,
 and the reduced patch is proved once more (`repair-worse-strip.ts`):
-58 issues in 31 patches over every run, 15 in 6 of 51 on TianqiChen666,
-where the owner question had said 40, counting only ties and the worse majority.
+58 issues in 31 patches over every run,
+15 in 6 of 51 on TianqiChen666,
+where the owner question had said 40,
+counting only ties and the worse majority.
 Rides inside the repair cache version 33 with a written account.
 TianqiChen66616 slice 3 shipped "it left a trace of her turned to ash" (one ballot worse),
 the patch having won on one resolved minor omission.
-Across every run, 345 of 2,148 selected patches carried at least one edit whose issue the checkers did not confirm,
-691 such issues: 1 on a worse majority, 39 on a fixed and worse tie, 651 on not-fixed;
-on the TianqiChen666 runs 18 of 51, 49 issues, none on a worse majority.
+Across every run,
+345 of 2,148 selected patches carried at least one edit whose issue the checkers did not confirm,
+691 such issues:
+1 on a worse majority,
+39 on a fixed and worse tie,
+651 on not-fixed;
+on the TianqiChen666 runs 18 of 51,
+49 issues,
+none on a worse majority.
 A worse-majority floor would therefore catch almost nothing.
-No ruling covers it: the owner's L2 answer rules on the standing after a lost repair, not on a winning patch's contents,
+No ruling covers it:
+the owner's L2 answer rules on the standing after a lost repair,
+not on a winning patch's contents,
 and `design-commitments.md` commits that every stage changing shipped text is audited,
 which counts against reverting unconfirmed envelopes with no recheck of the composite.
 
 ### L4: the editor preservation gate can never reject anything
 
-Status: fixed in `b5338610e` and `c4a4fbb62` (guard `01d8bfd4c`); owner ruled 2026-09-28, "Markup atoms" (`design-commitments.md`);
+Status:
+fixed in `b5338610e` and `c4a4fbb62` (guard `01d8bfd4c`);
+owner ruled 2026-09-28,
+"Markup atoms" (`design-commitments.md`);
 measured 2026-09-28.
 Envelopes and licensed quotes are the same quotes;
 `residualTokens` is 0 on 536 of 540 regions.
-Replayed over 5,733 recorded repair regions, the structural atoms an edit changed are mostly gains an omission fix restores
-(footnote references, link destinations, tags);
+Replayed over 5,733 recorded repair regions,
+the structural atoms an edit changed are mostly gains an omission fix restores
+(footnote references,
+link destinations,
+tags);
 the losses mix addition removals (footnotes and inline code on `accuracy/addition` claims)
-with damage (a footnote lost on a quotation-mark claim, MDX braces lost on mistranslation claims).
-The damage this finding names (a gloss dropped, a handle and a name replaced, an attribution deleted)
-is prose inside the licensed quote, which no markup gate sees,
-so what the gate should protect inside a quote is a design choice, not a measurement.
+with damage (a footnote lost on a quotation-mark claim,
+MDX braces lost on mistranslation claims).
+The damage this finding names (a gloss dropped,
+a handle and a name replaced,
+an attribution deleted)
+is prose inside the licensed quote,
+which no markup gate sees,
+so what the gate should protect inside a quote is a design choice,
+not a measurement.
 
-`markup-atom-scan.ts` reads footnote references, link destinations, MDX expressions, inline code and tags
+`markup-atom-scan.ts` reads footnote references,
+link destinations,
+MDX expressions,
+inline code and tags
 (comments included) out of an envelope fragment in one left-to-right scan:
-a code span is consumed whole, a backslash escapes, parentheses and braces nest,
+a code span is consumed whole,
+a backslash escapes,
+parentheses and braces nest,
 and a construct the fragment edge cuts off yields no atom.
-Footnote labels follow GFM's call tokenizer, which refuses an empty label, a bracket, a space or a line ending.
-`markup-atom-preservation.ts` compares the atoms as a multiset, since an accuracy edit may move a reference to its clause;
-an atom inside a quote an addition claim made may go, claim by claim rather than issue by issue (`buildRemovableQuotes`).
-`applyPatchOperations` refuses a loss as `preservation-lost-markup (<kinds>)`, naming kinds, never atom text.
-The editor sheet's markup rule is built from `MARKUP_ATOM_SHEET_NAMES`, a Record over every kind,
-so the sheet names each kind the gate enforces; before, it named footnote markers only.
+Footnote labels follow GFM's call tokenizer,
+which refuses an empty label,
+a bracket,
+a space or a line ending.
+`markup-atom-preservation.ts` compares the atoms as a multiset,
+since an accuracy edit may move a reference to its clause;
+an atom inside a quote an addition claim made may go,
+claim by claim rather than issue by issue (`buildRemovableQuotes`).
+`applyPatchOperations` refuses a loss as `preservation-lost-markup (<kinds>)`,
+naming kinds,
+never atom text.
+The editor sheet's markup rule is built from `MARKUP_ATOM_SHEET_NAMES`,
+a Record over every kind,
+so the sheet names each kind the gate enforces;
+before,
+it named footnote markers only.
 One `ADDITION_CATEGORY` in `issue-taxonomy.ts` replaces the private copies in `reference-attest-claims.ts` and `archive-dispute.ts`.
 
-Reach, replayed with the built gate over the same 5,733 regions (`l4-replay.mjs`):
-24 refused, none of them by the typography restoration;
+Reach,
+replayed with the built gate over the same 5,733 regions (`l4-replay.mjs`):
+24 refused,
+none of them by the typography restoration;
 15 regions that lose an atom pass on an addition quote.
-Positive control: 39 regions lose an atom by plain set difference, 24 plus 15.
-The refused regions by shape (`l4-refused-markup.mjs`, markup only):
-footnote references lost on quotation-mark claims (hulicaijia s34, shihai4h s29), both withdrawn;
-an MDX expression dropped on a mistranslation claim (shihai4h s38, shipped);
-`DottedNumber` component props rewritten on number-format claims (XingZ60 s34, s39, s41; three shipped);
-inline code the source renders as a heading tag, converted to that tag (XingZ60 s87 and s88, two shipped);
-a spelling fix inside a `PhotoScroll` prop, whose captions are visible text (noname s9, shipped);
-and two footnote references swapped between clauses across two envelopes (yuki418330012 s6, shipped).
-An HTML comment translated or deleted on untranslated-text claims (XingZ60 s6, six shipped) is invisible to readers either way.
+Positive control:
+39 regions lose an atom by plain set difference,
+24 plus 15.
+The refused regions by shape (`l4-refused-markup.mjs`,
+markup only):
+footnote references lost on quotation-mark claims (hulicaijia s34,
+shihai4h s29),
+both withdrawn;
+an MDX expression dropped on a mistranslation claim (shihai4h s38,
+shipped);
+`DottedNumber` component props rewritten on number-format claims (XingZ60 s34,
+s39,
+s41;
+three shipped);
+inline code the source renders as a heading tag,
+converted to that tag (XingZ60 s87 and s88,
+two shipped);
+a spelling fix inside a `PhotoScroll` prop,
+whose captions are visible text (noname s9,
+shipped);
+and two footnote references swapped between clauses across two envelopes (yuki418330012 s6,
+shipped).
+An HTML comment translated or deleted on untranslated-text claims (XingZ60 s6,
+six shipped) is invisible to readers either way.
 One footnote lost on a link-convention and omission claim (shihai4h s33) was not selected;
-the package defines no rule text for `policy/link-convention`, so it stays unclassified.
+the package defines no rule text for `policy/link-convention`,
+so it stays unclassified.
 
-Corrected the same day: the first version of this entry called the `DottedNumber` rewrites the damage the ruling names,
+Corrected the same day:
+the first version of this entry called the `DottedNumber` rewrites the damage the ruling names,
 reading claim category and tag shape without the source (M31).
-Against the corpus source page (`l4-source-carried.mjs`, pin a41fc607),
+Against the corpus source page (`l4-source-carried.mjs`,
+pin a41fc607),
 the archive's `DottedNumber` props are not in the source on all six regions,
-and the edit's props are the source's own on five: those edits restore the original's props.
+and the edit's props are the source's own on five:
+those edits restore the original's props.
 Every refused atom was classified the same way:
-the lost footnote references, MDX expression and deleted comments are pure removals with nothing written in their place;
-the inline code, the `PhotoScroll` prop, the comments rewritten and the `DottedNumber` props are markup the translation authored
-(the source does not carry it), which the edit re-marked, into the source's own form where the source carries one;
-and the two swapped footnote references are the source's, each written by the other envelope's edit.
+the lost footnote references,
+MDX expression and deleted comments are pure removals with nothing written in their place;
+the inline code,
+the `PhotoScroll` prop,
+the comments rewritten and the `DottedNumber` props are markup the translation authored
+(the source does not carry it),
+which the edit re-marked,
+into the source's own form where the source carries one;
+and the two swapped footnote references are the source's,
+each written by the other envelope's edit.
 
-Mutation check (`l4-mutants.json`): the gate off, the addition licence ignored, every claim licensing removal,
-a set compare in place of the multiset, escapes ignored, a spaced footnote label accepted,
-and the sheet dropping a kind are each caught; the comment-wording control survives.
-Cache: rides inside repair version 33 with an account in `repair-slice-key.ts`.
+Mutation check (`l4-mutants.json`):
+the gate off,
+the addition licence ignored,
+every claim licensing removal,
+a set compare in place of the multiset,
+escapes ignored,
+a spaced footnote label accepted,
+and the sheet dropping a kind are each caught;
+the comment-wording control survives.
+Cache:
+rides inside repair version 33 with an account in `repair-slice-key.ts`.
 
-Refined for quality the same day, under the owner's standing directive (`design-commitments.md`):
-guard `9df194059` and `550603cfe`, fix `b07f8ac48`, sheet `ab84cbfd7`.
+Refined for quality the same day,
+under the owner's standing directive (`design-commitments.md`):
+guard `9df194059` and `550603cfe`,
+fix `b07f8ac48`,
+sheet `ab84cbfd7`.
 `markupDelta` (`markup-atom-preservation.ts`) keeps a loss unexcused unless an addition quote licenses it,
-or the translation authored the atom (the source does not carry it), it is an expression, inline code or tag,
-and the edit wrote, one for one, an atom of the same kind or one the source carries in its place.
+or the translation authored the atom (the source does not carry it),
+it is an expression,
+inline code or tag,
+and the edit wrote,
+one for one,
+an atom of the same kind or one the source carries in its place.
 Footnote references and link destinations (`MARKUP_IDENTIFIER_KINDS`) have no such excuse:
-the source often carries no footnote at all, so every archive reference would read as authored.
-`settleMarkupMoves` then reads the patch as a whole: an unexcused loss another standing edit writes has survived;
-the settlement is a fixed point, since refusing an edit withdraws what it wrote.
-It runs over the edits every per-edit gate passed (`apply-patch-markup.ts`), and refusals stay in input order.
-The gate reads the whole source document where the chunk has it (`documentSourceText`), else the chunk's source,
+the source often carries no footnote at all,
+so every archive reference would read as authored.
+`settleMarkupMoves` then reads the patch as a whole:
+an unexcused loss another standing edit writes has survived;
+the settlement is a fixed point,
+since refusing an edit withdraws what it wrote.
+It runs over the edits every per-edit gate passed (`apply-patch-markup.ts`),
+and refusals stay in input order.
+The gate reads the whole source document where the chunk has it (`documentSourceText`),
+else the chunk's source,
 and the replay below measured only the document case.
-`EditorStageResult.preservation` carries the gate, and the L3 strip re-applies it to the kept edits,
+`EditorStageResult.preservation` carries the gate,
+and the L3 strip re-applies it to the kept edits,
 since the kept side of a move whose writer was stripped has lost its atom.
-The editor sheet's markup rule states the refined rule, both lists built from `MARKUP_IDENTIFIER_KINDS`.
-Reach, replayed with the built functions per slice against the corpus page (`l4-replay-settled.mjs`):
-7 of 5,733 refused, the pure removals (three deleted comments, the three footnote references, the MDX expression),
-against 24 under the ruling's wording; 41 regions have no corpus source page and were read as all-authored.
-Mutation check (`l4b-mutants.json`): no re-marking excuse, identifiers re-markable, copied markup re-markable,
-same-kind pairing only, no move settlement, a single settlement round, the strip skipping the gate,
-the strip dropping its new refusals, and the sheet lists inverted are each caught; the comment-wording control survives.
+The editor sheet's markup rule states the refined rule,
+both lists built from `MARKUP_IDENTIFIER_KINDS`.
+Reach,
+replayed with the built functions per slice against the corpus page (`l4-replay-settled.mjs`):
+7 of 5,733 refused,
+the pure removals (three deleted comments,
+the three footnote references,
+the MDX expression),
+against 24 under the ruling's wording;
+41 regions have no corpus source page and were read as all-authored.
+Mutation check (`l4b-mutants.json`):
+no re-marking excuse,
+identifiers re-markable,
+copied markup re-markable,
+same-kind pairing only,
+no move settlement,
+a single settlement round,
+the strip skipping the gate,
+the strip dropping its new refusals,
+and the sheet lists inverted are each caught;
+the comment-wording control survives.
 
 ### L5: wrong panel acceptances
 
-Status: fixed or closed, item by item below (2026-09-28).
+Status:
+fixed or closed,
+item by item below (2026-09-28).
 Found in the audit:
 glosses of works outside the panel's apparatus list;
 a supplied object outside its forced-difference line;
@@ -2507,32 +3946,68 @@ a neutral "correctly renders" claim accepted and cut into an envelope.
 
 #### Neutral acceptances
 
-Status: fixed, one fix in two parts, both needed.
-Measured over every artifact under the agent runs (`l5-neutral-census.mjs`, `l5-neutral-kinds.mjs`, `l5-neutral-affirm.mjs`):
-41 of 9,532 accepted repair-lane issues had settled at neutral, over 30 runs;
-32 cut a region, 28 shipped an edit, and 26 of those the checkers called resolved.
-Eight were claims whose own summary called the rendering accurate or correct, with no negation
-(seven on hulicaijia, one on Carena0442); one of them, on hulicaijia19, shipped an edit.
-Others were real small losses filed neutral: the same noname omission of a nuance was filed neutral and fixed in six runs.
-Neutral is the severity that asserts no defect (`issue-taxonomy.ts`), and neither sheet defined any severity.
+Status:
+fixed,
+one fix in two parts,
+both needed.
+Measured over every artifact under the agent runs (`l5-neutral-census.mjs`,
+`l5-neutral-kinds.mjs`,
+`l5-neutral-affirm.mjs`):
+41 of 9,532 accepted repair-lane issues had settled at neutral,
+over 30 runs;
+32 cut a region,
+28 shipped an edit,
+and 26 of those the checkers called resolved.
+Eight were claims whose own summary called the rendering accurate or correct,
+with no negation
+(seven on hulicaijia,
+one on Carena0442);
+one of them,
+on hulicaijia19,
+shipped an edit.
+Others were real small losses filed neutral:
+the same noname omission of a nuance was filed neutral and fixed in six runs.
+Neutral is the severity that asserts no defect (`issue-taxonomy.ts`),
+and neither sheet defined any severity.
 
-The tally part (`e87e353ae`, guards `266a0891a`, `aa7f4e360`, `c53d5c717`):
-an acceptance settled at neutral is held as needs-human, with a `neutral-held-for-human (claim)` finding,
-so it reaches no editor, envelope, checker ballot, recheck round or archive dispute.
+The tally part (`e87e353ae`,
+guards `266a0891a`,
+`aa7f4e360`,
+`c53d5c717`):
+an acceptance settled at neutral is held as needs-human,
+with a `neutral-held-for-human (claim)` finding,
+so it reaches no editor,
+envelope,
+checker ballot,
+recheck round or archive dispute.
 A single supporter re-grading to a real severity lifts the upper median out of neutral and keeps the acceptance.
-Mutation checked with a control: the severity test, the returned status, the dropped finding,
+Mutation checked with a control:
+the severity test,
+the returned status,
+the dropped finding,
 and a finding raised for any vote (caught only after `aa7f4e360` added the rejected case).
 
-The sheet part (`fb6c06cca`, `severity-scale.ts`, guard `925b85a8f`;
-cache account `ef20e7978`, `SLICE_CACHE_VERSION` 34):
-both sheets define the scale, minor, major and critical after MQM
-(https://www.themqm.org/guidance/values-and-scores/, read 2026-09-28)
-and neutral in the pipeline's own words, since MQM's neutral marks a spot where "a different solution is warranted";
+The sheet part (`fb6c06cca`,
+`severity-scale.ts`,
+guard `925b85a8f`;
+cache account `ef20e7978`,
+`SLICE_CACHE_VERSION` 34):
+both sheets define the scale,
+minor,
+major and critical after MQM
+(<https://www.themqm.org/guidance/values-and-scores/>,
+read 2026-09-28)
+and neutral in the pipeline's own words,
+since MQM's neutral marks a spot where "a different solution is warranted";
 the critic is told a claim naming nothing wrong is no issue;
-the panel votes such a claim unsupported, with interpretive ambiguity and suspected source errors kept outside that rule;
+the panel votes such a claim unsupported,
+with interpretive ambiguity and suspected source errors kept outside that rule;
 and a supporter lifts a real defect filed neutral to at least minor.
 Without the sheet part the tally part alone would regress the real small fixes filed neutral.
-Mutation checked with a control: dropping either sheet's scale, either rule, the re-grade rule,
+Mutation checked with a control:
+dropping either sheet's scale,
+either rule,
+the re-grade rule,
 a scale line or the carve-out each fails a guard.
 
 Expected but unmeasured (QAB):
@@ -2547,285 +4022,491 @@ so its precision over accepted issues reads higher by construction on runs from 
 
 #### Footnote definitions outside the slice
 
-Status: premise refuted and the window change reverted (`80a18dd53`);
-fixed in the note rule's framing (`868e848d3`, guard `c611b525e` corrected in `657e9db35`, mutation checked;
-rides inside repair 34 and refine 5, `e8d906387`).
+Status:
+premise refuted and the window change reverted (`80a18dd53`);
+fixed in the note rule's framing (`868e848d3`,
+guard `c611b525e` corrected in `657e9db35`,
+mutation checked;
+rides inside repair 34 and refine 5,
+`e8d906387`).
 `DECLARED_IDENTITY_RULES` now says a footnote marker in either document points to the note line with that label
-and what the note says stands at that marker, so content the ORIGINAL states inline and the TRANSLATION's own note
-carries at its marker is not omitted, nor the reverse; the note lines stay vocabulary evidence otherwise.
+and what the note says stands at that marker,
+so content the ORIGINAL states inline and the TRANSLATION's own note
+carries at its marker is not omitted,
+nor the reverse;
+the note lines stay vocabulary evidence otherwise.
 The red guard's editor case first failed for a second reason (the editor states these rules only when the page
-declares something, and the fixture declared nothing), so it would have stayed red after the fix; caught on the fix run.
-The translate lane's sheets carry the note lines with no framing rule at all, and no evidence yet says they misread them,
+declares something,
+and the fixture declared nothing),
+so it would have stayed red after the fix;
+caught on the fix run.
+The translate lane's sheets carry the note lines with no framing rule at all,
+and no evidence yet says they misread them,
 so the clause stays on the repair sheets.
-The audit said no sheet shows footnote definitions, so a slice citing `[^5]` read as if the attribution
+The audit said no sheet shows footnote definitions,
+so a slice citing `[^5]` read as if the attribution
 the note carries were dropped (sh2 slices 33 and 37).
-That was never checked against a rendered sheet, and it is false:
+That was never checked against a rendered sheet,
+and it is false:
 `entry-notes.ts` has carried every footnote definition of both documents,
-as "ORIGINAL note" and "ARCHIVE note" lines of the DECLARED NAMES block, to every sheet since `12ed82cee` (2026-09-02).
-shihai4h ran on 2026-09-26; its original has no footnotes and the archive's ten notes sit in no slice,
-and the shipped extractor turns all ten, notes 5 and 7 included, into ARCHIVE note lines
-(`l5-sh2-notes.mjs`; the artifact does not store the identity context, so this is the extractor rerun, not the sheet read back).
+as "ORIGINAL note" and "ARCHIVE note" lines of the DECLARED NAMES block,
+to every sheet since `12ed82cee` (2026-09-02).
+shihai4h ran on 2026-09-26;
+its original has no footnotes and the archive's ten notes sit in no slice,
+and the shipped extractor turns all ten,
+notes 5 and 7 included,
+into ARCHIVE note lines
+(`l5-sh2-notes.mjs`;
+the artifact does not store the identity context,
+so this is the extractor rerun,
+not the sheet read back).
 
-What the notes lacked is standing, not presence.
+What the notes lacked is standing,
+not presence.
 `DECLARED_IDENTITY_RULES` tells every sheet the note lines "establish vocabulary and titles for the terms they name
-and nothing else", and that the block "is evidence about naming ONLY";
+and nothing else",
+and that the block "is evidence about naming ONLY";
 nothing says what a footnote marker carries.
-That framing is inferred, not measured, to be why the sh2 claims were accepted:
-those runs predate stored ballot reasons, so what the panel thought cannot be read.
+That framing is inferred,
+not measured,
+to be why the sh2 claims were accepted:
+those runs predate stored ballot reasons,
+so what the panel thought cannot be read.
 The census still measures how many slices the framing matters for
-(`l5-footnote-census.mjs`, every run, repeats included):
-342 of 6,261 slices cite a source footnote defined outside the slice, 171 a target one;
-the panel accepted 318 issues on those slices, 74 of them omission or addition claims,
-and 85 name a footnote, attribution, credit, citation or translator, or quote a `[^` marker.
+(`l5-footnote-census.mjs`,
+every run,
+repeats included):
+342 of 6,261 slices cite a source footnote defined outside the slice,
+171 a target one;
+the panel accepted 318 issues on those slices,
+74 of them omission or addition claims,
+and 85 name a footnote,
+attribution,
+credit,
+citation or translator,
+or quote a `[^` marker.
 Those 85 stayed accepted with the notes on the sheet,
-which fits the framing story and fits some of them being legitimate; they are not the fix's yield.
+which fits the framing story and fits some of them being legitimate;
+they are not the fix's yield.
 
-The reverted change (`b0dd42341` to `13b936c90`, seven commits over 21 files) ended each slice's fidelity window
-with the definitions it cites from outside the window, first from the slices, then from each whole document.
+The reverted change (`b0dd42341` to `13b936c90`,
+seven commits over 21 files) ended each slice's fidelity window
+with the definitions it cites from outside the window,
+first from the slices,
+then from each whole document.
 Its wire guard passed with every lane's documents replaced by the empty string or by the other side's text,
-because the notes reached the sheets through the DECLARED NAMES block regardless; that is what exposed the premise (M32).
+because the notes reached the sheets through the DECLARED NAMES block regardless;
+that is what exposed the premise (M32).
 
 #### The other sub-items
 
-Each checked on a rendered sheet first (M32), with `l5-obligatory-render.mjs` and `l5-handle-render.mjs`.
+Each checked on a rendered sheet first (M32),
+with `l5-obligatory-render.mjs` and `l5-handle-render.mjs`.
 
-The panel's obligatory differences (Tq16 slice 20, an addition claim against "of me" English had to state):
-fixed in `64a4bf63a` (guard `1c3d0cf36`, mutation checked).
+The panel's obligatory differences (Tq16 slice 20,
+an addition claim against "of me" English had to state):
+fixed in `64a4bf63a` (guard `1c3d0cf36`,
+mutation checked).
 Rendered sheets showed the critic carried a whole obligatory-difference block and the panel none of it,
-only a line on conjunctions, connectives, pronouns and small words.
-`obligatory-differences.ts` states the block once in neutral voice, now naming a possessor and a connective too,
-and both sheets carry it with a line in their own voice; it replaces the panel's narrower line.
-Rides inside repair 34, no slice-cache file newer than the last bump remaining.
+only a line on conjunctions,
+connectives,
+pronouns and small words.
+`obligatory-differences.ts` states the block once in neutral voice,
+now naming a possessor and a connective too,
+and both sheets carry it with a line in their own voice;
+it replaces the panel's narrower line.
+Rides inside repair 34,
+no slice-cache file newer than the last bump remaining.
 
-A handle's literal gloss claimed as an addition (Cu11 slice 1): covered by today's sheets.
+A handle's literal gloss claimed as an addition (Cu11 slice 1):
+covered by today's sheets.
 Both the critic and the panel render the house rule giving a romanized handle its literal meaning in parentheses
-on first mention, and the apparatus kinds naming a gloss of a name as accurate apparatus;
-the run predates S5, which put the shared apparatus list on the panel.
+on first mention,
+and the apparatus kinds naming a gloss of a name as accurate apparatus;
+the run predates S5,
+which put the shared apparatus list on the panel.
 
-A heading rendered "Ann" (XZ14 slice 49): not a wrong acceptance by any rule the owner has set.
-The original heading has the shape "label: name" and the archive renders every section heading as the name alone;
-the accepted claims argue the label was dropped, and the owner's ruling on headings is "judges decide".
-The patch lost at the checkers, so the archive heading shipped.
+A heading rendered "Ann" (XZ14 slice 49):
+not a wrong acceptance by any rule the owner has set.
+The original heading has the shape "label:
+name" and the archive renders every section heading as the name alone;
+the accepted claims argue the label was dropped,
+and the owner's ruling on headings is "judges decide".
+The patch lost at the checkers,
+so the archive heading shipped.
 
-鲨鲨, a plush shark, taken for a person (hu31 slice 39): no sheet change.
-The accepted claim (settled major, a mistranslation claim calling 鲨鲨 a person) lost at the checkers,
-so the page kept the archive's wording; the run predates stored panel reasons,
-and the reason-before-vote change (owner, 2026-09-27) is the structural answer to a panel voting on a misreading.
+鲨鲨,
+a plush shark,
+taken for a person (hu31 slice 39):
+no sheet change.
+The accepted claim (settled major,
+a mistranslation claim calling 鲨鲨 a person) lost at the checkers,
+so the page kept the archive's wording;
+the run predates stored panel reasons,
+and the reason-before-vote change (owner,
+2026-09-27) is the structural answer to a panel voting on a misreading.
 
-Closed elsewhere: Tq16 slice 0's gloss of a work (S5's `APPARATUS_KINDS`), sh2 slice 38's MDX comment (L4).
+Closed elsewhere:
+Tq16 slice 0's gloss of a work (S5's `APPARATUS_KINDS`),
+sh2 slice 38's MDX comment (L4).
 
 ### L6: the lane contest runs on insertion slices the repair lane does not apply to
 
-Status: open; measured and designed 2026-09-28, deferred past the TianqiChen666 launch,
+Status:
+open;
+measured and designed 2026-09-28,
+deferred past the TianqiChen666 launch,
 since no TianqiChen666 run contested such a slice (its archive has every passage).
 31 wasted contests on XingZ6014.
 Across the 240 contested artifacts under the agent runs,
 952 contests ran on slices whose repair outcome is `not-applicable` (every one an archive-absent insertion):
-931 went to the translate lane, 5 settled neither and were consolidated,
-and 16 missed quorum, where the consolidation found no standing text and nothing shipped,
+931 went to the translate lane,
+5 settled neither and were consolidated,
+and 16 missed quorum,
+where the consolidation found no standing text and nothing shipped,
 so those 16 inserted passages are missing from their pages.
 Excluding such rows from the contest would also skip the consolidation and polish,
-which run only on contested slices, and those are the passages no human translated.
-Design: from a new artifact generation, such a row takes a deterministic `sole-lane` verdict naming the lane that applies,
+which run only on contested slices,
+and those are the passages no human translated.
+Design:
+from a new artifact generation,
+such a row takes a deterministic `sole-lane` verdict naming the lane that applies,
 with no roster asked;
-the consolidation treats it as a win for that lane, the would-ship reader ships that lane's wording,
+the consolidation treats it as a win for that lane,
+the would-ship reader ships that lane's wording,
 and a reader of an older generation reads the contests it recorded.
 
 ### L7: the lane contest is shown probe claims about a patch that lost
 
-Status: fixed in `3bed8241d` (guard `11c1e92d8`; mutation checked with a control).
+Status:
+fixed in `3bed8241d` (guard `11c1e92d8`;
+mutation checked with a control).
 `damageClaimLinesBySlice` read every chunk's accuracy probe,
 so XingZ6014 slice 3 showed the judges damage quoting "she came out as trans"
-that the repair candidate, the archive after a lost patch, never carried.
+that the repair candidate,
+the archive after a lost patch,
+never carried.
 The accuracy repair's claims now need `accuracyPatchSelected`;
 the naturalness rewrite's stand either way.
 Rides inside `LANE_CONTEST_CACHE_VERSION` 6.
 
 ### L8: a heard ballot with no usable verdict still counts toward quorum
 
-Status: fixed in `abfc69393` (guard `79b1db6b0`, which also stopped the two stage tests pinning the defect:
+Status:
+fixed in `abfc69393` (guard `79b1db6b0`,
+which also stopped the two stage tests pinning the defect:
 each expected three heard voices from ballots that voted only on a claim the sheet never showed).
 The panel and checker gathers validated with the wire guards alone,
-which accept an empty ballot, one voting only off the sheet and one whose only vote is no vote,
+which accept an empty ballot,
+one voting only off the sheet and one whose only vote is no vote,
 so each counted as heard and could close the round
-(TianqiChen66616 slice 3, a claim in needs-human on two votes beside a ballot voting "minor";
-XingZ6014 slice 87, an issue resolved on the one other ballot).
+(TianqiChen66616 slice 3,
+a claim in needs-human on two votes beside a ballot voting "minor";
+XingZ6014 slice 87,
+an issue resolved on the one other ballot).
 Now such a ballot is unreadable and the recovery round re-asks its seat;
-a ballot usable on some claims is still heard, since the artifacts record 388 missing verdicts,
-142 unknown votes and 104 off-sheet numbers inside otherwise usable ballots, and requiring whole ballots
+a ballot usable on some claims is still heard,
+since the artifacts record 388 missing verdicts,
+142 unknown votes and 104 off-sheet numbers inside otherwise usable ballots,
+and requiring whole ballots
 would discard those votes.
-Mutation checked with a control: restoring either wire guard alone fails its stage test.
+Mutation checked with a control:
+restoring either wire guard alone fails its stage test.
 Rides inside `SLICE_CACHE_VERSION` 33 and `REFINE_CACHE_VERSION` 5.
 
 ### L9: the dispute rule reads the critic's filed severity, not the adjudicated one
 
-Status: fixed in `6a0f68cec`, guard `b15ba5464`
-(owner answer 2026-09-27, "Adjudicated";
+Status:
+fixed in `6a0f68cec`,
+guard `b15ba5464`
+(owner answer 2026-09-27,
+"Adjudicated";
 seventeenth addendum of `doc/decision/translation-repair-ineligible-standing.md`).
 
 ### L10: the attestation screen only looks at addition claims
 
-Status: closed as designed, 2026-09-28; measured, no change.
-What a cited reference can answer is "the original never states this", which is an addition claim;
+Status:
+closed as designed,
+2026-09-28;
+measured,
+no change.
+What a cited reference can answer is "the original never states this",
+which is an addition claim;
 a mistranslation or omission claim on an attested detail can still be right (the archive may word the detail wrongly),
-and the panel sees the cited references for every claim it hears, so the screen is a shortcut for one question,
+and the panel sees the cited references for every claim it hears,
+so the screen is a shortcut for one question,
 not the only path references take.
-Measured over every artifact (`l10-attested-others.mjs`): the screen fired on two attested archive quotes in all,
+Measured over every artifact (`l10-attested-others.mjs`):
+the screen fired on two attested archive quotes in all,
 and no claim of any other category touched either of them.
-A lower bound, since only quotes an addition claim hit leave a finding, and a small sample;
+A lower bound,
+since only quotes an addition claim hit leave a finding,
+and a small sample;
 the same script rerun on later runs reopens this if other categories start filing on attested details.
 
 ### L11: refinement on a slice whose patch lost gets no recheck
 
-Status: fixed in `462c514ee` (guard `35272d1cd`; class one hundred eight's open half, with H4);
-owner ruled 2026-09-28, "Recheck the rewrite" (`design-commitments.md`);
+Status:
+fixed in `462c514ee` (guard `35272d1cd`;
+class one hundred eight's open half,
+with H4);
+owner ruled 2026-09-28,
+"Recheck the rewrite" (`design-commitments.md`);
 measured 2026-09-28.
-Across every run, 1,218 of 2,144 refined slices were rewrites of the archive after the accuracy patch lost,
-457 of them on slices with panel-accepted issues the rewrite was never shown, and none had a checker round;
-on the TianqiChen666 runs 106 of 125, 75 with accepted issues.
+Across every run,
+1,218 of 2,144 refined slices were rewrites of the archive after the accuracy patch lost,
+457 of them on slices with panel-accepted issues the rewrite was never shown,
+and none had a checker round;
+on the TianqiChen666 runs 106 of 125,
+75 with accepted issues.
 
 The retention recheck in `refine-slice-settle.ts` now rules on every accepted issue `T1` leaves open beside the confirmed ones,
 and rolls the whole slice back when a confirmed issue is no longer resolved or an open one drew at least one worse ballot,
 the threshold the owner ruled the same day for a patch's unconfirmed edits (L3).
-A `fixed` ballot on an open issue credits nothing: the round is a rollback gate.
+A `fixed` ballot on an open issue credits nothing:
+the round is a rollback gate.
 Rejected and needs-human issues buy no round.
 The introduced-defect probe already ran on every kept rewrite,
 and its comment claiming every rewritten slice had its issues repaired is corrected.
-Its role was first left as in the accuracy lane, deciding nothing directly;
-the owner's answer to that question (2026-09-28) made it a quality call, below.
-Scope beyond the question's wording: an accepted issue a winning patch left open is checked by the same rule,
-since the rewrite was never shown it either; the ruling's mechanism, not a new one.
-Mutation check (`l11-mutants.json`): leaving the open issues out of the round, never rolling back on them,
-a worse majority in place of one ballot, dropping the status filter, and crediting a fixed ballot are each caught;
+Its role was first left as in the accuracy lane,
+deciding nothing directly;
+the owner's answer to that question (2026-09-28) made it a quality call,
+below.
+Scope beyond the question's wording:
+an accepted issue a winning patch left open is checked by the same rule,
+since the rewrite was never shown it either;
+the ruling's mechanism,
+not a new one.
+Mutation check (`l11-mutants.json`):
+leaving the open issues out of the round,
+never rolling back on them,
+a worse majority in place of one ballot,
+dropping the status filter,
+and crediting a fixed ballot are each caught;
 the comment-wording control survives.
-Cache: rides inside refine version 5 with an account in `refine-slice-key.ts`.
+Cache:
+rides inside refine version 5 with an account in `refine-slice-key.ts`.
 
-**The probe rolls a rewrite back**, decided for quality under the owner's standing directive
-(guard `9e01c7133`, fix `d41ad44c4`).
-Measured over every run (`l11-probe-census.mjs`): 175 of 2,144 kept rewrites carried a claim the screen admitted
-(151 added damage, 25 removal), against 409 of 3,081 accuracy reports;
-only 9 carried two or more, so requiring agreement would catch almost none.
-`corroborated` in the report means the differential bore the quote out, one prober's claim sufficing;
+**The probe rolls a rewrite back**,
+decided for quality under the owner's standing directive
+(guard `9e01c7133`,
+fix `d41ad44c4`).
+Measured over every run (`l11-probe-census.mjs`):
+175 of 2,144 kept rewrites carried a claim the screen admitted
+(151 added damage,
+25 removal),
+against 409 of 3,081 accuracy reports;
+only 9 carried two or more,
+so requiring agreement would catch almost none.
+`corroborated` in the report means the differential bore the quote out,
+one prober's claim sufficing;
 the `ClaimTotals` comment saying a second prober confirmed it was wrong and is corrected.
 The one graded reading of flagged regions (`doc/planning/translation-repair-roster-calibration-2026-09-01.md`,
-2026-09-03) found six of ten true, three false and one borderline,
+2026-09-03) found six of ten true,
+three false and one borderline,
 so rolling back reverts roughly twice as many damaged rewrites as fluent ones,
 and what comes back is text a checker round or the archive already stood behind.
 A rewrite with any admitted claim now keeps the text before it,
 with `refine-rolled-back-by-probe (<added> added-damage and <dropped> removal claims ...)` in the findings;
-its report is not attached, because the lane contest reads `refinementDefects` as evidence against the text that ships.
+its report is not attached,
+because the lane contest reads `refinementDefects` as evidence against the text that ships.
 The probe module's header no longer says nothing reads the report.
 Over an accuracy patch the probe still decides nothing directly:
 a rollback there would discard edits fixing panel-confirmed defects on the same six-in-ten signal.
-Mutation check (`l11b-mutants.json`): never rolling back, ignoring added-damage claims, ignoring removal claims,
-and attaching the report on a rollback are each caught; the comment-wording control survives.
-Cache: rides inside refine version 5 with an account in `refine-slice-key.ts`.
+Mutation check (`l11b-mutants.json`):
+never rolling back,
+ignoring added-damage claims,
+ignoring removal claims,
+and attaching the report on a rollback are each caught;
+the comment-wording control survives.
+Cache:
+rides inside refine version 5 with an account in `refine-slice-key.ts`.
 
 ### L12: logging gaps in the repair lane
 
-Status: fixed, each part guarded and mutation-checked.
-A11 put the slice on the critic, editor, checker, select and probe lines.
-What it left, and what the audit found beside it:
+Status:
+fixed,
+each part guarded and mutation-checked.
+A11 put the slice on the critic,
+editor,
+checker,
+select and probe lines.
+What it left,
+and what the audit found beside it:
 the refinement phase ran slices side by side with no slice on its lines;
 panel and checker ballot irregularities reached the findings and never the log;
 assembly's document-scale damage checks named no slice;
 the settlement line said "unchanged" for three different settlements;
 and the dispute line blamed the checkers for every refused stand-in.
 
-- Refinement: `4c714af90` (guard `ca684d49e`).
-    Each slice refines under `inSliceLogContext`, as the accuracy pass settles each slice.
-- Ballot irregularities: `da02c1fef` (guard `152c83e41`).
-    `logBallotIrregularities` warns one line per finding, naming the stage and the model that cast the ballot;
-    the audit counted 10, 14 and 26 on three runs' artifacts and none in their logs.
-- Assembly damage: `7d40f198b` (guards `2e443cd1a`, and `44ccb69f5` for the translate assembler).
+- Refinement:
+  `4c714af90` (guard `ca684d49e`).
+    Each slice refines under `inSliceLogContext`,
+  as the accuracy pass settles each slice.
+- Ballot irregularities:
+  `da02c1fef` (guard `152c83e41`).
+    `logBallotIrregularities` warns one line per finding,
+  naming the stage and the model that cast the ballot;
+    the audit counted 10,
+  14 and 26 on three runs' artifacts and none in their logs.
+- Assembly damage:
+  `7d40f198b` (guards `2e443cd1a`,
+  and `44ccb69f5` for the translate assembler).
     Repair assembly logs the slices and phrase of each introduced repetition
     and the slice and words of each content loss;
-    translate assembly logs repetitions, the only document-scale check it runs.
-    The findings stay free of corpus wording; the log carries it.
-- Settlement line: `179297e7a` (guard `56fcd6e03`, wiring guard `824113c56`).
-    "Unchanged" now says which: the archive won, the patch won and wrote nothing,
+    translate assembly logs repetitions,
+  the only document-scale check it runs.
+    The findings stay free of corpus wording;
+  the log carries it.
+- Settlement line:
+  `179297e7a` (guard `56fcd6e03`,
+  wiring guard `824113c56`).
+    "Unchanged" now says which:
+  the archive won,
+  the patch won and wrote nothing,
     or the patch won and was refused for dropping a declared name.
-- Dispute stand-in: `f66e96f06` (guard `cbb8f3f26`) and `3ffbcec10` (guard `05357361d`).
+- Dispute stand-in:
+  `f66e96f06` (guard `cbb8f3f26`) and `3ffbcec10` (guard `05357361d`).
     A refused dispute names its refusal
-    (withdrawn at assembly, the archive's own wording, or unconfirmed by the checkers)
+    (withdrawn at assembly,
+  the archive's own wording,
+  or unconfirmed by the checkers)
     in the log line and in the refused-wording finding a translate author reads,
     which also said the checkers had not confirmed a withdrawn slice's text.
     A stand-in identical to the archive is now refused whatever the checkers voted.
-    Measured over every artifact (`l12e-census.mjs`): 266 artifacts, 1,791 disputed slices,
-    1,132 with every disputing issue resolved, none of them with unchanged text, so no settled slice moves.
-    `ArchiveDispute` is a union now, so a refused dispute cannot lack its reason.
+    Measured over every artifact (`l12e-census.mjs`):
+  266 artifacts,
+  1,791 disputed slices,
+    1,132 with every disputing issue resolved,
+  none of them with unchanged text,
+  so no settled slice moves.
+    `ArchiveDispute` is a union now,
+  so a refused dispute cannot lack its reason.
 
-Mutation check (`l12-mutants.json`, then `l12b-mutants.json`):
-dropping the refinement context, either ballot-log call, the model in the ballot line,
-any of the three assembly log loops, the slice in either damage line,
-either settlement branch, either settlement wiring argument,
+Mutation check (`l12-mutants.json`,
+then `l12b-mutants.json`):
+dropping the refinement context,
+either ballot-log call,
+the model in the ballot line,
+any of the three assembly log loops,
+the slice in either damage line,
+either settlement branch,
+either settlement wiring argument,
 the archive-wording or withdrawn refusal,
-and the refusal lookup in the dispute line and in the author's reason are each caught; both controls survive.
-The first run found the settlement wiring unguarded (both mutants survived), which `824113c56` closed;
-two ballot-log mutants in it did not parse and two patterns had been reformatted by lint, so the second run redid them.
-Cache: the log lines touch no key.
+and the refusal lookup in the dispute line and in the author's reason are each caught;
+both controls survive.
+The first run found the settlement wiring unguarded (both mutants survived),
+which `824113c56` closed;
+two ballot-log mutants in it did not parse and two patterns had been reformatted by lint,
+so the second run redid them.
+Cache:
+the log lines touch no key.
 The eligibility and the reason reach the translate and consolidation lanes through the refused wordings,
-which no key hashes; they ride inside translate 15 and consolidation 20 with accounts, same slice-cache check, same result.
+which no key hashes;
+they ride inside translate 15 and consolidation 20 with accounts,
+same slice-cache check,
+same result.
 
 ### L13: stale TSDoc and comments
 
-Status: fixed in `99dc48335`; one item was code, now L15.
-Each site was read against the code before rewording, and two claims beyond the audit's were wrong too.
+Status:
+fixed in `99dc48335`;
+one item was code,
+now L15.
+Each site was read against the code before rewording,
+and two claims beyond the audit's were wrong too.
 
-- `chunk-critic-phase.ts`: `votesStand` said the slice "must ship unchanged" and its example returned unchanged;
-    standing votes are evidence since question 3, answer B (2026-08-16).
-    `heardCriticIds` said it was "what it was asked"; it is who was heard.
-- `repair-contract.ts`: `nonTranslationStanding` said the slice "shipped unchanged"
-    and fed a "document-level block"; the dominance finding reports and blocks nothing.
-- `house-policy.ts`: the measuring sheets were said to decide nothing that ships;
-    checker ballots decide resolution, strip worse-voted edits (L3) and roll rewrites back (L11),
+- `chunk-critic-phase.ts`:
+  `votesStand` said the slice "must ship unchanged" and its example returned unchanged;
+    standing votes are evidence since question 3,
+  answer B (2026-08-16).
+    `heardCriticIds` said it was "what it was asked";
+  it is who was heard.
+- `repair-contract.ts`:
+  `nonTranslationStanding` said the slice "shipped unchanged"
+    and fed a "document-level block";
+  the dominance finding reports and blocks nothing.
+- `house-policy.ts`:
+  the measuring sheets were said to decide nothing that ships;
+    checker ballots decide resolution,
+  strip worse-voted edits (L3) and roll rewrites back (L11),
     and an admitted probe claim rolls a naturalness rewrite back.
-- `repair-editor-stage.ts`: "judges that wrote none of them" (editors sit among the judges at the self-vote weight);
+- `repair-editor-stage.ts`:
+  "judges that wrote none of them" (editors sit among the judges at the self-vote weight);
     also "a decline ships the fallback repair" and "only when no editor produced an operation",
     both wrong since a unanimous decline returns the untouched text (L14(c));
-    and a `@throws` naming "every judge also edits", which the roster check never refuses.
-- `editor-ensemble.ts`: "producers are removed downstream", twice; they vote at the self-vote weight.
-- `stage-quorum.ts`: "no stage decided by a single model" was said to be held by the quorum;
-    the quorum is a retry target, and a gather short after every round proceeds on what it heard.
-- `preservation-check.ts` and the version 12 note in `repair-slice-key.ts`: the token gate was described as
-    what rejects damaging edits; L4 measured that it sees almost nothing, since envelopes are the licensed quotes.
+    and a `@throws` naming "every judge also edits",
+  which the roster check never refuses.
+- `editor-ensemble.ts`:
+  "producers are removed downstream",
+  twice;
+  they vote at the self-vote weight.
+- `stage-quorum.ts`:
+  "no stage decided by a single model" was said to be held by the quorum;
+    the quorum is a retry target,
+  and a gather short after every round proceeds on what it heard.
+- `preservation-check.ts` and the version 12 note in `repair-slice-key.ts`:
+  the token gate was described as
+    what rejects damaging edits;
+  L4 measured that it sees almost nothing,
+  since envelopes are the licensed quotes.
 - The dispute header (`archive-dispute.ts`) and the damage-evidence note (`repair-damage-evidence.ts`)
     were already rewritten by L2 and L7.
-- `refine-slice-settle.ts:187`: "shipped deliberately untouched" was a comment on code that acted on it (L15).
+- `refine-slice-settle.ts:187`:
+  "shipped deliberately untouched" was a comment on code that acted on it (L15).
 
 ### L15: the refinement lane still stopped on standing non-translation votes
 
-Status: fixed in `f77363387`, guarded red first in `d601ebec6`; found while fixing L13.
+Status:
+fixed in `f77363387`,
+guarded red first in `d601ebec6`;
+found while fixing L13.
 `settleRefinedSlice` returned a slice unrefined when its non-translation votes stood,
 on the reading that such a slice shipped deliberately untouched.
-Question 3, answer B (`doc/decision/translation-repair-question-answers.md`, 2026-08-16)
+Question 3,
+answer B (`doc/decision/translation-repair-question-answers.md`,
+2026-08-16)
 keeps critics as evidence "rather than deciding anything" and removes every early return they owned,
-and `05ff9791e` removed the repair lane's the same day; this one was left,
+and `05ff9791e` removed the repair lane's the same day;
+this one was left,
 and `refine-slice-settle.unit.test.ts` was written on 2026-08-24 to defend it on the stale reading.
 Over every artifact (`~/temp/agent/audit-glossary-fix/l13-standing-census.mjs`),
-10 of 6,150 slices had standing votes, the repair lane changed 8 of them,
+10 of 6,150 slices had standing votes,
+the repair lane changed 8 of them,
 and none of the 9 in runs that refine was refined.
 The settle test now expects the rewriter to be asked for a standing slice as for any other;
 the phase test that used a standing slice to mean "ineligible" uses one too short to refine.
-Mutation check: restoring the early return is caught; the control survived.
-Cache: rides inside refine 5, same check, same result.
+Mutation check:
+restoring the early return is caught;
+the control survived.
+Cache:
+rides inside refine 5,
+same check,
+same result.
 
 ### L14: smaller items
 
-Status: (a) to (d) fixed; (e) closed as a census artifact, with two sites unclassified.
+Status:
+(a) to (d) fixed;
+(e) closed as a census artifact,
+with two sites unclassified.
 
 #### L14(a): the resolution checker sheet carried none of the panel's evidence
 
-Status: fixed in `fe0fc1f13`, guarded red first in `01a2dc31f`.
+Status:
+fixed in `fe0fc1f13`,
+guarded red first in `01a2dc31f`.
 The sheet showed the ORIGINAL,
 the REVISED TRANSLATION,
-and each claim's category, severity and summary.
+and each claim's category,
+severity and summary.
 The panel that accepted each issue also read the DECLARED NAMES block with its rules,
 the cited references,
 and the claim's own quotes.
 Checker `worse` ballots strip an edit (L3) and roll a rewrite back (L11),
 so a checker that could not see a declaration could count a declared handle kept as written as damage.
-The M32 step came first: `buildResolutionMessages` is the whole sheet
+The M32 step came first:
+`buildResolutionMessages` is the whole sheet
 (`runCheckerStage` sends `plan.messages` unchanged),
 and it took no identity or reference parameter,
 so no other path could have carried either.
@@ -2838,32 +4519,43 @@ the cited references after the revised translation,
 with a checker line that a referenced detail is never a reason for worse
 and that the references never reopen an accepted issue,
 since the panel judged with them and the reference screen already voided attested additions;
-and each claim's quotes, JSON-encoded,
+and each claim's quotes,
+JSON-encoded,
 the TRANSLATION side labelled as the text before this revision.
 The encoding is measured need:
 349 of 45,860 claim quotes over 266 artifacts span more than one line
 (`~/temp/agent/audit-glossary-fix/l14-summary-newlines.mjs`).
-Rules ride with their blocks, as on the introduced-defect probe (H8),
+Rules ride with their blocks,
+as on the introduced-defect probe (H8),
 so a page declaring nothing and linking nowhere reads the rules it always did.
-The stage, the repair proof and its worse-vote recheck, and the refinement recheck all forward both contexts.
+The stage,
+the repair proof and its worse-vote recheck,
+and the refinement recheck all forward both contexts.
 
-Guards: `resolution-sheet-evidence.unit.test.ts` (the builder)
-and `checker-evidence-threading.unit.test.ts` (each caller, both directions).
+Guards:
+`resolution-sheet-evidence.unit.test.ts` (the builder)
+and `checker-evidence-threading.unit.test.ts` (each caller,
+both directions).
 Two guard defects surfaced while greening them.
 The threading control's fixture had a heading,
 and preparation writes the archive's rendering of a heading into the identity context,
 so the control page declared a name and its checker sheet was rightly shown the block
-(`ab7ad54f0`; a `prepareDocumentPair` probe confirmed the heading-less fixture yields neither context).
-The mutation check (24 mutants, control surviving) left one survivor:
+(`ab7ad54f0`;
+a `prepareDocumentPair` probe confirmed the heading-less fixture yields neither context).
+The mutation check (24 mutants,
+control surviving) left one survivor:
 a fence chosen without the declared names,
 because the fence case gave the references the longer run of equals signs,
 and a fence clearing that run cleared the identity's too;
-one sheet per context now carries the run alone (`b507cbf28`), and both fence mutants are caught.
-Cache: rides inside repair 34 and refine 5,
+one sheet per context now carries the run alone (`b507cbf28`),
+and both fence mutants are caught.
+Cache:
+rides inside repair 34 and refine 5,
 checked on 2026-09-28:
 the only slice-cache file not older than 00:26 on 2026-09-27 is the consolidation entry written that minute.
 
-Scope kept out, as a candidate rather than bundled:
+Scope kept out,
+as a candidate rather than bundled:
 the probe's sheet also carries the neighbouring window and community renderings,
 and the checker sheet carries neither;
 and the audit's finding also named the text before the revision,
@@ -2873,9 +4565,13 @@ says sheet additions need evidence first.
 
 #### L14(b): editors write neighbouring text into an envelope
 
-Status: fixed in `49d3c285b`, guarded red first in `8408e8864`.
+Status:
+fixed in `49d3c285b`,
+guarded red first in `8408e8864`.
 The audit reported editors writing neighbouring text into a region and the chunk judges choosing it
-(CuspariaKLSY11 slice 3, shihai4h2 slice 28), and that neither shipped.
+(CuspariaKLSY11 slice 3,
+shihai4h2 slice 28),
+and that neither shipped.
 
 What was measured (`~/temp/agent/audit-glossary-fix/l14b-census.mjs` and its siblings):
 56 of 6,222 chunk candidates over 266 artifacts carried a sentence of 12 characters or more
@@ -2883,52 +4579,74 @@ more often than the slice's archive English did,
 in 43 of 2,476 rounds;
 the judges selected such a candidate 3 times;
 and Carena0442 slice 14 on carena-rerun-20260902 (a schema 9 build) shipped two such sentences
-through a repair-lane win, so "neither shipped" does not hold for the family.
-Some of the 56 are noise: URL and link fragments the sentence splitter cut at a period,
+through a repair-lane win,
+so "neither shipped" does not hold for the family.
+Some of the 56 are noise:
+URL and link fragments the sentence splitter cut at a period,
 and one blockquote line accounts for 9.
 The editor sheet shows the whole TRANSLATION and the whole ORIGINAL (rendered 2026-09-28),
 so a rule about text outside the region asks for nothing the editor cannot check.
 
-What was not measured: the class the audit described,
+What was not measured:
+the class the audit described,
 neighbouring ORIGINAL content re-translated into a region in new words.
 A verbatim census against the adjacent slices' archive English found none,
 and its positive control failed:
 at CuspariaKLSY11 slice 3 the selected candidate repeats no sentence and no 4-word phrase,
 and shares none with the neighbouring slice,
-so string matching cannot see that class, and the zero is not evidence of its absence.
+so string matching cannot see that class,
+and the zero is not evidence of its absence.
 The fix rests on the audit's reading of that class and on the measured verbatim family.
 
 The fix:
 the editor sheet says a region carries only what the ORIGINAL says at that place,
 and that a sentence the TRANSLATION already carries outside it,
 or content a NEARBY ORIGINAL passage says,
-goes in only where the ORIGINAL says it again, as a refrain the TRANSLATION rendered once;
+goes in only where the ORIGINAL says it again,
+as a refrain the TRANSLATION rendered once;
 the faithfulness test both editor selections read says the same of candidates.
 Conditioned on the ORIGINAL because the omission rules say to translate ALL of the missing content,
 and a refrain the archive rendered once is such content.
-Mutation check: the unwired editor rule, the rule without its condition,
-and the dropped judge line are each caught; the control survived.
-Cache: rides inside repair 34, same check, same result.
+Mutation check:
+the unwired editor rule,
+the rule without its condition,
+and the dropped judge line are each caught;
+the control survived.
+Cache:
+rides inside repair 34,
+same check,
+same result.
 
-Candidate kept out: prefer, among indecision fallbacks, a patch that repeats no sentence.
+Candidate kept out:
+prefer,
+among indecision fallbacks,
+a patch that repeats no sentence.
 Its one measured case is XingZ631 slice 37,
-where the indecision fallback carried a repeat, the repair was lost, and the slate endorsed the standing text.
+where the indecision fallback carried a repeat,
+the repair was lost,
+and the slate endorsed the standing text.
 
 #### L14(c): `selectChunkPatch` wording on declines
 
-Status: fixed in `e7e530564`, guarded red first in `ebe1c8ffd`.
+Status:
+fixed in `e7e530564`,
+guarded red first in `ebe1c8ffd`.
 The chunk selection used the shared promise
 "the caller keeps text it already trusts when you decline".
 A decline names no candidate and counts as no vote:
 the existing English is kept only when every judge declines (`rejection`),
 and a round the naming judges cannot decide (`indecision`) sends the editor patch that landed the most edits
 on to the checkers (`pickFallbackCandidate`).
-The audit called this latent, with no chunk round holding a majority of declines.
-Measured, that was wrong:
+The audit called this latent,
+with no chunk round holding a majority of declines.
+Measured,
+that was wrong:
 over 2,476 chunk rounds in 266 artifacts,
 656 had at least one decline,
 14 had declines outnumbering the ballots naming a candidate,
-10 of those were read as indecision (TianqiChen66621 chunk 17: 4 declined, 1 named),
+10 of those were read as indecision (TianqiChen66621 chunk 17:
+4 declined,
+1 named),
 4 selected a candidate the minority named,
 and none had every judge decline
 (`~/temp/agent/audit-glossary-fix/l14c-census.mjs`).
@@ -2942,53 +4660,92 @@ and both behaviours it states are pinned (`chunk-decline-consequence.unit.test.t
 The shared promise stays for the envelope selection,
 where any declined round leaves the envelope unedited,
 so a round that declines keeps the trusted text there.
-Mutation check: the unwired constant, the dropped unanimity, the unstated fallback,
-and an indecision that keeps the existing English are each caught; the control survived.
-Cache: rides inside repair 34, same check, same result.
+Mutation check:
+the unwired constant,
+the dropped unanimity,
+the unstated fallback,
+and an indecision that keeps the existing English are each caught;
+the control survived.
+Cache:
+rides inside repair 34,
+same check,
+same result.
 
 #### L14(e): a repaired text repeating a sentence no recorded stage wrote
 
-Status: closed as a census artifact at 7 of 9 sites; 2 unclassified; found while measuring L14(b).
+Status:
+closed as a census artifact at 7 of 9 sites;
+2 unclassified;
+found while measuring L14(b).
 In 9 slices the repaired text carries a sentence more often than the archive English
 while no chunk candidate of the slice does and no repair region's replacement carries it:
 6 whose rounds were chunk and envelope selection
-(Mio12-20260910, Mio16-20260916 and Mio21-20260916 slice 14, Mio20-20260916 slice 15, TianqiChen66613 slice 12, XingZ626 slice 44),
-2 with a refinement round (XingZ628 slice 53, XingZ631 slice 54),
+(Mio12-20260910,
+Mio16-20260916 and Mio21-20260916 slice 14,
+Mio20-20260916 slice 15,
+TianqiChen66613 slice 12,
+XingZ626 slice 44),
+2 with a refinement round (XingZ628 slice 53,
+XingZ631 slice 54),
 and 1 refined without an accuracy patch (XingZ6010 slice 38).
 At Mio12-20260910 slice 14 the repeated sentence is 12 characters,
 absent from the archive English and from both candidates,
 and the repaired text is 36 characters longer than the selected candidate,
-so a step after selection wrote it (`~/temp/agent/audit-glossary-fix/l14b-origin.mjs`, `l14b-mio.mjs`).
+so a step after selection wrote it (`~/temp/agent/audit-glossary-fix/l14b-origin.mjs`,
+`l14b-mio.mjs`).
 
-What that step did (`l14e-lines.mjs`, `l14e-all.mjs`, `l14e-substr.mjs`):
+What that step did (`l14e-lines.mjs`,
+`l14e-all.mjs`,
+`l14e-substr.mjs`):
 at all 9 sites the repaired text holds more lines than the archive English and the selected candidate
-(1 or 3 lines becoming 11 to 17, and 76 becoming 91 or 92),
+(1 or 3 lines becoming 11 to 17,
+and 76 becoming 91 or 92),
 so a later step set the text on the ORIGINAL's lines,
-and the "repeated sentences" are short verse fragments (a single word and a comma, a four-word line)
+and the "repeated sentences" are short verse fragments (a single word and a comma,
+a four-word line)
 that the census's sentence rule counts only once they stand on their own lines.
-Counted as substrings, 7 of the 9 carry the fragment exactly as often as the archive English or the candidate:
-nothing was said twice, and the census, not a stage, made the repeat.
+Counted as substrings,
+7 of the 9 carry the fragment exactly as often as the archive English or the candidate:
+nothing was said twice,
+and the census,
+not a stage,
+made the repeat.
 Two carry a fragment more often:
-TianqiChen66613 slice 12 (archive 1, candidate and repaired text 2)
-and XingZ6010 slice 38, refined without an accuracy patch (archive and candidate 0, refined text 4).
-Neither ORIGINAL repeats a line of text (`l14e-source.mjs`; only markup lines repeat),
-but a refrain within a line is not excluded, and the slice's own ORIGINAL is not in the artifact,
+TianqiChen66613 slice 12 (archive 1,
+candidate and repaired text 2)
+and XingZ6010 slice 38,
+refined without an accuracy patch (archive and candidate 0,
+refined text 4).
+Neither ORIGINAL repeats a line of text (`l14e-source.mjs`;
+only markup lines repeat),
+but a refrain within a line is not excluded,
+and the slice's own ORIGINAL is not in the artifact,
 so both stay unclassified.
-Candidate kept out: the refine sheet states no rule about saying something twice,
-and the L14(b) rule, conditioned on the ORIGINAL, would carry over;
-its only case is the unclassified XingZ6010 slice 38, so it waits for evidence.
-Lesson for any later census of repetition: count substrings as well as split sentences,
+Candidate kept out:
+the refine sheet states no rule about saying something twice,
+and the L14(b) rule,
+conditioned on the ORIGINAL,
+would carry over;
+its only case is the unclassified XingZ6010 slice 38,
+so it waits for evidence.
+Lesson for any later census of repetition:
+count substrings as well as split sentences,
 since setting a text on its lines changes what a sentence splitter sees.
 
 #### L14(d): model-written and quoted text rendered raw on line-based sheets
 
-Status: fixed in `3be658509`, guarded red first in `25d549aea`, with every line end pinned in `bfc458ad3`;
+Status:
+fixed in `3be658509`,
+guarded red first in `25d549aea`,
+with every line end pinned in `bfc458ad3`;
 found while fixing L14(a).
 The panel sheet renders each evidence quote raw after `- evidence (SIDE): `,
 and both the panel and checker sheets render each claim summary raw.
 349 quotes and 3 of 23,714 summaries over every artifact carry a line break,
 so their later lines stand as unlabelled lines between claims.
-None opened a `CLAIM`, `GROUP`, `ISSUE` or `REGION` line in the artifacts measured,
+None opened a `CLAIM`,
+`GROUP`,
+`ISSUE` or `REGION` line in the artifacts measured,
 but a quote or summary may,
 and a forged opening line renumbers every ballot after it.
 The same raw summary split the filing log lines (`claim-filers.ts`),
@@ -2997,84 +4754,142 @@ and the grading sheet rendered quotes raw where the repair sheet folded them.
 
 The fix (`sheet-line-text.ts`):
 a summary is one sentence of prose and folds onto one line with `flattenSpace`
-(moved there from `introduced-defect-screen.ts`, since the probe wire now needs it and the screen imports the wire);
+(moved there from `introduced-defect-screen.ts`,
+since the probe wire now needs it and the screen imports the wire);
 a panel quote is evidence and keeps its lines,
 each later one indented under its evidence item by `indentContinuation`,
 so 99 percent of panel quotes stay byte-identical;
 the grading sheet folds quotes as the repair sheet did;
-the checker JSON also escapes NEL, LS and PS, which `JSON.stringify` leaves raw.
-The helper treats LF, VT, FF, CR, NEL, LS and PS as line ends and CR LF as one;
-none of the 45,860 quotes carried VT, FF, NEL, LS or PS
-(`~/temp/agent/audit-glossary-fix/l14-unicode-breaks.mjs`), so those are covered for the class, not for a seen case.
-Mutation check: 20 mutants over each fold, the indent, CR LF and each line end, all caught,
+the checker JSON also escapes NEL,
+LS and PS,
+which `JSON.stringify` leaves raw.
+The helper treats LF,
+VT,
+FF,
+CR,
+NEL,
+LS and PS as line ends and CR LF as one;
+none of the 45,860 quotes carried VT,
+FF,
+NEL,
+LS or PS
+(`~/temp/agent/audit-glossary-fix/l14-unicode-breaks.mjs`),
+so those are covered for the class,
+not for a seen case.
+Mutation check:
+20 mutants over each fold,
+the indent,
+CR LF and each line end,
+all caught,
 with the control surviving in a separate run
-(the first spec's control pattern opened and closed the region, so the harness skipped it).
-Cache: rides inside repair 34 and refine 5, same check, same result.
+(the first spec's control pattern opened and closed the region,
+so the harness skipped it).
+Cache:
+rides inside repair 34 and refine 5,
+same check,
+same result.
 
 ## Docs and comments against code
 
-Probe scripts: `~/temp/agent/audit-docs2/`
-(`backticks.mjs`, `repo-wide.mjs`, `examples.mjs`, `owner-quotes.mjs`, `hygiene.mjs`, `class-dates.mjs`, `pairing.mjs`).
+Probe scripts:
+`~/temp/agent/audit-docs2/`
+(`backticks.mjs`,
+`repo-wide.mjs`,
+`examples.mjs`,
+`owner-quotes.mjs`,
+`hygiene.mjs`,
+`class-dates.mjs`,
+`pairing.mjs`).
 Roster values were computed from `src/corpus-run/run-config.ts` itself:
-`RUN_ROSTER` 9 seats, `RUN_READER_MODELS` 6, 7 wide seats, 8 late judges.
+`RUN_ROSTER` 9 seats,
+`RUN_READER_MODELS` 6,
+7 wide seats,
+8 late judges.
 Paths below are package-relative.
 
 ### D1: the README says the editor roster check still requires disinterested judges
 
-Status: fixed in `4397d7d2a`.
-`README.md:301-303`; `repair-contract.ts:224-229` says the 2026-08-14 ruling removed that requirement,
-and the check refuses only repeats, no editor, or judge capacity short of the minimum weight.
+Status:
+fixed in `4397d7d2a`.
+`README.md:301-303`;
+`repair-contract.ts:224-229` says the 2026-08-14 ruling removed that requirement,
+and the check refuses only repeats,
+no editor,
+or judge capacity short of the minimum weight.
 
 ### D2: the schema generation the pass writes is misstated in three places
 
-Status: Markdown fixed in `4397d7d2a` (generations 1 and 2 use the chunk spelling, 3 is mixed);
-the two `.ts` comments fixed in `a25f09b2e` on 2026-09-28, found open while writing the status page's open list:
-V14 now says it is what the pass writes, and the older history says where versions 10 to 14 are recorded.
-`doc/configuration.md:326`, `:334`, `:352` say generation 4 and three generations;
+Status:
+Markdown fixed in `4397d7d2a` (generations 1 and 2 use the chunk spelling,
+3 is mixed);
+the two `.ts` comments fixed in `a25f09b2e` on 2026-09-28,
+found open while writing the status page's open list:
+V14 now says it is what the pass writes,
+and the older history says where versions 10 to 14 are recorded.
+`doc/configuration.md:326`,
+`:334`,
+`:352` say generation 4 and three generations;
 `artifact-schema-version.ts:34` says V7;
 `corpus-run/artifact-two-lane-contract.ts:36` says V12.
-The pass writes V14 (`corpus-run/artifact-two-lane-build.ts:260`, `corpus-run/pass-schema-guard.ts:426`)
+The pass writes V14 (`corpus-run/artifact-two-lane-build.ts:260`,
+`corpus-run/pass-schema-guard.ts:426`)
 and reads generations 1 to 14.
 `artifact-schema-version.ts:42-90` stops its history at version 9.
 
 ### D3: pull-request runs are documented through a variable nothing reads
 
-Status: fixed in `4397d7d2a` (two probe variables were also missing);
+Status:
+fixed in `4397d7d2a` (two probe variables were also missing);
 two repo docs outside the package still name the variable (D18).
 `doc/configuration.md:293-295` names `TRANSLATION_REPAIR_CORPUS_DIR` and an uncommitted fork;
 production reads `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_CORPUS_COMMIT`
-(`corpus-run/corpus-pin-override.ts`), documented nowhere in the package.
+(`corpus-run/corpus-pin-override.ts`),
+documented nowhere in the package.
 `doc/configuration.md:5` claims every knob is listed and omits six.
 
 ### D4: the OpenRouter checker substitute is misnamed
 
-Status: fixed in `4397d7d2a`, then superseded by `f10de5198`, which replaced the substitute with the measured order.
+Status:
+fixed in `4397d7d2a`,
+then superseded by `f10de5198`,
+which replaced the substitute with the measured order.
 `doc/design-commitments.md:177` says gemma-4-26b-a4b-it;
 `corpus-run/run-seats.ts:113` has `google.gemma-4-e2b`.
 
 ### D5: the removed preparation layer is described in the present tense
 
-Status: fixed in `4397d7d2a`;
-the `.ts` comments still describing it, which this entry counted as two, ran through eight source files
+Status:
+fixed in `4397d7d2a`;
+the `.ts` comments still describing it,
+which this entry counted as two,
+ran through eight source files
 and were rewritten under D16 (`5a5079549`),
 and the two fields kept only for it were removed under D20 (`89a15887a`).
 `doc/seats-and-calibration.md:50-239` names about fifteen identifiers,
 four artefacts and two mise tasks removed in `cbedea357`;
 `:124` claims a bootstrap build dependency `mise.toml` no longer has.
-`blockPairingQuestion`, `blockPairingProtocol` and `prepareBlockPairing` survive.
+`blockPairingQuestion`,
+`blockPairingProtocol` and `prepareBlockPairing` survive.
 
 ### D6: stale constants and counts in the docs
 
-Status: Markdown fixed in `4397d7d2a`; `corpus-run/run-config.ts:785` fixed in `79b749388`
-(the comment was right when written on 2026-07-26, at a 90 minute cap, and went stale at each raise).
-`doc/pictures.md:89` says 8 MiB (7 MiB since 2026-08-22, `image-reading-stage.ts:120`);
+Status:
+Markdown fixed in `4397d7d2a`;
+`corpus-run/run-config.ts:785` fixed in `79b749388`
+(the comment was right when written on 2026-07-26,
+at a 90 minute cap,
+and went stale at each raise).
+`doc/pictures.md:89` says 8 MiB (7 MiB since 2026-08-22,
+`image-reading-stage.ts:120`);
 `doc/configuration.md:18` says a run without the Synthetic key throws (every key is optional,
 `corpus-run/run-providers.ts:94-130`);
 `doc/configuration.md:201` says a stalled entry drops after its second try (its first,
 `corpus-run/entry-reattempt.ts:214-223`);
-the picture reader count is four or five in `README.md:353`, `doc/pictures.md:54`,
+the picture reader count is four or five in `README.md:353`,
+`doc/pictures.md:54`,
 `doc/slice-context.md:316` and `image-reading-stage.ts:17,21` (six);
-`README.md:109` says 20 Synthetic slots across four models (two models, 10);
+`README.md:109` says 20 Synthetic slots across four models (two models,
+10);
 `README.md:287` misdescribes stage quorum retries (`stage-quorum.ts:337-376`);
 `doc/seats-and-calibration.md:458` says ten editors (nine);
 `corpus-run/run-config.ts:785` says a 90 minute entry ceiling (420);
@@ -3082,23 +4897,32 @@ the picture reader count is four or five in `README.md:353`, `doc/pictures.md:54
 
 ### D7: the OpenRouter routing description is stale
 
-Status: fixed in `4397d7d2a`.
+Status:
+fixed in `4397d7d2a`.
 `doc/configuration.md:73,81-85` and `doc/roster-changes.md:25-31`
 against `model-cards.ts:209,320-328` and `openrouter-catalog.ts:98-100,263`.
 
 ### D8: comments name functions that never existed
 
-Status: fixed in `8ce84fb73`, which also fixed D16's `SLICE_SPELLED_KEYS` part.
+Status:
+fixed in `8ce84fb73`,
+which also fixed D16's `SLICE_SPELLED_KEYS` part.
 `image-reading-pair.ts:393` names `runStageRound` (`runGatherRound`);
 `declined-target-runs.ts:44` names `pairBlocksAcrossRoster` (`pairBlocksWithRoster`);
 `artifact-key-vocabulary.ts:19,47,104` miscounts its keys and misdates a table.
 
 ### D9: examples call the wrong function or pass keys it does not take
 
-Status: fixed in `d43933e6e` (red guard `d181e7c9b`, `tsdoc-example-scan.unit.test.ts`),
+Status:
+fixed in `d43933e6e` (red guard `d181e7c9b`,
+`tsdoc-example-scan.unit.test.ts`),
 which scans every source file's `@example` against the function it documents.
-Mutation check: dropping the callee report, the key check, a required key from a source example,
-or counting defaulted keys as required was each caught; the control survived.
+Mutation check:
+dropping the callee report,
+the key check,
+a required key from a source example,
+or counting defaulted keys as required was each caught;
+the control survived.
 The scan flags an example only when it never names its function,
 since an example may pass a predicate by name rather than call it.
 Wrong callee or keys:
@@ -3113,18 +4937,23 @@ Wrong callee or keys:
 These omit a required key:
 `apply-patch.ts:194` and `editor-ensemble.ts:472` (`preservation`),
 `corpus-run/artifact-two-lane-consolidate.ts:446` (`sliceIndex`),
-`corpus-run/artifact-two-lane-read-contest.ts:68` (`keys`, `generation`, `comparison`),
+`corpus-run/artifact-two-lane-read-contest.ts:68` (`keys`,
+`generation`,
+`comparison`),
 `corpus-run/artifact-two-lane-read-rows.ts:52,140,278` (`keys`),
 `corpus-run/band-order.ts:140` (`settledPerBand`),
 `corpus-run/bench-sample.ts:81` (`pin`),
 `corpus-run/pass-entry-artifact.ts:56` (`pageAssembly`),
-`corpus-run/pass-entry.ts:586` (`publishDir`, `declinedDir`),
+`corpus-run/pass-entry.ts:586` (`publishDir`,
+`declinedDir`),
 `corpus-run/rendering-audit-settled-input.ts:282` (`runSetDir`),
 `corpus-run/title-reference-locate.ts:411` and `corpus-run/title-reference-marks.ts:193` (`rendering`),
 `document-readings.ts:74` (`readOcr`),
 `front-matter.ts:320` (`openLength`),
 `lane-slice-text.ts:196` (`notApplicableHere`),
-`pair-agreement.ts:175` (`pairings`, `needed`, `pairingShape`),
+`pair-agreement.ts:175` (`pairings`,
+`needed`,
+`pairingShape`),
 `refine-eligibility.ts:224` (`minimumChars`),
 `refine-slice-settle.ts:460` (`refineContributors`),
 `repair-chunk-verdict.ts:108` and `repair-refine-step.ts:95` (`declaredNames`),
@@ -3132,18 +4961,26 @@ These omit a required key:
 `sample-manifest.ts:166` (`generation`),
 `slice-cost-log.ts:189` (`signal`),
 `stream-drain.ts:191` (`label`).
-The probe checked `function` declarations only, not arrow functions, methods or types.
+The probe checked `function` declarations only,
+not arrow functions,
+methods or types.
 
 ### D10: owner quotes not in the record
 
-Status: fixed in `7b2d382bc`; the first cites the paraphrase's decision record, the second quotes in full.
+Status:
+fixed in `7b2d382bc`;
+the first cites the paraphrase's decision record,
+the second quotes in full.
 `provider-name.ts:11` quotes the owner in the first person where the records hold a paraphrase;
-`translate-runoff-tie.ts:25` truncates "prefer the best valid proposal, else fail the slice at once".
+`translate-runoff-tie.ts:25` truncates "prefer the best valid proposal,
+else fail the slice at once".
 
 ### D11: status and hygiene
 
-Status: Markdown fixed in `4397d7d2a` except the ALL-CAPS paragraphs it did not touch (D19);
-`seat-tally.ts:326` fixed in `59fb991c7`, which gives the decision-seat tally its real reason
+Status:
+Markdown fixed in `4397d7d2a` except the ALL-CAPS paragraphs it did not touch (D19);
+`seat-tally.ts:326` fixed in `59fb991c7`,
+which gives the decision-seat tally its real reason
 (the `SEAT` lines and the dark-seat report).
 `doc/status.md` puts its history under the current heading,
 names a consolidation cache generation 14 that collides with artifact schema generation 14,
@@ -3151,7 +4988,8 @@ says `assertFinalSelectionSettled` remains (removed in `1ba8f713a`),
 and calls a 2026-08-26 audit current evidence.
 ALL-CAPS emphasis across the docs,
 lines over 120 characters in `doc/slice-context.md` and `doc/status.md`,
-positional references (`doc/configuration.md:328`, `doc/status.md:105,123`),
+positional references (`doc/configuration.md:328`,
+`doc/status.md:105,123`),
 an italic (`doc/status.md:428`),
 unbackticked model ids,
 double blank lines,
@@ -3160,42 +4998,59 @@ mixed list markers in the README.
 
 ### D12: class dates and clock times
 
-Status: fixed in `3a1706795` (every Markdown clock time carries a zone, checked in `4397d7d2a`).
+Status:
+fixed in `3a1706795` (every Markdown clock time carries a zone,
+checked in `4397d7d2a`).
 The owner answered "Major+ accuracy" and "Slate's choice" at 01:59:59 UTC on 2026-09-27,
 and six places carried the local day before it.
-Of the four dates named here, class one hundred seventy-eight's was right
+Of the four dates named here,
+class one hundred seventy-eight's was right
 (its run began at 20:12 UTC on 2026-09-26),
 and the class seventy-seven site carries no date to correct.
 A census of every owner-answer date against the transcript timestamps belongs to #367.
 The finding as first recorded:
 four class dates match only the local day of their commit
-(class seventy-seven, one hundred seventy-six, one hundred seventy-seven, one hundred seventy-eight);
+(class seventy-seven,
+one hundred seventy-six,
+one hundred seventy-seven,
+one hundred seventy-eight);
 `corpus-run/run-seats-wait.ts:14-18` and `corpus-run/run-seats.ts:66-67` give clock times with no zone.
 
 ### D13: a setting documented as read by launch logs that nothing reads
 
-Status: fixed in `0df81f0c1`: `corpus-pass` prints `CORPUS PIN OVERRIDDEN`
-naming the clone, the commit and each one's source whenever either comes from the environment;
+Status:
+fixed in `0df81f0c1`:
+`corpus-pass` prints `CORPUS PIN OVERRIDDEN`
+naming the clone,
+the commit and each one's source whenever either comes from the environment;
 `doc/configuration.md` said no launch line did until `f921e8f0e`.
-`corpus-run/run-config.ts:875-879`: the `RUN_CORPUS_PIN_SETTING` TSDoc says "for launch logs",
-but nothing reads it, so no launch line names where the corpus pin came from.
+`corpus-run/run-config.ts:875-879`:
+the `RUN_CORPUS_PIN_SETTING` TSDoc says "for launch logs",
+but nothing reads it,
+so no launch line names where the corpus pin came from.
 
 ### D14: an invalid Hyper request rate is not refused
 
-Status: fixed in `f69912818` (red guard `2fc22b098`): a set value that is not a positive number is a stated refusal.
+Status:
+fixed in `f69912818` (red guard `2fc22b098`):
+a set value that is not a positive number is a stated refusal.
 `request-pace.ts:305` falls back to the default rate for an invalid `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR`,
 where every other dial refuses an invalid value.
 
 ### D15: probe variables exported empty are used as given
 
-Status: fixed in `ea0493bd5` (red guard `89caeda65`): both read through `textSettingOf`,
+Status:
+fixed in `ea0493bd5` (red guard `89caeda65`):
+both read through `textSettingOf`,
 which folds an exported-empty variable into its fallback as `artifact-pool.ts` does.
 `corpus-run/damage-sample.ts:267` and `corpus-run/score-verify.ts:199` read their variables with `??`,
 so an exported-empty `DAMAGE_SAMPLE_SEED` or `VERIFY_SHEET_BASENAME` is used rather than defaulted or refused.
 
 ### D16: stale comments on providers and removed features
 
-Status: fixed in `5a5079549`, the fence test in `9f20342b1`;
+Status:
+fixed in `5a5079549`,
+the fence test in `9f20342b1`;
 the `SLICE_SPELLED_KEYS` part in `8ce84fb73` (D8).
 `corpus-run/budget-sample.ts:14-27,54-55` says "both providers" (four);
 `block-pairing-question.ts:41` and `block-pairing-protocol.ts:63` mention replay and receipt planning
@@ -3203,113 +5058,213 @@ that `cbedea357` removed;
 the `SLICE_SPELLED_KEYS` TSDoc in `artifact-key-vocabulary.ts` says generation 3 writes the slice spelling
 and its header compares generations 1 and 2 with 4.
 
-The two block-pairing sites were a family, not a pair (M35).
-A search for the removed layer's vocabulary (receipt, replay, recipe, retally, qualification, calibration pool)
-found the same framing in `block-pairing-question-key.ts`, `pair-blocks-read-outcomes.ts`, `pair-blocks-stage.ts`,
-`prepare-block-pairing.ts`, `queried-block-pairing-details.ts` and `prepare-with-pairing.ts`,
-and in two test names; all were rewritten to say what the code does now.
+The two block-pairing sites were a family,
+not a pair (M35).
+A search for the removed layer's vocabulary (receipt,
+replay,
+recipe,
+retally,
+qualification,
+calibration pool)
+found the same framing in `block-pairing-question-key.ts`,
+`pair-blocks-read-outcomes.ts`,
+`pair-blocks-stage.ts`,
+`prepare-block-pairing.ts`,
+`queried-block-pairing-details.ts` and `prepare-with-pairing.ts`,
+and in two test names;
+all were rewritten to say what the code does now.
 `budget-sample.ts` now names the four meters (three endpoints and the Bedrock spend ledger)
 and its `@throws` names `StatedRefusalError`.
 
 Found while fixing:
 `pair-blocks-wire.ts` and `pair-sections-wire.ts` said their fence guards against a run of backticks
 and gave a backtick fence in their examples;
-`selectFence` has fenced with `=` since `b111fc376`, before either sheet was written.
+`selectFence` has fenced with `=` since `b111fc376`,
+before either sheet was written.
 The section sheet's fence test fed a fixture holding backticks only,
 so a builder that ignored the content and fenced with a fixed `=====` passed it:
-that mutant survived, the block sheet's twin was caught, and the control survived.
+that mutant survived,
+the block sheet's twin was caught,
+and the control survived.
 The fixture now carries a setext underline,
 and the test first checks that the line it reads is the fence around that fixture;
 the mutant is now caught by both files' runs.
 
 ### D17: the recovery round re-asks only the last round's unreadable seats
 
-Status: fixed with P2 (`005692e11`, guard `3549b74be`);
-the README described the old behaviour until the P1 documentation commit, which now says what P2 does.
+Status:
+fixed with P2 (`005692e11`,
+guard `3549b74be`);
+the README described the old behaviour until the P1 documentation commit,
+which now says what P2 does.
 `stage-quorum.ts` set `unreadable = answeredBadly` each round,
 so a seat that answered unreadably in an earlier round was not re-asked.
 
 ### D18: repo docs name a corpus variable nothing reads
 
-Status: fixed in `f921e8f0e`.
+Status:
+fixed in `f921e8f0e`.
 The variable belonged to the uncommitted fork the pull-request 386 runs used on 2026-08-29;
 production has read `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_CORPUS_COMMIT`
 since `b0a79eb66` (2026-09-01).
-The runbook now names those; the handover keeps its history with a note saying so.
+The runbook now names those;
+the handover keeps its history with a note saying so.
 `doc/runbook/translation-repair-corpus-pass.md:38` and `doc/handover/translation-repair-handover-2026-08-29.md:379`
 name `TRANSLATION_REPAIR_CORPUS_DIR`.
 
 ### D19: ALL-CAPS emphasis left in untouched paragraphs
 
-Status: fixed in `069b4df46`.
-Emphasis became sentence case, bold where the stress carries meaning;
+Status:
+fixed in `069b4df46`.
+Emphasis became sentence case,
+bold where the stress carries meaning;
 the three seat states `producer-silence.ts` prints became code spans in prose rather than labelled bullets.
-A probe over every package Markdown file, not only the list below,
-found four more in `doc/repetition.md` and four in this ledger, fixed in the same commit.
-Kept: the owner's words quoted in `doc/status.md` and sheet text quoted in this ledger.
-`README.md`, `doc/configuration.md`, `doc/design-commitments.md`, `doc/pictures.md`,
-`doc/provider-availability.md`, `doc/roster-changes.md`, `doc/seats-and-calibration.md`,
+A probe over every package Markdown file,
+not only the list below,
+found four more in `doc/repetition.md` and four in this ledger,
+fixed in the same commit.
+Kept:
+the owner's words quoted in `doc/status.md` and sheet text quoted in this ledger.
+`README.md`,
+`doc/configuration.md`,
+`doc/design-commitments.md`,
+`doc/pictures.md`,
+`doc/provider-availability.md`,
+`doc/roster-changes.md`,
+`doc/seats-and-calibration.md`,
 `doc/slice-context.md` and `doc/status.md` keep ALL-CAPS emphasis in paragraphs the D fixes did not reach
 (the docs agent's report of 2026-09-27 lists the lines).
 
 ### D20: pairing fields kept only for the removed preparation layer
 
-Status: fixed in `89a15887a`, found while fixing D16.
-`BlockPairingOutcome.outcomes` (`919e517e4`, 2026-09-11) carried every asked seat's reply,
-and `PreparedBlockPairing.evidence` with its type `PreparedBlockEvidence` (`536cd7445`, 2026-09-11)
+Status:
+fixed in `89a15887a`,
+found while fixing D16.
+`BlockPairingOutcome.outcomes` (`919e517e4`,
+2026-09-11) carried every asked seat's reply,
+and `PreparedBlockPairing.evidence` with its type `PreparedBlockEvidence` (`536cd7445`,
+2026-09-11)
 said whether a section's relations came from the cache or the roster;
 both were added for the receipt and replay layer `cbedea357` removed,
 and after it only tests read them.
-Removed by the criterion `cbedea357` itself used: nothing a pass or probe reaches reads them.
-The pairing cache stores `{ pairs, findings }` alone, before and after, so no cache version moves.
-The tests that read the fields now assert heard and usable counts, findings, exact pairs and call counts;
-the census of those tests first named four files, and the type check named two more (M33).
+Removed by the criterion `cbedea357` itself used:
+nothing a pass or probe reaches reads them.
+The pairing cache stores `{ pairs, findings }` alone,
+before and after,
+so no cache version moves.
+The tests that read the fields now assert heard and usable counts,
+findings,
+exact pairs and call counts;
+the census of those tests first named four files,
+and the type check named two more (M33).
 
 ### D21: log-line and status names in this ledger outside code spans
 
-Status: fixed, found while fixing D19.
+Status:
+fixed,
+found while fixing D19.
 Eighteen lines of this ledger named a line or status the package prints
-(`SPEND`, `METERS`, `SEAT`, `TALLY`, `DONE`, `ERROR`, `INCOMPLETE`, `REFUSED`, `SURVIVED`, `[PASS]`, `[FAIL]`)
-as bare capitals, where the other docs span them; one of them was written on 2026-09-28 closing D11.
+(`SPEND`,
+`METERS`,
+`SEAT`,
+`TALLY`,
+`DONE`,
+`ERROR`,
+`INCOMPLETE`,
+`REFUSED`,
+`SURVIVED`,
+`[PASS]`,
+`[FAIL]`)
+as bare capitals,
+where the other docs span them;
+one of them was written on 2026-09-28 closing D11.
 One line named a log file bare as well.
 A probe over every package Markdown file found none outside this ledger.
 
 ### D22: task-list numbers used as references across the package
 
-Status: open, found 2026-09-28 while recording M48.
-The owner's rule forbids task-list numbers in commit messages and docs, because they resolve to unrelated GitHub issues.
+Status:
+open,
+found 2026-09-28 while recording M48.
+The owner's rule forbids task-list numbers in commit messages and docs,
+because they resolve to unrelated GitHub issues.
 A census (`~/temp/agent/audit-glossary-fix/hash-number-census.mjs`) found 588 of them in 331 package files:
-368 in source files, 182 in test files, 21 in Markdown and 17 in `mise.toml` task descriptions,
+368 in source files,
+182 in test files,
+21 in Markdown and 17 in `mise.toml` task descriptions,
 126 distinct numbers from 36 to 474.
-Of those checked against the repository's issues, every one names unrelated work
-(catalog readers, a nested Wayland fixture, webapp ports), and the three real issues cited (576 to 578) are excluded.
+Of those checked against the repository's issues,
+every one names unrelated work
+(catalog readers,
+a nested Wayland fixture,
+webapp ports),
+and the three real issues cited (576 to 578) are excluded.
 The numbers also fail as internal references:
 the transcripts show one number given to two or more different tasks in different sessions
 (the number cited 58 times names both a picture-reader measurement and the relocation question),
 so a reader cannot recover which was meant.
-No rendered model-facing sheet carries one (38 sheets, 0 found; a control line is found).
-Fix: each reference becomes what it named, from its own context:
-a ledger entry, a doc heading, a commit, or the prose that already states the finding, with the number dropped.
+No rendered model-facing sheet carries one (38 sheets,
+0 found;
+a control line is found).
+Fix:
+each reference becomes what it named,
+from its own context:
+a ledger entry,
+a doc heading,
+a commit,
+or the prose that already states the finding,
+with the number dropped.
+
+### D23: package docs never read by the repository's Markdown linter
+
+Status:
+fixed 2026-09-28,
+found while recording M53.
+The repository lints Markdown with `@monochromatic-dev/cli-markdown-lint` (`mise run lint:markdown`).
+Over the package's 11 Markdown files it reported 3,344 findings:
+3,343 `semantic-line-breaks`
+(a line break belongs after a prose break point,
+so each clause stands on its own line)
+and one `MD034`
+(a bare URL,
+in this ledger's MQM citation).
+Every finding was fixable,
+and the linter's `--fix` cleared all of them.
+Rendered with micromark before and after,
+with whitespace runs collapsed,
+all 11 files render the same except that citation,
+which is now a link;
+the comparison first reported exactly that difference,
+so it can see one.
 
 ## Found while fixing
 
 ### X1: the translate lane stopped the entry on a rejected slate over an archive the floor refuses
 
-Status: fixed with the fifteenth addendum's translate-lane extension (sixteenth addendum).
+Status:
+fixed with the fifteenth addendum's translate-lane extension (sixteenth addendum).
 `translate-stage.ts` treats an archive failing the floor as an absent incumbent;
 two rejected production rounds rethrew `TranslateAbsenceError`,
 and `translate-slice-attempt.ts` rethrows it for a content slice,
 so the entry stopped.
-Guard: `slate-decline-ships-by-preference.unit.test.ts` (the translate stage case).
+Guard:
+`slate-decline-ships-by-preference.unit.test.ts` (the translate stage case).
 
 ### X2: a scripted gather-stage test's seat rotation depends on its prompt text
 
-Status: fixed in `87acdb4d9`: `attestCitedReferences` takes the optional `fanOut` `pairBlocksWithRoster` takes,
-threaded to both of its gathers, and the four scripted cases ask the whole bench.
+Status:
+fixed in `87acdb4d9`:
+`attestCitedReferences` takes the optional `fanOut` `pairBlocksWithRoster` takes,
+threaded to both of its gathers,
+and the four scripted cases ask the whole bench.
 Checked by shifting the hash's offset basis:
-three shifted offsets failed the pre-fix tests (2, 4 and 2 failures),
-the fixed tests passed under the two offsets run against them, and the control survived every run.
-The window's own tests pass under any offset, rightly: another offset is another valid rotation.
+three shifted offsets failed the pre-fix tests (2,
+4 and 2 failures),
+the fixed tests passed under the two offsets run against them,
+and the control survived every run.
+The window's own tests pass under any offset,
+rightly:
+another offset is another valid rotation.
 `stage-fanout-window.ts` picks the seats to ask by an FNV-1a hash of the prompt modulo the roster size,
 so rewording a fixture changes which scripted seat is heard;
 `reference-attest.unit.test.ts` and `reference-attest-confirm.unit.test.ts`
@@ -3319,10 +5274,13 @@ A test that depends on which seat is heard should pin the rotation rather than i
 
 ### X3: comments and TSDoc quoting corpus text or handles in source files
 
-Status: the method quote fixed in `a96bf1f4a`, which also replaced a TSDoc example naming the method;
+Status:
+the method quote fixed in `a96bf1f4a`,
+which also replaced a TSDoc example naming the method;
 the rest waits on the owner's end-of-project sanitization.
 `reference-attest-match.ts:18-19,29-30,48-50`,
-`translate-suicide-drop.ts:4-21` (quotes a method, a date and handles),
+`translate-suicide-drop.ts:4-21` (quotes a method,
+a date and handles),
 `rendering-glossary-phrasing.ts:56,76-79`,
 `archive-original-note.ts:37-53`,
 `markdown-blocks.ts:13`,
@@ -3331,64 +5289,100 @@ the rest waits on the owner's end-of-project sanitization.
 `corpus-run/run-config.ts:106`,
 `image-asset.ts:45`,
 `image-reading-stage.ts:98`;
-and in untouched tests, names in comments and test names
-(XingZ60 32, hakureico 23, Toka_ls 6, gqt 6, Yumao 5, aiyysk 3, lintong 3, 羽毛 3, Ling 2, Hanasaka 1),
+and in untouched tests,
+names in comments and test names
+(XingZ60 32,
+hakureico 23,
+Toka_ls 6,
+gqt 6,
+Yumao 5,
+aiyysk 3,
+lintong 3,
+羽毛 3,
+Ling 2,
+Hanasaka 1),
 Yumao and 羽毛 as string literals.
 The owner defers sanitization to the project's end;
 the method quote in `translate-suicide-drop.ts` is the one the reader-protection rule covers now.
 
 ### X4: the consolidation producers' repair turn re-checked revisions without the declared names
 
-Status: fixed with the sixteenth addendum.
+Status:
+fixed with the sixteenth addendum.
 `consolidate-produce.ts` validated each proposal with `subject.declared`
 and passed no `declared` to `repairInvalidCandidates`,
 so a revision that dropped a declared name passed the re-check.
 
 ### X5: neither slice key named the archive dispute
 
-Status: fixed with the sixteenth addendum.
+Status:
+fixed with the sixteenth addendum.
 `translateSliceKey` and `consolidateSliceKey` hashed the texts but not the dispute note,
 so a slice judged under accepted claims could resume a record settled for the same texts undisputed,
 and with the archive as incumbent on an unresolved dispute the texts would be identical.
 
 ### X6: the translate lane's refusals keep an archive the floor refuses
 
-Status: fixed in `6445a2e35` (guard `ee3a551e3`; mutation checked with a control, three mutants caught).
-`translate-slice.ts` gates its alignment, quote-loss and declared-name refusals on the slice having archive wording,
+Status:
+fixed in `6445a2e35` (guard `ee3a551e3`;
+mutation checked with a control,
+three mutants caught).
+`translate-slice.ts` gates its alignment,
+quote-loss and declared-name refusals on the slice having archive wording,
 not on that wording passing the floor,
 so a replacement refused there ships the floor-refused archive as the lane's text
 (shihai4h2 slice 14 kept a 1665-code-point archive against a 102-character source);
 the consolidation then refuses it as a standing.
-The disputed case no longer does this; the floor-refused case needs the stage's eligibility on the record.
+The disputed case no longer does this;
+the floor-refused case needs the stage's eligibility on the record.
 Measured 2026-09-28 over 975 run logs (`~/temp/agent/audit-glossary-fix/x6-census.mjs`):
-of 1,771 translate refusals, up to 47 were followed by the consolidation refusing that slice's standing,
+of 1,771 translate refusals,
+up to 47 were followed by the consolidation refusing that slice's standing,
 46 for a link the original carries and 1 for the untranslated pronoun;
 "up to" because the census cannot tell which lane the refused standing came from.
 The slice now asks `validateTranslatedSlice` the consolidation's standing question from the same inputs
-(`translate-archive-floor.ts`), and a refused archive is kept by no refusal:
-the judges' replacement goes on, the record carries `translate-archive-ineligible`, and a log line gives the rule's reason.
-A first fixture put a link in the original, which re-paired the section as an insertion and failed for the wrong reason;
-the guard uses the pronoun floor, which reads only the text.
+(`translate-archive-floor.ts`),
+and a refused archive is kept by no refusal:
+the judges' replacement goes on,
+the record carries `translate-archive-ineligible`,
+and a log line gives the rule's reason.
+A first fixture put a link in the original,
+which re-paired the section as an insertion and failed for the wrong reason;
+the guard uses the pronoun floor,
+which reads only the text.
 Rides inside the translate cache version 15 with a written account.
-The 47 measures the symptom, not the fix's reach, which is unmeasured on the agreement path:
-where the repair lane also left the archive, a kept archive made the lanes agree and shipped with no floor,
-leaving no consolidation line, and such slices now go through the contest and the consolidation.
-An original the grammar cannot read (`unknown`) lifts the refusals too, as the consolidation refuses that standing alike.
-Not a launch factor: no TianqiChen666 run refused anything in the translate lane.
+The 47 measures the symptom,
+not the fix's reach,
+which is unmeasured on the agreement path:
+where the repair lane also left the archive,
+a kept archive made the lanes agree and shipped with no floor,
+leaving no consolidation line,
+and such slices now go through the contest and the consolidation.
+An original the grammar cannot read (`unknown`) lifts the refusals too,
+as the consolidation refuses that standing alike.
+Not a launch factor:
+no TianqiChen666 run refused anything in the translate lane.
 
 ### X7: windowed stages re-ask a seat the router refused
 
-Status: fixed with guard `9466786dc`, fix `84a6caa02`.
+Status:
+fixed with guard `9466786dc`,
+fix `84a6caa02`.
 `stage-windowed-rounds.ts` put every seat that never answered back on its pending list,
 a refused one included,
-so the lane contest, pairing, the gate, the naturalness review and the polish gate
+so the lane contest,
+pairing,
+the gate,
+the naturalness review and the polish gate
 re-asked a seat no wet provider served in every retry round
 (a four-seat fixture asked it four times).
-`stage-quorum.ts` fixed the same defect on 2026-09-09 (`hulicaijia`); this path never got it.
+`stage-quorum.ts` fixed the same defect on 2026-09-09 (`hulicaijia`);
+this path never got it.
 
 ### X8: windowed stages size quorum over the seated bench
 
-Status: fixed with E3 in `29baade8f` (red guards `a6cbd8fc5`):
+Status:
+fixed with E3 in `29baade8f` (red guards `a6cbd8fc5`):
 `runWindowedRounds` re-sizes its quorum with `reachableQuorum` before every round,
 and the five stages beside the naturalness review carry `stage-short-bench` in their findings.
 
@@ -3402,22 +5396,31 @@ without the `stage-short-bench` finding the gathers carry.
 
 ### X9: code indented against its nesting, which no check reads
 
-Status: fixed in `632ef5fbc` and `f7b766fa4`; enforcement is issue #577.
-`runCriticBenchmark`'s inner attempt, its `try` body and its retry block sat two to three levels too deep
+Status:
+fixed in `632ef5fbc` and `f7b766fa4`;
+enforcement is issue #577.
+`runCriticBenchmark`'s inner attempt,
+its `try` body and its retry block sat two to three levels too deep
 for about 190 lines of `benchmark.ts`;
 a test body in `repair-translation.unit.test.ts` dropped two spaces for about 60 lines,
 and the stall case in `stream-idle-guard.unit.test.ts` left an argument and its assertions too shallow.
-All were lint-clean: the dprint TypeScript plugin was retired for `oxlint-plugin-stylistic`,
+All were lint-clean:
+the dprint TypeScript plugin was retired for `oxlint-plugin-stylistic`,
 which has no indentation rule.
-A heuristic scan of the 1666 source files flagged 35 lines, the rest being template-literal ends
+A heuristic scan of the 1666 source files flagged 35 lines,
+the rest being template-literal ends
 (`~/temp/agent/audit-repair/indent-scan.mjs`).
 The trailing-comma drift in some test files is not a finding:
 `package/config/oxlint/src/overrides.ts` lets tests lay out calls freely and no config enables `comma-dangle`.
 
 ### X10: a slice carved through an element can never settle, and the stages disagree on `unknown`
 
-Status: fixed in `a499a2fc2` (red guard `f4736eed4`, whose fixture was corrected in the fix; mutation checked).
-The carve was not the cause: NIGHT81473140 slice 22 holds the whole element,
+Status:
+fixed in `a499a2fc2` (red guard `f4736eed4`,
+whose fixture was corrected in the fix;
+mutation checked).
+The carve was not the cause:
+NIGHT81473140 slice 22 holds the whole element,
 an opener and a self-closing component with an expression attribute on one line and the closer on the next,
 and the document and the slice both parse it whole.
 The lone-container masker (`mask-container-tags.ts`) paired whole tag lines only,
@@ -3425,11 +5428,16 @@ so it blanked the closer as unpartnered and left the opener with no end;
 it now pairs against openers and closers of the same names anywhere in the slice (`inline-container-tags.ts`)
 and masks only a tag line left unpaired.
 The deterministic carve of all 92 entries now has 0 of 1,259 slices whose source or translation the slice grammar refuses.
-The stages still disagree on `unknown`, which after this fix means an original the grammar refuses whole,
-where the page would fail the upstream compile as well; none occurs in the pinned corpus, and no change is made there.
+The stages still disagree on `unknown`,
+which after this fix means an original the grammar refuses whole,
+where the page would fail the upstream compile as well;
+none occurs in the pinned corpus,
+and no change is made there.
 The first red guard used a fixture that is not valid MDX even whole (a `span` on the opener line),
-so it failed for a reason other than the defect; the fix commit replaced it with the entry's shape
-and the mutation check (pre-fix masker, rebuilt) showed the corrected case failing.
+so it failed for a reason other than the defect;
+the fix commit replaced it with the entry's shape
+and the mutation check (pre-fix masker,
+rebuilt) showed the corrected case failing.
 
 Found as (the diagnosis below blamed the carve and was wrong):
 NIGHT81473140 slice 22 of the deterministic carve opens a `<blockquote>` that closes in a later slice,
@@ -3437,99 +5445,179 @@ so the strict grammar refuses the original (`end-tag-mismatch` at 1:1) and the v
 The producers read `unknown` as a pass (`translate-floor.ts` keeps any voice not `invalid`;
 `translate-repair.ts` lets it stand with a `translate-unvalidated` finding),
 while every gate reads it as a refusal (`translate-stage.ts` keeps the incumbent off the slate;
-`lane-contest-eligibility.ts`, `consolidate-lane-offer.ts`, `consolidate-standing-verdict.ts`
+`lane-contest-eligibility.ts`,
+`consolidate-lane-offer.ts`,
+`consolidate-standing-verdict.ts`
 and `consolidation-polish-round.ts` accept only `valid`),
 and a candidate that mirrors the cut fails the strict grammar itself and is refused as unparseable.
-The slice can therefore never settle, and the entry stopped;
-since the owner's ruling of 2026-09-27 ("Keep archive, ship") no wording passing the rule keeps the archive there,
-so the entry ships with the slice on its `DEFECTS` line, but the slice is never improved.
-The root is the carve cutting an element; once carving keeps elements whole,
-`unknown` means an original the upstream MDX compile would also refuse, where refusing is right.
-One slice of 1,277 in the replay; no run has reached it (no settled artifact exists for the entry).
+The slice can therefore never settle,
+and the entry stopped;
+since the owner's ruling of 2026-09-27 ("Keep archive,
+ship") no wording passing the rule keeps the archive there,
+so the entry ships with the slice on its `DEFECTS` line,
+but the slice is never improved.
+The root is the carve cutting an element;
+once carving keeps elements whole,
+`unknown` means an original the upstream MDX compile would also refuse,
+where refusing is right.
+One slice of 1,277 in the replay;
+no run has reached it (no settled artifact exists for the entry).
 
 ### X11: the consolidation run shape omitted the slate judges
 
-Status: fixed in `c5ac38345` (red guard `01c8bbad8`;
-mutation checked with a control, the dropped-judges mutant caught).
+Status:
+fixed in `c5ac38345` (red guard `01c8bbad8`;
+mutation checked with a control,
+the dropped-judges mutant caught).
 `9a7d48354` split the slate judges and the gate from the writers on 2026-09-02
 and left them out of `consolidateRunShape`,
 so a settlement another judging bench reached would resume under a bench that never judged it.
 The run shape now carries the judges beside the writers.
-Every consolidation key moved inside version 20, under which no slice-cache file had been written
-(checked 2026-09-28: the newest is the TianqiChen66620 consolidation entry at 00:26 on 2026-09-27).
+Every consolidation key moved inside version 20,
+under which no slice-cache file had been written
+(checked 2026-09-28:
+the newest is the TianqiChen66620 consolidation entry at 00:26 on 2026-09-27).
 The other run shapes carry every bench they ask:
-the translate lane's its writers and judges, refine's its refiners, judges and checkers,
+the translate lane's its writers and judges,
+refine's its refiners,
+judges and checkers,
 the lane contest's its one bench.
 The same commit also folded `checkerSelfCertificationPermitted` into the repair run shape where refused;
 that half was wrong and `6d9b361b4` took it out again (M37).
 
 ### X12: the lane contest, the preparation and the picture readings never re-seat under a hold
 
-Status: fixed in every phase: lane contest, picture readings, insertion admission and preparation.
-Contest: prep `4bd530922`, red guards `5acdd36c6`, fix `2a0ee0272`
-(mutation checked with a control, seven mutants caught).
+Status:
+fixed in every phase:
+lane contest,
+picture readings,
+insertion admission and preparation.
+Contest:
+prep `4bd530922`,
+red guards `5acdd36c6`,
+fix `2a0ee0272`
+(mutation checked with a control,
+seven mutants caught).
 `contestHooksFor` (`corpus-run/pass-contest-reseat.ts`) re-reads the late judges while a hold runs
-and keeps them once it ends; `contestDocumentLanes` seats and keys each slice on them (`shapeFor`),
+and keeps them once it ends;
+`contestDocumentLanes` seats and keys each slice on them (`shapeFor`),
 so a slice nobody re-seated keys as before and no cache version moves.
-The three copies of the hold-and-memo re-seat are now one, `reseatHookFor` (`corpus-run/pass-reseat-hook.ts`):
+The three copies of the hold-and-memo re-seat are now one,
+`reseatHookFor` (`corpus-run/pass-reseat-hook.ts`):
 the consolidation hook moved onto it in `09839c622` and the lanes hook in `df601d839`,
 after `f60abcb15` pinned that each lane keeps its own seating.
-The migrations were mutation checked with a control, followed by the full suite (0 FAIL, 1264 PASS):
-eight mutants caught, one of them only after `87c3d7aaf`.
-The translate hook reading under the lanes phase survived the first run, since no case told the phases apart;
-`87c3d7aaf` does, under the one view of all sixteen that separates them
-(Hyper and OpenRouter dry: the lanes phase finds the editors and refiners short, the translate lane nothing).
+The migrations were mutation checked with a control,
+followed by the full suite (0 FAIL,
+1264 PASS):
+eight mutants caught,
+one of them only after `87c3d7aaf`.
+The translate hook reading under the lanes phase survived the first run,
+since no case told the phases apart;
+`87c3d7aaf` does,
+under the one view of all sixteen that separates them
+(Hyper and OpenRouter dry:
+the lanes phase finds the editors and refiners short,
+the translate lane nothing).
 `awaitBenchQuorum` lost its last caller with them and was removed in `c2e74caeb`,
 with the `run-seats-read.ts` comment that said every driver asks it.
-Pictures: prep `3ef2e210d`, red guards `fcd16ce66`, fix `d69db363a`.
+Pictures:
+prep `3ef2e210d`,
+red guards `fcd16ce66`,
+fix `d69db363a`.
 `picturesHooksFor` (`corpus-run/pass-pictures-reseat.ts`) re-reads the readers while a hold runs;
-`readDocumentPictures` reads and keys each picture by them, and `readSeatedPictures` builds one hook per call,
-since each call reads the seats afresh. The picture key has no version and already folded the readers.
-Mutation checked with a control, then the full suite (0 FAIL, 1266 PASS): four mutants caught, two survived.
-The hook reading under another phase survived because no view tells the pictures, lane contest
-and consolidation phases apart; `1fa856e0d` asserts each hook's logged re-seat line with its exact phase,
+`readDocumentPictures` reads and keys each picture by them,
+and `readSeatedPictures` builds one hook per call,
+since each call reads the seats afresh.
+The picture key has no version and already folded the readers.
+Mutation checked with a control,
+then the full suite (0 FAIL,
+1266 PASS):
+four mutants caught,
+two survived.
+The hook reading under another phase survived because no view tells the pictures,
+lane contest
+and consolidation phases apart;
+`1fa856e0d` asserts each hook's logged re-seat line with its exact phase,
 which caught all four phase mutants and a helper logging no phase.
-The seam dropping the hook survived because no test drives a pass seam: X14.
-The census counts holds after the pictures reading under the pictures, so its 11 in 3 logs is an upper bound:
+The seam dropping the hook survived because no test drives a pass seam:
+X14.
+The census counts holds after the pictures reading under the pictures,
+so its 11 in 3 logs is an upper bound:
 the sighted pairing and the archive review run after the readings on the preparation's reading.
-Insertion admission: prep `c087e6e33`, red guards `2fbb7ec24`, fix `105e81220`.
+Insertion admission:
+prep `c087e6e33`,
+red guards `2fbb7ec24`,
+fix `105e81220`.
 `decidePassInsertionAdmission` asked every source-only candidate of the roster the lanes read.
 `insertionHooksFor` (`corpus-run/pass-insertion-reseat.ts`) re-reads the roster under a hold
-under its own `insertion admission` phase, which leans on the wide bench as the preparation does,
-and `admitPassInsertions`, the seam `runPassEntry` now calls, wires it (split out to keep `pass-entry.ts`
-under its line cap, and so a test drives the wiring: X14). The coverage stage caches nothing.
-Mutation checked with a control, then the full suite (0 FAIL, 1271 PASS): four mutants caught, one survived,
-the new phase leaning on another bench, since only some phases' benches were pinned;
-`c2adcfdbf` pins the whole table, which caught it and a lane contest bench mutant.
-Preparation: prep `aa635056a`, red guards `f891b358e`, fix `92556ba44`, guards completed in `d00123df3`.
-`preparePassEntry` asked its attestation, every section and block pairing round
+under its own `insertion admission` phase,
+which leans on the wide bench as the preparation does,
+and `admitPassInsertions`,
+the seam `runPassEntry` now calls,
+wires it (split out to keep `pass-entry.ts`
+under its line cap,
+and so a test drives the wiring:
+X14).
+The coverage stage caches nothing.
+Mutation checked with a control,
+then the full suite (0 FAIL,
+1271 PASS):
+four mutants caught,
+one survived,
+the new phase leaning on another bench,
+since only some phases' benches were pinned;
+`c2adcfdbf` pins the whole table,
+which caught it and a lane contest bench mutant.
+Preparation:
+prep `aa635056a`,
+red guards `f891b358e`,
+fix `92556ba44`,
+guards completed in `d00123df3`.
+`preparePassEntry` asked its attestation,
+every section and block pairing round
 and every archive block review of the roster read before it.
 `preparationHooksFor` (`corpus-run/pass-prepare-reseat.ts`) re-reads the roster under a hold
-under the `preparation` phase, and `runPassPreparation`, the seam `runPassEntry` now calls, wires it.
-One `beforeItem` hook reaches every site that asks: `prepareDocumentPairWithRoster` reads it before the section round
-and before each section's block round, `repairArchiveBlocks` before each block,
+under the `preparation` phase,
+and `runPassPreparation`,
+the seam `runPassEntry` now calls,
+wires it.
+One `beforeItem` hook reaches every site that asks:
+`prepareDocumentPairWithRoster` reads it before the section round
+and before each section's block round,
+`repairArchiveBlocks` before each block,
 and `attestPassReferences` (`corpus-run/pass-attest-references.ts`) before the attestation,
-only when the original links somewhere. The pairing keys fold the roster that answers (X13),
+only when the original links somewhere.
+The pairing keys fold the roster that answers (X13),
 so a re-seated round is keyed by it.
 The first mutation run (control survived) caught six mutants and left four more alive besides the attestation site.
-The pairing fixture never bought a section round, its hook handed one constant roster
-so a block round reusing the section round's seating passed, and the seam fixture left no archive block unclaimed.
+The pairing fixture never bought a section round,
+its hook handed one constant roster
+so a block round reusing the section round's seating passed,
+and the seam fixture left no archive block unclaimed.
 The phase table mutant survived only because the spec left out `corpus-run/run-seats-wait.unit.test.ts` (M41).
 `d00123df3` rebuilt the pairing and review guards on a hook alternating two disjoint rosters,
 requiring every call to ask the roster last handed over and each round to be reached,
 and added a seam case whose archive carries an unclaimed block.
-The attestation had no guard a fixture could reach, since `preparePassEntry` read the linked pages off the web.
+The attestation had no guard a fixture could reach,
+since `preparePassEntry` read the linked pages off the web.
 `attestPassReferences` now takes the round out of it with a required hook
 (`keepBench` in `bench-seating.ts` for a caller with none,
 since the repo models absence without nullish unions),
-and `preparePassEntry` takes an injected reference reader, as it takes `readPictures`,
+and `preparePassEntry` takes an injected reference reader,
+as it takes `readPictures`,
 so a case drives the whole preparation and requires every call to ask the roster the hook hands over.
-The second run, with a control, caught all fourteen mutants, including the attestation wiring,
-an unlinked original still asking, and the injected reader ignored;
-the full suite then passed (0 FAIL, 1278 PASS).
+The second run,
+with a control,
+caught all fourteen mutants,
+including the attestation wiring,
+an unlinked original still asking,
+and the injected reader ignored;
+the full suite then passed (0 FAIL,
+1278 PASS).
 All four call sites are guarded.
 The one wiring a type guards rather than a test is omitting `beforeItem` at `attestPassReferences`,
-which fails the type check; replacing it with `keepBench` is the tested mutant.
+which fails the type check;
+replacing it with `keepBench` is the tested mutant.
 
 Found as:
 The fifth stage of the H5 family.
@@ -3537,22 +5625,39 @@ The fifth stage of the H5 family.
 so a dry-out inside the contest leaves every later slice on the judges read before it,
 and nothing waits out the hold either:
 the per-slice wait `e17d0c487` added on 2026-09-07 reached the lanes and the consolidation only.
-The preparation (pairing, archive review) and the picture readings read their benches once too.
+The preparation (pairing,
+archive review) and the picture readings read their benches once too.
 Measured 2026-09-28 over 4,122 run logs (`~/temp/agent/audit-glossary-fix/phase-hold-census.mjs`),
-holds that began inside each phase, counted from its seat reading to the next phase's:
-lane contest 222 in 12 logs, preparation 25 in 4, pictures 11 in 3
-(consolidation 983 in 25, lanes 353 in 42, translate lane 115 in 14, all three now re-seating).
-With the consolidation hook re-seating, `awaitBenchQuorum` has no production caller left,
+holds that began inside each phase,
+counted from its seat reading to the next phase's:
+lane contest 222 in 12 logs,
+preparation 25 in 4,
+pictures 11 in 3
+(consolidation 983 in 25,
+lanes 353 in 42,
+translate lane 115 in 14,
+all three now re-seating).
+With the consolidation hook re-seating,
+`awaitBenchQuorum` has no production caller left,
 and `corpus-run/run-seats-read.ts` still says every driver asks it before each chunk.
 
 ### X13: the pairing keys carry no roster
 
-Status: fixed in `fea6e4688` (red guards `e9caf3f27`; mutation checked with a control, three mutants caught).
-Both keys fold the roster that answers, last, after a separator and the word `roster`;
-the block round passes its roster through `blockPairingQuestion`, and the block key goldens were recaptured
-under a fixture roster. Every pairing key moved inside version 3, under which nothing was written.
+Status:
+fixed in `fea6e4688` (red guards `e9caf3f27`;
+mutation checked with a control,
+three mutants caught).
+Both keys fold the roster that answers,
+last,
+after a separator and the word `roster`;
+the block round passes its roster through `blockPairingQuestion`,
+and the block key goldens were recaptured
+under a fixture roster.
+Every pairing key moved inside version 3,
+under which nothing was written.
 The full suite after the mutants found one more test deriving pairing keys itself
-(`corpus-run/pass-footnote-lifecycle.unit.test.ts`), fixed in `b84c2384c` (M39).
+(`corpus-run/pass-footnote-lifecycle.unit.test.ts`),
+fixed in `b84c2384c` (M39).
 
 Found as:
 The same defect X11 fixed in the consolidation key.
@@ -3560,67 +5665,131 @@ The same defect X11 fixed in the consolidation key.
 (`prepare-section-round.ts`) hash the version and the texts only.
 The pipeline digest the pairing caches are opened under covers the static roster,
 since any change to `corpus-run/run-config.ts` rebuilds `dist`,
-but not a dry reading's subset: `pass-entry.ts` seats `preparationSeats.roster`,
+but not a dry reading's subset:
+`pass-entry.ts` seats `preparationSeats.roster`,
 and a section paired by a subset resumes on the full bench under the same generation and key.
-Both rounds persist once any voice was usable (`usable > 0`), so a one-voice answer is kept as well.
+Both rounds persist once any voice was usable (`usable > 0`),
+so a one-voice answer is kept as well.
 Neither the keys' TSDoc nor `doc/decision/llm-assisted-block-pairing.md` rules that pairing is roster-independent.
 Pairing answers live beside the slice caches (`slice-cache/<entry>/pairing.*.json`);
-version 3 was set in `d614a0c1d` at 00:30 on 2026-09-28, after the newest slice-cache file (00:26 on 2026-09-27),
+version 3 was set in `d614a0c1d` at 00:30 on 2026-09-28,
+after the newest slice-cache file (00:26 on 2026-09-27),
 so none was written under 3 and the roster can ride inside it.
-It must land before the preparation half of X12, or a re-seated section resumes the old bench's answer.
+It must land before the preparation half of X12,
+or a re-seated section resumes the old bench's answer.
 
 ### X14: no test drives a pass seam
 
-Status: fixed; every pass seam is driven by a test
-(contest, consolidation, insertion admission, preparation, lanes and pictures).
-The insertion admission seam (`admitPassInsertions`, X12) is driven the same way in `2fbb7ec24`,
-and the preparation seam (`runPassPreparation`, X12) in `f891b358e` for the pairing
+Status:
+fixed;
+every pass seam is driven by a test
+(contest,
+consolidation,
+insertion admission,
+preparation,
+lanes and pictures).
+The insertion admission seam (`admitPassInsertions`,
+X12) is driven the same way in `2fbb7ec24`,
+and the preparation seam (`runPassPreparation`,
+X12) in `f891b358e` for the pairing
 and `d00123df3` for the archive review.
-`runPassContest`, `runPassConsolidation`, `readSeatedPictures` and `runPassEntry` wire each phase's hook
-and bench into its driver, and none had a test, so a seam dropping its hook survived every guard
+`runPassContest`,
+`runPassConsolidation`,
+`readSeatedPictures` and `runPassEntry` wire each phase's hook
+and bench into its driver,
+and none had a test,
+so a seam dropping its hook survived every guard
 (the picture seam mutant in X12).
-`76142da2c` exports the contest and consolidation seams, and `6371fd9ff` drives each against a client
-whose view turns Synthetic dry after the phase's own reading, under a hold:
+`76142da2c` exports the contest and consolidation seams,
+and `6371fd9ff` drives each against a client
+whose view turns Synthetic dry after the phase's own reading,
+under a hold:
 only a wired hook keeps the seat the dry-out took from being asked,
 and a control whose view never changes shows that seat is asked otherwise.
-Mutation checked with a control: both seam mutants caught.
-Lanes: the hooks were spread into `runDocumentLanes` inside `runPassEntry`, which no test drives.
-`f2c329781` gives them a seam, `runPassLanes` (`corpus-run/pass-lanes.ts`), which takes the `readLanesSeats`
-result whole, and `30e57c62b` drives it on a real reading: no lane call may ask a seat the dry-out took
-from either lane bench. Mutation checked with a control, then the full suite (0 FAIL, 1280 PASS):
-the seam dropping both hooks, the translate re-seat alone and the per-slice hook alone were each caught.
-Pictures: `readSeatedPictures` reached the pinned corpus (`gatherEntryPictures`)
+Mutation checked with a control:
+both seam mutants caught.
+Lanes:
+the hooks were spread into `runDocumentLanes` inside `runPassEntry`,
+which no test drives.
+`f2c329781` gives them a seam,
+`runPassLanes` (`corpus-run/pass-lanes.ts`),
+which takes the `readLanesSeats`
+result whole,
+and `30e57c62b` drives it on a real reading:
+no lane call may ask a seat the dry-out took
+from either lane bench.
+Mutation checked with a control,
+then the full suite (0 FAIL,
+1280 PASS):
+the seam dropping both hooks,
+the translate re-seat alone and the per-slice hook alone were each caught.
+Pictures:
+`readSeatedPictures` reached the pinned corpus (`gatherEntryPictures`)
 and shelled out to `dwebp` and `tesseract` (`readImageWithOcr`) with no way to hand either in,
-and its one seam, `visualEvidenceReader`, replaces the whole reading, hook and all.
+and its one seam,
+`visualEvidenceReader`,
+replaces the whole reading,
+hook and all.
 `36aeeaa6c` adds an optional `pictureSources` input (`PassPictureSources`) replacing only those two,
 and `f865f524a` drives the entry's picture reader over stand-in bytes and OCR.
 The first mutation run caught three mutants and left two alive (M42 again):
-the stage seating the roster instead of the readers, since under a constant hold the hook re-seats every picture
-and the first seating is never asked, and the OCR ignoring the stand-in, since the readers are asked either way.
+the stage seating the roster instead of the readers,
+since under a constant hold the hook re-seats every picture
+and the first seating is never asked,
+and the OCR ignoring the stand-in,
+since the readers are asked either way.
 `35684e182` adds a case with no hold and requires the stand-in OCR to have read;
-the rerun, with a control, caught all five, and the full suite passed (0 FAIL, 1281 PASS).
+the rerun,
+with a control,
+caught all five,
+and the full suite passed (0 FAIL,
+1281 PASS).
 
 ### X15: the pairing keys are not injective
 
-Status: fixed in `692ebe3c0` (red guard `aee557392`, section kind pinned in `c89bbda4f`),
-as hardening: measured, no pinned input reaches the aliasing.
+Status:
+fixed in `692ebe3c0` (red guard `aee557392`,
+section kind pinned in `c89bbda4f`),
+as hardening:
+measured,
+no pinned input reaches the aliasing.
 `pairingQuestionKey` (`pairing-question-key.ts`) now builds both keys from one JSON value of fixed shape
-(version, question kind, both sides' texts, pictures, roster),
+(version,
+question kind,
+both sides' texts,
+pictures,
+roster),
 which JSON escapes injectively and which keeps a section key and a block key apart over the same texts.
-The block goldens were recaptured, and the two embedded NUL cases they had pinned to one key now differ;
+The block goldens were recaptured,
+and the two embedded NUL cases they had pinned to one key now differ;
 three tests that joined the key by hand name its material and call the encoder instead (the M39 lesson).
-Rides inside version 3: checked again on 2026-09-28, the newest slice-cache file is still from 00:26 on 2026-09-27.
-Mutation checked with a control: nine mutants caught (the question kind, roster, pictures, version,
-sides swapped, texts flattened, and each key passing the other's kind or dropping its pictures),
-after `c89bbda4f` pinned the section round's kind, which no test had named;
-the full suite then passed (0 FAIL, 1279 PASS).
+Rides inside version 3:
+checked again on 2026-09-28,
+the newest slice-cache file is still from 00:26 on 2026-09-27.
+Mutation checked with a control:
+nine mutants caught (the question kind,
+roster,
+pictures,
+version,
+sides swapped,
+texts flattened,
+and each key passing the other's kind or dropping its pictures),
+after `c89bbda4f` pinned the section round's kind,
+which no test had named;
+the full suite then passed (0 FAIL,
+1279 PASS).
 The draw keys hash joined fields as well and need nothing:
-`sample-draw.ts` fixes its seed and kind within each sort, so two keys meet only when their ids do,
-and `damage-sample.ts` separates with NUL, which neither its fixed domain,
-its seed (`DAMAGE_SAMPLE_SEED`, an environment value, or a literal) nor an id can carry.
+`sample-draw.ts` fixes its seed and kind within each sort,
+so two keys meet only when their ids do,
+and `damage-sample.ts` separates with NUL,
+which neither its fixed domain,
+its seed (`DAMAGE_SAMPLE_SEED`,
+an environment value,
+or a literal) nor an id can carry.
 
 Found as:
-Both pairing keys, `roundKey` (`prepare-section-round.ts`)
+Both pairing keys,
+`roundKey` (`prepare-section-round.ts`)
 and `blockPairingQuestionKey` (`block-pairing-question-key.ts`),
 joined the texts of both sides with NUL and marked the side boundary with one more NUL element,
 so an empty text beside the boundary aliased across it:
@@ -3629,126 +5798,215 @@ as did a NUL inside a text across a block boundary,
 and UTF-8 folded every lone surrogate into U+FFFD.
 The block key's TSDoc named only an embedded NUL as its aliasing path,
 and kept its layout so that every key without pictures kept its historical bytes;
-X13 had moved every pairing key inside version 3, so no historical bytes remained to keep.
+X13 had moved every pairing key inside version 3,
+so no historical bytes remained to keep.
 Measured 2026-09-28 (`~/temp/agent/audit-glossary-fix/x15-empty-text-probe.mjs`):
-over all 92 pinned pairs, 570 sections and 5,063 blocks, the archive side normalized as the preparation reads it,
+over all 92 pinned pairs,
+570 sections and 5,063 blocks,
+the archive side normalized as the preparation reads it,
 no section or block text is empty and none holds a NUL,
-and no parser edge case tried (front matter alone, a bare heading, a thematic break, an empty code block,
-quote, list item or footnote, a comment, a picture, a component) yields an empty text,
+and no parser edge case tried (front matter alone,
+a bare heading,
+a thematic break,
+an empty code block,
+quote,
+list item or footnote,
+a comment,
+a picture,
+a component) yields an empty text,
 since a node's text is its own non-empty span.
 
 Found as:
 Reading `prepare-section-round.ts` whole after its raw NUL bytes had hidden it from every line search (M40).
-The golden file also cited a scratch baseline (`question-baseline-QWeptI`, from `62cedf6fa`) that no longer exists;
+The golden file also cited a scratch baseline (`question-baseline-QWeptI`,
+from `62cedf6fa`) that no longer exists;
 the recapture removed that line.
 
 ### X16: a handle or a community's name varies in case across unanchored slices
 
-Status: measured 2026-09-28; no floor, decided for quality.
-Found measuring H16: on XingZ60's newest settled artifact a handle ships as `z60` and `Z60`,
-and a community's name as `limelight` and `Limelight`, on slices no archive English anchors.
+Status:
+measured 2026-09-28;
+no floor,
+decided for quality.
+Found measuring H16:
+on XingZ60's newest settled artifact a handle ships as `z60` and `Z60`,
+and a community's name as `limelight` and `Limelight`,
+on slices no archive English anchors.
 Measured over the newest settled artifact of 39 entries (`~/temp/agent/audit-glossary-fix/x16-case-drift.mjs`):
-of 279 Latin tokens the originals write that ship, 16 ship in two casings away from a sentence start,
-and reading where each minority form stands (the character before it, never the token) shows
-most sit inside a URL or path, or open a quoted line after `>` (XingZ60's `Z60` among them);
-the mid-sentence ones are ordinary English words, where casing follows grammar and titles.
-Restricted to tokens that are not lowercase dictionary words (`x16-floor-reach.mjs`, URLs left out):
-73 ship, 7 ship in a casing the original never uses (on 6 pages), and each is consistent within its page.
+of 279 Latin tokens the originals write that ship,
+16 ship in two casings away from a sentence start,
+and reading where each minority form stands (the character before it,
+never the token) shows
+most sit inside a URL or path,
+or open a quoted line after `>` (XingZ60's `Z60` among them);
+the mid-sentence ones are ordinary English words,
+where casing follows grammar and titles.
+Restricted to tokens that are not lowercase dictionary words (`x16-floor-reach.mjs`,
+URLs left out):
+73 ship,
+7 ship in a casing the original never uses (on 6 pages),
+and each is consistent within its page.
 A deterministic floor forcing the original's casing cannot tell a person's handle,
-which keeps its spelling (house rule: HiYku, wing, Mikä), from a brand an original types in lowercase,
-whose English styling is capitalized; it would enforce the wrong English as often as the right one.
-The handle case is already a house rule every sheet carries, so nothing is added.
+which keeps its spelling (house rule:
+HiYku,
+wing,
+Mikä),
+from a brand an original types in lowercase,
+whose English styling is capitalized;
+it would enforce the wrong English as often as the right one.
+The handle case is already a house rule every sheet carries,
+so nothing is added.
 
 ### X17: the rendered-sheets fixture claims every model-facing sheet and holds fifteen
 
-Status: fixed in `9ebc80985` (production names `4429fd4b3` and `b98638490`, spelling `ffc03346d`), 2026-09-28;
+Status:
+fixed in `9ebc80985` (production names `4429fd4b3` and `b98638490`,
+spelling `ffc03346d`),
+2026-09-28;
 found wiring H16.
 `rendered-sheets.test-fixture.ts` said it renders "EVERY MODEL-FACING SHEET" so a guard about what the models read
 checks every sheet at once;
-it held fifteen: of the 24 `build…Messages` builders the package defines it rendered 14,
-and it rendered none of the picture readers, the other selection slates, their decline texts or the typed decision.
-The fixture now renders all of them, split into four sibling fixtures under max-lines.
+it held fifteen:
+of the 24 `build…Messages` builders the package defines it rendered 14,
+and it rendered none of the picture readers,
+the other selection slates,
+their decline texts or the typed decision.
+The fixture now renders all of them,
+split into four sibling fixtures under max-lines.
 Rendering them from production text took names for four texts built inline where they are sent
-(the picture reader's request, the translate challenge task, the archive slate's task and decline),
-each moved byte for byte, and exports for the rest.
-The first read found one defect: the picture readers' instruction said "summarise", which en_CA writes "summarize";
-the picture reading key hashes the instruction, so no version moves.
+(the picture reader's request,
+the translate challenge task,
+the archive slate's task and decline),
+each moved byte for byte,
+and exports for the rest.
+The first read found one defect:
+the picture readers' instruction said "summarise",
+which en_CA writes "summarize";
+the picture reading key hashes the instruction,
+so no version moves.
 The full suite then passed on `ffc03346d` (0 FAIL).
-Prevention: `rendered-sheets-census.unit.test.ts` scans `src` for every exported `build…Messages` function
+Prevention:
+`rendered-sheets-census.unit.test.ts` scans `src` for every exported `build…Messages` function
 and fails when no fixture renders it (over the old fixture it lists ten).
 Sheets built without that naming
-(the slates' tasks, criteria and decline texts, the picture readers, the typed decision)
-are not in the census; a new one of those still needs its own entry.
+(the slates' tasks,
+criteria and decline texts,
+the picture readers,
+the typed decision)
+are not in the census;
+a new one of those still needs its own entry.
 
 ### X18: the preparation dropped the attestation's findings when the archive was corrected
 
-Status: fixed in `d80f56866` (red guard `5f4863f32`), 2026-09-28.
+Status:
+fixed in `d80f56866` (red guard `5f4863f32`),
+2026-09-28.
 `preparePassEntry` (`corpus-run/pass-prepare.ts`) has three ways out:
-no unclaimed block, an archive the review leaves standing, and an archive corrected and prepared again.
-The first two carried the reference attestation's findings; the third rebuilt its findings
-from the re-preparation, the relabel and the review, and dropped them.
+no unclaimed block,
+an archive the review leaves standing,
+and an archive corrected and prepared again.
+The first two carried the reference attestation's findings;
+the third rebuilt its findings
+from the re-preparation,
+the relabel and the review,
+and dropped them.
 The attestation's and the page title lexicon's findings now form one `evidenceFindings` list on every way out.
 The guard drives all three returns and asserts each is reached (the M42 prevention):
-its first fixture, on a two-seat roster, never reached the third, since the correction slate kept the archive,
+its first fixture,
+on a two-seat roster,
+never reached the third,
+since the correction slate kept the archive,
 and the reach assertion said so before any verdict was read;
-both seats wrote the one revision, each vote for it weighs `SELF_VOTE_WEIGHT` (1/2),
+both seats wrote the one revision,
+each vote for it weighs `SELF_VOTE_WEIGHT` (1/2),
 and 1 falls short of `MIN_SELECTION_WEIGHT` (2) (`candidate-select-model.ts`);
-on four seats, as the older correction test uses, the slate selects the revision.
+on four seats,
+as the older correction test uses,
+the slate selects the revision.
 
 Found as:
 Reading the returns while wiring H16's lexicon findings into them.
 
 ### X19: a unit test bought a live web search and wrote the real lookup cache
 
-Status: fixed in `d82dfe559`, 2026-09-28.
+Status:
+fixed in `d82dfe559`,
+2026-09-28.
 `preparePassEntry` read three things outside the pipeline itself:
-the work-title lookup and the cited references, each with the Exa key from `process.env` and a cache under `~/.cache`,
+the work-title lookup and the cited references,
+each with the Exa key from `process.env` and a cache under `~/.cache`,
 and the corpus names at the pin.
-The unit suite runs under the root `mise.toml`, which decrypts `.env.local.json`,
-so the key is set in every test process (checked as a boolean: `TRANSLATION_REPAIR_EXA_API_KEY` is non-empty).
+The unit suite runs under the root `mise.toml`,
+which decrypts `.env.local.json`,
+so the key is set in every test process (checked as a boolean:
+`TRANSLATION_REPAIR_EXA_API_KEY` is non-empty).
 H16's red guard (`31c7d3f00`) prepared an original naming an invented title through that path:
 the preparation bought one Exa search for it
 and wrote the answer to `~/.cache/translation-repair/lookup/84fcabcd8c13….json` at 15:42.
 The five other lookup records whose titles a fixture also names are corpus titles live runs bought.
 The three reads now come through `PassOutsideReads` (`corpus-run/pass-outside-reads.ts`),
 required by `preparePassEntry` and `runPassPreparation`;
-the run hands over `RUN_OUTSIDE_READS`, and every test hands over `NO_OUTSIDE_READS`
-(`pass-outside-reads.test-fixture.ts`) or a reader of its own, so a test that leaves the seam out does not compile.
-`pass-outside-reads.unit.test.ts` drives the wiring: each reader asked once about the original,
+the run hands over `RUN_OUTSIDE_READS`,
+and every test hands over `NO_OUTSIDE_READS`
+(`pass-outside-reads.test-fixture.ts`) or a reader of its own,
+so a test that leaves the seam out does not compile.
+`pass-outside-reads.unit.test.ts` drives the wiring:
+each reader asked once about the original,
 and what each returns reaching the sheets.
 The footnote-lifecycle test had worked around the same hazard by asserting its original names no title;
 that assertion gave way to the fixture.
 The stray record could not be removed from this session (the removal was refused);
-it holds only the invented title's search, and the owner can delete it.
+it holds only the invented title's search,
+and the owner can delete it.
 
 ### X20: the page-name glossary reads Markdown headings and not HTML ones
 
-Status: fixed in `ee39e2ba5` (red guard `84b9822d8`, order and levels pinned in `197f8b811`), 2026-09-28.
+Status:
+fixed in `ee39e2ba5` (red guard `84b9822d8`,
+order and levels pinned in `197f8b811`),
+2026-09-28.
 `page-headings.ts` now holds the one Markdown and HTML heading reader the glossary and the page title spans share,
-each heading placed where it stands, and the glossary pairs each kind among itself under the same-count rule,
-listed by where the original's heading stands, so an HTML heading only one side carries costs no Markdown pair.
+each heading placed where it stands,
+and the glossary pairs each kind among itself under the same-count rule,
+listed by where the original's heading stands,
+so an HTML heading only one side carries costs no Markdown pair.
 Over the 92 pinned pairs the built `pageNameLines` gains heading lines on `aiyysk` (2) and `mikaela_khara` (1)
 and nowhere else (`~/temp/agent/audit-glossary-fix/x20-verify.mjs`).
-Mutation checked with a control, then the full suite (0 FAIL): over X20 and H16's three earlier survivors,
-nine of eleven mutants were caught at once; the two left, a heading the archive keeps in the original's words
-and markers with no space after them, had no fixture that could fail;
-`801b09420` adds one for each, and the rerun, with its control, caught both.
+Mutation checked with a control,
+then the full suite (0 FAIL):
+over X20 and H16's three earlier survivors,
+nine of eleven mutants were caught at once;
+the two left,
+a heading the archive keeps in the original's words
+and markers with no space after them,
+had no fixture that could fail;
+`801b09420` adds one for each,
+and the rerun,
+with its control,
+caught both.
 
 Found as:
 Reading the glossary's heading reader beside the page title spans' while fixing H16.
-`headingsOf` (`page-name-glossary.ts`) read ATX headings only, so an archive's rendering of an HTML heading
+`headingsOf` (`page-name-glossary.ts`) read ATX headings only,
+so an archive's rendering of an HTML heading
 never reached the sheets as a page name.
 Measured at the pin (`~/temp/agent/audit-glossary-fix/x20-html-headings.mjs`):
-3 of 92 pairs carry HTML headings with Han in the original, 13 headings;
+3 of 92 pairs carry HTML headings with Han in the original,
+13 headings;
 on `aiyysk` (2) and `mikaela_khara` (1) the archive carries the same count of HTML headings,
 so those three are pairs the glossary misses;
 XingZ60's 10 against the archive's 6 pair nothing by the glossary's same-count rule either way.
-No page has a line of seven or more `#`, which `headingsOf` read as a heading and CommonMark does not,
-so the shared reader, which stops at six, reads the corpus as the old one did.
+No page has a line of seven or more `#`,
+which `headingsOf` read as a heading and CommonMark does not,
+so the shared reader,
+which stops at six,
+reads the corpus as the old one did.
 
 ## Recurring code families
 
-Audit area six: code kept in more than one place, which can drift until two parts of the pipeline
+Audit area six:
+code kept in more than one place,
+which can drift until two parts of the pipeline
 read one page two ways.
 `~/temp/agent/audit-glossary-fix/duplicate-bodies.mjs` parses every non-test source file with rolldown's parser
 and groups function bodies with comments and whitespace removed;
@@ -3758,7 +6016,8 @@ so a copy whose body matches but whose constants differ shows up as such.
 
 The rule applied to each group:
 merge when both copies are live code that must agree;
-keep a copy that is an artifact generation's frozen rule, which the reader recomputes and refuses to disagree with,
+keep a copy that is an artifact generation's frozen rule,
+which the reader recomputes and refuses to disagree with,
 and say so where it stands.
 `artifact-two-lane-comparison.ts` states this for the lane verdict (`judgeTwoLaneSlice` beside `judgeSlice`).
 A reader of one artifact version never imports from a live stage;
@@ -3766,298 +6025,522 @@ two readers of the same version may share.
 
 ### B1: private Han tests and code-point counters, and two Han tests that read one page two ways
 
-Status: fixed in `67243edae`, `edb013f38`, red guard `58d1eefaf` and `37db4ae4b`, 2026-09-28.
-`page-name-glossary.ts`, `corpus-name-index.ts` and `handle-reading.ts` each kept a private copy of the
-U+4E00 to U+9FFF test `han-only-text.ts` exports, and two of them a code-point counter beside `codePointCount`.
+Status:
+fixed in `67243edae`,
+`edb013f38`,
+red guard `58d1eefaf` and `37db4ae4b`,
+2026-09-28.
+`page-name-glossary.ts`,
+`corpus-name-index.ts` and `handle-reading.ts` each kept a private copy of the
+U+4E00 to U+9FFF test `han-only-text.ts` exports,
+and two of them a code-point counter beside `codePointCount`.
 The floors' `isHanCharacter` read the unified block alone while the tokenizer's `isIdeograph` added Extension A;
 neither read the compatibility block or astral Han.
-`isHanCharacter` now covers Extension A, the unified block, the compatibility block and Extensions B to H,
+`isHanCharacter` now covers Extension A,
+the unified block,
+the compatibility block and Extensions B to H,
 and `isIdeograph` delegates to it.
-No pinned page carries a character from the added blocks (Extension A, compatibility and astral counts all 0,
-against 210,475 unified-block characters), so no page reads differently.
+No pinned page carries a character from the added blocks (Extension A,
+compatibility and astral counts all 0,
+against 210,475 unified-block characters),
+so no page reads differently.
 
 ### B2: two quote-line readers
 
-Status: fixed in `43132653d`, 2026-09-28.
+Status:
+fixed in `43132653d`,
+2026-09-28.
 The line structure guard and the bilingual pair bound each kept a copy of what a line carries past its `>` markers.
-`quote-line.ts` now holds `carriesContent` and `pastQuoteMarkers`, with its own unit test.
+`quote-line.ts` now holds `carriesContent` and `pastQuoteMarkers`,
+with its own unit test.
 
 ### B3: three copies of whether a footnote relabel moves a note
 
-Status: fixed in `441e609ab`, 2026-09-28.
-The relabel planner (`archive-footnote-relabel.ts`), its closure (`archive-footnote-closure.ts`)
+Status:
+fixed in `441e609ab`,
+2026-09-28.
+The relabel planner (`archive-footnote-relabel.ts`),
+its closure (`archive-footnote-closure.ts`)
 and the pass that reports the relabel (`pass-footnote-relabel.ts`) each tested whether a from-to relation
 folds to another footnote.
-`relabelsFootnote` in `footnote-identifier.ts` now serves all three, with a unit test for respelling and moves.
+`relabelsFootnote` in `footnote-identifier.ts` now serves all three,
+with a unit test for respelling and moves.
 
 ### B4: two copies of the page assembly's archive-repeat filter
 
-Status: fixed in `bb836ea31`, 2026-09-28.
+Status:
+fixed in `bb836ea31`,
+2026-09-28.
 `guardPageAssembly` dropped rows repeating the archive's wording on its first read,
-and each round of `settlePageRounds` dropped them again before the footnote check, each with its own copy.
+and each round of `settlePageRounds` dropped them again before the footnote check,
+each with its own copy.
 `rowsChangingArchive` in `page-assembly-rounds.ts` now serves both.
-A mutant keeping every repeat fails 9 assertions across the guard and heading-collision tests; its control survives.
+A mutant keeping every repeat fails 9 assertions across the guard and heading-collision tests;
+its control survives.
 
 ### B5: two copies of the shipped-slice reading, one lane's call untested
 
-Status: fixed in `184b10cf9`, 2026-09-28.
+Status:
+fixed in `184b10cf9`,
+2026-09-28.
 Both lanes built the per-slice list the adjacent-repetition check reads with their own copy of `shippedFor`;
 `shippedSliceTexts` in `assembly-invariant.ts` now serves both.
 Mutation found the translate lane's call untested:
-handing it no surviving rows, so every slice read as the archive, failed no test,
+handing it no surviving rows,
+so every slice read as the archive,
+failed no test,
 because only the repair lane's twin (`repair-assemble-slice-match.unit.test.ts`) drove the reading.
 `translate-assemble-slice-match.unit.test.ts` now kills that mutant (2 failures)
-and an inverted slice match (3 failures); its control survives.
+and an inverted slice match (3 failures);
+its control survives.
 
 ### B6: two HTML-comment finding tests beside a third inline
 
-Status: fixed in `c92394058`, 2026-09-28.
-`archive-original-note.ts`, `entry-notes.ts` and `footnote-protected-ranges.ts` each spelled out the two comment kinds;
-`isCommentFinding` in `parse-document.ts`, where the kinds are defined, now serves all three,
+Status:
+fixed in `c92394058`,
+2026-09-28.
+`archive-original-note.ts`,
+`entry-notes.ts` and `footnote-protected-ranges.ts` each spelled out the two comment kinds;
+`isCommentFinding` in `parse-document.ts`,
+where the kinds are defined,
+now serves all three,
 with a test over every finding kind.
 
 ### B7: two readings of one event stream, and a data prefix spelled with its space
 
-Status: fixed in `91ff1e779` and `440eb0c0d`, 2026-09-28.
-The live delta scanners (`stream-delta-scan.ts`, `anthropic-delta-scan.ts`) read `data:` lines by the event-stream
-format (one trailing carriage return dropped, the field name at the line start, one optional space removed),
-while the three readers folding the drained body (`stream-completion.ts`, `anthropic-completion.ts`,
+Status:
+fixed in `91ff1e779` and `440eb0c0d`,
+2026-09-28.
+The live delta scanners (`stream-delta-scan.ts`,
+`anthropic-delta-scan.ts`) read `data:` lines by the event-stream
+format (one trailing carriage return dropped,
+the field name at the line start,
+one optional space removed),
+while the three readers folding the drained body (`stream-completion.ts`,
+`anthropic-completion.ts`,
 `openrouter-chunk-scan.ts`) trimmed every surrounding space first.
 A line the format does not count as an event (one indented before `data:`) reached the answer
 while the runaway guards never saw it.
 `ssePayloadOf` in `sse-data-line.ts` now serves all five;
-mutants restoring either trim, keeping the carriage return, or stripping every space each fail 2 assertions.
-A sixth reader, `requireBedrockStreamEnd` (`bedrock-stream-end.ts`), looked for its usage chunk under `data: `
-with the space, so a usage chunk sent as `data:{...}` never counted and a whole stream was refused as cut off;
-it now reads through the same function, and a test sending the tight form fails when the spaced prefix is restored.
+mutants restoring either trim,
+keeping the carriage return,
+or stripping every space each fail 2 assertions.
+A sixth reader,
+`requireBedrockStreamEnd` (`bedrock-stream-end.ts`),
+looked for its usage chunk under `data: `
+with the space,
+so a usage chunk sent as `data:{...}` never counted and a whole stream was refused as cut off;
+it now reads through the same function,
+and a test sending the tight form fails when the spaced prefix is restored.
 
 ### B8: five span-rewrite appliers under three contracts
 
-Status: fixed in `8f590d8e8`, 2026-09-28.
+Status:
+fixed in `8f590d8e8`,
+2026-09-28.
 The name casing sorted its rewrites and dropped any overlapping an earlier one;
 the Canadian forms sorted and trusted a comment that dates and spellings never overlap;
-the pinyin tones applied rewrites in the order parentheses were read, sorted or not;
+the pinyin tones applied rewrites in the order parentheses were read,
+sorted or not;
 the casing restore and the tag attribute restore relied on their callers' order.
 An unsorted or overlapping set splices behind the cursor and repeats page text.
-`applySpanRewrites` in `corpus-run/span-rewrites.ts` orders by start, the longer first, and withholds overlaps
-for all five; mutants dropping the sort, the tie-break or the overlap rule each fail its test.
-Nested parentheses in a pinyin probe produced no duplicate rewrite, so no page is known to have hit the defect.
+`applySpanRewrites` in `corpus-run/span-rewrites.ts` orders by start,
+the longer first,
+and withholds overlaps
+for all five;
+mutants dropping the sort,
+the tie-break or the overlap rule each fail its test.
+Nested parentheses in a pinyin probe produced no duplicate rewrite,
+so no page is known to have hit the defect.
 
 ### B9: small shared helpers kept twice
 
-Status: fixed, 2026-09-28, each with the tests naming its callers passing.
+Status:
+fixed,
+2026-09-28,
+each with the tests naming its callers passing.
 
-- `longestRunOf` (`character-run.ts`) for the Markdown and prompt fences, which counted runs of different characters
-  with one body (`304ae283d`); its test counts an astral character by code point.
-- `runEnd` and `runStart` moved to `corpus-run/text-runs.ts`, and the pinyin pass's private `scanEnd` copy removed
+- `longestRunOf` (`character-run.ts`) for the Markdown and prompt fences,
+  which counted runs of different characters
+  with one body (`304ae283d`);
+  its test counts an astral character by code point.
+- `runEnd` and `runStart` moved to `corpus-run/text-runs.ts`,
+  and the pinyin pass's private `scanEnd` copy removed
   (`c147db8cc`).
 - `chunkLabel` exported from `chunk-document.ts` for `coverage-candidates.ts` and `prepare-section-round.ts`
-  (`f96ade088`; the 46 test files touching sectioning pass).
+  (`f96ade088`;
+  the 46 test files touching sectioning pass).
 - `sliceSizesOf` (`displacement-ratio.ts`) for the displacement probe and the window trial (`d80ebe034`).
 - `describeBlocks` and `sameShape` from `translate-validate-blocks.ts` for the archive revision shape check,
-  over the same `BlockShape` (`6a80392c6`; 54 test files pass).
+  over the same `BlockShape` (`6a80392c6`;
+  54 test files pass).
 - `bothHalvesInserted` (`container-half-pairs.ts`) for lone-half withholding and insertion admission (`957a5ab3e`).
 - `slicesInOrder` in `heading-collision-restore.ts` and a new `rowsChangedBy` (`assembly-page-text.ts`)
   for the casing and name gloss restores (`4006a55d4`).
 
 ### B10: probes and a benchmark grader that re-carved slices and claimed to match the pipeline
 
-Status: fixed in `87e42628a` and `2732a2c4e` (red guard `a00128524`), 2026-09-28.
+Status:
+fixed in `87e42628a` and `2732a2c4e` (red guard `a00128524`),
+2026-09-28.
 Measured over the 92 pinned pairs (`~/temp/agent/audit-glossary-fix/probe-slicing-extra.mjs`),
 aligning sections and subdividing them matches `prepareDocumentPair` in order on every pair
-except the front-matter slice the preparation leads with, so a re-carve's slice numbers run one behind the run's.
-The relabel probes find their slice by text, so no result moved; they now take the preparation's slices.
-The recall benchmark's `gradeSeedDetection` indexed issue records, which carry the run's slice numbers,
-into such a re-carve: on any document with visible front matter (all 92 pinned pairs) every issue read the next slice,
+except the front-matter slice the preparation leads with,
+so a re-carve's slice numbers run one behind the run's.
+The relabel probes find their slice by text,
+so no result moved;
+they now take the preparation's slices.
+The recall benchmark's `gradeSeedDetection` indexed issue records,
+which carry the run's slice numbers,
+into such a re-carve:
+on any document with visible front matter (all 92 pinned pairs) every issue read the next slice,
 so an accepted issue at a seed was scored undetected.
 It now slices through `prepareDocumentPair` as `repairTranslation` does;
 a test with front matter was red before and passes after,
 and the older grader test builds its expected slices the same way.
-The bench sample keeps its own carve: its line-structure flags agree with the preparation's on all 1,259 comparable
-slices (`bench-line-structure-parity.mjs`), it leaves the front-matter slice out, and its numbering is its own.
-The slice census and the translate probe measure shapes and texts, not run indices, and stay.
+The bench sample keeps its own carve:
+its line-structure flags agree with the preparation's on all 1,259 comparable
+slices (`bench-line-structure-parity.mjs`),
+it leaves the front-matter slice out,
+and its numbering is its own.
+The slice census and the translate probe measure shapes and texts,
+not run indices,
+and stay.
 
 ### B11: correspondence-list checks kept three times, and a type declared twice
 
-Status: fixed in `010e36bc5`, `84c748aba` and `74f56d2bf`, 2026-09-28.
-`pair-blocks-wire.ts`, `pair-sections-read.ts` and `corpus-run/slice-cache-store.ts` each tested
-the integer `{ source, target }` list shape; `isIndexPairList` and `isIndexPairingWire` (`index-pair-list.ts`)
-now serve them, with a test covering ten refused shapes.
+Status:
+fixed in `010e36bc5`,
+`84c748aba` and `74f56d2bf`,
+2026-09-28.
+`pair-blocks-wire.ts`,
+`pair-sections-read.ts` and `corpus-run/slice-cache-store.ts` each tested
+the integer `{ source, target }` list shape;
+`isIndexPairList` and `isIndexPairingWire` (`index-pair-list.ts`)
+now serve them,
+with a test covering ten refused shapes.
 `010e36bc5` declared its own `IndexPair` while `pair-agreement.ts` already exported the same shape,
-and the package failed its type check at that commit; `84c748aba` uses the existing type (M47).
+and the package failed its type check at that commit;
+`84c748aba` uses the existing type (M47).
 
 ### B12: four provider clients with identical limiter and JSON plumbing
 
-Status: fixed in `23ae677be`, 2026-09-28.
-Bedrock, Hyper, OpenRouter and Synthetic each kept `limiterFor` and `chatJson`;
-each `chatJson` forwarded four named request fields by hand, so `otherThan` never reached a JSON exchange
-(harmless today: the cross-provider re-ask goes through `chatText`).
-`perModelLimiter` and `chatJsonThrough`, which forwards the whole request but its validator, now serve all four;
+Status:
+fixed in `23ae677be`,
+2026-09-28.
+Bedrock,
+Hyper,
+OpenRouter and Synthetic each kept `limiterFor` and `chatJson`;
+each `chatJson` forwarded four named request fields by hand,
+so `otherThan` never reached a JSON exchange
+(harmless today:
+the cross-provider re-ask goes through `chatText`).
+`perModelLimiter` and `chatJsonThrough`,
+which forwards the whole request but its validator,
+now serve all four;
 the 25 client test files pass and a direct test pins the forwarding.
 
 ### B13: two renderings of prior failed corrections
 
-Status: fixed in `4830317ef`, 2026-09-28.
+Status:
+fixed in `4830317ef`,
+2026-09-28.
 `renderPriorCorrections` (`refine-selection-context.ts`) now serves the refine context and the consolidation gate.
-Prompt text, so measured rather than read (`sheet-bytes.mjs`): hashes of all 38 rendered-sheets fixture sheets
+Prompt text,
+so measured rather than read (`sheet-bytes.mjs`):
+hashes of all 38 rendered-sheets fixture sheets
 and of both sheets with two prior corrections are identical before and after;
-a one-word change to the rendering, as a positive control, moved all three hashes.
+a one-word change to the rendering,
+as a positive control,
+moved all three hashes.
 
 ### B14: artifact readers with private string-list and pair-list readers
 
-Status: fixed in `8c897d1cc` and `657a81dbe`, 2026-09-28.
+Status:
+fixed in `8c897d1cc` and `657a81dbe`,
+2026-09-28.
 `requireStringList` (`artifact-guard.ts`) replaces four private readers and one inline copy;
 `requireIndexPairList` (`artifact-exact-guard.ts`) replaces the two section-pairing readers' whole-function copies.
-Both readers read one artifact version, so sharing keeps the freeze. The 43 artifact test files pass.
+Both readers read one artifact version,
+so sharing keeps the freeze.
+The 43 artifact test files pass.
 
 ### B15: frozen copies kept on purpose
 
-Status: kept, annotated in `c0d0eb22a`, 2026-09-28.
+Status:
+kept,
+annotated in `c0d0eb22a`,
+2026-09-28.
 `judgeTwoLaneSlice` beside `judgeSlice` (`artifact-two-lane-comparison.ts` already said why)
 and `uniqueNaturalnessFindings` beside the live `uniqueFindings`:
-each reader copy is an artifact version's rule, recomputed on read and refused on disagreement,
-so merging would remove the check. Both naturalness sites now say so.
+each reader copy is an artifact version's rule,
+recomputed on read and refused on disagreement,
+so merging would remove the check.
+Both naturalness sites now say so.
 
 ### B16: 41 import bindings nothing referenced, and no check that reports one
 
-Status: fixed in `3817a99c9`, 2026-09-28; the missing check is repository configuration, outside the package.
+Status:
+fixed in `3817a99c9`,
+2026-09-28;
+the missing check is repository configuration,
+outside the package.
 `noUnusedLocals` is off in `package/config/typescript/tsconfig.options.json` and the linter reports none either,
 so the provider-client merge (B12) left four `p-limit` imports behind unnoticed until counted.
 A parser census over the package's 1,837 source and test files (`~/temp/agent/audit-glossary-fix/unused-imports.mjs`)
-found 41 bindings no code references; 36 are removed across 24 files,
-and the 5 kept are TSDoc `{@link}` targets (`ArtifactParseError` in three readers, `FidelityReferenceError`,
-`IssueEvidenceConflictError`). The census now reports those 5 and nothing else.
+found 41 bindings no code references;
+36 are removed across 24 files,
+and the 5 kept are TSDoc `{@link}` targets (`ArtifactParseError` in three readers,
+`FidelityReferenceError`,
+`IssueEvidenceConflictError`).
+The census now reports those 5 and nothing else.
 
 ### B17: the TSDoc example scan closed a fence on any three backticks
 
-Status: fixed in `7cc4ac642`, 2026-09-28; found by the full suite.
+Status:
+fixed in `7cc4ac642`,
+2026-09-28;
+found by the full suite.
 `exampleCodeOf` (`tsdoc-example-scan.ts`) took the next three backticks anywhere as the closing fence,
-where CommonMark closes only on a line of backticks alone, at least as long as the opener.
-`longestRunOf`'s example, whose string quoted a fence, was cut short and read as leaving out `character`,
-and the package-wide scan failed; the merge (`304ae283d`) had passed its own tests,
-and the suite that caught it ran once, after the audit-area-six commits.
-The scan now reads fences line by line; a fixture quoting a fence passes, the same fixture missing a key is still found,
-and a mutant restoring the old close fails 2 assertions. The suite after it: 0 FAIL, 1,301 PASS lines.
+where CommonMark closes only on a line of backticks alone,
+at least as long as the opener.
+`longestRunOf`'s example,
+whose string quoted a fence,
+was cut short and read as leaving out `character`,
+and the package-wide scan failed;
+the merge (`304ae283d`) had passed its own tests,
+and the suite that caught it ran once,
+after the audit-area-six commits.
+The scan now reads fences line by line;
+a fixture quoting a fence passes,
+the same fixture missing a key is still found,
+and a mutant restoring the old close fails 2 assertions.
+The suite after it:
+0 FAIL,
+1,301 PASS lines.
 
 ### B18: letter, digit and hex tests kept in many copies, and prose scanners that test ASCII letters only
 
-Status: in progress, 2026-09-28.
+Status:
+in progress,
+2026-09-28.
 Letter tests were kept as named functions in eleven modules (`72bbe6500` merged them into `ascii-letters.ts`)
-and inline in more (M48), several named for Latin while testing ASCII only,
+and inline in more (M48),
+several named for Latin while testing ASCII only,
 so an accented letter ends a word for every scanner that reads English prose with one.
-The settled pages carry 4 such words in 17,492 (2 of 40 entries), which is why nothing has visibly broken.
-Done so far, each with the same admitted characters as before unless stated:
+The settled pages carry 4 such words in 17,492 (2 of 40 entries),
+which is why nothing has visibly broken.
+Done so far,
+each with the same admitted characters as before unless stated:
 
-- `9375057c5`: `latin-letters.ts` holds the Latin blocks and combining marks the glossary's form edges and
-  the Canadian spelling pass each kept; the glossary edges now also admit Latin Extended Additional,
-  of which only letters NFD keeps whole reach folded text, and none occurs in the pinned corpus or the settled pages
-  (control U+00E4 found twice). The sheet hashes are unchanged, and mutants dropping the sign exclusion,
+- `9375057c5`:
+  `latin-letters.ts` holds the Latin blocks and combining marks the glossary's form edges and
+  the Canadian spelling pass each kept;
+  the glossary edges now also admit Latin Extended Additional,
+  of which only letters NFD keeps whole reach folded text,
+  and none occurs in the pinned corpus or the settled pages
+  (control U+00E4 found twice).
+  The sheet hashes are unchanged,
+  and mutants dropping the sign exclusion,
   the Additional block or the marks are each caught.
-- `4197af843`: the inline letter-or-digit, digit and lower-case hex tests route through `ascii-letters.ts`;
+- `4197af843`:
+  the inline letter-or-digit,
+  digit and lower-case hex tests route through `ascii-letters.ts`;
   one of the digit tests (`image-reading-sense.ts`) was never called.
-- `1c3286271`: eight source files opened with a blank line, each since its first commit.
-- `8d88a08e1` and `f4aa85d9a`: the casing restore's `latinWords` opens a word on a Latin letter and continues
-  through letters and combining marks, and takes the opening letter before its continue loop,
+- `1c3286271`:
+  eight source files opened with a blank line,
+  each since its first commit.
+- `8d88a08e1` and `f4aa85d9a`:
+  the casing restore's `latinWords` opens a word on a Latin letter and continues
+  through letters and combining marks,
+  and takes the opening letter before its continue loop,
   which the mutation check showed could otherwise hang the pass (M50).
-  Old against new (`~/temp/agent/audit-glossary-fix/letter-harness.mjs`): `latinWords` differs on exactly
-  the 11 inputs the census names, `titleRuns` on 4.
+  Old against new (`~/temp/agent/audit-glossary-fix/letter-harness.mjs`):
+  `latinWords` differs on exactly
+  the 11 inputs the census names,
+  `titleRuns` on 4.
   The page-assembly guard replayed old against new over 222 settled artifacts on their own slicing
-  (`page-assembly-letter-replay.mjs`) differs on none; lowering the pass's `MIN_USES` makes it differ on one,
+  (`page-assembly-letter-replay.mjs`) differs on none;
+  lowering the pass's `MIN_USES` makes it differ on one,
   so the replay can see this pass.
-- `00a22f08e`: the name-casing pass's `midSentence` and glued-match check read Latin letters, digits and marks.
-  A name after `café` now counts as mid-sentence, and an occurrence running on into `ō` or `ū` is another word;
-  over the corpus `phraseOccurrences` drops one such false occurrence in each of 2 inputs, and no page changes.
-- `218720cfe`: the address floor's word scan reads Latin letters; the pre-letter build refused a rendering
-  addressing a cat named `Heřmánek` as if it said "he", and the current build accepts it.
-  No finding changes over 131 source and target pairs; a control removing `you` makes 20 differ.
-- `340b56ef5`: the suicide-method floor's word scan, the same; no finding changes, and a control breaking
+- `00a22f08e`:
+  the name-casing pass's `midSentence` and glued-match check read Latin letters,
+  digits and marks.
+  A name after `café` now counts as mid-sentence,
+  and an occurrence running on into `ō` or `ū` is another word;
+  over the corpus `phraseOccurrences` drops one such false occurrence in each of 2 inputs,
+  and no page changes.
+- `218720cfe`:
+  the address floor's word scan reads Latin letters;
+  the pre-letter build refused a rendering
+  addressing a cat named `Heřmánek` as if it said "he",
+  and the current build accepts it.
+  No finding changes over 131 source and target pairs;
+  a control removing `you` makes 20 differ.
+- `340b56ef5`:
+  the suicide-method floor's word scan,
+  the same;
+  no finding changes,
+  and a control breaking
   the suicide stem makes 21 differ.
-- `3e28464fa`: those three scans were one scan in three copies; `latinWordSpans` and `lowerCaseLatinWords`
-  in `latin-letters.ts` replace them, matching HEAD on every measure above.
+- `3e28464fa`:
+  those three scans were one scan in three copies;
+  `latinWordSpans` and `lowerCaseLatinWords`
+  in `latin-letters.ts` replace them,
+  matching HEAD on every measure above.
   Mutants making the shared scan ASCII at the start or in the loop are caught by 6 assertions each.
-- `bdc0112e6`: heading affinity's `latinTokens` come from the shared scan, folded by the new `foldLatinWord`
-  (NFD, marks dropped, lower case), so a handle written with its accent composed, combining or left off
-  scores against itself; `Kätzchen` no longer reads as `tzchen`.
-  Token sets differ on the 13 inputs with such letters, and `prepareDocumentPair`'s slices on none of 92 pairs;
-  with affinity disabled XingZ60's slicing moves, so the comparison sees this path.
-- `ee99ee294`: the preservation gate's `contentTokens` run on Latin letters, digits and marks, and `properNouns`
-  opens a name on any capital Latin letter (the new `isLatinCapital`), so a deleted `Émile` counts as a name lost.
-  Token lists differ on 13 inputs and names on 9; `checkPreservation` replayed over 9,456 recorded repair regions
-  (`preservation-replay.mjs`) changes no verdict, while raising the minimum name length flips 92.
-- `a5ae23a8f`: the neutral-pronoun count no longer counts `TA` inside an accented word or before a combining mark.
-  `sourcePronounLines` is unchanged on all 92 sources; counting occurrences inside words makes 31 differ.
-- `23d2bea2a`: a missed quote's note counts accented words as one Latin token (diagnostic only).
-- `fa0983503`: the picture-reading refusal screen reads accented words whole;
+- `bdc0112e6`:
+  heading affinity's `latinTokens` come from the shared scan,
+  folded by the new `foldLatinWord`
+  (NFD,
+  marks dropped,
+  lower case),
+  so a handle written with its accent composed,
+  combining or left off
+  scores against itself;
+  `Kätzchen` no longer reads as `tzchen`.
+  Token sets differ on the 13 inputs with such letters,
+  and `prepareDocumentPair`'s slices on none of 92 pairs;
+  with affinity disabled XingZ60's slicing moves,
+  so the comparison sees this path.
+- `ee99ee294`:
+  the preservation gate's `contentTokens` run on Latin letters,
+  digits and marks,
+  and `properNouns`
+  opens a name on any capital Latin letter (the new `isLatinCapital`),
+  so a deleted `Émile` counts as a name lost.
+  Token lists differ on 13 inputs and names on 9;
+  `checkPreservation` replayed over 9,456 recorded repair regions
+  (`preservation-replay.mjs`) changes no verdict,
+  while raising the minimum name length flips 92.
+- `a5ae23a8f`:
+  the neutral-pronoun count no longer counts `TA` inside an accented word or before a combining mark.
+  `sourcePronounLines` is unchanged on all 92 sources;
+  counting occurrences inside words makes 31 differ.
+- `23d2bea2a`:
+  a missed quote's note counts accented words as one Latin token (diagnostic only).
+- `fa0983503`:
+  the picture-reading refusal screen reads accented words whole;
   the pre-letter build discarded a short reading of a `Noël` card as a refusal (`no` plus `l`),
   and the current build keeps it while real refusals still refuse.
-  Word lists change on the 11 inputs with such letters; no recorded picture readings were replayed.
-- `5f82122aa`: the quote and refusal tests add words opening on an accented letter,
+  Word lists change on the 11 inputs with such letters;
+  no recorded picture readings were replayed.
+- `5f82122aa`:
+  the quote and refusal tests add words opening on an accented letter,
   which closed mutants that tested only a word's first character against ASCII.
-- `b4029fa3d`: content survival and the damage log read `foldedLatinWords`,
-  so `château` is one specific of seven letters instead of `ch` and `teau`, both too short to count.
-  Survival counts change on 6 of 131 archive-to-settled and archive-to-itself pairs, each by one accented word,
+- `b4029fa3d`:
+  content survival and the damage log read `foldedLatinWords`,
+  so `château` is one specific of seven letters instead of `ch` and `teau`,
+  both too short to count.
+  Survival counts change on 6 of 131 archive-to-settled and archive-to-itself pairs,
+  each by one accented word,
   and one settled page's lost list gains one such word.
-- `435ba036f`: the lexical restoration grade (read by the recall benchmark only) folds accented words;
+- `435ba036f`:
+  the lexical restoration grade (read by the recall benchmark only) folds accented words;
   word sets change on the 11 inputs with such letters and on no other.
-- `c72cee0cf`: the line guard reads an accented-only line (`Å` beside its Han line) as the original's own English;
+- `c72cee0cf`:
+  the line guard reads an accented-only line (`Å` beside its Han line) as the original's own English;
   the pre-letter build refuses that fixture's one-line rendering and the current build accepts it.
-  `compareLineCounts` is unchanged on 131 pairs; forcing `isOwnEnglish` false makes 31 differ.
-- `59e6f47c4`: the italic title restore reads a title opening on an accented capital (`Été des chats`).
-  `archiveItalicSpans` is unchanged over 92 preparations; accepting any first character makes 18 differ.
-- `94dca38d8` and `d107043be`: handle gloss placement reads word edges as Latin letters, digits and marks,
+  `compareLineCounts` is unchanged on 131 pairs;
+  forcing `isOwnEnglish` false makes 31 differ.
+- `59e6f47c4`:
+  the italic title restore reads a title opening on an accented capital (`Été des chats`).
+  `archiveItalicSpans` is unchanged over 92 preparations;
+  accepting any first character makes 18 differ.
+- `94dca38d8` and `d107043be`:
+  handle gloss placement reads word edges as Latin letters,
+  digits and marks,
   where it had read any cased letter (so a kaomoji's Greek or Cyrillic letter joined a handle's word)
   and no combining mark (so a gloss could land between a letter and its accent).
-  Page assembly replayed over 222 settled artifacts changes nothing; with the edge test always true, 7 differ.
-  The first commit's test never reached the path it named (M53); the second puts the accented word where
+  Page assembly replayed over 222 settled artifacts changes nothing;
+  with the edge test always true,
+  7 differ.
+  The first commit's test never reached the path it named (M53);
+  the second puts the accented word where
   the pre-letter build does insert the gloss before the accent.
-- `d8a90d528`: a handle's reading keeps a space from an accented word beside it (`YumaoÉmile` no longer).
-  `nameAuthorities` is unchanged over 92 preparations; tagging every romanised run changes one signer rendering.
-- `81f2ce048`: a ballot finding naming a longer accented word (`tabbyé`, or a combining accent) blames no candidate;
-  the wire reads model replies, so no corpus replay applies, and the test pins both spellings.
-- `b44711b68`: block alignment tokens are folded Latin word and digit runs instead of ASCII runs by code point.
-  Token sets change on 13 inputs, and `prepareDocumentPair`'s slices on none of 92 pairs;
+- `d8a90d528`:
+  a handle's reading keeps a space from an accented word beside it (`YumaoÉmile` no longer).
+  `nameAuthorities` is unchanged over 92 preparations;
+  tagging every romanised run changes one signer rendering.
+- `81f2ce048`:
+  a ballot finding naming a longer accented word (`tabbyé`,
+  or a combining accent) blames no candidate;
+  the wire reads model replies,
+  so no corpus replay applies,
+  and the test pins both spellings.
+- `b44711b68`:
+  block alignment tokens are folded Latin word and digit runs instead of ASCII runs by code point.
+  Token sets change on 13 inputs,
+  and `prepareDocumentPair`'s slices on none of 92 pairs;
   with tokens disabled the slicing of 10 pairs moves.
-- `baed88f59`: tests written negated (`(character < '0') || (character > '9')`) route through `ascii-letters.ts`:
+- `baed88f59`:
+  tests written negated (`(character < '0') || (character > '9')`) route through `ascii-letters.ts`:
   four whole-text digit tests become `isAsciiDigits` and a lower-case letter test `isAsciiLowerLetter`,
-  each admitting the same characters as before, the empty text included.
-  The full suite after it: 0 FAIL, 1,303 PASS.
+  each admitting the same characters as before,
+  the empty text included.
+  The full suite after it:
+  0 FAIL,
+  1,303 PASS.
 
-The census bounds every switch: the characters an ASCII test and a Latin letter-or-mark test disagree on
-occur in 2 of 92 sources (7 characters), 9 of 92 archive pages (20) and 2 of 40 settled pages (4).
+The census bounds every switch:
+the characters an ASCII test and a Latin letter-or-mark test disagree on
+occur in 2 of 92 sources (7 characters),
+9 of 92 archive pages (20) and 2 of 40 settled pages (4).
 
 Still to do:
-the Canadian date and spelling passes read words with `isCasedLetter`, which takes no combining mark,
+the Canadian date and spelling passes read words with `isCasedLetter`,
+which takes no combining mark,
 so a month or a word written with a combining accent ends at the accent where its composed spelling does not;
 the apostrophe reading (`quote-neighbours.ts`) reads a combining mark before a straight quote as no word;
 and the three `opensTag` copies move to what the MDX compiler reads after `<`
-(`micromark-extension-mdx-jsx`: a space, tab or line end leaves it text;
-`/`, `>` or an identifier start, which includes Han, opens a tag; anything else fails to compile).
+(`micromark-extension-mdx-jsx`:
+a space,
+tab or line end leaves it text;
+`/`,
+`>` or an identifier start,
+which includes Han,
+opens a tag;
+anything else fails to compile).
 
 ## Process mistakes in this audit
 
-These are the agent's own mistakes while fixing, recorded for the prevention doc.
+These are the agent's own mistakes while fixing,
+recorded for the prevention doc.
 
 ### M1: `;` in shell commands
 
-Status: recurring.
+Status:
+recurring.
 At least five times on 2026-09-27
-(`sed ... ; sed`, `node <guard> ; rg`, `rg ... ; ls`, `xargs <lint> ; rg`, and one by the fixture agent),
+(`sed ... ; sed`,
+`node <guard> ; rg`,
+`rg ... ; ls`,
+`xargs <lint> ; rg`,
+and one by the fixture agent),
 against the rule of at most three `&&` and no `;`;
-twice more later that day (`node <test> | rg ; node <test> | rg`, and one `rg` then `awk` by the docs agent),
-and once a shell `for` loop over line numbers, which the same rule forbids,
+twice more later that day (`node <test> | rg ; node <test> | rg`,
+and one `rg` then `awk` by the docs agent),
+and once a shell `for` loop over line numbers,
+which the same rule forbids,
 and once `<test> | rg ... ; true` to force a zero exit;
-twice more still (`<test> > log ; echo "exit $?"`, and `rg --files ... ; rg <config>`),
+twice more still (`<test> > log ; echo "exit $?"`,
+and `rg --files ... ; rg <config>`),
 and once more during H2 (`<test> > log && rg --count FAIL log ; rg <name> log`),
-and once during S19 (`sleep 1 && rg --count PASS log ; tail <output>`), a foreground sleep as well,
+and once during S19 (`sleep 1 && rg --count PASS log ; tail <output>`),
+a foreground sleep as well,
 and once during S5 (`build > log && tsc | rg --count ; true`),
 and once during S12 (`rg --count <file> ; rg --line-number <file>`),
 and a foreground `sleep 1 && tail <log>` during #379.
 During A6 a test file was edited while the full suite ran,
 against the rule that nothing the suite reads changes until it finishes.
-Twice more during A11 (`node --print ... ; ls`, and `rg <roots> | rg --invert-match ; rg --count`).
-Also during A11, a wrap script matched the first line of a multi-line signature as its end;
-the diff showed it before anything was committed, and the four files were restored from HEAD.
-Prevention for scripted rewrites: print each located boundary and read the diff before lint or commit.
+Twice more during A11 (`node --print ... ; ls`,
+and `rg <roots> | rg --invert-match ; rg --count`).
+Also during A11,
+a wrap script matched the first line of a multi-line signature as its end;
+the diff showed it before anything was committed,
+and the four files were restored from HEAD.
+Prevention for scripted rewrites:
+print each located boundary and read the diff before lint or commit.
 Once more during A12b (`<test> | rg ... ; echo done`).
 Twice during E1 and E4:
 `<test> > log 2>&1 ; rg --count` to capture a test's output,
@@ -4065,10 +6548,13 @@ and a heredoc appended to a test file with the lint command on the next line,
 two commands no `&&` joined.
 Once more while closing P6 (`rg <transcript> | head ; rg <transcript> | sort | head`),
 looking up how earlier ledger commits were render-checked,
-and once during P10 (`rg <run> | head ; ls <agent dir> | rg`), after that entry was committed.
-While the P14 mutation run went, a foreground `sleep 1 && tail <log>` and two more checks of its log,
+and once during P10 (`rg <run> | head ; ls <agent dir> | rg`),
+after that entry was committed.
+While the P14 mutation run went,
+a foreground `sleep 1 && tail <log>` and two more checks of its log,
 against the rules that forbid a foreground sleep and any call while a background task runs;
-the task notifies on completion, so the wait is to end the turn.
+the task notifies on completion,
+so the wait is to end the turn.
 Once during D14 (`mise run corpus-pass -- --plan > log 2>&1 ; rg <log>`),
 and once during D16 (`rg <backtick> | rg <fence> ; rg <example fence>`),
 both searches whose second half ran regardless,
@@ -4076,154 +6562,254 @@ and once reading the suite after D20 (`rg --count FAIL log ; rg --count PASS log
 During X2 an edit script was patched with an inline `python3 - <<'EOF'` heredoc chained after `sed`,
 where scripts go through the Write tool and run in a call of their own.
 Once more during H9 (`rg --files-with-matches <term> <clone> ; rg --files-with-matches <term> <other clone>`).
-Once more during X12's preparation half, in a positive control (`rg <scan> <scratch> <src> ; echo "rg exit $?"`).
-Once more during X20 (`rg <old reader> src/ ; mise run build > log`), a leftover check chained to the build,
-and twice during X17: `git diff | rg --count <long lines> ; true`, to force a zero exit when nothing matched,
-the same form recorded above once already, and `rg --count FAIL log ; rg --count PASS log` reading the suite,
+Once more during X12's preparation half,
+in a positive control (`rg <scan> <scratch> <src> ; echo "rg exit $?"`).
+Once more during X20 (`rg <old reader> src/ ; mise run build > log`),
+a leftover check chained to the build,
+and twice during X17:
+`git diff | rg --count <long lines> ; true`,
+to force a zero exit when nothing matched,
+the same form recorded above once already,
+and `rg --count FAIL log ; rg --count PASS log` reading the suite,
 where `rg --count FAIL log || true` then a second call is the recorded form.
-Once more during audit area six (B14), counting call sites after removing four readers
+Once more during audit area six (B14),
+counting call sites after removing four readers
 (`remove-functions.mjs <file> && rg --count <old name> <files> ; rg --count <other name> <file>`).
 Twice more in the same area:
-`rg <predicate> <files> ; rg --files <script dir>`, a lookup chained to an unrelated listing,
-and `for_sig() { :; } ; rg <signature>`, a shell function defined and followed by `;` in one call.
-Once more during B18 (`rg <leftovers> | rg --invert-match <files> ; <lint> src`), a leftover search chained to a lint.
-Also during B18, calls made while background tasks ran:
-ledger edits and reads while a mutation run went, and reads of the MDX parser's source while the full suite went,
+`rg <predicate> <files> ; rg --files <script dir>`,
+a lookup chained to an unrelated listing,
+and `for_sig() { :; } ; rg <signature>`,
+a shell function defined and followed by `;` in one call.
+Once more during B18 (`rg <leftovers> | rg --invert-match <files> ; <lint> src`),
+a leftover search chained to a lint.
+Also during B18,
+calls made while background tasks ran:
+ledger edits and reads while a mutation run went,
+and reads of the MDX parser's source while the full suite went,
 against the rule that the wait for a background task is to end the turn.
-None touched a file the running task read, which the rule does not make an exception for.
+None touched a file the running task read,
+which the rule does not make an exception for.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
-Status: caught the same hour, 2026-09-27 (E1).
+Status:
+caught the same hour,
+2026-09-27 (E1).
 The package's `test:unit` task runs the tests against `dist` without building;
 only `buildAndTest` builds first.
 After a mutation check the source was restored with `git checkout --`
 and the suite launched through `test:unit`,
 so it ran against the mutant's build and reported its two guards failing.
-Prevention: every suite run goes through `buildAndTest`,
+Prevention:
+every suite run goes through `buildAndTest`,
 and so does any single test file run after a source change,
 through `mise run build` first.
 
 ### M20: docs naming a log line the code never writes
 
-Status: corrected, 2026-09-27 (E4).
+Status:
+corrected,
+2026-09-27 (E4).
 The README and the corpus-pass runbook both said dropped addresses reach the run log at `info`
 under `publish: dropped destination`;
-no such line exists, and the real one is at `warn`,
+no such line exists,
+and the real one is at `warn`,
 reading `entry <id>: page drops source destination <address>`.
-Prevention: before a doc names a log line, a message or an output line,
+Prevention:
+before a doc names a log line,
+a message or an output line,
 `rg` the source for the exact string and copy it from there.
 
 ### M21: a check that could not fail
 
-Status: corrected in `d2f0e07ef` (E4).
+Status:
+corrected in `d2f0e07ef` (E4).
 A test asserting that a throwing settlement bought no judge read its counter off the return value,
 which a throw never delivers,
 so the assertion held at its initial zero whatever was bought.
-A parser test named "listing the two it does" had pinned three kinds, and later four.
-Prevention: a counter or state a throwing path must leave untouched is held by the test outside the call;
-test names describe the property, not a count that the next change makes false.
+A parser test named "listing the two it does" had pinned three kinds,
+and later four.
+Prevention:
+a counter or state a throwing path must leave untouched is held by the test outside the call;
+test names describe the property,
+not a count that the next change makes false.
 
 ### M22: a comment's claim carried into the ledger without reading the measurement it described
 
-Status: corrected, 2026-09-27 (E6).
+Status:
+corrected,
+2026-09-27 (E6).
 The audit copied "a malformed archive competes as though it parsed" from a TSDoc paragraph into the ledger as E6,
-and no one read `measurePatchedCandidate`, where integrity is relative to the archive,
+and no one read `measurePatchedCandidate`,
+where integrity is relative to the archive,
 so the finding asked for a behaviour change that would have changed nothing on the archive's own row.
-Prevention: a finding drawn from a comment is confirmed against the code the comment describes before it is filed,
-and a field's doc says what the code measures, relative or absolute, with the function that measures it named.
+Prevention:
+a finding drawn from a comment is confirmed against the code the comment describes before it is filed,
+and a field's doc says what the code measures,
+relative or absolute,
+with the function that measures it named.
 
 ### M23: a red guard committed with its lint warnings unread
 
-Status: corrected in `f83c4a6b6`, 2026-09-27 (E5).
+Status:
+corrected in `f83c4a6b6`,
+2026-09-27 (E5).
 The panel guard was linted and committed in one `&&` chain;
-the lint wrapper exits 0 on warnings, so six `strict-void-return` warnings landed in `f12a29a3d`
+the lint wrapper exits 0 on warnings,
+so six `strict-void-return` warnings landed in `f12a29a3d`
 and were read only in the output afterwards.
-Prevention: lint is its own call, and its `Found N warnings and M errors` line is read before anything is staged;
-warnings count as findings here (LN8), so a chain that gates on the exit code gates on nothing.
+Prevention:
+lint is its own call,
+and its `Found N warnings and M errors` line is read before anything is staged;
+warnings count as findings here (LN8),
+so a chain that gates on the exit code gates on nothing.
 
 ### M24: a census read a helper's fields by their names, not their contract
 
-Status: corrected before use, 2026-09-27 (A17).
+Status:
+corrected before use,
+2026-09-27 (A17).
 The A17 census and the first version of its floor sliced each signer out of the slice text with
-`Signature.nameStart` and `nameEnd`, which are offsets into the signature's own line;
+`Signature.nameStart` and `nameEnd`,
+which are offsets into the signature's own line;
 the census reported 75 of 82 page signers unglossed over names that were not names,
-and a first pass of that census, reading the would-ship kind as `text` where it is `wording`,
+and a first pass of that census,
+reading the would-ship kind as `text` where it is `wording`,
 had reported every signer unaligned.
 Both were caught only because a result looked wrong or a guard failed.
-Prevention: a census that calls a helper reads the helper's type doc for every field it uses,
+Prevention:
+a census that calls a helper reads the helper's type doc for every field it uses,
 and prints one decoded example of what it counts (ids and code points only) before it prints a total;
 a result where every item lands in one bucket is a defect in the census until shown otherwise.
 
 ### M25: floors and sheets changed a cached stage's decisions with no cache version moved
 
-Status: corrected in `66703994a`, which moved the translate cache to 15 and the consolidation cache to 20,
-with the repair cache's version 33 account naming what rode inside it, 2026-09-27.
+Status:
+corrected in `66703994a`,
+which moved the translate cache to 15 and the consolidation cache to 20,
+with the repair cache's version 33 account naming what rode inside it,
+2026-09-27.
 The translate and consolidation versions landed at 02:34 (`bd98bdc70`);
-after them the F-series floors, the Han residue floor, the sheets reading the declared names and house rules,
-the reachable quorum and the A17 signer floor all changed what those stages ask or accept, and none moved a number;
+after them the F-series floors,
+the Han residue floor,
+the sheets reading the declared names and house rules,
+the reachable quorum and the A17 signer floor all changed what those stages ask or accept,
+and none moved a number;
 the repair lane had four more such changes after its version 32 (03:34).
-No harm reached a page, and only by luck: no run cached a slice after 00:26 that day.
+No harm reached a page,
+and only by luck:
+no run cached a slice after 00:26 that day.
 Each version file says the bump is enforced by nothing and was missed before.
-Prevention: a commit that changes a floor, a sheet, a threshold or a settlement rule in the translate, consolidation
-or repair path names in its message which cache version it moves, or why none moves;
-and before any run launches, the versions are checked against `git log` since each one last moved.
+Prevention:
+a commit that changes a floor,
+a sheet,
+a threshold or a settlement rule in the translate,
+consolidation
+or repair path names in its message which cache version it moves,
+or why none moves;
+and before any run launches,
+the versions are checked against `git log` since each one last moved.
 
 ### M26: a lint autofix changed what the code does
 
-Status: caught before it reached a run; corrected in `70a2a73ca`, 2026-09-28.
-`oxlint --fix` applied `unicorn(prefer-set-has)` to a string: `prefix.includes('- ')` became
-`new Set(prefix).has('- ')`, a set of single characters that no two-character list marker can match,
+Status:
+caught before it reached a run;
+corrected in `70a2a73ca`,
+2026-09-28.
+`oxlint --fix` applied `unicorn(prefer-set-has)` to a string:
+`prefix.includes('- ')` became
+`new Set(prefix).has('- ')`,
+a set of single characters that no two-character list marker can match,
 so a list item's first word never opened a sentence.
-The red guard caught it; the commit before the fix had been made after the autofix, unreviewed.
+The red guard caught it;
+the commit before the fix had been made after the autofix,
+unreviewed.
 The date modules' autofix (`e9065faef` to `2efc90630`) was read line by line afterwards and is layout only.
-Prevention: commit before `--fix`, read `git diff` after it for anything but layout,
+Prevention:
+commit before `--fix`,
+read `git diff` after it for anything but layout,
 and run the guards on the fixed code before trusting it.
 
 ### M27: a mutation harness that could not report a catch
 
-Status: caught by its own result, 2026-09-28; the verdicts were discarded and the check rerun.
-The spelling mutation script dropped every output line containing "Error: " to skip the suite's summary line,
-and every assertion failure reads "AssertionError: ", so all 26 mutants printed `SURVIVED`.
-A null result from a probe never shown able to fail is no result (the M21 family, one level up).
-Prevention: every mutation run opens with controls,
-an unchanged source that must pass and a mutant that must fail, before any verdict is read.
+Status:
+caught by its own result,
+2026-09-28;
+the verdicts were discarded and the check rerun.
+The spelling mutation script dropped every output line containing "Error:
+" to skip the suite's summary line,
+and every assertion failure reads "AssertionError:
+",
+so all 26 mutants printed `SURVIVED`.
+A null result from a probe never shown able to fail is no result (the M21 family,
+one level up).
+Prevention:
+every mutation run opens with controls,
+an unchanged source that must pass and a mutant that must fail,
+before any verdict is read.
 
 ### M28: the M25 correction checked three of six cache versions
 
-Status: corrected in the commit that moved the lane contest to 6 and pairing to 3, 2026-09-28.
-M25's check walked the translate, consolidation and repair versions and stopped there.
-The lane contest (version 5 since 2026-08-29) kept its number through changes to its sheet, its eligibility floor,
-its windows and its quorum, and its ballots were cached under version 5 on fifteen days of changing sheets;
+Status:
+corrected in the commit that moved the lane contest to 6 and pairing to 3,
+2026-09-28.
+M25's check walked the translate,
+consolidation and repair versions and stopped there.
+The lane contest (version 5 since 2026-08-29) kept its number through changes to its sheet,
+its eligibility floor,
+its windows and its quorum,
+and its ballots were cached under version 5 on fifteen days of changing sheets;
 pairing (version 2 since 2026-08-29) kept its number through windowed rounds and bench-sized quorums;
 refine (version 5 since 03:34 on 2026-09-27) carried house-rule changes with no account.
-Found while accounting for K13, whose house-rule line reaches every one of those sheets.
-The page-assembly Canadian pass is outside every key, but the prose ranges it shares with the Han-residue floor are not;
+Found while accounting for K13,
+whose house-rule line reaches every one of those sheets.
+The page-assembly Canadian pass is outside every key,
+but the prose ranges it shares with the Han-residue floor are not;
 that too was nearly missed.
-Prevention: M25's pre-launch check lists every `*CACHE_VERSION` constant in `src`
-(`rg 'CACHE_VERSION[A-Z_]* = ' src`), not the ones remembered,
+Prevention:
+M25's pre-launch check lists every `*CACHE_VERSION` constant in `src`
+(`rg 'CACHE_VERSION[A-Z_]* = ' src`),
+not the ones remembered,
 and for each one runs `git log` since it last moved over every file its stage's sheet or floors import,
 the shared house rules and prose ranges included.
 
-The pre-launch check (task #395), 2026-09-28, run by `cache-account-audit.ts` over all six constants:
-translate 15 and consolidation 20 set in `66703994a` (22:56 on 2026-09-27), repair 33 in `f2cd70ece` (22:41),
-refine 5 in `30e66051e` (03:34 that morning), lane contest 6 and pairing 3 in `d614a0c1d` (00:30 on 2026-09-28).
+The pre-launch check (task #395),
+2026-09-28,
+run by `cache-account-audit.ts` over all six constants:
+translate 15 and consolidation 20 set in `66703994a` (22:56 on 2026-09-27),
+repair 33 in `f2cd70ece` (22:41),
+refine 5 in `30e66051e` (03:34 that morning),
+lane contest 6 and pairing 3 in `d614a0c1d` (00:30 on 2026-09-28).
 Every one was set after the newest slice-cache file under the agent runs (00:26 on 2026-09-27),
-and none has been written since: `find ... -newermt '2026-09-27 00:27'` gives 0, and its control at 00:20 gives 18.
-So no answer cached under an earlier question can be served under any current number, and no version moves.
-Of the 153 non-test source commits since the earliest of them, 37 are named by an account and 116 by none
+and none has been written since:
+`find ... -newermt '2026-09-27 00:27'` gives 0,
+and its control at 00:20 gives 18.
+So no answer cached under an earlier question can be served under any current number,
+and no version moves.
+Of the 153 non-test source commits since the earliest of them,
+37 are named by an account and 116 by none
 (the script prints each with its subject and the versions set before it);
-they ride inside every version by the same fact, and each version's TSDoc now says so, dated.
-Rerun 2026-09-28 over seven constants, with the page title lexicon's `PAGE_TITLE_CACHE_VERSION` 1 (`ea61cbd4c`)
+they ride inside every version by the same fact,
+and each version's TSDoc now says so,
+dated.
+Rerun 2026-09-28 over seven constants,
+with the page title lexicon's `PAGE_TITLE_CACHE_VERSION` 1 (`ea61cbd4c`)
 added to the script and the repair version now 34 (`ef20e7978`):
-`find ... -newermt '2026-09-27 00:20'` gives the same 18 files, all by 00:26 that day, and none since,
+`find ... -newermt '2026-09-27 00:20'` gives the same 18 files,
+all by 00:26 that day,
+and none since,
 so every number still holds what it names.
 The page title lines and X20's heading pairs reach the slices through the identity context,
-which all five slice keys hash, and never reach a pairing sheet, whose key does not carry them.
+which all five slice keys hash,
+and never reach a pairing sheet,
+whose key does not carry them.
 
 ### M29: a red guard asked a function that never reads the entry it guards
 
-Status: caught before the fix landed, 2026-09-28; the guard was rewritten in `357f534b7`.
+Status:
+caught before the fix landed,
+2026-09-28;
+the guard was rewritten in `357f534b7`.
 The R11 and R12 guards of `8da383b89` asked `communityRenderingDepartures` whether "dated" and "intensive care"
 still counted as renderings of 交往 and 抢救,
 but the departures block reads the community glossary only,
@@ -4231,92 +6817,163 @@ and both words are in the rendering glossary,
 whose renderings reach the identity-context lines and nothing else.
 The guards were red before the fix and would have stayed red after it,
 so their red proved nothing about the finding.
-Prevention: a red guard is read case by case before the fix
+Prevention:
+a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
-a case that stays red after the fix is a guard defect, not a fix defect.
+a case that stays red after the fix is a guard defect,
+not a fix defect.
+
+### M54: doc commits that never ran the Markdown linter
+
+Status:
+happened across the audit;
+found 2026-09-28 (D23) and fixed the same hour.
+Every commit to this ledger,
+the prevention doc and the package's other docs was checked by reading,
+by a search for task-list numbers,
+and sometimes by a render,
+but never by the repository's Markdown linter,
+which the repository's lint task runs over every Markdown file.
+Prevention:
+a Markdown change runs `mise run lint:markdown <files>` before it is staged,
+and a `--fix` is rendered against the committed version before it is committed.
 
 ### M53: a test committed for a defect it never reached
 
-Status: happened 2026-09-28 (B18); `94dca38d8`'s test, fixed by `d107043be` the same hour.
+Status:
+happened 2026-09-28 (B18);
+`94dca38d8`'s test,
+fixed by `d107043be` the same hour.
 The test for gloss placement beside a combining accent put the accented handle in a signature,
-where the pass never establishes a signer's rendering, so it placed nothing under either build;
+where the pass never establishes a signer's rendering,
+so it placed nothing under either build;
 the commit named a defect its own test could not show,
 and a mutant restoring the old edge test survived it.
-The fixture checks run for the address, refusal and line switches against the pre-letter build
+The fixture checks run for the address,
+refusal and line switches against the pre-letter build
 (`.cache/dist-before-letters/`) were skipped for this one.
-Prevention: a test added for a defect is run against the build before the fix, and must fail there,
-before the fix is committed; a test that passes on both builds is rewritten until it reaches the path.
+Prevention:
+a test added for a defect is run against the build before the fix,
+and must fail there,
+before the fix is committed;
+a test that passes on both builds is rewritten until it reaches the path.
 
 ### M52: a positive control applied by line number after an edit moved the line
 
-Status: happened 2026-09-28 (B18); caught because the control read 0, and rerun.
+Status:
+happened 2026-09-28 (B18);
+caught because the control read 0,
+and rerun.
 The suicide floor's control rewrote its stem with `sed` addressed by line 53,
 read from the file before the switch's import grew by three lines;
-the `sed` matched nothing, the harness reported no difference, and a null control is no control.
-Rerun by pattern with the replacement counted first, the control made 21 of 131 pairs differ.
-Prevention: a control edit is addressed by the text it changes, never by a line number,
+the `sed` matched nothing,
+the harness reported no difference,
+and a null control is no control.
+Rerun by pattern with the replacement counted first,
+the control made 21 of 131 pairs differ.
+Prevention:
+a control edit is addressed by the text it changes,
+never by a line number,
 and the command counts the changed text (`rg --count-matches`) before the measurement runs.
 
 ### M51: a command batched with the write it read
 
-Status: happened 2026-09-28 (B18); no harm, caught the same minute.
+Status:
+happened 2026-09-28 (B18);
+no harm,
+caught the same minute.
 A new mutation spec was written in the same batch as the command that ran it;
-the spec's name already existed from B4, the write was refused because the old file had not been read,
-and the runner ran the old spec, which mutated and restored page-assembly files and reported on them.
+the spec's name already existed from B4,
+the write was refused because the old file had not been read,
+and the runner ran the old spec,
+which mutated and restored page-assembly files and reported on them.
 Against the rule that a call depending on another's output waits for it (repository rule EDR).
-Prevention: a command reading a file written in the same response runs in a later call,
+Prevention:
+a command reading a file written in the same response runs in a later call,
 and each new scratch spec takes a name not used before (`ls` the name first).
 
 ### M50: a mutation runner that read a crashed test run as a survivor
 
-Status: happened 2026-09-28 (B18); the runner fixed the same hour.
+Status:
+happened 2026-09-28 (B18);
+the runner fixed the same hour.
 `mutants.ts` (`~/temp/agent/audit-glossary-fix/`) counted `[FAIL]` lines only.
 A mutant giving the casing scan an ASCII-only continue test made it loop forever on a word opening with `Â`;
-the test process died of memory exhaustion before printing any verdict, and the runner reported the mutant SURVIVED.
-Reproduced by hand, it was a hang, not a survivor, and it exposed a real hazard in the scan (fixed in `f4aa85d9a`).
-Earlier survivors were each closed by an added test, so no past verdict let a gap stand;
+the test process died of memory exhaustion before printing any verdict,
+and the runner reported the mutant SURVIVED.
+Reproduced by hand,
+it was a hang,
+not a survivor,
+and it exposed a real hazard in the scan (fixed in `f4aa85d9a`).
+Earlier survivors were each closed by an added test,
+so no past verdict let a gap stand;
 a crash read as a survivor only ever cost an unneeded test.
-The runner now counts a non-zero exit, a signal or a timeout (180 s) as a failure and names it,
+The runner now counts a non-zero exit,
+a signal or a timeout (180 s) as a failure and names it,
 and a control that reproduces the hang reads as caught (SIGABRT).
-Prevention: a harness's verdict counts only outcomes it can observe;
-a run that ends without a verdict is a result of its own, never read as a pass,
+Prevention:
+a harness's verdict counts only outcomes it can observe;
+a run that ends without a verdict is a result of its own,
+never read as a pass,
 and each harness gets one control per outcome it reports.
 
 ### M49: a commit message that named a cause before it was looked up
 
-Status: happened 2026-09-28 (B18); corrected by a commit comment on `1c3286271` the same hour.
+Status:
+happened 2026-09-28 (B18);
+corrected by a commit comment on `1c3286271` the same hour.
 The message said the blank first lines were left when imports were written or removed.
-`git blame` of each file's first line, run after the push, showed every one came in with its file's first commit,
+`git blame` of each file's first line,
+run after the push,
+showed every one came in with its file's first commit,
 and no import removal left one.
-Prevention: a commit message states only what its diff and the checks run show;
-a cause goes in only after the command that shows it (blame, log, a probe) has run,
+Prevention:
+a commit message states only what its diff and the checks run show;
+a cause goes in only after the command that shows it (blame,
+log,
+a probe) has run,
 and otherwise the message says what changed and nothing about why it was there.
 
 ### M48: a census of a rule that searched the names of functions holding it
 
-Status: happened 2026-09-28 (audit area six, letter predicates); found when the prose-scanner switch widened its search.
-The ASCII letter merge replaced 11 local copies, found by searching for named predicates and their bodies,
+Status:
+happened 2026-09-28 (audit area six,
+letter predicates);
+found when the prose-scanner switch widened its search.
+The ASCII letter merge replaced 11 local copies,
+found by searching for named predicates and their bodies,
 and the plan for switching prose scanners to Latin letters was drawn from the same list.
 The same test written inline was never searched:
 `(character >= 'a') && (character <= 'z')` inside a larger function,
-character-code ranges (`align-blocks.ts`), literal alphabets and digit strings,
-case-fold tests (`lower !== upper`), and regex classes and properties (`\p{L}`).
+character-code ranges (`align-blocks.ts`),
+literal alphabets and digit strings,
+case-fold tests (`lower !== upper`),
+and regex classes and properties (`\p{L}`).
 A search by shape found inline letter tests in 13 more source files and a test file,
 among them prose scanners the plan lacked
-(`reading-refusal.ts`, `assembly-content-survival.ts`, `lexical-restoration.ts`, `line-structure-guard.ts`,
-`archive-italic-spans.ts`), plus digit and hex tests,
+(`reading-refusal.ts`,
+`assembly-content-survival.ts`,
+`lexical-restoration.ts`,
+`line-structure-guard.ts`,
+`archive-italic-spans.ts`),
+plus digit and hex tests,
 and further definitions of a word character
-(`\p{L}\p{N}` in `declared-name-survival.ts`, cased letters by regex in `quote-neighbours.ts`,
-cased letters by case fold in `canadian-date-parts.ts`, `handle-gloss-place.ts` and `prose-ranges.ts`).
+(`\p{L}\p{N}` in `declared-name-survival.ts`,
+cased letters by regex in `quote-neighbours.ts`,
+cased letters by case fold in `canadian-date-parts.ts`,
+`handle-gloss-place.ts` and `prose-ranges.ts`).
 It also found three `opensTag` definitions that disagree on which character after `<` opens a tag.
 Prevention (the prevention doc's copies family):
 a census of a rule searches every way the rule can be written,
 not the names of functions known to hold it:
-range comparisons on characters and on character codes, literal alphabets,
-case-fold comparisons, and regex classes and properties,
+range comparisons on characters and on character codes,
+literal alphabets,
+case-fold comparisons,
+and regex classes and properties,
 each query with a positive control.
-The shape search itself then missed the negated form, `(character < '0') || (character > '9')`,
+The shape search itself then missed the negated form,
+`(character < '0') || (character > '9')`,
 which held four whole-text digit tests and a lower-case letter test (`baed88f59`);
 a search for reversed operands (`'0' <= character`) and for character-code arithmetic found none,
 while its control pattern matched 2.
@@ -4324,365 +6981,632 @@ So every shape is searched in both its asserted and its negated spelling.
 
 ### M47: a type declared while the same shape was already exported under the same name
 
-Status: happened 2026-09-28 (B11), fixed in the next commit.
+Status:
+happened 2026-09-28 (B11),
+fixed in the next commit.
 `index-pair-list.ts` declared `IndexPair { source, target }` for the shared correspondence-list guard,
-in a change whose whole purpose was removing copies; `pair-agreement.ts` already exported that type by that name.
-Prevention (the prevention doc's copies family): before declaring a type or helper,
-search for its name and for its shape (`rg 'type <Name>\b'`, and the field names together),
+in a change whose whole purpose was removing copies;
+`pair-agreement.ts` already exported that type by that name.
+Prevention (the prevention doc's copies family):
+before declaring a type or helper,
+search for its name and for its shape (`rg 'type <Name>\b'`,
+and the field names together),
 and reuse what is there.
 
 ### M46: a commit whose type check ran before its last edit
 
-Status: happened 2026-09-28; `010e36bc5` failed the package's type check, fixed by `84c748aba`.
-The type check ran after the guard's first edits; the barrel export added last collided with an existing export,
-and lint and the tests passed, so nothing caught it before the commit, which named no breakage.
-Prevention: lint, type check and the named tests run after the final edit of a commit, in that order,
+Status:
+happened 2026-09-28;
+`010e36bc5` failed the package's type check,
+fixed by `84c748aba`.
+The type check ran after the guard's first edits;
+the barrel export added last collided with an existing export,
+and lint and the tests passed,
+so nothing caught it before the commit,
+which named no breakage.
+Prevention:
+lint,
+type check and the named tests run after the final edit of a commit,
+in that order,
 and a commit follows only a clean run of all three.
 
 ### M45: a lint over an empty file list read as clean
 
-Status: happened 2026-09-28 while fixing X19; caught by the next command's output.
+Status:
+happened 2026-09-28 while fixing X19;
+caught by the next command's output.
 The file list for the lint came from `git status --short -- .` run in the package directory,
-which cli-git's `require-root` guard refused, so the list was empty;
+which cli-git's `require-root` guard refused,
+so the list was empty;
 the lint that read it printed "Found 0 warnings and 0 errors".
 The earlier run over the same empty list had printed findings in exactly the changed files,
-so the wrapper with no file argument lints something wider, and a clean result from it says nothing about the list.
-Prevention: a command that consumes a generated list prints the list's line count in the same call first
-(`wc --lines`), and git runs from the repository root (the M1 family's git rule).
+so the wrapper with no file argument lints something wider,
+and a clean result from it says nothing about the list.
+Prevention:
+a command that consumes a generated list prints the list's line count in the same call first
+(`wc --lines`),
+and git runs from the repository root (the M1 family's git rule).
 The same hour the slice-cache age check (M28) wrote its output to `slice-cache-newer.out` under the tree it searched,
-a name its own `-path '*slice-cache*'` matched, and printed one file written "today";
-reading the path showed it was the output itself, before any conclusion was drawn.
-Prevention: a probe writes its output outside the tree it searches, or under a name its pattern cannot match.
+a name its own `-path '*slice-cache*'` matched,
+and printed one file written "today";
+reading the path showed it was the output itself,
+before any conclusion was drawn.
+Prevention:
+a probe writes its output outside the tree it searches,
+or under a name its pattern cannot match.
 
 ### M44: a detector that said one order and kept another, guarded by a fixture that could not tell
 
-Status: happened 2026-09-28 in H16's `page-title-spans.ts`; fixed in `d9a306602`.
+Status:
+happened 2026-09-28 in H16's `page-title-spans.ts`;
+fixed in `d9a306602`.
 `repeatedTitleSpans` said it listed titles by first appearance,
-and tallied every heading, then every HTML heading, then every 《》 and 【】 span, wherever each stood.
-Its order test used 《》 alone, one marker kind, so it passed either way: the M42 family, a guard whose fixture
+and tallied every heading,
+then every HTML heading,
+then every 《》 and 【】 span,
+wherever each stood.
+Its order test used 《》 alone,
+one marker kind,
+so it passed either way:
+the M42 family,
+a guard whose fixture
 cannot reach the difference its label names.
-The same file copied a private code-point counter, with a `character !== ''` guard that a `for…of` over a string
-can never fail, from `page-name-glossary.ts` and `corpus-name-index.ts`,
+The same file copied a private code-point counter,
+with a `character !== ''` guard that a `for…of` over a string
+can never fail,
+from `page-name-glossary.ts` and `corpus-name-index.ts`,
 beside a shared `codePointCount` (`code-points.ts`) that says it exists so no copy drifts;
 `67243edae` removes all three copies and the three private copies of the Han test.
-The rewrite then slipped a regex into the heading reader (RG1), caught on reading the diff before lint.
-Prevention: before writing a helper, `rg` the package for one that does the job
+The rewrite then slipped a regex into the heading reader (RG1),
+caught on reading the diff before lint.
+Prevention:
+before writing a helper,
+`rg` the package for one that does the job
 (`rg 'function \w*(codePoint|Han|heading)' src`);
 an order claim is tested with a fixture mixing every source the order draws from.
 
 
 ### M43: a unit test run under the run's keys reached the live web
 
-Status: happened 2026-09-28 with H16's red guard; fixed structurally in `d82dfe559` (X19).
+Status:
+happened 2026-09-28 with H16's red guard;
+fixed structurally in `d82dfe559` (X19).
 The guard drove `preparePassEntry` end to end with an original naming a title,
 and nothing in the test said which of the preparation's reads leave the process.
 The suite inherits every decrypted key from the root `mise.toml`,
 so the preparation's own lookup bought a search and wrote a record to the real cache (X19).
 The same hazard had been met once before and handled in one test only,
 by asserting its fixture named no title (`pass-footnote-lifecycle.unit.test.ts`).
-Prevention: a new test that drives a production entry point lists the reads that entry point makes
-outside the process (`process.env`, `fetch`, `homedir()`, a pinned corpus) before it first runs,
-and hands each a fixture; a seam that reaches the network or a real cache is required, never optional,
+Prevention:
+a new test that drives a production entry point lists the reads that entry point makes
+outside the process (`process.env`,
+`fetch`,
+`homedir()`,
+a pinned corpus) before it first runs,
+and hands each a fixture;
+a seam that reaches the network or a real cache is required,
+never optional,
 so the type checker refuses a test that forgets it.
 
 
 ### M42: red guards whose fixtures never reached two of the sites they guarded
 
-Status: happened 2026-09-28 in X12's preparation half; the guards rebuilt in `d00123df3`.
+Status:
+happened 2026-09-28 in X12's preparation half;
+the guards rebuilt in `d00123df3`.
 `f891b358e` guarded four call sites.
-Its pairing fixture had sections of equal shape, so no section round was bought,
-and its hook handed one constant roster, so a block round reusing an earlier seating passed;
-its seam fixture paired every archive block, so the review never ran.
+Its pairing fixture had sections of equal shape,
+so no section round was bought,
+and its hook handed one constant roster,
+so a block round reusing an earlier seating passed;
+its seam fixture paired every archive block,
+so the review never ran.
 Every guard went red before the fix and green after it,
-which proved only that some site was fixed: the M29 family, a red that says nothing about the site its label names.
-Prevention: a guard over several sites asserts that each site is reached
-(one assertion per site, as `sectionRoundAsked` and `blockRoundAsked` now are),
-and a hook under test hands a different roster at each call, so reusing an earlier reading fails.
-Once more the same day, in the X14 pictures seam: `f865f524a` held Synthetic throughout,
-so the first seating was never asked, and nothing showed the injected OCR was the one read;
+which proved only that some site was fixed:
+the M29 family,
+a red that says nothing about the site its label names.
+Prevention:
+a guard over several sites asserts that each site is reached
+(one assertion per site,
+as `sectionRoundAsked` and `blockRoundAsked` now are),
+and a hook under test hands a different roster at each call,
+so reusing an earlier reading fails.
+Once more the same day,
+in the X14 pictures seam:
+`f865f524a` held Synthetic throughout,
+so the first seating was never asked,
+and nothing showed the injected OCR was the one read;
 `35684e182` adds a case with no hold and counts the stand-in's reads.
-Prevention, added: a case under a constant hold exercises only the re-seat;
-the first seating needs a case with no hold, and an injected dependency needs its own call counted.
+Prevention,
+added:
+a case under a constant hold exercises only the re-seat;
+the first seating needs a case with no hold,
+and an injected dependency needs its own call counted.
 
 ### M41: a mutation spec that left out the test pinning the mutated table
 
-Status: happened 2026-09-28 in X12's preparation half; the mutant was caught once the file was listed.
+Status:
+happened 2026-09-28 in X12's preparation half;
+the mutant was caught once the file was listed.
 The first preparation spec mutated the `preparation` row of `BENCHES_BY_PHASE`
 but listed only the preparation's own tests;
-`corpus-run/run-seats-wait.unit.test.ts`, which pins the whole table since `c2adcfdbf`, was not among them,
+`corpus-run/run-seats-wait.unit.test.ts`,
+which pins the whole table since `c2adcfdbf`,
+was not among them,
 so the mutant survived and read as a gap in the guards.
-Prevention: for every mutant, search the tests for the mutated token and list every file naming it;
+Prevention:
+for every mutant,
+search the tests for the mutated token and list every file naming it;
 report a survivor only after that search.
 
 ### M40: a source file with raw NUL bytes, skipped by every line search
 
-Status: fixed in `aacf919eb`, 2026-09-28.
+Status:
+fixed in `aacf919eb`,
+2026-09-28.
 `prepare-section-round.ts` carried two raw NUL bytes as its key separator since `3e93519df` (2026-08-23),
 so `rg` and `grep` treated it as binary and printed one "binary file matches" notice in place of its lines.
-Every line search over `src` since then got that notice, or nothing once piped through a filter;
+Every line search over `src` since then got that notice,
+or nothing once piped through a filter;
 X13's fix edited the key beside the raw bytes without noticing them,
 and this audit's outline of the file came back empty until an unfiltered search printed the notice.
-Prevention: a "binary file matches" notice from a search over source is a finding, never noise.
-A scan for control bytes other than tab, newline and carriage return
-(`rg --text --files-with-matches '[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]'`, positive-controlled on a scratch file)
-found no other file in the package outside `node_modules`, `dist` and `.cache` after the fix,
+Prevention:
+a "binary file matches" notice from a search over source is a finding,
+never noise.
+A scan for control bytes other than tab,
+newline and carriage return
+(`rg --text --files-with-matches '[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]'`,
+positive-controlled on a scratch file)
+found no other file in the package outside `node_modules`,
+`dist` and `.cache` after the fix,
 and belongs in the pre-launch checklist.
 
 ### M39: a key change committed on a census of callers, and a commit message and its correction garbled
 
-Status: happened 2026-09-28 in X13; the missed test fixed in `b84c2384c`, the messages corrected by a commit comment.
+Status:
+happened 2026-09-28 in X13;
+the missed test fixed in `b84c2384c`,
+the messages corrected by a commit comment.
 Before `fea6e4688` the census of what reads the pairing keys searched for calls to the key builders.
-Two of the tests it found also derive the key by hand, which surfaced only when they went red;
+Two of the tests it found also derive the key by hand,
+which surfaced only when they went red;
 `corpus-run/pass-footnote-lifecycle.unit.test.ts` calls no builder and joins the key material itself,
 so it went red only in the full suite.
 Afterwards a search for tests joining the version and a separator returned one of those three,
-while a search for every test hashing with `createHash('sha256'` found all four hashing tests: the M33 lesson again.
-The message of `b84c2384c` then carried a garbled phrase, and the first correction comment on it
-carried a placeholder where a hash belonged; the comment was edited to the resolved hash.
-Prevention: census a key by the material it hashes (`createHash`, the version constant, the separator),
-never by the names of its builders, and sanity-check a search that returns nothing with a broader one.
-Read a commit message back before committing, and resolve every hash a message or comment names with `git log`.
+while a search for every test hashing with `createHash('sha256'` found all four hashing tests:
+the M33 lesson again.
+The message of `b84c2384c` then carried a garbled phrase,
+and the first correction comment on it
+carried a placeholder where a hash belonged;
+the comment was edited to the resolved hash.
+Prevention:
+census a key by the material it hashes (`createHash`,
+the version constant,
+the separator),
+never by the names of its builders,
+and sanity-check a search that returns nothing with a broader one.
+Read a commit message back before committing,
+and resolve every hash a message or comment names with `git log`.
 
 ### M38: stray marker lines in guard scripts, stripped by a pattern that ate indentation
 
-Status: happened 2026-09-28, three times; fixed in `6ebd37697` and before the other commits.
+Status:
+happened 2026-09-28,
+three times;
+fixed in `6ebd37697` and before the other commits.
 The scripts that wrote the X12 guards and the X14 seam test carried stray `"""` lines inside TSDoc blocks.
-Two scripts removed them with `replaceAll('   """\n', '')`, which on a nine-space line also took six spaces
-of indentation from the line after, leaving TSDoc closers at fifteen spaces:
-one landed in `5acdd36c6`, five more were caught before their commit by a search for over-indented closers.
-No check reads indentation (X9), and lint passed each time.
-Prevention: remove a stray line whole (`sed '/^\s*"""$/d'`), never by a substring;
-after any scripted edit, search the touched files for over-indented `*/` lines and for the marker itself.
+Two scripts removed them with `replaceAll('   """\n', '')`,
+which on a nine-space line also took six spaces
+of indentation from the line after,
+leaving TSDoc closers at fifteen spaces:
+one landed in `5acdd36c6`,
+five more were caught before their commit by a search for over-indented closers.
+No check reads indentation (X9),
+and lint passed each time.
+Prevention:
+remove a stray line whole (`sed '/^\s*"""$/d'`),
+never by a substring;
+after any scripted edit,
+search the touched files for over-indented `*/` lines and for the marker itself.
 
 ### M37: a key component added from a flag's name
 
-Status: happened 2026-09-28 in X11 (`c5ac38345`); reverted in `6d9b361b4`, whose guard pins the key unmoved.
+Status:
+happened 2026-09-28 in X11 (`c5ac38345`);
+reverted in `6d9b361b4`,
+whose guard pins the key unmoved.
 `checkerSelfCertificationPermitted` was folded into the repair run shape
 on the reading that it "decides who may check a refinement".
-Every reader hands it to `assertCheckerIndependence`, which only refuses a roster before anything is bought:
-a roster it admits is asked and weighed the same either way, and the checkers are keyed already.
+Every reader hands it to `assertCheckerIndependence`,
+which only refuses a roster before anything is bought:
+a roster it admits is asked and weighed the same either way,
+and the checkers are keyed already.
 The readers also default an absent flag to refused while the fold read only an explicit `false`,
 which is how the mistake surfaced.
-Prevention: before a field goes into a key, list every reader of it (`rg` for the field)
+Prevention:
+before a field goes into a key,
+list every reader of it (`rg` for the field)
 and name the question or weighting it changes for a run that goes ahead;
-a field that only admits or refuses the run stays out, with a comment saying why.
+a field that only admits or refuses the run stays out,
+with a comment saying why.
 
 ### M36: a search for an entry id printed corpus lines
 
-Status: happened 2026-09-28 during H9; nothing was written to a file or a commit.
-Looking for which entry an H9 observation came from, an `rg --only-matching` over the session transcript
-took up to 120 characters after a corpus term, and printed lines of the poem around it,
-against the rule that probes print ids, indices, counts, code points and markup only.
-Prevention: find an entry by `--files-with-matches` over the pinned clone, or by `--count` first;
+Status:
+happened 2026-09-28 during H9;
+nothing was written to a file or a commit.
+Looking for which entry an H9 observation came from,
+an `rg --only-matching` over the session transcript
+took up to 120 characters after a corpus term,
+and printed lines of the poem around it,
+against the rule that probes print ids,
+indices,
+counts,
+code points and markup only.
+Prevention:
+find an entry by `--files-with-matches` over the pinned clone,
+or by `--count` first;
 an `--only-matching` pattern never carries wildcard context around corpus text.
 
 ### M35: a teardown that kept what only its consumers read, and an audit that listed the sites it saw
 
-Status: fixed under D16 and D20, 2026-09-28.
-`cbedea357` removed the receipt, replay and calibration layer by import closure,
-which finds modules nothing reaches but not comments, fields and test names inside modules that stay:
+Status:
+fixed under D16 and D20,
+2026-09-28.
+`cbedea357` removed the receipt,
+replay and calibration layer by import closure,
+which finds modules nothing reaches but not comments,
+fields and test names inside modules that stay:
 the surviving pairing modules kept describing the removed consumers,
 and two fields survived that only those consumers read.
-The audit then recorded that remnant as the two comments it had met (D5, D16),
+The audit then recorded that remnant as the two comments it had met (D5,
+D16),
 where the removed layer's vocabulary found the same framing across eight source files.
-Prevention: a removal is followed by a search of `src` for the removed layer's own words
+Prevention:
+a removal is followed by a search of `src` for the removed layer's own words
 (its module names and the concepts its commits introduced),
-and by a census of every export and field whose only readers were removed, tests included;
+and by a census of every export and field whose only readers were removed,
+tests included;
 an audit finding about a remnant searches that vocabulary before it writes a site list.
 
 ### M34: a guard that looked for a word the message carries twice
 
-Status: caught by the mutation check, 2026-09-28 (P12); the guard was tightened before the entry closed.
+Status:
+caught by the mutation check,
+2026-09-28 (P12);
+the guard was tightened before the entry closed.
 The all-dry refusal's guard asked whether the message said "Bedrock",
-and the message says it twice: once in the out-of-budget list the finding was about, once in the refill sentence.
+and the message says it twice:
+once in the out-of-budget list the finding was about,
+once in the refill sentence.
 A mutant dropping Bedrock from the list passed.
-Prevention: a guard asserts on the clause that makes the claim, not on the whole text;
-before committing a guard of the form `includes(word)`, `rg` the message for every other place the word appears.
+Prevention:
+a guard asserts on the clause that makes the claim,
+not on the whole text;
+before committing a guard of the form `includes(word)`,
+`rg` the message for every other place the word appears.
 
 ### M33: a search capped with `head` read as complete
 
-Status: caught by the type check, 2026-09-28 (P4).
-Removing `DEFAULT_JUDGE_MODEL_IDS`, its users were listed with an `rg ... | head` that cut the list,
-and `roster-reach.unit.test.ts`, past the cap, still imported it;
-the build's type check named it, and an uncapped search then showed no other user.
-Prevention: a search whose result decides what to change runs uncapped, or with `--count` first;
-`head` is for reading samples, never for a census.
-Again during D20, capped by scope rather than by `head`:
+Status:
+caught by the type check,
+2026-09-28 (P4).
+Removing `DEFAULT_JUDGE_MODEL_IDS`,
+its users were listed with an `rg ... | head` that cut the list,
+and `roster-reach.unit.test.ts`,
+past the cap,
+still imported it;
+the build's type check named it,
+and an uncapped search then showed no other user.
+Prevention:
+a search whose result decides what to change runs uncapped,
+or with `--count` first;
+`head` is for reading samples,
+never for a census.
+Again during D20,
+capped by scope rather than by `head`:
 the readers of the removed fields were searched in four named test files,
 and the type check named `pair-blocks-evidence-identity.unit.test.ts` and `prepare-block-scope.unit.test.ts`.
-A census searches the whole of `src`, then narrows.
+A census searches the whole of `src`,
+then narrows.
 
 ### M32: a fix that supplies context a model lacks, built without reading the sheet it goes on
 
-Status: caught the same day, 2026-09-28, by a wire guard's surviving mutants; reverted in `80a18dd53`.
-L5's footnote item said no sheet shows footnote definitions, and seven commits over 21 files threaded
+Status:
+caught the same day,
+2026-09-28,
+by a wire guard's surviving mutants;
+reverted in `80a18dd53`.
+L5's footnote item said no sheet shows footnote definitions,
+and seven commits over 21 files threaded
 whole-document footnote definitions into every lane's window on that premise.
-One rendered sheet refutes it: every footnote definition of both documents has been on every sheet since `12ed82cee`.
-The wire guard's fixture case checked the window, not the sheet, so it certified the wrong object,
-and `l5-render.mjs`, the pattern that would have shown it, already existed in the same session.
-Prevention: a fix that gives a model context it "lacks" starts by rendering the actual sheet for the case
-and searching it for that content; only an absence seen on the rendered sheet licenses the fix.
+One rendered sheet refutes it:
+every footnote definition of both documents has been on every sheet since `12ed82cee`.
+The wire guard's fixture case checked the window,
+not the sheet,
+so it certified the wrong object,
+and `l5-render.mjs`,
+the pattern that would have shown it,
+already existed in the same session.
+Prevention:
+a fix that gives a model context it "lacks" starts by rendering the actual sheet for the case
+and searching it for that content;
+only an absence seen on the rendered sheet licenses the fix.
 
 ### M31: replay refusals classified as damage from claim category and tag shape
 
-Status: caught the same day, 2026-09-28, before the owner question was answered; the L4 entry is corrected.
+Status:
+caught the same day,
+2026-09-28,
+before the owner question was answered;
+the L4 entry is corrected.
 The L4 replay's refusals were sorted into damage and fixes by their claim category and markup shape,
-and the `DottedNumber` prop rewrites on number-format claims went down as damage, in the ledger and in the owner question.
-Compared with the corpus source page, five of the six restore the source's own props.
-Prevention: a gate replay's refusals are classified against the source they are meant to protect
-(is the lost atom the source's, and is what the edit wrote the source's?) before any is called damage;
-a category name says what a critic claimed, not what the edit did.
+and the `DottedNumber` prop rewrites on number-format claims went down as damage,
+in the ledger and in the owner question.
+Compared with the corpus source page,
+five of the six restore the source's own props.
+Prevention:
+a gate replay's refusals are classified against the source they are meant to protect
+(is the lost atom the source's,
+and is what the edit wrote the source's?)
+before any is called damage;
+a category name says what a critic claimed,
+not what the edit did.
 
 ### M30: quality calls put to the owner as design questions
 
-Status: caught by the owner, 2026-09-28; the directive is recorded in `design-commitments.md`.
-After the L4 replay, the fix-shaped refusals and the L11 probe's role went to the owner as two option sets
-with a recommended option that saved effort (keep the gate as built; keep the probe in shadow).
-Each set differed only in what ships, so the answer was fixed by the goal:
+Status:
+caught by the owner,
+2026-09-28;
+the directive is recorded in `design-commitments.md`.
+After the L4 replay,
+the fix-shaped refusals and the L11 probe's role went to the owner as two option sets
+with a recommended option that saved effort (keep the gate as built;
+keep the probe in shadow).
+Each set differed only in what ships,
+so the answer was fixed by the goal:
 "Do not try to save effort and just do the option that would result in best quality of the end result",
 now a standing directive.
-An earlier instance of the same shape: the P9 question recommended deleting the re-ask, and the owner chose to enable it.
-Prevention: before asking, name what the options differ in;
-if it is only the quality of the end result, build the best option unasked and record why;
+An earlier instance of the same shape:
+the P9 question recommended deleting the re-ask,
+and the owner chose to enable it.
+Prevention:
+before asking,
+name what the options differ in;
+if it is only the quality of the end result,
+build the best option unasked and record why;
 ask only when a quality choice conflicts with an earlier ruling or the options differ in something else.
-Effort, code size and wall clock never rank an option first.
+Effort,
+code size and wall clock never rank an option first.
 
 ### M15: a finding carried and a fix started against an owner ruling
 
-Status: corrected; the ruling is now in `doc/design-commitments.md`.
-A16 listed a triple newline as a defect, and a seam-spacing guard was written for it,
-though the owner had said extra newlines need no fixing, since Markdown renders them alike;
-the ruling was in no package doc, so neither the audit that filed A16 nor the fix read it.
-Owner, 2026-09-27: "There is no need to eliminate extra newlines, because markdown doesn't care. I believe I said this before."
-Prevention: an owner ruling goes into `doc/design-commitments.md` (or its decision record) the turn it is given,
+Status:
+corrected;
+the ruling is now in `doc/design-commitments.md`.
+A16 listed a triple newline as a defect,
+and a seam-spacing guard was written for it,
+though the owner had said extra newlines need no fixing,
+since Markdown renders them alike;
+the ruling was in no package doc,
+so neither the audit that filed A16 nor the fix read it.
+Owner,
+2026-09-27:
+"There is no need to eliminate extra newlines,
+because markdown doesn't care.
+I believe I said this before."
+Prevention:
+an owner ruling goes into `doc/design-commitments.md` (or its decision record) the turn it is given,
 and a finding is checked against those commitments before any fix starts.
 
 ### M18: a count put to the owner that measured something narrower than the option it backed
 
-Status: corrected by re-asking, 2026-09-27 (A16c).
-A question said a page had never disagreed with its artifact, "0 of 214 pages across 372 run directories";
+Status:
+corrected by re-asking,
+2026-09-27 (A16c).
+A question said a page had never disagreed with its artifact,
+"0 of 214 pages across 372 run directories";
 the script behind the number had compared which files exist and never judged a page against its artifact.
-The owner chose on that premise; judged, 77 of 214 disagree.
-The ledger already said so: F-2 recorded 77 of 209 pages that no longer reproduce by splice,
+The owner chose on that premise;
+judged,
+77 of 214 disagree.
+The ledger already said so:
+F-2 recorded 77 of 209 pages that no longer reproduce by splice,
 so a search of this file before asking would have caught the claim.
-Prevention: every number in a question option names the check that produced it,
+Prevention:
+every number in a question option names the check that produced it,
 and a claim about a state is backed by a run of the instrument that decides that state,
-with its positive control, before the question is asked;
+with its positive control,
+before the question is asked;
 and the ledger is searched for the state (`rg` over `doc/audit-ledger.md` and `doc/status.md`)
 before any claim that it has never occurred.
 
 ### M17: a file split at the line cap, with comments elsewhere still naming the old file
 
-Status: corrected in `e52de1f23` (four references, one more than first counted).
+Status:
+corrected in `e52de1f23` (four references,
+one more than first counted).
 `pass-entry.ts` was split at its line budget and the write order moved to `pass-entry-persist.ts`,
-yet `published-page-check.ts`, `verify-published.ts` and a `publish-fixed.unit.test.ts` case name still
+yet `published-page-check.ts`,
+`verify-published.ts` and a `publish-fixed.unit.test.ts` case name still
 credit `pass-entry.ts` with it.
 A reader sent there finds no write at all.
-Prevention: every split runs `rg` for the backticked old filename across `src`, tests and `doc`,
+Prevention:
+every split runs `rg` for the backticked old filename across `src`,
+tests and `doc`,
 and each hit that names a moved responsibility is repointed in the same commit.
 
 ### M16: a commit message claiming records not yet written, and a hash typed rather than resolved
 
-Status: corrected by a commit comment on `5ab33539f`.
-Its message said A13, A14 and K5 were already in the ledger; they were recorded in the next commit.
-The first attempt at that comment named a full hash typed out by hand, which GitHub refused as no commit.
-Prevention: a commit message states only what `git show --stat` of that commit shows;
+Status:
+corrected by a commit comment on `5ab33539f`.
+Its message said A13,
+A14 and K5 were already in the ledger;
+they were recorded in the next commit.
+The first attempt at that comment named a full hash typed out by hand,
+which GitHub refused as no commit.
+Prevention:
+a commit message states only what `git show --stat` of that commit shows;
 every hash is resolved with `git rev-parse` in the same command that uses it.
-Once more on 2026-09-27, in the page-agreement docs:
+Once more on 2026-09-27,
+in the page-agreement docs:
 a hash no command had produced was written into this ledger as a red guard's,
-and caught on reading the edit back, before any commit.
-Once more on 2026-09-28: `c1dd889b5` said the preparation hook now takes `BenchSeating`
-before any preparation hook existed (it came in `aa635056a`); a commit comment on it corrects the message.
+and caught on reading the edit back,
+before any commit.
+Once more on 2026-09-28:
+`c1dd889b5` said the preparation hook now takes `BenchSeating`
+before any preparation hook existed (it came in `aa635056a`);
+a commit comment on it corrects the message.
 The same day `d00123df3` was typed `test` while it also changed production code
-(`attestPassReferences`, the injected reference reader, `keepBench`); a commit comment names the right type.
-Prevention for the type: read `git diff --cached --stat` before choosing it;
+(`attestPassReferences`,
+the injected reference reader,
+`keepBench`);
+a commit comment names the right type.
+Prevention for the type:
+read `git diff --cached --stat` before choosing it;
 any file outside tests makes the commit more than `test`.
-Once more on 2026-09-28: `67243edae` wrote "(#368)" in its subject, the audit's task-list number,
-which on GitHub is an unrelated file-enforcer issue; commit comment 202472839 corrects it.
-Prevention for references: a commit message names a GitHub issue only after `gh issue view` shows it is the one meant,
+Once more on 2026-09-28:
+`67243edae` wrote "(#368)" in its subject,
+the audit's task-list number,
+which on GitHub is an unrelated file-enforcer issue;
+commit comment 202472839 corrects it.
+Prevention for references:
+a commit message names a GitHub issue only after `gh issue view` shows it is the one meant,
 and never a task-list number.
-Within the hour `3f29feb30` wrote "(#369 of the audit)", the task number of the prevention doc,
-which on GitHub is an unrelated kwin-key-helper issue; commit comment 202478725 corrects it.
-A rule written an hour before did not stop it, so the prevention doc now asks for a read of the message
+Within the hour `3f29feb30` wrote "(#369 of the audit)",
+the task number of the prevention doc,
+which on GitHub is an unrelated kwin-key-helper issue;
+commit comment 202478725 corrects it.
+A rule written an hour before did not stop it,
+so the prevention doc now asks for a read of the message
 for `#` followed by digits before every commit.
 
 ### M14: a reproduction check committed without a positive control
 
-Status: corrected in `7c444de3e`, with a commit comment on `2c4207912`.
-The A12 fix compared the rebuilt identity with the recorded one, checked only against a synthetic fixture,
+Status:
+corrected in `7c444de3e`,
+with a commit comment on `2c4207912`.
+The A12 fix compared the rebuilt identity with the recorded one,
+checked only against a synthetic fixture,
 and was committed before any stored artifact was run through it;
-every stored artifact then read as moved, mikaela17 among them though its rows matched slice for slice.
-The same shape recurred one step later, when the rendering audit's rows-plus-measurements check
+every stored artifact then read as moved,
+mikaela17 among them though its rows matched slice for slice.
+The same shape recurred one step later,
+when the rendering audit's rows-plus-measurements check
 was committed with the alignment findings in it and every reproduced carve still refused.
-Prevention: a check that classifies real artifacts runs over stored ones before its commit,
-with at least one that must pass and one that must fail (QPC), and every class it can print is read.
-A related shape, `<test A> | rg --count FAIL || <test B> | rg --count FAIL`, never ran B when A went red (S10);
-and `mise run --cd <package> build` once, against CM5.
-The first `;` one also hid which of two files failed, since both counts printed as one number.
-Prevention: a report that should run after a failing command is `a || b`, never `a ; b`;
+Prevention:
+a check that classifies real artifacts runs over stored ones before its commit,
+with at least one that must pass and one that must fail (QPC),
+and every class it can print is read.
+A related shape,
+`<test A> | rg --count FAIL || <test B> | rg --count FAIL`,
+never ran B when A went red (S10);
+and `mise run --cd <package> build` once,
+against CM5.
+The first `;` one also hid which of two files failed,
+since both counts printed as one number.
+Prevention:
+a report that should run after a failing command is `a || b`,
+never `a ; b`;
 two independent checks are two tool calls.
-Once more on 2026-09-28, in narration: the X15 slice-cache check was announced with an empty-directory control
-the command did not contain; its second `find`, printing the newest file's time, served as one,
+Once more on 2026-09-28,
+in narration:
+the X15 slice-cache check was announced with an empty-directory control
+the command did not contain;
+its second `find`,
+printing the newest file's time,
+served as one,
 and the narration was corrected before the result was used.
 
 ### M2: a wording change committed without the full suite
 
-Status: fixed in `0cf2017b3`.
+Status:
+fixed in `0cf2017b3`.
 `e8f0b0369` reworded house-policy sentences and bumped a cache version with single-file runs only;
-three pins broke (the version 17 key literal, the corner-bracket sentence, the place-as-means sentence).
-Prevention: any sheet wording or cache version change runs the full suite right after its commit
+three pins broke (the version 17 key literal,
+the corner-bracket sentence,
+the place-as-means sentence).
+Prevention:
+any sheet wording or cache version change runs the full suite right after its commit
 (GCE puts the commit first) and before the next change builds on it,
 and a version bump repins its key literal in the same commit.
 
 ### M3: a guard whose first red was a link failure
 
-Status: fixed by the prep export `refactor(module-translation-repair): export archiveStandInFor`.
+Status:
+fixed by the prep export `refactor(module-translation-repair): export archiveStandInFor`.
 `archive-dispute-standing.unit.test.ts` first failed because `archiveStandInFor` was not exported,
 which says nothing about behaviour.
-Prevention: read each `[FAIL]` reason of a red run; a missing export gets its own prep commit first.
+Prevention:
+read each `[FAIL]` reason of a red run;
+a missing export gets its own prep commit first.
 
 ### M4: a guard committed red with a lint warning
 
-Status: fixed in the following fix commit.
+Status:
+fixed in the following fix commit.
 `88fdb1923` carried a `no-mixed-operators` warning
 because the lint step sat in an `&&` chain whose `rg` succeeded on warnings.
-Recurred on 2026-09-27: the F-9 guard went in red with seven type errors,
+Recurred on 2026-09-27:
+the F-9 guard went in red with seven type errors,
 because it passed `sourceText` to a floor that did not yet take it.
-Prevention: commit only after the lint line reads `Found 0 warnings and 0 errors`;
+Prevention:
+commit only after the lint line reads `Found 0 warnings and 0 errors`;
 a guard that needs a new parameter gets a prep commit adding the parameter first.
 
 ### M5: a new condition guarded on one branch only
 
-Status: fixed (guard `88fdb1923`).
+Status:
+fixed (guard `88fdb1923`).
 `bd98bdc70` refused the judged part of the incumbent whenever a target-only run was held out,
 which refused an eligible stand-in with a trailing transcript;
-the guard had no eligible stand-in with a held-out run, and review found it.
-Prevention: a guard for a new condition covers every combination of the inputs it branches on,
+the guard had no eligible stand-in with a held-out run,
+and review found it.
+Prevention:
+a guard for a new condition covers every combination of the inputs it branches on,
 with a positive control that must move.
 
 ### M6: edits attempted on files not read
 
-Status: recurring, harmless (the tool refuses).
-Twice more on 2026-09-27 (`tally-resolution.unit.test.ts`, `roster-fixture.ts`),
+Status:
+recurring,
+harmless (the tool refuses).
+Twice more on 2026-09-27 (`tally-resolution.unit.test.ts`,
+`roster-fixture.ts`),
 both files viewed with `sed` rather than the Read tool.
-Prevention: read the region with the Read tool before editing it;
+Prevention:
+read the region with the Read tool before editing it;
 a `sed` or `rg` view does not count as a read.
 
 ### M7: an adopted reading parked in docs across a compaction
 
-Status: fixed (owner confirmed "English letters" on 2026-09-27).
+Status:
+fixed (owner confirmed "English letters" on 2026-09-27).
 The "kept in English letters" reading waited in the planning doc for a veto instead of being asked.
-Prevention: a reading adopted without the owner's answer is asked in the same turn.
+Prevention:
+a reading adopted without the owner's answer is asked in the same turn.
 
 ### M8: asked the owner a measurable question
 
-Status: corrected; measured, and the bench reseated in L1.
+Status:
+corrected;
+measured,
+and the bench reseated in L1.
 The agent asked which model should fill the third checker seat,
-offering gemma-4-31b, Mercury 2.5, a stop, or no change,
+offering gemma-4-31b,
+Mercury 2.5,
+a stop,
+or no change,
 when checker quality on the role's own sheet is measurable.
-Owner, 2026-09-27: "Why don't you measure? Also Mercury 2.5 is really cheap so it's fine."
-Measurement: `~/temp/agent/audit-repair/checker-cases.mjs` builds 85 pairs from twelve runs
-(a unanimous-fixed patch, and the same issue against the unchanged archive, where not-fixed is certain);
+Owner,
+2026-09-27:
+"Why don't you measure?
+Also Mercury 2.5 is really cheap so it's fine."
+Measurement:
+`~/temp/agent/audit-repair/checker-cases.mjs` builds 85 pairs from twelve runs
+(a unanimous-fixed patch,
+and the same issue against the unchanged archive,
+where not-fixed is certain);
 `checker-bench.mjs` and `checker-bench-raw.mjs` score each candidate on the resolution sheet.
 The owner approved Mimo v2.6 Flash and Mimo v2.6 Pro on OpenRouter the same day,
 then Solar Mini 4 (`upstage/solar-mini4`);
@@ -4691,57 +7615,82 @@ Solar Mini 4 is out of the checker seat on its first reading:
 78 of 85 positives called fixed,
 but only 7 of 85 unchanged archive texts called not-fixed,
 so it calls almost any text fixed.
-Result: the ranked order in `RUN_CHECKER_ORDER` (L1).
+Result:
+the ranked order in `RUN_CHECKER_ORDER` (L1).
 The Mimo candidates were first scored by raw fetch without `zdr`;
-through the run client Mimo v2.6 Flash reaches only DeepInfra, its one zero-retention endpoint,
+through the run client Mimo v2.6 Flash reaches only DeepInfra,
+its one zero-retention endpoint,
 and scored 81 and 80 at 3.9 s median against 82 and 79 at 0.35 s.
 A measurement for a seat is taken on the route the run uses.
-Prevention: a model-for-role choice is measured on that role's task before anything is asked;
+Prevention:
+a model-for-role choice is measured on that role's task before anything is asked;
 only what a measurement cannot settle goes to the owner.
 
 ### M9: a ledger claim written from a summary rather than measured
 
-Status: corrected in P3.
-P3 said rounds ran to the 360 s deadline; the two runs it cited had no round past 181 s.
-Prevention: a timing or count in a finding is read off the log it cites before the finding is written.
+Status:
+corrected in P3.
+P3 said rounds ran to the 360 s deadline;
+the two runs it cited had no round past 181 s.
+Prevention:
+a timing or count in a finding is read off the log it cites before the finding is written.
 
 ### M10: lint run on changed files only
 
-Status: fixed in `13c3f51af`.
+Status:
+fixed in `13c3f51af`.
 Every batch linted the files it touched,
 so two `unicorn(consistent-function-scoping)` warnings from `0aa800ab4` (2026-09-03)
 stood in `provider-budget.ts` and `openrouter-client.ts` for 24 days;
-a whole-package run (`oxlint-wrapper.mjs src`, 1666 files, about 30 to 50 s) showed them at once.
-Prevention: before a batch is called done, lint the whole `src` tree and read its summary line.
+a whole-package run (`oxlint-wrapper.mjs src`,
+1666 files,
+about 30 to 50 s) showed them at once.
+Prevention:
+before a batch is called done,
+lint the whole `src` tree and read its summary line.
 
 ### M11: a fix for one test defect written in the shape of another
 
-Status: fixed in `d76d2424a` and `a9230202d`.
+Status:
+fixed in `d76d2424a` and `a9230202d`.
 The T6 fix made two tests assert that the second call finishes first,
-and ordered the calls by 20 ms against 5 ms sleeps, which is the T5 shape;
+and ordered the calls by 20 ms against 5 ms sleeps,
+which is the T5 shape;
 `consolidate-driver` then failed 1 of 8 at 0.2 CPU.
 Twice more a comment stated how a check fails before any mutation showed it:
-`e40ccf6d2` said a hanging voice ends at the exchange deadline (the fixture arms none, so the bound could never fail),
+`e40ccf6d2` said a hanging voice ends at the exchange deadline (the fixture arms none,
+so the bound could never fail),
 and the gate comment said the case fails on the run deadline (the file exits 13 on the unsettled wait).
-Both are corrected, with commit comments on `e40ccf6d2` and `c10d62663`.
-Prevention: an ordering claim in a test is enforced by a gate, never by a head start;
+Both are corrected,
+with commit comments on `e40ccf6d2` and `c10d62663`.
+Prevention:
+an ordering claim in a test is enforced by a gate,
+never by a head start;
 a comment that says how a check fails is written after the mutation that shows it.
 
 ### M12: a floor change committed with its own test file run, not the full suite
 
-Status: fixed in `b1dc34af2`.
+Status:
+fixed in `b1dc34af2`.
 The F-9 fix (the neutral-pronoun floor reads the original) ran only `translate-neutral-pronoun.unit.test.ts`;
 `translate-validate.unit.test.ts` pinned the old behaviour and failed until the F-5 work ran it.
-The ledger edit that moved M9 also cut M8 in two, because the region was read short of M8's end;
+The ledger edit that moved M9 also cut M8 in two,
+because the region was read short of M8's end;
 M8's prevention sat under M11 until this entry's commit.
-Prevention: a floor change runs the full suite before its commit, as M2 already asks of sheet wording;
+Prevention:
+a floor change runs the full suite before its commit,
+as M2 already asks of sheet wording;
 a region is read to the next heading before text is inserted after it.
 
 ### M13: a pin search that quoted a whole clause
 
-Status: caught by the full suite before commit (`112b399a5`).
+Status:
+caught by the full suite before commit (`112b399a5`).
 Before rewording `KEPT_SUBJECT_RULE` the search for pins quoted the clause "says that I (or that person)";
-`source-subject-policy.unit.test.ts` pins it split across two string lines, so the search found nothing
+`source-subject-policy.unit.test.ts` pins it split across two string lines,
+so the search found nothing
 and the full suite failed on it.
-Prevention: search for a pin of a sentence by a fragment of four words or fewer, and by each end of the sentence;
+Prevention:
+search for a pin of a sentence by a fragment of four words or fewer,
+and by each end of the sentence;
 the full suite before commit (M2) stays the backstop.

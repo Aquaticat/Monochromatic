@@ -209,11 +209,14 @@ and the publish guard still reads it.
 
 ## A carried passage the archive rendered across both neighbours
 
-Class one hundred eleven (`mikaela13`, 2026-09-24):
+Class one hundred eleven (`mikaela13`,
+2026-09-24):
 the archive may render a source-only passage partly inside the earlier paired neighbour's span
 and partly inside the later one's
-(the HRT sentences in slice 10's paragraph, the "originally just" clause on slice 12's own line).
-The fold (`corpus-run/insertion-carried-anchor.ts`, `corpus-run/insertion-carried-decide.ts`)
+(the HRT sentences in slice 10's paragraph,
+the "originally just" clause on slice 12's own line).
+The fold (`corpus-run/insertion-carried-anchor.ts`,
+`corpus-run/insertion-carried-decide.ts`)
 places each quoted region block by block:
 every block must sit in a paired slice next to the carried one,
 the carrier is the neighbour holding the larger share of the quoted text (the earlier on a tie),
@@ -224,20 +227,28 @@ A stand-aside names its reason in a `stays carried:` warn line,
 and every passage still carried prints its evidence regions at the admission.
 
 Two carried passages in a row (`mikaela14`):
-a passage's neighbours are the nearest paired slices on each side, looking past insertions,
+a passage's neighbours are the nearest paired slices on each side,
+looking past insertions,
 the abutting check refuses a fold across a source the carrier has not absorbed,
-and the fold passes repeat until nothing more folds, at most once per carried passage.
+and the fold passes repeat until nothing more folds,
+at most once per carried passage.
 
 ## An interior gap unplaced on both sides
 
-Class one hundred twelve (`mikaela15`, 2026-09-24):
+Class one hundred twelve (`mikaela15`,
+2026-09-24):
 between two paired steps a roster may leave originals and translation blocks alike unpartnered.
-Read as bare steps, the originals became insertions and the translation blocks rode into the next paired slice's span,
-so the passage was lost (`mikaela12`, `mikaela13`) or, once the fold worked, shipped twice (`mikaela15`).
+Read as bare steps,
+the originals became insertions and the translation blocks rode into the next paired slice's span,
+so the passage was lost (`mikaela12`,
+`mikaela13`) or,
+once the fold worked,
+shipped twice (`mikaela15`).
 `pairUnpartneredGaps` (`unpartnered-gap-steps.ts`) now reads such a gap as one merge:
 the first pair opens the rendering and the rest continue it on both sides,
 so the gap is one slice whose source is every unplaced original and whose span is every unplaced block.
-Leading, trailing and one-sided gaps are unchanged.
+Leading,
+trailing and one-sided gaps are unchanged.
 
 ## What the consolidate gate is told about an ineligible standing
 
@@ -260,10 +271,15 @@ a tie or rejection is challenged once under `decline-challenge`,
 run off over the candidates that drew a ballot and again while each round narrows them (class eighty-two),
 with `translate-declined-retried` and the run-off finding recorded.
 A challenge that declines with nothing left to narrow ships the candidate the judges preferred
-(owner, 2026-09-27, "Preference + polish"); until then it stopped the entry.
+(owner,
+2026-09-27,
+"Preference + polish");
+until then it stopped the entry.
 A slate over an eligible standing keeps its single round and its standing on a decline,
-except where every contest ballot called the archive flawed (class one hundred six, 2026-09-24):
-there a tie is run off too, and the standing still ships where that run-off ends undecided.
+except where every contest ballot called the archive flawed (class one hundred six,
+2026-09-24):
+there a tie is run off too,
+and the standing still ships where that run-off ends undecided.
 
 ## When the consolidate gate cannot decide over an ineligible standing
 
@@ -318,7 +334,8 @@ A picture's text reaches the sheets only once two readers agree about it
 Since class fifty-two (2026-09-17) that agreement is looked for over every pair of readings,
 not the first two:
 the vision bench seats more than two readers
-(six when every provider is wet, `RUN_READER_MODELS` in `src/corpus-run/run-config.ts`),
+(six when every provider is wet,
+`RUN_READER_MODELS` in `src/corpus-run/run-config.ts`),
 and on XingZ601 the two readings the old rule compared stood just under the line
 while a third agreed with both.
 A reading no other reading vouches for stays out of the corroborated set.
@@ -510,7 +527,9 @@ When the original writes more,
 at least that many of its blocks have no rendering of their own,
 and a source-only slice inside the roster found absent is admitted on that deficit,
 recorded as `insertion-container-deficit-admitted`
-with the slice, the container and the slices it spans, and both block counts
+with the slice,
+the container and the slices it spans,
+and both block counts
 (`src/corpus-run/insertion-container-deficit.ts`),
 in document order while the deficit lasts.
 This is what admits an interior omission on a page whose translated part runs long,
@@ -521,7 +540,8 @@ Since class sixty-nine (XingZ618,
 a minority anchored claim is no majority,
 the missing block is the second signal,
 and the row is admitted with `insertion-split-in-container-deficit` beside the deficit finding,
-naming the slice and its full, partial and absent counts out of the seats asked;
+naming the slice and its full,
+partial and absent counts out of the seats asked;
 a verdict a majority carried stays out.
 
 ## The untranslated tail

@@ -69,7 +69,11 @@ Fresh schema-9 passage validation remains mandatory before this replacement cont
 They are not the same kind of limit,
 and a former version of this section had Charm Hyper backwards.
 There is one meter per provider,
-in `PROVIDER_ORDER` (Synthetic, Bedrock, Hyper, OpenRouter; `src/provider-name.ts`).
+in `PROVIDER_ORDER` (Synthetic,
+Bedrock,
+Hyper,
+OpenRouter;
+`src/provider-name.ts`).
 
 Charm Hyper is a **prepaid balance**,
 priced per token and per model.
@@ -112,7 +116,8 @@ Two consequences for reading a run.
 A per-entry cost measured while a provider is dry is not the cost a run with every provider wet pays,
 and should be labelled with the outage.
 Any quality figure measured then rests on whoever was awake,
-as on 2026-08-24, when five of ten models contributed nothing to it.
+as on 2026-08-24,
+when five of ten models contributed nothing to it.
 
 ## Measuring how much of the time each provider was there
 
@@ -125,7 +130,8 @@ but said so at `debug` level,
 which a run does not record.
 It now says so at `info`,
 as one line per reading,
-here from 2026-08-24, when two providers were metered:
+here from 2026-08-24,
+when two providers were metered:
 
 ```text
 [info] [2026-08-24T19:22:07.104Z] [translation-repair] [takeReading] METERS synthetic=wet hyper=dry syntheticWeekly=97% syntheticFiveHour=48/50 syntheticThrottled=no hyperBalance=0

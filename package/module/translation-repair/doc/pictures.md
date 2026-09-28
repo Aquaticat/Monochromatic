@@ -91,7 +91,8 @@ not by base64 length.
 Sent unchanged,
 an asset four times that ceiling comes back read for 2631 characters.
 A plain 7 MiB ceiling remains (`READING_MAX_BYTES` in `src/image-reading-stage.ts`,
-8 MiB until 2026-08-22, when that was found to permit request bodies the gateway rejects),
+8 MiB until 2026-08-22,
+when that was found to permit request bodies the gateway rejects),
 which nothing in the reference corpus approaches.
 
 The provider accepts `image/jpeg`,
