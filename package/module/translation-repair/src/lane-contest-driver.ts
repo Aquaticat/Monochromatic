@@ -30,7 +30,7 @@ import {
   laneContestRunShape,
   laneContestSliceKey,
 } from './lane-contest-key.ts';
-import type { LaneContestSliceSeating, } from './lane-contest-slice-seating.ts';
+import type { BenchSeating, } from './bench-seating.ts';
 import type { SliceCache, } from './slice-cache.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
@@ -285,7 +285,7 @@ export async function contestDocumentLanes(
     readonly overlap?: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
-    readonly beforeSlice?: () => Promise<LaneContestSliceSeating>;
+    readonly beforeSlice?: () => Promise<BenchSeating>;
   },
 ): Promise<readonly ArtifactContestSlice[]> {
   /**
@@ -375,7 +375,7 @@ export async function contestDocumentLanes(
            Seating the hook hands this slice: judges read under a hold, or none,
            which keeps those the contest started on.
            */
-          const seating: LaneContestSliceSeating = (beforeSlice === undefined) ? {} : await beforeSlice();
+          const seating: BenchSeating = (beforeSlice === undefined) ? {} : await beforeSlice();
           /**
            Judges this slice runs on.
            */

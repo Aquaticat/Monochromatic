@@ -30,7 +30,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkPair,
-  type CoverageSeating,
+  type BenchSeating,
   type InsertionAdmission,
   type PreparedDocumentPair,
   type RosterModelId,
@@ -878,7 +878,7 @@ function seatRecordingCoverageClient(
  ```
  */
 async function coverageSeatsAsked(
-  { beforeCandidate, }: { readonly beforeCandidate?: () => Promise<CoverageSeating>; },
+  { beforeCandidate, }: { readonly beforeCandidate?: () => Promise<BenchSeating>; },
 ): Promise<readonly RosterModelId[]> {
   /**
    Seat of every call.
@@ -915,7 +915,7 @@ await describe({
          Seats asked when the hook re-seats the candidate elsewhere.
          */
         const moved = await coverageSeatsAsked({
-          beforeCandidate: async (): Promise<CoverageSeating> => ({ modelIds: RESEATED_ROSTER, }),
+          beforeCandidate: async (): Promise<BenchSeating> => ({ modelIds: RESEATED_ROSTER, }),
         },);
         expect({
           controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {

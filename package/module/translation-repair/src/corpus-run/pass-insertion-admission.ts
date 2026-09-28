@@ -24,7 +24,7 @@ import {
   type InsertionCandidate,
   type InsertionCoverageRow,
 } from './insertion-coverage-model.ts';
-import type { CoverageSeating, } from './insertion-admission-seating.ts';
+import type { BenchSeating, } from '../bench-seating.ts';
 
 //region Pass insertion admission
 // Production proof for writing source-only passages into a memorial page.
@@ -85,7 +85,7 @@ export async function decidePassInsertionAdmission(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
-    readonly beforeCandidate?: () => Promise<CoverageSeating>;
+    readonly beforeCandidate?: () => Promise<BenchSeating>;
   }>,
 ): Promise<InsertionAdmission> {
   /**
@@ -209,7 +209,7 @@ export async function decidePassInsertionAdmission(
        Seating the hook hands this candidate: a roster read under a hold, or
        none, which keeps the one the admission started on.
        */
-      const seating: CoverageSeating = (beforeCandidate === undefined) ? {} : await beforeCandidate();
+      const seating: BenchSeating = (beforeCandidate === undefined) ? {} : await beforeCandidate();
       /**
        Roster verdict independent of pairing and shortfall.
        */

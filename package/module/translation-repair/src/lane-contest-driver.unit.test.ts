@@ -37,7 +37,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type LaneContestOutcome,
-  type LaneContestSliceSeating,
+  type BenchSeating,
   type ProjectedLanes,
   type RosterModelId,
   type SliceCache,
@@ -1296,7 +1296,7 @@ async function contestOneSlice(
     looked = [],
   }: {
     readonly client: SyntheticClient;
-    readonly beforeSlice?: () => Promise<LaneContestSliceSeating>;
+    readonly beforeSlice?: () => Promise<BenchSeating>;
     readonly looked?: string[];
   },
 ): Promise<readonly ArtifactContestSlice[]> {
@@ -1345,7 +1345,7 @@ await describe({
         const asked: RosterModelId[] = [];
         await contestOneSlice({
           client: judgeRecordingClient({ asked, },),
-          beforeSlice: async (): Promise<LaneContestSliceSeating> => ({ modelIds: RESEATED_JUDGES, }),
+          beforeSlice: async (): Promise<BenchSeating> => ({ modelIds: RESEATED_JUDGES, }),
         },);
         expect({
           controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
@@ -1379,7 +1379,7 @@ await describe({
         await contestOneSlice({
           client: judgeRecordingClient({ asked: [], },),
           looked: moved,
-          beforeSlice: async (): Promise<LaneContestSliceSeating> => ({ modelIds: RESEATED_JUDGES, }),
+          beforeSlice: async (): Promise<BenchSeating> => ({ modelIds: RESEATED_JUDGES, }),
         },);
         /**
          Keys looked up when the hook hands back the judges the driver started on.
@@ -1388,7 +1388,7 @@ await describe({
         await contestOneSlice({
           client: judgeRecordingClient({ asked: [], },),
           looked: kept,
-          beforeSlice: async (): Promise<LaneContestSliceSeating> => ({ modelIds: ROSTER, }),
+          beforeSlice: async (): Promise<BenchSeating> => ({ modelIds: ROSTER, }),
         },);
         expect({
           lookups: [starting.length, moved.length, kept.length,],

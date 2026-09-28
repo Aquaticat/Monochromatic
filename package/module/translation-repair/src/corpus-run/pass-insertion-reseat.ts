@@ -6,7 +6,7 @@ import {
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import type { InsertionAdmission, } from '../insertion-admission.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
-import type { CoverageSeating, } from './insertion-admission-seating.ts';
+import type { BenchSeating, } from '../bench-seating.ts';
 import { decidePassInsertionAdmission, } from './pass-insertion-admission.ts';
 import {
   type Reseated,
@@ -31,7 +31,7 @@ import type { SeatReadingClient, } from './run-seats-read.ts';
  ```
  */
 export type InsertionHooks = {
-  readonly beforeCandidate: () => Promise<CoverageSeating>;
+  readonly beforeCandidate: () => Promise<BenchSeating>;
 };
 
 /**
@@ -49,7 +49,7 @@ export type InsertionHooks = {
  */
 function coverageSeatingOf(
   { seats, }: { readonly seats: JudgeSeats; },
-): Reseated<CoverageSeating> {
+): Reseated<BenchSeating> {
   /**
    Roster the candidate is asked of, for the line.
    */
@@ -89,7 +89,7 @@ export function insertionHooksFor(
   },
 ): InsertionHooks {
   return {
-    beforeCandidate: reseatHookFor<CoverageSeating>({
+    beforeCandidate: reseatHookFor<BenchSeating>({
       client,
       signal,
       phase: 'insertion admission',

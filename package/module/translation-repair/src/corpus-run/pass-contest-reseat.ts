@@ -1,6 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { LaneContestSliceSeating, } from '../lane-contest-slice-seating.ts';
+import type { BenchSeating, } from '../bench-seating.ts';
 import {
   type Reseated,
   reseatHookFor,
@@ -30,7 +30,7 @@ import type { SeatReadingClient, } from './run-seats-read.ts';
  ```
  */
 export type ContestHooks = {
-  readonly beforeSlice: () => Promise<LaneContestSliceSeating>;
+  readonly beforeSlice: () => Promise<BenchSeating>;
 };
 
 /**
@@ -48,7 +48,7 @@ export type ContestHooks = {
  */
 function contestSeatingOf(
   { seats, }: { readonly seats: JudgeSeats; },
-): Reseated<LaneContestSliceSeating> {
+): Reseated<BenchSeating> {
   /**
    Judges the slice runs on, for the line.
    */
@@ -88,7 +88,7 @@ export function contestHooksFor(
   },
 ): ContestHooks {
   return {
-    beforeSlice: reseatHookFor<LaneContestSliceSeating>({
+    beforeSlice: reseatHookFor<BenchSeating>({
       client,
       signal,
       phase: 'lane contest',

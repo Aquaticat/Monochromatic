@@ -29,7 +29,7 @@ import type { JudgeSeatPhase, } from './run-seats-wait.ts';
 
  @example
  ```ts
- const reseated: Reseated<LaneContestSliceSeating> = { seating: { modelIds: seats.lateJudges, }, line: 'slice re-seated under a hold: judges=a,b', };
+ const reseated: Reseated<BenchSeating> = { seating: { modelIds: seats.lateJudges, }, line: 'slice re-seated under a hold: judges=a,b', };
  ```
  */
 export type Reseated<SeatingT,> = {
