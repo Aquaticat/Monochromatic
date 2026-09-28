@@ -411,6 +411,11 @@ import type { RepairModels, } from './repair-contract.ts';
  Rides inside 34 too: the critic and panel sheets share one block of
  obligatory differences, which replaces the panel's line on small words
  (ledger L5, `64a4bf63a`); same check, same result.
+
+ Rides inside 34 too: patch application clamps each replacement line to the
+ deepest quote its context allows (class one hundred eighty-seven,
+ `58287ebe3` and `05a18ed02`), which changes the text an edit ships; same
+ check, same result.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**

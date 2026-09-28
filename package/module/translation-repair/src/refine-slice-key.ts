@@ -126,6 +126,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  TianqiChen66621: that run wrote slice-cache files from 06:26 to 06:49 and
  the pass retired them when its artifact landed, so still no slice-cache file
  newer than 00:26 on 2026-09-27 remains to be served under this number.
+
+ Rides inside 5 too: patch application, which the naturalness rewrite goes
+ through, clamps each replacement line to the deepest quote its context
+ allows (class one hundred eighty-seven, `58287ebe3` and `05a18ed02`); same
+ check, same result.
  */
 export const REFINE_CACHE_VERSION = 5;
 
