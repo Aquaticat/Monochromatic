@@ -835,7 +835,11 @@ Status: open, to re-check on current pages:
 
 ### H10: stale statements against the code
 
-Status: open.
+Status: fixed in `8c1681836`.
+Both also missed that since class one hundred six a tie over an eligible standing every contest ballot
+called flawed is run off, that a run-off repeats while it narrows (class eighty-two),
+and that a challenge declining with nothing left to narrow ships the judges' preference (owner, 2026-09-27);
+the TSDoc was in `consolidate-settle-judge.ts`.
 `doc/slice-context.md` says a slate over an eligible standing keeps its single round on a decline
 and that a tie or rejection is re-asked once;
 the TSDoc in `consolidate-settle.ts` says the same.
@@ -3153,7 +3157,12 @@ Guard: `slate-decline-ships-by-preference.unit.test.ts` (the translate stage cas
 
 ### X2: a scripted gather-stage test's seat rotation depends on its prompt text
 
-Status: open (test fragility, with T1 to T9).
+Status: fixed in `87acdb4d9`: `attestCitedReferences` takes the optional `fanOut` `pairBlocksWithRoster` takes,
+threaded to both of its gathers, and the four scripted cases ask the whole bench.
+Checked by shifting the hash's offset basis:
+three shifted offsets failed the pre-fix tests (2, 4 and 2 failures),
+the fixed tests passed under the two offsets run against them, and the control survived every run.
+The window's own tests pass under any offset, rightly: another offset is another valid rotation.
 `stage-fanout-window.ts` picks the seats to ask by an FNV-1a hash of the prompt modulo the roster size,
 so rewording a fixture changes which scripted seat is heard;
 `reference-attest.unit.test.ts` and `reference-attest-confirm.unit.test.ts`
@@ -3163,7 +3172,8 @@ A test that depends on which seat is heard should pin the rotation rather than i
 
 ### X3: comments and TSDoc quoting corpus text or handles in source files
 
-Status: open (with D11).
+Status: the method quote fixed in `a96bf1f4a`, which also replaced a TSDoc example naming the method;
+the rest waits on the owner's end-of-project sanitization.
 `reference-attest-match.ts:18-19,29-30,48-50`,
 `translate-suicide-drop.ts:4-21` (quotes a method, a date and handles),
 `rendering-glossary-phrasing.ts:56,76-79`,
@@ -3330,6 +3340,8 @@ Once during D14 (`mise run corpus-pass -- --plan > log 2>&1 ; rg <log>`),
 and once during D16 (`rg <backtick> | rg <fence> ; rg <example fence>`),
 both searches whose second half ran regardless,
 and once reading the suite after D20 (`rg --count FAIL log ; rg --count PASS log`).
+During X2 an edit script was patched with an inline `python3 - <<'EOF'` heredoc chained after `sed`,
+where scripts go through the Write tool and run in a call of their own.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
