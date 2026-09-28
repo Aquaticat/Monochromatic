@@ -1,4 +1,5 @@
-import { wait, } from '@monochromatic-dev/module-async-time/ts';
+import { setTimeout as sleepFor, } from 'node:timers/promises';
+
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -159,6 +160,58 @@ function backoffDelayMs(
  */
 function longestBackoffMs({ policy, }: { readonly policy: RetryPolicy; },): number {
   return policy.baseMs * (2 ** policy.limit);
+}
+
+/**
+ Sleeps one backoff, ending it the moment the caller aborts.
+
+ LEDGER P13 (the whole-package audit, 2026-09-28): the ladder slept its whole
+ backoff on a timer no signal could end and read the abort only after it, so
+ a call its caller or its deadline had given up on held its seat for up to
+ the ladder's reach, 16 s under the shipped policy.
+
+ @param ms - backoff to sleep
+
+ @param signal - caller's abort, joined with the exchange deadline where one
+ is armed
+
+ @throws Whatever the timer throws for any reason other than that abort
+
+ @example
+ ```ts
+ await sleepBackoff({ ms: 2_000, signal, },);
+ ```
+ */
+async function sleepBackoff(
+  {
+    ms,
+    signal,
+  }: {
+    readonly ms: number;
+    readonly signal: AbortSignal;
+  },
+): Promise<void> {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: sleepBackoff.name,
+    l,
+  },);
+  try {
+    await sleepFor(
+      ms,
+      undefined,
+      { signal, },
+    );
+  }
+  catch (error) {
+    // The caller's abort is the one early end a backoff has; the retry loop
+    // reads it next and surfaces the failure that was being retried.
+    if (!signal.aborted)
+      throw error;
+    rl.debug(`backoff of ${String(ms,)}ms ended by the caller's abort: ${String(error,)}`,);
+  }
 }
 
 /**
@@ -420,7 +473,10 @@ export async function exchangeWithRetry(
       } of ${String(policy.limit + 1,)})`,
     );
     // oxlint-disable-next-line no-await-in-loop -- backoff must complete before the dependent retry
-    await wait(backoffMs,);
+    await sleepBackoff({
+      ms: backoffMs,
+      signal: exchange.signal,
+    },);
     // A caller abort during backoff stops the retry loop here; the aborted
     // signal would otherwise burn an attempt on a guaranteed rejection.
     if (exchange.signal
