@@ -23,6 +23,7 @@ import {
 
 import {
   type BudgetView,
+  judgeSeatsFor,
   lanesHooksFor,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_OPENROUTER_ONLY,
@@ -169,7 +170,7 @@ await describe({
       },
     },),
     it({
-      name: 'WAITS ONLY, on the translate lane, as the thirteenth class built it: nothing to seat',
+      name: 'COSTS NOTHING on the translate lane either while nothing is held: no dryness read, nothing to seat',
       fn: async () => {
         const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
         const hooks = lanesHooksFor({
@@ -179,6 +180,42 @@ await describe({
         },);
         expect(await hooks.beforeSlice({ lane: 'translate', },),).toEqual({},);
         expect(rig.counter.reads,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'RE-SEATS THE TRANSLATE LANE before a slice while a hold runs, as it does the repair lane, and keeps '
+        + 'that roster once the hold has ended (ledger H5: the fourth stage of a family classes one hundred '
+        + 'three, one hundred nine and one hundred thirteen fixed one at a time)',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        rig.holds.synthetic = DRY_HOLD_MS;
+        const hooks = lanesHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          entryId: 'mittens',
+        },);
+        /**
+         Roster the hook hands the translate lane under the hold.
+         */
+        const underHold = await hooks.beforeSlice({ lane: 'translate', },);
+        rig.holds.synthetic = 0;
+        /**
+         Roster handed over once the hold has ended.
+         */
+        const afterHold = await hooks.beforeSlice({ lane: 'translate', },);
+        /**
+         What a reading of this view seats on the translate lane.
+         */
+        const { translateModels, } = judgeSeatsFor({ dry: BEDROCK_AND_OPENROUTER, },);
+        expect({
+          underHold,
+          afterHold,
+          reads: rig.counter.reads,
+        },).toEqual({
+          underHold: { translateModels, },
+          afterHold: { translateModels, },
+          reads: 1,
+        },);
       },
     },),
   ],

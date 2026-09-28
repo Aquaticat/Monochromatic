@@ -624,6 +624,50 @@ await describe({
     },),
 
     it({
+      name: 'SEATS THE TRANSLATE LANE ON THE ROSTER ITS HOOK RETURNS, as it seats the repair lane, so a bench '
+        + 're-seated after a provider dry-out inside the lane is the one the next slice asks (ledger H5)',
+      fn: async () => {
+        /**
+         Schemas the run served, in order.
+         */
+        const served: SchemaLog = [];
+        /**
+         Every call with the seat that asked.
+         */
+        const askedBy: AskedLog = [];
+        /**
+         Roster the translate lane's hook hands back: writers re-seated.
+         */
+        const reseated: TranslateModels = {
+          ...TRANSLATE_MODELS,
+          translatorModelIds: ROSTER.slice(
+            3,
+            6,
+          ),
+        };
+        await runLanes({
+          served,
+          askedBy,
+          beforeSlice: async ({ lane, },): Promise<RepairSliceSeating & { readonly translateModels?: TranslateModels; }> =>
+            (lane === 'translate') ? { translateModels: reseated, } : {},
+        },);
+        /**
+         Seats the translate stage asked to write.
+         */
+        const writers = askedBy
+          .filter(function isWriter(call,): boolean {
+            return call.schema === 'translation_report';
+          },)
+          .map(function toSeat(call,): RosterModelId {
+            return call.modelId;
+          },);
+        expect(writers.length,).toBeGreaterThan(0,);
+        for (const seat of writers)
+          expect(reseated.translatorModelIds,).toContain(seat,);
+      },
+    },),
+
+    it({
       name: 'threads one overlap through BOTH repair and translate lanes, after serial '
         + 'positive controls prove each stage instrument distinguishes one slice from two',
       fn: async () => {
