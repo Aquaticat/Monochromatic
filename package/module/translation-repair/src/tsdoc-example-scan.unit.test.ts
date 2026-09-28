@@ -1,0 +1,157 @@
+/**
+ Tests for the TSDoc example scan (ledger D9): every function declaration's
+ `@example` calls the function it documents and passes the keys it requires.
+
+ THE FIXTURES COME FIRST, so the package-wide case below is read against a
+ scan shown able to find each fault (ledger M21: a check that could not fail).
+ Fixtures are cat-themed; the package case reads this package's own source.
+
+ @module
+ */
+
+import { readdir, readFile, } from 'node:fs/promises';
+import { join, } from 'node:path';
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import { exampleFindingsOf, } from '../dist/final/node/index.mjs';
+
+/**
+ A documented function, as the formatter writes one.
+
+ @param example - the example's code line
+
+ @param declaration - the declaration's lines
+
+ @returns Source text
+
+ @example
+ ```ts
+ const text = documented({ example: 'feedCat({ kibble, },);', declaration: ['export function feedCat(', ...], },);
+ ```
+ */
+function documented(
+  {
+    example,
+    declaration,
+  }: {
+    readonly example: string;
+    readonly declaration: readonly string[];
+  },
+): string {
+  return [
+    '/**',
+    ' Feeds the cat.',
+    '',
+    ' @example',
+    ' ```ts',
+    ` ${example}`,
+    ' ```',
+    ' */',
+    ...declaration,
+    '  return 1;',
+    '}',
+  ].join('\n',);
+}
+
+/**
+ A declaration taking a required, an optional and a defaulted key.
+ */
+const FEED_CAT = [
+  'export function feedCat(',
+  '  { kibble, water, nap = 3, }: { readonly kibble: number; readonly water?: number; readonly nap: number; },',
+  '): number {',
+];
+
+/**
+ A declaration in the multi-line shape, its type wrapped and commented.
+ */
+const GROOM_CAT = [
+  'export async function groomCat<const BrushT,>(',
+  '  {',
+  '    purr,',
+  '    brush,',
+  '  }: ForeignBorrowed<{',
+  '    /**',
+  '     Whether the cat purrs (it doesn\'t always; {braces} are text here).',
+  '     */',
+  '    readonly purr: boolean;',
+  '    readonly brush: BrushT;',
+  '  }>,',
+  '): Promise<number> {',
+];
+
+await describe({
+  name: exampleFindingsOf.name,
+  children: [
+    it({
+      name: 'FINDS AN EXAMPLE CALLING ANOTHER FUNCTION and one leaving out a required key, the two D9 faults',
+      fn: async () => {
+        expect({
+          otherCallee: exampleFindingsOf({
+            text: documented({ example: 'const bowl = fillBowl({ kibble, },);', declaration: FEED_CAT, },),
+          },),
+          missingKey: exampleFindingsOf({
+            text: documented({ example: 'feedCat({ water: 1, },);', declaration: FEED_CAT, },),
+          },),
+          missingInWrapped: exampleFindingsOf({
+            text: documented({ example: 'await groomCat({ brush, },);', declaration: GROOM_CAT, },),
+          },),
+        },).toEqual({
+          otherCallee: [{ name: 'feedCat', line: 9, problem: 'calls another function', },],
+          missingKey: [{ name: 'feedCat', line: 9, problem: 'leaves out kibble', },],
+          missingInWrapped: [{ name: 'groomCat', line: 9, problem: 'leaves out purr', },],
+        },);
+      },
+    },),
+    it({
+      name: 'PASSES AN EXAMPLE THAT LEAVES OUT ONLY OPTIONAL OR DEFAULTED KEYS, elides them, or passes a variable',
+      fn: async () => {
+        expect([
+          'feedCat({ kibble, },);',
+          'feedCat({ ..., },);',
+          'feedCat(order,);',
+        ].flatMap(function findingsOf(example,) {
+          return exampleFindingsOf({ text: documented({ example, declaration: FEED_CAT, },), },);
+        },),).toEqual([],);
+        expect(exampleFindingsOf({
+          text: documented({ example: 'await groomCat({ purr: true, brush, },);', declaration: GROOM_CAT, },),
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'FINDS NOTHING IN THIS PACKAGE\'S SOURCE: every function declaration\'s example calls it with its '
+        + 'required keys (ledger D9 listed 29 that did not, and this scan first read 42)',
+      fn: async () => {
+        /**
+         The package's source directory.
+         */
+        const srcDir = new URL('.', import.meta.url,).pathname;
+
+        /**
+         Every source file other than tests.
+         */
+        const files = (await readdir(srcDir, { recursive: true, },))
+          .filter(function isSource(path,): boolean {
+            return path.endsWith('.ts',) && (!path.endsWith('.test.ts',)) && (!path.endsWith('.d.ts',));
+          },)
+          .toSorted();
+
+        /**
+         Findings across them, each named by file.
+         */
+        const findings = (await Promise.all(files.map(async function scan(path,): Promise<readonly string[]> {
+          return exampleFindingsOf({ text: await readFile(join(srcDir, path,), 'utf8',), },)
+            .map(function named(finding,): string {
+              return `${path}:${String(finding.line,)} ${finding.name} ${finding.problem}`;
+            },);
+        },),)).flat();
+        expect(findings,).toEqual([],);
+      },
+    },),
+  ],
+},);

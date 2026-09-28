@@ -290,6 +290,7 @@ export * from './provider-barrel.ts';
 export * from './roster-barrel.ts';
 export * from './bedrock-barrel.ts';
 export * from './cap-census-barrel.ts';
+export * from './source-check-barrel.ts';
 export * from './publish-barrel.ts';
 export * from './pairing-barrel.ts';
 export * from './editor-barrel.ts';
