@@ -23,8 +23,10 @@ import {
 // Pure aggregation of panel ballots into adjudicated issues. Decision rules,
 // in order per claim: not enough non-abstain weight lands needs-human; a
 // protective source-defect minority blocks; a strict majority accepts or
-// rejects; everything else needs a human. Merge disposition is majority
-// same-defect weight among opining panelists, defaulting to distinct.
+// rejects, save that an acceptance settled at neutral severity, which asserts
+// no defect, is held for a human (ledger L5); everything else needs a human.
+// Merge disposition is majority same-defect weight among opining panelists,
+// defaulting to distinct.
 
 /**
  Everything the panel decided over one chunk's clusters.
@@ -86,6 +88,43 @@ function decideStatus(
   if ((tally.unsupported / electorate) > config.decisionThreshold)
     return 'rejected';
   return 'needs-human';
+}
+
+/**
+ Status of a claim once its settled severity is known: an acceptance at
+ neutral is held for a human, because neutral is the severity that asserts no
+ defect (`issue-taxonomy.ts`), and an accepted issue is the editor's work
+ list, its envelopes, its checkers' ballot and, for an addition, a dispute of
+ the archive. LEDGER L5: over every run, 41 accepted issues had settled at
+ neutral, 28 of them shipped an edit, and 8 were claims whose own summary
+ called the rendering accurate or correct. A supporter who finds a real
+ defect in a claim filed neutral re-grades it, and the upper median then
+ leaves neutral, so a single such re-grade among supporters keeps it
+ accepted.
+
+ @param status - fate the votes decided
+
+ @param severity - severity the claim settled at
+
+ @returns Needs-human for an acceptance at neutral, else the voted fate
+
+ @example
+ ```ts
+ heldIfNeutral({ status: 'accepted', severity: 'neutral', },); // 'needs-human'
+ ```
+ */
+function heldIfNeutral(
+  {
+    status,
+    severity,
+  }: {
+    readonly status: AdjudicationStatus;
+    readonly severity: IssueSeverity;
+  },
+): AdjudicationStatus {
+  if ((status === 'accepted') && (severity === 'neutral'))
+    return 'needs-human';
+  return status;
 }
 
 /**
@@ -272,20 +311,45 @@ export function tallyVotes(
         config,
       },);
 
+      /**
+       Severity the claim settles at.
+       */
+      const severity = finalSeverity({
+        member,
+        ballots,
+      },);
+
       return {
         member,
         tally: reading.tally,
         reading,
-        status: decideStatus({
-          tally: reading.tally,
-          config,
+        status: heldIfNeutral({
+          status: decideStatus({
+            tally: reading.tally,
+            config,
+          },),
+          severity,
         },),
-        severity: finalSeverity({
-          member,
-          ballots,
-        },),
+        severity,
       };
     },);
+
+    /**
+     Members a supported majority would have accepted at neutral, which the
+     tally held for a human instead.
+     */
+    const held = graded
+      .filter(function isHeldNeutral(entry,): boolean {
+        return (entry.severity === 'neutral')
+          && (decideStatus({
+            tally: entry.tally,
+            config,
+          },) === 'accepted');
+      },)
+      .map(function heldFinding(entry,): string {
+        return `neutral-held-for-human (${entry.member
+          .claimId})`;
+      },);
 
     /**
      Whether the panel relates these diagnoses as one defect.
@@ -309,12 +373,15 @@ export function tallyVotes(
     },);
     return {
       issues,
-      findings: merged && (groups.length > 1)
-        ? [`issue-merge-partitioned (${cluster.clusterId}: ${issues.map(function partition(issue,): string {
-          return `${issue.issueId}=${issue.status}`;
-        },)
-          .join(', ',)})`,]
-        : [],
+      findings: [
+        ...held,
+        ...(merged && (groups.length > 1)
+          ? [`issue-merge-partitioned (${cluster.clusterId}: ${issues.map(function partition(issue,): string {
+            return `${issue.issueId}=${issue.status}`;
+          },)
+            .join(', ',)})`,]
+          : []),
+      ],
     };
   },);
 
