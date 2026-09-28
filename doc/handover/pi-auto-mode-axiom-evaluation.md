@@ -1019,8 +1019,29 @@ reference and JSON-grammar checks,
 repeat/reverse bodies,
 contrast/collision controls,
 and shared clocks with an omitted-deadline control.
-The planned sixteen calls use only exposed development examples;
-true explicit-prohibition contrasts are outside this focused scope.
+`proc_bb75` completed the sixteen calls and 64 raw scores on exposed development examples.
+`proc_1153` rechecked the source/policy,
+exact bodies,
+raw responses,
+and comparisons without another model call.
+Raw result is `4eab406`,
+SHA-256 `6f57df090092771c96d93cc915b125f5f05cf4a48b3d4b7517e5eb2c54a193c4`.
+The known read-prose collision separated:
+true raw support/complement `0.81640625`/`0.8046875`,
+false `0.78515625`/`0.77734375`.
+All six positive-relation contrast margins had reference-consistent order;
+sampled repeat/reversal controls matched.
+No probability,
+fitting,
+calibration,
+noise bound,
+or production qualification follows.
+
+True explicit-prohibition and cross-clause contrasts were outside that focused phase.
+Task #53 is a separate fixed follow-up:
+twenty-four unchanged concrete-hypothesis calls for the remaining four exposed families,
+plus four contemporary abstract read controls.
+It adds no fitting or new held-out claim.
 Do not retune the completed candidate on its exposed test data.
 Do not resume Q16 or Laya #34.
 

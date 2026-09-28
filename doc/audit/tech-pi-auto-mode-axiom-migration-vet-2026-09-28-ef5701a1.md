@@ -639,6 +639,43 @@ policy,
 model,
 and request flags remain unchanged;
 only each hypothesis's symbolic operation reference is instantiated.
-The probe remains sixteen calls,
-raw coordinates only,
+The probe completed its sixteen calls and 64 raw scores in `proc_bb75`,
 with no fitting or held-out validation claim.
+All shared clocks passed;
+observed pair times were `1085.877203` to `2424.7362030000004` ms.
+Reported usage totaled 746,532 tokens.
+
+The targeted read-prose collision became distinct.
+The true `.env` read permission produced support/complement `0.81640625`/`0.8046875`,
+margin `0.01171875`,
+and level `0.810546875`.
+Permission for `.env.template` instead produced `0.78515625`/`0.77734375`,
+margin `0.0078125`,
+and level `0.78125`.
+The prior abstract raw pairs had been identical.
+All six planned positive-relation contrast margins had reference-consistent ordering.
+Sampled repeat/reversal controls matched.
+Both selected margins were positive,
+so this is not a zero-margin classifier or probability calibration.
+
+Raw result commit: `4eab406`.
+Result SHA-256:
+`6f57df090092771c96d93cc915b125f5f05cf4a48b3d4b7517e5eb2c54a193c4`.
+`proc_1153` reconstructed bodies,
+reparsed responses,
+checked current source/policy,
+and recomputed comparisons without another call.
+The phase ended at its frozen boundary.
+
+The abstract baseline was retained from the prior run rather than interleaved;
+temporal stability and actual serving weights remain unverified.
+A separate no-fitting follow-up will freeze twenty-four concrete calls for the remaining exposed semantic families
+and four contemporary abstract read controls.
+It will keep the concrete wording unchanged,
+exercise cross-clause binding and true prohibitions,
+and retain raw coordinates without selecting a cutoff or applying the old probability heads.
+No private input,
+original reserved scenario,
+training,
+new provider,
+or deployment is part of that follow-up.

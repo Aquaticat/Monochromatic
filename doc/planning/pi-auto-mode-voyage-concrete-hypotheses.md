@@ -104,3 +104,60 @@ extension,
 coefficient change,
 selector,
 or production adoption follows.
+
+## Verified mechanism result
+
+`proc_bb75` completed the sixteen calls and 64 raw scores with zero retries.
+Every shared clock passed;
+observed pair times were `1085.877203` to `2424.7362030000004` ms.
+Reported usage totaled 746,532 tokens.
+
+The known read-prose collision became distinct.
+For the true `.env` read permission,
+support/complement were `0.81640625`/`0.8046875`,
+margin `0.01171875`,
+and level `0.810546875`.
+For permission to read `.env.template` instead,
+they were `0.78515625`/`0.77734375`,
+margin `0.0078125`,
+and level `0.78125`.
+The old raw pairs had been identical.
+
+Every planned within-operation/source-kind positive-relation contrast had reference-consistent margin ordering.
+The sampled repeat and document-reversal controls matched.
+This is scoped representation evidence,
+not calibration,
+generalization,
+serving independence,
+or a noise bound.
+Both members of the selected contrast still had positive margins,
+so a zero-margin rule would not distinguish their references.
+No raw score is a truth probability merely because the pair separated.
+
+Raw result commit:
+`4eab406`.
+Result SHA-256:
+`6f57df090092771c96d93cc915b125f5f05cf4a48b3d4b7517e5eb2c54a193c4`.
+`proc_1153` reconstructed bodies,
+reparsed raw responses,
+checked current source/policy,
+and recomputed every comparison without another model call.
+No classifier was fitted or applied in this phase.
+
+## Remaining question
+
+This probe exercised direct positives and resource/destination mismatches,
+not cross-clause binding or true explicit prohibitions.
+Its abstract baseline came from the completed prior run,
+not an interleaved comparison;
+internal serving identity and temporal stability remain unverified.
+
+A separate no-fitting follow-up will freeze the remaining four semantic families across the same exposed episodes:
+direct prohibition,
+cross-clause binding,
+broad prohibition,
+and positive relation with an unrelated ban.
+The intended bound is twenty-four concrete calls plus four contemporary abstract read controls.
+Keep this phase's exact concrete hypothesis wording unchanged.
+These are development diagnostics,
+not reused held-out validation or a new probability profile.
