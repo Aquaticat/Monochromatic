@@ -193,19 +193,21 @@ await describe({
       },
     },),
     it({
-      name: 'LEAVES "id" INSIDE A LONGER WORD, beside a digit, and in a footnote label, and writes a bare one as '
-        + 'ID (ledger H14)',
+      name: 'LEAVES "id" INSIDE A LONGER WORD, beside a digit, in a footnote label and as Freud\'s, and writes a '
+        + 'bare one as ID (ledger H14)',
       fn: async () => {
         expect([
           respelled({ text: 'The cat wrote idée, ide\u0301e and idō to Sa\u0301id.', },),
           respelled({ text: 'The cat used id3 tags and 3id.', },),
           respelled({ text: 'See [^id] for the cat.', },),
           respelled({ text: 'See [id] for the cat.', },),
+          respelled({ text: 'Freud split the cat\'s mind into the id, the ego and the superego.', },),
         ],).toEqual([
           'The cat wrote idée, ide\u0301e and idō to Sa\u0301id.',
           'The cat used id3 tags and 3id.',
           'See [^id] for the cat.',
           'See [ID] for the cat.',
+          'Freud split the cat\'s mind into the id, the ego and the superego.',
         ],);
       },
     },),
