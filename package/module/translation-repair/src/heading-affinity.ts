@@ -1,7 +1,4 @@
-import {
-  foldLatinWord,
-  latinWordSpans,
-} from './latin-letters.ts';
+import { foldedLatinWords, } from './latin-letters.ts';
 
 //region Heading affinity
 // Written as a prototype for `#71`, and WIRED SINCE: `align-headings-grid.ts`
@@ -35,11 +32,11 @@ const MIN_TOKEN_LENGTH = 3;
 /**
  Extracts folded Latin runs from a heading.
  
- Runs come from the shared index scan (`latinWordSpans`), which a heading's
- arbitrary text cannot make backtrack, and each is folded (`foldLatinWord`)
- so a handle written with its accent, with a separate one or without matches
- itself: ASCII runs alone cut `Mikä` to `mik` on both sides and matched only by
- that accident, and cut `Mika` to a different run (ledger B18).
+ Runs come from the shared index scan, which a heading's arbitrary text
+ cannot make backtrack, each folded (`foldedLatinWords`) so a handle written
+ with its accent, with a separate one or without matches itself: ASCII runs
+ alone cut `Mikä` to `mik` on both sides and matched only by that accident,
+ and cut `Mika` to a different run (ledger B18).
  
  @param text - heading text
  
@@ -52,10 +49,7 @@ const MIN_TOKEN_LENGTH = 3;
  */
 export function latinTokens({ text, }: { readonly text: string; },): ReadonlySet<string> {
   return new Set(
-    latinWordSpans({ text, },)
-      .map(function folded({ word, },): string {
-        return foldLatinWord({ word, },);
-      },)
+    foldedLatinWords({ text, },)
       .filter(function longEnough(token,): boolean {
         return token.length >= MIN_TOKEN_LENGTH;
       },),

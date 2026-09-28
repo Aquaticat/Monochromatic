@@ -17,6 +17,7 @@ import {
 import {
   continuesLatinWord,
   foldLatinWord,
+  foldedLatinWords,
   isCombiningMark,
   isLatinCapital,
   isLatinLetter,
@@ -213,6 +214,12 @@ await describe({
           'katzchen',
           'katzchen',
           'chateau',
+        ],);
+        expect(foldedLatinWords({ text: 'Château, Cha\u{0302}teau and Éa9', },),).toEqual([
+          'chateau',
+          'chateau',
+          'and',
+          'ea',
         ],);
       },
     },),

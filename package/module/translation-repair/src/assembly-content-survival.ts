@@ -1,3 +1,5 @@
+import { foldedLatinWords, } from './latin-letters.ts';
+
 //region Assembly content survival
 // THE DAMAGE EVERY OTHER INSTRUMENT HERE MISSES.
 //
@@ -18,6 +20,14 @@
 // may carry the same detail in different English words, and a rare-word test
 // cannot tell re-wording from deletion. The repair lane EDITS the incumbent, so
 // a distinctive word it drops really is a detail removed or blurred.
+//
+// WORDS ARE LATIN LETTERS ONLY, folded (`foldedLatinWords`): punctuation and
+// digits separate them, unlike `wordsOf` in `assembly-repetition.ts`, which
+// keeps punctuation on its token. That file compares passages, where `soon.`
+// and `soon,` are different sentences; this one compares vocabulary, where
+// they are the same word, and so are `Château`, `Cha\u{0302}teau` and
+// `Chateau`. A local ASCII copy of the scan cut `Château` in two until ledger
+// B18, and counted a combining mark as a letter towards a word's length.
 
 /**
  Shortest word that can carry a specific.
@@ -64,50 +74,6 @@ export type ContentSurvival = {
 };
 
 /**
- Splits text into lowercase letter-only words.
- 
- PUNCTUATION AND DIGITS ARE SEPARATORS HERE, unlike `wordsOf` in
- `assembly-repetition.ts` which keeps punctuation on its token. That file
- compares passages, where `soon.` and `soon,` are different sentences; this one
- compares vocabulary, where they are the same word.
- 
- A single linear pass rather than a pattern, per `RG1`.
- 
- @param text - document or passage
- 
- @returns Lowercase words in order
- 
- @example
- ```ts
- const words = lettersOnlyWords({ text: 'Tabby-cat, dozing.', },);
- ```
- */
-export function lettersOnlyWords({ text, }: { readonly text: string; },): readonly string[] {
-  /**
-   Words closed so far.
-   */
-  const words: string[] = [];
-
-  /**
-   Letters of the word being read.
-   */
-  let held = '';
-
-  for (const character of text.toLowerCase()) {
-    if ((character >= 'a') && (character <= 'z')) {
-      held += character;
-      continue;
-    }
-    if (held !== '')
-      words.push(held,);
-    held = '';
-  }
-  if (held !== '')
-    words.push(held,);
-  return words;
-}
-
-/**
  Words the archive uses rarely and at length, which carry its specifics.
  
  @param archiveText - translation as it stood before the pipeline ran
@@ -126,7 +92,7 @@ export function distinctiveWords(
    Times the archive uses each word.
    */
   const uses = new Map<string, number>();
-  for (const word of lettersOnlyWords({ text: archiveText, },))
+  for (const word of foldedLatinWords({ text: archiveText, },))
     uses.set(
       word,
       (uses.get(word,) ?? 0) + 1,
@@ -172,7 +138,7 @@ export function measureContentSurvival(
   /**
    Every word the shipped document carries, for membership tests.
    */
-  const shipped = new Set(lettersOnlyWords({ text: shippedText, },),);
+  const shipped = new Set(foldedLatinWords({ text: shippedText, },),);
 
   /**
    How many specifics survived.
@@ -217,7 +183,7 @@ export function lostDistinctiveWords(
   /**
    Every word the shipped document carries, for membership tests.
    */
-  const shipped = new Set(lettersOnlyWords({ text: shippedText, },),);
+  const shipped = new Set(foldedLatinWords({ text: shippedText, },),);
   return distinctiveWords({ archiveText, },)
     .filter(function isLost(word,): boolean {
       return !shipped.has(word,);

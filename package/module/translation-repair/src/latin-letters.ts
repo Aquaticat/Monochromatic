@@ -268,4 +268,26 @@ export function foldLatinWord({ word, }: { readonly word: string; },): string {
     .toLowerCase();
 }
 
+/**
+ Every Latin word of a text, folded (`foldLatinWord`), in order: the form in
+ which two writers' vocabularies are compared, so an accent written composed,
+ combining or not at all neither splits a word nor makes it another word, and
+ a word's length counts its letters and not its marks.
+
+ @param text - text under scan
+
+ @returns Folded words in order
+
+ @example
+ ```ts
+ foldedLatinWords({ text: 'Château and Cha\u{0302}teau', },); // ['chateau', 'and', 'chateau']
+ ```
+ */
+export function foldedLatinWords({ text, }: { readonly text: string; },): readonly string[] {
+  return latinWordSpans({ text, },)
+    .map(function folded({ word, },): string {
+      return foldLatinWord({ word, },);
+    },);
+}
+
 //endregion Latin letters

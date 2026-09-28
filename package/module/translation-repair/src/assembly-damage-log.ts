@@ -1,12 +1,10 @@
 import type { AdjacentSliceText, } from './assembly-adjacent-repetition.ts';
-import {
-  lettersOnlyWords,
-  lostDistinctiveWords,
-} from './assembly-content-survival.ts';
+import { lostDistinctiveWords, } from './assembly-content-survival.ts';
 import {
   findIntroducedRepetitions,
   wordsOf,
 } from './assembly-repetition.ts';
+import { foldedLatinWords, } from './latin-letters.ts';
 
 //region Assembly damage log
 // WHERE THE DOCUMENT-SCALE DAMAGE IS, for the log (ledger L12). The findings
@@ -129,7 +127,7 @@ export function contentLossLogLines(
     /**
      Lost words this slice's archive wording held, each once.
      */
-    const held = [...new Set(lettersOnlyWords({ text: slice.text, },),),]
+    const held = [...new Set(foldedLatinWords({ text: slice.text, },),),]
       .filter(function wasLost(word,) {
         return lost.has(word,);
       },);

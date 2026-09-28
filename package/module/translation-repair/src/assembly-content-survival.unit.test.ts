@@ -118,6 +118,30 @@ await describe({
         expect(survival.lost,).toBe(0,);
       },
     },),
+    it({
+      name: 'COUNTS an accented word as one specific whose length is its letters, composed or combining, and keeps it '
+        + 'where the document writes it without the accent (ledger B18)',
+      fn: async () => {
+        // ASCII letters alone cut `château` into `ch` and `teau` and `Émilie`
+        // into `milie`, all too short to count, so losing either went unseen;
+        // counted by UTF-16 unit, a combining accent made a five-letter word
+        // six long.
+        for (const archiveText of ['Mittens napped in the château with Émilie and Émile.', 'Mittens napped in the cha\u{0302}teau with E\u{0301}milie and E\u{0301}mile.',]) {
+          expect([
+            measureContentSurvival({
+              archiveText,
+              shippedText: 'Mittens napped in the house.',
+            },),
+            measureContentSurvival({
+              archiveText,
+              shippedText: 'Mittens napped in the chateau with Emilie.',
+            },),
+          ].map(function counts({ distinctive, lost, },): readonly number[] {
+            return [distinctive, lost,];
+          },),).toEqual([[4, 2,], [4, 0,],],);
+        }
+      },
+    },),
   ],
 },);
 

@@ -13,6 +13,7 @@ export { isHanCharacter, } from './han-only-text.ts';
 export {
   continuesLatinWord,
   foldLatinWord,
+  foldedLatinWords,
   isCombiningMark,
   isLatinCapital,
   isLatinLetter,
