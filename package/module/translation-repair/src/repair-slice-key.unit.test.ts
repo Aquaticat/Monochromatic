@@ -152,9 +152,9 @@ await describe({
       },
     },),
     it({
-      name: 'MOVES THE KEY WHERE CHECKER SELF-CERTIFICATION IS REFUSED, and only there (ledger X11): it decides '
-        + 'who may check a refinement, and production has permitted it since 2026-08-23, so a permitted or '
-        + 'unstated flag keys as every settled slice did',
+      name: 'KEEPS THE KEY WHATEVER CHECKER SELF-CERTIFICATION SAYS (ledger X11, M37): the flag only lets '
+        + 'a roster run, and a roster it admits is asked and weighed the same either way, so splitting the '
+        + 'cache on it would rebuy settled slices for no different answer',
       fn: async () => {
         /**
          Key under the fixture, which states no flag.
@@ -165,7 +165,7 @@ await describe({
             === settled,
           keyed({ runShape: repairRunShape({ models: { ...MODELS, checkerSelfCertificationPermitted: false, }, },), },)
             === settled,
-        ],).toEqual([true, false,],);
+        ],).toEqual([true, true,],);
       },
     },),
     it({
