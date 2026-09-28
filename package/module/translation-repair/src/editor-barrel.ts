@@ -100,5 +100,10 @@ export {
 } from './corpus-run/editor-width-arm.ts';
 export { bothOrders, } from './corpus-run/editor-width-contest.ts';
 export { runWidthSlice, } from './corpus-run/editor-width-slice.ts';
+export {
+  clampQuoteDepth,
+  quoteDepth,
+  quoteDepthBound,
+} from './quote-depth-clamp.ts';
 
 //endregion Editor barrel
