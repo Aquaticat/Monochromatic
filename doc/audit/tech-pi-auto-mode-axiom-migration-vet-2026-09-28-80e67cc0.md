@@ -541,6 +541,35 @@ No third-party research code or weights are executed.
 The original reserved scenarios remain unopened,
 and the design interview remains paused.
 
+## Paired-hypothesis mechanism freeze
+
+Task #44 freezes the exact no-fitting test in
+`~/temp/agent/voyage-paired-hypotheses-2026-09-28`.
+Source `4a0d2a6` and input/control/verifier checkpoint `c17ab9f` precede live calls.
+Local controls `proc_681b` passed full-policy/source isolation,
+reference exclusion,
+independent hypothesis-pair decoding,
+sorted/reversed index mapping,
+raw-value and overflow checks,
+comparison controls,
+and the shared deadline.
+Swapped-side and deadline-omitted variants exposed incorrect acceptance without changing originals.
+
+The schedule has twelve calls and forty-eight raw scores:
+eight base calls for the four existing read profiles,
+two exact repeats,
+and two document-order reversals.
+Every pair of selected sources shares five seconds.
+All 58 source/input files are hash-frozen.
+Repeat/order probes yield observations at those inputs,
+not general noise or invariance bounds.
+No fitting,
+probability,
+production cutoff,
+private input,
+new provider,
+or deployment is authorized by this freeze.
+
 ## Current outcome
 
 Direct Lite scoring access is established,

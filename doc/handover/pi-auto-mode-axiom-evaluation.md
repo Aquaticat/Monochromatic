@@ -326,6 +326,23 @@ SDK,
 provider,
 or training implementation is adopted.
 
+Task #44 freezes the no-fitting mechanism probe at
+`~/temp/agent/voyage-paired-hypotheses-2026-09-28`.
+Source `4a0d2a6` and input/control/verifier checkpoint `c17ab9f` precede live calls.
+`proc_681b` passed the exact encoder,
+per-axiom pair decoder,
+reference exclusion,
+reversed-index,
+raw-range,
+overflow,
+comparison,
+and shared-deadline controls.
+The frozen twelve-call schedule includes four base read profiles,
+one exact repeat of each direct-positive source kind,
+and one document-order reversal of each.
+All 58 source/input files and complete policy are hash-bound.
+No model output from this probe is a probability or permission decision.
+
 ## Sequencing correction
 
 The user stopped the integration-policy interview and asked whether investigation of Laya,

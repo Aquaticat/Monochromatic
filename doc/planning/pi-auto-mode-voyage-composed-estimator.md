@@ -232,6 +232,49 @@ record that this mechanism has not earned a fitting stage.
 Observed separation is only mechanism evidence,
 not a probability profile or adoption qualification.
 
+## Frozen mechanism checkpoint
+
+Private source is `~/temp/agent/voyage-paired-hypotheses-2026-09-28`.
+Commit `4a0d2a6` freezes the exact hypothesis strings,
+encoder,
+independent-pair decoder,
+comparison logic,
+and shared-clock client before model calls.
+Commit `c17ab9f` retains inputs,
+58 source/input identities,
+local checks,
+and the model-free result verifier.
+
+`proc_681b` passed local controls without networking:
+full policy in every hypothesis,
+selected-source isolation,
+reference exclusion,
+index mapping despite sorted or reversed documents,
+independent axiom pairs,
+non-finite/overflow rejection,
+and raw values outside the unit interval.
+A swapped-side mutation exposed incorrect feature decoding;
+removing the final deadline check exposed late acceptance.
+Original sources remained unchanged.
+
+The schedule first runs the direct-positive request/prose pair,
+then its exact repeat,
+then its reversed-document-order pair,
+then direct prohibition,
+scope mismatch,
+and cross-clause binding.
+Every set shares five seconds across its two sources.
+Frozen query sizes are 714 to 764 bytes;
+complete requests are 189,406 to 189,816 bytes.
+These byte measurements do not establish token limits or latency.
+The complete policy remains 42,677 bytes,
+SHA-256 `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+
+No model result,
+probability,
+fit,
+or deployment qualification follows from this preparation checkpoint.
+
 ## Later validation boundary
 
 Any fitting stage needs new authorization and its own frozen protocol.
