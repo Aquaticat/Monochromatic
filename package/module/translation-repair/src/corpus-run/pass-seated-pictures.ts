@@ -4,6 +4,7 @@ import type { ChunkPair, } from '../chunk-document.ts';
 import type { PairedReading, } from '../image-reading-pair.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import {
+  type PassPictureSources,
   type PassVisualEvidenceReader,
   readPassVisualEvidence,
 } from './pass-visual-evidence.ts';
@@ -50,12 +51,16 @@ import { readJudgeSeats, } from './run-seats-read.ts';
  @param visualEvidenceReader - optional integration-test evidence seam
  
  @param priorReadings - completed evidence retained within this pinned entry
- 
+
+ @param pictureSources - where bytes and OCR text come from, the run's own
+ when absent; a test hands stand-ins to drive the readers' re-seat hook
+ (ledger X14)
+
  @returns Corroborated or reviewed no-text evidence by asset
- 
+
  @throws {@link import('./visual-evidence-completeness.ts').VisualEvidenceInterruptedError}
  when any referenced asset lacks usable evidence
- 
+
  @example
  ```ts
  const readings = await readSeatedPictures({ client, slices, entryId, cache, signal, l, },);
@@ -71,6 +76,7 @@ export async function readSeatedPictures(
     l,
     visualEvidenceReader,
     priorReadings,
+    pictureSources,
   }: {
     readonly client: RunClient;
     readonly slices: readonly ChunkPair[];
@@ -80,6 +86,7 @@ export async function readSeatedPictures(
     readonly l: Logger;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
     readonly priorReadings?: ReadonlyMap<string, PairedReading>;
+    readonly pictureSources?: PassPictureSources;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**
@@ -103,6 +110,7 @@ export async function readSeatedPictures(
     l,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
     ...((priorReadings === undefined) ? {} : { priorReadings, }),
+    ...((pictureSources === undefined) ? {} : { pictureSources, }),
     // EVERY PICTURE RE-SEATS UNDER A HOLD (ledger X12,
     // `pass-pictures-reseat.ts`), with a memo per call, since each call
     // already reads the seats afresh.

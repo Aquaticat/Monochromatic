@@ -110,5 +110,7 @@ export {
   type LanesSeating,
   runPassLanes,
 } from './corpus-run/pass-lanes.ts';
+export { createPassPictureReader, } from './corpus-run/pass-seated-pictures.ts';
+export { type PassPictureSources, } from './corpus-run/pass-visual-evidence.ts';
 
 //endregion Corpus readiness barrel

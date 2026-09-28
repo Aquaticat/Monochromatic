@@ -4,7 +4,10 @@ import type { SyntheticClient, } from '../chat-contract.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import { readDocumentPictures, } from '../document-readings.ts';
 import { readImageWithOcr, } from '../image-ocr.ts';
-import type { PairedReading, } from '../image-reading-pair.ts';
+import type {
+  OcrReader,
+  PairedReading,
+} from '../image-reading-pair.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import type { CorpusPin, } from '../corpus-source.ts';
 import type { SliceCache, } from '../slice-cache.ts';
@@ -21,6 +24,36 @@ import { assertVisualEvidenceComplete, } from './visual-evidence-completeness.ts
 export type PassVisualEvidenceReader = (args: {
   readonly slices: readonly ChunkPair[];
 },) => Promise<ReadonlyMap<string, PairedReading>>;
+
+/**
+ Where a picture's bytes and its OCR text come from: the pinned corpus and
+ the local OCR tools in a run, stand-ins in a test that drives the readers
+ and their re-seat hook (ledger X14). `PassVisualEvidenceReader` replaces the
+ whole reading, hook and all; this replaces only what lies outside it.
+
+ @example
+ ```ts
+ const sources: PassPictureSources = { gather: gatherEntryPictures, readOcr: readImageWithOcr, };
+ ```
+ */
+export type PassPictureSources = {
+  /**
+   Reads the bytes of every picture the slices name.
+   */
+  readonly gather: typeof gatherEntryPictures;
+  /**
+   Reads a picture's text before any model is asked about it.
+   */
+  readonly readOcr: OcrReader;
+};
+
+/**
+ The run's picture sources: the pinned corpus and `dwebp` with `tesseract`.
+ */
+const RUN_PICTURE_SOURCES: PassPictureSources = {
+  gather: gatherEntryPictures,
+  readOcr: readImageWithOcr,
+};
 
 /**
  Reads and requires complete visual evidence before any lane work.
@@ -49,7 +82,10 @@ export type PassVisualEvidenceReader = (args: {
 
  @param beforePicture - per-picture hook handing each picture the readers it
  runs on (ledger X12)
- 
+
+ @param pictureSources - where bytes and OCR text come from, the run's own
+ when absent
+
  @returns Corroborated or reviewed no-text evidence by asset
  
  @throws {@link import('./visual-evidence-completeness.ts').VisualEvidenceInterruptedError}
@@ -74,6 +110,7 @@ export async function readPassVisualEvidence(
     visualEvidenceReader,
     priorReadings = new Map(),
     beforePicture,
+    pictureSources = RUN_PICTURE_SOURCES,
   }: {
     readonly client: SyntheticClient;
     readonly slices: readonly ChunkPair[];
@@ -87,6 +124,7 @@ export async function readPassVisualEvidence(
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
     readonly priorReadings?: ReadonlyMap<string, PairedReading>;
     readonly beforePicture?: () => Promise<PictureReaderSeating>;
+    readonly pictureSources?: PassPictureSources;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
   /**
@@ -108,10 +146,10 @@ export async function readPassVisualEvidence(
     return priorReadings;
   }
   /**
-   Assets read only on production path.
+   Assets from the picture sources, none when the evidence seam replaces the reading.
    */
   const assets = (visualEvidenceReader === undefined)
-    ? await gatherEntryPictures({
+    ? await pictureSources.gather({
       pin,
       entryId,
       slices,
@@ -123,7 +161,7 @@ export async function readPassVisualEvidence(
    */
   const readings = (visualEvidenceReader === undefined)
     ? await readDocumentPictures({
-      readOcr: readImageWithOcr,
+      readOcr: pictureSources.readOcr,
       client,
       slices,
       assets,
