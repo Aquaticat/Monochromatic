@@ -15,7 +15,9 @@ import {
 import {
   isAsciiAlphanumeric,
   isAsciiDigit,
+  isAsciiDigits,
   isAsciiLetter,
+  isAsciiLowerLetter,
   isLowerHexDigit,
 } from '../dist/final/node/index.mjs';
 
@@ -76,6 +78,29 @@ await describe({
         expect(PROBES.filter(function lowerHex(character,): boolean {
           return isLowerHexDigit({ character, },);
         },),).toEqual(['a', '0', '9', 'f',],);
+      },
+    },),
+    it({
+      name: 'ADMITS a to z alone as lower-case letters',
+      fn: async () => {
+        expect(PROBES.filter(function lower(character,): boolean {
+          return isAsciiLowerLetter({ character, },);
+        },),).toEqual(['a', 'z', 'f', 'g',],);
+      },
+    },),
+    it({
+      name: 'READS a text as digits only when it is non-empty and every character is 0 to 9',
+      fn: async () => {
+        expect([
+          '611',
+          '0',
+          '',
+          '10th',
+          '٣',
+          '1 2',
+        ].map(function digits(text,): boolean {
+          return isAsciiDigits({ text, },);
+        },),).toEqual([true, true, false, false, false, false,],);
       },
     },),
   ],

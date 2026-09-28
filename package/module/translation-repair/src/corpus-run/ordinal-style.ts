@@ -1,3 +1,5 @@
+import { isAsciiDigits, } from '../ascii-letters.ts';
+
 //region Ordinal style
 // HOW A NUMBERED HEADING SPELLS ITS NUMBER. A source heading series such as
 // `其一` to `其十` reaches the page one slice at a time, and each slice's
@@ -241,28 +243,6 @@ function isRoman({ word, }: { readonly word: string; },): boolean {
 }
 
 /**
- Whether a word is all digits.
-
- @param word - word as written
-
- @returns True when every character is an ASCII digit
-
- @example
- ```ts
- isDigits({ word: '12', },); // true
- ```
- */
-function isDigits({ word, }: { readonly word: string; },): boolean {
-  if (word === '')
-    return false;
-  for (const character of word) {
-    if ((character < '0') || (character > '9'))
-      return false;
-  }
-  return true;
-}
-
-/**
  Spelling form of one number word, `none` when it is no number.
 
  @param word - word as written
@@ -283,7 +263,7 @@ function formOf({ word, }: { readonly word: string; },): OrdinalStyle['form'] {
     return 'cardinal';
   if (ORDINALS.includes(lowered,))
     return 'ordinal';
-  if (isDigits({ word, },))
+  if (isAsciiDigits({ text: word, },))
     return 'arabic';
   if (isRoman({ word, },))
     return 'roman';
@@ -523,7 +503,7 @@ function hanValue({ text, }: { readonly text: string; },): number {
  ```
  */
 export function readHanNumeral({ text, }: { readonly text: string; },): number {
-  if (isDigits({ word: text, },))
+  if (isAsciiDigits({ text, },))
     return Number(text,);
   return hanValue({ text, },);
 }

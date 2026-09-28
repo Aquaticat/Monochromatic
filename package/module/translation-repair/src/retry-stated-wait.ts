@@ -1,4 +1,7 @@
-import { isAsciiDigit, } from './ascii-letters.ts';
+import {
+  isAsciiDigit,
+  isAsciiLowerLetter,
+} from './ascii-letters.ts';
 
 //region Stated retry wait
 // The wait a provider's refusal names in its own body ("try again in 2h25m18s"),
@@ -170,7 +173,7 @@ function letterRunEnd(
      Character under the cursor.
      */
     const character = text.charAt(cursor,);
-    if ((character < 'a') || (character > 'z'))
+    if (!isAsciiLowerLetter({ character, },))
       return cursor;
   }
   return text.length;

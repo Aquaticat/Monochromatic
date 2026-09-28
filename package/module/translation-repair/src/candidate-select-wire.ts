@@ -1,4 +1,5 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
+import { isAsciiDigits, } from './ascii-letters.ts';
 
 import {
   communityRenderingsBlock,
@@ -132,11 +133,7 @@ function isCanonicalIndexText(text: string,): boolean {
     return false;
   if ((text.length > 1) && text.startsWith('0',))
     return false;
-  for (const character of text) {
-    if ((character < '0') || (character > '9'))
-      return false;
-  }
-  return true;
+  return isAsciiDigits({ text, },);
 }
 
 /**

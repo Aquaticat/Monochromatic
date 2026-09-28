@@ -5,7 +5,9 @@
 export {
   isAsciiAlphanumeric,
   isAsciiDigit,
+  isAsciiDigits,
   isAsciiLetter,
+  isAsciiLowerLetter,
   isLowerHexDigit,
 } from './ascii-letters.ts';
 export { longestRunOf, } from './character-run.ts';

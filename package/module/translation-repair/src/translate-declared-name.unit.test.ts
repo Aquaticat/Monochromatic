@@ -28,6 +28,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  isAsciiDigit,
   messageText,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -175,7 +176,7 @@ function firstNonDigit(
      Character under the cursor.
      */
     const character = text.charAt(cursor,);
-    if ((character < '0') || (character > '9'))
+    if (!isAsciiDigit({ character, },))
       return cursor;
   }
   return text.length;

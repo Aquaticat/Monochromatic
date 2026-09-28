@@ -1,3 +1,5 @@
+import { isAsciiDigits, } from '../ascii-letters.ts';
+
 //region Run timing parse
 // Reads a run's own log back into the two shapes that say where its wall-clock
 // went, and answers the question `#215` was opened on.
@@ -198,10 +200,8 @@ export type CallReading =
 function countIn({ field, }: { readonly field: string; },): number {
   if (field === '')
     throw new Error('count field is empty',);
-  for (const character of field) {
-    if ((character < '0') || (character > '9'))
-      throw new Error(`count field is not a whole number: "${field}"`,);
-  }
+  if (!isAsciiDigits({ text: field, },))
+    throw new Error(`count field is not a whole number: "${field}"`,);
   return Number(field,);
 }
 

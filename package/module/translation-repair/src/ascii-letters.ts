@@ -12,6 +12,23 @@
 // scanner states; the name here says what is tested so that choice is visible.
 
 /**
+ Whether one character is a lower-case ASCII letter, `a` to `z`.
+
+ @param character - one UTF-16 unit, empty past a text's edge
+
+ @returns True for `a` to `z` only
+
+ @example
+ ```ts
+ isAsciiLowerLetter({ character: 'h', },); // true
+ isAsciiLowerLetter({ character: 'H', },); // false
+ ```
+ */
+export function isAsciiLowerLetter({ character, }: { readonly character: string; },): boolean {
+  return (character >= 'a') && (character <= 'z');
+}
+
+/**
  Whether one character is an ASCII letter, `a` to `z` in either case.
 
  @param character - one UTF-16 unit, empty past a text's edge
@@ -25,7 +42,7 @@
  ```
  */
 export function isAsciiLetter({ character, }: { readonly character: string; },): boolean {
-  return ((character >= 'a') && (character <= 'z')) || ((character >= 'A') && (character <= 'Z'));
+  return isAsciiLowerLetter({ character, },) || ((character >= 'A') && (character <= 'Z'));
 }
 
 /**
@@ -42,6 +59,29 @@ export function isAsciiLetter({ character, }: { readonly character: string; },):
  */
 export function isAsciiDigit({ character, }: { readonly character: string; },): boolean {
   return (character >= '0') && (character <= '9');
+}
+
+/**
+ Whether a text is a run of ASCII digits and nothing else, as a count, an
+ index or a number word is written.
+
+ @param text - text under test
+
+ @returns True for a non-empty text of `0` to `9` only
+
+ @example
+ ```ts
+ isAsciiDigits({ text: '611', },); // true
+ isAsciiDigits({ text: '10th', },); // false
+ isAsciiDigits({ text: '', },); // false
+ ```
+ */
+export function isAsciiDigits({ text, }: { readonly text: string; },): boolean {
+  return (text !== '')
+    && Array.from(text,)
+    .every(function digit(character,): boolean {
+    return isAsciiDigit({ character, },);
+  },);
 }
 
 /**
