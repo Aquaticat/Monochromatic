@@ -14,6 +14,7 @@ import { once, } from 'node:events';
 
 import { wait as pause, } from '@monochromatic-dev/module-async-time/ts';
 import {
+  caught,
   describe,
   expect,
   it,
@@ -24,6 +25,7 @@ import {
   HYPER_PACE_WINDOW_MS,
   HYPER_REQUESTS_PER_HOUR,
   hyperRequestsPerHour,
+  StatedRefusalError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -202,13 +204,23 @@ await describe({
   name: hyperRequestsPerHour.name,
   children: [
     it({
-      name: 'READS a positive number from the variable and falls back to the account limit otherwise',
+      name: 'READS a positive number from the variable and takes the account limit when it is unset',
       fn: async () => {
         expect(hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: '300', }, },),).toBe(300,);
-        expect(hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: 'lots', }, },),).toBe(HYPER_REQUESTS_PER_HOUR,);
         expect(hyperRequestsPerHour({ env: {}, },),).toBe(HYPER_REQUESTS_PER_HOUR,);
         expect(HYPER_REQUESTS_PER_HOUR,).toBe(1_000,);
         expect(HYPER_PACE_WINDOW_MS,).toBe(3_600_000,);
+      },
+    },),
+    it({
+      name: 'REFUSES A VALUE THAT IS NOT A POSITIVE NUMBER, as every other dial does (ledger D14): it fell back to '
+        + 'the account limit, so a mistyped rate ran the launch at a pace nobody asked for',
+      fn: async () => {
+        expect(['lots', '0', '-5',].map(function refusalOf(written,): boolean {
+          return caught(function readsRate() {
+            hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: written, }, },);
+          },) instanceof StatedRefusalError;
+        },),).toEqual([true, true, true,],);
       },
     },),
   ],
