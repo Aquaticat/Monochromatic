@@ -8384,7 +8384,8 @@ Three slips, built as two classes under the standing instruction of 2026-09-25:
 - 激素一点一点进入她的身体 shipped as "the medication entered her system bit by bit",
   where TianqiChen66611 had "hormones".
   The pin carries 激素 in seven paragraphs on five entries,
-  two of them also writing 药 or 药物 where "medication" renders that word,
+  one of them (shi_Yumiaoya) also writing 药物 where "medication" renders that word
+  (corrected 2026-09-28, ledger R16: this line once counted two, the second a 药 inside 药娘),
   so the medical glossary seeds "hormones" without a refused form (class one hundred eighty).
 - The period sat outside the closing quote (`“high-performance robot”.`) on a page that also wrote `“Old Man Chen,”`.
   Canadian Press style sets a period or comma inside, and the archive does so 224 times to 32 across the pin.
@@ -8798,7 +8799,8 @@ Class one hundred fifty-seven is live: the threat line reads "Sakurana threatene
 and "I'd never actually dated a trans woman before" on aiyysk1, a romance the original never states.
 The narrator had simply never spent time with trans women; the next paragraph says
 "It was my first time ever talking with a trans woman", and the archive wrote "I'd never actually talked to an MTF person before".
-The pinned corpus carries 交往 three times, all on aiyysk (lines 157, 159 and 185), all ordinary social contact.
+The pinned corpus carries 交往 four times, all on aiyysk (lines 157, 159 twice and 185), all ordinary social contact
+(corrected 2026-09-28, ledger R16: this line once said three times).
 交往 joins the phrasing glossary with "talked to" first.
 The floor matches refused forms as lower-cased substrings (`refusedFormIn`, `translate-community-term.ts`),
 so the refused forms are multi-word ("never dated", "dated a trans", "dating them" and the like)
@@ -8893,8 +8895,10 @@ two archive-revision-refused lines and five archive review lines.
 Under the owner's standing instruction to translate better wherever possible:
 初中 shipped "junior middle school" (line 76), 自考 "self-taught exams" (line 79)
 and 压力话 "frequently subjected to pressured remarks" (line 82).
-初中 stands in five pinned entries; four of the five archive passages that render it write "junior high school"
-(Jennife80677612, aiyysk twice, Xu_Yushu), and shihai4h's archive alone writes "junior middle school".
+初中 stands nine times in five pinned entries; the archives write "junior high school" (Jennife80677612 once,
+aiyysk twice), "middle school" (yulianNyanner twice) and "junior middle school" (shihai4h alone),
+and XIEPT2's archive renders it nowhere
+(corrected 2026-09-28, ledger R16: this line once counted a 初中 in a Xu_Yushu reader comment as an archive passage).
 自考 (高等教育自学考试, the self-study examinations) and 压力话 stand on shihai4h alone, with no archive English.
 The three join the wording glossary with "junior high school", "self-study examinations" and "pressured" first,
 and "junior middle school", "self-taught exam" and "pressured remarks" with their variants refused

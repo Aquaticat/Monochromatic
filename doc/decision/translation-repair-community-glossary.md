@@ -97,3 +97,22 @@ The owner answered:
 - 药娘 lists 小药娘网络科技 and 以小药娘做字号.
     The ruling of 2026-09-24 is unchanged everywhere else:
     the word is refused in Han and in pinyin even where the archive keeps it.
+
+## Addendum 2026-09-28: what the glossary enters, and what it refuses
+
+The whole-package audit (ledger C6 in `package/module/translation-repair/doc/audit-ledger.md`)
+found two statements here that later practice left behind.
+
+- "A term the archive got wrong is not entered" stopped holding once runs shipped words the archive had wrong too:
+    炸柜 (the archive's "tried coming out"),
+    and 阿洛娜 and 亚托莉 (the archive's "Alona and Atori") entered by the classes that found them.
+    An entry goes in wherever a run shipped the word wrong,
+    and its renderings lead with the archive's only where the archive renders the word well.
+- "No candidate is barred by the block" still holds of the `COMMUNITY RENDERINGS` block,
+    but since the owner's ruling of 2026-09-24 (class one hundred nineteen)
+    a floor refuses a candidate that keeps a term in Han or writes a form its entry refuses,
+    so an entry can bar a candidate.
+    No listed rendering is ever required.
+- An entry may also list longer words that write its characters without being the term
+    (`enclosingWords`: 自切 inside 各自切),
+    read as absent the way a proper name is.
