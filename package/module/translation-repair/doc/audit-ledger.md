@@ -1950,9 +1950,25 @@ A refused window seat now hands its place to the next pending seat within the ro
 
 ### P4: the recall benchmark still seats gpt-oss-120b
 
-Status: open (latent).
-`repair-benchmark.ts` default judges;
-`reachOf` ignores `OWNER_CULLED`.
+Status: fixed 2026-09-28, each part guarded red first and mutation-checked.
+The owner's cull of 2026-09-24 held on every derived bench,
+and nothing stopped a path that named the seat itself.
+
+- Recall judges: `460ceb8f4` (guard `b522c3e83`).
+    `DEFAULT_JUDGE_MODEL_IDS` listed three judges by hand and still named `hf:openai/gpt-oss-120b`.
+    The benchmark now takes its judges from its caller (`judgeModelIds` is required),
+    and the recall benchmark passes `RECALL_JUDGE_MODEL_IDS`, the wide seats the run derives,
+    which every seating rule and the cull reach.
+- The run client: `9fd80fb28` (guard `6e935644b`).
+    `refusingCulledSeats` (`culled-seat-guard.ts`) wraps the routed client
+    and throws the `NoProviderForModelError` a round reads as an unreachable seat,
+    before any provider is asked, on `chatText`, `chatJson` and `decide` alike.
+    Catalog reach is unchanged: the card stays for the catalogs and fixtures, and `reachOf` reports what serves a model,
+    while the refusal says the owner does not seat it.
+
+Mutation check (`p4-mutants.json`): the guard never refusing, the run client unguarded,
+and the recall bench naming the culled model are each caught; the control survives.
+No cache moves: no derived bench seated the culled model since the cull, so no cached answer came from it.
 
 ### P5: the archive-block-review guard rejects a shape its prompt never forbids
 
@@ -1966,8 +1982,18 @@ Only source-supported retention now needs an anchor. Archive-block reviews are n
 
 ### P6: the seat tally cannot see an unusable reply
 
-Status: open.
+Status: fixed in `27bc9f951` (guard `a30b43761`; mutation checked with a control).
 `SEAT inception/mercury-2.5 asked=1007 usable=1007 unusable=0` beside 40 schema losses.
+The tally sat inside `promptUniqueClient`, which buys every JSON reply through `chatText` and reads it itself,
+so the tally saw text arrive and counted it usable.
+It now wraps the client callers hold and settles each JSON call as the outcome its caller gets:
+the nudged re-ask elsewhere (P9) is inside that one call, and a replayed payload counts as an ask,
+since its answer is the run's evidence all the same.
+The red guard read `asked 2, usable 1, unusable 0` for one unreadable answer:
+the second ask was the nudged re-ask, which the second provider refused, counted as a seat that threw.
+Mutation check (`p6-mutants.json`): the tally back inside the wrapper,
+and a tally reading every JSON outcome as usable, are each caught.
+No cache moves: the tally reads outcomes and writes nothing a stage reads.
 
 ### P7: abandoned-spend estimates mix units
 
@@ -2032,19 +2058,43 @@ Status: open.
 
 ### P11: owner-rule enforcement relies on absence rather than a guard
 
-Status: open.
-Qwen3.8-27B and glm-5.3 stay off OpenRouter only because their cards lack an OpenRouter block;
-no test covers every client body for thinking parameters.
+Status: fixed in `0baa4cb41`; green on arrival, since every body already kept the rules, so the mutation check is its proof.
+Qwen3.8-27B and glm-5.3 stayed off OpenRouter only because their cards lacked an OpenRouter block;
+the no-thinking, no-budget, always-`max_tokens` rules were read only on the Hyper and OpenRouter bodies.
+`owner-body-rules.unit.test.ts` reads every request body all four clients send, text and schema calls,
+for `max_tokens` present and no `thinking`, `budget_tokens`, `reasoning_effort`, `reasoning` or `include_reasoning` key at any depth,
+and checks that every seat in `OPENROUTER_DROPPED_SEATS` has no OpenRouter block and no OpenRouter reach.
+`reachOf` and the OpenRouter picture check now read `OPENROUTER_DROPPED_SEATS` too.
+Mutation check (`p4-mutants.json`): thinking on the Synthetic body, a budget on the Hyper body,
+a reasoning effort on the OpenRouter body, and no `max_tokens` on the Bedrock body are each caught.
+The mutant dropping the new reach condition survives by construction:
+no card carries both an OpenRouter block and a drop, and the card case fails first if one ever does.
+No cache moves: no dropped seat had OpenRouter reach, so no route changed.
 
 ### P12: log lines that cannot be attributed
 
-Status: open (with A11); the retry lines are fixed.
-Retry lines never named the model: fixed in `dc156524b` (guard `db3dae27d`, mutation-checked);
-the retry line and the stated-wait line open with the exchange label.
-Open:
-"ms to quorum" printed when quorum never stood;
-`EveryProviderDryError` omits Bedrock;
-`run-config.ts` says Qwen is withheld whenever Synthetic is dry.
+Status: fixed 2026-09-28, each code part guarded red first and mutation-checked; A11 is its own entry.
+
+- Retry lines never named the model: `dc156524b` (guard `db3dae27d`).
+    The retry line and the stated-wait line open with the exchange label.
+- "ms to quorum" printed when quorum never stood: `6d27dab11` (guard `f03900948`).
+    Such a round now says `no quorum (heard of needed needed), every ask settled`,
+    since its "quorum" mark was only when the last ask settled, and the grace after it was nothing.
+- `EveryProviderDryError` omitted Bedrock: `dc6bd8321` (guard `0857bf052`).
+    It lists Bedrock among the providers out of budget, says its credit is never topped up,
+    and cites the meters the router decided on where it said "no reading cited".
+    The first guard checked the whole message for "Bedrock", which the refill sentence also carries,
+    and the mutant dropping Bedrock from the list survived (`p6-mutants.json`);
+    `5cf2889ea` reads every provider in the clause before "Nothing further can be bought",
+    and `p12b-mutants.json` catches that mutant and one dropping Hyper.
+- `run-config.ts` said Qwen is withheld whenever Synthetic is dry: `ab923b266`, a comment.
+    `run-seats.ts` withholds it while Hyper would serve it, Synthetic dry and Hyper wet;
+    with both dry no provider serves it and a round reads it as unreachable.
+
+Mutation check (`p6-mutants.json`, `p12b-mutants.json`): a round reading as quorate whatever it heard,
+the list without Bedrock or Hyper, the refill sentence without Bedrock, the refusal without its reading,
+and the reading with dry and wet swapped are each caught; the controls survive.
+No cache moves: log lines and a refusal message only.
 
 ### P13: low items
 
@@ -3129,6 +3179,8 @@ Twice during E1 and E4:
 `<test> > log 2>&1 ; rg --count` to capture a test's output,
 and a heredoc appended to a test file with the lint command on the next line,
 two commands no `&&` joined.
+Once more while closing P6 (`rg <transcript> | head ; rg <transcript> | sort | head`),
+looking up how earlier ledger commits were render-checked.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -3267,6 +3319,24 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M34: a guard that looked for a word the message carries twice
+
+Status: caught by the mutation check, 2026-09-28 (P12); the guard was tightened before the entry closed.
+The all-dry refusal's guard asked whether the message said "Bedrock",
+and the message says it twice: once in the out-of-budget list the finding was about, once in the refill sentence.
+A mutant dropping Bedrock from the list passed.
+Prevention: a guard asserts on the clause that makes the claim, not on the whole text;
+before committing a guard of the form `includes(word)`, `rg` the message for every other place the word appears.
+
+### M33: a search capped with `head` read as complete
+
+Status: caught by the type check, 2026-09-28 (P4).
+Removing `DEFAULT_JUDGE_MODEL_IDS`, its users were listed with an `rg ... | head` that cut the list,
+and `roster-reach.unit.test.ts`, past the cap, still imported it;
+the build's type check named it, and an uncapped search then showed no other user.
+Prevention: a search whose result decides what to change runs uncapped, or with `--count` first;
+`head` is for reading samples, never for a census.
 
 ### M32: a fix that supplies context a model lacks, built without reading the sheet it goes on
 
