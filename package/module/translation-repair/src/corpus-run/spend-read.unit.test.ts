@@ -450,3 +450,75 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: 'reckoned spend lines (ledger P14)',
+  children: [
+    it({
+      name: 'READS WHY A LINE IS RECKONED and counts such calls apart, since the writer marks an abandoned attempt '
+        + 'and a bound with `estimated=` so a reader can total them apart, and this reader dropped the field: '
+        + '2,178 reckoned lines in the run logs read as calls the wire reported',
+      fn: async () => {
+        /**
+         Line the writer returns for an attempt it reckoned.
+         */
+        const reckoned = reportSpend({
+          provider: 'openrouter',
+          label: 'minimax/minimax-m3',
+          extracted: {
+            text: '',
+            usage: {
+              prompt_tokens: 900,
+              completion_tokens: 40,
+            },
+          },
+          costUsd: 0.125,
+          estimated: 'abandoned',
+        },);
+
+        /**
+         What the reader made of it.
+         */
+        const reading = readSpendLine({ line: reckoned, },);
+
+        /**
+         Seat totals over the reckoned line and one the wire reported.
+         */
+        const [seat,] = tallySpend({
+          lines: [
+            reckoned,
+            logged({ tail: 'SPEND provider=openrouter model=minimax/minimax-m3 prompt=10 completion=20 cost=0.0625', },),
+          ],
+        },).seats;
+        expect({
+          reading,
+          seat,
+          unknownMark: readSpendLine({
+            line: logged({ tail: 'SPEND provider=bedrock model=google.gemma-4-e2b prompt=1 completion=2 estimated=guessed', },),
+          },),
+        },).toEqual({
+          reading: {
+            provider: 'openrouter',
+            model: 'minimax/minimax-m3',
+            prompt: 900,
+            completion: 40,
+            costUsd: 0.125,
+            reckoning: 'abandoned',
+          },
+          seat: {
+            provider: 'openrouter',
+            model: 'minimax/minimax-m3',
+            calls: 2,
+            promptTokens: 910,
+            completionTokens: 60,
+            unreportedCalls: 0,
+            costUsd: 0.1875,
+            costedCalls: 2,
+            reckonedCalls: 1,
+          },
+          unknownMark: 'unreadable',
+        },);
+      },
+    },),
+  ],
+},);
