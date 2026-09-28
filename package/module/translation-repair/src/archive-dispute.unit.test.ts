@@ -126,6 +126,7 @@ await describe({
             {
               sliceIndex: 3,
               repairedText: REPAIRED,
+              changed: true,
               resolvedIssueIds: [],
               issues: [
                 issueOf({ status: 'accepted', claim: INVENTED, },),
@@ -158,12 +159,14 @@ await describe({
             {
               sliceIndex: 5,
               repairedText: REPAIRED,
+              changed: true,
               resolvedIssueIds: [],
               issues: [issueOf({ status: 'accepted', claim: WRONG_COLOUR, },),],
             },
             {
               sliceIndex: 6,
               repairedText: REPAIRED,
+              changed: true,
               resolvedIssueIds: [],
               issues: [issueOf({ status: 'accepted', claim: INVENTED_HOUR, },),],
             },
@@ -185,18 +188,21 @@ await describe({
             {
               sliceIndex: 0,
               repairedText: REPAIRED,
+              changed: true,
               resolvedIssueIds: [],
               issues: [issueOf({ status: 'rejected', claim: INVENTED, },),],
             },
             {
               sliceIndex: 1,
               repairedText: REPAIRED,
+              changed: true,
               resolvedIssueIds: [],
               issues: [issueOf({ status: 'needs-human', claim: INVENTED, },),],
             },
             {
               sliceIndex: 2,
               repairedText: REPAIRED,
+              changed: true,
               resolvedIssueIds: [],
               issues: [
                 issueOf({ status: 'accepted', claim: NEAR_SYNONYM, },),
@@ -206,6 +212,7 @@ await describe({
             {
               sliceIndex: 4,
               repairedText: REPAIRED,
+              changed: true,
               resolvedIssueIds: [],
               issues: [],
             },

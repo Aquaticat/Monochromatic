@@ -117,6 +117,7 @@ function disputeOf(
     chunks: [{
       sliceIndex: 3,
       repairedText: REFINED,
+      changed: true,
       issues: [ADDITION,],
       resolvedIssueIds,
     },],
