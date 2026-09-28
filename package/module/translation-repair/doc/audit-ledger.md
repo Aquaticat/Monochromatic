@@ -1861,8 +1861,16 @@ Status: open.
 
 ### P8: a complete JSON value followed by more text is lost
 
-Status: open.
+Status: fixed in `cac097368` (guard `e86cd9f44`; mutation checked with a control).
 36 in five runs, 760 across all logs, mostly mercury.
+The stored TianqiChen666 replies of that shape trail a hyphen line, a sentence or a stray fence,
+every one with the stop reason.
+`parseAnswerJson` now reads the whole answer, then past a false start, then the value the answer opens with.
+Replayed over 587,102 stored replies: 919 recovered and none read differently.
+A first ordering put the leading value before the false start and read 18 replies differently:
+each held two whole objects, the first empty or missing a field the second carries,
+so the later object is the answer and the false start stays first.
+Rides inside all six cache versions.
 
 ### P9: the router's cross-provider re-ask never runs in production
 

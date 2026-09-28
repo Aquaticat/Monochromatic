@@ -83,6 +83,11 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  round it came in, in the nudged recovery round (ledger P2, `005692e11`),
  which changes whose voices a round closes on; checked on 2026-09-28: still no
  slice-cache file newer than 00:26 on 2026-09-27.
+
+ Rides inside 5 too: a reply whose complete JSON value more text follows is
+ read rather than lost (ledger P8, `cac097368`), which changes whose voices
+ every round hears; checked on 2026-09-28: still no slice-cache file newer
+ than 00:26 on 2026-09-27.
  */
 export const REFINE_CACHE_VERSION = 5;
 
