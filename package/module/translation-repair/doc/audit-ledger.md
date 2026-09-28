@@ -906,6 +906,9 @@ Status: fixed in `98054d72b` (every file below rewritten with invention).
     and `build > log 2>&1 ; tsc | rg` so the type check would run even if the build failed.
     Neither was needed: a background task notifies when it ends,
     and a build failure is itself the answer the type check would have given.
+    Then the placeholder came back as `sleep 0 2>/dev/null ; true` after a doc edit, a sleep and a `;` in one call
+    that did nothing at all.
+    Prevention: a call that would do nothing is not made; while waiting on a background task, make no tool call.
     During P9 a `;` joined a lint count to the commit of the red guard,
     and the staging read only the count of expected type errors, not the full summary (read afterwards: those six only).
 - A capped search taken as complete (QRY): before `7ceffe055` changed two card prices,

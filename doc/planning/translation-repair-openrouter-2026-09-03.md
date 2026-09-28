@@ -8082,6 +8082,50 @@ then whether the repair lane keeps the clause and what the contest and consolida
 then the first chat block's quote style,
 then the seven steps and the three checks.
 
+## TianqiChen66621 read, 2026-09-28: SETTLED, class one hundred eighty-seven
+
+TianqiChen66621 ran on `.frozen-dist-9a3f28b30` and settled in 3,169,499 ms
+(`TALLY TianqiChen666 status=SETTLED slices=24`):
+148 repair issues, 91 accepted, 85 resolved, every slice changed, no DEFECTS line.
+`verify-published` read the page back: 24 of 24 wordings present, at the length the artifact implies.
+The page (`fixed/people/TianqiChen666/page.en.md`) was read against the original, line by line.
+
+### What held
+
+- 治愈 leads with "healed" (page line 134), per the owner's rule.
+- 头壳 is "headpiece" at every occurrence (lines 120, 130, 147, 163); the bare "her head" gap did not recur.
+- The "high-performance robot" carries the Atri gloss (line 152), accurate apparatus.
+- 柜门炸开 is "she was outed" (line 88); 小药娘 does not occur; 跨性别女孩 is "transgender girl".
+- Speech the original sets in 「」 is rendered as blockquotes, the archive's own convention.
+
+### Class one hundred eighty-seven: a patch nested a quote
+
+Page line 182 is a quote inside a quote (`> >`) that neither the original (two separate 「」 lines) nor the archive
+(one quote of two paragraphs) has.
+Slice 16's accuracy patch resolved six accepted issues and left its last quoted line at depth two;
+the consolidation declined its slate for the standing, so the nesting shipped.
+Over every artifact, ten repair-lane slices nested a quote two levels deep where neither side nests,
+every one shipped, and the translate lane did it none (`nested-quote-census.mjs`).
+Fixed in `58287ebe3` and `05a18ed02` (guard `d661bb51f`, widened in `9e4d7dafb`):
+patch application clamps each replacement line to the deepest quote its context allows,
+one level always and deeper only where a whole line the region touches, or the original, nests,
+before any gate reads it, on the editor and naturalness paths alike.
+The mutation check found the first cut reading the replaced text as if its first line started a line,
+so a region starting mid-line at an emoticon like `>>_<<` allowed two levels itself; `05a18ed02` reads whole lines.
+A replay over the ten sites clamps every one to one level with its words unchanged (`nested-quote-replay.mjs`).
+
+### Seen and not a code class
+
+- Line 54, "sweeping over her face": the archive dropped 扑面而来 altogether;
+    the pipeline restored it but aimed it at her,
+    where the original has the glow coming at everyone she knew.
+    A model's reading, left to the judges.
+- The four refrains 所以她是个……女孩吧 render 吧 three ways across slices
+    ("I suppose" twice, "wasn't she?", "must have been"),
+    where the archive rendered all four without it.
+    Each slice is decided alone, and no stage sees a refrain repeated across slices;
+    recorded as an open quality question rather than fixed on one page.
+
 ## Whole-package audit, 2026-09-27: class one hundred eighty-six onward
 
 The owner asked:
