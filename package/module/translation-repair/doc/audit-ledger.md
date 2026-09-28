@@ -1618,7 +1618,22 @@ Told this, the owner chose again that a pass rewrites such pages to the running 
 
 ### A17: a handle every writer left in Han ships romanised with no literal meaning
 
-Status: open (found while fixing T3).
+Status: fixed in `7ec9669bd` (red guard `4945f97cd`), found while fixing T3.
+`translate-signer-handle.ts` is a text floor in `validateTranslatedSlice`, on the parsed and the grammar-free path:
+at a signature the original signs in Han, with no Latin rendering on the aligned archive signature and no declared pair,
+a candidate left in Han, or writing the handle reading with no meaning in parentheses
+(letters alone, so spacing, capitals and tone marks do not matter), is sent back naming the reading to gloss.
+The Han residue floor (`078939ac7`, after this entry was filed) already refused Han in prose,
+but excused Han the archive also carries, and asked for no meaning.
+Measured over 262 stored artifacts: 45 of the 51 page signers the archive never rendered in Latin
+shipped with no meaning anywhere, shihai4h's runs of 2026-09-26 among them.
+Replayed over 671 signature rows the floor refuses 0 of 480 archives, 48 of 670 translate-lane texts,
+2 of 480 repair-lane texts and 60 of 670 shipped wordings.
+A first census read each signer through `Signature.nameStart` and `nameEnd` as offsets into the slice;
+they are offsets into the signature's line, so it counted 75 of 82 over wrong names
+until the floor's own guard failed on the same misreading (M24).
+
+Found as:
 The owner's rule of 2026-09-22 is pinyin as one capitalised word with the literal meaning in parentheses
 at the first appearance.
 `contributor-name-restore.ts` romanises a handle the page left in Han,
@@ -2241,6 +2256,19 @@ the lint wrapper exits 0 on warnings, so six `strict-void-return` warnings lande
 and were read only in the output afterwards.
 Prevention: lint is its own call, and its `Found N warnings and M errors` line is read before anything is staged;
 warnings count as findings here (LN8), so a chain that gates on the exit code gates on nothing.
+
+### M24: a census read a helper's fields by their names, not their contract
+
+Status: corrected before use, 2026-09-27 (A17).
+The A17 census and the first version of its floor sliced each signer out of the slice text with
+`Signature.nameStart` and `nameEnd`, which are offsets into the signature's own line;
+the census reported 75 of 82 page signers unglossed over names that were not names,
+and a first pass of that census, reading the would-ship kind as `text` where it is `wording`,
+had reported every signer unaligned.
+Both were caught only because a result looked wrong or a guard failed.
+Prevention: a census that calls a helper reads the helper's type doc for every field it uses,
+and prints one decoded example of what it counts (ids and code points only) before it prints a total;
+a result where every item lands in one bucket is a defect in the census until shown otherwise.
 
 ### M15: a finding carried and a fix started against an owner ruling
 

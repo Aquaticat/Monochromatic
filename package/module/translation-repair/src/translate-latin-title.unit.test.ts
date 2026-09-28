@@ -44,9 +44,12 @@ await describe({
     it({
       name: 'ACCEPTS the translated title in quotation marks',
       fn: async () => {
+        // THE SIGNER CARRIES ITS MEANING, which the signer floor asks of a
+        // handle the original writes in Han (ledger A17), so the title is the
+        // only thing this case weighs.
         expect(validateTranslatedSlice({
           sourceText: CREDIT,
-          candidateText: '<p style="text-align: end;">— Maomao, “Meow Song”</p>',
+          candidateText: '<p style="text-align: end;">— Maomao (Kitty Kitty), “Meow Song”</p>',
         },).kind,).toBe('valid',);
       },
     },),
