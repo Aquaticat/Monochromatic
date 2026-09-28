@@ -238,7 +238,7 @@ await describe({
             -0.2,
             9,
           );
-          expect(bedrockMeterLevel({ credits, },),).toEqual(['bedrockUsd=-0.20',],);
+          expect(bedrockMeterLevel({ credits, },),).toEqual(['bedrockUsd=-0.20', 'bedrockReckonedUsd=0.00',],);
         },);
       },
     },),

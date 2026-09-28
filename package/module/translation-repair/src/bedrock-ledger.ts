@@ -210,7 +210,7 @@ export type BedrockLedgerEntry = {
  
  @example
  ```ts
- const credits: BedrockCredits = { creditUsd: 200, spentUsd: 1.5, remainingUsd: 198.5, calls: 12, };
+ const credits: BedrockCredits = { creditUsd: 200, spentUsd: 1.5, reckonedUsd: 0.2, remainingUsd: 198.5, calls: 12, };
  ```
  */
 export type BedrockCredits = {
@@ -223,6 +223,14 @@ export type BedrockCredits = {
    Sum of every line in the ledger.
    */
   readonly spentUsd: number;
+
+  /**
+   The part of the spend that lines marked `estimated` hold: attempts priced
+   at their bound or reckoned off what they delivered rather than off
+   reported usage (ledger P1), so a reader sees how much of what is left
+   rests on reckoning.
+   */
+  readonly reckonedUsd: number;
 
   /**
    Credit minus spend, which may go below zero once the last calls in
@@ -568,6 +576,19 @@ export function createBedrockLedger(
     );
 
     /**
+     The part of that spend reckoned rather than reported.
+     */
+    const reckonedUsd = entries.reduce(
+      function addReckoned(
+        running,
+        entry,
+      ): number {
+        return (entry.estimated === undefined) ? running : running + entry.usd;
+      },
+      0,
+    );
+
+    /**
      What is left of the credit.
      */
     const remainingUsd = creditUsd - spentUsd;
@@ -575,11 +596,12 @@ export function createBedrockLedger(
     rl.debug(
       `${path}: ${String(entries.length,)} calls, ${spentUsd.toFixed(SPENT_LOG_DECIMALS,)} USD spent of ${
         String(creditUsd,)
-      }, ${remainingUsd.toFixed(2,)} USD left`,
+      } (${reckonedUsd.toFixed(SPENT_LOG_DECIMALS,)} of it reckoned), ${remainingUsd.toFixed(2,)} USD left`,
     );
     return {
       creditUsd,
       spentUsd,
+      reckonedUsd,
       remainingUsd,
       calls: entries.length,
     };

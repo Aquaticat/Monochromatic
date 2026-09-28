@@ -465,7 +465,7 @@ export function openRouterMeterLevel(
  @example
  ```ts
  bedrockMeterLevel({ credits, },);
- // => ['bedrockUsd=198.50',]
+ // => ['bedrockUsd=198.50', 'bedrockReckonedUsd=0.20',]
  ```
  */
 export function bedrockMeterLevel(
@@ -474,9 +474,17 @@ export function bedrockMeterLevel(
   /**
    What is left, which is the one number the record watches.
    */
-  const { remainingUsd, } = credits;
+  const {
+    remainingUsd,
+    reckonedUsd,
+  } = credits;
 
-  return [`bedrockUsd=${remainingUsd.toFixed(2,)}`,];
+  // THE RECKONED SHARE BESIDE IT (ledger P1): how much of the spend behind
+  // that number rests on bounds and estimates rather than reported usage.
+  return [
+    `bedrockUsd=${remainingUsd.toFixed(2,)}`,
+    `bedrockReckonedUsd=${reckonedUsd.toFixed(2,)}`,
+  ];
 }
 
 //endregion Budget routing
