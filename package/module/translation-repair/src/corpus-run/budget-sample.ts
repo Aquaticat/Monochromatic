@@ -12,7 +12,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Budget sample
-// Takes ONE reading of both providers' meters and leaves it in the log.
+// Takes ONE reading of every provider's meter and leaves it in the log.
 //
 // WHY THIS EXISTS SEPARATELY FROM A RUN. The budget layer reads the meters when
 // something asks to spend, so the availability record is dense while a pass is
@@ -25,9 +25,11 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // This closes that. Run it between passes, or on a timer, and the record gains
 // readings during the quiet stretches where the recovery actually happened.
 //
-// SPENDS NO GENERATION. It reads two meter endpoints, the same two the router
-// already reads once a minute while working. No model is called, no token is
-// produced, and nothing is written to a run directory.
+// SPENDS NO GENERATION. It reads the four meters the router reads at most once
+// a minute while working (ledger D16): the Synthetic, Hyper and OpenRouter
+// endpoints, and the Bedrock spend ledger on disk, where that provider's credit
+// is kept. No model is called, no token is produced, and nothing is written to
+// a run directory.
 //
 // THE READING IS THE OUTPUT. It goes to the log as a `METERS` line, which is
 // the same line a pass leaves and the same line `meter-report` reads back.
@@ -49,12 +51,12 @@ const l = contextRoot({ tag: 'translation-repair', },);
 const SAMPLE_TIMEOUT_MS = 60_000;
 
 /**
- Reads both meters once and leaves the reading in the log.
- 
+ Reads every provider's meter once and leaves the reading in the log.
+
  Returns nothing: the `METERS` line IS the output.
- 
- @throws {@link Error} when either provider's key is absent, since a sample
- of one provider cannot answer a question about the other
+
+ @throws {@link StatedRefusalError} when any provider's key is absent, since
+ a sample of some providers cannot answer a question about the others
  
  @example
  ```ts

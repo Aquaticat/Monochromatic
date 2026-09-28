@@ -199,7 +199,7 @@ export async function pairBlocksWithRoster(
   },);
 
   /**
-   Exact protocol also exposed to current-attempt receipt planning.
+   Messages and response format the roster is asked with.
    */
   const {
     messages,

@@ -6,11 +6,11 @@ import {
 } from './pair-blocks-wire.ts';
 
 //region Block-pairing protocol
-// Preparation acquisition and receipt planning share actual messages and schema, not parallel reconstructions.
+// The messages and schema the pairing stage sends, built without a client so tests can read them.
 
 /**
- Existing structured response contract, unchanged by moving its construction.
- Each handoff receives its own copy so recording code cannot mutate future questions.
+ Structured response contract the pairing stage asks for.
+ Each call receives its own copy, so a caller that mutates one cannot change the next question.
  */
 const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
   type: 'json_schema',
@@ -40,8 +40,8 @@ const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
 };
 
 /**
- Model-neutral payload supplied by the actual block-pairing stage.
- Provider bodies, completion caps, rosters and attempt provenance remain separate receipt bindings.
+ Messages and response format for one pairing question, the same whichever model is asked.
+ Which models are asked, and each provider's request body, stay with the stage and the client.
  
  @example
  ```ts
@@ -50,18 +50,18 @@ const PAIRING_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
  */
 export type BlockPairingProtocol = {
   /**
-   Exact ordered messages, including the existing content-sensitive listing fence.
+   Ordered messages, whose listing fence is longer than any run of `=` in the blocks.
    */
   readonly messages: readonly ChatMessage[];
   /**
-   Existing schema name and shape, without adding strictness or changing response semantics.
+   Schema name and shape, sent without `strict`.
    */
   readonly responseFormat: JsonSchemaResponseFormat;
 };
 
 /**
- Constructs the model-neutral protocol shared by production acquisition and receipt planning.
- Definition-order exemptions affect local interpretation, not this emitted message contract.
+ Constructs the pairing question's messages and response format for `pairBlocksWithRoster`.
+ Definition-order exemptions affect how replies are read, not the messages sent.
  
  @param sourceBlocks - current original blocks in their emitted numbering
  
@@ -69,7 +69,7 @@ export type BlockPairingProtocol = {
  
  @param pictureContext - transcripts of the section's pictures for the sheet, absent when it shows none
  
- @returns Actual messages and owned schema, without creating providers or purchasing evidence
+ @returns Messages and a schema copy the caller owns; no client is created and nothing is bought
  
  @example
  ```ts

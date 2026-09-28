@@ -39,8 +39,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 //
 // SILENCE FALLS BACK RATHER THAN FAILING. A section the roster cannot pair keeps
 // the deterministic aligner, and the finding says which sections went that way.
-// `prepareBlockPairing` exposes that state so a calibration planner can refuse
-// uncorroborated inputs without changing production's fallback policy.
 
 /**
  A preparation and what the pairing cost to obtain.
@@ -217,7 +215,7 @@ export async function prepareDocumentPairWithRoster(
     .entries()) {
     /* oxlint-disable no-await-in-loop -- parent rounds remain sequential rather than multiplying the provider fanout */
     /**
-     The same parent operation a bounded calibration pool consumes independently.
+     This section's pairing, from structure, the cache or the roster.
      */
     const round = await prepareBlockPairing({
       client,

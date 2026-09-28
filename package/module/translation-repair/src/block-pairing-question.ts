@@ -7,11 +7,11 @@ import type {
 import { definitionIndexes, } from './pair-definition-order.ts';
 
 //region Current parent question identity
-// Acquisition and provider-free evidence replay must number and identify exactly the same parent blocks.
+// A cold section and a resumed one must number and key exactly the same blocks.
 
 /**
- Existing production question, including its historical cache identity.
- This identity does not claim that cached relations contain current seat evidence.
+ The pairing question for one aligned section, with the key its agreed answer is cached under.
+ A cache hit reuses the relations a past round agreed on; it is not a fresh vote.
  
  @example
  ```ts
@@ -32,13 +32,13 @@ export type BlockPairingQuestion = {
    */
   readonly freeOrder: FreeOrderBlocks;
   /**
-   Unchanged versioned cache key, not a qualification certificate.
+   Versioned pairing-cache key, naming the question rather than vouching for its answer.
    */
   readonly key: string;
 };
 
 /**
- Constructs the question shared by live preparation and retained-outcome replay.
+ Constructs the question `prepareBlockPairing` asks the roster and looks the cache up by.
  It buys no calls and does not alter singleton or empty-side dispatch.
  
  @param pair - complete current parent whose parsed nodes define local indexes

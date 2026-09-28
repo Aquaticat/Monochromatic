@@ -21,7 +21,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { ContainerSpan, } from './unwrap-container.ts';
 
 //region One indexed parent through existing block preparation
-// Full-document preparation and bounded calibration pools share acquisition, cache and normalization rules.
+// One aligned section's pairing: settled by structure, resumed from the cache, or asked of the roster.
 
 /**
  Prepares one already-aligned parent without buying unrelated section or block questions.
@@ -138,7 +138,7 @@ export async function prepareBlockPairing(
     pictureContext,
   },);
   /**
-   Historical round, which carries no invented new electorate evidence.
+   Relations and findings a past round stored under this question's key.
    */
   const cached = pairingCache?.resumed
     .get(key,);
@@ -173,7 +173,7 @@ export async function prepareBlockPairing(
     },);
   }
   /**
-   Final outcomes and agreement from the unchanged configured pairing stage.
+   What the roster agreed on when asked now.
    */
   const outcome = await pairBlocksWithRoster({
     client,

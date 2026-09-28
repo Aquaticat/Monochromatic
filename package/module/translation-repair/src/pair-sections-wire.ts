@@ -126,7 +126,7 @@ export type SectionPairingWire = {
  
  @example
  ```ts
- const rendered = renderSections({ sections, fence: '```', },);
+ const rendered = renderSections({ sections, fence: '=====', },);
  ```
  */
 function renderSections(
@@ -171,9 +171,11 @@ export function buildSectionPairingMessages(
   /**
    Fence chosen against every section this sheet carries.
    
-   Both sides are arbitrary prose and either may contain a run of backticks,
-   so a fixed fence would let a section close its own listing and have the
-   rest read as sheet structure.
+   Both sides are arbitrary prose and either may contain a run of equals
+   signs (a setext heading underline is one), so a fixed fence would let a
+   section close its own listing and have the rest read as sheet structure.
+   `selectFence` fenced with equals signs from `b111fc376`, before this sheet
+   was written, yet this comment said backticks until ledger D16.
    */
   const fence = selectFence({
     texts: [

@@ -2,11 +2,12 @@ import { createHash, } from 'node:crypto';
 import type { NumberedBlock, } from './pair-blocks-wire.ts';
 import { PAIRING_CACHE_VERSION, } from './pairing-cache-version.ts';
 
-//region Historical cache encoding remains distinct from complete question identity
+//region Block-pairing cache key
 
 /**
- Computes the existing versioned NUL-delimited block cache key without changing its bytes.
- Embedded NUL can alias block boundaries; this key is not complete-question or receipt authority.
+ Computes the versioned NUL-delimited key a section's pairing is cached under.
+ Embedded NUL can alias block boundaries, so the key names a cache slot rather than proving two
+ questions identical; its bytes must not change without a pairing cache version bump.
 
  @internal
 
@@ -55,4 +56,4 @@ export function blockPairingQuestionKey({
     .digest('hex',);
 }
 
-//endregion Historical cache encoding remains distinct from complete question identity
+//endregion Block-pairing cache key

@@ -15,7 +15,7 @@ const expectedFormat: JsonSchemaResponseFormat = {
 };
 
 await describe({ name: blockPairingProtocol.name, children: [
-  it({ name: 'shares exact existing messages and schema without inventing a receipt identity', fn: async () => {
+  it({ name: 'builds the pairing messages and the schema, and nothing else', fn: async () => {
     const sourceBlocks = [{ index: 0, text: '猫。' }, { index: 1, text: '盒子。' }];
     const targetBlocks = [{ index: 0, text: 'Cat.' }, { index: 1, text: 'Box.' }];
     const protocol = blockPairingProtocol({ sourceBlocks, targetBlocks });

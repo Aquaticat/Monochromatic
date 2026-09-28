@@ -51,7 +51,7 @@ await describe({
       },
     },),
     it({
-      name: 'replays missing outcomes and distinguishes configured seats from asked seats',
+      name: 'reads an unreadable reply as unheard and counts configured seats, not asked ones, in the finding',
       fn: async () => {
         const outcomes: readonly RoundOutcome<BlockPairingWire>[] = [
           { modelId: roster[1], voice: { heard: false, answered: true, unreachable: false, unreadable: 'off-shape', }, },

@@ -7,7 +7,8 @@ import { claimMediaAdjacentTargets, } from './pair-media-adjacency.ts';
 import type { ContainerSpan, } from './unwrap-container.ts';
 
 //region Queried preparation before persistence
-// Live acquisition and qualification share all findings without moving definition separation ahead of persistence.
+// Findings and the cache gate for a section the roster was asked about, worked out before
+// definition separation so the cache stores the relations whole.
 
 /**
  Existing queried-parent normalization and persistence eligibility.
@@ -27,7 +28,8 @@ export type QueriedBlockPairingDetails = {
    */
   readonly findings: readonly string[];
   /**
-   Existing cache gate, not semantic qualification.
+   Whether the pairing may be cached: nothing was dropped as contested or out of order,
+   and every archive block is claimed.
    */
   readonly canPersistPairing: boolean;
 };

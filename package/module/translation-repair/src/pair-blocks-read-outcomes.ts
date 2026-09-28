@@ -18,11 +18,11 @@ import type { RoundOutcome, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Pairing outcomes read without transport
-// Live stages and frozen preparation recipes share range/order validation and relation agreement.
+// The stage's replies read apart from the round that gathered them, so the reader and the
+// agreement rule are tested without a client.
 
 /**
- Existing per-relation endorsement threshold, distinct from the stage's roster quorum.
- Retallying stored outcomes must not introduce another agreement policy.
+ Voices that must name a relation before it is kept, distinct from the stage's roster quorum.
  */
 const AGREEMENT_NEEDED = 2;
 
@@ -51,7 +51,7 @@ const AGREEMENT_NEEDED = 2;
  
  @example
  ```ts
- const retallied = readBlockPairingOutcomes({ outcomes, modelIds, sourceCount: 2, targetCount: 3, l });
+ const read = readBlockPairingOutcomes({ outcomes, modelIds, sourceCount: 2, targetCount: 3, l });
  ```
  */
 export function readBlockPairingOutcomes(
@@ -72,7 +72,7 @@ export function readBlockPairingOutcomes(
   }>,
 ): BlockPairingOutcome {
   /**
-   Logger distinguishing transport-free interpretation from the purchased stage.
+   Logger tagged with this reader, apart from the stage that gathered the replies.
    */
   const pl = tagged({
     tag: readBlockPairingOutcomes.name,
