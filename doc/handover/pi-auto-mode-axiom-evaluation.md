@@ -208,6 +208,13 @@ Overall service/privacy,
 production calibration,
 and live-authority qualification remain open.
 
+The user-selected bounded semantic stage is finished.
+Provider-agnostic policy questions may return to the interview frontier without selecting a provider or threshold.
+This is not a claim that the overall candidate audit or production qualification is complete.
+No further model batch,
+paid Pro expansion,
+or paused Laya source work follows automatically.
+
 ## Sequencing correction
 
 The user stopped the integration-policy interview and asked whether investigation of Laya,
@@ -430,8 +437,9 @@ Do not reopen these choices:
 - Q15 B permits eligible human-confirmed trust directives to inherit into a new forked session
   through verified lineage and a valid original human witness.
   Copied text or an entry ID alone does not establish authority.
-  Cross-session revocation linkage remains unresolved and is deferred,
-  not an invitation to resume integration grilling now.
+  Cross-session revocation linkage remains unresolved.
+  The bounded semantic prerequisite is now complete;
+  asking this provider-agnostic policy question does not select a model or authorize implementation.
 
 Fixed checks,
 provenance,
@@ -1569,28 +1577,36 @@ There are 153 model estimates,
 150 scored references,
 and 27 deterministic empty-grant values.
 All experimental assessments completed within five seconds.
-The single-quoted literal read claim received 0.86 against false,
-while real substitution received 0.95 against true.
-Harmless printf-only controls confirmed the quoting distinction.
+The archived run recorded 0.86 for a single-quoted literal read claim
+and 0.95 for real substitution.
+The model-quality conclusions drawn from that quoting comparison are withdrawn:
+Bash structure is parser-owned,
+not a model test.
+Retain only the scoped runtime/input-delivery evidence.
 Cache grant contrasts were 0.37 versus 0.98;
 transfer grant contrasts were 0.24 versus 0.96.
 Do not select thresholds from these development observations or infer whole-guard accuracy.
 Scratch commit `cf8a7fc` retains the result and quote control.
 
 Todo #11 is complete for Voyage interface/feature fit only.
-Todo #16 is paused pending the candidate-research priority correction.
+Todo #16 was paused for the candidate-research priority correction.
 Its effect/authorization contract and code-owned witness/freshness tests remain incomplete.
+The completed bounded semantic checkpoint does not authorize implementation;
+remaining provider-agnostic interview choices can now be resolved.
 The inventory honors Q13 B.
 Joint permission binding is required even within one grant:
 separate operation and target mentions cannot be combined across clauses.
 Standalone directive prohibitions must also survive alternative permission witnesses.
 
-Next work is candidate investigation,
-starting with the remaining Laya assessment rather than further grant-lifecycle design.
+That historical Laya sequencing checkpoint does not authorize resuming source exploration.
+The active bounded checkpoint is recorded in the Respan candidate section;
+task #34 remains paused.
 
 ### Laya investigation still incomplete
 
-Todo #6 is active again after the user's explicit instruction to keep working.
+Task #6 was reopened at this historical checkpoint and subsequently completed the published native baseline.
+Broader runtime qualification remains deferred under #25 and the paused #34;
+do not resume it from this historical record.
 The [Laya qualification record](../planning/pi-auto-mode-laya-qualification.md)
 tracks the bounded candidate work;
 no integration interview has resumed.
@@ -1800,8 +1816,10 @@ revocation finalization,
 old approval reuse,
 manual prompts,
 deadline/retry/cancellation paths,
-and real Pi consumer integration remain recorded work,
-not the current interview frontier.
+and real Pi consumer integration remain unimplemented.
+The bounded semantic prerequisite is complete,
+so unresolved provider-agnostic preferences can return to the interview frontier.
+Broader service and production-qualification gates remain open.
 Preserve the original 24 reserved scenarios;
 do not tune definitions or thresholds to reserved model results.
 No winner or adoption-ready recommendation exists.
@@ -1817,10 +1835,13 @@ Only scoped documentation was committed in the main worktree.
 Unrelated music-player work and `tmp/` must not be reset or cleaned.
 
 The current authorization-context audit fingerprint is
-`51edb8223a030345de584932d5273ecd90ead6753011d84fefb7b9505f218d67`.
-The prior `4a2938840ff56544f24ad0d2dd543431c94baa1e18db815adb8ee68af297ea8d` report is archived,
+`80e67cc07b2eb898054d15ddd04e91bb689fbb4c8ebb77aee5c4ba3cd6f9a8d2`.
+Commit `de7a5a1e5` records the bounded Pro/OpenRouter authorization context.
+The initial Respan `d5b5b9cdfae6f38c9958ab2eaf7d39b8026b9bb3ed61965bcefbf56451de9170`
+and pre-Respan `51edb8223a030345de584932d5273ecd90ead6753011d84fefb7b9505f218d67` contexts remain preserved.
+The historical `4a2938840ff56544f24ad0d2dd543431c94baa1e18db815adb8ee68af297ea8d` report is also archived,
 not relabelled.
-Commit `a44920f9c` records that context fork.
+Commit `a44920f9c` records the pre-Respan context fork.
 `~/temp/agent/auto-mode-current-audit.json` identifies the current path and full fingerprint.
 
 Audit updates use private per-path locks,
@@ -1829,7 +1850,10 @@ and atomic sibling-file renames.
 The helper is `~/temp/agent/auto-mode-route-audit-update.mjs`;
 it reads the current-context manifest and accepts exact replacement pairs as its argument.
 Do not run old-context amendment files unchanged.
-The formatter is `~/temp/agent/auto-mode-doc-format-current.mjs`.
+The historical broad formatter is `~/temp/agent/auto-mode-doc-format-current.mjs`.
+The bounded Respan checkpoint uses `~/temp/agent/auto-mode-respan-result-format.mjs`
+with an explicit scoped path list;
+do not assume the historical list contains newly added reports.
 Both select reports by full metadata fingerprint,
 then last-updated date and lexical path,
 not by assuming one filename per subject.
@@ -1879,6 +1903,8 @@ The user subsequently chose Q14 A and Q15 B,
 while correcting the premature integration interview.
 This handover records those answers and the return to candidate investigation.
 The in-memory probe still does not qualify persisted replay.
-Do not ask the deferred inheritance/revocation questions yet.
+The dependent inheritance/revocation questions were deferred until the chosen bounded semantic work finished.
+That prerequisite is now complete;
+provider-agnostic policy questions can resume without assuming adoption.
 No candidate has a qualified production selection,
 and no production implementation is authorized.
