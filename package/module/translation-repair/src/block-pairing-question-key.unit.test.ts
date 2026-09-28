@@ -38,6 +38,38 @@ const cases: readonly KeyCase[] = [
   { name: 'multiple blocks', source: ['Cat', 'Dog', 'Owl'], target: ['Chat', 'Chien'], key: 'cf8db86265e5c064cf820d366690e948e1a70590e8e8803309c6bdc33107de00' },
 ];
 
+// One pairing question's texts, each side in document order.
+type Question = { readonly source: readonly string[]; readonly target: readonly string[] };
+
+// Pairs of different questions the key must tell apart (ledger X15): a NUL-joined layout
+// aliased each pair, and UTF-8 folds both lone surrogates into U+FFFD.
+const distinctQuestions: readonly { readonly label: string; readonly left: Question; readonly right: Question }[] = [
+  {
+    label: 'an empty text beside the side boundary',
+    left: { source: ['Cat', ''], target: ['Chat'] },
+    right: { source: ['Cat'], target: ['', 'Chat'] },
+  },
+  {
+    label: 'a NUL inside a text, across a block boundary',
+    left: { source: ['Cat\u0000Dog', 'Owl'], target: ['Chat'] },
+    right: { source: ['Cat', 'Dog\u0000Owl'], target: ['Chat'] },
+  },
+  {
+    label: 'two different lone surrogates',
+    left: { source: ['\uD800'], target: ['Chat'] },
+    right: { source: ['\uDC00'], target: ['Chat'] },
+  },
+];
+
+// Key of one question under the fixture roster.
+function keyOf(question: Question): string {
+  return blockPairingQuestionKey({
+    sourceBlocks: question.source.map((text, index) => ({ index, text })),
+    targetBlocks: question.target.map((text, index) => ({ index, text })),
+    modelIds: ROSTER,
+  });
+}
+
 function chunk(texts: readonly string[]): ContentChunk {
   const nodes: DocumentNode[] = [];
   texts.reduce(function placeNode(
@@ -87,6 +119,12 @@ await describe({ name: '', children: [
       },
     }),
   ] }),
+  describe({ name: 'one key per question (ledger X15, 2026-09-28)', children: distinctQuestions.map(({ label, left, right }) => it({
+    name: `KEYS TWO DIFFERENT QUESTIONS APART: ${label}`,
+    fn: async () => {
+      expect(keyOf(left)).not.toBe(keyOf(right));
+    },
+  })) }),
   describe({ name: blockPairingQuestionKey.name, children: cases.map(({ name, source, target, key }) => it({
     name: `preserves pre-extraction ${name} bytes`,
     fn: async () => {
