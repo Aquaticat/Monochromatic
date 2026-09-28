@@ -313,3 +313,30 @@ Part of [the package README](../README.md).
   Its effect on votes is measured at the next run, TianqiChen666,
   as the share of panel ballots voting supported against TianqiChen66620's,
   one run per arm (`doc/status.md`, the 2026-09-27 section).
+- **A winning patch sheds the edits a checker voted worse, and the rest is rechecked.**
+  Owner, 2026-09-28, asked what happens to edits inside a selected repair patch whose issues the checkers did not confirm
+  (345 of 2,148 patches over every run, 18 of 51 on TianqiChen666;
+  691 such issues: 651 not fixed, 39 on a fixed and worse tie, 1 on a worse majority):
+  "Revert worse-voted, recheck".
+  An edit whose issue drew at least one worse ballot is stripped from the patch,
+  and the reduced patch faces one more checker round before it ships;
+  a not-fixed edit with no worse ballot stays (ledger L3).
+- **A rewrite after a lost patch is rechecked before it ships.**
+  Owner, 2026-09-28, asked what happens when the naturalness stage rewrites the archive
+  after the accuracy patch lost, which shipped with no checker round
+  (1,218 of 2,144 refined slices over every run; 106 of 125 on TianqiChen666, 75 over accepted issues):
+  "Recheck the rewrite".
+  The rewrite faces a checker round against the slice's accepted issues and the regression probe,
+  and a rewrite the checkers find worse keeps the text before it (ledger L11).
+- **Inside a licensed quote, an edit keeps the markup atoms its issue does not license it to remove.**
+  Owner, 2026-09-28, asked what the editor's preservation gate should protect inside a quote an edit may change,
+  where it could never reject anything:
+  "Markup atoms".
+  Footnote references, link destinations, MDX expressions, inline code and tags survive every edit
+  except a removal an addition issue names; prose damage inside the quote stays with the checkers (ledger L4).
+- **A reply no one could read is re-asked on another provider, nudged.**
+  Owner, 2026-09-28, asked what becomes of the router's cross-provider re-ask,
+  which never ran because the prompt-uniqueness wrapper bypasses it:
+  "Enable with the nudge".
+  The re-ask carries the recovery nudge, so its prompt digest differs from the first ask's
+  and prompt uniqueness holds (ledger P9).

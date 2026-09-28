@@ -1896,7 +1896,7 @@ Rides inside all six cache versions.
 
 ### P9: the router's cross-provider re-ask never runs in production
 
-Status: open, owner call (it would break the prompt-uniqueness rule).
+Status: owner ruled 2026-09-28, "Enable with the nudge" (`design-commitments.md`); implementation pending.
 
 ### P10: the deepseek-v4.1-flash card is stale against its own measurement rule
 
@@ -2015,7 +2015,7 @@ a withdrawn text also becomes a stand-in.
 
 ### L3: edits the checkers did not confirm ship inside a selected patch
 
-Status: open, an owner question (batched with L4 and L11); measured 2026-09-28.
+Status: owner ruled 2026-09-28, "Revert worse-voted, recheck" (`design-commitments.md`); implementation pending; measured 2026-09-28.
 TianqiChen66616 slice 3 shipped "it left a trace of her turned to ash" (one ballot worse),
 the patch having won on one resolved minor omission.
 Across every run, 345 of 2,148 selected patches carried at least one edit whose issue the checkers did not confirm,
@@ -2028,7 +2028,7 @@ which counts against reverting unconfirmed envelopes with no recheck of the comp
 
 ### L4: the editor preservation gate can never reject anything
 
-Status: open, an owner question on scope (batched with L3 and L11); measured 2026-09-28.
+Status: owner ruled 2026-09-28, "Markup atoms" (`design-commitments.md`); implementation pending; measured 2026-09-28.
 Envelopes and licensed quotes are the same quotes;
 `residualTokens` is 0 on 536 of 540 regions.
 Replayed over 5,733 recorded repair regions, the structural atoms an edit changed are mostly gains an omission fix restores
@@ -2104,7 +2104,7 @@ Status: open.
 
 ### L11: refinement on a slice whose patch lost gets no recheck
 
-Status: open (class one hundred eight's open half, with H4), an owner question batched with L3 and L4;
+Status: open (class one hundred eight's open half, with H4); owner ruled 2026-09-28, "Recheck the rewrite" (`design-commitments.md`), implementation pending;
 measured 2026-09-28.
 Across every run, 1,218 of 2,144 refined slices were rewrites of the archive after the accuracy patch lost,
 457 of them on slices with panel-accepted issues the rewrite was never shown, and none had a checker round;
