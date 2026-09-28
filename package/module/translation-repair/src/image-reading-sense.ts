@@ -79,23 +79,6 @@ const REFUSAL_PHRASES: readonly string[] = [
 ];
 
 /**
- Whether a character is an ASCII letter.
- 
- @param character - character to weigh
- 
- @returns Whether it is a Latin letter
- 
- @example
- ```ts
- const letter = isLatin({ character: 'a', },);
- ```
- */
-function isLatin({ character, }: { readonly character: string; },): boolean {
-  return ((character >= 'a') && (character <= 'z'))
-    || ((character >= 'A') && (character <= 'Z'));
-}
-
-/**
  Whether a character is a digit.
  
  @param character - character to weigh

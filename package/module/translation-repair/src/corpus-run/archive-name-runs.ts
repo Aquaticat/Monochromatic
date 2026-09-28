@@ -8,6 +8,7 @@ import {
   inProse,
   protectedRanges,
 } from './prose-ranges.ts';
+import { isAsciiAlphanumeric, } from '../ascii-letters.ts';
 
 //region Archive name runs
 // The scans class one hundred thirty-six reads a page with (`archive-name-
@@ -35,26 +36,6 @@ export type NameRun = {
   readonly phrase: string;
   readonly start: number;
 };
-
-/**
- Whether one character is an ASCII letter or digit.
-
- @param character - one UTF-16 unit
-
- @returns Whether it is a to z, A to Z or 0 to 9
-
- @example
- ```ts
- isWordCharacter({ character: 'e', },); // true
- ```
- */
-function isWordCharacter(
-  { character, }: { readonly character: string; },
-): boolean {
-  return ((character >= 'a') && (character <= 'z'))
-    || ((character >= 'A') && (character <= 'Z'))
-    || ((character >= '0') && (character <= '9'));
-}
 
 /**
  Whether a run starting at one offset stands mid-sentence: the nearest
@@ -92,7 +73,7 @@ export function midSentence(
     .trimEnd()
     .at(-1,)
     ?? '';
-  return isWordCharacter({ character: last, },) || MID_SENTENCE_BEFORE.has(last,);
+  return isAsciiAlphanumeric({ character: last, },) || MID_SENTENCE_BEFORE.has(last,);
 }
 
 /**
@@ -227,8 +208,8 @@ export function phraseOccurrences(
     /**
      Whether a letter or digit touches the match on either side.
      */
-    const glued = isWordCharacter({ character: text.charAt(at - 1,), },)
-      || isWordCharacter({ character: text.charAt(at + needle.length,), },);
+    const glued = isAsciiAlphanumeric({ character: text.charAt(at - 1,), },)
+      || isAsciiAlphanumeric({ character: text.charAt(at + needle.length,), },);
     if (glued || onHeadingLine({
       text,
       at,

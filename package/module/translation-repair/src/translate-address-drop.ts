@@ -2,6 +2,7 @@ import {
   addressCount,
   hanThirdPersonCount,
 } from './translate-address-original.ts';
+import { isAsciiLetter, } from './ascii-letters.ts';
 
 //region Second-person address the passage carries
 // CLASS NINETY-SEVEN (yingying5, 2026-09-23). The original's closing wish
@@ -151,22 +152,6 @@ export function blocksOf({ text, }: { readonly text: string; },): readonly strin
     .map(function joined(lines: readonly string[],): string {
       return lines.join('\n',);
     },);
-}
-
-/**
- Whether a character is an ASCII letter.
-
- @param character - one UTF-16 unit
-
- @returns True for a to z in either case
-
- @example
- ```ts
- isAsciiLetter({ character: 'y', },); // true
- ```
- */
-function isAsciiLetter({ character, }: { readonly character: string; },): boolean {
-  return ((character >= 'a') && (character <= 'z')) || ((character >= 'A') && (character <= 'Z'));
 }
 
 /**

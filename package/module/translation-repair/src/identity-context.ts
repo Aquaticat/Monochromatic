@@ -1,5 +1,6 @@
 import { hanItemsClause, } from './identity-han-items.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { isAsciiLetter, } from './ascii-letters.ts';
 
 //region Identity context
 // Corpus pages declare who the entry is about in YAML front matter, and the two
@@ -248,27 +249,6 @@ const COMPOUNDS_HIDING_A_PRONOUN = [
 ] as const;
 
 /**
- Whether one character is a Latin letter, which is what would make `TA` part
- of a longer word (DATA, STATION, a romanised handle) rather than a pronoun.
- 
- @param character - one character, empty at either end of the text
- 
- @returns Whether it is A to Z or a to z
- 
- @example
- ```ts
- isLatinLetter({ character: 'D', },);
- // => true
- ```
- */
-function isLatinLetter(
-  { character, }: { readonly character: string; },
-): boolean {
-  return ((character >= 'A') && (character <= 'Z'))
-    || ((character >= 'a') && (character <= 'z'));
-}
-
-/**
  Counts how often one han pronoun occurs in a text, compounds removed first.
  
  AN INDEX SCAN RATHER THAN A PATTERN, since the needle is a fixed string and
@@ -427,8 +407,8 @@ function countNeutralSpelling(
     /**
      Whether letters sit either side, which makes this a longer word.
      */
-    const insideWord = isLatinLetter({ character: text.charAt(at - 1,), },)
-      || isLatinLetter({ character: text.charAt(at + spelling.length,), },);
+    const insideWord = isAsciiLetter({ character: text.charAt(at - 1,), },)
+      || isAsciiLetter({ character: text.charAt(at + spelling.length,), },);
     /**
      Whether the occurrence is the plural, which is not the subject's pronoun.
      */

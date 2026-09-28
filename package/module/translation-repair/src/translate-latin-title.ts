@@ -1,5 +1,5 @@
 import {
-  carriesLatinLetter,
+  carriesAsciiLetter,
   isHanCharacter,
 } from './han-only-text.ts';
 import { withoutComments, } from './translate-address-drop.ts';
@@ -54,7 +54,7 @@ function isLatinOnly({ title, }: { readonly title: string; },): boolean {
     if (isHanCharacter({ character, },))
       return false;
   }
-  return carriesLatinLetter({
+  return carriesAsciiLetter({
     text: title,
     from: 0,
     to: title.length,

@@ -1,5 +1,5 @@
 import { nameProjection, } from './declared-name-survival.ts';
-import { isLatinLetter, } from './han-only-text.ts';
+import { isAsciiLetter, } from './ascii-letters.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import {
   type Link,
@@ -64,7 +64,7 @@ function isHandleCharacter({ character, }: { readonly character: string; },): bo
    Whether it is an ASCII digit.
    */
   const digit = (character >= '0') && (character <= '9');
-  return isLatinLetter({ character, },)
+  return isAsciiLetter({ character, },)
     || digit
     || HANDLE_PUNCTUATION.has(character,);
 }

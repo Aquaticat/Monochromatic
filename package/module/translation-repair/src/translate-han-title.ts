@@ -1,4 +1,4 @@
-import { carriesLatinLetter, } from './han-only-text.ts';
+import { carriesAsciiLetter, } from './han-only-text.ts';
 import {
   bracketedTitles,
   LINE_END,
@@ -69,7 +69,7 @@ function closesAsGloss(
     if ((character === LINE_END) || (character === GLOSS_OPEN))
       return false;
     if (character === GLOSS_CLOSE)
-      return carriesLatinLetter({
+      return carriesAsciiLetter({
         text,
         from: open + 1,
         to: at,

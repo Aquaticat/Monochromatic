@@ -2,6 +2,7 @@ import {
   blocksOf,
   withoutComments,
 } from './translate-address-drop.ts';
+import { isAsciiLetter, } from './ascii-letters.ts';
 
 //region A suicide the passage names
 // CLASS ONE HUNDRED FIFTY (shi_Yumiaoya36, 2026-09-26). The original states a
@@ -148,22 +149,6 @@ const HAND_NOUNS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- Whether a character is an ASCII letter.
-
- @param character - one UTF-16 unit
-
- @returns True for a to z in either case
-
- @example
- ```ts
- isLetter({ character: 's', },); // true
- ```
- */
-function isLetter({ character, }: { readonly character: string; },): boolean {
-  return ((character >= 'a') && (character <= 'z')) || ((character >= 'A') && (character <= 'Z'));
-}
-
-/**
  Every run of ASCII letters in a text, lower-cased, in order.
 
  @param text - rendering, comments already cut
@@ -185,7 +170,7 @@ function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
    */
   let current = '';
   for (const character of text) {
-    if (isLetter({ character, },)) {
+    if (isAsciiLetter({ character, },)) {
       current += character.toLowerCase();
       continue;
     }

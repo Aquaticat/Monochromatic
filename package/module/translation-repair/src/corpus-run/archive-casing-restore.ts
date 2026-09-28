@@ -9,6 +9,7 @@ import {
   applySpanRewrites,
   type SpanRewrite,
 } from './span-rewrites.ts';
+import { isAsciiLetter, } from '../ascii-letters.ts';
 
 //region Archive casing restore
 // THE ONE HUNDRED AND TWENTY-FIRST CLASS (mikaela17, 2026-09-25). The archive
@@ -99,24 +100,6 @@ export type LatinWord = {
 };
 
 /**
- Whether one character is a Latin letter a to z in either case.
-
- @param character - one UTF-16 unit
-
- @returns Whether it is a Latin letter
-
- @example
- ```ts
- isLatinLetter({ character: 'M', },); // true
- ```
- */
-function isLatinLetter(
-  { character, }: { readonly character: string; },
-): boolean {
-  return ((character >= 'a') && (character <= 'z')) || ((character >= 'A') && (character <= 'Z'));
-}
-
-/**
  Every run of Latin letters in a text, by one index scan.
 
  @param text - text under scan
@@ -136,7 +119,7 @@ export function latinWords(
    */
   const words: LatinWord[] = [];
   for (let at = 0; at < text.length;) {
-    if (!isLatinLetter({ character: text.charAt(at,), },)) {
+    if (!isAsciiLetter({ character: text.charAt(at,), },)) {
       at += 1;
       continue;
     }
@@ -144,7 +127,7 @@ export function latinWords(
      Where this run starts.
      */
     const start = at;
-    while ((at < text.length) && isLatinLetter({ character: text.charAt(at,), },))
+    while ((at < text.length) && isAsciiLetter({ character: text.charAt(at,), },))
       at += 1;
     words.push({
       word: text.slice(

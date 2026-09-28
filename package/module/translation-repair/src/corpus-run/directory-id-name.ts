@@ -1,6 +1,7 @@
 import { pinyin, } from 'pinyin-pro';
 
 import type { FrontMatterBlock, } from '../front-matter.ts';
+import { isAsciiLetter, } from '../ascii-letters.ts';
 
 //region Directory id as a name
 // `directory-id-name` refuses a page whose visible name is the directory id
@@ -29,32 +30,6 @@ const ALIAS_SEPARATORS = [
   '，',
   '、',
 ];
-
-/**
- Whether a character is an ASCII letter.
- 
- @param character - one UTF-16 unit
- 
- @returns Whether it is in the Latin alphabet
- 
- @example
- ```ts
- isLatinLetter({ character: 'h', },);
- ```
- */
-function isLatinLetter({ character, }: { readonly character: string; },): boolean {
-  /**
-   Whether it is lower-case.
-   */
-  const lower = (character >= 'a') && (character <= 'z');
-
-  /**
-   Whether it is upper-case.
-   */
-  const upper = (character >= 'A') && (character <= 'Z');
-
-  return lower || upper;
-}
 
 /**
  Lower-cases a rendering and keeps its Latin letters only, so `Lin Tong`,
@@ -86,7 +61,7 @@ function latinLettersOf({ text, }: { readonly text: string; },): string {
      Unit under the cursor.
      */
     const character = lowered.charAt(index,);
-    if (isLatinLetter({ character, },))
+    if (isAsciiLetter({ character, },))
       kept.push(character,);
   }
   return kept.join('',);

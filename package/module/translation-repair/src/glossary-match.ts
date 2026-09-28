@@ -1,7 +1,5 @@
-import {
-  isHanCharacter,
-  isLatinLetter,
-} from './han-only-text.ts';
+import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+import { isHanCharacter, } from './han-only-text.ts';
 
 //region Glossary match
 // CLASS ONE HUNDRED EIGHTY-SIX (the whole-package audit, 2026-09-27). Every
@@ -127,7 +125,7 @@ const LATIN_SIGNS: ReadonlySet<string> = new Set([
 export function isGlossaryWordCharacter({ character, }: { readonly character: string; },): boolean {
   if (character === '')
     return false;
-  if (isLatinLetter({ character, },) || ((character >= '0') && (character <= '9')))
+  if (isAsciiAlphanumeric({ character, },))
     return true;
   return (character >= LATIN_EXTENDED_FIRST)
     && (character <= LATIN_EXTENDED_LAST)

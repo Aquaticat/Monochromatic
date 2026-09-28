@@ -1,4 +1,5 @@
 import { inlineContainerTags, } from './inline-container-tags.ts';
+import { isAsciiLetter, } from './ascii-letters.ts';
 
 //region Lone container tag masking
 // A container's opening tag is owned by the first block inside it and its
@@ -83,32 +84,6 @@ type PairingTag = Readonly<{
 }>;
 
 /**
- Whether a character can start an element name.
- 
- @param character - character after `<` or `</`
- 
- @returns Whether it is an ASCII letter
- 
- @example
- ```ts
- startsName({ character: 'd', },);
- ```
- */
-function startsName({ character, }: { readonly character: string; },): boolean {
-  /**
-   Whether it is an ASCII lower-case letter.
-   */
-  const lower = (character >= 'a') && (character <= 'z');
-
-  /**
-   Whether it is an ASCII upper-case letter.
-   */
-  const upper = (character >= 'A') && (character <= 'Z');
-
-  return lower || upper;
-}
-
-/**
  Reads one line as a container tag when the line is nothing but one tag.
  
  A line holding an opening tag with attributes counts; a self-closing tag,
@@ -172,7 +147,7 @@ function tagOnLine(
    Text after the closing slash, or the whole inner text for an opener.
    */
   const body = closes ? inner.slice(1,) : inner;
-  if (!startsName({ character: body.charAt(0,), },))
+  if (!isAsciiLetter({ character: body.charAt(0,), },))
     return [];
 
   /**

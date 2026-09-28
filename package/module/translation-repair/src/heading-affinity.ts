@@ -1,3 +1,5 @@
+import { isAsciiLetter, } from './ascii-letters.ts';
+
 //region Heading affinity
 // Written as a prototype for `#71`, and WIRED SINCE: `align-headings-grid.ts`
 // calls it for every candidate pairing, and `alignHeadingsForced` decides on
@@ -26,27 +28,6 @@
  match far too freely across unrelated headings.
  */
 const MIN_TOKEN_LENGTH = 3;
-
-/**
- Whether a character is an ASCII letter.
- 
- @param character - character to classify
- 
- @returns Whether it belongs to a Latin run
- 
- @example
- ```ts
- isLatinLetter({ character: 'w', },);
- ```
- */
-function isLatinLetter({ character, }: { readonly character: string; },): boolean {
-  /**
-   Lowercased form, so one comparison covers both cases.
-   */
-  const lower = character.toLowerCase();
-
-  return (lower >= 'a') && (lower <= 'z');
-}
 
 /**
  Extracts lowercase Latin runs from a heading.
@@ -80,7 +61,7 @@ export function latinTokens({ text, }: { readonly text: string; },): ReadonlySet
        Character under the cursor.
        */
       const character = text.charAt(index,);
-      if (isLatinLetter({ character, },)) {
+      if (isAsciiLetter({ character, },)) {
         run += character.toLowerCase();
         continue;
       }

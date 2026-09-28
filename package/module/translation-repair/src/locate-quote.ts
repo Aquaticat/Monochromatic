@@ -8,6 +8,7 @@ import {
   normalizePunctuation,
 } from './quote-normalize.ts';
 import type { AnchorTarget, } from './validate-issue.ts';
+import { isAsciiAlphanumeric, } from './ascii-letters.ts';
 
 //region Quote location
 // Deterministic evidence anchoring: find a critic's quote in the document,
@@ -144,24 +145,6 @@ function bindQuoteRegion(
 }
 
 /**
- Whether a character belongs to a Latin token: an ASCII letter or digit.
- 
- @param character - one character
- 
- @returns Whether it continues a Latin token
- 
- @example
- ```ts
- const inToken = isLatinTokenCharacter({ character: 'a', },);
- ```
- */
-function isLatinTokenCharacter({ character, }: { readonly character: string; },): boolean {
-  return ((character >= 'a') && (character <= 'z'))
-    || ((character >= 'A') && (character <= 'Z'))
-    || ((character >= '0') && (character <= '9'));
-}
-
-/**
  Describes the missed quote into the failure finding by its shape, so a miss
  can be diagnosed by size and script rather than only counted, and without
  writing corpus text into a finding.
@@ -206,7 +189,7 @@ function needlePreview(
     /**
      Whether this character continues a token.
      */
-    const inToken = isLatinTokenCharacter({ character, },);
+    const inToken = isAsciiAlphanumeric({ character, },);
     if (inToken && (!counted.inToken))
       counted.tokens += 1;
     counted.inToken = inToken;

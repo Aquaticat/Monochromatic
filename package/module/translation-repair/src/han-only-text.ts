@@ -1,3 +1,5 @@
+import { isAsciiLetter, } from './ascii-letters.ts';
+
 //region Han-only text
 // Character tests shared by the floors that ask whether a run of text is
 // written in Han alone, and by the tokenizer (`preservation-tokens.ts`),
@@ -63,24 +65,7 @@ export function isHanCharacter({ character, }: { readonly character: string; },)
 }
 
 /**
- Whether a character is an ASCII letter, which marks a text as carrying its
- own Latin form.
-
- @param character - one code point of a text
-
- @returns True for a to z in either case
-
- @example
- ```ts
- isLatinLetter({ character: 'N', },); // true
- ```
- */
-export function isLatinLetter({ character, }: { readonly character: string; },): boolean {
-  return ((character >= 'a') && (character <= 'z')) || ((character >= 'A') && (character <= 'Z'));
-}
-
-/**
- Whether a text carries a Han ideograph and no Latin letter, so its only
+ Whether a text carries a Han ideograph and no ASCII letter, so its only
  form is Han.
 
  @param text - run of text under the question
@@ -99,7 +84,7 @@ export function isHanOnly({ text, }: { readonly text: string; },): boolean {
    */
   let han = false;
   for (const character of text) {
-    if (isLatinLetter({ character, },))
+    if (isAsciiLetter({ character, },))
       return false;
     if (isHanCharacter({ character, },))
       han = true;
@@ -129,7 +114,7 @@ export function carriesHan({ text, }: { readonly text: string; },): boolean {
 }
 
 /**
- Whether a span of a text carries a Latin letter.
+ Whether a span of a text carries an ASCII letter.
 
  @param text - text read
 
@@ -137,14 +122,14 @@ export function carriesHan({ text, }: { readonly text: string; },): boolean {
 
  @param to - offset just past the span
 
- @returns True when some character of the span is a Latin letter
+ @returns True when some character of the span is an ASCII letter
 
  @example
  ```ts
- carriesLatinLetter({ text: '猫 (cat)', from: 3, to: 6, },); // true
+ carriesAsciiLetter({ text: '猫 (cat)', from: 3, to: 6, },); // true
  ```
  */
-export function carriesLatinLetter(
+export function carriesAsciiLetter(
   {
     text,
     from,
@@ -156,7 +141,7 @@ export function carriesLatinLetter(
   },
 ): boolean {
   for (let at = from; at < to; at += 1) {
-    if (isLatinLetter({ character: text.charAt(at,), },))
+    if (isAsciiLetter({ character: text.charAt(at,), },))
       return true;
   }
   return false;

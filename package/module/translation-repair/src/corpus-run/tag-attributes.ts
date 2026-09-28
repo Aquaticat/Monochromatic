@@ -1,3 +1,5 @@
+import { isAsciiLetter, } from '../ascii-letters.ts';
+
 //region Tag attributes
 // A JSX OR HTML TAG READ FOR ITS QUOTED ATTRIBUTES, by index scan: the name
 // after `<`, then attribute names with their quoted values up to `>` or
@@ -119,22 +121,6 @@ export type TagReading = {
 };
 
 /**
- Whether a character may open a tag name.
-
- @param character - one character
-
- @returns True for an ASCII letter
-
- @example
- ```ts
- isNameStart({ character: 'D', },); // true
- ```
- */
-function isNameStart({ character, }: { readonly character: string; },): boolean {
-  return ((character >= 'a') && (character <= 'z')) || ((character >= 'A') && (character <= 'Z'));
-}
-
-/**
  Whether a character may continue a tag or attribute name.
 
  @param character - one character
@@ -147,7 +133,7 @@ function isNameStart({ character, }: { readonly character: string; },): boolean 
  ```
  */
 function isNamePart({ character, }: { readonly character: string; },): boolean {
-  if (isNameStart({ character, },))
+  if (isAsciiLetter({ character, },))
     return true;
   if ((character >= '0') && (character <= '9'))
     return true;
@@ -306,7 +292,7 @@ function readTagAt(
     readonly at: number;
   },
 ): TagReading {
-  if (!isNameStart({ character: text.charAt(at + 1,), },))
+  if (!isAsciiLetter({ character: text.charAt(at + 1,), },))
     return NO_TAG;
   /**
    Offset just past the tag name.

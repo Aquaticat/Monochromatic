@@ -3,10 +3,8 @@ import {
   handleReading,
   withoutGloss,
 } from './corpus-run/handle-reading.ts';
-import {
-  carriesHan,
-  isLatinLetter,
-} from './han-only-text.ts';
+import { isAsciiLetter, } from './ascii-letters.ts';
+import { carriesHan, } from './han-only-text.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 
 //region Signer handle floor
@@ -73,7 +71,7 @@ function readingLetters({ rendering, }: { readonly rendering: string; },): strin
     .normalize('NFD',)
     .split('',)
     .filter(function isLetter(character,): boolean {
-      return isLatinLetter({ character, },);
+      return isAsciiLetter({ character, },);
     },)
     .join('',)
     .toLowerCase();

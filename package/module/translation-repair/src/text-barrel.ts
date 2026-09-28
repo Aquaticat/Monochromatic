@@ -2,6 +2,11 @@
 // Character tests the floors and guards share, exported so each is tested once
 // where it is defined rather than through every caller (audit area six).
 
+export {
+  isAsciiAlphanumeric,
+  isAsciiDigit,
+  isAsciiLetter,
+} from './ascii-letters.ts';
 export { longestRunOf, } from './character-run.ts';
 export { isHanCharacter, } from './han-only-text.ts';
 export { isIdeograph, } from './preservation-tokens.ts';

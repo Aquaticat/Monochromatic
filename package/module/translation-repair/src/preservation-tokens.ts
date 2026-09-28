@@ -1,3 +1,4 @@
+import { isAsciiAlphanumeric, } from './ascii-letters.ts';
 import { isHanCharacter, } from './han-only-text.ts';
 
 //region Preservation tokens
@@ -106,9 +107,7 @@ const MIN_NAME_LENGTH = 3;
  ```
  */
 function isWordCharacter(character: string,): boolean {
-  return ((character >= 'a') && (character <= 'z'))
-    || ((character >= 'A') && (character <= 'Z'))
-    || ((character >= '0') && (character <= '9'))
+  return isAsciiAlphanumeric({ character, },)
     || (character === '\'')
     || (character === '-');
 }

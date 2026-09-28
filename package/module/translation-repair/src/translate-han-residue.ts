@@ -2,7 +2,7 @@ import {
   type ProtectedRange,
   protectedRanges,
 } from './corpus-run/prose-ranges.ts';
-import { isLatinLetter, } from './han-only-text.ts';
+import { isAsciiLetter, } from './ascii-letters.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
 import { withoutComments, } from './translate-address-drop.ts';
 import { withoutGlossedTitles, } from './translate-han-title.ts';
@@ -236,7 +236,7 @@ function isKanaLine({ units, }: { readonly units: readonly string[]; },): boolea
    Whether any unit is a Latin letter.
    */
   const carriesLatin = units.some(function latin(character,): boolean {
-    return isLatinLetter({ character, },);
+    return isAsciiLetter({ character, },);
   },);
   return kanaSeen && (!carriesLatin);
 }
@@ -387,7 +387,7 @@ function glossFollows(
     const character = line.charAt(at,);
     if (GLOSS_CLOSERS.has(character,))
       return false;
-    if (isLatinLetter({ character, },))
+    if (isAsciiLetter({ character, },))
       return true;
   }
   return false;
