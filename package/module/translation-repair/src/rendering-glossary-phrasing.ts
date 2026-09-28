@@ -12,7 +12,9 @@ import type { CommunityTerm, } from './community-glossary.ts';
 // 陷入癫狂, 环境的问题, kigurumi的记忆结束); their lessons are the idiomatic
 // English, grammatical English and kept-subject rules of
 // `english-usage-policy.ts`, on every sheet. 交往 stays as a word but refuses
-// nothing, since "dated" is its English wherever the passage speaks of romance.
+// nothing, since "dated" is its English wherever the passage speaks of
+// romance; the pin carries it four times, all on aiyysk, never of romance, so
+// "dated" is not among its renderings (ledger R11).
 
 /**
  Phrasings the pinned corpus carries whose word-for-word rendering reads
@@ -21,11 +23,14 @@ import type { CommunityTerm, } from './community-glossary.ts';
 export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: '摆烂',
+    // LEDGER R6: the why once prescribed one page's sentence ("she stopped
+    // trying"), a mistranslation of lxy's 偶尔摆烂, taking it easy now and
+    // then; the renderings now lead with the plain verb either way.
     renderings: [
-      'stopped trying',
       'gave up',
-      'let things slide',
+      'stopped trying',
       'took it easy',
+      'let things slide',
     ],
     refusedForms: [
       'one of giving up',
@@ -36,8 +41,9 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
       'slack off',
       'bailan',
     ],
-    why: 'internet slang for no longer making an effort; the page writes the plain verb ("she stopped trying"), '
-      + 'never an attitude "of giving up" and never the English slang "slacked off"',
+    why: 'internet slang for no longer making an effort, or, said lightly, for taking it easy; English says she gave '
+      + 'up, stopped trying or took it easy, as the passage means, never an attitude "of giving up" and never the '
+      + 'English slang "slacked off"',
   },
   {
     term: '万千世界',
@@ -67,7 +73,6 @@ export const PHRASING_GLOSSARY: readonly CommunityTerm[] = [
       'interacted with',
       'spent time with',
       'got to know',
-      'dated',
     ],
     refusedForms: [],
     why: 'keeping company with people and getting to know them; it means dating only where the passage speaks of '

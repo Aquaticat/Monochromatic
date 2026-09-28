@@ -23,13 +23,16 @@ import {
 
 /**
  How a form may end where the text goes on: exactly, with a plural "s", with
- an inflection, or open to any continuation (a rendering may inflect).
+ an inflection, with any ending English adds to a rendering, or open to any
+ continuation.
  */
-export type FormEnd = 'exact' | 'plural' | 'inflected' | 'open';
+export type FormEnd = 'exact' | 'plural' | 'inflected' | 'rendering' | 'open';
 
 /**
  Endings each closed `FormEnd` accepts before the word boundary; "open" has
- none because it checks no boundary at all.
+ none because it checks no boundary at all. A glossary term takes no "d",
+ since OD would then match inside "odd"; a rendering takes it, since "cure"
+ is "cured" (ledger C3).
  */
 const FORM_END_SUFFIXES: Record<Exclude<FormEnd, 'open'>, readonly string[]> = {
   exact: ['',],
@@ -43,6 +46,29 @@ const FORM_END_SUFFIXES: Record<Exclude<FormEnd, 'open'>, readonly string[]> = {
     'ed',
     'ing',
   ],
+  rendering: [
+    '',
+    's',
+    'es',
+    'd',
+    'ed',
+    'ing',
+  ],
+};
+
+/**
+ Where one rendering stands in a folded text.
+ */
+export type GlossarySpan = {
+  /**
+   Index the rendering starts at.
+   */
+  readonly start: number;
+
+  /**
+   Index just past the rendering as written, before any ending.
+   */
+  readonly end: number;
 };
 
 /**
@@ -310,6 +336,90 @@ export function formStarts(
           && (!isGlossaryWordCharacter({ character: folded.charAt(after + suffix.length,), },));
       },);
     },);
+}
+
+/**
+ Stems English writes when it inflects a rendering whose last letter changes:
+ a final e drops before "ing" (curing, soothing), and a final y turns to "ie"
+ before "s" or "d" (communities, studied).
+
+ @param form - folded rendering
+
+ @returns Inflected spellings the endings in `FORM_END_SUFFIXES` cannot reach,
+ empty for a rendering whose last letter stays
+
+ @example
+ ```ts
+ changedStems({ form: 'cure', },); // => ['curing']
+ changedStems({ form: 'trans community', },); // => ['trans communities', 'trans communitied']
+ ```
+ */
+function changedStems({ form, }: { readonly form: string; },): readonly string[] {
+  /**
+   Rendering without its last letter.
+   */
+  const stem = form.slice(
+    0,
+    -1,
+  );
+  if (form.endsWith('e',))
+    return [`${stem}ing`,];
+  if (form.endsWith('y',)) {
+    return [
+      `${stem}ies`,
+      `${stem}ied`,
+    ];
+  }
+  return [];
+}
+
+/**
+ Every span at which an accepted rendering stands in a folded text,
+ inflected as English inflects it (ledger C3: "to cure", "trans
+ communities" and "a healing cat" carry their words), opening and closing at
+ word boundaries (ledger C4 on the opening side, and "Atri" never inside
+ "atrium" on the closing side).
+
+ @param folded - folded text
+
+ @param rendering - rendering as the glossary writes it
+
+ @returns Spans in the order their spellings were searched
+
+ @example
+ ```ts
+ renderingSpans({ folded: 'hard to cure', rendering: 'cure', },); // => [{ start: 8, end: 12 }]
+ ```
+ */
+export function renderingSpans(
+  {
+    folded,
+    rendering,
+  }: {
+    readonly folded: string;
+    readonly rendering: string;
+  },
+): readonly GlossarySpan[] {
+  /**
+   Rendering folded as the text is.
+   */
+  const form = foldForGlossary({ text: rendering, },);
+  return [
+    form,
+    ...changedStems({ form, },),
+  ].flatMap(function spansOf(spelling,): readonly GlossarySpan[] {
+    return formStarts({
+      folded,
+      form: spelling,
+      end: 'rendering',
+    },)
+      .map(function toSpan(start,): GlossarySpan {
+        return {
+          start,
+          end: start + spelling.length,
+        };
+      },);
+  },);
 }
 
 /**

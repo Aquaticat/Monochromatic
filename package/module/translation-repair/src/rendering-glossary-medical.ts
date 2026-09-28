@@ -15,12 +15,17 @@ import type { CommunityTerm, } from './community-glossary.ts';
 export const MEDICAL_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: 'II型糖尿病',
+    // LEDGER R15: "type II diabetic" and "diabetes type II" once passed; a
+    // hyphen folds to a space, so "type-II" needs no form of its own.
     renderings: [
       'type 2 diabetes',
+      'type 2 diabetic',
     ],
     refusedForms: [
       'type ii diabetes',
-      'type-ii diabetes',
+      'type ii diabetic',
+      'diabetes type ii',
+      'diabetes, type ii',
     ],
     why: 'the common adult-onset diabetes; current English writes the type with an Arabic numeral, "type 2 diabetes", '
       + 'never the dated "type II"',
@@ -28,8 +33,10 @@ export const MEDICAL_GLOSSARY: readonly CommunityTerm[] = [
   // CLASS ONE HUNDRED EIGHTY (TianqiChen66613, 2026-09-27): 激素一点一点进入
   // 她的身体 shipped as "the medication entered her system", hiding the
   // hormones the passage is about. Seeded without a refused form: the census
-  // of the pin finds 激素 in seven paragraphs on five entries, and two of them
-  // also write 药物 or 药, where "medication" renders that word.
+  // of the pin finds 激素 in seven paragraphs on five entries, and one of them
+  // (shi_Yumiaoya) also writes 药物, where "medication" renders that word
+  // (ledger R16, measured 2026-09-28: this comment once counted two, the
+  // second a 药 inside 药娘).
   {
     term: '激素',
     renderings: [

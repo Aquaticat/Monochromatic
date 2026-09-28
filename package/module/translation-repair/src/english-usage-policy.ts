@@ -40,7 +40,10 @@ export const IDIOMATIC_ENGLISH_RULE: string =
 /**
  Grammatical English, the lesson of the entries keyed on one sentence's
  grammar slip (classes one hundred sixty-one, sixty-four, sixty-six and
- seventy-one).
+ seventy-one). The doubled preposition (class one hundred sixty-one, "turned
+ into in a small box") joined it on 2026-09-28 (ledger R5): refused as a
+ form keyed on 化作, it also refused sound English whose next phrase opens
+ with "in" ("what the kitten turned into in spring").
 
  @example
  ```ts
@@ -48,7 +51,7 @@ export const IDIOMATIC_ENGLISH_RULE: string =
  ```
  */
 export const GRAMMATICAL_ENGLISH_RULE: string =
-  'Every sentence is grammatical English: a verb after make or let is bare (made her meet, never made her met), a tag question matches its clause (she deserved better, didn\'t she), a phrase attaches to the noun it describes, and a pronoun keeps the speaker\'s own point of view (when I leave you all, never when I leave us).';
+  'Every sentence is grammatical English: a verb after make or let is bare (made her meet, never made her met), a verb\'s preposition is written once before its object (turned into a small box, never turned into in a small box), a tag question matches its clause (she deserved better, didn\'t she), a phrase attaches to the noun it describes, and a pronoun keeps the speaker\'s own point of view (when I leave you all, never when I leave us).';
 
 /**
  A credit names its maker with "by" (class one hundred forty, XingZ6012:

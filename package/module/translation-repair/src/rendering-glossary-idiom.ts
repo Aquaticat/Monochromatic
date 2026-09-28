@@ -24,24 +24,30 @@ import type { CommunityTerm, } from './community-glossary.ts';
 export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
   {
     term: '三剑客',
+    // LEDGER R13: "the Top Gear trio" was one page's rendering among the
+    // word's; "trio" carries it.
     renderings: [
       'trio',
       'the Three Musketeers',
-      'the Top Gear trio',
     ],
     refusedForms: [
       'three swordsmen',
       'sanjianke',
     ],
-    why: 'a famous trio, after the Three Musketeers; the three presenters of Top Gear and The Grand Tour are "the Top '
-      + 'Gear trio" to English viewers, so the page names that trio rather than the musketeers',
+    why: 'a famous trio, after the Three Musketeers; English names a trio by its own name where it has one (the '
+      + 'presenters of Top Gear are "the Top Gear trio") and otherwise says "trio" or "the Three Musketeers"',
   },
   {
     term: '燃油车',
+    // LEDGER R2: "fossil-fuel car" is sound English for the car being phased
+    // out, and the refused "fuel car" stands inside it; as a rendering it
+    // excuses what it overlaps.
     renderings: [
       'gas-powered car',
       'gasoline car',
       'gas car',
+      'fossil-fuel car',
+      'fossil-fuel vehicle',
     ],
     refusedForms: [
       'fuel-powered car',
@@ -53,8 +59,8 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
       'petrol car',
       'petrol-powered',
     ],
-    why: 'a car with a gasoline engine, the kind being phased out; Canadian English says "a gas-powered car", never '
-      + '"a fuel-powered car" or the British "petrol car"',
+    why: 'a car with a gasoline engine, the kind being phased out; Canadian English says "a gas-powered car" or "a '
+      + 'fossil-fuel car", never "a fuel-powered car" or the British "petrol car"',
   },
   {
     term: '喘不过气',
@@ -94,8 +100,10 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
       'volunteer form',
       'wish form',
     ],
-    why: 'listing the universities a gaokao candidate applies to; the page says she made a mistake on her university '
-      + 'applications, never her "application preferences"',
+    // LEDGER R9 and R13: the why once wrote "gaokao", which 高考 refuses, and
+    // named one page's mistake on the applications.
+    why: 'listing the universities a college entrance examination candidate applies to; English says university '
+      + 'applications or choices, never "application preferences"',
   },
   {
     term: '命运的齿轮',
@@ -139,12 +147,20 @@ export const IDIOM_GLOSSARY: readonly CommunityTerm[] = [
       'threatened to kill herself',
       'used her own life as leverage',
     ],
+    // LEDGER R15: the present tense and the other pronouns once passed.
     refusedForms: [
-      'threatened her life',
-      'threatened his life',
-      'threatened their life',
-      'threatening her life',
-    ],
+      'threatened',
+      'threatens',
+      'threatening',
+    ].flatMap(function againstLife(verb,): readonly string[] {
+      return [
+        'her',
+        'his',
+        'their',
+      ].map(function joined(pronoun,): string {
+        return `${verb} ${pronoun} life`;
+      },);
+    },),
     why: 'someone who stakes their own life to stop another, threatening to kill themselves; "threatened her life" '
       + 'says the other person\'s life was threatened',
   },

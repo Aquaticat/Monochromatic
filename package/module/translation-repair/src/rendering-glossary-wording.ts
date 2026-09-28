@@ -18,6 +18,18 @@ import type { CommunityTerm, } from './community-glossary.ts';
 // for 营救 wherever the rescue is one.
 
 /**
+ Forms every name of the behaviour-correction institution refuses, since
+ "correctional" in English names a prison (ledger R7).
+ */
+const CORRECTIONAL_REFUSALS = [
+  'correctional facility',
+  'correctional institution',
+  'correctional center',
+  'correctional centre',
+  'correctional school',
+] as const;
+
+/**
  Wording in accounts of events whose word-for-word rendering misleads or reads
  badly in English, with the English the page uses.
  */
@@ -43,14 +55,35 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
       'behaviour-correction camp',
       'correction camp',
     ],
-    refusedForms: [
-      'correctional facility',
-      'correctional institution',
-      'correctional center',
-      'correctional centre',
-    ],
+    refusedForms: CORRECTIONAL_REFUSALS,
     why: 'a private institution that claims to correct behaviour, not a prison; "correctional facility" in English '
       + 'is a prison, so the page says "behaviour-correction centre"',
+  },
+  // LEDGER R7 (the glossary audit of 2026-09-27): the institution's other
+  // names had no entry. 矫正中心 stands on zhangyubaka, whose archive writes
+  // "correctional school"; 矫正学校 on Y1Ran, whose archive writes "internet
+  // addiction correction school". The replay of 2026-09-28 found the refused
+  // forms on no other archive or settled page.
+  {
+    term: '矫正中心',
+    renderings: [
+      'behaviour-correction centre',
+      'correction centre',
+      'correction camp',
+    ],
+    refusedForms: CORRECTIONAL_REFUSALS,
+    why: 'a private centre that claims to correct behaviour, not a prison; "correctional" in English names a prison, '
+      + 'so the page says "behaviour-correction centre"',
+  },
+  {
+    term: '矫正学校',
+    renderings: [
+      'behaviour-correction school',
+      'correction school',
+    ],
+    refusedForms: CORRECTIONAL_REFUSALS,
+    why: 'a private school that claims to correct behaviour, not a prison; "correctional school" in English is a '
+      + 'juvenile prison, so the page says "correction school" or "behaviour-correction school"',
   },
   {
     term: '营救',
@@ -65,15 +98,22 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
   },
   {
     term: '抢救',
+    // LEDGER R12: "intensive care" is the ward (重症监护, ICU), not the
+    // fight to save a life, so it no longer counts as carrying 抢救.
+    // Resuscitation and salvage are renderings where the passage means them,
+    // so a candidate writing them names no departure.
     renderings: [
       'emergency treatment',
-      'intensive care',
-      'doctors fought to save',
+      'fought to save',
+      'tried to save',
+      'resuscitate',
+      'resuscitation',
+      'salvage',
     ],
     refusedForms: [],
     why: 'emergency medical treatment to save a life, which can run for hours or days; English says emergency '
-      + 'treatment or intensive care, and "resuscitation" only for the minutes of reviving someone; said of a thing, '
-      + 'it is salvaging it',
+      + 'treatment or that doctors fought to save her, never the ward ("intensive care") for the treatment, and '
+      + '"resuscitation" only for the minutes of reviving someone; said of a thing, it is salvaging it',
   },
   // CLASS ONE HUNDRED THIRTY-FOUR (hulicaijia19, 2026-09-25): 药代 shipped as
   // "In her role as a pharmaceutical sales representative", the general sense
@@ -138,10 +178,13 @@ export const WORDING_GLOSSARY: readonly CommunityTerm[] = [
   },
   // CLASS ONE HUNDRED FIFTY-SIX (shihai4h1, 2026-09-26): 初中 shipped as
   // "junior middle school", 自考 as "self-taught exams" and 压力话 as
-  // "subjected to pressured remarks". 初中 stands in five pinned entries, and
-  // four of the five archive passages that render it write "junior high
-  // school"; shihai4h's archive alone writes "junior middle school". 自考 and
-  // 压力话 stand on shihai4h alone, with no archive English.
+  // "subjected to pressured remarks". 初中 stands nine times in five pinned
+  // entries; the archives write "junior high school" (Jennife80677612 once,
+  // aiyysk twice), "middle school" (yulianNyanner twice) and "junior middle
+  // school" (shihai4h alone), and XIEPT2's archive renders it nowhere
+  // (ledger R16, measured 2026-09-28: this comment once counted a 初中 in a
+  // Xu_Yushu reader comment as an archive passage). 自考 and 压力话 stand on
+  // shihai4h alone, with no archive English.
   {
     term: '初中',
     renderings: [

@@ -1,7 +1,9 @@
 import { FANDOM_GLOSSARY, } from './community-glossary-fandom.ts';
+import { COMMUNITY_WORD_GLOSSARY, } from './community-glossary-words.ts';
 import {
   foldForGlossary,
   formStarts,
+  renderingSpans,
 } from './glossary-match.ts';
 import { withoutComments, } from './translate-address-drop.ts';
 
@@ -15,21 +17,27 @@ import { withoutComments, } from './translate-address-drop.ts';
 // Streamer Overload. Nothing in the pipeline told the bench, so nothing
 // stopped it regressing a correct rendering twice.
 //
-// TWO USES. Every sheet that carries the declared names carries the terms an
-// entry's source holds (`communityTermLines`, read into the identity context
-// by `document-preparation.ts`), so writers and judges alike know the word.
-// The sheets where judges compare candidates name each candidate lacking
-// every accepted rendering where the source carries the term
-// (`communityRenderingsBlock`): evidence to weigh, not a verdict, and how
-// the archive's rendering joins every slate. No candidate is barred by it,
-// since a rendering inflects and the judges decide.
+// THREE USES. Every sheet that carries the declared names carries the terms
+// an entry's source holds (`communityTermLines`, read into the identity
+// context by `document-preparation.ts`), so writers and judges alike know the
+// word. The sheets where judges compare candidates name each candidate
+// lacking every accepted rendering where the source carries the term
+// (`communityRenderingsBlock`): evidence to weigh, not a verdict, and how the
+// archive's rendering joins every slate. And since class one hundred nineteen
+// (2026-09-24) a floor refuses a candidate that keeps a term in Han or writes
+// a form its entry refuses (`translate-community-term.ts`). No listed
+// rendering is ever required, since a rendering inflects and the judges
+// decide; until ledger C6 (2026-09-28) this comment said no candidate was
+// barred, which the floor had made false.
 //
-// THE OWNER CURATES IT. A term the archive got wrong is not entered; the
-// renderings are the archive's first, then forms the community also uses.
-// Where no archive renders the term well (药娘 by the owner's ruling, 逆子
-// where the only passage has no archive English), the renderings are the
-// ones the entry's why states. 跨圈 takes shihai4h's archive rendering, since
-// shi_Yumiaoya's archive leaves its passages untranslated.
+// THE OWNER CURATES IT. An entry goes in wherever a run shipped the word
+// wrong, whether or not the archive had it right: the archive wrote "tried
+// coming out" for 炸柜 and "Alona and Atori" for 阿洛娜 and 亚托莉. The
+// renderings are the archive's first where the archive renders the word
+// well, then forms the community also uses. Where no archive renders the term
+// well (药娘 by the owner's ruling, 逆子 where the only passage has no archive
+// English), the renderings are the ones the entry's why states. Until ledger
+// C6 this comment said a term the archive got wrong is not entered.
 
 /**
  One community term and how the community renders it.
@@ -46,8 +54,9 @@ export type CommunityTerm = {
   readonly term: string;
 
   /**
-   Renderings the community accepts, the archive's first; a candidate
-   carrying any of them, in any casing, carries the word.
+   Renderings the community accepts, the archive's first where it renders
+   the word well; a candidate carrying any of them, in any casing and
+   inflected as English inflects it, carries the word.
    */
   readonly renderings: readonly string[];
 
@@ -59,7 +68,8 @@ export type CommunityTerm = {
   readonly refusedForms: readonly string[];
 
   /**
-   One line of why, for the sheet.
+   One line of why, for the sheet; it is shown on every page whose original
+   carries the term, so it says nothing that holds on one page alone.
    */
   readonly why: string;
 
@@ -70,139 +80,20 @@ export type CommunityTerm = {
    absent by the floor, the sheet lines and the departures.
    */
   readonly properNameContexts?: readonly string[];
+
+  /**
+   Longer words that write the term's characters without being the term
+   (各自切, each cutting, holds 自切; ledger C10); an occurrence inside one is
+   read as absent, as one inside a proper name is.
+   */
+  readonly enclosingWords?: readonly string[];
 };
 
 /**
  Community terms the pinned corpus carries, curated by the owner.
  */
 export const COMMUNITY_GLOSSARY: readonly CommunityTerm[] = [
-  {
-    term: '自切',
-    renderings: ['self-surgery',],
-    refusedForms: [],
-    why: 'the community\'s word for gender-affirming surgery performed on oneself; the archive renders it '
-      + '"attempted self-surgery", and "self-harm" or "cutting" misreads it',
-  },
-  {
-    term: '超天酱',
-    renderings: [
-      'KAngel',
-      'Needy Streamer Overload',
-    ],
-    refusedForms: [],
-    why: 'the community\'s nickname for KAngel, the streamer character of the game Needy Streamer Overload; '
-      + 'the archive names the character or the game, never a transliteration',
-  },
-  {
-    // CLASS SEVENTY-TWO (mikaela_khara, 2026-09-19). The archive rendered 炸柜
-    // as "tried coming out", one pass shipped "got blown out of the closet"
-    // and the next "came out", a judge calling the community reading risky
-    // and the literal one a display cabinet; nothing on any sheet said which.
-    term: '炸柜',
-    renderings: [
-      'outed',
-      'blown out of the closet',
-    ],
-    refusedForms: [],
-    why: 'the community\'s word for being outed against one\'s will, the closet blowing up, not for coming out; '
-      + 'the source pairs it with the family finding and throwing away the medication, and "came out" or '
-      + '"tried coming out" reads the outing as her choice',
-  },
-  {
-    // CLASS ONE HUNDRED NINETEEN (shi_Yumiaoya19, 2026-09-24). 小药娘 and
-    // 药娘 shipped in Han, the judges following the archive translator's
-    // comment that the word needs no translation, where two earlier runs
-    // wrote "little HRT girl" and "little yaoniang". The owner answered on
-    // 2026-09-24: the word is disrespectful, used neutrally by only some of
-    // the community, and that neutrality does not carry into English, so
-    // the page says "trans woman" or "trans girl". The owner added the same
-    // day that the term is not kept even where the existing translation keeps
-    // it, because the term itself can read as derogatory. 小药娘 carries
-    // 药娘, so one entry covers both.
-    term: '药娘',
-    renderings: [
-      'trans girl',
-      'trans woman',
-      'trans women',
-    ],
-    refusedForms: [
-      'yaoniang',
-      'yao niang',
-      'xiaoyaoniang',
-      'xiao yaoniang',
-      'xiao yao niang',
-    ],
-    why: 'a disrespectful word for trans women on hormone therapy that some of the community use neutrally; '
-      + 'the term itself can read as derogatory and the neutrality does not carry into English, so the page '
-      + 'says "trans girl" or "trans woman", never the Han and never a pinyin form, even where the existing '
-      + 'translation or a translator\'s note on the page keeps it',
-    // OWNER, 2026-09-27: mikaela_khara's registered company carries the word
-    // in its name, and a company's proper name keeps its own form.
-    properNameContexts: [
-      '小药娘网络科技',
-      '以小药娘做字号',
-    ],
-  },
-  {
-    // CLASS ONE HUNDRED FIFTY-ONE (shi_Yumiaoya36 and 37, 2026-09-26). The
-    // father's insult 「逆子」 shipped as "rebellious child" on both runs and
-    // in Han on shi_Yumiaoya8. The word is "unfilial son": on a trans
-    // woman's memorial it is her father calling her his son, and "child"
-    // takes the misgendering out of the insult the page reports. No archive
-    // renders the passage (shi_Yumiaoya's archive is partial), so nothing on
-    // any sheet said which.
-    term: '逆子',
-    renderings: [
-      'unfilial son',
-      'undutiful son',
-      'disobedient son',
-      'ungrateful son',
-      'rebellious son',
-    ],
-    refusedForms: [],
-    why: 'a parent\'s insult, "unfilial son"; said by a father of his trans daughter it calls her his son, '
-      + 'so the page keeps "son" inside the quoted insult: "child" or "kid" drops the misgendering the '
-      + 'insult carries, and the Han is never left',
-  },
-  {
-    // CLASS ONE HUNDRED FIFTY-FOUR (shi_Yumiaoya38, 2026-09-26). 跨圈 appears
-    // four times on the page; three shipped "the trans community" and one
-    // "the crossdressing community", where shi_Yumiaoya37 had read it "across
-    // different communities". The word is short for 跨性别圈子, and the archive
-    // renders it "the Trans Community" (shihai4h's heading). Crossdressing is
-    // another word (女装) and names another thing, so writing it for 跨圈
-    // tells the reader the page's trans women are crossdressers.
-    term: '跨圈',
-    renderings: [
-      'trans community',
-      'transgender community',
-      'trans circles',
-      'trans circle',
-    ],
-    refusedForms: [
-      'crossdressing community',
-      'cross-dressing community',
-      'crossdressing circle',
-      'cross-dressing circle',
-    ],
-    why: 'short for 跨性别圈子, the trans community; the archive renders it "the Trans Community", and it '
-      + 'never means crossdressing (女装) or "across communities"',
-  },
-  {
-    // CLASS ONE HUNDRED EIGHTY-TWO (TianqiChen66614, 2026-09-27). 炸柜
-    // written out, the closet door blown open; the 炸柜 entry never matched
-    // it. The page shipped "blocked again and again, each time the closet
-    // door blew open" for 因为柜门炸开屡屡受阻, keeping the figure literal and
-    // reading the cause as a repeated event. One page in the pin carries it.
-    term: '柜门炸开',
-    renderings: [
-      'outed',
-      'blown out of the closet',
-    ],
-    refusedForms: [],
-    why: '炸柜 written out, the closet door blown open: being outed against one\'s will, not coming out, and '
-      + 'never a literal door',
-  },
+  ...COMMUNITY_WORD_GLOSSARY,
   ...FANDOM_GLOSSARY,
 ];
 
@@ -259,10 +150,14 @@ export function communityTermsIn(
   const uncommented = withoutComments({ text, },);
   return glossary.filter(function present(entry,): boolean {
     /**
-     Original with every proper name that carries the term cut out, so an
-     organization's name is not read as the term.
+     Original with every proper name and every longer word that carries the
+     term cut out, so an organization's name (小药娘网络科技) or another word
+     (各自切) is not read as the term.
      */
-    const unnamed = (entry.properNameContexts ?? []).reduce(
+    const unnamed = [
+      ...entry.properNameContexts ?? [],
+      ...entry.enclosingWords ?? [],
+    ].reduce(
       function cutName(
         remaining,
         context,
@@ -331,7 +226,7 @@ export function communityTermLines(
   {
     text,
     glossary = COMMUNITY_GLOSSARY,
-    heading = 'COMMUNITY TERMS this entry carries, rendered as the archive and the community render them (a rendering may inflect):',
+    heading = 'COMMUNITY TERMS this entry carries, with the renderings the community uses (a rendering may inflect):',
   }: {
     readonly text: string;
     readonly glossary?: readonly CommunityTerm[];
@@ -357,8 +252,9 @@ export function communityTermLines(
 
 /**
  Whether a text carries any accepted rendering of a term outside its
- comments, in any casing, opening at a word boundary and free to inflect
- ("healed" in "healed", never "cured" in "secured").
+ comments, in any casing, at word boundaries and inflected as English
+ inflects it (`renderingSpans`): "cure" in "to cure" and "cured", never
+ "cured" in "secured" nor "Atri" in "atrium" (ledger C3 and C4).
 
  @param text - candidate text
  
@@ -388,14 +284,13 @@ function carriesRendering(
   return entry.renderings
     .some(function occurs(rendering,): boolean {
       /**
-       Bounded starts of the rendering in the candidate.
+       Spans at which the rendering stands in the candidate.
        */
-      const starts = formStarts({
+      const spans = renderingSpans({
         folded,
-        form: foldForGlossary({ text: rendering, },),
-        end: 'open',
+        rendering,
       },);
-      return starts.length > 0;
+      return spans.length > 0;
     },);
 }
 

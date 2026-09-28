@@ -66,7 +66,10 @@ await describe({
       fn: async () => {
         expect(entryFor({ term: '二本', },).renderings[0],).toBe('second-tier university',);
         expect(entryFor({ term: '二本', },).refusedForms,).toContain('admission slot',);
-        expect(entryFor({ term: '滑档', },).refusedForms,).toContain('slid down',);
+        // Ledger R4: the slide is refused onto a tier, never as a bare motion verb.
+        expect(entryFor({ term: '滑档', },).refusedForms,).toContain('slid down into a second tier',);
+        expect(entryFor({ term: '滑档', },).refusedForms,).not
+          .toContain('slid down',);
       },
     },),
     it({

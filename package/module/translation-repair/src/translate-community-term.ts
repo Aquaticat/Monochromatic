@@ -6,6 +6,7 @@ import {
 import {
   foldForGlossary,
   formStarts,
+  renderingSpans,
   textCarriesForm,
 } from './glossary-match.ts';
 import { withoutComments, } from './translate-address-drop.ts';
@@ -56,7 +57,10 @@ function renderingList(
  her head" opening "inside her headpiece", class one hundred sixty-three). A
  rendering that ends inside the occurrence ("a minor" in "a minor trans
  girl") excuses nothing, and a rendering of another entry excuses nothing
- either, since it names another word.
+ either, since it names another word. A rendering stands where the departure
+ check reads it (`renderingSpans`), inflected and bounded, so a rendering
+ that counts as written also excuses what it overlaps ("fossil-fuel cars"
+ over "fuel car", ledger R2).
 
  @param entry - term whose renderings may excuse the occurrence
 
@@ -90,20 +94,14 @@ function renderingCarries(
   return entry
     .renderings
     .some(function carries(rendering,): boolean {
-      /**
-       Rendering folded as the candidate is.
-       */
-      const form = foldForGlossary({ text: rendering, },);
-      return formStarts({
+      return renderingSpans({
         folded,
-        form,
-        end: 'open',
+        rendering,
       },)
-        .some(function covers(renderingStart,): boolean {
-          /**
-           Index just past this rendering occurrence.
-           */
-          const renderingEnd = renderingStart + form.length;
+        .some(function covers({
+          start: renderingStart,
+          end: renderingEnd,
+        },): boolean {
           /**
            Whether the rendering holds the whole occurrence.
            */

@@ -48,7 +48,8 @@ const IDIOMATIC_ENGLISH =
  Rule replacing the entries keyed on one sentence's grammar slip.
  */
 const GRAMMATICAL_ENGLISH =
-  'Every sentence is grammatical English: a verb after make or let is bare (made her meet, never made her met), a tag '
+  'Every sentence is grammatical English: a verb after make or let is bare (made her meet, never made her met), a verb\'s '
+  + 'preposition is written once before its object (turned into a small box, never turned into in a small box), a tag '
   + 'question matches its clause (she deserved better, didn\'t she), a phrase attaches to the noun it describes, and a '
   + 'pronoun keeps the speaker\'s own point of view (when I leave you all, never when I leave us).';
 

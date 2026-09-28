@@ -30,8 +30,12 @@ export const FANDOM_GLOSSARY: readonly CommunityTerm[] = [
       'inside his head',
       'inside their head',
     ],
-    why: 'a kigurumi performer\'s full head mask; the archive renders it "headpiece", and "her head" reads it as '
-      + 'the wearer\'s own head',
+    // LEDGER C5: the floor refuses "inside her head", the form
+    // TianqiChen6662 shipped; a bare "her head" stays with the judges, since
+    // a slice that names the head mask can name the wearer's head too ("put
+    // the headpiece on her head").
+    why: 'a kigurumi performer\'s full head mask; the archive renders it "headpiece", and "her head" or "their head" '
+      + 'for it reads as the wearer\'s own head',
   },
   {
     term: '阿洛娜',
@@ -61,39 +65,56 @@ export const FANDOM_GLOSSARY: readonly CommunityTerm[] = [
   // as "in this game of becoming a doll" and 被她治愈 as "those she had
   // healed". Kigurumi players call putting on the costume 变娃 (a Chinese
   // report on the hobby: 偶装玩家会将穿上偶装称作"变娃"); English "doll up"
-  // means dressing smartly, so it is refused. 治愈 first led with
-  // "comforted"; the owner disagreed (2026-09-27), since the same page writes
-  // 安慰 where it means comfort, "healing" is the fandom's own English for
-  // 治愈系 and the archive reads "those she has healed". It leads with
-  // "healed" and refuses nothing.
+  // means dressing smartly, so it is refused, every form of it since ledger
+  // C5 (the why named "doll up" while the floor refused only "dolled up").
+  // 治愈 first led with "comforted"; the owner disagreed (2026-09-27), since
+  // "healing" is the fandom's own English for 治愈系 and the archive reads
+  // "those she has healed". It leads with "healed" and refuses nothing. The
+  // entry, its guard and the handover also told the owner that the same page
+  // writes 安慰 where it means comfort; it writes 安抚, never 安慰 (ledger C6),
+  // so no contrast with 安慰 stands.
   {
     term: '变娃',
+    // A MULTI-WORD RENDERING INFLECTS INSIDE, where the ending the matcher
+    // reads never reaches (ledger C3: "becoming the doll" named a departure),
+    // so each verb form is its own rendering.
     renderings: [
       'put on the kigurumi',
+      'puts on the kigurumi',
+      'putting on the kigurumi',
       'in kigurumi',
       'became the doll',
+      'become the doll',
+      'becoming the doll',
     ],
     refusedForms: [
+      'doll up',
+      'dolls up',
       'dolled up',
       'dolling up',
     ],
-    why: 'kigurumi players\' word for putting on the costume (head, bodysuit) and becoming the character, who '
-      + 'then stays silent; not a game, and never "doll up", which in English means dressing smartly',
+    // LEDGER C6: the why once said the character "then stays silent", which
+    // the doll's own quoted speech on the page contradicts.
+    why: 'kigurumi players\' word for putting on the costume (head, bodysuit) and becoming the character; not a '
+      + 'game, and never "doll up", which in English means dressing smartly',
   },
   {
     term: '治愈',
+    // Each rendering inflects (ledger C3: "to cure" and "Healing views" named
+    // departures), so "heal", "soothe" and "cure" carry every form; "healed"
+    // leads by the owner's ruling. LEDGER C6: the why once named one page's
+    // sentence ("the people she healed") on the three pages that carry 治愈.
     renderings: [
       'healed',
       'healing',
-      'heals',
-      'soothed',
-      'soothing',
-      'cured',
+      'heal',
+      'soothe',
+      'cure',
     ],
     refusedForms: [],
-    why: 'of people or feelings, the healing a person or a work gives (治愈系, "healing" in the fan sense): the '
-      + 'people she healed; a stronger word than 安慰, which is comfort, so never flatten 治愈 into "comforted" '
-      + 'where the page keeps the two apart; "cured" only where the passage speaks of an illness',
+    why: 'of people or feelings, the healing a person, a place or a work gives (治愈系, "healing" in the fan sense), '
+      + 'so English says it healed or soothed them rather than flattening it into "comforted"; "cured" only where '
+      + 'the passage speaks of an illness',
   },
 ];
 

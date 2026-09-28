@@ -1,6 +1,6 @@
 /**
  Guards the entry-content findings of the two glossary audits of 2026-09-27
- (ledger C3, C5, C7, C10, R2, R4, R5, R7, R9, R11, R12 and R15): renderings
+ (ledger C3, C5, C6, C7, C10, R2, R4, R5, R7, R9, R11, R12 and R15): renderings
  that did not count once inflected ("to cure", "a transgender girl") or
  counted inside another word ("atrium"), whys that promised refusals the
  refused forms did not carry, sibling spellings with no entry, a term read
@@ -29,6 +29,7 @@ import {
   communityTermsIn,
   HOUSE_POLICY_BLOCK,
   RENDERING_GLOSSARY,
+  renderingTermLines,
   textCarriesForm,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
@@ -94,8 +95,6 @@ const DEPARTURE_CASES: readonly DepartureCase[] = [
   ['C3 药娘 transgender girl', '猫是药娘。', 'The cat was a transgender girl.', false,],
   ['C3 变娃 becoming the doll', '猫今天变娃了。', 'Today the cat was becoming the doll.', false,],
   ['C3 亚托莉 atrium', '亚托莉在猫舍。', 'The cat napped in the atrium.', true,],
-  ['R11 交往 dated', '猫从没和狗交往过。', 'The cat had never dated a dog.', true,],
-  ['R12 抢救 intensive care', '猫在医院抢救了三天。', 'The cat was in intensive care for three days.', true,],
 ];
 
 /**
@@ -159,6 +158,38 @@ await describe({
       },
     },),
     it({
+      name: 'LISTS NO RENDERING that is another word\'s English on the sheet lines: "dated" for 交往 on the one '
+        + 'page where it never means dating (R11), "intensive care", the ward, for 抢救 (R12)',
+      fn: async () => {
+        // The rendering glossary's renderings reach the identity context only;
+        // the departures block reads the community glossary. The first guard
+        // of 2026-09-28 asked the departures for these two and could never
+        // pass, so it was rewritten before the fix landed. Each term line reads
+        // `- term: "rendering", ... (why)`, and the why may name a form to
+        // avoid, so only the list before the why is read.
+        /**
+         Rendering list of each term line the two originals put on the sheet.
+         */
+        const renderingLists = [
+          ...renderingTermLines({ text: '猫从没和狗交往过。', },),
+          ...renderingTermLines({ text: '猫在医院抢救了三天。', },),
+        ]
+          .filter(function isTermLine(line,): boolean {
+            return line.startsWith('- ',);
+          },)
+          .map(function renderingsOf(line,): string {
+            return line.slice(
+              0,
+              line.indexOf(' (',),
+            );
+          },);
+        expect(renderingLists,).toHaveLength(2,);
+        expect(renderingLists.filter(function listsOtherWord(list,): boolean {
+          return list.includes('"dated"',) || list.includes('"intensive care"',);
+        },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'FINDS 爆柜 and 跨性别圈, and never 自切 inside 各自切, 亲自切 or 独自切 (C7, C10)',
       fn: async () => {
         expect(termsOf({ text: '猫上周爆柜了。', },),).toContain('爆柜',);
@@ -176,10 +207,13 @@ await describe({
       name: 'STATES THE DOUBLED PREPOSITION as a house rule of grammar rather than a refusal keyed on 化作 (R5)',
       fn: async () => {
         expect(HOUSE_POLICY_BLOCK,).toContain('never turned into in',);
+        expect(RENDERING_GLOSSARY.some(function isBecoming(entry,): boolean {
+          return entry.term === '化作';
+        },),).toBe(false,);
       },
     },),
     it({
-      name: 'WRITES NO FORM ANOTHER ENTRY REFUSES in any why or rendering (R9)',
+      name: 'WRITES NO FORM ANOTHER ENTRY REFUSES in any why or rendering, save one it refuses itself (R9)',
       fn: async () => {
         /**
          Each why or rendering that carries another entry's refused form.
@@ -190,7 +224,12 @@ await describe({
               return other.term !== entry.term;
             },)
             .flatMap(function refusedBy(other,): readonly string[] {
+              // A form the entry refuses too is one its why quotes to refuse
+              // (跨圈 and 跨性别圈 share theirs), never its own English.
               return other.refusedForms
+                .filter(function notOwnRefusal(form,): boolean {
+                  return !entry.refusedForms.includes(form,);
+                },)
                 .filter(function carried(form,): boolean {
                   return [
                     entry.why,

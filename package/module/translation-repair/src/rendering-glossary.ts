@@ -2,7 +2,6 @@ import {
   type CommunityTerm,
   communityTermLines,
 } from './community-glossary.ts';
-import { GRAMMAR_GLOSSARY, } from './rendering-glossary-grammar.ts';
 import { IDIOM_GLOSSARY, } from './rendering-glossary-idiom.ts';
 import { MEDICAL_GLOSSARY, } from './rendering-glossary-medical.ts';
 import { PHRASING_GLOSSARY, } from './rendering-glossary-phrasing.ts';
@@ -25,6 +24,47 @@ import { WORDING_GLOSSARY, } from './rendering-glossary-wording.ts';
 // 大学, "Beijing Normal University") is never entered, only the generic word.
 
 /**
+ Slides onto a tier, each form 滑档 refuses (ledger R4): the verbs a run
+ wrote for it, with or without "down", before "into" or "to" and a tier.
+ Every variant the settled shi_Yumiaoya pages shipped is among them
+ ("slipped down into the second tier", "slid down to a second-tier").
+ */
+const TIER_SLIDES: readonly string[] = [
+  'slid',
+  'slipped',
+  'slide',
+  'slides',
+  'slip',
+  'slips',
+  'sliding',
+  'slipping',
+].flatMap(function slidesOf(verb,): readonly string[] {
+  return [
+    verb,
+    `${verb} down`,
+  ].flatMap(function linksOf(slide,): readonly string[] {
+    return [
+      'into',
+      'to',
+    ].flatMap(function tiersOf(link,): readonly string[] {
+      return [
+        'a second tier',
+        'the second tier',
+        'second tier',
+        'a lower tier',
+        'the lower tier',
+        'lower tier',
+        'a third tier',
+        'the third tier',
+        'third tier',
+      ].map(function joined(tier,): string {
+        return `${slide} ${link} ${tier}`;
+      },);
+    },);
+  },);
+},);
+
+/**
  Ordinary words the pinned corpus carries whose word-for-word rendering reads
  badly in English, with the English the page uses.
  */
@@ -39,8 +79,12 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
     refusedForms: [
       'normal college',
     ],
-    why: 'a generic college that trains teachers; "normal college" is a calque English readers do not '
-      + 'recognize, kept only inside an institution\'s own official English name',
+    // LEDGER R8: the why once promised that "normal college" stays inside an
+    // institution's official English name, which the floor never excepted.
+    // The pin carries 师范学院 once, generically (shi_Yumiaoya); a page that
+    // names an institution takes a `properNameContexts` entry, as 药娘 does.
+    why: 'a college that trains teachers; "normal college" is the dated English name, which today\'s readers do '
+      + 'not recognize',
   },
   {
     term: '师范学校',
@@ -52,7 +96,7 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
     refusedForms: [
       'normal school',
     ],
-    why: 'a generic school that trains teachers; "normal school" is a dated calque English readers do not '
+    why: 'a school that trains teachers; "normal school" is the dated English name, which today\'s readers do not '
       + 'recognize',
   },
   {
@@ -69,8 +113,10 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
       'study tyrant',
       'xueba',
     ],
-    why: 'a student who excels academically; 觉醒了学霸属性 is internet slang for suddenly becoming a top '
-      + 'student, so the page says that, never that she "awakened" a "trait" or "attribute"',
+    // LEDGER R13: the why once taught one page's sentence (觉醒了学霸属性); the
+    // stock-phrase lesson is the idiomatic English rule's, and the refused
+    // forms keep its calque out.
+    why: 'a student who excels academically; English says top student or star student, never "academic tyrant"',
   },
   // CLASS ONE HUNDRED TWENTY-FIVE (shi_Yumiaoya25, 2026-09-25): 滑档二本
   // shipped as "slid down into a second-tier admission slot". Each form
@@ -90,8 +136,8 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
       'second batch',
       'erben',
     ],
-    why: 'the second tier of Chinese universities, admitted by gaokao score after the first tier (一本); the '
-      + 'page names the kind of university, never the admission batch or slot',
+    why: 'the second tier of Chinese universities, admitted by college entrance examination score after the first '
+      + 'tier (一本); the page names the kind of university, never the admission batch or slot',
   },
   {
     term: '滑档',
@@ -100,18 +146,18 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
       'fell through to',
       'ended up at',
     ],
+    // LEDGER R4: the bare motion verbs ("slid into", "slid to") refused tears
+    // that slid down a face and a mood slipped into, so each refused slide
+    // now lands on a tier.
     refusedForms: [
-      'slid down',
-      'slid into',
-      'slid to',
-      'slipped to',
-      'slipped into',
+      ...TIER_SLIDES,
       'slipped a file',
       'sliding file',
       'huadang',
     ],
-    why: 'a gaokao applicant whose score met none of the schools she applied to and who was placed at a lower '
-      + 'tier; the page says she missed her chosen schools and ended up at the lower-tier one',
+    why: 'an applicant whose college entrance examination score met none of the schools applied to and who was placed '
+      + 'at a lower tier; English says she missed her chosen schools and ended up at a lower-tier one, never that she '
+      + 'slid or slipped to a tier',
   },
   // CLASS ONE HUNDRED TWENTY-SIX (shi_Yumiaoya27, 2026-09-25): 年级组长
   // shipped as "the grade leader", 未成年药娘 as "a minor trans girl", 骨灰骰子
@@ -146,8 +192,8 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
       'minor girl',
       'minor boy',
     ],
-    why: '"a minor" is English as a noun, but before another noun ("a minor trans girl") it reads as "unimportant"; '
-      + 'the page writes "an underage trans girl"',
+    why: 'under the age of majority; English says "underage" before a noun and "a minor" only as a noun, since "a '
+      + 'minor trans girl" reads as an unimportant one',
   },
   {
     term: '骨灰骰子',
@@ -246,9 +292,11 @@ export const RENDERING_GLOSSARY: readonly CommunityTerm[] = [
   // CLASS ONE HUNDRED THIRTY-ONE (shi_Yumiaoya32, 2026-09-25): wording in
   // accounts of events, kept in `rendering-glossary-wording.ts`.
   ...WORDING_GLOSSARY,
-  // CLASS ONE HUNDRED SIXTY-ONE (TianqiChen6662, 2026-09-26): grammar slips,
-  // kept in `rendering-glossary-grammar.ts`.
-  ...GRAMMAR_GLOSSARY,
+  // CLASS ONE HUNDRED SIXTY-ONE (TianqiChen6662, 2026-09-26) seeded 化作 to
+  // refuse the doubled preposition "turned into in"; ledger R5 (2026-09-28)
+  // took it out, since the refusal also struck sound English ("what the
+  // kitten turned into in spring"), and the grammatical English rule of
+  // `english-usage-policy.ts` states the lesson on every sheet.
   // CLASS ONE HUNDRED SIXTY-TWO (TianqiChen6663, 2026-09-26): medical terms,
   // kept in `rendering-glossary-medical.ts`.
   ...MEDICAL_GLOSSARY,
