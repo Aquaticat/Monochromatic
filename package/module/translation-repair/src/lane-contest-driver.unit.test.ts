@@ -25,14 +25,21 @@ import {
   createSyntheticClient,
   DEFAULT_RETRY_POLICY,
   persistLaneContestOutcome,
+  SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ArtifactComparisonRow,
   type ArtifactContestSlice,
   type ArtifactDeliveryRow,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type LaneContestOutcome,
+  type LaneContestSliceSeating,
   type ProjectedLanes,
+  type RosterModelId,
   type SliceCache,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -1204,6 +1211,194 @@ await describe({
             lane: 'translate',
           },
         ],);
+      },
+    },),
+  ],
+},);
+
+/**
+ Judges a hook hands back after a dry-out, none of them the driver's own.
+ */
+const RESEATED_JUDGES: readonly RosterModelId[] = [
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY,
+];
+
+/**
+ Builds a client that records which seat every call asked and answers each
+ with a ballot for the repair lane.
+
+ @param asked - sink for the seat of every call, in order
+
+ @returns Client to drive with
+
+ @example
+ ```ts
+ const client = judgeRecordingClient({ asked: [], },);
+ ```
+ */
+function judgeRecordingClient(
+  { asked, }: { readonly asked: RosterModelId[]; },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText not used',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      asked.push(request.modelId,);
+      /**
+       Ballot every judge casts.
+       */
+      const rawText = JSON.stringify({
+        choice: 'repair',
+        unsupported: [],
+        dropped: [],
+        reason: 'the original supports it',
+      },);
+      /**
+       That ballot as the sheet parses it.
+       */
+      const value: unknown = JSON.parse(rawText,);
+      return request.validate(value,)
+        ? { kind: 'ok', value, rawText, }
+        : { kind: 'schema-mismatch', rawText, detail: 'fixture answers another sheet', };
+    },
+    quotas: async () => {
+      throw new Error('quotas not used',);
+    },
+  };
+}
+
+/**
+ Contests one slice the lanes worded differently on the fixture roster.
+
+ @param client - client the judges are asked through
+
+ @param beforeSlice - hook handing the slice its judges, none for a driver
+ with no hook
+
+ @param looked - sink for every key the driver looked up
+
+ @returns Records the driver produced
+
+ @example
+ ```ts
+ await contestOneSlice({ client, looked: [], },);
+ ```
+ */
+async function contestOneSlice(
+  {
+    client,
+    beforeSlice,
+    looked = [],
+  }: {
+    readonly client: SyntheticClient;
+    readonly beforeSlice?: () => Promise<LaneContestSliceSeating>;
+    readonly looked?: string[];
+  },
+): Promise<readonly ArtifactContestSlice[]> {
+  /**
+   Cache holding nothing, recording every key the driver looked up.
+   */
+  const recordedMiss = {
+    get: function recordKey(key: string,): undefined {
+      looked.push(key,);
+      return undefined;
+    },
+  };
+  return await contestDocumentLanes({
+    client,
+    projected: catProjection({ pairs: [[REPAIR_NAP, TRANSLATE_NAP,],], },),
+    modelIds: ROSTER,
+    frontMatterSlices: new Set(),
+    lineStructuredSlices: new Set(),
+    cache: {
+      resumed: recordedMiss as unknown as ReadonlyMap<string, LaneContestOutcome>,
+      persist: async function keepNothing(): Promise<void> {},
+    },
+    signal: AbortSignal.timeout(30_000,),
+    perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
+    l,
+    fanOut: 'whole-bench',
+    ...((beforeSlice === undefined) ? {} : { beforeSlice, }),
+  },);
+}
+
+await describe({
+  name: `${contestDocumentLanes.name} re-seated under a hold (ledger X12)`,
+  children: [
+    it({
+      name: 'SEATS A SLICE ON THE JUDGES ITS HOOK RETURNS, as the lanes and the consolidation seat theirs, so '
+        + 'judges re-read after a provider dry-out are the ones the slice asks rather than those read before it',
+      fn: async () => {
+        /**
+         Seat of every call a driver with no hook made.
+         */
+        const control: RosterModelId[] = [];
+        await contestOneSlice({ client: judgeRecordingClient({ asked: control, },), },);
+        /**
+         Seat of every call the re-seated driver made.
+         */
+        const asked: RosterModelId[] = [];
+        await contestOneSlice({
+          client: judgeRecordingClient({ asked, },),
+          beforeSlice: async (): Promise<LaneContestSliceSeating> => ({ modelIds: RESEATED_JUDGES, }),
+        },);
+        expect({
+          controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
+            return (ROSTER as readonly RosterModelId[]).includes(seat,);
+          },),
+          reseatedAskedAny: asked.length > 0,
+          outsideReseated: asked.filter(function outside(seat,): boolean {
+            return !RESEATED_JUDGES.includes(seat,);
+          },),
+        },).toEqual({
+          controlOnRoster: true,
+          reseatedAskedAny: true,
+          outsideReseated: [],
+        },);
+      },
+    },),
+    it({
+      name: 'KEYS A RE-SEATED SLICE BY THE JUDGES IT RUNS ON, so ballots the judges read before the dry-out '
+        + 'cast are never resumed for it, while a hook handing back the starting judges keys the slice as a '
+        + 'driver with no hook does',
+      fn: async () => {
+        /**
+         Keys a driver with no hook looks up.
+         */
+        const starting: string[] = [];
+        await contestOneSlice({ client: judgeRecordingClient({ asked: [], },), looked: starting, },);
+        /**
+         Keys looked up when the hook re-seats the slice elsewhere.
+               */
+        const moved: string[] = [];
+        await contestOneSlice({
+          client: judgeRecordingClient({ asked: [], },),
+          looked: moved,
+          beforeSlice: async (): Promise<LaneContestSliceSeating> => ({ modelIds: RESEATED_JUDGES, }),
+        },);
+        /**
+         Keys looked up when the hook hands back the judges the driver started on.
+         */
+        const kept: string[] = [];
+        await contestOneSlice({
+          client: judgeRecordingClient({ asked: [], },),
+          looked: kept,
+          beforeSlice: async (): Promise<LaneContestSliceSeating> => ({ modelIds: ROSTER, }),
+        },);
+        expect({
+          lookups: [starting.length, moved.length, kept.length,],
+          movedDiffers: moved[0] !== starting[0],
+          keptMatches: kept[0] === starting[0],
+        },).toEqual({
+          lookups: [1, 1, 1,],
+          movedDiffers: true,
+          keptMatches: true,
+        },);
       },
     },),
   ],

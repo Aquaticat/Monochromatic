@@ -25,6 +25,7 @@ import {
   type BudgetView,
   consolidationHooksFor,
   consolidationPolishConfiguration,
+  contestHooksFor,
   judgeSeatsFor,
   lanesHooksFor,
   prepareDocumentPair,
@@ -297,6 +298,61 @@ await describe({
           client: rig.client,
           signal: new AbortController().signal,
           prepared: PREPARED,
+          l,
+        },);
+        expect(await hooks.beforeSlice(),).toEqual({},);
+        expect(rig.counter.reads,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${contestHooksFor.name} (ledger X12)`,
+  children: [
+    it({
+      name: 'RE-SEATS THE LANE CONTEST before a slice while a hold runs, as it does the lanes and the '
+        + 'consolidation, handing the slice the reading\'s judges, and keeps them once the hold has ended',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        rig.holds.synthetic = DRY_HOLD_MS;
+        const hooks = contestHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
+          l,
+        },);
+        /**
+         Seating the hook hands the slice under the hold.
+         */
+        const underHold = await hooks.beforeSlice();
+        rig.holds.synthetic = 0;
+        /**
+         Seating handed over once the hold has ended.
+         */
+        const afterHold = await hooks.beforeSlice();
+        /**
+         Judges a reading of this view seats.
+         */
+        const { lateJudges, } = judgeSeatsFor({ dry: BEDROCK_AND_OPENROUTER, },);
+        expect({
+          underHold,
+          afterHold,
+          reads: rig.counter.reads,
+        },).toEqual({
+          underHold: { modelIds: lateJudges, },
+          afterHold: { modelIds: lateJudges, },
+          reads: 1,
+        },);
+      },
+    },),
+    it({
+      name: 'COSTS NOTHING while nothing is held: no dryness read and no judges, so the slice keeps those '
+        + 'the contest started on',
+      fn: async () => {
+        const rig = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+        const hooks = contestHooksFor({
+          client: rig.client,
+          signal: new AbortController().signal,
           l,
         },);
         expect(await hooks.beforeSlice(),).toEqual({},);
