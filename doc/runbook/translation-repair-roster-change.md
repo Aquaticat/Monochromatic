@@ -164,8 +164,14 @@ keep the card and empty the seats instead of deleting it:
 Edit the card.
 A price,
 an ignored endpoint,
+a preferred endpoint,
 a measured cap or a hold is one line on the card,
 and the package checks say whether anything else disagrees.
+A card that names a preferred endpoint carries that endpoint's listed price,
+not the model's cheapest listing that `roster-card` prints,
+since that endpoint is the one the seat buys
+(`GET /api/v1/models/<author>/<slug>/endpoints` lists each endpoint's price;
+ledger P13 in `package/module/translation-repair/doc/audit-ledger.md`).
 
 ## While a pass is running
 
