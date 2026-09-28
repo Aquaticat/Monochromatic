@@ -4,6 +4,7 @@ import {
   type CorpusPairReader,
   republishSettledPages,
 } from './page-republish.ts';
+import { removeDeclinedPages, } from './pass-decline.ts';
 import { settledEntryIds, } from './published-tree-listing.ts';
 import { RUN_CORPUS_PIN, } from './run-config.ts';
 
@@ -70,33 +71,42 @@ async function readPinnedPair(
 
 /**
  Rewrites from its artifact every page in a runs directory that is missing or
- disagrees with what the artifact ships, before the pass settles anything.
+ disagrees with what the artifact ships, and removes every page standing for
+ a declined entry, before the pass settles anything.
 
- Never stops the pass: an artifacts directory it cannot list is logged and
- the pass goes on, as does every page it cannot rewrite.
+ Never stops the pass on a page it cannot rewrite, or on an artifacts
+ directory it cannot list: each is logged and the pass goes on.
 
  @param runsDir - run directory holding the artifacts
 
  @param artifactsDir - settled artifact root
 
+ @param declinedDir - directory of decline records
+
  @param publishDir - root of the mirrored tree
 
  @example
  ```ts
- await republishRunPages({ runsDir, artifactsDir, publishDir, },);
+ await republishRunPages({ runsDir, artifactsDir, declinedDir, publishDir, },);
  ```
  */
 export async function republishRunPages(
   {
     runsDir,
     artifactsDir,
+    declinedDir,
     publishDir,
   }: {
     readonly runsDir: string;
     readonly artifactsDir: string;
+    readonly declinedDir: string;
     readonly publishDir: string;
   },
 ): Promise<void> {
+  await removeDeclinedPages({
+    declinedDir,
+    publishDir,
+  },);
   /**
    Entries this directory settled.
    */

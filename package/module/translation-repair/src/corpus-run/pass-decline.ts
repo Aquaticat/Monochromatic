@@ -7,7 +7,10 @@ import {
   archiveOriginalReadingOf,
 } from '../archive-original-note.ts';
 import { parseDocument, } from '../parse-document.ts';
-import { writeDeclinedEntry, } from './declined-entries.ts';
+import {
+  declinedEntryIds,
+  writeDeclinedEntry,
+} from './declined-entries.ts';
 import type {
   CorpusPair,
   EntryOutcome,
@@ -165,6 +168,66 @@ export async function recordEntryDecline(
     `TALLY ${entry.id} status=DECLINED reason=archive-original ms=${String(Date.now() - startedAt,)}`,
   );
   return { kind: 'declined', };
+}
+
+/**
+ Removes the page standing for every entry a runs directory has declined,
+ which a decline recorded before its page removal existed can have left
+ (ledger A16c); the pass runs it before any entry, since a declined entry is
+ never visited again.
+
+ @param declinedDir - directory of decline records
+
+ @param publishDir - root of the mirrored tree
+
+ @returns Entries whose page was removed, sorted
+
+ @example
+ ```ts
+ const removed = await removeDeclinedPages({ declinedDir, publishDir, },);
+ ```
+ */
+export async function removeDeclinedPages(
+  {
+    declinedDir,
+    publishDir,
+  }: {
+    readonly declinedDir: string;
+    readonly publishDir: string;
+  },
+): Promise<readonly string[]> {
+  /**
+   Entries declined here, each with whether a page stood for it.
+   */
+  const outcomes = await Promise.all([...await declinedEntryIds({ declinedDir, },),]
+    .map(async function removeFor(entryId,): Promise<{
+      readonly entryId: string;
+      readonly removed: boolean;
+    }> {
+      return {
+        entryId,
+        removed: await removeLeftoverPage({
+          publishDir,
+          entryId,
+        },),
+      };
+    },),);
+  /**
+   Entries whose page was removed.
+   */
+  const removed = outcomes
+    .filter(function wasRemoved({ removed: gone, },): boolean {
+      return gone;
+    },)
+    .map(function idOf({ entryId, },): string {
+      return entryId;
+    },)
+    .toSorted();
+  for (const entryId of removed) {
+    tagged({ tag: entryId, },)
+      .warn(`entry ${entryId}: removed a page standing for a declined entry, since the archive's note says the archive ships`,);
+  }
+  return removed;
 }
 
 //endregion Pass decline

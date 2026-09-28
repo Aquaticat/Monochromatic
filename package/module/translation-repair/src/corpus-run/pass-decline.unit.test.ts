@@ -31,6 +31,7 @@ import {
   assertPipelineDigest,
   type PipelineDigest,
   recordEntryDecline,
+  removeDeclinedPages,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -158,6 +159,48 @@ await describe({
 
         expect(await readdir(run.pageDir,),).toStrictEqual([],);
         expect(await readdir(run.declinedDir,),).toStrictEqual([`${ENTRY.id}.json`,],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: removeDeclinedPages.name,
+  children: [
+    it({
+      name: 'REMOVES the page standing for an entry declined earlier, since no later pass visits it',
+      fn: async () => {
+        const run = await runsDirectory();
+        await decline({ run, },);
+        await mkdir(
+          run.pageDir,
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            run.pageDir,
+            'page.en.md',
+          ),
+          'A page standing beside a decline record.\n',
+        );
+
+        expect(await removeDeclinedPages({
+          declinedDir: run.declinedDir,
+          publishDir: run.publishDir,
+        },),).toStrictEqual([ENTRY.id,],);
+        expect(await readdir(run.pageDir,),).toStrictEqual([],);
+      },
+    },),
+    it({
+      name: 'REMOVES NOTHING where no page stands, the control the removal rests on',
+      fn: async () => {
+        const run = await runsDirectory();
+        await decline({ run, },);
+
+        expect(await removeDeclinedPages({
+          declinedDir: run.declinedDir,
+          publishDir: run.publishDir,
+        },),).toStrictEqual([],);
       },
     },),
   ],

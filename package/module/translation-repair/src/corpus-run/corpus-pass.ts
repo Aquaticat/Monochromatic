@@ -538,11 +538,12 @@ async function runCorpusPass(): Promise<void> {
   // AFTER THE PLAN RETURNS, which promises no write, and after the build
   // guards, so a page is rewritten only under a build the operator let resume
   // here: every page the artifacts here say should ship differently, or that
-  // is missing, is rewritten from its artifact before any entry runs (ledger
-  // A16c).
+  // is missing, is rewritten from its artifact before any entry runs, and a
+  // page standing for a declined entry is removed (ledger A16c).
   await republishRunPages({
     runsDir,
     artifactsDir,
+    declinedDir,
     publishDir,
   },);
 
