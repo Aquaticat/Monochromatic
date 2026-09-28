@@ -13,12 +13,25 @@ import {
   buildRenderingAuditMessages,
   buildResolutionMessages,
   buildTranslateMessages,
-  hashContent,
   HOUSE_POLICY_BLOCK,
-  messageText,
   TRANSLATE_SELECTION_TASK,
   translateSelectionCriteria,
 } from '../dist/final/node/index.mjs';
+import {
+  type RenderedSheet,
+  SOURCE,
+  ARCHIVE,
+  REPAIR,
+  IDENTITY,
+  REFERENCES,
+  TENSE_ISSUE,
+  joined,
+} from './rendered-sheets-texts.test-fixture.ts';
+import { evidenceSheets, } from './rendered-sheets-preparation.test-fixture.ts';
+import { judgeSheets, } from './rendered-sheets-judges.test-fixture.ts';
+import { slateSheets, } from './rendered-sheets-slates.test-fixture.ts';
+
+export type { RenderedSheet, } from './rendered-sheets-texts.test-fixture.ts';
 
 //region Rendered sheets
 // EVERY MODEL-FACING SHEET, rendered once with invented cat fixtures, so a
@@ -27,118 +40,13 @@ import {
 // sheet its class happened to find. Built for the whole-package audit of
 // 2026-09-27, whose sheet audits rendered the same sheets by hand. These
 // strings are authored test data, never copied corpus passages.
-
-/**
- One rendered sheet, named by the stage that reads it.
- */
-export type RenderedSheet = {
-  /**
-   Stage the sheet is written for.
-   */
-  readonly name: string;
-
-  /**
-   Every message of the exchange, joined.
-   */
-  readonly text: string;
-};
-
-/**
- Invented original: a kitten asleep on the windowsill, and what she said.
- */
-const SOURCE = '那晚小猫咪在窗台上睡着了。她说：「我明天还来。」';
-
-/**
- Invented archive rendering, told in the present.
- */
-const ARCHIVE = 'That night the kitten falls asleep on the windowsill. She says, "I will come again tomorrow."';
-
-/**
- Invented repair of the archive rendering, told in the past.
- */
-const REPAIR = 'That night the kitten fell asleep on the windowsill. She said, "I will come again tomorrow."';
-
-/**
- Invented identity context carrying one declared name.
- */
-const IDENTITY = 'name: 咪咪 = Mittens';
-
-/**
- Invented cited reference.
- */
-const REFERENCES = '- reference 1 https://example.org/mittens ("Mittens"): Mittens had an older sister who was also a tabby.';
-
-/**
- Opening sentence of the invented original, which the invented claim quotes.
- */
-const SOURCE_QUOTE = '那晚小猫咪在窗台上睡着了。';
-
-/**
- Opening sentence of the invented archive rendering, which the invented
- claim quotes.
- */
-const ARCHIVE_QUOTE = 'That night the kitten falls asleep on the windowsill.';
-
-/**
- Invented accepted issue quoting both documents, so the checker sheet shows
- its claim evidence (ledger L14).
- */
-const TENSE_ISSUE = {
-  issueId: 'issue/tense',
-  status: 'accepted' as const,
-  severity: 'minor' as const,
-  claims: [
-    {
-      claimId: 'claim/tense',
-      claim: {
-        category: 'fluency/grammar' as const,
-        severity: 'minor' as const,
-        summary: 'The narration is told in the present.',
-        spans: [
-          {
-            side: 'source' as const,
-            nodeId: 'block/1',
-            nodeHash: hashContent({ content: SOURCE, },),
-            startOffset: 0,
-            endOffset: SOURCE_QUOTE.length,
-            quotedText: SOURCE_QUOTE,
-          },
-          {
-            side: 'target' as const,
-            nodeId: 'block/1',
-            nodeHash: hashContent({ content: ARCHIVE, },),
-            startOffset: 0,
-            endOffset: ARCHIVE_QUOTE.length,
-            quotedText: ARCHIVE_QUOTE,
-          },
-        ],
-      },
-    },
-  ],
-  tallies: {},
-};
-
-/**
- Joins the content of every message of an exchange.
-
- @param messages - exchange to read
-
- @returns Every message's text, joined
-
- @example
- ```ts
- const text = joined({ messages, },);
- ```
- */
-function joined(
-  { messages, }: { readonly messages: readonly Parameters<typeof messageText>[0]['message'][]; },
-): string {
-  return messages
-    .map(function textOf(message,): string {
-      return messageText({ message, },);
-    },)
-    .join('\n',);
-}
+//
+// "EVERY" WAS FIFTEEN UNTIL LEDGER X17 (2026-09-28): the attestation, the
+// pairing rounds, the archive review and its slate, the repair lane's judges,
+// the picture readers, every other selection slate and the typed decision were
+// missing, and the picture readers' "summarise" had never met the Canadian
+// spelling guard. `rendered-sheets-census.unit.test.ts` now fails when a sheet
+// builder the package exports is rendered by none of these fixtures.
 
 /**
  Every model-facing sheet the package builds, rendered with the fixtures.
@@ -360,6 +268,9 @@ export function renderedSheets(): readonly RenderedSheet[] {
         },),
       },),
     },
+    ...evidenceSheets(),
+    ...judgeSheets(),
+    ...slateSheets(),
   ];
 }
 

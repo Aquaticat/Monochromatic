@@ -1,0 +1,261 @@
+/**
+ Every selection slate and the typed decision, rendered for
+ `rendered-sheets.test-fixture.ts` (ledger X17).
+
+ Fixtures are cat-themed invention; no corpus content appears here.
+
+ @module
+ */
+
+import {
+  buildCandidateSelectMessages,
+  buildRefineSelectionContext,
+  CHUNK_DECLINE_CONSEQUENCE,
+  CHUNK_SELECTION_CRITERIA,
+  CHUNK_SELECTION_TASK,
+  ENVELOPE_SELECTION_CRITERIA,
+  ENVELOPE_SELECTION_TASK,
+  KEEPS_TRUSTED_TEXT,
+  LEAVES_PASSAGE_UNTRANSLATED,
+  type RefineStageMode,
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY,
+  selectDecision,
+  SHIPS_BY_PREFERENCE,
+  TRANSLATE_SELECTION_TASK,
+  translatedSlateCriteria,
+  translateSelectionCriteria,
+  translateSelectionTask,
+} from '../dist/final/node/index.mjs';
+
+import {
+  type RenderedSheet,
+  SOURCE,
+  ARCHIVE,
+  REPAIR,
+  REFERENCES,
+  ARCHIVE_QUOTE,
+  VERSE_SOURCE,
+  TENSE_REGION,
+  joined,
+} from './rendered-sheets-texts.test-fixture.ts';
+
+//region Slate sheets
+
+/**
+ Every refinement mode, each of which asks its own slate.
+ */
+const REFINE_MODES: readonly {
+  readonly name: string;
+  readonly mode: RefineStageMode;
+}[] = [
+  {
+    name: 'refine slate',
+    mode: { kind: 'comparative', },
+  },
+  {
+    name: 'refine correction slate',
+    mode: {
+      kind: 'required-naturalness-correction',
+      findings: [{
+        paragraph: 1,
+        problem: 'The second sentence repeats the first.',
+      },],
+      priorCorrections: [{
+        candidateText: ARCHIVE,
+        findings: ['It still repeats itself.',],
+      },],
+    },
+  },
+  {
+    name: 'refine objection slate',
+    mode: {
+      kind: 'objection-correction',
+      groups: [{
+        origin: 'consolidation gate',
+        objections: ['The tense shifts mid-paragraph.',],
+      },],
+    },
+  },
+];
+
+/**
+ The typed decision's state and question, as the decisions endpoint reads them.
+
+ @returns Both, as JSON
+
+ @example
+ ```ts
+ const text = typedDecisionText();
+ ```
+ */
+function typedDecisionText(): string {
+  /**
+   The choice asked as a typed decision.
+   */
+  const decision = selectDecision({
+    task: TRANSLATE_SELECTION_TASK,
+    criteria: translateSelectionCriteria({ lineStructured: false, },),
+    evidence: [{
+      label: 'ORIGINAL (Chinese)',
+      text: SOURCE,
+    },],
+    rendered: [
+      ARCHIVE,
+      REPAIR,
+    ],
+    sourceText: SOURCE,
+  },);
+  return JSON.stringify({
+    state: decision.state,
+    questions: decision.questions,
+  },);
+}
+
+/**
+ Every selection slate by its own task, criteria and decline text, and the
+ same choice asked as a typed decision (ledger X17).
+
+ @returns One entry per sheet
+
+ @example
+ ```ts
+ const sheets = slateSheets();
+ ```
+ */
+export function slateSheets(): readonly RenderedSheet[] {
+  /**
+   The original as every slate's first evidence.
+   */
+  const original = [{
+    label: 'ORIGINAL (Chinese)',
+    text: SOURCE,
+  },];
+  return [
+    {
+      name: 'envelope slate',
+      text: joined({
+        messages: buildCandidateSelectMessages({
+          task: ENVELOPE_SELECTION_TASK,
+          criteria: ENVELOPE_SELECTION_CRITERIA,
+          evidence: original,
+          rendered: [
+            ARCHIVE_QUOTE,
+            TENSE_REGION.editorAfter,
+          ],
+          declineConsequence: KEEPS_TRUSTED_TEXT,
+          sourceText: SOURCE,
+        },),
+      },),
+    },
+    {
+      name: 'chunk slate',
+      text: joined({
+        messages: buildCandidateSelectMessages({
+          task: CHUNK_SELECTION_TASK,
+          criteria: CHUNK_SELECTION_CRITERIA,
+          evidence: original,
+          rendered: [
+            ARCHIVE,
+            REPAIR,
+          ],
+          declineConsequence: CHUNK_DECLINE_CONSEQUENCE,
+          sourceText: SOURCE,
+        },),
+      },),
+    },
+    {
+      name: 'translate challenge slate',
+      text: joined({
+        messages: buildCandidateSelectMessages({
+          task: translateSelectionTask({ responsibility: 'decline-challenge', },),
+          criteria: translatedSlateCriteria({
+            sourceText: VERSE_SOURCE,
+            archiveText: '',
+            lineStructured: false,
+            slate: [
+              {
+                index: 1,
+                text: 'The kitten fell asleep. It dreamed of fish.',
+                hash: 'slate/1',
+                origin: 'fresh',
+                producer: {
+                  kind: 'model',
+                  modelId: SEAT_HYPER_ONLY,
+                },
+              },
+              {
+                index: 2,
+                text: 'The kitten fell asleep.<br/>It dreamed of fish.',
+                hash: 'slate/2',
+                origin: 'fresh',
+                producer: {
+                  kind: 'model',
+                  modelId: SEAT_OPENROUTER_ONLY,
+                },
+              },
+            ],
+          },),
+          evidence: [{
+            label: 'ORIGINAL (Chinese)',
+            text: VERSE_SOURCE,
+          },],
+          rendered: [
+            'The kitten fell asleep. It dreamed of fish.',
+            'The kitten fell asleep.<br/>It dreamed of fish.',
+          ],
+          declineConsequence: LEAVES_PASSAGE_UNTRANSLATED,
+          sourceText: VERSE_SOURCE,
+        },),
+      },),
+    },
+    {
+      name: 'translate front matter slate',
+      text: joined({
+        messages: buildCandidateSelectMessages({
+          task: TRANSLATE_SELECTION_TASK,
+          criteria: translateSelectionCriteria({
+            lineStructured: false,
+            syntax: 'front-matter',
+          },),
+          evidence: original,
+          rendered: [
+            ARCHIVE,
+            REPAIR,
+          ],
+          declineConsequence: SHIPS_BY_PREFERENCE,
+          sourceText: SOURCE,
+        },),
+      },),
+    },
+    ...REFINE_MODES.map(function refineSlate({
+      name,
+      mode,
+    },): RenderedSheet {
+      return {
+        name,
+        text: joined({
+          messages: buildCandidateSelectMessages({
+            ...buildRefineSelectionContext({
+              mode,
+              sourceText: SOURCE,
+              repairedText: REPAIR,
+              referenceContext: REFERENCES,
+            },),
+            rendered: [
+              REPAIR,
+              ARCHIVE,
+            ],
+            sourceText: SOURCE,
+          },),
+        },),
+      };
+    },),
+    {
+      name: 'typed decision',
+      text: typedDecisionText(),
+    },
+  ];
+}
+
+//endregion Slate sheets
