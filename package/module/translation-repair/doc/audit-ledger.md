@@ -2414,7 +2414,7 @@ the preservation-check claims.
 
 ### L14: smaller items
 
-Status: (a) and (d) fixed; (b) and (c) open.
+Status: (a), (c) and (d) fixed; (b) open.
 
 #### L14(a): the resolution checker sheet carried none of the panel's evidence
 
@@ -2467,7 +2467,9 @@ the only slice-cache file not older than 00:26 on 2026-09-27 is the consolidatio
 
 Scope kept out, as a candidate rather than bundled:
 the probe's sheet also carries the neighbouring window and community renderings,
-and the checker sheet carries neither.
+and the checker sheet carries neither;
+and the audit's finding also named the text before the revision,
+which the claim quotes now carry only where a claim quoted it.
 The panel's measured regression from adding sheet content (`NEARBY_RULE` in `adjudicate-prompt.ts`)
 says sheet additions need evidence first.
 
@@ -2477,8 +2479,35 @@ Status: open.
 
 #### L14(c): `selectChunkPatch` wording on declines
 
-Status: open.
-It tells judges a decline keeps the trusted text while an indecision ships the strongest patch.
+Status: fixed in `e7e530564`, guarded red first in `ebe1c8ffd`.
+The chunk selection used the shared promise
+"the caller keeps text it already trusts when you decline".
+A decline names no candidate and counts as no vote:
+the existing English is kept only when every judge declines (`rejection`),
+and a round the naming judges cannot decide (`indecision`) sends the editor patch that landed the most edits
+on to the checkers (`pickFallbackCandidate`).
+The audit called this latent, with no chunk round holding a majority of declines.
+Measured, that was wrong:
+over 2,476 chunk rounds in 266 artifacts,
+656 had at least one decline,
+14 had declines outnumbering the ballots naming a candidate,
+10 of those were read as indecision (TianqiChen66621 chunk 17: 4 declined, 1 named),
+4 selected a candidate the minority named,
+and none had every judge decline
+(`~/temp/agent/audit-glossary-fix/l14c-census.mjs`).
+
+The vote rule stays.
+A decline as an abstention that does not count is the measured policy for the consolidation gate's `neither`
+(`doc/planning/the-third-rendering.md`),
+and the fallback repairs because the panel ruled its issues real (`editor-candidates.ts`).
+The chunk sheet now states that rule (`CHUNK_DECLINE_CONSEQUENCE`),
+and both behaviours it states are pinned (`chunk-decline-consequence.unit.test.ts`).
+The shared promise stays for the envelope selection,
+where any declined round leaves the envelope unedited,
+so a round that declines keeps the trusted text there.
+Mutation check: the unwired constant, the dropped unanimity, the unstated fallback,
+and an indecision that keeps the existing English are each caught; the control survived.
+Cache: rides inside repair 34, same check, same result.
 
 #### L14(d): model-written and quoted text rendered raw on line-based sheets
 

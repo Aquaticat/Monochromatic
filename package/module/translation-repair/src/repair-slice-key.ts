@@ -429,6 +429,10 @@ import type { RepairModels, } from './repair-contract.ts';
  indented under its evidence item (ledger L14(d), `3be658509`), which changes
  the sheets of any slice whose claims carry a line break; same check, same
  result.
+
+ Rides inside 34 too: the chunk selection tells its judges that a decline
+ counts as no vote and keeps the existing English only when every judge
+ declines (ledger L14(c), `e7e530564`); same check, same result.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**
