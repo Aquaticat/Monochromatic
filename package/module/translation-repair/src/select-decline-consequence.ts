@@ -23,6 +23,32 @@ import type { IncumbentKind, } from './translate-absence.ts';
 export const KEEPS_TRUSTED_TEXT: string = 'the caller keeps text it already trusts when you decline';
 
 /**
+ What a decline does on the chunk selection, where declining every candidate
+ and failing to agree lead to different texts (ledger L14(c)).
+
+ A decline names no candidate and counts as no vote, as `neither` does at the
+ consolidation gate by measurement (`doc/planning/the-third-rendering.md`).
+ The existing English is kept only when every judge declines; when the judges
+ who named a candidate reach no decision, the editor patch that landed the
+ most edits goes on, since the panel ruled its issues real
+ (`pickFallbackCandidate`). The shared promise, that the caller keeps trusted
+ text when a judge declines, held for neither case: 14 of 2,476 chunk rounds
+ over every artifact had declines outnumbering the ballots naming a
+ candidate, and 10 of them sent that fallback on.
+
+ @example
+ ```ts
+ const consequence = CHUNK_DECLINE_CONSEQUENCE;
+ ```
+ */
+export const CHUNK_DECLINE_CONSEQUENCE: string = [
+  'a decline names no candidate and counts as no vote: the caller keeps the EXISTING ENGLISH BEFORE REPAIR',
+  'only when every judge declines, and when the judges who named a candidate reach no decision, the repair that',
+  'landed the most edits goes on instead, since the panel ruled its issues real; whatever goes on must still',
+  'pass the resolution checkers and beat the existing English on measurements before it ships',
+].join(' ',);
+
+/**
  What a decline costs where the caller has NOTHING to fall back on.
 
  @example

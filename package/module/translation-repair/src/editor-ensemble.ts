@@ -16,6 +16,7 @@ import {
   producerModelIds,
 } from './candidate-select-model.ts';
 import { selectBestCandidate, } from './candidate-select-record.ts';
+import { CHUNK_DECLINE_CONSEQUENCE, } from './select-decline-consequence.ts';
 import { collectEnvelopeProposals, } from './editor-proposals.ts';
 import {
   CHUNK_SELECTION_CRITERIA,
@@ -397,6 +398,9 @@ export async function selectChunkPatch(
     sourceText,
     task: CHUNK_SELECTION_TASK,
     criteria: CHUNK_SELECTION_CRITERIA,
+    // WHAT DECLINING DOES HERE, which the shared promise misstates: only a
+    // unanimous decline keeps the existing English (ledger L14(c)).
+    declineConsequence: CHUNK_DECLINE_CONSEQUENCE,
     evidence: [
       {
         label: 'ORIGINAL (Chinese)',
