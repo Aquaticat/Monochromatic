@@ -10,6 +10,8 @@ import type {
   ChatTextRequest,
 } from './chat-contract.ts';
 import { readJsonOutcome, } from './chat-json-outcome.ts';
+import { NoProviderForModelError, } from './no-provider-for-model-error.ts';
+import { reaskElsewhereNudged, } from './nudged-reask.ts';
 import {
   isBudgetRefusal,
   isPaymentRefusal,
@@ -40,6 +42,11 @@ import type { SlotLedger, } from './provider-router-slots.ts';
 // names, and skipped where every other provider is dry. When the second stack
 // disagrees with the schema too, the FIRST provider's answer is returned,
 // because the caller's own handling is written against it; both are logged.
+//
+// NUDGED, AND DRIVEN FROM ABOVE THE ROUTER IN A RUN (ledger P9): the re-ask
+// carries `CROSS_PROVIDER_NUDGE` so it is a new prompt the uniqueness wrapper
+// may buy, and that wrapper performs it through `chatText` hinted with
+// `otherThan`, which `routedTextElsewhere` serves (`nudged-reask.ts`).
 //
 // SPLIT FROM `provider-router.ts` at its line budget. The router lends it the
 // three things it needs: the reach of a request, the budget view, and the
@@ -229,15 +236,99 @@ async function replyOrBudgetRefusal(
 }
 
 /**
- Schema-validated chat exchange over whichever provider served the text,
- re-asked once elsewhere when the answer did not conform.
- 
+ One exchange served by a provider other than the one named: the re-ask of a
+ reply that could not be used (ledger P9).
+
  @param core - what the router lent
- 
+
+ @param request - exchange to perform, already nudged
+
+ @param otherThan - provider that served the first reply
+
+ @returns Reply and the provider that served it
+
+ @throws {@link NoProviderForModelError} when no other provider serving the
+ model has budget, or the one asked refused on budget
+
+ @example
+ ```ts
+ const { provider, reply, } = await routedTextElsewhere({ core, request, otherThan: 'synthetic', },);
+ ```
+ */
+export async function routedTextElsewhere(
+  {
+    core,
+    request,
+    otherThan,
+  }: {
+    readonly core: RoutedCore;
+    readonly request: ForeignBorrowed<ChatTextRequest>;
+    readonly otherThan: ProviderName;
+  },
+): Promise<RoutedReply> {
+  /**
+   Somewhere else to ask, where this model is served and has budget.
+   */
+  const [elsewhere,] = await secondOpinionsFrom({
+    core,
+    request,
+    served: otherThan,
+  },);
+
+  if (elsewhere === undefined) {
+    throw new NoProviderForModelError({
+      modelId: request.modelId,
+      reason: `no provider other than ${otherThan} serves it with budget`,
+    },);
+  }
+
+  // THE SLOT IS TAKEN HERE FOR THE SAME REASON THE ROUTER TAKES IT AT THE
+  // DECISION: `callOn` releases one slot on every call to a limiting provider,
+  // and a re-ask that reached one without a take released a slot nothing
+  // held, so the count drifted negative and overflow needed that many extra
+  // concurrent calls before it resumed (`#240`). No `await` sits between the
+  // budget read in `secondOpinionsFrom` and this line.
+  core.ledger
+    .take({
+      provider: elsewhere,
+      modelId: request.modelId,
+    },);
+
+  /**
+   The other serving stack's reply, or nothing, when it refused on budget.
+   */
+  const asked = await replyOrBudgetRefusal({
+    core,
+    provider: elsewhere,
+    request,
+  },);
+
+  if (asked.kind === 'budget-refused') {
+    throw new NoProviderForModelError({
+      modelId: request.modelId,
+      reason: `${elsewhere} refused the re-ask on budget`,
+    },);
+  }
+  return {
+    provider: elsewhere,
+    reply: asked.reply,
+  };
+}
+
+/**
+ Schema-validated chat exchange over whichever provider served the text,
+ re-asked once elsewhere, nudged, when the answer could not be used.
+
+ REACHED ONLY WHERE A CLIENT CALLS THE ROUTER'S `chatJson` DIRECTLY; a run
+ wraps the router in `promptUniqueClient`, which buys through `chatText` and
+ re-asks through the same helper so both exchanges are claimed and stored.
+
+ @param core - what the router lent
+
  @param request - exchange plus content guard
- 
+
  @returns Outcome as data: ok, refusal-shaped, or schema-mismatch
- 
+
  @example
  ```ts
  const outcome = await routedJson({ core, request, },);
@@ -253,99 +344,41 @@ export async function routedJson<ValueT,>(
   },
 ): Promise<ChatJsonOutcome<ValueT>> {
   /**
-   Logger pre-tagged with this function's name.
-   */
-  const rl = tagged({
-    tag: routedJson.name,
-    l,
-  },);
-
-  /**
-   What the router lent, named once.
-   */
-  const {
-    routedText,
-    ledger,
-  } = core;
-
-  /**
    Raw text reply of the routed exchange, and who answered it.
    */
   const {
     provider,
     reply,
-  } = await routedText(request,);
+  } = await core.routedText(request,);
 
-  /**
-   What that answer turned out to be.
-   */
-  const outcome = readJsonOutcome({
-    modelId: request.modelId,
-    reply,
-    validate: request.validate,
-  },);
-
-  if (outcome.kind === 'ok')
-    return outcome;
-
-  /**
-   Somewhere else to ask, where this model is served and has budget.
-   */
-  const [elsewhere,] = await secondOpinionsFrom({
-    core,
+  return await reaskElsewhereNudged({
     request,
-    served: provider,
+    first: {
+      reply: {
+        ...reply,
+        servedBy: provider,
+      },
+      outcome: readJsonOutcome({
+        modelId: request.modelId,
+        reply,
+        validate: request.validate,
+      },),
+    },
+    ask: async function askElsewhere(nudged,): Promise<ChatTextReply> {
+      /**
+       The nudged exchange on another provider.
+       */
+      const routed = await routedTextElsewhere({
+        core,
+        request: nudged,
+        otherThan: provider,
+      },);
+      return {
+        ...routed.reply,
+        servedBy: routed.provider,
+      };
+    },
   },);
-
-  if (elsewhere === undefined)
-    return outcome;
-
-  rl.info(
-    `${request.modelId}: ${outcome.kind} on ${provider}, asking ${elsewhere} for the same model`,
-  );
-
-  // THE SLOT IS TAKEN HERE FOR THE SAME REASON THE ROUTER TAKES IT AT THE
-  // DECISION: `callOn` releases one slot on every call to a limiting provider,
-  // and a re-ask that reached one without a take released a slot nothing
-  // held, so the count drifted negative and overflow needed that many extra
-  // concurrent calls before it resumed (`#240`). No `await` sits between the
-  // budget read in `secondOpinionsFrom` and this line.
-  ledger.take({
-    provider: elsewhere,
-    modelId: request.modelId,
-  },);
-
-  /**
-   Same model, same question, another serving stack; or nothing, when that
-   stack refused on budget.
-   */
-  const asked = await replyOrBudgetRefusal({
-    core,
-    provider: elsewhere,
-    request,
-  },);
-
-  if (asked.kind === 'budget-refused')
-    return outcome;
-
-  /**
-   What the other stack's answer turned out to be.
-   */
-  const second = readJsonOutcome({
-    modelId: request.modelId,
-    reply: asked.reply,
-    validate: request.validate,
-  },);
-
-  if (second.kind === 'ok')
-    return second;
-
-  // THE FIRST ANSWER IS RETURNED WHEN BOTH FAIL, because it came from the
-  // provider the policy preferred and the caller's own handling is written
-  // against that. Both are logged, so a reader can see the re-ask happened
-  // and did not help.
-  rl.info(`${request.modelId}: ${elsewhere} answered ${second.kind} too`,);
-  return outcome;
 }
 
 //endregion Provider router re-ask

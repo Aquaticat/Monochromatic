@@ -6,6 +6,7 @@ import type {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { Decider, } from './decision-contract.ts';
+import type { ProviderName, } from './provider-name.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { QuotaSnapshot, } from './synthetic-quota.ts';
 
@@ -232,6 +233,14 @@ export type ChatTextRequest = {
    Structured-output constraint when the caller expects JSON.
    */
   readonly responseFormat?: JsonSchemaResponseFormat;
+
+  /**
+   Provider this exchange must not be served by, set only on the nudged
+   re-ask of a reply that could not be used (ledger P9). The router serves it
+   on another provider or throws `NoProviderForModelError`; a client that
+   routes nowhere never tags a reply, so it is never asked to honour one.
+   */
+  readonly otherThan?: ProviderName;
 };
 
 /**
@@ -269,6 +278,14 @@ export type ChatTextReply = {
    the guard.
    */
   readonly finishReason?: string;
+
+  /**
+   Provider that served the reply, set by the router and replayed by the
+   payload store, so a reply that could not be used can be re-asked
+   elsewhere (ledger P9). Absent from a client that routes nowhere and from
+   payloads stored before 2026-09-28, which are then not re-asked.
+   */
+  readonly servedBy?: ProviderName;
 };
 
 /**

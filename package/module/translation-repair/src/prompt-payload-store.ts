@@ -6,6 +6,7 @@ import { join, } from 'node:path';
 
 import type { ChatTextReply, } from './chat-contract.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { isProviderName, } from './provider-name.ts';
 import { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 
 //region Durable model-prompt payload store
@@ -197,12 +198,19 @@ function readStoredReply(
     refusal,
     finishReason,
     usage,
+    servedBy,
   } = value;
   if ((typeof text) !== 'string')
     invalidStoredPayload({ promptDigest, },);
   if ((refusal !== undefined) && ((typeof refusal) !== 'string'))
     invalidStoredPayload({ promptDigest, },);
   if ((finishReason !== undefined) && ((typeof finishReason) !== 'string'))
+    invalidStoredPayload({ promptDigest, },);
+  // THE PROVIDER THAT SERVED IT IS REPLAYED TOO (ledger P9): without it a
+  // resumed run could not re-ask a reply that could not be used elsewhere,
+  // and would answer differently from the run it resumes. Payloads stored
+  // before the tag existed carry none.
+  if ((servedBy !== undefined) && (((typeof servedBy) !== 'string') || (!isProviderName(servedBy,))))
     invalidStoredPayload({ promptDigest, },);
   /**
    Validated reply without optional usage.
@@ -211,6 +219,7 @@ function readStoredReply(
     text,
     ...((refusal === undefined) ? {} : { refusal, }),
     ...((finishReason === undefined) ? {} : { finishReason, }),
+    ...((servedBy === undefined) ? {} : { servedBy, }),
   };
   if (usage === undefined)
     return reply;

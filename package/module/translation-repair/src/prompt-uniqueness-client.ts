@@ -11,6 +11,7 @@ import type {
   SyntheticClient,
 } from './chat-contract.ts';
 import { hashContent, } from './document-node.ts';
+import { reaskElsewhereNudged, } from './nudged-reask.ts';
 import {
   PROMPT_PAYLOAD_MISSING,
   type PromptPayloadStore,
@@ -145,136 +146,104 @@ export function promptUniqueClient(
    */
   const claimed = new Map<string, Promise<ChatTextReply>>();
 
-  return {
-    chatText: async function uniqueText(
-      request: ChatTextRequest,
-    ): Promise<ChatTextReply> {
+  /**
+   One exchange under the uniqueness rule: a claimed payload reused, a stored
+   one replayed, or the first provider call bought and stored.
+
+   @param request - exchange to perform
+
+   @returns Payload for this model and prompt
+
+   @example
+   ```ts
+   const reply = await claimedReply(request,);
+   ```
+   */
+  async function claimedReply(request: ChatTextRequest,): Promise<ChatTextReply> {
+    /**
+     Canonical model and prompt identity.
+     */
+    const promptDigest = modelPromptDigest({ request, },);
+    /**
+     Earlier in-flight or completed payload for same identity.
+     */
+    const existing = claimed.get(promptDigest,);
+    if (existing !== undefined) {
       /**
-       Canonical model and prompt identity.
+       Reused payload after owner call completed successfully.
        */
-      const promptDigest = modelPromptDigest({ request, },);
+      const reply = await existing;
+      l.info(`PROMPT-REUSE source=memory model=${request.modelId} digest=${promptDigest}`,);
+      return reply;
+    }
+    /**
+     Durable payload replay or first provider exchange,
+     claimed synchronously before any await.
+     */
+    const pending = (async function buyOrResume(): Promise<ChatTextReply> {
       /**
-       Earlier in-flight or completed payload for same identity.
+       Durable payload or explicit absence when store is configured.
        */
-      const existing = claimed.get(promptDigest,);
-      if (existing !== undefined) {
-        /**
-         Reused payload after owner call completed successfully.
-         */
-        const reply = await existing;
-        l.info(`PROMPT-REUSE source=memory model=${request.modelId} digest=${promptDigest}`,);
-        return reply;
+      const stored = await store?.read({ promptDigest, },)
+        ?? PROMPT_PAYLOAD_MISSING;
+      if ((typeof stored) !== 'symbol') {
+        l.info(`PROMPT-REUSE source=disk model=${request.modelId} digest=${promptDigest}`,);
+        return stored;
       }
       /**
-       Durable payload replay or first provider exchange,
-       claimed synchronously before any await.
+       First provider payload for this prompt identity.
        */
-      const pending = (async function buyOrResumeText(): Promise<ChatTextReply> {
-        /**
-         Durable payload or explicit absence when store is configured.
-         */
-        const stored = await store?.read({ promptDigest, },)
-          ?? PROMPT_PAYLOAD_MISSING;
-        if ((typeof stored) !== 'symbol') {
-          l.info(`PROMPT-REUSE source=disk model=${request.modelId} digest=${promptDigest}`,);
-          return stored;
-        }
-        /**
-         First provider payload for this prompt identity.
-         */
-        const reply = await inner.chatText(request,);
-        await store?.write({
-          promptDigest,
-          reply,
-        },);
-        return reply;
-      })();
-      claimed.set(
+      const reply = await inner.chatText(request,);
+      await store?.write({
         promptDigest,
-        pending,
-      );
-      try {
-        return await pending;
-      }
-      catch (error) {
-        /**
-         Whether provider completed payload or durable store failed after claim.
-         */
-        const retainsClaim = (error instanceof MalformedCompletionError)
-          || (error instanceof PromptPayloadStoreError);
-        if (!retainsClaim)
-          claimed.delete(promptDigest,);
-        throw error;
-      }
-    },
+        reply,
+      },);
+      return reply;
+    })();
+    claimed.set(
+      promptDigest,
+      pending,
+    );
+    try {
+      return await pending;
+    }
+    catch (error) {
+      /**
+       Whether provider completed payload or durable store failed after claim.
+       */
+      const retainsClaim = (error instanceof MalformedCompletionError)
+        || (error instanceof PromptPayloadStoreError);
+      if (!retainsClaim)
+        claimed.delete(promptDigest,);
+      throw error;
+    }
+  }
+
+  return {
+    chatText: claimedReply,
     chatJson: async function uniqueJson<ValueT,>(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> {
       /**
-       Canonical model and prompt identity.
+       Payload for this model and prompt, reused, replayed or bought.
        */
-      const promptDigest = modelPromptDigest({ request, },);
-      /**
-       Earlier in-flight or completed payload for same identity.
-       */
-      const existing = claimed.get(promptDigest,);
-      if (existing !== undefined) {
-        /**
-         Reused payload after owner call completed successfully.
-         */
-        const reply = await existing;
-        l.info(`PROMPT-REUSE source=memory model=${request.modelId} digest=${promptDigest}`,);
-        return readJsonOutcome({
-          modelId: request.modelId,
+      const reply = await claimedReply(request,);
+
+      // A REPLY THAT COULD NOT BE USED IS RE-ASKED ELSEWHERE, NUDGED, through
+      // this same claim path (ledger P9), so the re-ask is claimed and stored
+      // like the first ask and a resumed run replays both.
+      return await reaskElsewhereNudged({
+        request,
+        first: {
           reply,
-          validate: request.validate,
-        },);
-      }
-      /**
-       Durable payload replay or first provider exchange,
-       claimed synchronously before any await.
-       */
-      const pending = (async function buyOrResumeJson(): Promise<ChatTextReply> {
-        /**
-         Durable payload or explicit absence when store is configured.
-         */
-        const stored = await store?.read({ promptDigest, },)
-          ?? PROMPT_PAYLOAD_MISSING;
-        if ((typeof stored) !== 'symbol') {
-          l.info(`PROMPT-REUSE source=disk model=${request.modelId} digest=${promptDigest}`,);
-          return stored;
-        }
-        /**
-         First provider payload for this prompt identity.
-         */
-        const reply = await inner.chatText(request,);
-        await store?.write({
-          promptDigest,
-          reply,
-        },);
-        return reply;
-      })();
-      claimed.set(
-        promptDigest,
-        pending,
-      );
-      try {
-        return readJsonOutcome({
-          modelId: request.modelId,
-          reply: await pending,
-          validate: request.validate,
-        },);
-      }
-      catch (error) {
-        /**
-         Whether provider completed payload or durable store failed after claim.
-         */
-        const retainsClaim = (error instanceof MalformedCompletionError)
-          || (error instanceof PromptPayloadStoreError);
-        if (!retainsClaim)
-          claimed.delete(promptDigest,);
-        throw error;
-      }
+          outcome: readJsonOutcome({
+            modelId: request.modelId,
+            reply,
+            validate: request.validate,
+          },),
+        },
+        ask: claimedReply,
+      },);
     },
     quotas: inner.quotas,
     // A TYPED EXCHANGE IS NEITHER CLAIMED NOR STORED: its state is the

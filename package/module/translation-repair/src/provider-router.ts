@@ -36,9 +36,11 @@ import {
   type ProviderName,
   type ProviderRecord,
 } from './provider-name.ts';
+import { NoProviderForModelError, } from './no-provider-for-model-error.ts';
 import {
   type RoutedCore,
   routedJson,
+  routedTextElsewhere,
 } from './provider-router-reask.ts';
 import type { RoutedReply, } from './provider-router-reply.ts';
 import {
@@ -101,45 +103,9 @@ import {
  */
 const l = contextRoot({ tag: 'translation-repair', },);
 
-/**
- Refusal raised when no provider can take one call at all.
- 
- @example
- ```ts
- throw new NoProviderForModelError({ modelId, reason: 'no provider serves this model', },);
- ```
- */
-export class NoProviderForModelError extends Error {
-  /**
-   Declares this message safe to forward: it names a model and which of the routing outcomes it hit.
-   */
-  readonly messageNamesOnly: true = true;
-
-  /**
-   Builds failure naming the model and why nowhere could take it.
-   
-   @param modelId - model the call was addressed to
-   
-   @param reason - what the router decided, verbatim
-   
-   @example
-   ```ts
-   new NoProviderForModelError({ modelId: 'minimax-m3', reason: 'no provider serves this model', },);
-   ```
-   */
-  public constructor(
-    {
-      modelId,
-      reason,
-    }: {
-      readonly modelId: string;
-      readonly reason: string;
-    },
-  ) {
-    super(`no provider can take ${modelId}: ${reason}`,);
-    this.name = 'NoProviderForModelError';
-  }
-}
+// The refusal lives in its own module so the re-ask can raise it without an
+// import cycle; it is re-exported here, where every importer found it.
+export { NoProviderForModelError, } from './no-provider-for-model-error.ts';
 
 /**
  Per-model slots the providers grant by default: Synthetic's measured five,
@@ -544,6 +510,17 @@ export function createRoutingClient(
   }
 
   /**
+   What the re-ask borrows from this router.
+   */
+  const core: RoutedCore = {
+    reachFor,
+    budgets,
+    ledger,
+    callOn,
+    routedText,
+  };
+
+  /**
    Free-text chat exchange, routed and re-routed on budget refusals.
    
    @param request - exchange to perform
@@ -560,19 +537,25 @@ export function createRoutingClient(
    ```
    */
   async function chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
-    return (await routedText(request,)).reply;
-  }
+    /**
+     The exchange and who served it: on the provider the policy picks, or,
+     for a re-ask hinted away from one, on another (ledger P9).
+     */
+    const routed = (request.otherThan === undefined)
+      ? await routedText(request,)
+      : await routedTextElsewhere({
+        core,
+        request,
+        otherThan: request.otherThan,
+      },);
 
-  /**
-   What the re-ask borrows from this router.
-   */
-  const core: RoutedCore = {
-    reachFor,
-    budgets,
-    ledger,
-    callOn,
-    routedText,
-  };
+    // TAGGED WITH ITS PROVIDER, so a reply that could not be used can be
+    // re-asked elsewhere by the caller that reads it.
+    return {
+      ...routed.reply,
+      servedBy: routed.provider,
+    };
+  }
 
   /**
    Schema-validated chat exchange over whichever provider served the text.
