@@ -96,6 +96,10 @@ each uses an empty export as given.
     which names those endpoints ahead of the price sort and leaves `allow_fallbacks` unset:
     Wafer for `hf:zai-org/GLM-5.3-Flash` and Morph for `deepseek-v4.1-flash`, both since 2026-09-23,
     because the price sort had landed those seats on endpoints that reason at length by default.
+    Such a card carries its preferred endpoint's listed price, not the model's cheapest listing,
+    since that is the endpoint the seat buys;
+    only the abandoned-spend estimate reads the card's OpenRouter price
+    (ledger P13, 2026-09-28: both cards had carried a price no call of theirs paid).
     The ignores once kept for DeepSeek V4 Flash, `hf:Qwen/Qwen3.8-27B` and `glm-5.3` left with their OpenRouter rows:
     the last two have been off the OpenRouter catalog since 2026-09-09 (`openrouter-dropped` on their cards),
     and DeepSeek V4 Flash left the roster on 2026-09-16.

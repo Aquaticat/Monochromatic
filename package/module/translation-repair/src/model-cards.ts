@@ -47,8 +47,15 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       id: 'z-ai/glm-5.3-flash',
       readsImages: true,
       maxOutputLength: 131_072,
-      promptUsdPerMillion: 0.075,
-      completionUsdPerMillion: 0.25,
+      // WAFER'S PRICE, THE ENDPOINT THIS SEAT BUYS (ledger P13, 2026-09-28).
+      // The card carried DeepInfra's, the cheapest listing when it was
+      // written, 0.075 and 0.25, while all 253 calls on TianqiChen66616, 66619
+      // and 66620 went to Wafer, listed that day at 0.9 and 0.5; fitted from
+      // what those calls were charged, 0.43 a million prompt tokens and 0.5 a
+      // million completion tokens. Only the abandoned-spend estimate reads
+      // these.
+      promptUsdPerMillion: 0.9,
+      completionUsdPerMillion: 0.5,
       ignoredEndpoints: [],
       // WAFER AHEAD OF THE PRICE SORT (class ninety-three, XingZ626,
       // 2026-09-23). The price sort lands this seat on endpoints that reason
@@ -279,8 +286,13 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       id: 'deepseek/deepseek-v4.1-flash',
       readsImages: true,
       maxOutputLength: 384_000,
-      promptUsdPerMillion: 0.3,
-      completionUsdPerMillion: 1.2,
+      // MORPH'S PRICE, THE ENDPOINT THIS SEAT BUYS (ledger P13, 2026-09-28).
+      // The card carried the model's catalog price, 0.3 and 1.2, while 812 of
+      // 817 calls on TianqiChen66616, 66619 and 66620 went to Morph, listed
+      // that day at 0.12 and 0.468 and charged at 0.662 to 0.674 of it. Only
+      // the abandoned-spend estimate reads these.
+      promptUsdPerMillion: 0.12,
+      completionUsdPerMillion: 0.468,
       // THE ENDPOINT WAS THE SLOW SEAT, NOT THE MODEL (XingZ607, 2026-09-18).
       // Over 990 completed judge calls the price sort spread across three
       // upstreams: Morph answered at 11 s median and 25 s at the ninetieth
