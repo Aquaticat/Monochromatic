@@ -757,8 +757,8 @@ await describe({
     it({
       name:
         'NAMES AN ENTRY SETTLED AND NEVER PUBLISHED, which is the serious half. A pass builds its '
-        + 'skip set from the artifacts on disk, so that entry is one no resumed pass will attempt '
-        + 'again and no reader will ever find a page for',
+        + 'skip set from the artifacts on disk, so no pass settles that entry again, and the archive '
+        + 'ships for it until the next pass started there writes its page from the artifact',
       fn: async () => {
         expect(pairPublishedPages({
           settled: ['BookshopCat', 'Mittens',],
@@ -773,9 +773,9 @@ await describe({
 
     it({
       name:
-        'NAMES AN ENTRY PUBLISHED AND NOT SETTLED SEPARATELY, because it is the untidy half rather '
-        + 'than the serious one: publishing runs before the artifact write, so a crash between them '
-        + 'leaves this, and a resumed pass re-settles the entry and overwrites the page',
+        'NAMES AN ENTRY PUBLISHED AND NOT SETTLED SEPARATELY: publishing runs before the artifact '
+        + 'write, so a crash between them leaves this, and the page ships as it stands until a pass '
+        + 'settles the entry again',
       fn: async () => {
         expect(pairPublishedPages({
           settled: ['BookshopCat',],

@@ -603,22 +603,24 @@ export type PublishedPairing = {
   /**
    Entries the run settled and never published.
    
-   THE ORDERING IN `pass-entry.ts` IS SUPPOSED TO MAKE THIS EMPTY, and that is
-   exactly why it is worth counting. `publishFixedPage` runs BEFORE the
+   THE ORDERING IN `pass-entry-persist.ts` IS SUPPOSED TO MAKE THIS EMPTY, and
+   that is exactly why it is worth counting. `publishFixedPage` runs BEFORE the
    artifact write so that an artifact existing means a page was written, and a
    pass builds its skip set from the artifacts on disk. An entry in this list
-   is one a resumed pass will never attempt again and no reader will ever find
-   a page for.
+   is one no pass settles again; the archive ships for it until the next pass
+   started in the runs directory writes its page from the artifact
+   (`pass-republish.ts`, ledger A16c).
    */
   readonly unpublished: readonly string[];
 
   /**
    Entries carrying a page whose artifact is absent.
-   
+
    The other half of the same ordering, and the expected one: a crash between
-   the two writes leaves this rather than the list above. A resumed pass
-   re-settles the entry and overwrites the page, so this is untidy rather than
-   wrong, and it is reported so the two cases are never counted together.
+   the two writes leaves this rather than the list above. The page ships as it
+   stands, since a run always ships (the owner, 2026-09-27), with nothing to
+   check it against until a pass settles the entry again; it is reported so
+   the two cases are never counted together.
    */
   readonly unsettled: readonly string[];
 };

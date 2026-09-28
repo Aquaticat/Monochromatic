@@ -442,13 +442,16 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     Expected, on a run with nothing wrong:
 
     ```text
-    verify-published: matched=<n> settledWithNoPage=0 pageWithNoArtifact=0
+    verify-published: matched=<n> settledWithNoPage=0 pageWithNoArtifact=0 declined=<n>
     ```
 
     followed by one line per entry of the form
     `<id>: wordings=<n> silent=<n> chars=<n>=expected missing=0`,
     and a final line reading
-    `verify-published: <n> of <n> pages carry every wording their artifact promised, at the length it implies`.
+
+    ```text
+    verify-published: <n> of <n> pages carry every wording their artifact promised; <n> of those at the length it implies, 0 UNWEIGHED because the artifact predates the stored archive text
+    ```
 
     A RUN DIRECTORY WITH NOTHING IN IT DOES NOT READ AS A PASS.
     It prints one line and exits `2`:
@@ -462,23 +465,40 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     Before `#217` both cases printed `matched=0` and exited `0`,
     so an empty run and a typo each read as a clean pass over zero entries.
 
-    Otherwise the exit code is the verdict:
+    A RUN ALWAYS SHIPS (the owner, 2026-09-27),
+    so every finding below is printed and the exit is still `0`.
+    Only a run that could not be read at all exits `2`.
+    Read the lines, not the exit code.
+    The next pass started in the runs directory repairs what it can before it settles anything:
+    it rewrites from its artifact every page that is missing or disagrees,
+    and removes every page standing for a declined entry
+    (`REPUBLISHED`, `REPUBLISH LEFT` and `republish:` lines in the pass log).
 
-    -   `0`, every matched page carried every wording its artifact promised,
-        at the length that implies.
-    -   `1`, some page disagreed, or some settled entry has no page.
-    -   `2`, nothing was verified, which is neither a pass nor a disagreement.
-
-    Four failure lines, each meaning something different:
+    The finding lines, each meaning something different:
 
     -   `SETTLED AND NEVER PUBLISHED: <id>`.
         The worst one.
         A pass publishes before it writes the artifact precisely so that
         an artifact implies a page, and a resumed pass builds its skip set from the artifacts.
-        So this entry will never be attempted again and no reader will ever find a rendering of it.
+        So no pass settles this entry again, and the archive ships for it
+        until the next pass started here writes its page from the artifact.
 
     -   `PUBLISHED AND NOT SETTLED: <id>`.
-        A resumed pass re-settles it and overwrites the page.
+        A crash between the page write and the artifact write left a page no artifact records.
+        It ships as it stands, with nothing to check it against, until a pass settles the entry again.
+
+    -   `DECLINED AND PUBLISHED ANYWAY: <id>`.
+        The archive's note says the page is the author's own English, so the archive must ship;
+        the next pass started here removes the page.
+
+    -   `READ BY ANOTHER BUILD: settled by <digest>, read by <digest>`,
+        under an entry that disagrees.
+        Every page agreed with the build that wrote it,
+        and this build reads the artifact through its own typography,
+        so the disagreement can be the reading that moved.
+        On 2026-09-27 this was 77 of 214 stored pages, 69 of them only by the class 181 and 147 fixes.
+        A pass resumed here on this build (`TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT=yes`)
+        rewrites the page to this reading.
 
     -   `WRONG LENGTH: page is <n> characters off`.
         The page is not as long as the archive plus every change the slices made,

@@ -206,7 +206,10 @@ Read-back tools,
 none of which spends quota or calls a model:
 
 - `verify-published` reads the published tree back against the artifacts that produced it,
-  and refuses a run whose pages disagree with what its artifacts promised.
+  prints every page that disagrees with what its artifact promised and every artifact with no page,
+  and exits 0, since a run always ships;
+  it exits 2 only for a run it could not read at all.
+  The next pass started in the runs directory rewrites each such page from its artifact.
 - `meter-report` says what each provider was doing while the run was asking,
   which is availability at the moments the run asked rather than availability in general.
 - `run-timing-report` says where the wall clock went,

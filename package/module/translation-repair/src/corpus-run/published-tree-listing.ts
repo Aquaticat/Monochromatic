@@ -229,16 +229,17 @@ export async function publishedEntryIds(
 /**
  Decides whether a run has anything to verify at all.
  
- TWO WAYS TO VERIFY NOTHING, and both have to leave a verdict a gate can
- refuse on. An artifacts directory that is not there means the caller is
- pointed at something that is not a run. An artifacts directory holding no
- artifact means the run settled no entry. Neither is a clean run, and before
- `#217` both read as one.
- 
+ TWO WAYS TO VERIFY NOTHING, and both have to leave a verdict that says so,
+ which is the verifier's one nonzero exit. An artifacts directory that is not
+ there means the caller is pointed at something that is not a run. An
+ artifacts directory holding no artifact means the run settled no entry.
+ Neither is a clean run, and before `#217` both read as one.
+
  AN ABSENT PUBLISHED TREE IS DELIBERATELY NOT ONE OF THEM. Beside real
- artifacts it means every settled entry was never published, and a resumed
- pass skips exactly those entries, so no reader will ever find a page for
- them. Reporting that as an empty tree keeps it a finding the caller counts,
+ artifacts it means every settled entry was never published: no pass settles
+ those entries again, and the archive ships for each until the next pass
+ started in the runs directory writes its page from the artifact (ledger
+ A16c). Reporting that as an empty tree keeps it a finding the caller counts,
  rather than a silence that ends the report.
  
  @param settled - what the artifacts directory listed

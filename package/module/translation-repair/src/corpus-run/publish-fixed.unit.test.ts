@@ -849,7 +849,7 @@ await describe({
       name:
         'WRITES NOTHING AT ALL when the artifact and the archive disagree about what a slice covers, '
         + 'rather than publishing a page no artifact accounts for. The refusal has to happen before '
-        + 'the write: `pass-entry.ts` publishes BEFORE it settles precisely so that an artifact '
+        + 'the write: `pass-entry-persist.ts` publishes BEFORE it settles precisely so that an artifact '
         + 'existing means a page exists, and a page written then refused would invert that',
       fn: async () => {
         await using tree = await throwawayTree();

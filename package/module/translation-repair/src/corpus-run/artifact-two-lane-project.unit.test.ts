@@ -21,7 +21,7 @@
  would otherwise reach into the comparison the builder returned. A case
  mutates the source afterwards and reads the projection back.
  
- `pass-entry.ts` is the only caller and it writes whole artifacts, so every
+ `pass-entry-artifact.ts` is the only caller and it builds whole artifacts, so every
  rule here reached the suite as a settled file that happened to parse.
  
  Fixtures are cat-themed invention. No corpus content appears here.
