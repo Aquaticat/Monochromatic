@@ -472,5 +472,22 @@ await describe({
         expect(atomsOf({ text: '<details>\n\nThe cat.\n\n</details>', },),).toEqual([],);
       },
     },),
+
+    it({
+      name: 'READS AN ELEMENT WHOSE OPENER SHARES ITS LINE WITH CONTENT and whose closer stands alone as one '
+        + 'element (ledger X10, NIGHT81473140 slice 22): the lone-tag masker paired tag lines only, so it '
+        + 'blanked the closer as unpartnered and left the opener with no end, and the slice read as '
+        + 'unparseable while the document read it whole',
+      fn: async () => {
+        expect(atomsOf({ text: '<blockquote><span>The cat naps.</span>\n</blockquote>', },),).toEqual([],);
+        // The closer with no opener anywhere is still masked and carried.
+        expect(atomsOf({ text: 'The cat naps.\n\n</blockquote>', },),).toEqual([
+          {
+            kind: 'container-tag',
+            value: '</blockquote>',
+          },
+        ],);
+      },
+    },),
   ],
 },);
