@@ -3479,8 +3479,8 @@ It must land before the preparation half of X12, or a re-seated section resumes 
 
 ### X14: no test drives a pass seam
 
-Status: contest, consolidation, insertion admission and preparation seams guarded;
-the picture and lanes seams stay open.
+Status: fixed; every pass seam is driven by a test
+(contest, consolidation, insertion admission, preparation, lanes and pictures).
 The insertion admission seam (`admitPassInsertions`, X12) is driven the same way in `2fbb7ec24`,
 and the preparation seam (`runPassPreparation`, X12) in `f891b358e` for the pairing
 and `d00123df3` for the archive review.
@@ -3492,9 +3492,21 @@ whose view turns Synthetic dry after the phase's own reading, under a hold:
 only a wired hook keeps the seat the dry-out took from being asked,
 and a control whose view never changes shows that seat is asked otherwise.
 Mutation checked with a control: both seam mutants caught.
-Still open: `readSeatedPictures` reaches the pinned corpus (`gatherEntryPictures`)
-and shells out to `dwebp` and `tesseract` (`readImageWithOcr`) with no way to hand either in,
-and the lanes hooks are spread into `runDocumentLanes` inside `runPassEntry`, which no test drives.
+Lanes: the hooks were spread into `runDocumentLanes` inside `runPassEntry`, which no test drives.
+`f2c329781` gives them a seam, `runPassLanes` (`corpus-run/pass-lanes.ts`), which takes the `readLanesSeats`
+result whole, and `30e57c62b` drives it on a real reading: no lane call may ask a seat the dry-out took
+from either lane bench. Mutation checked with a control, then the full suite (0 FAIL, 1280 PASS):
+the seam dropping both hooks, the translate re-seat alone and the per-slice hook alone were each caught.
+Pictures: `readSeatedPictures` reached the pinned corpus (`gatherEntryPictures`)
+and shelled out to `dwebp` and `tesseract` (`readImageWithOcr`) with no way to hand either in,
+and its one seam, `visualEvidenceReader`, replaces the whole reading, hook and all.
+`36aeeaa6c` adds an optional `pictureSources` input (`PassPictureSources`) replacing only those two,
+and `f865f524a` drives the entry's picture reader over stand-in bytes and OCR.
+The first mutation run caught three mutants and left two alive (M42 again):
+the stage seating the roster instead of the readers, since under a constant hold the hook re-seats every picture
+and the first seating is never asked, and the OCR ignoring the stand-in, since the readers are asked either way.
+`35684e182` adds a case with no hold and requires the stand-in OCR to have read;
+the rerun, with a control, caught all five, and the full suite passed (0 FAIL, 1281 PASS).
 
 ### X15: the pairing keys are not injective
 
@@ -3733,6 +3745,11 @@ which proved only that some site was fixed: the M29 family, a red that says noth
 Prevention: a guard over several sites asserts that each site is reached
 (one assertion per site, as `sectionRoundAsked` and `blockRoundAsked` now are),
 and a hook under test hands a different roster at each call, so reusing an earlier reading fails.
+Once more the same day, in the X14 pictures seam: `f865f524a` held Synthetic throughout,
+so the first seating was never asked, and nothing showed the injected OCR was the one read;
+`35684e182` adds a case with no hold and counts the stand-in's reads.
+Prevention, added: a case under a constant hold exercises only the re-seat;
+the first seating needs a case with no hold, and an injected dependency needs its own call counted.
 
 ### M41: a mutation spec that left out the test pinning the mutated table
 
