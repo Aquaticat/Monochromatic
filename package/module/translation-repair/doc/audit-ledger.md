@@ -886,9 +886,28 @@ so its "no judge bought" assertion held whatever was bought.
 
 ### E5: floor refusals and panel votes the log cannot explain
 
-Status: open.
+Status: the log half fixed; the reason per panel verdict is put to the owner.
+Floors and the repair turn in `d69a456de` (red guard `58b993f81`):
+the translate floor warns per withheld candidate with the rule's reason,
+the consolidation floor names proposals withheld beside survivors (it logged only the all-refused case),
+and `repairOneCandidate` logs every branch that changes a candidate's fate,
+where it had logged only a taken revision.
+The panel in `b8aea8ecf` (red guard `f12a29a3d`, lint repair `f83c4a6b6`, see M23):
+one line per issue with its status, severity and every member claim's weights,
+where the stage logged only its packet count;
+a claim with no tally says so rather than reading as zeros.
+Who voted what was already in the artifact (`AdjudicatedIssue.readings`).
+
+Found as:
 `translate-produce.ts` returns floor refusals as findings with no log line;
 a panel verdict carries no reason.
+The second half is a wire change (`PanelVerdictWire` has claim, vote and severity only),
+measured on 2026-09-27 over the 265 stored artifacts:
+about 783 panel verdicts per entry (207,394 ballots),
+and the reasons other stages' ballots carry average 167 characters.
+A reason placed before the vote can move votes, and no panel bench exists to measure that:
+the last panel-sheet change was judged by paired entry runs, one run per arm
+(`doc/audit/the-damage-no-instrument-was-catching.md` at the repo root).
 
 ### E6: a malformed archive competes in repair selection as though it parsed
 
@@ -2205,6 +2224,15 @@ and no one read `measurePatchedCandidate`, where integrity is relative to the ar
 so the finding asked for a behaviour change that would have changed nothing on the archive's own row.
 Prevention: a finding drawn from a comment is confirmed against the code the comment describes before it is filed,
 and a field's doc says what the code measures, relative or absolute, with the function that measures it named.
+
+### M23: a red guard committed with its lint warnings unread
+
+Status: corrected in `f83c4a6b6`, 2026-09-27 (E5).
+The panel guard was linted and committed in one `&&` chain;
+the lint wrapper exits 0 on warnings, so six `strict-void-return` warnings landed in `f12a29a3d`
+and were read only in the output afterwards.
+Prevention: lint is its own call, and its `Found N warnings and M errors` line is read before anything is staged;
+warnings count as findings here (LN8), so a chain that gates on the exit code gates on nothing.
 
 ### M15: a finding carried and a fix started against an owner ruling
 
