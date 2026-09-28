@@ -1,6 +1,10 @@
 import { pinyin, } from 'pinyin-pro';
 
 import { isHanCharacter, } from '../han-only-text.ts';
+import {
+  continuesLatinWord,
+  isLatinWordCharacter,
+} from '../latin-letters.ts';
 
 //region Handle reading
 // CLASS EIGHTY-THREE (XingZ622, 2026-09-22). A signer the archive never
@@ -15,37 +19,6 @@ import { isHanCharacter, } from '../han-only-text.ts';
 // house policy; this module is the deterministic half the page assembly
 // applies where a rendering still carries Han: the reading of the handle,
 // and the tolerance for a rendering that carries its gloss.
-
-/**
- Whether a character is a Latin letter or a digit, which a romanised run is
- kept apart from by a space.
-
- @param character - one code point as a string
-
- @returns Whether it is ASCII alphanumeric
-
- @example
- ```ts
- isLatinOrDigit({ character: 'O', },); // true
- ```
- */
-function isLatinOrDigit({ character, }: { readonly character: string; },): boolean {
-  /**
-   Whether it is a lower-case letter.
-   */
-  const lower = (character >= 'a') && (character <= 'z');
-  /**
-   Whether it is an upper-case letter.
-   */
-  const upper = (character >= 'A') && (character <= 'Z');
-  /**
-   Whether it is a digit.
-   */
-  const digit = (character >= '0') && (character <= '9');
-  return lower
-    || upper
-    || digit;
-}
 
 /**
  Syllables one capitalised group holds. Owner, 2026-09-22: syllable groups,
@@ -138,8 +111,10 @@ export function handleReading({ name, }: { readonly name: string; },): string {
    */
   let run = '';
   /**
-   Whether the character last written out was a Latin letter or a digit,
-   which a run opening right after it is kept apart from.
+   Whether the character last written out ends a Latin word (a letter,
+   accented or not, a digit, or a combining mark on a letter), which a run
+   opening right after it is kept apart from; ASCII letters alone left
+   `Café猫` as `CaféMao` (ledger B18).
    */
   let afterLatin = false;
   for (const character of name) {
@@ -152,11 +127,11 @@ export function handleReading({ name, }: { readonly name: string; },): string {
     if (run !== '') {
       rendered += romanisedRun({ run, },);
       run = '';
-      if (isLatinOrDigit({ character, },))
+      if (isLatinWordCharacter({ character, },))
         rendered += ' ';
     }
     rendered += character;
-    afterLatin = isLatinOrDigit({ character, },);
+    afterLatin = continuesLatinWord({ character, },);
   }
   if (run !== '')
     rendered += romanisedRun({ run, },);

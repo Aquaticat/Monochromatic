@@ -52,6 +52,21 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS AN ACCENTED WORD a space apart too, opening after the reading or ending, accent composed or '
+        + 'combining, before it; ASCII letters alone wrote them against the reading (ledger B18)',
+      fn: async () => {
+        expect([
+          handleReading({ name: '雨猫Émile', },),
+          handleReading({ name: 'Café雨猫', },),
+          handleReading({ name: 'Cafe\u{0301}雨猫', },),
+        ],).toEqual([
+          'Yumao Émile',
+          'Café Yumao',
+          'Cafe\u{0301} Yumao',
+        ],);
+      },
+    },),
+    it({
       name: 'ACCEPTS a rendering carrying its literal meaning in parentheses as the rendering itself',
       fn: async () => {
         expect(withoutGloss({ rendering: 'Jinmao (Brocade Cat)', },),).toBe('Jinmao',);
