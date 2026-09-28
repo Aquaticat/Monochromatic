@@ -18,6 +18,10 @@ import { FOREIGN_PHRASE_NAME_TITLE_SCOPE, } from './foreign-phrase-scope.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 import { ACCURACY_CATEGORY_SCOPE, } from './accuracy-category-policy.ts';
+import {
+  CRITIC_NOTHING_WRONG_RULE,
+  SEVERITY_SCALE,
+} from './severity-scale.ts';
 
 //region Critic prompt
 // One strict prompt for every critic model: exact-quote evidence rules, the closed
@@ -67,7 +71,7 @@ ${ACCURACY_CATEGORY_SCOPE}
 
 Report each defect as one atomic issue:
 - category: one of ${ISSUE_CATEGORIES.join(', ',)}
-- severity: one of ${ISSUE_SEVERITIES.join(', ',)}
+- severity: one of ${ISSUE_SEVERITIES.join(', ',)}, as the SEVERITY SCALE below defines
 - summary: one sentence stating the single defect
 - sourceQuote: exact substring copied character-for-character from the ORIGINAL that evidences the defect (omit if none applies)
 - targetQuote: exact substring copied character-for-character from the TRANSLATION where the defect manifests (omit only if the defect has no target-side anchor)
@@ -77,6 +81,9 @@ Quote rules, strictly enforced by a machine:
 - Each quote must be long enough to occur exactly once in its document.
 - A quote must stay inside one paragraph or block; never span a blank line.
 - For omitted content: sourceQuote is the untranslated original text, targetQuote is the translated sentence adjacent to where the content should have appeared.
+
+${SEVERITY_SCALE}
+${CRITIC_NOTHING_WRONG_RULE}
 
 ${HOUSE_POLICY_BLOCK}
 

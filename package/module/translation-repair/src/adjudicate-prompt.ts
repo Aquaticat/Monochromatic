@@ -3,6 +3,11 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ClaimCluster, } from './aggregate-claims.ts';
 import type { SpanAnchor, } from './issue-model.ts';
 import { ISSUE_SEVERITIES, } from './issue-taxonomy.ts';
+import {
+  PANEL_NEUTRAL_REGRADE_RULE,
+  PANEL_NOTHING_WRONG_RULE,
+  SEVERITY_SCALE,
+} from './severity-scale.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import {
   APPARATUS_KINDS,
@@ -83,13 +88,16 @@ Translation policy, which governs what may count as a defect at all. A claim tha
 - Fluency-serving additions are not additions. Conjunctions, discourse connectives, pronouns, and other small words that English grammar or readability requires carry no new content, so a claim reporting one as accuracy/addition is unsupported.
 - Do not apply prose standards to verse. When the span is poetry, lyrics, or deliberately stylized lines, compression, inversion, unusual punctuation, and non-literal imagery are the form working as intended, not defects.
 - In-group vocabulary rendered by its conventional meaning is correct even when a literal reading of the characters says otherwise; never vote supported on the strength of a literal reading alone.
+- ${PANEL_NOTHING_WRONG_RULE}
 - The ORIGINAL is not golden. A TRANSLATION that is clearer, better punctuated, or more explicit than the ORIGINAL is doing its job, and that alone is never a defect.
 - Accurate page apparatus a translator ADDED is not an addition: ${APPARATUS_KINDS}. It is correct information a reader benefits from. Vote unsupported on a claim whose whole case is that the ORIGINAL does not carry it; vote supported only when the added detail is WRONG. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS}
 
 ${DECLARED_IDENTITY_RULES}
 - Vote unsupported on a claim whose whole case is a rendering the block makes correct.
 
-Optionally re-grade a supported claim's severity: one of ${ISSUE_SEVERITIES.join(', ',)}.
+${SEVERITY_SCALE}
+
+Optionally re-grade a supported claim's severity on that scale: one of ${ISSUE_SEVERITIES.join(', ',)}. ${PANEL_NEUTRAL_REGRADE_RULE}
 For every GROUP holding more than one claim, also state whether its claims describe one single defect (sameDefect true) or genuinely distinct defects (sameDefect false).
 
 Reply with ONLY a JSON object of shape
