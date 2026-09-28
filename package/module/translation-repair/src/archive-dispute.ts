@@ -72,49 +72,6 @@ const DISPUTING_SEVERITIES: ReadonlySet<string> = new Set([
 const DISPUTING_RULE = 'accuracy/addition at any severity, any other accuracy claim the panel settled at major or worse';
 
 /**
- One disputed slice and the text standing in for its archive rendering.
-
- @example
- ```ts
- const dispute: ArchiveDispute = { sliceIndex: 3, standIn: repairedText, acceptedClaims: [], };
- ```
- */
-export type ArchiveDispute = {
-  /**
-   Slice whose archive rendering is disputed.
-   */
-  readonly sliceIndex: number;
-
-  /**
-   Repair lane's text for the slice, which stands in for the archive where
-   {@link ArchiveDispute.standInEligible} says it may.
-   */
-  readonly standIn: string;
-
-  /**
-   Whether the checkers confirmed every disputing issue resolved in the
-   repair lane's text and the lane kept the slice, so the text may stand in
-   for the archive. Where not, the slice has no eligible standing and both
-   the archive's wording and the repair lane's text are refused (owner,
-   2026-09-27, "No eligible standing").
-   */
-  readonly standInEligible: boolean;
-
-  /**
-   Why the repair lane's text may not stand in, absent where it may (ledger
-   L12): the line names the reason rather than blaming the checkers for all
-   three.
-   */
-  readonly standInRefusal?: StandInRefusal;
-
-  /**
-   Accepted disputing claims, each as "category severity: summary", for the
-   sheets that judge or write against the stand-in (class one hundred eight).
-   */
-  readonly acceptedClaims: readonly string[];
-};
-
-/**
  Why a disputed slice's repair text may not stand in for the archive:
  the assembly withdrew it, it is the archive's own wording, or the checkers
  did not confirm every disputing issue resolved in it.
@@ -127,14 +84,83 @@ export type ArchiveDispute = {
 export type StandInRefusal = 'withdrawn' | 'archive-wording' | 'unresolved';
 
 /**
- What the dispute line says each refusal leaves standing.
+ How each refusal is said (ledger L12): `outcome` ends the dispute line, and
+ `reason` tells a translate author why the repair lane's text cannot ship.
+ Both said "the checkers" for all three, and a withdrawn slice can carry every
+ disputing issue confirmed.
  */
-const REFUSAL_OUTCOMES: Readonly<Record<StandInRefusal, string>> = {
-  'withdrawn': 'and the assembly withdrew the repair lane\'s text, so the slice has no eligible standing',
-  'archive-wording': 'and the repair lane\'s text is the archive\'s own wording, so the slice has no eligible standing',
-  'unresolved': 'and the checkers did not confirm every disputing issue resolved, so the slice has no eligible '
-    + 'standing (owner, 2026-09-27)',
+const REFUSALS: Readonly<Record<StandInRefusal, {
+  readonly outcome: string;
+  readonly reason: string
+}>> = {
+  'withdrawn': {
+    outcome: 'and the assembly withdrew the repair lane\'s text, so the slice has no eligible standing',
+    reason: 'which the repair lane\'s page assembly withdrew from its page',
+  },
+  'archive-wording': {
+    outcome: 'and the repair lane\'s text is the archive\'s own wording, so the slice has no eligible standing',
+    reason: 'which is the disputed archive rendering itself',
+  },
+  'unresolved': {
+    outcome: 'and the checkers did not confirm every disputing issue resolved, so the slice has no eligible '
+      + 'standing (owner, 2026-09-27)',
+    reason: 'which the checkers did not confirm resolves the disputed reading',
+  },
 };
+
+/**
+ One disputed slice and the text standing in for its archive rendering.
+
+ @example
+ ```ts
+ const dispute: ArchiveDispute = { sliceIndex: 3, standIn: repairedText, standInEligible: true, acceptedClaims: [], };
+ ```
+ */
+export type ArchiveDispute =
+  & {
+    /**
+     Slice whose archive rendering is disputed.
+     */
+    readonly sliceIndex: number;
+
+    /**
+     Repair lane's text for the slice, which stands in for the archive where
+     {@link ArchiveDispute.standInEligible} says it may.
+     */
+    readonly standIn: string;
+
+    /**
+     Accepted disputing claims, each as "category severity: summary", for
+     the sheets that judge or write against the stand-in (class one hundred
+     eight).
+     */
+    readonly acceptedClaims: readonly string[];
+  }
+  & (
+    | {
+      /**
+       The checkers confirmed every disputing issue resolved in the repair
+       lane's text, the lane kept the slice, and the text differs from the
+       archive's, so it stands in for the archive.
+       */
+      readonly standInEligible: true;
+    }
+    | {
+      /**
+       The slice has no eligible standing: the archive's wording and the
+       repair lane's text are both refused (owner, 2026-09-27, "No eligible
+       standing").
+       */
+      readonly standInEligible: false;
+
+      /**
+       Why the repair lane's text may not stand in, so the line and the
+       refused-wording finding name it rather than blaming the checkers
+       (ledger L12).
+       */
+      readonly standInRefusal: StandInRefusal;
+    }
+  );
 
 /**
  What the reading needs of a repaired chunk: its position, its text, its
@@ -337,8 +363,12 @@ export function archiveDisputesOf(
         {
           sliceIndex: chunk.sliceIndex,
           standIn: chunk.repairedText,
-          standInEligible: verdict === 'eligible',
-          ...((verdict === 'eligible') ? {} : { standInRefusal: verdict, }),
+          ...((verdict === 'eligible')
+            ? { standInEligible: true, }
+            : {
+              standInEligible: false,
+              standInRefusal: verdict,
+            }),
           acceptedClaims: disputing.flatMap(function claimsOf(issue,): readonly string[] {
             return issue.claims;
           },),
@@ -415,18 +445,18 @@ export function disputedWordingsOf(
     } accepted claim(s))`,
   };
   /**
-   Whether the repair lane's text is refused beside it.
+   The repair lane's text where it is refused beside the archive, with why.
    */
-  const repairRefused = (!dispute.standInEligible) && (dispute.standIn !== archiveText);
+  const repair: readonly DisputedWording[] = (dispute.standInEligible || (dispute.standIn === archiveText))
+    ? []
+    : [{
+      text: dispute.standIn,
+      reason: `the repair lane's text for a disputed slice, ${REFUSALS[dispute.standInRefusal]
+        .reason}`,
+    },];
   return [
     ...((archiveText.trim() === '') ? [] : [archive,]),
-    ...(repairRefused
-      ? [{
-        text: dispute.standIn,
-        reason: 'the repair lane\'s text for a disputed slice, which the checkers did not confirm resolves the '
-          + 'disputed reading',
-      },]
-      : []),
+    ...repair,
   ];
 }
 
@@ -452,11 +482,10 @@ export function describeArchiveDispute(
   /**
    What the dispute leaves standing.
    */
-  // A record built without a reason reads as unresolved, the refusal the rule
-  // was written for.
   const outcome = dispute.standInEligible
     ? 'so the repair lane\'s text stands in for it'
-    : REFUSAL_OUTCOMES[dispute.standInRefusal ?? 'unresolved'];
+    : REFUSALS[dispute.standInRefusal]
+      .outcome;
   return `translate-archive-disputed (slice ${String(dispute.sliceIndex,)}): the repair lane's adjudicators accepted ${
     String(acceptedClaims.length,)
   } disputing claim(s) (${DISPUTING_RULE}) against the archive rendering, ${outcome} `
