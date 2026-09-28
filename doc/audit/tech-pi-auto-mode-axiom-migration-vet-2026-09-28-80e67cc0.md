@@ -311,8 +311,8 @@ state,
 and questions.
 Its Noul answer schema exposes a scalar,
 not Respan's native triple.
-The mapping and preservation of not-observable mass are not established;
-no Pro inference has yet occurred.
+The mapping and preservation of not-observable mass are not established.
+The bounded Pro route observations are retained in the corrected canary result section.
 Do not invent native absent/not-observable values from that scalar.
 
 The [limits reference](https://openrouter.ai/docs/api_reference/limits.md)
@@ -320,10 +320,53 @@ distinguishes free-variant platform caps from provider-side limits.
 It does not establish the reported Respan Pro-specific low limit.
 The model page's aggregate latency is not this experiment's measurement.
 
+## Corrected Pro canary result
+
+The first OpenRouter request returned HTTP `400` because Respan requires string state or a span-shaped
+object containing only `input` and `output`.
+The general Decisions object used for that attempt did not meet this model-specific restriction.
+Private `dc479ae` preserves the refusal.
+
+A separate input freeze,
+`8f3ec7e`,
+used the exact accepted Lite span and behavior definitions.
+Result `016a630` records HTTP `200`,
+returned model `respan/span-01-20260925`,
+provider `Respan`,
+and Noul values `0.6700895` for positive relation and `0.027236922` for explicit prohibition.
+They equal Lite's present fields on this one matched span.
+Response usage was 13,151 input tokens,
+zero output tokens,
+and `0.00026302` USD cost.
+This is reported usage,
+not an independently checked invoice.
+
+The live validator required the unversioned alias and rejected the response before final freshness checks.
+Its `529.101426` ms duration is not a complete qualified assessment.
+Anonymous public endpoint metadata subsequently corroborated the versioned label.
+Offline recheck `8a4e6c5` verified retained response,
+request,
+source,
+and current policy identities,
+without changing the original rejection or making another model call.
+It also verified that the comparison detects a changed scalar.
+
+Neither equality on one span nor the catalogue label proves model parity,
+correct internal tier routing,
+cache independence,
+or the mapping of native uncertainty mass.
+The observed answers contain only `type` and `noul`;
+no native absent/not-observable value is inferred.
+No further Pro call or top-up recommendation follows from this canary.
+The [OpenRouter contract finding](../troubleshooting/openrouter-respan-decisions-contract.md)
+records both distinct failures and the verified boundaries.
+
 ## Current outcome
 
 Direct Lite scoring access is established for the corrected synthetic canary.
-Pro's measured benefit and route semantics remain unestablished.
+Pro returned a retained diagnostic response,
+but a complete live-budget pass and native probability mapping remain unqualified.
+Its measured benefit is not established.
 No model winner,
 production threshold,
 top-up recommendation,

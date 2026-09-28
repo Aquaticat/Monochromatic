@@ -128,8 +128,20 @@ A public raw GitHub fetch matched all 42,677 bytes of current policy.
 The completed free scoring probe used synthetic wording plus that verified-public policy,
 with freshness rechecked before dispatch and release.
 The current audit records unresolved terms and data-handling questions without revoking existing input consent.
-OpenRouter's inspected Decisions schema exposes Noul answers;
-its mapping to Respan's native triples is not yet established.
+The initial OpenRouter Pro request returned `400` because Respan requires string or span-shaped state.
+A separately frozen correction used the exact accepted Lite span and definitions.
+It returned `200` with model `respan/span-01-20260925`,
+Noul values `0.6700895` and `0.027236922`,
+and reported cost `0.00026302` USD.
+The live validator rejected that versioned label before its final freshness checks;
+its `529.101426` ms duration is not a complete qualified assessment.
+Anonymous catalogue metadata later corroborated the label.
+Private `8a4e6c5` retains an offline source/policy/body recheck without another model call.
+Both Noul values equal Lite's present fields on this one span,
+not proof of model parity or native uncertainty mapping.
+The [OpenRouter contract finding](../troubleshooting/openrouter-respan-decisions-contract.md)
+records the failures and limits.
+No further Pro call or top-up recommendation follows from this canary.
 Do not invent an absence probability or discard not-observable mass.
 Task #38's result documentation is finalized after the scoring resource check,
 without rerunning its model batch.
