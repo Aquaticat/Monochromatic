@@ -1,25 +1,48 @@
 //region Han-only text
 // Character tests shared by the floors that ask whether a run of text is
-// written in Han alone: the CJK unified ideograph block as the page-name
-// glossary and the corpus name index read it, and ASCII letters as the mark
-// of a Latin form.
+// written in Han alone, and by the tokenizer (`preservation-tokens.ts`),
+// whose ideograph test is this one: every block of Han ideographs, and ASCII
+// letters as the mark of a Latin form.
+//
+// ONE DEFINITION OF HAN (audit area six, 2026-09-28). The floors read the
+// unified block alone and the tokenizer Extension A as well, so the two read
+// one page two ways; neither read the compatibility block or astral Han. No
+// pinned page carries a character from those blocks, so no page read
+// differently; the next one to would have.
 
 /**
- First code point of the CJK unified ideograph block.
+ Blocks of Han ideographs, first and last code point of each: Extension A,
+ the unified block, the compatibility block, and Extensions B to H.
  */
-const HAN_FIRST = '\u{4E00}';
+const HAN_BLOCKS: readonly {
+  readonly first: number;
+  readonly last: number;
+}[] = [
+  {
+    first: 0x34_00,
+    last: 0x4D_BF,
+  },
+  {
+    first: 0x4E_00,
+    last: 0x9F_FF,
+  },
+  {
+    first: 0xF9_00,
+    last: 0xFA_FF,
+  },
+  {
+    first: 0x2_00_00,
+    last: 0x3_13_4F,
+  },
+];
 
 /**
- Last code point of the CJK unified ideograph block.
- */
-const HAN_LAST = '\u{9FFF}';
+ Whether a character is a Han ideograph.
 
-/**
- Whether a character is a Han ideograph of the unified block.
+ @param character - one code point of a text; a lone surrogate half is no
+ ideograph
 
- @param character - one code point of a text
-
- @returns True inside the unified block
+ @returns True inside any block of Han ideographs
 
  @example
  ```ts
@@ -27,7 +50,16 @@ const HAN_LAST = '\u{9FFF}';
  ```
  */
 export function isHanCharacter({ character, }: { readonly character: string; },): boolean {
-  return (character >= HAN_FIRST) && (character <= HAN_LAST);
+  /**
+   Code point of the character, none for an empty string.
+   */
+  const point = character.codePointAt(0,) ?? (-1);
+  return HAN_BLOCKS.some(function holds({
+    first,
+    last,
+  },): boolean {
+    return (point >= first) && (point <= last);
+  },);
 }
 
 /**

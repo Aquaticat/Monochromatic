@@ -1,3 +1,5 @@
+import { isHanCharacter, } from './han-only-text.ts';
+
 //region Preservation tokens
 // Tokenizing and proper-noun scanning for the preservation gate, as index
 // scans rather than regexes. The rules here are positional (is this character a
@@ -113,7 +115,8 @@ function isWordCharacter(character: string,): boolean {
 
 /**
  Reports whether a character is a CJK ideograph, which tokenizes one per
- character rather than by word run.
+ character rather than by word run: the floors' own Han test
+ (`han-only-text.ts`), so the tokenizer and the floors read one page one way.
  
  @param character - single character
  
@@ -125,7 +128,7 @@ function isWordCharacter(character: string,): boolean {
  ```
  */
 export function isIdeograph(character: string,): boolean {
-  return (character >= '㐀') && (character <= '鿿');
+  return isHanCharacter({ character, },);
 }
 
 /**
