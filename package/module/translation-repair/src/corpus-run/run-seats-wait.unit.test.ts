@@ -216,6 +216,38 @@ await describe({
         expect(phaseBenches({ phase: 'consolidation', },).includes('readers',),).toBe(false,);
       },
     },),
+    it({
+      name: 'NAMES EVERY PHASE\'S BENCHES as the table in `run-seats-wait.ts` documents them, the insertion '
+        + 'admission on the wide bench it asks as the preparation does (ledger X12), so a phase never waits on '
+        + 'a bench it does not ask nor starts past one it does',
+      fn: async () => {
+        /**
+         Every phase a seat reading is taken for.
+         */
+        const phases = [
+          'preparation',
+          'pictures',
+          'insertion admission',
+          'lanes',
+          'translate lane',
+          'lane contest',
+          'consolidation',
+        ] as const;
+        expect(
+          Object.fromEntries(phases.map(function benchesOf(phase,) {
+          return [phase, phaseBenches({ phase, },),];
+        },),),
+        ).toEqual({
+          preparation: ['wide',],
+          pictures: ['readers',],
+          'insertion admission': ['wide',],
+          lanes: ['wide', 'editors', 'refiners', 'translators',],
+          'translate lane': ['translators', 'select',],
+          'lane contest': ['wide',],
+          consolidation: ['slate', 'wide',],
+        },);
+      },
+    },),
   ],
 },);
 
