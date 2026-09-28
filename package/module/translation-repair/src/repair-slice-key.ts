@@ -387,8 +387,21 @@ import type { RepairModels, } from './repair-contract.ts';
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).
+
+ VERSION 34, 2026-09-28, the first number spent while a run held the
+ previous one. TianqiChen66621 ran the frozen dist of `9a3f28b30` and wrote
+ 28 slice-cache files under 33, from 06:26 to 06:49 that day, so nothing may
+ ride inside 33 from here on. Both kinds of change at once (ledger L5): the
+ RECORD, because the tally holds an acceptance settled at neutral for a human
+ (`e87e353ae`), so a slice settled under 33 would resume carrying accepted
+ neutral issues, their envelopes and their edits; and the QUESTION, because
+ the critic and panel sheets define the severity scale, tell the critic a
+ claim naming nothing wrong is no issue, and ask a supporter to lift a real
+ defect filed neutral (`severity-scale.ts`), none of which
+ `repairRunShape` hashes. `REFINE_CACHE_VERSION` needs no move for the
+ tally: its key hashes the adjudicated issues, status included.
  */
-export const SLICE_CACHE_VERSION = 33;
+export const SLICE_CACHE_VERSION = 34;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

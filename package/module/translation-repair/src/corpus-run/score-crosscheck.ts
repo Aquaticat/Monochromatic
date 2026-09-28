@@ -314,7 +314,11 @@ async function main(): Promise<void> {
       + 'judge can agree or disagree with it; needs-human means the panel '
       + 'declined to decide, and agreement with a verdict never given is '
       + 'undefined. Those claims lean supported on this run, so folding them '
-      + 'into control would fill it with claims the panel mostly believed.',
+      + 'into control would fill it with claims the panel mostly believed. '
+      + 'From repair cache version 34 needs-human also holds a claim a supported '
+      + 'majority settled at neutral, which asserts no defect, so the accepted '
+      + 'arm no longer carries those claims and reads higher by construction '
+      + 'against earlier runs.',
   );
 
   if (items.length === 0) {

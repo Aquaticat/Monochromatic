@@ -87,7 +87,7 @@ await describe({
         + 'change to the FIXTURE INPUTS below moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(33,);
+        expect(SLICE_CACHE_VERSION,).toBe(34,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -143,8 +143,12 @@ await describe({
         // VERSION 33 THE SAME DAY: the panel sheet asks each verdict's reason
         // before its vote, and every stored ballot carries it (owner, "Reason
         // before vote"), so the question and the record both moved.
+        //
+        // VERSION 34 ON 2026-09-28 the same way (ledger L5): the tally holds
+        // an acceptance settled at neutral for a human, and the critic and
+        // panel sheets define the severity scale.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('74a428a553da7045985acfc713d3ebd46c1ec13cd89b16670e7e34c7edd5288b',);
+          .toBe('8382b00027e712d5fc13150898640833a3606c5ecc86b2781be15765eeecccae',);
       },
     },),
     it({

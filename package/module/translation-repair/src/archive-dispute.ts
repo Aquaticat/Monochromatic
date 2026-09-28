@@ -44,6 +44,13 @@ import {
 // a claim filed major disputed slice 66 though the panel settled the issue
 // minor, and slice 19 went undisputed though the panel settled its issue
 // major. The issue's settled severity is what the rule and the note read.
+//
+// NO ACCEPTED ISSUE SETTLES AT NEUTRAL (ledger L5, 2026-09-28). The tally
+// holds an acceptance settled at neutral, the severity asserting no defect,
+// for a human, so "addition at any severity" reaches minor and worse in
+// effect: an addition claim no supporter finds a real defect in disputes
+// nothing. Before, five accepted neutral additions over every run could
+// dispute an archive on a finding that named no defect.
 
 /**
  Category family whose other claims dispute the archive at a disputing

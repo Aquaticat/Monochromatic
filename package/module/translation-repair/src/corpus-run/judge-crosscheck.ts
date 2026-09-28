@@ -32,7 +32,13 @@ import { seatJudges, } from './judge-independence.ts';
  there is no verdict to survive re-asking. Measured on this run those claims
  lean supported 228 to 23, so filing them as control would fill the control
  arm with claims the panel mostly believed.
- 
+
+ From ledger L5 on, `needs-human` also holds a claim a supported majority
+ settled at neutral, the severity that asserts no defect, so there is no
+ defect for a judge to confirm. Such claims leave the accepted arm for the
+ undecided one, and on runs from `SLICE_CACHE_VERSION` 34 the accepted arm's
+ precision reads higher by construction against earlier runs.
+
  `source-defect` sits in `control` because it IS a verdict, the panel ruling
  the original text wrong at the claimed spot rather than the translation.
  */
