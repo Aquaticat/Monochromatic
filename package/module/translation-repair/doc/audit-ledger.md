@@ -791,8 +791,20 @@ Guard: `addition-repair-rule.unit.test.ts`.
 
 ### H5: the translate lane and the consolidation never re-seat under a hold
 
-Status: translate half fixed in `29a424b76` (guard `3d9079ea7`; mutation checked with a control, three mutants caught);
-consolidation half deferred past the TianqiChen666 launch.
+Status: fixed.
+Translate half in `29a424b76` (guard `3d9079ea7`; mutation checked with a control, three mutants caught).
+Consolidation half in `84aa1ce86` (red guards `01c8bbad8`, further guards `2f8499b4d` and `81555e22e`):
+`consolidationHooksFor` (`corpus-run/pass-consolidate-reseat.ts`) reads the seats while a hold runs,
+builds the writers, slate judges and naturalness roles `pass-consolidate.ts` builds, and keeps them once the hold ends;
+`consolidateDocument` seats each slice on that roster and keys it by it (`shapeFor`),
+so a slice nobody re-seated keys as before and no cache version moves.
+Mutation checked with a control: eleven mutants caught.
+Three survived the first guards (the driver handing a re-seated slice the starting judges or polish roles,
+and the run shape keying the starting polish), because no judging or polish round ran under a client
+that answered nothing usable; a role-answering client with a no-hook control now proves those rounds are asked.
+The lane contest, the preparation and the picture readings have the same gap: X12.
+
+Found as:
 `corpus-run/pass-reseat.ts` and `corpus-run/pass-consolidate.ts` only wait.
 The fourth stage of one family: classes one hundred three, one hundred nine and one hundred thirteen
 fixed re-seating for one repair stage at a time.
@@ -3342,6 +3354,38 @@ The root is the carve cutting an element; once carving keeps elements whole,
 `unknown` means an original the upstream MDX compile would also refuse, where refusing is right.
 One slice of 1,277 in the replay; no run has reached it (no settled artifact exists for the entry).
 
+### X11: the consolidation run shape omitted the slate judges
+
+Status: fixed in `c5ac38345` (red guard `01c8bbad8`;
+mutation checked with a control, the dropped-judges mutant caught).
+`9a7d48354` split the slate judges and the gate from the writers on 2026-09-02
+and left them out of `consolidateRunShape`,
+so a settlement another judging bench reached would resume under a bench that never judged it.
+The run shape now carries the judges beside the writers.
+Every consolidation key moved inside version 20, under which no slice-cache file had been written
+(checked 2026-09-28: the newest is the TianqiChen66620 consolidation entry at 00:26 on 2026-09-27).
+The other run shapes carry every bench they ask:
+the translate lane's its writers and judges, refine's its refiners, judges and checkers,
+the lane contest's its one bench.
+The same commit also folded `checkerSelfCertificationPermitted` into the repair run shape where refused;
+that half was wrong and `6d9b361b4` took it out again (M37).
+
+### X12: the lane contest, the preparation and the picture readings never re-seat under a hold
+
+Status: open.
+The fifth stage of the H5 family.
+`runPassContest` reads its judges once and `contestDocumentLanes` has no per-slice hook,
+so a dry-out inside the contest leaves every later slice on the judges read before it,
+and nothing waits out the hold either:
+the per-slice wait `e17d0c487` added on 2026-09-07 reached the lanes and the consolidation only.
+The preparation (pairing, archive review) and the picture readings read their benches once too.
+Measured 2026-09-28 over 4,122 run logs (`~/temp/agent/audit-glossary-fix/phase-hold-census.mjs`),
+holds that began inside each phase, counted from its seat reading to the next phase's:
+lane contest 222 in 12 logs, preparation 25 in 4, pictures 11 in 3
+(consolidation 983 in 25, lanes 353 in 42, translate lane 115 in 14, all three now re-seating).
+With the consolidation hook re-seating, `awaitBenchQuorum` has no production caller left,
+and `corpus-run/run-seats-read.ts` still says every driver asks it before each chunk.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing, recorded for the prevention doc.
@@ -3523,6 +3567,19 @@ Prevention: a red guard is read case by case before the fix
 (each failing case must fail for the reason its label names),
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect, not a fix defect.
+
+### M37: a key component added from a flag's name
+
+Status: happened 2026-09-28 in X11 (`c5ac38345`); reverted in `6d9b361b4`, whose guard pins the key unmoved.
+`checkerSelfCertificationPermitted` was folded into the repair run shape
+on the reading that it "decides who may check a refinement".
+Every reader hands it to `assertCheckerIndependence`, which only refuses a roster before anything is bought:
+a roster it admits is asked and weighed the same either way, and the checkers are keyed already.
+The readers also default an absent flag to refused while the fold read only an explicit `false`,
+which is how the mistake surfaced.
+Prevention: before a field goes into a key, list every reader of it (`rg` for the field)
+and name the question or weighting it changes for a run that goes ahead;
+a field that only admits or refuses the run stays out, with a comment saying why.
 
 ### M36: a search for an entry id printed corpus lines
 
