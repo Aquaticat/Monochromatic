@@ -143,6 +143,9 @@ const LOST_SEAT = (function lostSeat(): RosterModelId {
  @param reading - what every picture reader transcribes, for a case that
  reads pictures; a text call throws without it
 
+ @param held - whether Synthetic's hold runs, which is what makes a hook read
+ again; a case without it asks the benches the phase first seated
+
  @returns Client to drive a seam with
 
  @example
@@ -157,9 +160,11 @@ function viewChangingClient(
     reviewed,
     answer,
     reading,
+    held = true,
   }: {
     readonly later: BudgetView;
     readonly reading?: string;
+    readonly held?: boolean;
     readonly asked: RosterModelId[];
     readonly reviewed?: RosterModelId[];
     readonly answer: string;
@@ -175,7 +180,7 @@ function viewChangingClient(
       return (counter.reads === 1) ? ALL_WET : later;
     },
     providerHolds: () => ({
-      synthetic: HOLD_MS,
+      synthetic: held ? HOLD_MS : 0,
       bedrock: 0,
       hyper: 0,
       openrouter: 0,
@@ -885,18 +890,35 @@ const LOST_READER_SEAT = (function lostReaderSeat(): RosterModelId {
 
  @param later - view every reading after the pictures' own answers
 
- @returns Seats the readers' calls asked
+ @param held - whether Synthetic's hold runs, so the hook reads again
+
+ @returns Seats the readers' calls asked, beside how often the stand-in OCR read
 
  @example
  ```ts
- const asked = await picturesAsked({ later: SYNTHETIC_DRY, },);
+ const { asked, ocrReads, } = await picturesAsked({ later: SYNTHETIC_DRY, held: true, },);
  ```
  */
-async function picturesAsked({ later, }: { readonly later: BudgetView; },): Promise<readonly RosterModelId[]> {
+async function picturesAsked(
+  {
+    later,
+    held,
+  }: {
+    readonly later: BudgetView;
+    readonly held: boolean;
+  },
+): Promise<{
+  readonly asked: readonly RosterModelId[];
+  readonly ocrReads: number;
+}> {
   /**
    Seat of every call.
    */
   const asked: RosterModelId[] = [];
+  /**
+   Readings the stand-in OCR took, so a case can tell it was the one asked.
+   */
+  const ocr = { reads: 0, };
   /**
    Entry abort the readings honour.
    */
@@ -910,6 +932,7 @@ async function picturesAsked({ later, }: { readonly later: BudgetView; },): Prom
       asked,
       answer: '{}',
       reading: PICTURE_TEXT,
+      held,
     },),
     entryId: 'CatEntry',
     cache: {
@@ -920,10 +943,13 @@ async function picturesAsked({ later, }: { readonly later: BudgetView; },): Prom
     l,
     pictureSources: {
       gather: async () => new Map([[PICTURE, new Uint8Array([1, 2, 3,],),],],),
-      readOcr: async () => ({
-        kind: 'read',
-        text: PICTURE_TEXT,
-      }),
+      readOcr: async () => {
+        ocr.reads += 1;
+        return {
+          kind: 'read',
+          text: PICTURE_TEXT,
+        };
+      },
     },
   },);
   await readPictures({
@@ -932,7 +958,10 @@ async function picturesAsked({ later, }: { readonly later: BudgetView; },): Prom
       targetText: ARCHIVE,
     },).slices,
   },);
-  return asked;
+  return {
+    asked,
+    ocrReads: ocr.reads,
+  };
 }
 
 await describe({
@@ -945,19 +974,44 @@ await describe({
         /**
          Seats asked while every provider stays wet.
          */
-        const control = await picturesAsked({ later: ALL_WET, },);
+        const control = await picturesAsked({ later: ALL_WET, held: true, },);
         /**
          Seats asked once Synthetic reads dry after the pictures' own reading.
          */
-        const moved = await picturesAsked({ later: SYNTHETIC_DRY, },);
+        const moved = await picturesAsked({ later: SYNTHETIC_DRY, held: true, },);
         expect({
-          controlAskedLost: control.includes(LOST_READER_SEAT,),
-          movedAskedAny: moved.length > 0,
-          movedAskedLost: moved.includes(LOST_READER_SEAT,),
+          controlReadOcr: control.ocrReads > 0,
+          controlAskedLost: control.asked.includes(LOST_READER_SEAT,),
+          movedAskedAny: moved.asked.length > 0,
+          movedAskedLost: moved.asked.includes(LOST_READER_SEAT,),
         },).toEqual({
+          controlReadOcr: true,
           controlAskedLost: true,
           movedAskedAny: true,
           movedAskedLost: false,
+        },);
+      },
+    },),
+    it({
+      name: 'THE PICTURES SEAM SEATS THE READERS while nothing is held: every picture is read by the readers '
+        + 'the stage\'s own reading seated, and by no seat off that bench',
+      fn: async () => {
+        /**
+         Seats asked with no hold running, so no hook reads again.
+         */
+        const unheld = await picturesAsked({ later: SYNTHETIC_DRY, held: false, },);
+        /**
+         Readers the stage's own reading seats.
+         */
+        const readers: readonly RosterModelId[] = judgeSeatsFor({ dry: ALL_WET, },).readers;
+        expect({
+          askedAny: unheld.asked.length > 0,
+          offReaders: unheld.asked.filter(function offBench(seat,): boolean {
+            return !readers.includes(seat,);
+          },),
+        },).toEqual({
+          askedAny: true,
+          offReaders: [],
         },);
       },
     },),
