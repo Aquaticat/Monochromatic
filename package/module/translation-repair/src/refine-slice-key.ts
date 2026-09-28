@@ -71,6 +71,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  that day, none after 00:27). The refiner reads no glossary floor and no
  COMMUNITY RENDERINGS block; the glossary's terms, renderings and whys reach
  it through the identity context, which the key hashes.
+
+ Rides inside 5 too, through the retention recheck's checker round: a panel
+ ballot or checker report carrying no usable verdict on its sheet is no heard
+ voice, so the gather re-asks the seat rather than closing the round on it
+ (ledger L8, `abfc69393`); checked on 2026-09-28: still no slice-cache file
+ newer than 00:26 on 2026-09-27.
  */
 export const REFINE_CACHE_VERSION = 5;
 

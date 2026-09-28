@@ -1970,7 +1970,19 @@ Status: open.
 
 ### L8: a heard ballot with no usable verdict still counts toward quorum
 
-Status: open.
+Status: fixed in `abfc69393` (guard `79b1db6b0`, which also stopped the two stage tests pinning the defect:
+each expected three heard voices from ballots that voted only on a claim the sheet never showed).
+The panel and checker gathers validated with the wire guards alone,
+which accept an empty ballot, one voting only off the sheet and one whose only vote is no vote,
+so each counted as heard and could close the round
+(TianqiChen66616 slice 3, a claim in needs-human on two votes beside a ballot voting "minor";
+XingZ6014 slice 87, an issue resolved on the one other ballot).
+Now such a ballot is unreadable and the recovery round re-asks its seat;
+a ballot usable on some claims is still heard, since the artifacts record 388 missing verdicts,
+142 unknown votes and 104 off-sheet numbers inside otherwise usable ballots, and requiring whole ballots
+would discard those votes.
+Mutation checked with a control: restoring either wire guard alone fails its stage test.
+Rides inside `SLICE_CACHE_VERSION` 33 and `REFINE_CACHE_VERSION` 5.
 
 ### L9: the dispute rule reads the critic's filed severity, not the adjudicated one
 

@@ -331,6 +331,11 @@ import type { RepairModels, } from './repair-contract.ts';
  the grammatical English house rule on the critic, editor and panel sheets
  states the doubled preposition. The terms, renderings and whys reach the
  identity context, which the key hashes.
+
+ Rides inside 33 too: a panel ballot or checker report carrying no usable
+ verdict on its sheet is no heard voice, so the gather re-asks the seat rather
+ than closing the round on it (ledger L8, `abfc69393`); checked on 2026-09-28:
+ still no slice-cache file newer than 00:26 on 2026-09-27.
  */
 export const SLICE_CACHE_VERSION = 33;
 /**
