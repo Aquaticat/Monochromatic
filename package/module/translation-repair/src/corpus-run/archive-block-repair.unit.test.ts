@@ -332,37 +332,77 @@ await describe({
 },);
 
 /**
- Review roster a hook hands back after a dry-out, none of it the fixture's own.
+ Review rosters an alternating hook hands over in turn, disjoint from each
+ other and from the fixture's own.
  */
-const RESEATED: readonly RosterModelId[] = [
-  SEAT_HYPER_ONLY,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_OPENROUTER_DECISIONS,
-  SEAT_OPENROUTER_ONLY_CHECKER,
+const ALTERNATES: readonly (readonly RosterModelId[])[] = [
+  [
+    SEAT_HYPER_ONLY,
+    SEAT_OPENROUTER_ONLY,
+  ],
+  [
+    SEAT_OPENROUTER_DECISIONS,
+    SEAT_OPENROUTER_ONLY_CHECKER,
+  ],
 ];
 
 /**
- Reviews one unclaimed block, recording the seats asked.
+ One structured call: the seat asked, and how many rosters the hook had
+ handed over when it was asked.
+ */
+type ReviewAsk = {
+  /**
+   Seat the call asked.
+   */
+  readonly seat: RosterModelId;
+  /**
+   Handovers so far, zero before the first.
+   */
+  readonly handover: number;
+};
 
- @param beforeBlock - hook handing the block its roster, none for a caller
- with no hook
+/**
+ Roster the alternating hook handed over at a handover.
 
- @returns Seats the review calls asked
+ @param handover - handovers so far
+
+ @returns That handover's roster, none before the first
 
  @example
  ```ts
- const asked = await reviewSeatsAsked({},);
+ const roster = alternateAt({ handover: 1, },);
  ```
  */
-async function reviewSeatsAsked(
-  { beforeBlock, }: { readonly beforeBlock?: () => Promise<BenchSeating>; },
-): Promise<readonly RosterModelId[]> {
+function alternateAt({ handover, }: { readonly handover: number; },): readonly RosterModelId[] {
+  return (handover === 0) ? [] : (ALTERNATES[(handover - 1) % ALTERNATES.length] ?? []);
+}
+
+/**
+ Reviews two unclaimed blocks, recording every call's seat and handover.
+
+ @param alternating - whether a hook hands over the alternates in turn, or
+ none is given
+
+ @returns Every structured call the review made
+
+ @example
+ ```ts
+ const asks = await reviewsAsked({ alternating: true, },);
+ ```
+ */
+async function reviewsAsked(
+  { alternating, }: { readonly alternating: boolean; },
+): Promise<readonly ReviewAsk[]> {
   /**
-   Seat of every call.
+   Handovers the hook made so far.
    */
-  const asked: RosterModelId[] = [];
+  const hook = { handovers: 0, };
   /**
-   Scripted reviewer removing the block.
+   Every structured call.
+   */
+  const asks: ReviewAsk[] = [];
+  /**
+   Scripted reviewer removing each block.
    */
   const inner = correctionClient({
     replacementFor: function replacement(): string {
@@ -370,18 +410,21 @@ async function reviewSeatsAsked(
     },
   },);
   /**
-   One archive block the pairing left unclaimed.
+   Two archive blocks the pairing left unclaimed.
    */
-  const targetText = 'The cat won an award.';
+  const targetText = 'The cat won an award.\n\nThe cat won a second award.';
   /**
-   That block.
+   Those blocks.
    */
-  const blocks = [blockAt({ targetText, blockText: targetText, blockId: 'block/0', }),];
+  const blocks = [
+    blockAt({ targetText, blockText: 'The cat won an award.', blockId: 'block/0', }),
+    blockAt({ targetText, blockText: 'The cat won a second award.', blockId: 'block/1', }),
+  ];
   await repairArchiveBlocks({
     client: {
       chatText: inner.chatText,
       chatJson: async (request,) => {
-        asked.push(request.modelId,);
+        asks.push({ seat: request.modelId, handover: hook.handovers, },);
         return await inner.chatJson(request,);
       },
       quotas: inner.quotas,
@@ -395,40 +438,53 @@ async function reviewSeatsAsked(
     signal: new AbortController().signal,
     exchangeTimeoutMs: 5_000,
     l,
-    ...((beforeBlock === undefined) ? {} : { beforeBlock, }),
+    ...(alternating
+      ? {
+        beforeBlock: async (): Promise<BenchSeating> => {
+          hook.handovers += 1;
+          return { modelIds: alternateAt({ handover: hook.handovers, },), };
+        },
+      }
+      : {}),
   },);
-  return asked;
+  return asks;
 }
 
 await describe({
   name: `${repairArchiveBlocks.name} re-seated under a hold (ledger X12)`,
   children: [
     it({
-      name: 'REVIEWS EACH BLOCK ON THE ROSTER ITS HOOK RETURNS, so a roster re-read after a provider dry-out '
-        + 'reviews the blocks after it rather than the roster read before it',
+      name: 'REVIEWS EACH BLOCK ON THE ROSTER ITS HOOK LAST HANDED OVER, so a roster re-read after a provider '
+        + 'dry-out reviews the blocks after it rather than any roster read before it',
       fn: async () => {
         /**
-         Seats a caller with no hook asked.
+         Calls a caller with no hook made.
          */
-        const control = await reviewSeatsAsked({},);
+        const control = await reviewsAsked({ alternating: false, },);
         /**
-         Seats asked when the hook re-seats the block elsewhere.
+         Calls made while the hook alternates the rosters.
          */
-        const moved = await reviewSeatsAsked({
-          beforeBlock: async (): Promise<BenchSeating> => ({ modelIds: RESEATED, }),
-        },);
+        const moved = await reviewsAsked({ alternating: true, },);
         expect({
-          controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
-            return (ROSTER as readonly RosterModelId[]).includes(seat,);
+          controlAskedAny: control.length > 0,
+          controlOffRoster: control.filter(function offRoster(ask,): boolean {
+            return !(ROSTER as readonly RosterModelId[]).includes(ask.seat,);
           },),
-          movedAskedAny: moved.length > 0,
-          outsideReseated: moved.filter(function outside(seat,): boolean {
-            return !RESEATED.includes(seat,);
+          firstBlockAsked: moved.some(function atFirstHandover(ask,): boolean {
+            return ask.handover === 1;
+          },),
+          secondBlockAsked: moved.some(function atSecondHandover(ask,): boolean {
+            return ask.handover === 2;
+          },),
+          movedStrayed: moved.filter(function strayed(ask,): boolean {
+            return !alternateAt({ handover: ask.handover, },).includes(ask.seat,);
           },),
         },).toEqual({
-          controlOnRoster: true,
-          movedAskedAny: true,
-          outsideReseated: [],
+          controlAskedAny: true,
+          controlOffRoster: [],
+          firstBlockAsked: true,
+          secondBlockAsked: true,
+          movedStrayed: [],
         },);
       },
     },),

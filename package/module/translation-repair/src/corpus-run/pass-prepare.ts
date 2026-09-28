@@ -6,7 +6,10 @@ import {
   type PairedPreparation,
   prepareDocumentPairWithRoster,
 } from '../prepare-with-pairing.ts';
-import type { BenchSeating, } from '../bench-seating.ts';
+import {
+  type BenchSeating,
+  keepBench,
+} from '../bench-seating.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import {
   corpusNameLines,
@@ -17,7 +20,6 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 import { workTitleLookupLines, } from '../work-title-lookup.ts';
 import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
 import { citedReferenceBlock, } from '../cited-reference-lookup.ts';
-import { attestCitedReferences, } from '../reference-attest-stage.ts';
 import { referenceCacheDir, } from '../reference-cache.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
@@ -27,6 +29,7 @@ import {
 import { repairArchiveBlocks, } from './archive-block-repair.ts';
 import { archiveBlockSourceContexts, } from './archive-block-source-context.ts';
 import { passArchiveText, } from './pass-archive.ts';
+import { attestPassReferences, } from './pass-attest-references.ts';
 import { frontMatterAuthorityOf, } from './archive-front-matter.ts';
 import { relabelArchiveFootnotes, } from './pass-footnote-relabel.ts';
 import type { PairedReading, } from '../image-reading-pair.ts';
@@ -59,6 +62,62 @@ function wallClock(): Date {
 }
 
 /**
+ Reads what the pages an original links say, empty when it links nowhere or
+ nothing could be read.
+
+ @example
+ ```ts
+ const readReferences: PassReferenceReader = readCitedReferences;
+ ```
+ */
+export type PassReferenceReader = (
+  input: {
+    readonly sourceText: string;
+    readonly signal: AbortSignal;
+    readonly l: Logger;
+  },
+) => Promise<string>;
+
+/**
+ The run's reference reader: each page bought once over the web and cached
+ durably (class thirty-five, the owner's decision of 2026-09-16).
+
+ @param sourceText - the original, whose links are read
+
+ @param signal - entry deadline and caller abort
+
+ @param l - entry logger
+
+ @returns What the linked pages say, empty when there are none or no key to read them with
+
+ @example
+ ```ts
+ const referenceLines = await readCitedReferences({ sourceText, signal, l, },);
+ ```
+ */
+function readCitedReferences(
+  {
+    sourceText,
+    signal,
+    l,
+  }: {
+    readonly sourceText: string;
+    readonly signal: AbortSignal;
+    readonly l: Logger;
+  },
+): Promise<string> {
+  return citedReferenceBlock({
+    sourceText,
+    apiKey: process.env[EXA_API_KEY_VAR] ?? '',
+    dir: referenceCacheDir({ env: process.env, },),
+    signal,
+    fetchFn: fetch,
+    now: wallClock,
+    logger: l,
+  },);
+}
+
+/**
  Prepares one pass entry with cached roster pairing and publication safety.
  
  @param client - shared provider client
@@ -85,7 +144,11 @@ function wallClock(): Date {
  
  @param beforeItem - one per-item hook for every stage that asks the roster, so
  once a hold re-seats it the later stages stay re-seated (ledger X12)
- 
+
+ @param readReferences - reader of the pages the original links, the run's
+ web reader when absent; injected, as `readPictures` is, so a test can drive
+ the attestation round without the network
+
  @returns Prepared slices and pairing findings
  
  @example
@@ -107,6 +170,7 @@ export async function preparePassEntry(
     l,
     readPictures,
     beforeItem,
+    readReferences,
   }: ForeignBorrowed<{
     readonly client: SyntheticClient;
     readonly entryId: string;
@@ -120,6 +184,7 @@ export async function preparePassEntry(
     readonly l: Logger;
     readonly readPictures?: PassVisualEvidenceReader;
     readonly beforeItem?: () => Promise<BenchSeating>;
+    readonly readReferences?: PassReferenceReader;
   }>,
 ): Promise<PairedPreparation> {
   l.debug(`${preparePassEntry.name}: preparing entry ${entryId}`,);
@@ -215,58 +280,28 @@ export async function preparePassEntry(
    a detail the archive took from a cited reference is not deleted as an
    addition.
    */
-  const referenceLines = await citedReferenceBlock({
+  const referenceLines = await (readReferences ?? readCitedReferences)({
     sourceText,
-    apiKey: process.env[EXA_API_KEY_VAR] ?? '',
-    dir: referenceCacheDir({ env: process.env, },),
     signal,
-    fetchFn: fetch,
-    now: wallClock,
-    logger: l,
+    l,
   },);
   /**
-   Roster a stage asks now: the one the hook hands over under a hold, or the
-   one the preparation started on (ledger X12). The attestation is one round,
-   so it is re-seated at its start; the pairing and the review take the hook
-   itself and re-seat per section and per block.
-
-   @returns Roster the next stage is asked of
-
-   @example
-   ```ts
-   const roster = await rosterNow();
-   ```
-   */
-  async function rosterNow(): Promise<readonly RosterModelId[]> {
-    /**
-     What the hook hands over, nothing where no hook was given.
-     */
-    const seating: BenchSeating = (beforeItem === undefined) ? {} : await beforeItem();
-    return seating.modelIds ?? modelIds;
-  }
-  /**
    Archive details a reference states, attested by the bench with quotes
-   checked word for word (class thirty-seven, 2026-09-16): the repair lane
-   screens addition claims against them before the panel, and every sheet
-   reads them as ATTESTED lines under the references. Nothing is asked when
-   the original links nowhere.
+   checked word for word (class thirty-seven, 2026-09-16), on the roster the
+   hook hands over (ledger X12); the pairing and the review take the hook
+   itself and re-seat per section and per block.
    */
-  const attestation = (referenceLines === '')
-    ? {
-      details: [],
-      lines: [],
-      findings: [],
-    }
-    : await attestCitedReferences({
-      client,
-      modelIds: await rosterNow(),
-      sourceText,
-      archiveText,
-      referenceContext: referenceLines,
-      signal,
-      exchangeTimeoutMs,
-      l,
-    },);
+  const attestation = await attestPassReferences({
+    client,
+    modelIds,
+    beforeItem: beforeItem ?? keepBench,
+    sourceText,
+    archiveText,
+    referenceLines,
+    signal,
+    exchangeTimeoutMs,
+    l,
+  },);
   /**
    Reference lines with the attested lines under them.
    */

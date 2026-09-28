@@ -28,6 +28,7 @@ import {
 
 import {
   admitPassInsertions,
+  ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
   type ArtifactComparisonRow,
   type ArtifactContestSlice,
   type ArtifactDeliveryRow,
@@ -131,6 +132,9 @@ const LOST_SEAT = (function lostSeat(): RosterModelId {
 
  @param asked - sink for the seat of every call
 
+ @param reviewed - sink for the seat of every call on the archive review
+ sheet, for a case that must tell the review apart from the pairing
+
  @param answer - reply every call is given, which the sheet may refuse
 
  @returns Client to drive a seam with
@@ -144,10 +148,12 @@ function viewChangingClient(
   {
     later,
     asked,
+    reviewed,
     answer,
   }: {
     readonly later: BudgetView;
     readonly asked: RosterModelId[];
+    readonly reviewed?: RosterModelId[];
     readonly answer: string;
   },
 ): RunClient {
@@ -173,6 +179,8 @@ function viewChangingClient(
       request: ChatJsonRequest<ValueT>,
     ): Promise<ChatJsonOutcome<ValueT>> => {
       asked.push(request.modelId,);
+      if (request.responseFormat?.json_schema.name === ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT.json_schema.name)
+        reviewed?.push(request.modelId,);
       /**
        That reply as the sheet parses it.
        */
@@ -602,6 +610,77 @@ await describe({
          Seats asked once Synthetic reads dry after the preparation's own reading.
          */
         const moved = await preparationAsked({ later: SYNTHETIC_DRY, },);
+        expect({
+          controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
+          movedAskedAny: moved.length > 0,
+          movedAskedLost: moved.includes(LOST_ROSTER_SEAT,),
+        },).toEqual({
+          controlAskedLost: true,
+          movedAskedAny: true,
+          movedAskedLost: false,
+        },);
+      },
+    },),
+  ],
+},);
+
+/**
+ Runs the preparation seam over a page whose archive carries a paragraph the
+ original lacks, which the pairing leaves unclaimed and the archive review is
+ asked about.
+
+ @param later - view every reading after the preparation's own answers
+
+ @returns Seats the archive review's calls asked
+
+ @example
+ ```ts
+ const asked = await archiveReviewAsked({ later: SYNTHETIC_DRY, },);
+ ```
+ */
+async function archiveReviewAsked({ later, }: { readonly later: BudgetView; },): Promise<readonly RosterModelId[]> {
+  /**
+   Seat of every call.
+   */
+  const asked: RosterModelId[] = [];
+  /**
+   Seat of every call on the archive review sheet.
+   */
+  const reviewed: RosterModelId[] = [];
+  await using cacheDir = await throwawayCacheDir();
+  await runPassPreparation({
+    client: viewChangingClient({
+      later,
+      asked,
+      reviewed,
+      answer: JSON.stringify({ pairs: [{ source: 0, target: 0, }, { source: 1, target: 1, },], },),
+    },),
+    entryId: 'CatEntry',
+    entryCacheDir: cacheDir.dir,
+    pipelineDigest: DIGEST,
+    readPictures: async () => new Map(),
+    sourceText: `${SOURCE}\n\n它梦见了鱼。`,
+    targetText: `${ARCHIVE}\n\nIt dreamed of fish.\n\nThe cat won an award.`,
+    signal: AbortSignal.timeout(30_000,),
+  },);
+  return reviewed;
+}
+
+await describe({
+  name: 'preparation seam re-seats the archive review under a hold (ledger X12)',
+  children: [
+    it({
+      name: 'THE PREPARATION HANDS ITS HOOK TO THE ARCHIVE REVIEW: a review after a dry-out asks the roster '
+        + 'the hook re-read, never the seat the dry-out took, which a review whose view never changes does ask',
+      fn: async () => {
+        /**
+         Review seats asked while every provider stays wet.
+         */
+        const control = await archiveReviewAsked({ later: ALL_WET, },);
+        /**
+         Review seats asked once Synthetic reads dry after the preparation's own reading.
+         */
+        const moved = await archiveReviewAsked({ later: SYNTHETIC_DRY, },);
         expect({
           controlAskedLost: control.includes(LOST_ROSTER_SEAT,),
           movedAskedAny: moved.length > 0,

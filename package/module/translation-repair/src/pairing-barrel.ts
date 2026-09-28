@@ -125,7 +125,10 @@ export {
   laneContestRunShape,
   laneContestSliceKey,
 } from './lane-contest-key.ts';
-export { type BenchSeating, } from './bench-seating.ts';
+export {
+  type BenchSeating,
+  keepBench,
+} from './bench-seating.ts';
 export {
   type ContestHooks,
   contestHooksFor,

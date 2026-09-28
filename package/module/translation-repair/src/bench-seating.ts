@@ -22,4 +22,19 @@ export type BenchSeating = {
   readonly modelIds?: readonly RosterModelId[];
 };
 
+/**
+ Hook for a caller that re-seats nothing: every item keeps the bench the
+ phase started on.
+
+ @returns No bench, so the given one stands
+
+ @example
+ ```ts
+ const attestation = await attestPassReferences({ ...input, beforeItem: keepBench, },);
+ ```
+ */
+export function keepBench(): Promise<BenchSeating> {
+  return Promise.resolve({},);
+}
+
 //endregion Bench seating

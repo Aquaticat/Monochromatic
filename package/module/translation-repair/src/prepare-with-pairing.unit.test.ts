@@ -27,7 +27,9 @@ import {
   createSyntheticClient,
   prepareDocumentPairWithRoster,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type BenchSeating,
@@ -488,109 +490,193 @@ await describe({
 },);
 
 /**
- Roster a hook hands back after a dry-out, none of it the fixture's own.
+ Rosters an alternating hook hands over in turn: two seats each, the smallest
+ that can agree, disjoint from each other and from the fixture's own.
  */
-const RESEATED: readonly RosterModelId[] = [
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
+const ALTERNATES: readonly (readonly RosterModelId[])[] = [
+  [
+    SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+    SEAT_SYNTHETIC_VISION_WITHHELD,
+  ],
+  [
+    SEAT_HYPER_ONLY,
+    SEAT_OPENROUTER_ONLY,
+  ],
 ];
 
 /**
- Builds a client recording which seat every call asked, each pairing the two
- blocks in order.
+ Original with three Chinese-headed sections of two paragraphs each, whose
+ headings share no token with the translation's, so the aligner refuses and
+ the section round is bought before each paired section's block round.
+ */
+const SECTIONED_SOURCE = `## 第一节
 
- @param asked - sink for the seat of every call
+猫猫在窗台上打盹。
 
- @returns Client serving only the pairing rounds
+它整个下午都没有动。
+
+## 第二节
+
+窗台上有一只鸟。
+
+猫猫看着它。
+
+## 第三节
+
+猫猫也喜欢晒太阳。
+
+它晒了很久。
+`;
+
+/**
+ Translation carrying only two of those sections.
+ */
+const SECTIONED_TARGET = `## Naps
+
+The cat naps on the windowsill.
+
+She did not move all afternoon.
+
+## Birds
+
+A bird sits on the windowsill.
+
+The cat watches it.
+`;
+
+/**
+ One structured call: the seat asked, and how many rosters the hook had
+ handed over when it was asked.
+ */
+type RoundAsk = {
+  /**
+   Seat the call asked.
+   */
+  readonly seat: RosterModelId;
+  /**
+   Handovers so far, zero before the first.
+   */
+  readonly handover: number;
+};
+
+/**
+ Roster the alternating hook handed over at a handover.
+
+ @param handover - handovers so far
+
+ @returns That handover's roster, none before the first
 
  @example
  ```ts
- const client = pairingSeatClient({ asked: [], },);
+ const roster = alternateAt({ handover: 1, },);
  ```
  */
-function pairingSeatClient({ asked, }: { readonly asked: RosterModelId[]; },): SyntheticClient {
-  return {
+function alternateAt({ handover, }: { readonly handover: number; },): readonly RosterModelId[] {
+  return (handover === 0) ? [] : (ALTERNATES[(handover - 1) % ALTERNATES.length] ?? []);
+}
+
+/**
+ Prepares the sectioned fixture, recording every call's seat and handover.
+
+ @param alternating - whether a hook hands over the alternates in turn, or
+ none is given
+
+ @returns Every structured call the preparation made
+
+ @example
+ ```ts
+ const asks = await roundsAsked({ alternating: true, },);
+ ```
+ */
+async function roundsAsked(
+  { alternating, }: { readonly alternating: boolean; },
+): Promise<readonly RoundAsk[]> {
+  /**
+   Handovers the hook made so far.
+   */
+  const hook = { handovers: 0, };
+  /**
+   Every structured call.
+   */
+  const asks: RoundAsk[] = [];
+  /**
+   Client pairing a question's first two blocks or sections in order, a
+   reply a sheet may refuse, which leaves only the seat to record.
+   */
+  const client: SyntheticClient = {
     chatText: async () => {
       throw new Error('chatText not used',);
     },
     chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
-      asked.push(request.modelId,);
+      asks.push({ seat: request.modelId, handover: hook.handovers, },);
       /**
        Pairing every seat gives.
        */
       const value: unknown = { pairs: [{ source: 0, target: 0, }, { source: 1, target: 1, },], };
-      if (!request.validate(value,))
-        throw new Error('scripted pairing reply failed validator',);
-      return { kind: 'ok', value, rawText: JSON.stringify(value,), };
+      return request.validate(value,)
+        ? { kind: 'ok', value, rawText: JSON.stringify(value,), }
+        : { kind: 'schema-mismatch', rawText: JSON.stringify(value,), detail: 'fixture answers another sheet', };
     },
     quotas: async () => {
       throw new Error('quotas not used',);
     },
   };
-}
-
-/**
- Prepares the two-block fixture, recording the seats asked.
-
- @param beforeSection - hook handing each round its roster, none for a caller
- with no hook
-
- @returns Seats the pairing calls asked
-
- @example
- ```ts
- const asked = await pairingSeatsAsked({},);
- ```
- */
-async function pairingSeatsAsked(
-  { beforeSection, }: { readonly beforeSection?: () => Promise<BenchSeating>; },
-): Promise<readonly RosterModelId[]> {
-  /**
-   Seat of every call.
-   */
-  const asked: RosterModelId[] = [];
   await prepareDocumentPairWithRoster({
-    client: pairingSeatClient({ asked, },),
+    client,
     modelIds: ROSTER,
-    sourceText: SOURCE_TEXT,
-    targetText: TARGET_TEXT,
+    sourceText: SECTIONED_SOURCE,
+    targetText: SECTIONED_TARGET,
     signal: new AbortController().signal,
-    exchangeTimeoutMs: 5_000,
+    exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
     l,
-    ...((beforeSection === undefined) ? {} : { beforeSection, }),
+    ...(alternating
+      ? {
+        beforeSection: async (): Promise<BenchSeating> => {
+          hook.handovers += 1;
+          return { modelIds: alternateAt({ handover: hook.handovers, },), };
+        },
+      }
+      : {}),
   },);
-  return asked;
+  return asks;
 }
 
 await describe({
   name: `${prepareDocumentPairWithRoster.name} re-seated under a hold (ledger X12)`,
   children: [
     it({
-      name: 'ASKS EACH PAIRING ROUND OF THE ROSTER ITS HOOK RETURNS, so a roster re-read after a provider '
-        + 'dry-out pairs the sections after it rather than the roster read before it',
+      name: 'ASKS EVERY ROUND OF THE ROSTER ITS HOOK LAST HANDED OVER, the section round and each section\'s '
+        + 'block round alike, so a roster re-read after a provider dry-out asks the rounds after it rather than '
+        + 'any roster read before it',
       fn: async () => {
         /**
-         Seats a caller with no hook asked.
+         Calls a caller with no hook made.
          */
-        const control = await pairingSeatsAsked({},);
+        const control = await roundsAsked({ alternating: false, },);
         /**
-         Seats asked when the hook re-seats the rounds elsewhere.
+         Calls made while the hook alternates the rosters.
          */
-        const moved = await pairingSeatsAsked({
-          beforeSection: async (): Promise<BenchSeating> => ({ modelIds: RESEATED, }),
-        },);
+        const moved = await roundsAsked({ alternating: true, },);
         expect({
-          controlOnRoster: (control.length > 0) && control.every(function onRoster(seat,): boolean {
-            return (ROSTER as readonly RosterModelId[]).includes(seat,);
+          controlAskedAny: control.length > 0,
+          controlOffRoster: control.filter(function offRoster(ask,): boolean {
+            return !(ROSTER as readonly RosterModelId[]).includes(ask.seat,);
           },),
-          movedAskedAny: moved.length > 0,
-          outsideReseated: moved.filter(function outside(seat,): boolean {
-            return !RESEATED.includes(seat,);
+          sectionRoundAsked: moved.some(function atFirstHandover(ask,): boolean {
+            return ask.handover === 1;
+          },),
+          blockRoundAsked: moved.some(function atSecondHandover(ask,): boolean {
+            return ask.handover === 2;
+          },),
+          movedStrayed: moved.filter(function strayed(ask,): boolean {
+            return !alternateAt({ handover: ask.handover, },).includes(ask.seat,);
           },),
         },).toEqual({
-          controlOnRoster: true,
-          movedAskedAny: true,
-          outsideReseated: [],
+          controlAskedAny: true,
+          controlOffRoster: [],
+          sectionRoundAsked: true,
+          blockRoundAsked: true,
+          movedStrayed: [],
         },);
       },
     },),

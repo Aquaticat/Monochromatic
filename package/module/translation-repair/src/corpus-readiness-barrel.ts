@@ -65,6 +65,7 @@ export {
   runArchiveBlockReviewStage,
 } from './archive-block-review-stage.ts';
 export {
+  ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
   ARCHIVE_BLOCK_SELECTION_CRITERIA,
   buildArchiveBlockReviewMessages,
   isArchiveBlockReviewWire,
@@ -100,6 +101,10 @@ export {
   assertVisualEvidenceComplete,
   VisualEvidenceInterruptedError,
 } from './corpus-run/visual-evidence-completeness.ts';
-export { preparePassEntry, } from './corpus-run/pass-prepare.ts';
+export {
+  type PassReferenceReader,
+  preparePassEntry,
+} from './corpus-run/pass-prepare.ts';
+export { attestPassReferences, } from './corpus-run/pass-attest-references.ts';
 
 //endregion Corpus readiness barrel
