@@ -547,3 +547,59 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: 'the all-dry refusal names every provider (ledger P12)',
+  children: [
+    it({
+      name: 'NAMES BEDROCK AND SAYS ITS CREDIT NEVER REFILLS, and cites the reading the router decided on, since '
+        + 'the refusal named three providers, said they refill, and carried "no reading cited" from the router',
+      fn: async () => {
+        /**
+         What the router threw on an all-dry reading.
+         */
+        const thrown = (function refusal(): unknown {
+          try {
+            routeProviderFor({
+              reach: {
+                synthetic: true,
+                hyper: true,
+                bedrock: true,
+                openrouter: true,
+              },
+              dry: {
+                synthetic: true,
+                hyper: true,
+                bedrock: true,
+                openrouter: true,
+              },
+              saturated: {
+                synthetic: false,
+                hyper: false,
+                bedrock: false,
+                openrouter: false,
+              },
+            },);
+            return undefined;
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+        if (!(thrown instanceof EveryProviderDryError))
+          throw new Error('an all-dry refusal by construction',);
+        expect({
+          bedrock: thrown.message.includes('Bedrock',),
+          neverRefills: thrown.message.includes('never topped up',),
+          cited: !thrown.message.includes('no reading cited',),
+          reading: thrown.message.includes('bedrock dry',),
+        },).toEqual({
+          bedrock: true,
+          neverRefills: true,
+          cited: true,
+          reading: true,
+        },);
+      },
+    },),
+  ],
+},);
