@@ -13,6 +13,10 @@ import { checkPreservation, } from './preservation-check.ts';
 
 import { hashContent, } from './document-node.ts';
 import { restoreTypography, } from './restore-typography.ts';
+import {
+  clampQuoteDepth,
+  quoteDepthBound,
+} from './quote-depth-clamp.ts';
 import type { EditableEnvelope, } from './patch-model.ts';
 
 //region Patch application
@@ -341,10 +345,22 @@ export function applyPatchOperations(
      exactly when an editor writes a fresh contraction into a curly-quoted
      document.
      */
-    const restored = restoreTypography({
-      replacement: operation.newText,
-      replaced: envelope.baseText,
-      convention: targetText,
+    const restored = clampQuoteDepth({
+      replacement: restoreTypography({
+        replacement: operation.newText,
+        replaced: envelope.baseText,
+        convention: targetText,
+      },),
+      // No quote nests deeper than its context allows (TianqiChen66621
+      // slice 16, `quote-depth-clamp.ts`), clamped here so every gate below
+      // reads the depth that ships.
+      bound: quoteDepthBound({
+        targetText,
+        startOffset: envelope.startOffset,
+        baseText: envelope.baseText,
+        sourceText: (preservation.mode === 'enforce') ? preservation.sourceText : '',
+      },),
+      startsLine: (envelope.startOffset === 0) || (targetText[envelope.startOffset - 1] === '\n'),
     },);
     if (restored === envelope.baseText) {
       rejected.push({
