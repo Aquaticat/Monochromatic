@@ -117,9 +117,11 @@ The rule: a message states only what `git show --stat` of that commit shows;
 the type follows `git diff --cached --stat` (any file outside tests makes it more than `test`);
 every hash is resolved with `git rev-parse` in the command that uses it;
 an issue number goes in only after `gh issue view` shows it is the one meant.
+Before the commit runs, read the message for `#` followed by digits:
+this audit's task list numbers its items like issues, and two commits named a task as an issue within one hour.
 An inaccurate message is never amended: a commit comment corrects it.
 
-What enforces it: habit.
+What enforces it: habit, which failed twice in one hour on the issue numbers.
 
 ## Cached decisions
 

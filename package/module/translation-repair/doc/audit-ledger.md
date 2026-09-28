@@ -3028,7 +3028,8 @@ and the check refuses only repeats, no editor, or judge capacity short of the mi
 ### D2: the schema generation the pass writes is misstated in three places
 
 Status: Markdown fixed in `4397d7d2a` (generations 1 and 2 use the chunk spelling, 3 is mixed);
-the two `.ts` comments below are open.
+the two `.ts` comments fixed in `a25f09b2e` on 2026-09-28, found open while writing the status page's open list:
+V14 now says it is what the pass writes, and the older history says where versions 10 to 14 are recorded.
 `doc/configuration.md:326`, `:334`, `:352` say generation 4 and three generations;
 `artifact-schema-version.ts:34` says V7;
 `corpus-run/artifact-two-lane-contract.ts:36` says V12.
@@ -4183,6 +4184,10 @@ Once more on 2026-09-28: `67243edae` wrote "(#368)" in its subject, the audit's 
 which on GitHub is an unrelated file-enforcer issue; commit comment 202472839 corrects it.
 Prevention for references: a commit message names a GitHub issue only after `gh issue view` shows it is the one meant,
 and never a task-list number.
+Within the hour `3f29feb30` wrote "(#369 of the audit)", the task number of the prevention doc,
+which on GitHub is an unrelated kwin-key-helper issue; commit comment 202478725 corrects it.
+A rule written an hour before did not stop it, so the prevention doc now asks for a read of the message
+for `#` followed by digits before every commit.
 
 ### M14: a reproduction check committed without a positive control
 
