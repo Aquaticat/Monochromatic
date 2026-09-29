@@ -212,7 +212,7 @@ function outcomeOf(
 ): LaneSliceOutcome {
   if (byIndex.has(sliceIndex,)) {
     /**
-     Wording the lane reported, which the membership check above proves is
+     Wording the lane reported, which `byIndex.has` proves is
      there unless the lane reported the slice with nothing in it.
      */
     const acceptedText = byIndex.get(sliceIndex,);

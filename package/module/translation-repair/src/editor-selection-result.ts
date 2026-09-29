@@ -101,7 +101,8 @@ export type EnvelopeSelection = {
    
    Carried up rather than logged because the caller writes findings into the
    per-entry artifact, and a log line only exists if something captured it.
-   The counts above say how many envelopes were decided which way; they do
+   `soleCount`, `judgedCount` and `declinedCount` say how many envelopes were
+   decided which way; they do
    not say which judge went silent, and that identity is what every
    voice-loss diagnosis has turned on.
    */

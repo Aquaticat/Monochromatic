@@ -95,7 +95,8 @@ await describe({
   name: 'module root loggers',
   children: [
     it({
-      name: 'SEES a plain root in a line of text, the positive control for the scan below',
+      name: 'SEES a plain root in a line of text, the positive control for the "BUILDS every module root as a '
+        + 'context root" scan',
       fn: async () => {
         expect(rootsIn({
           text: 'import { tagged, } from \'x\';\nconst l = tagged({ tag: \'whiskers\', },);\n',
@@ -137,8 +138,8 @@ await describe({
           };
         },),);
 
-        // The scan read real roots, so an empty list below is not a scan that
-        // read nothing.
+        // The scan read real roots, so an empty `hasContextRoot` list is not a
+        // scan that read nothing.
         expect(scanned.filter(function hasContextRoot({ context, },): boolean {
           return context.length > 0;
         },).length,).toBeGreaterThan(0,);

@@ -322,7 +322,7 @@ await describe({
         },);
 
         // THE SILENT ONE. A body drained by the other provider's reader yields
-        // an empty answer channel, which every guard above reads as a
+        // an empty answer channel, which every guard the client runs reads as a
         // well-behaved call that produced nothing. Nothing else in the reply
         // distinguishes that from a model declining to answer.
         expect(exchanges.at(0,)?.wireFormat,).toBe('anthropic',);

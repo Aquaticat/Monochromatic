@@ -710,7 +710,7 @@ await describe({
 
     it({
       name: 'ASKS THE DETERMINISTIC READER NOTHING WHEN THE RUN HAS ALREADY STOPPED, which the '
-        + 'abort case above cannot show because it throws either way. The gate shells out to a '
+        + '"FORWARDS AN ABORT rather than absorbing it" case cannot show because it throws either way. The gate shells out to a '
         + 'decoder and to tesseract per picture and consults no signal of its own, so a stopped '
         + 'run that reached it would spend that on every remaining asset and then persist verdicts '
         + 'that beat the stop',

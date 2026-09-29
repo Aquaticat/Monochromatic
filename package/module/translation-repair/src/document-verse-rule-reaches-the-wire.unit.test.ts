@@ -425,8 +425,9 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES BOTH HALVES OF AN UNGOVERNED DOCUMENT ALONE, which is what makes the two cases above '
-        + 'evidence rather than tautologies. A sheet carrying the rule unconditionally would satisfy them '
+      name: 'LEAVES BOTH HALVES OF AN UNGOVERNED DOCUMENT ALONE, which is what makes the "DERIVES THE '
+        + 'VERDICT FROM THE DOCUMENT AND SHOWS IT TO THE TRANSLATORS" and "SHOWS THE SAME DOCUMENT\'S JUDGES '
+        + 'THE CRITERION AGAINST MERGING LINES" cases evidence rather than tautologies. A sheet carrying the rule unconditionally would satisfy them '
         + 'exactly as well, and would mean the archive\'s prose was being told to count lines its '
         + 'ORIGINAL never broke',
       fn: async () => {

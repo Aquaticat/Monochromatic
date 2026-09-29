@@ -206,8 +206,8 @@ function assertReplacementRow(
     },);
   }
   /**
-   Text this delivery leaves the document with, which the check above proves
-   the decision can supply.
+   Text this delivery leaves the document with, which the
+   `replacement-without-decision` check proves the decision can supply.
    */
   const expected = (carries === 'accepted')
     ? record.outcome

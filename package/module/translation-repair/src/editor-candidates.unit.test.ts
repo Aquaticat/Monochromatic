@@ -9,7 +9,7 @@
  runs of the same chunk could ship different text for no reason anyone could
  reconstruct.
  
- So the cases below feed voices in orders that disagree with the roster and
+ So the cases in this file feed voices in orders that disagree with the roster and
  assert the output does not move.
  
  Envelopes are built with the real `hashContent`, so the patches genuinely

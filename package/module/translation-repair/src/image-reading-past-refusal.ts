@@ -199,7 +199,7 @@ export async function readPastRefusal(
     const perspective = nonNullishOrThrow(
       IMAGE_READING_PERSPECTIVES[ask - 1],
     );
-    /* oxlint-disable-next-line no-await-in-loop -- re-asks are sequential by design, see above */
+    /* oxlint-disable-next-line no-await-in-loop -- re-asks are sequential by design: each later perspective exists only when the prior answer was refusal-shaped */
     reading = await readImageAsset({
       client,
       modelId,

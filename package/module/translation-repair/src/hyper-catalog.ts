@@ -247,7 +247,7 @@ export function hyperModelsWithoutSyntheticCounterparts(): readonly HyperServedI
 export type HyperOriginNamesAreServed = HyperOriginRosterId extends HyperServedId ? true : never;
 
 /**
- The proof above, instantiated, so a roster label with no catalog row stops
+ `HyperOriginNamesAreServed`, instantiated, so a roster label with no catalog row stops
  the type check instead of surfacing at run time as one lost voice per call:
  when the conditional resolves to `never`, `true` is not assignable
  and `lint:types` fails on this line, naming the drift.

@@ -486,8 +486,9 @@ export function prepareDocumentPair(
     targetNodes: targetDocument.nodes,
   },);
 
-  // AND THAT EVERY CONTAINER TAG IS STILL OWNED BY A BLOCK, which none of the
-  // checks above can reach. Dissolving a container leaves its opening and
+  // AND THAT EVERY CONTAINER TAG IS STILL OWNED BY A BLOCK, which none of
+  // `assertSliceIndexing`, `assertPlacementLayout` and `assertSpanContiguity`
+  // can reach. Dissolving a container leaves its opening and
   // closing tags belonging to no block, and `container-extents.ts` hands each of
   // them to the block beside it so that ranges minted from block offsets cannot
   // cut one. This asks whether that still happened.

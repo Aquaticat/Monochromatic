@@ -58,7 +58,7 @@ const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT AND MUST NOT BE EDITED. '
  more often than the slice's archive English did. NEARBY_RULE forbids copying
  the NEARBY blocks and nothing forbade repeating the translation outside the
  region, which this sheet shows whole. Conditioned on the ORIGINAL because
- the omission rules above say to translate ALL of the missing content, and a
+ the sheet's omission rules say to translate ALL of the missing content, and a
  refrain the TRANSLATION rendered once is such content.
  */
 const REPEATED_CONTENT_EDITOR_RULE = 'Write into a region only what the ORIGINAL says at that place. A sentence the '

@@ -118,7 +118,7 @@ export function extensionOf({ assetName, }: { readonly assetName: string; },): s
  
  @param maxBytes - most bytes this picture may occupy, which the CALLER
  decides. Guessing what a provider accepts is not this function's job, and the
- note above records what happened when it was
+ "Image asset" region note records what happened when it was
  
  @returns Data URI, or the reason it was refused
  

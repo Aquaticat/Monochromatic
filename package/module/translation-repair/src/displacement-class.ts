@@ -400,7 +400,7 @@ export function classifyDisplacement(
    */
   const relocationCandidates = highIndices.flatMap(function toCandidates(high,) {
     /**
-     Surplus this slice carries, known present by the filter above.
+     Surplus this slice carries, known present by `isHigh`.
      */
     const surplus = classified[high]
       ?.residual

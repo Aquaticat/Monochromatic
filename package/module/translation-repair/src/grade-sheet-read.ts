@@ -266,7 +266,7 @@ export function parseGradedSheet(
         .split('.',);
       /**
        That number, as a number; NaN when the heading carries none, which the
-       comparison below refuses like any other disagreement.
+       `position + 1` comparison refuses like any other disagreement.
        */
       const printed = Number(numberText.trim(),);
       if (printed !== (position + 1))

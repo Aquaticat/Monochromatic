@@ -71,7 +71,8 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES a single digit, which is the control that makes the floor above a floor rather '
+      name: 'REFUSES a single digit, which is the control that makes the "ADMITS A NUMBER EXACTLY AT THE '
+        + 'FLOOR" case\'s floor a floor rather '
         + 'than an accident: one digit is as often a list marker as a claim',
       fn: async () => {
         expect(sharedNumber({
@@ -105,7 +106,8 @@ await describe({
     },),
     it({
       name: 'ADMITS the same number when the English states it once, which is the control showing '
-        + 'the case above turns on the second occurrence rather than on the wording around it',
+        + 'the "REFUSES a number the ENGLISH states twice" case turns on the second occurrence rather than '
+        + 'on the wording around it',
       fn: async () => {
         expect(sharedNumber({
           cleanText: 'In 2019 Mittens had kittens, and later she had more.',

@@ -419,7 +419,7 @@ export async function runFidelityTrial(
   const ballots = outcome.ballots
     .map(function toRead(ballot,): FidelityBallotRead {
       // A DECLINE IS READ FIRST because `CANDIDATE_NONE` is zero, which is a
-      // position no candidate occupies: leaving it to the comparison below would
+      // position no candidate occupies: leaving it to the `cleanPosition` comparison would
       // record an abstention as a vote for whichever text is not the clean one.
       if (ballot.best === CANDIDATE_NONE) {
         return {

@@ -10,7 +10,7 @@
  WHAT WOULD GO WRONG WITHOUT THEM. A gate admitting everything is
  indistinguishable from no gate, and a gate admitting nothing silently
  disables the whole insertion path; neither raises anything, so both look
- identical from outside. The cases below exercise both directions on one
+ identical from outside. The cases in this file exercise both directions on one
  fixture.
  
  Fixtures are cat-themed invention. No corpus content appears here.

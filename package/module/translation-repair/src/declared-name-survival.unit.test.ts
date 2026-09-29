@@ -193,7 +193,8 @@ await describe({
       },
     },),
     it({
-      name: 'REPORTS that same handle as lost when it really goes, so the case above is the '
+      name: 'REPORTS that same handle as lost when it really goes, so the "ACCEPTS a handle whose diacritic '
+        + 'is spelled the other way" case is the '
         + 'comparison working rather than the comparison never firing',
       fn: async () => {
         expect(findDroppedDeclaredNames({

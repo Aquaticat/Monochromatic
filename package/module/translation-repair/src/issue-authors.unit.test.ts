@@ -230,7 +230,7 @@ function editorOf(
 }
 
 /**
- The one envelope every case below repairs, and the issue it serves.
+ The one envelope every case in this file repairs, and the issue it serves.
  */
 const KEPT = [
   envelopeOf({

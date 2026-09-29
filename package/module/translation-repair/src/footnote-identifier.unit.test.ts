@@ -114,7 +114,7 @@ await describe({
       fn: async () => {
         expect(fold('Straße',),).toBe('strasse',);
         expect(fold('STRASSE',),).toBe('strasse',);
-        // The claim above is the interesting half: a plain lowercase would
+        // The `Straße` claim is the interesting half: a plain lowercase would
         // leave this one different from the other two.
         expect('Straße'.toLowerCase(),).not.toBe(fold('Straße',),);
       },

@@ -25,7 +25,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Issue the cases below credit.
+ Issue the cases in this file credit.
  */
 const WHISKER = 'adjudicated/whisker';
 

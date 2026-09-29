@@ -248,7 +248,8 @@ export function findDroppedDeclaredNames(
 
   // A LONGER FORM CARRYING A SHORTER LOST ONE REPORTS ONCE. Losing
   // `Zha Ke (Lilith)` should not read as two separate losses when the shorter
-  // form only ever appeared inside the longer. Carried as a name, as above:
+  // form only ever appeared inside the longer. Carried as a name, as the
+  // CARRIED AS A NAME, NOT AS LETTERS note says:
   // `Ann` running on inside `Annabel` is its own loss (ledger B23).
   return dropped
     .filter(function isNotInsideAnother({ key: lostKey, },): boolean {

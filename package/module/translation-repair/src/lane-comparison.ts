@@ -419,7 +419,8 @@ export function compareDocumentLanes(
   const { preparationIdentity, } = repair;
 
   /**
-   Rows each ledger holds, named once so every count below reads as one step.
+   Rows each ledger holds, named once so every count this function takes reads
+   as one step.
    */
   const { records: repairRecords, } = repair;
 

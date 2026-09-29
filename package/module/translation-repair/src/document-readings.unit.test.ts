@@ -550,8 +550,8 @@ await describe({
           throw new Error('one key by construction',);
 
         /**
-         Calls spent before the resuming gather, so the assertion below reads
-         the difference rather than a total.
+         Calls spent before the resuming gather, so the `toBe(spentBefore)`
+         assertion reads the difference rather than a total.
          */
         const spentBefore = asked.length;
 

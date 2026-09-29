@@ -144,7 +144,8 @@ await describe({
     it({
       name: 'REFUSES the same drop when the page parses strictly, which is the positive control',
       fn: async () => {
-        // Proves the assertion above is about the DOWNGRADE and not about the
+        // Proves the "REFUSES a candidate that drops a page the strict grammar
+        // cannot read" case is about the DOWNGRADE and not about the
         // floor in general: a well-formed page has always been floored on.
         const verdict = validateTranslatedSlice({
           sourceText: SOURCE_TEXT,

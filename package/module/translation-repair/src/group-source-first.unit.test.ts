@@ -406,7 +406,8 @@ await describe({
       name: 'attaches a target-only run FORWARD, as the LEADING blocks of the paired unit that '
         + 'follows it, when no paired unit precedes it in its region: a note opening a passage has '
         + 'nothing earlier to trail, so it has to join whatever paired unit comes next, the mirror of '
-        + 'the backward case above and the one direction neither of the other orphan cases exercises',
+        + 'the "attaches a target-only run BACKWARD" case and the one direction neither of the other orphan '
+        + 'cases exercises',
       fn: async () => {
         /** One source paragraph. */
         const sourceNodes = blocksOf({ text: '猫猫在窗台上打盹。\n', },);
@@ -450,7 +451,8 @@ await describe({
           throw new Error('expected one paired unit',);
         // LEADING, not trailing: the note sits FIRST in the shipped order,
         // matching where it sits in the document, which is the opposite edge
-        // of the unit from what the backward case above pins.
+        // of the unit from what the "attaches a target-only run BACKWARD" case
+        // pins.
         expect(only.targetRun,).toEqual([
           targetNodes[0],
           targetNodes[1],

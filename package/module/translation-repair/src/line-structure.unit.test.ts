@@ -91,8 +91,8 @@ await describe({
             '睡着了',
           ],
         },);
-        // POSITIVE CONTROL: the LF form is line-structured, or the CRLF case
-        // below would be checking nothing.
+        // POSITIVE CONTROL: the LF form is line-structured, or the CRLF
+        // assertion would be checking nothing.
         expect(isLineStructured({ text: verse, },),).toBe(true,);
         expect(isLineStructured({ text: verse.replaceAll('\n', '\r\n',), },),).toBe(true,);
       },

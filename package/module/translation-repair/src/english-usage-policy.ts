@@ -6,7 +6,7 @@
 // entries were keyed on one sentence's construction, grammar or pronoun
 // (用这种方式, 原因是多方面的, 被她治愈, 在隙中, 离开我们的时候, ，作者, the UNO
 // line and the rest; the list stands in `glossary-dictionary-terms.unit.test.ts`).
-// Each taught a general lesson, and the rules below state those lessons for
+// Each taught a general lesson, and the rules this module exports state those lessons for
 // every sheet, since a rule reaches the next page's sentence where an entry
 // keyed on one sentence's words never fires again. `house-policy.ts` splices
 // them into its bullets.

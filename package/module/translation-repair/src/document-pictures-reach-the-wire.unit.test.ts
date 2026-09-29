@@ -272,7 +272,7 @@ type RecordedRequest = {
  
  @param translatorRendering - text every translator call answers with
  
- @returns Client honoring the script above
+ @returns Client honoring the script its parameters describe
  
  @example
  ```ts
@@ -580,7 +580,8 @@ await describe({
 
         /**
          Translator requests from the run handed a reading, which must carry
-         it, or the comparison below would not be a control at all.
+         it, or comparing `translatorWith` with `translatorWithout` would not
+         be a control at all.
          */
         const translatorWith = translatorRequestsOf({ requests: withReadings.requests, },);
 
@@ -663,7 +664,7 @@ await describe({
 
         /**
          Findings this record carries, defaulted to empty so a missing
-         record fails the assertion below rather than throwing first.
+         record fails the `findings` assertion rather than throwing first.
          */
         const findings = record?.findings ?? [];
         expect(
@@ -673,8 +674,8 @@ await describe({
         ).toBe(true,);
 
         // NEITHER SHEET, checked across every exchange the run attempted
-        // together: the heading below is the only channel a picture reaches a
-        // sheet through, and `slicePictures` never writes it for a reading it
+        // together: the WHAT THE PICTURES HERE SAY heading is the only channel a
+        // picture reaches a sheet through, and `slicePictures` never writes it for a reading it
         // refused, so its absence here is the whole proof.
         expect(
           requests.some(function mentionsPictures(request,): boolean {

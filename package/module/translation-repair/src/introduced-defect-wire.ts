@@ -109,7 +109,7 @@ export function isIntroducedDefectVerdict(value: unknown,): value is IntroducedD
 /**
  Which edit a probe run is auditing.
  
- The question is identical for both and the rules below are shared; only what
+ The question is identical for both and the probe's rules are shared; only what
  the editor was TRYING to do differs, and that changes what a prober should
  expect to see. Telling a prober that an edit was fixing defects, when it was
  actually rewriting already-repaired text for fluency, invites them to read
