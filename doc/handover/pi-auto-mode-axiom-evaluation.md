@@ -155,6 +155,12 @@ The RPC correlation draft remains deferred.
 Next work is the scope-binding writer at this existing owner,
 followed by one genuine human confirmation for a disposable fixture.
 Scripted channel checks cannot replace that capture.
+The synthetic launcher waited for helper exit;
+the real `cli-terminal-exec/src/launch.ts` returns after detached process startup.
+Do not generalize the synthetic raw-byte capture timing to live launch.
+The configured editor is `nano`,
+with executable `/usr/bin/nano` observed;
+no genuine confirmation window has been opened by this phase.
 Task #68 is not complete and downstream gates remain separate.
 
 ## Current interview state
