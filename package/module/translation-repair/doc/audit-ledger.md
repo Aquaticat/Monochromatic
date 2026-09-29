@@ -2494,6 +2494,33 @@ the unit suite under `NODE_V8_COVERAGE`,
 with function entries that never ran intersected with the barrel exports,
 then a case per branch of each function on that list (TCV).
 
+Measured so on 2026-09-28 at `1ea1e350a` (`~/temp/agent/audit-glossary-fix/coverage-exports.mjs`,
+result in `coverage-exports.json`):
+835 test processes,
+7,044 bundle functions,
+1,407 exported functions.
+Three exported functions never ran:
+`DecisionsCardMissingError`,
+`UnpositionedContainerError` and `spendCeilingOverrideNote`.
+Five exports match no bundle function by name
+(`isAsciiLowerLetter`,
+`isJsonRecord`,
+`seatJudges`,
+`seriesFor`,
+`textSettingOf`),
+so the measure cannot say whether they ran.
+The name census's 94 was mostly functions reached through others.
+The branch gap is the larger one:
+371 exported functions that ran hold 952 blocks no test reached
+(175 functions with one such block,
+130 with two or three,
+57 with four to ten,
+9 with more,
+led by `repairChunk` at 22),
+and blocks inside functions the package does not export are not yet counted.
+Closing T8 means a test per cold block,
+which waits behind the findings that change a run's output.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
