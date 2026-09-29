@@ -60,7 +60,8 @@ stop and have the agent prepare a fresh,
 separately identified test.
 Existing constructor and execution receipts must not be overwritten or replayed.
 
-The expected window title is **Pi answer: save and exit to submit**.
+The expected window title is **Pi answer:
+ save and exit to submit**.
 The document is `ANSWER.md`,
 with **Private confirmation test**,
 **Scope**,

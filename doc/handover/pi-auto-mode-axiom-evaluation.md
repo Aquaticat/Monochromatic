@@ -206,15 +206,21 @@ while a private referenced lease allowed completion,
 caught cancellation,
 and caught failure to exit naturally with code zero.
 Those caught cases did not test an escaping rejection from the leased callback.
+The separate `proc_dba6` controls then passed escaping asynchronous rejection,
+synchronous throw,
+returned-value propagation,
+and a cleanup-omitted case that could not exit naturally and reached its bounded stop.
+No desktop interaction or genuine response occurred in either control phase.
 The earlier source-review clearance is retracted in a separate corrective record;
 startup-only scripted return did not prove equivalence to detached/unreferenced children with ignored stdio.
 No Node/Pi defect or SDK-session failure is established.
 
 Next:
-finish escaping-rejection,
-lease-integration,
-and bounded-stop checks,
-then request authorization for a new separately frozen genuine epoch.
+obtain authorization for one new separately frozen genuine epoch.
+Lease integration before dynamic import,
+request cancellation,
+a declared human-response deadline,
+and controller-loss behavior still need verification before dispatch.
 The original launch budget is consumed.
 No second window is authorized or opened by this correction.
 The [human handoff](../runbook/pi-auto-mode-confirmation-fixture.md) remains fixture-only and is not a replay instruction.

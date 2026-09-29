@@ -604,6 +604,16 @@ session,
 or human response was created.
 The original genuine attempt was not replayed.
 The caught cases do not exercise a rejection escaping from the leased callback.
+Separate `contract/human-origin/liveness-rejection-controls/result.json` records successful `proc_dba6` controls:
+escaping asynchronous rejection,
+synchronous throw,
+returned-value propagation,
+and cleanup omission.
+The first cases exited naturally after their exact value/error assertions;
+the cleanup omission reached its bounded stop,
+proving the reference would otherwise remain.
+These are inert bootstrap checks,
+not a genuine workflow repair claim.
 
 The private bootstrap remedy owns one event-loop reference through the callback:
 
@@ -621,9 +631,10 @@ not cancellation,
 a deadline,
 human authentication,
 or a production grant.
-Escaping-rejection,
-integration-placement,
-and bounded-stop checks remain before a new separately authorized genuine epoch.
+Lease integration,
+request cancellation,
+a declared human-response deadline,
+and controller-loss checks remain before a new separately authorized genuine epoch.
 The consumed attempt and potentially sensitive workspace remain private evidence.
 Do not infer approval from its inactive window or reopen it as a replay.
 Detached terminal cleanup remains a separate unestablished result.
