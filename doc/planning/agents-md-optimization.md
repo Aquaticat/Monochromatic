@@ -1527,7 +1527,93 @@ EDR:
 
 ## Next action
 
-Propose batch 16.
+Batch 16 proposed:
+15 rules become 9 always-loaded,
+822 to 583 tokens;
+RCO moves to the `choosing-technology` skill's "Replacement parity overlay" and AP5 to `package/config/rolldown/README.md` (165 tokens).
+Awaiting user answers.
+
+### Pending batch 16 text
+
+```md
+TP1:
+ Third-party APIs and CLIs:
+ read the installed type definitions before calling;
+ on an undefined-method error,
+ fetch current docs immediately;
+ test the simplest invocation first.
+
+DM1:
+ Internal dependencies use `workspace:*`;
+ external ones use `catalog:`,
+ with versions in the `pnpm-workspace.yaml` catalog.
+
+LFW:
+ Never hand-edit lockfiles:
+ regenerate via the owning package manager or repo task,
+ inspect the generated diff,
+ report unrelated drift separately.
+
+RCI:
+ Before proposing a new owner for a responsibility,
+ inspect existing repo-owned generators and managers;
+ extend one that already owns it.
+
+AP1:
+ New packages go under `package/<category>/<name>`.
+
+AP2:
+ New packages get a `mise.toml` with tasks mirroring sibling packages.
+
+AP4:
+ CLI packages with `bin`:
+ `#!/usr/bin/env node` as the first line,
+ or Unix falls back to `/bin/sh` and hangs;
+ `#!/usr/bin/env bun` only in documented Bun islands.
+
+SGD:
+ Dir segments singular;
+ package name = `@monochromatic-dev/` + path under `package/`,
+ `/` -> `-`.
+Rename dir + name + consumers together.
+Exemptions:
+ `doc/planning/singular-dir-name-invariant.md`.
+
+SBS:
+ Sidecars (`.fuzz`,
+ `.bench`,
+ `.conformance`) sit beside their subject package as `<pkg>.<kind>`,
+ never under a per-kind top-level dir;
+ move dir,
+ name,
+ and consumers together.
+```
+
+### Pending batch 16 moved text
+
+```md
+RCO:
+ Removing an incumbent:
+ ledger every consumed responsibility with its owner,
+ selection status,
+ parity test,
+ and retired behavior;
+ recommend removal only when every entry has a viable owner.
+
+AP5:
+ Client-side bundling packages:
+ add `rolldown.client.config.ts` extending `@monochromatic-dev/config-rolldown/.client.ts`,
+ a `build:js:client` task,
+ and this package as a devDependency.
+```
+
+Retires TP2 and TP3 into TP1 (drops vague "Note CLI command patterns across examples"),
+DM2 and AP3 into DM1.
+AP1 loses its fuzz-sidecar sentence (SBS covers it).
+RCI widens from replacement design to any new owner (research found it firing outside that domain).
+No checker validates `package.json` specifiers or lockfile edits;
+866 of 866 internal specs use `workspace:`.
+SGD enforcement is documentation-only by user choice (`doc/planning/singular-dir-name-invariant.md`).
 
 ### Concurrent `AGENTS.md` changes
 
