@@ -16,7 +16,12 @@
  set, under the agent runs or the package's own runs directory, where a control
  time finds 494, so no answer is cached under it. Every later source commit
  rides inside it the same way, those an account names and those none does
- (`corpus-run/cache-account-audit.ts`, ledger M28).
+ (`corpus-run/cache-account-audit.ts`, ledger M28). The choice changed once
+ since (ledger B24, 2026-09-29): renderings apart only in apostrophe style or
+ spacing of any kind count as one, and corner brackets and underscores come
+ off as wrappers. That rides inside too: a find for slice-cache files written
+ since 2026-09-28T19:38Z, when this value was set, finds none, and one from
+ 2026-09-27T00:00Z finds 494.
 
  @example
  ```ts

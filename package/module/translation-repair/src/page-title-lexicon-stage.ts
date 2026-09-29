@@ -5,6 +5,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { foldedLine, } from './entry-notes.ts';
 import {
   buildPageTitleLexiconMessages,
   isPageTitleLexiconWire,
@@ -12,6 +13,7 @@ import {
   type PageTitleLexiconWire,
 } from './page-title-lexicon-wire.ts';
 import type { RepeatedTitleSpan, } from './page-title-spans.ts';
+import { straightenQuotes, } from './quote-normalize.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -19,7 +21,8 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 //region Page title lexicon stage
 // ONE RENDERING PER REPEATED TITLE, ONCE PER PAGE (ledger H16, 2026-09-28).
 // The bench is asked once; each title keeps the rendering most voices gave,
-// compared without case, spacing or wrapping quotes, the earliest seat on the
+// compared without case, spacing, apostrophe style or wrapping marks (ledger
+// B24), the earliest seat on the
 // roster breaking a tie so a resumed page reads the same answer. The lines
 // are evidence beside the page-name block: the judges still decide.
 
@@ -30,18 +33,25 @@ const HEADING = 'TITLES THIS PAGE REPEATS THAT THE ARCHIVE DOES NOT RENDER '
   + '(the bench settled one English rendering for each, so every passage renders the same title the same way):';
 
 /**
- Marks a rendering may arrive wrapped in, taken off before comparing.
+ Marks a rendering may arrive wrapped in, taken off before comparing: quotes
+ of every style a voice answers in, and Markdown emphasis of either kind
+ (ledger B24).
  */
 const WRAPPERS: ReadonlySet<string> = new Set([
   '"',
   '\'',
   '*',
+  '_',
   '“',
   '”',
   '‘',
   '’',
   '《',
   '》',
+  '「',
+  '」',
+  '『',
+  '』',
 ],);
 
 /**
@@ -136,7 +146,10 @@ function unwrapped({ rendering, }: { readonly rendering: string; },): string {
 }
 
 /**
- Form two renderings share when they differ only in case or spacing.
+ Form two renderings share when they differ only in case, spacing of any
+ kind, or the style of their apostrophes and quotation marks: the typography
+ fold, since the typography restoration makes such renderings one (ledger
+ B24).
 
  @param rendering - unwrapped rendering
 
@@ -144,16 +157,11 @@ function unwrapped({ rendering, }: { readonly rendering: string; },): string {
 
  @example
  ```ts
- comparisonKey({ rendering: 'Song  of the cat', },); // 'song of the cat'
+ comparisonKey({ rendering: 'The  Cat’s song', },); // "the cat's song"
  ```
  */
 function comparisonKey({ rendering, }: { readonly rendering: string; },): string {
-  return rendering
-    .split(' ',)
-    .filter(function word(part,): boolean {
-      return part !== '';
-    },)
-    .join(' ',)
+  return foldedLine({ text: straightenQuotes({ text: rendering, },), },)
     .toLowerCase();
 }
 
