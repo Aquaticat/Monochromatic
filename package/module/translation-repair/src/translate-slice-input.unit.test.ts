@@ -1,5 +1,7 @@
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
+  attestedDetailLines,
+  type AttestedDetail,
   type ChunkPair,
   isLineStructured,
   makeInsertionChunk,
@@ -77,6 +79,24 @@ await describe({
         const surface = translateSliceInput({ slice, prepared, archiveStandIn: 'The cat slept.', archiveDisputeNote: 'ARCHIVE RENDERING DISPUTED: (1) the pills.' });
         expect(surface.stageInput.archiveDisputeNote).toBe('ARCHIVE RENDERING DISPUTED: (1) the pills.');
         expect(translateSliceInput({ slice, prepared }).stageInput.archiveDisputeNote).toBe(undefined);
+      },
+    },),
+    // LEDGER B29: the floor-inputs scan names the translate slice's call to
+    // the stage as forwarding this literal, which states the references, the
+    // attested lines and the declared names; a mutation batch dropped each and
+    // no case noticed.
+    it({
+      name: 'CARRIES THE CITED REFERENCES, THE ATTESTED LINES AND THE DECLARED NAMES the prepared pair holds into the stage input',
+      fn: async () => {
+        const prepared = prepareDocumentPair({ sourceText: '猫睡了。', targetText: 'The cat slept.' });
+        const slice = first(prepared);
+        const attested: AttestedDetail = { archiveQuote: 'The cat slept.', reference: 1, referenceQuote: 'the cat slept', voices: 2, heard: 3 };
+        const declared = [{ source: '猫', rendering: 'Tabby' }];
+        const surface = translateSliceInput({ slice, prepared: { ...prepared, referenceContext: 'Reference 1: the cat slept.',
+          attestedDetails: [attested], declaredNamePairs: declared } });
+        expect(surface.stageInput.referenceContext).toBe('Reference 1: the cat slept.');
+        expect(surface.stageInput.attestedLines).toEqual(attestedDetailLines({ details: [attested] }));
+        expect(surface.stageInput.declared).toEqual(declared);
       },
     },),
     it({
