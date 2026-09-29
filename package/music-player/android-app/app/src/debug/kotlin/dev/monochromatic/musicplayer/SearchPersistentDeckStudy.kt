@@ -690,13 +690,15 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
                     // ```
                     for (hit in searchRankingHits(rankVariant, includeParentHits)) {
                         PersistentResultLine(title = hit.title, detail = hit.detail, kind = hit.kind,
-                            query = query)
+                            query = query, pageColor = pageColor)
                     }
                 } else if (overflowStudy) {
                     PersistentResultLine(title = overflowFolderTitle,
-                        detail = "Folder · opens this folder", kind = "Folder", query = query)
+                        detail = "Folder · opens this folder", kind = "Folder", query = query,
+                        pageColor = pageColor)
                     PersistentResultLine(title = overflowTrackTitle,
-                        detail = overflowTrackDetail, kind = "Track", query = query)
+                        detail = overflowTrackDetail, kind = "Track", query = query,
+                        pageColor = pageColor)
                     // What: `repeat` invokes this block for each synthetic row index.
                     // Why: Enough fixture rows must exist to exercise vertical result scrolling.
                     //
@@ -706,13 +708,15 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
                     // ```
                     repeat(18) { index ->
                         PersistentResultLine(title = "Camellia archive ${index + 1}",
-                            detail = "Folder · opens this folder", kind = "Folder", query = query)
+                            detail = "Folder · opens this folder", kind = "Folder", query = query,
+                            pageColor = pageColor)
                     }
                 } else {
                     PersistentResultLine(title = "Camellia", detail = "Folder · opens this folder",
-                        kind = "Folder", query = query)
+                        kind = "Folder", query = query, pageColor = pageColor)
                     PersistentResultLine(title = "Another Xronixle",
-                        detail = "Track · Camellia · reveals track", kind = "Track", query = query)
+                        detail = "Track · Camellia · reveals track", kind = "Track", query = query,
+                        pageColor = pageColor)
                 }
             } else {
                 Text(if (unavailable) "Library unavailable" else if (query.isEmpty()) "Search your music"
@@ -766,7 +770,11 @@ private fun PersistentSearchHeader(query: String, onQueryChange: (String) -> Uni
 
 /** Pairs result title and supporting meaning in one pane without a detached type label. */
 @Composable
-private fun PersistentResultLine(title: String, detail: String, kind: String, query: String) {
+private fun PersistentResultLine(title: String, detail: String, kind: String, query: String,
+    pageColor: Color) {
+    // Paint one theme-accent highlight in OKLCH for both title and supporting context.
+    val matchBackground = fixtureMatchBackground(MaterialTheme.colorScheme.primary,
+        darkScene = pageColor == Color.Black)
     Row(modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp).padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically) {
         // What: Center the result icon in the same 48dp leading slot as the header's Back icon.
@@ -790,13 +798,11 @@ private fun PersistentResultLine(title: String, detail: String, kind: String, qu
             // <Text spans={highlightFixtureMatches(title, query, matchInk, matchBackground)} />
             // ```
             Text(text = highlightFixtureMatches(title, query,
-                MaterialTheme.colorScheme.onTertiaryContainer,
-                MaterialTheme.colorScheme.tertiaryContainer),
+                MaterialTheme.colorScheme.onSurface, matchBackground),
                 style = MaterialTheme.typography.bodyLarge)
             // The supporting parent name may be the only source of a track match.
             Text(text = highlightFixtureMatches(detail, query,
-                MaterialTheme.colorScheme.onTertiaryContainer,
-                MaterialTheme.colorScheme.tertiaryContainer),
+                MaterialTheme.colorScheme.onSurface, matchBackground),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

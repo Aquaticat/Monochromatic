@@ -47,6 +47,49 @@ import androidx.compose.ui.text.buildAnnotatedString
 // ```
 import androidx.compose.ui.text.font.FontWeight
 
+/** Stores the light-surface fraction toward white in the existing OKLCH mixer. */
+private const val FIXTURE_LIGHT_WHITE_MIX: Float = 0.72f
+
+/** Keeps some accent chroma while a light highlight approaches white. */
+private const val FIXTURE_LIGHT_CHROMA_MIX: Float = 0.55f
+
+/** Stores the dark-surface fraction toward black for readable light text. */
+private const val FIXTURE_DARK_BLACK_MIX: Float = 0.62f
+
+/** Keeps more accent chroma on black while moderating saturation. */
+private const val FIXTURE_DARK_CHROMA_MIX: Float = 0.35f
+
+/**
+ * What: Derive a highlight fill from the runtime OS accent using the existing OKLCH neutral mixer.
+ * Why: Search emphasis should stay in the selected theme's hue, not a tertiary purple unrelated to its accent.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function fixtureMatchBackground(accent: Color, darkScene: boolean): Color {
+ *   return mixOklchWithNeutral({ color: accent, neutralLightness: darkScene ? 0 : 1,
+ *     lightnessFraction: darkScene ? 0.62 : 0.72, chromaFraction: darkScene ? 0.35 : 0.55 });
+ * }
+ * ```
+ */
+internal fun fixtureMatchBackground(accent: Color, darkScene: Boolean): Color {
+    // What: `OklchNeutralMix` keeps source hue while lightness and chroma move toward neutral.
+    // Why: Dynamic OS accent and selected light/dark scene determine the match fill at render time.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return mixOklchWithNeutral({ color: accent, neutralLightness: darkScene ? 0 : 1,
+    //   lightnessFraction: darkScene ? 0.62 : 0.72, chromaFraction: darkScene ? 0.35 : 0.55 });
+    // ```
+    return mixOklchWithNeutral(
+        OklchNeutralMix(
+            color = accent,
+            neutralLightness = if (darkScene) OKLCH_BLACK_LIGHTNESS else OKLCH_WHITE_LIGHTNESS,
+            lightnessFraction = if (darkScene) FIXTURE_DARK_BLACK_MIX else FIXTURE_LIGHT_WHITE_MIX,
+            chromaFraction = if (darkScene) FIXTURE_DARK_CHROMA_MIX else FIXTURE_LIGHT_CHROMA_MIX,
+        ),
+    )
+}
+
 /**
  * What: Keep original fixture lettering while highlighting every non-overlapping literal query occurrence.
  * Why: Search membership and ordering remain undecided, but every visible title and parent detail needs an honest `cam` cue.

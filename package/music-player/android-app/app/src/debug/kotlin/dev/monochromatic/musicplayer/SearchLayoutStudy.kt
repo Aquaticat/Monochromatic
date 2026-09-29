@@ -398,6 +398,9 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
 private fun SearchLayoutRow(title: String, detail: String, kind: String, query: String,
     halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean, pageColor: Color) {
     val rowColor = if (pageColor == Color.Black) Color(0xFF1A1A1F) else MaterialTheme.colorScheme.surfaceContainerLow
+    // The highlight keeps the runtime primary accent's hue while OKLCH adjusts it for the scene.
+    val matchBackground = fixtureMatchBackground(MaterialTheme.colorScheme.primary,
+        darkScene = pageColor == Color.Black)
     val surface = if (fullWidth) Modifier.fillMaxWidth().background(rowColor) else Modifier.fillMaxWidth()
     BoxWithConstraints(modifier = surface.heightIn(min = 80.dp)) {
         val safeEnd = if (halfClearance != null) maxWidth / 2 - halfClearance - 16.dp else maxWidth - 24.dp
@@ -428,13 +431,11 @@ private fun SearchLayoutRow(title: String, detail: String, kind: String, query: 
                 // <Text spans={highlightFixtureMatches(title, query, matchInk, matchBackground)} />
                 // ```
                 Text(text = highlightFixtureMatches(title, query,
-                    MaterialTheme.colorScheme.onTertiaryContainer,
-                    MaterialTheme.colorScheme.tertiaryContainer),
+                    MaterialTheme.colorScheme.onSurface, matchBackground),
                     style = MaterialTheme.typography.bodyLarge)
                 // Supporting text may contain the only matching parent-name occurrence.
                 Text(text = highlightFixtureMatches(detail, query,
-                    MaterialTheme.colorScheme.onTertiaryContainer,
-                    MaterialTheme.colorScheme.tertiaryContainer),
+                    MaterialTheme.colorScheme.onSurface, matchBackground),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
