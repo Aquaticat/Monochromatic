@@ -161,7 +161,7 @@ Neither source settles the local-file product behavior.
   visible Back/Clear,
   new-visit query and same-query refocus visibility.
   Native restoration remains unverified,
-  and TalkBack stays separate under #118.
+  and TalkBack stays separate under review task 118.
   No further IME experiments are authorized without first making a
   compelling case to the user.
 

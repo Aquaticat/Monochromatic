@@ -1804,7 +1804,7 @@ not a current-directory-only coverage limit or a file-index implementation.
 The synthetic `Another Xronixle` row must **not** appear solely because
 its immediate parent is `Camellia` for query `cam`.
 This keeps matching-folder results visible without deciding what tapping
-that folder does (#129).
+that folder does (review task 129).
 It does not decide broader Unicode equivalence,
 filename extension handling,
 mid-word substring matching,
@@ -1862,13 +1862,13 @@ No production Search implementation is authorized by this correction.
 
 ### D63. Search entry requests query edit focus (2026-09-29)
 
-The user selected the recommended **E-fast** interaction under #127:
+The user selected the recommended **E-fast** interaction under review task 127:
 opening the separate Search destination requests query edit focus and a
 keyboard so the user can begin typing without first selecting the field.
 This is an interaction intent,
 not proof that every native keyboard appears or fits the selected layout.
 Actual focus and keyboard behavior need implementation-boundary verification.
-Accessibility focus remains a separate #118 decision.
+Accessibility focus remains a separate review task 118 decision.
 
 ### D64. The visible Back arrow exits Search directly (2026-09-29)
 
@@ -1886,7 +1886,7 @@ illustrative baseline,
 not a cross-keyboard guarantee or a selected app override.
 Returning must not replace the retained left folder-browser location or
 playback deck with a Search fixture.
-No native return-focus target is selected here (#118).
+No native return-focus target is selected here (review task 118).
 
 ### D65. Clear preserves the current edit-focus state (2026-09-29)
 
@@ -1938,10 +1938,10 @@ Verify it with a future implementation before claiming it works with
 arbitrary keyboard geometries;
 do not restart IME experiments in this design review without first
 making a compelling case to the user.
-D57's bounded floating-Gboard overlap and #129 result activation remain
+D57's bounded floating-Gboard overlap and review task 129 result activation remain
 separate.
 
-The user accepted all #127 recommended behaviors and pointed out that
+The user accepted all review task 127 recommendations and pointed out that
 asking for an additional preference answer was unnecessary.
 Treat these choices as selected,
 not as pending defaults in the review form.

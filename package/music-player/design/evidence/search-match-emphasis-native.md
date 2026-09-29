@@ -170,10 +170,11 @@ Other OS accent seeds and scale-dependent paint contrast are untested.
 The match spans do not create a click handler.
 D60/D61 subsequently selected direct-name membership and mixed relevance.
 Matching grammar and deterministic tie-breaks remain future backend work;
-D63 to D68 later settled #127's interaction goals,
+D63 to D68 later settled review task 127's interaction goals,
 with native refocus visibility still unverified.
-#128,
-#129 and #118 accessibility remain separate open questions.
+D69 to D71 subsequently settled Search status truth conditions,
+and D72 to D74 settled intended result actions;
+review task 118 Search accessibility remains a separate open question.
 
 [inner-light]: ../questions/render/search-selected-accent-review-inner-results-light-s200.png
 [inner-dark]: ../questions/render/search-selected-accent-review-inner-results-dark-s200.png

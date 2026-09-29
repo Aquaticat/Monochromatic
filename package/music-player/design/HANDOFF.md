@@ -6025,7 +6025,7 @@ keyboard present;
 a 100% interaction moved focus to the debug keyboard,
 but did not prove app-mode traversal or activation.
 The guest's original accessibility settings were restored.
-Full screen-reader traversal remains under #118,
+Full screen-reader traversal remains under review task 118,
 and the D50 timing/space tradeoff remains unaccepted.
 
 ## Scale-scoped IME evidence and cover viewport review
@@ -6076,7 +6076,7 @@ that interaction,
 Back/Clear and result ranking/actions remain #116,
 inner floating-keyboard result-lettering overlap remains #122,
 E2's informational `min_padding` was still open at that point (#120),
-and full Search accessibility traversal remains #118.
+and full Search accessibility traversal remains review task 118.
 D56 does not authorize production work or further IME experimentation.
 
 The user answered **A** in the separate inner floating-Gboard question;
@@ -6290,7 +6290,7 @@ scratch root.
 
 The form recommends D over P to avoid unmeasured expansion of
 parent-only child rows while still showing the matching folder;
-it does not assume the folder opens until #129 decides that action.
+it did not assume the folder opened before review task 129 selected that action.
 P's displacement depends on M/F/T order,
 not membership alone.
 It ranks M over F because the exact track remains first,
@@ -6302,9 +6302,9 @@ F or T** independently;
 matching grammar,
 Unicode/path/tie-breaking semantics and real-library scaling need further
 separate evidence after those priorities.
-#129 result activation,
-#127 Back/Clear/focus and scroll restoration,
-#128 empty/unavailable states and #118 accessibility remain open.
+Review task 129 result activation,
+review task 127 Back/Clear/focus and scroll restoration,
+review task 128 empty/unavailable states and review task 118 accessibility were open at this point.
 The selected-only `questions/current.html` embeds newly aligned short
 results at 100% and 200% in light/dark,
 and labels its older keyboard-open captures as historical pre-D58
@@ -6463,7 +6463,7 @@ D60 also forbids indexing a whole relative display path as a track name,
 since that would reintroduce parent-only hits.
 At this checkpoint #116 continued toward matching/tie questions;
 D62 later removed that backend choice from the current UI frontier.
-#127 through #129 and #118 remain separate pending UI reviews.
+Review tasks 127 through 129 and 118 remained separate pending UI reviews at this point.
 
 ## Historical mid-word exploration, superseded by D62
 
@@ -6554,16 +6554,16 @@ A future implementation may choose and vet a library only under a
 separate request;
 if its output forces a visible conflict with those constraints,
 bring that concrete conflict back to design rather than presupposing one.
-The next active UI area is #127 Back/Clear/focus and scroll restoration,
-then #128 empty/unavailable messaging,
-#129 result activation and #118 Search accessibility.
+The next active UI area was review task 127 Back/Clear/focus and scroll restoration,
+then review task 128 empty/unavailable messaging,
+review task 129 result activation and review task 118 Search accessibility.
 The original AVD remains untouched and the disposable Fold is stopped.
 
-## #127 Search navigation and focus evidence started
+## Search navigation and focus evidence started (review task 127)
 
 `evidence/search-navigation-focus-boundaries.md` distinguishes already
 selected D47/D48 destination/header behavior from keyboard **edit** focus
-and separate #118 accessibility focus.
+and separate review task 118 accessibility focus.
 The debug-only inner `SearchPersistentDeckStudy.kt` and delegated cover
 `SearchLayoutStudy.kt` on prototype branch
 `prototype/music-player-theme-compose` (commit `cc66a0dcf`)
@@ -6612,12 +6612,12 @@ explained to the user.
 Re-entry covers one running-session visit;
 posture changes,
 process restoration and return-focus target are outside this schematic.
-#128,
-#129 and #118 stay separate.
+Review tasks 128,
+129 and 118 stayed separate.
 
-## #127 accepted, question-calibration correction
+## Navigation review accepted, question-calibration correction
 
-The user selected **all** recommended #127 behaviors and corrected the
+The user selected **all** recommended review task 127 behaviors and corrected the
 agent's unnecessary request for an additional answer:
 these recommendations should have been recorded with an opportunity for
 veto rather than consuming a confirmation question.
@@ -6639,8 +6639,8 @@ No new IME experiment,
 production Search implementation,
 backend library choice,
 original-AVD change or KWin automation occurred.
-The next separate UI review is #128 empty/unavailable behavior,
-followed by #129 activation and #118 Search accessibility.
+The next separate UI review was review task 128 empty/unavailable behavior,
+followed by review task 129 activation and review task 118 Search accessibility.
 A proposed clarification to the existing `AGENTS.md` QGR guidance would
 say to adopt a strongly determined recommendation with a veto path rather
 than ask for ceremonial ratification;

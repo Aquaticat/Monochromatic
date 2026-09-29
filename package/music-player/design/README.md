@@ -172,7 +172,7 @@ visible Back,
 Clear focus state,
 new-visit query behavior,
 conditional restored-query position and same-query row visibility.
-The [#127 evidence](evidence/search-navigation-focus-boundaries.md)
+The [navigation and focus evidence](evidence/search-navigation-focus-boundaries.md)
 and [archived logic comparison](questions/archive/search-navigation-focus-before-selection.html)
 explain the alternatives;
 the [active Search A review](questions/current.html) shows only selected

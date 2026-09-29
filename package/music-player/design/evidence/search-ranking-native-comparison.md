@@ -66,7 +66,7 @@ Its manually ordered lists cannot validate any of those matching rules.
   This avoids adding parent-only child tracks to the result set,
   but a track whose own filename lacks the query is not a separate hit.
   Whether activating the folder can lead to its contents remains open
-  under #129.
+  under review task 129.
 - **P: include immediate-parent-only track hits.**
   The sample adds `Another Xronixle` with
   `Track · Camellia · parent-only match`.
@@ -137,11 +137,11 @@ entries.
 The candidates do **not** prove that the intended exact/prefix/contained
 categories could be calculated or tie-broken consistently in the real
 library.
-Folder and track actions remain a separate #129 question.
+D72 to D74 later settled folder and track action goals under review task 129.
 D63 to D68 later selected query focus,
 visible Back/Clear and same-query row visibility;
 that scroll goal still lacks native verification.
-Accessibility remains #118.
+Accessibility remains review task 118.
 
 ## Bounded verification and capture manifest
 

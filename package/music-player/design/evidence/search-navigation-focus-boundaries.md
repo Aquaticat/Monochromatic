@@ -18,7 +18,7 @@ The currently selected D/M results and D59 match highlights appear in
 None of those visual decisions says whether **text edit focus** is
 requested when Search opens,
 or what a second system Back does after the keyboard has hidden.
-Screen-reader initial accessibility focus is a separate #118 concern and
+Screen-reader initial accessibility focus is a separate review task 118 concern and
 must not be inferred from keyboard/edit focus.
 
 The archived Material 3 Search guidance indexed in
@@ -137,9 +137,9 @@ across Search entry/exit;
 it does not prove native retention or define a return focus target.
 The re-entry comparison concerns visits in one running session;
 posture changes and process restoration are not modeled.
-Result activation (#129),
-empty/unavailable content (#128),
-TalkBack traversal and announcements (#118),
+Result activation (review task 129),
+empty/unavailable content (review task 128),
+TalkBack traversal and announcements (review task 118),
 and search-library selection (D62,
 future implementation work) stay separate.
 `package/music-player/design/questions/archive/search-navigation-focus-before-selection.html`

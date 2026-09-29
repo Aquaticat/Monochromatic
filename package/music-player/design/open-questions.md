@@ -289,7 +289,8 @@ rounds (2026-09-17):
   no other inner floating placement or ordinary keyboard overlap is waived.
   Whether covered matches are scroll-reachable after focus changes remains
   unverified against D68;
-  their activation remains open under #129.
+  their activation was settled as D72 to D74 under review task 129,
+  but native behavior remains unverified.
   See `evidence/search-result-overflow.md` for bounds and test limitations.
 - **OPEN: remaining Search behavior after D51/D52.**
   Keep positive results,
@@ -337,7 +338,7 @@ rounds (2026-09-17):
   A separate visual question may remain about displaying file extensions
   in result titles;
   it is not a reason to pick a matcher library now.
-  D63 to D68 settle #127's entry edit focus,
+  D63 to D68 settle review task 127's entry edit focus,
   visible Back,
   Clear focus state,
   new-visit empty query,
