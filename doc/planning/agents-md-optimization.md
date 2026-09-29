@@ -2102,6 +2102,114 @@ or moved);
 SLF is the only new code;
 no duplicate codes.
 
+### Whole-file draft (assembled in scratch)
+
+Assembled from current headings plus approved text with every recorded move:
+`AGENTS.md` 17618 tokens and 42677 bytes (grown from the 17431-token baseline by concurrent additions) become 12927 tokens and 31216 bytes,
+a 27% cut;
+31216 bytes fits Codex's default 32768-byte `project_doc_max_bytes` with 1552 to spare.
+The audit's 43.8% estimate assumed dropping clause-per-line breaks (1913 tokens,
+kept in round 2) and moving most situational rules to skills (research kept most as general).
+
+Placements chosen during assembly (no earlier record):
+WC2 to "Cross-runtime and scripts",
+VKI to "Hazardous commands",
+VHI to "Communication style",
+ATS with CXD and HDM under "User interfaces",
+which sits before "TSDoc comments".
+
+```text
+# Development guidelines for AI agents
+  ORG TAG RLM SLF NCD CRN APG
+## Before responding to the user
+### Communication style
+  HON SYS WKP DCK 1ST SRC EXT WRN GAP EPR VHI
+### Proactivity calibration
+  PX1 MWK PXQ PX2 PX3 TSK
+### Pre-response checklist
+  CK9 CKB XIC
+### Measure-vs-ask
+  QF1 QJ1 DVP QAB QPC QIV QNB ASK QGR QCS QSP QPM
+### Present options with pros, cons, and a personal ranking
+  OPT OPA YKZ ODM
+### Exhaust evidence layers when assessing system usage
+  EVL EL4
+### Before claiming inability
+  CB1 RXH CB2 RPB FCH
+### Name the verification step
+  NVS QRY
+### Git cleanup and worktree safety reviews
+  GCL GCR GC2
+### Research tools
+  RT1 RT4
+## Before running a command
+### Command execution conventions
+  TMO NXR EDR 1CB RGP ATH CLN APQ BOP WCD CLH
+### Long-form flags
+  LFF RGT
+### Hazardous commands
+  HRM RXI BOX DCB VKI
+### Essential commands
+  CM1 CM3 CM5 CM6
+## Before editing code
+### Match action scope to the request verb
+  VRB DRR IWT AUT VR2 ANN EC4
+### Cross-runtime and scripts
+  XRT HOM SCR PIN SPG CM2 WC2
+### Simplification
+  IMM UTL XNC ITR MXL
+### Linting
+  LN1 LN2 LN3 LN6 LN7
+### Logging and diagnostics
+  LOG TLG LG1 LG2 DGT DNL
+### Security
+  SYB STB PRV
+### User interfaces
+  CXD HDM ATS
+### TSDoc comments
+  TSD TD1 TD2 TD4 TD5 TD6 TD7 JCH
+### TypeScript
+#### Standards
+  ST2 ST3 ST5 ST6 ST8 ST9 TQ2 TQ3 XPT
+#### Type system
+  TY2 TY3 TY5 TY6 TY7 TY8 TY9
+#### Variables and values
+  VA5
+#### Programming patterns
+  PP1 PP2 PP4 PP5 PP6 PP8 PPX
+#### Regular expressions
+  RG2
+### Third-party libraries
+  TP1
+### Dependency management
+  DM1 LFW RCI
+### Adding new packages
+  AP1 AP2 AP4 SGD SBS
+## Before declaring work complete
+### Package completeness
+  PKG TCV GFP CXL
+### Verify at the user boundary
+  VUB VB1 VB5 VB7 SCF ABR URF
+### Verify on a throwaway, not against real state
+  THR TAE
+## When committing or documenting
+### Documentation standards
+#### Prose style
+  WR2 WR3 WR4 WR5
+#### Markdown syntax
+  MD1 MD2 MD3 MD4 MD5 MD6 MD8 WRP
+### Doc placement
+  DPL DL1 DL3 DL4 DL5 RBK
+### Handling external changes
+  EC1
+### Git commit guidelines
+  GCE GCG GCB GCA CLG CPN XCM
+## Architecture decisions
+  AD1 AD2 AD3 AD4 OCG
+## Agent skills
+  SK1 SK2 SK3
+```
+
 ### Concurrent `AGENTS.md` changes
 
 Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- AGENTS.md`, checked 2026-09-29):
