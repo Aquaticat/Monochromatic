@@ -414,6 +414,38 @@ await describe({
     },),
 
     it({
+      name: 'READS A LATIN TITLE AS WORDS (ledger B23): a result whose title only runs on from the work\'s is a '
+        + 'neighbour, and is warned about and listed after the one naming it',
+      fn: async () => {
+        /**
+         Record for a Latin title, a neighbour first.
+         */
+        const record: LookupRecord = {
+          query: lookupQueryFor({ title: '《Catcraft》', },),
+          fetchedAt: NOW.toISOString(),
+          hits: [
+            {
+              title: 'Catcraftopia fan wiki',
+              url: 'https://example.invalid/fan',
+              highlight: '',
+            },
+            {
+              title: 'Catcraft (game)',
+              url: 'https://example.invalid/game',
+              highlight: '',
+            },
+          ],
+        };
+        expect(lookupLinesOf({
+          title: '《Catcraft》',
+          record,
+        },),).toEqual([
+          '- web lookup for 《Catcraft》: "Catcraft (game)" https://example.invalid/game',
+          '- web lookup for 《Catcraft》 (this result does NOT name the work asked about; it is a neighbour, not its title): "Catcraftopia fan wiki" https://example.invalid/fan',
+        ],);
+      },
+    },),
+    it({
       name: 'ASKS NOTHING without a key or without a title, so a run without the secret changes nothing '
         + 'but a log line',
       fn: async () => {
