@@ -9763,6 +9763,106 @@ fix `2beaca02f`.
   No pinned original or stored artifact carries one
   (ledger B21's census).
 
+### B30: functions only tests reach
+
+Status:
+open,
+found 2026-09-29 while reading T8's cold stretches.
+`consolidationFailureEvidence` held four cold stretches,
+and nothing outside its own test calls it:
+the single consolidation attempt (`1ba8f713a`,
+2026-09-01) stopped building the prior-failure evidence it feeds,
+and the consolidate sheet kept a branch for evidence no caller sets.
+B20's guard never reported it,
+because it counts a test,
+and a barrel's re-export list,
+as naming an export.
+
+Measured at `e3ce445ed` by reach from production
+(`t8-production-reach.ts` in the audit's scratch folder):
+the roots are every non-test source file's module-level code,
+which is where the runner entries call their main and where tables run on import;
+a top-level function is live once a live context names it,
+and its body is then a live context;
+import and export lists name nothing.
+Matching is by name,
+so a name two functions share keeps both live,
+and the error is only toward calling code live.
+Its control planted a chain no root reaches,
+an export that a barrel re-exports and a private function calls,
+that private function,
+and the export calling it,
+which a barrel also re-exports,
+beside a function a module-level constant calls;
+it reported the chain's three and kept the fourth.
+Every one of the 44 build entries sits under `src/`,
+and no file outside this package imports it.
+It lists 57 functions,
+by what they are:
+
+- Wrappers over parts production calls apart,
+  tested in place of the parts:
+  `assertResumableGeneration` (the pass runs a schema check between its halves),
+  `verifiedAttestations` (the stage logs each verdict between its parts),
+  `stripStubMarkers`,
+  `comparisonRowsEqual`,
+  `laneContestChoiceMayShip`,
+  `groupNodesAligned` (production passes seals)
+  and `corroboratedCount` (replaced by the prober count,
+  `83f913a65`).
+  Two comments still name the generation wrapper as what runs at pass startup
+  (`corpus-pass.ts`,
+  `artifact-provenance.ts`).
+- Modules built beside the live path and superseded:
+  the source-first grouper and orphan reflow (`group-source-first.ts`,
+  `reflow-orphans.ts`),
+  built unwired on 2026-08-15 "before it decides a corpus",
+  whose job the sealed grouper's block-scale insertion took on 2026-08-23;
+  the version 1 artifact writer (`buildSettledArtifact`),
+  unused since both lanes settle each entry (`04c6d85cf`),
+  whose round-trip case says it reads what the pass writes;
+  the non-streaming completion parser (`extractCompletion`),
+  unused since streaming (`33d3331d4`);
+  and the critic benchmark (`runCriticBenchmark`,
+  `computeScorecard`,
+  `isRetryableAttempt`,
+  `isTruncatedAttempt`,
+  `prepareBenchmarkEntry`),
+  which no runner calls.
+- Functions whose caller changed course:
+  `consolidationFailureEvidence` and its three helpers (`1ba8f713a`);
+  `assertPublishableTranslation` (`c1db6f729` publishes a page with an unfilled passage as a recorded gap);
+  `verifyArtifactAgainstPreparation` (the rendering audit checks measurements alone since A12b,
+  `da9ca20b0`);
+  `referenceLabels` (`ac179a4e4` reads footnotes from the document's syntax);
+  `donorTextsFor` (`6354dd16a` calibrates on a reviewed donor);
+  `estimateRequestWeight`,
+  which routing never read;
+  `renderJudgedRate`,
+  whose runner changed;
+  and `categoryFamily`.
+- Test support shipped as package source:
+  the TSDoc example scan and its text scanner (`tsdoc-example-scan.ts`,
+  `source-text-scan.ts`),
+  the catalogs' label lookups and Hyper counterpart lists,
+  and `cardOf`.
+- `resetRunSpend`,
+  a documented seam that zeroes the process-wide spend meter between tests.
+
+Fix:
+the guard counts reach from production,
+fixtures first,
+and fails on these before any is touched.
+A wrapper goes and its cases call the parts in production's order;
+a superseded module or a function whose caller changed course goes with its cases,
+once no other export of its file is live;
+test support moves to `.test-fixture.ts` files;
+and `resetRunSpend` is the guard's one allowed seam,
+since no fixture can reach module-private state without an export,
+a choice the owner may veto for an injected meter.
+The consolidate sheet's branch goes with the evidence,
+and the rendered-sheets census shows whether any sheet changes.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
