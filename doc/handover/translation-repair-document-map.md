@@ -172,6 +172,30 @@ handover.
 The GitHub gist base URL is mutable;
 use the revision-specific URL and byte digest.
 
+## Task numbers in these documents
+
+Many documents indexed here cite items of a session's task tracker,
+as `#N` or as "task N".
+Those ids belong to the session that wrote them:
+one number names different work in different sessions,
+none is a GitHub issue,
+and a bare `#N` on GitHub links an unrelated one
+(`AGENTS.md` rules XNS and XN2).
+The history segments,
+dated snapshots,
+run-continuity parts and interface-candidate files are kept byte for byte,
+as their split audits require.
+The living documents name the work instead:
+the translation-repair decision records,
+the current handover and its snapshot,
+and the readiness signal and OpenRouter pass log it links as current.
+Every other document keeps its numbers as written;
+read each against the session and date around it.
+Where a living document quotes the owner,
+the quotation keeps its number and the text around it says what the number meant.
+The sections those living documents carry from the sessions of 2026-09-10 to 2026-09-15
+keep that tracker's numbers under a note saying whose they are.
+
 ## Redaction timing
 
 The

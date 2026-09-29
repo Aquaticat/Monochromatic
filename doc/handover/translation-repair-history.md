@@ -32,6 +32,12 @@ and the package's own docs and source
 date owner answers by their UTC day
 (ledger D12 in `package/module/translation-repair/doc/audit-ledger.md`).
 
+Task numbers in the segments (`#N`,
+"task N") are the writing session's task-tracker ids,
+not GitHub issues,
+and are kept as written;
+the document map's "Task numbers in these documents" says how to read them.
+
 ## Chronological groups
 
 1.  Early foundation:
