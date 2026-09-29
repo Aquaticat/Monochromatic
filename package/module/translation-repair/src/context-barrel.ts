@@ -100,8 +100,11 @@ export {
 export {
   type NumberedReferenceLine,
   numberedReferenceLines,
+  REFERENCE_UNFETCHED,
+  REFERENCE_UNREADABLE,
   referenceLineHead,
   ReferenceLineHeadError,
+  referencePageTexts,
 } from './reference-line-head.ts';
 export {
   attestCitedReferences,

@@ -28,6 +28,7 @@ import {
   type RenderedSheet,
   SOURCE,
   ARCHIVE,
+  IDENTITY,
   REFERENCES,
   ARCHIVE_QUOTE,
   ASIDE,
@@ -140,6 +141,9 @@ export function evidenceSheets(): readonly RenderedSheet[] {
           targetText: archiveWithAside,
           blockText: ASIDE,
           priorFindings: [],
+          // What preparation passes the review since ledger B28.
+          identityContext: IDENTITY,
+          referenceContext: REFERENCES,
         },),
       },),
     },
@@ -164,6 +168,8 @@ export function evidenceSheets(): readonly RenderedSheet[] {
             },],
             candidates: archiveCandidates,
             priorFindings: [],
+            identityContext: IDENTITY,
+            referenceContext: REFERENCES,
           },),
           rendered: archiveCandidates.map(function renderedOf(candidate,): string {
             return candidate.rendered;

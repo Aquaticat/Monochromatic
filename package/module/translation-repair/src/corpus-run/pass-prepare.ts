@@ -407,6 +407,11 @@ export async function preparePassEntry(
     };
   }
   /**
+   Declared names this preparation built, which the archive review reads.
+   */
+  const preparedIdentity = sightedPaired.prepared
+    .identityContext;
+  /**
    Selected corrections and retained licenses from the single review round.
    */
   const repaired = await repairArchiveBlocks({
@@ -418,6 +423,12 @@ export async function preparePassEntry(
       ...sighted,
     },),
     blocks: pending,
+    // WHAT PREPARATION ALREADY HOLDS (ledger B28): the review judges archive
+    // wording against the original, and a detail a cited page states is the
+    // translator's knowledge; the house rules it carries read a DECLARED NAMES
+    // block too.
+    ...((preparedIdentity === undefined) ? {} : { identityContext: preparedIdentity, }),
+    ...((referenceContext === '') ? {} : { referenceContext, }),
     signal,
     exchangeTimeoutMs,
     l,

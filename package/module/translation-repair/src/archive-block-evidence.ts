@@ -1,6 +1,7 @@
 import { codePointCount, } from './code-points.ts';
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { normalizePunctuation, } from './quote-normalize.ts';
+import { referencePageTexts, } from './reference-line-head.ts';
 
 //region Archive block evidence
 
@@ -68,6 +69,48 @@ export function isArchiveSourceQuoteAnchored(
   const foldedQuote = normalizePunctuation({ text: normalizedQuote, },);
   return (codePointCount({ text: normalizedQuote, },) >= MINIMUM_SOURCE_QUOTE_CHARACTERS)
     && foldedContext.includes(foldedQuote,);
+}
+
+/**
+ Checks a retention's support is substantive and stated by one page the
+ original cites.
+ 
+ A CITED PAGE IS THE ORIGINAL'S OWN SOURCE (the owner's decision of
+ 2026-09-16, ledger B28): an archive block carrying what a linked page states
+ is the translator's knowledge, not an unsupported insertion. The quote is
+ looked for in one page's text at a time, with the fold and the minimum the
+ source anchor uses; the address, the attestation's lines (each quoting the
+ archive) and the lookup's failure notes are never support.
+ 
+ @param referenceContext - reference lines, with any attested lines under them
+ 
+ @param sourceQuote - provider's exact support claim
+ 
+ @returns Whether quote is long enough and stated by one cited page
+ 
+ @throws ReferenceLineHeadError when a reference line has no numbered head
+ 
+ @example
+ ```ts
+ isArchiveReferenceQuoteAnchored({ referenceContext: '- reference 1 https://cats.example/a: Mittens naps.', sourceQuote: 'Mittens naps', });
+ ```
+ */
+export function isArchiveReferenceQuoteAnchored(
+  {
+    referenceContext,
+    sourceQuote,
+  }: {
+    readonly referenceContext: string;
+    readonly sourceQuote: string;
+  },
+): boolean {
+  return referencePageTexts({ referenceContext, },)
+    .some(function statesQuote(pageText,): boolean {
+      return isArchiveSourceQuoteAnchored({
+        sourceContext: pageText,
+        sourceQuote,
+      },);
+    },);
 }
 
 /**

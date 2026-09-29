@@ -5,6 +5,7 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import {
+  isArchiveReferenceQuoteAnchored,
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
 } from './archive-block-evidence.ts';
@@ -76,6 +77,12 @@ export type ArchiveBlockReviewOutcome = {
  
  @param priorFindings - latest failed-strategy evidence
  
+ @param identityContext - declared names preparation holds, for the
+ reviewers, the correction selectors and the naturalness read (ledger B28)
+ 
+ @param referenceContext - what the pages the original links say, with the
+ attested lines under them; a retention may anchor in one page's text
+ 
  @param signal - caller cancellation
  
  @param exchangeTimeoutMs - per-call bound
@@ -97,6 +104,8 @@ export async function runArchiveBlockReviewStage(
     targetText,
     blockText,
     priorFindings,
+    identityContext,
+    referenceContext,
     signal,
     exchangeTimeoutMs,
     l,
@@ -107,6 +116,8 @@ export async function runArchiveBlockReviewStage(
     readonly targetText: string;
     readonly blockText: string;
     readonly priorFindings: readonly string[];
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
@@ -120,6 +131,14 @@ export async function runArchiveBlockReviewStage(
     tag: runArchiveBlockReviewStage.name,
   },);
   /**
+   Declared names and cited pages, passed on only where the page has them,
+   to every sheet this stage asks.
+   */
+  const pageContext = {
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
+  };
+  /**
    Quorum-bounded review voices.
    */
   const gather = await gatherStageVoices<ArchiveBlockReviewWire>({
@@ -130,6 +149,7 @@ export async function runArchiveBlockReviewStage(
       targetText,
       blockText,
       priorFindings,
+      ...pageContext,
     },),
     signal,
     exchangeTimeoutMs,
@@ -146,11 +166,19 @@ export async function runArchiveBlockReviewStage(
     if (voice.value
       .disposition
       === 'source-supported') {
+      // A CITED PAGE ANCHORS TOO (ledger B28): a detail the page the original
+      // links states is the translator's knowledge. Only a page's own text
+      // counts, never an attested line, which quotes the archive back.
       return isArchiveSourceQuoteAnchored({
         sourceContext: sourceText,
         sourceQuote: voice.value
           .sourceQuote,
-      },);
+      },)
+        || isArchiveReferenceQuoteAnchored({
+          referenceContext: referenceContext ?? '',
+          sourceQuote: voice.value
+            .sourceQuote,
+        },);
     }
     if (voice.value
       .disposition
@@ -277,6 +305,7 @@ export async function runArchiveBlockReviewStage(
       modelIds,
       sourceText,
       blockText,
+      ...((identityContext === undefined) ? {} : { identityContext, }),
       signal,
       exchangeTimeoutMs,
       l: reviewLog,
@@ -317,6 +346,7 @@ export async function runArchiveBlockReviewStage(
       voices: anchoredVoices,
       candidates,
       priorFindings,
+      ...pageContext,
     },),
     declineConsequence: ARCHIVE_BLOCK_DECLINE_CONSEQUENCE,
     signal,

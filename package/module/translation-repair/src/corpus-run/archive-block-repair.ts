@@ -200,6 +200,12 @@ function removalSpan(
  
  @param blocks - unclaimed blocks in current preparation
  
+ @param identityContext - declared names preparation holds, for every sheet
+ the review asks (ledger B28)
+ 
+ @param referenceContext - what the pages the original links say, with the
+ attested lines under them
+ 
  @param signal - caller cancellation
  
  @param exchangeTimeoutMs - per-call bound
@@ -223,6 +229,8 @@ export async function repairArchiveBlocks(
     targetText,
     sourceContexts,
     blocks,
+    identityContext,
+    referenceContext,
     signal,
     exchangeTimeoutMs,
     l,
@@ -233,6 +241,8 @@ export async function repairArchiveBlocks(
     readonly targetText: string;
     readonly sourceContexts: ReadonlyMap<string, string>;
     readonly blocks: readonly UnclaimedTargetBlock[];
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
@@ -291,6 +301,8 @@ export async function repairArchiveBlocks(
       targetText,
       blockText,
       priorFindings: [],
+      ...((identityContext === undefined) ? {} : { identityContext, }),
+      ...((referenceContext === undefined) ? {} : { referenceContext, }),
       signal,
       exchangeTimeoutMs,
       l,

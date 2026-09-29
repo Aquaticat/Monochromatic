@@ -3,8 +3,10 @@ import { isAsciiDigits, } from './ascii-letters.ts';
 //region Reference line head
 // The head every cited-reference line opens with, written by the lookup and
 // read back by the attestation, which looks for a reference quote in the one
-// line of the reference an item names (ledger B25). Writer and reader share
-// this module so the reader cannot drift from what is written.
+// line of the reference an item names (ledger B25), and by the archive block
+// review, which anchors a retention in what one page says (ledger B28).
+// Writer and readers share this module so a reader cannot drift from what is
+// written.
 
 /**
  What every reference line opens with, before its number.
@@ -20,6 +22,17 @@ const LINE_BREAK = '\n';
  What `indexOf` answers when nothing is found.
  */
 const NOT_FOUND = -1;
+
+/**
+ What the lookup writes after a head when the page could not be fetched,
+ before the endpoint's own failure text.
+ */
+export const REFERENCE_UNFETCHED = 'could not be fetched';
+
+/**
+ What the lookup writes after a head when the page held no readable text.
+ */
+export const REFERENCE_UNREADABLE = 'nothing readable on the page';
 
 /**
  Head of one reference line: the mark, the position and the page, before
@@ -168,6 +181,66 @@ export function numberedReferenceLines(
       line,
     };
   },);
+}
+
+/**
+ What each cited page says, as the lookup wrote it after the line's head:
+ its title and its text, without the mark, the number or the address. Lines
+ that do not open with the reference mark are skipped, since the block a
+ sheet carries puts the attestation's lines under the pages and each of those
+ quotes the archive; a page the lookup could not fetch or read says nothing.
+
+ READ WHERE A QUOTE IS TO BE FOUND ON A PAGE (ledger B28): the archive block
+ review anchors a retention in what a cited page states, and an address, an
+ attested line or the lookup's own failure note is no page's statement.
+
+ @param referenceContext - reference lines, with any attested lines under them
+
+ @returns Page texts in block order
+
+ @throws ReferenceLineHeadError when a line opening with the mark has no number
+
+ @example
+ ```ts
+ referencePageTexts({ referenceContext: '- reference 1 https://cats.example/a ("Naps"): Mittens naps.', },);
+ // => ['("Naps"): Mittens naps.']
+ ```
+ */
+export function referencePageTexts(
+  { referenceContext, }: { readonly referenceContext: string; },
+): readonly string[] {
+  /**
+   Lines the lookup wrote for pages, the attested lines left out.
+   */
+  const pageLines = referenceContext
+    .split(LINE_BREAK,)
+    .filter(function isPageLine(line,): boolean {
+      return line.startsWith(REFERENCE_LINE_MARK,);
+    },);
+  return numberedReferenceLines({ referenceContext: pageLines.join(LINE_BREAK,), },)
+    .flatMap(function pageText({
+      reference,
+      line,
+    },): readonly string[] {
+      /**
+       Line after its number: the address, then what the page says.
+       */
+      const afterNumber = line.slice(`${REFERENCE_LINE_MARK}${String(reference,)} `.length,);
+      /**
+       Where the address ends: a space opens the title, or follows the colon
+       after an address the page gave no title.
+       */
+      const addressEnd = afterNumber.indexOf(' ',);
+      if (addressEnd === NOT_FOUND)
+        return [];
+      /**
+       What follows the address.
+       */
+      const text = afterNumber.slice(addressEnd + 1,);
+      if (text.startsWith(REFERENCE_UNFETCHED,) || (text === REFERENCE_UNREADABLE))
+        return [];
+      return [text,];
+    },);
 }
 
 //endregion Reference line head

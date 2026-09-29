@@ -20,6 +20,7 @@ import {
   referenceLineHead,
   ReferenceLineHeadError,
   referenceLineOf,
+  referencePageTexts,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -133,6 +134,71 @@ await describe({
         expect(message,).toContain('reference line 1 of 1',);
         expect(message,).not
           .toContain('Mittens',);
+      },
+    },),
+    it({
+      name: 'READS what each page says without its head, and nothing from a failure note or an attested line '
+        + '(ledger B28): the archive review anchors a retention only in a page\'s own words',
+      fn: async () => {
+        /**
+         Lines as the lookup writes them: a page with a title, one without, one
+         the lookup could not fetch and one with nothing readable; then an
+         attested line, which quotes the archive.
+         */
+        const referenceContext = [
+          referenceLineOf({
+            index: 1,
+            record: {
+              url: 'https://cats.example/a',
+              fetchedAt: '2026-09-29T00:00:00.000Z',
+              status: 'success',
+              title: 'Naps',
+              text: 'Mittens naps on the sill.',
+            },
+          },),
+          referenceLineOf({
+            index: 2,
+            record: {
+              url: 'https://cats.example/b',
+              fetchedAt: '2026-09-29T00:00:00.000Z',
+              status: 'success',
+              title: '',
+              text: 'Mittens purrs at dawn.',
+            },
+          },),
+          referenceLineOf({
+            index: 3,
+            record: {
+              url: 'https://cats.example/c',
+              fetchedAt: '2026-09-29T00:00:00.000Z',
+              status: 'error',
+              title: '',
+              text: '',
+              failure: 'NOT FOUND',
+            },
+          },),
+          referenceLineOf({
+            index: 4,
+            record: {
+              url: 'https://cats.example/d',
+              fetchedAt: '2026-09-29T00:00:00.000Z',
+              status: 'success',
+              title: 'Blank',
+              text: '',
+            },
+          },),
+          '- attested: the ARCHIVE\'s "The cat naps on the sill." is stated by reference 1 ("Mittens naps"), '
+            + '2 of 3 voices checked word for word',
+        ].join('\n',);
+        expect(referencePageTexts({ referenceContext, },),).toEqual([
+          '("Naps"): Mittens naps on the sill.',
+          'Mittens purrs at dawn.',
+        ],);
+        expect(referencePageTexts({ referenceContext: '', },),).toEqual([],);
+        // A line opening with the mark and no number is still refused.
+        expect(function read(): void {
+          referencePageTexts({ referenceContext: '- reference two https://cats.example/b: Mittens purrs.', },);
+        },).toThrow(ReferenceLineHeadError,);
       },
     },),
   ],

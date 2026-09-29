@@ -42,6 +42,9 @@ function describeNaturalnessFindings(
  
  @param blockText - exact retained English wording
  
+ @param identityContext - declared names the block's reviewers read, so a
+ name in its declared form is not read as awkward English (ledger B28)
+ 
  @param signal - caller cancellation
  
  @param exchangeTimeoutMs - per-call bound
@@ -61,6 +64,7 @@ export async function recordArchiveBlockNaturalness(
     modelIds,
     sourceText,
     blockText,
+    identityContext,
     signal,
     exchangeTimeoutMs,
     l,
@@ -69,6 +73,7 @@ export async function recordArchiveBlockNaturalness(
     readonly modelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly blockText: string;
+    readonly identityContext?: string;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
@@ -84,6 +89,7 @@ export async function recordArchiveBlockNaturalness(
     // An unclaimed archive block is page prose no line rule governs, so the
     // reviewer reads it as the page renders it (ledger H6).
     lineStructured: false,
+    ...((identityContext === undefined) ? {} : { identityContext, }),
   };
   /**
    First responsibility searches for defects.

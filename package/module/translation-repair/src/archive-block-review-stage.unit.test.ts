@@ -17,6 +17,7 @@ import {
 
 import {
   ARCHIVE_BLOCK_SELECTION_CRITERIA,
+  isArchiveReferenceQuoteAnchored,
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
   NoProviderForModelError,
@@ -237,6 +238,34 @@ await describe({
         expect(isArchiveSourceQuoteAnchored({
           sourceContext: '猫\u{20000}\u{20001}猫。',
           sourceQuote: '\u{20000}\u{20001}',
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'ANCHORS a quote in one cited page\'s text through the evidence fold, never in its address, an '
+        + 'attested line or a quote shorter than the minimum (ledger B28)',
+      fn: async () => {
+        expect(isArchiveReferenceQuoteAnchored({
+          referenceContext: REFERENCE_CONTEXT,
+          sourceQuote: 'an older sister who was also a tabby',
+        },),).toBe(true,);
+        expect(isArchiveReferenceQuoteAnchored({
+          referenceContext: REFERENCE_CONTEXT,
+          sourceQuote: '(“Mittens”): Mittens had',
+        },),).toBe(true,);
+        for (const sourceQuote of [
+          SISTER_BLOCK,
+          'https://cats.example/posts/mittens',
+          'she',
+        ]) {
+          expect(isArchiveReferenceQuoteAnchored({
+            referenceContext: REFERENCE_CONTEXT,
+            sourceQuote,
+          },),).toBe(false,);
+        }
+        expect(isArchiveReferenceQuoteAnchored({
+          referenceContext: '',
+          sourceQuote: 'an older sister who was also a tabby',
         },),).toBe(false,);
       },
     },),

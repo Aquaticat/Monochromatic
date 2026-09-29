@@ -61,6 +61,7 @@ export {
   namesDirectoryId,
 } from './corpus-run/directory-id-name.ts';
 export {
+  isArchiveReferenceQuoteAnchored,
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
 } from './archive-block-evidence.ts';

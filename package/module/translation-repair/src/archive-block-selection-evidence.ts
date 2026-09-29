@@ -1,6 +1,8 @@
 import type { ArchiveBlockReviewWire, } from './archive-block-review-wire.ts';
 import type { Candidate, } from './candidate-select-model.ts';
 import type { SelectEvidence, } from './candidate-select-wire.ts';
+import { citedReferenceEvidence, } from './cited-reference-rule.ts';
+import { DECLARED_NAMES_HEADING, } from './declared-identity-rule.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
@@ -83,6 +85,12 @@ export function withArchiveOriginal(
  
  @param priorFindings - earlier opinions, kept separate from current assessments
  
+ @param identityContext - declared names the reviewers read, absent when the
+ page declares none (ledger B28)
+ 
+ @param referenceContext - what the pages the original links say, which the
+ first criterion counts as support, absent when it links nowhere
+ 
  @returns Evidence whose reasons retain their proposed meaning
  
  @example
@@ -98,6 +106,8 @@ export function archiveBlockSelectionEvidence(
     voices,
     candidates,
     priorFindings,
+    identityContext,
+    referenceContext,
   }: {
     readonly sourceText: string;
     readonly targetText: string;
@@ -105,6 +115,8 @@ export function archiveBlockSelectionEvidence(
     readonly voices: readonly ArchiveReviewVoice[];
     readonly candidates: readonly Candidate<string>[];
     readonly priorFindings: readonly string[];
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
   },
 ): readonly SelectEvidence[] {
   /**
@@ -153,6 +165,15 @@ export function archiveBlockSelectionEvidence(
       label: 'CURRENT ARCHIVE BLOCK',
       text: blockText,
     },
+    // The names and pages the reviewers read (ledger B28), after the block so
+    // a selector judging its claims has what the reviewers judged them by.
+    ...((identityContext === undefined) || (identityContext === '')
+      ? []
+      : [{
+        label: DECLARED_NAMES_HEADING,
+        text: identityContext,
+      },]),
+    ...citedReferenceEvidence({ referenceContext: referenceContext ?? '', },),
     {
       label: 'PRIOR REVIEW ASSESSMENTS, opinions to check against the documents, not authority or votes deciding your answer',
       text: JSON.stringify(assessments,),

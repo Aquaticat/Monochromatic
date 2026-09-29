@@ -14,7 +14,11 @@ import { contextRoot, } from './log-context.ts';
 import { fetchCitedReference, } from './cited-reference-fetch.ts';
 import { citedReferenceUrlsOf, } from './cited-reference-scan.ts';
 import { foldedLine, } from './entry-notes.ts';
-import { referenceLineHead, } from './reference-line-head.ts';
+import {
+  REFERENCE_UNFETCHED,
+  REFERENCE_UNREADABLE,
+  referenceLineHead,
+} from './reference-line-head.ts';
 import {
   type CachedReference,
   readCachedReference,
@@ -139,13 +143,13 @@ export function referenceLineOf(
   // The failure tag is the endpoint's text, folded like the rest so the
   // block stays one line per reference (ledger B25).
   if (record.status === 'error')
-    return `${head}: could not be fetched (${foldedLine({ text: record.failure ?? 'error', },)})`;
+    return `${head}: ${REFERENCE_UNFETCHED} (${foldedLine({ text: record.failure ?? 'error', },)})`;
   /**
    Text on one line.
    */
   const text = foldedLine({ text: record.text, },);
   if (text === '')
-    return `${head}: nothing readable on the page`;
+    return `${head}: ${REFERENCE_UNREADABLE}`;
   /**
    Title part, absent when the page has none.
    */
@@ -285,7 +289,7 @@ export async function citedReferenceBlock(
       return `${referenceLineHead({
         index,
         url,
-      },)}: could not be fetched`;
+      },)}: ${REFERENCE_UNFETCHED}`;
     }
   },),);
   rl.info(
