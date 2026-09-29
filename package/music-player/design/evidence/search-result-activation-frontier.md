@@ -48,16 +48,20 @@ without loading a replacement track or immediately changing playback.
 `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt`
 routes an already-current player-list row tap to `togglePlay()` and
 another player-list track row to `playIndex(item.index)`.
-This is measured source behavior for the existing list,
+This is source-audited behavior for the existing list,
 not a settled Search-row action.
 If Search opens a different folder,
 the queue scope could change even while the current audio keeps playing;
 “opens folder” must not be described as “plays folder.”
-Conversely,
-playing a track may change queue scope even if its browser folder is not
-visibly selected yet;
-verify actual state synchronization before asserting what appears in the
-left browser after a cross-folder Search hit.
+`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/Queue.kt`
+changes page scope when `playIndex` receives an index outside that scope.
+`PlayerController.playCurrent()` loads and plays the track and calls
+`refresh(followCurrent = true)`,
+which selects the containing page and refreshes visible items.
+This source path supports an owning-folder selection in player state;
+it does **not** establish scroll-to-row,
+focus placement,
+a native Search tap or how the right pane looks if Search stays open.
 
 D51's left browser remains visible on the inner panel,
 but the cover Search occupies the full width.
@@ -70,36 +74,55 @@ D66 already says opening a new Search visit starts with an empty query;
 that rule alone does not choose whether activation ends the current visit.
 The visible Back arrow is a separate explicit exit (D64).
 
-## Separable activation questions
+## Incumbent effects and remaining preference
 
-- **Folder result:** should one tap return to player with its folder
-  selected (no autoplay),
-  or update the retained unfolded browser and keep Search open?
-  If behavior varies by panel,
-  state the cover effect and why a user would tolerate different outcomes.
-- **Other track result:** should one tap start that track immediately,
-  or reveal its row in its folder and require a later playback action?
-  Do not call “reveal” playback or promise a track restarts without
-  testing the chosen implementation.
-- **Already-current track result:** should tapping its Search row toggle
-  play/pause like the existing player row,
-  merely reveal it,
-  or leave playback unchanged?
-  A direct `playIndex(current)` call could restart the playhead rather than
-  act like the current-row toggle;
-  never claim equivalence without a real call.
-- **Destination after a result action:** close Search,
-  keep it open with the query/results in the right pane,
-  or use a panel-specific return.
-  This is independent of whether folder selection or track playback
-  happened.
-- **Unavailable/stale result:** a target may disappear after a static
-  result is displayed.
-  Do not silently choose another folder or track,
-  claim playback started,
-  or turn an activation failure into a no-match diagnosis.
-  The actual error and recovery owner need implementation-boundary
-  verification.
+- **Folder result default:** return to player showing the selected folder,
+  without autoplay.
+  `selectPage` already performs the selection and queue-scope change;
+  closing Search exposes the folder's normal track view on both panels.
+  Updating the left browser while retaining Search would obscure that
+  folder's track view on the inner panel and be invisible on the cover.
+  This is a coherence recommendation,
+  not a pre-existing Search decision.
+- **Other track default:** start the directly named track using the
+  existing non-current player-row semantics.
+  `playIndex` and `playCurrent` also select the track's owning page in
+  source;
+  they do not prove a scroll or focus jump to its row.
+  A “reveal but do not play” workflow would be new behavior without a
+  prior user signal.
+- **Already-current track default:** carry the existing player-row
+  play/pause distinction into a Search result for a query that actually
+  matches that track.
+  `togglePlay()` pauses when playing,
+  resumes the already-loaded current URI when paused,
+  or loads it when necessary.
+  Passing the current index to `playIndex` would instead follow its load
+  path;
+  do not label that route a toggle.
+  The historical `cam` fixture's current deck track is **not** a valid
+  result to test this case.
+- **Actual open choice:** after a successful **track** result action,
+  keep Search visible so the user can inspect further hits and use the
+  retained deck,
+  or return to the ordinary folder track view?
+  D47's separate destination,
+  D51's retained deck,
+  D64's Back arrow and D66's fresh-query **next visit** leave both paths
+  coherent.
+  Do not bundle this choice with the folder's return-to-player effect,
+  or split it again between current and other tracks without a reason.
+- **Unavailable/stale target:** a result may disappear before activation.
+  Treat that as an action failure requiring a truthful handler,
+  not another user-preference axis.
+  Do not substitute a different item,
+  claim playback started or turn a failure into a no-match diagnosis.
+  D9 already drops a vanished file from the list and uses a dismissible
+  bar rather than leaving a dead row in place;
+  that is the incumbent presentation to reuse where its cause matches.
+  The actual Search action failure,
+  bar timing and collision with another transient message still need
+  implementation-boundary verification.
 
 A visual/logic comparison must start from selected A with its real left
 browser and full deck,
