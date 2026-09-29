@@ -35,8 +35,7 @@ import {
   EMPTY_TALLY,
   type TranslateStageResult,
 } from './translate-stage-result.ts';
-import { citedReferenceEvidence, } from './cited-reference-rule.ts';
-import { JUDGE_PICTURE_SCOPE_RULE, } from './translate-wire.ts';
+import { translateSlateEvidence, } from './translate-slate-evidence.ts';
 
 //region Translate judge
 
@@ -401,86 +400,15 @@ export async function judgeTranslateSlate(
       slate,
       ...((syntax === undefined) ? {} : { syntax, }),
     },),
-    evidence: [
-      {
-        label: 'ORIGINAL (Chinese)',
-        text: sourceText,
-      },
-      // WHAT THE PICTURES SAY, placed beside the original because that is what
-      // it is: a passage showing a picture has a source a judge cannot read,
-      // and English transcribing that picture looks like invention until this
-      // block exists. Only corroborated readings appear here; a picture nobody
-      // could read is a finding rather than a hedge for a judge to weigh.
-      ...((pictureContext === undefined) || (pictureContext === '')
-        ? []
-        : [
-          {
-            // The scope rides in the label (ledger S16, H7): read with no rule,
-            // a neighbouring picture's transcript looked like faithful content.
-            label: `WHAT THE PICTURES HERE SAY, transcribed by two readers that agreed; ${JUDGE_PICTURE_SCOPE_RULE}`,
-            text: pictureContext,
-          },
-        ]),
-      // Neighbouring sections travel as CONTEXT, never as something to render,
-      // and only when a caller asked for them, so a run that does not want the
-      // wider window renders the sheet this stage has always sent. The label
-      // carries the caveat because a judge that reads it as required content
-      // starts filing coverage complaints against every candidate.
-      ...((neighbouringSourceText === undefined) || (neighbouringSourceText === '')
-        ? []
-        : [
-          {
-            label: 'SURROUNDING ORIGINAL (Chinese), context only: the candidates are not expected to render this',
-            text: neighbouringSourceText,
-          },
-        ]),
-      // THE OTHER HALF OF THE SAME WINDOW, and the half that names the failure
-      // relocation causes. A judge shown only this slice cannot tell a passage
-      // the archive INVENTED from one it carried across a boundary, and it
-      // condemns the archive for both. Measured over 92 entries and 1260
-      // slices, every relocation pair is adjacent, so the passage it is looking
-      // for is in this block whenever it is anywhere.
-      ...((neighbouringIncumbentText === undefined) || (neighbouringIncumbentText === '')
-        ? []
-        : [
-          {
-            label: 'SURROUNDING EXISTING TRANSLATION (English), context only: '
-              + 'wording that belongs to the passages either side of this one. A '
-              + 'candidate is not expected to render any of it. Where wording the '
-              + 'ORIGINAL of THIS passage calls for is already sitting here, the '
-              + 'archive carried it across a boundary rather than inventing it.',
-            text: neighbouringIncumbentText,
-          },
-        ]),
-      // Declared names travel as evidence rather than as part of a candidate,
-      // because a judge cannot check criterion three without them. The existing
-      // translation deliberately does NOT travel here: it is on the ballot,
-      // anonymously, and showing it twice would tell the judges which candidate
-      // is the incumbent.
-      ...((identityContext === undefined) || (identityContext === '')
-        ? []
-        : [
-          {
-            label: 'DECLARED NAMES',
-            text: identityContext,
-          },
-        ]),
-      // The pages the original cites, after the names, so a candidate keeping
-      // a detail only a cited page states is judged on evidence rather than
-      // condemned for saying what the original does not.
-      ...citedReferenceEvidence({ referenceContext: referenceContext ?? '', },),
-      // Why the incumbent on the ballot is the repair lane's stand-in, after
-      // the references, so a candidate leaving a disputed detail out is not
-      // read as dropping the page's own content (class one hundred eight).
-      ...((archiveDisputeNote === undefined) || (archiveDisputeNote === '')
-        ? []
-        : [
-          {
-            label: 'ARCHIVE RENDERING DISPUTED',
-            text: archiveDisputeNote,
-          },
-        ]),
-    ],
+    evidence: translateSlateEvidence({
+      sourceText,
+      ...((pictureContext === undefined) ? {} : { pictureContext, }),
+      ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+      ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
+      ...((identityContext === undefined) ? {} : { identityContext, }),
+      ...((referenceContext === undefined) ? {} : { referenceContext, }),
+      ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
+    },),
     signal,
     perCallTimeoutMs,
     l: tl,

@@ -107,5 +107,6 @@ export {
   quoteDepth,
   quoteDepthBound,
 } from './quote-depth-clamp.ts';
+export { repairSelectionSourceEvidence, } from './repair-selection-evidence.ts';
 
 //endregion Editor barrel

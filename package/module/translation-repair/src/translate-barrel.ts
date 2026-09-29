@@ -278,5 +278,6 @@ export {
 } from './translate-atom-rendering.ts';
 export { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
 export { wrapTranslateRecords, } from './translate-wrap.ts';
+export { translateSlateEvidence, } from './translate-slate-evidence.ts';
 
 //endregion Translate barrel
