@@ -766,10 +766,18 @@ private fun PersistentSearchHeader(query: String, onQueryChange: (String) -> Uni
 private fun PersistentResultLine(title: String, detail: String, kind: String) {
     Row(modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp).padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically) {
-        Icon(imageVector = if (kind == "Folder") Icons.Filled.FolderOpen else Icons.Filled.MusicNote,
-            contentDescription = null, modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(modifier = Modifier.width(12.dp))
+        // What: Center the result icon in the same 48dp leading slot as the header's Back icon.
+        // Why: Its visual center and the following title now share Back/query x anchors.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // <LeadingSlot width={48}><Icon width={24} /></LeadingSlot><ResultText />
+        // ```
+        Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+            Icon(imageVector = if (kind == "Folder") Icons.Filled.FolderOpen else Icons.Filled.MusicNote,
+                contentDescription = null, modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         Column {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             Text(detail, style = MaterialTheme.typography.bodyMedium,

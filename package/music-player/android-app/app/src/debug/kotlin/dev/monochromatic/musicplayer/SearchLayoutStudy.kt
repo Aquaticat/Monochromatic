@@ -399,15 +399,24 @@ private fun SearchLayoutRow(title: String, detail: String, kind: String,
     val surface = if (fullWidth) Modifier.fillMaxWidth().background(rowColor) else Modifier.fillMaxWidth()
     BoxWithConstraints(modifier = surface.heightIn(min = 80.dp)) {
         val safeEnd = if (halfClearance != null) maxWidth / 2 - halfClearance - 16.dp else maxWidth - 24.dp
-        val labelWidth = if (fullWidth) safeEnd - 88.dp else maxWidth - (halfClearance ?: 0.dp) - 88.dp
+        // The 48dp leading slot replaces 24dp icon plus 12dp spacer; reserve its full width for text.
+        val labelWidth = if (fullWidth) safeEnd - 100.dp else maxWidth - (halfClearance ?: 0.dp) - 100.dp
         Row(modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
             .padding(start = 16.dp, end = if (!fullWidth && halfClearance != null) halfClearance + 8.dp else 16.dp,
                 top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = if (kind == "Folder") Icons.Filled.FolderOpen else Icons.Filled.MusicNote,
-                contentDescription = null, modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.width(12.dp))
+            // What: Match the cover Back icon's 48dp anchor and put the title at the query start.
+            // Why: Icon and text align as two consistent vertical columns across header and results.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // <LeadingSlot width={48}><Icon width={24} /></LeadingSlot><ResultText />
+            // ```
+            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                Icon(imageVector = if (kind == "Folder") Icons.Filled.FolderOpen else Icons.Filled.MusicNote,
+                    contentDescription = null, modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             Column(modifier = Modifier.width(labelWidth.coerceAtLeast(160.dp))) {
                 Text(title, style = MaterialTheme.typography.bodyLarge)
                 Text(detail, style = MaterialTheme.typography.bodyMedium,
