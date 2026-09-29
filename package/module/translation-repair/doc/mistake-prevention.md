@@ -65,9 +65,13 @@ M14,
 M38);
 a command ran in the same batch as the write it read,
 and ran a stale file of the same name (M51).
+A transcript census found 9,324 of 22,058 calls breaking the rule after it took its current wording,
+and the rule itself misread as three `&&` rather than three steps (M1).
 
 The rule:
 a Bash call holds at most three steps joined by `&&`,
+which is two `&&`,
+and a leading `cd` is one of the three;
 never `;`,
 never a shell loop.
 A report that must run after a failing command is `a || b`.
@@ -80,11 +84,12 @@ the turn ends;
 a notification arrives when it finishes.
 
 What enforces it:
-nothing automated.
-The ledger's M1 counts every slip,
-and the count kept growing
-after the rule was written down;
-count the `&&` and look for `;` before sending.
+nothing automated yet;
+issue #579 asks the repository's guardrail hook to deny such calls.
+The rate fell while slips were recorded by hand but never reached zero,
+so until the hook lands,
+count the `&&` and look for `;` before sending,
+and rerun the M1 census before an entry claims a count.
 
 ## Guards that cannot fail
 
@@ -214,7 +219,8 @@ a cause goes in only after the command that shows it (blame,
 log,
 a probe) has run.
 A count goes in only from a command run on the staged diff
-(one commit said 44 and five where its diff held 40 and 6).
+(one commit said 44 and five where its diff held 40 and 6;
+another counted its edit script's edits and called them the times they fixed).
 Before the commit runs,
 read the message for `#` followed by digits:
 this audit's task list numbers its items like issues,
@@ -261,6 +267,35 @@ docs,
 README or `mise.toml`
 unless it is a listed issue,
 and on a listed issue that is no longer cited.
+
+## Dates and clock times
+
+What happened:
+owner answers given between 00:00 and 04:00 UTC were dated by the local day before,
+the voting rulings in 40 places (D12);
+clock times were copied as `git log` and `find` print them,
+in local EDT with no zone,
+157 of them in 17 files,
+and the scan that found them skipped 14 more written with seconds (D25).
+
+The rule:
+a date or time is read from its source's own timestamp and written in UTC with its zone.
+Transcripts and run logs print UTC;
+`git log`,
+`find` and `stat` print local time,
+so they run under `TZ=UTC` with a local-format date.
+An owner answer is dated by the UTC day of its transcript entry.
+A range states its zone once,
+after its second end;
+a time whose zone cannot be recovered says so in words.
+
+What enforces it:
+`src/clock-time-zones.unit.test.ts` for clock times,
+over the package's comments,
+docs and README,
+the decision records and the current handover;
+dates by habit,
+with the D12 census as the way to check them.
 
 ## Cached decisions
 
@@ -375,7 +410,8 @@ Lint,
 type check and the named tests run after the final edit of a commit,
 in that order,
 and the commit follows only a clean run of all three (M46).
-Neither the type check nor the linter reports an unused import here,
+Neither the type check nor the linter reports an unused import here
+(issue #578 asks for a check),
 so a removal counts the removed names' uses,
 and a change that stops calling a function removes it in the same commit.
 Commit before `--fix` and read the diff after it for anything but layout.

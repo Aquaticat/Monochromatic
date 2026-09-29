@@ -5306,7 +5306,7 @@ every one names unrelated work
 (catalog readers,
 a nested Wayland fixture,
 webapp ports),
-and the three real issues cited (576 to 578) are excluded.
+and the two real issues cited (576 and 577) are excluded.
 The numbers also fail as internal references:
 the transcripts show one number given to two or more different tasks in different sessions
 (the number cited 58 times names both a picture-reader measurement and the relocation question),
@@ -5387,9 +5387,11 @@ tests,
 docs,
 README and `mise.toml`
 for the census's shape,
-allows only issues 576 and 577
-(each checked with `gh issue view`),
-and asserts both are still cited.
+allows only the GitHub issues it lists
+(576 and 577 at first,
+578 and 579 since they were cited,
+each checked with `gh issue view`),
+and asserts each is still cited.
 Its fixtures come first.
 A citation planted at the end of the README failed the package case,
 naming that line,
@@ -5445,8 +5447,8 @@ OpenRouter (`provider-name.ts`).
 ### D25: clock times with no zone came back after D12
 
 Status:
-open,
-found 2026-09-28 during the D12 census.
+fixed 2026-09-28,
+found the same day during the D12 census.
 D12 made every Markdown clock time carry a zone,
 by hand and with no guard.
 A scan of the living docs
@@ -5470,6 +5472,52 @@ the file,
 the log line)
 to UTC with its zone,
 and guard every living doc against a zone-less clock time.
+
+What was done:
+
+-   `c94b5cba4` gave 157 clock times in 17 files their zone
+    (counted from its diff:
+    157 zone-less times left and 157 zoned ones came in,
+    file by file).
+    Commit times and slice-cache file times were read again from git and the files in UTC
+    (`TZ=UTC` with a local-format date),
+    and moved from local EDT to UTC;
+    times read from run logs,
+    meters and owner messages were already UTC
+    (checked against the hakureico,
+    settle-default and TianqiChen66621 logs and the transcripts)
+    and now say so.
+-   The guard found 14 more,
+    all times with seconds that the first scan's pattern skipped,
+    and `dd519a3b8` gave them their zone in 7 edits:
+    three ranges and two single times in source comments,
+    one in this ledger,
+    two in the current handover snapshot,
+    and a three-line log excerpt in the multi-provider record,
+    now a fenced `text` block under "(log times,
+    UTC)".
+    Its message counted them wrong;
+    commit comment 202516691 corrects it.
+-   One time in the multi-provider record has no recoverable zone
+    (02:53;
+    the zone it was observed in was never established);
+    it now says so,
+    and the guard accepts that stated phrase and nothing looser.
+
+Guard:
+`src/clock-time-zones.unit.test.ts` (`dd519a3b8`)
+reads the package's source comments
+(parsed,
+so string literals and fenced examples are skipped),
+docs and README,
+the translation-repair decision records,
+the handover index and the snapshot it links,
+and fails on a clock time with no `UTC`,
+`EDT` or `Z` after it,
+unless a range states the zone once after its second end.
+Its fixtures come first.
+A time planted at the end of the README failed the package case with one finding,
+and the README was restored from the commit.
 
 ### D26: task-list numbers in the repository-level translation-repair docs
 
@@ -6559,7 +6607,8 @@ Status:
 fixed in `3817a99c9`,
 2026-09-28;
 the missing check is repository configuration,
-outside the package.
+outside the package,
+and issue #578 asks for it.
 `noUnusedLocals` is off in `package/config/typescript/tsconfig.options.json` and the linter reports none either,
 so the provider-client merge (B12) left four `p-limit` imports behind unnoticed until counted.
 A parser census over the package's 1,837 source and test files (`~/temp/agent/audit-glossary-fix/unused-imports.mjs`)
@@ -6969,14 +7018,45 @@ recorded for the prevention doc.
 ### M1: `;` in shell commands
 
 Status:
-recurring.
-At least five times on 2026-09-27
+recurring,
+and far more often than the hand list in this entry records.
+A census of this session's transcript on 2026-09-29
+(`~/temp/agent/audit-glossary-fix/shell-slips.mjs`,
+reading every Bash call outside quotes and heredoc bodies)
+counts from the rule's current wording (`a2f6bf184`,
+2026-09-06 19:20 UTC):
+of 22,058 calls,
+9,324 broke it.
+6,101 held a `;` separator,
+3,231 chained more than three steps,
+945 ran a command after a heredoc's terminator,
+348 held a shell loop
+and 66 a foreground sleep
+(a call with two kinds counts under each;
+30 `;` hits drawn at random were all real separators).
+The share fell from 59 to 70% of each UTC day's calls on 2026-09-06 to 09-09
+to 16 to 18% on 2026-09-27 and 09-28,
+and never reached zero.
+The hand list also measured against a misreading:
+this entry,
+and the session's working notes,
+carried the rule as at most three `&&`,
+where the repository's rule 1CB allows three `&&`-chained steps,
+which is two `&&`;
+2,326 of the 3,231 long chains are exactly four steps.
+Prevention:
+the wording is corrected here and in the prevention doc,
+and since recording each slip has not stopped them,
+issue #579 asks the repository's guardrail hook to deny such calls.
+
+The hand list:
+at least five times on 2026-09-27
 (`sed ... ; sed`,
 `node <guard> ; rg`,
 `rg ... ; ls`,
 `xargs <lint> ; rg`,
 and one by the fixture agent),
-against the rule of at most three `&&` and no `;`;
+against the rule of no `;`;
 twice more later that day (`node <test> | rg ; node <test> | rg`,
 and one `rg` then `awk` by the docs agent),
 and once a shell `for` loop over line numbers,
@@ -7956,6 +8036,16 @@ Prevention for counts:
 a number in a commit message comes from a command run on the staged diff,
 in the same call that commits,
 or the message says no number.
+Hours later,
+with that rule written,
+`dd519a3b8` said its guard found seven log times with seconds;
+the guard's output before the fix held 14,
+fixed by 7 edits,
+so the message counted edits and called them times.
+Commit comment 202516691 corrects it.
+The rule holds as written:
+the count came from the edit script's "applied 7 edits" line,
+not from a command on the staged diff.
 
 ### M14: a reproduction check committed without a positive control
 

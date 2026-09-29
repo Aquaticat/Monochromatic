@@ -60,9 +60,27 @@ const LOGGER_LOG_ISSUE = 576;
 const INDENTATION_CHECK_ISSUE = 577;
 
 /**
+ GitHub issue asking for a check that reports unused imports (ledger B16),
+ checked with `gh issue view` on 2026-09-29.
+ */
+const UNUSED_IMPORT_CHECK_ISSUE = 578;
+
+/**
+ GitHub issue asking the guardrail hook to deny Bash calls that break the
+ repository's shell rule (ledger M1), checked with `gh issue view` on
+ 2026-09-29.
+ */
+const SHELL_RULE_HOOK_ISSUE = 579;
+
+/**
  Real GitHub issues the package may cite by number.
  */
-const GITHUB_ISSUES: ReadonlySet<number> = new Set([LOGGER_LOG_ISSUE, INDENTATION_CHECK_ISSUE,],);
+const GITHUB_ISSUES: ReadonlySet<number> = new Set([
+  LOGGER_LOG_ISSUE,
+  INDENTATION_CHECK_ISSUE,
+  UNUSED_IMPORT_CHECK_ISSUE,
+  SHELL_RULE_HOOK_ISSUE,
+],);
 
 /**
  One file the guard reads, named from the package root.
@@ -289,7 +307,7 @@ await describe({
           files: [
             {
               path: 'doc/cat.md',
-              text: `Naps:\nsee issue ${HASH}${String(LOGGER_LOG_ISSUE,)} and ${HASH}578`,
+              text: `Naps:\nsee issue ${HASH}${String(LOGGER_LOG_ISSUE,)} and ${HASH}412`,
             },
             {
               path: 'src/bowl.ts',
@@ -299,12 +317,12 @@ await describe({
         },);
         expect(found,).toEqual([
           `doc/cat.md:2 ${String(LOGGER_LOG_ISSUE,)}`,
-          'doc/cat.md:2 578',
+          'doc/cat.md:2 412',
           'src/bowl.ts:1 31',
         ],);
         expect(found.filter(function isNotAllowed(citation,): boolean {
           return !GITHUB_ISSUES.has(citedNumber({ citation, },),);
-        },),).toEqual(['doc/cat.md:2 578', 'src/bowl.ts:1 31',],);
+        },),).toEqual(['doc/cat.md:2 412', 'src/bowl.ts:1 31',],);
       },
     },),
     it({
