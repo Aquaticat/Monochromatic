@@ -35,7 +35,8 @@ export const SLOT_SEPARATOR = '\u0000';
 export const SETTLED_AUDIT_PROBE = 'rendering-audit-settled';
 
 /**
- Digests of the exact two texts one audit was shown.
+ Digests of the exact texts one audit was shown: the pair, and the cited
+ references where there were any.
  
  A TAGGED ABSENCE rather than two optional strings, because the question a
  reader asks of this field is whether two rows audited the SAME characters,
@@ -61,6 +62,17 @@ export type AuditedTextIdentity = {
    Rendering it judged.
    */
   readonly candidate: string;
+
+  /**
+   What the pages the original links say, as the roster was shown them
+   (ledger B29).
+   
+   ABSENT WHERE NONE WERE SHOWN, rather than a digest of the empty string.
+   Every row written before the audit showed references was shown none, so
+   an absent field keys a row shown none today exactly as it keys those,
+   and only a row that was shown references keys differently.
+   */
+  readonly references?: string;
 } | {
   readonly kind: 'unrecorded';
 };
@@ -129,6 +141,13 @@ export type SettledAuditRow = {
    Whether the producing run had declared names to pass on.
    */
   readonly identityKind: string;
+
+  /**
+   Whether the roster was shown what the pages the original links say
+   (ledger B29). Rows persisted before this field existed carry nothing
+   here, and every one of them was shown none.
+   */
+  readonly referencesKind: 'cited' | 'none';
 
   /**
    What this audit was actually shown, by digest.

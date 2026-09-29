@@ -117,6 +117,17 @@ export type SettledAuditSubject = {
   readonly candidateText: string;
 
   /**
+   Whole original page the slice was cut from, at the artifact's commit.
+   
+   CARRIED FOR ITS LINKS (ledger B29). The producing run read what the
+   pages the WHOLE original links say and showed every critic and panel
+   that block, so the audit reads the same page's links rather than the
+   slice's, which may cite nothing the page does. Read only when a subject
+   is bought, since a reference read can cost a web fetch.
+   */
+  readonly pageSourceText: string;
+
+  /**
    Whether any later stage overruled that rendering.
    
    ADDED BESIDE the lane-scoped fields rather than replacing them, for the
@@ -181,6 +192,9 @@ export function identityOf({ prepared, }: { readonly prepared: PreparedDocumentP
  
  @param identity - names its producing run licensed
  
+ @param pageSourceText - whole original at the artifact's commit, whose
+ links the audit reads
+ 
  @returns One subject per decided slice
  
  @throws {@link Error} when a row that passed the decided filter is not
@@ -188,7 +202,7 @@ export function identityOf({ prepared, }: { readonly prepared: PreparedDocumentP
  
  @example
  ```ts
- const subjects = subjectsOf({ artifact, runSet, identity, },);
+ const subjects = subjectsOf({ artifact, runSet, identity, pageSourceText, },);
  ```
  */
 export function subjectsOf(
@@ -196,10 +210,12 @@ export function subjectsOf(
     artifact,
     runSet,
     identity,
+    pageSourceText,
   }: {
     readonly artifact: ParsedTwoLaneArtifact;
     readonly runSet: string;
     readonly identity: SettledIdentity;
+    readonly pageSourceText: string;
   },
 ): readonly SettledAuditSubject[] {
   /**
@@ -277,6 +293,7 @@ export function subjectsOf(
         auditsArchiveText: shipped.kind === ARCHIVE_TEXT_DELIVERY,
         sourceText: row.sourceText,
         candidateText: outcome.acceptedText,
+        pageSourceText,
         pageRelation: pageRelationOf({
           laneSelection: artifact.laneSelection,
           reading,

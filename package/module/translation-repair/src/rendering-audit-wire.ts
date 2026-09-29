@@ -311,6 +311,12 @@ export type RenderingAuditSubject = {
    Names and terms this run licensed, shown as evidence rather than as a rule.
    */
   readonly identityContext?: string;
+
+  /**
+   What the pages the ORIGINAL links say, as the producing critics and panels
+   read them (ledger B29); empty or absent where it links nowhere.
+   */
+  readonly referenceContext?: string;
 };
 
 /**

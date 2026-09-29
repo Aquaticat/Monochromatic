@@ -28,8 +28,10 @@ export {
 export {
   auditOne,
   capped,
+  type CitedSubject,
   eligibleSubjects,
   printPopulation,
+  withCitedReferences,
 } from './corpus-run/rendering-audit-settled-buy.ts';
 export {
   newestRun,

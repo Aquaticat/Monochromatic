@@ -21,6 +21,11 @@ import type {
 // and different English there, which is a comparison of two renderings rather
 // than two readings of one, and it belongs in the archive-versus-fresh split
 // instead.
+//
+// AND THE REFERENCES (ledger B29). An auditor shown what the pages the
+// original links say is answering a different question from one shown none,
+// so two rows over one pair are a repeat only when they were shown the same
+// references, or none.
 
 /**
  Marks what the digest is over, so a later change of algorithm or of what is
@@ -29,46 +34,62 @@ import type {
 const AUDITED_DIGEST_PREFIX = 'sha256-audited-v1:';
 
 /**
- Digests the exact pair one audit was shown.
+ Digests one text the audit was shown.
+ 
+ @param text - exact characters
+ 
+ @returns Prefixed digest
+ 
+ @example
+ ```ts
+ const digest = auditedDigestOf({ text: sourceText, },);
+ ```
+ */
+function auditedDigestOf({ text, }: { readonly text: string; },): string {
+  return `${AUDITED_DIGEST_PREFIX}${
+    createHash('sha256',)
+      .update(
+        text,
+        'utf8',
+      )
+      .digest('hex',)
+  }`;
+}
+
+/**
+ Digests the exact texts one audit was shown.
  
  @param sourceText - original put in front of the roster
  
  @param candidateText - rendering it judged
  
+ @param referenceContext - what the pages the original links say as the
+ roster was shown them, empty where it was shown none, which leaves the
+ identity keyed as every row written before references were shown
+ 
  @returns Identity to persist on the row
  
  @example
  ```ts
- const identity = digestAuditedText({ sourceText, candidateText, },);
+ const identity = digestAuditedText({ sourceText, candidateText, referenceContext, },);
  ```
  */
 export function digestAuditedText(
   {
     sourceText,
     candidateText,
+    referenceContext,
   }: {
     readonly sourceText: string;
     readonly candidateText: string;
+    readonly referenceContext: string;
   },
 ): AuditedTextIdentity {
   return {
     kind: 'digested',
-    source: `${AUDITED_DIGEST_PREFIX}${
-      createHash('sha256',)
-        .update(
-          sourceText,
-          'utf8',
-        )
-        .digest('hex',)
-    }`,
-    candidate: `${AUDITED_DIGEST_PREFIX}${
-      createHash('sha256',)
-        .update(
-          candidateText,
-          'utf8',
-        )
-        .digest('hex',)
-    }`,
+    source: auditedDigestOf({ text: sourceText, },),
+    candidate: auditedDigestOf({ text: candidateText, },),
+    ...((referenceContext === '') ? {} : { references: auditedDigestOf({ text: referenceContext, },), }),
   };
 }
 
@@ -78,7 +99,8 @@ export function digestAuditedText(
  @param value - field as it came out of the run file, positional because a
  type predicate cannot name a destructured binding
  
- @returns Whether both digests are there and are strings
+ @returns Whether both digests are there and are strings, and the
+ references digest is a string wherever it is there
  
  @example
  ```ts
@@ -89,6 +111,7 @@ function isDigested(value: unknown,): value is {
   readonly kind: 'digested';
   readonly source: string;
   readonly candidate: string;
+  readonly references?: string;
 } {
   if ((value === null) || ((typeof value) !== 'object'))
     return false;
@@ -100,7 +123,8 @@ function isDigested(value: unknown,): value is {
 
   return (fields.kind === 'digested')
     && ((typeof fields.source) === 'string')
-    && ((typeof fields.candidate) === 'string');
+    && ((typeof fields.candidate) === 'string')
+    && ((fields.references === undefined) || ((typeof fields.references) === 'string'));
 }
 
 /**
@@ -141,7 +165,8 @@ export function textIdentityOf(
 }
 
 /**
- Whether two rows were shown identical originals and identical renderings.
+ Whether two rows were shown identical originals, identical renderings and
+ identical references, none counting as identical to none.
  
  TWO UNRECORDED ROWS ARE NOT A MATCH. This is the whole reason the field is a
  tagged union: comparing two absences for equality would pair rows by their
@@ -180,7 +205,9 @@ export function sameAuditedText(
 
   if ((mine.kind === 'unrecorded') || (theirs.kind === 'unrecorded'))
     return false;
-  return (mine.source === theirs.source) && (mine.candidate === theirs.candidate);
+  return (mine.source === theirs.source)
+    && (mine.candidate === theirs.candidate)
+    && (mine.references === theirs.references);
 }
 
 //endregion Audited text identity

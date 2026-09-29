@@ -1,8 +1,11 @@
 //region Cited-reference rule
-// The one sentence both sheets carry with the references, and the fenced
-// block that carries it. Shared by `critic-prompt.ts` and
-// `adjudicate-prompt.ts` so the critic that files and the panel that votes
-// read the same rule (class thirty-five, 2026-09-16).
+// The rule every sheet carries with the references, worded once per kind of
+// sheet, and the blocks that carry it. The critic that files and the panel
+// that votes read one rule (`critic-prompt.ts`, `adjudicate-prompt.ts`,
+// class thirty-five, 2026-09-16); the sheets that weigh renderings against
+// each other read a second (class thirty-six); the rendering audit, which
+// files by its own categories against one CANDIDATE, reads a third
+// (ledger B29).
 
 /**
  What the references are for and what they are not. Written against the
@@ -154,5 +157,29 @@ export function citedReferenceEvidence(
     },
   ];
 }
+
+/**
+ The same rule for the rendering audit (ledger B29), which judges one
+ CANDIDATE against its ORIGINAL and files by its own categories. The critic's
+ rule names a TRANSLATION this sheet never shows and an accuracy/addition
+ label its wire rejects, and the sheet's own definition of
+ unsupported-addition names only the original and the identity evidence, so
+ the precedence is stated here: without it an auditor shown a detail a cited
+ page states has every reason to file it as unsupported-addition.
+
+ NO ATTESTED LINES: the audit is shown the reference lines alone, since the
+ attestation names ARCHIVE details and the CANDIDATE under audit is often a
+ fresh rendering, so this rule says nothing about them.
+ */
+export const CITED_REFERENCE_AUDIT_RULE: string = 'CITED REFERENCES are what the pages the ORIGINAL itself links say, fetched once and kept.'
+  + ' A detail the CANDIDATE carries that the ORIGINAL does not state but a cited reference states'
+  + ' is ACCURATE detail the translator took from the ORIGINAL\'s own references:'
+  + ' never file it as unsupported-addition, and never as any other defect for being absent from the ORIGINAL.'
+  + ' The references are evidence for judging what the CANDIDATE already says and nothing else:'
+  + ' a CANDIDATE that leaves out what only a reference states has omitted nothing,'
+  + ' and the references never outrank the ORIGINAL where the two disagree and never support a finding elsewhere.'
+  + ' An event, an action or a characterization a cited reference states is covered too.'
+  + ' Reader protection outranks the references: a method, a substance, a dose, or a place that was the means'
+  + ' stays out however plainly a reference states it.';
 
 //endregion Cited-reference rule

@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { CITED_REFERENCE_AUDIT_RULE, } from './cited-reference-rule.ts';
 import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
 import { selectFence, } from './prompt-fence.ts';
 import {
@@ -158,7 +159,8 @@ function auditInstructions(): string {
 /**
  Builds the messages for one audit call.
  
- @param subject - original, candidate and any licensed identity evidence
+ @param subject - original, candidate, any licensed identity evidence and
+ what the pages the original links say
  
  @returns System and user messages
  
@@ -171,6 +173,11 @@ export function buildRenderingAuditMessages(
   { subject, }: { readonly subject: RenderingAuditSubject; },
 ): readonly ChatMessage[] {
   /**
+   What the pages the ORIGINAL links say, empty where it links nowhere.
+   */
+  const references = subject.referenceContext ?? '';
+
+  /**
    Fence long enough to hold every text without any of them closing it.
    */
   const fence = selectFence({
@@ -178,6 +185,7 @@ export function buildRenderingAuditMessages(
       subject.sourceText,
       subject.candidateText,
       subject.identityContext ?? '',
+      references,
     ],
   },);
 
@@ -206,6 +214,18 @@ export function buildRenderingAuditMessages(
             fence,
             subject.identityContext,
             fence,
+          ]),
+        // NO BLOCK AT ALL where the ORIGINAL links nowhere, so an audit shown
+        // no references reads exactly as one did before references existed.
+        ...((references === '')
+          ? []
+          : [
+            '',
+            'CITED REFERENCES, EVIDENCE ONLY:',
+            fence,
+            references,
+            fence,
+            CITED_REFERENCE_AUDIT_RULE,
           ]),
       ].join('\n',),
     },

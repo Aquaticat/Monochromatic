@@ -62,6 +62,13 @@ import {
 //     run's build worded them, so no rebuild today names itself as the run did,
 //     and every settled artifact read REFUSED.
 //
+// THE CITED REFERENCES ARE THE THIRD INPUT, and they are NOT read here
+// (ledger B29). The producing critics and panels were shown what the pages
+// the original links say, which is not in the preparation at all: it is an
+// outside read, a web fetch on a cache miss. So this free module carries the
+// whole original on every subject, and the driver reads its links only for
+// the subjects it buys.
+//
 // RE-PREPARED WITH THE RECIPE THE ARTIFACT RECORDS, through
 // `rebuildPreparation`, never with the bare deterministic carve. The pass
 // carves through the roster shell, whose section and block rounds move slices,
@@ -364,6 +371,7 @@ export async function readArtifactSubjects(
       artifact,
       runSet,
       identity: identityOf({ prepared: rebuilt.prepared, },),
+      pageSourceText: sourceText,
     },),
   };
 }

@@ -9,6 +9,7 @@ import {
   capped,
   eligibleSubjects,
   printPopulation,
+  withCitedReferences,
 } from './rendering-audit-settled-buy.ts';
 import {
   type SettledAuditRow,
@@ -19,6 +20,7 @@ import {
   pageRelationLabel,
 } from './rendering-audit-settled-relation.ts';
 import { readArchiveSubjects, } from './rendering-audit-settled-input.ts';
+import { RUN_OUTSIDE_READS, } from './pass-outside-reads.ts';
 import {
   createRunClient,
   resolveRunsDir,
@@ -237,13 +239,27 @@ async function main(): Promise<void> {
      archive and asks nobody, still needs no key.
      */
     const client = createRunClient();
-    for (const subject of buying) {
+
+    /**
+     Every bought subject beside what its page cites, read once per page
+     before any roster call, through the reader the producing run used, so
+     the auditors see what its critics and panels saw (ledger B29).
+     */
+    const cited = await withCitedReferences({
+      subjects: buying,
+      reader: RUN_OUTSIDE_READS.references,
+    },);
+    for (const {
+      subject,
+      references,
+    } of cited) {
       /**
        What the roster said about this one.
        */
       // oxlint-disable-next-line no-await-in-loop -- sequential by design: every subject shares one roster, and concurrent asks would interleave the progress stream a long run exists to be watched through
       const row = await auditOne({
         subject,
+        references,
         client,
       },);
       rows.push(row,);
