@@ -401,7 +401,7 @@ import type { RepairModels, } from './repair-contract.ts';
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
- accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).
+ accounts above name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
 
  VERSION 34, 2026-09-28, the first number spent while a run held the
  previous one. TianqiChen66621 ran the frozen dist of `9a3f28b30` and wrote

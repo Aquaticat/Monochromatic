@@ -37,10 +37,10 @@ not a memory of having done it.
     M45).
 4.  Every cache version is accounted for (M25,
     M28):
-    list the constants with `rg 'CACHE_VERSION[A-Z_]* = ' src`;
-    for each,
-    find the commit that set its value (`git log -S '<CONSTANT> = <value>' -- <file>`)
-    and read every source commit since it over the files its stage's sheets and floors import,
+    `mise run //package/module/translation-repair:cache-account-audit` lists every constant the source declares,
+    the commit that set each value,
+    and every non-test source commit since the earliest of them that no version's account names;
+    read each unnamed commit against the files its stage's sheets and floors import,
     the house rules and prose ranges included;
     a change that alters what the stage asks or accepts moves the version,
     unless no cache file was written after the change
@@ -366,7 +366,10 @@ What enforces it:
 the key-shape tests (`block-pairing-question-key.unit.test.ts`,
 `pass-page-titles.unit.test.ts`)
 fail when a key drops its version;
-the checklist's cache step covers the rest.
+the checklist's cache step covers the rest,
+through the `cache-account-audit` task,
+which reads the constants out of the source rather than from a remembered list,
+and whose readers are pinned by `cache-account-read.unit.test.ts` and `cache-account-commits.unit.test.ts`.
 
 ## Tests touching the real world
 

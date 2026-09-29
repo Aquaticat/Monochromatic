@@ -5,8 +5,18 @@
 
  Version one (2026-09-28): one rendering per title a page repeats and the
  archive leaves unpaired, the most voices' rendering, the earliest seat on the
- roster breaking a tie. A change to the sheet, the span detector or the choice
- moves this number, since each changes what a cached answer means.
+ roster breaking a tie. A change to the sheet's wording or to the choice moves
+ this number, since each changes what a cached answer means under the same key.
+ The span detector does not: the key hashes every title it yields, with its
+ count, in order (`pageTitleKey`), so a changed detection is a changed key.
+
+ Rides inside (2026-09-29): `d9a306602` (titles listed by where each first
+ stands) and `ee39e2ba5` (one shared heading reader, ledger X20) changed the
+ span detector only. No slice-cache file has been written since this value was
+ set, under the agent runs or the package's own runs directory, where a control
+ time finds 494, so no answer is cached under it. Every later source commit
+ rides inside it the same way, those an account names and those none does
+ (`corpus-run/cache-account-audit.ts`, ledger M28).
 
  @example
  ```ts

@@ -8391,6 +8391,29 @@ which all five slice keys hash,
 and never reach a pairing sheet,
 whose key does not carry them.
 
+The script moved into the package on 2026-09-29 as the read-only mise task `cache-account-audit`
+(`corpus-run/cache-account-audit.ts`),
+which reads every constant ending in `CACHE_VERSION` out of the tracked source instead of a typed list,
+finds each setting as the newest commit that added the declaration on balance,
+reads diff lines with the same declaration reader so a longer name or value holding one is told apart,
+and compares times in unix seconds.
+On that day's history it gives the script's answer:
+the same seven settings,
+353 source commits since `30e66051e`,
+and the same 295 hashes named by no account.
+Its readers have their own unit tests,
+and 12 mutants of them are caught with a comment control surviving.
+Moving it in found one gap:
+the page title version had no account,
+and its TSDoc said a span detector change moves it,
+while `d9a306602` and `ee39e2ba5` changed the detector and left it at 1.
+The key hashes every detected title with its count,
+so a changed detection is a changed key;
+the TSDoc now says only the sheet's wording and the choice move it,
+names both commits as riding inside,
+and records that no slice-cache file has been written since the value was set,
+where a control time finds 494.
+
 ### M29: a red guard asked a function that never reads the entry it guards
 
 Status:

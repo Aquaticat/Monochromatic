@@ -93,14 +93,14 @@ this one says what changed after it.
   quorum denominators,
   sheets missing blocks
   and silent fallbacks.
-  Of the two gaps found on the way,
-  `code-points.ts` and `cased-letters.ts` now have unit tests of their own,
+  Both gaps found on the way are closed:
+  `code-points.ts` and `cased-letters.ts` have unit tests of their own,
   which found and fixed two lone-surrogate faults
   (`f6e93ed5f`,
-  ledger B22);
-  the other is open:
-  the cache version accounts cite `cache-account-audit.ts`,
-  a scratch script outside the repository.
+  ledger B22),
+  and the cache version check is the read-only mise task `cache-account-audit`,
+  which the checklist's cache step now runs
+  (ledger M28).
 
 ### 2026-09-24, 04:30 UTC: one hundred ten classes, eight seats, two wet providers
 

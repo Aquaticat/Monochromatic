@@ -131,7 +131,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
- accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).
+ accounts above name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
 
  Rides inside 5 too: the declared-identity rule says a footnote marker
  carries its note, and it reaches the introduced-defect probe the refine
