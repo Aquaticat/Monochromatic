@@ -20,11 +20,16 @@ and model streams and round completions continued until refusal.
 
 Measured first-entry phase wall times were:
 
-- preparation before document lanes: 10 seconds
-- repair lane: 2,151 seconds
-- translate lane: 1,301 seconds
-- lane contest: 613 seconds
-- consolidation and final naturalness work: 2,358 seconds
+- preparation before document lanes:
+  10 seconds
+- repair lane:
+  2,151 seconds
+- translate lane:
+  1,301 seconds
+- lane contest:
+  613 seconds
+- consolidation and final naturalness work:
+  2,358 seconds
 
 Round logs attributed 4,797,358 milliseconds,
 79.96 minutes,
@@ -61,10 +66,14 @@ so it establishes only that completed calls did not all shift slower.
 
 Nondeterministic quality work multiplied exposure to stragglers:
 
-- current repair ran sixteen selection rounds, compared with twelve and ten
-- current consolidation ran twenty-seven rounds, compared with ten and fourteen
-- current consolidation ran six absolute reviews, compared with one and two
-- current consolidation ran six refinement rounds, compared with two and three
+- current repair ran sixteen selection rounds,
+  compared with twelve and ten
+- current consolidation ran twenty-seven rounds,
+  compared with ten and fourteen
+- current consolidation ran six absolute reviews,
+  compared with one and two
+- current consolidation ran six refinement rounds,
+  compared with two and three
 
 The exact final candidate then failed correctly.
 Independent replay heard all eight seats:
@@ -152,8 +161,16 @@ Snapshot taken 2026-08-29 at 12:14 UTC.
 
 `Weideriche_` process `proc_a259` had completed repair and translate after recording these slice costs:
 
-- repair: 0.001, 927.787, 883.347, and 17.230 seconds
-- translate: 427.660, 250.694, 264.892, and 8.567 seconds
+- repair:
+  0.001,
+  927.787,
+  883.347,
+  and 17.230 seconds
+- translate:
+  427.660,
+  250.694,
+  264.892,
+  and 8.567 seconds
 
 Lane contest was active and no terminal tally existed at snapshot.
 First attempt later refused slice 1 absolute naturalness at 4,840,305 milliseconds,
@@ -211,7 +228,12 @@ Logging now closes consolidation and absolute-review gaps:
 
 - `package/module/translation-repair/src/slice-cost-log.ts:136` defines `SLICE-START`
 - `package/module/translation-repair/src/consolidate-driver.ts:299` brackets every consolidation slice
-- consolidation exits distinguish `computed`, `resumed`, `reused`, `unsettled`, `failed`, and `aborted`
+- consolidation exits distinguish `computed`,
+  `resumed`,
+  `reused`,
+  `unsettled`,
+  `failed`,
+  and `aborted`
 - `package/module/translation-repair/src/absolute-naturalness-review-stage.ts:292` summarizes each seat's status,
   finding count,
   paragraph numbers,
@@ -323,15 +345,21 @@ Synthetic is hosted service.
 No provider source repository or matching issue tracker was found through
 [Synthetic API documentation][api-overview] or public repository search.
 
-1. **Is it upstream's fault?** Partly.
+1. **Is it upstream's fault?**
+   Partly.
    Synthetic returned queue/full-target 503 responses,
    and GLM-5.3-Flash repeatedly streamed until local grace cut it.
    Pipeline's accumulated wait is also deliberate local quality policy.
-2. **Can upstream fix it?** Provider can improve target availability and terminate pathological streams.
-3. **Are they supporting this use case?** Yes for chat completion and structured output.
-4. **Would repository welcome contribution?** Unknown because no provider source repository was found.
-5. **Will they likely fix it?** Unknown without public tracker or service incident record.
-6. **Have we prototyped compatible fix?** No upstream patch is possible from available source.
+2. **Can upstream fix it?**
+   Provider can improve target availability and terminate pathological streams.
+3. **Are they supporting this use case?**
+   Yes for chat completion and structured output.
+4. **Would repository welcome contribution?**
+   Unknown because no provider source repository was found.
+5. **Will they likely fix it?**
+   Unknown without public tracker or service incident record.
+6. **Have we prototyped compatible fix?**
+   No upstream patch is possible from available source.
    Local patch improves diagnosis without changing request contract.
 
 Constraints four through six do not pass,

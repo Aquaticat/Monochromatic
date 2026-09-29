@@ -53,7 +53,8 @@ Splitting those 118 by whether their DIRECT callers are tested reported 25
 gaps.
 That number is wrong twice over.
 
-It matched call syntax, `fn(`,
+It matched call syntax,
+`fn(`,
 which cannot see a function handed to a stage as a value.
 That form is the normal one for wire guards here,
 so `isTranslateReportWire` looked dead while three modules pass it as
@@ -90,7 +91,9 @@ and `PKG`'s "every exported code path" is vacuously satisfied for them.
 
 ## What is actually left
 
-Two items, both small, and neither is what the earlier numbers suggested.
+Two items,
+both small,
+and neither is what the earlier numbers suggested.
 
 -   `writeWidthReport` in `corpus-run/editor-width-report.ts`
     is the one exported function whose module no test path reaches.
@@ -147,7 +150,8 @@ which builds its own outcome.
 
 Measured this way on 2026-08-25:
 
--   Covered, so no case was written:
+-   Covered,
+    so no case was written:
     `reanchorInsertions` on both arms,
     `anchorOffsets`' placed-nothing guard,
     `leavesOriginalUnplaced`'s second conjunct,
@@ -157,7 +161,8 @@ Measured this way on 2026-08-25:
     `assembleRepair`'s shipped-slice count,
     and `applyCandidate`'s composite.
 
--   Uncovered, and closed by a case since:
+-   Uncovered,
+    and closed by a case since:
     `assembleTranslation`'s two refusal dispositions beside alignment,
     the settlement's critic telemetry where nothing shipped,
     and `unchangedChunkOutcome`'s roster.
@@ -190,7 +195,8 @@ since it finds the largest gaps soonest,
 and a function whose representative branch came back uncovered is worth
 deepening before one whose came back covered.
 
-Covered, so nothing was written:
+Covered,
+so nothing was written:
 `codePointCount` excluding the surrogate range,
 `wordsOf` pushing its final word,
 `collapseSoftLineBreaks` requiring both neighbours,
@@ -200,7 +206,8 @@ the slice cache key and its file name,
 `isTranslateReportWire` refusing a blank,
 and `extensionOf` lowercasing.
 
-Uncovered, and closed by a case in `2302cf549`:
+Uncovered,
+and closed by a case in `2302cf549`:
 `reflowOrphans` clearing what it holds at an anchor,
 `digitRuns` closing a run that ends the passage,
 `unsupportedVariant` wrapping through ten,
@@ -268,7 +275,8 @@ an object literal.
 -   `repairChunk` forwarding `neighbouringSourceText` into the fragment its four
     stages spread.
 -   `sliceNeighbourContexts` putting the original on the source side and the
-    archive English on the incumbent side, which is the same window read the
+    archive English on the incumbent side,
+    which is the same window read the
     wrong way round.
 -   `subjectsOf` reading the translate lane's delivery ledger rather than the
     repair lane's.
@@ -401,7 +409,8 @@ so reaching it needs five cases that each survive three scripted rounds of the
 whole roster,
 with a standing verdict of `carried` whose evidence a cut can actually locate.
 One scripted reply serves all of it:
-full coverage, quoting a sentence really present in the translation.
+full coverage,
+quoting a sentence really present in the translation.
 
 `sampleBenchSlices`' empty-corpus guard could not be reached at all,
 because the draw read the pinned corpus through a module constant.
@@ -411,7 +420,8 @@ The fix was not a testability hack:
 and its own TSDoc gives the reason,
 "passed rather than read so this is testable against a throwaway clone instead
 of the unlicensed one".
-The draw now does the same, and threads it to its private slicer as well.
+The draw now does the same,
+and threads it to its private slicer as well.
 
 ## A git fixture in this repo obeys the repo's git policy
 
@@ -425,7 +435,8 @@ so it guards a throwaway clone exactly as it guards this one:
 bulk staging and pathspec-less commits are rejected wherever they are run.
 
 Name the paths.
-The fixture wrote them, so it knows them,
+The fixture wrote them,
+so it knows them,
 and `git add -- <paths>` plus `git commit --message ... -- <paths>` is what the
 guard asks for.
 
@@ -491,7 +502,8 @@ A run that prints one short line per round,
 where each round takes five minutes,
 can run to completion without ever filling one buffer.
 
-Two changes, both cheap:
+Two changes,
+both cheap:
 
 -   Launch with `python3 -u`,
     which makes every print reach the file as it happens.

@@ -24,11 +24,14 @@ A `-preliminary` suffix means a scratch draw taken before coverage filled.
 Those are meant to be redrawn and are not the gate.
 
 Both scoring commands now print a NOTE about the DRAW DIGEST before their
-numbers, and for round three it will say the binding is the weaker one.
+numbers,
+and for round three it will say the binding is the weaker one.
 That is expected and is not a problem with your grading.
-Sheets drawn from now on carry a fingerprint of the exact item list, and the
+Sheets drawn from now on carry a fingerprint of the exact item list,
+and the
 scorers refuse a sheet whose fingerprint disagrees with its manifest;
-round three was drawn before that existed, so it is checked on seed and corpus
+round three was drawn before that existed,
+so it is checked on seed and corpus
 pin as it always was.
 Nothing about the numbers changes.
 
@@ -65,7 +68,8 @@ Either form parses:
 ### 5. grade: N. The original does quote this.  (Y = ...)
 ```
 
-If you cannot decide, say so instead of guessing:
+If you cannot decide,
+say so instead of guessing:
 
 ```text
 ### 6. grade: [Not enough context to grade]  (Y = ...)
@@ -99,19 +103,23 @@ answer whether the text the pipeline produced actually fixes it:
 `Y` means the returned wording resolves the defect AND introduces no new error
 nearby.
 A better phrasing existing does not make it `N`;
-if you want to say so, write it as rationale after the letter.
+if you want to say so,
+write it as rationale after the letter.
 
 Leave items blank where you graded `N` for detection:
 there was no defect to fix,
 so the question has no answer.
 
 Some items carry no grade box at all.
-That is deliberate, and the sheet says which case it is:
+That is deliberate,
+and the sheet says which case it is:
 
 -   `not-selected`:
-    a repair was written, but the unchanged text won its slice.
+    a repair was written,
+    but the unchanged text won its slice.
 -   `withdrawn`:
-    a repair was written, but the whole page was blocked as non-translation.
+    a repair was written,
+    but the whole page was blocked as non-translation.
 -   `no-region`:
     no targeted repair exists for that issue at all.
 
@@ -121,7 +129,8 @@ and the sheet shows what was attempted anyway so the attempt is visible.
 Two things worth knowing while you read:
 
 -   A `SHARED` line means one edit was written for several accepted issues at
-    once, and names the other sheet items it repeats under.
+    once,
+    and names the other sheet items it repeats under.
     You will meet the same before-and-after text there.
     Judge it against the claim of the item you are on.
 -   A `NOTE` about a naturalness pass means a later stage rewrote the slice,
@@ -140,25 +149,34 @@ Pass an ABSOLUTE path.
 The task runs with the package directory as its working directory,
 so a repo-relative path resolves somewhere unintended.
 
-Blind pre-grades for this draw ARE recorded, in
+Blind pre-grades for this draw ARE recorded,
+in
 `pre-grades-milestone-three-precision-round-three.json` beside the sheets:
-50 items, 49 scored and 1 handed over as genuinely contested.
+50 items,
+49 scored and 1 handed over as genuinely contested.
 They were written without the agent seeing your grades and are deliberately not
-reproduced anywhere you would read before grading, because naming them would
+reproduced anywhere you would read before grading,
+because naming them would
 anchor you toward agreeing and this same sheet produces the gate number.
-So grade the sheet without looking at that file, and the agreement rate falls
+So grade the sheet without looking at that file,
+and the agreement rate falls
 out of the command below.
 
 One asymmetry to know when you read that rate.
-The sheet shows no source anchor for addition-class claims, because an addition
-points at nothing in the original, so those cannot be graded from the sheet
+The sheet shows no source anchor for addition-class claims,
+because an addition
+points at nothing in the original,
+so those cannot be graded from the sheet
 alone.
-The agent read the corpus directly at the pinned commit for them, and marked
+The agent read the corpus directly at the pinned commit for them,
+and marked
 those grades `VERIFIED AGAINST SOURCE` in their notes.
 Disagreement on those items may be that asymmetry rather than judgement.
 
-It prints three precision readings and, when blind pre-grades were recorded for
-the draw, the agreement rate against them:
+It prints three precision readings and,
+when blind pre-grades were recorded for
+the draw,
+the agreement rate against them:
 
 ```text
 PRECISION items=50 scored=47 realDefects=37 strict=0.740 excluded=0.787 lenient=0.800 unscored=10,12,17
@@ -191,7 +209,8 @@ mise run //package/module/translation-repair:score-probe -- \
   --manifest /ABSOLUTE/path/to/sample-manifest-milestone-three-precision-round-three.json
 ```
 
-Absolute paths again, for the same reason.
+Absolute paths again,
+for the same reason.
 Run without the two flags to see the probe's own counts and no comparison.
 
 The line that matters is the second one:
@@ -200,23 +219,37 @@ The line that matters is the second one:
 AGREEMENT joined=41 probeFlagged=6 refutedByHuman=5 sharedWithHuman=1 flaggedUnscored=0 unflaggedFailures=9 refinedJoined=10
 ```
 
-READ `refinedJoined` FIRST, and subtract it before reading anything else.
+READ `refinedJoined` FIRST,
+and subtract it before reading anything else.
 The probe runs inside the accuracy stage and the naturalness lane runs after it,
-so on a slice the lane rewrote, the probe judged wording that never shipped
+so on a slice the lane rewrote,
+the probe judged wording that never shipped
 while the repair sheet asked you to grade the wording that did.
 Those positions compare two different texts and belong in neither column.
-For this draw it is 10 of the 50: positions 19, 22, 24, 26, 29, 31, 33, 35, 40,
+For this draw it is 10 of the 50:
+positions 19,
+22,
+24,
+26,
+29,
+31,
+33,
+35,
+40,
 and 45.
 Read every other count over the remaining 40 and say so in the verdict.
 
 This limit is specific to judging the PROBE.
-It does not touch the gate number from step 3, and it does not mean a gate would
+It does not touch the gate number from step 3,
+and it does not mean a gate would
 have judged the wrong text either:
-a gate would act during candidate selection, which is also before the lane runs.
+a gate would act during candidate selection,
+which is also before the lane runs.
 
 `refutedByHuman` is the only clean number there.
 Those are items where the probe claimed the repair introduced damage and you
-graded `Y`, which says the repair breaks nothing nearby.
+graded `Y`,
+which says the repair breaks nothing nearby.
 You read the same wording and disagreed,
 so each one is a correct repair that a gate would have thrown away.
 
@@ -226,23 +259,29 @@ Your `N` fires both for a repair that did not fix its target and for one that
 broke something,
 and the sheet has no way to separate those,
 so agreement there might be about a different defect entirely.
-`unflaggedFailures` is an upper bound on what the probe missed, for the same
+`unflaggedFailures` is an upper bound on what the probe missed,
+for the same
 reason.
 
 If `refutedByHuman` is a large share of `probeFlagged`,
 the probe is not fit to block anything and the honest move is to leave it
 recording.
-If it is near zero, the probe is finding damage the pipeline currently ships.
+If it is near zero,
+the probe is finding damage the pipeline currently ships.
 
-The gating question already has a recorded answer, and this measurement is what
+The gating question already has a recorded answer,
+and this measurement is what
 reopens it rather than what decides it.
 You chose to keep the probe in shadow mode on 2026-08-07;
 the four options and the reason each was ranked where it was are in
-`doc/decision/introduced-defect-probe-gating.md`, along with the two outcomes
+`doc/decision/introduced-defect-probe-gating.md`,
+along with the two outcomes
 worth naming in advance.
-That document is the one to revise once these numbers exist, not this runbook.
+That document is the one to revise once these numbers exist,
+not this runbook.
 
-A second probe now runs on the naturalness lane itself, reported on a
+A second probe now runs on the naturalness lane itself,
+reported on a
 `REFINEMENT` line by the same command:
 
 ```text
@@ -250,7 +289,8 @@ REFINEMENT rewrittenSlices=0 majorityIntroduced=0 minorityIntroduced=0 noneIntro
 ```
 
 `rewrittenSlices=0` does NOT mean the lane broke nothing.
-It means no artifact in the runs directory carries that audit, which is true of
+It means no artifact in the runs directory carries that audit,
+which is true of
 everything settled before run 012.
 The command prints a note saying so whenever the count is zero.
 
@@ -262,21 +302,32 @@ LANE slicesOffered=101 slicesSilent=6 entriesWithRewrites=15/47
 ```
 
 `slicesSilent` counts slices where NO refiner answered.
-One model refines, so a roster of one has no quorum to lose and its failure
+One model refines,
+so a roster of one has no quorum to lose and its failure
 moves no other number.
 Run 013 is where the six come from:
-its only refiner lost every voice to schema-mismatch, so five settled entries
+its only refiner lost every voice to schema-mismatch,
+so five settled entries
 carry no rewrite at all.
-Read a rising `slicesSilent` as the lane going quiet, not as a run with nothing
+Read a rising `slicesSilent` as the lane going quiet,
+not as a run with nothing
 worth rewriting;
-`doc/handover/translation-repair-history.md` has the evidence, and the open decision is
+`doc/handover/translation-repair-history.md` has the evidence,
+and the open decision is
 task 64.
 
 ## What this round cannot tell you
 
 Round three changed many things at once:
-the roster, the editor ensemble, the checker set, the quorum rule, the
-adjudication policy, the house policy, the naturalness lane, and the
+the roster,
+the editor ensemble,
+the checker set,
+the quorum rule,
+the
+adjudication policy,
+the house policy,
+the naturalness lane,
+and the
 resolution-credit rule.
 A precision delta will not be attributable to any single one of them.
 Say so in the verdict rather than implying otherwise.

@@ -38,7 +38,8 @@ It reads corpus clone and commit from `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and 
 (package `doc/configuration.md`)
 and prints `CORPUS PIN OVERRIDDEN` at launch when either is set.
 Pull-request validation points them at exact pull-request commit in isolated corpus clone or minimal Git fixture.
-Pull-request 386 procedure of 2026-08-29 predates both variables (`b0a79eb66`, 2026-09-01);
+Pull-request 386 procedure of 2026-08-29 predates both variables (`b0a79eb66`,
+2026-09-01);
 its uncommitted throwaway fork read a `TRANSLATION_REPAIR_CORPUS_DIR` of its own,
 which production never reads.
 Run `--plan --only <entry>` before spending quota.
@@ -56,17 +57,22 @@ Two prerequisites cannot be bridged,
 and they are the reason this is written for a person.
 
 -   The decryption identity at `~/.config/mise/age.txt` is a private key.
-    An agent cannot create it, recover it, or read it out of anywhere else.
+    An agent cannot create it,
+    recover it,
+    or read it out of anywhere else.
     Without it every credential in `.env.local.json` stays encrypted
     and the run reaches its first model call and throws.
 
--   Budget is bought, not arranged.
+-   Budget is bought,
+    not arranged.
     Charm Hyper is a prepaid balance that does not refill on a schedule:
     it read `0` continuously through the whole of 2026-08-24,
-    before, during and after a pass,
+    before,
+    during and after a pass,
     and reached `10000` on 2026-08-25 only because credits were purchased.
     Synthetic is a subscription allowance that does refill on its own schedule,
-    which the account owner can sometimes reset, but not reliably and not on demand.
+    which the account owner can sometimes reset,
+    but not reliably and not on demand.
 
 Everything else here is scripted,
 and is given as the exact command to paste.
@@ -82,8 +88,10 @@ TODO | DONE
     ls -l ~/.config/mise/age.txt
     ```
 
-    Expected: one line naming the file.
-    If it is absent, stop.
+    Expected:
+    one line naming the file.
+    If it is absent,
+    stop.
     Nothing further in this runbook can work,
     and the key cannot be regenerated from anything in the repository.
 
@@ -114,25 +122,31 @@ TODO | DONE
     Every name absent is launch refusal.
     The Charm Hyper name carries `CHARM` in the middle.
     A variable missing it configures a run without Hyper rather than silently failing.
-    Routing spends in the order Synthetic, Charm Hyper, OpenRouter
+    Routing spends in the order Synthetic,
+    Charm Hyper,
+    OpenRouter
     (`doc/decision/translation-repair-openrouter-fallback.md`);
     a worktree whose store predates the OpenRouter name can still exercise it by launching the worktree's
     bundle with the main repository as the mise config root
     (`cd /var/home/user/Monochromatic && mise exec -- node <worktree>/<bundle> --only <id>`,
     where the bundle is `package/module/translation-repair/dist/final/node/corpus-pass.mjs`),
     with `env -u TRANSLATION_REPAIR_CHARM_HYPER_API_KEY` between `--` and `node` to leave Hyper out of that run.
-    Check which names a root injects before choosing, printing presence and never a value:
+    Check which names a root injects before choosing,
+    printing presence and never a value:
     `mise exec -- node -e "console.log(process.env.TRANSLATION_REPAIR_OPENROUTER_API_KEY === undefined ? 'absent' : 'present')"`.
 
-3.  Prepare the scratch root that will hold the log, the pid file and the run directory.
+3.  Prepare the scratch root that will hold the log,
+    the pid file and the run directory.
 
     ```sh
     mkdir --parents "${HOME}/temp/agent"
     chmod 700 "${HOME}/temp/agent"
     ```
 
-    Expected: no output.
-    The mode matters: trust checks reject group and other permission bits.
+    Expected:
+    no output.
+    The mode matters:
+    trust checks reject group and other permission bits.
 
 4.  Check the setup for no quota at all.
 
@@ -140,9 +154,14 @@ TODO | DONE
     mise run //package/module/translation-repair:corpus-pass -- --plan
     ```
 
-    Expected: a line beginning `PLAN ok tip=`,
-    carrying `pipeline=`, `client=constructed`, `pending=` and `first=`.
-    It reads the corpus, builds the pending list, constructs the client,
+    Expected:
+    a line beginning `PLAN ok tip=`,
+    carrying `pipeline=`,
+    `client=constructed`,
+    `pending=` and `first=`.
+    It reads the corpus,
+    builds the pending list,
+    constructs the client,
     and returns without opening a stream.
     A live invocation took 1.88 seconds.
 
@@ -156,24 +175,31 @@ TODO | DONE
     cat ~/temp/agent/pre-launch.log
     ```
 
-    Expected: one line containing `METERS`, for example:
+    Expected:
+    one line containing `METERS`,
+    for example:
 
     ```text
     METERS synthetic=wet hyper=dry syntheticWeekly=97% syntheticFiveHour=48/50 syntheticThrottled=no hyperBalance=0
     ```
 
-    Capture both streams as shown: the reading is at `info`
+    Capture both streams as shown:
+    the reading is at `info`
     and a meter that could not be reached warns at `warn`.
 
     A provider reading `dry` does not block ordinary launch.
     Validation or performance arm requiring particular providers must add
-    `-- --require-providers synthetic,hyper` (any subset of `synthetic`, `hyper`, `openrouter`);
+    `-- --require-providers synthetic,hyper` (any subset of `synthetic`,
+    `hyper`,
+    `openrouter`);
     that mode refuses before model calls unless every named key and meter is wet.
     The budget layer refuses each model no reachable provider can take,
-    the stage records a lost voice, and the run continues on whoever answered.
+    the stage records a lost voice,
+    and the run continues on whoever answered.
     It does change what the run's output means:
     any quality figure measured while a provider was dry
-    rests on whoever was awake, which can be five of the ten seats.
+    rests on whoever was awake,
+    which can be five of the ten seats.
 
 6.  Re-read the completion caps against the runs since the last launch.
 
@@ -182,14 +208,22 @@ TODO | DONE
     rg '^cap-census:|^[a-z].*: card cap|^  [A-Z]{4}' ~/temp/agent/cap-census.log
     ```
 
-    Expected: a `cap-census:` summary line, then per seat its card cap and the rule's reading,
+    Expected:
+    a `cap-census:` summary line,
+    then per seat its card cap and the rule's reading,
     and any flags under it.
-    It reads ids and numbers only, and spends no quota.
+    It reads ids and numbers only,
+    and spends no quota.
     `PLACEHOLDER WITH A DISTRIBUTION` means a card still names the pooled 99th percentile
-    though the rule can now read its own calls (ledger P10): write the measured cap on the card.
-    `RULE READS ... AGAINST THE CARD'S ...` and `CUTS OVER ONE PERCENT` are for reading, not for acting on at once:
-    a capped call cannot show a longer answer, and the log scope differs from the 2026-09-09 table,
-    so read each provider's cut columns (with content, with none, unpaired) in the full log before moving a cap,
+    though the rule can now read its own calls (ledger P10):
+    write the measured cap on the card.
+    `RULE READS ... AGAINST THE CARD'S ...` and `CUTS OVER ONE PERCENT` are for reading,
+    not for acting on at once:
+    a capped call cannot show a longer answer,
+    and the log scope differs from the 2026-09-09 table,
+    so read each provider's cut columns (with content,
+    with none,
+    unpaired) in the full log before moving a cap,
     as `completion-cap.ts` records for the 2026-09-28 reading.
 
 ## Steps
@@ -206,13 +240,17 @@ TODO | DONE
     mkdir --parents "${RUNDIR}"
     ```
 
-    Expected: no output.
+    Expected:
+    no output.
     Leaving `TRANSLATION_REPAIR_RUNS_DIR` unset writes into
     `node_modules/.monochromatic/translation-repair-runs` under the worktree root,
     which is the pooled location.
-    Any hand-picked run, meaning one carrying `--only`, wants a throwaway.
+    Any hand-picked run,
+    meaning one carrying `--only`,
+    wants a throwaway.
 
-2.  Launch it detached, with its output captured.
+2.  Launch it detached,
+    with its output captured.
 
     ```sh
     cd -- /var/home/user/worktrees/translation-repair
@@ -221,19 +259,26 @@ TODO | DONE
       > "${RUNDIR}.log" 2>&1 < /dev/null &
     ```
 
-    Expected: the shell prints a job number and a pid, and returns immediately.
+    Expected:
+    the shell prints a job number and a pid,
+    and returns immediately.
 
-    Launch-time dials, each printed above the work so the log says which run this was:
+    Launch-time dials,
+    each printed above the work so the log says which run this was:
     `TRANSLATION_REPAIR_SLICE_OVERLAP=<n>` (prints `OVERLAP <entry> value=<n> source=...` per entry),
     `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS=<ms>` (prints `STRAGGLER GRACE OVERRIDDEN by ...`),
     `TRANSLATION_REPAIR_WRITER_GRACE_MS=<ms>` (prints `WRITER GRACE OVERRIDDEN by ...`;
-    the editor, refiner, translate and consolidate rounds alone wait this long on a straggler after quorum,
+    the editor,
+    refiner,
+    translate and consolidate rounds alone wait this long on a straggler after quorum,
     the other rounds keep the round window).
-    Unset, the writer rounds wait their built-in 180000 ms and the launch prints `WRITER GRACE built in`,
+    Unset,
+    the writer rounds wait their built-in 180000 ms and the launch prints `WRITER GRACE built in`,
     and the pass keeps four slices in flight (`OVERLAP <entry> value=4 source=fallback`);
     since 2026-09-06 the plain launch is the production launch,
     and a dial is for a measured arm.
-    A value the dial cannot read refuses the launch in one line naming the variable, at zero quota,
+    A value the dial cannot read refuses the launch in one line naming the variable,
+    at zero quota,
     which `-- --plan` shows without spending anything.
 
     ALWAYS KILL AND RELAUNCH,
@@ -248,22 +293,27 @@ TODO | DONE
     land it first and launch once.
 
     For a measured arm that needs named providers,
-    insert `-- --require-providers synthetic,hyper` (or any subset of `synthetic`, `hyper`, `openrouter`)
+    insert `-- --require-providers synthetic,hyper` (or any subset of `synthetic`,
+    `hyper`,
+    `openrouter`)
     after `corpus-pass`.
     Log must contain `REQUIRED-PROVIDERS synthetic,hyper status=wet` before model traffic.
     This flag is wired only to `corpus-pass`;
     probes and calibrations do not support it and cannot serve as required-provider timing arms.
 
     THE PID THE SHELL PRINTS IS NOT THE RUN.
-    It is a wrapper, and the work sits two levels below it.
-    Measured on a live calibration, the tree was
+    It is a wrapper,
+    and the work sits two levels below it.
+    Measured on a live calibration,
+    the tree was
     a `bash` wrapper holding 2792 KB of resident memory,
     a `mise run` child,
     and a `node dist/final/node/<script>.mjs` grandchild holding 126340 KB,
     which is the process doing the work.
     Do not record the printed pid as the run's identity.
 
-3.  Confirm the run is alive by what it is, rather than by a recorded number.
+3.  Confirm the run is alive by what it is,
+    rather than by a recorded number.
 
     Paste this function once per shell.
     It reads each process's argument vector out of `/proc` directly.
@@ -284,11 +334,13 @@ TODO | DONE
     running corpus-pass.mjs
     ```
 
-    Expected: one line beginning `alive pid=`.
+    Expected:
+    one line beginning `alive pid=`.
 
     DO NOT REPLACE THIS WITH A `pgrep` PATTERN.
     Two separate flag interactions have each left this exact check silently blind,
-    and both failed by returning false, which reads precisely like a clear field.
+    and both failed by returning false,
+    which reads precisely like a clear field.
     A pattern is matched against the whole flattened command line,
     so it also matches the shell that merely carries the pattern text,
     and `--exact` then fails against any run carrying `--only`.
@@ -297,7 +349,8 @@ TODO | DONE
     Matching the file NAME rather than its path is deliberate,
     and it is what survives the file move that broke this once already.
     It also means a run of the same script under any other path counts as running.
-    That asymmetry is chosen: reporting a run that is not there makes you wait,
+    That asymmetry is chosen:
+    reporting a run that is not there makes you wait,
     while missing one that is there launches a second pass
     into the same runs directory and the same slice cache.
 
@@ -308,13 +361,15 @@ TODO | DONE
     A pass computes its pipeline digest once at startup and stamps it into every artifact,
     so a rebuild that changes any output file leaves the run recording a digest
     that no longer describes what is on disk.
-    That is the whole of the reason, and it is enough on its own.
+    That is the whole of the reason,
+    and it is enough on its own.
 
     NOT BECAUSE THE PROCESS WOULD LOAD A MIX OF OLD AND NEW MODULES,
     which this runbook used to claim and which was measured false on 2026-08-25.
     Every one of the 176 chunks is reached by a static import resolved at startup,
     the only dynamic imports in the whole bundle are `node:fs/promises` and `node:path`
-    inside the logger, and no child process the bundle spawns runs a file under `dist`.
+    inside the logger,
+    and no child process the bundle spawns runs a file under `dist`.
     A running pass never reads that directory again.
     The claim is corrected rather than deleted because a wrong mechanism invites
     someone to disprove it and conclude the rule is safe to break.
@@ -322,13 +377,16 @@ TODO | DONE
     A rebuild with no source change is byte-identical and harmless,
     which is exactly why this is easy to get away with and worth stating anyway.
 
-    THE RULE IS ABOUT WHAT THE RUN WRITES, not about whether the process would notice.
+    THE RULE IS ABOUT WHAT THE RUN WRITES,
+    not about whether the process would notice.
     A measurement CLI that settles no artifact stamps no digest,
-    and `editor-calibrate` is one: its output is its log.
+    and `editor-calibrate` is one:
+    its output is its log.
     Its bundle was rebuilt eight times under a live 40-slice calibration on 2026-08-25,
     twice with deliberately broken source for a guard proof,
     and the run kept producing rounds throughout.
-    Three facts were checked on the running process first, rather than assumed:
+    Three facts were checked on the running process first,
+    rather than assumed:
     one process with zero children,
     no descriptor open under `translation-repair/dist`,
     and zero occurrences of `import(` in its entry bundle.
@@ -338,24 +396,30 @@ TODO | DONE
     so a rebuild leaves the run recording a digest that no longer describes what is on disk,
     and the pool partitions generations by exactly that field.
 
-    To read something while a pass is in flight, invoke the built entry point directly
+    To read something while a pass is in flight,
+    invoke the built entry point directly
     and skip the task that would rebuild it:
 
     ```sh
     node dist/final/node/meter-report.mjs "${RUNDIR}.log"
     ```
 
-    To exercise a CHANGE while a pass is in flight, run the source rather than the bundle:
+    To exercise a CHANGE while a pass is in flight,
+    run the source rather than the bundle:
 
     ```sh
     node --experimental-strip-types --disable-warning=ExperimentalWarning src/hyper-client.ts
     ```
 
-    Node runs the package's TypeScript directly, resolving its `.ts` extension imports,
+    Node runs the package's TypeScript directly,
+    resolving its `.ts` extension imports,
     so a probe that injects a fake transport can exercise a provider path end to end
-    with no key, no network and no build.
-    `#226`, `#227` and `#228` were each verified this way while a pass held the bundle.
-    Two limits: a suite that imports `../dist/final/node/index.mjs` still needs the build,
+    with no key,
+    no network and no build.
+    `#226`,
+    `#227` and `#228` were each verified this way while a pass held the bundle.
+    Two limits:
+    a suite that imports `../dist/final/node/index.mjs` still needs the build,
     and a probe run this way exercises the source rather than the artifact,
     so it verifies the change and not the packaging.
 
@@ -378,71 +442,102 @@ Each is the exact string the log carries.
     grep --count '\[error\]' "${RUNDIR}.log"
     ```
 
-    Expected: `0`.
+    Expected:
+    `0`.
 
--   `METERS`, once per reading, roughly once a minute while the run is spending.
+-   `METERS`,
+    once per reading,
+    roughly once a minute while the run is spending.
     `hyper=dry` or `synthetic=dry` is ordinary and not a failure.
     A state of `unreadable` means the meter endpoint could not be reached;
-    it still routes as spendable, because a monitoring failure must not become an outage.
+    it still routes as spendable,
+    because a monitoring failure must not become an outage.
 
--   `ONLY`, only when the invocation was restricted.
+-   `ONLY`,
+    only when the invocation was restricted.
     Seeing it on a run you meant to be unrestricted means the pass is doing less than you asked.
 
--   `SPEND CEILING OVERRIDDEN`, only when `TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD` was set.
-    It names the USD this run may spend on OpenRouter before it stops starting entries; the built-in is 20.
+-   `SPEND CEILING OVERRIDDEN`,
+    only when `TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD` was set.
+    It names the USD this run may spend on OpenRouter before it stops starting entries;
+    the built-in is 20.
 
--   `SPEND CEILING reached`, when the run has spent that allowance.
+-   `SPEND CEILING reached`,
+    when the run has spent that allowance.
     The pass starts no further entry and the entries already running finish;
     `DONE processed=` then reads short of `pending=` for money rather than for time.
     Raise the ceiling for a deliberately larger run.
 
--   `CAP OVERRIDDEN`, only when `TRANSLATION_REPAIR_HARD_CAP_MINUTES` was set.
+-   `CAP OVERRIDDEN`,
+    only when `TRANSLATION_REPAIR_HARD_CAP_MINUTES` was set.
     It names the per-entry ceiling actually in force.
 
--   `CAP TOO TIGHT`, which is a warning and not a refusal.
+-   `CAP TOO TIGHT`,
+    which is a warning and not a refusal.
     It means the ceiling is at or below one model exchange,
     currently 360000 milliseconds,
     so every attempt is cut before any exchange returns,
-    nothing caches, and the queue drops each entry as stalled on its second try.
+    nothing caches,
+    and the queue drops each entry as stalled on its second try.
 
--   `REATTEMPT <id> queued`, which is healthy only after resumable operational error or hard cap.
+-   `REATTEMPT <id> queued`,
+    which is healthy only after resumable operational error or hard cap.
     Entry that bought more cache records goes to back of queue.
     Quality rejection and `status=INCOMPLETE` must never produce this line.
 
--   `TALLY <id> status=INCOMPLETE`, which means stage-local work remains.
+-   `TALLY <id> status=INCOMPLETE`,
+    which means stage-local work remains.
     It is neither success,
     quality verdict,
     nor publication evidence.
     Cache stays,
     but whole entry does not restart in same invocation.
 
--   `STALLED <id>`, which is the earned-re-attempt rule refusing.
+-   `STALLED <id>`,
+    which is the earned-re-attempt rule refusing.
     The entry finished an attempt with no more cache records than it started with,
     so it is dropped for this invocation.
-    A few are ordinary. Every entry stalling is a defect.
+    A few are ordinary.
+    Every entry stalling is a defect.
 
-When the run has exited, check its output rather than its log.
+When the run has exited,
+check its output rather than its log.
 
 ### Three exit codes every command below can leave
 
-Each command has its own verdicts in `1` through `3`, listed with it.
+Each command has its own verdicts in `1` through `3`,
+listed with it.
 Above those sit three that mean the same thing whichever command printed them,
 because they come from the reporter every command is wrapped in.
 
--   `4`. A file it needed would not read, and it stopped there.
-    The first line names the file and the failure, never the file's text.
-    Re-run the pass to rewrite the file, or name a run directory that has it.
--   `5`. A fault in the command rather than in the run.
-    The first line names the class, and stack frames follow.
-    There is no message: a fault's message can carry text from whatever it
-    choked on, and a run directory holds unlicensed corpus wording,
+-   `4`.
+    A file it needed would not read,
+    and it stopped there.
+    The first line names the file and the failure,
+    never the file's text.
+    Re-run the pass to rewrite the file,
+    or name a run directory that has it.
+-   `5`.
+    A fault in the command rather than in the run.
+    The first line names the class,
+    and stack frames follow.
+    There is no message:
+    a fault's message can carry text from whatever it
+    choked on,
+    and a run directory holds unlicensed corpus wording,
     so the reporter drops the message and keeps the frames.
     This one is a bug report.
--   `6`. The command declined in its own words, and the words are the report.
-    A usage line, an unset key, a control that did not hold.
+-   `6`.
+    The command declined in its own words,
+    and the words are the report.
+    A usage line,
+    an unset key,
+    a control that did not hold.
     Nothing broke and nothing was half-read.
 
-So `6` means read the line, `4` means fix the input, `5` means file a bug.
+So `6` means read the line,
+`4` means fix the input,
+`5` means file a bug.
 
 1.  Confirm it is actually gone rather than merely quiet.
 
@@ -450,7 +545,8 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     running corpus-pass.mjs
     ```
 
-    Expected: no output at all.
+    Expected:
+    no output at all.
 
 2.  Read the published tree back against the artifacts that produced it.
 
@@ -460,7 +556,8 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     ```
 
     This spends no quota and calls no model.
-    Expected, on a run with nothing wrong:
+    Expected,
+    on a run with nothing wrong:
 
     ```text
     verify-published: matched=<n> settledWithNoPage=0 pageWithNoArtifact=0 declined=<n>
@@ -486,30 +583,39 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     Before `#217` both cases printed `matched=0` and exited `0`,
     so an empty run and a typo each read as a clean pass over zero entries.
 
-    A RUN ALWAYS SHIPS (the owner, 2026-09-27),
+    A RUN ALWAYS SHIPS (the owner,
+    2026-09-27),
     so every finding below is printed and the exit is still `0`.
     Only a run that could not be read at all exits `2`.
-    Read the lines, not the exit code.
+    Read the lines,
+    not the exit code.
     The next pass started in the runs directory repairs what it can before it settles anything:
     it rewrites from its artifact every page that is missing or disagrees,
     and removes every page standing for a declined entry
-    (`REPUBLISHED`, `REPUBLISH LEFT` and `republish:` lines in the pass log).
+    (`REPUBLISHED`,
+    `REPUBLISH LEFT` and `republish:` lines in the pass log).
 
-    The finding lines, each meaning something different:
+    The finding lines,
+    each meaning something different:
 
     -   `SETTLED AND NEVER PUBLISHED: <id>`.
         The worst one.
         A pass publishes before it writes the artifact precisely so that
-        an artifact implies a page, and a resumed pass builds its skip set from the artifacts.
-        So no pass settles this entry again, and the archive ships for it
+        an artifact implies a page,
+        and a resumed pass builds its skip set from the artifacts.
+        So no pass settles this entry again,
+        and the archive ships for it
         until the next pass started here writes its page from the artifact.
 
     -   `PUBLISHED AND NOT SETTLED: <id>`.
         A crash between the page write and the artifact write left a page no artifact records.
-        It ships as it stands, with nothing to check it against, until a pass settles the entry again.
+        It ships as it stands,
+        with nothing to check it against,
+        until a pass settles the entry again.
 
     -   `DECLINED AND PUBLISHED ANYWAY: <id>`.
-        The archive's note says the page is the author's own English, so the archive must ship;
+        The archive's note says the page is the author's own English,
+        so the archive must ship;
         the next pass started here removes the page.
 
     -   `READ BY ANOTHER BUILD: settled by <digest>, read by <digest>`,
@@ -517,7 +623,8 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
         Every page agreed with the build that wrote it,
         and this build reads the artifact through its own typography,
         so the disagreement can be the reading that moved.
-        On 2026-09-27 this was 77 of 214 stored pages, 69 of them only by the class 181 and 147 fixes.
+        On 2026-09-27 this was 77 of 214 stored pages,
+        69 of them only by the class 181 and 147 fixes.
         A pass resumed here on this build (`TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT=yes`)
         rewrites the page to this reading.
 
@@ -531,15 +638,18 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
         The page does not carry that slice's wording in order.
 
     A `chars=UNWEIGHED(artifact predates stored archive text)` column
-    is not a pass. It means that entry could not be weighed at all.
+    is not a pass.
+    It means that entry could not be weighed at all.
 
-    Then read the destination lines off the pass log, which spends nothing either:
+    Then read the destination lines off the pass log,
+    which spends nothing either:
 
     ```sh
     grep '^DESTINATIONS ' "${RUNDIR}.log"
     ```
 
-    Expected: one line per settled entry,
+    Expected:
+    one line per settled entry,
     `DESTINATIONS <id> source=<n> page=<n> dropped=<n>`,
     counting the distinct web addresses the source page links to,
     the ones the published page carries,
@@ -548,10 +658,13 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     A non-zero `dropped` is a finding rather than a failure:
     the page is what both deciders approved and it shipped,
     and the addresses themselves are in the run log at `warn`,
-    one line each under `entry <id>: page drops source destination`, never on stdout.
+    one line each under `entry <id>: page drops source destination`,
+    never on stdout.
     A trailing `destinations-mdx-downgraded (source)` or `(page)` says the strict grammar refused that side
-    and the plain-markdown parse was read instead; the count still stands.
-    A checkout that predates `#265` prints no such line, and a run made from it recorded nothing to read.
+    and the plain-markdown parse was read instead;
+    the count still stands.
+    A checkout that predates `#265` prints no such line,
+    and a run made from it recorded nothing to read.
 
     Then read the defect lines the same way:
 
@@ -559,16 +672,22 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     grep '^DEFECTS ' "${RUNDIR}.log"
     ```
 
-    Expected: no output on a clean pass.
+    Expected:
+    no output on a clean pass.
     A line `DEFECTS <id> checks=<a>,<b>` names a page that shipped with those defects.
-    `archive-original`, `contributor-names`, `destinations`, `front-matter` and `headings`
+    `archive-original`,
+    `contributor-names`,
+    `destinations`,
+    `front-matter` and `headings`
     are the publish-time content checks;
     `no-valid-wording` names slices where no wording passed the deterministic rule,
     so the archive's own wording stayed;
     `page-agreement` names a page that does not carry what its artifact says ships,
-    which is a defect in page assembly, not in the text.
+    which is a defect in page assembly,
+    not in the text.
     Each defect's message is in the run log at `warn` under `publish: shipping with defect`,
-    naming ids, counts and slice indices only.
+    naming ids,
+    counts and slice indices only.
     A checkout that predates 2026-09-27 refused such entries instead,
     so it prints no such line.
 
@@ -578,16 +697,21 @@ So `6` means read the line, `4` means fix the input, `5` means file a bug.
     mise run //package/module/translation-repair:meter-report -- "${RUNDIR}.log"
     ```
 
-    Expected: per provider, a count of readings in each state,
+    Expected:
+    per provider,
+    a count of readings in each state,
     the fraction of answering readings that found budget,
     and the longest outage as a range rather than a number.
     An outage with no answering reading before or after it is reported open,
     because it may have begun before the record or may still be running.
 
-    Every figure is availability WHEN WE WERE ASKING, which is not availability.
+    Every figure is availability WHEN WE WERE ASKING,
+    which is not availability.
 
-The three tools that follow arrived with `#210`, `#212` and `#215`.
-If `mise run` reports no such task, the checkout predates them,
+The three tools that follow arrived with `#210`,
+`#212` and `#215`.
+If `mise run` reports no such task,
+the checkout predates them,
 and a run made from that checkout recorded none of what they read either.
 
 4.  Read where the wall clock went.
@@ -598,7 +722,8 @@ and a run made from that checkout recorded none of what they read either.
 
     This spends no quota and calls no model.
     Name more than one log to read a resumed run as a single span.
-    Expected, on a run whose rounds and calls were both recorded:
+    Expected,
+    on a run whose rounds and calls were both recorded:
 
     ```text
     run-timing-report: 1 logs, 6 lines
@@ -614,7 +739,8 @@ and a run made from that checkout recorded none of what they read either.
     That is the quantity `STRAGGLER_GRACE_MS` trades against,
     so read it before changing the window.
 
-    `calls in flight` is ACHIEVED concurrency, not configured concurrency.
+    `calls in flight` is ACHIEVED concurrency,
+    not configured concurrency.
     A peak below the producer count means the pipeline never actually ran that wide,
     whatever it was configured to do.
 
@@ -652,7 +778,8 @@ and a run made from that checkout recorded none of what they read either.
     ```
 
     This spends no quota and calls no model.
-    Expected, on a run that touched all three providers:
+    Expected,
+    on a run that touched all three providers:
 
     ```text
     spend-report: 1 logs, 6 lines, 5 seats
@@ -671,7 +798,8 @@ and a run made from that checkout recorded none of what they read either.
     Subscription seats are counted and never priced,
     because a weekly allowance is not a per-call rate and pricing it would invent a number.
     Their consumption shows up on the `METERS` line instead.
-    OpenRouter seats are priced from the wire, the `cost=` field each `SPEND` line carries,
+    OpenRouter seats are priced from the wire,
+    the `cost=` field each `SPEND` line carries,
     and never from a table;
     a seat whose lines lacked the field is marked `a floor: N calls carried no cost`.
     Hypercredits and USD are two currencies and the report never adds them.
@@ -693,7 +821,9 @@ and a run made from that checkout recorded none of what they read either.
     exiting `0` as it does so.
 
     On OpenRouter calls the `SPEND` line also names the upstream that served the call (`endpoint=`),
-    and every stream progress line, cut ones included, ends with `served by "..."`.
+    and every stream progress line,
+    cut ones included,
+    ends with `served by "..."`.
     A model that keeps coming back empty or slow on that provider is attributed by two greps:
 
     ```sh
@@ -703,27 +833,38 @@ and a run made from that checkout recorded none of what they read either.
     ```
 
     An upstream that fails after the gateway has already answered 200 shows up as a retry line naming
-    the failure, not as a truncation:
+    the failure,
+    not as a truncation:
 
     ```text
     transport failure: InStreamProviderError: stream carried a provider failure instead of a completion: code 504, type timeout, served by ModelRun
     ```
 
-    Count those by endpoint the same way. Logs written before 2026-09-04 carry the same event as
+    Count those by endpoint the same way.
+    Logs written before 2026-09-04 carry the same event as
     `MalformedCompletionError: ... stream ended without its [DONE] terminator; the reply was cut off`,
     attributable only through the stream progress line just before it (a body of a few hundred raw
-    characters with `0 content chars`, "completed" after about ten seconds).
+    characters with `0 content chars`,
+    "completed" after about ten seconds).
 
     An upstream measured broken goes into that model's `ignoredEndpoints` in `openrouter-catalog.ts`
-    with the measurement beside it, as Parasail did for MiniMax M3 and OpenInference for DeepSeek V4 Flash
-    on 2026-09-03. Before ignoring, count what would be left:
+    with the measurement beside it,
+    as Parasail did for MiniMax M3 and OpenInference for DeepSeek V4 Flash
+    on 2026-09-03.
+    Before ignoring,
+    count what would be left:
     an ignore that leaves one endpoint serving turns that endpoint's rate limit into a lost voice,
-    since OpenRouter is the last provider in the order. Under zero data retention with a schema request
-    the listing's `supported_parameters` decides who is left, not the endpoint count: MiniMax M3 has one
+    since OpenRouter is the last provider in the order.
+    Under zero data retention with a schema request
+    the listing's `supported_parameters` decides who is left,
+    not the endpoint count:
+    MiniMax M3 has one
     such endpoint (ModelRun) once Parasail is ignored and CoreWeave sits on the account-level ignore list
-    (measured 2026-09-04, `~/temp/agent/openrouter-minimax-endpoints-20260904.log`).
+    (measured 2026-09-04,
+    `~/temp/agent/openrouter-minimax-endpoints-20260904.log`).
 
-6.  Read who produced what, and what the judges said about it.
+6.  Read who produced what,
+    and what the judges said about it.
 
     ```sh
     TRANSLATION_REPAIR_RUNS_DIR="${RUNDIR}" \
@@ -742,7 +883,8 @@ and a run made from that checkout recorded none of what they read either.
 
     `disinterested ballots` excludes the seat's own votes for its own candidate,
     which is why `self-votes` is reported beside the share rather than folded into it.
-    A low share means rarely picked as best, which is not the same as wrong.
+    A low share means rarely picked as best,
+    which is not the same as wrong.
 
     DO NOT PASTE `--model` OUTPUT ANYWHERE.
     Passing `--model <id>` prints that seat's candidate text verbatim,
@@ -751,7 +893,8 @@ and a run made from that checkout recorded none of what they read either.
     The summary above names only models and counts and is safe to share;
     the per-model view is not.
 
-    THIS ONE EXITS `1` WHEN IT FINDS NOTHING, unlike the two tools before it:
+    THIS ONE EXITS `1` WHEN IT FINDS NOTHING,
+    unlike the two tools before it:
 
     ```text
     NOTHING RECORDED. This run wrote no ledger, which is not the same as a run whose models wrote nothing: every run started before candidate-ledger.ts landed has none, and so does any run launched without TRANSLATION_REPAIR_RUNS_DIR set.
@@ -763,8 +906,10 @@ and a run made from that checkout recorded none of what they read either.
     while a log with no `SPEND` or round lines is simply an older log
     and says nothing about the operator.
 
-    A ledger file that is malformed rather than absent is named, skipped,
-    and counted, and the exit code becomes `2`:
+    A ledger file that is malformed rather than absent is named,
+    skipped,
+    and counted,
+    and the exit code becomes `2`:
 
     ```text
       UNREADABLE 000001.json: could not read 000001.json as JSON (SyntaxError)
@@ -773,12 +918,15 @@ and a run made from that checkout recorded none of what they read either.
 
     A byte offset joins the class where the parser stated one,
     as `(SyntaxError at byte 42)`.
-    A file truncated at the end states none, which is the case above.
+    A file truncated at the end states none,
+    which is the case above.
 
     Read a `2` as a floor rather than a standing.
-    The refusal names the class that refused and where it stopped, never the file's text,
+    The refusal names the class that refused and where it stopped,
+    never the file's text,
     because a ledger holds corpus wording and a parse message quotes what it disagrees about.
-    If every file refuses, the report prints `NOTHING COUNTED` and still exits `2`,
+    If every file refuses,
+    the report prints `NOTHING COUNTED` and still exits `2`,
     which is a run whose record was lost rather than a run that recorded nothing.
 
     A third code exists for one operator slip.
@@ -799,7 +947,8 @@ running corpus-pass.mjs
 kill <pid>
 ```
 
-Expected: a later `running corpus-pass.mjs` prints nothing.
+Expected:
+a later `running corpus-pass.mjs` prints nothing.
 
 A stopped run is resumable and is not wasted.
 Run root `prompt-payloads/` contains raw model payloads keyed by canonical prompt digest.
@@ -815,7 +964,8 @@ entry cannot recover until operator repairs/removes disposable record and relaun
 This is fail-closed handling,
 not quality verdict.
 
-Every stage caches, so a relaunch into the same `TRANSLATION_REPAIR_RUNS_DIR`
+Every stage caches,
+so a relaunch into the same `TRANSLATION_REPAIR_RUNS_DIR`
 republishes what was already bought rather than re-buying it,
 provided no source file changed in between.
 
@@ -831,12 +981,14 @@ whatever it cost.
 If a resume supervisor is driving the pass,
 stopping the run and stopping the supervisor are two different operations.
 
--   To stop the supervisor while a pass is running, kill it by pid.
+-   To stop the supervisor while a pass is running,
+    kill it by pid.
     Killing the supervisor does not kill the pass,
     because the pass is a child that outlives it.
     That is what makes swapping supervisors mid-run safe.
 
--   To stop the run, kill the pass by pid.
+-   To stop the run,
+    kill the pass by pid.
     The supervisor then sees the field clear,
     and a stop file placed at that point prevents the next launch:
 
@@ -848,16 +1000,20 @@ stopping the run and stopping the supervisor are two different operations.
     so it takes effect within a minute while the supervisor is waiting.
     IT DOES NOTHING WHILE A PASS IS RUNNING.
     The supervisor spends that time awaiting its child and reaches no stop check
-    until the pass exits, so a stop file placed during a run
-    sits unread for as long as the run lasts, which can be twelve hours.
+    until the pass exits,
+    so a stop file placed during a run
+    sits unread for as long as the run lasts,
+    which can be twelve hours.
 
-To discard a run entirely, remove its directory and its log.
+To discard a run entirely,
+remove its directory and its log.
 Do this only for a throwaway run.
 
 ```sh
 rm --recursive --force -- "${RUNDIR}" "${RUNDIR}.log"
 ```
 
-Expected: no output.
+Expected:
+no output.
 Nothing in the repository is touched by a pass,
 so there is no working tree state to restore.

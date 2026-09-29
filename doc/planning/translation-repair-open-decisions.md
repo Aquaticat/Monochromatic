@@ -1,379 +1,749 @@
 # Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-19
 
-STATUS ON 2026-08-26: EVERY QUESTION IS ANSWERED, and this document is kept for the evidence behind the
-answers (register item A-4). Questions 11 and 12, opened and decided the same day at the end of this file, are
-recorded in `doc/decision/translation-repair-calibration-overlap.md`. The records for 1 to 10 are:
+STATUS ON 2026-08-26:
+EVERY QUESTION IS ANSWERED,
+and this document is kept for the evidence behind the
+answers (register item A-4).
+Questions 11 and 12,
+opened and decided the same day at the end of this file,
+are
+recorded in `doc/decision/translation-repair-calibration-overlap.md`.
+The records for 1 to 10 are:
 
--   Question 1, producing roster width: `doc/decision/translation-repair-question-answers.md`
-    ("Producing roster width: keep three, widen on evidence"), and the "RULED 2026-08-23" section under the
+-   Question 1,
+    producing roster width:
+    `doc/decision/translation-repair-question-answers.md`
+    ("Producing roster width:
+    keep three,
+    widen on evidence"),
+    and the "RULED 2026-08-23" section under the
     question here.
--   Question 2, the transcribed-image class: the same record ("Transcribed images: send the image, fall back to
-    protecting the block"), and the "RULED, AND HALF-REFUSED ON MEASUREMENT" section here.
--   Question 3, whether the critic stage survives: the same record ("Critics: keep them as evidence, remove
+-   Question 2,
+    the transcribed-image class:
+    the same record ("Transcribed images:
+    send the image,
+    fall back to
+    protecting the block"),
+    and the "RULED,
+    AND HALF-REFUSED ON MEASUREMENT" section here.
+-   Question 3,
+    whether the critic stage survives:
+    the same record ("Critics:
+    keep them as evidence,
+    remove
     every early return").
--   Question 4, a self-certifying checker's verdict: the same record ("Self-certifying checkers: a half,
+-   Question 4,
+    a self-certifying checker's verdict:
+    the same record ("Self-certifying checkers:
+    a half,
     matching selection").
--   Question 5, the replacement rate: the same record ("Replacement rate: widen the judged window and re-read
+-   Question 5,
+    the replacement rate:
+    the same record ("Replacement rate:
+    widen the judged window and re-read
     it").
--   Question 6, a thin roster's verdict and the cache: the same record ("Thin-roster slices: cache anything
+-   Question 6,
+    a thin roster's verdict and the cache:
+    the same record ("Thin-roster slices:
+    cache anything
     examined at all").
--   Question 7, the non-translation denominator: the same record ("Non-translation denominator: delegated").
--   Question 8, where the rendering audit runs: "ANSWERED 2026-08-16: option B, standalone over EVERY settled
-    artifact", under the question here.
--   Question 9, the straggler grace's one-model tax: `doc/decision/translation-repair-straggler-grace.md`.
--   Question 10, re-arming the idle windows: `doc/decision/translation-repair-runaway-call-termination.md`.
+-   Question 7,
+    the non-translation denominator:
+    the same record ("Non-translation denominator:
+    delegated").
+-   Question 8,
+    where the rendering audit runs:
+    "ANSWERED 2026-08-16:
+    option B,
+    standalone over EVERY settled
+    artifact",
+    under the question here.
+-   Question 9,
+    the straggler grace's one-model tax:
+    `doc/decision/translation-repair-straggler-grace.md`.
+-   Question 10,
+    re-arming the idle windows:
+    `doc/decision/translation-repair-runaway-call-termination.md`.
 
-WHAT `#121` ADDED, 08-19. Two new questions, 9 and 10, and one correction that needed no question
+WHAT `#121` ADDED,
+08-19.
+Two new questions,
+9 and 10,
+and one correction that needed no question
 at all.
 
--   THE IDLE WINDOWS' STATED REASON WAS WRONG, THE VALUES WEREN'T. The 95.6 s median
+-   THE IDLE WINDOWS' STATED REASON WAS WRONG,
+    THE VALUES WEREN'T.
+    The 95.6 s median
     `STREAM_FIRST_BYTE_MS` and `STREAM_IDLE_MS` were disabled against is superseded 77 to 93 times
-    by first production traffic, but the tail still holds completed calls at 183755 ms, 124992 ms,
-    and (three weeks earlier, a different roster) 347099 ms, the last within 3.6 percent of the
-    360000 ms deadline. Both constants stay at 600000; only their TSDoc changed, in
-    `doc/decision/translation-repair-runaway-call-termination.md` and commit `3893825b2`. This
-    needed no question because the evidence pointed one way: nothing on record would have let a
+    by first production traffic,
+    but the tail still holds completed calls at 183755 ms,
+    124992 ms,
+    and (three weeks earlier,
+    a different roster) 347099 ms,
+    the last within 3.6 percent of the
+    360000 ms deadline.
+    Both constants stay at 600000;
+    only their TSDoc changed,
+    in
+    `doc/decision/translation-repair-runaway-call-termination.md` and commit `3893825b2`.
+    This
+    needed no question because the evidence pointed one way:
+    nothing on record would have let a
     tighter window avoid killing a healthy call.
--   THE STRAGGLER GRACE'S CUT POPULATION IS COUNTED TO THE END OF THE PASS: 19 cuts, not the
-    audit's mid-flight 10, sixteen of them `hf:zai-org/GLM-5.2` and two newly `hf:Qwen/Qwen3.6-27B`.
+-   THE STRAGGLER GRACE'S CUT POPULATION IS COUNTED TO THE END OF THE PASS:
+    19 cuts,
+    not the
+    audit's mid-flight 10,
+    sixteen of them `hf:zai-org/GLM-5.2` and two newly `hf:Qwen/Qwen3.6-27B`.
     What to do about that concentration is Question 9.
--   WHETHER TO ACTIVELY RE-ARM THE IDLE WINDOWS BELOW 600000, trading the deadline's six-minute
-    ceiling for something faster on a genuinely dead call, is Question 10. The measurement above
-    settles the premise; it does not settle how much of the documented tail risk is worth paying
+-   WHETHER TO ACTIVELY RE-ARM THE IDLE WINDOWS BELOW 600000,
+    trading the deadline's six-minute
+    ceiling for something faster on a genuinely dead call,
+    is Question 10.
+    The measurement above
+    settles the premise;
+    it does not settle how much of the documented tail risk is worth paying
     against.
 
-WHAT A FOURTH NIGHT CHANGED, 08-17.
-One new question, Question 8, and one gate that is no longer a gate. Nothing
+WHAT A FOURTH NIGHT CHANGED,
+08-17.
+One new question,
+Question 8,
+and one gate that is no longer a gate.
+Nothing
 below was answered in between and nothing changed its answer.
 
--   THE WINDOW TRIAL FINISHED, all 327 arms, zero refusals. Widening the judge's
-    context did NOT move selection: over the 109 slices it read, the wide arm
+-   THE WINDOW TRIAL FINISHED,
+    all 327 arms,
+    zero refusals.
+    Widening the judge's
+    context did NOT move selection:
+    over the 109 slices it read,
+    the wide arm
     decided differently from a narrow arm 18 times and the two identically
-    configured narrow arms differed 21 times, so the effect is smaller than the
-    noise it was measured against. The result and the pre-registered reading it
+    configured narrow arms differed 21 times,
+    so the effect is smaller than the
+    noise it was measured against.
+    The result and the pre-registered reading it
     fired are in `doc/planning/translation-repair-window-trial.md`.
--   ITS NEGATIVE CONTROL MEASURED SOMETHING NOBODY ASKED FOR, and it constrains
-    how any single pass may be read: the per-slice preserve-or-replace decision
-    is about 19 percent unstable between identical runs. Rates over many slices
-    survive that; per-slice claims and small comparisons do not.
--   THE LAUNCH GATE IS LIFTED. The corpus pass was held only because the trial
-    was competing for the same six models, and it is done.
--   THE RENDERING AUDIT WORKS, and Question 8 asks where it should run. Both
-    live arms ran three times: the planted defect was found in every run, by all
-    three auditors in two of them and by two of three in the last, where the
-    remaining voice's only claim failed to anchor. The faithful control drew no
-    claims at all, in any run.
--   QUOTA WAS SPENT, deliberately and in small amounts: three runs of two audit
-    arms against a three-model roster. Everything else was unit tests against
+-   ITS NEGATIVE CONTROL MEASURED SOMETHING NOBODY ASKED FOR,
+    and it constrains
+    how any single pass may be read:
+    the per-slice preserve-or-replace decision
+    is about 19 percent unstable between identical runs.
+    Rates over many slices
+    survive that;
+    per-slice claims and small comparisons do not.
+-   THE LAUNCH GATE IS LIFTED.
+    The corpus pass was held only because the trial
+    was competing for the same six models,
+    and it is done.
+-   THE RENDERING AUDIT WORKS,
+    and Question 8 asks where it should run.
+    Both
+    live arms ran three times:
+    the planted defect was found in every run,
+    by all
+    three auditors in two of them and by two of three in the last,
+    where the
+    remaining voice's only claim failed to anchor.
+    The faithful control drew no
+    claims at all,
+    in any run.
+-   QUOTA WAS SPENT,
+    deliberately and in small amounts:
+    three runs of two audit
+    arms against a three-model roster.
+    Everything else was unit tests against
     the synthetic client.
 
-WHAT A THIRD NIGHT CHANGED, 08-16 into 08-17.
+WHAT A THIRD NIGHT CHANGED,
+08-16 into 08-17.
 None of the questions below were answered in between and none of them changed
-its answer: the night went on the artifact reader, two resume guards and the
-last of the invariants review, so this is a note about what is now built rather
+its answer:
+the night went on the artifact reader,
+two resume guards and the
+last of the invariants review,
+so this is a note about what is now built rather
 than about anything you have to re-decide.
 
--   THE VERSION 2 ARTIFACT PARSER IS IN, and with it a refusal the adversarial
-    list called for and I had dropped: a ledger naming one slice twice used to
-    pass every relation, because they all join by POSITION, so two rows naming
-    slice 5 agree with each other, with their evidence, and with the slice
+-   THE VERSION 2 ARTIFACT PARSER IS IN,
+    and with it a refusal the adversarial
+    list called for and I had dropped:
+    a ledger naming one slice twice used to
+    pass every relation,
+    because they all join by POSITION,
+    so two rows naming
+    slice 5 agree with each other,
+    with their evidence,
+    and with the slice
     count.
--   TWO RESUME GUARDS, one of which corrects a claim this repository made in
-    three places. The mixed-generation trap was recorded as unguarded; it was
-    not. `assertResumableGeneration` already refuses a directory whose artifacts
-    record another pipeline digest, and a build that writes version 1 cannot
-    share a digest with one that writes version 2. What was genuinely open is
-    the drift opt-in, which promises that naming a required commit keeps a mixed
-    pool readable: true of build drift, false of schema drift. That hole is
+-   TWO RESUME GUARDS,
+    one of which corrects a claim this repository made in
+    three places.
+    The mixed-generation trap was recorded as unguarded;
+    it was
+    not.
+    `assertResumableGeneration` already refuses a directory whose artifacts
+    record another pipeline digest,
+    and a build that writes version 1 cannot
+    share a digest with one that writes version 2.
+    What was genuinely open is
+    the drift opt-in,
+    which promises that naming a required commit keeps a mixed
+    pool readable:
+    true of build drift,
+    false of schema drift.
+    That hole is
     closed and the new guard is deliberately NOT overridable.
--   `#103` IS FULLY CLOSED, and two of its three remaining items turned out to
-    be built already. Re-reading them cost less than rebuilding them.
--   NOTHING SPENT YOUR QUOTA. The only runs were plan-mode, which makes no model
-    call, and unit tests against the synthetic client.
--   `#105`'S FIRST ITEM, the decline-rate measurement that gates its decision,
-    still cannot run: it wants the real roster, and the launch gate holds while
+-   `#103` IS FULLY CLOSED,
+    and two of its three remaining items turned out to
+    be built already.
+    Re-reading them cost less than rebuilding them.
+-   NOTHING SPENT YOUR QUOTA.
+    The only runs were plan-mode,
+    which makes no model
+    call,
+    and unit tests against the synthetic client.
+-   `#105`'S FIRST ITEM,
+    the decline-rate measurement that gates its decision,
+    still cannot run:
+    it wants the real roster,
+    and the launch gate holds while
     the window trial is live.
 
-WHAT A SECOND NIGHT CHANGED, 08-16, since none of these questions were answered
+WHAT A SECOND NIGHT CHANGED,
+08-16,
+since none of these questions were answered
 in between and you should not re-read the whole document to find it:
 
--   QUESTION 5'S OPTION E GOT DEARER, and it is the top-ranked option. The
-    production re-run it calls for cannot be a two-arm comparison; that design
-    measures the window and a resampled candidate slate at once. It is three
-    arms now, with the slate held fixed, which needs a refactor first. Priced in
-    option E. The RANKING did not move.
--   NOTHING ELSE HERE CHANGED ITS ANSWER. The rest of the night went on making
-    the instrument honest rather than on new findings: a window index that
-    silently returned "no window" now throws, the cache key that would have
-    made both arms of that comparison identical is fixed and pinned, and the
+-   QUESTION 5'S OPTION E GOT DEARER,
+    and it is the top-ranked option.
+    The
+    production re-run it calls for cannot be a two-arm comparison;
+    that design
+    measures the window and a resampled candidate slate at once.
+    It is three
+    arms now,
+    with the slate held fixed,
+    which needs a refactor first.
+    Priced in
+    option E.
+    The RANKING did not move.
+-   NOTHING ELSE HERE CHANGED ITS ANSWER.
+    The rest of the night went on making
+    the instrument honest rather than on new findings:
+    a window index that
+    silently returned "no window" now throws,
+    the cache key that would have
+    made both arms of that comparison identical is fixed and pinned,
+    and the
     hop that carries the window to the judges is now a test that was shown to
     fail without it.
--   ONE THING I GOT WRONG AND FIXED, recorded because it touched your
-    repository. Six comments about this work were posted onto unrelated GitHub
-    issues: the task-tracker ids in this document collide with GitHub issue
-    numbers, and `#84`, `#106`, `#107` and `#108` are real tickets about other
-    things. The comments have been rewritten in place as misfiled notes, no
-    content was lost, and `AGENTS.md` now carries the rule that would have
+-   ONE THING I GOT WRONG AND FIXED,
+    recorded because it touched your
+    repository.
+    Six comments about this work were posted onto unrelated GitHub
+    issues:
+    the task-tracker ids in this document collide with GitHub issue
+    numbers,
+    and `#84`,
+    `#106`,
+    `#107` and `#108` are real tickets about other
+    things.
+    The comments have been rewritten in place as misfiled notes,
+    no
+    content was lost,
+    and `AGENTS.md` now carries the rule that would have
     prevented it.
 
-Written overnight on 2026-08-14 to 15, while the translate lane was built out.
-Each question below is one I could not answer from the code, the corpus, or a
+Written overnight on 2026-08-14 to 15,
+while the translate lane was built out.
+Each question below is one I could not answer from the code,
+the corpus,
+or a
 measurement I could take without spending your quota on a decision you may
 reverse.
-Every one of them names what it blocks, so you can skip the ones that block
+Every one of them names what it blocks,
+so you can skip the ones that block
 nothing you care about today.
 
-The last section lists decisions I took WITHOUT you, with the reasoning, so you
+The last section lists decisions I took WITHOUT you,
+with the reasoning,
+so you
 can veto any of them cheaply.
 
-READ QUESTION 5 FIRST if you read only one. It was not on the list last night;
-the bench put it there. The lane replaces the archive's English on most of the
-slices it was benched over, and that is a decision about what this project is,
-not a tuning question. It is also the one that blocks wiring the corpus pass,
+READ QUESTION 5 FIRST if you read only one.
+It was not on the list last night;
+the bench put it there.
+The lane replaces the archive's English on most of the
+slices it was benched over,
+and that is a decision about what this project is,
+not a tuning question.
+It is also the one that blocks wiring the corpus pass,
 because report-only and shipping are different wirings.
 
-QUESTION 6 arrived from a defect rather than a bench: both drivers were caching
-slices an aborted run never bought. That is fixed; what remains is a narrower
-judgement about thin rosters, and it blocks nothing.
+QUESTION 6 arrived from a defect rather than a bench:
+both drivers were caching
+slices an aborted run never bought.
+That is fixed;
+what remains is a narrower
+judgement about thin rosters,
+and it blocks nothing.
 
-QUESTION 7 ARRIVED LAST, from a free measurement over the pinned corpus rather
-than from either. One entry in it produces no slices at all and settles as a
-clean unchanged document on the strength of having examined nothing. The
-question is what the one whole-document refusal should count against, and my
-own answer is in it, so delegating is cheap.
+QUESTION 7 ARRIVED LAST,
+from a free measurement over the pinned corpus rather
+than from either.
+One entry in it produces no slices at all and settles as a
+clean unchanged document on the strength of having examined nothing.
+The
+question is what the one whole-document refusal should count against,
+and my
+own answer is in it,
+so delegating is cheap.
 
-WHAT LANDED AFTER THIS DOCUMENT WAS FIRST WRITTEN, so you are not reading
+WHAT LANDED AFTER THIS DOCUMENT WAS FIRST WRITTEN,
+so you are not reading
 yesterday's state:
 
--   Both lanes now run from one driver that arbitrates nothing, and each lane
+-   Both lanes now run from one driver that arbitrates nothing,
+    and each lane
     result names the slices it shipped and withdrew rather than only counting
-    them. Decisions 16 and 17, both open to veto.
--   The bench prices sending and answering separately now. Decision 18.
--   QUESTION 1'S COST BULLET CHANGED, because the same bench rows were re-read
-    per stage at no new cost and the previous reading was half wrong. Read that
+    them.
+    Decisions 16 and 17,
+    both open to veto.
+-   The bench prices sending and answering separately now.
+    Decision 18.
+-   QUESTION 1'S COST BULLET CHANGED,
+    because the same bench rows were re-read
+    per stage at no new cost and the previous reading was half wrong.
+    Read that
     bullet again if you answer Question 1 from cost.
--   THE ASSEMBLY CONTRACT WAS REBUILT, in decisions 20, 21 and 22. Three things
-    changed that a reader of a count needs to know. A contradictory cached slice
-    is now discarded and recomputed rather than reaching assembly, so one bad
-    file costs one slice. An assembly that changes no byte now ships nothing,
-    whatever its slices decided. And the shipped set is DERIVED from the
+-   THE ASSEMBLY CONTRACT WAS REBUILT,
+    in decisions 20,
+    21 and 22.
+    Three things
+    changed that a reader of a count needs to know.
+    A contradictory cached slice
+    is now discarded and recomputed rather than reaching assembly,
+    so one bad
+    file costs one slice.
+    An assembly that changes no byte now ships nothing,
+    whatever its slices decided.
+    And the shipped set is DERIVED from the
     surviving replacements and checked against the document's own bytes rather
     than accepted as a separate list.
--   WHAT `withdrawn` MEANS IS WIDER THAN IT WAS. It used to be an integrity veto
-    and nothing else. It now says the document does not carry that slice's
-    change, for any of three reasons, and only the findings say which. If you
-    were going to read `withdrawnSliceCount` as footnote damage, do not; it
+-   WHAT `withdrawn` MEANS IS WIDER THAN IT WAS.
+    It used to be an integrity veto
+    and nothing else.
+    It now says the document does not carry that slice's
+    change,
+    for any of three reasons,
+    and only the findings say which.
+    If you
+    were going to read `withdrawnSliceCount` as footnote damage,
+    do not;
+    it
     would over-count.
--   ONE SUSPECTED DEFECT WAS REFUTED RATHER THAN FIXED, `#97`. The claim was
+-   ONE SUSPECTED DEFECT WAS REFUTED RATHER THAN FIXED,
+    `#97`.
+    The claim was
     that a checker verdict recorded as `resolved` might describe pre-refinement
-    text. A checker DOES run after refinement, and any issue it fails to
-    re-confirm rolls back the whole slice. Measured over the 56 settled
-    artifacts: 32 resolved-and-refined slices against 32 re-check findings, zero
-    violations, with the probe validated first. Nothing to build.
--   THE EMPTY-ROSTER REFUSAL WAS BUILT for every role except the critics. A lane
+    text.
+    A checker DOES run after refinement,
+    and any issue it fails to
+    re-confirm rolls back the whole slice.
+    Measured over the 56 settled
+    artifacts:
+    32 resolved-and-refined slices against 32 re-check findings,
+    zero
+    violations,
+    with the probe validated first.
+    Nothing to build.
+-   THE EMPTY-ROSTER REFUSAL WAS BUILT for every role except the critics.
+    A lane
     configured with nobody in a required role now refuses before buying
-    anything, at all three depths a caller can enter at. The quiet path is still
-    right for OUTAGES and is untouched; what is refused is the deterministic
-    case, before any work is done. CRITICS ARE STILL UNGUARDED, and that is
-    Question 3's doing rather than an oversight: if the critic stage survives,
+    anything,
+    at all three depths a caller can enter at.
+    The quiet path is still
+    right for OUTAGES and is untouched;
+    what is refused is the deterministic
+    case,
+    before any work is done.
+    CRITICS ARE STILL UNGUARDED,
+    and that is
+    Question 3's doing rather than an oversight:
+    if the critic stage survives,
     an empty critic roster is a misconfiguration and belongs in the same check,
-    and if it does not survive, an empty critic roster is the intended
-    configuration. A second review sharpened the cost of leaving it open: the
-    stage RUNS today, so an empty critic roster today produces exactly the quiet
-    vacuous pass this check exists to refuse. Task `#93` carries the remainder.
+    and if it does not survive,
+    an empty critic roster is the intended
+    configuration.
+    A second review sharpened the cost of leaving it open:
+    the
+    stage RUNS today,
+    so an empty critic roster today produces exactly the quiet
+    vacuous pass this check exists to refuse.
+    Task `#93` carries the remainder.
 -   THE ASSEMBLY AND SLICE-RECORD CONTRACTS WERE HARDENED AGAIN overnight on the
-    15th, after a second review of the same code. Three of these change numbers
-    you may read, so they are worth knowing before you read any:
+    15th,
+    after a second review of the same code.
+    Three of these change numbers
+    you may read,
+    so they are worth knowing before you read any:
     -   A NATURALNESS REFINEMENT THAT LANDS BACK ON THE ARCHIVE WORDING is now
-        recorded as unchanged, and its slice's resolved-issue credit is dropped.
-        The rewriter is measured against the accuracy text it rewrites, so it
-        can move off that text right back onto the archive's own words; that was
-        being recorded as a change, which would have named the slice in the
+        recorded as unchanged,
+        and its slice's resolved-issue credit is dropped.
+        The rewriter is measured against the accuracy text it rewrites,
+        so it
+        can move off that text right back onto the archive's own words;
+        that was
+        being recorded as a change,
+        which would have named the slice in the
         shipped set and then failed the whole document at assembly.
     -   A FRESHLY SETTLED SLICE RECORD is now checked against its own text
-        before it is cached, on both lanes, exactly as a resumed one is. Only
-        one direction of that contradiction was ever caught downstream: a record
-        claiming a change it did not make is refused at assembly, while one
+        before it is cached,
+        on both lanes,
+        exactly as a resumed one is.
+        Only
+        one direction of that contradiction was ever caught downstream:
+        a record
+        claiming a change it did not make is refused at assembly,
+        while one
         DENYING a change it made was dropped in silence.
-    -   REFINEMENT NOW HONORS THE ABORT. It had none: a torn-down exchange
-        surfaced as whichever stage happened to fail, and a phase that settled
-        under an abort returned a document that read as a finished run. A fully
-        cached document still finishes, because what a stopped run cannot do is
+    -   REFINEMENT NOW HONORS THE ABORT.
+        It had none:
+        a torn-down exchange
+        surfaced as whichever stage happened to fail,
+        and a phase that settled
+        under an abort returned a document that read as a finished run.
+        A fully
+        cached document still finishes,
+        because what a stopped run cannot do is
         buy what it is missing.
--   A REPO-WIDE LINT GAP was measured while doing that, and it is a question for
-    you rather than a defect: `doc/planning/unused-import-lint-policy.md`. It
+-   A REPO-WIDE LINT GAP was measured while doing that,
+    and it is a question for
+    you rather than a defect:
+    `doc/planning/unused-import-lint-policy.md`.
+    It
     blocks nothing.
 -   THE EVENING OF THE 15TH went to the cache-key review and to the first two
-    landings of one-sided slicing. NONE OF IT ADDS A QUESTION, which is why it
-    is a list rather than a section: every choice in it was settled by a review,
-    by your ruling on the cache keys, or by the design already recorded in
-    `#100`. Decisions 23 to 25 carry the reasoning, and what changed is:
-    -   A SLICE'S CACHE KEY NO LONGER NAMES ITS POSITION, on both lanes, which
-        is the change you authorized to land while the window is free. A record
-        is now keyed by what was asked, and the answer to that question does not
-        depend on where in the document it was asked; a resumed record is
-        re-stamped with the index it is resumed under. Both caches were measured
-        empty first, so nothing was discarded.
-    -   A REFUSAL THAT NAMES A SLICE BY NUMBER IS NO LONGER STORED. It was the
-        one thing in a stored record that did depend on position, so it would
+    landings of one-sided slicing.
+    NONE OF IT ADDS A QUESTION,
+    which is why it
+    is a list rather than a section:
+    every choice in it was settled by a review,
+    by your ruling on the cache keys,
+    or by the design already recorded in
+    `#100`.
+    Decisions 23 to 25 carry the reasoning,
+    and what changed is:
+    -   A SLICE'S CACHE KEY NO LONGER NAMES ITS POSITION,
+        on both lanes,
+        which
+        is the change you authorized to land while the window is free.
+        A record
+        is now keyed by what was asked,
+        and the answer to that question does not
+        depend on where in the document it was asked;
+        a resumed record is
+        re-stamped with the index it is resumed under.
+        Both caches were measured
+        empty first,
+        so nothing was discarded.
+    -   A REFUSAL THAT NAMES A SLICE BY NUMBER IS NO LONGER STORED.
+        It was the
+        one thing in a stored record that did depend on position,
+        so it would
         have survived the key change and reported the wrong slice number after a
-        resume. The number is now derived at the document level, where the
+        resume.
+        The number is now derived at the document level,
+        where the
         positions are known.
-    -   A COLD RUN AND A WARM ONE NOW BUY THE SAME THING. Both lanes memoized
-        every settled slice in process, including ones the cache deliberately
-        refused to persist, so a document with two identical sections bought one
-        of them on a cold run and two on a resumed one, and no count said so.
-    -   A CHUNK CAN NOW NAME A PLACE rather than only cover text, and assembly
+    -   A COLD RUN AND A WARM ONE NOW BUY THE SAME THING.
+        Both lanes memoized
+        every settled slice in process,
+        including ones the cache deliberately
+        refused to persist,
+        so a document with two identical sections bought one
+        of them on a cold run and two on a resumed one,
+        and no count said so.
+    -   A CHUNK CAN NOW NAME A PLACE rather than only cover text,
+        and assembly
         refuses every placement shape that would move or overwrite existing
-        wording. Nothing produces such an anchor yet, deliberately: `#100` lands
-        the producers last, so by the time a section with no translation is
-        sliced, the assembly it flows into already refuses what it must.
-    -   THE BLANK LINE BETWEEN TWO BLOCKS HAS AN OWNER, which is assembly rather
-        than the prompt. This closes `#101`.
-    -   THE LANES CAN NOW BE HANDED A SLICE THE ARCHIVE NEVER TRANSLATED, which
-        is the third landing of `#100`. The translate lane refuses to settle one
+        wording.
+        Nothing produces such an anchor yet,
+        deliberately:
+        `#100` lands
+        the producers last,
+        so by the time a section with no translation is
+        sliced,
+        the assembly it flows into already refuses what it must.
+    -   THE BLANK LINE BETWEEN TWO BLOCKS HAS AN OWNER,
+        which is assembly rather
+        than the prompt.
+        This closes `#101`.
+    -   THE LANES CAN NOW BE HANDED A SLICE THE ARCHIVE NEVER TRANSLATED,
+        which
+        is the third landing of `#100`.
+        The translate lane refuses to settle one
         it could not fill rather than reporting a settled slice carrying the
-        empty string, and the repair lane says the question does not apply
-        rather than sending critics to complain about a blank. Decisions 26 and
-        27 carry the two choices in it that are yours to veto; nothing produces
-        such a slice yet, so no run changes today.
+        empty string,
+        and the repair lane says the question does not apply
+        rather than sending critics to complain about a blank.
+        Decisions 26 and
+        27 carry the two choices in it that are yours to veto;
+        nothing produces
+        such a slice yet,
+        so no run changes today.
 -   THE NIGHT OF THE 15TH INTO THE 16TH went to the quote anchoring chain and to
-    building `#84`'s instrument. One item here changes a number you may read and
-    one adds a question, so both are stated plainly:
+    building `#84`'s instrument.
+    One item here changes a number you may read and
+    one adds a question,
+    so both are stated plainly:
     -   QUOTE ANCHORING COULD ANCHOR A CRITIC'S QUOTE TO THE WRONG OCCURRENCE.
         Ambiguity was judged inside each matching pass rather than over the
-        broadest form the chain accepts, so a quote appearing twice under
-        whitespace folding could still bind to the first. The three passes are
-        now one, over one normalization. MEASURED COST: zero. Across three
-        corpus passes, 16,479 real critic quotes, not one became ambiguous under
-        the stricter rule, and a positive control proved the probe could see
+        broadest form the chain accepts,
+        so a quote appearing twice under
+        whitespace folding could still bind to the first.
+        The three passes are
+        now one,
+        over one normalization.
+        MEASURED COST:
+        zero.
+        Across three
+        corpus passes,
+        16,479 real critic quotes,
+        not one became ambiguous under
+        the stricter rule,
+        and a positive control proved the probe could see
         ambiguity when it exists (566 hits when the same needles were searched
-        over whole pages). The slice cache version moved for it, since the
+        over whole pages).
+        The slice cache version moved for it,
+        since the
         change alters which claims survive while every keyed input stays
         identical.
-    -   `#84` NOW HAS AN INSTRUMENT AND A FIRST READING, which Question 5 carries
-        in full. The short version: over four entries the judges chose the
-        complete text in all sixteen trials, which rules out keeping what they
-        were handed and preferring a ballot position, and CANNOT rule out
-        preferring the longer text, because a deleted sentence makes the
-        complete candidate the longer one every time. An insertion fixture, whose
-        correct answer is the shorter candidate, is built and running.
-    -   TWO OF SIX JUDGES ABSTAINED ON ELEVEN OF SIXTEEN of those trials, both
+    -   `#84` NOW HAS AN INSTRUMENT AND A FIRST READING,
+        which Question 5 carries
+        in full.
+        The short version:
+        over four entries the judges chose the
+        complete text in all sixteen trials,
+        which rules out keeping what they
+        were handed and preferring a ballot position,
+        and CANNOT rule out
+        preferring the longer text,
+        because a deleted sentence makes the
+        complete candidate the longer one every time.
+        An insertion fixture,
+        whose
+        correct answer is the shorter candidate,
+        is built and running.
+    -   TWO OF SIX JUDGES ABSTAINED ON ELEVEN OF SIXTEEN of those trials,
+        both
         refusing the pair because the archive's own handle romanisation violates
-        the sheet's exact-names criterion. That is worth knowing before Question
-        6, since it means the effective roster on such slices is four voices.
+        the sheet's exact-names criterion.
+        That is worth knowing before Question
+        6,
+        since it means the effective roster on such slices is four voices.
 
 ## Question 1: how wide should the producing rosters be
 
-BLOCKS the roster half of `#91`, and through it the first long run under the
+BLOCKS the roster half of `#91`,
+and through it the first long run under the
 new shape.
 
 The GUARD half of `#91` no longer waits on you and landed overnight in
-`285af2867`: the code still forbade what you had already ruled, so a roster
-where every model produces threw before any model was asked. Details in the
-"decisions I took without you" section. What is still yours is how many
+`285af2867`:
+the code still forbade what you had already ruled,
+so a roster
+where every model produces threw before any model was asked.
+Details in the
+"decisions I took without you" section.
+What is still yours is how many
 producers to seat by default.
 
 You ruled "All producing roles to 4" and then "don't hardcode magic numbers like
 4 or 6".
 I tried to derive the four from the roster size and got it wrong twice in one
-day, both times by the same mistake, so I stopped deriving and am asking.
+day,
+both times by the same mistake,
+so I stopped deriving and am asking.
 
-WHAT IS NOT A CONSTRAINT, verified in the code rather than assumed:
+WHAT IS NOT A CONSTRAINT,
+verified in the code rather than assumed:
 selection imposes no ceiling at all.
-The half-weight discount applies to a judge's ballot for its OWN candidate, so a
+The half-weight discount applies to a judge's ballot for its OWN candidate,
+so a
 candidate's full-weight judges are everyone who did not write it.
-Four editors judging each other work fine; so would six.
+Four editors judging each other work fine;
+so would six.
 
 WHAT ACTUALLY MOVES with width:
 
--   COST, now measured rather than reasoned about, in
-    `doc/audit/translation-repair-lane-budget.md`. Per slice: width 2 costs 7.2
-    calls and 22118 tokens, width 4 costs 10.2 calls and 34567 tokens, width 6
-    costs 12.4 calls and 40294 tokens. Over the whole corpus that is 27.9M,
-    43.6M and 50.8M tokens for one pass. So the widest roster costs about 1.8
-    times the narrowest, not six times, and the reason is where those tokens go.
-    MEASURED PER STAGE on 2026-08-15 from the same rows, at no new cost, and it
-    corrects what this bullet said yesterday: the judge round takes 5.4 calls
-    per slice at EVERY width from three up, because the judge roster does not
-    widen when the producing one does, but its tokens still rise 58% from width
-    2 to width 6. Which half of a ballot grows is not knowable from those rows,
-    which carry one total per exchange: the prompt repeats every candidate to
-    every judge, and the answer may carry a verdict per candidate. The judge
-    round dominates at both ends either way, 60% of a slice's tokens at width 2
+-   COST,
+    now measured rather than reasoned about,
+    in
+    `doc/audit/translation-repair-lane-budget.md`.
+    Per slice:
+    width 2 costs 7.2
+    calls and 22118 tokens,
+    width 4 costs 10.2 calls and 34567 tokens,
+    width 6
+    costs 12.4 calls and 40294 tokens.
+    Over the whole corpus that is 27.9M,
+    43.6M and 50.8M tokens for one pass.
+    So the widest roster costs about 1.8
+    times the narrowest,
+    not six times,
+    and the reason is where those tokens go.
+    MEASURED PER STAGE on 2026-08-15 from the same rows,
+    at no new cost,
+    and it
+    corrects what this bullet said yesterday:
+    the judge round takes 5.4 calls
+    per slice at EVERY width from three up,
+    because the judge roster does not
+    widen when the producing one does,
+    but its tokens still rise 58% from width
+    2 to width 6.
+    Which half of a ballot grows is not knowable from those rows,
+    which carry one total per exchange:
+    the prompt repeats every candidate to
+    every judge,
+    and the answer may carry a verdict per candidate.
+    The judge
+    round dominates at both ends either way,
+    60% of a slice's tokens at width 2
     and 52% at width 6.
-    So widening buys more candidates at a discount rather than for free, and a
+    So widening buys more candidates at a discount rather than for free,
+    and a
     cheaper decision procedure would save more than a narrower roster.
--   AGREEMENT. Ballots spread thinner across more candidates, so the leader more
-    often falls short of the minimum weight or ties. Both outcomes decline, and
-    a decline keeps the incumbent, so widening can quietly REDUCE how often
+-   AGREEMENT.
+    Ballots spread thinner across more candidates,
+    so the leader more
+    often falls short of the minimum weight or ties.
+    Both outcomes decline,
+    and
+    a decline keeps the incumbent,
+    so widening can quietly REDUCE how often
     anything is replaced.
--   COVERAGE, which is what the widening is for, on your reasoning that these
+-   COVERAGE,
+    which is what the widening is for,
+    on your reasoning that these
     models have different blind spots.
 
 ### Measured overnight, so this is no longer a guess
 
 `mise run //package/module/translation-repair:slice-census` reads the pinned
-corpus, slices it exactly as the pipeline does, and spends no quota.
-First run, 92 complete pairs:
+corpus,
+slices it exactly as the pipeline does,
+and spends no quota.
+First run,
+92 complete pairs:
 
     1260 slices
     slice source chars   p50 101, p90 174, p99 374, max 1313
     slice target chars   p50 299, p90 486, p99 1512, max 10959
     slices over 4641 target chars   1 of 1260
 
-COST, which is now arithmetic rather than an adjective. Translate calls are
-slices times producers, so the whole corpus costs:
+COST,
+which is now arithmetic rather than an adjective.
+Translate calls are
+slices times producers,
+so the whole corpus costs:
 
     3 producers   3780 translate calls
     4 producers   5040
     6 producers   7560
 
-Selection is 1260 rounds whatever the producer count, one call per judge, so
+Selection is 1260 rounds whatever the producer count,
+one call per judge,
+so
 7560 judge calls at the current six-model judge roster.
-What producer count changes there is the SIZE of each judge prompt, since every
-candidate is repeated to every judge: about 101 source characters plus one
-candidate of about 299 per producer, plus the incumbent.
+What producer count changes there is the SIZE of each judge prompt,
+since every
+candidate is repeated to every judge:
+about 101 source characters plus one
+candidate of about 299 per producer,
+plus the incumbent.
 
     3 producers   about 1300 characters per judge prompt
     4 producers   about 1600
     6 producers   about 2200
 
 So widening from three producers to six doubles the translate calls and adds
-about seventy percent to each judge prompt. Neither is a cliff, and neither is
+about seventy percent to each judge prompt.
+Neither is a cliff,
+and neither is
 free.
 
-THAT SEVENTY PERCENT WAS AN OVER-ESTIMATE, and the bench now says by how much.
-Measured per stage on 2026-08-15: a ballot costs 2794 tokens at width 3 and 3861
-at width 6, which is 38% rather than 69%. The character arithmetic counted only
-the part of the prompt that grows, and a ballot also carries the policy, the
-source and the incumbent, none of which widen with the roster. Use 38% when
-pricing a width, and keep the arithmetic for the shape of the effect rather than
+THAT SEVENTY PERCENT WAS AN OVER-ESTIMATE,
+and the bench now says by how much.
+Measured per stage on 2026-08-15:
+a ballot costs 2794 tokens at width 3 and 3861
+at width 6,
+which is 38% rather than 69%.
+The character arithmetic counted only
+the part of the prompt that grows,
+and a ballot also carries the policy,
+the
+source and the incumbent,
+none of which widen with the roster.
+Use 38% when
+pricing a width,
+and keep the arithmetic for the shape of the effect rather than
 its size.
 
-THE TAIL IS ONE ENTRY. Exactly one slice of 1260 exceeds 4641 target
-characters, which is the size the translate probe already watched time out at
-six minutes and return schema-invalid output. It is in `shihai4h`, at 10959
-characters, and that entry also owns the largest target-only block count. So
+THE TAIL IS ONE ENTRY.
+Exactly one slice of 1260 exceeds 4641 target
+characters,
+which is the size the translate probe already watched time out at
+six minutes and return schema-invalid output.
+It is in `shihai4h`,
+at 10959
+characters,
+and that entry also owns the largest target-only block count.
+So
 the oversized-call risk is a single entry rather than a distribution problem,
 and it can be handled without changing the roster at all.
 
-THE AGREEMENT LIMB IS BEING MEASURED NOW, and it is the half of this question
-the corpus cannot answer: whether more candidates make the judges converge less.
+THE AGREEMENT LIMB IS BEING MEASURED NOW,
+and it is the half of this question
+the corpus cannot answer:
+whether more candidates make the judges converge less.
 `mise run //package/module/translation-repair:roster-bench` runs the same ten
 stratified slices through the translate lane at every width from two to the
-whole roster, interleaved so each width meets the same provider weather, with
-one width run twice for a run-to-run band. Results are folded in below as they
+whole roster,
+interleaved so each width meets the same provider weather,
+with
+one width run twice for a run-to-run band.
+Results are folded in below as they
 land.
 
-THE FIRST THING IT SHOWED IS THE BAND ITSELF, and it is wide. On one slice, at
-one width, the two passes disagreed about the outcome: one judged and replaced
-the archive text at weight 4.5, the other declined for indecision and kept it.
-Same slice, same width, same roster, minutes apart. Any difference between
-widths smaller than that is noise, which is exactly why the repeat was built in
+THE FIRST THING IT SHOWED IS THE BAND ITSELF,
+and it is wide.
+On one slice,
+at
+one width,
+the two passes disagreed about the outcome:
+one judged and replaced
+the archive text at weight 4.5,
+the other declined for indecision and kept it.
+Same slice,
+same width,
+same roster,
+minutes apart.
+Any difference between
+widths smaller than that is noise,
+which is exactly why the repeat was built in
 before the sweep rather than after.
 
-THE SWEEP IS FINISHED, 60 rows, and it lands inside that band. Per width, over
+THE SWEEP IS FINISHED,
+60 rows,
+and it lands inside that band.
+Per width,
+over
 the same ten slices:
 
     width 2   kept 3   declined 0   72 calls    221k tokens    70s per slice
@@ -383,195 +753,365 @@ the same ten slices:
     width 5   kept 2   declined 1  113 calls    417k tokens   111s
     width 6   kept 2   declined 1  124 calls    403k tokens    93s
 
-THE TWO WIDTH-FOUR PASSES DIFFER BY AS MUCH AS THE WIDTHS DO. They disagree
-about the outcome on three of the ten slices, and their kept counts, 3 and 4,
-span the whole range every other width falls in. So the honest reading is that
-WIDTH DOES NOT MEASURABLY CHANGE AGREEMENT on ten slices, not that some width
-won. Ten slices cannot resolve a difference smaller than the noise, and this
+THE TWO WIDTH-FOUR PASSES DIFFER BY AS MUCH AS THE WIDTHS DO.
+They disagree
+about the outcome on three of the ten slices,
+and their kept counts,
+3 and 4,
+span the whole range every other width falls in.
+So the honest reading is that
+WIDTH DOES NOT MEASURABLY CHANGE AGREEMENT on ten slices,
+not that some width
+won.
+Ten slices cannot resolve a difference smaller than the noise,
+and this
 noise is large.
 
-The agreement worry that motivated the question is not supported either: the
-widest roster declined once, the narrowest declined never, and nothing in
-between trends. Ballots spreading thinner across more candidates did not produce
+The agreement worry that motivated the question is not supported either:
+the
+widest roster declined once,
+the narrowest declined never,
+and nothing in
+between trends.
+Ballots spreading thinner across more candidates did not produce
 more declines here.
 
-WHAT THE SWEEP DOES SETTLE IS COST, which now has numbers rather than an
-estimate: going from two producers to six multiplies calls by 1.7 and tokens by
-1.8, and the whole bench spent 602 calls, 2.03 million tokens and 1.5 hours of
+WHAT THE SWEEP DOES SETTLE IS COST,
+which now has numbers rather than an
+estimate:
+going from two producers to six multiplies calls by 1.7 and tokens by
+1.8,
+and the whole bench spent 602 calls,
+2.03 million tokens and 1.5 hours of
 wall time on ten slices.
 
 So this question is now a coverage-versus-cost decision and not an agreement
-decision. Nothing measured says a wider roster decides worse; what it costs is
+decision.
+Nothing measured says a wider roster decides worse;
+what it costs is
 `1.8x` at six.
 
-WHAT THIS BENCH DOES NOT MEASURE: every slice it drew already has a translation,
-94 to 302 characters so far. The numbers therefore describe preserve-or-replace
-only. Filling a GAP, a slice whose incumbent is blank, is the case the new shape
-exists for, and no row here covers it: the draw is stratified by source size over
-slices the aligner paired, and one-sided sections are not sliced at all, which is
-`#90`. Nothing in this question needs a redraw to answer, but no answer here
+WHAT THIS BENCH DOES NOT MEASURE:
+every slice it drew already has a translation,
+94 to 302 characters so far.
+The numbers therefore describe preserve-or-replace
+only.
+Filling a GAP,
+a slice whose incumbent is blank,
+is the case the new shape
+exists for,
+and no row here covers it:
+the draw is stratified by source size over
+slices the aligner paired,
+and one-sided sections are not sliced at all,
+which is
+`#90`.
+Nothing in this question needs a redraw to answer,
+but no answer here
 transfers to the gap case.
 
 ### Options
 
-A.  Fixed count in run configuration, named and commented, e.g.
+A.
+ Fixed count in run configuration,
+named and commented,
+e.g.
     `PRODUCERS_PER_ROLE = 4`.
-    Pros: says exactly what it means; one line to change when the provider
-    changes; no false derivation.
-    Cons: it is the literal you told me not to write, and it silently means
+    Pros:
+says exactly what it means;
+one line to change when the provider
+    changes;
+no false derivation.
+    Cons:
+it is the literal you told me not to write,
+and it silently means
     "all but two" at six models and "half" at eight.
 
-B.  A share of the roster, e.g. two thirds, rounded down.
-    Pros: tracks the provider with nothing edited, which is what you asked for.
-    Cons: the fraction is as arbitrary as the count, and rounding makes it
+B.
+ A share of the roster,
+e.g. two thirds,
+rounded down.
+    Pros:
+tracks the provider with nothing edited,
+which is what you asked for.
+    Cons:
+the fraction is as arbitrary as the count,
+and rounding makes it
     jump at odd sizes.
 
-C.  Every model produces in every role, and the discounts carry the whole load.
-    Pros: no number at all; maximum coverage; the simplest rule to state.
-    Cons: most candidates per slice, so the largest judge prompts and the
-    thinnest ballots; and with every model a producer, self-votes and
-    self-certifications are the norm rather than the exception, which makes
+C.
+ Every model produces in every role,
+and the discounts carry the whole load.
+    Pros:
+no number at all;
+maximum coverage;
+the simplest rule to state.
+    Cons:
+most candidates per slice,
+so the largest judge prompts and the
+    thinnest ballots;
+and with every model a producer,
+self-votes and
+    self-certifications are the norm rather than the exception,
+which makes
     the discounts load-bearing in a way nothing has measured.
 
-D.  Keep the current three until `#84` measures judge quality, then widen on
+D.
+ Keep the current three until `#84` measures judge quality,
+then widen on
     evidence.
-    Pros: the only option that spends nothing before the measurement that says
-    whether wider slates help; leaves every other decision intact.
-    Cons: it is what you already overruled, and it delays the coverage you
+    Pros:
+the only option that spends nothing before the measurement that says
+    whether wider slates help;
+leaves every other decision intact.
+    Cons:
+it is what you already overruled,
+and it delays the coverage you
     widened for.
 
-RANKING: A > D > B > C.
+RANKING:
+A > D > B > C.
 
 A over D because you have already decided to widen and a named constant is the
-honest way to write "four" while you decide whether four is right; D would be
+honest way to write "four" while you decide whether four is right;
+D would be
 re-litigating a decision you made.
-D over B because a fraction invents precision nobody has: two thirds of six is
-four only by coincidence, and at seven models it silently becomes four again.
+D over B because a fraction invents precision nobody has:
+two thirds of six is
+four only by coincidence,
+and at seven models it silently becomes four again.
 B over C because C makes both discounts load-bearing on every slice at once,
 and the self-preference rate they compensate for is exactly what `#84` has not
 measured yet.
 
-D, do #84 first
+D,
+do #84 first
 
 
 ### MEASURED 2026-08-23: the width does not decide it
 
-This question was gated on a number nobody had. There is one now, from two disjoint draws of twenty
-slices each over the same forty-slice sample, thirty-one of which carried work.
-The instrument, its three fixed defects and its positive control are described in
+This question was gated on a number nobody had.
+There is one now,
+from two disjoint draws of twenty
+slices each over the same forty-slice sample,
+thirty-one of which carried work.
+The instrument,
+its three fixed defects and its positive control are described in
 `doc/handover/translation-repair-history.md`.
 
 Widening the editors from three to six changed what ships NO MORE OFTEN than re-running the same
-three did. The comparison is paired, one bit per slice from changing the width and one from changing
-nothing, so only slices where the two disagree carry information:
+three did.
+The comparison is paired,
+one bit per slice from changing the width and one from changing
+nothing,
+so only slices where the two disagree carry information:
 
--   moved WITHOUT churning, which is width doing something: 1 of 31
--   churned without moving, which is the lane alone: 2 of 31
+-   moved WITHOUT churning,
+    which is width doing something:
+    1 of 31
+-   churned without moving,
+    which is the lane alone:
+    2 of 31
 
-Quality was asked separately, by putting both arms' repairs on one slate before the fixed panel in
-both seating orders. Of 23 contests, 7 were decided by SEAT rather than text. The 16 that survived
-the swap split 10 wide to 6 narrow, which arrives about one time in four under no true difference.
-Draw A alone had read 5 to 1 and looked like something; draw B read 5 to 5. The held-back half is the
+Quality was asked separately,
+by putting both arms' repairs on one slate before the fixed panel in
+both seating orders.
+Of 23 contests,
+7 were decided by SEAT rather than text.
+The 16 that survived
+the swap split 10 wide to 6 narrow,
+which arrives about one time in four under no true difference.
+Draw A alone had read 5 to 1 and looked like something;
+draw B read 5 to 5.
+The held-back half is the
 only reason that is known rather than believed.
 
 TWO FACTS NOW BEAR ON THE "ALL PRODUCING ROLES TO 4" RULING that were not available when it was made,
 and the ruling is yours to keep or revise:
 
-1.  Between three and six, widening buys nothing measurable on either reading.
-2.  FOUR IS NOT REACHABLE as the rosters stand. `RUN_MODELS` partitions the six-model roster exactly,
-    three editors who are also the three refiners plus the disjoint other three as checkers, because
-    `assertCheckerIndependence` forbids a checker from being a writer. Four writers leaves at most two
-    checkers, and nothing refuses that: the only floor, `assertRostersConfigured`, refuses an EMPTY
-    role and nothing more. At two checkers, one `fixed` against one `not-fixed` resolves nothing,
+1.  Between three and six,
+    widening buys nothing measurable on either reading.
+2.  FOUR IS NOT REACHABLE as the rosters stand.
+    `RUN_MODELS` partitions the six-model roster exactly,
+    three editors who are also the three refiners plus the disjoint other three as checkers,
+    because
+    `assertCheckerIndependence` forbids a checker from being a writer.
+    Four writers leaves at most two
+    checkers,
+    and nothing refuses that:
+    the only floor,
+    `assertRostersConfigured`,
+    refuses an EMPTY
+    role and nothing more.
+    At two checkers,
+    one `fixed` against one `not-fixed` resolves nothing,
     since `tallyResolutionChecks` needs `fixed > (notFixed + worse)`.
 
 So implementing the ruling costs checker independence and buys no measured quality.
-RECOMMENDATION: stay at three, and leave `assertCheckerIndependence` alone.
-That also leaves the checker-side self-vote discount unreachable, which is the standing state
-recorded in `doc/decision/translation-repair-question-answers.md`, and closes the applying task
+RECOMMENDATION:
+stay at three,
+and leave `assertCheckerIndependence` alone.
+That also leaves the checker-side self-vote discount unreachable,
+which is the standing state
+recorded in `doc/decision/translation-repair-question-answers.md`,
+and closes the applying task
 unbuilt rather than shipping a relaxation nothing needs.
 
 ### RULED 2026-08-23: three producers, and the checker width goes to measurement
 
-The owner read both facts and REVISED the "all producing roles to 4" ruling. The producing roles
-STAY AT THREE. `#186` measured that exact comparison and found nothing, and widening is not free
+The owner read both facts and REVISED the "all producing roles to 4" ruling.
+The producing roles
+STAY AT THREE.
+`#186` measured that exact comparison and found nothing,
+and widening is not free
 here because it forces a checker change nothing has measured.
 
-The checker roster was ruled separately, and NOT settled by opinion. `assertCheckerIndependence`
-relaxes behind a run-configuration switch, the same entries run once with the disjoint three and
-once with all six, per-issue resolution is compared, and whichever wins ships while the loser is
-deleted. The reasoning is the standing instruction to prototype and measure where the answer is
-unknown, and this one is unknown: no measurement anywhere covers checker width, only producer width.
+The checker roster was ruled separately,
+and NOT settled by opinion.
+`assertCheckerIndependence`
+relaxes behind a run-configuration switch,
+the same entries run once with the disjoint three and
+once with all six,
+per-issue resolution is compared,
+and whichever wins ships while the loser is
+deleted.
+The reasoning is the standing instruction to prototype and measure where the answer is
+unknown,
+and this one is unknown:
+no measurement anywhere covers checker width,
+only producer width.
 
-WHY THIS IS NOT THE SAME QUESTION `#186` ANSWERED, which is the misreading to guard against. `#186`
-compared three writers against six writers and found the ships indistinguishable. Checker width asks
-something else: whether six ballots per issue, three of them discounted for having written the text
-under review, resolve better than three undiscounted ballots from models that wrote nothing. A null
-on producers says nothing about that, because the two arms differ in ballot COUNT rather than in who
+WHY THIS IS NOT THE SAME QUESTION `#186` ANSWERED,
+which is the misreading to guard against.
+`#186`
+compared three writers against six writers and found the ships indistinguishable.
+Checker width asks
+something else:
+whether six ballots per issue,
+three of them discounted for having written the text
+under review,
+resolve better than three undiscounted ballots from models that wrote nothing.
+A null
+on producers says nothing about that,
+because the two arms differ in ballot COUNT rather than in who
 produced the candidate.
 
-THE DISCOUNT IS ALREADY BUILT AND ALREADY LIVE ELSEWHERE, so this measurement adds no new weighting
-mechanism. `tally-resolution.ts:310` picks the weight PER ISSUE through `wroteTextForIssue`, so a
+THE DISCOUNT IS ALREADY BUILT AND ALREADY LIVE ELSEWHERE,
+so this measurement adds no new weighting
+mechanism.
+`tally-resolution.ts:310` picks the weight PER ISSUE through `wroteTextForIssue`,
+so a
 checker is halved only on issues whose shipped text it helped write and keeps full weight on the
-rest. `candidate-select.ts:276` runs the same overlap-plus-discount pattern on every chunk today.
+rest.
+`candidate-select.ts:276` runs the same overlap-plus-discount pattern on every chunk today.
 The checker stage is the only place in the pipeline that excludes rather than discounts.
 
-The arithmetic that makes the measurement worth running: at all six, an issue written by the three
-writers faces three full independent votes against three halved self-votes, three against one and a
-half, so independents stay dominant while the panel doubles.
+The arithmetic that makes the measurement worth running:
+at all six,
+an issue written by the three
+writers faces three full independent votes against three halved self-votes,
+three against one and a
+half,
+so independents stay dominant while the panel doubles.
 
-A SIDE FINDING WORTH MORE THAN THE ANSWER: the panel's ability to separate two serious repairs of one
-passage is not stable between runs. Draw A decided 6 of 12 contests by seat; draw B decided 1 of 11
-that way, hours apart on the same models and the same sheet. Any later measurement resting on this
+A SIDE FINDING WORTH MORE THAN THE ANSWER:
+the panel's ability to separate two serious repairs of one
+passage is not stable between runs.
+Draw A decided 6 of 12 contests by seat;
+draw B decided 1 of 11
+that way,
+hours apart on the same models and the same sheet.
+Any later measurement resting on this
 panel resolving fine differences should measure that decisiveness first rather than assume it.
 
 ## Question 2: the transcribed-image class
 
-BLOCKS nothing mechanically, and is the largest known quality risk in the new
-shape. The class is now enumerated rather than estimated: 8 blockquotes over 6
-entries, 15299 characters, sitting inside a wider target-only population of 132
+BLOCKS nothing mechanically,
+and is the largest known quality risk in the new
+shape.
+The class is now enumerated rather than estimated:
+8 blockquotes over 6
+entries,
+15299 characters,
+sitting inside a wider target-only population of 132
 blocks and 44731 characters that also holds translator apparatus and alignment
 slop.
 
-WHICH NUMBER COUNTS WHAT, since three have been in circulation and they are not
-the same population. 44731 is every block the translation carries that no
-source block partnered, apparatus and slop included. 16249 is the blockquote
-part of it. 15299 is the 8 blockquotes over 1000 characters, which is the
-transcription class itself. The handover's older "roughly 31 thousand
-characters, 6 entries verified" reproduces from none of these, so it should not
-be carried forward: it appears to have counted whole English blockquotes in the
+WHICH NUMBER COUNTS WHAT,
+since three have been in circulation and they are not
+the same population.
+44731 is every block the translation carries that no
+source block partnered,
+apparatus and slop included.
+16249 is the blockquote
+part of it.
+15299 is the 8 blockquotes over 1000 characters,
+which is the
+transcription class itself.
+The handover's older "roughly 31 thousand
+characters,
+6 entries verified" reproduces from none of these,
+so it should not
+be carried forward:
+it appears to have counted whole English blockquotes in the
 named entries rather than the part with no Chinese counterpart.
 
-Chinese pages hold letters and documents as IMAGES. English pages transcribe
-and translate them. So the English carries text with no counterpart in the
+Chinese pages hold letters and documents as IMAGES.
+English pages transcribe
+and translate them.
+So the English carries text with no counterpart in the
 Chinese markdown at all.
 
-Under the repair shape this was safe: nothing asked a model to produce the
-English from scratch, so the transcription simply survived.
-Under the translate shape it is in danger twice over. A translator working from
-the source has no source for it, so its candidate omits it. A judge comparing
-candidates against the source cannot tell that omission from a correct one, and
-the structural validator cannot either, since the source genuinely has no
-footnote, link or block for that text.
+Under the repair shape this was safe:
+nothing asked a model to produce the
+English from scratch,
+so the transcription simply survived.
+Under the translate shape it is in danger twice over.
+A translator working from
+the source has no source for it,
+so its candidate omits it.
+A judge comparing
+candidates against the source cannot tell that omission from a correct one,
+and
+the structural validator cannot either,
+since the source genuinely has no
+footnote,
+link or block for that text.
 
-Your standing ruling is that accurate translator additions are kept. Nothing in
+Your standing ruling is that accurate translator additions are kept.
+Nothing in
 the lane yet makes that happen.
 
 ### Measured overnight, and it changes the options
 
-Four measurements, all from the pinned corpus, none spending quota.
+Four measurements,
+all from the pinned corpus,
+none spending quota.
 
-A CORRECTION FIRST. An earlier draft of this section said the image is not in
-the markdown at all, and drew conclusions from it. That was wrong, and it was
-wrong because the search was: it looked for Markdown image syntax and for the
-string `img`. The corpus writes images as an MDX component instead, and
-`<PhotoScroll ...>` appears in 50 of 92 entries, matching on both sides in 49
-of them. The one exception is `shi_Yumiaoya`, whose Chinese page carries a
-photo block the English page does not. Everything the earlier draft concluded
+A CORRECTION FIRST.
+An earlier draft of this section said the image is not in
+the markdown at all,
+and drew conclusions from it.
+That was wrong,
+and it was
+wrong because the search was:
+it looked for Markdown image syntax and for the
+string `img`.
+The corpus writes images as an MDX component instead,
+and
+`<PhotoScroll ...>` appears in 50 of 92 entries,
+matching on both sides in 49
+of them.
+The one exception is `shi_Yumiaoya`,
+whose Chinese page carries a
+photo block the English page does not.
+Everything the earlier draft concluded
 from the absence is struck.
 
-WHAT THE 132 TARGET-ONLY BLOCKS ARE MADE OF. This is the measurement the
-options actually turn on, and no earlier draft had it:
+WHAT THE 132 TARGET-ONLY BLOCKS ARE MADE OF.
+This is the measurement the
+options actually turn on,
+and no earlier draft had it:
 
     blockquote            17 blocks   16249 chars
     paragraph             87 blocks   14370 chars
@@ -581,197 +1121,354 @@ options actually turn on, and no earlier draft had it:
     heading                2 blocks       21 chars
     thematicBreak          2 blocks        6 chars
 
-Three populations, not one. The blockquotes are the transcriptions. The
-`mdxFlowExpression` blocks are translator apparatus: the largest single
-target-only block in the corpus, 10737 characters in `shihai4h`, is a
-commented-out block of localization notes, and the footnote definitions are the
-citation apparatus the translator added to go with them. The 87 paragraphs are
-mostly ordinary alignment slop, a sentence moved or a paragraph split, at 165
+Three populations,
+not one.
+The blockquotes are the transcriptions.
+The
+`mdxFlowExpression` blocks are translator apparatus:
+the largest single
+target-only block in the corpus,
+10737 characters in `shihai4h`,
+is a
+commented-out block of localization notes,
+and the footnote definitions are the
+citation apparatus the translator added to go with them.
+The 87 paragraphs are
+mostly ordinary alignment slop,
+a sentence moved or a paragraph split,
+at 165
 characters each on average.
 
-THE TRANSCRIPTIONS ARE EXACTLY THE BIG TARGET-ONLY BLOCKQUOTES, and they match
+THE TRANSCRIPTIONS ARE EXACTLY THE BIG TARGET-ONLY BLOCKQUOTES,
+and they match
 the entries `doc/planning/translation-pipeline-redesign.md` named by hand:
 
     Zha_Ke          3625     zheermao101   2115 + 1071
     Mio      2052 + 1882     MizuharaNagisa      1969
     dogesir_        1487     wangzihao980        1098
 
-That is 8 blocks over 6 entries, and it answers the question the earlier draft
-could not: the class does land in the target-only population, so a structural
+That is 8 blocks over 6 entries,
+and it answers the question the earlier draft
+could not:
+the class does land in the target-only population,
+so a structural
 rule can reach it.
 
-ONE TRANSCRIPTION IS NOT TARGET-ONLY, and it is the reason a size test alone is
-not enough. Across the corpus there are 210 aligned blockquote pairs, and their
-growth band is narrow: p50 2.71, p90 3.68. Exactly one pair sits outside it,
-`shihai4h` at 102 characters against 1665, a ratio of 16.3. That is a letter
-transcribed INTO a quote the Chinese also has, so it is aligned as an ordinary
-pair and no target-only rule will ever see it. It is one block in one entry,
+ONE TRANSCRIPTION IS NOT TARGET-ONLY,
+and it is the reason a size test alone is
+not enough.
+Across the corpus there are 210 aligned blockquote pairs,
+and their
+growth band is narrow:
+p50 2.71,
+p90 3.68.
+Exactly one pair sits outside it,
+`shihai4h` at 102 characters against 1665,
+a ratio of 16.3.
+That is a letter
+transcribed INTO a quote the Chinese also has,
+so it is aligned as an ordinary
+pair and no target-only rule will ever see it.
+It is one block in one entry,
 and the ratio band says a paired quote over five times its source is the test
 that finds it without catching ordinary growth.
 
 ### Options
 
-A.  Protect the class structurally: keep every target-only block out of
-    translation and splice it back unchanged, and add the paired-quote ratio
+A.
+ Protect the class structurally:
+keep every target-only block out of
+    translation and splice it back unchanged,
+and add the paired-quote ratio
     guard for the one merged case.
-    Pros: the transcription cannot be lost by any model decision; cheap; no
-    model has to be told anything; now measurable rather than hypothetical,
+    Pros:
+the transcription cannot be lost by any model decision;
+cheap;
+no
+    model has to be told anything;
+now measurable rather than hypothetical,
     since the population it protects is enumerated above.
-    Cons: rests on the aligner, the component with the worst track record in
-    this pipeline, and the aligner is being rebuilt under `#74`. It also
-    protects the 87 alignment-slop paragraphs, which simply are not
-    retranslated; at 165 characters each that is a small amount of text left
+    Cons:
+rests on the aligner,
+the component with the worst track record in
+    this pipeline,
+and the aligner is being rebuilt under `#74`.
+It also
+    protects the 87 alignment-slop paragraphs,
+which simply are not
+    retranslated;
+at 165 characters each that is a small amount of text left
     exactly as it stands.
 
-B.  Supply the image to the translators and judges, so the text has a source.
-    Pros: the only option where the translation of that text can be CHECKED
-    rather than preserved; would also catch a bad existing transcription; and
-    the component naming the image file is right there in the markdown, so
+B.
+ Supply the image to the translators and judges,
+so the text has a source.
+    Pros:
+the only option where the translation of that text can be CHECKED
+    rather than preserved;
+would also catch a bad existing transcription;
+and
+    the component naming the image file is right there in the markdown,
+so
     finding the asset is a path resolution rather than a new corpus reader.
-    Cons: needs image transport and models that read images, which this
-    provider roster may not have; and OCR of handwritten Chinese letters is its
+    Cons:
+needs image transport and models that read images,
+which this
+    provider roster may not have;
+and OCR of handwritten Chinese letters is its
     own failure surface.
 
-C.  Licence it as evidence: pass the incumbent's target-only blocks to the
-    judges as "verified additions the archive keeps", without asking anyone to
+C.
+ Licence it as evidence:
+pass the incumbent's target-only blocks to the
+    judges as "verified additions the archive keeps",
+without asking anyone to
     reproduce them.
-    Pros: no new machinery; judges stop reading the omission as correct.
-    Cons: tells the judges what to believe rather than letting them check, and
+    Pros:
+no new machinery;
+judges stop reading the omission as correct.
+    Cons:
+tells the judges what to believe rather than letting them check,
+and
     the incumbent's additions are exactly what nobody has verified.
 
-RANKING: A > C > B, unchanged by the measurements, though A is now a smaller
+RANKING:
+A > C > B,
+unchanged by the measurements,
+though A is now a smaller
 and better-specified piece of work than when it was ranked.
 
-A over C because A cannot be talked out of by a model, while C depends on every
+A over C because A cannot be talked out of by a model,
+while C depends on every
 judge weighing an instruction the same way.
-C over B because B needs capabilities the roster may not have, and its OCR
+C over B because B needs capabilities the roster may not have,
+and its OCR
 failure mode replaces a known-good human transcription with a machine guess,
 which is the one outcome worse than losing it.
 
-WHAT I WOULD DO WITHOUT AN ANSWER: build A for target-only blocks, since it is
-structural and needs no decision from you, and leave the paired-quote guard
-alone until you have ruled, because that one is a threshold and thresholds are
+WHAT I WOULD DO WITHOUT AN ANSWER:
+build A for target-only blocks,
+since it is
+structural and needs no decision from you,
+and leave the paired-quote guard
+alone until you have ruled,
+because that one is a threshold and thresholds are
 yours to set.
 
-B, but best effort, fallback to A whenever an image's OCR doesn't make sense.
+B,
+but best effort,
+fallback to A whenever an image's OCR doesn't make sense.
 
-RULED, AND HALF-REFUSED ON MEASUREMENT. B is built: two blind readers per
-picture, compared on character trigrams, with an uncorroborated reading refused
-rather than caveated. A's first half, keeping target-only runs out of
-translation, is built and wired into `translate-slice.ts`.
+RULED,
+AND HALF-REFUSED ON MEASUREMENT.
+B is built:
+two blind readers per
+picture,
+compared on character trigrams,
+with an uncorroborated reading refused
+rather than caveated.
+A's first half,
+keeping target-only runs out of
+translation,
+is built and wired into `translate-slice.ts`.
 
-A's second half, the paired-quote ratio guard, is REFUSED. Measured over all 211
-aligned blockquote pairs it fires nine times: once on `shihai4h/14`, which two
-guards already hold, and eight times on ordinary text, five of those on source
-quotes of 10 to 16 characters where a ratio is arithmetic on almost nothing. It
-never reaches the slice it was meant for. `shihai4h/3` carries no blockquote on
-either side and sits at ratio 4.1, so both the shape test and the threshold miss
-it. The reading covers that slice instead: it names `photo3.webp`, 18550 bytes,
-inside both readers' allowances. Evidence in
+A's second half,
+the paired-quote ratio guard,
+is REFUSED.
+Measured over all 211
+aligned blockquote pairs it fires nine times:
+once on `shihai4h/14`,
+which two
+guards already hold,
+and eight times on ordinary text,
+five of those on source
+quotes of 10 to 16 characters where a ratio is arithmetic on almost nothing.
+It
+never reaches the slice it was meant for.
+`shihai4h/3` carries no blockquote on
+either side and sits at ratio 4.1,
+so both the shape test and the threshold miss
+it.
+The reading covers that slice instead:
+it names `photo3.webp`,
+18550 bytes,
+inside both readers' allowances.
+Evidence in
 `doc/audit/reading-a-picture-at-the-user-boundary.md`.
 
 ## Question 3: does the critic stage survive
 
-BLOCKS `#86`, and the answer changes the cost of every entry.
+BLOCKS `#86`,
+and the answer changes the cost of every entry.
 
-Critics exist to find defects for an editor to repair, and the decided shape
-repairs nothing. Dropping them removes 582 calls per corpus and adds 105,
-making the new shape CHEAPER than the one it replaces. Keeping them gives the
-judges evidence and keeps a stage that reasons about the source, which
+Critics exist to find defects for an editor to repair,
+and the decided shape
+repairs nothing.
+Dropping them removes 582 calls per corpus and adds 105,
+making the new shape CHEAPER than the one it replaces.
+Keeping them gives the
+judges evidence and keeps a stage that reasons about the source,
+which
 Question 2 argues for.
 
-There is a third answer I did not see until the review: if critics stay, their
-BLOCKING behaviour cannot. `repairChunk` returns the input unchanged when
-non-translation votes stand, and the document-level dominance check can return
-the whole original target, discarding translated slices that already succeeded.
-On a sparse target, which is exactly what the lane exists for, that is the
+There is a third answer I did not see until the review:
+if critics stay,
+their
+BLOCKING behaviour cannot.
+`repairChunk` returns the input unchanged when
+non-translation votes stand,
+and the document-level dominance check can return
+the whole original target,
+discarding translated slices that already succeeded.
+On a sparse target,
+which is exactly what the lane exists for,
+that is the
 common case rather than the rare one.
 
-THIS QUESTION ALSO DECIDES WHETHER `#93` IS A DEFECT. An empty critic roster
-today settles a document rather than refusing it, which is wrong when the roster
+THIS QUESTION ALSO DECIDES WHETHER `#93` IS A DEFECT.
+An empty critic roster
+today settles a document rather than refusing it,
+which is wrong when the roster
 is empty by MISCONFIGURATION and right when critics were dropped on purpose.
-Answer A makes an empty critic roster the intended configuration, so any guard
-`#93` grows has to refuse a MISSING STAGE rather than an empty list, or be
+Answer A makes an empty critic roster the intended configuration,
+so any guard
+`#93` grows has to refuse a MISSING STAGE rather than an empty list,
+or be
 placed where the stage is requested rather than where its roster is read.
 
 ### Options
 
-A.  Drop critics from the translate path.
-    Pros: cheapest; removes the blocking behaviour by removing the stage;
+A.
+ Drop critics from the translate path.
+    Pros:
+cheapest;
+removes the blocking behaviour by removing the stage;
     the judges already compare against the source.
-    Cons: loses the only stage that names WHY a passage is wrong, which is what
+    Cons:
+loses the only stage that names WHY a passage is wrong,
+which is what
     every grading sheet has been built on.
 
-B.  Keep critics as evidence for the judges, with every early return removed.
-    Pros: keeps the diagnosis and the sheets; judges get named defects rather
+B.
+ Keep critics as evidence for the judges,
+with every early return removed.
+    Pros:
+keeps the diagnosis and the sheets;
+judges get named defects rather
     than only two texts.
-    Cons: pays for a stage whose output no longer decides anything, and the
+    Cons:
+pays for a stage whose output no longer decides anything,
+and the
     numbers that would justify it do not exist until `#83` lands.
 
-C.  Keep critics only where the incumbent is substantial, and skip them where
+C.
+ Keep critics only where the incumbent is substantial,
+and skip them where
     it is thin.
-    Pros: spends the calls where a critic can see something.
-    Cons: "substantial" is a threshold, which is the kind of number you
+    Pros:
+spends the calls where a critic can see something.
+    Cons:
+"substantial" is a threshold,
+which is the kind of number you
     rejected when it was called a coverage ratio.
 
-RANKING: B > A > C.
+RANKING:
+B > A > C.
 
 B over A because the sheets are the instrument every quality claim rests on,
-and losing the critic loses the vocabulary they are written in; the cost is
+and losing the critic loses the vocabulary they are written in;
+the cost is
 recoverable later and the instrument is not.
 A over C because C reintroduces exactly the magic threshold you rejected in the
-pipeline-shape decision, and a threshold that decides whether a passage is
+pipeline-shape decision,
+and a threshold that decides whether a passage is
 examined at all is worse than one that decides how it is routed.
 
-B, land #83
+B,
+land #83
 
 ## Question 4: what a self-certifying checker's verdict is worth
 
 BLOCKS `#91` alongside Question 1.
 
-You ruled that checkers may certify text they helped write, at lower weight.
-The selection discount is a half, and that number rests on an argument that
-does NOT transfer: in selection a winner needs weight 2, so half-weight
-self-votes cannot carry a candidate. Resolution checking tallies verdicts about
-one claim rather than ranking candidates, so nothing in the arithmetic picks a
+You ruled that checkers may certify text they helped write,
+at lower weight.
+The selection discount is a half,
+and that number rests on an argument that
+does NOT transfer:
+in selection a winner needs weight 2,
+so half-weight
+self-votes cannot carry a candidate.
+Resolution checking tallies verdicts about
+one claim rather than ranking candidates,
+so nothing in the arithmetic picks a
 number.
 
 ### Options
 
-A.  A half, matching the selection discount.
-    Pros: one number to explain, one to tune; visibly consistent.
-    Cons: consistency is the only argument for it.
+A.
+ A half,
+matching the selection discount.
+    Pros:
+one number to explain,
+one to tune;
+visibly consistent.
+    Cons:
+consistency is the only argument for it.
 
-B.  Zero weight, meaning a self-certifier's verdict is recorded but not counted.
-    Pros: keeps the record while never letting a model certify itself; closest
+B.
+ Zero weight,
+meaning a self-certifier's verdict is recorded but not counted.
+    Pros:
+keeps the record while never letting a model certify itself;
+closest
     to the old exclusion without refusing the roster.
-    Cons: with every model producing, a claim could end up with no counted
-    verdict at all, which reads as unproven rather than as unchecked.
+    Cons:
+with every model producing,
+a claim could end up with no counted
+    verdict at all,
+which reads as unproven rather than as unchecked.
 
-C.  Weighted by measured agreement: a checker's verdict on its own work counts
+C.
+ Weighted by measured agreement:
+a checker's verdict on its own work counts
     at the rate its verdicts agree with disinterested checkers elsewhere.
-    Pros: the only option grounded in evidence.
-    Cons: needs a measurement nobody has taken, and it cannot be taken until
+    Pros:
+the only option grounded in evidence.
+    Cons:
+needs a measurement nobody has taken,
+and it cannot be taken until
     the new shape has run.
 
-RANKING: A > B > C.
+RANKING:
+A > B > C.
 
-A over B because B's failure mode is silent: a claim with no counted verdict
-looks identical to one nobody could prove, and this pipeline has been bitten by
+A over B because B's failure mode is silent:
+a claim with no counted verdict
+looks identical to one nobody could prove,
+and this pipeline has been bitten by
 that shape repeatedly.
-B over C because C is right and unavailable: it needs a corpus run under the new
-shape to produce the agreement rates it weighs by, so A or B has to hold the
+B over C because C is right and unavailable:
+it needs a corpus run under the new
+shape to produce the agreement rates it weighs by,
+so A or B has to hold the
 seat until then anyway.
 
 A
 
 ## Question 5: the lane replaces most of the archive's English
 
-BLOCKS the first long run. Not on last night's list; the bench put it here.
+BLOCKS the first long run.
+Not on last night's list;
+the bench put it here.
 
-MEASURED, on ten stratified slices run at six roster widths, 60 rounds in all:
+MEASURED,
+on ten stratified slices run at six roster widths,
+60 rounds in all:
 THE JUDGES CHOSE A FRESH TRANSLATION OVER THE ARCHIVE'S OWN IN 44 OF 60 ROUNDS,
-73 percent. The archive text survived on 16, and only ONE slice of the ten kept
+73 percent.
+The archive text survived on 16,
+and only ONE slice of the ten kept
 it at every width:
 
     slice                    w2 w3 w4 w4 w5 w6   source/incumbent chars
@@ -786,114 +1483,241 @@ it at every width:
     Chinatsu_Suzuki#7         .  .  D  .  .  .   151/497
     yuki418330012#6           K  K  K  K  K  K   229/229
 
-`K` kept the archive text, `.` replaced it, `D` declined and therefore kept it.
+`K` kept the archive text,
+`.` replaced it,
+`D` declined and therefore kept it.
 
-WHAT THIS IS NOT. It is not the judges being broken: they are choosing between
-anonymized candidates on stated criteria, and the archive's English is often
-genuinely awkward, which is why this project exists. It is also not the
-mispairing case, which now has its own guard: none of these ten slices trips it.
+WHAT THIS IS NOT.
+It is not the judges being broken:
+they are choosing between
+anonymized candidates on stated criteria,
+and the archive's English is often
+genuinely awkward,
+which is why this project exists.
+It is also not the
+mispairing case,
+which now has its own guard:
+none of these ten slices trips it.
 
-WHAT IT MEANS IN PRACTICE. Run over the corpus, this shape rewrites roughly
-three of every four slices of a memorial archive's English, replacing text
-volunteers wrote about people who died with text six models agreed on. That may
+WHAT IT MEANS IN PRACTICE.
+Run over the corpus,
+this shape rewrites roughly
+three of every four slices of a memorial archive's English,
+replacing text
+volunteers wrote about people who died with text six models agreed on.
+That may
 be exactly what you decided when you re-scoped the pipeline from repair to
-translation. It may also be more than you meant, and it is not a decision I can
+translation.
+It may also be more than you meant,
+and it is not a decision I can
 take for you.
 
-HOW FIRM THE NUMBER IS. 44 of 60 counts ROUNDS, not slices: ten slices seen six
-times each. Per width the rate ran 6 to 8 of 10, and the two width-4 passes
-disagreed on 3 of the 10 slices, so the corpus rate is "most of it" rather than
-"73 percent of it". Ten slices is a bench, not a census, and option C is also
+HOW FIRM THE NUMBER IS.
+44 of 60 counts ROUNDS,
+not slices:
+ten slices seen six
+times each.
+Per width the rate ran 6 to 8 of 10,
+and the two width-4 passes
+disagreed on 3 of the 10 slices,
+so the corpus rate is "most of it" rather than
+"73 percent of it".
+Ten slices is a bench,
+not a census,
+and option C is also
 what would turn it into one.
 
-WHAT WOULD MAKE IT SAFER TO ACCEPT, in the order it becomes available:
-`#84` measures whether the judges are RIGHT when they replace, and `#85` rebuilds
+WHAT WOULD MAKE IT SAFER TO ACCEPT,
+in the order it becomes available:
+`#84` measures whether the judges are RIGHT when they replace,
+and `#85` rebuilds
 the damage instrument for output that has no before text.
 
-`#84` NOW HAS ITS FIRST READING, and it is a floor rather than a verdict. A trial
-takes a real archive slice, deletes one whole sentence, puts both texts on the
-ballot the production sheet builds, and runs all four arrangements: clean text as
-incumbent and as proposal, listed first and listed second. Over four pairs from
-`AmbeR_the_anpa`, `Arita`, `Chinatsu_Suzuki` and `CuspariaKLSY`, ALL SIXTEEN
-TRIALS CHOSE THE COMPLETE TEXT. Of 95 ballots, 66 backed it, 3 backed the
-deletion, and 26 declined to choose.
+`#84` NOW HAS ITS FIRST READING,
+and it is a floor rather than a verdict.
+A trial
+takes a real archive slice,
+deletes one whole sentence,
+puts both texts on the
+ballot the production sheet builds,
+and runs all four arrangements:
+clean text as
+incumbent and as proposal,
+listed first and listed second.
+Over four pairs from
+`AmbeR_the_anpa`,
+`Arita`,
+`Chinatsu_Suzuki` and `CuspariaKLSY`,
+ALL SIXTEEN
+TRIALS CHOSE THE COMPLETE TEXT.
+Of 95 ballots,
+66 backed it,
+3 backed the
+deletion,
+and 26 declined to choose.
 
-READ IT AS FOUR QUESTIONS ASKED FOUR WAYS, not sixteen questions: the four
+READ IT AS FOUR QUESTIONS ASKED FOUR WAYS,
+not sixteen questions:
+the four
 arrangements of one pair share their text.
 
-WHAT IT RULES OUT: a roster that keeps whatever it is handed, and one that
-prefers the first candidate. Both score half by construction, and neither shape
+WHAT IT RULES OUT:
+a roster that keeps whatever it is handed,
+and one that
+prefers the first candidate.
+Both score half by construction,
+and neither shape
 appeared.
 
-WHAT A DELETION ALONE CANNOT RULE OUT: preferring the LONGER text, which also
-scores sixteen of sixteen, because a deletion is a strict subset. That habit is
-not harmless in production, where it favours a padded fresh rendering over a
+WHAT A DELETION ALONE CANNOT RULE OUT:
+preferring the LONGER text,
+which also
+scores sixteen of sixteen,
+because a deletion is a strict subset.
+That habit is
+not harmless in production,
+where it favours a padded fresh rendering over a
 tight archive one.
 
-SO A SECOND FIXTURE WAS BUILT AND RUN, and it settles that. An INSERTION splices
+SO A SECOND FIXTURE WAS BUILT AND RUN,
+and it settles that.
+An INSERTION splices
 a sentence borrowed from another slice of the same document into the archive's
-English, so the correct answer is the SHORTER candidate. Over the same four
-entries, ALL SIXTEEN INSERTION TRIALS ALSO CHOSE THE COMPLETE TEXT: 95 ballots,
-64 for it, 31 declining, and NOT ONE for the text carrying the borrowed sentence.
+English,
+so the correct answer is the SHORTER candidate.
+Over the same four
+entries,
+ALL SIXTEEN INSERTION TRIALS ALSO CHOSE THE COMPLETE TEXT:
+95 ballots,
+64 for it,
+31 declining,
+and NOT ONE for the text carrying the borrowed sentence.
 A roster preferring length scores sixteen on the deletion and zero here.
 
-TAKEN TOGETHER, the two fixtures rule out three habits: keeping what it was
-handed, preferring a ballot position, and preferring length. Each scores half or
-zero across the pair, and the roster scored both in full. The written reasons name
+TAKEN TOGETHER,
+the two fixtures rule out three habits:
+keeping what it was
+handed,
+preferring a ballot position,
+and preferring length.
+Each scores half or
+zero across the pair,
+and the roster scored both in full.
+The written reasons name
 the borrowed sentence as unsupported ("has no basis in the original Chinese
-text"), and 28 of the 95 quote the original directly while comparing.
+text"),
+and 28 of the 95 quote the original directly while comparing.
 
-WHAT IS STILL NOT LICENSED: "verified against the source". A judge that never
+WHAT IS STILL NOT LICENSED:
+"verified against the source".
+A judge that never
 reads the Chinese but prefers whichever English reads better passes both
-fixtures, since a deletion leaves a gap in the argument and a borrowed sentence
-is a non-sequitur. The quoted-Chinese reasons argue against that, but a reason is
-written after the choice. The fixture that would settle it is a damaged candidate
+fixtures,
+since a deletion leaves a gap in the argument and a borrowed sentence
+is a non-sequitur.
+The quoted-Chinese reasons argue against that,
+but a reason is
+written after the choice.
+The fixture that would settle it is a damaged candidate
 that READS BETTER than the archive while saying something the original does not,
 which is the hard case `#84` still carries.
 
-ONE CORRECTION TO THE DELETION NUMBER, since it bears on how firmly to read it:
+ONE CORRECTION TO THE DELETION NUMBER,
+since it bears on how firmly to read it:
 the first sixteen ran while the deletion left a whitespace edit-mark at the join
-(a double space mid-paragraph, three line breaks where a paragraph went), which a
-judge could notice without reading the original at all. That is fixed, and THE
-ARM WAS RERUN CLEAN WITH THE SAME RESULT: 16 of 16, 92 ballots split 60 for the
-complete text, 2 for the deletion, 30 declining. So the judges were not reading
+(a double space mid-paragraph,
+three line breaks where a paragraph went),
+which a
+judge could notice without reading the original at all.
+That is fixed,
+and THE
+ARM WAS RERUN CLEAN WITH THE SAME RESULT:
+16 of 16,
+92 ballots split 60 for the
+complete text,
+2 for the deletion,
+30 declining.
+So the judges were not reading
 the join.
 
-THE THIRD FIXTURE RAN, and it is the one that asks whether the ORIGINAL is read
-at all. An ALTERATION changes a number the original also states, since digits
-survive translation: the damaged candidate is the same length, equally fluent,
-and wrong about a fact only the Chinese reveals. Result: 12 of 16, 96 ballots
-split 55 for the complete text, 41 declining, and NONE for the damaged text. No
-judge ever picked the wrong number. 86 of the 96 reasons appeal to the original
-explicitly, several naming the year it states: "Candidate 1 correctly preserves
+THE THIRD FIXTURE RAN,
+and it is the one that asks whether the ORIGINAL is read
+at all.
+An ALTERATION changes a number the original also states,
+since digits
+survive translation:
+the damaged candidate is the same length,
+equally fluent,
+and wrong about a fact only the Chinese reveals.
+Result:
+12 of 16,
+96 ballots
+split 55 for the complete text,
+41 declining,
+and NONE for the damaged text.
+No
+judge ever picked the wrong number.
+86 of the 96 reasons appeal to the original
+explicitly,
+several naming the year it states:
+"Candidate 1 correctly preserves
 the birth year 2004 from the original".
 
-SO THE READING STRENGTHENS: the roster is not running a habit, and on a slice
-where nothing but the original can decide, it consults the original.
+SO THE READING STRENGTHENS:
+the roster is not running a habit,
+and on a slice
+where nothing but the original can decide,
+it consults the original.
 
-BUT THE FOUR MISSES ARE THE MOST IMPORTANT RESULT OF THE NIGHT, and they are not
-a judge failure. All four are one slice, `Dethelly/0`, in all four arrangements,
-and in each the roster DECLINED. It was right to. That section's Chinese is one
-sentence about a girl from Chongqing arriving in Hangzhou in autumn 2023; its
+BUT THE FOUR MISSES ARE THE MOST IMPORTANT RESULT OF THE NIGHT,
+and they are not
+a judge failure.
+All four are one slice,
+`Dethelly/0`,
+in all four arrangements,
+and in each the roster DECLINED.
+It was right to.
+That section's Chinese is one
+sentence about a girl from Chongqing arriving in Hangzhou in autumn 2023;
+its
 English drops Chongqing and adds four sentences about her being introverted,
-shy, and having nobody to confide in. The judges called that hallucinated.
+shy,
+and having nobody to confide in.
+The judges called that hallucinated.
 
-IT IS NOT HALLUCINATED. Every one of those ideas appears in the Chinese
-document, and the NEXT Chinese slice is exactly that material: the translator
-moved it up a section. The alignment is perfect (24 slices, zero findings). The
-per-slice size ratios corroborate it: 11.51 on slice 0 and 2.08 on slice 1
-against a document median of 3.31, which is what a relocation looks like from
+IT IS NOT HALLUCINATED.
+Every one of those ideas appears in the Chinese
+document,
+and the NEXT Chinese slice is exactly that material:
+the translator
+moved it up a section.
+The alignment is perfect (24 slices,
+zero findings).
+The
+per-slice size ratios corroborate it:
+11.51 on slice 0 and 2.08 on slice 1
+against a document median of 3.31,
+which is what a relocation looks like from
 both ends.
 
-WHY THAT BEARS DIRECTLY ON THIS QUESTION. Every judge sees ONE slice pair.
-Wherever the translator moved material across a section boundary, the archive
-looks like it invented content on one slice and dropped content on the next, and
+WHY THAT BEARS DIRECTLY ON THIS QUESTION.
+Every judge sees ONE slice pair.
+Wherever the translator moved material across a section boundary,
+the archive
+looks like it invented content on one slice and dropped content on the next,
+and
 the roster condemns it on BOTH while preferring a fresh rendering that says only
-what its own slice's original says. SOME UNKNOWN SHARE OF THE THREE-IN-FOUR
-REPLACEMENT RATE MAY BE THIS rather than the archive being worse, and nothing in
-the pipeline can currently see it. `#107` carries the probe, and IT HAS NOW RUN over the
-whole pinned corpus at zero quota: per-slice ratios against each document's own
-median, flagging a slice at twice the median that sits beside a below-median
+what its own slice's original says.
+SOME UNKNOWN SHARE OF THE THREE-IN-FOUR
+REPLACEMENT RATE MAY BE THIS rather than the archive being worse,
+and nothing in
+the pipeline can currently see it.
+`#107` carries the probe,
+and IT HAS NOW RUN over the
+whole pinned corpus at zero quota:
+per-slice ratios against each document's own
+median,
+flagging a slice at twice the median that sits beside a below-median
 neighbour.
 
     complete pairs                        92
@@ -903,26 +1727,47 @@ neighbour.
     entries carrying at least one         22   (24 percent of entries)
     slices involved in a moved pair       77   (6.4 percent of slices)
 
-HAND-CHECKED ON THREE FLAGGED PAIRS, read on both sides. Two are true
-relocations: `Dethelly` (above) and `lintong`, whose English carries the previous
+HAND-CHECKED ON THREE FLAGGED PAIRS,
+read on both sides.
+Two are true
+relocations:
+`Dethelly` (above) and `lintong`,
+whose English carries the previous
 slice's Chinese almost sentence for sentence while that slice's English is
-reduced to an attribution line. The third, `dogesir_`, is a DIFFERENT class
-arriving through the same screen: the English adds a transcript of text the
-Chinese carries only as an IMAGE, which is Question 2's subject. So the screen is
+reduced to an attribution line.
+The third,
+`dogesir_`,
+is a DIFFERENT class
+arriving through the same screen:
+the English adds a transcript of text the
+Chinese carries only as an IMAGE,
+which is Question 2's subject.
+So the screen is
 three for three on "a per-slice judge will condemn the archive here" and two for
 three on "a passage moved".
 
-THAT FIRST READING PUT THE FLOOR AT 6.4 PERCENT OF SLICES, and it is superseded
-by what follows. Read the corrected numbers rather than that one.
+THAT FIRST READING PUT THE FLOOR AT 6.4 PERCENT OF SLICES,
+and it is superseded
+by what follows.
+Read the corrected numbers rather than that one.
 
-THAT SCREEN WAS THEN FOUND TO BE MEASURING FOUR THINGS AT ONCE, AND REBUILT.
+THAT SCREEN WAS THEN FOUND TO BE MEASURING FOUR THINGS AT ONCE,
+AND REBUILT.
 The three pairs hand-checked above all came from entries whose expansion was
-ordinary. Four entries sit far outside any plausible Chinese-to-English band, and
-their flagged pairs are NOT relocations: `shi_Yumiaoya` has three UNTRANSLATED
+ordinary.
+Four entries sit far outside any plausible Chinese-to-English band,
+and
+their flagged pairs are NOT relocations:
+`shi_Yumiaoya` has three UNTRANSLATED
 sections whose near-zero ratios dragged the document median down until two
-ordinary translations were flagged; `Zha_Ke` has a letter that exists only in
-English; `noname3031`'s flagged slice is twenty-three Chinese characters, which
-is arithmetic. The screen now classifies rather than counting one bucket, and
+ordinary translations were flagged;
+`Zha_Ke` has a letter that exists only in
+English;
+`noname3031`'s flagged slice is twenty-three Chinese characters,
+which
+is arithmetic.
+The screen now classifies rather than counting one bucket,
+and
 the corpus reads:
 
     relocation candidates                              22
@@ -932,41 +1777,90 @@ the corpus reads:
     other imbalances                                   24
     slices read                                      1260
 
-SO THE NUMBER THIS QUESTION SHOULD USE IS THE UNION, not the relocation count
-alone. Every one of those classes causes the same judging failure: a per-slice
-judge sees the archive inventing content, or dropping it, or both, and prefers a
-fresh rendering. Counted as UNIQUE SLICES, with both ends of every relocation
-pair included because a per-slice judge misjudges the archive at both, that union
-is 80 of 1260 slices, 6.3 percent. It remains a FLOOR because the screen reads
-SIZE: a passage swapped for one of similar length reads as perfectly ordinary.
+SO THE NUMBER THIS QUESTION SHOULD USE IS THE UNION,
+not the relocation count
+alone.
+Every one of those classes causes the same judging failure:
+a per-slice
+judge sees the archive inventing content,
+or dropping it,
+or both,
+and prefers a
+fresh rendering.
+Counted as UNIQUE SLICES,
+with both ends of every relocation
+pair included because a per-slice judge misjudges the archive at both,
+that union
+is 80 of 1260 slices,
+6.3 percent.
+It remains a FLOOR because the screen reads
+SIZE:
+a passage swapped for one of similar length reads as perfectly ordinary.
 
-Counting slices rather than adding the four class totals matters, and an earlier
-draft of this paragraph got it wrong by summing them to 62. The relocation figure
-counts PAIRS, the other three count slices, and pairs share slices: `lintong`
-reports 3 to 2 and 3 to 4, which is three slices rather than four.
+Counting slices rather than adding the four class totals matters,
+and an earlier
+draft of this paragraph got it wrong by summing them to 62.
+The relocation figure
+counts PAIRS,
+the other three count slices,
+and pairs share slices:
+`lintong`
+reports 3 to 2 and 3 to 4,
+which is three slices rather than four.
 
-WHAT IT IS NOT is a count of relocations. Two of the 22 are transcriptions on the
-probe's own evidence, two are verified relocations, and eighteen are unchecked,
-which is why the class is named `relocationCandidates`. The earlier "6.4 percent
-is a floor" wording is withdrawn: it was a floor for the union, never for
-relocation. The sections "The displacement screen measures four different things"
-and "The screen rebuilt, and the corrected corpus numbers" in
+WHAT IT IS NOT is a count of relocations.
+Two of the 22 are transcriptions on the
+probe's own evidence,
+two are verified relocations,
+and eighteen are unchecked,
+which is why the class is named `relocationCandidates`.
+The earlier "6.4 percent
+is a floor" wording is withdrawn:
+it was a floor for the union,
+never for
+relocation.
+The sections "The displacement screen measures four different things"
+and "The screen rebuilt,
+and the corrected corpus numbers" in
 `doc/handover/translation-repair-history.md` carry the per-slice numbers and what the
 rebuild changed.
 
-ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION: two of the six judges decline
-constantly, and not only over names. Across the three arms `gpt-oss-120b`
-declined 9, 11 and 12 of 16, and `Nemotron-3-Super` 16, 15 and 15 of 16, in each
+ALSO WORTH KNOWING BEFORE ANY QUORUM DECISION:
+two of the six judges decline
+constantly,
+and not only over names.
+Across the three arms `gpt-oss-120b`
+declined 9,
+11 and 12 of 16,
+and `Nemotron-3-Super` 16,
+15 and 15 of 16,
+in each
 case because BOTH candidates fall short of full faithfulness against the
-original: a romanised handle the archive introduced, an omitted clause, a
-softened nuance. On slices carrying any archive imperfection the effective roster
-is about four voices, not six.
+original:
+a romanised handle the archive introduced,
+an omitted clause,
+a
+softened nuance.
+On slices carrying any archive imperfection the effective roster
+is about four voices,
+not six.
 
-Those triples were previously written here as 11, 11, 12 and 11, 15, 16, which
-mixed the superseded marked-deletion arm into the sequence; both models declined
-11 in that arm, which is where both leading elevens came from. Corrected against
-the three current arms. Widening the evidence window does not move either model
-(`gpt-oss` 12, `Nemotron` 14 on the wide alteration arm), so this is a property
+Those triples were previously written here as 11,
+11,
+12 and 11,
+15,
+16,
+which
+mixed the superseded marked-deletion arm into the sequence;
+both models declined
+11 in that arm,
+which is where both leading elevens came from.
+Corrected against
+the three current arms.
+Widening the evidence window does not move either model
+(`gpt-oss` 12,
+`Nemotron` 14 on the wide alteration arm),
+so this is a property
 of the two models rather than of the question they were asked.
 
 So the replacement rate now has a quality floor beside it AND a named systematic
@@ -974,336 +1868,642 @@ bias that has not been measured yet.
 
 ### Options
 
-A.  Ship the lane as it stands: the judges decide, and the archive text wins
+A.
+ Ship the lane as it stands:
+the judges decide,
+and the archive text wins
     only when it wins on the criteria.
-    Pros: it is what the ensemble is for, and the incumbent is on the ballot
-    anonymously so nothing is stacked against it; the archive is in git, so
+    Pros:
+it is what the ensemble is for,
+and the incumbent is on the ballot
+    anonymously so nothing is stacked against it;
+the archive is in git,
+so
     every replacement is reversible.
-    Cons: a 73 percent rewrite of a memorial archive is a large action taken on
-    an ensemble's aesthetic judgement, before `#84` says whether that judgement
+    Cons:
+a 73 percent rewrite of a memorial archive is a large action taken on
+    an ensemble's aesthetic judgement,
+before `#84` says whether that judgement
     is any good.
 
-B.  Require MORE than a plurality to replace the archive text: the incumbent
+B.
+ Require MORE than a plurality to replace the archive text:
+the incumbent
     keeps its slice unless a fresh candidate clears a higher bar than it takes
     to beat another fresh candidate.
-    Pros: encodes that replacing human work is a bigger step than choosing
-    between two machine renderings, which is a value judgement rather than a
-    measurement, and it is yours to make.
-    Cons: another number to pick, and it would slow the lane's ability to fix
-    genuinely bad translations, which is what you asked for.
+    Pros:
+encodes that replacing human work is a bigger step than choosing
+    between two machine renderings,
+which is a value judgement rather than a
+    measurement,
+and it is yours to make.
+    Cons:
+another number to pick,
+and it would slow the lane's ability to fix
+    genuinely bad translations,
+which is what you asked for.
 
-C.  Run the lane in report-only mode first: translate everything, record every
-    decision, ship nothing, and grade a sample of what it WOULD have replaced.
-    Pros: buys the `#84` measurement with the same calls the real run would
-    spend, and nothing in the archive changes until you have read it. It does
-    NOT cost a second corpus of calls: each lane now owns its cache namespace,
+C.
+ Run the lane in report-only mode first:
+translate everything,
+record every
+    decision,
+ship nothing,
+and grade a sample of what it WOULD have replaced.
+    Pros:
+buys the `#84` measurement with the same calls the real run would
+    spend,
+and nothing in the archive changes until you have read it.
+It does
+    NOT cost a second corpus of calls:
+each lane now owns its cache namespace,
     so a report-only pass's settled slices resume into the shipping pass
-    unchanged, same run shape, same texts, same key. Shipping afterwards costs a
-    splice, not a re-translation. This option now has something concrete to run:
+    unchanged,
+same run shape,
+same texts,
+same key.
+Shipping afterwards costs a
+    splice,
+not a re-translation.
+This option now has something concrete to run:
     `runDocumentLanes` puts both lanes over one preparation and returns both
-    documents without choosing between them, which is exactly a report-only
-    pass minus the artifact wiring. It also measures decision 12's withdraw-all
-    rate for free, since the guard runs whether or not anything ships. And since
-    each lane result now NAMES the slices it shipped and withdrew, such a pass
-    answers "which slices did each lane change, and how often the same one"
-    without anything further being built; what it still cannot show side by side
-    is the two lanes' TEXT for one slice, which needs both contracts widened.
-    Cons: the grading is your time rather than mine, and the corpus ships later
+    documents without choosing between them,
+which is exactly a report-only
+    pass minus the artifact wiring.
+It also measures decision 12's withdraw-all
+    rate for free,
+since the guard runs whether or not anything ships.
+And since
+    each lane result now NAMES the slices it shipped and withdrew,
+such a pass
+    answers "which slices did each lane change,
+and how often the same one"
+    without anything further being built;
+what it still cannot show side by side
+    is the two lanes' TEXT for one slice,
+which needs both contracts widened.
+    Cons:
+the grading is your time rather than mine,
+and the corpus ships later
     by however long that reading takes.
 
-D.  Restrict replacement to slices that carry evidence of a defect, which is the
-    repair lane's rule, and translate only where the English is missing.
-    Pros: the most conservative reading of "improve the translation".
-    Cons: it is the shape you deliberately moved away from, and the graded
+D.
+ Restrict replacement to slices that carry evidence of a defect,
+which is the
+    repair lane's rule,
+and translate only where the English is missing.
+    Pros:
+the most conservative reading of "improve the translation".
+    Cons:
+it is the shape you deliberately moved away from,
+and the graded
     sheets showed the critics miss most of what is wrong.
 
-E.  Widen the judged window on the slices where the archive's layout differs
-    from the original's, then re-read the replacement rate. BOTH HALVES OF THIS
-    HAVE NOW RUN, and the answer is yes: widening works.
+E.
+ Widen the judged window on the slices where the archive's layout differs
+    from the original's,
+then re-read the replacement rate.
+BOTH HALVES OF THIS
+    HAVE NOW RUN,
+and the answer is yes:
+widening works.
     The fidelity trial was rerun on the same four slices with the neighbouring
-    source sections added as evidence, ground truth and damage unchanged. It went
-    from 12 of 16 to 15 OF 16. All four narrow-window misses were `Dethelly/0`
-    declines; three became correct choices, and the other three entries held at
-    12 of 12, so widening bought the flip without new failures elsewhere. The
-    picks were verified identical across the two arms, so they differ in the
+    source sections added as evidence,
+ground truth and damage unchanged.
+It went
+    from 12 of 16 to 15 OF 16.
+All four narrow-window misses were `Dethelly/0`
+    declines;
+three became correct choices,
+and the other three entries held at
+    12 of 12,
+so widening bought the flip without new failures elsewhere.
+The
+    picks were verified identical across the two arms,
+so they differ in the
     window and nothing else.
-    The one remaining decline is the finding rather than the failure: with the
-    neighbouring Chinese visible, the roster declines because both candidates
+    The one remaining decline is the finding rather than the failure:
+with the
+    neighbouring Chinese visible,
+the roster declines because both candidates
     omit that Sugar is a girl from Chongqing AND both add material this slice's
-    original does not carry. Both are true, and together they state the
-    relocation exactly. That is a judge correctly reporting that no per-slice
+    original does not carry.
+Both are true,
+and together they state the
+    relocation exactly.
+That is a judge correctly reporting that no per-slice
     candidate can satisfy this slice.
-    STILL NOT MEASURED: this says the TRIAL's declines came from the window. It
+    STILL NOT MEASURED:
+this says the TRIAL's declines came from the window.
+It
     does not say what the production REPLACEMENT rate does on flagged slices,
-    which needs the lane run with fresh candidates over them. Do not read one as
+    which needs the lane run with fresh candidates over them.
+Do not read one as
     the other.
-    Pros: it is the only option that separates "the archive is worse" from "the
-    archive is laid out differently", which is the actual question under the
-    number; the screen that finds those slices is deterministic and free; it can
-    run before any of A to D is chosen; and it is now the only option with a
+    Pros:
+it is the only option that separates "the archive is worse" from "the
+    archive is laid out differently",
+which is the actual question under the
+    number;
+the screen that finds those slices is deterministic and free;
+it can
+    run before any of A to D is chosen;
+and it is now the only option with a
     measured effect rather than an argued one.
-    Cons: widening the window costs a re-run over the flagged slices, and it
-    answers only the layout half: a document with no displacement still has
-    whatever quality gap the rate reports. It also does not help the two chronic
-    decliners, who decline at the same rate wide or narrow.
-    WHAT THAT RE-RUN COSTS WENT UP ON 08-16, and it matters because E is ranked
-    first partly on being cheap. The plan was to judge each flagged slice twice
-    and compare. That cannot measure the window: the stage produces its
-    candidates and judges them within one call, so a second call resamples the
-    CANDIDATES as well as changing the evidence, and the judges are stochastic
-    besides, so a two-arm null means only "smaller than a spread nobody
-    measured". The design is now three arms, with the candidate slate produced
-    once and judged repeatedly, which needs `runTranslateStage` split into a
-    producing half and a judging half first. Roughly 1760 exchanges over the
-    flagged slices, plus a matched set of UNFLAGGED ones as a control, plus that
-    refactor. Still far cheaper than a corpus pass, and the split is useful
-    beyond this measurement, but E's screen is what is free, not E's re-run.
+    Cons:
+widening the window costs a re-run over the flagged slices,
+and it
+    answers only the layout half:
+a document with no displacement still has
+    whatever quality gap the rate reports.
+It also does not help the two chronic
+    decliners,
+who decline at the same rate wide or narrow.
+    WHAT THAT RE-RUN COSTS WENT UP ON 08-16,
+and it matters because E is ranked
+    first partly on being cheap.
+The plan was to judge each flagged slice twice
+    and compare.
+That cannot measure the window:
+the stage produces its
+    candidates and judges them within one call,
+so a second call resamples the
+    CANDIDATES as well as changing the evidence,
+and the judges are stochastic
+    besides,
+so a two-arm null means only "smaller than a spread nobody
+    measured".
+The design is now three arms,
+with the candidate slate produced
+    once and judged repeatedly,
+which needs `runTranslateStage` split into a
+    producing half and a judging half first.
+Roughly 1760 exchanges over the
+    flagged slices,
+plus a matched set of UNFLAGGED ones as a control,
+plus that
+    refactor.
+Still far cheaper than a corpus pass,
+and the split is useful
+    beyond this measurement,
+but E's screen is what is free,
+not E's re-run.
 
-RANKING: E > C > A > B > D. Unchanged by the cost correction above: E is dearer
+RANKING:
+E > C > A > B > D.
+Unchanged by the cost correction above:
+E is dearer
 than it was and still cheaper than everything it is ranked over.
 
 E over C because E costs a bounded measurement over 80 flagged slices where C
-costs a pass over the whole corpus, and because E answers a question C cannot: a
-report-only pass grades what the judges decided, and if displacement is driving
-part of the rate, the grader would be reading decisions that were made on a slice
-window too narrow to be right. Measure the window before grading through it.
-An earlier version of this line said E is free and C is not. E's SCREEN is free;
-E's re-run is not, and the paragraph above prices it.
+costs a pass over the whole corpus,
+and because E answers a question C cannot:
+a
+report-only pass grades what the judges decided,
+and if displacement is driving
+part of the rate,
+the grader would be reading decisions that were made on a slice
+window too narrow to be right.
+Measure the window before grading through it.
+An earlier version of this line said E is free and C is not.
+E's SCREEN is free;
+E's re-run is not,
+and the paragraph above prices it.
 C over A because the whole disagreement is about whether the judges are right,
-and C answers that with the calls the run would spend anyway; A spends the same
+and C answers that with the calls the run would spend anyway;
+A spends the same
 quota and commits the result before anyone has read it.
 A over B because B invents a threshold to express a preference you have not
-stated, and if you do want the archive favoured, saying so is better than
+stated,
+and if you do want the archive favoured,
+saying so is better than
 tuning a number until it looks right.
-B over D because D is the shape you already rejected on evidence: the critics
-miss most of what is wrong, so gating replacement on a filed defect keeps the
+B over D because D is the shape you already rejected on evidence:
+the critics
+miss most of what is wrong,
+so gating replacement on a filed defect keeps the
 worst translations exactly as they are.
 
 E
 
 ## Question 6: what a thin roster's verdict is worth to the cache
 
-BLOCKS NOTHING. It changes how much a resumed run re-buys, so it is worth
+BLOCKS NOTHING.
+It changes how much a resumed run re-buys,
+so it is worth
 answering before a long run rather than during one.
 
-WHAT IS ALREADY DECIDED AND BUILT, so this question is only about the middle
-ground: a slice NOBODY examined is never cached. Zero critics heard, or zero
-translators heard, settles for the run and is left out of the cache, so the next
-attempt asks again instead of resuming an outage as a verdict. A caller abort
+WHAT IS ALREADY DECIDED AND BUILT,
+so this question is only about the middle
+ground:
+a slice NOBODY examined is never cached.
+Zero critics heard,
+or zero
+translators heard,
+settles for the run and is left out of the cache,
+so the next
+attempt asks again instead of resuming an outage as a verdict.
+A caller abort
 now stops both drivers rather than settling the slices it interrupted.
 
 THE MIDDLE GROUND is a slice that was examined by FEWER models than the stage
-asks for. Quorum is half the roster rounded up, so on six critics a slice
-decided by three met quorum exactly, and one decided by two did not.
+asks for.
+Quorum is half the roster rounded up,
+so on six critics a slice
+decided by three met quorum exactly,
+and one decided by two did not.
 
-MEASURED, on what is actually on disk:
+MEASURED,
+on what is actually on disk:
 
--   Of the 150 cached repair slices, `heardCritics` runs 3 for 1 slice, 4 for 3,
-    5 for 92 and 6 for 54. Not one is below quorum, and one sits exactly on it.
--   Across all 56 settled artifacts, 34 unmet-quorum findings appear, in 7
-    entries, and every one of them is the REFINER. Critics, panel, editor,
+-   Of the 150 cached repair slices,
+    `heardCritics` runs 3 for 1 slice,
+    4 for 3,
+    5 for 92 and 6 for 54.
+    Not one is below quorum,
+    and one sits exactly on it.
+-   Across all 56 settled artifacts,
+    34 unmet-quorum findings appear,
+    in 7
+    entries,
+    and every one of them is the REFINER.
+    Critics,
+    panel,
+    editor,
     judges and checkers never fell short of quorum in the settled corpus.
 
-So the population this question governs is small, and it is concentrated in the
-one lane that is optional: naturalness refinement, whose silence was traced to a
+So the population this question governs is small,
+and it is concentrated in the
+one lane that is optional:
+naturalness refinement,
+whose silence was traced to a
 single model in `#73` and `#77`.
 
 ### Options
 
-A.  Cache only a slice where EVERY stage met quorum; re-buy the rest next
+A.
+ Cache only a slice where EVERY stage met quorum;
+re-buy the rest next
     attempt.
-    Pros: what resumes is then work done at full strength, and nothing thin
+    Pros:
+what resumes is then work done at full strength,
+and nothing thin
     survives into an artifact by being cached first.
-    Cons: the cache is per SLICE, so a refiner that lost quorum re-buys the
-    critics, the panel, the editor, the judges and the checkers with it, to
-    retry one optional lane. And it can loop: the refiner's silence has a known
-    chronic cause, so those slices may never cache at all.
+    Cons:
+the cache is per SLICE,
+so a refiner that lost quorum re-buys the
+    critics,
+the panel,
+the editor,
+the judges and the checkers with it,
+to
+    retry one optional lane.
+And it can loop:
+the refiner's silence has a known
+    chronic cause,
+so those slices may never cache at all.
 
-B.  Cache anything that was examined at all, which is the rule as it now stands:
-    zero voices is not cached, one voice is.
-    Pros: matches what the stages already decided to do, since a stage short of
-    quorum deliberately proceeds with findings rather than failing; costs
+B.
+ Cache anything that was examined at all,
+which is the rule as it now stands:
+    zero voices is not cached,
+one voice is.
+    Pros:
+matches what the stages already decided to do,
+since a stage short of
+    quorum deliberately proceeds with findings rather than failing;
+costs
     nothing to keep.
-    Cons: a slice decided by a thin roster resumes forever with no way to tell
-    it apart from one decided at full strength, unless a reader goes looking in
+    Cons:
+a slice decided by a thin roster resumes forever with no way to tell
+    it apart from one decided at full strength,
+unless a reader goes looking in
     the findings.
 
-C.  Cache it, but RECORD that it was thin, and let a later pass re-buy only
+C.
+ Cache it,
+but RECORD that it was thin,
+and let a later pass re-buy only
     those slices.
-    Pros: keeps the budget while making the population addressable; the record
+    Pros:
+keeps the budget while making the population addressable;
+the record
     already exists in `findings` and would only need a field a reader can filter
     on.
-    Cons: a schema field, a version bump and a reader for a population that is
+    Cons:
+a schema field,
+a version bump and a reader for a population that is
     34 slices in 7 entries today.
 
-RANKING: B > C > A.
+RANKING:
+B > C > A.
 
 B over C because the measured population is small and sits entirely in the lane
 where thinness means "no improvement was attempted" rather than "nothing
-inspected this", and C's field cannot be added without a cache version bump,
+inspected this",
+and C's field cannot be added without a cache version bump,
 which discards the 150 slices already on disk to gain a filter over none of them.
-C over A because A pays for a whole slice to retry one optional lane, and pays
+C over A because A pays for a whole slice to retry one optional lane,
+and pays
 it again on every attempt while the cause persists.
 
 B
 
 ## Question 7: what the non-translation block counts against
 
-BLOCKS NOTHING TODAY, and nothing changed behaviourally overnight. It decides
-what one whole-document refusal MEANS, and that refusal is terminal: it returns
+BLOCKS NOTHING TODAY,
+and nothing changed behaviourally overnight.
+It decides
+what one whole-document refusal MEANS,
+and that refusal is terminal:
+it returns
 the archive untouched and stops the entry from inside the slice loop.
 
-WHAT THE CODE DOES. `assessNonTranslationDominance` sums characters over the
-SLICES it was handed, on both sides of the comparison, and blocks when the
+WHAT THE CODE DOES.
+`assessNonTranslationDominance` sums characters over the
+SLICES it was handed,
+on both sides of the comparison,
+and blocks when the
 slices standing as non-translation are more than half of them with no anchor
-in sight. Anything the aligner refused to pair, and anything slicing left
-whole, is in neither term. So the sentence the block currently supports is
-"most of what we EXAMINED is not a translation", while the parameter
+in sight.
+Anything the aligner refused to pair,
+and anything slicing left
+whole,
+is in neither term.
+So the sentence the block currently supports is
+"most of what we EXAMINED is not a translation",
+while the parameter
 documentation until last night said "archive characters in total".
 
-MEASURED, at zero quota, over the pinned corpus of 92 prepared pairs. Each
-pair was prepared, its slice characters summed, and the total compared against
+MEASURED,
+at zero quota,
+over the pinned corpus of 92 prepared pairs.
+Each
+pair was prepared,
+its slice characters summed,
+and the total compared against
 the whole English document:
 
--   Mean slice coverage, over entries with no alignment finding, is 92.5%.
--   14 entries fall under 90% covered, 2 under 50%.
+-   Mean slice coverage,
+    over entries with no alignment finding,
+    is 92.5%.
+-   14 entries fall under 90% covered,
+    2 under 50%.
 -   Only 2 entries carry any alignment finding at all.
 
-The routine gap is front matter and the separators between chunks, which
+The routine gap is front matter and the separators between chunks,
+which
 belong in no slice by construction and are not what this question is about.
-The tail is, and its two ends name the two causes. `XIEPT2` produces ZERO
-slices from 17 alignment refusals, so 0 of its 1218 characters are examined:
-both terms are zero, the block cannot fire, and the entry settles as a clean
-unchanged document having looked at nothing. `ArtsEpiphany` at 27.5% and
-`windward0032` at 60.9% carry no alignment finding at all, so their shortfall
-is slicing rather than pairing, which is `#90`'s territory rather than this
+The tail is,
+and its two ends name the two causes.
+`XIEPT2` produces ZERO
+slices from 17 alignment refusals,
+so 0 of its 1218 characters are examined:
+both terms are zero,
+the block cannot fire,
+and the entry settles as a clean
+unchanged document having looked at nothing.
+`ArtsEpiphany` at 27.5% and
+`windward0032` at 60.9% carry no alignment finding at all,
+so their shortfall
+is slicing rather than pairing,
+which is `#90`'s territory rather than this
 question's.
 
 ### Options
 
-A.  Read the ratio over the DOCUMENT, so the block means "most of this
+A.
+ Read the ratio over the DOCUMENT,
+so the block means "most of this
     translation is not a translation".
-    Pros: matches what every reader of a whole-document refusal will assume it
-    measured, and stops an entry whose examined part is all non-translation but
+    Pros:
+matches what every reader of a whole-document refusal will assume it
+    measured,
+and stops an entry whose examined part is all non-translation but
     whose bulk was never sliced from blocking the whole document.
-    Cons: an entry can then hide non-translation behind unsliced bulk, since
-    the majority it needs is now over text nothing inspected. It also makes the
-    block quieter the worse the slicing gets, which is the wrong direction for
+    Cons:
+an entry can then hide non-translation behind unsliced bulk,
+since
+    the majority it needs is now over text nothing inspected.
+It also makes the
+    block quieter the worse the slicing gets,
+which is the wrong direction for
     a signal.
 
-B.  Read it over the SLICES, as today, and say so in the contract.
-    Pros: every character in the ratio was actually examined, so the block
-    never rests on text no model read; costs one documentation pass, which is
+B.
+ Read it over the SLICES,
+as today,
+and say so in the contract.
+    Pros:
+every character in the ratio was actually examined,
+so the block
+    never rests on text no model read;
+costs one documentation pass,
+which is
     already half done.
-    Cons: the refusal's name promises more than it measures, and a document
+    Cons:
+the refusal's name promises more than it measures,
+and a document
     that is mostly unsliced cannot reach the block however bad the part that
     was examined.
 
-C.  Keep B's denominator and add a coverage floor: refuse to DECIDE on a
+C.
+ Keep B's denominator and add a coverage floor:
+refuse to DECIDE on a
     document whose sliced fraction falls below it.
-    Pros: the only option that gives `XIEPT2` an honest outcome, which is
-    neither clean nor blocked but unexaminable; the floor is one number and the
+    Pros:
+the only option that gives `XIEPT2` an honest outcome,
+which is
+    neither clean nor blocked but unexaminable;
+the floor is one number and the
     measurement above says where it would sit.
-    Cons: a third terminal outcome to represent, and `#96` says the artifact
-    cannot express "unknown" yet, so this one waits on that. It also needs a
-    number picked from 92 entries, and 2 of them are the whole population it
+    Cons:
+a third terminal outcome to represent,
+and `#96` says the artifact
+    cannot express "unknown" yet,
+so this one waits on that.
+It also needs a
+    number picked from 92 entries,
+and 2 of them are the whole population it
     would catch.
 
-RANKING: C > B > A.
+RANKING:
+C > B > A.
 
 C over B because B leaves `XIEPT2` settling as a clean unchanged document on
-the strength of having examined nothing, which is the one outcome in this
-question that is actively wrong rather than merely narrow, and C fixes it
-without changing what the block itself counts. B over A because A's failure
-mode grows with the very defect it is meant to survive: the less of a document
-gets sliced, the harder its examined non-translation is to see, whereas B's
+the strength of having examined nothing,
+which is the one outcome in this
+question that is actively wrong rather than merely narrow,
+and C fixes it
+without changing what the block itself counts.
+B over A because A's failure
+mode grows with the very defect it is meant to survive:
+the less of a document
+gets sliced,
+the harder its examined non-translation is to see,
+whereas B's
 narrowness is stated and constant.
 
-WHAT I WOULD DO IF YOU DELEGATE THIS: take B now, since it is documentation of
-what already happens, and hold C until `#96` can carry an unexaminable verdict.
-That ordering costs nothing, because C keeps B's denominator.
+WHAT I WOULD DO IF YOU DELEGATE THIS:
+take B now,
+since it is documentation of
+what already happens,
+and hold C until `#96` can carry an unexaminable verdict.
+That ordering costs nothing,
+because C keeps B's denominator.
 
 DELEGATE
 
 ## Question 8: where the rendering audit runs, now that it works
 
-ANSWERED 2026-08-16: option B, standalone over EVERY settled artifact.
+ANSWERED 2026-08-16:
+option B,
+standalone over EVERY settled artifact.
 Recorded with three other decisions of that date in
 `doc/decision/translation-repair-four-answers.md`.
 
-The ranking below puts C first and is SUPERSEDED, deliberately and for a reason worth keeping: C won
-its place as "the cheapest way to get a RATE rather than a verdict", and under the standing
-best-quality guideline cost is not a constraint, so the saving is not a benefit. A census has no
-sampling error and additionally answers questions about particular entries, which C says outright it
-cannot. Everything else in the ranking still holds, including why the audit stays OUT of the
+The ranking below puts C first and is SUPERSEDED,
+deliberately and for a reason worth keeping:
+C won
+its place as "the cheapest way to get a RATE rather than a verdict",
+and under the standing
+best-quality guideline cost is not a constraint,
+so the saving is not a benefit.
+A census has no
+sampling error and additionally answers questions about particular entries,
+which C says outright it
+cannot.
+Everything else in the ranking still holds,
+including why the audit stays OUT of the
 producing path until its production error rate is known.
 
-The options are kept as written, because they are the record of what the answer was chosen against.
+The options are kept as written,
+because they are the record of what the answer was chosen against.
 
-The absent-baseline instrument (`#85`) is built, tested, and MEASURED against
-its own planted defect, three runs of each arm. On the positive fixture the
-dropped negator was found in all three runs: by all three auditors twice, and by
-two of three once, where the remaining voice pointed at it but quoted wording
-that could not be anchored. On the faithful fixture every auditor claimed
-nothing at all, every time.
+The absent-baseline instrument (`#85`) is built,
+tested,
+and MEASURED against
+its own planted defect,
+three runs of each arm.
+On the positive fixture the
+dropped negator was found in all three runs:
+by all three auditors twice,
+and by
+two of three once,
+where the remaining voice pointed at it but quoted wording
+that could not be anchored.
+On the faithful fixture every auditor claimed
+nothing at all,
+every time.
 
-It is wired to nothing. That is the last decision on it, and it is yours because
+It is wired to nothing.
+That is the last decision on it,
+and it is yours because
 the options differ in what they cost you rather than in whether they work.
 
-WHAT EACH CALL COSTS, structurally: one exchange per voice per audited unit,
-against whatever roster it is given. The multiplier is how many units you audit,
+WHAT EACH CALL COSTS,
+structurally:
+one exchange per voice per audited unit,
+against whatever roster it is given.
+The multiplier is how many units you audit,
 and that is what the options differ on.
 
 ### Options
 
-A.  **Per slice, inside the translate lane, on every slice it renders.**
-    -   For: every rendering is audited before anything downstream reads it, and
-        the findings arrive while that slice's context is still in hand, so a
+A.
+ **Per slice,
+inside the translate lane,
+on every slice it renders.**
+    -   For:
+every rendering is audited before anything downstream reads it,
+and
+        the findings arrive while that slice's context is still in hand,
+so a
         future gate could act on them without a second pass.
-    -   Against: it multiplies a corpus pass by the roster width, does that on
-        slices nobody has reason to doubt, and puts an instrument whose
+    -   Against:
+it multiplies a corpus pass by the roster width,
+does that on
+        slices nobody has reason to doubt,
+and puts an instrument whose
         production error rate is unmeasured inside the path that produces the
         output rather than beside it.
 
-B.  **Standalone, over settled version 2 artifacts, after a pass.**
-    -   For: nothing in the producing path changes, so a bad audit run cannot
-        cost a pass. It reads the artifact the pass already wrote, and it can be
-        re-run against those same artifacts when the instrument changes, which
+B.
+ **Standalone,
+over settled version 2 artifacts,
+after a pass.**
+    -   For:
+nothing in the producing path changes,
+so a bad audit run cannot
+        cost a pass.
+It reads the artifact the pass already wrote,
+and it can be
+        re-run against those same artifacts when the instrument changes,
+which
         is exactly what this week needed and did not have.
-    -   Against: it cannot influence what ships without a second pass, and it
+    -   Against:
+it cannot influence what ships without a second pass,
+and it
         re-reads text the pass already had in memory.
 
-C.  **Standalone over a SAMPLE of settled artifacts, not all of them.**
-    -   For: the cheapest way to get a RATE rather than a verdict, which is what
-        an instrument in shadow mode is for. A sample is enough to say how often
+C.
+ **Standalone over a SAMPLE of settled artifacts,
+not all of them.**
+    -   For:
+the cheapest way to get a RATE rather than a verdict,
+which is what
+        an instrument in shadow mode is for.
+A sample is enough to say how often
         the lane's renderings carry corroborated defects.
-    -   Against: it says nothing about any particular entry, so it cannot settle
+    -   Against:
+it says nothing about any particular entry,
+so it cannot settle
         a question about one.
 
-D.  **Leave it unwired, and run it by hand when investigating.**
-    -   For: costs nothing, and the sensitivity arms already show it works when
+D.
+ **Leave it unwired,
+and run it by hand when investigating.**
+    -   For:
+costs nothing,
+and the sensitivity arms already show it works when
         pointed at something.
-    -   Against: nothing accumulates. Every question about the lane's fidelity
-        would start from zero, which is how an instrument built at some expense
+    -   Against:
+nothing accumulates.
+Every question about the lane's fidelity
+        would start from zero,
+which is how an instrument built at some expense
         quietly stops being used.
 
 ### Ranking
 
 C > B > A > D.
 
--   C over B, because the first thing anyone will ask of this instrument is a
-    RATE, and a sample answers that for a fraction of the cost. B's advantage,
-    covering every entry, only pays once a rate exists and someone wants to act
+-   C over B,
+    because the first thing anyone will ask of this instrument is a
+    RATE,
+    and a sample answers that for a fraction of the cost.
+    B's advantage,
+    covering every entry,
+    only pays once a rate exists and someone wants to act
     per entry.
--   B over A, because re-runnability is worth more than immediacy while the
-    instrument is still changing: the matcher was rebuilt twice this week, and
+-   B over A,
+    because re-runnability is worth more than immediacy while the
+    instrument is still changing:
+    the matcher was rebuilt twice this week,
+    and
     under A each rebuild would have needed a fresh corpus pass to re-measure,
     while under B the artifacts are still on disk.
--   A over D, because A at least accumulates evidence, and D's cost argument is
+-   A over D,
+    because A at least accumulates evidence,
+    and D's cost argument is
     real but its outcome is an unused instrument.
 
-WHAT I WOULD DO IF YOU DELEGATE THIS: C now, B once a rate exists and per-entry
-action is wanted, and A only if a gate is ever built on the audit, which would
+WHAT I WOULD DO IF YOU DELEGATE THIS:
+C now,
+B once a rate exists and per-entry
+action is wanted,
+and A only if a gate is ever built on the audit,
+which would
 need its false-positive rate measured on real renderings rather than on one
 faithful fixture.
 
@@ -1311,116 +2511,220 @@ DELEGATE
 
 ## Question 9: what to do about the straggler grace's one-model tax
 
-`STRAGGLER_GRACE_MS` is 180000, unchanged since `doc/decision/translation-repair-straggler-grace.md`
-widened it from 60000 and measured a roughly three-and-a-half-times drop in voice loss. First
-production traffic now shows WHO pays that window's remaining cost: of 19 cuts over 2025 streams,
+`STRAGGLER_GRACE_MS` is 180000,
+unchanged since `doc/decision/translation-repair-straggler-grace.md`
+widened it from 60000 and measured a roughly three-and-a-half-times drop in voice loss.
+First
+production traffic now shows WHO pays that window's remaining cost:
+of 19 cuts over 2025 streams,
 16 are `hf:zai-org/GLM-5.2` (4.88 percent of its 328 streams) and 2 are `hf:Qwen/Qwen3.6-27B`,
-newly appeared and on its two largest deliveries in the log (3258415 and 3209277 characters). Three
+newly appeared and on its two largest deliveries in the log (3258415 and 3209277 characters).
+Three
 of six models have never been cut.
 
-THE WINDOW ALSO CANNOT TELL A FULL-SPEED CALL FROM A CRAWLING ONE, which is a second, separate
-finding: the audit's two example abandonments were both cut at exactly 180000 ms, so dividing
-delivered characters by that shared floor gives an upper bound on each rate, at most 16196
-characters a second for one and at most 686 for the other, twenty-three times apart. Both are
-upper bounds, since the true duration is censored at the cut, but the shapes read as different: one
-was still producing, the other was closer to crawling.
+THE WINDOW ALSO CANNOT TELL A FULL-SPEED CALL FROM A CRAWLING ONE,
+which is a second,
+separate
+finding:
+the audit's two example abandonments were both cut at exactly 180000 ms,
+so dividing
+delivered characters by that shared floor gives an upper bound on each rate,
+at most 16196
+characters a second for one and at most 686 for the other,
+twenty-three times apart.
+Both are
+upper bounds,
+since the true duration is censored at the cut,
+but the shapes read as different:
+one
+was still producing,
+the other was closer to crawling.
 
-AND NOTHING RE-ASKS A CUT VOICE, by design. `stage-quorum.ts` stops its retry rounds once quorum is
-satisfied, so a voice lost to the grace after quorum already stood is never re-dispatched. The
-consequence named in the audit is the one worth deciding on: on the stages this happens, the
-ensemble is effectively five of six, always missing the same member.
+AND NOTHING RE-ASKS A CUT VOICE,
+by design.
+`stage-quorum.ts` stops its retry rounds once quorum is
+satisfied,
+so a voice lost to the grace after quorum already stood is never re-dispatched.
+The
+consequence named in the audit is the one worth deciding on:
+on the stages this happens,
+the
+ensemble is effectively five of six,
+always missing the same member.
 
-WHAT REDOING THE ORIGINAL DERIVATION WOULD NEED, and does not have: the 180000 figure came from
+WHAT REDOING THE ORIGINAL DERIVATION WOULD NEED,
+and does not have:
+the 180000 figure came from
 per-model whole-call latency percentiles over a 602-exchange bench under the roster of the time.
-Nothing read for `#121` measures that under the CURRENT six-model roster; first-byte and mid-stream
-gap are a different measurement, and cut rate by model is a rate rather than a latency. A fresh
+Nothing read for `#121` measures that under the CURRENT six-model roster;
+first-byte and mid-stream
+gap are a different measurement,
+and cut rate by model is a rate rather than a latency.
+A fresh
 per-model latency bench is the prerequisite for computing a new number rather than guessing one,
 and running it spends quota this task was not authorized to spend.
 
 ### Options
 
-A.  **Leave `STRAGGLER_GRACE_MS` at 180000.**
-    -   For: it already measured a roughly three-and-a-half-times drop in voice loss over the
-        window it replaced, costs nothing to keep, and the residual is concentrated on models this
+A.
+ **Leave `STRAGGLER_GRACE_MS` at 180000.**
+    -   For:
+it already measured a roughly three-and-a-half-times drop in voice loss over the
+        window it replaced,
+costs nothing to keep,
+and the residual is concentrated on models this
         ensemble is built to tolerate losing occasionally rather than a class of hangs.
         `doc/decision/translation-repair-straggler-grace.md`'s own backlog already says the LAST
-        widening's cost needs a run-to-run band before it needs a decision, and that band still
+        widening's cost needs a run-to-run band before it needs a decision,
+and that band still
         does not exist.
-    -   Against: it keeps taxing the same voice on the same stages repeatedly rather than fixing
-        anything, and 84 percent of cuts landing on one model is the shape the audit specifically
+    -   Against:
+it keeps taxing the same voice on the same stages repeatedly rather than fixing
+        anything,
+and 84 percent of cuts landing on one model is the shape the audit specifically
         flagged as worth deciding on rather than absorbing quietly.
 
-B.  **Widen `STRAGGLER_GRACE_MS` further, pending a fresh per-model latency bench.**
-    -   For: directly targets the harm the audit's full-speed example shows, a call still
-        delivering real content when the grace ends it, and the prior widening (60000 to 180000)
-        is precedented, measured, and worked.
-    -   Against: no fresh per-model latency data exists to derive a new number from under the
-        current roster, so any figure chosen now is a guess dressed as a measurement; it also
-        raises the cost on the crawling-call shape (the 686 characters-a-second example), and the
-        prior widening's own remeasure found a real, unbanded wall-time cost (+21 percent
-        aggregate, +28.6 percent on one entry) that widening again would compound before it is
+B.
+ **Widen `STRAGGLER_GRACE_MS` further,
+pending a fresh per-model latency bench.**
+    -   For:
+directly targets the harm the audit's full-speed example shows,
+a call still
+        delivering real content when the grace ends it,
+and the prior widening (60000 to 180000)
+        is precedented,
+measured,
+and worked.
+    -   Against:
+no fresh per-model latency data exists to derive a new number from under the
+        current roster,
+so any figure chosen now is a guess dressed as a measurement;
+it also
+        raises the cost on the crawling-call shape (the 686 characters-a-second example),
+and the
+        prior widening's own remeasure found a real,
+unbanded wall-time cost (+21 percent
+        aggregate,
++28.6 percent on one entry) that widening again would compound before it is
         even priced.
 
-C.  **Give `hf:zai-org/GLM-5.2` (or any model crossing a cut-rate threshold) a longer grace than
-    the roster default, rather than moving the shared window.**
-    -   For: targets exactly what was found, one model's concentration, without paying a wider
+C.
+ **Give `hf:zai-org/GLM-5.2` (or any model crossing a cut-rate threshold) a longer grace than
+    the roster default,
+rather than moving the shared window.**
+    -   For:
+targets exactly what was found,
+one model's concentration,
+without paying a wider
         window's cost on the other five models' much rarer cuts.
-    -   Against: `runGatherRound` takes one shared `graceMs` per round with no per-model concept
-        today, so this is a real implementation change layered on top of the policy choice, and it
-        privileges one vendor's model by name in code, which stays meaningful only while the
+    -   Against:
+`runGatherRound` takes one shared `graceMs` per round with no per-model concept
+        today,
+so this is a real implementation change layered on top of the policy choice,
+and it
+        privileges one vendor's model by name in code,
+which stays meaningful only while the
         roster does not change.
 
-D.  **Switch from a fixed-duration grace to a production-rate cutoff.**
-    -   For: the audit's two examples show the fixed window conflates "still producing" with
-        "crawling", and a rate test would keep the first kind of call and cut the second, which is
+D.
+ **Switch from a fixed-duration grace to a production-rate cutoff.**
+    -   For:
+the audit's two examples show the fixed window conflates "still producing" with
+        "crawling",
+and a rate test would keep the first kind of call and cut the second,
+which is
         closer to what the grace is actually meant to discriminate.
-    -   Against: exactly two examples exist to validate any rate floor against, both upper bounds
-        with an unknown true rate, so a specific threshold chosen now fits n=2; it is also a larger
+    -   Against:
+exactly two examples exist to validate any rate floor against,
+both upper bounds
+        with an unknown true rate,
+so a specific threshold chosen now fits n=2;
+it is also a larger
         implementation than a constant edit.
 
-E.  **Drop `hf:zai-org/GLM-5.2` from the roster.**
-    -   For: removes the tax at its source, and the model's cut rate under the CURRENT roster
-        (4.88 percent, sixteen times the next-highest model measured here) is now a direct
+E.
+ **Drop `hf:zai-org/GLM-5.2` from the roster.**
+    -   For:
+removes the tax at its source,
+and the model's cut rate under the CURRENT roster
+        (4.88 percent,
+sixteen times the next-highest model measured here) is now a direct
         measurement rather than an inference from an older bench.
-    -   Against: the straggler-grace decision already measured this model answering in full on a
-        large share of its seated stages, so dropping it trades a slow-but-mostly-working voice for
-        a permanently five-model ensemble on every stage rather than most of them; `#105`'s framing
-        was explicitly "widen the deadline, or seat a replacement", and the straggler-grace
+    -   Against:
+the straggler-grace decision already measured this model answering in full on a
+        large share of its seated stages,
+so dropping it trades a slow-but-mostly-working voice for
+        a permanently five-model ensemble on every stage rather than most of them;
+`#105`'s framing
+        was explicitly "widen the deadline,
+or seat a replacement",
+and the straggler-grace
         decision already answered against replacement once.
 
-F.  **Re-ask a straggler once the grace cuts it, instead of leaving the round at whatever quorum
+F.
+ **Re-ask a straggler once the grace cuts it,
+instead of leaving the round at whatever quorum
     already heard.**
-    -   For: recovers the lost answer even when the round itself could not wait for it, so a
+    -   For:
+recovers the lost answer even when the round itself could not wait for it,
+so a
         working-but-slow reply is not simply discarded.
-    -   Against: this reverses deliberate, documented design; `stage-quorum.ts`'s retry rounds stop
-        once quorum stands specifically so a satisfied round is not delayed further, and re-asking
+    -   Against:
+this reverses deliberate,
+documented design;
+`stage-quorum.ts`'s retry rounds stop
+        once quorum stands specifically so a satisfied round is not delayed further,
+and re-asking
         after the round has moved on means judging the straggler against a slate the rest of the
-        panel no longer shares, close to the confound `#109`'s window-trial ledger exists to avoid.
+        panel no longer shares,
+close to the confound `#109`'s window-trial ledger exists to avoid.
 
 ### Ranking
 
 A > C > D > B > F > E.
 
--   A over C, because C is a real, unvalidated behavior change naming a single vendor's model in
-    code, while A costs nothing and `translation-repair-straggler-grace.md`'s own backlog already
-    says the LAST widening's cost needs measuring before the next one is decided; acting again
+-   A over C,
+    because C is a real,
+    unvalidated behavior change naming a single vendor's model in
+    code,
+    while A costs nothing and `translation-repair-straggler-grace.md`'s own backlog already
+    says the LAST widening's cost needs measuring before the next one is decided;
+    acting again
     before that band exists repeats a mistake this document family has already corrected twice.
--   C over D, because both target the concentration precisely, but C only has to choose one number
-    (a per-model grace) where D has to fit a rate floor to two examples, both upper bounds; being
-    wrong about C's number costs one model some extra minutes, being wrong about D's rate risks
+-   C over D,
+    because both target the concentration precisely,
+    but C only has to choose one number
+    (a per-model grace) where D has to fit a rate floor to two examples,
+    both upper bounds;
+    being
+    wrong about C's number costs one model some extra minutes,
+    being wrong about D's rate risks
     cutting any slow-starting healthy call on any model.
--   D over B, because D at least targets the signal the audit found, rate rather than duration,
+-   D over B,
+    because D at least targets the signal the audit found,
+    rate rather than duration,
     where B pays the same wider-window cost on all six models' rare cuts to fix a problem that is
     concentrated on one.
--   B over F, because B is at least the same kind of change, a constant, with a measured precedent
-    behind its last move; F fights the pipeline's own documented design intent and risks the exact
+-   B over F,
+    because B is at least the same kind of change,
+    a constant,
+    with a measured precedent
+    behind its last move;
+    F fights the pipeline's own documented design intent and risks the exact
     judging confound `#109` was built to remove.
--   F over E, because F costs a design conflict and a possible confound, both recoverable; E is a
-    roster change already argued against once in this codebase's own history, and it discards a
+-   F over E,
+    because F costs a design conflict and a possible confound,
+    both recoverable;
+    E is a
+    roster change already argued against once in this codebase's own history,
+    and it discards a
     model shown to answer usefully on most of the stages that seat it.
 
-WHAT I WOULD DO IF YOU DELEGATE THIS: A now, then C once the run-to-run cost band the
-straggler-grace backlog already calls for is measured, since C is the option that answers "the
+WHAT I WOULD DO IF YOU DELEGATE THIS:
+A now,
+then C once the run-to-run cost band the
+straggler-grace backlog already calls for is measured,
+since C is the option that answers "the
 grace's cost is concentrated on one model" without guessing at a number the current roster has no
 bench for.
 
@@ -1429,534 +2733,1094 @@ DELEGATE
 ## Question 10: whether to re-arm the idle windows below the deadline
 
 `STREAM_FIRST_BYTE_MS` and `STREAM_IDLE_MS` stay at 600000 after `#121`'s re-derivation
-(`doc/decision/translation-repair-runaway-call-termination.md`), which corrected the STATED REASON
-for that value without finding a number below it that clears every regime measured. This question
-is the one the correction explicitly left open: given the median is now fast, is any of the
+(`doc/decision/translation-repair-runaway-call-termination.md`),
+which corrected the STATED REASON
+for that value without finding a number below it that clears every regime measured.
+This question
+is the one the correction explicitly left open:
+given the median is now fast,
+is any of the
 360000 ms the deadline currently spends on a dead call worth trying to reclaim.
 
-WHAT A FALSE TRIP ACTUALLY COSTS, which softens but does not remove the risk: `stream-idle-guard.ts`
-aborts on a controller it owns rather than the caller's signal, so `exchangeWithRetry` treats a
+WHAT A FALSE TRIP ACTUALLY COSTS,
+which softens but does not remove the risk:
+`stream-idle-guard.ts`
+aborts on a controller it owns rather than the caller's signal,
+so `exchangeWithRetry` treats a
 tripped guard as transient and re-dispatches at transport level on a roughly one-second backoff.
-No voice is lost the way a straggler-grace cut loses one. What IS spent is a full fresh call: real
-wall-clock time and quota, and if the model reliably pauses near the same point in its own reply,
+No voice is lost the way a straggler-grace cut loses one.
+What IS spent is a full fresh call:
+real
+wall-clock time and quota,
+and if the model reliably pauses near the same point in its own reply,
 a retry can walk into the same trip again rather than clearing it.
 
 ### Options
 
-A.  **Leave both constants at 600000, effectively disabled.** (Current state, landed in `#121`.)
-    -   For: zero demonstrated risk against every regime read, including the closest historical
-        near-miss, a completed call at 347099 ms three weeks before this traffic under a different
-        roster. The 360000 ms deadline already ends a truly dead call within six minutes, achieving
+A.
+ **Leave both constants at 600000,
+effectively disabled.**
+(Current state,
+landed in `#121`.)
+    -   For:
+zero demonstrated risk against every regime read,
+including the closest historical
+        near-miss,
+a completed call at 347099 ms three weeks before this traffic under a different
+        roster.
+The 360000 ms deadline already ends a truly dead call within six minutes,
+achieving
         the guard's stated purpose with a coarser instrument.
-    -   Against: a call whose first byte never arrives runs the full six minutes even though the
-        new median says most of that wait is now abnormal, and the idle guard exists specifically
+    -   Against:
+a call whose first byte never arrives runs the full six minutes even though the
+        new median says most of that wait is now abnormal,
+and the idle guard exists specifically
         to notice silence faster than the deadline does.
 
-B.  **Arm `STREAM_FIRST_BYTE_MS` (and `STREAM_IDLE_MS`) at a value grounded only in the CURRENT
-    traffic, past its observed maxima (183755 ms firstByte, 124992 ms gap), setting aside the
+B.
+ **Arm `STREAM_FIRST_BYTE_MS` (and `STREAM_IDLE_MS`) at a value grounded only in the CURRENT
+    traffic,
+past its observed maxima (183755 ms firstByte,
+124992 ms gap),
+setting aside the
     older RUN 014 regime as no longer representative.**
-    -   For: meaningfully faster than 360000 ms at catching a dead call, and grounded in the
-        largest, freshest sample read, 7079 streams this month.
-    -   Against: this is a bet that RUN 014's regime, a completed call at 347099 ms, cannot recur,
+    -   For:
+meaningfully faster than 360000 ms at catching a dead call,
+and grounded in the
+        largest,
+freshest sample read,
+7079 streams this month.
+    -   Against:
+this is a bet that RUN 014's regime,
+a completed call at 347099 ms,
+cannot recur,
         which is a bet about a two-person provider's infrastructure that the audit explicitly
-        declined to make: different stage shapes, provider capacity, routing, and time of day are
-        all unexcluded between the two readings. A false trip is soft, a retried call rather than a
-        lost voice, but it is not free: each one re-buys a whole exchange.
+        declined to make:
+different stage shapes,
+provider capacity,
+routing,
+and time of day are
+        all unexcluded between the two readings.
+A false trip is soft,
+a retried call rather than a
+        lost voice,
+but it is not free:
+each one re-buys a whole exchange.
 
-C.  **Arm both constants just under the deadline, clearing every regime on record with minimal
+C.
+ **Arm both constants just under the deadline,
+clearing every regime on record with minimal
     margin (roughly 350000).**
-    -   For: technically active and carries none of option B's regime risk, since it clears even
+    -   For:
+technically active and carries none of option B's regime risk,
+since it clears even
         RUN 014's uncensored maximum.
-    -   Against: leaves ten seconds or less of daylight before the deadline would end the same call
-        anyway, so the benefit over option A is bounded by that same margin. Worth the
+    -   Against:
+leaves ten seconds or less of daylight before the deadline would end the same call
+        anyway,
+so the benefit over option A is bounded by that same margin.
+Worth the
         implementation and re-test cost only if there is an operational reason to want the guard to
-        fire and log rather than relying on the deadline, which nothing read for `#121` establishes.
+        fire and log rather than relying on the deadline,
+which nothing read for `#121` establishes.
 
 ### Ranking
 
 A > C > B.
 
--   A over C, because C costs a real change for a benefit bounded at single-digit seconds per dead
-    call; it is worth doing only for a reason beyond the seconds saved, such as wanting the guard's
-    own logging on a dead call rather than the deadline's, and nothing gathered here shows that
+-   A over C,
+    because C costs a real change for a benefit bounded at single-digit seconds per dead
+    call;
+    it is worth doing only for a reason beyond the seconds saved,
+    such as wanting the guard's
+    own logging on a dead call rather than the deadline's,
+    and nothing gathered here shows that
     reason exists.
--   C over B, because C carries zero regime risk, clearing even RUN 014's 347099 ms, while B is the
+-   C over B,
+    because C carries zero regime risk,
+    clearing even RUN 014's 347099 ms,
+    while B is the
     only option that knowingly accepts a documented historical near-failure as unlikely to recur,
     on a provider this codebase has already twice caught treating a small sample's maximum as a
     bound.
 
-WHAT I WOULD DO IF YOU DELEGATE THIS: A, unchanged. Revisit C only if there is a stated operational
-reason to want the guard armed for its own sake, and revisit B only after the July-to-August regime
-shift gets an actual explanation, which nothing read for `#121` provides.
+WHAT I WOULD DO IF YOU DELEGATE THIS:
+A,
+unchanged.
+Revisit C only if there is a stated operational
+reason to want the guard armed for its own sake,
+and revisit B only after the July-to-August regime
+shift gets an actual explanation,
+which nothing read for `#121` provides.
 
 DELEGATE
 
 ## Decisions I took without you, veto cheaply
 
-1.  A revision that still fails validation is NOT taken; the original candidate
-    stands. Reasoning: the model was asked to fix those findings and did not,
-    so nothing says the new text is better, while the original is at least what
+1.  A revision that still fails validation is NOT taken;
+    the original candidate
+    stands.
+    Reasoning:
+    the model was asked to fix those findings and did not,
+    so nothing says the new text is better,
+    while the original is at least what
     it produced with the whole sheet in front of it.
 2.  The incumbent never passes through structural validation and can never be
-    dropped by it. Reasoning: it is the fallback, so a check that could drop it
+    dropped by it.
+    Reasoning:
+    it is the fallback,
+    so a check that could drop it
     could delete the archive.
-3.  A slice's candidate order is rotated by a hash of the source, so the
-    incumbent does not sit in one ballot position. Deterministic, so a resumed
+3.  A slice's candidate order is rotated by a hash of the source,
+    so the
+    incumbent does not sit in one ballot position.
+    Deterministic,
+    so a resumed
     slice asks the judges the same question a fresh one did.
-4.  Structural validation compares block structure, footnote markers, link and
-    image destinations, and inline code, and deliberately NOT numbers or names,
+4.  Structural validation compares block structure,
+    footnote markers,
+    link and
+    image destinations,
+    and inline code,
+    and deliberately NOT numbers or names,
     because 三只猫 becomes "three cats" and no digit survives on either side.
-5.  Atoms are compared as a multiset rather than in order, since a translation
+5.  Atoms are compared as a multiset rather than in order,
+    since a translation
     reorders clauses and a link moving inside a sentence is not damage.
-6.  THE ROSTER GUARD NOW MATCHES YOUR RULING. It required two judges with no
-    stake in any candidate, which is the rule your self-vote discount replaced,
-    and on six models that capped producers at four. It now refuses only
-    rosters that could not decide a round however they voted: repeats on either
-    side, no producer, or too little available weight to reach the minimum.
-    The weight limb catches a case a seat count would have passed, one producer
-    judged by itself and one other model, which tops out at 1.5 against a
+6.  THE ROSTER GUARD NOW MATCHES YOUR RULING.
+    It required two judges with no
+    stake in any candidate,
+    which is the rule your self-vote discount replaced,
+    and on six models that capped producers at four.
+    It now refuses only
+    rosters that could not decide a round however they voted:
+    repeats on either
+    side,
+    no producer,
+    or too little available weight to reach the minimum.
+    The weight limb catches a case a seat count would have passed,
+    one producer
+    judged by itself and one other model,
+    which tops out at 1.5 against a
     minimum of 2 and would have declined every round in silence.
-    CORRECTED LATER THE SAME NIGHT, in `9e43d5afc`, after a second review: my
+    CORRECTED LATER THE SAME NIGHT,
+    in `9e43d5afc`,
+    after a second review:
+    my
     first weight limb measured what a candidate would draw if EVERY producer
-    had a stake in it, and on that reading it refused three authors judging only
-    each other. That bench decides comfortably, because a candidate one of them
+    had a stake in it,
+    and on that reading it refused three authors judging only
+    each other.
+    That bench decides comfortably,
+    because a candidate one of them
     wrote draws half a vote from its author and a full one from each of the
-    other two. It now measures the most favourable candidate instead, which is
+    other two.
+    It now measures the most favourable candidate instead,
+    which is
     the question a guard refusing rosters that could not decide HOWEVER they
-    voted has to ask. The case above still refuses.
-    ONE EXCEPTION worth your veto if you dislike it: four models returning
-    byte-identical text collapse into one candidate, and four self-votes at a
-    half reach the minimum with no outside judge. I kept it, because agreement
-    to the byte between independent models is itself the corroboration, and
+    voted has to ask.
+    The case above still refuses.
+    ONE EXCEPTION worth your veto if you dislike it:
+    four models returning
+    byte-identical text collapse into one candidate,
+    and four self-votes at a
+    half reach the minimum with no outside judge.
+    I kept it,
+    because agreement
+    to the byte between independent models is itself the corroboration,
+    and
     pinned both it and the three-contributor case that falls short in tests.
-    THE ALTERNATIVE, which an external reviewer proposed and I did not take:
-    require at least one FULL-weight ballot on the winner, which would refuse
-    that four-way agreement outright. I left it for you because it is a new rule
-    on top of the weighting you chose rather than an implementation of it, and
+    THE ALTERNATIVE,
+    which an external reviewer proposed and I did not take:
+    require at least one FULL-weight ballot on the winner,
+    which would refuse
+    that four-way agreement outright.
+    I left it for you because it is a new rule
+    on top of the weighting you chose rather than an implementation of it,
+    and
     because it would also block the case where four models agree and the two
-    remaining judges simply went quiet. Say the word and it is a three-line
+    remaining judges simply went quiet.
+    Say the word and it is a three-line
     change plus its tests.
 7.  IDENTICAL CANDIDATES NOW MERGE THEIR AUTHORS in the editor and naturalness
-    lanes. They did not, so a model could vote at full weight for its own words
-    whenever another model wrote them first, and the ballot split across
-    identical texts. Found by an external review of the guard change.
-8.  The translate stage now RECORDS THE SLATE the judges were shown, with each
-    position's text, hash, origin and producer. Ballots name a position and the
-    slate is rotated per slice, so a stored ballot could not be joined to any
-    text afterwards. Judges still see anonymous positions; provenance is
+    lanes.
+    They did not,
+    so a model could vote at full weight for its own words
+    whenever another model wrote them first,
+    and the ballot split across
+    identical texts.
+    Found by an external review of the guard change.
+8.  The translate stage now RECORDS THE SLATE the judges were shown,
+    with each
+    position's text,
+    hash,
+    origin and producer.
+    Ballots name a position and the
+    slate is rotated per slice,
+    so a stored ballot could not be joined to any
+    text afterwards.
+    Judges still see anonymous positions;
+    provenance is
     attached to the record after the round.
 9.  The source-side slice budget is now derived from the whole document pair
-    rather than from one section, and capped at the target budget. Reasoning in
-    `#90`; the cap encodes that Chinese runs shorter than its English rendering,
+    rather than from one section,
+    and capped at the target budget.
+    Reasoning in
+    `#90`;
+    the cap encodes that Chinese runs shorter than its English rendering,
     so a ratio above one is missing translation rather than density.
-10. A SELECTION ROUND NOW REFUSES A ROSTER NAMING ONE MODEL TWICE, before it
-    spends a call. The stage guard already refused that, but two of the
-    selection entry points are reachable without the stage, and a repeat there
-    bought two exchanges from one model, which is two ballots and enough to
-    reach the minimum weight alone. Refused rather than silently deduplicated,
+10. A SELECTION ROUND NOW REFUSES A ROSTER NAMING ONE MODEL TWICE,
+    before it
+    spends a call.
+    The stage guard already refused that,
+    but two of the
+    selection entry points are reachable without the stage,
+    and a repeat there
+    bought two exchanges from one model,
+    which is two ballots and enough to
+    reach the minimum weight alone.
+    Refused rather than silently deduplicated,
     since a caller that passed a repeat believes it has more judges than it has.
-11. A REPLACEMENT THAT BREAKS A FOOTNOTE IS WITHDRAWN AT ASSEMBLY, rather than
-    reported and shipped, IN BOTH LANES. Reasoning: it is the same species of
-    guard as the alignment refusal you already have, and a dangling `[^1]` is
-    not a judgement call. The judges are not wrong here either: each slice
-    validated on its own, and the marker that went missing belongs to a line in
-    a slice they never saw. The per-slice record still says a replacement was
-    chosen, so the record and the document disagree ON PURPOSE: one says what
-    was chosen, the other says what the document could carry, and the shipped
+11. A REPLACEMENT THAT BREAKS A FOOTNOTE IS WITHDRAWN AT ASSEMBLY,
+    rather than
+    reported and shipped,
+    IN BOTH LANES.
+    Reasoning:
+    it is the same species of
+    guard as the alignment refusal you already have,
+    and a dangling `[^1]` is
+    not a judgement call.
+    The judges are not wrong here either:
+    each slice
+    validated on its own,
+    and the marker that went missing belongs to a line in
+    a slice they never saw.
+    The per-slice record still says a replacement was
+    chosen,
+    so the record and the document disagree ON PURPOSE:
+    one says what
+    was chosen,
+    the other says what the document could carry,
+    and the shipped
     counts follow the document.
-    IN THE REPAIR LANE IT ALSO REACHES THE ISSUE RECORDS, which is the part
-    that could have gone wrong quietly: an issue whose slice was withdrawn is
-    recorded `withdrawn` and unresolved, the same disposition a non-translation
-    block already used, because both mean the repair reached no reader.
+    IN THE REPAIR LANE IT ALSO REACHES THE ISSUE RECORDS,
+    which is the part
+    that could have gone wrong quietly:
+    an issue whose slice was withdrawn is
+    recorded `withdrawn` and unresolved,
+    the same disposition a non-translation
+    block already used,
+    because both mean the repair reached no reader.
     Crediting it would overstate the precision measurement directly.
-    WHAT THIS GUARD IS NOT, so you do not read more into it than it does: it
-    checks INTEGRITY, not preservation. It compares the footnote graph the
-    document comes out with against the graph it went in with, and withdraws a
-    replacement that made that graph worse. A candidate that drops a footnote
-    pair WHOLE, marker and definition together, leaves a graph with one fewer
-    footnote and nothing dangling, so it ships with no finding. So does one that
-    renames both halves consistently. Both are losses of content rather than
-    breaks in structure, and the instrument for those is `#85`, which is where
+    WHAT THIS GUARD IS NOT,
+    so you do not read more into it than it does:
+    it
+    checks INTEGRITY,
+    not preservation.
+    It compares the footnote graph the
+    document comes out with against the graph it went in with,
+    and withdraws a
+    replacement that made that graph worse.
+    A candidate that drops a footnote
+    pair WHOLE,
+    marker and definition together,
+    leaves a graph with one fewer
+    footnote and nothing dangling,
+    so it ships with no finding.
+    So does one that
+    renames both halves consistently.
+    Both are losses of content rather than
+    breaks in structure,
+    and the instrument for those is `#85`,
+    which is where
     the damage question belongs.
-12. WHEN NO SLICE CAN BE BLAMED, EVERY replacement is withdrawn and the archive
-    text ships. Reasoning: that shape comes from how replacements MEET, a stray
-    comment opener masking markers document-wide above all, so picking a slice
+12. WHEN NO SLICE CAN BE BLAMED,
+    EVERY replacement is withdrawn and the archive
+    text ships.
+    Reasoning:
+    that shape comes from how replacements MEET,
+    a stray
+    comment opener masking markers document-wide above all,
+    so picking a slice
     to withdraw would be a guess and shipping a document the lane knowingly
-    broke is worse. Rare by construction, loud when it happens.
-    A STRUCTURAL REGRESSION ALWAYS TAKES THIS BRANCH, even where one replacement
-    visibly contains the `<!--` that caused it. Attribution asks which slice
-    changed its mention of an IDENTIFIER, and an unterminated comment or an MDX
-    downgrade names none, so there is nothing to match it against. Worth knowing
-    because the branch is expensive: one bad slice costs the document every
+    broke is worse.
+    Rare by construction,
+    loud when it happens.
+    A STRUCTURAL REGRESSION ALWAYS TAKES THIS BRANCH,
+    even where one replacement
+    visibly contains the `<!--` that caused it.
+    Attribution asks which slice
+    changed its mention of an IDENTIFIER,
+    and an unterminated comment or an MDX
+    downgrade names none,
+    so there is nothing to match it against.
+    Worth knowing
+    because the branch is expensive:
+    one bad slice costs the document every
     other repair in it.
     HOW OFTEN THIS FIRES IS FREE TO MEASURE under Question 5's report-only
-    option, since a pass that writes nothing still runs the guard and records
-    what it withdrew. If you pick that option, the rate arrives with it.
-13. NO OTHER CROSS-SLICE GRAPH WAS BUILT, though an external review listed
-    several. Measured over all 184 corpus documents: 209 GFM footnote markers in
-    45 files, and zero reference-style link definitions, zero reference-style
-    link uses, and zero heading-anchor links. Footnotes are the only cross-slice
-    relation this corpus has. Structural parse regressions are read alongside
-    them, because an unterminated comment and an MDX downgrade name no
+    option,
+    since a pass that writes nothing still runs the guard and records
+    what it withdrew.
+    If you pick that option,
+    the rate arrives with it.
+13. NO OTHER CROSS-SLICE GRAPH WAS BUILT,
+    though an external review listed
+    several.
+    Measured over all 184 corpus documents:
+    209 GFM footnote markers in
+    45 files,
+    and zero reference-style link definitions,
+    zero reference-style
+    link uses,
+    and zero heading-anchor links.
+    Footnotes are the only cross-slice
+    relation this corpus has.
+    Structural parse regressions are read alongside
+    them,
+    because an unterminated comment and an MDX downgrade name no
     identifier and nothing else would notice.
 14. A GRADING SHEET NO LONGER SHOWS A REWRITE THE DOCUMENT DID NOT CARRY as the
-    wording that shipped. The record's final-wording field was written whenever
-    the naturalness lane rewrote a slice, which was right until decision 11 let
-    assembly take a rewritten slice back. It is now written only where the
-    document carries the rewrite, so a withdrawn slice states no final wording
+    wording that shipped.
+    The record's final-wording field was written whenever
+    the naturalness lane rewrote a slice,
+    which was right until decision 11 let
+    assembly take a rewritten slice back.
+    It is now written only where the
+    document carries the rewrite,
+    so a withdrawn slice states no final wording
     and the sheet says the rewrite was taken back rather than fencing an empty
-    block under "the slice as actually returned". Found by an external review of
-    tonight's guard change; the artifact reader was taught the same rule in the
-    same commit, because it required that field of every rewritten slice and
+    block under "the slice as actually returned".
+    Found by an external review of
+    tonight's guard change;
+    the artifact reader was taught the same rule in the
+    same commit,
+    because it required that field of every rewritten slice and
     would otherwise have refused to read the run.
 15. FOOTNOTE LABELS ARE FOLDED THE WAY THE PARSER FOLDS THEM before anything
-    compares them. Markdown reads `[^Note]` and `[^note]` as one footnote and
-    mdast hands back one spelling, while the raw scans this guard attributes
-    with see what was written. Measured on a fixture before the fix: the guard
-    looked for a finding about `note` in mentions keyed `Note`, could blame no
-    slice, and withdrew BOTH replacements including one that touched no footnote.
-    Nothing settled is affected, because all 209 corpus markers are numeric and
-    folding a digit changes nothing; a model writing a word-labelled footnote
+    compares them.
+    Markdown reads `[^Note]` and `[^note]` as one footnote and
+    mdast hands back one spelling,
+    while the raw scans this guard attributes
+    with see what was written.
+    Measured on a fixture before the fix:
+    the guard
+    looked for a finding about `note` in mentions keyed `Note`,
+    could blame no
+    slice,
+    and withdrew BOTH replacements including one that touched no footnote.
+    Nothing settled is affected,
+    because all 209 corpus markers are numeric and
+    folding a digit changes nothing;
+    a model writing a word-labelled footnote
     into a replacement triggers it at once.
 16. BOTH LANES NOW RUN FROM ONE DRIVER THAT ARBITRATES NOTHING.
-    `runDocumentLanes` takes one prepared pair, runs repair and then translate
-    over it, and returns both documents with no winner, no preferred lane and no
-    merged text, because choosing between them is Question 5 and a driver that
-    chose would answer it invisibly for every later count. Three sub-choices are
-    open to veto on their own: the lanes run SEQUENTIALLY, since the quota spent
-    is the same and both already serialize their own slices; REPAIR RUNS FIRST,
+    `runDocumentLanes` takes one prepared pair,
+    runs repair and then translate
+    over it,
+    and returns both documents with no winner,
+    no preferred lane and no
+    merged text,
+    because choosing between them is Question 5 and a driver that
+    chose would answer it invisibly for every later count.
+    Three sub-choices are
+    open to veto on their own:
+    the lanes run SEQUENTIALLY,
+    since the quota spent
+    is the same and both already serialize their own slices;
+    REPAIR RUNS FIRST,
     because its naturalness phase settles after the slice loop and nothing
-    persists what that phase produced, while the translate lane caches every
-    slice as it finishes, so a deadline cutting the entry loses less of what was
-    bought; and there is NO ABORT CHECK BETWEEN THE LANES, since both drivers
+    persists what that phase produced,
+    while the translate lane caches every
+    slice as it finishes,
+    so a deadline cutting the entry loses less of what was
+    bought;
+    and there is NO ABORT CHECK BETWEEN THE LANES,
+    since both drivers
     deliberately let a fully cached lane finish after an abort and a gate there
-    would refuse that. Alignment findings are reported once at the top level
-    rather than per lane, because they belong to the preparation both lanes
+    would refuse that.
+    Alignment findings are reported once at the top level
+    rather than per lane,
+    because they belong to the preparation both lanes
     shared and counting them per lane would count one defect in the archive
     twice.
-17. EACH LANE RESULT NOW NAMES THE SLICES IT SHIPPED AND WITHDREW, read off the
-    assembly guard rather than off the per-slice records. A record says what its
-    own slice CHOSE, and a slice can be withdrawn while carrying no issue of its
-    own, so a comparison built from records would credit a lane with slices the
-    returned document does not carry. Recorded into the settled artifact too, so
-    the withdraw rate is countable over a directory. Artifacts settled before
-    2026-08-15 lack both fields, and a reader must treat their absence as
+17. EACH LANE RESULT NOW NAMES THE SLICES IT SHIPPED AND WITHDREW,
+    read off the
+    assembly guard rather than off the per-slice records.
+    A record says what its
+    own slice CHOSE,
+    and a slice can be withdrawn while carrying no issue of its
+    own,
+    so a comparison built from records would credit a lane with slices the
+    returned document does not carry.
+    Recorded into the settled artifact too,
+    so
+    the withdraw rate is countable over a directory.
+    Artifacts settled before
+    2026-08-15 lack both fields,
+    and a reader must treat their absence as
     unknown rather than as empty.
-20. BOTH LANES NOW REFUSE A CHANGE THE DOCUMENT DOES NOT CARRY, rather than
-    reporting it, AND THE PLACE THEY REFUSE IT MOVED ON 2026-08-15. The way in
-    was the slice cache: a resumed record was trusted on its index alone, so one
+20. BOTH LANES NOW REFUSE A CHANGE THE DOCUMENT DOES NOT CARRY,
+    rather than
+    reporting it,
+    AND THE PLACE THEY REFUSE IT MOVED ON 2026-08-15.
+    The way in
+    was the slice cache:
+    a resumed record was trusted on its index alone,
+    so one
     claiming a change while holding the archive's own wording reached assembly,
-    survived the footnote guard untouched, and landed in the shipped set beside
-    a document nobody changed. Both lanes now check that a resumed record's
-    changed flag agrees with its own text WHERE THEY ACCEPT IT, in both
-    directions, and discard a record that disagrees so that slice is simply
-    bought again. One bad cache file costs one slice rather than the entry, and
-    each discard is named in the findings, because a recomputed slice is
-    otherwise indistinguishable from one that was never cached. The quieter
-    direction is the one nothing caught: only changed records become
-    replacements, so a record DENYING a change it made had its wording dropped
+    survived the footnote guard untouched,
+    and landed in the shipped set beside
+    a document nobody changed.
+    Both lanes now check that a resumed record's
+    changed flag agrees with its own text WHERE THEY ACCEPT IT,
+    in both
+    directions,
+    and discard a record that disagrees so that slice is simply
+    bought again.
+    One bad cache file costs one slice rather than the entry,
+    and
+    each discard is named in the findings,
+    because a recomputed slice is
+    otherwise indistinguishable from one that was never cached.
+    The quieter
+    direction is the one nothing caught:
+    only changed records become
+    replacements,
+    so a record DENYING a change it made had its wording dropped
     at assembly with nothing said.
-    THE ASSEMBLY CHECKS REMAIN, as a backstop rather than the first line: one
+    THE ASSEMBLY CHECKS REMAIN,
+    as a backstop rather than the first line:
+    one
     refuses a replacement that repeats its slice's incumbent or names a slice
-    the preparation never produced, and one derives the shipped set from the
-    surviving replacements, re-splices them, and refuses any returned document
-    they do not reconstruct. Both index sets are also checked against each other
-    and put in document order, which the withdrawn one never was.
-    THEY STILL THROW, and that is now the only place the throw-versus-finding
-    question is live. Dropping a suspect replacement silently would leave a run
-    reporting counts nobody can reproduce, but throwing loses an entry's
-    unpersisted work. The shape the review recommends is a typed error caught at
-    the corpus-entry boundary, so the pass continues and the entry stays
-    unsettled with its cached slices reusable, and that boundary is part of the
-    wiring Question 5 shapes. `#95` records the rest.
-19. THE TWO LANES CAN NOW BE COMPARED SLICE BY SLICE, and the comparison reads
-    what each DOCUMENT carries rather than what each lane chose. Every lane
-    result reports, for every prepared slice, the archive's own wording beside
-    the wording that lane decided on. A separate pure function joins two results
-    on the slice index and names each slice: the archive stands in both, one
-    lane moved, both moved to the same wording, or both moved apart. That last
-    one is the case a human has to read, and it is the reason the two-lane shape
-    exists. Deliberately NOT on the per-slice records: whether a slice shipped
+    the preparation never produced,
+    and one derives the shipped set from the
+    surviving replacements,
+    re-splices them,
+    and refuses any returned document
+    they do not reconstruct.
+    Both index sets are also checked against each other
+    and put in document order,
+    which the withdrawn one never was.
+    THEY STILL THROW,
+    and that is now the only place the throw-versus-finding
+    question is live.
+    Dropping a suspect replacement silently would leave a run
+    reporting counts nobody can reproduce,
+    but throwing loses an entry's
+    unpersisted work.
+    The shape the review recommends is a typed error caught at
+    the corpus-entry boundary,
+    so the pass continues and the entry stays
+    unsettled with its cached slices reusable,
+    and that boundary is part of the
+    wiring Question 5 shapes.
+    `#95` records the rest.
+19. THE TWO LANES CAN NOW BE COMPARED SLICE BY SLICE,
+    and the comparison reads
+    what each DOCUMENT carries rather than what each lane chose.
+    Every lane
+    result reports,
+    for every prepared slice,
+    the archive's own wording beside
+    the wording that lane decided on.
+    A separate pure function joins two results
+    on the slice index and names each slice:
+    the archive stands in both,
+    one
+    lane moved,
+    both moved to the same wording,
+    or both moved apart.
+    That last
+    one is the case a human has to read,
+    and it is the reason the two-lane shape
+    exists.
+    Deliberately NOT on the per-slice records:
+    whether a slice shipped
     is decided by an assembly guard reading the whole document and can differ
-    between two runs of the same slice, so it stays on the document-level index
-    sets and the comparison derives the rest. Nothing calls the comparison yet;
+    between two runs of the same slice,
+    so it stays on the document-level index
+    sets and the comparison derives the rest.
+    Nothing calls the comparison yet;
     wiring it into a pass is shaped by Question 5.
-18. THE BENCH NOW PRICES SENDING AND ANSWERING SEPARATELY. One total could not
-    answer the width question the bench exists for: seating one more producer
-    resends the SAME prompt and adds one more answer, while a judge pays a
-    prompt carrying every candidate, so those three costs scale with width
-    differently and a single number prices them the same way. The server's own
-    total is kept beside both halves rather than derived from them, so the
-    headline cost stays what the provider stated; the derived sum is the
-    fallback for servers that report no total at all. Whether any provider here
-    ever states a total that differs from its two halves is unmeasured, and the
+18. THE BENCH NOW PRICES SENDING AND ANSWERING SEPARATELY.
+    One total could not
+    answer the width question the bench exists for:
+    seating one more producer
+    resends the SAME prompt and adds one more answer,
+    while a judge pays a
+    prompt carrying every candidate,
+    so those three costs scale with width
+    differently and a single number prices them the same way.
+    The server's own
+    total is kept beside both halves rather than derived from them,
+    so the
+    headline cost stays what the provider stated;
+    the derived sum is the
+    fallback for servers that report no total at all.
+    Whether any provider here
+    ever states a total that differs from its two halves is unmeasured,
+    and the
     first bench run under the split answers it.
-21. AN ASSEMBLY THAT CHANGES NO BYTE NOW SHIPS NOTHING, whatever its slices
-    decided. Two adjacent slices whose replacements each differ from their own
-    incumbent can reassemble to the archive text: moving a paragraph across the
-    join does it, and subdivision groups small paragraphs into slices where that
-    join exists, so this is reachable rather than hypothetical. The lane used to
-    return a non-empty shipped set beside a byte-identical document, while both
+21. AN ASSEMBLY THAT CHANGES NO BYTE NOW SHIPS NOTHING,
+    whatever its slices
+    decided.
+    Two adjacent slices whose replacements each differ from their own
+    incumbent can reassemble to the archive text:
+    moving a paragraph across the
+    join does it,
+    and subdivision groups small paragraphs into slices where that
+    join exists,
+    so this is reachable rather than hypothetical.
+    The lane used to
+    return a non-empty shipped set beside a byte-identical document,
+    while both
     contracts said those indices name slices the document CARRIES a change for.
     The guard now withdraws that whole set under its own reason and returns no
-    survivors. CANONICALIZATION RATHER THAN REFUSAL, because nobody did anything
-    wrong: each lane still holds every wording it decided, and only the
-    document-level claim changes, to the true one. It also bought something
-    back, which is why it is worth the code: with the guard guaranteeing it, the
+    survivors.
+    CANONICALIZATION RATHER THAN REFUSAL,
+    because nobody did anything
+    wrong:
+    each lane still holds every wording it decided,
+    and only the
+    document-level claim changes,
+    to the true one.
+    It also bought something
+    back,
+    which is why it is worth the code:
+    with the guard guaranteeing it,
+    the
     check that a document equal to the archive names no changed slice became
-    enforceable again, and it had been dropped as unenforceable a day earlier.
-    THIS BROADENS WHAT `withdrawn` MEANS. It is no longer only an integrity veto:
-    a withdrawal now says the document does not carry that slice's change, for
-    any of three reasons, and only the findings say which. A reader counting
+    enforceable again,
+    and it had been dropped as unenforceable a day earlier.
+    THIS BROADENS WHAT `withdrawn` MEANS.
+    It is no longer only an integrity veto:
+    a withdrawal now says the document does not carry that slice's change,
+    for
+    any of three reasons,
+    and only the findings say which.
+    A reader counting
     footnote damage from `withdrawnSliceCount` alone would now over-count.
-22. A REPAIRED SLICE IS ONE WHOSE TEXT MOVED, not one whose patch won. The
-    repair lane derived `changed` from which candidate selection chose, which is
-    a different question: the patch gate refuses an operation that rewrites its
-    region to itself, but two operations in adjacent envelopes can each change
-    their own region and concatenate back to the archive text, the same shape as
-    decision 21 one level down. Such a patch could win and write no byte, and
+22. A REPAIRED SLICE IS ONE WHOSE TEXT MOVED,
+    not one whose patch won.
+    The
+    repair lane derived `changed` from which candidate selection chose,
+    which is
+    a different question:
+    the patch gate refuses an operation that rewrites its
+    region to itself,
+    but two operations in adjacent envelopes can each change
+    their own region and concatenate back to the archive text,
+    the same shape as
+    decision 21 one level down.
+    Such a patch could win and write no byte,
+    and
     the per-slice assertion would then throw on a run nobody did anything wrong
-    in. `changed` now reads the text; `accuracyPatchSelected` keeps the
-    selection fact, which stays true in that case and is a different thing. The
-    translate lane already worked this way, so the invariant now holds by
+    in.
+    `changed` now reads the text;
+    `accuracyPatchSelected` keeps the
+    selection fact,
+    which stays true in that case and is a different thing.
+    The
+    translate lane already worked this way,
+    so the invariant now holds by
     construction on both.
-23. A CACHE KEY NOW NAMES THE QUESTION AND NOT THE PLACE IT WAS ASKED. You
-    authorized the invalidation; the shape is mine and is open to veto. A key is
-    the run's shape, both slice texts and the governance flag, and the slice
-    index was in it for no reason a reader could defend: the same source and the
-    same incumbent produce the same answer wherever they sit, and one-sided
-    slicing moves indices around by design, so keeping it would have made every
-    slice after an inserted section a miss. A resumed record is RE-STAMPED with
-    the index it is resumed under, rather than trusted to carry its own, since
-    the stored one is now meaningless. What made this safe to do rather than
+23. A CACHE KEY NOW NAMES THE QUESTION AND NOT THE PLACE IT WAS ASKED.
+    You
+    authorized the invalidation;
+    the shape is mine and is open to veto.
+    A key is
+    the run's shape,
+    both slice texts and the governance flag,
+    and the slice
+    index was in it for no reason a reader could defend:
+    the same source and the
+    same incumbent produce the same answer wherever they sit,
+    and one-sided
+    slicing moves indices around by design,
+    so keeping it would have made every
+    slice after an inserted section a miss.
+    A resumed record is RE-STAMPED with
+    the index it is resumed under,
+    rather than trusted to carry its own,
+    since
+    the stored one is now meaningless.
+    What made this safe to do rather than
     merely right was that nothing had settled under either lane's current
-    version, measured before the change: the translate cache was empty and the
+    version,
+    measured before the change:
+    the translate cache was empty and the
     repair one held no record under its current version.
-    THE ONE THING THAT DEPENDED ON POSITION was removed rather than kept: a
-    refusal sentence naming `slice 3` was being stored inside the record, so
+    THE ONE THING THAT DEPENDED ON POSITION was removed rather than kept:
+    a
+    refusal sentence naming `slice 3` was being stored inside the record,
+    so
     after the key change it would have been resumed at another position and
-    reported the wrong slice number. The stored record now carries the finding
-    without the sentence, and the sentence is composed at the document level
+    reported the wrong slice number.
+    The stored record now carries the finding
+    without the sentence,
+    and the sentence is composed at the document level
     where the positions are known.
-24. A CHUNK IS EITHER CONTENT OR A PLACE, and the discriminant is a FIELD rather
-    than emptiness. This is the first landing of `#100` and it changes nothing
-    that runs today, because nothing produces a place yet. Reasoning: a
+24. A CHUNK IS EITHER CONTENT OR A PLACE,
+    and the discriminant is a FIELD rather
+    than emptiness.
+    This is the first landing of `#100` and it changes nothing
+    that runs today,
+    because nothing produces a place yet.
+    Reasoning:
+    a
     `nodes.length === 0` test would work today and would silently promote any
-    fabricated empty chunk to an insertion tomorrow, while a field says what a
-    value is. An external review argued me out of my first shape, an optional
-    `placement` marker on one broad type, which buys the word without the
-    protection: an insertion would stay assignable everywhere content is
+    fabricated empty chunk to an insertion tomorrow,
+    while a field says what a
+    value is.
+    An external review argued me out of my first shape,
+    an optional
+    `placement` marker on one broad type,
+    which buys the word without the
+    protection:
+    an insertion would stay assignable everywhere content is
     expected.
-    ONE RULE REFUSES EVERY BAD PLACEMENT, checked at assembly: each target span
-    starts at or after the previous one ends, walked in slice order. Overlaps, an
-    anchor sitting inside a span, two spans at one offset, backwards ranges and
-    stale text all fall out of it, and the review agreed there is no
-    offset-only counterexample once the per-slice shape checks pass. It also
-    found something I had not: array order is only slice order if the indices ARE
-    positions, which assembly never asserted, so two anchors at one boundary with
+    ONE RULE REFUSES EVERY BAD PLACEMENT,
+    checked at assembly:
+    each target span
+    starts at or after the previous one ends,
+    walked in slice order.
+    Overlaps,
+    an
+    anchor sitting inside a span,
+    two spans at one offset,
+    backwards ranges and
+    stale text all fall out of it,
+    and the review agreed there is no
+    offset-only counterexample once the per-slice shape checks pass.
+    It also
+    found something I had not:
+    array order is only slice order if the indices ARE
+    positions,
+    which assembly never asserted,
+    so two anchors at one boundary with
     unique but shuffled indices would have been written in reverse.
-    WHAT IT LEFT OPEN, and I did not decide: whether a MISSING replacement for an
-    anchor should be refused the way a BLANK one now is. A blank one is refused
-    because an anchor is where a rendering belongs, so blank text there leaves
-    the passage missing while the run reports it delivered. A missing one cannot
+    WHAT IT LEFT OPEN,
+    and I did not decide:
+    whether a MISSING replacement for an
+    anchor should be refused the way a BLANK one now is.
+    A blank one is refused
+    because an anchor is where a rendering belongs,
+    so blank text there leaves
+    the passage missing while the run reports it delivered.
+    A missing one cannot
     be answered until the absent-incumbent work says whether assembly may ever
-    withdraw an anchor's replacement, since withdrawing one restores nothing.
-25. THE SEPARATOR BETWEEN TWO BLOCKS IS ASSEMBLY'S, NOT THE PROMPT'S. Every
+    withdraw an anchor's replacement,
+    since withdrawing one restores nothing.
+25. THE SEPARATOR BETWEEN TWO BLOCKS IS ASSEMBLY'S,
+    NOT THE PROMPT'S.
+    Every
     replacement until now went into a span that already sat between the right
-    blank lines, so writing model text verbatim preserved them; an anchor has no
-    span, and verbatim text written before a heading produces `...afternoon.##
-    Habits`, which still parses as Markdown and says something else. A prompt
+    blank lines,
+    so writing model text verbatim preserved them;
+    an anchor has no
+    span,
+    and verbatim text written before a heading produces `...afternoon.##
+    Habits`,
+    which still parses as Markdown and says something else.
+    A prompt
     asking for correct leading and trailing blank lines is a hope that fails
-    silently, and it cannot be right anyway, since several fragments landing at
+    silently,
+    and it cannot be right anyway,
+    since several fragments landing at
     one boundary would each carry their own and put two between every pair.
-    THE RULES, all add-only: strip only outer blank-line material from a
-    fragment and keep its indentation, because a rendering that begins with
-    spaces is inside a list or a quote; join same-boundary fragments with one
-    blank line; preserve existing whitespace byte for byte and only top it up;
-    write the document's OWN line ending, which a Windows translation needs and a
-    diff would otherwise report as changes to lines nobody touched; and treat the
-    end of a file as termination rather than as separation from nothing. Four
-    existing test expectations changed, each of which had pinned the verbatim
+    THE RULES,
+    all add-only:
+    strip only outer blank-line material from a
+    fragment and keep its indentation,
+    because a rendering that begins with
+    spaces is inside a list or a quote;
+    join same-boundary fragments with one
+    blank line;
+    preserve existing whitespace byte for byte and only top it up;
+    write the document's OWN line ending,
+    which a Windows translation needs and a
+    diff would otherwise report as changes to lines nobody touched;
+    and treat the
+    end of a file as termination rather than as separation from nothing.
+    Four
+    existing test expectations changed,
+    each of which had pinned the verbatim
     write this replaces.
-26. A PASSAGE THE RUN COULD NOT TRANSLATE COSTS ITS OWN SLICE, NOT THE ENTRY.
-    This is the one place I departed from a review's recorded shape, so it is
+26. A PASSAGE THE RUN COULD NOT TRANSLATE COSTS ITS OWN SLICE,
+    NOT THE ENTRY.
+    This is the one place I departed from a review's recorded shape,
+    so it is
     the decision in tonight's work most worth your veto.
-    THE PROBLEM IT SOLVES either way: every fallback in the translate stage
-    ships the wording already in the archive, which is right for a slice that
-    HAS one, since leaving a passage as it stands is the state the run began in.
-    For a slice with none, the same fallback shipped the empty string and
-    reported a settled slice, so the run read as having delivered a translation
+    THE PROBLEM IT SOLVES either way:
+    every fallback in the translate stage
+    ships the wording already in the archive,
+    which is right for a slice that
+    HAS one,
+    since leaving a passage as it stands is the state the run began in.
+    For a slice with none,
+    the same fallback shipped the empty string and
+    reported a settled slice,
+    so the run read as having delivered a translation
     it never produced.
     THE REVIEW'S SHAPE was for the lane to throw and leave the whole entry
-    unsettled, its cached slices reusable by the next attempt.
-    WHAT I BUILT INSTEAD: the stage raises a typed refusal, the driver catches
-    it per slice, and the document settles with that passage still missing and
-    named in a new `unfilledChunkIndices` field, with the findings saying which
-    translators were heard and what the judges counted. Nothing is cached for
-    such a slice, so the next run asks again.
-    REASONING: the document keeps the gap the archive already had, which states
-    nothing false; a decline depends on which judges answered, so it varies
-    between runs, and throwing the entry away discards every other slice's work
-    over that; and the missing passage is now nameable, which is what stops it
+    unsettled,
+    its cached slices reusable by the next attempt.
+    WHAT I BUILT INSTEAD:
+    the stage raises a typed refusal,
+    the driver catches
+    it per slice,
+    and the document settles with that passage still missing and
+    named in a new `unfilledChunkIndices` field,
+    with the findings saying which
+    translators were heard and what the judges counted.
+    Nothing is cached for
+    such a slice,
+    so the next run asks again.
+    REASONING:
+    the document keeps the gap the archive already had,
+    which states
+    nothing false;
+    a decline depends on which judges answered,
+    so it varies
+    between runs,
+    and throwing the entry away discards every other slice's work
+    over that;
+    and the missing passage is now nameable,
+    which is what stops it
     being read as a slice the judges kept.
-    WHAT WOULD CHANGE IF YOU PREFER THE REVIEW'S SHAPE: one branch in the
-    driver, plus the entry-level catch that Question 5's wiring needs anyway.
-27. A TRANSLATOR REPLY THAT SAYS NOTHING IS NO LONGER A REPLY. `{"translation":
-    ""}` satisfies the structured-output schema, so it arrived as a heard voice,
-    was dropped further down as an unusable candidate, and the model that sent
-    it counted as having answered and was never asked again. The wire guard now
-    refuses it, which makes it a lost voice: the roster re-asks that model in
-    the next round, and if it stays blank the loss is named like any other.
-    Every source slice says something, so no legitimate reply is blank.
-    WHAT THIS CHANGES IN A COUNT you may already be reading: a blank reply used
+    WHAT WOULD CHANGE IF YOU PREFER THE REVIEW'S SHAPE:
+    one branch in the
+    driver,
+    plus the entry-level catch that Question 5's wiring needs anyway.
+27. A TRANSLATOR REPLY THAT SAYS NOTHING IS NO LONGER A REPLY.
+    `{"translation":
+    ""}` satisfies the structured-output schema,
+    so it arrived as a heard voice,
+    was dropped further down as an unusable candidate,
+    and the model that sent
+    it counted as having answered and was never asked again.
+    The wire guard now
+    refuses it,
+    which makes it a lost voice:
+    the roster re-asks that model in
+    the next round,
+    and if it stays blank the loss is named like any other.
+    Every source slice says something,
+    so no legitimate reply is blank.
+    WHAT THIS CHANGES IN A COUNT you may already be reading:
+    a blank reply used
     to show up as `translate-blank (model)` beside a full `heardTranslators`
-    tally. It now shows up as `stage-voice-lost (translate model)` with one
-    fewer heard translator, which is the same event described honestly. The
+    tally.
+    It now shows up as `stage-voice-lost (translate model)` with one
+    fewer heard translator,
+    which is the same event described honestly.
+    The
     blank filter downstream stays as a backstop and should now never fire.
 28. WHAT COUNTS AS PROOF THAT A PASSAGE WAS NEVER TRANSLATED?
-    THE PIPELINE IS ABOUT TO ACT ON AN ANSWER IT DOES NOT HAVE. Both halves of
+    THE PIPELINE IS ABOUT TO ACT ON AN ANSWER IT DOES NOT HAVE.
+    Both halves of
     the one-sided slicing work insert text where an aligner reports no
-    counterpart: at paragraph scale (landing four) and at section scale
-    (landing five). I measured what those reports are actually made of, and
+    counterpart:
+    at paragraph scale (landing four) and at section scale
+    (landing five).
+    I measured what those reports are actually made of,
+    and
     they are not evidence of a missing translation.
-    AT PARAGRAPH SCALE: the block aligner can pair one with one, skip a source
-    block, or skip a target block, and nothing else. It cannot say two source
-    paragraphs were rendered as one, so a merged pair reports the second as
-    unpaired, identically to an omission. Corpus: 2290 paired steps, 95
-    unpaired source blocks, in 23 of 92 entries, sixty of them inside two
-    entries. A hand sample of twelve found the strongest signals were merges
+    AT PARAGRAPH SCALE:
+    the block aligner can pair one with one,
+    skip a source
+    block,
+    or skip a target block,
+    and nothing else.
+    It cannot say two source
+    paragraphs were rendered as one,
+    so a merged pair reports the second as
+    unpaired,
+    identically to an omission.
+    Corpus:
+    2290 paired steps,
+    95
+    unpaired source blocks,
+    in 23 of 92 entries,
+    sixty of them inside two
+    entries.
+    A hand sample of twelve found the strongest signals were merges
     (one entry renders four consecutive lines as a single English block) and
     the weakest were MISPAIRINGS (a footnote definition paired with the wrong
-    footnote; a narration line paired with a translation three blocks away).
+    footnote;
+    a narration line paired with a translation three blocks away).
     AT SECTION SCALE the numbers are smaller and I READ THEM WRONG THE FIRST
-    TIME, which is worth your attention because the correction is what the
-    prototype below was able to make. Eighty-five of the 92 entries never reach
-    the section matcher at all, because equal heading counts short circuit it
-    (`#98`). Of the seven that do, two produce unpaired source sections, eleven
+    TIME,
+    which is worth your attention because the correction is what the
+    prototype below was able to make.
+    Eighty-five of the 92 entries never reach
+    the section matcher at all,
+    because equal heading counts short circuit it
+    (`#98`).
+    Of the seven that do,
+    two produce unpaired source sections,
+    eleven
     in total.
-    WHAT I FIRST CONCLUDED, and recorded here in an earlier draft: eight of the
-    eleven were false, because one entry's sections carry English headings that
-    plainly correspond, 经历 with Experience, 遇见 with Meeting, and so on
+    WHAT I FIRST CONCLUDED,
+    and recorded here in an earlier draft:
+    eight of the
+    eleven were false,
+    because one entry's sections carry English headings that
+    plainly correspond,
+    经历 with Experience,
+    遇见 with Meeting,
+    and so on
     through eight of them.
-    WHAT IS ACTUALLY TRUE: that entry's English document is 1,218 characters
-    against 7,365 Chinese, and every section of it except the last is a HEADING
-    WITH NO BODY. The headings correspond and the translations do not exist. I
-    had inferred body coverage from heading correspondence, which is the same
-    reasoning error I have been refusing elsewhere, and the six-model coverage
+    WHAT IS ACTUALLY TRUE:
+    that entry's English document is 1,218 characters
+    against 7,365 Chinese,
+    and every section of it except the last is a HEADING
+    WITH NO BODY.
+    The headings correspond and the translations do not exist.
+    I
+    had inferred body coverage from heading correspondence,
+    which is the same
+    reasoning error I have been refusing elsewhere,
+    and the six-model coverage
     probe reported all eight as uncarried before I checked.
-    SO THE MATCHER'S REFUSALS WERE RIGHT IN OUTCOME on that entry, for a reason
-    it could not state, and the count of genuine candidates at section scale is
+    SO THE MATCHER'S REFUSALS WERE RIGHT IN OUTCOME on that entry,
+    for a reason
+    it could not state,
+    and the count of genuine candidates at section scale is
     higher than the earlier draft said rather than lower.
-    WHY IT IS YOURS TO ANSWER: the paths differ in expense and in how long the
-    lane stays unable to fill a real gap. None of them is wrong.
-    A. ASK A MODEL WHETHER THE TARGET DOCUMENT CARRIES THIS PASSAGE AT ALL,
+    WHY IT IS YOURS TO ANSWER:
+    the paths differ in expense and in how long the
+    lane stays unable to fill a real gap.
+    None of them is wrong.
+    A.
+    ASK A MODEL WHETHER THE TARGET DOCUMENT CARRIES THIS PASSAGE AT ALL,
     scoped to the whole translation rather than to the neighbours the aligner
-    picked. Pros: it is the only option immune to the pairing quality this
-    measurement just impeached, since it never consults the pairing; about a
-    hundred and six questions corpus-wide is a small bill; it caches like every
-    other slice; and it answers both scales with one mechanism. Cons: a new
-    stage with its own prompt, schema, roster and failure modes, and a long
+    picked.
+    Pros:
+    it is the only option immune to the pairing quality this
+    measurement just impeached,
+    since it never consults the pairing;
+    about a
+    hundred and six questions corpus-wide is a small bill;
+    it caches like every
+    other slice;
+    and it answers both scales with one mechanism.
+    Cons:
+    a new
+    stage with its own prompt,
+    schema,
+    roster and failure modes,
+    and a long
     document makes a long question.
-    B. FIX ALIGNMENT FIRST, then revisit insertion. Pros: the mispairings and
-    the ambiguous refusals are defects rather than limits, `#74` and `#98`
-    already own them, and every stage reads better pairs, not just this one.
-    Cons: the largest item here, it does not by itself separate a merge from an
-    omission, and both landings wait on it.
-    C. INSERT ONLY WHERE THE EVIDENCE IS ALREADY OVERWHELMING, meaning a source
+    B.
+    FIX ALIGNMENT FIRST,
+    then revisit insertion.
+    Pros:
+    the mispairings and
+    the ambiguous refusals are defects rather than limits,
+    `#74` and `#98`
+    already own them,
+    and every stage reads better pairs,
+    not just this one.
+    Cons:
+    the largest item here,
+    it does not by itself separate a merge from an
+    omission,
+    and both landings wait on it.
+    C.
+    INSERT ONLY WHERE THE EVIDENCE IS ALREADY OVERWHELMING,
+    meaning a source
     section whose absence is corroborated by more than the matcher's refusal:
-    no target heading resembles it, and the target document is shorter than the
-    source by about that section's size. Pros: no new stage, no model call, and
+    no target heading resembles it,
+    and the target document is shorter than the
+    source by about that section's size.
+    Pros:
+    no new stage,
+    no model call,
+    and
     it would have admitted the three true ones and refused the eight false ones
-    in this corpus. Cons: a threshold tuned on two entries is a threshold tuned
-    on nothing, and it silently does nothing on the 85 entries that skip the
+    in this corpus.
+    Cons:
+    a threshold tuned on two entries is a threshold tuned
+    on nothing,
+    and it silently does nothing on the 85 entries that skip the
     matcher.
-    D. DO NOT INSERT AT ALL for now. Keep both landings parked, ship the
-    translate lane over slices that HAVE incumbent text, and revisit when
-    alignment is trustworthy. Pros: no corpus risk whatever; every invariant
-    built for insertion stays and stays tested. Cons: the archive's genuinely
-    missing sections stay missing, which is the thing the second lane exists
+    D.
+    DO NOT INSERT AT ALL for now.
+    Keep both landings parked,
+    ship the
+    translate lane over slices that HAVE incumbent text,
+    and revisit when
+    alignment is trustworthy.
+    Pros:
+    no corpus risk whatever;
+    every invariant
+    built for insertion stays and stays tested.
+    Cons:
+    the archive's genuinely
+    missing sections stay missing,
+    which is the thing the second lane exists
     for.
-    MY RANKING: A > C > B > D.
+    MY RANKING:
+    A > C > B > D.
     A over C because A answers the question for both scales with one mechanism
-    and does not depend on the aligner being right, where C still rests on
+    and does not depend on the aligner being right,
+    where C still rests on
     refusals whose reasons do not distinguish the cases.
     C over B because C can ship a genuinely missing section now and B is the
-    largest item here, and because the correction above raised how many section
+    largest item here,
+    and because the correction above raised how many section
     candidates are genuine rather than lowering it.
-    B over D because B is work that pays off in every stage, where D is a
+    B over D because B is work that pays off in every stage,
+    where D is a
     holding position.
-    WHAT I DID RATHER THAN WAIT: built A and measured it, since it was the
-    stated default and the prototype touches no corpus state. It is four files
-    and a probe task, nothing calls them, and no slicing or artifact reads them.
-    WHAT IT MEASURED, thirty-three candidates, six voices each, about a hundred
+    WHAT I DID RATHER THAN WAIT:
+    built A and measured it,
+    since it was the
+    stated default and the prototype touches no corpus state.
+    It is four files
+    and a probe task,
+    nothing calls them,
+    and no slicing or artifact reads them.
+    WHAT IT MEASURED,
+    thirty-three candidates,
+    six voices each,
+    about a hundred
     and ninety calls and under ten minutes:
-    ELEVEN SECTIONS: ten absent, one carried. Every verdict agrees with what the
-    documents contain, and NINE of my eleven hand labels were wrong. It found
-    that one entry's English side is headings without bodies, and that a source
+    ELEVEN SECTIONS:
+    ten absent,
+    one carried.
+    Every verdict agrees with what the
+    documents contain,
+    and NINE of my eleven hand labels were wrong.
+    It found
+    that one entry's English side is headings without bodies,
+    and that a source
     heading meaning "blank" is rendered by an English heading spelled `__`,
     which the matcher cannot score because it holds no letters.
-    TWENTY-TWO BLOCKS: eighteen carried, most unanimously, one absent, and three
-    split with NO votes for absence at all. So at paragraph scale at most one of
-    twenty-two passages the aligner refuses is one nobody translated, and
+    TWENTY-TWO BLOCKS:
+    eighteen carried,
+    most unanimously,
+    one absent,
+    and three
+    split with NO votes for absence at all.
+    So at paragraph scale at most one of
+    twenty-two passages the aligner refuses is one nobody translated,
+    and
     landing four would insert on all twenty-two.
-    WHAT THAT IS NOT: an accuracy number. The candidates come from five entries,
-    most blocks carry no hand label, and I made the labels after seeing the
-    aligner. What the class balance cannot explain is that pooled across both
-    scales no constant answer beats nineteen of thirty-three, while the probe
+    WHAT THAT IS NOT:
+    an accuracy number.
+    The candidates come from five entries,
+    most blocks carry no hand label,
+    and I made the labels after seeing the
+    aligner.
+    What the class balance cannot explain is that pooled across both
+    scales no constant answer beats nineteen of thirty-three,
+    while the probe
     agrees with every label I have in both directions.
-    WHAT IT COSTS: about six calls per candidate, roughly a hundred and six
-    candidates corpus-wide, so one pass over every unpaired passage in the
+    WHAT IT COSTS:
+    about six calls per candidate,
+    roughly a hundred and six
+    candidates corpus-wide,
+    so one pass over every unpaired passage in the
     corpus is around six hundred and forty calls and a quarter of an hour.
-    ONE DESIGN DEFECT IT EXPOSED, which matters whichever option you choose: a
+    ONE DESIGN DEFECT IT EXPOSED,
+    which matters whichever option you choose:
+    a
     source section whose translation is a HEADING WITH NO BODY must have its
-    body inserted UNDER that heading, not inserted as a whole new section, or
-    the document gains a duplicate heading. Landing five as designed would have
+    body inserted UNDER that heading,
+    not inserted as a whole new section,
+    or
+    the document gains a duplicate heading.
+    Landing five as designed would have
     made that mistake on eight sections of one entry.
-    RERUN AFTER THE REVIEW CHANGES LANDED, because the numbers above are what
-    this question rests on and three things moved underneath them: the sheet was
-    rewritten, the threshold became a majority of the roster rather than of the
-    voices heard, and the quote locator learned to see through a soft line wrap.
-    Nine of the eleven section verdicts are identical. XingZ60's section 12 reads
-    `partly-carried` where it read `carried`, which is not the models changing
-    their minds: the tallies are zero full and five partial, and the old verdict
-    counted any claim of coverage as one vote, so those same five votes used to
-    print as carried. XIEPT2's section 7 reads `split` where it read `absent`,
-    and that one I CANNOT attribute: the votes themselves moved, and votes of
-    that shape read as split under either threshold, so the cause is the new
-    sheet or ordinary variance between two samples of six stochastic models, and
+    RERUN AFTER THE REVIEW CHANGES LANDED,
+    because the numbers above are what
+    this question rests on and three things moved underneath them:
+    the sheet was
+    rewritten,
+    the threshold became a majority of the roster rather than of the
+    voices heard,
+    and the quote locator learned to see through a soft line wrap.
+    Nine of the eleven section verdicts are identical.
+    XingZ60's section 12 reads
+    `partly-carried` where it read `carried`,
+    which is not the models changing
+    their minds:
+    the tallies are zero full and five partial,
+    and the old verdict
+    counted any claim of coverage as one vote,
+    so those same five votes used to
+    print as carried.
+    XIEPT2's section 7 reads `split` where it read `absent`,
+    and that one I CANNOT attribute:
+    the votes themselves moved,
+    and votes of
+    that shape read as split under either threshold,
+    so the cause is the new
+    sheet or ordinary variance between two samples of six stochastic models,
+    and
     one run cannot separate those.
-    WHAT DID NOT MOVE IS THE ANSWER TO YOUR QUESTION. No candidate in either run
-    reports full coverage. Nine of eleven are absent by a majority of the whole
-    roster with every model heard, and both verdicts that moved moved AWAY from
-    coverage rather than toward it. The sections I had labelled as plainly
+    WHAT DID NOT MOVE IS THE ANSWER TO YOUR QUESTION.
+    No candidate in either run
+    reports full coverage.
+    Nine of eleven are absent by a majority of the whole
+    roster with every model heard,
+    and both verdicts that moved moved AWAY from
+    coverage rather than toward it.
+    The sections I had labelled as plainly
     translated are still reported as carrying nothing.
-    THE BLOCK SET WAS RERUN TOO, on `mikaela_khara`, the entry that produced the
-    three splits. All three are now carried, and of the quotes still unanchored
-    none is a soft line wrap where ten of eleven were before, so the refusals
-    that remain are English a model composed rather than copied, plus one
-    single-word quote refused for occurring twice. Across both runs of that entry,
-    ninety-six answers from six models, NOT ONE VOTE FOR ABSENCE was cast on
-    sixteen passages the block aligner refuses to pair. If anything, the paragraph
-    scale reads worse for landing four than it did: at most one of twenty-two, and
+    THE BLOCK SET WAS RERUN TOO,
+    on `mikaela_khara`,
+    the entry that produced the
+    three splits.
+    All three are now carried,
+    and of the quotes still unanchored
+    none is a soft line wrap where ten of eleven were before,
+    so the refusals
+    that remain are English a model composed rather than copied,
+    plus one
+    single-word quote refused for occurring twice.
+    Across both runs of that entry,
+    ninety-six answers from six models,
+    NOT ONE VOTE FOR ABSENCE was cast on
+    sixteen passages the block aligner refuses to pair.
+    If anything,
+    the paragraph
+    scale reads worse for landing four than it did:
+    at most one of twenty-two,
+    and
     plausibly none.
-    RUN A THIRD TIME under unchanged code, because the one sentence above that
-    said "this might be variance" deserved testing rather than repeating. All
-    eleven verdicts came back IDENTICAL to the second run, section 7's split
-    included. So that split reproduces, and the eleven verdicts this question
+    RUN A THIRD TIME under unchanged code,
+    because the one sentence above that
+    said "this might be variance" deserved testing rather than repeating.
+    All
+    eleven verdicts came back IDENTICAL to the second run,
+    section 7's split
+    included.
+    So that split reproduces,
+    and the eleven verdicts this question
     rests on are now two independent samples in agreement rather than one sample.
 
 ### MEASURED 2026-08-23: the absence vote is reachable, so the block-scale null is about the corpus
 
-The unanimity recorded for `mikaela_khara`, ninety-six answers with not one vote for absence,
+The unanimity recorded for `mikaela_khara`,
+ninety-six answers with not one vote for absence,
 had two readings and nothing separated them.
 Either the translation carries every passage,
 or the coverage wire's evidence rule admits any non-empty quote,
 which would make an absence verdict unreachable and the count meaningless.
-Both produce the same reading, and the second would undercut everything this question leans on.
+Both produce the same reading,
+and the second would undercut everything this question leans on.
 
-Measured both, on that same entry, at the current wire.
+Measured both,
+on that same entry,
+at the current wire.
 
-FIRST, the verdicts were graded deterministically, no model in the loop,
+FIRST,
+the verdicts were graded deterministically,
+no model in the loop,
 over the sixteen block-scale answers from a fresh run:
 no evidence span is offered for two different blocks,
 no block's evidence sits out of document order relative to its neighbours,
@@ -1965,26 +3829,35 @@ the thinnest being 2.08 English characters per source character against a spread
 Every detector was first shown to fire on a planted case,
 and the reuse detector was also shown NOT to fire on several voters quoting one span for one block.
 
-SECOND, and this is what settles it,
-the roster was asked about a passage, THE SPANS IT ITSELF ANCHORED ON were deleted,
+SECOND,
+and this is what settles it,
+the roster was asked about a passage,
+THE SPANS IT ITSELF ANCHORED ON were deleted,
 and it was asked again.
 Two of three cases flipped from `carried` to `absent`,
 with six of six and five of six voices calling it absent where none had before.
-The third moved to `partly-carried`, which is what a passage partly rendered elsewhere should produce.
+The third moved to `partly-carried`,
+which is what a passage partly rendered elsewhere should produce.
 
-THIRD, the same cases were cut again by the same number of characters
+THIRD,
+the same cases were cut again by the same number of characters
 taken from a part of the page the roster had not pointed at.
 None of the three produced a single absence vote.
 The deleted region was classified structurally rather than assumed to be ordinary:
-one prose line of 111 characters, not a heading, list, link or footer.
-So the flip follows the rendering, not the damage.
+one prose line of 111 characters,
+not a heading,
+list,
+link or footer.
+So the flip follows the rendering,
+not the damage.
 
 The targeted arm returned identical verdicts on two independent runs,
 and the coverage path holds no cache,
 so that agreement was bought rather than replayed.
 
 WHAT THIS DOES AND DOES NOT LICENSE.
-It establishes that the wire can say no, which is what question 28's premise needed.
+It establishes that the wire can say no,
+which is what question 28's premise needed.
 It does not establish that the corpus carries everything:
 that is one entry and three damaged cases,
 enough to settle reachability and not enough to make a claim about ninety-three pages.
@@ -1992,44 +3865,64 @@ The wiring itself stays where the owner left it,
 `groupSourceFirst` unwired and `alignDocumentSections` emitting no insertion pairs,
 because what the pipeline should DO with a reachable absence verdict is a separate decision.
 
-Runner: `mise run //package/module/translation-repair:coverage-control-probe -- --only <entry>`.
+Runner:
+`mise run //package/module/translation-repair:coverage-control-probe -- --only <entry>`.
 
 ### AND THE NULL ITSELF WAS ONE ENTRY, measured the same day
 
-Ran the same control over six entries, picked off a zero-quota census
+Ran the same control over six entries,
+picked off a zero-quota census
 that found 26 of the 92 pairs carry coverage candidates at all.
 
-Three entries HELD, meaning damage was detected and only the right damage:
-`mikaela_khara`, `TianqiChen666` and `Futajuhuacha` gave absence votes on 8 of 9 targeted cuts
+Three entries HELD,
+meaning damage was detected and only the right damage:
+`mikaela_khara`,
+`TianqiChen666` and `Futajuhuacha` gave absence votes on 8 of 9 targeted cuts
 and on 0 of 9 equally sized cuts taken where the roster had not pointed.
 
-On the other three the control had NOTHING TO DAMAGE, because the roster refused to call
+On the other three the control had NOTHING TO DAMAGE,
+because the roster refused to call
 a single candidate covered before anything was cut:
 
--   `shi_Yumiaoya`, 8 of 8 candidates: seven `absent` with 4 to 6 of 6 voices, one `split`.
--   `Aniloviraw`, 3 of 3: all `absent`, 5 to 6 voices.
--   `XingZ60`, 4 of 4: section 13 `absent` with 5 voices, the rest `partly-carried`.
+-   `shi_Yumiaoya`,
+    8 of 8 candidates:
+    seven `absent` with 4 to 6 of 6 voices,
+    one `split`.
+-   `Aniloviraw`,
+    3 of 3:
+    all `absent`,
+    5 to 6 voices.
+-   `XingZ60`,
+    4 of 4:
+    section 13 `absent` with 5 voices,
+    the rest `partly-carried`.
 
 Fifteen of fifteen undamaged candidates were not called covered,
 and not one refusal anywhere in the run was an anchoring failure.
 `XingZ60` also reproduced its recorded section-scale verdicts,
 section 12 `partly-carried` and section 13 `absent`.
 
-SO THE SENTENCE THIS QUESTION LEANS ON, ninety-six answers with not one vote for absence,
+SO THE SENTENCE THIS QUESTION LEANS ON,
+ninety-six answers with not one vote for absence,
 IS A FACT ABOUT `mikaela_khara`.
-It is not a fact about the wire, which votes absence near-unanimously on other pages,
+It is not a fact about the wire,
+which votes absence near-unanimously on other pages,
 and it is not a fact about the corpus.
-The reading that follows from it, at most one of twenty-two and plausibly none,
+The reading that follows from it,
+at most one of twenty-two and plausibly none,
 inherits the same limit and needs re-deriving over a spread before it can carry
 the weight the paragraph-scale refusal puts on it.
 
-NOT ESTABLISHED: whether those absence verdicts are CORRECT.
+NOT ESTABLISHED:
+whether those absence verdicts are CORRECT.
 They are consistent with genuine omissions rather than merges,
 since a merge puts the content somewhere and that is what `carried` reports while `absent`
-claims it is nowhere, but that is an argument and not a measurement.
+claims it is nowhere,
+but that is an argument and not a measurement.
 Settling it means reading those passages against their source.
 
-Still nothing wired, and still the owner's call.
+Still nothing wired,
+and still the owner's call.
 
 
 ### Taken on 2026-08-21, all four vetoable
@@ -2070,41 +3963,85 @@ Still nothing wired, and still the owner's call.
 
 ## Question 11: whether the editor calibration overlaps slices by default
 
-`TRANSLATION_REPAIR_SLICE_OVERLAP` (`slice-overlap.ts`, landed `ce5ca2368`) sets how many slices
-`editor-calibrate` keeps in flight; the default is 1. Measured on 2026-08-26 over the same four slices,
-one run per arm: arm B (overlap 4) took 24.18 min against arm A's 43.18 (overlap 1), heard 302 of 312
-voices against 304, and the calls themselves cost the same (stream sums 6249 s and 6312 s). Arm A2
-repeated arm A unchanged and took 58.95 min, so the run-to-run band is 37% of wall clock and comes from
-provider speed. Normalized as wall clock over stream sum: A 0.41, A2 0.38, B 0.23. The overlap effect is
-six bands wide. The owner's 2026-08-26 answer was "measure the run-to-run band first"; it is measured.
+`TRANSLATION_REPAIR_SLICE_OVERLAP` (`slice-overlap.ts`,
+landed `ce5ca2368`) sets how many slices
+`editor-calibrate` keeps in flight;
+the default is 1.
+Measured on 2026-08-26 over the same four slices,
+one run per arm:
+arm B (overlap 4) took 24.18 min against arm A's 43.18 (overlap 1),
+heard 302 of 312
+voices against 304,
+and the calls themselves cost the same (stream sums 6249 s and 6312 s).
+Arm A2
+repeated arm A unchanged and took 58.95 min,
+so the run-to-run band is 37% of wall clock and comes from
+provider speed.
+Normalized as wall clock over stream sum:
+A 0.41,
+A2 0.38,
+B 0.23.
+The overlap effect is
+six bands wide.
+The owner's 2026-08-26 answer was "measure the run-to-run band first";
+it is measured.
 
 ### Options
 
-A.  **Default `editor-calibrate` to overlap 4, keep the dial.**
-    -   For: halves the wall clock of the one command a session waits on most, on evidence that clears the
-        band six times over; voices heard moved by 2 of 312, inside what provider speed alone moves (A2 lost
+A.
+ **Default `editor-calibrate` to overlap 4,
+keep the dial.**
+    -   For:
+halves the wall clock of the one command a session waits on most,
+on evidence that clears the
+        band six times over;
+voices heard moved by 2 of 312,
+inside what provider speed alone moves (A2 lost
         8 with no dial change).
-    -   Against: a four-slice standing is noise either way (GLM-5.2 swung 52.2% to 26.7% to 10.0% between
-        identical runs), so faster standings are faster noise until the sample grows; `producer-calibrate`
-        has no dial yet, so the two calibrations would run under different defaults.
-B.  **Keep the default at 1; document `TRANSLATION_REPAIR_SLICE_OVERLAP=4` as the recommended launch.**
-    -   For: nothing changes for a reader of an old log; the pass drivers (question 3, `#261`) still run at
-        1, so calibration and pass stay alike until the pass is measured.
-    -   Against: the recommendation lives in a doc a reader may not open; every default run pays 19 minutes
+    -   Against:
+a four-slice standing is noise either way (GLM-5.2 swung 52.2% to 26.7% to 10.0% between
+        identical runs),
+so faster standings are faster noise until the sample grows;
+`producer-calibrate`
+        has no dial yet,
+so the two calibrations would run under different defaults.
+B.
+ **Keep the default at 1;
+document `TRANSLATION_REPAIR_SLICE_OVERLAP=4` as the recommended launch.**
+    -   For:
+nothing changes for a reader of an old log;
+the pass drivers (question 3,
+`#261`) still run at
+        1,
+so calibration and pass stay alike until the pass is measured.
+    -   Against:
+the recommendation lives in a doc a reader may not open;
+every default run pays 19 minutes
         for nothing measurable.
-C.  **Move both calibrations and the pass to overlap 4 together, after `#261` is measured.**
-    -   For: one story for every driver.
-    -   Against: couples a decided measurement to an undone one for no gain in evidence.
+C.
+ **Move both calibrations and the pass to overlap 4 together,
+after `#261` is measured.**
+    -   For:
+one story for every driver.
+    -   Against:
+couples a decided measurement to an undone one for no gain in evidence.
 
 ### Ranking
 
-A > B > C. A over B because the effect is measured and six bands wide, and the standing-noise objection
-applies equally at either overlap; B over C because C delays a decided question behind an undecided one.
+A > B > C.
+A over B because the effect is measured and six bands wide,
+and the standing-noise objection
+applies equally at either overlap;
+B over C because C delays a decided question behind an undecided one.
 
 ### DECIDED 2026-08-26: A, by the owner
 
-`CALIBRATION_OVERLAP = 4` in `slice-overlap.ts`; the dial's fallback is now the caller's, so the pass keeps
-1 until `#261`. Record: `doc/decision/translation-repair-calibration-overlap.md`.
+`CALIBRATION_OVERLAP = 4` in `slice-overlap.ts`;
+the dial's fallback is now the caller's,
+so the pass keeps
+1 until `#261`.
+Record:
+`doc/decision/translation-repair-calibration-overlap.md`.
 
 `#261` was measured on four matched pass pairs on 2026-08-27 and 2026-08-28,
 and on 2026-09-06 the pass fallback moved to 4 on that reading,
@@ -2114,52 +4051,112 @@ Record:
 
 ## Question 12: whether the straggler window moves from 180000 ms
 
-`TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (`grace-override.ts`, landed `4c070f729`) overrides the window for
-one run. Arm C (300000 ms, overlap 1) took 53.87 min against arm A's 43.18 and bought back 2 of 6 cut
-voices, all `qwen3.8-max`. Arm A2 then showed the band: 58.95 min for an unchanged arm A, 8 cut voices
-instead of 6. Normalized, A 0.41, A2 0.38, C 0.43: the window's cost sits inside the band, and so does its
-recovery. Arm D (overlap 4 at 300000 ms) is running; under overlap the wait a longer window adds is what
-overlap fills, so D is the arm that could show a cheap window.
+`TRANSLATION_REPAIR_STRAGGLER_GRACE_MS` (`grace-override.ts`,
+landed `4c070f729`) overrides the window for
+one run.
+Arm C (300000 ms,
+overlap 1) took 53.87 min against arm A's 43.18 and bought back 2 of 6 cut
+voices,
+all `qwen3.8-max`.
+Arm A2 then showed the band:
+58.95 min for an unchanged arm A,
+8 cut voices
+instead of 6.
+Normalized,
+A 0.41,
+A2 0.38,
+C 0.43:
+the window's cost sits inside the band,
+and so does its
+recovery.
+Arm D (overlap 4 at 300000 ms) is running;
+under overlap the wait a longer window adds is what
+overlap fills,
+so D is the arm that could show a cheap window.
 
 ### Options
 
-A.  **Keep 180000 ms, keep the dial, read arm D before reopening.**
-    -   For: nothing about the longer window is shown at this scale; the decision doc's own derivation
-        still stands; the dial lets any later trial run without a build.
-    -   Against: 6 to 8 cut voices per four-slice calibration persist, all on one model.
-B.  **Move to 300000 ms on arm C's 2-of-6.**
-    -   For: two voices came back on one run.
-    -   Against: the band swallows both the cost and the recovery; A2 lost 8 voices with no window change,
+A.
+ **Keep 180000 ms,
+keep the dial,
+read arm D before reopening.**
+    -   For:
+nothing about the longer window is shown at this scale;
+the decision doc's own derivation
+        still stands;
+the dial lets any later trial run without a build.
+    -   Against:
+6 to 8 cut voices per four-slice calibration persist,
+all on one model.
+B.
+ **Move to 300000 ms on arm C's 2-of-6.**
+    -   For:
+two voices came back on one run.
+    -   Against:
+the band swallows both the cost and the recovery;
+A2 lost 8 voices with no window change,
         so 2 of 6 is not distinguishable from noise on single runs.
-C.  **Run interleaved repeats (A, C, A, C in one sitting) and decide on the normalized pair.**
-    -   For: the only design that resolves a difference smaller than the band.
-    -   Against: about four hours of provider time for a dial whose largest plausible effect is two voices
-        per calibration, all from one model that `#121` already names as the window's single payer.
+C.
+ **Run interleaved repeats (A,
+C,
+A,
+C in one sitting) and decide on the normalized pair.**
+    -   For:
+the only design that resolves a difference smaller than the band.
+    -   Against:
+about four hours of provider time for a dial whose largest plausible effect is two voices
+        per calibration,
+all from one model that `#121` already names as the window's single payer.
 
 ### Arm D, read the same evening
 
-Overlap 4 at 300000 ms over the same four slices: 29.31 min against arm B's 24.18, with slower calls (stream
-sum 7591 s against 6249 s), so the normalized figure is 0.23 for both. Voices heard 318 of 320 against B's
-302 of 312; 2 cut against B's 7 and A2's 8. Time in grace 4591 s against 2819 s, filled by the other slices
-in flight. Under overlap, the longer window is free and it is the arm with the fewest cut voices of the five.
+Overlap 4 at 300000 ms over the same four slices:
+29.31 min against arm B's 24.18,
+with slower calls (stream
+sum 7591 s against 6249 s),
+so the normalized figure is 0.23 for both.
+Voices heard 318 of 320 against B's
+302 of 312;
+2 cut against B's 7 and A2's 8.
+Time in grace 4591 s against 2819 s,
+filled by the other slices
+in flight.
+Under overlap,
+the longer window is free and it is the arm with the fewest cut voices of the five.
 
-D.  **Move the window to 300000 ms together with overlap 4 as the calibration default (question 11, A).**
-    -   For: the one arm that pairs them shows no measurable wall-clock cost and the lowest voice loss of
-        any arm; the window's price was always the wait, and overlap is what fills the wait.
-    -   Against: one run; the voice-loss difference (2 against 7) is larger than the band's spread of cuts
-        (4 to 8 across single-overlap arms) but not by much; at overlap 1 the price returns, so the two
+D.
+ **Move the window to 300000 ms together with overlap 4 as the calibration default (question 11,
+A).**
+    -   For:
+the one arm that pairs them shows no measurable wall-clock cost and the lowest voice loss of
+        any arm;
+the window's price was always the wait,
+and overlap is what fills the wait.
+    -   Against:
+one run;
+the voice-loss difference (2 against 7) is larger than the band's spread of cuts
+        (4 to 8 across single-overlap arms) but not by much;
+at overlap 1 the price returns,
+so the two
         settings must move together or not at all.
 
 ### Ranking, revised
 
-D > A > C > B. D over A because it is measured where A was waiting for the measurement; A over C and C over
-B as before. D is conditional on question 11 resolving to overlap 4; at overlap 1 the window stays at
+D > A > C > B.
+D over A because it is measured where A was waiting for the measurement;
+A over C and C over
+B as before.
+D is conditional on question 11 resolving to overlap 4;
+at overlap 1 the window stays at
 180000 ms.
 
 ### DECIDED 2026-08-26: D, by the owner
 
-`CALIBRATION_STRAGGLER_GRACE_MS = 300_000` in `grace-override.ts`, adopted by the calibration through the
-variable; the built-in `STRAGGLER_GRACE_MS` stays 180000 for the pass until `#261`. Record:
+`CALIBRATION_STRAGGLER_GRACE_MS = 300_000` in `grace-override.ts`,
+adopted by the calibration through the
+variable;
+the built-in `STRAGGLER_GRACE_MS` stays 180000 for the pass until `#261`.
+Record:
 `doc/decision/translation-repair-calibration-overlap.md`.
 
 ## Question 13: entry time to complete after quality hardening
@@ -2219,5 +4216,6 @@ the pass log carries the evidence under the read that found each.
   (noted with class eighty-seven,
   never reached).
 - The coverage admission logged `coverage=carried` without the evidence regions;
-  built in 0ab0abdd8 (class one hundred eleven): every stand-aside of the fold names its reason at warn,
+  built in 0ab0abdd8 (class one hundred eleven):
+  every stand-aside of the fold names its reason at warn,
   and every passage still carried prints its evidence regions at the admission.

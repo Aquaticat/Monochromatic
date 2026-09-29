@@ -33,9 +33,12 @@ The blocking review and its correction loops are all takeover additions,
 landed 2026-08-27 through 2026-08-29 (`git log --follow` on each module):
 overlapped consolidation on 08-27 (`e8f6e78e9`),
 the blocking absolute-naturalness review on 08-28 (`6fadd3be0`),
-correction first bounded the same day (`4a60a660e`, "allow bounded follow-up correction"),
-then continuous on 08-29 (`1d16d89c4`, `97fda9f95`),
-with the translate and archive-block continuations the same day (`ed756993b`, `ccaad1f53`).
+correction first bounded the same day (`4a60a660e`,
+"allow bounded follow-up correction"),
+then continuous on 08-29 (`1d16d89c4`,
+`97fda9f95`),
+with the translate and archive-block continuations the same day (`ed756993b`,
+`ccaad1f53`).
 None of this machinery predates the takeover.
 The owner's stated rationale for removing it:
 they were built "under an assumption that models are bad,
@@ -75,7 +78,8 @@ then one fixed polish round:
 refiners propose,
 judges select between proposal and standing text,
 and the deterministic guard applies to whichever was selected.
-A declined proposal, and equally a selected proposal the guard rejects,
+A declined proposal,
+and equally a selected proposal the guard rejects,
 leaves the standing text shipping with the outcome recorded as a finding;
 this node has no re-ask under any outcome.
 Absolute-naturalness findings are recorded as evidence on the settlement.
@@ -99,7 +103,8 @@ and the judged-contest form is the one that produced the page a reading accepted
 ### Consolidation recovery, single attempt
 
 `buyConsolidationSlice` makes one attempt.
-As built (`consolidate-slice-buy.ts`, commit `1ba8f713a`),
+As built (`consolidate-slice-buy.ts`,
+commit `1ba8f713a`),
 this deviates from the proposal's deterministic best-produced selection:
 when standing lacks contest endorsement and the single attempt kept it,
 the standing text ships with a
@@ -121,10 +126,13 @@ After that the slice settles as unfilled or incumbent-kept,
 never as a thrown entry.
 
 This is the one rejection-driven second round the proposal retains,
-so it is where "discouraged, not a ban" is being exercised.
-Its evidence is adjacent, not direct:
+so it is where "discouraged,
+not a ban" is being exercised.
+Its evidence is adjacent,
+not direct:
 the measured three-of-four recovery (`#230`) converted schema-mismatch re-asks,
-an infrastructure class, not judge rejections;
+an infrastructure class,
+not judge rejections;
 and the redesign showed located-evidence-carrying second rounds are the one safe form
 (E1 double-prime) while evidence-free serial rounds degrade text (D1.3).
 Direct conversion of a quality follow-up round is unmeasured;
@@ -151,13 +159,16 @@ so it does not exercise the loop allowance.
 ### Insertion placement, single round
 
 One coverage round.
-As built (`pass-insertion-admission.ts`, commit `7e702e075`),
+As built (`pass-insertion-admission.ts`,
+commit `7e702e075`),
 a passage still unresolved after that round is not admitted:
 the pass records an
 `insertion-unresolved-after-single-round` finding naming the slice and the
-verdict, and the page ships without the passage,
+verdict,
+and the page ships without the passage,
 because an insertion is recovered supplementary content whose absence is a
-recorded gap, not a missing required page.
+recorded gap,
+not a missing required page.
 The corroboration guard keeps its admission authority unchanged,
 since it is a deterministic-integrity check rather than a quality review.
 `UnfilledPageError` remains the one bounded no-page terminal,
@@ -194,7 +205,8 @@ Production's writer seats
 Kimi-K3,
 gemma-4-26b)
 were measured before the current Hyper top end existed.
-The live Hyper catalog now carries qwen3.8-flash and qwen3.8-max (vision, 128,000 and 65,536 output),
+The live Hyper catalog now carries qwen3.8-flash and qwen3.8-max (vision,
+128,000 and 65,536 output),
 qwen3.8-2.4t-a95b,
 full glm-5.3 (262,144 output),
 deepseek-v4-pro and -flash (384,000 output),
@@ -213,7 +225,8 @@ so the advancement is concentrated on the Hyper side.
   seat obvious upgrades unmeasured and let the four-entry pass read the combination:
   fastest leverage;
   the owner has accepted exactly this bundling before
-  ("Bundle all the improvements that could be made, in"),
+  ("Bundle all the improvements that could be made,
+  in"),
   at the recorded cost that no delta attributes to one change.
 - R3,
   run the existing producer-calibrate and editor-calibrate instruments over the refreshed candidate set first,
@@ -230,7 +243,9 @@ so the advancement is concentrated on the Hyper side.
   well under a pass-scale run.
 
 Under R3 the order is:
-loop-removal code lands and is suite-, lint-, and GFP-verified;
+loop-removal code lands and is suite-,
+lint-,
+and GFP-verified;
 calibration runs on that build and seats the roster;
 then the four-entry pass;
 then the reading.
@@ -264,6 +279,11 @@ and the pass-then-reading gate.
 
 1.  Approve the loop-free shape above,
     including the one retained rejection-driven follow-up round
-    (translate, fixed depth two, the only place the loop allowance is exercised)?
+    (translate,
+    fixed depth two,
+    the only place the loop allowance is exercised)?
     Vetoing that round to depth one is a coherent stricter variant.
-2.  Roster: R1, R2, or R3?
+2.  Roster:
+    R1,
+    R2,
+    or R3?

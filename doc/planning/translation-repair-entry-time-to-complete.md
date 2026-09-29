@@ -34,35 +34,67 @@ Snapshot taken 2026-08-29 at 12:14 UTC.
 
 ### `Weideriche_`
 
-- Process: `proc_a259`.
-- Pipeline commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
-- Pipeline digest: `sha256-tree-v1:dc788a666af6bce37b37c55d4d674ac99185656795327d120413c3e1304aec9f58`.
-- Run root: `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829`.
-- Log: `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829.log`.
-- Expected artifact: run root plus `artifacts/Weideriche_.json`.
-- Expected page: run root plus `fixed/people/Weideriche_/page.en.md`.
-- Verification log to create: `~/temp/agent/verify-Weideriche-schema9-half-quorum-v12-20260829.log`.
-- State at snapshot: repair and translate complete; lane contest active; no terminal tally.
+- Process:
+  `proc_a259`.
+- Pipeline commit:
+  `68c37da59c43529386cad78f3f8078d180d57f35`.
+- Pipeline digest:
+  `sha256-tree-v1:dc788a666af6bce37b37c55d4d674ac99185656795327d120413c3e1304aec9f58`.
+- Run root:
+  `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829`.
+- Log:
+  `~/temp/agent/validation-Weideriche-schema9-half-quorum-v12-20260829.log`.
+- Expected artifact:
+  run root plus `artifacts/Weideriche_.json`.
+- Expected page:
+  run root plus `fixed/people/Weideriche_/page.en.md`.
+- Verification log to create:
+  `~/temp/agent/verify-Weideriche-schema9-half-quorum-v12-20260829.log`.
+- State at snapshot:
+  repair and translate complete;
+  lane contest active;
+  no terminal tally.
 - First-attempt result after snapshot:
   `status=ERROR ms=4840305 aborted=false error=slice 1 did not meet absolute naturalness floor`.
 - First attempt wrote no artifact or page and queued reattempt with 13 additional cache records.
 - Process was stopped during non-conforming whole-entry second attempt.
-- Repair slice costs recorded: 0.001, 927.787, 883.347, and 17.230 seconds.
-- Translate slice costs recorded: 427.660, 250.694, 264.892, and 8.567 seconds.
+- Repair slice costs recorded:
+  0.001,
+  927.787,
+  883.347,
+  and 17.230 seconds.
+- Translate slice costs recorded:
+  427.660,
+  250.694,
+  264.892,
+  and 8.567 seconds.
 
 ### Pull request 386, `Carena0442`
 
-- Process: `proc_3a1c`.
-- Pull-request head: `a80634a674f94861ea3b7056fba054ca9eab1a2c`.
-- Pipeline commit: `68c37da59c43529386cad78f3f8078d180d57f35`.
-- Fixture pipeline digest: `sha256-tree-v1:2231798fcc453ccb9fe7ff688f4690ec7662e22ae70b833f91d70c7ec5cc9f58`.
-- Run root: `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829`.
-- Log: `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
-- Provenance: `~/temp/agent/pr386-Carena0442-run-provenance-20260829.md`.
-- Expected artifact: run root plus `artifacts/Carena0442.json`.
-- Expected page: run root plus `fixed/people/Carena0442/page.en.md`.
-- Verification log to create: `~/temp/agent/verify-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
-- State at snapshot: 22 slices prepared; first non-metadata repair slice active; no terminal tally.
+- Process:
+  `proc_3a1c`.
+- Pull-request head:
+  `a80634a674f94861ea3b7056fba054ca9eab1a2c`.
+- Pipeline commit:
+  `68c37da59c43529386cad78f3f8078d180d57f35`.
+- Fixture pipeline digest:
+  `sha256-tree-v1:2231798fcc453ccb9fe7ff688f4690ec7662e22ae70b833f91d70c7ec5cc9f58`.
+- Run root:
+  `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829`.
+- Log:
+  `~/temp/agent/validation-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
+- Provenance:
+  `~/temp/agent/pr386-Carena0442-run-provenance-20260829.md`.
+- Expected artifact:
+  run root plus `artifacts/Carena0442.json`.
+- Expected page:
+  run root plus `fixed/people/Carena0442/page.en.md`.
+- Verification log to create:
+  `~/temp/agent/verify-pr386-Carena0442-schema9-half-quorum-v12-20260829.log`.
+- State at snapshot:
+  22 slices prepared;
+  first non-metadata repair slice active;
+  no terminal tally.
 - Process was stopped after same-prompt repetition was rejected as independence mechanism.
 - No artifact or page exists.
 
@@ -260,10 +292,14 @@ and share only cache-eligible twins.
 
 The scheduling candidate is evidence-supported across every non-null matched corpus pair already run:
 
-- `keyword233`: overlap 4 reduced wall time 19.2 percent and normalized wall time 23.9 percent.
-- `Toka_ls`: overlap 4 reduced wall time 66.7 percent and normalized wall time 64.9 percent with same 61 unheard voices.
-- `Zha_Ke`: overlap 4 reduced wall time 71.9 percent and normalized wall time 53.7 percent.
-- `Weideriche_`: overlap 4 reduced wall time 41.7 percent and normalized wall time 46.6 percent.
+- `keyword233`:
+  overlap 4 reduced wall time 19.2 percent and normalized wall time 23.9 percent.
+- `Toka_ls`:
+  overlap 4 reduced wall time 66.7 percent and normalized wall time 64.9 percent with same 61 unheard voices.
+- `Zha_Ke`:
+  overlap 4 reduced wall time 71.9 percent and normalized wall time 53.7 percent.
+- `Weideriche_`:
+  overlap 4 reduced wall time 41.7 percent and normalized wall time 46.6 percent.
 - One-slice `ArtsEpiphany` was expected null control because no second slice could overlap.
 
 Older output blockers in those runs do not prove readiness,

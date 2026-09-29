@@ -12,29 +12,76 @@ Sections separate what the record shows from my own analysis.
 
 ## What was tried, one line each
 
-- A1: draft plus finding-only auditors; a non-producing auditor withheld a complete draft; suspended.
-- A2: four serial complete-document producers; all four failed deterministic admission; no page.
-- B: typed specification then renderer plus three specialists; schema and envelope failures; no page.
-- C: three briefs then two whole-document editors; both editors failed admission; no page.
-- D1 to D1.3: immutable shell plus slot authors, then reviser, then copy editor;
+- A1:
+  draft plus finding-only auditors;
+  a non-producing auditor withheld a complete draft;
+  suspended.
+- A2:
+  four serial complete-document producers;
+  all four failed deterministic admission;
+  no page.
+- B:
+  typed specification then renderer plus three specialists;
+  schema and envelope failures;
+  no page.
+- C:
+  three briefs then two whole-document editors;
+  both editors failed admission;
+  no page.
+- D1 to D1.3:
+  immutable shell plus slot authors,
+  then reviser,
+  then copy editor;
   four published private pages,
   every one rejected by complete reading;
   D1.3 measured serial editing as non-monotonic.
-- E1 prime: three authors, three auditors, located-finding quorum;
+- E1 prime:
+  three authors,
+  three auditors,
+  located-finding quorum;
   whole-ballot strictness discarded 72 of 80 valid located findings.
-- E1 double-prime: per-finding admission; replay reproduced human comparisons;
-  live Hyper-only run falsely passed a one-candidate floor; page rejected.
-- E1 triple-prime: diversity floors corrected; roster exhausted;
+- E1 double-prime:
+  per-finding admission;
+  replay reproduced human comparisons;
+  live Hyper-only run falsely passed a one-candidate floor;
+  page rejected.
+- E1 triple-prime:
+  diversity floors corrected;
+  roster exhausted;
   five Qwen-family expansion authors all failed complete reading.
-- F: donor-slot assembly; rejected at design gate; absent findings are not clean evidence.
-- G: author-attested realization ledger over 134 obligations; unmeasured verifier envelope; no spend.
-- H: closed-world compact status matrices; zero admissible verifier ballots from three models; page rejected.
-- I: candidate-scoped compact ballots; both authors admitted, one clean nonself family each; both pages rejected.
-- J: Kimi third author; rejected at design gate on measured truncation.
-- K: authors given the readable review plan; zero admitted authors; verifiers never dispatched.
-- L: lean values-only authors; one admitted page with an actor inversion; all three verifier ballots unusable.
-- M: risk-attested authors plus role-split first-defect challengers;
-  one admitted page, floor unmet, page rejected with an actor-attribution defect
+- F:
+  donor-slot assembly;
+  rejected at design gate;
+  absent findings are not clean evidence.
+- G:
+  author-attested realization ledger over 134 obligations;
+  unmeasured verifier envelope;
+  no spend.
+- H:
+  closed-world compact status matrices;
+  zero admissible verifier ballots from three models;
+  page rejected.
+- I:
+  candidate-scoped compact ballots;
+  both authors admitted,
+  one clean nonself family each;
+  both pages rejected.
+- J:
+  Kimi third author;
+  rejected at design gate on measured truncation.
+- K:
+  authors given the readable review plan;
+  zero admitted authors;
+  verifiers never dispatched.
+- L:
+  lean values-only authors;
+  one admitted page with an actor inversion;
+  all three verifier ballots unusable.
+- M:
+  risk-attested authors plus role-split first-defect challengers;
+  one admitted page,
+  floor unmet,
+  page rejected with an actor-attribution defect
   despite an actor-attribution attestation and clean nonself challenges.
 
 ## The strongest cross-candidate signal: the defects repeat
@@ -49,10 +96,15 @@ and interface change on this roster:
   Candidate M body paragraph 15;
 - omission with substituted emphasis:
   D1.1's recognition-and-support omission,
-  Candidate M's final paragraph (youth image dropped, autonomy gloss added);
+  Candidate M's final paragraph (youth image dropped,
+  autonomy gloss added);
 - technical-term mistranslation:
-  laboratory staining rendered as ordinary dyeing in D1.1, D1.2, and D1.3;
-- source-language calques, register drift, and tense drift on nearly every page.
+  laboratory staining rendered as ordinary dyeing in D1.1,
+  D1.2,
+  and D1.3;
+- source-language calques,
+  register drift,
+  and tense drift on nearly every page.
 
 Defects are sparse,
 a handful per page,
@@ -63,7 +115,10 @@ over a page carrying an actor-attribution defect.
 
 My analysis:
 this is a capability ceiling of one-shot whole-page authorship on this roster
-(Qwen3.8-27B, MiniMax M3, GLM 5.3 Flash, Kimi K3),
+(Qwen3.8-27B,
+MiniMax M3,
+GLM 5.3 Flash,
+Kimi K3),
 not a prompt or interface problem.
 Six verifier-interface redesigns changed which failures were visible,
 never the author defect profile.
@@ -73,7 +128,9 @@ never the author defect profile.
 ### Whole-page work collides with the output envelope; slice-scale work does not
 
 Complete-page forced-tool responses repeatedly died at completion ceilings with default provider reasoning:
-GLM emitted thinking only to 32,000 tokens four times across K, L, and M,
+GLM emitted thinking only to 32,000 tokens four times across K,
+L,
+and M,
 and was cut at the 360-second call deadline twice in I;
 MiniMax authors truncated at 32,000 twice;
 Kimi truncated at its 16,000 model cap;
@@ -97,15 +154,22 @@ The redesign's family-diversity crisis was partly self-inflicted by this require
 
 ### Verifier verdict form decides everything
 
-Across candidates, four verdict forms were measured:
+Across candidates,
+four verdict forms were measured:
 
 - unlocated holistic rejection (the legacy naturalness review's form):
-  drives unbounded correction churn; 40 of 46 rejections on the stopped Carena run with wording that varies every round;
-- exhaustive per-obligation matrices (G, H):
-  models could not return them; zero admissible ballots;
+  drives unbounded correction churn;
+  40 of 46 rejections on the stopped Carena run with wording that varies every round;
+- exhaustive per-obligation matrices (G,
+  H):
+  models could not return them;
+  zero admissible ballots;
 - whole-role clean assertions (M):
-  returnable but under-discriminating; clean challenges over a page with recorded defects;
-- located, class-closed, anchor-bound findings with per-finding admission (E1 double-prime):
+  returnable but under-discriminating;
+  clean challenges over a page with recorded defects;
+- located,
+  class-closed,
+  anchor-bound findings with per-finding admission (E1 double-prime):
   the only form that reproduced human page comparisons,
   in a 48-millisecond zero-spend replay that picked the same page complete reading picked.
 
@@ -134,9 +198,13 @@ and its measured guard (`checkPreservation`) is deterministic.
   with the defect documented in `doc/troubleshooting/charm-hyper-max-tokens-tool-json.md`.
   That commit exists only on `prototype/translation-repair-finite-pipelines`;
   production's `chat-json-outcome` path needs the equivalent check verified or ported.
-- Source-echo refusal (Han ideographs in an English slot), which caught Qwen echoing Chinese as a "complete" answer.
-- Presentation-artifact refusal (visible return markers, control pictures, replacement characters).
-- Runtime-owned boundary separators, which fixed Candidate H's shared footnote-spacing defect without touching prose.
+- Source-echo refusal (Han ideographs in an English slot),
+  which caught Qwen echoing Chinese as a "complete" answer.
+- Presentation-artifact refusal (visible return markers,
+  control pictures,
+  replacement characters).
+- Runtime-owned boundary separators,
+  which fixed Candidate H's shared footnote-spacing defect without touching prose.
 - Raw duplicate-member refusal before JSON parsing.
 
 ### Front matter was a common-mode gap on both sides
@@ -145,7 +213,10 @@ The redesign hit it as a common-mode veto (Candidate K's hard gate),
 then moved four front-matter strings into author-owned slots with per-path identity contracts (Candidate L).
 Production never translates front matter at all (register item 269).
 Candidate L's per-path contract
-(name from alias members, ordered alias grammar, protected Latin identity, location and description as reviewed prose)
+(name from alias members,
+ordered alias grammar,
+protected Latin identity,
+location and description as reviewed prose)
 is a ready-made design for closing 269.
 
 ### Process finding: the cross-candidate spent-prompt doctrine amplified flukes
@@ -159,7 +230,8 @@ forcing a new candidate letter instead of a second sample.
 Nothing in the recorded owner decisions requires the cross-run half of that doctrine.
 Whether it binds future work is an open owner question;
 it also means several candidate rejections rest on single unrepeated observations
-(FLK: one capacity failure is not a stable limit).
+(FLK:
+one capacity failure is not a stable limit).
 
 ### The comparison the redesign never ran
 
@@ -178,9 +250,13 @@ never measured against an actual settled page.
 Following the E1 double-prime precedent of validating an admission change offline,
 the 46 retained naturalness-review log lines were re-parsed
 (the first parse silently dropped most seats because model ids contain colons;
-the corrected parse accounts for all 368 seats, eight per review):
+the corrected parse accounts for all 368 seats,
+eight per review):
 
-- per-seat verdicts: 281 `acceptable`, 71 `unacceptable`, 16 `unusable`;
+- per-seat verdicts:
+  281 `acceptable`,
+  71 `unacceptable`,
+  16 `unusable`;
 - every one of the 71 rejecting seats carried located findings (paragraph plus problem),
   so the legacy review's rejections are already located,
   which corrects the verdict-form framing in the section

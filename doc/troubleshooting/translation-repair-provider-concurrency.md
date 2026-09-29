@@ -293,13 +293,20 @@ It should not manufacture extra panel calls merely to occupy slots.
 Private logs remain outside the repository because they contain provider telemetry.
 Their SHA-256 digests are:
 
-- Qwen threshold: `7ef309495f4df689baf8214af27f81bc8293743e4ccf71dfadfd239182047c6d`
-- Kimi: `d801433ec402e01e2a35d9a3951c071b9e24fe206726f4381041165f1c16035f`
-- gpt-oss: `7ec42862fdf1a2d248a23a1cadd5a944bf358374bfb9952950943e95e8620dc3`
-- GLM-5.3-Flash: `89e2cb5a548a2e0521dd064322cc5e52f68cebab1886ed22805d0b82734366d8`
-- Synthetic aggregate width 20: `6fc7e599af177e5b7bb3197937777d449396132870c5b59f1360e423fac638fd`
-- Synthetic aggregate width 25: `8a5f58bb0262e0877da1f326d0ee45a584f964d379dfba653c3000d22b9ad2da`
-- Hyper structured: `be9d6f2d9c4922790d8f74a2434570cb9acfba2d8b9d1df09da6ce7db2bdf2a6`
+- Qwen threshold:
+  `7ef309495f4df689baf8214af27f81bc8293743e4ccf71dfadfd239182047c6d`
+- Kimi:
+  `d801433ec402e01e2a35d9a3951c071b9e24fe206726f4381041165f1c16035f`
+- gpt-oss:
+  `7ec42862fdf1a2d248a23a1cadd5a944bf358374bfb9952950943e95e8620dc3`
+- GLM-5.3-Flash:
+  `89e2cb5a548a2e0521dd064322cc5e52f68cebab1886ed22805d0b82734366d8`
+- Synthetic aggregate width 20:
+  `6fc7e599af177e5b7bb3197937777d449396132870c5b59f1360e423fac638fd`
+- Synthetic aggregate width 25:
+  `8a5f58bb0262e0877da1f326d0ee45a584f964d379dfba653c3000d22b9ad2da`
+- Hyper structured:
+  `be9d6f2d9c4922790d8f74a2434570cb9acfba2d8b9d1df09da6ce7db2bdf2a6`
 
 ## Upstream disposition
 

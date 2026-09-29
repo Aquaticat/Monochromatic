@@ -17,15 +17,24 @@ Complete partial run remains outside repository at
 
 ## Provenance
 
-- Pipeline commit: `0ce725f0415a53e9e16ca76d785b072dbcc075df`
-- Pipeline digest: `sha256-tree-v1:0edfb04f6b9f7e0181de7b810ce483135dab59190c53cc6464433fb626bdff1e`
-- Pull-request head: `a80634a674f94861ea3b7056fba054ca9eab1a2c`
-- Minimal corpus fixture commit: `d343df909b1673d68dd5cd805aeda1dfacd2d3c4`
-- Explicit slice overlap: 4
-- Required providers: `synthetic,hyper`
-- Provider preflight: both wet
-- Run root: `~/temp/agent/validation-pr386-Carena0442-current-overlap4-run1-20260829`
-- Run log: `~/temp/agent/validation-pr386-Carena0442-current-overlap4-run1-20260829.log`
+- Pipeline commit:
+  `0ce725f0415a53e9e16ca76d785b072dbcc075df`
+- Pipeline digest:
+  `sha256-tree-v1:0edfb04f6b9f7e0181de7b810ce483135dab59190c53cc6464433fb626bdff1e`
+- Pull-request head:
+  `a80634a674f94861ea3b7056fba054ca9eab1a2c`
+- Minimal corpus fixture commit:
+  `d343df909b1673d68dd5cd805aeda1dfacd2d3c4`
+- Explicit slice overlap:
+  4
+- Required providers:
+  `synthetic,hyper`
+- Provider preflight:
+  both wet
+- Run root:
+  `~/temp/agent/validation-pr386-Carena0442-current-overlap4-run1-20260829`
+- Run log:
+  `~/temp/agent/validation-pr386-Carena0442-current-overlap4-run1-20260829.log`
 
 Run root was fresh.
 It reused no earlier slice cache or prompt payload.
@@ -44,11 +53,16 @@ Both provider meters remained wet while consolidation churn continued.
 
 Pipeline reached these boundaries:
 
-- Preparation: one roster round.
-- Repair: 198 rounds.
-- Translate: 44 rounds.
-- Contest: 18 rounds.
-- Consolidation: 186 rounds before stop.
+- Preparation:
+  one roster round.
+- Repair:
+  198 rounds.
+- Translate:
+  44 rounds.
+- Contest:
+  18 rounds.
+- Consolidation:
+  186 rounds before stop.
 
 Consolidation occupied final 8,735 seconds of retained span.
 Eighteen slices required consolidation.

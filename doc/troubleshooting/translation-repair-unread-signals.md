@@ -1,12 +1,15 @@
 # Signals the pipeline emits and nobody reads
 
 Measured 2026-08-13 across all 92 entries at pin
- `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`, both sides of each.
+ `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`,
+both sides of each.
 
 `#71` was found because the artifact had been recording
  `alignment structure-mismatch` for weeks and nothing read it.
-That is a pattern rather than an incident, so every signal the deterministic
- core emits was censused at once, and the census found a second defect.
+That is a pattern rather than an incident,
+so every signal the deterministic
+ core emits was censused at once,
+and the census found a second defect.
 
 ## Census one: what the deterministic core emits over the 92-entry corpus
 
@@ -26,15 +29,21 @@ ALIGNMENT findings
 ## The footnote graph was wrong, and nothing was reading it to notice
 
 10 of those 15 unresolved references were FALSE.
-`shihai4h/page.en.md` carries ten references and ten definitions, and a raw
- scan of the text finds every one of them, yet the graph reported
+`shihai4h/page.en.md` carries ten references and ten definitions,
+and a raw
+ scan of the text finds every one of them,
+yet the graph reported
  `definitions: []` and called all ten references unresolved.
 
-Cause: `parseDocument` built the node list from FLATTENED children and the
+Cause:
+`parseDocument` built the node list from FLATTENED children and the
  footnote graph from the RAW ones.
-Every definition in that file sits inside a disclosure container, so
- `flattenContainers` promoted them for the node list while the graph, walking
- the unflattened tree, saw a container where a definition should be.
+Every definition in that file sits inside a disclosure container,
+so
+ `flattenContainers` promoted them for the node list while the graph,
+walking
+ the unflattened tree,
+saw a container where a definition should be.
 
 The same disagreement corrupted identifiers.
 `buildFootnoteGraph` names blocks `block/N` by position in the list it walks,
@@ -42,26 +51,40 @@ The same disagreement corrupted identifiers.
  the document exposes under that name.
 
 Fixed by flattening once and sharing the result.
-After the fix: 5 findings across 1 file, all real.
+After the fix:
+5 findings across 1 file,
+all real.
 `XingZ60/page.en.md` carries 5 references and 0 definitions while its Chinese
- side resolves 9 of 9, which is consistent with that translation being
+ side resolves 9 of 9,
+which is consistent with that translation being
  incomplete.
-Corpus totals are 107 references against 102 definitions, and no graph
+Corpus totals are 107 references against 102 definitions,
+and no graph
  identifier names a block that does not exist.
 
-Nothing reads `footnoteGraph` outside `parse-document.ts`, which is why a
+Nothing reads `footnoteGraph` outside `parse-document.ts`,
+which is why a
  deterministic detector could be wrong about 10 of its 15 outputs without
  anyone noticing.
 
 ## The alignment mismatch finding is a false alarm 6 times out of 7
 
-Seven entries emitted `structure-mismatch` and, at the time, took a proportional fallback.
-THAT FALLBACK IS GONE: `chunk-document.ts` now computes `equalShape` (equal chunk counts and matching
-leading node kinds), pairs by index with no finding only when the shape is equal and no roster pairing
-was supplied (the `#98` blind spot the code documents), and otherwise runs `alignHeadingsForced`, which
-emits a pairing only where the affinity grid gives a unique partner in both directions; every unpaired
+Seven entries emitted `structure-mismatch` and,
+at the time,
+took a proportional fallback.
+THAT FALLBACK IS GONE:
+`chunk-document.ts` now computes `equalShape` (equal chunk counts and matching
+leading node kinds),
+pairs by index with no finding only when the shape is equal and no roster pairing
+was supplied (the `#98` blind spot the code documents),
+and otherwise runs `alignHeadingsForced`,
+which
+emits a pairing only where the affinity grid gives a unique partner in both directions;
+every unpaired
 section becomes a `structure-mismatch` finding and a source-only section is placed as an insertion or
-refused. The table below is the measurement as it was taken, kept for the blast-radius argument.
+refused.
+The table below is the measurement as it was taken,
+kept for the blast-radius argument.
 Only ONE of the seven actually mispaired:
 
 ```text
@@ -75,17 +98,25 @@ Only ONE of the seven actually mispaired:
 ```
 
 Five of the seven had EQUAL chunk counts and differed only in the leading node
- kind of the first chunk, which is what the shape test (then `mirrored`, now
- `equalShape`) also checks; the proportional fallback then paired them by index
+ kind of the first chunk,
+which is what the shape test (then `mirrored`,
+now
+ `equalShape`) also checks;
+the proportional fallback then paired them by index
  anyway and no harm was done.
 `XIEPT2` had unequal counts and still paired by index.
-Only `XingZ60` slid, and sliding is no longer possible: a count mismatch goes to
+Only `XingZ60` slid,
+and sliding is no longer possible:
+a count mismatch goes to
  the forced aligner rather than to a proportional merge.
 
-So the blast radius for genuine mispairing is one entry, and this is the right
+So the blast radius for genuine mispairing is one entry,
+and this is the right
  way to have established it.
 An earlier check used HEADING counts as the proxy and got the right answer for
- the wrong reason: chunk counts are what the aligner compares, and they differ
+ the wrong reason:
+chunk counts are what the aligner compares,
+and they differ
  from heading counts because content before the first heading forms a chunk.
 
 Anyone gating on `structure-mismatch` would discard six good entries to catch
@@ -93,17 +124,24 @@ Anyone gating on `structure-mismatch` would discard six good entries to catch
 
 ## Alignment never drops content
 
-Checked separately, since a merge could in principle leave blocks in no pair:
- across all 92 entries, every block on both sides belongs to some pair.
+Checked separately,
+since a merge could in principle leave blocks in no pair:
+ across all 92 entries,
+every block on both sides belongs to some pair.
 `XIEPT2`'s extra target chunk is merged rather than lost.
 
 ## Four settled repairs shipped broken footnotes, and the detector was right there
 
-The point of the fixed graph is that it can now be trusted, so it was pointed
- at the pipeline's own output: parse each settled entry's input translation and
- its `repairedText`, and compare the two graphs.
+The point of the fixed graph is that it can now be trusted,
+so it was pointed
+ at the pipeline's own output:
+parse each settled entry's input translation and
+ its `repairedText`,
+and compare the two graphs.
 
-56 entries examined, 4 broken, 0 healed:
+56 entries examined,
+4 broken,
+0 healed:
 
 ```text
 Dethelly       refs [1]     -> [1]      defs [1]     -> [1 2]    orphan-definition 2
@@ -117,44 +155,72 @@ Four different corruptions:
 
 -   `Dethelly` gained a definition nothing references.
 -   `Futajuhuacha` had a definition duplicated.
--   `Y1Ran` lost a reference and a definition, from different footnotes, so one
+-   `Y1Ran` lost a reference and a definition,
+    from different footnotes,
+    so one
     reference now points nowhere and one definition is orphaned.
 -   `gqt` had a footnote reference INVENTED in a document that carried no
-    footnotes at all, pointing at a definition that has never existed.
+    footnotes at all,
+    pointing at a definition that has never existed.
 
 Three further entries changed footnote counts while staying internally
- consistent: `Huasheng` lost a matched pair, `XIEPT2` gained one, `hakureico`
- gained two. Those are not corruption on this measure, and whether a repair
+ consistent:
+`Huasheng` lost a matched pair,
+`XIEPT2` gained one,
+`hakureico`
+ gained two.
+Those are not corruption on this measure,
+and whether a repair
  should be inventing or removing footnotes at all is a separate question.
 
-Every one of the four passed the integrity check and shipped, because integrity
- is `downgradeCount`, which counts only MDX grammar downgrades. Breaking a
+Every one of the four passed the integrity check and shipped,
+because integrity
+ is `downgradeCount`,
+which counts only MDX grammar downgrades.
+Breaking a
  footnote leaves the grammar perfectly valid.
 
-This is the whole thesis in one measurement: the pipeline computes a
- deterministic detector for exactly this damage, on every document, and never
+This is the whole thesis in one measurement:
+the pipeline computes a
+ deterministic detector for exactly this damage,
+on every document,
+and never
  consults it.
 
 ### What was done about it
 
 `footnoteBreakCount` now joins `downgradeCount` in the candidate integrity
- gate: a patched chunk may carry no more footnote findings than the chunk it
+ gate:
+a patched chunk may carry no more footnote findings than the chunk it
  replaced.
-Comparison rather than an absolute count, so a chunk holding a dangling
+Comparison rather than an absolute count,
+so a chunk holding a dangling
  reference the translation arrived with is still repairable.
 
-Two limits, both deliberate and neither hidden:
+Two limits,
+both deliberate and neither hidden:
 
--   The gate is CHUNK-scoped, like every other measurement beside it, so it
-    sees damage a patch does within one chunk. A definition deleted in one
-    chunk whose reference lives in another passes, because neither chunk's own
-    count rises. `Y1Ran` may be exactly that shape. Catching it needs a
-    document-scoped check, which is not built.
--   The measurement that found this compared WHOLE documents, so it does not
-    prove each of the four would have been refused by a chunk-scoped gate. It
+-   The gate is CHUNK-scoped,
+    like every other measurement beside it,
+    so it
+    sees damage a patch does within one chunk.
+    A definition deleted in one
+    chunk whose reference lives in another passes,
+    because neither chunk's own
+    count rises.
+    `Y1Ran` may be exactly that shape.
+    Catching it needs a
+    document-scoped check,
+    which is not built.
+-   The measurement that found this compared WHOLE documents,
+    so it does not
+    prove each of the four would have been refused by a chunk-scoped gate.
+    It
     proves the damage is detectable by a detector already running.
 
-Both rest on the graph being right, which until 2026-08-13 it was not: it would
+Both rest on the graph being right,
+which until 2026-08-13 it was not:
+it would
  have reported ten false breaks on `shihai4h` and could not see a definition
  inside a container at all.
 
@@ -162,7 +228,8 @@ Both rest on the graph being right, which until 2026-08-13 it was not: it would
 
 Taken 2026-08-13 from `node_modules/.monochromatic/translation-repair-runs`,
  collapsing each finding's parenthesised payload so kinds group.
-Each pair is occurrences, then how many entries carry the kind at least once.
+Each pair is occurrences,
+then how many entries carry the kind at least once.
 
 ```text
     509  55  refine-skip block/0          43  16  group-index-out-of-range
@@ -178,20 +245,31 @@ Each pair is occurrences, then how many entries carry the kind at least once.
      64  30  refine-skip block/3           4   3  alignment sections-merged
 ```
 
-The tail below those runs to single figures: `no-quotes`, `unknown-severity`,
- `unknown-vote`, `duplicate-check`, `missing-check`, `refine-rolled-back`,
- `non-translation dominance`, and the per-quorum `non-translation votes stand`
+The tail below those runs to single figures:
+`no-quotes`,
+`unknown-severity`,
+ `unknown-vote`,
+`duplicate-check`,
+`missing-check`,
+`refine-rolled-back`,
+ `non-translation dominance`,
+and the per-quorum `non-translation votes stand`
  lines.
 
-Most of it is ordinary bookkeeping. Two families are not.
+Most of it is ordinary bookkeeping.
+Two families are not.
 
 ## Quote anchoring discards 398 critic claims, and the cause is still unknown
 
-`quote-not-found` 225, `empty-quote` 129, `ambiguous-quote` 30,
- `quote-outside-blocks` 12, `no-quotes` 2.
+`quote-not-found` 225,
+`empty-quote` 129,
+`ambiguous-quote` 30,
+ `quote-outside-blocks` 12,
+`no-quotes` 2.
 Each one is a critic claim that never reached adjudication.
 Confirmed at the call site rather than inferred from a TSDoc example:
- `repair-stages.ts` pushes the reason and returns an empty array, so the claim
+ `repair-stages.ts` pushes the reason and returns an empty array,
+so the claim
  is dropped.
 
 The buckets are different failures and must not be pooled.
@@ -200,59 +278,95 @@ The buckets are different failures and must not be pooled.
  and only `quote-not-found` is a location miss.
 
 For that last bucket there is a mechanism the code cannot currently see.
-The corpus soft-wraps its prose, so a paragraph holds line breaks that are not
- paragraph breaks. A critic quoting across a wrap returns a space where the
- document holds a line break. `locateQuote` searches byte-exact first, then
- falls back to `normalizePunctuation`, whose map covers curly punctuation,
- CJK corner brackets and U+00A0. Line breaks are deliberately absent from it,
+The corpus soft-wraps its prose,
+so a paragraph holds line breaks that are not
+ paragraph breaks.
+A critic quoting across a wrap returns a space where the
+ document holds a line break.
+`locateQuote` searches byte-exact first,
+then
+ falls back to `normalizePunctuation`,
+whose map covers curly punctuation,
+ CJK corner brackets and U+00A0.
+Line breaks are deliberately absent from it,
  so both searches miss.
 
-The competing explanation was ruled out first: if the critic prompt re-wrapped
- the text, a space-joined quote would be faithful to what the model was shown
+The competing explanation was ruled out first:
+if the critic prompt re-wrapped
+ the text,
+a space-joined quote would be faithful to what the model was shown
  and the fix would belong at the rendering boundary instead.
-`critic-prompt.ts` interpolates `sourceText` and `targetText` raw, so the model
+`critic-prompt.ts` interpolates `sourceText` and `targetText` raw,
+so the model
  saw the line breaks and collapsed them itself.
 
 ### What was done about it
 
-Telemetry only, in `a6bbeca50`. `quote-not-found` now carries a suffix naming
+Telemetry only,
+in `a6bbeca50`.
+`quote-not-found` now carries a suffix naming
  what a soft-line-break collapse would have produced:
- `[line-break-collapsible]` for a unique hit, `[line-break-ambiguous]` for one
- that lands twice, nothing at all when the quote is genuinely absent.
-No claim changes fate. `SLICE_CACHE_VERSION` went to 9 because findings are
+ `[line-break-collapsible]` for a unique hit,
+`[line-break-ambiguous]` for one
+ that lands twice,
+nothing at all when the quote is genuinely absent.
+No claim changes fate.
+`SLICE_CACHE_VERSION` went to 9 because findings are
  part of the cached payload.
 
 Counting outcome TRANSITIONS rather than "does it locate now" is the point.
-Collapsing line breaks makes the haystack more uniform, so some misses will
- become ambiguous rather than located, and a fix that traded silent discards
+Collapsing line breaks makes the haystack more uniform,
+so some misses will
+ become ambiguous rather than located,
+and a fix that traded silent discards
  for silent ambiguity would look like a win in a naive count.
 
-Admitting those quotes was NOT done, and is blocked rather than merely
- deferred. A repair anchored to a quote spanning a wrap replaces several lines
- with one, which is exactly the line-structure question left open in
- `doc/planning/naturalness-lane-reach.md`. Landing it quietly would decide that
+Admitting those quotes was NOT done,
+and is blocked rather than merely
+ deferred.
+A repair anchored to a quote spanning a wrap replaces several lines
+ with one,
+which is exactly the line-structure question left open in
+ `doc/planning/naturalness-lane-reach.md`.
+Landing it quietly would decide that
  question without asking.
 
 ### How much of the 225 the wrapping explains, bounded before the telemetry lands
 
-Two attempts, one worthless and one usable. Both are recorded because the
+Two attempts,
+one worthless and one usable.
+Both are recorded because the
  worthless one looks convincing.
 
 The first compared the newline rate among quotes that DID locate (1.03% of
  5458 target anchors) against the rate a 41-character window covers a newline
- when slid across the same prose (28.06%). A 27-fold deficit, and meaningless.
+ when slid across the same prose (28.06%).
+A 27-fold deficit,
+and meaningless.
 
-It fails twice over. The corpus wraps at semantic boundaries, so lines are
+It fails twice over.
+The corpus wraps at semantic boundaries,
+so lines are
  short (median 49 characters against a median quote of 41) and quotes are
- line-locked: 29.7% of located quotes are EXACTLY whole lines, 39.9% start
- flush after a line break and 46.0% end flush before one. A uniform-random
- window is not what a critic produces. Worse, the sample is survivors only, so
+ line-locked:
+29.7% of located quotes are EXACTLY whole lines,
+39.9% start
+ flush after a line break and 46.0% end flush before one.
+A uniform-random
+ window is not what a critic produces.
+Worse,
+the sample is survivors only,
+so
  "located quotes rarely contain newlines" is what BOTH explanations predict:
- critics rarely crossing wraps, and cross-wrap quotes failing and vanishing
+ critics rarely crossing wraps,
+and cross-wrap quotes failing and vanishing
  from the sample.
 
-The second test avoids survivors entirely. If wrapping causes misses, entries
- whose prose wraps more should miss more, and the miss rate is computed against
+The second test avoids survivors entirely.
+If wrapping causes misses,
+entries
+ whose prose wraps more should miss more,
+and the miss rate is computed against
  attempts rather than against successes:
 
 ```text
@@ -266,20 +380,32 @@ The second test avoids survivors entirely. If wrapping causes misses, entries
   median line >  54                     26 entries   3.6% missed
 ```
 
-Both splits move in the direction the mechanism predicts, and neither moves
- far. Treating the less-wrapped rate as the non-wrap baseline attributes
- roughly a quarter of the misses in the wrapped group to wrapping, so the
+Both splits move in the direction the mechanism predicts,
+and neither moves
+ far.
+Treating the less-wrapped rate as the non-wrap baseline attributes
+ roughly a quarter of the misses in the wrapped group to wrapping,
+so the
  expectation to hold going in is that soft wrapping explains a MINORITY of the
- 225, not the bulk of them.
+ 225,
+not the bulk of them.
 
-That is a bound, not an answer: the split is coarse, and entries that wrap more
- may differ in other ways. The suffix landed in `a6bbeca50` measures it
- directly, one failed quote at a time, and is the figure to believe.
+That is a bound,
+not an answer:
+the split is coarse,
+and entries that wrap more
+ may differ in other ways.
+The suffix landed in `a6bbeca50` measures it
+ directly,
+one failed quote at a time,
+and is the figure to believe.
 
 ### What the direct measurement says so far, against that prediction
 
 At 3 settled entries `pass13` has produced 13 `quote-not-found` findings and
- NONE of them carries either suffix. The telemetry is confirmed live, because a
+ NONE of them carries either suffix.
+The telemetry is confirmed live,
+because a
  bare reason can now only be produced by the line that always calls
  `lineBreakSuffix`.
 
@@ -310,13 +436,20 @@ The count reached the pre-registered threshold with none suffixed:
       30              <=  9.5%     <- threshold, 10% now rejected at 4.24%
 ```
 
-Thirty `quote-not-found` findings, 23 source and 7 target, and not one carried
- either suffix. The point estimate was zero and the ceiling 9.5%.
+Thirty `quote-not-found` findings,
+23 source and 7 target,
+and not one carried
+ either suffix.
+The point estimate was zero and the ceiling 9.5%.
 
-AMENDED ONE HOUR LATER, and the amendment matters more than the number. At 33
- misses one IS suffixed, `quote-not-found (source) [line-break-collapsible]`,
+AMENDED ONE HOUR LATER,
+and the amendment matters more than the number.
+At 33
+ misses one IS suffixed,
+`quote-not-found (source) [line-break-collapsible]`,
  meaning a quote that collapsing soft line breaks would have located uniquely.
-So the mechanism fires in practice, and "not one" expired exactly as two
+So the mechanism fires in practice,
+and "not one" expired exactly as two
  earlier universal claims about accumulating data did.
 
 The bound LOOSENS with a positive observation rather than tightening:
@@ -327,71 +460,126 @@ The bound LOOSENS with a positive observation rather than tightening:
 ```
 
 THE VERDICT IS UNCHANGED and now rests on the point estimate rather than on a
- zero. At 3.0%, admitting wrap-spanning quotes recovers about 7 of the 225
- misses in the settled population. Seven claims is not worth a behaviour change
- that also decides the line-structure question, and the change would still
+ zero.
+At 3.0%,
+admitting wrap-spanning quotes recovers about 7 of the 225
+ misses in the settled population.
+Seven claims is not worth a behaviour change
+ that also decides the line-structure question,
+and the change would still
  replace several lines with one.
 
-What changed is the honesty of the claim, not the decision: this is "a small
- real effect", not "no effect".
+What changed is the honesty of the claim,
+not the decision:
+this is "a small
+ real effect",
+not "no effect".
 
-THE SAMPLE WAS CHECKED BEFORE THE NULL WAS TRUSTED, because a lightly-wrapped
- sample would produce this result for an uninteresting reason. It is not
- lightly wrapped: the 7 settled entries have a median wrapped-prose share of
- 69%, against 69% for the other 85 entries in the corpus. Individual shares run
- from 0% to 97%, so the medians matching is the relevant comparison.
+THE SAMPLE WAS CHECKED BEFORE THE NULL WAS TRUSTED,
+because a lightly-wrapped
+ sample would produce this result for an uninteresting reason.
+It is not
+ lightly wrapped:
+the 7 settled entries have a median wrapped-prose share of
+ 69%,
+against 69% for the other 85 entries in the corpus.
+Individual shares run
+ from 0% to 97%,
+so the medians matching is the relevant comparison.
 
-VERDICT. The mechanism is real and is proven by unit test: a quote spanning a
- soft wrap, returned with a space, fails both the exact and the
- punctuation-normalized search. Its INCIDENCE in practice is about 3%, with a
- one-sided 95% ceiling of 13.5%. Admitting wrap-spanning quotes would therefore
- recover roughly 7 of the 225 misses in the settled population, so the
+VERDICT.
+The mechanism is real and is proven by unit test:
+a quote spanning a
+ soft wrap,
+returned with a space,
+fails both the exact and the
+ punctuation-normalized search.
+Its INCIDENCE in practice is about 3%,
+with a
+ one-sided 95% ceiling of 13.5%.
+Admitting wrap-spanning quotes would therefore
+ recover roughly 7 of the 225 misses in the settled population,
+so the
  anchoring change is not worth making.
 
-The telemetry stays. It costs nothing, it is what closed this, and it will
+The telemetry stays.
+It costs nothing,
+it is what closed this,
+and it will
  notice if a future corpus wraps differently.
 
-CONSEQUENCE BEYOND THIS ISSUE: the line-structure question in
- `doc/planning/naturalness-lane-reach.md` now governs ONE change, the
- naturalness lane, rather than two. That decision got simpler rather than more
- valuable, reversing what was recorded earlier.
+CONSEQUENCE BEYOND THIS ISSUE:
+the line-structure question in
+ `doc/planning/naturalness-lane-reach.md` now governs ONE change,
+the
+ naturalness lane,
+rather than two.
+That decision got simpler rather than more
+ valuable,
+reversing what was recorded earlier.
 
 ### What the misses are NOT, which narrows what they can be
 
-With wrapping ruled out, the next candidate was a pipeline bug rather than
- model behaviour: that the text a critic is SHOWN differs from the text
- `locateQuote` SEARCHES. Any divergence there would defeat quotes wholesale and
+With wrapping ruled out,
+the next candidate was a pipeline bug rather than
+ model behaviour:
+that the text a critic is SHOWN differs from the text
+ `locateQuote` SEARCHES.
+Any divergence there would defeat quotes wholesale and
  would be ours to fix.
 
-There is none. `repair-chunk.ts` parses `documents` from exactly the
- `sourceText` and `targetText` it then passes to the critic phase, and both
- travel together into `runChunkCriticPhase`. `RepairDocument.text` is the
- original source byte-for-byte rather than the masked variant, so masking does
+There is none.
+`repair-chunk.ts` parses `documents` from exactly the
+ `sourceText` and `targetText` it then passes to the critic phase,
+and both
+ travel together into `runChunkCriticPhase`.
+`RepairDocument.text` is the
+ original source byte-for-byte rather than the masked variant,
+so masking does
  not separate them either.
 
-So the remaining candidates are all model behaviour: paraphrasing instead of
- quoting, eliding with an ellipsis, quoting across the chunk boundary it was
- shown, or inventing text. Those cannot be told apart without the failing
- quote, which nothing retains.
+So the remaining candidates are all model behaviour:
+paraphrasing instead of
+ quoting,
+eliding with an ellipsis,
+quoting across the chunk boundary it was
+ shown,
+or inventing text.
+Those cannot be told apart without the failing
+ quote,
+which nothing retains.
 
-That is worth stating positively rather than as another dead end. The expensive
- branch, a systematic defect in our own plumbing, is eliminated. What is left is
+That is worth stating positively rather than as another dead end.
+The expensive
+ branch,
+a systematic defect in our own plumbing,
+is eliminated.
+What is left is
  a telemetry gap with a known and cheap remedy.
 
-The direction matters for the decision this feeds. If soft wrapping explains
- little, the anchoring lead closes, and the line-structure question in
+The direction matters for the decision this feeds.
+If soft wrapping explains
+ little,
+the anchoring lead closes,
+and the line-structure question in
  `doc/planning/naturalness-lane-reach.md` governs one change rather than two.
 
 ### The side split varies by entry, so do not compare a sample to a population
 
-The quote-family findings carry a side, `source` or `target`, and across all 56
- settled entries `quote-not-found` is almost exactly even, 112 against 113.
+The quote-family findings carry a side,
+`source` or `target`,
+and across all 56
+ settled entries `quote-not-found` is almost exactly even,
+112 against 113.
 
-At 7 settled entries `pass13` shows 17 source against 3 target. Under an even
- split that is about a 0.26% outcome, which looks like a pipeline change and is
+At 7 settled entries `pass13` shows 17 source against 3 target.
+Under an even
+ split that is about a 0.26% outcome,
+which looks like a pipeline change and is
  not one.
 
-The controlled comparison is the same entries in both runs, and it dissolves
+The controlled comparison is the same entries in both runs,
+and it dissolves
  the effect:
 
 ```text
@@ -402,32 +590,50 @@ The controlled comparison is the same entries in both runs, and it dissolves
   empty-quote target          4         3
 ```
 
-Those seven entries were ALREADY source-skewed in the old run, 12 against 6,
- while the corpus overall was even. The same holds for `empty-quote`, whose
+Those seven entries were ALREADY source-skewed in the old run,
+12 against 6,
+ while the corpus overall was even.
+The same holds for `empty-quote`,
+whose
  corpus-wide skew of 112 source against 17 target is driven by entries outside
  this sample entirely.
 
-So the side distribution is an entry property, and comparing a 7-entry sample
+So the side distribution is an entry property,
+and comparing a 7-entry sample
  against a 56-entry population measures which entries were drawn rather than
- what the pipeline did. Compare the same entries, or do not compare.
+ what the pipeline did.
+Compare the same entries,
+or do not compare.
 
-This is the second finding in one session to dissolve the same way; the other
+This is the second finding in one session to dissolve the same way;
+the other
  was a `needs-human` share that looked like a threefold shift and turned out to
- be one entry. Both were caught, but both were nearly written down.
+ be one entry.
+Both were caught,
+but both were nearly written down.
 
 ### A gap this exposed
 
-The failing quote is not retained anywhere. Artifacts keep adjudicated issues
- only, 2650 accepted plus 1033 rejected plus 415 needs-human, and a claim
- discarded at anchoring never becomes one. So the incidence of each mechanism
- cannot be measured from the existing 56 entries at all, only from a pass run
- after the suffix landed. A recorded signal that omits the evidence needed to
- act on it is the same failure this document is about, one layer down.
+The failing quote is not retained anywhere.
+Artifacts keep adjudicated issues
+ only,
+2650 accepted plus 1033 rejected plus 415 needs-human,
+and a claim
+ discarded at anchoring never becomes one.
+So the incidence of each mechanism
+ cannot be measured from the existing 56 entries at all,
+only from a pass run
+ after the suffix landed.
+A recorded signal that omits the evidence needed to
+ act on it is the same failure this document is about,
+one layer down.
 
 ## The rejected-value family is small, and checked so nobody re-opens it
 
-Every `unknown-` finding carries the value the model actually sent, so the
- census can read them off rather than guess. Over the same 56 entries there are
+Every `unknown-` finding carries the value the model actually sent,
+so the
+ census can read them off rather than guess.
+Over the same 56 entries there are
  nine in total:
 
 ```text
@@ -438,45 +644,75 @@ Every `unknown-` finding carries the value the model actually sent, so the
   1  unknown-vote (support)
 ```
 
-Severity accepts `neutral`, `minor`, `major`, `critical`.
-So four are the model omitting the field, three are it inventing a word outside
- the vocabulary, and one is an invented vote.
+Severity accepts `neutral`,
+`minor`,
+`major`,
+`critical`.
+So four are the model omitting the field,
+three are it inventing a word outside
+ the vocabulary,
+and one is an invented vote.
 
-The ninth is the interesting one. `minor,` is a VALID severity rejected for a
- trailing comma, which is the same shape as the Kimi-K3 channel-marker defect:
+The ninth is the interesting one.
+`minor,` is a VALID severity rejected for a
+ trailing comma,
+which is the same shape as the Kimi-K3 channel-marker defect:
  a good answer lost to a formatting artefact rather than to disagreement.
-It is one occurrence out of 4098 adjudicated issues, so it is recorded rather
- than acted on. Should this family grow, punctuation trimming before the
+It is one occurrence out of 4098 adjudicated issues,
+so it is recorded rather
+ than acted on.
+Should this family grow,
+punctuation trimming before the
  vocabulary check is the cheap half of the fix.
 
 ## The refiner goes silent on whole entries
 
-Recorded in full in `doc/planning/naturalness-lane-reach.md`, because it bears
- on a decision waiting there. In summary: `stage-quorum-unmet` is 34
- occurrences and every one is `refiner 0/1`, which is the artifact stating the
- roster size itself. The partition is exact, 29 entries heard from it always
- and 7 never, so the cause is entry-determined.
+Recorded in full in `doc/planning/naturalness-lane-reach.md`,
+because it bears
+ on a decision waiting there.
+In summary:
+`stage-quorum-unmet` is 34
+ occurrences and every one is `refiner 0/1`,
+which is the artifact stating the
+ roster size itself.
+The partition is exact,
+29 entries heard from it always
+ and 7 never,
+so the cause is entry-determined.
 
-ALREADY FIXED, and the census predates the fix. That population ran to
- 2026-08-11, and `eb21ffa6b` on 08-12 took the lane from one refiner to three.
-Quorum is two now, so a single lost voice cannot empty the stage, and `pass13`
- shows every `refine-candidates` finding at `3/3 heard`. The finding stands as
+ALREADY FIXED,
+and the census predates the fix.
+That population ran to
+ 2026-08-11,
+and `eb21ffa6b` on 08-12 took the lane from one refiner to three.
+Quorum is two now,
+so a single lost voice cannot empty the stage,
+and `pass13`
+ shows every `refine-candidates` finding at `3/3 heard`.
+The finding stands as
  a description of the old population and not of the current pipeline.
 
-`quorumMet` itself is read where it matters. `restoration-judge.ts` and
+`quorumMet` itself is read where it matters.
+`restoration-judge.ts` and
  `derivability-probe.ts` both mark a seed unjudged rather than accept a
- minority verdict. The other eight callers of `gatherStageVoices` do not read
- it, relying on their own downstream guards.
+ minority verdict.
+The other eight callers of `gatherStageVoices` do not read
+ it,
+relying on their own downstream guards.
 
 ## Dropped merge opinions do not explain the duplicate issues
 
 `group-index-out-of-range` is the adjudication panel naming a cluster number
- that does not exist; `adjudicate-wire.ts` drops that merge opinion and records
- the finding. A dropped merge opinion leaves claims unmerged, which looked like
+ that does not exist;
+`adjudicate-wire.ts` drops that merge opinion and records
+ the finding.
+A dropped merge opinion leaves claims unmerged,
+which looked like
  a candidate mechanism for the duplicates in
  `doc/planning/duplicate-accepted-issues.md`.
 
-Measured over the same 56 entries, split by whether an entry carries any
+Measured over the same 56 entries,
+split by whether an entry carries any
  dropped merge opinion:
 
 ```text
@@ -484,44 +720,73 @@ Measured over the same 56 entries, split by whether an entry carries any
   entries WITHOUT                        40 entries  1147 accepted  35.1% duplicate
 ```
 
-No effect, and no monotone relation inside the affected group either: the entry
+No effect,
+and no monotone relation inside the affected group either:
+the entry
  with the most dropped opinions has a lower duplicate rate than several
- carrying one. The hypothesis is refuted.
+ carrying one.
+The hypothesis is refuted.
 
 The duplicate rate here is higher than the 21.5% recorded in the planning doc
- because the key is looser. This measurement groups on an issue's first
- target-side span, where the planning doc required every span to match. They
- count one phenomenon at two strictnesses, and neither contradicts the other.
+ because the key is looser.
+This measurement groups on an issue's first
+ target-side span,
+where the planning doc required every span to match.
+They
+ count one phenomenon at two strictnesses,
+and neither contradicts the other.
 
 ## The recurring wall: outcomes are recorded, causes are not
 
-This document is a census of signals the pipeline EMITS. Four separate
- investigations in one session stalled on the opposite problem, and they stall
- the same way, so it is worth naming as one thing rather than four.
+This document is a census of signals the pipeline EMITS.
+Four separate
+ investigations in one session stalled on the opposite problem,
+and they stall
+ the same way,
+so it is worth naming as one thing rather than four.
 
--   ~~`quote-not-found` records that a quote failed to anchor, and discards the
-    QUOTE.~~ FIXED 2026-08-13 in `b8c678e0a`: the finding now carries a bounded
-    preview of the needle. The 225 misses already recorded stay undiagnosable,
-    but future ones name the quote that missed. See "The wall came down on one
+-   ~~`quote-not-found` records that a quote failed to anchor,
+    and discards the
+    QUOTE.~~
+    FIXED 2026-08-13 in `b8c678e0a`:
+    the finding now carries a bounded
+    preview of the needle.
+    The 225 misses already recorded stay undiagnosable,
+    but future ones name the quote that missed.
+    See "The wall came down on one
     of the four".
--   ~~`schema-mismatch` records that a model reply failed to parse, and
-    `attemptStageCall` discards the `rawText` the outcome carries.~~ FIXED
-    2026-08-13 in `256520df7`. See "The second wall came down, and the client
+-   ~~`schema-mismatch` records that a model reply failed to parse,
+    and
+    `attemptStageCall` discards the `rawText` the outcome carries.~~
+    FIXED
+    2026-08-13 in `256520df7`.
+    See "The second wall came down,
+    and the client
     was never the problem".
 -   Accepted issues record their claims but NOT which critic raised each one.
     So `#65` cannot ask whether a duplicated issue is independent
-    corroboration, because independence means "different critics" and the
+    corroboration,
+    because independence means "different critics" and the
     artifact cannot say.
--   The refiner's silences recorded `refiner 0/1` and no reason, so the cause
+-   The refiner's silences recorded `refiner 0/1` and no reason,
+    so the cause
     was only recoverable once a live run was watched.
 
-The shape is identical every time: the pipeline records WHAT happened and drops
- WHY, so any question about cause needs a fresh run rather than the artifacts
- already paid for. Each of those runs costs days.
+The shape is identical every time:
+the pipeline records WHAT happened and drops
+ WHY,
+so any question about cause needs a fresh run rather than the artifacts
+ already paid for.
+Each of those runs costs days.
 
-The four cases share one remedy: retain the reason alongside the outcome at the
- point the outcome is recorded, truncated where the payload is large. That was
- first written here as "cheap", which is a claim with a number behind it, so
+The four cases share one remedy:
+retain the reason alongside the outcome at the
+ point the outcome is recorded,
+truncated where the payload is large.
+That was
+ first written here as "cheap",
+which is a claim with a number behind it,
+so
  here is the number:
 
 ```text
@@ -535,36 +800,56 @@ The four cases share one remedy: retain the reason alongside the outcome at the
 ```
 
 So the whole remedy costs about a hundredth of what the artifacts already
- occupy, and the largest single part is the critic attribution that `#65`
+ occupy,
+and the largest single part is the critic attribution that `#65`
  needs.
 
-One correction while measuring this: the same paragraph originally justified
- caution by saying artifacts "already carry full repaired text", implying that
- is the bulk. It is not. `repairedText` totals 240 KiB across all 56 artifacts,
- under 2% of the 15362 KiB; the bulk is the 5453 recorded claims and their
- quoted spans. The caution was pointing at the wrong thing.
+One correction while measuring this:
+the same paragraph originally justified
+ caution by saying artifacts "already carry full repaired text",
+implying that
+ is the bulk.
+It is not.
+`repairedText` totals 240 KiB across all 56 artifacts,
+ under 2% of the 15362 KiB;
+the bulk is the 5453 recorded claims and their
+ quoted spans.
+The caution was pointing at the wrong thing.
 
-Raised here rather than acted on, on scope rather than on cost. It would change
- what `#65`, `#72` and `#75` can be answered from, so it belongs in a priority
+Raised here rather than acted on,
+on scope rather than on cost.
+It would change
+ what `#65`,
+`#72` and `#75` can be answered from,
+so it belongs in a priority
  conversation rather than in a commit landed overnight.
 
 ## What still reads nothing
 
-`alignment.findings` is turned into scorecard text and recorded, and reaches no
+`alignment.findings` is turned into scorecard text and recorded,
+and reaches no
  stage that could act on it.
 `footnoteGraph` was in that position until 2026-08-13 and no longer is:
- `footnoteBreakCount` reads it, and the chunk-integrity gate refuses a patch
+ `footnoteBreakCount` reads it,
+and the chunk-integrity gate refuses a patch
  raising the break count.
-The quote-anchoring findings are recorded, and now carry a diagnosis, but
+The quote-anchoring findings are recorded,
+and now carry a diagnosis,
+but
  nothing acts on them either.
 Whether any of these should is a design question this document does not settle.
 
 ## The `#72` re-open alarm was a pooling artifact, and the closure stands
 
-Fired 2026-08-13 by the run monitor: "`pass13` `#72` VERDICT AT RISK: 8 of 58
- wrap-explained. The closure assumed about 3%; this is nearer 10%."
+Fired 2026-08-13 by the run monitor:
+"`pass13` `#72` VERDICT AT RISK:
+8 of 58
+ wrap-explained.
+The closure assumed about 3%;
+this is nearer 10%."
 
-The figure is arithmetically right and the conclusion is wrong. It pools two
+The figure is arithmetically right and the conclusion is wrong.
+It pools two
  populations that the artifact tree keeps separate:
 
 ```text
@@ -573,47 +858,76 @@ The figure is arithmetically right and the conclusion is wrong. It pools two
   pooled        58                   8              13.8%
 ```
 
-`#72` was closed on the SETTLED-ARTIFACT population, and that population reads
- 2.6% here against the roughly 3% the closure assumed. It is the same number.
+`#72` was closed on the SETTLED-ARTIFACT population,
+and that population reads
+ 2.6% here against the roughly 3% the closure assumed.
+It is the same number.
 The closure stands and needs no re-taking.
 
 This is the third time this session that a share computed over the wrong
- population produced a false alarm, after the needs-human share and the
- quote-side split. The tell is identical each time: a rate that moves by a
- factor of three or more between a small reading and an established one, where
+ population produced a false alarm,
+after the needs-human share and the
+ quote-side split.
+The tell is identical each time:
+a rate that moves by a
+ factor of three or more between a small reading and an established one,
+where
  the small reading silently spans a different set of things.
 
-THE MONITOR SHOULD BE FIXED RATHER THAN THE DOCUMENT. It globs every `.json`
- under the run root, so it will keep pooling `slice-cache` with `artifacts` on
- every future check, and every future firing will overstate the same way.
+THE MONITOR SHOULD BE FIXED RATHER THAN THE DOCUMENT.
+It globs every `.json`
+ under the run root,
+so it will keep pooling `slice-cache` with `artifacts` on
+ every future check,
+and every future firing will overstate the same way.
 
 ### The slice-cache reading is a real leading indicator, not noise
 
-36.8% against 2.6% is not a rounding difference, and it deserves an explanation
+36.8% against 2.6% is not a rounding difference,
+and it deserves an explanation
  rather than a dismissal.
 
-The likely one is timing rather than behaviour. `artifacts` holds SETTLED
- entries and `slice-cache` holds slices of entries still in flight, so the cache
- is a window onto work that has not yet reached an artifact. If those 7
- collapsible failures settle as they stand, the settled share rises and `#72`
+The likely one is timing rather than behaviour.
+`artifacts` holds SETTLED
+ entries and `slice-cache` holds slices of entries still in flight,
+so the cache
+ is a window onto work that has not yet reached an artifact.
+If those 7
+ collapsible failures settle as they stand,
+the settled share rises and `#72`
  genuinely would need re-taking.
 
-Held as a WATCH ITEM rather than a finding, for two reasons. The cache total is
- 19 observations, which is small enough that a couple of entries dominate it.
-And the direction is not established: nothing here shows a cached failure
- reaching an artifact unchanged, which is the step the inference needs.
+Held as a WATCH ITEM rather than a finding,
+for two reasons.
+The cache total is
+ 19 observations,
+which is small enough that a couple of entries dominate it.
+And the direction is not established:
+nothing here shows a cached failure
+ reaching an artifact unchanged,
+which is the step the inference needs.
 
-Re-read both populations separately when `pass13` settles more entries. The
- comparison that matters is artifact-share then against artifact-share now, and
+Re-read both populations separately when `pass13` settles more entries.
+The
+ comparison that matters is artifact-share then against artifact-share now,
+and
  it is the only one that speaks to the closure.
 
 ### It fired again on the settled population, and it was one entry
 
-The fixed monitor, counting `artifacts` alone as it should, alarmed at 12
- settled entries: 8 of 59 wrap-explained, 13.6%, against the roughly 3% the
- closure assumed. On the right population, with the pooling bug gone.
+The fixed monitor,
+counting `artifacts` alone as it should,
+alarmed at 12
+ settled entries:
+8 of 59 wrap-explained,
+13.6%,
+against the roughly 3% the
+ closure assumed.
+On the right population,
+with the pooling bug gone.
 
-It is still a false alarm, and the reason is the one this session keeps
+It is still a false alarm,
+and the reason is the one this session keeps
  relearning:
 
 ```text
@@ -625,99 +939,161 @@ It is still a false alarm, and the reason is the one this session keeps
   excluding the top   1/39      2.6%
 ```
 
-Seven of the eight hits are ONE entry. Drop it and the share is 2.6%, which is
- the closure's number to within noise. `#72` stands, again.
+Seven of the eight hits are ONE entry.
+Drop it and the share is 2.6%,
+which is
+ the closure's number to within noise.
+`#72` stands,
+again.
 
 The watch item recorded when the pooling bug was fixed did predict this
- correctly in one respect: the in-flight `slice-cache` hits were 7 of 19, and
- they settled into `artifacts` unchanged, so the cache was a genuine leading
- indicator of what would land. What it led to was an outlier, not a population
+ correctly in one respect:
+the in-flight `slice-cache` hits were 7 of 19,
+and
+ they settled into `artifacts` unchanged,
+so the cache was a genuine leading
+ indicator of what would land.
+What it led to was an outlier,
+not a population
  shift.
 
 #### The guard that generalises all three false alarms
 
-Three alarms this session, three different surface causes, one shape:
+Three alarms this session,
+three different surface causes,
+one shape:
 
--   `needs-human` at 31%, which was `AmbeR_the_anpa` alone.
--   Wrap-explained at 13.8%, which was `slice-cache` pooled with `artifacts`.
--   Wrap-explained at 13.6%, which was `Futajuhuacha` alone.
+-   `needs-human` at 31%,
+    which was `AmbeR_the_anpa` alone.
+-   Wrap-explained at 13.8%,
+    which was `slice-cache` pooled with `artifacts`.
+-   Wrap-explained at 13.6%,
+    which was `Futajuhuacha` alone.
 
-A threshold on the share cannot separate these from a real shift, and the
+A threshold on the share cannot separate these from a real shift,
+and the
  second and third cases prove that fixing one surface cause does not stop the
- next. The rule that does separate them is stated once and applies to all:
+ next.
+The rule that does separate them is stated once and applies to all:
 
 A share is a POPULATION signal only if it survives dropping its largest single
  contributor.
 
 The monitor now computes both figures and alarms only when BOTH clear the
- threshold. It reports the excluded-top share on every progress line too, so the
+ threshold.
+It reports the excluded-top share on every progress line too,
+so the
  concentration is visible before it becomes an alarm rather than after.
 
 #### Left open, and worth a look when the pass ends
 
 `Futajuhuacha` really is 35% wrap-explained where every other settled entry is
- near zero. That is a fact about one entry rather than about the pipeline, but
+ near zero.
+That is a fact about one entry rather than about the pipeline,
+but
  nothing here explains WHY one entry's critic quotes should fail line-break
- collapse at ten times the corpus rate. Cheap to check once the pass stops:
+ collapse at ten times the corpus rate.
+Cheap to check once the pass stops:
  whether that entry's target text is wrapped differently from the rest.
 
 ## The wall came down on one of the four
 
-The recurring wall says outcomes are recorded and causes are not. One of its
- four instances is now fixed, and what forced it is worth keeping, because the
+The recurring wall says outcomes are recorded and causes are not.
+One of its
+ four instances is now fixed,
+and what forced it is worth keeping,
+because the
  wall had been recorded twice without anything changing.
 
 WHAT FORCED IT was a concrete blocked question rather than the principle.
 `Futajuhuacha` runs at 35% wrap-explained where every other settled entry is
- near zero. Trying to explain that:
+ near zero.
+Trying to explain that:
 
--   The obvious hypothesis, that the entry is wrapped differently, is REFUTED.
+-   The obvious hypothesis,
+    that the entry is wrapped differently,
+    is REFUTED.
     At 8.3 intra-paragraph line breaks per thousand characters it is
-    unremarkable: `AkiraComplex` is 18.0, `Aniloviraw` 16.7 and `Anilovr` 14.4,
-    all with zero or one wrap-explained miss, and `Dethelly` is higher again at
+    unremarkable:
+    `AkiraComplex` is 18.0,
+    `Aniloviraw` 16.7 and `Anilovr` 14.4,
+    all with zero or one wrap-explained miss,
+    and `Dethelly` is higher again at
     8.9 with none.
--   The next hypothesis, that its critics quoted longer spans, CANNOT BE TESTED
-    from the artifacts. Reconstructing the anchoring over every claim span in
+-   The next hypothesis,
+    that its critics quoted longer spans,
+    CANNOT BE TESTED
+    from the artifacts.
+    Reconstructing the anchoring over every claim span in
     all 12 settled entries found 1027 target spans and every single one located
-    exactly, with none needing a collapse and none missing.
+    exactly,
+    with none needing a collapse and none missing.
 
-That second result is the wall itself, stated precisely. Claims that FAIL
- anchoring never become issues, so they never reach the artifact, so the only
- quotes an artifact carries are the ones that succeeded. The failures are
+That second result is the wall itself,
+stated precisely.
+Claims that FAIL
+ anchoring never become issues,
+so they never reach the artifact,
+so the only
+ quotes an artifact carries are the ones that succeeded.
+The failures are
  counted and their text is gone.
 
-THE FIX is one call site. `lineBreakSuffix` already had the needle in scope, so
- the finding now appends a bounded preview: line breaks collapsed so a finding
- stays one line, truncated at 60 characters so a paragraph-length quote cannot
+THE FIX is one call site.
+`lineBreakSuffix` already had the needle in scope,
+so
+ the finding now appends a bounded preview:
+line breaks collapsed so a finding
+ stays one line,
+truncated at 60 characters so a paragraph-length quote cannot
  swamp a scorecard line.
 
-WHY IT IS SAFE for consumers, checked rather than assumed. The only non-test
- reader of `unresolvedReasons` is `unresolvedCountOf`, which takes `.length`;
- the field is documented as feeding prompt iteration, which is exactly the use
- the needle serves; and findings already carry variable payloads by convention,
+WHY IT IS SAFE for consumers,
+checked rather than assumed.
+The only non-test
+ reader of `unresolvedReasons` is `unresolvedCountOf`,
+which takes `.length`;
+ the field is documented as feeding prompt iteration,
+which is exactly the use
+ the needle serves;
+and findings already carry variable payloads by convention,
  as `stage-quorum-unmet (${shortfall})` and `duplicate-check (${check.issue})`
- do. Nothing groups them by string equality.
+ do.
+Nothing groups them by string equality.
 
-VERIFIED BY MUTATION, not by the suite passing. Removing the preview and
- rebuilding fails 24 assertions across the three test files, so the two new
+VERIFIED BY MUTATION,
+not by the suite passing.
+Removing the preview and
+ rebuilding fails 24 assertions across the three test files,
+so the two new
  cases covering truncation and flattening are load-bearing rather than
  decorative.
 
-THE OTHER THREE WALLS still stand: `schema-mismatch` discards `rawText`,
- accepted issues do not record which critic raised each claim, and refiner
- silences record no reason. Each is the same shape and each would take the same
+THE OTHER THREE WALLS still stand:
+`schema-mismatch` discards `rawText`,
+ accepted issues do not record which critic raised each claim,
+and refiner
+ silences record no reason.
+Each is the same shape and each would take the same
  kind of change at the site where the discarded value is still in scope.
 
-`Futajuhuacha` stays unexplained until a pass runs the new telemetry. That is
- the honest state: the instrument is built and has not yet been read.
+`Futajuhuacha` stays unexplained until a pass runs the new telemetry.
+That is
+ the honest state:
+the instrument is built and has not yet been read.
 
 ## The second wall came down, and the client was never the problem
 
-Two of the four recurring-wall instances are now fixed. This one carried a
- wrong diagnosis in the earlier entry, and the correction is the useful part.
+Two of the four recurring-wall instances are now fixed.
+This one carried a
+ wrong diagnosis in the earlier entry,
+and the correction is the useful part.
 
 THE EARLIER ENTRY SAID the client discards `rawText` and logs the sub-kind at
- debug. Reading the source, `synthetic-client.ts` does neither. It already
+ debug.
+Reading the source,
+`synthetic-client.ts` does neither.
+It already
  returns `rawText` on every failure outcome AND a `detail` naming which of the
  three faults fired:
 
@@ -727,89 +1103,160 @@ THE EARLIER ENTRY SAID the client discards `rawText` and logs the sub-kind at
   guard rejected       content parsed as JSON but failed the caller schema guard
 ```
 
-The loss is ONE CALL DOWNSTREAM. `attemptStageCall` in `stage-call.ts` had:
+The loss is ONE CALL DOWNSTREAM.
+`attemptStageCall` in `stage-call.ts` had:
 
 ```text
   l.warn(`${stage} ${modelId}: ${outcome.kind}, voice lost`,);
 ```
 
-`outcome.kind` is the flattened union tag. Both the sub-kind and the model text
- sat in scope, unread, on the same object. So the emitter was fine and the
- consumer threw the diagnosis away, which is a different fix from the one the
+`outcome.kind` is the flattened union tag.
+Both the sub-kind and the model text
+ sat in scope,
+unread,
+on the same object.
+So the emitter was fine and the
+ consumer threw the diagnosis away,
+which is a different fix from the one the
  earlier entry implied and a much smaller one.
 
-WHAT IT NOW RECORDS: the sub-kind by name, plus a bounded, line-flattened
- opening of the model text. The opening is the diagnostic part. The Kimi-K3
- outage was a two-character channel marker prefixing otherwise valid JSON, and
- it explained 507 mismatches in a single pass; nothing shorter than the first
+WHAT IT NOW RECORDS:
+the sub-kind by name,
+plus a bounded,
+line-flattened
+ opening of the model text.
+The opening is the diagnostic part.
+The Kimi-K3
+ outage was a two-character channel marker prefixing otherwise valid JSON,
+and
+ it explained 507 mismatches in a single pass;
+nothing shorter than the first
  few characters was needed to see it.
 
-The refusal branch is covered too. A refusal and a parse failure call for
+The refusal branch is covered too.
+A refusal and a parse failure call for
  different responses and both read as a bare lost voice before this.
 
-VERIFIED BY MUTATION: restoring the bare-kind warning fails 9 assertions. The
- test harness needed a capturing logger to make that possible, because the
+VERIFIED BY MUTATION:
+restoring the bare-kind warning fails 9 assertions.
+The
+ test harness needed a capturing logger to make that possible,
+because the
  existing cases asserted only that a voice was LOST and never read what the
- loss recorded, which is how a warning this uninformative survived having tests.
+ loss recorded,
+which is how a warning this uninformative survived having tests.
 
-WHEN IT WILL BE READ, and this is NARROWER than the first version of this
- paragraph said. It claimed `#75`'s "74-and-counting voice losses become
- diagnosable", which reads as covering the losses already on disk. It does not.
- A warning is written once, at the moment the voice is lost, so the 74 losses
- `pass13` has already recorded stay bare permanently. Only losses recorded
- AFTER a fresh process starts carry the sub-kind and the opening. `pass13`
- cannot see the change at all, being a frozen module graph; the detached
- watcher resumes that run in a new process, so the resumed half onward is
+WHEN IT WILL BE READ,
+and this is NARROWER than the first version of this
+ paragraph said.
+It claimed `#75`'s "74-and-counting voice losses become
+ diagnosable",
+which reads as covering the losses already on disk.
+It does not.
+ A warning is written once,
+at the moment the voice is lost,
+so the 74 losses
+ `pass13` has already recorded stay bare permanently.
+Only losses recorded
+ AFTER a fresh process starts carry the sub-kind and the opening.
+`pass13`
+ cannot see the change at all,
+being a frozen module graph;
+the detached
+ watcher resumes that run in a new process,
+so the resumed half onward is
  diagnosable and the already-recorded 74 are not recoverable.
 
-The needle write-up in this document got the equivalent point right, saying the
- misses already recorded stay undiagnosable. The voice-loss write-up did not,
+The needle write-up in this document got the equivalent point right,
+saying the
+ misses already recorded stay undiagnosable.
+The voice-loss write-up did not,
  and the two changes have identical reach.
 
 ### Both fixes make the run log corpus-bearing, which it was not before
 
-The raw opening is model output on a translation task, so it is largely corpus
- prose, and the needle preview carries corpus text by construction. Before
+The raw opening is model output on a translation task,
+so it is largely corpus
+ prose,
+and the needle preview carries corpus text by construction.
+Before
  today the log recorded `schema-mismatch, voice lost` and `quote-not-found`,
  which name a fault and quote nothing.
 
-As built this is safe. Both land only in run logs, which live outside git under
- `node_modules/.monochromatic` and are gitignored, exactly like the artifacts
+As built this is safe.
+Both land only in run logs,
+which live outside git under
+ `node_modules/.monochromatic` and are gitignored,
+exactly like the artifacts
  and grading sheets that have always held corpus text.
 
-The constraint is on what happens NEXT, and it falls on this document. Reading
+The constraint is on what happens NEXT,
+and it falls on this document.
+Reading
  those diagnoses and writing up what they say must not quote a needle or a raw
- opening here, because this file is committed, and must not paste log excerpts
- into `pi`/sol or any third-party model. `one-among-us/data` is unlicensed. The
- same discipline the grading sheets already carry applies: name the fault class,
- cite counts, quote nothing. `artifact-probe-read.unit.test.ts` states the rule
- for the quote fields it omits, and it is the same rule.
+ opening here,
+because this file is committed,
+and must not paste log excerpts
+ into `pi`/sol or any third-party model.
+`one-among-us/data` is unlicensed.
+The
+ same discipline the grading sheets already carry applies:
+name the fault class,
+ cite counts,
+quote nothing.
+`artifact-probe-read.unit.test.ts` states the rule
+ for the quote fields it omits,
+and it is the same rule.
 
 THE REMAINING WALL is accepted issues not recording which critic raised each
- claim, which blocks `#65`.
+ claim,
+which blocks `#65`.
 
-It does NOT block `#68`, which earlier versions of this document and of
- `256520df7` both claimed. `#68` is about the three PROBERS in the
- introduced-defect probe, not the critics, and it already has per-model
- attribution: it carries measured raise rates over the same 857 regions, 81
- claims against 45 against 5. What `#68` waits on is `#66`'s human-graded ground
- truth, which says which prober is right when they disagree. Getting this
- straight changes the urgency rather than the work: `#65` is a DECISION task, so
- critic attribution is groundwork, not something gating a measurement about to
+It does NOT block `#68`,
+which earlier versions of this document and of
+ `256520df7` both claimed.
+`#68` is about the three PROBERS in the
+ introduced-defect probe,
+not the critics,
+and it already has per-model
+ attribution:
+it carries measured raise rates over the same 857 regions,
+81
+ claims against 45 against 5.
+What `#68` waits on is `#66`'s human-graded ground
+ truth,
+which says which prober is right when they disagree.
+Getting this
+ straight changes the urgency rather than the work:
+`#65` is a DECISION task,
+so
+ critic attribution is groundwork,
+not something gating a measurement about to
  be taken.
 
 ## The third wall is the same shape after all, and I said it was not
 
-The paragraph above, and commit `256520df7`'s message, both say the attribution
- is "genuinely absent rather than discarded downstream", so the fix would need
- the claim to carry its speaker from the critic stage onward. That is wrong, and
- wrong in the direction that matters: it makes a discarded value look like a
- data-flow redesign, which is the difference between a contained change and one
- nobody starts. Reading the source says otherwise.
+The paragraph above,
+and commit `256520df7`'s message,
+both say the attribution
+ is "genuinely absent rather than discarded downstream",
+so the fix would need
+ the claim to carry its speaker from the critic stage onward.
+That is wrong,
+and
+ wrong in the direction that matters:
+it makes a discarded value look like a
+ data-flow redesign,
+which is the difference between a contained change and one
+ nobody starts.
+Reading the source says otherwise.
 
-`gatherStageVoices` returns `HeardVoice<ValueT>`, whose TSDoc reads "One heard
+`gatherStageVoices` returns `HeardVoice<ValueT>`,
+whose TSDoc reads "One heard
  voice with its speaker" and whose fields are `modelId` and `value`
- (`stage-quorum.ts:53`). `runCriticStage` then does this, at
+ (`stage-quorum.ts:53`).
+`runCriticStage` then does this,
+at
  `repair-stages.ts:153`:
 
 ```ts
@@ -820,84 +1267,151 @@ const reports = gather.voices
 },);
 ```
 
-The speaker is discarded one line after arriving, and every claim built below
- that line comes from `reports`, which no longer knows who said anything. This
- is the third instance of the same shape, not a different one: `locate-quote`
- had the needle in scope, `stage-call` had the sub-kind and the raw text in
- scope, and `runCriticStage` has the `modelId` in scope.
+The speaker is discarded one line after arriving,
+and every claim built below
+ that line comes from `reports`,
+which no longer knows who said anything.
+This
+ is the third instance of the same shape,
+not a different one:
+`locate-quote`
+ had the needle in scope,
+`stage-call` had the sub-kind and the raw text in
+ scope,
+and `runCriticStage` has the `modelId` in scope.
 
-WHAT IS GENUINELY ABSENT is the destination, not the source. `issue-model.ts:10`
+WHAT IS GENUINELY ABSENT is the destination,
+not the source.
+`issue-model.ts:10`
  and `aggregate-claims.ts:15` both describe a mechanism in the present tense,
- that "the shell maps claim ids to proposers for calibration, never for judging".
- No such map exists. Every occurrence of `proposer` under `src/` is a comment or
- a test name; none is an implementation. So the design named the right place,
- recorded why it must sit outside the claim, and the map was never built while
+ that "the shell maps claim ids to proposers for calibration,
+never for judging".
+ No such map exists.
+Every occurrence of `proposer` under `src/` is a comment or
+ a test name;
+none is an implementation.
+So the design named the right place,
+ recorded why it must sit outside the claim,
+and the map was never built while
  its one input was being thrown away upstream.
 
-THE INVARIANT THE FIX MUST NOT BREAK, and the reason attribution cannot simply
- be added to the claim: adjudication is provenance-blind by deliberate design,
+THE INVARIANT THE FIX MUST NOT BREAK,
+and the reason attribution cannot simply
+ be added to the claim:
+adjudication is provenance-blind by deliberate design,
  `adjudicate-prompt.unit.test.ts` asserts the sheet "keeps proposer identity out
- of the sheet", and `aggregate-claims.ts:17` records why. A real defect can
- arrive with exactly one proposer; the reference run had `gpt-oss-120b` as the
- sole finder of a planted seed. Proposer counts must never reach a judging
- prompt. A side map keyed by claim id satisfies this, because
+ of the sheet",
+and `aggregate-claims.ts:17` records why.
+A real defect can
+ arrive with exactly one proposer;
+the reference run had `gpt-oss-120b` as the
+ sole finder of a planted seed.
+Proposer counts must never reach a judging
+ prompt.
+A side map keyed by claim id satisfies this,
+because
  `computeIssueClaimId` already gives every claim a stable handle and the panel
  never sees the map.
 
-THERE IS A WORKING PRECEDENT in a sibling stage. `editor-ensemble.ts:251` tracks
- "every distinct APPLIED proposal for this envelope, first proposer" for edit
- candidates, and `candidate-select.ts:29` uses provenance to stop a proposer
- grading its own work. The pattern is established in this codebase; the critic
+THERE IS A WORKING PRECEDENT in a sibling stage.
+`editor-ensemble.ts:251` tracks
+ "every distinct APPLIED proposal for this envelope,
+first proposer" for edit
+ candidates,
+and `candidate-select.ts:29` uses provenance to stop a proposer
+ grading its own work.
+The pattern is established in this codebase;
+the critic
  stage just never got it.
 
-COST OF LANDING IT, measured rather than assumed. A change to the chunk outcome
+COST OF LANDING IT,
+measured rather than assumed.
+A change to the chunk outcome
  shape requires bumping `SLICE_CACHE_VERSION` (`repair-translation.ts:85`,
- currently 9), and that bump was missed on the very commit that added the gate,
- so it is worth pricing before deciding when. `corpus-pass.ts:566` calls
- `discardSliceCache` the moment an entry settles, so the cache only ever holds
- in-flight work. Confirmed on `pass13`: 12 settled artifacts, and the slice
- cache holds one entry (`GLaDOSister`, 8 files, 216K). A bump therefore costs
- one entry's partial slices, not twelve entries.
+ currently 9),
+and that bump was missed on the very commit that added the gate,
+ so it is worth pricing before deciding when.
+`corpus-pass.ts:566` calls
+ `discardSliceCache` the moment an entry settles,
+so the cache only ever holds
+ in-flight work.
+Confirmed on `pass13`:
+12 settled artifacts,
+and the slice
+ cache holds one entry (`GLaDOSister`,
+8 files,
+216K).
+A bump therefore costs
+ one entry's partial slices,
+not twelve entries.
 
 ## Census of the findings nobody reads, pass13
 
-Every settled artifact carries a `findings` array. `score-probe` reads it, but
- only to summarize the editor and refine rosters, so every other kind recorded
- there has never been looked at. Taken over pass13's first 13 settled entries:
+Every settled artifact carries a `findings` array.
+`score-probe` reads it,
+but
+ only to summarize the editor and refine rosters,
+so every other kind recorded
+ there has never been looked at.
+Taken over pass13's first 13 settled entries:
  748 findings.
 
-NONE OF THEM CONTAIN CORPUS TEXT. Checked rather than assumed: zero of 748
- contain any CJK character, and the rare kinds were read with quoted spans
- redacted before anything was pasted anywhere. That makes a findings census safe
+NONE OF THEM CONTAIN CORPUS TEXT.
+Checked rather than assumed:
+zero of 748
+ contain any CJK character,
+and the rare kinds were read with quoted spans
+ redacted before anything was pasted anywhere.
+That makes a findings census safe
  to share in a way the artifacts themselves are not.
 
 The bulk are ordinary stage bookkeeping:
 
--   `refine-skip` 214, `refine-skipped` 100
--   `editor-candidates` 88, `editor-envelope-select` 87, `editor-chunk-select` 87
--   `quote-not-found` 69, which is the anchoring loss `#72` already measured
--   `refine-candidates` 28, `empty-quote` 24, `refine-selected` 13,
-    `refine-declined` 13, `refine-recheck-passed` 8
+-   `refine-skip` 214,
+    `refine-skipped` 100
+-   `editor-candidates` 88,
+    `editor-envelope-select` 87,
+    `editor-chunk-select` 87
+-   `quote-not-found` 69,
+    which is the anchoring loss `#72` already measured
+-   `refine-candidates` 28,
+    `empty-quote` 24,
+    `refine-selected` 13,
+    `refine-declined` 13,
+    `refine-recheck-passed` 8
 
 The tail is where the unread signal lives:
 
 -   `group-index-out-of-range` 5
--   `ambiguous-quote` 3, `quote-outside-blocks` 3, `non-translation` 2
--   `alignment` 1, `duplicate-verdict` 1, `unknown-regrade-severity` 1,
+-   `ambiguous-quote` 3,
+    `quote-outside-blocks` 3,
+    `non-translation` 2
+-   `alignment` 1,
+    `duplicate-verdict` 1,
+    `unknown-regrade-severity` 1,
     `missing-verdict` 1
 
 ### The panel parser degrades gracefully, which is worth stating
 
-`group-index-out-of-range`, `duplicate-verdict`, `missing-verdict` and
- `unknown-regrade-severity` all come from `adjudicate-wire.ts`, and all four are
+`group-index-out-of-range`,
+`duplicate-verdict`,
+`missing-verdict` and
+ `unknown-regrade-severity` all come from `adjudicate-wire.ts`,
+and all four are
  the parser correctly refusing a malformed judge answer rather than a defect of
- its own. The important one is `unknown-regrade-severity`
- (`adjudicate-wire.ts:279`): it keeps the VOTE and drops only the unusable
- severity, so a judge that mis-typed a severity still counts toward the verdict.
- A first reading of the name suggests a lost voice, and it is not one.
+ its own.
+The important one is `unknown-regrade-severity`
+ (`adjudicate-wire.ts:279`):
+it keeps the VOTE and drops only the unusable
+ severity,
+so a judge that mis-typed a severity still counts toward the verdict.
+ A first reading of the name suggests a lost voice,
+and it is not one.
 
-At 8 occurrences in 748 findings across 13 entries, the panel is receiving
- well-formed answers nearly always. This is a healthy signal that had never been
+At 8 occurrences in 748 findings across 13 entries,
+the panel is receiving
+ well-formed answers nearly always.
+This is a healthy signal that had never been
  read either.
 
 ### The one alignment finding contradicts its own message
@@ -908,8 +1422,10 @@ alignment structure-mismatch (pair 0: section structures differ
 ```
 
 The structures are declared different while both sides have exactly ONE chunk.
- That is not a contradiction in the data, it is the mismatch test being about
- something other than counts, and the code says exactly which:
+ That is not a contradiction in the data,
+it is the mismatch test being about
+ something other than counts,
+and the code says exactly which:
 
 ```ts
 // package/module/translation-repair/src/chunk-document.ts, the shape test as it stood;
@@ -920,35 +1436,67 @@ const mirrored = (sourceChunks.length === targetChunks.length)
   },);
 ```
 
-With one chunk on each side, the count test passes by construction, so
- the shape test can be false for exactly one reason: the leading node kinds differ.
- One document opens with a heading and the other with a paragraph. That is the
- asymmetric preamble named in `#74`, confirmed from the source rather than
+With one chunk on each side,
+the count test passes by construction,
+so
+ the shape test can be false for exactly one reason:
+the leading node kinds differ.
+ One document opens with a heading and the other with a paragraph.
+That is the
+ asymmetric preamble named in `#74`,
+confirmed from the source rather than
  inferred from a sample.
 
-The fallback did no harm HERE, because pairing one chunk to one chunk
- proportionally gave the same answer as pairing them directly. But it was the
- same code path that shifted every section of `XingZ60` by two, and it fired on
- an entry where nothing was wrong with the document at all. A test that reports
- a mismatch on a forced pairing is reporting on the preamble, not the structure.
+The fallback did no harm HERE,
+because pairing one chunk to one chunk
+ proportionally gave the same answer as pairing them directly.
+But it was the
+ same code path that shifted every section of `XingZ60` by two,
+and it fired on
+ an entry where nothing was wrong with the document at all.
+A test that reports
+ a mismatch on a forced pairing is reporting on the preamble,
+not the structure.
  The proportional path has since been deleted (`chunk-document.ts` says so at
- its head); an unequal shape now goes to `alignHeadingsForced`, and the finding
+ its head);
+an unequal shape now goes to `alignHeadingsForced`,
+and the finding
  names the sections it could not pair rather than a fraction it aligned by.
 
 ## A signal that was read and said the wrong thing, and one that did not exist (2026-08-26)
 
-THE COVERAGE SENTENCE MISREAD ITS OWN SEAT. `WROTE NOTHING AT ALL: minimax-m3` at the end of arm A's REFINER
-table told the reader to re-run a seat whose `SEAT` line, printed by the same command, said `asked=31 usable=31`;
-arm A2 repeated it for `minimax-m3` and `deepseek-v4-flash-0731`. The line was derived from slates, and a
-rewriter that answers every ask and leaves the paragraph as it stands reaches no slate. `#263` (landed in source,
-awaiting the build) carries the refine stage's heard ids out to the coverage split, which gains an
-answered-but-unslated state; the editor and translate seats still carry only a count out and say so (`#266`).
-The general shape is the one this document keeps finding: a summary line derived from one record while the
-contradicting record sits three lines below it, and nothing compares them.
+THE COVERAGE SENTENCE MISREAD ITS OWN SEAT.
+`WROTE NOTHING AT ALL: minimax-m3` at the end of arm A's REFINER
+table told the reader to re-run a seat whose `SEAT` line,
+printed by the same command,
+said `asked=31 usable=31`;
+arm A2 repeated it for `minimax-m3` and `deepseek-v4-flash-0731`.
+The line was derived from slates,
+and a
+rewriter that answers every ask and leaves the paragraph as it stands reaches no slate.
+`#263` (landed in source,
+awaiting the build) carries the refine stage's heard ids out to the coverage split,
+which gains an
+answered-but-unslated state;
+the editor and translate seats still carry only a count out and say so (`#266`).
+The general shape is the one this document keeps finding:
+a summary line derived from one record while the
+contradicting record sits three lines below it,
+and nothing compares them.
 
-NOTHING WATCHED THE LINKS. The naturalness lane protects link destinations as ordered atoms, but a slice that
+NOTHING WATCHED THE LINKS.
+The naturalness lane protects link destinations as ordered atoms,
+but a slice that
 ships through the repair lane's archive sentence or the contest's incumbent can drop a source hyperlink with no
-finding anywhere; the output reading found a page that had. `#265` (landed in source) adds the document-level
-check at publish: `DESTINATIONS <id> source=N page=M dropped=K` on stdout beside the `TALLY` line, the
-addresses at info in the run log, a warn line with the count. It is a finding and never a refusal, because the
-page is what both deciders approved. `grep '^DESTINATIONS ' <log> | grep -v 'dropped=0'` is the read.
+finding anywhere;
+the output reading found a page that had.
+`#265` (landed in source) adds the document-level
+check at publish:
+`DESTINATIONS <id> source=N page=M dropped=K` on stdout beside the `TALLY` line,
+the
+addresses at info in the run log,
+a warn line with the count.
+It is a finding and never a refusal,
+because the
+page is what both deciders approved.
+`grep '^DESTINATIONS ' <log> | grep -v 'dropped=0'` is the read.

@@ -115,7 +115,8 @@ gets a card with a `decisions` side instead of provider sides.
     and no quorum waits on it anywhere else.
     A state past the seat's context is out of reach for that ballot too:
     the endpoint refuses it with HTTP 400 `max_tokens_exceeded`
-    (probed 2026-09-28; ledger P13 in `package/module/translation-repair/doc/audit-ledger.md`).
+    (probed 2026-09-28;
+    ledger P13 in `package/module/translation-repair/doc/audit-ledger.md`).
 6.  Measure it with `judge-fidelity-probe -- --candidates <id>`
     as for any judge;
     its ballots carry the reason prefix `typed decision`
@@ -151,7 +152,9 @@ keep the card and empty the seats instead of deleting it:
 1.  Add `owner-culled` to the card's `holds` with the owner's words and the evidence beside it.
 2.  `RUN_ROSTER` and `RUN_READER_MODELS` already filter `OWNER_CULLED`,
     so every derived bench loses the seat;
-    pass any static seat it held (editor, refiner, checker) in `src/corpus-run/run-config.ts` on the evidence recorded there.
+    pass any static seat it held (editor,
+    refiner,
+    checker) in `src/corpus-run/run-config.ts` on the evidence recorded there.
 3.  Leave the blocklist alone:
     it labels ids the catalogs do not carry,
     and its guard refuses a compiled catalog that seats a blocked id.
