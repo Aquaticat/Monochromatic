@@ -641,7 +641,10 @@ code spans closed early by a backtick inside them rendered as loose backticks,
 which no linter rule reports (D30);
 a page's link markup quoted as prose rendered as fifteen live links to files that do not exist (D32);
 changes that stopped calling a function left it behind,
-and nothing reported one (ledger B20).
+and nothing reported one (ledger B20);
+two error classes were marked safe to print and a third added
+with only each commit's own tests run,
+so the scan that reads every class failed two commits later (M59).
 
 The rule:
 read a region with the Read tool before editing it.
@@ -649,6 +652,22 @@ Lint,
 type check and the named tests run after the final edit of a commit,
 in that order,
 and the commit follows only a clean run of all three (M46).
+The named tests of a source commit include the package-wide source scans
+(`message-names-only`,
+`dead-functions`,
+`duplicate-bodies`,
+`tsdoc-example-scan`,
+`fixed-length-cuts`,
+`clock-time-zones`,
+`task-list-numbers`,
+`living-doc-links`
+and `log-root-scan`),
+since a new class,
+function,
+export,
+link or clock time is read by those and not by its own file's tests;
+a ledger entry is closed only after a full suite has passed on its last commit (M12,
+M59).
 Neither the type check nor the linter reports an unused import here
 (issue #578 asks for a check),
 so a removal counts the removed names' uses,

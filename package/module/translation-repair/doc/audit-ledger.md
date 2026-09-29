@@ -8666,6 +8666,37 @@ and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
 
+### M59: error classes added and marked with only their own tests run
+
+Status:
+happened 2026-09-29,
+caught by the full suite after B24 and B25,
+fixed in `2ea511960`.
+`735566798` marked `CacheAccountLogError` and `CacheAccountReadError` safe to print,
+and `5bf2388ff` added `ReferenceLineHeadError`,
+which writes its own sentence;
+each commit ran its own test files and no full suite ran between them.
+`message-names-only.unit.test.ts` reads every class in `src`,
+so it failed on all three:
+two marked classes the inventory did not list,
+a `line` part it did not name,
+and a class writing its own sentence with neither the marker nor a withheld reason.
+This is M12's class again:
+a change whose guard is a package-wide scan,
+tested only where it was written.
+Prevention:
+every source commit's test run includes the package-wide source scans
+(`message-names-only`,
+`dead-functions`,
+`duplicate-bodies`,
+`tsdoc-example-scan`,
+`fixed-length-cuts`,
+`clock-time-zones`,
+`task-list-numbers`,
+`living-doc-links`
+and `log-root-scan`),
+and a ledger entry is closed only after a full suite has passed on its last commit.
+
 ### M58: a red case whose fixture could not reach the check it was said to pin
 
 Status:
