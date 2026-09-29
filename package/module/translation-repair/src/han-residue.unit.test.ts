@@ -177,6 +177,20 @@ await describe({
         },).join(' ',),).toContain('"喵"',);
       },
     },),
+    it({
+      name: 'REFUSES AN IDEOGRAPH BEYOND THE FIRST PLANE left in English prose, alone or opening a run, which '
+        + 'a scan by UTF-16 unit never read as Han: it saw no run, or a run cut short (ledger B21)',
+      fn: async () => {
+        expect(hanResidueFindings({
+          sourceText: '\u{20BB7}\u{732B}\u{7761}\u{89C9}\u{3002}',
+          candidateText: 'The cat \u{20BB7} naps.',
+        },).join(' ',),).toContain('"\u{20BB7}"',);
+        expect(hanResidueFindings({
+          sourceText: '\u{20BB7}\u{732B}\u{7761}\u{89C9}\u{3002}',
+          candidateText: 'The cat \u{20BB7}\u{732B} naps.',
+        },).join(' ',),).toContain('"\u{20BB7}\u{732B}"',);
+      },
+    },),
   ],
 },);
 
