@@ -6254,10 +6254,14 @@ deck,
 cover viewport and E2 floor remain unchanged.
 No production Search or new IME experiment was authorized.
 
-## Search membership and order review awaits two answers
+## Historical pre-D59 Search membership and order checkpoint
 
-`questions/ranking-review.html` is a **separate, unselected** #116
-review from the D58-corrected installed APK.
+At this earlier checkpoint,
+`questions/ranking-review.html` was a **separate, unselected** #116
+review from the D58-corrected APK.
+D59 later superseded its unhighlighted evidence and rebuilt the form
+with OS-accent OKLCH match highlights;
+use the D59 section for current image provenance.
 It independently shows membership D (direct folder/filename only)
 or P (add a track matched solely through its immediate parent),
 then ordering M (exact-first relevance-mixed),
@@ -6277,8 +6281,11 @@ ranking engine or enabled result tap.
 installed APK SHA-256,
 initial/scrolled difference,
 full terminal-row visibility and an order-check positive control.
-Sanitized images are at `questions/render/search-rank-review-*.png`;
-private raw screen/status and XML source stay under the private agent
+The historical sanitized images remain at
+`questions/render/search-rank-review-*.png`;
+**current** form images use `search-rank-accent-review-*.png` from the
+D59 APK.
+Private raw screen/status and XML source stay under the private agent
 scratch root.
 
 The form recommends D over P to avoid unmeasured expansion of
