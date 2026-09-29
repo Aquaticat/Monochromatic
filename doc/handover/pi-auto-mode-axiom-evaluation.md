@@ -10,7 +10,9 @@ and ask.
 Zero coding-plan judge calls includes fallback.
 Normal coding-agent traffic is outside this migration boundary.
 
-Production implementation remains blocked until final shared understanding is confirmed.
+Q22 confirms private contract and real-consumer qualification,
+not production implementation or cutover.
+Production still requires the separate qualification and adoption gates.
 Main-worktree work is documentation only.
 Private prototypes,
 local history inspection,
@@ -33,6 +35,35 @@ Current references:
 - [Effect and authorization contract](../planning/pi-auto-mode-effect-contract.md).
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
+
+## Policy freshness checkpoint
+
+The current `AGENTS.md` was fully read after the freshness check found SHA-256
+`2f4377aa7b950d178999a88337bfd7ec1dba1723313d1650d712e06b2dc3a7cc`.
+Git history identifies `d03ec673e`,
+`docs(AGENTS.md): apply rule-by-rule optimization`.
+The file has no local diff;
+this task did not edit or revert it.
+Unrelated music-player design changes are concurrent work and remain untouched.
+
+The frozen studies and original policy index used
+`4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+Preserve their bytes and results as historical evidence,
+not current-policy admission.
+The old 276-tag structural count does not describe the new file.
+Do not assume semantic equivalence from the optimization commit title,
+or that a live harness already reloaded its instruction snapshot.
+
+Task #76 captures the complete new policy in a separate private epoch
+and refreshes structural indexing with the verified native-coordinate adapter.
+No completed constructor,
+model study,
+or original index may be replayed or overwritten.
+No new model batch,
+production cutoff,
+or cutover is authorized by this freshness event.
+The audit fingerprint's requirement remains complete current policy and stale-result invalidation;
+that context compatibility is distinct from the now-stale per-study policy binding.
 
 ## Current interview state
 
@@ -127,8 +158,9 @@ Task #74 is complete at its private-workaround scope;
 the production TypeScript linter remains intentionally unchanged under issue 559's existing decision.
 Task #16 resumed after the offset remedy,
 then paused on task #75's effective SDK dependency staging.
-Task #75 is the active work item;
-no real SDK session or external model assessment has started.
+Task #75 is closing the measured staging prerequisites;
+#76 is the next policy-freshness gate before #16 resumes.
+No real SDK session or external model assessment has started.
 Production stays unchanged,
 no cutoff is selected,
 and no engineering gate is declared passed by the confirmation.
@@ -336,8 +368,19 @@ A separate composition under `contract/sdk/effective` binds the retained invento
 reviewed override-configuration hash,
 exact shim metadata/code,
 and inspected lazy-route sources.
-It is metadata classification only;
-file-layout/source staging and actual import/startup still need verification.
+The composition and topology checks passed in separate retained epochs.
+The artifact selection now hashes 11,847 files totaling 119,045,169 bytes,
+with 68 measured dependency lookup placements.
+Generated executable wrappers,
+local logger artifacts,
+and the shim's build cache/configuration are excluded.
+Artifact manifest SHA-256:
+`d9df0286368eecc8a54f826c80b2524f5eb22344085ed5cd9cdd84d2ec86e1e3`.
+File copying,
+staged resolution,
+native/Wasm compatibility,
+and actual import/startup still need verification.
+See the [SDK staging diagnosis](../troubleshooting/pi-sdk-staging.md).
 No removed cloud SDK was installed,
 no production source or lockfile was edited,
 and no package code was executed by the inventory.

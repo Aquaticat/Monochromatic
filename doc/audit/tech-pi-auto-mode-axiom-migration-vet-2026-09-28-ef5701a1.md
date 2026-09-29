@@ -1435,6 +1435,57 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## SDK staging prerequisites and policy freshness
+
+The nominal SDK dependency inventory `proc_1af5` stopped before package execution.
+Its owned controller rejected the configured cloud SDK removals
+and the existing repository lockfile shim.
+The original 54-package inventory and failures remain immutable.
+Separate effective composition,
+file measurement,
+and topology epochs passed without reinstalling removed dependencies
+or replacing the incumbent shim.
+The 55-root topology has 68 resolved symlink edges,
+2 configured removals,
+22 absent esbuild platform dependencies,
+and 4 absent optional peers.
+
+The new artifact manifest hashes 11,847 files totaling 119,045,169 bytes.
+It excludes generated wrappers,
+local logger artifacts,
+and the shim's build cache/configuration.
+Artifact manifest SHA-256:
+`d9df0286368eecc8a54f826c80b2524f5eb22344085ed5cd9cdd84d2ec86e1e3`.
+This is input identity and topology evidence,
+not SDK startup,
+hermetic dependency closure,
+source authority,
+or real-human authentication.
+The [SDK staging report](../troubleshooting/pi-sdk-staging.md) records the source trace and limits.
+
+A subsequent current-policy hash check found
+`2f4377aa7b950d178999a88337bfd7ec1dba1723313d1650d712e06b2dc3a7cc`,
+with `d03ec673e` in `AGENTS.md` history.
+This task did not edit or revert the policy.
+The current file was fully read.
+The prior policy hash
+`4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
+now binds historical study/index evidence only,
+not current-policy admission.
+No semantic equivalence is inferred from the optimization commit title.
+No live harness reload is inferred from changed disk bytes.
+
+Task #76 captures a separate full-policy epoch before the actual SDK probe.
+Completed constructors and model phases remain preserved and must not be replayed.
+This freshness event authorizes no model batch,
+cutoff,
+production change,
+or recipient expansion.
+The full audit fingerprint remains compatible:
+its requirement is complete current policy with stale-result invalidation,
+not one fixed policy digest.
+That compatibility does not restore freshness to old per-study policy bindings.
+
 ## Private policy-index offset failure and remedy
 
 Task #16's structural-index constructor `proc_0f5a` stopped on its astral-offset fixture

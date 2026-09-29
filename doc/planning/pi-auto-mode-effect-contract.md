@@ -24,6 +24,17 @@ Do not silently expand guard coverage or describe existing unflagged tools as ne
 Additional unsupported reviewed actions may require manual approval,
 as already accepted by the user.
 
+## Policy epoch admission
+
+The current policy hash is
+`2f4377aa7b950d178999a88337bfd7ec1dba1723313d1650d712e06b2dc3a7cc`.
+The previous `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
+studies and structural index cannot be admitted as current-policy evidence.
+Preserve them and capture the full new policy separately under task #76.
+A changed on-disk policy is not proof that an already-running harness refreshed its loaded instructions.
+The collector must keep those source versions and observations distinct.
+See the [freshness checkpoint](../handover/pi-auto-mode-axiom-evaluation.md#policy-freshness-checkpoint).
+
 ## Current dispatcher and evidence limits
 
 `package/pi-plugin/auto-mode/src/index.ts` checks the fixed virtual-input guard first,

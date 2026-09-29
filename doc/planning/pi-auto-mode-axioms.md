@@ -43,6 +43,19 @@ records actual incumbent-parser verification and the revised next-probe scope.
 Keep historical runtime/input observations tied to their original envelopes.
 This does not revoke Q13 B or impose universal code-proof-only script admission.
 
+## Current policy evidence boundary
+
+The latest freshness check found `AGENTS.md` at SHA-256
+`2f4377aa7b950d178999a88337bfd7ec1dba1723313d1650d712e06b2dc3a7cc`,
+from commit `d03ec673e`.
+Completed studies bound to `4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
+remain immutable historical evidence,
+not current-policy qualification.
+Task #76 captures a new complete-policy epoch before the actual SDK probe.
+It does not authorize repeating a completed study or selecting a cutoff.
+The [handover](../handover/pi-auto-mode-axiom-evaluation.md#policy-freshness-checkpoint)
+records this freshness boundary separately from the accepted product decisions.
+
 ## Hosted input authorization update
 
 The user subsequently declined dashboard access,

@@ -213,10 +213,30 @@ The optional entries were not additional Pi removal overrides.
   declarations,
   documentation,
   and licenses rather than copying the cache or build configuration.
-- Per-file byte hashes,
-  staged resolution,
+- Staged resolution,
   native/Wasm compatibility,
   and actual import/startup remain unverified.
+
+### Selected artifact bytes
+
+The separate `contract/sdk/artifacts/freeze.mjs` phase completed once in `proc_490f`.
+It selected and hashed 11,847 files totaling 119,045,169 bytes
+and retained 68 dependency lookup placements.
+It excluded the shim's `mise.toml`,
+`tsconfig.json`,
+and TypeScript build cache;
+none of the skipped logger artifacts or executable wrappers was admitted.
+
+The create-new manifest is `contract/sdk/artifacts/manifest.json`,
+SHA-256 `d9df0286368eecc8a54f826c80b2524f5eb22344085ed5cd9cdd84d2ec86e1e3`.
+This establishes listed artifact-byte identity before staging,
+not publisher authenticity,
+a copied image,
+or actual SDK execution.
+A later policy freshness check found a changed `AGENTS.md`;
+the [separate policy-epoch intake](../handover/pi-auto-mode-axiom-evaluation.md#policy-freshness-checkpoint)
+must precede the SDK probe.
+The dependency-byte inventory does not refresh the policy evidence.
 
 ## Verified workaround and remaining gates
 
@@ -229,7 +249,7 @@ not general SDK dependency completeness.
 No completed constructor or stopped original inventory was replayed.
 
 Before SDK execution,
-select and hash the admitted artifact bytes,
+copy the admitted artifact bytes with hash checks,
 preserve measured lookup topology,
 verify staged resolution and required-dependency omission controls,
 and bind the actual runtime and image identity.

@@ -14,6 +14,22 @@ The user has since resumed the integration interview;
 its [current decisions](pi-auto-mode-axioms.md#resumed-integration-interview) are recorded separately.
 Laya remains paused and the original 24 reserved scenarios remain unopened.
 
+## Policy version limitation
+
+This completed study used frozen policy SHA-256
+`4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+The subsequent current-policy check measured
+`2f4377aa7b950d178999a88337bfd7ec1dba1723313d1650d712e06b2dc3a7cc`.
+The results remain historical finite-study observations,
+not qualification under the changed policy.
+Preserve all inputs,
+labels,
+outputs,
+and counts;
+no automatic rerun or new model batch follows from this change.
+The [current handover](../handover/pi-auto-mode-axiom-evaluation.md#policy-freshness-checkpoint)
+tracks the separate new-policy intake.
+
 ## Outcome and next engineering step
 
 The fresh native-Jev study is complete at its declared scope.
