@@ -409,6 +409,27 @@ await describe({
             .replaceAll('X', '\u{10414}',)
             .replaceAll('x', '\u{1043C}',);
         },),);
+        /**
+         The same texts in bold script letters, which the corpus writes
+         handles in: cased letters by general category with no case mapping,
+         as `quote-neighbours.ts` reads them (class ninety-six).
+         */
+        const script = deseret.map(function asScript(text,): string {
+          return text
+            .replaceAll('\u{10414}', '\u{1D4E7}',)
+            .replaceAll('\u{1043C}', '\u{1D501}',);
+        },);
+        expect(script.map(function rewrite(text,): string {
+          return rewritten({ text, },);
+        },),).toEqual(script.map(function throughLatin(text,): string {
+          return rewritten({
+            text: text
+              .replaceAll('\u{1D4E7}', 'X',)
+              .replaceAll('\u{1D501}', 'x',),
+          },)
+            .replaceAll('X', '\u{1D4E7}',)
+            .replaceAll('x', '\u{1D501}',);
+        },),);
       },
     },),
     it({
