@@ -31,10 +31,6 @@
  @module
  */
 
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -48,10 +44,10 @@ import {
   isAsciiDigit,
 } from '../dist/final/node/index.mjs';
 import {
-  readLivingRepositoryDocs,
-  REPOSITORY_ROOT,
-} from './living-docs.test-fixture.ts';
-import { readPackageSource, } from './source-scan.test-fixture.ts';
+  type PackageText,
+  readPackageTexts,
+  readRepositoryTexts,
+} from './prose-texts.test-fixture.ts';
 
 /**
  The sign a citation opens with, kept out of this file's own text.
@@ -183,21 +179,6 @@ const TAKEOVER_RANGES: readonly KeptRange[] = [
     to: '## Naming scope reaches a bounded production stage, 2026-09-10',
   },
 ];
-
-/**
- One file the guard reads, named from the package root.
- */
-type PackageText = {
-  /**
-   Path from the package root, which names locations.
-   */
-  readonly path: string;
-
-  /**
-   File text.
-   */
-  readonly text: string;
-};
 
 /**
  Whether a character stands inside an identifier or a word the census would
@@ -489,82 +470,6 @@ function citedNumber({ citation, }: { readonly citation: string; },): number {
  */
 function ascending(left: number, right: number,): number {
   return left - right;
-}
-
-/**
- Every file the guard reads: the package's TypeScript under `src`, its docs,
- its README and its task file.
-
- @returns Files with their text
-
- @example
- ```ts
- const files = await readPackageTexts();
- ```
- */
-async function readPackageTexts(): Promise<readonly PackageText[]> {
-  /**
-   Package root, which holds `src`.
-   */
-  const root = join(import.meta.dirname, '..',);
-  /**
-   Markdown files under `doc`.
-   */
-  const docs = (await readdir(join(root, 'doc',),))
-    .filter(function isMarkdown(name,): boolean {
-      return name.endsWith('.md',);
-    },)
-    .map(function underDoc(name,): string {
-      return join('doc', name,);
-    },);
-  /**
-   Non-source files, read from the package root.
-   */
-  const others = await Promise.all([...docs, 'README.md', 'mise.toml',].map(async function read(
-    path,
-  ): Promise<PackageText> {
-    return {
-      path,
-      text: await readFile(join(root, path,), 'utf8',),
-    };
-  },),);
-  /**
-   Source and test files, named from the package root.
-   */
-  const source = (await readPackageSource()).map(function fromRoot(file,): PackageText {
-    return {
-      path: join('src', file.path,),
-      text: file.text,
-    };
-  },);
-  return [...source, ...others,];
-}
-
-/**
- Every living repository-level doc: the translation-repair decision records,
- the canonical handover and its snapshot, and the planning docs it links as
- current.
-
- @returns Files with their text, named from the repository root
-
- @example
- ```ts
- const files = await readRepositoryTexts();
- ```
- */
-async function readRepositoryTexts(): Promise<readonly PackageText[]> {
-  /**
-   Living repository-level docs.
-   */
-  const { decisionRecords, handover, currentPlanning, operations, } = await readLivingRepositoryDocs();
-  return Promise.all([...decisionRecords, ...handover, ...currentPlanning, ...operations,].map(async function read(
-    path,
-  ): Promise<PackageText> {
-    return {
-      path,
-      text: await readFile(join(REPOSITORY_ROOT, path,), 'utf8',),
-    };
-  },),);
 }
 
 await describe({
