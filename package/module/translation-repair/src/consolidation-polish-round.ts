@@ -16,6 +16,7 @@ import { runRefineStage, } from './refine-stage.ts';
 import { wrapReplacementText, } from './semantic-wrap.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
+import { sameWording, } from './wording-key.ts';
 
 //region One bounded consolidation polish round
 
@@ -296,13 +297,19 @@ export async function runConsolidationPolishRound(
    */
   const rewrapped = polished !== refined.refinedText;
   /**
-   Whether the wrap left nothing between the refinement and the base, which
-   may itself stand unwrapped where it is the archive's own wording.
+   Whether nothing but layout separates the refinement from the base, which
+   may itself stand unwrapped where it is the archive's own wording
+   (`sameWording`, ledger B26): a refinement that is the base rewrapped, or
+   the base with its soft line breaks where no wrap would put them, publishes
+   the page the base already publishes.
    */
-  const demoted = (polished === baseText)
-    || ((!lineStructured) && (polished === wrapReplacementText({ text: baseText, },)));
+  const demoted = sameWording({
+    proposal: polished,
+    standing: baseText,
+    lineStructured,
+  },);
   if (demoted) {
-    l.info('semantic wrap: the polish matched the base once wrapped, so the slice keeps what it had',);
+    l.info('wording: the polish is the base in all but layout, so the slice keeps what it had',);
     return {
       disposition: (mode.kind === 'required-naturalness-correction') ? 'no-correction' : 'fallback',
       text: baseText,
@@ -313,7 +320,7 @@ export async function runConsolidationPolishRound(
       rounds: refined.rounds,
       findings: [
         ...refined.findings,
-        'consolidation-polish matched the base once wrapped',
+        'consolidation-polish is the base in all but layout',
       ],
     };
   }

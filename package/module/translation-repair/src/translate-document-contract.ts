@@ -212,8 +212,18 @@ import type { SliceReplacement, } from './splice-slices.ts';
  sheet-leak floor the editor sheet's «REGION marker and its CURRENT TEXT: and
  CONTEXT: ... heads; over the stored artifacts one comparison row of 6,285
  carries a guillemet its incumbent lacks, and none of the pinned originals
- or archives carries a guillemet or those heads. Same cache check as the
- paragraph before.
+ or archives carries a guillemet or those heads; checked on 2026-09-29: the
+ newest slice-cache file is still the one of 04:26 UTC on 2026-09-27.
+
+ Rides inside 15 too: the slate's key reads a rendering as the page shows it
+ (ledger B26, `wordingKey`), so on a slice the line-structure rule does not
+ govern, a rendering apart from the incumbent or another only in where its
+ soft line breaks fall collapses into it, and the repair turn's copy check
+ reads the same key. Over the 2,905 stored slates, 490 carried such a twin
+ and in 93 the chosen candidate was the incumbent's, line-structured slices
+ included, which the key leaves apart; checked on 2026-09-29: no slice-cache
+ file was written after 04:27 UTC on 2026-09-27, where a control from
+ midnight finds 494.
 
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the

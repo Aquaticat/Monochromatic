@@ -3,6 +3,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import type { ChunkRepairOutcome, } from './repair-contract.ts';
 import { wrapReplacementText, } from './semantic-wrap.ts';
+import { sameWording, } from './wording-key.ts';
 
 //region Repair lane wrap
 // APPLIES THE SEMANTIC WRAP TO WHAT THE REPAIR LANE PRODUCED, at the one point
@@ -26,9 +27,14 @@ import { wrapReplacementText, } from './semantic-wrap.ts';
  RE-DERIVED RATHER THAN CARRIED FORWARD. A passage whose only difference from
  the archive was its wrapping becomes identical to the archive once wrapped,
  and an outcome still claiming a change at that point fails the assembly
- assertion. It is a retention, so it is recorded as one. No slice in the pool
- settled 2026-08-18 does this, which is why the case has its own test rather
- than a measurement.
+ assertion. It is a retention, so it is recorded as one, with the archive's
+ own bytes. SINCE 2026-09-29 THE QUESTION IS THE PAGE'S (ledger B26,
+ `sameWording`): a proposal that is the archive with its soft line breaks
+ elsewhere, which the site renders as spaces, is a retention too, and so is a
+ governed one that is the archive with a trailing newline. It is asked of
+ every changed outcome, including one the wrap leaves as it is, which the
+ earlier byte check after the wrap never reached; over the stored artifacts
+ 186 lane texts were such a proposal.
  
  NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
  producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
@@ -100,38 +106,58 @@ export function wrapRepairOutcomes(
     if (!outcome.changed)
       return outcome;
 
-    // LEFT EXACTLY AS PRODUCED, like an outcome that changed nothing. The
-    // line-structure rule made this slice's line breaks the producer's to set,
-    // and this function only ever adds more.
-    if (lineStructuredSlices.has(outcome.sliceIndex,)) {
-      counted.governed += 1;
-      return outcome;
-    }
-
-    /**
-     Wording as the rule would have it written.
-     */
-    const repairedText = wrapReplacementText({ text: outcome.repairedText, },);
-    if (repairedText === outcome.repairedText)
-      return outcome;
-    counted.rewrapped += 1;
-
     /**
      Archive wording here, absent when the slice is not in the pair list.
      */
     const incumbentText = incumbentByIndex.get(outcome.sliceIndex,);
 
     /**
-     Whether anything but the wrapping still separates the two.
+     Whether the line-structure rule governs this slice, which leaves its
+     lines as the producer wrote them.
      */
-    const changed = repairedText !== incumbentText;
-    if (!changed)
+    const lineStructured = lineStructuredSlices.has(outcome.sliceIndex,);
+
+    /**
+     Wording as it would ship: as the rule would write it, or as produced on
+     a governed slice, whose line breaks the producer was told to set.
+     */
+    const repairedText = lineStructured
+      ? outcome.repairedText
+      : wrapReplacementText({ text: outcome.repairedText, },);
+
+    // THE ARCHIVE'S WORDING IN ALL BUT LAYOUT IS THE ARCHIVE'S (ledger B26),
+    // read before either early return below: a proposal the wrap leaves as it
+    // is can still be the archive with its soft breaks elsewhere, and a
+    // governed one the archive with a trailing newline. Either would ship a
+    // change the page does not show, so the outcome keeps the archive's own
+    // bytes.
+    if (
+      (incumbentText !== undefined)
+      && sameWording({
+        proposal: repairedText,
+        standing: incumbentText,
+        lineStructured,
+      },)
+    ) {
       counted.demoted += 1;
+      return {
+        ...outcome,
+        repairedText: incumbentText,
+        changed: false,
+      };
+    }
+
+    if (lineStructured) {
+      counted.governed += 1;
+      return outcome;
+    }
+    if (repairedText === outcome.repairedText)
+      return outcome;
+    counted.rewrapped += 1;
 
     return {
       ...outcome,
       repairedText,
-      changed,
     };
   },);
 
@@ -141,11 +167,15 @@ export function wrapRepairOutcomes(
         + 'line breaks the producer was told to set',
     );
 
+  if (counted.demoted > 0)
+    l.info(
+      `wording: ${String(counted.demoted,)} of ${String(outcomes.length,)} repair outcomes differ from the `
+        + 'archive only in layout the page does not show, and keep the archive\'s own wording (ledger B26)',
+    );
+
   if (counted.rewrapped > 0)
     l.info(
-      `semantic wrap: rewrapped ${String(counted.rewrapped,)} of ${
-        String(outcomes.length,)
-      } repair outcomes, ${String(counted.demoted,)} of them back to the archive's own wording`,
+      `semantic wrap: rewrapped ${String(counted.rewrapped,)} of ${String(outcomes.length,)} repair outcomes`,
     );
 
   return wrapped;

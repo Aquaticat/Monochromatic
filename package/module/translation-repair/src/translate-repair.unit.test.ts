@@ -366,6 +366,7 @@ await describe({
           voices: repaired.voices,
           translatorModelIds: modelIds,
           incumbentText: archive,
+          lineStructured: false,
         },);
         expect(repaired.voices,).toHaveLength(0,);
         expect(repaired.findings,).toHaveLength(modelIds.length * 2,);

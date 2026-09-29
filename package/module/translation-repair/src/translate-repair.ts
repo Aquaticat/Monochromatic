@@ -21,9 +21,9 @@ import {
   isTranslateRepairWire,
   TRANSLATE_REPAIR_RESPONSE_FORMAT,
 } from './translate-repair-wire.ts';
-import { collapseKey, } from './translate-candidates.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
+import { sameWording, } from './wording-key.ts';
 
 //region Translate repair
 // Structural validation, and the conversation a failing candidate gets instead
@@ -180,10 +180,15 @@ async function repairOneCandidate(
       .translation,
     disputedWordings,
   },);
-  if ((collapseKey({ text: voice.value
-    .translation, },)
-    === collapseKey({ text: incumbentText, },))
-    && (disputedCopy.length === 0))
+  if (
+    sameWording({
+      proposal: voice.value
+        .translation,
+      standing: incumbentText,
+      lineStructured,
+    },)
+    && (disputedCopy.length === 0)
+  )
     return {
       voice,
       findings: [],

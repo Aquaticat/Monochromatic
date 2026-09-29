@@ -7,6 +7,7 @@ import type {
 import { wrapReplacementText, } from './semantic-wrap.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
+import { sameWording, } from './wording-key.ts';
 
 //region Consolidation wrap
 // APPLIES THE SEMANTIC WRAP TO A CONSOLIDATION THAT SHIPS, which is the one
@@ -121,25 +122,30 @@ export function wrapConsolidation(
 
   if (lineStructured) {
     /**
-     Whether the producer proposed exactly what already stands.
-     
-     RAW, AGAINST BOTH TEXTS UNWRAPPED, because neither has been through the
-     wrap on this path. The comparison the wrapped path makes is wider on
-     purpose: it also catches a proposal that is a pure re-wrapping of the
-     standing text. No re-wrapping can reach here, so the only way a
-     proposal changes nothing is by being the standing text itself.
-     
+     Whether the producer proposed what already stands.
+
+     BOTH TEXTS UNWRAPPED, because neither has been through the wrap on this
+     path, and read as the line-structure rule reads them (`sameWording`):
+     trailing whitespace and prose quote style are one wording, and a line
+     break is the producer's work. Until 2026-09-29 this compared bytes, so a
+     proposal that was the standing text with a trailing newline shipped as a
+     change (ledger B26).
+
      THAT CASE STILL DEMOTES. A replacement identical to its incumbent
      survives the footnote guard and lands in the shipped set beside a
      document nobody changed, which is the fault the demote exists for and
      which skipping the wrap does not make go away.
      */
-    const unchanged = consolidatedText === standingText;
+    const unchanged = sameWording({
+      proposal: consolidatedText,
+      standing: standingText,
+      lineStructured: true,
+    },);
 
     if (unchanged) {
       l.info(
         'semantic wrap: skipped on a line-structured slice, and the consolidation is the standing '
-          + 'text as written, so the slice keeps what it had',
+          + 'text\'s wording, so the slice keeps what it had',
       );
       return {
         ships: 'standing',
@@ -181,31 +187,25 @@ export function wrapConsolidation(
   const rewrapped = wrapped !== consolidatedText;
 
   /**
-   Standing text as the rule would have written it, COMPARED AND NEVER
-   SHIPPED.
-   
-   The standing text is not always lane output. Where a lane contest settled
-   on the incumbent, what stands is the archive's own wording, which nothing
-   has ever wrapped, because wrapping a retained passage would report a
-   change nobody decided on. A consolidation that is a pure re-wrapping of
-   THAT text matches neither `standingText` nor anything else this function
-   holds, so without this key it escapes demotion and ships as a change.
-   
-   Only the comparison uses it. The demoted branch below returns
-   `standingText` itself, so the retained wording still leaves here byte for
-   byte and `wrapReplacementText`'s contract holds.
+   Whether anything but layout still separates it from what stands
+   (`sameWording`, ledger B26). The key reads both through the wrap and folds
+   a paragraph's soft line breaks, so a pure re-wrapping of an unwrapped
+   standing text demotes, and so does one whose soft breaks fall where no wrap
+   would put them, which the byte comparison this replaced let ship. The
+   standing text is not always lane output: where a lane contest settled on
+   the incumbent, what stands is the archive's own wording, which nothing has
+   ever wrapped. The demoted branch below returns `standingText` itself, so
+   the retained wording still leaves here byte for byte.
    */
-  const standingAsWritten = wrapReplacementText({ text: standingText, },);
-
-  /**
-   Whether anything but the wrapping still separates it from what stands,
-   against a standing text that may itself be wrapped or unwrapped.
-   */
-  const demoted = (wrapped === standingText) || (wrapped === standingAsWritten);
+  const demoted = sameWording({
+    proposal: wrapped,
+    standing: standingText,
+    lineStructured: false,
+  },);
 
   if (demoted) {
     l.info(
-      'semantic wrap: the consolidation matched the standing text once wrapped, so the slice keeps what it had',
+      'semantic wrap: the consolidation is the standing text in all but layout, so the slice keeps what it had',
     );
     return {
       ships: 'standing',
@@ -262,14 +262,17 @@ export function wrapConsolidation(
  SAFE TO APPLY TWICE, and it is applied twice: a winner wrapped here reaches
  {@link wrapConsolidation} and is wrapped again. Measured rather than assumed
  over twelve representative passages, seven of which the first application
- moved and none of which a second application moved again.
+ moved and none of which a second application moved again, and again on
+ 2026-09-29 over the 7,462 distinct texts of the stored comparison rows, 1,876
+ of which the first application moved and none the second (ledger B26).
  
  THE INCUMBENT IS NEITHER WRAPPED NOR PASSED HERE. Wrapping text a lane
  decided to keep would report a change nobody decided on, which
- `wrapReplacementText`'s own contract refuses. So a proposal that is a pure
- re-wrapping of an UNWRAPPED archive standing text still fails to collapse
- into it, and {@link wrapConsolidation}'s `standingAsWritten` key stays as the
- thing that catches that case.
+ `wrapReplacementText`'s own contract refuses. The slate's key (`wordingKey`,
+ ledger B26) reads both sides through the wrap instead, so a proposal that is
+ a pure re-wrapping of an UNWRAPPED archive standing text collapses into it
+ on the slate, and {@link wrapConsolidation}'s demotion still catches it
+ after the gate.
  
  A GOVERNED SLICE IS LEFT ALONE, on the same evidence that stops the shipping
  wrap touching one: over the 211 line-structured slices of the pinned corpus

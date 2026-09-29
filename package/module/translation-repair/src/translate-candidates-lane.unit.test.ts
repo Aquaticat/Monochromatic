@@ -104,6 +104,7 @@ await describe({
           ],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: 'The cat naps.',
+          lineStructured: false,
           laneTexts: [
             {
               lane: 'repair',
@@ -153,6 +154,7 @@ await describe({
           ],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: '',
+          lineStructured: false,
           laneTexts: [
             {
               lane: 'repair',
@@ -183,6 +185,7 @@ await describe({
           voices: [],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: REPAIR_TEXT,
+          lineStructured: false,
           laneTexts: [
             {
               lane: 'repair',
@@ -209,6 +212,7 @@ await describe({
           },),],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: 'The cat naps.',
+          lineStructured: false,
         },);
         const empty = buildTranslateCandidates({
           voices: [voiceOf({
@@ -217,6 +221,7 @@ await describe({
           },),],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: 'The cat naps.',
+          lineStructured: false,
           laneTexts: [],
         },);
         expect(empty,).toEqual(without,);

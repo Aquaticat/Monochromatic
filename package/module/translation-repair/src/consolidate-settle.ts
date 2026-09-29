@@ -603,6 +603,7 @@ export async function settleConsolidation(
     voices: shippableVoices,
     translatorModelIds: roster,
     incumbentText: incumbent.incumbentText,
+    lineStructured,
     laneTexts,
   },);
 

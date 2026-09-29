@@ -3,6 +3,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { wrapReplacementText, } from './semantic-wrap.ts';
 import type { TranslateSliceRecord, } from './translate-document-contract.ts';
+import { sameWording, } from './wording-key.ts';
 
 //region Translate lane wrap
 // APPLIES THE SEMANTIC WRAP TO WHAT THE TRANSLATE LANE PRODUCED, at the one
@@ -23,7 +24,10 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
  RE-DERIVED RATHER THAN CARRIED FORWARD, for the reason `wrapRepairOutcomes`
  gives: a passage differing from the archive only in its wrapping becomes the
  archive once wrapped, and a record still claiming a change there fails the
- assembly assertion.
+ assembly assertion. Since 2026-09-29 the question is the page's (ledger B26,
+ `sameWording`), asked of every changed record including one the wrap leaves
+ as it is, and a record that is the archive in all but layout keeps the
+ archive's own bytes.
  
  NEVER APPLIED TO A LINE-STRUCTURED SLICE. The pipeline hands a governed
  producer `TRANSLATE_LINE_STRUCTURE_RULE`, one output line per original line,
@@ -95,33 +99,58 @@ export function wrapTranslateRecords(
     if (!record.changed)
       return record;
 
-    // LEFT EXACTLY AS PRODUCED, like a record that changed nothing. The
-    // line-structure rule made this slice's line breaks the producer's to set,
-    // and this function only ever adds more.
-    if (lineStructuredSlices.has(record.sliceIndex,)) {
+    /**
+     Archive wording here, absent when the slice is not in the pair list.
+     */
+    const incumbentText = incumbentByIndex.get(record.sliceIndex,);
+
+    /**
+     Whether the line-structure rule governs this slice, which leaves its
+     lines as the producer wrote them.
+     */
+    const lineStructured = lineStructuredSlices.has(record.sliceIndex,);
+
+    /**
+     Wording as it would ship: as the rule would write it, or as produced on
+     a governed slice, whose line breaks the producer was told to set.
+     */
+    const outputText = lineStructured
+      ? record.outputText
+      : wrapReplacementText({ text: record.outputText, },);
+
+    // THE ARCHIVE'S WORDING IN ALL BUT LAYOUT IS THE ARCHIVE'S (ledger B26),
+    // read before either early return below: a proposal the wrap leaves as it
+    // is can still be the archive with its soft breaks elsewhere, and a
+    // governed one the archive with a trailing newline. Either would ship a
+    // change the page does not show, so the record keeps the archive's own
+    // bytes.
+    if (
+      (incumbentText !== undefined)
+      && sameWording({
+        proposal: outputText,
+        standing: incumbentText,
+        lineStructured,
+      },)
+    ) {
+      counted.demoted += 1;
+      return {
+        ...record,
+        outputText: incumbentText,
+        changed: false,
+      };
+    }
+
+    if (lineStructured) {
       counted.governed += 1;
       return record;
     }
-
-    /**
-     Wording as the rule would have it written.
-     */
-    const outputText = wrapReplacementText({ text: record.outputText, },);
     if (outputText === record.outputText)
       return record;
     counted.rewrapped += 1;
 
-    /**
-     Whether anything but the wrapping still separates it from the archive.
-     */
-    const changed = outputText !== incumbentByIndex.get(record.sliceIndex,);
-    if (!changed)
-      counted.demoted += 1;
-
     return {
       ...record,
       outputText,
-      changed,
     };
   },);
 
@@ -131,11 +160,15 @@ export function wrapTranslateRecords(
         + 'line breaks the producer was told to set',
     );
 
+  if (counted.demoted > 0)
+    l.info(
+      `wording: ${String(counted.demoted,)} of ${String(settled.length,)} translated slices differ from the `
+        + 'archive only in layout the page does not show, and keep the archive\'s own wording (ledger B26)',
+    );
+
   if (counted.rewrapped > 0)
     l.info(
-      `semantic wrap: rewrapped ${String(counted.rewrapped,)} of ${
-        String(settled.length,)
-      } translated slices, ${String(counted.demoted,)} of them back to the archive's own wording`,
+      `semantic wrap: rewrapped ${String(counted.rewrapped,)} of ${String(settled.length,)} translated slices`,
     );
 
   return wrapped;

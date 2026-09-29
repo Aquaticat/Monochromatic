@@ -233,6 +233,7 @@ function positionOfText(
     },),
     translatorModelIds: ROSTER,
     incumbentText,
+    lineStructured: false,
     laneTexts,
   },);
 
@@ -1468,8 +1469,8 @@ await describe({
         + 'This case asserted wrap-erased-difference until 2026-08-22: the proposal reached the slate '
         + 'unwrapped, both deciders spent ballots on where the lines broke, and the shipping wrap '
         + 'demoted it at the end. Wrapped before the slate it IS the standing text, the candidate '
-        + 'dedup folds it in, and nothing is bought. The demote is still reachable where the standing '
-        + 'text is unwrapped archive wording, which consolidate-proposal-wrap.unit.test.ts covers',
+        + 'dedup folds it in, and nothing is bought. Since 2026-09-29 the dedup reads the wording as the '
+        + 'page shows it (ledger B26), so a proposal whose soft breaks fall anywhere else folds in too',
       fn: async () => {
         /**
          The standing text as a producer that ignored the wrap rule emits it.
@@ -1479,7 +1480,9 @@ await describe({
         const { settled, served, } = await settleWith({
           voices: [voiceOf({ modelId: ROSTER[0], translation: unwrapped, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
-          judgeReply: judgeBallot({ best: positionOfText({ texts: [unwrapped,], wanted: unwrapped, },), },),
+          // No judge is asked, which the served count below pins, so the
+          // ballot a judge would cast is never read.
+          judgeReply: judgeBallot({ best: 1, },),
           gateReply: gateBallot({ choice: 'consolidated', },),
         },);
 

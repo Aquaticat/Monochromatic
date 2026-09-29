@@ -3,6 +3,7 @@ import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { LaneText, } from './translate-candidates.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
+import { sameWording, } from './wording-key.ts';
 
 //region Lane texts offered to the consolidation slate
 // THE CONSOLIDATION IS THE RETRY OF A DECLINED CONTEST, and until class forty
@@ -118,7 +119,18 @@ export function laneTextsForSlate(
      */
     const trimmed = laneText.text
       .trim();
-    if ((trimmed === '') || (laneText.text === standingText))
+    // THE STANDING'S WORDING IN ALL BUT LAYOUT IS THE STANDING (ledger B26):
+    // a lane text that is the standing with its soft breaks elsewhere
+    // publishes the page the standing publishes, so offering it back under a
+    // lane name puts a withheld standing on the slate.
+    if (
+      (trimmed === '')
+      || sameWording({
+        proposal: laneText.text,
+        standing: standingText,
+        lineStructured,
+      },)
+    )
       return false;
     /**
      What the deterministic rule makes of this lane's text.

@@ -231,6 +231,7 @@ function positionOfText(
     },),
     translatorModelIds: ROSTER,
     incumbentText,
+    lineStructured,
   },);
 
   const entries = describeSlate({
@@ -504,30 +505,25 @@ await describe({
     },),
 
     it({
-      name: 'STILL DEMOTES A RE-WRAPPING OF UNWRAPPED ARCHIVE WORDING, and buys both rounds to do it. '
-        + 'This is the residue the pre-slate wrap does NOT cover and the reason wrapConsolidation '
-        + 'keeps its standingAsWritten key: where a lane contest settled on the incumbent, what '
-        + 'stands is the archive\'s own wording, which nothing has ever wrapped, so no wrapped '
-        + 'proposal can collapse into it',
+      name: 'SETTLES A RE-WRAPPING OF UNWRAPPED ARCHIVE WORDING WITHOUT BUYING EITHER ROUND (ledger B26). '
+        + 'Where a lane contest settled on the incumbent, what stands is the archive\'s own wording, which '
+        + 'nothing has ever wrapped, so until 2026-09-29 no wrapped proposal could collapse into it: this '
+        + 'case bought both rounds and the shipping wrap demoted it at the end. The slate\'s wording key '
+        + 'reads both through the wrap, so the proposal is the standing text before any ballot',
       fn: async () => {
         const { settled, served, } = await settleWith({
           proposals: [STANDING,],
           standingText: REWRAPPING,
-          judgeReply: judgeBallot({
-            best: positionOfText({
-              proposals: [STANDING,],
-              incumbentText: REWRAPPING,
-              lineStructured: false,
-              wanted: STANDING,
-            },),
-          },),
+          // No judge is asked, which the served count below pins, so the
+          // ballot a judge would cast is never read.
+          judgeReply: judgeBallot({ best: 1, },),
           gateReply: gateBallot({ choice: 'consolidated', },),
         },);
 
-        expect(served.judge,).toBeGreaterThan(0,);
-        expect(served.gate,).toBeGreaterThan(0,);
-        expect(settled.terminal,).toBe('wrap-erased-difference',);
-        expect(settled.demoted,).toBe(true,);
+        expect(served.judge,).toBe(0,);
+        expect(served.gate,).toBe(0,);
+        expect(settled.terminal,).toBe('slate-unjudged-standing',);
+        expect(settled.demoted,).toBe(false,);
         expect(settled.text,).toBe(REWRAPPING,);
       },
     },),

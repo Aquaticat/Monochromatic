@@ -7,6 +7,7 @@ import type { UnclaimedTargetBlock, } from '../document-preparation.ts';
 import { hashContent, } from '../document-node.ts';
 import type { BenchSeating, } from '../bench-seating.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
+import { sameWording, } from '../wording-key.ts';
 
 //region Archive block repair
 
@@ -299,9 +300,19 @@ export async function repairArchiveBlocks(
       findings.push(`archive block reviewed and retained: ${identity}`);
       continue;
     }
-    if (outcome.text === blockText) {
-      // A revision that repeats its original wording is a claimed change with
-      // no change; the original is kept and the defective claim recorded.
+    if (
+      sameWording({
+        proposal: outcome.text,
+        standing: blockText,
+        // READ AS PROSE whatever the block is: this review exists to remove or
+        // reword archive text no source supports, and a demotion only keeps
+        // the archive's bytes, so re-lining a verse block is kept out too.
+        lineStructured: false,
+      },)
+    ) {
+      // A revision that repeats its original wording, in all but layout the
+      // page does not show (ledger B26), is a claimed change with no change;
+      // the original is kept and the defective claim recorded.
       findings.push(`archive block revision repeated its original wording and was retained: ${identity}`);
       continue;
     }

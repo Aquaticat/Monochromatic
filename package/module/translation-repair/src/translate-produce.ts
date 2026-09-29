@@ -265,6 +265,7 @@ export async function produceTranslateSlate(
     voices: floored.voices,
     translatorModelIds,
     incumbentText: incumbentEligible ? incumbentText : '',
+    lineStructured,
   },);
 
   return {

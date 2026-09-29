@@ -272,8 +272,11 @@ which is why the guard is part of the same decision rather than a later one.
 
 ### The fixture the queued work owed, now measured
 
-`wrapConsolidation` demotes on `wrapped === standingText || wrapped === standingAsWritten`,
-where `standingAsWritten` is the standing text put through the same wrap.
+`wrapConsolidation` demoted on `wrapped === standingText || wrapped === standingAsWritten`,
+where `standingAsWritten` was the standing text put through the same wrap
+(since 2026-09-29 it reads `sameWording`,
+which keeps a line-structured slice's lines apart;
+the package audit ledger's B26 records why).
 On a line-structured slice whose standing text is FLAT,
 a producer that correctly unmerges the lines can have its wrapped output collide with the wrapped standing text,
 demote,

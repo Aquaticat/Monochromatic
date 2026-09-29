@@ -232,6 +232,7 @@ function positionOfText(
     },),
     translatorModelIds: ROSTER,
     incumbentText,
+    lineStructured,
   },);
 
   const entries = describeSlate({

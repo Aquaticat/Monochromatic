@@ -40,13 +40,6 @@ export {
   type QuoteLocation,
 } from './locate-quote.ts';
 export {
-  collapseLineBreaks,
-  collapseSoftLineBreaks,
-  normalizePunctuation,
-  straightenProseQuotes,
-  straightenQuotes,
-} from './quote-normalize.ts';
-export {
   type ForcedAlignStep,
   alignHeadingsForced,
   type InsertionAnchor,
@@ -272,6 +265,7 @@ export * from './corpus-barrel.ts';
 export * from './displacement-barrel.ts';
 export * from './document-barrel.ts';
 export * from './floor-barrel.ts';
+export * from './text-fold-barrel.ts';
 export * from './footnote-barrel.ts';
 export * from './generation-barrel.ts';
 export * from './lane-barrel.ts';

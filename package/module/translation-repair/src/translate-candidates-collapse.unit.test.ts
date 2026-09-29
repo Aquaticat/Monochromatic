@@ -1,8 +1,10 @@
 /**
  Tests for which two renderings count as the same wording on a slate.
  
- WHY THIS FILE EXISTS. `collapseKey` trims the END of a rendering and the
- trailing spaces of blank lines and blank quote lines, and nothing else, so
+ WHY THIS FILE EXISTS. The slate's key (`wordingKey`) trims the END of a
+ rendering and the trailing spaces of blank lines and blank quote lines,
+ reads prose quotes straight (ledger B24), and on a slice the line-structure
+ rule does not govern folds a paragraph's soft line breaks (ledger B26), so
  two translators whose text differs only there share one candidate and one
  stake. Trimming the FRONT as well would look like the same tidying and is
  not: leading spaces open a code block, indent a list item, and continue a
@@ -97,6 +99,7 @@ await describe({
           ],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: '',
+          lineStructured: false,
         },);
         expect(set.candidates,).toHaveLength(1,);
         expect(set.collapsed,).toBe(1,);
@@ -120,6 +123,7 @@ await describe({
           ],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: '',
+          lineStructured: false,
         },);
         expect(set.candidates,).toHaveLength(2,);
         expect(set.collapsed,).toBe(0,);
@@ -154,6 +158,7 @@ await describe({
           ],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: incumbent,
+          lineStructured: false,
         },);
         /**
          Renderings on the ballot.
@@ -193,6 +198,7 @@ await describe({
           ],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: incumbent,
+          lineStructured: false,
         },);
         expect(prose.candidates
           .map(function toRendering(candidate,): string {
@@ -215,6 +221,7 @@ await describe({
           ],
           translatorModelIds: [...TRANSLATORS,],
           incumbentText: '',
+          lineStructured: false,
         },);
         expect(code.candidates,).toHaveLength(2,);
       },
@@ -249,6 +256,7 @@ await describe({
             },),],
             translatorModelIds: [...TRANSLATORS,],
             incumbentText: incumbent,
+            lineStructured: false,
           },)
             .candidates
             .map(function toRendering(candidate,): string {
@@ -279,6 +287,7 @@ await describe({
           ],
           translatorModelIds: TRANSLATORS,
           incumbentText: '',
+          lineStructured: false,
         },);
 
         expect(set.candidates,).toHaveLength(1,);

@@ -7,10 +7,10 @@ import {
   type FoldedText,
   foldInvisibleVariants,
 } from './invisible-variants.ts';
-import { straightenProseQuotes, } from './quote-normalize.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
+import { wordingKey, } from './wording-key.ts';
 
 //region Translate candidate assembly
 // Turning heard translator voices into the slate judges compare, with the
@@ -94,7 +94,7 @@ export type LaneText = {
 
  @example
  ```ts
- const { candidates, collapsed, } = buildTranslateCandidates({ voices, ... },);
+ const { candidates, collapsed, } = buildTranslateCandidates({ voices, translatorModelIds, incumbentText, lineStructured: false, },);
  ```
  */
 export type TranslateCandidateSet = {
@@ -141,83 +141,23 @@ function proposesText({ text, }: { readonly text: string; },): boolean {
 }
 
 /**
- Whether a line carries nothing but blockquote marks and spaces, so that its
- trailing whitespace is formatting churn rather than a Markdown hard break.
- 
- @param line - one line, whitespace included
- 
- @returns Whether every character is `>` or a space
- 
- @example
- ```ts
- isBlankQuoteLine({ line: '> ', },);
- // => true
- ```
- */
-function isBlankQuoteLine({ line, }: { readonly line: string; },): boolean {
-  for (const character of line) {
-    if ((character !== '>') && (character !== ' '))
-      return false;
-  }
-  return true;
-}
-
-/**
- Key two candidates share when their texts differ only in trailing whitespace
- at the end of the text or on blank lines and blank quote lines.
- 
- Trailing newlines vary between models for reasons no judge should be asked to
- rank, and a fresh candidate differing from the incumbent by one of them would
- otherwise be counted as replacing it. BLANK QUOTE LINES TOO, since
- 2026-09-02: the Toka_ls reading found a candidate judged a replacement five
- ballots to two that differed from the archive in exactly two bytes, a
- trailing space after `>` on two blank quote lines copied from the source's
- formatting. Lines carrying content keep their trailing spaces: 65 of the
- pinned corpus's pages use Markdown hard breaks (two trailing spaces before a
- newline; saurikissa's archive has 35 such lines), and those are content.
- Leading whitespace is NOT stripped, since Markdown list indentation is
- content.
-
- PROSE QUOTE STYLE TOO, since 2026-09-29 (ledger B24): a rendering apart
- from another only in whether its prose apostrophes and quotation marks are
- straight or curly is one wording, which the typography restoration makes one
- after the ballot. Of 2,905 stored slates, 305 carried such a twin, 246 of the
- pairs with the incumbent, and in 30 the chosen candidate was the incumbent
- with its quotes straightened. Quotes in code and markup stay as written
- (`straightenProseQuotes`), since there they are content.
-
- @param text - candidate text
- 
- @returns Comparison key
- 
- @example
- ```ts
- const key = collapseKey({ text, },);
- ```
- */
-export function collapseKey({ text, }: { readonly text: string; },): string {
-  /**
-   Each line, blank and blank-quote lines without their trailing spaces.
-   */
-  const lines = straightenProseQuotes({ text, },)
-    .split('\n',)
-    .map(function foldedBlank(line,): string {
-      return isBlankQuoteLine({ line, },) ? line.trimEnd() : line;
-    },);
-  return lines
-    .join('\n',)
-    .trimEnd();
-}
-
-/**
  Assembles the candidate slate for one slice.
- 
+
+ ONE WORDING, ONE CANDIDATE. Two proposals that publish the same page share a
+ candidate and a stake (`wordingKey`): trailing whitespace, prose quote style
+ (ledger B24), and on a slice the line-structure rule does not govern, where a
+ paragraph's soft line breaks fall (ledger B26). A model whose rendering is
+ the incumbent's in all but those is reported as matching it.
+
  @param voices - heard translator replies in arrival order
- 
+
  @param translatorModelIds - roster, fixing candidate order
- 
+
  @param incumbentText - translation as it stands, blank when this slice has
  none
+
+ @param lineStructured - whether the line-structure rule governs the slice,
+ which keeps two renderings whose lines differ apart
 
  @param laneTexts - what the repair and translate lanes would ship, offered
  to a consolidation slate whose standing is neither contest-endorsed nor
@@ -227,7 +167,7 @@ export function collapseKey({ text, }: { readonly text: string; },): string {
 
  @example
  ```ts
- const set = buildTranslateCandidates({ voices, translatorModelIds, incumbentText, },);
+ const set = buildTranslateCandidates({ voices, translatorModelIds, incumbentText, lineStructured: false, },);
  ```
  */
 export function buildTranslateCandidates(
@@ -235,11 +175,13 @@ export function buildTranslateCandidates(
     voices,
     translatorModelIds,
     incumbentText,
+    lineStructured,
     laneTexts = [],
   }: {
     readonly voices: readonly HeardVoice<TranslateReportWire>[];
     readonly translatorModelIds: readonly RosterModelId[];
     readonly incumbentText: string;
+    readonly lineStructured: boolean;
     readonly laneTexts?: readonly LaneText[];
   },
 ): TranslateCandidateSet {
@@ -365,7 +307,10 @@ export function buildTranslateCandidates(
     /**
      Key this candidate competes under.
      */
-    const key = collapseKey({ text: candidate.rendered, },);
+    const key = wordingKey({
+      text: candidate.rendered,
+      lineStructured,
+    },);
 
     /**
      Earlier candidate with the same key, when one exists.

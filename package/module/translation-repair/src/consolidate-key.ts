@@ -201,7 +201,19 @@ import type { LaneText, } from './translate-candidates.ts';
  the editor sheet's «REGION marker and line heads (ledger B24,
  `translate-guillemets.ts`, `translate-sheet-leak.ts`); one comparison row
  of 6,285 across the stored artifacts carries a guillemet its incumbent
- lacks. Same cache check as the paragraph before.
+ lacks; checked on 2026-09-29: the newest slice-cache file is still the one
+ of 04:26 UTC on 2026-09-27.
+
+ Rides inside 20 too: whether a proposal changes anything is read as the page
+ shows it (ledger B26, `sameWording`). The consolidation slate collapses a
+ rendering apart from the standing or a lane text only in where its soft line
+ breaks fall; a lane text that is the standing in all but layout is not
+ offered back; the shipping wrap demotes a consolidation that is the standing
+ in all but layout, and on a line-structured slice one that is the standing
+ but for a trailing newline; the polish round demotes a refinement that is
+ the base in all but layout. Over the 2,905 stored slates, 490 carried such a
+ twin; checked on 2026-09-29: no slice-cache file was written after 04:27 UTC
+ on 2026-09-27, where a control from midnight finds 494.
 
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the

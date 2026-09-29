@@ -459,7 +459,7 @@ await describe({
         expect(
           rewrapOnly.findings
             .some(function namesDemotion(finding,): boolean {
-              return finding.includes('matched the base once wrapped',);
+              return finding === 'consolidation-polish is the base in all but layout';
             },),
         ).toBe(true,);
 
@@ -486,6 +486,7 @@ await describe({
           throw new Error('soft-break fixture did not settle',);
         expect(softOnly.changed,).toBe(false,);
         expect(softOnly.text,).toBe(BASE,);
+        expect(softOnly.findings,).toContain('consolidation-polish is the base in all but layout',);
       },
     },),
 
