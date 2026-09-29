@@ -74,7 +74,7 @@ export {
   findIntroducedRepetitions,
   repetitionFindings,
   type RepetitionFinding,
-  wordsOf,
+  whitespaceTokensOf,
 } from './assembly-repetition.ts';
 export {
   countSpan,

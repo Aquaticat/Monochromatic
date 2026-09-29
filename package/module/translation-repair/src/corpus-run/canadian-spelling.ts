@@ -9,7 +9,7 @@ import { codePointAt, } from '../code-points.ts';
 import { isWordCharacter, } from './canadian-date-parts.ts';
 import {
   besideNonProse,
-  wordsOf,
+  lowerCaseWordSetOf,
 } from './canadian-spelling-context.ts';
 import {
   runEnd,
@@ -342,7 +342,7 @@ export function canadianSpellings(
    where the text names the psychoanalytic frame it belongs to (ledger H14:
    beside the ego and the superego, "id" is Freud's, not a handle).
    */
-  const held: ReadonlySet<string> = wordsOf({ text, },)
+  const held: ReadonlySet<string> = lowerCaseWordSetOf({ text, },)
     .isDisjointFrom(FREUDIAN_WORDS,)
     ? kept
     : new Set([

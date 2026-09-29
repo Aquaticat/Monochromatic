@@ -199,10 +199,10 @@ export function topLevelPieces({
 
  @example
  ```ts
- const bare = withoutComments({ text: '{ /** doc *\/ readonly a: T; }', },);
+ const bare = withoutBlockAndLineComments({ text: '{ /** doc *\/ readonly a: T; }', },);
  ```
  */
-export function withoutComments({ text, }: { readonly text: string; },): string {
+export function withoutBlockAndLineComments({ text, }: { readonly text: string; },): string {
   /**
    Text kept so far.
    */

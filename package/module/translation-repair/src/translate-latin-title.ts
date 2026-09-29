@@ -3,7 +3,7 @@ import {
   isHanCharacter,
 } from './han-only-text.ts';
 import { straightenQuotes, } from './quote-normalize.ts';
-import { withoutComments, } from './translate-address-drop.ts';
+import { withoutHtmlComments, } from './translate-address-drop.ts';
 import { titleText, } from './han-title-read.ts';
 
 //region Latin title floor
@@ -151,7 +151,7 @@ export function latinTitleFindings(
    the typography restoration makes them one (ledger B24).
    */
   const foldedPage = straightenQuotes({ text: pageText, },);
-  return latinBracketed({ text: withoutComments({ text: candidateText, },), },)
+  return latinBracketed({ text: withoutHtmlComments({ text: candidateText, },), },)
     .filter(function unkeptByPage(span,): boolean {
       return !foldedPage.includes(straightenQuotes({ text: span, },),);
     },)

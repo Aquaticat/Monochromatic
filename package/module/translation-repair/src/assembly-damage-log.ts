@@ -2,7 +2,7 @@ import type { AdjacentSliceText, } from './assembly-adjacent-repetition.ts';
 import { lostDistinctiveWords, } from './assembly-content-survival.ts';
 import {
   findIntroducedRepetitions,
-  wordsOf,
+  whitespaceTokensOf,
 } from './assembly-repetition.ts';
 import { foldedLatinWords, } from './latin-letters.ts';
 
@@ -56,7 +56,7 @@ export function repetitionLogLines(
   } {
     return {
       sliceIndex: slice.sliceIndex,
-      words: ` ${wordsOf({ text: slice.text, },)
+      words: ` ${whitespaceTokensOf({ text: slice.text, },)
         .join(' ',)} `,
     };
   },);

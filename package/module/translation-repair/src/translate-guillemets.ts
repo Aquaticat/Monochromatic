@@ -1,4 +1,4 @@
-import { withoutComments, } from './translate-address-drop.ts';
+import { withoutHtmlComments, } from './translate-address-drop.ts';
 import { proseMask, } from './typography-prose-mask.ts';
 
 //region Guillemet floor
@@ -123,7 +123,7 @@ export function guillemetFindings(
   /**
    Guillemets the candidate's prose carries.
    */
-  const marks = proseGuillemets({ text: withoutComments({ text: candidateText, },), },);
+  const marks = proseGuillemets({ text: withoutHtmlComments({ text: candidateText, },), },);
   if (marks.length === 0)
     return [];
   return [

@@ -113,7 +113,7 @@ export type RepetitionFinding = {
  PADDED ON BOTH SIDES before the substring test, so a phrase that is a
  character substring of a longer one across a word boundary (`at the garden
  gate` inside `cat the garden gates`) is not taken for a part of it. Both
- phrases come from `wordsOf` joined with single spaces, which is what makes
+ phrases come from `whitespaceTokensOf` joined with single spaces, which is what makes
  the space a word boundary here.
  
  @param longer - phrase that may hold the other
@@ -160,14 +160,14 @@ export function holdsPhrase(
  
  @example
  ```ts
- const words = wordsOf({ text: 'the kitten dozes', },);
+ const words = whitespaceTokensOf({ text: 'the kitten dozes', },);
  ```
  
  Shared with the adjacency check; not part of the lane contract.
  
  @internal
  */
-export function wordsOf({ text, }: { readonly text: string; },): readonly string[] {
+export function whitespaceTokensOf({ text, }: { readonly text: string; },): readonly string[] {
   /**
    Words closed so far.
    */
@@ -325,12 +325,12 @@ export function findIntroducedRepetitions(
    Archive as a word list, so phrase counting sees the same units on both
    sides.
    */
-  const archiveWords = wordsOf({ text: archiveText, },);
+  const archiveWords = whitespaceTokensOf({ text: archiveText, },);
 
   /**
    {@inheritDoc archiveWords}
    */
-  const shippedWords = wordsOf({ text: shippedText, },);
+  const shippedWords = whitespaceTokensOf({ text: shippedText, },);
 
   /**
    Findings so far, longest first.

@@ -1,6 +1,6 @@
 import {
   blocksOf,
-  withoutComments,
+  withoutHtmlComments,
 } from './translate-address-drop.ts';
 import { lowerCaseLatinWords, } from './latin-letters.ts';
 
@@ -308,7 +308,7 @@ export function droppedSuicideFindings(
   /**
    The original outside its comments and its quotations of published works.
    */
-  const original = blocksOf({ text: withoutComments({ text: sourceText, },), },)
+  const original = blocksOf({ text: withoutHtmlComments({ text: sourceText, },), },)
     .filter(function ownWords(block,): boolean {
       return !quotesPublishedWork({ block, },);
     },)
@@ -321,7 +321,7 @@ export function droppedSuicideFindings(
   },);
   if (named.length === 0)
     return [];
-  if (saysSuicide({ words: lowerCaseLatinWords({ text: withoutComments({ text: candidateText, },), },), },))
+  if (saysSuicide({ words: lowerCaseLatinWords({ text: withoutHtmlComments({ text: candidateText, },), },), },))
     return [];
   return [
     `Your translation drops the suicide the ORIGINAL names: the ORIGINAL passage writes ${named.join(' and ',)}, and your translation carries no wording for suicide at all. A death by suicide is said to be a suicide, and a survived attempt is still an attempt: say that the person attempted suicide or tried to end their life, with the pronoun the page uses for them, keeping the means as vague as the house rule asks.`,

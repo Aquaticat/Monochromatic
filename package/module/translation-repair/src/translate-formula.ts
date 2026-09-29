@@ -4,7 +4,7 @@ import {
   MdxParseError,
   parseMdxBody,
 } from './parse-mdx.ts';
-import { withoutComments, } from './translate-address-drop.ts';
+import { withoutHtmlComments, } from './translate-address-drop.ts';
 
 //region Formulas the original does not write
 // LEDGER X22 (2026-09-29): the site compiles every page with remark-math, so
@@ -114,7 +114,7 @@ function formulaReading({ text, }: { readonly text: string; },): FormulaReading 
   try {
     return {
       kind: 'read',
-      count: treeNodes({ root: parseMdxBody({ body: withoutComments({ text, },), },), },)
+      count: treeNodes({ root: parseMdxBody({ body: withoutHtmlComments({ text, },), },), },)
         .filter(isFormula,)
         .length,
     };

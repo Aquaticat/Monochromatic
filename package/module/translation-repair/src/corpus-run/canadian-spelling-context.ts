@@ -119,10 +119,10 @@ export function lineStartOf(
 
  @example
  ```ts
- wordsOf({ text: 'The id, the Ego.', },); // Set { 'the', 'id', 'ego' }
+ lowerCaseWordSetOf({ text: 'The id, the Ego.', },); // Set { 'the', 'id', 'ego' }
  ```
  */
-export function wordsOf(
+export function lowerCaseWordSetOf(
   { text, }: { readonly text: string; },
 ): ReadonlySet<string> {
   /**

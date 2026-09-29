@@ -22,7 +22,7 @@ import { foldedLatinWords, } from './latin-letters.ts';
 // a distinctive word it drops really is a detail removed or blurred.
 //
 // WORDS ARE LATIN LETTERS ONLY, folded (`foldedLatinWords`): punctuation and
-// digits separate them, unlike `wordsOf` in `assembly-repetition.ts`, which
+// digits separate them, unlike `whitespaceTokensOf` in `assembly-repetition.ts`, which
 // keeps punctuation on its token. That file compares passages, where `soon.`
 // and `soon,` are different sentences; this one compares vocabulary, where
 // they are the same word, and so are `Château`, `Cha\u{0302}teau` and

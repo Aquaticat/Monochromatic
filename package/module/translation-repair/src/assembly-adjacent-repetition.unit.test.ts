@@ -133,7 +133,7 @@ await describe({
         // FIVE rather than the six words of the fixture, because punctuation
         // rides on its token: the earlier slice ends the run with `be.` and the
         // later one with `be,`, so the shared run stops one word short. That is
-        // `wordsOf`'s documented behaviour and the reason nothing is reported
+        // `whitespaceTokensOf`'s documented behaviour and the reason nothing is reported
         // as repeated which is not repeated verbatim.
         expect(found[0]?.words,).toBe(5,);
       },

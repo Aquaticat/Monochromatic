@@ -5,7 +5,7 @@ import {
   formStarts,
   renderingSpans,
 } from './glossary-match.ts';
-import { withoutComments, } from './translate-address-drop.ts';
+import { withoutHtmlComments, } from './translate-address-drop.ts';
 
 //region Community glossary
 // THE COMMUNITY'S WORDS, beside the corpus pin (`corpus-source.ts`), by the
@@ -147,7 +147,7 @@ export function communityTermsIn(
   /**
    Original with its comments cut, read once for every term.
    */
-  const uncommented = withoutComments({ text, },);
+  const uncommented = withoutHtmlComments({ text, },);
   return glossary.filter(function present(entry,): boolean {
     /**
      Original with every proper name and every longer word that carries the
@@ -280,7 +280,7 @@ function carriesRendering(
   /**
    Candidate folded once, its comments cut, for every rendering.
    */
-  const folded = foldForGlossary({ text: withoutComments({ text, },), },);
+  const folded = foldForGlossary({ text: withoutHtmlComments({ text, },), },);
   return entry.renderings
     .some(function occurs(rendering,): boolean {
       /**

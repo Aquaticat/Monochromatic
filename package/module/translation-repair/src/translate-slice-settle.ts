@@ -190,10 +190,10 @@ export type TranslateSliceSettlement = {
  
  @example
  ```ts
- const settlement = await settleTranslateSlice({ ..., slice, slicePosition: 0, },);
+ const settlement = await resumeReuseOrBuyTranslateSlice({ ..., slice, slicePosition: 0, },);
  ```
  */
-export async function settleTranslateSlice(
+export async function resumeReuseOrBuyTranslateSlice(
   {
     client,
     prepared,

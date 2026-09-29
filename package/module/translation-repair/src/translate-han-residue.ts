@@ -5,7 +5,7 @@ import {
 import { isAsciiLetter, } from './ascii-letters.ts';
 import { codePointAt, } from './code-points.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
-import { withoutComments, } from './translate-address-drop.ts';
+import { withoutHtmlComments, } from './translate-address-drop.ts';
 import { withoutGlossedTitles, } from './translate-han-title.ts';
 import { untranslatedFindings, } from './translate-untranslated.ts';
 
@@ -634,7 +634,7 @@ export function hanResidueFindings(
    */
   const read = withoutGlossedTitles({
     sourceText,
-    candidateText: withoutComments({ text: candidateText, },),
+    candidateText: withoutHtmlComments({ text: candidateText, },),
   },);
   /**
    Distinct runs nothing excuses, in order.

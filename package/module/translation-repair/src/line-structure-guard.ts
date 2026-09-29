@@ -8,7 +8,7 @@ import {
   carriesContent,
   pastQuoteMarkers,
 } from './quote-line.ts';
-import { withoutComments, } from './translate-address-drop.ts';
+import { withoutHtmlComments, } from './translate-address-drop.ts';
 
 //region Line structure guard
 // WHY THIS IS NOT IN `translate-validate.ts`, where it was first written and
@@ -40,7 +40,7 @@ import { withoutComments, } from './translate-address-drop.ts';
  ```
  */
 function contentLines({ text, }: { readonly text: string; },): readonly string[] {
-  return withoutComments({ text, },)
+  return withoutHtmlComments({ text, },)
     .split('\n',)
     .filter(function kept(line,): boolean {
       return carriesContent({ line, },);

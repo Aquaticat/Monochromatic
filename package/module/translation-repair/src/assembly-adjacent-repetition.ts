@@ -23,7 +23,7 @@
 import {
   countPhrases,
   holdsPhrase,
-  wordsOf,
+  whitespaceTokensOf,
 } from './assembly-repetition.ts';
 
 /**
@@ -239,12 +239,12 @@ function repeatsInPair(
   /**
    Earlier slice as words, which the candidate windows are cut from.
    */
-  const earlierWords = wordsOf({ text: earlier.text, },);
+  const earlierWords = whitespaceTokensOf({ text: earlier.text, },);
 
   /**
    Later slice as words, for membership tests at each length.
    */
-  const laterWords = wordsOf({ text: later.text, },);
+  const laterWords = whitespaceTokensOf({ text: later.text, },);
 
   /**
    Repeats kept so far, with the wording that produced each, so a shorter
@@ -340,7 +340,7 @@ export function findAdjacentRepetitions(
   /**
    Archive as words, cut once rather than per pair.
    */
-  const archiveWords = wordsOf({ text: archiveText, },);
+  const archiveWords = whitespaceTokensOf({ text: archiveText, },);
   return neighbouringPairs({ slices: shippedSlices, },)
     .flatMap(function inPair(pair,): readonly AdjacentRepetition[] {
       return repeatsInPair({

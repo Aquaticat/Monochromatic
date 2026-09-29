@@ -9,7 +9,7 @@ import {
   renderingSpans,
   textCarriesForm,
 } from './glossary-match.ts';
-import { withoutComments, } from './translate-address-drop.ts';
+import { withoutHtmlComments, } from './translate-address-drop.ts';
 import { withoutGlossedTitles, } from './translate-han-title.ts';
 
 //region Community term floor
@@ -223,7 +223,7 @@ export function communityTermFindings(
    */
   const candidate = withoutGlossedTitles({
     sourceText,
-    candidateText: withoutComments({ text: candidateText, },),
+    candidateText: withoutHtmlComments({ text: candidateText, },),
   },);
   return carried.flatMap(function findingsFor(entry,): readonly string[] {
     if (textCarriesForm({

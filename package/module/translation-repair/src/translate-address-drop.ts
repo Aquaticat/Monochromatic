@@ -80,10 +80,10 @@ const COMMENT_CLOSE = '-->';
 
  @example
  ```ts
- withoutComments({ text: '<!-- 你 --> 猫', },); // ' 猫'
+ withoutHtmlComments({ text: '<!-- 你 --> 猫', },); // ' 猫'
  ```
  */
-export function withoutComments({ text, }: { readonly text: string; },): string {
+export function withoutHtmlComments({ text, }: { readonly text: string; },): string {
   /**
    Kept pieces, in order.
    */
@@ -288,11 +288,11 @@ export function droppedAddressFindings(
   /**
    Original outside its comments.
    */
-  const original = withoutComments({ text: sourceText, },);
+  const original = withoutHtmlComments({ text: sourceText, },);
   /**
    Candidate outside its comments.
    */
-  const rendering = withoutComments({ text: candidateText, },);
+  const rendering = withoutHtmlComments({ text: candidateText, },);
   /**
    Blocks of the original.
    */

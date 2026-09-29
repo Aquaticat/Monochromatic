@@ -3,7 +3,7 @@ import {
   NOT_FOUND,
   topLevelPieces,
   wholeWordAt,
-  withoutComments,
+  withoutBlockAndLineComments,
 } from './source-text-scan.ts';
 
 //region TSDoc example scan
@@ -322,7 +322,7 @@ function requiredKeysOf({ params, }: { readonly params: string; },): readonly st
   /**
    The type after the binding's colon.
    */
-  const typeText = withoutComments({ text: first.slice(bindingEnd + 1,), },);
+  const typeText = withoutBlockAndLineComments({ text: first.slice(bindingEnd + 1,), },);
 
   /**
    Where the written-out type opens.

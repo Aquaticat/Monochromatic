@@ -7,7 +7,7 @@ import {
   TITLE_CLOSE,
   TITLE_OPEN,
 } from './han-title-read.ts';
-import { withoutComments, } from './translate-address-drop.ts';
+import { withoutHtmlComments, } from './translate-address-drop.ts';
 
 //region Han title floor
 // CLASS NINETY-EIGHT (XingZ629, 2026-09-23). The house rule calls a work the
@@ -490,7 +490,7 @@ export function withoutGlossedTitles(
   },
 ): string {
   return bracketedTitles({
-    text: withoutComments({ text: sourceText, },),
+    text: withoutHtmlComments({ text: sourceText, },),
     form: 'carrying-han',
   },)
     .reduce(
@@ -548,9 +548,9 @@ export function hanTitleFindings(
   /**
    Candidate with its comments cut.
    */
-  const candidate = withoutComments({ text: candidateText, },);
+  const candidate = withoutHtmlComments({ text: candidateText, },);
   return bracketedTitles({
-    text: withoutComments({ text: sourceText, },),
+    text: withoutHtmlComments({ text: sourceText, },),
     form: 'han-only',
   },)
     .filter(function leftBare(title,): boolean {

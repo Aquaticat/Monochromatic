@@ -3,7 +3,7 @@ import { isHanOnly, } from '../han-only-text.ts';
 import { straightenQuotes, } from '../quote-normalize.ts';
 import { wordStarts, } from '../word-bounds.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
-import { withoutComments, } from '../translate-address-drop.ts';
+import { withoutHtmlComments, } from '../translate-address-drop.ts';
 import {
   pageTextBySlice,
   slicesInOrder,
@@ -427,7 +427,7 @@ export function unifyTitleReferences(
     /**
      Original text of this slice, comments cut.
      */
-    const sourceText = withoutComments({ text: slice.source
+    const sourceText = withoutHtmlComments({ text: slice.source
       .text, },);
     for (const heading of headings.values()) {
       if (heading.sliceIndex === sliceIndex)

@@ -1,5 +1,5 @@
 import { isAsciiDigit, } from './ascii-letters.ts';
-import { withoutComments, } from './translate-address-drop.ts';
+import { withoutHtmlComments, } from './translate-address-drop.ts';
 
 //region Closing quotation marks with no opening one
 // CLASS ONE HUNDRED SIXTY-FIVE (TianqiChen6665, 2026-09-26). The original's
@@ -229,13 +229,13 @@ export function strayClosingQuoteFindings(
   /**
    Closing marks in the original that close nothing.
    */
-  const sourceStrays = strayClosers({ text: withoutComments({ text: sourceText, },), },);
+  const sourceStrays = strayClosers({ text: withoutHtmlComments({ text: sourceText, },), },);
   if (sourceStrays.length > 0)
     return [];
   /**
    Closing marks in the candidate that close nothing.
    */
-  const strays = strayClosers({ text: withoutComments({ text: candidateText, },), },);
+  const strays = strayClosers({ text: withoutHtmlComments({ text: candidateText, },), },);
   if (strays.length === 0)
     return [];
   /**

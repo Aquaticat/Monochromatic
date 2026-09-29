@@ -28,7 +28,7 @@ import type {
   TranslateSliceSeating,
   UnfilledSlice,
 } from './translate-document-contract.ts';
-import { settleTranslateSlice, } from './translate-slice-settle.ts';
+import { resumeReuseOrBuyTranslateSlice, } from './translate-slice-settle.ts';
 import { translateRunShape, } from './translate-slice-key.ts';
 import type { TwinMemo, } from './twin-memo.ts';
 
@@ -280,7 +280,7 @@ export async function translateDocument(
            */
           const archiveDispute = archiveDisputes?.get(slice.target
             .sliceIndex,);
-          return await settleTranslateSlice({
+          return await resumeReuseOrBuyTranslateSlice({
             client,
             prepared,
             models: sliceModels,
