@@ -5049,9 +5049,73 @@ Of the four dates named here,
 class one hundred seventy-eight's was right
 (its run began at 20:12 UTC on 2026-09-26),
 and the class seventy-seven site carries no date to correct.
-A census of every owner-answer date against the transcript timestamps was deferred here to the docs audit
-and never run;
-it stays open until its result is recorded under D12.
+A census of every owner-answer date against the transcript timestamps was deferred here to the docs audit,
+and ran on 2026-09-28.
+
+The census read every owner-side entry in both package sessions' transcripts:
+typed messages,
+messages queued while the agent worked
+(stored as `queued_command` attachments,
+which a first reader missed until the known 01:59:59 answer failed to appear),
+and AskUserQuestion answers.
+The Codex prompt history holds no owner prompt between 00:00 and 04:00 UTC.
+Every entry in that window,
+where the local (EDT) day is the day before,
+was matched to the docs that date it:
+by quotation where a doc quotes the owner
+(323 dated sites carry a quotation)
+and by topic where it does not.
+Corrected in `d01d359d1`:
+
+-   The voting rulings of 2026-08-15,
+    00:47 to 01:44 UTC
+    (no full-roster retry target,
+    self-judging at reduced weight,
+    the one-model rule,
+    the 60 s grace,
+    producing roles,
+    the re-ask of an invalid candidate),
+    dated 2026-08-14 in 40 places:
+    27 in source,
+    the ensemble-voting,
+    straggler-grace and ineligible-standing records,
+    a planning doc,
+    the README,
+    `doc/slice-context.md`
+    and this ledger.
+-   The answers of 2026-09-27 01:59 UTC,
+    dated 2026-09-26 in 6 places the first fix missed because it touched only package files:
+    two answer lines and two addendum headings in the ineligible-standing record
+    (the addenda were committed at 02:28 UTC that day),
+    one test name,
+    and the current handover.
+-   "50% is okay here."
+    and the half-roster quorum,
+    2026-08-06 02:58 and 03:06 UTC,
+    dated 2026-08-05.
+-   The output goal,
+    2026-08-13 01:50 UTC,
+    dated 2026-08-12.
+-   Not a zone slip:
+    the current handover dated the cron ruling 2026-09-19;
+    the owner said it at 17:41 UTC on 2026-09-17.
+
+Checked and right,
+among the window's rulings:
+the 2026-08-14 cost standing (22:37 UTC),
+the translate-better instruction (2026-09-25 02:22 UTC),
+the Jev approval (2026-09-18 00:29 UTC),
+the gpt-oss-120b cull (2026-09-24 00:39 UTC),
+the gloss objection and the ballot-caster ruling (2026-09-26 02:02 and 02:03 UTC),
+and the dictionary-terms and 治愈 rulings (2026-09-27 03:13 and 03:41 UTC).
+Not verifiable:
+owner rulings the docs date 2026-08-28 to 2026-08-30 and 2026-09-11,
+days with no owner entry in any local transcript.
+The archived history segments carry the local day for evening answers
+and are kept byte for byte;
+their index now says so.
+The census commit's message said 44 and five places;
+commit comment 202514782 corrects both counts.
 The finding as first recorded:
 four class dates match only the local day of their commit
 (class seventy-seven,
@@ -5377,6 +5441,75 @@ and `PROVIDER_ORDER` is Synthetic,
 Bedrock,
 Hyper,
 OpenRouter (`provider-name.ts`).
+
+### D25: clock times with no zone came back after D12
+
+Status:
+open,
+found 2026-09-28 during the D12 census.
+D12 made every Markdown clock time carry a zone,
+by hand and with no guard.
+A scan of the living docs
+(package source,
+docs and README,
+the decision records and the current handovers)
+for a clock time no zone follows
+finds 198,
+some of them ranges that state the zone once
+("02:35 and 02:45 UTC").
+Most are the cache-version histories written for M28 on 2026-09-28,
+which give commit times as `git log` prints them
+(`66703994a` "at 22:56 on 2026-09-27" is 02:56 UTC on 2026-09-28)
+and slice-cache file times as `find` prints them,
+both in local time.
+Fix:
+resolve each time from its source
+(the commit,
+the file,
+the log line)
+to UTC with its zone,
+and guard every living doc against a zone-less clock time.
+
+### D26: task-list numbers in the repository-level translation-repair docs
+
+Status:
+open,
+found 2026-09-28 while closing D22,
+whose census covered the package directory only.
+The same shape stands 120 times in the translation-repair decision records,
+157 times in the planning docs
+and 929 times in the handovers,
+most of those in the archived history segments.
+The current handover's open-work line also lists task-list numbers without the sign,
+a form the D22 guard does not read.
+Fix:
+the living docs as D22 did;
+the archived segments,
+which their index keeps byte for byte,
+get a note on the index saying what those numbers name;
+and the D22 guard's scope,
+or a sibling,
+reaches the living repository-level docs.
+
+### D27: the repository-level translation-repair docs have never passed the Markdown linter
+
+Status:
+open,
+found 2026-09-28 when a `--fix` run over the census's edits reflowed about 13,000 lines
+(reverted;
+the census committed its date edits alone).
+The repository's `lint:markdown` walks the whole tree,
+and over the translation-repair decision records,
+planning docs and handovers it reports 13,871 `semantic-line-breaks` findings
+and a handful of heading findings (MD025,
+MD026).
+Fix:
+the living docs as D23 did
+(`--fix`,
+then a rendered comparison showing nothing but line breaks moved);
+the archived segments are kept byte for byte,
+so they need an exclusion the linter supports
+or a recorded reason they stay as they are.
 
 ## Found while fixing
 
@@ -7813,6 +7946,15 @@ commit comment 202478725 corrects it.
 A rule written an hour before did not stop it,
 so the prevention doc now asks for a read of the message
 for `#` followed by digits before every commit.
+Once more on 2026-09-28:
+`d01d359d1` gave its counts (44 places and five) from a tally kept while editing,
+before the commit existed to count;
+`git show --unified=0` of it counts 40 and 6,
+and commit comment 202514782 corrects both.
+Prevention for counts:
+a number in a commit message comes from a command run on the staged diff,
+in the same call that commits,
+or the message says no number.
 
 ### M14: a reproduction check committed without a positive control
 

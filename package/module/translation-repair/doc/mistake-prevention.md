@@ -213,6 +213,8 @@ an issue number goes in only after `gh issue view` shows it is the one meant;
 a cause goes in only after the command that shows it (blame,
 log,
 a probe) has run.
+A count goes in only from a command run on the staged diff
+(one commit said 44 and five where its diff held 40 and 6).
 Before the commit runs,
 read the message for `#` followed by digits:
 this audit's task list numbers its items like issues,
