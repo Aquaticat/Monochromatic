@@ -203,8 +203,8 @@ export function assembleRepair(
     }/${String(outcomes.length,)} slices changed, ${String(issues.length,)} issues`,
   );
 
-  // WHERE THE DOCUMENT-SCALE DAMAGE IS (ledger L12): the findings below count
-  // it and name no slice, so the log names the slices, the phrase and the words.
+  // WHERE THE DOCUMENT-SCALE DAMAGE IS (ledger L12): `repetitionFindings`
+  // counts it and names no slice, so the log names the slices, the phrase and the words.
   for (
     const line of repetitionLogLines({
       archiveText: targetText,
@@ -261,7 +261,8 @@ export function assembleRepair(
       ...findings,
       ...guarded.findings,
       // REPETITION IS A RELATION BETWEEN SLICES, exactly like the footnote graph
-      // the guard above exists for, so this is the only layer that can see it.
+      // the page guard (`guarded`) exists for, so this is the only layer that can
+      // see it.
       // The introduced-defect probe was measured against `lintong`'s
       // duplicated farewell and it could not have caught it at any setting: the
       // probe compares one edited region against itself, and no single region
@@ -270,8 +271,8 @@ export function assembleRepair(
         archiveText: targetText,
         shippedText: guarded.assembledText,
       },),
-      // ADJACENCY IS A SEPARATE CHECK because the document-scale one above
-      // cannot see the `lintong` example: that duplication carries no word of
+      // ADJACENCY IS A SEPARATE CHECK because `repetitionFindings`, the
+      // document-scale one, cannot see the `lintong` example: that duplication carries no word of
       // five letters, so the content gate drops it. Two neighbouring slices
       // shipping the same wording is specific enough to need no such gate.
       ...adjacentRepetitionFindings({

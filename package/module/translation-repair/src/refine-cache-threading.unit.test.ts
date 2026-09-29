@@ -289,7 +289,7 @@ await describe({
 
     it({
       name: 'SETTLES WITH NO CACHE AT ALL, which is the control: a step manufacturing one of its own '
-        + 'would satisfy the case above without ever having been handed anything',
+        + 'would satisfy the "KEEPS WHAT IT SETTLED" case without ever having been handed anything',
       fn: async () => {
         /**
          Keys kept when the step was handed no cache.

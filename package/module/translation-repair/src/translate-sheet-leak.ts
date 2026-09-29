@@ -15,7 +15,7 @@ import {
 // are never part of the passage, so a candidate carrying one of their labels
 // is not a rendering of the original and never reaches a judge.
 //
-// LEDGER F-8 AND E7 (2026-09-27). The list below had fallen behind the
+// LEDGER F-8 AND E7 (2026-09-27). `SHEET_LABELS` had fallen behind the
 // sheets: six consolidation-writer and polish headers and the translate
 // sheet's REJECTED CANDIDATE N were missing, so a candidate carrying one
 // passed. A list kept by hand will fall behind again, so every fenced header

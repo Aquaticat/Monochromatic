@@ -34,9 +34,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  record, so a resumed slice would otherwise carry an audit the current prober
  never performed.
  
- MOVED TO 2 WHEN THE PROBE GAINED ITS WINDOW. The two nearby fields below
- already change every key that carries one, so this bump decides nothing on
- its own; it is here because the rule above says the version moves when the
+ MOVED TO 2 WHEN THE PROBE GAINED ITS WINDOW. The `nearby-source` and
+ `nearby-incumbent` fields already change every key that carries one, so this bump decides nothing on
+ its own; it is here because the MOVES WHEN THE QUESTION MOVES rule says the version moves when the
  probe's question moves, and a reader checking that rule against this change
  has to find it kept rather than argued around. It also covers the slices
  whose window is empty, which the fields deliberately cannot.

@@ -374,7 +374,8 @@ export function buildSliceDelivery(
       },);
     }
 
-    // THE TWO AXES AGAINST EACH OTHER, which the checks above do not cover:
+    // THE TWO AXES AGAINST EACH OTHER, which no lane-against-preparation check
+    // covers:
     // they compare the lane record against the preparation, and this compares
     // the record against itself. `buildLaneSliceTexts` refuses all three of
     // these while building, and a wording reaching here need not have come from

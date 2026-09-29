@@ -31,7 +31,7 @@ const CLOSE = '\u{201D}';
 /**
  Restores using the replaced region as its own convention.
  
- Every case below was written before the convention widened to the whole
+ Every case in this file was written before the convention widened to the whole
  document, and each asserts REGION-scoped behaviour, so passing the replaced
  text as the convention keeps each assertion testing what it was written to
  test.

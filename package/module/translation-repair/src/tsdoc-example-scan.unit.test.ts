@@ -2,7 +2,8 @@
  Tests for the TSDoc example scan (ledger D9): every function declaration's
  `@example` calls the function it documents and passes the keys it requires.
 
- THE FIXTURES COME FIRST, so the package-wide case below is read against a
+ THE FIXTURES COME FIRST, so the "FINDS NOTHING IN THIS PACKAGE'S SOURCE" case
+ is read against a
  scan shown able to find each fault (ledger M21: a check that could not fail).
  Fixtures are cat-themed; the package case reads this package's own source.
 

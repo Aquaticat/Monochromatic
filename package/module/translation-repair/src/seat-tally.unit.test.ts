@@ -6,7 +6,7 @@
  met on the nose by the other five and nothing read the whole run. The tally
  counts every settled call against its seat, and the report says which seats
  were asked and produced nothing usable, in the closing lines of every
- command. The cases below pin what "usable" means on each surface, that the
+ command. The cases in this file pin what "usable" means on each surface, that the
  wrapped client is otherwise untouched, and the exact lines a reader greps.
  
  @module

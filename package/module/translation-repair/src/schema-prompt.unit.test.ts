@@ -156,8 +156,8 @@ await describe({
         expect(block,).toContain('"minutes"',);
         // THE WHOLE SCHEMA, rendered from the same value the request sends.
         // "Put even the full tool schema into system prompts" is the
-        // instruction, and a block carrying part of it would satisfy the two
-        // assertions above while failing the thing that was asked for.
+        // instruction, and a block carrying part of it would satisfy the
+        // `additionalProperties` and `minutes` assertions while failing the thing that was asked for.
         expect(block,).toContain(JSON.stringify(
           NAP_FORMAT.json_schema.schema,
           null,

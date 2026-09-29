@@ -154,7 +154,8 @@ await describe({
 
     it({
       name: 'REFUSES to resolve those same two ballots when nobody is named as an author, which is '
-        + 'the positive control for the case above: the assertion has to be reading the discount '
+        + 'the positive control for the "RESOLVES on one independent fixed vote against the author '
+        + 'saying not-fixed" case: the assertion has to be reading the discount '
         + 'and not the ballots',
       fn: async function withoutAuthorshipItTies() {
         expect(fateOf({

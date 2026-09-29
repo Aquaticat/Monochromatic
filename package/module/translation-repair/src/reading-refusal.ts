@@ -106,7 +106,7 @@ const PICTURE_WORDS: readonly string[] = [
 ];
 
 /**
- Whether a character can sit inside one of the words above: a Latin letter,
+ Whether a character can sit inside one of the `PICTURE_WORDS`: a Latin letter,
  accented or not, a combining mark, or an apostrophe. ASCII letters alone cut
  `café` to `caf` (ledger B18).
  
@@ -130,7 +130,7 @@ function continuesWord({ character, }: { readonly character: string; },): boolea
 }
 
 /**
- Whether a character can open one of the words above: a Latin letter or an
+ Whether a character can open one of the `PICTURE_WORDS`: a Latin letter or an
  apostrophe, never a combining mark, which belongs to the letter before it.
  
  @param character - character to weigh

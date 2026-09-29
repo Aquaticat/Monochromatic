@@ -454,7 +454,7 @@ await describe({
         },);
 
         // POSITIVE CONTROL. Two empty lists compare equal, so a replay that lost
-        // everything would satisfy the comparison below against a run that said
+        // everything would satisfy the `warm.findings` comparison against a run that said
         // nothing. The cold run has to have reported something first.
         expect(cold.findings.length > 0,).toBe(true,);
         expect(stored.size,).toBe(1,);

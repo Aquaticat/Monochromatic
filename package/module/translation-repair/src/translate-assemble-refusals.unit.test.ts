@@ -4,8 +4,8 @@
  
  WHY THIS FILE EXISTS. `assembleTranslation` reports `refusedSliceCount` as
  the size of a filter naming three dispositions, and `alignmentRefusals`
- writes one finding per refusal in three shapes. Every case reaching either of
- them before this drove ONE of the three, `refused-alignment`, so dropping
+ writes one finding per refusal in three shapes. Until this file existed, every
+ case reaching either of them drove ONE of the three, `refused-alignment`, so dropping
  either of the other two from the filter would have cost the artifact a
  refusal and failed nothing. The two other kinds were pinned at the slice that
  produces them and nowhere downstream.
@@ -281,8 +281,8 @@ await describe({
     it({
       name: 'COUNTS a slice refused for quote loss and a slice refused for a dropped declared name '
         + 'alongside one refused on alignment, which is what the artifact reports as `refusedSliceCount`. '
-        + 'Every case before this drove the alignment kind alone, so dropping either of the other two '
-        + 'from the filter would have understated the count and failed nothing',
+        + 'Until this case was written, every case drove the alignment kind alone, so dropping either '
+        + 'of the other two from the filter would have understated the count and failed nothing',
       fn: async () => {
         const { result, } = await assembledFixture();
         expect(result.sliceCount,).toBe(4,);

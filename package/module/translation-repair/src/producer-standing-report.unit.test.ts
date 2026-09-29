@@ -146,7 +146,7 @@ await describe({
     it({
       name:
         'POSITIVE CONTROL: the input order is not already the answer, so a ranking that returned its '
-        + 'argument untouched would fail the cases below rather than pass them',
+        + 'argument untouched would fail the other cases in this file rather than pass them',
       fn: async () => {
         expect([
           UNJUDGED,

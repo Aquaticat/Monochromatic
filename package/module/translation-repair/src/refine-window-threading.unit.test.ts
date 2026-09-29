@@ -520,7 +520,7 @@ await describe({
       name: 'ASKS A SLICE STANDING ALONE exactly what it was asked before the '
         + 'window existed, with no nearby block at all. This is the control '
         + 'the other case needs: a fence rendered unconditionally would '
-        + 'satisfy every assertion above while carrying nothing',
+        + 'satisfy every assertion of that case while carrying nothing',
       fn: async () => {
         const sheets = await probeSheets({
           marks: [

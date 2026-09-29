@@ -264,8 +264,9 @@ export function subdivideSealedChunkPair(
   }
 
   /**
-   Nothing is sealed from here on: a seal names translation blocks, and the
-   paths below are the ones where the translation side carries none.
+   Nothing is sealed from here on: a seal names translation blocks, and
+   every path reaching this line is one where the translation side carries
+   none.
    */
   const nothingSealed = new Set<string>();
 
@@ -331,7 +332,7 @@ export function subdivideSealedChunkPair(
   // STILL ONE SLICE where the target carries a span but no blocks, which is
   // not an insertion: several pairs would have to replace one span rather
   // than be written into a boundary, and that is a different question from
-  // the one above.
+  // slicing an insertion.
   return {
     sealedSourceIds: nothingSealed,
     slices: [

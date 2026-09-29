@@ -8,7 +8,7 @@
  
  The binding step's stated contract is that it drops rather than throws: a
  rewriter miscounting its own list says nothing about the paragraphs it got
- right. So the cases below check that a bad item is recorded AND dropped,
+ right. So the cases in this file check that a bad item is recorded AND dropped,
  while its well-formed neighbours survive.
  
  Fixtures are cat-themed invention.

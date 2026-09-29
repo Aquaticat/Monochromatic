@@ -1030,7 +1030,8 @@ await describe({
         expect(serial.peak,).toBe(1,);
         expect(overlapped.peak,).toBe(2,);
         // THE SECOND REFINER DID ANSWER FIRST: the call started first is not
-        // the first to finish, so the input-order check below is exercised.
+        // the first to finish, so the check that outcomes come back in input
+        // order is exercised.
         expect(overlapped.finished,).toContain(0,);
         expect(overlapped.finished[0],).not.toBe(0,);
         expect(phase.outcomes.map(function toIndex(outcome,) {
@@ -1613,7 +1614,7 @@ await describe({
           }),
         },);
         // The rewrite shipped, so both checking stages ran; a case where
-        // neither ran would pass the membership checks below vacuously.
+        // neither ran would pass the `calls.some` membership checks vacuously.
         expect(phase.outcomes[0]?.repairedText,).toBe(SMOOTH_TEXT,);
         expect(calls.some(function isProbe(call,): boolean {
           return call.stage === 'introduced_defect_report';
@@ -1627,8 +1628,8 @@ await describe({
       },
     },),
     it({
-      name: 'KEEPS THE CHUNK BENCH when the reading seats nothing new, the control showing the case '
-        + 'above reports the hook and not a fixture that never asks the chunk bench',
+      name: 'KEEPS THE CHUNK BENCH when the reading seats nothing new, the control showing the "ASKS THE '
+        + 'RE-SEATED BENCH" case reports the hook and not a fixture that never asks the chunk bench',
       fn: async () => {
         const { calls, } = await runReseatedPhase({
           reseat: async (): Promise<RepairSliceSeating> => ({}),

@@ -20,7 +20,8 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
  Whether the producing stage behind this record heard nobody.
  
  ONE DEFINITION, because three places ask: the driver deciding whether to
- cache, the wording builder deciding what the outcome is, and the guard below.
+ cache, the wording builder deciding what the outcome is, and
+ `assertUnheardKeptIncumbent`.
  Two spellings of it would eventually disagree, and the slice that fell between
  them would be cached as a decision nobody made.
  

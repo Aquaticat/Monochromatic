@@ -430,7 +430,8 @@ export type TranslateDocumentResult = {
   readonly translatedText: string;
 
   /**
-   Slices preparation produced, which every count below is out of.
+   Slices preparation produced, which every other slice count of this result
+   is out of.
    */
   readonly sliceCount: number;
 

@@ -227,7 +227,8 @@ await describe({
     },),
     it({
       name: 'SENDS NO NEARBY BLOCKS for a slice standing alone, which is the control that makes the '
-        + 'case above legible: a driver pasting them unconditionally would satisfy it',
+        + '"FORWARDS both sides of the neighbouring window" case legible: a driver pasting them '
+        + 'unconditionally would satisfy it',
       fn: async () => {
         /**
          Sheets the critics were sent with no neighbours at all.

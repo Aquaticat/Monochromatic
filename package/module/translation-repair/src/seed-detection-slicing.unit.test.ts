@@ -104,7 +104,7 @@ await describe({
         expect(slicePosition,).toBeGreaterThan(0,);
 
         /**
-         Slice the seed landed in, present by the assertion above.
+         Slice the seed landed in, present since `slicePosition` is past zero.
          */
         const slice = slices[slicePosition];
         if (slice === undefined)

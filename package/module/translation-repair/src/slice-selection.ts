@@ -69,7 +69,8 @@ export type SliceSelection = {
    ballot cast over it with its reason and weight.
    
    KEPT IN FULL RATHER THAN SUMMARISED, on the owner's instruction that disk
-   is not the constraint. The summary above answers what shipped; only the
+   is not the constraint. The summary fields (`origin`, `producer`, `decision`,
+   `voteWeight`, `shipped`) answer what shipped; only the
    round answers who was asked and what they said, and three separate
    measurements need exactly that. `selfPreference` reads it as-is, which is
    why it is this shape: the artifact carries what the instrument consumes

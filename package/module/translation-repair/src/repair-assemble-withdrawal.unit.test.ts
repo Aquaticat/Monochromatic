@@ -289,7 +289,7 @@ await describe({
       },
     },),
     it({
-      name: 'STAYS QUIET when it withdrew nothing, which is what keeps the line above worth reading: a '
+      name: 'STAYS QUIET when it withdrew nothing, which is what keeps the withdrawal announcement worth reading: a '
         + 'guard announcing every clean assembly is how a real withdrawal stops being noticed',
       fn: async () => {
         const { result, warnings, } = assembleWith({ repairedText: KEPT_REPAIR, },);

@@ -75,8 +75,8 @@ export const STREAM_FIRST_BYTE_MS = 600_000;
  mistake, and the pattern repeated a third time on re-measurement. An
  earlier 30 s value here was justified by a six-stream sample whose largest
  gap was 733 ms, called forty times the worst observation; at 32 streams
- that read p50 86 ms, p90 3833 ms, max 24_673 ms; the re-count above
- puts the observed max at 124_992 ms. Each larger sample found a larger
+ that read p50 86 ms, p90 3833 ms, max 24_673 ms; the re-count against
+ those three logs puts the observed max at 124_992 ms. Each larger sample found a larger
  gap, 733 ms then 24_673 ms then 124_992 ms, so treating any one of them as
  a bound has been wrong every time it was tried. See
  `doc/decision/translation-repair-runaway-call-termination.md` for the

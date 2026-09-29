@@ -70,8 +70,8 @@ import type { RepairModels, } from './repair-contract.ts';
  L4 later measured that the gate can see almost nothing, since envelopes are
  cut from the licensed quotes; the markup-atom check guards inside them.)
  
- Versions 13 through 16 were bumped without a paragraph here, which the note
- above says must never happen; recovered from the commits that moved the
+ Versions 13 through 16 were bumped without a paragraph here, which breaks
+ the rule that every bump records why it was needed; recovered from the commits that moved the
  constant rather than reconstructed, so each is what its own change says it
  is. Version 13 (`4a4a8b6bc`) pairs sections only when the aligner is forced
  to, and never blocks on a refusal, so a slice resumed from 12 was paired by a
@@ -111,7 +111,7 @@ import type { RepairModels, } from './repair-contract.ts';
  
  Version 21 widens what the naturalness lane may touch. Eligibility excluded
  every paragraph containing a newline, which rejected soft source wraps along
- with authored line breaks; it now excludes only the latter. Measured over the
+ with authored line breaks; it now excludes only authored line breaks. Measured over the
  92 entries at the pinned corpus commit, 811 of 2067 prose paragraphs carry an
  internal newline and 29 carry a hard break, so a version-20 slice was refined
  over a small fraction of the prose the lane could have reached. Those cached
@@ -217,7 +217,7 @@ import type { RepairModels, } from './repair-contract.ts';
  TWO LATER ANCHORING CHANGES ALSO RODE INSIDE 27, checked rather than assumed:
  no slice-cache file had been written under it when either landed, so there was
  nothing on disk for them to disagree with. They are the uniqueness rule now
- judged over the broadest accepted form of a quote, and the lane literal below.
+ judged over the broadest accepted form of a quote, and the lane literal this key now leads with.
  Once a run settles a slice under 27, the next behavioural change to anchoring
  takes 28.
  

@@ -41,7 +41,7 @@ await describe({
         const reading = strictRefusalOffset({ text: BROKEN, },);
         expect(reading.refused,).toBe(true,);
         if (!reading.refused)
-          throw new Error('refused by the assertion above',);
+          throw new Error('the reading is asserted refused',);
         expect(reading.offset,).toBeGreaterThanOrEqual(BROKEN.indexOf('A bird',),);
         expect(reading.offset,).toBeLessThanOrEqual(BROKEN.length,);
       },

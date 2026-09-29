@@ -4,7 +4,7 @@
  WHY THESE ARE WORTH PINNING: the taxonomy in this prompt is what decides
  whether two voices describing one defect describe it the same way, and a
  vocabulary that grows without its definition growing too would fragment the
- labels silently. The drift cases below fail the moment a category is added to
+ labels silently. The drift cases in this file fail the moment a category is added to
  the wire and not defined here.
  
  THE FENCE CASE IS ADVERSARIAL: both texts are pasted into a fenced block, and

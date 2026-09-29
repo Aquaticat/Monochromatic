@@ -12,7 +12,7 @@ import type { RepairDocument, } from './parse-document.ts';
 // and dishonest as a detector.
 //
 // It once excluded EVERY paragraph containing a newline, which collapsed the
-// very distinction the paragraph above draws: a soft wrap renders as a space
+// very distinction the ELIGIBILITY FILTER paragraph draws: a soft wrap renders as a space
 // and carries no authored structure, while a hard break does. Measured over
 // the 92 entries at the pinned corpus commit, 811 of 2067 prose paragraphs
 // carry an internal newline and only 29 carry a hard break, so that rule

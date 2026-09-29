@@ -193,7 +193,7 @@ await describe({
 
         // The reason a judge gave is the evidence this whole record exists for,
         // so it is asserted separately rather than only inside the whole-object
-        // comparison above: a later change that summarised reasons instead of
+        // `toEqual`: a later change that summarised reasons instead of
         // keeping them would still satisfy a shape check.
         expect(round.ballots.at(0,)?.reason,).toBe('the alias has no basis in the original',);
       },

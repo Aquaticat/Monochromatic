@@ -84,7 +84,7 @@ await describe({
         'produces a KNOWN hash for known inputs, which is the only thing standing between a change '
         + 'to this derivation and every settled slice in the corpus silently missing the cache. '
         + 'A DERIVATION change moves this hash and needs SLICE_CACHE_VERSION moved with it; a '
-        + 'change to the FIXTURE INPUTS below moves it too, and must not, because those inputs are '
+        + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
         expect(SLICE_CACHE_VERSION,).toBe(34,);
@@ -116,9 +116,9 @@ await describe({
         // recheck can discount a checker judging its own work after a resume.
         //
         // THE HASH MOVED ON 2026-08-24 WITHOUT THE DERIVATION MOVING, which is
-        // the case the note above says must not happen, so it is written down
+        // the case the name of this case says must not happen, so it is written down
         // rather than quietly re-pinned. The owner blocklisted
-        // `zai-org/GLM-4.7-Flash`, the fixture roster below named it, and a
+        // `zai-org/GLM-4.7-Flash`, this case's fixture roster named it, and a
         // fixture that names a model no longer on the roster does not compile.
         // The roster IS part of the key by design, so a fixture roster change
         // moves this hash and invalidates only this fixture's own entries.

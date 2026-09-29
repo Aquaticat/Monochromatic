@@ -935,7 +935,8 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES IT OUT OF AN UNGOVERNED ROUND, which is the positive control the case above needs: '
+      name: 'LEAVES IT OUT OF AN UNGOVERNED ROUND, which is the positive control the "FORWARDS THE VERSE '
+        + 'RULE TO ITS JUDGES" case needs: '
         + 'a sheet carrying the criterion for every slice would satisfy that one exactly as well and would '
         + 'mean the flag was never read on the way through',
       fn: async () => {

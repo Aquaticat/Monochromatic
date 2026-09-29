@@ -412,7 +412,7 @@ export async function settleTranslateSlice(
   }
 
   // WHAT AN ABSENT SLICE MAY SETTLE ON, stated where the record is built rather
-  // than trusted to the paths above. Every way of producing nothing has already
+  // than trusted to the paths that produce it. Every way of producing nothing has already
   // thrown by here, so this is unreachable; what it pins is that a record for a
   // passage the archive never translated always carries a translation, since
   // such a record is cached and read back as finished work.

@@ -371,8 +371,8 @@ async function attemptExchange(
     // NEITHER IS A TERMINATION THIS SYSTEM CHOSE. `drainBody` ends a runaway by
     // cancelling the reader and throwing, and it deliberately does NOT abort the
     // caller's signal, because the decision was ours rather than the caller's.
-    // That leaves the check above blind to it, so without this the retry ladder
-    // re-dispatches the runaway once per remaining attempt: measured at five
+    // That leaves the `exchange.signal.aborted` check blind to it, so without
+    // this the retry ladder re-dispatches the runaway once per remaining attempt: measured at five
     // transport calls over twelve seconds of backoff under the production
     // policy. A model that has begun repeating itself will repeat itself again,
     // so every one of those attempts pays the same cost the guard exists to
@@ -387,7 +387,8 @@ async function attemptExchange(
 
     // NOR IS A STREAM THE CARD'S BOUND CUT (ledger P13, 2026-09-28). The bound
     // is armed around each attempt, inside the transport, so it never aborts
-    // the signal the check above reads; a retry would wait in the same queue,
+    // the signal the `exchange.signal.aborted` check reads; a retry would wait
+    // in the same queue,
     // and the router has to see the cut to hold the provider out for the
     // model. Asked apart from `isSelfEndedStream` because the drain wraps a
     // bound cut in its cut-short error, which keeps the partial text, and

@@ -289,7 +289,8 @@ await describe({
   children: [
     it({
       name: 'NAMES THE TWO NEIGHBOURS that really did ship the same wording, which is the control '
-        + 'showing this check speaks at all before the case below reads its silence',
+        + 'showing this check speaks at all before the "STAYS SILENT when three neighbours ship three '
+        + 'different wordings" case reads its silence',
       fn: async () => {
         /**
          Assembly where the middle slice shipped its neighbour's wording.

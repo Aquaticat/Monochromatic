@@ -248,7 +248,7 @@ export function assembleTranslation(
       .length,
     refusedSliceCount: refused.length,
     withdrawnSliceCount: withdrawn.length,
-    // The same surviving replacements the count above is the size of, named,
+    // The same surviving replacements `changedSliceCount` is the size of, named,
     // and checked against the withdrawn set before either is reported.
     changedSliceIndices: ordered.shipped,
     sliceSelections: buildSliceSelections({
@@ -302,7 +302,7 @@ export function assembleTranslation(
         shippedText: guarded.assembledText,
       },),
       // Adjacency, for the reason `assembly-adjacent-repetition.ts` gives: the
-      // check above needs content words this lane's duplications may not have.
+      // `repetitionFindings` check needs content words this lane's duplications may not have.
       ...adjacentRepetitionFindings({
         archiveText: prepared.targetText,
         shippedSlices,

@@ -47,7 +47,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Model that produces candidates in most cases below.
+ Model that produces candidates in most cases in this file.
  */
 const PRODUCER_ONE = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 

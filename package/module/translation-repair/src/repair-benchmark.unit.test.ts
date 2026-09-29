@@ -555,7 +555,7 @@ The cat naps in the sun. The cat also chases crimson butterflies across the mead
         // because slice zero is the one case the old pair indexing got right.
         expect(slicePosition,).toBeGreaterThan(0,);
 
-        /** Slice the seed landed in, present by the assertion above. */
+        /** Slice the seed landed in, present since `slicePosition` is past zero. */
         const slice = slices[slicePosition];
         if (slice === undefined)
           throw new Error('fixture lost its slice',);
@@ -767,7 +767,7 @@ await describe({
             // The stub rewrites the document whole rather than by slice, so it
             // names the one slice that stands for it. A changed document with
             // no shipped slice would state a thing the contract cannot mean,
-            // and the wording pair below is that slice as both sides saw it.
+            // and the `sliceTexts` entry is that slice as both sides saw it.
             changedSliceIndices: [0,],
             withdrawnSliceIndices: [],
             trimmedReplacements: [],

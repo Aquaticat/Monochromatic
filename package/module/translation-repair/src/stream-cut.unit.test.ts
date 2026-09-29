@@ -33,8 +33,8 @@ const SOME_PROGRESS = {
 
 /**
  Generated character totals a call made before it stopped, deliberately
- unequal to `SOME_PROGRESS.chars` and to each other, so no assertion below
- could pass by two counts coinciding.
+ unequal to `SOME_PROGRESS.chars` and to each other, so no assertion in this
+ file could pass by two counts coinciding.
  */
 const SOME_GENERATED_CHARS = {
   content: 40,

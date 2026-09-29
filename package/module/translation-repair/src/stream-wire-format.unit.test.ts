@@ -8,7 +8,7 @@
  nothing. That is indistinguishable from a model that declined, so a
  misrouted stream would surface as a lost voice and be blamed on a provider.
  
- The cases below therefore assert the WRONG reader sees nothing, not only
+ The cases in this file therefore assert the WRONG reader sees nothing, not only
  that the right one sees something. Only the pair proves the choice matters.
  
  @module

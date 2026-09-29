@@ -200,7 +200,7 @@ export async function buyTranslateSlice(
       .text,
   },);
   // WHAT HEARING NOBODY HAS TO MEAN, checked before the record is kept. The
-  // branch below rests on it, and so does every wording built from this
+  // `heardNobody` branch rests on it, and so does every wording built from this
   // record afterwards.
   assertUnheardKeptIncumbent({
     sliceIndex,

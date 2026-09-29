@@ -94,7 +94,7 @@ export type {
  modalities, features, quantization, always-on and price. The alias
  `syn:small:vision` still resolved to the OLDER id when this was written, so
  that alias breaks or repoints when the retirement lands; nothing here calls
- it, and the dedupe rule above is what keeps that from mattering.
+ it, and deduping on `hugging_face_id` is what keeps that from mattering.
  
  Two ids were REMOVED 2026-08-05, `moonshotai/Kimi-K2.7-Code` and
  `MiniMaxAI/MiniMax-M3` (written without the `hf:` prefix here so a future

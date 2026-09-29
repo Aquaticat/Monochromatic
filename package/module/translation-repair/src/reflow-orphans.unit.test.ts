@@ -179,8 +179,8 @@ await describe({
       },
     },),
     it({
-      name: 'ATTACHES that same held block to a paired unit inside its own region, so the case above '
-        + 'measures the anchor rather than a fixture that never held anything',
+      name: 'ATTACHES that same held block to a paired unit inside its own region, so the "DROPS a block '
+        + 'held before an anchor" case measures the anchor rather than a fixture that never held anything',
       fn: async () => {
         /**
          Units the reflow kept once no anchor divides the two.

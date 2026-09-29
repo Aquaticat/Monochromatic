@@ -338,7 +338,7 @@ await describe({
         /**
          Full and partial microchip-scan readings whose measured overlap
          sits at the corroboration threshold, built once here so both
-         assertions below measure the same pair.
+         assertions of this case measure the same pair.
          */
         const { full, partial, } = trigramSharePair({ share: CORROBORATION_TRIGRAM_SHARE, },);
 

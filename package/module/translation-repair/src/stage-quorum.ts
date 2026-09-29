@@ -443,7 +443,7 @@ export async function gatherStageVoices<ValueT,>(
 
     // ONE RECOVERY ROUND, OUTSIDE THE QUORUM LOOP AND AFTER IT.
     //
-    // The loop above stops the moment quorum stands, which is correct for what
+    // The quorum loop stops the moment quorum stands, which is correct for what
     // it is for and is why nothing it re-asks has ever been re-asked: measured
     // over 109 rounds of a ten-model roster on 2026-08-25, the first fan-out
     // met quorum every time, 1054 voices of 1090 were heard, 31 rounds lost at

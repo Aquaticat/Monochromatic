@@ -267,7 +267,8 @@ async function judgeSheetFor(
 /**
  Client that fails if anything asks it a question.
  
- THE POINT OF THE TWO CASES BELOW IS THAT NO ROUND IS BOUGHT. An empty slate
+ THE POINT OF EVERY CASE CALLING `refusalOverAnchor` IS THAT NO ROUND IS
+ BOUGHT. An empty slate
  has nothing to judge, so a judge that called a model would be spending on a
  question with no candidates in it, and this turns that into a failure rather
  than a slower green.
@@ -389,7 +390,8 @@ await describe({
       },
     },),
     it({
-      name: 'LEAVES IT OUT OF A SLICE IT DOES NOT GOVERN, which is what makes the case above evidence '
+      name: 'LEAVES IT OUT OF A SLICE IT DOES NOT GOVERN, which is what makes the "SHOWS A GOVERNED '
+        + 'SLICE\'S JUDGES THE RULE AGAINST MERGING LINES" case evidence '
         + 'rather than a tautology. A sheet carrying the criterion unconditionally would satisfy that '
         + 'one exactly as well and would mean the flag was never read',
       fn: async () => {

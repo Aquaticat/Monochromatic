@@ -5,7 +5,7 @@
  The failure this exists for is silent and destructive: when the aligner pairs
  a heading against a whole section, the judges are asked which of two unrelated
  texts better renders the heading, they answer correctly, and a passage is
- replaced by a sentence. Every case below is a shape measured in the corpus,
+ replaced by a sentence. Every case in this file is a shape measured in the corpus,
  rewritten with invented cat-themed content. No corpus text appears here.
  
  @module

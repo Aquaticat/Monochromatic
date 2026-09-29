@@ -218,7 +218,8 @@ export function translateSliceKey(
           'pictures',
           pictureContext,
         ]),
-      // THE DISPUTE NOTE, appended only when present like the fields above: a
+      // THE DISPUTE NOTE, appended only when present like every optional field
+      // of this key: a
       // slice judged under accepted claims against its archive asks a different
       // question from the same slice undisputed, and one whose archive is
       // refused asks another (owner, 2026-09-27).

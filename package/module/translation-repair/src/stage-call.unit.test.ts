@@ -8,7 +8,7 @@
  would not be: the fan-out would carry on answering after the user asked it to
  stop, and quorum would be reached from voices nobody wanted.
  
- So the cases below separate those two, and check that a lost voice is always
+ So the cases in this file separate those two, and check that a lost voice is always
  logged rather than silently swallowed.
  
  Fixtures are cat-themed invention.

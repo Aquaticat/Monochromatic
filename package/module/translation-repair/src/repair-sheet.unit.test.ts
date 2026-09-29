@@ -267,7 +267,8 @@ await describe({
         + 'invent a heading or a grade box on the sheet',
       fn: async () => {
         // The replacement is corpus-derived model output crossing into markdown
-        // grammar. Interpolated raw, a line like the one below puts a grade box
+        // grammar. Interpolated raw, a line like the fixture's `editorAfter` puts a
+        // grade box
         // on the sheet that nobody wrote, and a grader would fill it in.
         const sheet = formatRepairSheet({
           sample: [
