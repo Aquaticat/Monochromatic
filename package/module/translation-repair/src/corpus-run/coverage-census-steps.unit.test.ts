@@ -1,0 +1,457 @@
+/**
+ Tests the coverage census's steps that touch files and processes (ledger
+ T8), each against a disposable directory: a command run under coverage with
+ its markers and exit code read from its log, the coverage directory read
+ twice in one order, a bundle's map read with its sources named from the
+ package, and the commit a throwaway repository's files match. Names are
+ cat-themed invention.
+
+ @module
+ */
+
+import {
+  mkdir,
+  mkdtempDisposable,
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
+import {
+  devNull,
+  tmpdir,
+} from 'node:os';
+import { join, } from 'node:path';
+
+import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import spawn from 'nano-spawn';
+
+import {
+  CoverageFileError,
+  coverageReadings,
+  packageCommit,
+  readBundle,
+  runSuite,
+  SourceMapFileError,
+  sourceLineAt,
+  tallyCoverage,
+} from '../../dist/final/node/index.mjs';
+
+/**
+ A fresh directory removed with its contents when the test's scope ends.
+
+ @returns The directory
+ */
+async function scratch() {
+  return mkdtempDisposable(join(
+    tmpdir(),
+    'translation-repair-census-test-',
+  ),);
+}
+
+/**
+ A coverage file of one process loading `nap.mjs` from the given build.
+
+ @param prefix - build directory URL with a trailing slash
+
+ @param napRanges - ranges of function nap as `[start, end, count]`, whole extent first
+
+ @returns The file's text
+ */
+function coverageText({
+  prefix,
+  napRanges,
+}: {
+  readonly prefix: string;
+  readonly napRanges: readonly (readonly [number, number, number])[];
+},): string {
+  return JSON.stringify({
+    result: [{
+      url: `${prefix}nap.mjs`,
+      functions: [
+        {
+          functionName: '',
+          ranges: [{
+            startOffset: 0,
+            endOffset: 100,
+            count: 1,
+          },],
+        },
+        {
+          functionName: 'nap',
+          ranges: napRanges.map(([startOffset, endOffset, count,],) => ({
+            startOffset,
+            endOffset,
+            count,
+          })),
+        },
+      ],
+    },],
+  },);
+}
+
+/**
+ Build directory URL the fixture coverage names.
+ */
+const PREFIX = 'file:///cattery/dist/final/node/';
+
+await describe({
+  name: runSuite.name,
+  children: [
+    it({
+      name: 'COUNTS THE MARKERS A PASSING COMMAND PRINTED, with the coverage directory handed to it',
+      fn: async () => {
+        await using directory = await scratch();
+        const coverageDirectory = join(
+          directory.path,
+          'coverage',
+        );
+        const logPath = join(
+          directory.path,
+          'suite.log',
+        );
+        expect(await runSuite({
+          command: [
+            process.execPath,
+            '--eval',
+            'console.log("[PASS] nap [PASS] purr"); console.log(process.env.NODE_V8_COVERAGE);',
+          ],
+          cwd: directory.path,
+          coverageDirectory,
+          logPath,
+        },),).toEqual({
+          passes: 2,
+          failures: 0,
+          exitCode: 0,
+        },);
+        expect(await readFile(
+          logPath,
+          'utf8',
+        ),).toContain(coverageDirectory,);
+      },
+    },),
+    it({
+      name: 'READS A FAILING COMMAND\'S EXIT CODE AND FAIL MARKERS, and a command that never started as exit 1',
+      fn: async () => {
+        await using directory = await scratch();
+        const logPath = join(
+          directory.path,
+          'suite.log',
+        );
+        expect(await runSuite({
+          command: [
+            process.execPath,
+            '--eval',
+            'console.log("[FAIL] knead"); process.exit(3);',
+          ],
+          cwd: directory.path,
+          coverageDirectory: join(
+            directory.path,
+            'coverage',
+          ),
+          logPath,
+        },),).toEqual({
+          passes: 0,
+          failures: 1,
+          exitCode: 3,
+        },);
+        expect((await runSuite({
+          command: ['translation-repair-no-such-cat-program',],
+          cwd: directory.path,
+          coverageDirectory: join(
+            directory.path,
+            'coverage',
+          ),
+          logPath,
+        },)).exitCode,).toBe(1,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: tallyCoverage.name,
+  children: [
+    it({
+      name: 'READS EVERY COVERAGE FILE TWICE: a block one process lists as cold ran in the other, and one file alone leaves it cold',
+      fn: async () => {
+        await using both = await scratch();
+        await writeFile(
+          join(
+            both.path,
+            'coverage-1.json',
+          ),
+          coverageText({
+            prefix: PREFIX,
+            napRanges: [[10, 90, 2,], [40, 60, 0,],],
+          },),
+        );
+        await writeFile(
+          join(
+            both.path,
+            'coverage-2.json',
+          ),
+          coverageText({
+            prefix: PREFIX,
+            napRanges: [[10, 90, 3,],],
+          },),
+        );
+        const tally = await tallyCoverage({
+          coverageDirectory: both.path,
+          bundleUrlPrefix: PREFIX,
+        },);
+        expect(tally.coldStretches(),).toEqual([],);
+        expect(tally.loadedBundles(),).toEqual(['nap.mjs',],);
+
+        await using one = await scratch();
+        await writeFile(
+          join(
+            one.path,
+            'coverage-1.json',
+          ),
+          coverageText({
+            prefix: PREFIX,
+            napRanges: [[10, 90, 2,], [40, 60, 0,],],
+          },),
+        );
+        expect((await tallyCoverage({
+          coverageDirectory: one.path,
+          bundleUrlPrefix: PREFIX,
+        },)).coldStretches(),).toEqual([{
+          bundle: 'nap.mjs',
+          start: 40,
+          end: 60,
+          shape: { kind: 'block', },
+        },],);
+      },
+    },),
+    it({
+      name: 'REFUSES A COVERAGE FILE THAT DOES NOT READ as V8 writes one',
+      fn: async () => {
+        await using directory = await scratch();
+        await writeFile(
+          join(
+            directory.path,
+            'coverage-1.json',
+          ),
+          JSON.stringify({ result: 'none', },),
+        );
+        await expect(tallyCoverage({
+          coverageDirectory: directory.path,
+          bundleUrlPrefix: PREFIX,
+        },),).rejects.toThrow(CoverageFileError,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: coverageReadings.name,
+  children: [
+    it({
+      name: 'YIELDS EACH FILE\'S BUNDLE SCRIPTS IN THE ORDER GIVEN',
+      fn: async () => {
+        await using directory = await scratch();
+        const purrPrefix = 'file:///cattery/purr/';
+        const paths = [
+          join(
+            directory.path,
+            'b.json',
+          ),
+          join(
+            directory.path,
+            'a.json',
+          ),
+        ];
+        await writeFile(
+          paths[0] ?? '',
+          coverageText({
+            prefix: PREFIX,
+            napRanges: [[10, 90, 1,],],
+          },),
+        );
+        await writeFile(
+          paths[1] ?? '',
+          coverageText({
+            prefix: purrPrefix,
+            napRanges: [[10, 90, 1,],],
+          },),
+        );
+        const counts = [];
+        for await (const scripts of coverageReadings({
+          paths,
+          bundleUrlPrefix: PREFIX,
+        },))
+          counts.push(scripts.length,);
+        expect(counts,).toEqual([1, 0,],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: readBundle.name,
+  children: [
+    it({
+      name: 'READS A BUNDLE AND ITS MAP, naming its sources from the package',
+      fn: async () => {
+        await using directory = await scratch();
+        const distDirectory = join(
+          directory.path,
+          'dist',
+          'final',
+          'node',
+        );
+        await mkdir(
+          distDirectory,
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            distDirectory,
+            'nap.mjs',
+          ),
+          'x\ny',
+        );
+        await writeFile(
+          join(
+            distDirectory,
+            'nap.mjs.map',
+          ),
+          JSON.stringify({
+            version: 3,
+            sources: ['../../../src/nap.ts',],
+            names: [],
+            mappings: ';AAAA',
+          },),
+        );
+        const { lines, sources, } = await readBundle({
+          distDirectory,
+          packageDirectory: directory.path,
+          bundle: 'nap.mjs',
+        },);
+        expect(sources,).toEqual(['src/nap.ts',],);
+        expect(sourceLineAt({
+          lines,
+          offset: 2,
+        },),).toEqual({
+          kind: 'mapped',
+          source: 'src/nap.ts',
+          line: 1,
+        },);
+      },
+    },),
+    it({
+      name: 'REFUSES A BUNDLE WHOSE MAP DOES NOT READ as a version 3 map',
+      fn: async () => {
+        await using directory = await scratch();
+        await writeFile(
+          join(
+            directory.path,
+            'nap.mjs',
+          ),
+          'x',
+        );
+        await writeFile(
+          join(
+            directory.path,
+            'nap.mjs.map',
+          ),
+          JSON.stringify({ version: 2, },),
+        );
+        await expect(readBundle({
+          distDirectory: directory.path,
+          packageDirectory: directory.path,
+          bundle: 'nap.mjs',
+        },),).rejects.toThrow(SourceMapFileError,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: packageCommit.name,
+  children: [
+    it({
+      name: 'NAMES THE COMMIT BY NINE CHARACTERS, clean until a file under the package changes',
+      fn: async () => {
+        await using directory = await scratch();
+        const git = await resolveRealGit();
+        const hermetic = {
+          env: {
+            GIT_CONFIG_GLOBAL: devNull,
+            GIT_CONFIG_SYSTEM: devNull,
+          },
+        };
+        await spawn(
+          git,
+          [
+            'init',
+            directory.path,
+          ],
+          hermetic,
+        );
+        await writeFile(
+          join(
+            directory.path,
+            'nap.txt',
+          ),
+          'nap\n',
+        );
+        await spawn(
+          git,
+          [
+            '-C',
+            directory.path,
+            'add',
+            'nap.txt',
+          ],
+          hermetic,
+        );
+        await spawn(
+          git,
+          [
+            '-C',
+            directory.path,
+            '-c',
+            'user.name=cat',
+            '-c',
+            'user.email=cat@example.org',
+            'commit',
+            '--message',
+            'nap',
+            '--no-gpg-sign',
+          ],
+          hermetic,
+        );
+        const { stdout: full, } = await spawn(
+          git,
+          [
+            '-C',
+            directory.path,
+            'rev-parse',
+            'HEAD',
+          ],
+          hermetic,
+        );
+        const committed = await packageCommit({ packageDirectory: directory.path, },);
+        expect(committed.head,).toBe(full.slice(
+          0,
+          9,
+        ),);
+        expect(committed.clean,).toBe(true,);
+        await writeFile(
+          join(
+            directory.path,
+            'nap.txt',
+          ),
+          'purr\n',
+        );
+        expect((await packageCommit({ packageDirectory: directory.path, },)).clean,).toBe(false,);
+      },
+    },),
+  ],
+},);
