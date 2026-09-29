@@ -69,7 +69,9 @@ const WRAP_RULES: readonly Rule[] = [RULE,];
  would turn a decision to change nothing into a change, which the delivery
  coherence check and the assembly assertion both refuse by design, and it
  would also manufacture the one kind of edit a human grader cannot usefully
- judge. Callers pass only wording a lane produced.
+ judge. Callers that ship the result pass only wording a lane produced;
+ `wordingKey` wraps both sides of a comparison, retained text included, and
+ ships neither (ledger B26).
  
  @param text - passage as the lane produced it
  

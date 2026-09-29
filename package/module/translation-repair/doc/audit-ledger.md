@@ -8391,7 +8391,15 @@ and the archive block review,
 read as prose whatever the block,
 since a demotion there only keeps the archive's bytes.
 `buildTranslateCandidates` now requires `lineStructured`,
-so no caller folds verse by default.
+so no slate folds verse by default.
+`repairInvalidCandidates` and `laneTextsForSlate` still default it to false,
+which every production caller overrides
+(`translate-produce.ts`,
+`consolidate-produce.ts`,
+`consolidate-driver.ts`);
+both are handed to family seven,
+silent fallbacks,
+to take the same required argument.
 Two cases that pinned the old behaviour now pin the new:
 a rewrap of unwrapped archive wording settles on the slate without buying either round,
 and the polish round's finding reads "consolidation-polish is the base in all but layout".
@@ -8481,8 +8489,12 @@ each account naming the change;
 no slice-cache file was written after 04:27 UTC on 2026-09-27,
 where a control from midnight finds 494.
 The lane wraps run at assembly,
-after the slice cache,
-and the archive block review keeps no cache.
+after the slice cache.
+The archive block review keeps no cache:
+the prepare pass calls it afresh on every run (`pass-prepare.ts`),
+no preparation is stored for a resume to reuse,
+and neither the review stage nor `archive-block-repair.ts` stores,
+persists or memoizes a reply.
 The full suite passed on `f0ddd425d` with no failing case.
 
 ## Process mistakes in this audit
