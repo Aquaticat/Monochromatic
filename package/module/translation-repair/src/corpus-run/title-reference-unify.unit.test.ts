@@ -213,6 +213,81 @@ await describe({
       },
     },),
     it({
+      name: 'REWRITES A QUOTED RENDERING THAT ONLY ENDS WITH THE HEADING\'S (ledger B23): a longer title is another '
+        + 'rendering, not the same one',
+      fn: async () => {
+        /**
+         Pass over a footnote quoting a longer rendering of the heading.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            pair({
+              sliceIndex: 2,
+              source: '### 午后猫语',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 3,
+              source: '[^6]: 另见「午后猫语」篇末尾。',
+              target: '',
+            },),
+          ],
+          replacements: [
+            {
+              sliceIndex: 2,
+              replacementText: '### Cat Murmurs',
+            },
+            {
+              sliceIndex: 3,
+              replacementText: '[^6]: See the end of the section “Evening Cat Murmurs”.',
+            },
+          ],
+        },);
+        expect(unified.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).toEqual([
+          '### Cat Murmurs',
+          '[^6]: See the end of the section “Cat Murmurs”.',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES A GLOSSED RUN WHOSE LEAD-IN WORDS END IN THE HEADING\'S RENDERING, since the run before a gloss '
+        + 'cannot be told from the words ahead of it',
+      fn: async () => {
+        /**
+         Pass over a credit whose glossed run says more than the title.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            pair({
+              sliceIndex: 2,
+              source: '### 午后猫语',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 5,
+              source: '—— 云猫【梦】《午后猫语》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADINGS[1],
+            {
+              sliceIndex: 5,
+              replacementText: '—— Yunmao, from the Afternoon Cat Murmurs (午后猫语)',
+            },
+          ],
+        },);
+        expect(unified.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).toEqual([
+          '### Afternoon Cat Murmurs',
+          '—— Yunmao, from the Afternoon Cat Murmurs (午后猫语)',
+        ],);
+      },
+    },),
+    it({
       name: 'LEAVES A SLICE THAT NAMES THE TITLE WITHOUT BRACKETS, whatever its page quotes: a bare mention is words, '
         + 'not a reference',
       fn: async () => {
