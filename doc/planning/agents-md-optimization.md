@@ -1997,7 +1997,107 @@ SK3:
 
 ## Next action
 
-Propose batch 20.
+Batch 20 proposed:
+10 rules stay 10,
+694 tokens both ways;
+awaiting user answers.
+
+### Pending batch 20 text
+
+```md
+ORG:
+ Organized by moment of decision,
+ not topic;
+ "Architecture decisions" and "Agent skills" hold cross-cutting reference.
+Rationale,
+ mechanisms,
+ examples:
+ `doc/philosophy/agents.md`.
+
+TAG:
+ Every rule starts with a `[A-Z0-9]{3}` code (`CODE:`),
+ a stable cross-session handle unique across `AGENTS.md`,
+ skills,
+ and package docs;
+ never tag headings,
+ code fences,
+ or the title.
+
+RLM:
+ Each tagged rule stays under 50 words and 200 characters after whitespace normalization;
+ split longer guidance into fresh tagged rules.
+
+NCD:
+ New codes:
+ fresh,
+ unique,
+ semi-meaningful;
+ check `forbidden-strings.append.txt`;
+ reject unrelated first readings (acronyms,
+ products,
+ ordinary words,
+ external prefix+digit namespaces).
+
+CRN:
+ Never reuse a code except to rename a misleading one,
+ updating every occurrence in the same change;
+ renamed,
+ rejected,
+ or retired codes get a comment + regex entry in `forbidden-strings.append.txt`.
+
+APG:
+ Auto-push is enabled.
+
+DGT:
+ User-facing diagnostics:
+ name the affected input and calls plainly;
+ explain uncertainty and every valid remediation path;
+ no unexplained implementation terms;
+ length is unconstrained.
+
+DNL:
+ Diagnostic names and messages use neutral operation or evidence terms,
+ never moral judgments of code,
+ types,
+ or authors.
+
+JCH:
+ Never write `@mutates` for absent effects:
+ move work to an ownership-known boundary,
+ pass its primitive result,
+ or improve the proof;
+ contracts describe possible runtime effects,
+ not analyzer gaps.
+
+EPR:
+ Research ecosystem precedent before offering naming or technology options it could inform.
+"Think in X":
+ list X's features,
+ ask which to omit.
+```
+
+Fixes:
+NCD and CRN pointed at untracked `forbidden-strings.append.local.txt`;
+reserved and retired codes live in tracked `forbidden-strings.append.txt` (lines 12 to 137).
+TAG states round 4's uniqueness scope;
+CRN covers retired codes.
+Placement:
+DGT and DNL move from "Communication style" to "Before editing code" ("Logging" becomes "Logging and diagnostics");
+JCH moves to "TSDoc comments".
+
+JCH evidence (reopens round 2):
+`tsdoc/check-mutates` messages are syntactic only (`package/oxlint-plugin/tsdoc/src/rule/mutates.ts:108`),
+so it cannot carry JCH;
+the fitting message,
+`staleMutatesTag`,
+belongs to `no-invalid-parameter-effect-contracts`,
+off until #423 (`package/config/oxlint/src/rule/restriction.ts:186`).
+837 `@mutates` tags in 392 package files;
+27 commits in the last month changed them.
+
+Meta-rule placement evidence:
+`writing-for-agents` loads in 25% of pi sessions;
+143 commits touched `AGENTS.md` between 2026-06-25 and 2026-09-25.
 
 ### Concurrent `AGENTS.md` changes
 
