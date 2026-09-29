@@ -1435,6 +1435,91 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Completed fresh Jev qualification result
+
+The approved Jev direction now has completed fresh validation and locked-test evidence
+in `~/temp/agent/jev-native-qualification-2026-09-29/instrumented`.
+The [complete result and practical implication](../planning/pi-auto-mode-jev-fresh-qualification.md#outcome-and-next-engineering-step)
+records the declared scope and remaining gates.
+`proc_5b73` collected remaining validation;
+`proc_fd94` reconstructed and admitted it.
+`proc_39bc` collected the unchanged locked test;
+`proc_c1b9` reconstructed test and deep-recomputed both reports.
+
+Each partition has 216 core axiom rows,
+72 true and 144 false,
+from 108 sources and 27 episode groups.
+Validation correct/wrong/uncertain counts were 193/3/20 at 80/20,
+175/0/41 at 90/10,
+and 149/0/67 at 95/05.
+Test counts were 192/3/21,
+182/0/34,
+and 139/0/77 respectively.
+Both strict bands passed both the four-role and twelve-role/operation diagnostic gates in both partitions.
+The 95/05 test minimum per-cell correctly resolved true/false counts were 2/1.
+These are finite coverage checks,
+not independent trials or population error bounds.
+
+Every 80/20 error was a false positive relation for reading `.env` contents
+when the source named its pathname and requested/permitted another file's contents.
+Test error probabilities were `0.84`,
+`0.89`,
+and `0.81`.
+The recurring binding pattern remains a required consumer-regression concern.
+The fresh 90/10 pass does not erase the earlier frozen false-prose estimate `0.93`.
+No production cutoff is selected or marked validated.
+
+Overall validation log loss/Brier were `0.1255102649568954`/`0.03216064814814811`;
+test was `0.11877876306217362`/`0.028877777777777742`.
+The designed-prevalence constant baseline was `0.6365141682948113`/`0.22222222222222246`.
+Overall fixed-bin gaps were `0.06912037037037037` and `0.06435185185185188`.
+The full report retains overall,
+role,
+operation,
+family,
+episode,
+and accepted-subset losses and bin diagnostics,
+with empty cells preserved.
+In the targeted test bank,
+uncertain bins from 0.2 to 0.4 and from 0.4 to 0.6 contained only false references
+(upper endpoints excluded);
+strict-band abstention must not be mistaken for broad probability calibration.
+
+The study contains 228 successful calls and 456 native scalars,
+including the original successful pair once and 12 diagnostic control calls.
+Reported usage totals 2441490 input tokens and 9348 output tokens.
+There was no client transport retry;
+the outside-clock zero-dispatch preparation restart remains explicitly recorded.
+Accepted validation pairs took `601.8494770000107` to `1005.230366` ms;
+test pairs took `591.4575400000031` to `896.1361519999991` ms.
+The earlier `35378.384507` ms local preparation phase remains a failed attempt,
+not an accepted assessment or a provider-latency observation.
+Research waits and unmeasured inter-epoch idle remain outside those clocks.
+
+Of 24 repeat/question-order axiom comparisons,
+six differed by approximately `0.01` at the returned interface.
+The cache anchor spans epochs.
+No determinism,
+order-invariance,
+cache-absence,
+or serving-independence claim follows.
+The timing traces did not reproduce the historical preparation stall;
+#67 retains its unassigned cause.
+
+Verified-summary SHA-256:
+`c15d0c8d17ed71618da269fd5f900ea8f64d3bd80986c773f501d2628fe98176`.
+Test raw SHA-256:
+`4394b2f0ee5968f7660a21da073e2281aae2faceaac6adb5de3efc8f760c66f4`.
+Reconstruction is first-party host-side verification,
+not independent corpus authorship or backend attestation.
+Continue with actionable service and actual human-authority/lifecycle/finalizer qualification,
+not another model batch or production implementation.
+All source-code,
+privacy,
+reserved-bank,
+Q16,
+and Laya boundaries remain intact.
+
 ## Preparation deadline and stage-instrumented continuation
 
 Recovery process `proc_7cea` passed its four-second startup floor at `4004.4306489999994` ms,

@@ -58,8 +58,15 @@ not an intrinsic ranking of provider weights or untested versions.
 The 95/05 pass is synthetic screening,
 not broad calibration or all-operation coverage.
 One novel example supplies its true request-prohibition coverage.
-Fresh qualification,
-remaining service evidence,
+The [fresh source-language study](pi-auto-mode-jev-fresh-qualification.md#outcome-and-next-engineering-step)
+is now complete at its bounded scope.
+At 95/05,
+its locked test resolved 139 axiom claims correctly,
+none incorrectly,
+and left 77 uncertain while meeting the twelve-role/operation diagnostic coverage rule.
+The fresh 90/10 pass does not erase the earlier false read-scope prose estimate of `0.93`.
+Remaining service evidence,
+broader workload calibration,
 and the real human-authority/lifecycle/finalizer boundary still need completion.
 Existing private-input consent is sufficient for the named Jev evaluation route;
 do not reopen declined dashboard access or silently resume Q16/Laya.
@@ -70,11 +77,15 @@ without fitting a Jev calibration adapter or selecting a production cutoff.
 Then close actionable remaining service gates without repeating completed audits or declined dashboard attempts.
 The real authority/lifecycle/finalizer contract remains a separate dependency;
 paused Q16 and Laya work are not silently resumed.
-Task #64's [fresh native-Jev protocol](pi-auto-mode-jev-fresh-qualification.md)
-records the new grouped corpus,
+Task #64's [fresh native-Jev result](pi-auto-mode-jev-fresh-qualification.md)
+records the grouped corpus,
 fixed diagnostic bands,
 client controls,
-and phase-admission boundary.
+phase-admission boundary,
+complete reconstruction,
+and retained local failures.
+No production threshold was selected.
+The previously unassigned preparation stall remains an operational concern rather than a claimed fix.
 
 ## Parser-boundary correction
 

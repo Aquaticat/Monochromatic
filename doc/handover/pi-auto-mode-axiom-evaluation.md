@@ -34,6 +34,54 @@ Current references:
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
+## Completed fresh Jev study and next gate
+
+The approved Jev direction now has completed fresh validation and locked-test evidence.
+`proc_5b73` collected remaining validation;
+`proc_fd94` reconstructed and admitted it.
+`proc_39bc` collected the unchanged locked test;
+`proc_c1b9` reconstructed test and deep-recomputed both reports.
+The study has 228 successful calls and 456 scalar answers,
+including the original successful pair once and declared diagnostic controls.
+No represented operation was executed.
+
+At 95/05,
+validation had 149 correct,
+zero wrong,
+and 67 uncertain axiom rows;
+test had 139 correct,
+zero wrong,
+and 77 uncertain.
+Both partitions passed the four-role and twelve-role/operation diagnostic gates.
+Test minimum correctly resolved true/false references per operation cell were 2/1.
+The fresh 90/10 band also passed,
+but the earlier frozen false read-scope prose estimate of `0.93` remains a known error for that band.
+No production threshold or confidence profile was selected.
+
+The [complete result](../planning/pi-auto-mode-jev-fresh-qualification.md#outcome-and-next-engineering-step)
+retains proper losses,
+overall/accepted-subset diagnostics,
+repeated read-scope binding errors,
+and evidence limits.
+Test log loss was `0.11877876306217362` and Brier loss `0.028877777777777742`.
+Accepted validation pair times were `601.8494770000107` to `1005.230366` ms;
+test times were `591.4575400000031` to `896.1361519999991` ms.
+The earlier local preparation failure is not erased or called a successful assessment.
+Its cause remains unassigned under #67.
+
+Private `instrumented/verified-study-summary.json` SHA-256:
+`c15d0c8d17ed71618da269fd5f900ea8f64d3bd80986c773f501d2628fe98176`.
+No additional query phase,
+training,
+cutoff selection,
+production change,
+reserved-bank access,
+Q16,
+or Laya work follows automatically.
+Finish the result documentation checks under #64,
+then #65 closes actionable service gates without repeating settled audits or declined dashboards.
+Real human-authority/lifecycle/finalizer qualification remains separate.
+
 ## Approved Jev qualification direction
 
 The user accepted the overall candidate recommendation with "Okay,
@@ -81,8 +129,9 @@ The local assertion was `Research pacing timer returned early`,
 not a Jev refusal or assessment-budget failure.
 Original stopped raw is retained at private `9cb065a`,
 SHA-256 `462a1861d9ca47932b80b097b7ff39f3fecb4546fbabeeca6bdd0a1997eda964`.
-Task #64 remains pending behind #66;
-active #67 owns the subsequent preparation-deadline incident.
+Task #66 completed its pacing recovery and real validation admission.
+Task #64 completed collection and report recomputation through the instrumented namespace;
+#67 retains the unassigned historical preparation incident.
 The separate `recovery/` plan allows only the remaining 118 validation and 108 test calls,
 with no completed-entry replay or source/question/reference/band/budget change.
 The measured-deadline pacing helper passed `proc_726c`;
@@ -127,13 +176,14 @@ and five-second budget.
 The `instrumented/` forwarding and collector controls passed `proc_f234`.
 Its 14-file manifest is frozen at SHA-256
 `7a3ea9280ade8db3b843f0c1f03dd2882b4a215341b88c911c2ce98dcc94364b`.
-Only that sealed one-time continuation may dispatch the remaining schedule.
+That sealed one-time continuation has completed its declared schedule;
+never rerun either live phase.
 The trace records primitive stage timestamps in memory and persists them after collection stops.
 No credential,
 header,
 request body,
 or response body enters that trace.
-The remaining model-call bound stays 118 validation plus 108 test,
+The declared 118 validation and 108 test calls are complete,
 with the original successful pair retained exactly once.
 Never rerun the original completed constructors,
 controls,
