@@ -177,6 +177,42 @@ await describe({
       },
     },),
     it({
+      name: 'SCOPES THE SEARCH TO THE LINE THAT BRACKETS THE TITLE (ledger B23), not an earlier footnote naming it bare',
+      fn: async () => {
+        /**
+         Pass over a slice whose first footnote names the title bare and whose
+         second references it in brackets.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            pair({
+              sliceIndex: 2,
+              source: '### 午后猫语',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 7,
+              source: '[^5]: 午后猫语是一首歌。\n\n[^6]: 另见「午后猫语」篇末尾。',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADINGS[1],
+            {
+              sliceIndex: 7,
+              replacementText: '[^5]: Afternoon Cat Talk is a song.\n\n[^6]: See the end of the section “Afternoon Cat Talk”.',
+            },
+          ],
+        },);
+        expect(unified.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).toEqual([
+          '### Afternoon Cat Murmurs',
+          '[^5]: Afternoon Cat Talk is a song.\n\n[^6]: See the end of the section “Afternoon Cat Murmurs”.',
+        ],);
+      },
+    },),
+    it({
       name: 'LEAVES a reference already rendered as the heading, one the archive alone carries, and one it cannot place',
       fn: async () => {
         /**
