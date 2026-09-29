@@ -294,7 +294,8 @@ Retired codes are reserved in the local forbidden-strings appendix so they are n
 The explanatory "why/how" for each rule below was moved here so `AGENTS.md` keeps only the terse enforceable rule,
  cue,
  and tokens.
- Headings match the `AGENTS.md` section they came from.
+ Headings match the `AGENTS.md` section each rule came from;
+ rules since moved to a skill or package doc keep their codes there.
 
 ### Rule details
 
