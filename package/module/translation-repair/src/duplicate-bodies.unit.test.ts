@@ -1,5 +1,5 @@
 /**
- Guards the copies family (audit area six, ledger B1 to B18; the prevention
+ Guards the copies family (audit area six, ledger B1 to B19; the prevention
  doc's "Copies of shared code"): no two functions in the package's source may
  keep one body, in two files or in one, except the frozen copies an artifact
  version recomputes and refuses to disagree with (ledger B15), each listed
@@ -10,46 +10,34 @@
  fail). Fixtures are cat-themed; the package case reads this package's own
  source.
 
- A body is compared as TypeScript prints it with comments removed and every
+ A body is compared as its source text with every comment cut out and every
  whitespace character dropped, so two copies differing only in layout or
- comments are one body; bodies shorter than `SHORTEST_COMPARED` normalized
+ comments are one body; bodies shorter than `SHORTEST_COMPARED` such
  characters are left out, as a one-line accessor is no drift risk.
 
  @module
  */
-
-import { readdir, readFile, } from 'node:fs/promises';
-import { join, } from 'node:path';
 
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-// Rolldown's parser (oxc), as the repository's import-attributes plugin reads
-// source; TypeScript 7 exposes no stable compiler API to parse with.
-import { parseSync, } from 'rolldown/utils';
+
+import {
+  childNodes,
+  isTreeNode,
+  parseSource,
+  readPackageSource,
+  type SourceText,
+  type TreeNode,
+} from './source-scan.test-fixture.ts';
 
 /**
  Shortest body, in normalized characters, the scan compares; the census the
  audit ran (`duplicate-bodies.mjs`) used the same floor.
  */
 const SHORTEST_COMPARED = 80;
-
-/**
- One source file the scan reads.
- */
-type SourceText = {
-  /**
-   Path relative to the source root, which names locations.
-   */
-  readonly path: string;
-
-  /**
-   File text.
-   */
-  readonly text: string;
-};
 
 /**
  Frozen copies kept on purpose, each group as its sorted locations, with the
@@ -89,15 +77,6 @@ const FROZEN_COPIES: readonly {
     reason: 'nested inside the frozen copy of uniqueFindings',
   },
 ];
-
-/**
- An ESTree node as the scan reads it: its kind, its offsets and its fields.
- */
-type TreeNode = Readonly<Record<string, unknown>> & {
-  readonly type: string;
-  readonly start: number;
-  readonly end: number;
-};
 
 /**
  Node kinds that carry a function body.
@@ -146,30 +125,13 @@ function isNamed(name: string,): boolean {
 }
 
 /**
- Whether a value is an ESTree node with offsets.
-
- @param value - field of a node
-
- @returns Whether it is a node
-
- @example
- ```ts
- const node = isTreeNode(program.body[0],);
- ```
- */
-function isTreeNode(value: unknown,): value is TreeNode {
-  return ((typeof value) === 'object') && (value !== null) && ('type' in value) && ((typeof value.type) === 'string')
-    && ('start' in value) && ((typeof value.start) === 'number') && ('end' in value) && ((typeof value.end) === 'number');
-}
-
-/**
  The identifier a node names, where its name field holds one.
 
  @param node - node read
 
  @param field - field holding the name: `id` for a function or a variable, `key` for a property
 
- @returns The name, or undefined
+ @returns The name, or `UNNAMED`
 
  @example
  ```ts
@@ -270,19 +232,14 @@ function normalizedBody(
 
  @example
  ```ts
- const bodies = bodiesOf({ file: { path: 'cat.ts', text: 'function nap() { return 1; }', }, },);
+ const bodies = bodiesOf({ file: { path: 'cat.ts', text: 'function nap() { return 1; }', isTest: false, }, },);
  ```
  */
 function bodiesOf({ file, }: { readonly file: SourceText; },): readonly (readonly [string, string])[] {
   /**
    Parsed file.
    */
-  const parsed = parseSync(
-    file.path,
-    file.text,
-  );
-  if (parsed.errors.length > 0)
-    throw new Error(`${file.path} does not parse: ${parsed.errors.map(String,).join('; ',)}`,);
+  const { program, comments, } = parseSource({ file, },);
   /**
    Bodies found so far.
    */
@@ -291,7 +248,7 @@ function bodiesOf({ file, }: { readonly file: SourceText; },): readonly (readonl
    Nodes still to visit, each with the name its holder gives a function.
    */
   const pending: { readonly node: TreeNode; readonly held: string; }[] = [{
-    node: parsed.program as unknown as TreeNode,
+    node: program,
     held: UNNAMED,
   },];
   while (pending.length > 0) {
@@ -306,7 +263,7 @@ function bodiesOf({ file, }: { readonly file: SourceText; },): readonly (readonl
       const normalized = normalizedBody({
         text: file.text,
         body: node.body,
-        comments: parsed.comments,
+        comments,
       },);
       if (normalized.length >= SHORTEST_COMPARED) {
         found.push([
@@ -321,17 +278,12 @@ function bodiesOf({ file, }: { readonly file: SourceText; },): readonly (readonl
     const gives = NAMING_KINDS.has(node.type,)
       ? ([identifierIn({ node, field: 'id', },), identifierIn({ node, field: 'key', },),].find(isNamed,) ?? UNNAMED)
       : UNNAMED;
-    Object.values(node,)
-      .flatMap(function children(value,): readonly unknown[] {
-        return Array.isArray(value,) ? value : [value,];
-      },)
-      .filter(isTreeNode,)
-      .forEach(function queue(child,): void {
-        pending.push({
-          node: child,
-          held: gives,
-        },);
+    childNodes({ node, },).forEach(function queue(child,): void {
+      pending.push({
+        node: child,
+        held: gives,
       },);
+    },);
   }
   return found;
 }
@@ -423,6 +375,36 @@ function catFunction(
   ].join('\n',);
 }
 
+/**
+ A fixture file, as the scan reads one.
+
+ @param path - file name
+
+ @param text - file text
+
+ @returns Source file
+
+ @example
+ ```ts
+ const file = fixture({ path: 'cat.ts', text: 'function nap() {}', },);
+ ```
+ */
+function fixture(
+  {
+    path,
+    text,
+  }: {
+    readonly path: string;
+    readonly text: string;
+  },
+): SourceText {
+  return {
+    path,
+    text,
+    isTest: false,
+  };
+}
+
 await describe({
   name: 'duplicate function bodies',
   children: [
@@ -431,25 +413,25 @@ await describe({
       fn: async () => {
         expect(duplicateGroups({
           files: [
-            {
+            fixture({
               path: 'cat-a.ts',
               text: catFunction({ name: 'feedCat', bowl: 'bowl', note: 'kibble first', },),
-            },
-            {
+            },),
+            fixture({
               path: 'cat-b.ts',
               text: catFunction({ name: 'serveCat', bowl: 'bowl', note: 'water after', },)
                 .replaceAll('(kibble) => kibble > 0', '(kibble)=>kibble>0',),
-            },
+            },),
           ],
         },),).toEqual([['cat-a.ts#feedCat', 'cat-b.ts#serveCat',],],);
         expect(duplicateGroups({
-          files: [{
+          files: [fixture({
             path: 'cat-c.ts',
             text: [
               catFunction({ name: 'feedCat', bowl: 'bowl', note: 'one', },),
               catFunction({ name: 'feedKitten', bowl: 'bowl', note: 'two', },),
             ].join('\n\n',),
-          },],
+          },),],
         },),).toEqual([['cat-c.ts#feedCat', 'cat-c.ts#feedKitten',],],);
       },
     },),
@@ -458,18 +440,18 @@ await describe({
       fn: async () => {
         expect(duplicateGroups({
           files: [
-            {
+            fixture({
               path: 'cat-a.ts',
               text: catFunction({ name: 'feedCat', bowl: 'bowl', note: 'one', },),
-            },
-            {
+            },),
+            fixture({
               path: 'cat-b.ts',
               text: catFunction({ name: 'feedCat', bowl: 'dish', note: 'one', },),
-            },
-            {
+            },),
+            fixture({
               path: 'cat-c.ts',
               text: 'export function nap(): number { return 1; }\nexport function doze(): number { return 1; }',
-            },
+            },),
           ],
         },),).toEqual([],);
       },
@@ -479,25 +461,11 @@ await describe({
         + 'and every listed copy still stands',
       fn: async () => {
         /**
-         Source root, which holds this test.
-         */
-        const srcDir = import.meta.dirname;
-        /**
          Every non-test source file.
          */
-        const paths = (await readdir(srcDir, { recursive: true, },))
-          .filter(function isSource(path,): boolean {
-            return path.endsWith('.ts',) && (!path.endsWith('.test.ts',)) && (!path.endsWith('.test-fixture.ts',));
-          },);
-        /**
-         Their texts.
-         */
-        const files = await Promise.all(paths.map(async function read(path,): Promise<SourceText> {
-          return {
-            path,
-            text: await readFile(join(srcDir, path,), 'utf8',),
-          };
-        },),);
+        const files = (await readPackageSource()).filter(function isSource(file,): boolean {
+          return !file.isTest;
+        },);
         expect(files.length > 0,).toBe(true,);
         expect(duplicateGroups({ files, },),).toEqual(FROZEN_COPIES
           .map(function locationsOf({ locations, },): readonly string[] {
