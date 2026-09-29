@@ -13,6 +13,11 @@ export {
 export { longestRunOf, } from './character-run.ts';
 export { isHanCharacter, } from './han-only-text.ts';
 export {
+  carriesHandleToken,
+  isHandleCharacter,
+  standsAsHandle,
+} from './handle-token.ts';
+export {
   continuesLatinWord,
   foldLatinWord,
   foldedLatinWords,

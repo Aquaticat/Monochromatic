@@ -163,7 +163,7 @@ await describe({
         );
         expect(pageNameLines({
           sourceText: '[\u{6C38}\u{522B}\u{4E86}\u{FF0C}\u{732B}\u{732B}\u{3002}](https://example.invalid/farewell)\n',
-          targetText: String.raw`[Farewell, Mittens\_Cat.](https://example.invalid/farewell)` + '\n',
+          targetText: `${String.raw`[Farewell, Mittens\_Cat.](https://example.invalid/farewell)`}\n`,
           declared: [{ source: '\u{732B}\u{732B}', rendering: 'Mittens_Cat', },],
         },),).toContain(
           String.raw`- 永别了，猫猫。 (link text, https://example.invalid/farewell): "Farewell, Mittens\_Cat."`,

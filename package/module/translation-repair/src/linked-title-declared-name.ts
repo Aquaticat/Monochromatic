@@ -1,4 +1,10 @@
+import { carriesHandleToken, } from './handle-token.ts';
 import { extractDeclaredIdentity, } from './identity-context.ts';
+import {
+  carriesName,
+  nameProjection,
+  projectName,
+} from './name-projection.ts';
 
 //region Linked title declared name
 // THE EIGHTY-SIXTH CLASS (yingying3, 2026-09-22). The page-name glossary
@@ -133,6 +139,13 @@ export function declaredNamePairs(
  or when the title names nobody declared, because the line is then right as
  it stands and a note would tell the reader to change nothing.
 
+ READ AS THE LINK-NAME FLOOR READS THE SAME LINK (ledger B23): the source
+ form at handle edges (`handle-token.ts`), so `Tomcat` names no `Tom`, and
+ the declared form as a name on its projection (`name-projection.ts`), so
+ an archive writing `Mittens\_Cat` carries `Mittens_Cat` and one writing
+ `Tomcat` does not carry `Tom`. A note the floor would contradict tells a
+ translator the opposite of what the floor then enforces.
+
  @param source - link text as the source writes it
 
  @param rendering - link text as the archive renders it
@@ -161,7 +174,22 @@ export function declaredNameNote(
    Declared names the title carries and the archive rendered otherwise.
    */
   const named = declared.filter(function carriedOtherwise(pair,): boolean {
-    return source.includes(pair.source,) && (!rendering.includes(pair.rendering,));
+    /**
+     Whether the title names this person.
+     */
+    const names = carriesHandleToken({
+      text: source,
+      needle: pair.source,
+    },);
+
+    /**
+     Whether the archive's title already carries the declared form.
+     */
+    const rendered = carriesName({
+      projection: projectName({ text: rendering, },),
+      key: nameProjection({ text: pair.rendering, },),
+    },);
+    return names && (!rendered);
   },);
   if (named.length === 0)
     return '';
