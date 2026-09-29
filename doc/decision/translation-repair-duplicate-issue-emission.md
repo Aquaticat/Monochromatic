@@ -1,6 +1,6 @@
 # Duplicate accepted issues are deduplicated at emission
 
-Ratified 2026-08-13 by the user, closing the question `#65` asked.
+Ratified 2026-08-13 by the user, closing the question of whether duplicate accepted issues count against precision.
 
 ## The decision
 

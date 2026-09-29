@@ -2,7 +2,10 @@
 
 Decided by the owner on 2026-08-24 across four rounds of questions.
 Supersedes the single-provider assumption throughout `package/module/translation-repair`.
-Reverses part of `#136` and changes the premise of `#187` and `#188`.
+Reverses part of the GLM-4.7-Flash seat measurement,
+and changes the premise of two findings:
+that the checker-side self-certification discount is unreachable in production,
+and that checker width changes no verdict.
 
 ## Why
 
@@ -45,10 +48,10 @@ it measures 20 of 20.
 
 Anthropic SSE events are NORMALIZED into the event shape the existing guards already consume,
 rather than reimplemented natively.
-The guards in question are `#118` partial-text retention, `#119` and `#120` runaway detection,
-`#121` straggler and idle windows, `#156` answer volume, and `#158` the thinking-channel scanner.
+The guards in question are partial-text retention, runaway detection,
+the straggler and idle windows, the answer-volume bound, and the thinking-channel scanner.
 Every one of their thresholds came from measurement,
-and `#121` re-derived its windows after finding the median premise wrong by a factor of eighty.
+and the straggler and idle windows were re-derived after finding the median premise wrong by a factor of eighty.
 A second copy would be unmeasured guesswork, and drift between the two would stay invisible until it cost a run.
 
 Streaming stays ON.
@@ -59,7 +62,7 @@ Six of the eight allowlisted Hyper models expose `reasoning.effort_levels`.
 The pipeline requests NONE of them and takes each model's own default.
 Note that `qwen3.8-max` emits native `thinking` content blocks with `thinking_delta` events,
 so on this transport the reasoning channel is TYPED rather than sniffed out of text,
-and `#158`'s spelling blindness cannot recur through it.
+and the scanner's old blindness to one thinking spelling cannot recur through it.
 The owner's reasoning:
 
 > Both providers aren't multi-billion enterprises whose only job is to serve models.
@@ -111,14 +114,14 @@ The balance refreshes every 24 hours at 02:53 (the zone it was observed in was n
 ### Non-conformant answers
 
 A model served by both providers that returns a non-conformant answer is re-asked on the OTHER provider.
-A model served by only one provider falls back to the existing `#88` invalid-candidate repair path,
+A model served by only one provider falls back to the existing invalid-candidate re-ask,
 which already sends an unusable slice back to its author.
 
 ## Roster
 
 `hf:zai-org/GLM-4.7-Flash` is BLOCKLISTED on Synthetic by owner instruction.
 It has no Hyper counterpart, so it leaves the pipeline entirely.
-This reverses `#136`, which measured that it earned its seat.
+This reverses the GLM-4.7-Flash seat measurement, which found that it earned its seat.
 It currently sits in `editorModelIds` and `refinerModelIds`, both of which lose a member.
 
 Allowlisted on Hyper by owner instruction, all 8 confirmed present in the catalog:
@@ -133,7 +136,7 @@ The resulting 10 distinct model identities:
 
 Provider is NOT part of panelist identity.
 `glm-5.2` reached through Hyper is the same panelist as `hf:zai-org/GLM-5.2` reached through Synthetic,
-for the `#91` and `#187` self-certification weighting and for the cache key.
+for the self-certification weighting and for the cache key.
 Provider IS recorded per call, for diagnosis.
 
 ### An allowlisted model that cannot conform
@@ -170,8 +173,8 @@ The owner's reason: nothing is shipping artifacts yet, so an uncalibrated vote c
 
 `checkerSelfCertificationPermitted` is ENABLED.
 Checkers and writers are no longer disjoint sets,
-so the half-weight discount that `#187` found unreachable in production goes live.
-`#188`'s finding, that width changed no verdict across 231 rounds,
+so the half-weight discount once found unreachable in production goes live.
+The checker-width finding, that width changed no verdict across 231 rounds,
 was measured on a disjoint panel and no longer describes the pipeline it was measured on.
 
 ### Picture readers
@@ -187,9 +190,9 @@ no slice may end up judged only by models that read its pictures.
 
 ### Answer volume
 
-`#156` bounds answer volume at 32000 tokens after measurement.
+The answer-volume bound is 32000 tokens, set by measurement.
 Two Hyper models cap lower: `gpt-oss-120b` at 13107 output tokens and `kimi-k3` at 16000.
-The bound becomes PER MODEL, the lower of `#156` and the model's own cap,
+The bound becomes PER MODEL, the lower of that bound and the model's own cap,
 so a truncation is a named refusal rather than a silently short answer a judge scores as complete.
 
 ## Still to measure
@@ -207,7 +210,7 @@ As of 2026-08-24, in commit order:
     so every stream guard covers the second transport with no second copy of a measured threshold.
     GFP-proven with two mutations.
 -   `hyper-catalog.ts` records the eight allowlisted models with their measured tool-choice shape,
-    vision flag and output ceiling, plus `answerCeilingFor` reconciling each model against `#156`.
+    vision flag and output ceiling, plus `answerCeilingFor` reconciling each model against the answer-volume bound.
     GFP-proven with one mutation.
 -   `anthropic-completion.ts` reassembles a drained Anthropic body into `ExtractedCompletion`,
     reading tool-call arguments as the answer and requiring `message_stop`.
@@ -411,7 +414,7 @@ so the same weights can conform on one serving stack and not the other.
 It is not a budget failover and does not pretend to be one.
 A bad answer marks nobody as refusing.
 The re-ask is skipped where the other provider does not serve the model,
-which is the `#88` invalid-candidate path the policy names,
+which is the invalid-candidate re-ask the policy names,
 and skipped where the other provider has no budget.
 When both stacks disagree with the schema,
 the PREFERRED provider's answer is returned,
@@ -524,7 +527,7 @@ and names this calibration as what settles it.
 
 CHECKER SEATS ARE A DIFFERENT QUESTION and this table does not answer them.
 The standing measures who WRITES well, and a checker does not write;
-`#188` settled checker width separately across 231 rounds.
+Checker width was settled separately, across 231 rounds.
 Nothing here argues Nemotron should leave the checker roster
 merely because it writes below the null.
 
@@ -845,7 +848,7 @@ IT STILL DOES NOT MOVE THE SEAT, for three reasons, and the third is decisive:
     about the provider. Production traffic has a different shape entirely.
 
 WHAT WOULD SETTLE IT is the same measurement over days rather than one afternoon,
-which is why `#201` persists transitions rather than sampling.
+which is why the availability recorder persists transitions rather than sampling.
 The number worth having is not the mean but the LONGEST dry interval,
 since that is what decides whether a seat can be relied on at all.
 
@@ -887,12 +890,12 @@ That is not evidence about checking.
 The instrument measures who writes a candidate other models vote for;
 a checker writes nothing.
 Moving a checker seat needs a checker-side measurement,
-and `#188` is the shape such a measurement takes.
+and the checker-width measurement is the shape such a measurement takes.
 Acting on this table would be reading the wrong instrument.
 
 ### Availability is now recorded rather than argued, 2026-08-24
 
-`#201` existed because three writer seats sit on Charm Hyper only,
+The availability recorder was built because three writer seats sit on Charm Hyper only,
 and the case for them rested on the forty-round quality pass
 plus an availability adjustment that was reasoned about, never measured.
 Two things were missing:
@@ -961,7 +964,7 @@ which is the same outage the roster probe found earlier that day.
 
 ### The editor seats get their own instrument, 2026-08-24
 
-`#200` was opened on a self-correction recorded above:
+That instrument was started on a self-correction recorded above:
 the forty-round pass was described as measuring the job both stages do,
 and it does not.
 `producer-calibrate.ts` drives `runTranslateStage`,

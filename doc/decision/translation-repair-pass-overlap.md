@@ -1,6 +1,6 @@
 # The corpus pass keeps four slices in flight when nothing overrides it
 
-Taken 2026-09-06 on the four matched pairs that `#261` asked for,
+Taken 2026-09-06 on the four matched pairs the overlap-dial work asked for,
 all measured on 2026-08-27 and 2026-08-28 and recorded in
 `package/module/translation-repair/README.md` and
 `doc/planning/translation-repair-corpus-overlap-measurement.md`,
@@ -10,7 +10,7 @@ before the reading was turned into a default.
 THIS MOVES A VALUE THE OWNER LEFT AT ONE.
 Question 11 of `doc/planning/translation-repair-open-decisions.md` was answered on 2026-08-26 with option A:
 the editor calibration goes to four,
-and "the pass keeps 1 until `#261`".
+and, in the sheet's record of it, the pass keeps one slice in flight until the overlap dial is measured on the pass.
 That deferral asked for evidence on the pass itself,
 not for a preference,
 and the evidence has existed since 2026-08-28.
@@ -84,7 +84,7 @@ The run-to-run band on that normalized figure is about 0.03.
     normalized down 53.7 percent.
 -   `Weideriche_`,
     first attempts,
-    both arms ending at the same `#273` pairing refusal rather than a page.
+    both arms ending at the same truncated-completion pairing refusal rather than a page.
     Overlap 1:
     54.04 minutes over 2.293 call-hours,
     normalized 0.393,

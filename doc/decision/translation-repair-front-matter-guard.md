@@ -50,7 +50,7 @@ artifact keeps their records for the reading.
 
 The rule of 2026-08-28 (`69df7d881`,
 "review visible front matter",
-written for #269,
+written for
 archives whose
 metadata was never translated and still named the directory id) refused any page whose metadata equalled
 the archive's while the source's differed,
@@ -95,7 +95,7 @@ the night's record is in
   and it does not
   fire where the source names the person by that same handle.
   The 15 archives that show the directory id
-  where the source has a name of its own (the #269 shape) stay refused until a lane renders the name.
+  where the source has a name of its own (the directory-id shape) stay refused until a lane renders the name.
 - `FrontMatterCompletenessError` carries no decision detail any more;
   its message names the entry and the
   structural reason only.
@@ -204,8 +204,8 @@ read on the original Chinese and the original English front matter:
 What stays refused is a page whose visible name is the folder and whose front matter,
 on both sides,
 carries no Latin rendering but the folder itself:
-the `#269` shape as it was literally described.
-The `#269` 7 above all carry a Latin rendering in the archive alias (Sakuya,
+the directory-id shape as it was literally described.
+The seven handles above all carry a Latin rendering in the archive alias (Sakuya,
 Lan Gou,
 Qian Yu Mao Tou,
 Danpian,
@@ -252,7 +252,7 @@ THE RULE,
 landed in `package/module/translation-repair/src/corpus-run/archive-front-matter.ts` (`20e5135a6`):
 the archive's front matter stands unless the archive shows the directory id as the visible name while the source names
 the person and none of the three clauses of 2026-09-07 makes the id stand,
-which is the `#269` shape as literally described.
+which is the directory-id shape as literally described.
 Where it stands,
 the preparation makes no metadata slice
 (`prepareDocumentPair({ frontMatterAuthority: 'archive' })`,
@@ -289,7 +289,7 @@ lintong,
 lxyddice,
 noname) all stand by the clauses of 2026-09-07.
 So on this corpus the lanes render no front matter at all,
-and the rendering path is kept for the `#269` shape a future archive may still have.
+and the rendering path is kept for the directory-id shape a future archive may still have.
 A consequence the owner should know:
 the front-matter defects the earlier decisions were written for
 (an archive still naming its folder where the source names the person)
@@ -298,7 +298,7 @@ they are the archive's to correct by hand.
 
 Guards:
 `archive-front-matter.unit.test.ts` (the ninth pass's shape stands,
-the `#269` shape does not,
+the directory-id shape does not,
 each 2026-09-07 clause,
 the two one-sided cases),
 `front-matter-completeness.unit.test.ts` (the standing archive accepted as it is with no slice,
@@ -322,4 +322,4 @@ restored,
 Options rejected:
 letting the body follow a corrected front matter (re-derives the declared forms exactly where six of six judges once dropped
 a declared alias);
-freezing the whole front matter to the archive even where it names the folder (the `#269` shape would then never be rendered).
+freezing the whole front matter to the archive even where it names the folder (the directory-id shape would then never be rendered).

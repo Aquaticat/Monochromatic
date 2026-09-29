@@ -1,7 +1,7 @@
 # Unpairable sections are reported and skipped, not aligned proportionally
 
 Ratified 2026-08-13 by the user. Supersedes the open destination question in
- `#74` and in `doc/planning/wire-the-heading-aligner.md`.
+ the aligner-scoring finding and in `doc/planning/wire-the-heading-aligner.md`.
 
 ## The decision
 

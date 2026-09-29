@@ -43,7 +43,7 @@ revisit is what this document is.
 
 ## The question the queue asked
 
-`#105` and the handover both framed it as a choice: widen the deadline for `hf:zai-org/GLM-5.2`, or
+The task queue and the handover both framed it as a choice: widen the deadline for `hf:zai-org/GLM-5.2`, or
 seat a replacement. The measurement answers it, and it answers against replacement.
 
 ## What the loss actually is
@@ -245,7 +245,7 @@ This does not invalidate either reading,
 since both sides of each comparison are measured the same way.
 It does mean the figures understate loss in a two-lane pipeline,
 and that any future comparison should extend the definition first.
-That work is `#119`.
+That work was filed with client-side runaway termination.
 
 EVERY ABANDONED VOICE IN THIS SNAPSHOT IS A GLM, at a much larger scale than the single
 surviving abandonment the morning audit found.
@@ -256,8 +256,8 @@ Zero name `hf:moonshotai/Kimi-K3`,
 which appears more often in this log than any other model.
 That is a zero-numerator fact rather than a rate,
 since appearance counts are log mentions and not calls.
-It supersedes `#77`'s finding that Kimi-K3 dominates voice loss,
-which was measured before `#64`'s channel-marker fix landed.
+It supersedes the earlier finding that Kimi-K3 dominates voice loss,
+which was measured before the channel-marker fix at the parser landed.
 
 ABANDONMENT IS THE ONLY LOSS MODE HERE, so nothing else is quietly eating voices.
 Losses reconcile against abandon lines stage by stage:
@@ -280,13 +280,13 @@ The bench maxima of 85.5 s and 88.6 s were measured over calls that COMPLETED.
 Whether a GLM call still running at 180 seconds is merely slow,
 or has stopped producing anything new and would never have finished,
 cannot be told apart from anything currently recorded,
-because `#118` discards the partial text and no raw output is stored anywhere.
+because an aborted stream discards the partial text and no raw output is stored anywhere.
 
 The user reports that this provider does not terminate token degeneration.
 If that is what some of these calls are doing,
 no widening of this window would ever have helped them,
 and the remedy is to end them ourselves.
-That is `doc/decision/translation-repair-runaway-call-termination.md` and `#119`.
+That is `doc/decision/translation-repair-runaway-call-termination.md`.
 
 ## Addendum 2026-08-26: the window has a dial, and single runs cannot price it
 
@@ -311,7 +311,7 @@ DECIDED 2026-08-26, LATER THE SAME DAY: the editor calibration runs under 300000
 in flight, by the owner's answer to question 12 in `doc/planning/translation-repair-open-decisions.md`, on arm
 D (29.31 min, 318 of 320 voices, 2 cut, normalized 0.23 against arm B's 0.23). `adoptCalibrationGrace` in
 `grace-override.ts` applies it through the same variable a launch can set. This value, 180000 ms, stays the
-pass's until `#261` gives the pass overlap; the two move together or not at all. Record:
+pass's until the overlap dial gives the pass overlap; the two move together or not at all. Record:
 `doc/decision/translation-repair-calibration-overlap.md`.
 
 ## Addendum 2026-09-02: writer rounds have a dial of their own

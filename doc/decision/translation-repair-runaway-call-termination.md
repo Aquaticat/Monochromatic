@@ -68,7 +68,7 @@ a degenerate reply never reaches an artifact.
 THE ABANDONED CALL CANNOT SEE IT.
 `drainBody` accumulates its parts and the catch rethrows,
 discarding everything received.
-That is `#118`,
+That is the discarded-partial-text defect,
 and it is why no degenerate reply has ever been examined.
 
 ## What was built
@@ -322,7 +322,7 @@ carries label?: NO label property
 
 THE RUNAWAY ERROR NAMES NOTHING.
 It is constructed with `response.url` where every other path uses the `label` parameter,
-and `label` exists precisely because `#118` found that attributing a stream to the endpoint
+and `label` exists precisely because the partial-text work found that attributing a stream to the endpoint
 rather than to the model makes a per-model figure unreadable.
 Here the message opens with a bare colon because a constructed `Response` has no url;
 in production it would open with the chat-completions endpoint,
@@ -409,7 +409,7 @@ but that is the fixture rather than production.
     Held until the targeted pass releases the producing path.
 -   NAME OUR OWN TERMINATION in `StreamOutcome` rather than filing it as a cut,
     so a stall figure read off a log counts stalls.
--   RECORD THE NEW LOSS CAUSE with its own sub-kind, per `#75`.
+-   RECORD THE NEW LOSS CAUSE with its own sub-kind, as voice loss already records one.
     A call ended this way must not be filed with a stall:
     a stall is worth retrying,
     and a model that has begun repeating itself will repeat itself again.
@@ -421,15 +421,15 @@ but that is the fixture rather than production.
     by capturing one stream per model outside the pipeline
     and counting both sides with this package's own scanner.
 -   VALIDATE AGAINST A REAL DEGENERATE REPLY.
-    `#118` landed and an aborted call now keeps what it received,
+    Partial-text retention landed, and an aborted call now keeps what it received,
     so the material exists as soon as one occurs,
     but none has occurred yet and the detector is still fixture-validated only.
 
-## The idle windows' premise, re-derived from first production traffic, `#121`
+## The idle windows' premise, re-derived from first production traffic
 
 STATE THE SPREAD BEFORE THE NUMBER, per this repository's own rule. Read separately from each of
 the three logs `doc/audit/stream-guards-first-production-traffic.md` names, `flagged-pass-2.log`
-(2025 post-`#118` progress lines), `corpus-pass-20260817.log` (2166), and `resume-run-output.log`
+(2025 progress lines after partial-text retention), `corpus-pass-20260817.log` (2166), and `resume-run-output.log`
 (2888), the first-byte median runs 1032, 1207, and 1237 ms, five days and more than one roster
 composition apart. That band, not any single figure inside it, is what "the median" means here.
 `grace-remeasure-snapshot.log` stays excluded: independently re-run, `cmp` confirms it is byte for
@@ -471,7 +471,7 @@ against the sabotaged idle constant). Restored, both pass.
 ## The straggler grace's cut population, counted to the end of the pass
 
 THE AUDIT'S "NINE OF TEN" WAS A FLOOR, taken mid-flight; the pass log is no longer growing. Read to
-the end of `flagged-pass-2.log`, `#121` counts 19 cuts, not 10, over 2025 streams:
+the end of `flagged-pass-2.log`, the re-derivation counts 19 cuts, not 10, over 2025 streams:
 
 ```text
 model                                               streams   cuts     rate
@@ -490,13 +490,13 @@ six models remain at zero, not four; the finding narrows rather than reverses.
 
 WHETHER TO CHANGE `STRAGGLER_GRACE_MS` IN RESPONSE IS A POLICY QUESTION, not a measurement one: the
 input the original 180000 ms derivation used, per-model whole-call latency percentiles under a
-bench roster, has no fresh equivalent under the current six-model roster in anything `#121` read,
+bench roster, has no fresh equivalent under the current six-model roster in anything the re-derivation read,
 and estimating one would mean spending quota this task was not authorized to spend. Options,
 ranked, are in `doc/planning/translation-repair-open-decisions.md`, Question 9. The idle-window
 re-arming posture this section leaves open, whether 600000 should ever be lowered given the
 tail evidence above, is the same document's Question 10.
 
-## Both channels were scanned and one of them was never read, `#158`
+## Both channels were scanned and one of them was never read
 
 The section "Both channels are scanned, and the thinking one matters most" was right about why,
 and wrong about what the code did.
@@ -563,10 +563,10 @@ and all three leave both channels `undecided` on an ordinary call.
 Every generated-character figure recorded for `GLM-4.7-Flash` and Nemotron before this date understates,
 by however much thinking those calls did.
 Any bound derived from that column has to be re-derived,
-which is why `#156` is blocked on this rather than merely related to it.
+which is why the answer-volume bound is blocked on this rather than merely related to it.
 
 Timing figures are unaffected.
-The straggler and idle windows re-derived in `#121` read `firstByteMs` and `maxGapMs`,
+The straggler and idle windows re-derived from first production traffic read `firstByteMs` and `maxGapMs`,
 which never depended on which field carried the text.
 
 ### The size of what was invisible
@@ -582,9 +582,9 @@ which is the largest median of any model on the roster and had been recorded as 
 Anything read off the character columns for those three before 2026-08-21 is wrong by roughly that much,
 including the reading that they were the cheap models on the roster.
 
-## The size a cap should read, measured over 515 calls, `#156`
+## The size a cap should read, measured over 515 calls
 
-`#156` asked for an absolute output-size cap with a bound taken from the observed distribution
+The answer-volume work asked for an absolute output-size cap with a bound taken from the observed distribution
 rather than guessed.
 The distribution now exists,
 because `reportStreamProgress` reports on the completed path as well as the cut one,
@@ -614,7 +614,7 @@ The two populations overlap almost exactly on that measure.
 The largest COMPLETED call carries 5,992,537 raw characters.
 The 6,495,103-character cut this task was filed over is 8 percent above it.
 Any raw cap low enough to have stopped that runaway also kills legitimate completions,
-so the figure `#156` was filed with is the wrong number to build a bound from.
+so the figure that work was filed with is the wrong number to build a bound from.
 
 ### What separates them is silence, not size
 
@@ -638,7 +638,7 @@ Exactly one finished silent, at 32,646 reasoning characters.
   110820 reasoning +      0 content   Nemotron-3-Super
 ```
 
-This also confirms `#156`'s reading that no per-model allowance can bound it:
+This also confirms that work's reading that no per-model allowance can bound it:
 three models appear, and the largest silent runaway is Nemotron's.
 
 ### The two bounds the numbers support
@@ -732,7 +732,7 @@ defaulting to the measured value rather than freezing a constant into the guard.
 ### What the guard must not repeat
 
 Whatever error a cap throws has to carry the same retry classification as `StreamDegenerateError`.
-`#120` recorded the exact defect: a guard that stops a runaway
+The stream-guard defect audit recorded the exact defect: a guard that stops a runaway
 and then hands a retryable error to the retry layer buys the same runaway four more times.
 The outcome also needs its own label in `reportStreamProgress`,
 which means the census pattern gains a fourth alternative and every earlier scan of that log

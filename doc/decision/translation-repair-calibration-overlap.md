@@ -14,7 +14,7 @@ recommended option.
     `src/grace-override.ts`, applied by `adoptCalibrationGrace` through the same variable a launch can set).
     The variable still overrides it.
 -   The corpus pass is unchanged: one slice at a time and the built-in 180000 ms window
-    (`STRAGGLER_GRACE_MS` in `src/stage-round.ts`), until `#261` builds the overlap dial into the pass
+    (`STRAGGLER_GRACE_MS` in `src/stage-round.ts`), until later work builds the overlap dial into the pass
     drivers and measures it there. The two settings move together or not at all, because the window's price
     is the wait and overlap is what fills the wait.
 
@@ -33,7 +33,7 @@ measurable and D is the arm with the fewest cut voices of the five.
 
 ## What this does not decide
 
--   Whether the corpus pass overlaps slices. That is `#261`, measured on matched pass runs read the same
+-   Whether the corpus pass overlaps slices. That is the overlap-dial work, measured on matched pass runs read the same
     normalized way, since single-run wall clock moves 37% on provider speed alone.
 -   Whether `producer-calibrate` gets the same dial. It does, as follow-up work, so the two calibrations run
     under one default; until then it runs one slice at a time.
@@ -47,7 +47,7 @@ measurable and D is the arm with the fewest cut voices of the five.
 
 ## Addendum 2026-09-06: the pass followed
 
-`#261` was measured on four matched pass pairs on 2026-08-27 and 2026-08-28,
+Pass overlap was measured on four matched pass pairs on 2026-08-27 and 2026-08-28,
 and the pass fallback moved to four on that reading:
 `doc/decision/translation-repair-pass-overlap.md`.
 The window stayed where the owner put it on 2026-09-03.

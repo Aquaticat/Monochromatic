@@ -58,8 +58,8 @@ so no existing page is readiness evidence for current HEAD.
     plus Carena.
 4.  After the bound lands,
     one fresh pass on current HEAD over that set,
-    then the actual-output reading (session task `#259`),
-    and only a passing reading re-opens the readiness signal (session task `#219`).
+    then the actual-output reading,
+    and only a passing reading re-opens the readiness signal.
 
 ## Owner refinement, 2026-09-01, later the same day
 

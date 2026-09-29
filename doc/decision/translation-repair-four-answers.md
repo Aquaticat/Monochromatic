@@ -114,12 +114,12 @@ Two things gate it, and neither is a reason to abandon it:
     no body, the body belongs UNDER that heading. Landing five as designed inserts the whole source
     section, heading included, which would have produced eight duplicate headings on `XIEPT2`.
 -   THE ALIGNER, which is the foundational one and comes FIRST. 85 of 92 entries never reach the
-    matcher at all, because equal section counts skip it (`#98`), and the scorer is broken with
-    asymmetric preambles causing most fallbacks (`#74`). Every section-scale number above was drawn
+    matcher at all, because equal section counts skip it (the equal-count fast path), and the scorer is broken with
+    asymmetric preambles causing most fallbacks. Every section-scale number above was drawn
     from the 7 entries that do reach it. Landing insertion on top of an aligner that never runs for
     92 percent of the corpus would ship a feature whose input is decided by a fallback.
 
-ORDER: `#74` and `#98` first, then re-run the section census over the population that then reaches
+ORDER: the aligner's scoring and the equal-count skip first, then re-run the section census over the population that then reaches
 the matcher, then land section-scale insertion with the heading defect fixed.
 
 ### What this means for the coverage measurement

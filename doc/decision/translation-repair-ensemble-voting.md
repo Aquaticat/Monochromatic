@@ -125,7 +125,7 @@ A half is not a measured figure and is not presented as one.
 What the discount corrects is a TILT rather than a preference:
 the judge sheet is anonymized and says so, so a producer cannot see which
 candidate is its own and cannot set out to back it.
-Measuring the real self-preference rate is `#84`'s work, and every self-vote is
+Measuring the real self-preference rate is the judge-quality bench's work, and every self-vote is
 recorded by name (`select-self-vote (<model>)`), weighed on its ballot, and
 counted in `SelectionTally.selfVotes` so that measurement has a population.
 
@@ -211,20 +211,20 @@ change closed.
 The ruling answers it by extending the selection discount to certification: a
 checker may certify text it helped write, and that verdict counts for less than
 a disinterested checker's.
-`assertCheckerIndependence` stops being a refusal and becomes a weighting,
-tracked as `#91`.
+`assertCheckerIndependence` stops being a refusal and becomes a weighting
+(the self-certification weight).
 
 What this does NOT decide, and what the implementation must not assume: the
 certification weight.
 `SELF_VOTE_WEIGHT` is a half by an argument about selection arithmetic that does
 not transfer, because resolution checking tallies verdicts about one claim
 rather than ranking candidates against each other.
-`#91` owns picking that number and saying what it rests on.
+The self-certification weight work owns picking that number and saying what it rests on.
 
 One consequence to expect rather than discover: seating producers grew the
 full-weight panel for any given candidate, and widening the producing roles
 moves it again.
-Tie and decline rates will shift where nothing else changed, and `#84` inherits
+Tie and decline rates will shift where nothing else changed, and the judge-quality bench inherits
 that too.
 
 ## An invalid candidate is sent back to its author, not dropped
@@ -250,7 +250,8 @@ not in this slice is telling the pipeline something about the SLICING rather
 than about itself, and a validator that silently dropped that candidate would
 have destroyed the only report of it.
 
-Tracked as `#88`.
+Tracked as the invalid-candidate re-ask:
+an invalid translated slice goes back to its author rather than being dropped.
 
 ## What the code enforced until 2026-08-15, and what it enforces now
 

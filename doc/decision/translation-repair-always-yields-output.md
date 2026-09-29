@@ -37,7 +37,7 @@ The asymmetry that makes this right: leaving text alone cannot damage it, while
 An unrepaired section is a floor, not a goal. The better answer for a partial
  translation like `XIEPT2`, whose target bodies are empty, is to TRANSLATE the
  missing content rather than to pass it through. That is the translate stage
- `#70` is about, and it is the reason ROUTE outranked REPORT in the original
+ the translate-first re-design is about, and it is the reason ROUTE outranked REPORT in the original
  ranking. REPORT is what is available before that stage exists.
 
 ## How the question got asked anyway

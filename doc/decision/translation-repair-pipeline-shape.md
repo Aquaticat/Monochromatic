@@ -13,7 +13,7 @@ Provenance, stated exactly because it is a derivation rather than a quotation:
 The derivation is set out in "What was proposed and what the user said".
 It was reported to the user for correction when it was taken.
 
-It closes `#70`,
+It closes the translate-first re-design proposal,
  which `doc/decision/translation-repair-output-goal.md` left open when it decided
  the goal and named a re-design as likely rather than chosen.
 
@@ -83,7 +83,7 @@ Its replacement already exists in intent:
 Judge quality on the preserve-or-replace question has never been measured.
 This shape stakes every slice on judges preferring a good human translation to a
  fluent machine one,
- and `#31` deferred the judge crosscheck back in milestone three.
+ and milestone three deferred the judge crosscheck.
 Measuring it is now a precondition rather than a nicety,
  because a weak judge under this shape does not degrade one repair,
  it rewrites the corpus.
@@ -129,7 +129,7 @@ A whole-slice replacement has no envelope, and faking one that spans the slice
  with no licensed quotes the preservation rule rejects nearly every legitimate
  translation, while licensing the whole envelope makes it vacuous.
 What that gate enforced still has to be enforced, by a validator built for whole
- candidates rather than for edits, which is `#88`.
+ candidates rather than for edits, which is the invalid-candidate re-ask.
 Semantic preservation does not survive in deterministic form at all:
  whether wording only the existing translation carries is a correct archival
  addition needs source-aware judging, and the incumbent standing as a candidate
@@ -137,6 +137,6 @@ Semantic preservation does not survive in deterministic form at all:
 
 The accumulation running under the repair-only shape keeps its value until the
  new one lands:
- probe calibration and prober disagreement, `#66` and `#68`,
+ probe calibration and prober disagreement,
  are questions about judging damage,
  and this shape needs judges more than the last one did.

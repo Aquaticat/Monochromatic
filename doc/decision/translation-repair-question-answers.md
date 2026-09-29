@@ -6,17 +6,18 @@ That document holds the questions, the evidence behind each, and the options wit
 This one holds only what was chosen, what it means in code, and what it moves.
 
 Two answers carry an explicit ordering instruction rather than only a choice, and both are recorded with the
-decision they attach to: measure `#84` before widening rosters, and land `#83` before the critic stage is
+decision they attach to: measure judge quality before widening rosters, and record who won each slice before the critic stage is
 kept on the strength of evidence it does not yet produce.
 
-Item numbers throughout are LOCAL TASK TRACKER ids, not GitHub issue numbers.
-The two namespaces collide; see `AGENTS.md` rules XNS and XN2.
+The owner's answers cite items of the drafting session's task tracker by number;
+each quotation keeps its number verbatim and names the item beside it.
+Those ids are not GitHub issue numbers, and the two namespaces collide (`AGENTS.md` rules XNS and XN2).
 
 ## Producing roster width: keep three, widen on evidence
 
-Question 1, answer D, with "do `#84` first".
+Question 1, answer D, with "do `#84` first" (the judge-quality bench).
 
-The producing roster stays at three until `#84` measures judge quality on preserve-or-replace.
+The producing roster stays at three until the judge-quality bench measures judge quality on preserve-or-replace.
 Widening happens afterwards and on those numbers, not before them.
 
 This overrules the drafted ranking, which put a named constant first on the argument that widening was already
@@ -26,7 +27,7 @@ The owner's reading is that the measurement comes first regardless, so there is 
 What it means concretely:
 
 -   No `PRODUCERS_PER_ROLE` constant is introduced now.
--   `#91` stays blocked on `#84` rather than on this question.
+-   The self-certification weight stays blocked on the judge-quality bench rather than on this question.
 -   ONE OF THE WORRIES BEHIND THIS QUESTION IS NOW MEASURED. Option C was rejected partly because with every
     model producing, "self-votes and self-certifications are the norm rather than the exception, which makes
     the discounts load-bearing in a way nothing has measured". The self-preference bench recorded below under
@@ -65,7 +66,7 @@ aliases of those same two models. So the vision sub-roster is exactly two, and w
 provider rather than a different configuration.
 
 TWO IS THIN, and that is what this answer has to be built around. Selection needs a minimum weight of two, a
-producer's ballot for its own work counts half, and `#84` measured that on slices carrying any archive
+producer's ballot for its own work counts half, and the judge-quality bench measured that on slices carrying any archive
 imperfection the effective roster is already about four of six. Where both vision models produce, no
 disinterested judge remains at all, which is exactly the `no-disinterested-ballots` case the self-preference
 instrument names. Expect the A fallback to carry more of this than the answer's wording implies.
@@ -87,24 +88,24 @@ What it means concretely:
 
 ## Critics: keep them as evidence, remove every early return
 
-Question 3, answer B, with "land `#83`".
+Question 3, answer B, with "land `#83`" (recording who won each slice).
 
 Critics stay in the translate path, supplying named defects to the judges rather than deciding anything.
 Every early return is removed, so a critic can no longer block a document or return the original target and
 discard translated slices that already succeeded.
 
-The sheet's own con against B was that the numbers justifying the spend do not exist until `#83` lands.
-The instruction to land `#83` answers that directly: produce the numbers, then keep paying with the evidence
+The sheet's own con against B was that the numbers justifying the spend do not exist until selection records who won each slice.
+The instruction to land that record answers it directly: produce the numbers, then keep paying with the evidence
 in hand.
 
 What it means concretely:
 
--   `#86` is decided rather than open.
+-   The critic-stage question is decided rather than open.
 -   `repairChunk` must stop returning its input unchanged when non-translation votes stand, and the
     document-level dominance check must stop returning the whole original target.
--   `#93` is confirmed as a defect on this answer. An empty critic roster is a misconfiguration here, not an
+-   Settling a document with no critics is confirmed as a defect on this answer. An empty critic roster is a misconfiguration here, not an
     intended configuration, because critics are kept. The guard can read an empty list.
--   `#83` is blocked by `#89`, so landing it means landing the driver's outcome and cache first.
+-   Recording who won is blocked by driving the translate lane from the document driver, so landing it means landing the driver's outcome and cache first.
 
 ## Self-certifying checkers: a half, matching selection
 
@@ -119,7 +120,7 @@ picks a number. The choice is made on consistency with that understood.
 
 What it means concretely:
 
--   `#91` takes a half for self-certification WHEN there is any self-certification to weigh, which today
+-   The self-certification weight is a half WHEN there is any self-certification to weigh, which today
     there is not. See the dependency below before writing code for this.
 -   The number was a stated preference rather than a derived one when it was chosen. It has since been
     measured, below.
@@ -133,8 +134,8 @@ implementable. It is not, and writing the weight now would be unreachable code.
 or refiners. A roster where a model could certify its own text is refused before any work happens, so no
 checker is ever a self-certifier and a half-weight branch would never run.
 
-Relaxing that assertion is the "widen the producing roles" half of `#91`, and question 1 answer D blocks
-roster widening until `#84` reports. So the ordering is forced: `#84`, then the roles widen, then the half
+Relaxing that assertion is the "widen the producing roles" half of the self-certification work, and question 1 answer D blocks
+roster widening until the judge-quality bench reports. So the ordering is forced: the bench, then the roles widen, then the half
 becomes reachable and is applied. Weighing has to replace forbidding in one change, not before it.
 
 WHAT THE HALF STILL BUYS BY BEING DECIDED NOW: whoever relaxes the assertion does not also have to pick a
@@ -210,10 +211,10 @@ the rate, and a higher rate is a stronger reason to know how much of it is layou
 
 What it means concretely:
 
--   `#108` is authorized, and its cost is the repriced one: three arms rather than two, with the candidate
+-   The window trial is authorized, and its cost is the repriced one: three arms rather than two, with the candidate
     slate produced once and judged repeatedly, roughly 1760 exchanges over the flagged slices plus matched
     unflagged controls.
--   `#109`, splitting `runTranslateStage` into producing and judging halves, is a prerequisite rather than a
+-   Splitting `runTranslateStage` into producing and judging halves is a prerequisite rather than a
     detour, because a two-arm comparison resamples the candidates and cannot measure the window.
 -   None of A to D is chosen by this. Option E was ranked first precisely because it runs before that choice
     and changes what the choice is made on.
@@ -235,7 +236,7 @@ What it means concretely:
 
 Question 7, delegated.
 
-Taking the drafted delegation answer: option B now, option C held until `#96` can carry an unexaminable
+Taking the drafted delegation answer: option B now, option C held until the artifact can carry an unexaminable
 verdict. That ordering costs nothing, because C keeps B's denominator.
 
 What it means concretely:
@@ -244,15 +245,15 @@ What it means concretely:
     calling the denominator the document's characters. This is documentation of existing behaviour, not a
     behavioural change.
 -   `XIEPT2`, which produces no slices at all and settles as a clean unchanged document having examined
-    nothing, keeps doing so for now. Reporting it as unexaminable is option C, and it waits on `#96`.
--   Revisit when `#96` lands.
+    nothing, keeps doing so for now. Reporting it as unexaminable is option C, and it waits on that artifact change.
+-   Revisit when the artifact can carry that verdict.
 
 ## What the answers move
 
-Unblocked and authorized: `#86` decided, `#108` authorized behind `#109`, `#91`'s self-certification weight
-settled, `#104` settled as documentation.
+Unblocked and authorized: the critic-stage question decided, the window trial authorized behind the producing and judging split,
+the self-certification weight settled, the non-translation denominator settled as documentation.
 
-Ordering the owner set: `#84` before any roster widening; `#89` then `#83` before the critic spend is
+Ordering the owner set: the judge-quality bench before any roster widening; the document-driven translate lane, then recording who won each slice, before the critic spend is
 justified by its own numbers.
 
-Still blocked on measurement rather than on a decision: roster width, which waits on `#84`.
+Still blocked on measurement rather than on a decision: roster width, which waits on the judge-quality bench.

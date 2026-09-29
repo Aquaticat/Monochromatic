@@ -41,7 +41,7 @@ The decisive one is the preservation gate, because it was CALIBRATED ON THIS
  does not exist, and the number would look exactly like a number about the one
  that does.
 
-Two smaller confirmations point the same way. `#71` recorded that the damages at
+Two smaller confirmations point the same way. The section-alignment finding recorded that the damages at
  items 5, 16 and 19 are the aligner defect rather than repair quality, and
  deduplication now merges roughly one accepted issue in seven that the sheet
  lists as separate items.
@@ -60,7 +60,8 @@ The cheap version of that check is the one used here: compare the artifacts'
 
 ## What this costs, stated plainly
 
-The three tasks that named these sheets, `#60`, `#66` and `#68`, were recorded
+The three tasks that named these sheets
+ (the probe's false-positive sample, its calibration and the prober disagreement) were recorded
  as blocked on the user. They were not. They need a fresh draw from entries
  settled under the current pipeline, and until enough have settled there is
  nothing to draw. That is a real delay, and it is the honest one; the

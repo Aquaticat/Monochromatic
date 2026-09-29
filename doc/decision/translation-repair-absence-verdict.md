@@ -372,5 +372,5 @@ The fold above remains for the shapes it was built on: an original the roster pl
 ## What this supersedes
 
 `doc/planning/translation-repair-open-decisions.md` question 28, whose ranking was A > C > B > D
-and which framed the four as exclusive. The wiring gate recorded on `#106` is released by this
+and which framed the four as exclusive. The gate that held back wiring the absence verdict is released by this
 decision, and the stopgap copy in `doc/handover/translation-repair-history.md` is replaced by this file.
