@@ -75,6 +75,7 @@ export {
 } from './container-extents.ts';
 export {
   type ContainerSpan,
+  flattenContainers,
   UnpositionedContainerError,
 } from './unwrap-container.ts';
 export {

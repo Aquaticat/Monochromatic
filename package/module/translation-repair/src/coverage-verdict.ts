@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   anchorsInsideForeignRegion,
   type TargetRegion,
@@ -46,25 +48,6 @@ import type { AnchorTarget, } from './validate-issue.ts';
 // first (`stage-fanout-window.ts`), so `asked` is what the gather sent the
 // question to, not the bench: a seat the window spared was never silent, and
 // the majority is taken over the seats that were actually asked.
-
-/**
- Raised when a located quote carries no anchor to read a region from.
- 
- Unreachable through `locateQuote`, which refuses rather than returning an
- empty anchor list, so this names a broken contract instead of a case a caller
- should handle.
- 
- @example
- ```ts
- throw new AnchorRegionError('located quote carried no anchors',);
- ```
- */
-export class AnchorRegionError extends Error {
-  /**
-   Distinguishes this from other errors after serialization.
-   */
-  public override readonly name = 'AnchorRegionError';
-}
 
 /**
  What a roster concluded about one passage.
@@ -192,13 +175,12 @@ type WeighedVoice = {
  
  @param document - side the region was located in
  
- @param anchors - located spans in document order, never empty
- 
+ @param anchors - located spans in document order, never empty by their type
+ (ledger T8: a located quote's anchors are a non-empty list, so the throw
+ that stood here for none could not run, and went with its class)
+
  @returns Document text from first anchor start to last anchor end
- 
- @throws {@link AnchorRegionError} when handed no anchors, which a located
- result cannot produce
- 
+
  @example
  ```ts
  const matched = matchedRegion({ document, anchors, },);
@@ -210,20 +192,21 @@ function matchedRegion(
     anchors,
   }: {
     readonly document: AnchorTarget;
-    readonly anchors: readonly SpanAnchor[];
+    readonly anchors: readonly [
+      SpanAnchor,
+      ...SpanAnchor[]
+    ];
   },
 ): string {
   /**
    Earliest span, whose start opens the region.
    */
-  const first = anchors.at(0,);
+  const [first,] = anchors;
 
   /**
-   Latest span, whose end closes it.
+   Latest span, whose end closes it; the list holds at least the first.
    */
-  const last = anchors.at(-1,);
-  if ((first === undefined) || (last === undefined))
-    throw new AnchorRegionError('located quote carried no anchors',);
+  const last = nonNullishOrThrow(anchors.at(-1,),);
   return document.text
     .slice(
       first.startOffset,

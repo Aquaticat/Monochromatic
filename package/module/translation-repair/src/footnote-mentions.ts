@@ -19,6 +19,16 @@ import { normalizeFootnoteIdentifier, } from './footnote-identifier.ts';
 // only the role says anything changed.
 
 /**
+ How many identifiers a scan may report before the text is refused as
+ pathological rather than counted.
+
+ A slice is a paragraph or two of prose. Thousands of markers in one means
+ generated or adversarial text, and the guard exists to keep such text OUT of
+ the document rather than to attribute it.
+ */
+export const MAX_SLICE_IDENTIFIERS = 4_096;
+
+/**
  Raised when one text carries more footnote markers than the guard counts.
  
  AN INPUT REFUSAL, not an invariant: a page really can carry them, and the
@@ -58,16 +68,6 @@ export class FootnoteOverflowError extends Error {
     this.name = 'FootnoteOverflowError';
   }
 }
-
-/**
- How many identifiers a scan may report before the text is refused as
- pathological rather than counted.
- 
- A slice is a paragraph or two of prose. Thousands of markers in one means
- generated or adversarial text, and the guard exists to keep such text OUT of
- the document rather than to attribute it.
- */
-const MAX_SLICE_IDENTIFIERS = 4_096;
 
 /**
  Characters a GFM marker spends on punctuation: `[`, `^` and `]`.

@@ -4,7 +4,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseDocument, } from '../dist/final/node/index.mjs';
+import {
+  flattenContainers,
+  parseDocument,
+  parseMdxBody,
+  UnpositionedContainerError,
+} from '../dist/final/node/index.mjs';
 
 //region Container unwrapping tests
 // Fixtures are cat-themed inventions that reproduce the STRUCTURE read off the
@@ -187,6 +192,38 @@ await describe({
           },
         },),
       ],
+    },),
+  ],
+},);
+
+await describe({
+  name: flattenContainers.name,
+  children: [
+    it({
+      name: 'REFUSES A CONTAINER WITH NO POSITION OF ITS OWN, whose tags nothing could then locate (ledger T8)',
+      fn: async () => {
+        /**
+         A parsed disclosure, dissolved once as parsed so the refusal cannot
+         pass for the wrong reason.
+         */
+        const { children: parsed, } = parseMdxBody({
+          body: '<details>\n\n> Mittens on the windowsill\n\n</details>\n',
+        },);
+        expect(flattenContainers({ children: parsed, },).containers,).toHaveLength(1,);
+
+        /**
+         The same tree with each top-level block stripped of its own position
+         while its children keep theirs, the one shape a constructed tree can
+         reach the walk in.
+         */
+        const unpositioned = parsed.map(function dropPosition(child,) {
+          return {
+            ...child,
+            position: undefined,
+          };
+        },);
+        expect(() => flattenContainers({ children: unpositioned, },),).toThrow(UnpositionedContainerError,);
+      },
     },),
   ],
 },);

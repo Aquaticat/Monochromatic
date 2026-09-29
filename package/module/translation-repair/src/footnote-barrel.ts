@@ -55,6 +55,11 @@ export {
   normalizeFootnoteIdentifier,
   relabelsFootnote,
 } from './footnote-identifier.ts';
+export {
+  footnoteIdentifiers,
+  FootnoteOverflowError,
+  MAX_SLICE_IDENTIFIERS,
+} from './footnote-mentions.ts';
 export type {
   FootnoteConvention,
   FootnoteDefinitionHit,

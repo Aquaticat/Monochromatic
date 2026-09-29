@@ -49,10 +49,13 @@ export type QuoteLocation =
     readonly located: true;
 
     /**
-     One anchor per block the quoted region touches;
+     One anchor per block the quoted region touches, never none;
      block-crossing quotes split into per-node spans.
      */
-    readonly anchors: readonly SpanAnchor[];
+    readonly anchors: readonly [
+      SpanAnchor,
+      ...SpanAnchor[]
+    ];
   }
   | {
     readonly located: false;
@@ -99,51 +102,63 @@ function bindQuoteRegion(
   },
 ): QuoteLocation {
   /**
-   Blocks the region touches, in document order.
+   First block the region touches, then the rest, in document order.
    */
-  const touched = document
+  const [firstTouched, ...laterTouched] = document
     .nodes
     .filter(function overlapping(candidate,) {
       return (candidate.startOffset < end) && (candidate.endOffset > at);
     },);
-  if (touched.length === 0) {
+  if (firstTouched === undefined) {
     return {
       located: false,
       reason: `quote-outside-blocks (${side})`,
     };
   }
 
+  /**
+   One block's share of the region.
+
+   @param node - block the region touches
+
+   @returns Its anchor
+   */
+  function toAnchor(node: AnchorTarget['nodes'][number],): SpanAnchor {
+    /**
+     Start of this block's share of the region.
+     */
+    const spanStart = Math.max(
+      at,
+      node.startOffset,
+    );
+
+    /**
+     Exclusive end of this block's share.
+     */
+    const spanEnd = Math.min(
+      end,
+      node.endOffset,
+    );
+    return {
+      side,
+      nodeId: node.id,
+      nodeHash: node.contentHash,
+      startOffset: spanStart,
+      endOffset: spanEnd,
+      quotedText: document.text
+        .slice(
+        spanStart,
+        spanEnd,
+      ),
+    };
+  }
+
   return {
     located: true,
-    anchors: touched.map(function toAnchor(node,): SpanAnchor {
-      /**
-       Start of this block's share of the region.
-       */
-      const spanStart = Math.max(
-        at,
-        node.startOffset,
-      );
-
-      /**
-       Exclusive end of this block's share.
-       */
-      const spanEnd = Math.min(
-        end,
-        node.endOffset,
-      );
-      return {
-        side,
-        nodeId: node.id,
-        nodeHash: node.contentHash,
-        startOffset: spanStart,
-        endOffset: spanEnd,
-        quotedText: document.text
-          .slice(
-          spanStart,
-          spanEnd,
-        ),
-      };
-    },),
+    anchors: [
+      toAnchor(firstTouched,),
+      ...laterTouched.map(toAnchor,),
+    ],
   };
 }
 

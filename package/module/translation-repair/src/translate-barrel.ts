@@ -242,6 +242,10 @@ export {
   readImagePair,
 } from './image-reading-pair.ts';
 export {
+  clusterReadings,
+  ReadingClusterError,
+} from './reading-cluster.ts';
+export {
   readPastRefusal,
   REFUSAL_ASK_LIMIT,
 } from './image-reading-past-refusal.ts';

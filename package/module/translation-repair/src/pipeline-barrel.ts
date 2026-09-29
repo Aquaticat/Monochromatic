@@ -150,7 +150,6 @@ export {
   repairSliceKey,
   SLICE_CACHE_VERSION,
 } from './repair-slice-key.ts';
-export { footnoteIdentifiers, } from './footnote-mentions.ts';
 export { compareLineCounts, } from './line-structure-guard.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {

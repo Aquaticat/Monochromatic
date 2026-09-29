@@ -390,12 +390,10 @@ export function flattenContainers(
   const dissolved: ContainerSpan[] = [];
   while (pending.length > 0) {
     /**
-     Next block in document order, present by the loop condition.
+     Next block in document order, present by the loop condition (ledger T8:
+     the guard that broke the loop on none could not run, and is gone).
      */
-    const node = pending.pop();
-    /* v8 ignore next 2 -- @preserve the loop condition guarantees an element */
-    if (node === undefined)
-      break;
+    const node = nonNullishOrThrow(pending.pop(),);
 
     if (isUnwrappableContainer(node,)) {
       dissolved.push(containerSpanOf({ container: node, },),);

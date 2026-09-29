@@ -1,26 +1,8 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ProtectedAtom, } from './protected-atom.ts';
 
 //region Translation atom floor
-
-/**
- Invariant failure when a counted key has no source record.
- */
-class AtomFloorError extends Error {
-  /**
-   Constructs invariant failure naming generated atom key.
-   
-   @param key - impossible missing tally key
-   
-   @example
-   ```ts
-   throw new AtomFloorError({ key, });
-   ```
-   */
-  public constructor({ key, }: { readonly key: string; },) {
-    super(`atom key belonging to neither side: ${key}`,);
-    this.name = 'AtomFloorError';
-  }
-}
 
 /**
  Renders one atom for finding and multiset key.
@@ -108,9 +90,7 @@ function countAtoms(
  @param source - atoms original carries
  
  @returns Union with higher count per atom
- 
- @throws {@link AtomFloorError} on impossible tally contradiction
- 
+
  @example
  ```ts
  const owed = mergeAtoms({ page, source, });
@@ -152,11 +132,11 @@ export function mergeAtoms(
      */
     const bySource = fromSource.get(key,);
     /**
-     Preferred record describing atom.
+     Preferred record describing atom; one of the two tallies holds every
+     key, since the keys are theirs (ledger T8: the throw that stood here for
+     a key in neither could not run, and went with its class).
      */
-    const held = bySource ?? byPage;
-    if (held === undefined)
-      throw new AtomFloorError({ key, },);
+    const held = nonNullishOrThrow(bySource ?? byPage,);
     /**
      Copies page requests.
      */
