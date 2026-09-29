@@ -7,9 +7,10 @@
  found and rewritten from their own sentences; a rule written an hour before
  two of them did not stop them, so this reads every file instead.
 
- THE LIVING REPOSITORY-LEVEL DOCS are read too (ledger D26): the decision
- records, the canonical handover and its snapshot, and the planning docs it
- links as current. There an owner quotation keeps its number verbatim, listed
+ THE LIVING REPOSITORY-LEVEL DOCS are read too (ledger D26 and D30): the
+ decision records, the canonical handover and its snapshot, the planning docs
+ it links as current, and the runbooks and troubleshooting docs. There an
+ owner quotation keeps its number verbatim, listed
  exactly; the archived documents are not read and keep theirs as written.
 
  A REAL GITHUB ISSUE IS ALLOWED ONLY BY NUMBER, each checked with
@@ -100,9 +101,19 @@ const GITHUB_ISSUES: ReadonlySet<number> = new Set([
 const LINE_BREAK_RULE_ISSUE = 556;
 
 /**
+ GitHub issue on persisted definition-order member loss, which the
+ root-order serialization troubleshooting doc links, checked with
+ `gh issue view` on 2026-09-29.
+ */
+const DEFINITION_ORDER_ISSUE = 541;
+
+/**
  Real GitHub issues the living repository-level docs may cite by number.
  */
-const REPOSITORY_GITHUB_ISSUES: ReadonlySet<number> = new Set([LINE_BREAK_RULE_ISSUE,],);
+const REPOSITORY_GITHUB_ISSUES: ReadonlySet<number> = new Set([
+  DEFINITION_ORDER_ISSUE,
+  LINE_BREAK_RULE_ISSUE,
+],);
 
 /**
  Owner quotations the living repository-level docs keep verbatim, number and
@@ -356,8 +367,8 @@ async function readRepositoryTexts(): Promise<readonly PackageText[]> {
   /**
    Living repository-level docs.
    */
-  const { decisionRecords, handover, currentPlanning, } = await readLivingRepositoryDocs();
-  return Promise.all([...decisionRecords, ...handover, ...currentPlanning,].map(async function read(
+  const { decisionRecords, handover, currentPlanning, operations, } = await readLivingRepositoryDocs();
+  return Promise.all([...decisionRecords, ...handover, ...currentPlanning, ...operations,].map(async function read(
     path,
   ): Promise<PackageText> {
     return {
@@ -461,7 +472,13 @@ await describe({
          Every living repository-level doc.
          */
         const files = await readRepositoryTexts();
-        expect(['doc/decision/', 'doc/handover/', 'doc/planning/',].filter(function isUnread(kind,): boolean {
+        expect([
+          'doc/decision/',
+          'doc/handover/',
+          'doc/planning/',
+          'doc/runbook/',
+          'doc/troubleshooting/',
+        ].filter(function isUnread(kind,): boolean {
           return !files.some(function isOfKind({ path, },): boolean {
             return path.startsWith(kind,);
           },);

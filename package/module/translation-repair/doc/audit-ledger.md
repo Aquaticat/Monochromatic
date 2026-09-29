@@ -5612,7 +5612,7 @@ the harness prints a PASS line for some cases only).
 ### D27: the repository-level translation-repair docs have never passed the Markdown linter
 
 Status:
-open,
+fixed 2026-09-29,
 found 2026-09-28 when a `--fix` run over the census's edits reflowed about 13,000 lines
 (reverted;
 the census committed its date edits alone).
@@ -5628,6 +5628,46 @@ then a rendered comparison showing nothing but line breaks moved);
 the archived segments are kept byte for byte,
 so they need an exclusion the linter supports
 or a recorded reason they stay as they are.
+
+What was done:
+
+-   `c3abb83e4` ran the linter's `--fix` over the 48 living documents;
+    36 changed,
+    and each renders the same block for block
+    (`~/temp/agent/audit-glossary-fix/render-blocks.mjs`,
+    which lexes each file with marked and compares every top-level block with HEAD,
+    shown first to report a planted list item),
+    except the reader-protection record,
+    whose second top-level heading (MD025) became a second-level one with its subsections a level below.
+-   The first run damaged the two living documents that hold astral characters:
+    186 headings split into heading and paragraph and one list turned loose in the pass log,
+    and a break after an ordered-list marker in the snapshot.
+    The linter converts Sätteri's offsets twice after an astral character (issue 559);
+    a cat-themed reproduction with 18 or more emoji before a heading shows the same split,
+    and it is recorded on that issue.
+    Both files were reverted and fixed with each astral character mapped to a single-unit private-use character for the run
+    (`astral-safe-fix.mjs`),
+    then compared block for block.
+    The 649 findings the linter still reports on them are the same defect's:
+    copies with the astral characters mapped out report none.
+-   `4cd2914ec` did the same for the 27 translation-repair documents outside the living set that no split audit pins
+    (audits,
+    older planning records,
+    runbooks and troubleshooting docs),
+    and the linter reports nothing on them.
+-   The pinned families
+    (history segments,
+    dated snapshots,
+    run-continuity parts,
+    interface-candidate files)
+    carry one finding,
+    at line 382 of the 2026-08-29 snapshot,
+    and keep it:
+    their split audits pin their bytes,
+    and the linter excludes files only through `.gitignore` and a built-in directory list,
+    neither of which can hold a committed archive.
+    Outside translation-repair the tree-wide lint reports 56,657 findings in 177 files,
+    so `lint:markdown` gates nothing today.
 
 ### D28: the document map's current status stopped at 2026-09-06
 
@@ -5661,6 +5701,51 @@ resolve each from its source
 `git log` and `find` print local time),
 write its zone,
 and add both docs to the clock guard's read.
+
+### D30: the runbooks and troubleshooting docs sat outside the living set
+
+Status:
+fixed 2026-09-29,
+found the same day while linting the translation-repair documents outside the living set for D27.
+The runbooks and troubleshooting docs are the references a pass is run and debugged by,
+yet D25 and D26 read neither:
+they carried 37 task-list citations and 6 zone-less clock times,
+and the corpus-pass runbook quoted a tool message the tool no longer prints.
+What was done:
+
+-   Each citation was named from the earlier session's task record,
+    or replaced by the commit that landed it (`b6ea1cc51`,
+    `fd4f7546f`);
+    issue 541,
+    which the root-order troubleshooting doc links,
+    is real and stays.
+    A recorded monitor alarm that quoted a task number became a paraphrase,
+    since the monitor was the session's own script.
+-   Times the same record states in UTC now say so,
+    and the typography fix's landing was checked against `846f9ff6d`
+    (04:34 UTC).
+    Two times in the run-invalidation doc were a predicted overnight launch whose zone was never set;
+    `pass13` in fact stopped at 17:14 UTC by the watcher's log,
+    so the sentences now say what happened in words,
+    without a clock time.
+-   The runbook's quoted `NO ROUND LINE` message now matches `run-timing-report.ts`.
+-   A scan for stray backticks and asterisks in the rendered text,
+    over every translation-repair doc outside the pinned archives
+    (`~/temp/agent/audit-glossary-fix/stray-contexts.mjs`),
+    found literal backticks where code was meant:
+    in the invisible-characters doc,
+    two bare triple backticks and a `git grep` pattern whose span closed at its first escaped backtick;
+    in the package audit,
+    two spans that closed the same way,
+    and a third stray that was their knock-on.
+    A backslash does not escape a backtick inside a CommonMark code span;
+    each now uses a longer backtick run as its delimiter,
+    and the linter's `--fix` then broke the prose those spans had hidden.
+
+Guard:
+`src/living-docs.test-fixture.ts` adds the runbooks and troubleshooting docs as a kind,
+the task-list-number guard reads them with issue 541 allowed,
+and the clock guard reads them.
 
 ## Found while fixing
 
@@ -8203,6 +8288,14 @@ Commit comment 202516691 corrects it.
 The rule holds as written:
 the count came from the edit script's "applied 7 edits" line,
 not from a command on the staged diff.
+A third time on 2026-09-29:
+`c3abb83e4` said the first `--fix` run split "187 headings and a list"
+where the block comparison it came from held 187 damaged places,
+186 of them headings;
+commit comment 202522217 corrects it.
+The count was a total read as a subtotal,
+which a count taken from a command still allows:
+the message has to name what the command counted.
 
 ### M14: a reproduction check committed without a positive control
 

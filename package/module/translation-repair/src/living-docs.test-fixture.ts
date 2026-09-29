@@ -6,8 +6,9 @@ import { join, } from 'node:path';
 
 //region Living repository-level docs
 // The repository-level translation-repair docs that state current fact and are
-// kept current (ledger D26): the decision records, the canonical handover and
-// the snapshot it links, and the planning docs that handover links as current.
+// kept current (ledger D26 and D30): the decision records, the canonical
+// handover and the snapshot it links, the planning docs that handover links as
+// current, and the runbooks and troubleshooting docs.
 // The archived documents (history segments, dated snapshots, run-continuity
 // parts, interface-candidate files) are kept byte for byte and are not read;
 // `doc/handover/translation-repair-document-map.md` says how to read their task
@@ -63,6 +64,12 @@ export type LivingRepositoryDocs = {
    The planning docs the handover links as current.
    */
   readonly currentPlanning: readonly string[];
+
+  /**
+   Every translation-repair runbook and troubleshooting doc, the operational
+   references a pass is run and debugged by (ledger D30).
+   */
+  readonly operations: readonly string[];
 };
 
 /**
@@ -108,6 +115,38 @@ function linkTargets({ text, }: { readonly text: string; },): readonly string[] 
 }
 
 /**
+ Every translation-repair Markdown doc in one `doc` family, sorted so failures
+ read in a stable order.
+
+ @param family - directory under `doc`, such as `decision`
+
+ @returns Paths from the repository root
+
+ @example
+ ```ts
+ const records = await translationRepairDocs({ family: 'decision', },);
+ ```
+ */
+async function translationRepairDocs({ family, }: { readonly family: string; },): Promise<readonly string[]> {
+  return (await readdir(join(
+    REPOSITORY_ROOT,
+    'doc',
+    family,
+  ),))
+    .filter(function isTranslationRepair(name,): boolean {
+      return name.startsWith('translation-repair',) && name.endsWith('.md',);
+    },)
+    .toSorted()
+    .map(function underFamily(name,): string {
+      return join(
+        'doc',
+        family,
+        name,
+      );
+    },);
+}
+
+/**
  The living repository-level docs, located from the canonical handover.
 
  @returns Paths from the repository root, by kind
@@ -118,7 +157,7 @@ function linkTargets({ text, }: { readonly text: string; },): readonly string[] 
 
  @example
  ```ts
- const { decisionRecords, handover, currentPlanning, } = await readLivingRepositoryDocs();
+ const { decisionRecords, handover, currentPlanning, operations, } = await readLivingRepositoryDocs();
  ```
  */
 export async function readLivingRepositoryDocs(): Promise<LivingRepositoryDocs> {
@@ -173,30 +212,15 @@ export async function readLivingRepositoryDocs(): Promise<LivingRepositoryDocs> 
   },);
   if (unlinked.length > 0)
     throw new Error(`neither ${HANDOVER_INDEX} nor ${snapshotPath} links ${unlinked.join(', ',)} any more`,);
-  /**
-   Decision records, sorted so failures read in a stable order.
-   */
-  const decisionRecords = (await readdir(join(
-    REPOSITORY_ROOT,
-    'doc',
-    'decision',
-  ),))
-    .filter(function isRecord(name,): boolean {
-      return name.startsWith('translation-repair',) && name.endsWith('.md',);
-    },)
-    .toSorted()
-    .map(function underDecision(name,): string {
-      return join(
-        'doc',
-        'decision',
-        name,
-      );
-    },);
   return {
-    decisionRecords,
+    decisionRecords: await translationRepairDocs({ family: 'decision', },),
     handover: [
       HANDOVER_INDEX,
       snapshotPath,
+    ],
+    operations: [
+      ...await translationRepairDocs({ family: 'runbook', },),
+      ...await translationRepairDocs({ family: 'troubleshooting', },),
     ],
     currentPlanning: CURRENT_PLANNING.map(function underPlanning(name,): string {
       return join(

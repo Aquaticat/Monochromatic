@@ -411,7 +411,12 @@ its warnings unread (M23),
 or an autofix changing behaviour unreviewed (M26);
 a file split at the line cap left comments naming the old file (M17);
 every doc commit skipped the repository's Markdown linter,
-so the package docs carried 3,344 of its findings (M54);
+so the package docs carried 3,344 of its findings (M54),
+and the repository-level translation-repair docs 16,717 (D27);
+the linter's `--fix` split 186 headings in a file with astral characters,
+through an offset defect of its own (issue 559);
+code spans closed early by a backtick inside them rendered as loose backticks,
+which no linter rule reports (D30);
 changes that stopped calling a function left it behind,
 and nothing reported one (ledger B20).
 
@@ -431,7 +436,15 @@ tests and `doc` for the old file's name and repoints every hit in the same commi
 The line cap is met by splitting by concern,
 never by reformatting or disabling the rule.
 A Markdown change runs `mise run lint:markdown <files>` from the repository root,
-and its `--fix` output is rendered against the committed version before it is staged.
+and its `--fix` output is rendered against the committed version before it is staged,
+block for block (`render-blocks.mjs` in the audit's scratch folder),
+not by counting markers.
+Until issue 559 is fixed,
+`--fix` runs on a file holding an astral character only with those characters mapped to single-unit private-use characters for the run
+(`astral-safe-fix.mjs`).
+A code span holding a backtick uses a longer backtick run as its delimiter,
+since a backslash does not escape it,
+and a rendered doc is scanned for stray backticks and asterisks (`stray-contexts.mjs`).
 
 What enforces it:
 the linter's `max-lines` and every other rule,

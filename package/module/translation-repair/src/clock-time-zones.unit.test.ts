@@ -8,7 +8,8 @@
  WHAT IS READ is prose: the comments of every TypeScript file under `src`
  (tests included, since their comments document too), the package's docs and
  README, the translation-repair decision records at the repository root, the
- canonical handover and the snapshot it links. String literals are fixture
+ canonical handover and the snapshot it links, and the translation-repair
+ runbooks and troubleshooting docs (ledger D30). String literals are fixture
  text and are not read, and neither is code: a code span or a fenced block
  quotes a command or a format, not a moment.
 
@@ -628,7 +629,7 @@ async function readLivingProse(): Promise<readonly Prose[]> {
   /**
    Living repository-level docs.
    */
-  const { decisionRecords, handover, } = await readLivingRepositoryDocs();
+  const { decisionRecords, handover, operations, } = await readLivingRepositoryDocs();
   /**
    Markdown paths from the repository root.
    */
@@ -641,6 +642,7 @@ async function readLivingProse(): Promise<readonly Prose[]> {
     join(pkg, 'README.md',),
     ...decisionRecords,
     ...handover,
+    ...operations,
   ];
   /**
    Markdown prose.
