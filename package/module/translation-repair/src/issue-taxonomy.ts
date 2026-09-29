@@ -1,5 +1,3 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
 //region Issue taxonomy
 // MQM-derived error categories plus the extension states this pipeline needs for
 // individually unreliable critics: suspected source defects must be able to block
@@ -116,19 +114,6 @@ export type IssueCategory = typeof ISSUE_CATEGORIES[number];
 export const ADDITION_CATEGORY: IssueCategory = 'accuracy/addition';
 
 /**
- Family segment derived from category slugs,
- so families can never drift from the category list they group.
- 
- @example
- ```ts
- const family: IssueCategoryFamily = 'locale-convention';
- ```
- */
-export type IssueCategoryFamily = IssueCategory extends `${infer Family}/${string}`
-  ? Family
-  : never;
-
-/**
  Guards untrusted category strings from model JSON before they enter typed claims.
  
  @param value - candidate from unvalidated model output
@@ -236,56 +221,6 @@ export function isIssueSeverity(value: unknown,): value is IssueSeverity {
     return false;
 
   return (ISSUE_SEVERITIES as readonly string[]).includes(value,);
-}
-
-/**
- Every family in category-list first-occurrence order;
- the annotation pins each entry to the family union derived from category slugs,
- and a unit test pins completeness in the other direction,
- so list and slugs can never drift apart.
- Scorecard buckets and routing tables enumerate families from here.
- 
- @example
- ```ts
- for (const family of ISSUE_CATEGORY_FAMILIES) bucketByFamily(family,);
- ```
- */
-export const ISSUE_CATEGORY_FAMILIES: readonly IssueCategoryFamily[] = [
-  'accuracy',
-  'fluency',
-  'terminology',
-  'style',
-  'locale-convention',
-  'policy',
-  'extension',
-];
-
-/**
- Extracts family segment from one category slug,
- because routing, panel weights, and scorecard buckets operate per family.
- 
- @param category - slug whose family segment routing needs
- 
- @returns Family whose slash-terminated prefix opens the slug
- 
- @example
- ```ts
- categoryFamily({ category: 'policy/sensitive-content', },);
- ```
- */
-export function categoryFamily(
-  { category, }: { readonly category: IssueCategory; },
-): IssueCategoryFamily {
-  /**
-   Family opening the slug, present for every member of the closed category union;
-   the trailing slash keeps one family from matching another's prefix.
-   */
-  const family = ISSUE_CATEGORY_FAMILIES
-    .find(function opensSlug(candidate,) {
-      return category.startsWith(`${candidate}/`,);
-    },);
-
-  return nonNullishOrThrow(family,);
 }
 
 //endregion Issue taxonomy

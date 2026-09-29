@@ -23,13 +23,10 @@ export {
   type SpanAnchor,
 } from './issue-model.ts';
 export {
-  categoryFamily,
   type CategoryRemap,
   ISSUE_CATEGORIES,
-  ISSUE_CATEGORY_FAMILIES,
   ISSUE_SEVERITIES,
   type IssueCategory,
-  type IssueCategoryFamily,
   isIssueCategory,
   isIssueSeverity,
   type IssueSeverity,
@@ -144,8 +141,6 @@ export {
   type RefusalScan,
 } from './refusal.ts';
 export {
-  estimateRequestWeight,
-  SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN,
   SYNTHETIC_CHAT_BASE_URL,
   SYNTHETIC_MODELS,
   SYNTHETIC_QUOTAS_URL,

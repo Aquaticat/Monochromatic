@@ -23,7 +23,6 @@ import {
   SliceSpliceError,
   TranslationRepairInterruptedError,
   UnansweredContestSliceError,
-  UnfilledPageError,
   UnparseablePageError,
   VisualEvidenceInterruptedError,
 } from '../../dist/final/node/index.mjs';
@@ -52,14 +51,6 @@ await describe({
       new TranslationRepairInterruptedError({
         reason: 'provider-unavailable',
         findings: [],
-      },),
-      new UnfilledPageError({
-        entryId: 'Cat',
-        unfilled: [{
-          sliceIndex: 1,
-          reason: 'not-corroborated',
-          findings: [],
-        },],
       },),
       new VisualEvidenceInterruptedError({ unavailableCount: 1, }),
       // Ledger A7: deterministic page and artifact refusals, which a retry

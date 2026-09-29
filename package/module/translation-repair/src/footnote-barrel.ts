@@ -9,7 +9,6 @@ export {
   type FootnoteRelabelReading,
   footnoteRelabelOf,
   footnoteRelabelOfDefinitions,
-  referenceLabels,
 } from './archive-footnote-relabel.ts';
 export { widenFootnoteRelabel, } from './archive-footnote-relabel-widen.ts';
 export {

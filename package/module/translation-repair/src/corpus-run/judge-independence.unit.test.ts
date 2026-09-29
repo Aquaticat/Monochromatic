@@ -1,9 +1,11 @@
 /**
  Tests for seating judges that did not propose the claim they judge.
  
- The cases that matter are the two that would produce a confident wrong
+ The case that matters is the one that would produce a confident wrong
  number: a claim every seated model proposed, which must be reported rather
- than dropped, and a rate over a population too small to carry one.
+ than dropped. The rate renderer tested beside it had no caller after its
+ runner changed and went on 2026-09-29 (ledger B30); the crosscheck runner
+ reads `MIN_JUDGED_CLAIMS` itself.
  
  Model ids are the real roster, since the rule under test is about the
  relationship between authorship and the seats available. No corpus text is
@@ -19,8 +21,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  MIN_JUDGED_CLAIMS,
-  renderJudgedRate,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -134,62 +134,6 @@ await describe({
           SEAT_HYPER_OPENROUTER_VISION_EDITOR,
           SEAT_SYNTHETIC_TEXT_EVERYWHERE,
         ],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: renderJudgedRate.name,
-  children: [
-    it({
-      name: 'REFUSES to render a rate under the minimum population, naming how '
-        + 'far short it is. The eligible population on 2026-08-13 was 2 entries '
-        + 'and 17 chunks, and a rate over that reads exactly like a rate over a '
-        + 'thousand',
-      fn: async () => {
-        expect(renderJudgedRate({
-          count: 3,
-          judged: 4,
-          digits: 2,
-        },),).toBe(`n/a (4 of ${String(MIN_JUDGED_CLAIMS,)} needed)`,);
-      },
-    },),
-
-    it({
-      name: 'renders a rate once the population carries one',
-      fn: async () => {
-        expect(renderJudgedRate({
-          count: 20,
-          judged: 40,
-          digits: 2,
-        },),).toBe('0.50',);
-      },
-    },),
-
-    it({
-      name: 'reports INCONSISTENT when the numerator exceeds the denominator, '
-        + 'rather than a rate above one. More judgements than judged claims is '
-        + 'a contradiction in the record, and dividing it would hide that',
-      fn: async () => {
-        expect(renderJudgedRate({
-          count: 50,
-          judged: 40,
-          digits: 2,
-        },),).toBe('INCONSISTENT',);
-      },
-    },),
-
-    it({
-      name: 'reports INCONSISTENT rather than n/a when a nonzero count sits '
-        + 'over a zero denominator, so an empty population and a broken join '
-        + 'stay distinguishable',
-      fn: async () => {
-        expect(renderJudgedRate({
-          count: 1,
-          judged: 0,
-          digits: 2,
-        },),).toBe('INCONSISTENT',);
       },
     },),
   ],

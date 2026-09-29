@@ -1,11 +1,14 @@
 /**
- Tests for checking a version 2 artifact against a preparation.
- 
+ Tests for checking a version 2 artifact's measurements against a
+ preparation.
+
  WHAT THESE PIN is the boundary the standalone reader has to leave open. That
  reader checks the recorded preparation identity for SYNTAX and nothing more,
  because the inputs the identity hashes are not in the file; these cases run
- the same artifact against a preparation somebody rebuilt, which is the only
- way the question gets answered.
+ the same artifact against a preparation somebody rebuilt, and read its
+ recorded measurements against it, as the rendering audit does. They tested an
+ identity check nothing called until 2026-09-29 (ledger B30), and the
+ measurements check the audit runs had no case of its own.
  
  The preparation here is a REAL one from `prepareDocumentPair` rather than a
  hand-built stand-in, so the identity, the slices and every measurement come
@@ -34,7 +37,7 @@ import {
   type PreparedDocumentPair,
   prepareDocumentPair,
   type SliceDeliveryRecord,
-  verifyArtifactAgainstPreparation,
+  verifyArtifactMeasurements,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -216,13 +219,12 @@ function writeAndRead(
 }
 
 await describe({
-  name: verifyArtifactAgainstPreparation.name,
+  name: verifyArtifactMeasurements.name,
   children: [
     it({
       name:
-        'ACCEPTS an artifact against the preparation it was written over, which is the only way the '
-        + 'recorded identity is ever checked for more than syntax: the file stores measurements of the '
-        + 'two documents rather than the documents, so nothing in it can recompute the name it carries',
+        'ACCEPTS an artifact against the preparation it was written over: every measurement it records '
+        + 'of the two documents is what that preparation measures',
       fn: async () => {
         /**
          A real preparation of the cat pair.
@@ -231,7 +233,7 @@ await describe({
           sourceText: SOURCE_DOC,
           targetText: TARGET_DOC,
         },);
-        verifyArtifactAgainstPreparation({
+        verifyArtifactMeasurements({
           artifact: writeAndRead({ prepared, },),
           prepared,
         },);
@@ -239,9 +241,9 @@ await describe({
     },),
     it({
       name:
-        'REFUSES the same artifact against a preparation of DIFFERENT documents, naming the identity it '
-        + 'expected: a standalone reader accepts any syntactically valid identity, and this is the check '
-        + 'that tells one preparation from another',
+        'REFUSES the same artifact against a preparation of DIFFERENT documents, naming the first '
+        + 'measurement that differs: a standalone reader accepts any syntactically valid identity, and '
+        + 'this is the check that tells one preparation from another',
       fn: async () => {
         /**
          Preparation the artifact describes.
@@ -267,21 +269,24 @@ await describe({
          What differentDocuments raised, read for its class as well as its wording.
          */
         const refusalOfDifferentDocuments = caught(function differentDocuments() {
-          verifyArtifactAgainstPreparation({
+          verifyArtifactMeasurements({
             artifact,
             prepared: otherPair,
           },);
         },);
 
         expect(refusalOfDifferentDocuments,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfDifferentDocuments as Error).message,).toContain('CatEntry1.preparation.identity',);
+        // The two originals slice alike and differ in length, so the source's
+        // character count is the first measurement the check reads that differs.
+        expect(otherPair.slices.length,).toBe(prepared.slices.length,);
+        expect((refusalOfDifferentDocuments as Error).message,).toContain('CatEntry1.preparation.sourceChars',);
       },
     },),
     it({
       name:
-        'REFUSES the same DOCUMENTS sliced under a different budget, which is the subtle half: the two '
-        + 'preparations describe one pair of texts and pair different originals with different archive '
-        + 'wordings, so an artifact read against the wrong one would report rows nobody produced',
+        'REFUSES the same DOCUMENTS sliced under a different budget into a different number of slices: '
+        + 'the two preparations describe one pair of texts and pair different originals with different '
+        + 'archive wordings, so an artifact read against the wrong one would report rows nobody produced',
       fn: async () => {
         /**
          Preparation the artifact describes.
@@ -301,22 +306,22 @@ await describe({
         },);
 
         // POSITIVE CONTROL for the case: unless the budget actually changed the
-        // slicing, this would be checking an artifact against its own
-        // preparation and passing for the wrong reason.
-        expect(preparationIdentity({ prepared: finer, },),).not
-          .toBe(preparationIdentity({ prepared, },),);
+        // slice count, this would be checking an artifact against measurements
+        // it shares and passing for the wrong reason.
+        expect(finer.slices.length,).not
+          .toBe(prepared.slices.length,);
         /**
          What differentSlicing raised, read for its class as well as its wording.
          */
         const refusalOfDifferentSlicing = caught(function differentSlicing() {
-          verifyArtifactAgainstPreparation({
+          verifyArtifactMeasurements({
             artifact: writeAndRead({ prepared, },),
             prepared: finer,
           },);
         },);
 
         expect(refusalOfDifferentSlicing,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfDifferentSlicing as Error).message,).toContain('CatEntry1.preparation.identity',);
+        expect((refusalOfDifferentSlicing as Error).message,).toContain('CatEntry1.preparation.sliceCount',);
       },
     },),
   ],

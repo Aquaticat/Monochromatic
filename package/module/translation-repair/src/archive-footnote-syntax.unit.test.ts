@@ -1,5 +1,5 @@
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { applyFootnoteRelabel, documentLabels, parseDocument, referenceLabels, } from '../dist/final/node/index.mjs';
+import { applyFootnoteRelabel, documentLabels, parseDocument, } from '../dist/final/node/index.mjs';
 
 const syntaxLines = [
   '---', 'name: "Literal [^1]"', '---', '', 'Real[^1].', '', '`[^1]`', '', String.raw`\[^1]`, '',
@@ -33,7 +33,6 @@ await describe({
         const text = 'Real[^Note] and [^note].\n\n[^NOTE]: Actual note.';
         expect(applyFootnoteRelabel({ text, map: [{ from: 'NOTE', to: 'x' }] })).toBe('Real[^x] and [^x].\n\n[^x]: Actual note.');
         expect(documentLabels({ text })).toEqual(['Note']);
-        expect(referenceLabels({ text })).toEqual(['Note']);
       },
     }),
     it({

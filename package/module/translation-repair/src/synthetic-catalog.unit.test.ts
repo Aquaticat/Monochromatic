@@ -1,5 +1,5 @@
 /**
- Tests for the verified model catalog and request-weight estimation.
+ Tests for the verified model catalog.
  
  @module
  */
@@ -10,38 +10,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  estimateRequestWeight,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN,
   SYNTHETIC_MODELS,
 } from '../dist/final/node/index.mjs';
-
-await describe({
-  name: estimateRequestWeight.name,
-  children: [
-    it({
-      name: 'TRACKS CURRENT KIMI-K3 REQUEST-WEIGHT DENOMINATOR independently of roster identity',
-      fn: async () => {
-        // AGAINST KIMI-K3'S OWN CARD rather than a literal (ledger T6): a
-        // literal passed whatever Kimi-K3's listed price became.
-        expect(SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN,)
-          .toBe(SYNTHETIC_MODELS['hf:moonshotai/Kimi-K3'].promptDollarsPerToken,);
-      },
-    },),
-
-    it({
-      name: 'derives every weight as the input-price ratio against the baseline',
-      fn: async () => {
-        /** Baseline input price weights divide by. */
-        const baselinePrice = SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN;
-        for (const info of Object.values(SYNTHETIC_MODELS,)) {
-          expect(estimateRequestWeight({ modelId: info.id, },),)
-            .toBe(info.promptDollarsPerToken / baselinePrice,);
-        }
-      },
-    },),
-  ],
-},);
 
 await describe({
   name: 'synthetic catalog',

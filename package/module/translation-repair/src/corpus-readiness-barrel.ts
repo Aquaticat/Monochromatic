@@ -99,11 +99,7 @@ export {
   repairArchiveBlocks,
 } from './corpus-run/archive-block-repair.ts';
 export { archiveBlockSourceContexts, } from './corpus-run/archive-block-source-context.ts';
-export {
-  assertPublishableTranslation,
-  UnfilledPageError,
-  unfilledPageFindings,
-} from './corpus-run/publish-completeness.ts';
+export { unfilledPageFindings, } from './corpus-run/publish-completeness.ts';
 export { assertFinalNaturalnessComplete, } from './corpus-run/final-naturalness-completeness.ts';
 export {
   finalSelectionFindings,

@@ -203,7 +203,6 @@ export { readOnlyIds, } from './corpus-run/entry-filter.ts';
 export {
   type JudgeSeating,
   MIN_JUDGED_CLAIMS,
-  renderJudgedRate,
   seatJudges,
 } from './corpus-run/judge-independence.ts';
 export {

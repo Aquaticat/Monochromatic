@@ -23,7 +23,6 @@ import {
   footnoteRelabelOf,
   footnoteRelabelOfDefinitions,
   prepareDocumentPair,
-  referenceLabels,
 } from '../dist/final/node/index.mjs';
 
 //region Fixtures
@@ -40,24 +39,6 @@ const TARGET_TEXT = '## Life\n\nTuantuan[^1] took her in, and Doudou[^2] kept he
   + '[^1]: The old cat who took her in, like a mother.\n\n[^2]: The kitten next door, always following her.\n';
 
 //endregion Fixtures
-
-await describe({
-  name: referenceLabels.name,
-  children: [
-    it({
-      name: 'lists the distinct labels a text references in order of first appearance, and never a '
-        + 'definition opener',
-      fn: async () => {
-        expect(referenceLabels({ text: 'A[^2] and B[^1], again[^2].\n\n[^1]: note\n[^3]: unreferenced\n', },),)
-          .toStrictEqual([
-            '2',
-            '1',
-          ],);
-        expect(referenceLabels({ text: 'Nothing here.\n', },),).toStrictEqual([],);
-      },
-    },),
-  ],
-},);
 
 await describe({
   name: footnoteRelabelOf.name,

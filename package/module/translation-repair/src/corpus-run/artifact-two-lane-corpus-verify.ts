@@ -1,14 +1,9 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
-import { preparationIdentity, } from '../preparation-identity.ts';
 import { sourceBytesOf, } from '../sample-grading.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
-import {
-  assertFindingsDescribePreparation,
-  assertLedgerDescribesPreparation,
-  assertResultCountsPreparation,
-} from './artifact-two-lane-verify.ts';
+import { assertResultCountsPreparation, } from './artifact-two-lane-verify.ts';
 
 //region Artifact version 2 corpus verification
 // The checks a file ALONE cannot make, run against a preparation somebody else
@@ -21,10 +16,11 @@ import {
 // and offsets, the line-structure flag and the identity context, and the file
 // carries none of those.
 //
-// SO THE PREPARATION IS A PARAMETER. Whoever holds the corpus checkout at the
-// recorded commit and the matching pipeline builds the preparation and passes
-// it here; this then answers the question the reader had to leave open, which
-// is whether the artifact describes THAT slicing rather than some slicing.
+// SO THE PREPARATION IS A PARAMETER, and what it is checked against is the
+// artifact's MEASUREMENTS. A check that recomputed the identity and read both
+// ledgers row by row against the preparation stood here until 2026-09-29: no
+// rebuild matches a run's identity (ledger A12b), so nothing called it, and it
+// went with the other functions only tests reached (ledger B30).
 //
 // EVERY REFUSAL COMES BACK AS A PARSE ERROR, translated by `translating` from
 // the writer-side mismatch error its checks raise. A caller reading artifacts should meet
@@ -102,117 +98,11 @@ function assertMeasured(
 }
 
 /**
- Checks a parsed version 2 artifact against the preparation it claims to
- describe.
- 
- WHAT THIS ADDS over reading the file: the recorded identity is RECOMPUTED
- rather than syntax-checked, every per-slice row is checked against the slice
- the preparation actually produced, and every recorded measurement is checked
- against the documents themselves.
- 
- WHAT IT STILL CANNOT SAY: that the two raw lane results came from the same
- run as the ledgers beside them. Each result reports the slice count of its
- own preparation and that is checked here, which refuses a grossly mismatched
- pairing and proves nothing finer.
- 
- @param artifact - artifact as the version 2 reader returned it
- 
- @param prepared - preparation whoever holds the corpus rebuilt
- 
- @throws {@link ArtifactParseError} when the artifact describes a different
- slicing, a different pair of documents, or measurements these documents do
- not have
- 
- @example
- ```ts
- verifyArtifactAgainstPreparation({ artifact, prepared, },);
- ```
- */
-export function verifyArtifactAgainstPreparation(
-  {
-    artifact,
-    prepared,
-  }: {
-    readonly artifact: ParsedTwoLaneArtifact;
-    readonly prepared: PreparedDocumentPair;
-  },
-): void {
-  /**
-   Name this preparation gives itself, recomputed from the documents rather
-   than read out of the artifact.
-   */
-  const expected = preparationIdentity({ prepared, },);
-
-  /**
-   What the artifact says about the slicing.
-   */
-  const { preparation, } = artifact;
-  if (preparation.identity !== expected) {
-    throw new ArtifactParseError({
-      path: `${artifact.id}.preparation.identity`,
-      reason: `${expected}, which is what this preparation names itself; the artifact records ${
-        preparation.identity
-      }, so it describes a different slicing of some pair of documents`,
-    },);
-  }
-  verifyArtifactMeasurements({
-    artifact,
-    prepared,
-  },);
-  translating({
-    check: function findings(): void {
-      assertFindingsDescribePreparation({
-        prepared,
-        reported: preparation.alignmentFindings,
-      },);
-    },
-    path: `${artifact.id}.preparation.alignmentFindings`,
-  },);
-
-  // BOTH LEDGERS ROW BY ROW, against the slices the preparation produced. This
-  // is the check the standalone reader has no way to make: it can see that the
-  // two lanes agree with each other, and only a preparation says whether either
-  // one describes the documents anybody actually ran.
-  translating({
-    check: function repairRows(): void {
-      assertLedgerDescribesPreparation({
-        prepared,
-        expected,
-        ledger: {
-          preparationIdentity: preparation.identity,
-          records: artifact.lanes
-            .repair
-            .delivery,
-        },
-        lane: 'repair',
-      },);
-    },
-    path: `${artifact.id}.lanes.repair.delivery`,
-  },);
-  translating({
-    check: function translateRows(): void {
-      assertLedgerDescribesPreparation({
-        prepared,
-        expected,
-        ledger: {
-          preparationIdentity: preparation.identity,
-          records: artifact.lanes
-            .translate
-            .delivery,
-        },
-        lane: 'translate',
-      },);
-    },
-    path: `${artifact.id}.lanes.translate.delivery`,
-  },);
-}
-
-/**
  Checks what a parsed artifact measured of its preparation against a
  preparation: slice count, document sizes, alignment pairs, and each lane's
  own slice count.
  
- SPLIT FROM THE IDENTITY CHECK (ledger A12b). The recorded identity also
+ SPLIT FROM THE IDENTITY CHECK (ledger A12b), since removed (ledger B30). The recorded identity also
  hashes the declared names as the run's build worded them, and the recorded
  alignment findings include the roster pairing rounds' own (mikaela16's six
  are all `block-pairing` lines), which a rebuild never runs, so it reports

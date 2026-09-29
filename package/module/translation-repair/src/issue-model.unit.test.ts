@@ -11,13 +11,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  categoryFamily,
   computeIssueClaimId,
   hashContent,
   isIssueCategory,
   isIssueSeverity,
   ISSUE_CATEGORIES,
-  ISSUE_CATEGORY_FAMILIES,
   ISSUE_SEVERITIES,
   type IssueClaim,
   type SpanAnchor,
@@ -45,44 +43,6 @@ const BASE_CLAIM: IssueClaim = {
   summary: '猫猫追蝴蝶的句子没有翻译。',
   spans: [BASE_SPAN,],
 };
-
-await describe({
-  name: categoryFamily.name,
-  children: [
-    it({
-      name: 'returns family segment for compound family slugs',
-      fn: async () => {
-        expect(categoryFamily({ category: 'locale-convention/quotation-marks', },),)
-          .toBe('locale-convention',);
-      },
-    },),
-
-    it({
-      name: 'maps every listed category into a known family',
-      fn: async () => {
-        /** Families actually derivable from the category list. */
-        const derived = [
-          ...new Set(ISSUE_CATEGORIES.map(function toFamily(category,) {
-            return categoryFamily({ category, },);
-          },),),
-        ]
-          .toSorted();
-        expect(derived,).toEqual([
-          'accuracy',
-          'extension',
-          'fluency',
-          'locale-convention',
-          'policy',
-          'style',
-          'terminology',
-        ],);
-        // Completeness pin in the other direction: the hand-listed family const
-        // covers exactly the families the category slugs derive.
-        expect([...ISSUE_CATEGORY_FAMILIES,].toSorted(),).toEqual(derived,);
-      },
-    },),
-  ],
-},);
 
 await describe({
   name: isIssueCategory.name,

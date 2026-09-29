@@ -123,41 +123,4 @@ export function seatJudges(
  */
 export const MIN_JUDGED_CLAIMS = 30;
 
-/**
- Renders a rate, or says why it is not being rendered.
- 
- @param count - numerator
- 
- @param judged - claims a disinterested judge actually ruled on
- 
- @param digits - decimal places
- 
- @returns Rate, `n/a` under the minimum, or `INCONSISTENT` when a count
- exceeds a denominator that cannot hold it
- 
- @example
- ```ts
- const rendered = renderJudgedRate({ count: 21, judged: 34, digits: 2, },);
- ```
- */
-export function renderJudgedRate(
-  {
-    count,
-    judged,
-    digits,
-  }: {
-    readonly count: number;
-    readonly judged: number;
-    readonly digits: number;
-  },
-): string {
-  // A numerator with no denominator to divide is not zero, it is a contradiction
-  // in the record, and rendering it as a rate would hide that.
-  if (count > judged)
-    return 'INCONSISTENT';
-  if (judged < MIN_JUDGED_CLAIMS)
-    return `n/a (${String(judged,)} of ${String(MIN_JUDGED_CLAIMS,)} needed)`;
-  return (count / judged).toFixed(digits,);
-}
-
 //endregion Judge independence

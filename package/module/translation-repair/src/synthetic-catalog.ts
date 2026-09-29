@@ -192,17 +192,6 @@ export const SYNTHETIC_MODELS: Readonly<Record<SyntheticServedId, SyntheticModel
 },);
 
 /**
- Input price of one baseline request against the five-hour limit.
- 
- READ FROM CURRENT RATE-LIMIT DOCUMENTATION on 2026-08-29, which names
- `moonshotai/Kimi-K3` as default and one call as exactly one request. Earlier
- same-day documentation named GLM-5.2 at a different price, so this value is
- deliberately separate from roster identity and must move with documented
- default. Live `/quotas` readings remain authoritative.
- */
-export const SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN = 0.000003;
-
-/**
  Whether Synthetic serves a roster model at all.
  
  THE CHECK THE WIRE NEVER MADE. Five roster seats are Charm Hyper endpoint
@@ -224,37 +213,6 @@ export function syntheticServes(modelId: RosterModelId,): modelId is SyntheticSe
     SYNTHETIC_MODELS,
     modelId,
   );
-}
-
-/**
- Estimates five-hour-limit weight of one request to one model,
- as input-price ratio against the baseline
- (rate-limit page: requests are scaled by model input price).
- Planning estimate only; the provider's own accounting is authoritative and
- observable through `/quotas`.
- 
- @param modelId - model whose request weight routing needs
- 
- @returns Estimated fraction of one baseline request
- 
- @example
- ```ts
- estimateRequestWeight({ modelId: 'hf:openai/gpt-oss-120b', },);
- ```
- */
-export function estimateRequestWeight(
-  { modelId, }: { readonly modelId: SyntheticServedId; },
-): number {
-  /**
-   Input price of the requested model.
-   */
-  const modelPrice = SYNTHETIC_MODELS[modelId]
-    .promptDollarsPerToken;
-
-  /**
-   Input price of the baseline model.
-   */
-  return modelPrice / SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN;
 }
 
 /**

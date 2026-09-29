@@ -158,7 +158,6 @@ export {
   alterSharedNumber,
   type DamageAttempt,
   deleteOneSentence,
-  donorTextsFor,
   type FidelityDamageKind,
   insertBorrowedSentence,
 } from './fidelity-damage.ts';

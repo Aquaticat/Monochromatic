@@ -118,29 +118,6 @@ export type FootnoteRelabelReading = {
 };
 
 /**
- Distinct labels one text references, in order of first appearance,
- definition openers left out.
- 
- @param text - complete document or independently parseable fragment
- 
- @returns Labels, each once
- 
- @example
- ```ts
- referenceLabels({ text: 'A[^2] and B[^1].', },);
- // => ['2', '1']
- ```
- */
-export function referenceLabels(
-  { text, }: { readonly text: string; },
-): readonly string[] {
-  return footnoteMarkerLabels({ markers: activeFootnoteMarkers({ text, },)
-    .filter(function reference(marker,): boolean {
-    return marker.kind === 'reference';
-  },), },);
-}
-
-/**
  One claim that an archive label is an original label, and where it was
  read.
  */
