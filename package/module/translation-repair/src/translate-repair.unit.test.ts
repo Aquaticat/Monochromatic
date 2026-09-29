@@ -421,6 +421,24 @@ await describe({
     },),
 
     it({
+      name: 'leaves alone a candidate that is the incumbent with its SOFT LINE BREAK ELSEWHERE, which the site '
+        + 'renders as the same page and the slate collapses into the incumbent the same way (ledger B26)',
+      fn: async () => {
+        const { repaired, log, } = await runRepair({
+          translation: MERGED_TEXT,
+          incumbentText: 'A day in the cat\'s life:\nit dozes on the windowsill.',
+          answer: {
+            resolution: 'revised',
+            translation: GOOD_TEXT,
+            explanation: 'restored the heading',
+          },
+        },);
+        expect(log.calls,).toBe(0,);
+        expect(repaired.voices[0]?.value.translation,).toBe(MERGED_TEXT,);
+      },
+    },),
+
+    it({
       name: 'still asks about a candidate that only RESEMBLES the incumbent, '
         + 'since the collapse it would merge into never happens and the '
         + 'candidate reaches the ballot on its own',
