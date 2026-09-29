@@ -149,7 +149,7 @@ which were left as historical style comparisons.
    and frames fill
   the viewport height rather than floating in dead space.
 
-## Current screen refinement matrix, awaiting verdict
+## Historical screen refinement matrix, settled with 1B
 
 The accepted `divider-final.png` remains the before-state evidence.
  Its transport
@@ -404,7 +404,7 @@ fill,
 All light-side files are presented on a light desk with a light caption bar
 (review-notes 5g);
  the dark pair keeps a dark one.
- For the active questionnaire,
+ For the historical native theme questionnaire,
  the
 six `.dc.html` files are now historical design records rather than screenshot sources.
 Branch `prototype/music-player-theme-compose` rebuilds the same six keys in native
@@ -594,7 +594,7 @@ the visible dynamic rail line.
 </tbody>
 </table>
 
-## ROUND 6 — awaiting verdict
+## Historical round 6, scrollbar choice settled by D22
 
 <table>
 <thead>
@@ -767,7 +767,7 @@ on-secondary-container #E8DEF8.
  The descend demos assume parent tracks play before
 subfolders (unconfirmed — see open-questions.md #3).
 
-## REJECTED or UNRESOLVED — needs rebuilding
+## Historical rejected or unresolved candidates
 
 <table>
 <thead>
@@ -855,7 +855,7 @@ subfolders (unconfirmed — see open-questions.md #3).
    **Keep:
    this is the fallback if the connected button group is dropped.**
 
-### Folder picker explorations (the A–Z jump strip won)
+### Historical folder picker explorations, superseded by D17 and D31
 - **picker-a** — letter section rows.
 - **picker-b** — the jump strip (the direction that won).
 - **picker-c** — persistent sidebar.
@@ -975,7 +975,7 @@ covered (`questions/evidence/cover-round-cover-picker-p4-interaction.json`).
 P1/P3 deviation: the floating menu panel exceeds the baseline menu's 112 to 280dp width
 cap because the D31 name wall needs the full panel.
 
-## Desktop command-bar visual drafts, withdrawn pending MD3 redraw
+## Historical desktop command-bar visual drafts, withdrawn
 
 The I/G/R questions are independent,
  and no choice was made.
@@ -986,7 +986,7 @@ rejected as visibly non-MD3.
  The candidates recorded here are historical design
 probes,
  not current response options.
- The replacement must use the Search bar/view
+ The subsequent replacement used the Search bar/view
 visual and token evidence in `material-3-compliance.md`.
 
 The withdrawn I/G/R variant roles were:
@@ -1198,7 +1198,7 @@ right pane,
 typing.
  D52 removes the duplicate `Results for “cam”` heading from positive
 results on the inner and cover panels.
- The current A-only rasters in
+ The initial A-only rasters in
 `questions/render/search-selected-review-*` are sanitized native captures
 at 100% and 200% text in light/dark.
  The self-contained
