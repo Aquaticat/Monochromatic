@@ -184,7 +184,7 @@ await describe({
               'The kitten leapt above the bowl at or above quorum, unbounded below and above.',
               'The threshold below which a nap counts sits above U+2E80, far above anything, kept below {@link NAPS}.',
               'The label read `Translation of the above photos:` on the page, and a below-threshold vote counts.',
-              '            `Translation of the above note:`',
+              '            `the above note`',
             ].join('\n',),
           },
         },),).toEqual([],);
