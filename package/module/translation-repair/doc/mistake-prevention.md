@@ -327,7 +327,9 @@ its warnings unread (M23),
 or an autofix changing behaviour unreviewed (M26);
 a file split at the line cap left comments naming the old file (M17);
 every doc commit skipped the repository's Markdown linter,
-so the package docs carried 3,344 of its findings (M54).
+so the package docs carried 3,344 of its findings (M54);
+changes that stopped calling a function left it behind,
+and nothing reported one (ledger B20).
 
 The rule:
 read a region with the Read tool before editing it.
@@ -336,7 +338,8 @@ type check and the named tests run after the final edit of a commit,
 in that order,
 and the commit follows only a clean run of all three (M46).
 Neither the type check nor the linter reports an unused import here,
-so a removal counts the removed names' uses.
+so a removal counts the removed names' uses,
+and a change that stops calling a function removes it in the same commit.
 Commit before `--fix` and read the diff after it for anything but layout.
 A split searches `src`,
 tests and `doc` for the old file's name and repoints every hit in the same commit.
@@ -349,7 +352,10 @@ What enforces it:
 the linter's `max-lines` and every other rule,
 read in full before staging;
 the Markdown linter,
-which exits 0 only when no finding remains.
+which exits 0 only when no finding remains;
+`src/dead-functions.unit.test.ts`,
+which fails on a top-level function its file never names beyond its declaration
+and on an export no other package file names.
 
 ## Questions to the owner
 

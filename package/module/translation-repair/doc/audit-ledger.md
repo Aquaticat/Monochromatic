@@ -6721,6 +6721,38 @@ The lookup cache,
 which outlives builds,
 already checks every hit (`isLookupRecord`).
 
+### B20: functions nothing calls, and no check that reports one
+
+Status:
+fixed,
+2026-09-28.
+A census of every top-level function in the package's non-test source
+(`.cache/dead-functions.mjs` in the package,
+rolldown's parser)
+found one private function its file never names beyond its declaration
+and one export no other file names;
+a control copy of the source with one planted function of each kind reported both.
+- `cb30e516e`:
+  `isAnchored` (`coverage-verdict.ts`) had been the evidence filter until `d6db46519` made full-coverage votes the only evidence,
+  and `uniqueRosterModelIds` (`consolidation-naturalness-state.ts`) served the naturalness correction loop `0f1898942` removed;
+  both are gone,
+  with the import only the second read.
+- `549f15bbd`:
+  `dead-functions.unit.test.ts` fails on either kind,
+  counting a test as naming an export;
+  its fixtures first show it finds each kind and leaves a function called in its file,
+  named in another source file or a test,
+  or exported by a list.
+  Writing the fixtures caught a flaw in its own whole-word check
+  (the last occurrence read no following character,
+  so a longer word counted),
+  pinned before the package-wide case could pass on it.
+  Both source guards now read through `source-scan.test-fixture.ts`.
+  Mutants planting a dead private function,
+  a dead export,
+  and restoring a merged copy are each caught;
+  a comment control survives.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
