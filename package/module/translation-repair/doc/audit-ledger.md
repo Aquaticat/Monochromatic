@@ -2691,6 +2691,33 @@ the bundle writes that non-list return as `isNodeList(children)?…:!1`,
 and the separator before `!1` maps to the last line of the arm before it,
 so the stretch read 278 to 284 where only 278 was cold.
 The error is only ever toward calling code cold.
+
+The third batch gave cases to named functions no test called,
+each an exchange or helper production reaches:
+the prefixing logger's `error`,
+`fatal`,
+`flush` and `trace`;
+the culled-seat guard's `chatJson` and `decide`,
+refused for a culled model and passed through otherwise
+(the guard is now exported for its test);
+the router's `decide`,
+refused with no decisions client and while OpenRouter reads dry,
+and marking the meter on a budget refusal;
+the seat tally's `decide`;
+the Anthropic scanner's `servedBy`,
+which the drain asks on every Hyper stream;
+the pacer's default sleeper,
+driven on the real clock through a wait and an abort;
+and `sealedEnd`,
+which only the scorer walk reaches,
+with an original left behind the last seal and nothing after it.
+`sealedEnd`'s hand-written unreachable throw became `nonNullishOrThrow`,
+and the provider barrel's `//endregion` moved to its end,
+past the two export blocks that had landed after it.
+A census of the batch's test files against the format 2 baseline reads every claimed stretch as ran,
+and `src/group-merge.ts`,
+edited,
+holds neither `sealedEnd` nor the seal branch calling it in a fresh census of those files.
 The census reports raw truth and honours no v8 ignore hint:
 a guard a hint hid is restructured in its file's batch,
 as `flattenContainers`' was.

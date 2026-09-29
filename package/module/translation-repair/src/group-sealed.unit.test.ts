@@ -357,5 +357,37 @@ await describe({
         },).id,);
       },
     },),
+
+    it({
+      name: 'WRITES AN ORIGINAL LEFT BEHIND THE LAST SEAL AT THE SEAL\'S END under the scorer walk, where no pairing '
+        + 'anchors it and nothing after the seal can take it (ledger T8)',
+      fn: async () => {
+        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
+        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
+        /**
+         The closing line, sealed, which leaves the footnote definition behind
+         the seal with no run after it.
+         */
+        const closing = nodeAt({
+          nodes: targetNodes,
+          at: 2,
+        },);
+        const { runs, } = groupNodesSealed({
+          sourceNodes,
+          targetNodes,
+          sourceBudget: WIDE_BUDGET,
+          targetBudget: WIDE_BUDGET,
+          sealed: new Set([ closing.id, ],),
+        },);
+        expect(runs.at(-1,),).toStrictEqual({
+          kind: 'insertion',
+          sourceRun: [ nodeAt({
+            nodes: sourceNodes,
+            at: 3,
+          },), ],
+          targetOffset: closing.endOffset,
+        },);
+      },
+    },),
   ],
 },);

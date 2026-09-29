@@ -34,6 +34,7 @@ export {
   createRoutingClient,
   NoProviderForModelError,
 } from './provider-router.ts';
+export { refusingCulledSeats, } from './culled-seat-guard.ts';
 export {
   modelPromptDigest,
   promptUniqueClient,
@@ -300,8 +301,6 @@ export {
   routesAsDry,
   UNCONFIGURED_METER,
 } from './provider-meters.ts';
-
-//endregion Provider barrel
 export {
   isBudgetRefusal,
   isPaymentRefusal,
@@ -313,3 +312,5 @@ export {
   UPSTREAM_MODEL_HOLD_MS,
   type UpstreamModelHolds,
 } from './upstream-model-hold.ts';
+
+//endregion Provider barrel

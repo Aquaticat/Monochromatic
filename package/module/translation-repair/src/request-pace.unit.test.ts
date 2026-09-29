@@ -39,6 +39,12 @@ const SIGNAL = new AbortController().signal;
 const WINDOW_MS = 60_000;
 
 /**
+ Window length for the pacer on the real clock: short, since a case sleeps
+ through it once.
+ */
+const REAL_WINDOW_MS = 20;
+
+/**
  Builds a pacer on a scripted clock whose sleeps advance the clock instead of
  waiting.
  
@@ -195,6 +201,33 @@ await describe({
         await unpaced.pace.take({ signal: SIGNAL, },);
         await unpaced.pace.take({ signal: SIGNAL, },);
         expect(unpaced.sleeps,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'SLEEPS ON THE REAL CLOCK WITH THE DEFAULT SLEEPER until the window has room, and an abort ends that '
+        + 'sleep with the abort reason (ledger T8)',
+      fn: async () => {
+        const pace = createRequestPace({
+          perWindow: 1,
+          windowMs: REAL_WINDOW_MS,
+        },);
+        await pace.take({ signal: SIGNAL, },);
+        // A second take must now sleep, which is what the default sleeper is
+        // for; its return is the take resolving.
+        expect(pace.waitMs(),).toBeGreaterThan(0,);
+        await pace.take({ signal: SIGNAL, },);
+
+        /**
+         A caller that gives up while the default sleeper holds it.
+         */
+        const aborter = new AbortController();
+        /**
+         Its take, asleep until the window has room.
+         */
+        const asleep = pace.take({ signal: aborter.signal, },);
+        aborter.abort(new Error('the cat left the queue',),);
+        await expect(asleep,).rejects.toThrow('the cat left the queue',);
       },
     },),
   ],

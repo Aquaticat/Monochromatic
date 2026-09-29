@@ -195,5 +195,64 @@ await describe({
         },),).toBe(true,);
       },
     },),
+    it({
+      name: 'PREFIXES EVERY LEVEL, not only info, and forwards a flush (ledger T8)',
+      fn: async () => {
+        /**
+         What the wrapped logger received, as `level message`.
+         */
+        const received: string[] = [];
+        /**
+         A level's method that records instead of printing.
+
+         @param level - level name recorded beside the message
+
+         @returns The recording method
+         */
+        function recording(level: string,): (message: string,) => void {
+          return function record(message: string,): void {
+            received.push(`${level} ${message}`,);
+          };
+        }
+        /**
+         Slice logger over the recording one.
+         */
+        const l = sliceTagged({
+          l: {
+            debug: recording('debug',),
+            error: recording('error',),
+            fatal: recording('fatal',),
+            flush: async function flush(): Promise<void> {
+              received.push('flush',);
+            },
+            info: recording('info',),
+            trace: recording('trace',),
+            warn: recording('warn',),
+          },
+        },);
+        await inSliceLogContext({
+          lane: 'repair',
+          sliceIndex: 2,
+          run: async () => {
+            l.debug('stretches',);
+            l.error('knocks a cup over',);
+            l.fatal('naps forever',);
+            l.info('purrs',);
+            l.trace('tracks a moth',);
+            l.warn('hisses',);
+            await l.flush();
+          },
+        },);
+        expect(received,).toStrictEqual([
+          'debug [repair slice 2] stretches',
+          'error [repair slice 2] knocks a cup over',
+          'fatal [repair slice 2] naps forever',
+          'info [repair slice 2] purrs',
+          'trace [repair slice 2] tracks a moth',
+          'warn [repair slice 2] hisses',
+          'flush',
+        ],);
+      },
+    },),
   ],
 },);

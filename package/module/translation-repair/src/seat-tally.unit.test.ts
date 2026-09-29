@@ -31,6 +31,8 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChatTextReply,
+  type DecisionReply,
+  type DecisionRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -378,6 +380,56 @@ await describe({
         },);
 
         expect(client.quotas,).toBe(inner.quotas,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS THE TYPED DECISION EXCHANGE AS A SEAT ASKED, a reply usable and a throw rethrown, and offers it '
+        + 'only where the wrapped client does (ledger T8)',
+      fn: async () => {
+        /** Tally the wrapper counts into. */
+        const tally = createSeatTally();
+        /** Reply the answering decision seat gives. */
+        const reply = { answers: ['windowsill',], } as unknown as DecisionReply;
+        /** Decision request naming one seat, cast past what the tally never reads. */
+        const request = {
+          modelId: SEAT_HYPER_VISION,
+          signal: SIGNAL,
+        } as unknown as DecisionRequest;
+        /** Client under test, whose decision seat answers. */
+        const answering = seatTallyClient({
+          inner: {
+            ...innerClient({ text: '喵。', },),
+            decide: async function decide(): Promise<DecisionReply> {
+              return reply;
+            },
+          },
+          tally,
+        },);
+        /** Client under test, whose decision seat throws. */
+        const failing = seatTallyClient({
+          inner: {
+            ...innerClient({ text: '喵。', },),
+            decide: async function decide(): Promise<never> {
+              throw FAILURE;
+            },
+          },
+          tally,
+        },);
+
+        expect(await answering.decide?.(request,),).toBe(reply,);
+        await expect(failing.decide?.(request,),).rejects.toBe(FAILURE,);
+        expect(tally.counts(),).toStrictEqual([{
+          modelId: SEAT_HYPER_VISION,
+          asked: 2,
+          usable: 1,
+          unusable: 0,
+          threw: 1,
+        },],);
+        expect(seatTallyClient({
+          inner: innerClient({ text: '喵。', },),
+          tally,
+        },).decide,).toBeUndefined();
       },
     },),
   ],

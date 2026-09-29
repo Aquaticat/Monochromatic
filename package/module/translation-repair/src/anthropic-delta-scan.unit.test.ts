@@ -554,5 +554,21 @@ await describe({
       },
     },),
 
+    it({
+      name: 'NAMES NO UPSTREAM, even after a message_start that names one, since the Hyper stream this reads '
+        + 'names none and the endpoint that does is used for measurement only (ledger T8)',
+      fn: async () => {
+        /**
+         Scanner under test, fed an opening frame that names an upstream.
+         */
+        const scanner = scanAnthropicDeltas();
+
+        scanner.feed({
+          chunk: 'data: {"type":"message_start","message":{"provider":"Whiskers","usage":{"input_tokens":0}}}\n\n',
+        },);
+
+        expect(scanner.servedBy(),).toBe('',);
+      },
+    },),
   ],
 },);

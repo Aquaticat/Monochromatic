@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { DocumentNode, } from './document-node.ts';
 import type {
   GroupedRun,
@@ -63,10 +65,8 @@ function sealedEnd(
   /**
    Last sealed block, present because a sealed run is built from at least one.
    */
-  const last = run.targetRun
-    .at(-1,);
-  if (last === undefined)
-    throw new Error('unreachable: a sealed run always carries at least one translation block',);
+  const last = nonNullishOrThrow(run.targetRun
+    .at(-1,),);
   return last.endOffset;
 }
 
