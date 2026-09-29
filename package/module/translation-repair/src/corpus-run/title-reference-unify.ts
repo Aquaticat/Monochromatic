@@ -1,5 +1,6 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import { isHanOnly, } from '../han-only-text.ts';
+import { straightenQuotes, } from '../quote-normalize.ts';
 import { wordStarts, } from '../word-bounds.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { withoutComments, } from '../translate-address-drop.ts';
@@ -329,10 +330,13 @@ function rewriteLocated(
    edge, so "Wildcat Murmurs" does not end in "cat Murmurs".
    */
   const glossEndsWithHeading = (located.kind === 'gloss') && endsWithWords({
-    text: core,
-    tail: heading.rendering,
+    text: straightenQuotes({ text: core, },),
+    tail: straightenQuotes({ text: heading.rendering, },),
   },);
-  if ((core === heading.rendering) || glossEndsWithHeading)
+  // THE TYPOGRAPHY FOLD (ledger B24): a reference apart from the heading only
+  // in apostrophe style is the heading's, which the typography restoration
+  // makes one; rewriting it would only swap one quote style for the other.
+  if ((straightenQuotes({ text: core, },) === straightenQuotes({ text: heading.rendering, },)) || glossEndsWithHeading)
     return { kind: 'same', };
   if ((located.kind === 'gloss') && (wordCount({ text: core, },) > (wordCount({ text: heading.rendering, },) + RUN_SLACK)))
     return { kind: 'ambiguous', };

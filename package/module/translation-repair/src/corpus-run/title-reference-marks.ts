@@ -1,3 +1,5 @@
+import { straightenQuotes, } from '../quote-normalize.ts';
+import { wordStarts, } from '../word-bounds.ts';
 import type {
   Span,
   TitleLocation,
@@ -222,14 +224,25 @@ export function locateMarked(
   if (spans.length === 0)
     return { kind: 'none', };
   /**
-   Spans that already carry the heading's rendering.
+   Rendering as the typography fold reads it.
+   */
+  const foldedRendering = straightenQuotes({ text: rendering, },);
+  /**
+   Spans that already carry the heading's rendering: opening with it as
+   words (ledger B23), so "Catnip Days" does not carry "Cat", and read
+   through the typography fold (ledger B24), so "The Cat's Afternoon" carries
+   "The Cat’s Afternoon".
    */
   const carrying = spans.filter(function carries(span,): boolean {
-    return pageText.slice(
-      span.start,
-      span.end,
-    )
-      .startsWith(rendering,);
+    return wordStarts({
+      text: straightenQuotes({ text: pageText.slice(
+        span.start,
+        span.end,
+      ), },),
+      needle: foldedRendering,
+      end: 'word',
+    },)
+      .includes(0,);
   },);
   if ((spans.length > 1) && (carrying.length !== 1))
     return { kind: 'ambiguous', };
