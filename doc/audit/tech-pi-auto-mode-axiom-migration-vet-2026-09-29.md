@@ -169,6 +169,54 @@ then capture a genuine confirmation for a disposable fixture.
 The RPC correlation draft stays secondary.
 See the [source trace and bounded results](../troubleshooting/pi-input-provenance.md).
 
+## Observed-owner and consumed genuine-host result
+
+The private observed-owner phase passed ten predeclared cases,
+nine actual helper/scripted-editor launches,
+raw capture before normalization and cleanup,
+and scope/handle/omission controls.
+Every scripted result remained `humanOrigin: "not-established"`.
+No human authority,
+model,
+session,
+or production change was created.
+Its freeze is `8cacba0c2bd55e9b0b87224de35be319f51b3b83a3d5695ee302babd743318a5`.
+
+The genuine host freeze `proc_e6c0` passed its limited syntax,
+opt-in,
+and reversible default-spawn preparation controls.
+Actual outer controller `proc_d6b3` then failed with child exit `13`
+and Node's `Detected unsettled top-level await` diagnostic.
+The private verified-before-spawn receipt exists;
+original-capture and final-confirmation receipts do not.
+Read-only inspection found an owned Ghostty process and private workspace.
+No raw answer was read or exported;
+missing capture does not prove that no human typed.
+The original launch budget is consumed and the failed attempt must not be replayed.
+
+The standalone bootstrap omitted a referenced event-loop handle
+while the existing listener and detached child were unreferenced.
+Private no-desktop controls `proc_4663` passed reference/omission contrasts,
+completion,
+caught cancellation,
+and caught failure.
+Those controls do not cover escaping callback rejection,
+lease placement in a new genuine entrypoint,
+or bounded-stop behavior.
+The prior source-review clearance is explicitly retracted in a separate correction.
+No Node/Pi defect or actual SDK-session failure is established.
+
+Next:
+finish the private bootstrap controls and obtain authorization for a separately frozen new genuine epoch.
+No new human dispatch,
+production grant,
+cutoff,
+or adoption is authorized by these results.
+Detached terminal cleanup,
+other writer coverage,
+and the separate downstream gates remain unqualified.
+See the [source trace and limits](../troubleshooting/pi-input-provenance.md).
+
 ## Next bounded work
 
 Task #68 qualifies the existing trusted input and confirmation-writer paths under A.
