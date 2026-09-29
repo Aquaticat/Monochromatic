@@ -8516,7 +8516,8 @@ Every quorum-sizing line in the package's source was read
 18 of them calls or mentions of `rosterQuorumSize` or `reachableQuorum`),
 and each threshold was asked which seats its denominator counts.
 Outside its own file,
-`rosterQuorumSize` has 8 calls.
+`rosterQuorumSize` had 8 calls when the census read them,
+and has 7 since the fix removed the archive block review's.
 The gather itself (`stage-quorum.ts`),
 the windowed rounds,
 the select minimum
@@ -8597,6 +8598,91 @@ with the comment control surviving both times.
 The archive block review keeps no cache (B26),
 and the seat reader's line is a log.
 The full suite passed on `b968cbdc6` with no failing case.
+
+### B28: sheets missing a block their role needs (B21, family six)
+
+Status:
+in progress,
+2026-09-29.
+The census rendered every model-facing sheet the rendered-sheets fixtures build (38)
+and asked which shared blocks each carries
+(`~/temp/agent/f6-sheets/`:
+`constants.ts` over every exported string constant of 80 characters or more,
+`shared-lines.ts` over every line of 60 or more on two sheets or more,
+grouped by the sheets carrying it,
+and `context-presence.ts` over the fixture's identity and reference lines).
+The fixture decides what context a builder is given,
+so every gap a parameterized block showed was traced to the production caller before it counted.
+
+#### Roles
+
+Writers write English that may ship:
+the translate writer,
+the consolidation writer,
+the editor,
+the refiner,
+the translate repair turn,
+and the archive block review,
+whose reviewers write replacement text.
+Wording judges choose among wordings:
+the lane contest,
+both gates,
+and every selection slate,
+the typed decision included.
+Claim judges file or weigh claims against a rendering:
+the critic,
+the panel,
+the resolution judge,
+coverage,
+the rendering audit,
+the naturalness review,
+and the introduced-defect probe.
+Readers extract or align and write nothing that ships:
+the picture readers,
+reference attestation and its confirmation,
+section and block pairing,
+and the page-title lexicon.
+The restoration judge and the derivability probe are measurement probes.
+
+#### Findings so far
+
+- The archive block review lists the apparatus kinds without the shared narrative bound
+  (`NARRATIVE_DETAIL_IS_NOT_APPARATUS`);
+  its own sentence names biography,
+  events and dialogue,
+  and leaves out a method,
+  a time,
+  a cause and a characterization.
+  S5's fix put the bound on every sheet that files,
+  votes on or writes against the archive.
+- The introduced-defect probe excuses dropped wording as page apparatus without the bound,
+  the misreading the bound was written to stop (class one hundred eight).
+- The archive block review and its correction slate carry neither the declared names nor the cited references,
+  though both exist when `pass-prepare.ts` calls `repairArchiveBlocks`
+  (the reference context is built before the call,
+  and the declared-name lines are passed to preparation beside it).
+  The review judges archive wording against the original,
+  which `slice-context.md` says every such sheet does with the references beside it,
+  and the house rules it carries tell it to read a pronoun line and footnote vocabulary in a DECLARED NAMES block it never sees.
+  Of 381 stored run logs under `~/temp/agent/` in which the review ran,
+  95 are entries citing at least one reference.
+
+#### Read and left as they are
+
+The editor and the resolution judge act on issues the critic and panel classed,
+and both of those carry the kinds and the bound.
+The refiner and the refine slates judge against the current text,
+where dropping a gloss is "dropped",
+and the refiner is told declared names survive exactly.
+Production passes the translate slates,
+the repair slates,
+the editor and the rendering audit the declared names and references the fixture rendered them without
+(`translate-judge.ts`,
+`editor-ensemble.ts`,
+`repair-editor-stage.ts`,
+`rendering-audit.ts`).
+The readers and pairing sheets carry no house rules,
+and write nothing that ships.
 
 ## Process mistakes in this audit
 
