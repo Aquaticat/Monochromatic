@@ -155,10 +155,6 @@ export {
   PAGE_APPARATUS_IS_KEPT,
 } from './page-apparatus-clause.ts';
 export {
-  type CoverageAnswer,
-  runCoverageStage,
-} from './coverage-stage.ts';
-export {
   alterSharedNumber,
   type DamageAttempt,
   deleteOneSentence,
@@ -186,31 +182,6 @@ export {
   type FidelityTrial,
   runFidelityTrial,
 } from './judge-fidelity.ts';
-export {
-  type CoverageVerdict,
-  judgeCoverage,
-} from './coverage-verdict.ts';
-export {
-  admitWithinShortfall,
-  type CandidatePassage,
-  CORPUS_EXPANSION,
-  expectedTranslationPoints,
-  pageShortfall,
-} from './coverage-corroboration.ts';
-export {
-  interiorShortfall,
-  readUntranslatedTail,
-  type UntranslatedTail,
-} from './coverage-tail.ts';
-export {
-  buildCoverageMessages,
-  COVERAGE_RESPONSE_FORMAT,
-  type CoverageDegree,
-  type CoverageFollowupEvidence,
-  type CoveragePromptPlan,
-  type CoverageReportWire,
-  isCoverageReportWire,
-} from './coverage-wire.ts';
 export {
   messageText,
   type VisionMessage,

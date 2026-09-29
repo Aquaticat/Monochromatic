@@ -287,6 +287,7 @@ export * from './sheet-barrel.ts';
 export * from './text-barrel.ts';
 export * from './stage-barrel.ts';
 export * from './translate-barrel.ts';
+export * from './coverage-barrel.ts';
 export * from './consolidation-barrel.ts';
 export * from './context-barrel.ts';
 

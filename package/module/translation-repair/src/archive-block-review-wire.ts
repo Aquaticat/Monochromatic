@@ -61,6 +61,14 @@ const DISPOSITIONS: readonly string[] = [
 ];
 
 /**
+ What the reviewer does with a name the DECLARED NAMES block makes correct,
+ after the shared rules for reading the block (ledger B28): it stands as the
+ block declares it.
+ */
+export const ARCHIVE_BLOCK_IDENTITY_RULE: string = '- A name, handle or place name in the block that matches a '
+  + 'declared value is correct: never revise it to another form.';
+
+/**
  Builds distinct initial or continuation review messages.
  
  @param sourceText - aligned source section and corroborated readings of its pictures
@@ -127,7 +135,7 @@ export function buildArchiveBlockReviewMessages(
    */
   const identityRules = (identityBlock === '')
     ? ''
-    : `\n\n${DECLARED_IDENTITY_RULES}\n- A name, handle or place name in the block that matches a declared value is correct: never revise it to another form.`;
+    : `\n\n${DECLARED_IDENTITY_RULES}\n${ARCHIVE_BLOCK_IDENTITY_RULE}`;
   /**
    What the cited pages say and the rule for weighing it, after the block
    under review, nothing when the original links nowhere.

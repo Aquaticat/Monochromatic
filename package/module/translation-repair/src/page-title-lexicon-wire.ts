@@ -54,6 +54,15 @@ export type PageTitleLexiconWire = {
 };
 
 /**
+ What the lexicon does with a title a line of the DECLARED NAMES block gives
+ in English, after the shared rules for reading the block (ledger B28): a web
+ lookup or a note can establish a work's official English title, which the
+ sheet asks for.
+ */
+export const PAGE_TITLE_IDENTITY_RULE: string = '- A title a web lookup line or a note line gives in English is '
+  + 'weighed as those rules say before you render it.';
+
+/**
  Builds the lexicon request over one page.
 
  @param sourceText - the original document, so each title is read in its place
@@ -115,7 +124,7 @@ export function buildPageTitleLexiconMessages(
    */
   const identityRules = (identityBlock === '')
     ? ''
-    : `\n\n${DECLARED_IDENTITY_RULES}\n- A title a web lookup line or a note line gives in English is weighed as those rules say before you render it.`;
+    : `\n\n${DECLARED_IDENTITY_RULES}\n${PAGE_TITLE_IDENTITY_RULE}`;
   return [
     {
       role: 'system',

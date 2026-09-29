@@ -86,6 +86,14 @@ const COVERAGE_REPLY_RULE =
   `Reply with JSON only: {"coverage": "full" | "partial" | "none", "quote": "<one span copied exactly from the English translation, or empty for none>", "reason": "<one sentence naming what the span states>"}`;
 
 /**
+ What coverage does with a name the DECLARED NAMES block makes correct, after
+ the shared rules for reading the block (ledger B28): the declared English
+ form states the name the passage writes, so the passage reads as carried.
+ */
+export const COVERAGE_IDENTITY_RULE: string = '- A name, handle or place name the English writes in the form the block '
+  + 'declares states the name the passage writes.';
+
+/**
  Messages for one coverage call.
  
  @example
@@ -214,7 +222,7 @@ export function buildCoverageMessages(
    */
   const identityRules = (identityBlock === '')
     ? ''
-    : `\n\n${DECLARED_IDENTITY_RULES}\n- A name, handle or place name the English writes in the form the block declares states the name the passage writes.`;
+    : `\n\n${DECLARED_IDENTITY_RULES}\n${COVERAGE_IDENTITY_RULE}`;
   return {
     messages: [
       {

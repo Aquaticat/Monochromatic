@@ -71,6 +71,7 @@ export {
 } from './archive-block-review-stage.ts';
 export {
   ARCHIVE_BLOCK_DECLINE_CONSEQUENCE,
+  ARCHIVE_BLOCK_IDENTITY_RULE,
   ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
   ARCHIVE_BLOCK_SELECTION_CRITERIA,
   ARCHIVE_BLOCK_SELECTION_TASK,
@@ -135,8 +136,10 @@ export {
 export {
   buildPageTitleLexiconMessages,
   isPageTitleLexiconWire,
+  PAGE_TITLE_IDENTITY_RULE,
   PAGE_TITLE_LEXICON_RESPONSE_FORMAT,
 } from './page-title-lexicon-wire.ts';
+export { pageIdentityLines, } from './page-identity-lines.ts';
 export {
   type PageTitleLexicon,
   pageTitleLines,
