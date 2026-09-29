@@ -1,0 +1,98 @@
+//region Build entries
+// Every RUNNER is a build entry, not just the library index.
+//
+// The tasks used to invoke `node src/corpus-run/<name>.ts` directly, so what
+// executed was loose source while the tests imported the built bundle. That
+// split is what made "which pipeline produced this artifact" hard to answer at
+// all: there was no single artifact to point at, only a transitive closure of
+// source files that had to be reconstructed to be identified.
+//
+// Building the runners makes the executed thing a FILE. Identity, staleness and
+// reproducibility all become questions about `dist/final/node` rather than
+// about an import graph.
+//
+// KEPT IN SOURCE rather than in the build config because two readers need it:
+// the normal build and the coverage build (`rolldown.node.config.ts`,
+// `rolldown.coverage.config.ts`), and the coverage census, which tells a
+// runner's command-line main from library source by this list (ledger T8).
+
+/**
+ Named entries of the normal build and the coverage build, each a path from
+ the package directory.
+
+ @example
+ ```ts
+ const runner = nodeEntries['coverage-census']; // './src/corpus-run/coverage-census.ts'
+ ```
+ */
+export const nodeEntries: Readonly<Record<string, string>> = {
+  index: './src/index.ts',
+  'budget-sample': './src/corpus-run/budget-sample.ts',
+  'checker-sensitivity': './src/corpus-run/checker-sensitivity.ts',
+  'corpus-pass': './src/corpus-run/corpus-pass.ts',
+  'damage-sample': './src/corpus-run/damage-sample.ts',
+  'draw-sample': './src/corpus-run/draw-sample.ts',
+  'meter-report': './src/corpus-run/meter-report.ts',
+  'model-catalog': './src/corpus-run/model-catalog.ts',
+  'audit-sensitivity': './src/corpus-run/audit-sensitivity.ts',
+  'rendering-audit-settled': './src/corpus-run/rendering-audit-settled.ts',
+  'rendering-audit-settled-report': './src/corpus-run/rendering-audit-settled-report.ts',
+  'model-health': './src/corpus-run/model-health.ts',
+  'roster-card': './src/corpus-run/roster-card.ts',
+  'probe-relabel': './src/corpus-run/probe-relabel.ts',
+  'producer-calibrate': './src/corpus-run/producer-calibrate.ts',
+  'probe-sensitivity': './src/corpus-run/probe-sensitivity.ts',
+  'probe-verify': './src/corpus-run/probe-verify.ts',
+  'recall-benchmark': './src/corpus-run/recall-benchmark.ts',
+  'roster-bench': './src/corpus-run/roster-bench.ts',
+  'score-agreement': './src/corpus-run/score-agreement.ts',
+  'score-attribution': './src/corpus-run/score-attribution.ts',
+  'score-crosscheck': './src/corpus-run/score-crosscheck.ts',
+  'score-probe': './src/corpus-run/score-probe.ts',
+  'score-verify': './src/corpus-run/score-verify.ts',
+  'sentinel-probe': './src/corpus-run/sentinel-probe.ts',
+  'coverage-census': './src/corpus-run/coverage-census.ts',
+  'coverage-control-probe': './src/corpus-run/coverage-control-probe.ts',
+  'coverage-probe': './src/corpus-run/coverage-probe.ts',
+  'cache-account-audit': './src/corpus-run/cache-account-audit.ts',
+  'cap-census': './src/corpus-run/cap-census.ts',
+  'displacement-probe': './src/corpus-run/displacement-probe.ts',
+  'editor-calibrate': './src/corpus-run/editor-calibrate.ts',
+  'editor-standing-read': './src/corpus-run/editor-standing-read.ts',
+  'editor-width-probe': './src/corpus-run/editor-width-probe.ts',
+  'judge-fidelity-probe': './src/corpus-run/judge-fidelity-probe.ts',
+  'ledger-report': './src/corpus-run/ledger-report.ts',
+  'run-timing-report': './src/corpus-run/run-timing-report.ts',
+  'slice-census': './src/corpus-run/slice-census.ts',
+  'slice-cost-report': './src/corpus-run/slice-cost-report.ts',
+  'spend-report': './src/corpus-run/spend-report.ts',
+  'translate-probe': './src/corpus-run/translate-probe.ts',
+  'verify-published': './src/corpus-run/verify-published.ts',
+  'window-trial-probe': './src/corpus-run/window-trial-probe.ts',
+};
+
+/**
+ Source files of the runner entries, as the census names sources: from the
+ package directory, with no leading `./`. The library index is left out,
+ since what it reaches is library source.
+
+ @returns Runner entry sources
+
+ @example
+ ```ts
+ runnerEntrySources().has('src/corpus-run/corpus-pass.ts',); // true
+ ```
+ */
+export function runnerEntrySources(): ReadonlySet<string> {
+  return new Set(
+    Object.entries(nodeEntries,)
+      .filter(function isRunner([name,],): boolean {
+        return name !== 'index';
+      },)
+      .map(function sourceOf([, path,],): string {
+        return path.startsWith('./',) ? path.slice('./'.length,) : path;
+      },),
+  );
+}
+
+//endregion Build entries
