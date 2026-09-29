@@ -152,6 +152,14 @@ this one says what changed after it.
   and the cache version check is the read-only mise task `cache-account-audit`,
   which the checklist's cache step now runs
   (ledger M28).
+  T8 (code no unit test runs) is the open entry the launch waits for,
+  an order taken under the owner's standing directive to prefer the quality of the end result,
+  which the owner may veto to launch first.
+  Measured on 2026-09-29 at `cd3f14810` by block coverage mapped to source lines,
+  the unit suite leaves 1,223 spans over 3,229 lines of library source in 449 files unrun,
+  72 functions among them never called;
+  the ledger entry has the method,
+  the classes and what closes it.
 
 ### 2026-09-24, 04:30 UTC: one hundred ten classes, eight seats, two wet providers
 

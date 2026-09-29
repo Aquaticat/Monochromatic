@@ -62,10 +62,11 @@ read from TianqiChen66620's slice cache (it settled no artifact):
 over 110 issues in 36 of its 110 cached slices.
 A drop of the size that change caused (72% to 65% on one entry) is reported to the owner with the reasons it cites.
 
-Still open in the ledger on the evening of 2026-09-28,
+Still open in the ledger on 2026-09-29,
 read off each entry's status line:
-T8 (exported functions with no test,
-recounted with its blind spots),
+T8 (code no unit test runs,
+measured by block coverage mapped to source lines,
+which the next launch waits for),
 T9 (every test run writes a log into `node_modules`,
 owned by `module-logger`,
 issue #576),

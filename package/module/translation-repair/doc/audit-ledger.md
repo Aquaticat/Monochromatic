@@ -2466,11 +2466,17 @@ and `request-pace`'s account limit.
 before,
 the DeepSeek test's 13,082 literal was its only cover.
 
-### T8: untested exported functions
+### T8: code no unit test runs
 
 Status:
-open;
-recounted 2026-09-27 at 79 of 1,178 barrel-exported functions
+open,
+and the next launch waits for it:
+under the owner's standing directive of 2026-09-28 to prefer the quality of the end result,
+the launch follows the tests this entry asks for,
+and the owner may veto that order and launch first.
+Remeasured 2026-09-29 by block coverage mapped to source lines,
+which supersedes the 2026-09-28 figures;
+first recounted 2026-09-27 at 79 of 1,178 barrel-exported functions
 (`~/temp/agent/audit-repair/untested-exports.mjs`,
 list in `untested-exports.json`),
 queued after the findings that change a run's output.
@@ -2518,8 +2524,77 @@ The branch gap is the larger one:
 9 with more,
 led by `repairChunk` at 22),
 and blocks inside functions the package does not export are not yet counted.
-Closing T8 means a test per cold block,
-which waits behind the findings that change a run's output.
+The 952 was a listed-range sum over exported functions alone;
+it and the five unmatched names are superseded by the 2026-09-29 measurement.
+
+Remeasured on 2026-09-29 at `cd3f14810`,
+with every block rather than exported functions' alone:
+the unit suite under `NODE_V8_COVERAGE` against a build carrying source maps
+(862 test processes;
+1,356 passes counted by marker and no failures,
+where a count of lines reads 1,355 because one output line held two tests' lines),
+each bundle cut at every range boundary any process reported,
+each piece given the count of its innermost enclosing range in each process and summed over processes,
+and the pieces no process ran merged and mapped to source lines through the maps.
+Summing only the ranges each process lists,
+as the 2026-09-28 measurement did,
+calls blocks cold that ran:
+V8 drops a nested block whose count equals its parent's
+(`MergeNestedRanges` in V8's `src/debug/debug-coverage.cc`),
+so a block one process lists as cold can have run in another that does not list it.
+Of the 2,371 blocks in every function that sum calls cold on this run,
+1,061 ran.
+That measurement also keyed each function by its start offset alone,
+so a function opening its chunk merged with the chunk's top-level script and took its empty name:
+those are the five unmatched exports,
+and all five ran
+(`isAsciiLowerLetter` 35,657,557 times,
+`isJsonRecord` 1,286,565,
+`seatJudges` 14,
+`seriesFor` 9,
+`textSettingOf` 3).
+Two controls hold the mapping:
+the three exports no test calls land on their own declarations
+(the constructors at `src/model-card-derive.ts:271` and `src/unwrap-container.ts:162`,
+`spendCeilingOverrideNote` at `src/corpus-run/spend-ceiling.ts:132`),
+and the spans in `src/repair-chunk.ts` read as whole branches
+(ternary arms,
+early returns with their log lines),
+though a span can start a line late where the minifier folds a log call and a return into one statement.
+
+What no unit test ran on that build,
+by class.
+In library source,
+1,223 spans over 3,229 lines in 449 files,
+holding 72 functions no test calls.
+In the six runner entry files tests load,
+27 spans over 798 lines,
+holding 14 such functions.
+The 35 runner bundles no test loads carry 12,928 physical lines in 38 files,
+counted apart from the spans;
+three of those files are library source only those runners import
+(`src/corpus-run/audit-sensitivity-input.ts`,
+`src/corpus-run/runs-layout.ts`,
+`src/corpus-run/pass-republish.ts`).
+Other workspace packages built into the bundles add 233 spans over 3,906 lines in 59 files,
+which are theirs to test rather than this entry's.
+
+T8 closes when every library span has a case that runs it and checks what it does (TCV),
+a throw on malformed input included
+(driven by an input cast past its type,
+asserting the error class),
+and a span no runtime value can reach is removed as dead code under this ledger;
+the runner entry files and the runners no test loads come after the library.
+A batch proves its reach by rerunning its own test files under coverage against a mapped build:
+every span it claims must read a count above zero there.
+The whole census reruns before the launch checklist.
+The 2026-09-29 measurement ran from scratch scripts
+(`~/temp/agent/audit-glossary-fix/t8-map-build.mjs` for the mapped build,
+`t8-cold-map.mjs`,
+`t8-cold-census.mjs`,
+`t8-naive-vs-painted.mjs` and `t8-function-at.mjs`);
+they move into the package as a task before the first batch,
+as the cache-account audit did (M28).
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
