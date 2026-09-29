@@ -217,14 +217,17 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
     val cover = LocalConfiguration.current.screenWidthDp < 600
     // The stress marker changes only sample result data, never accepted Search geometry.
     val overflowStudy = candidate.contains("-overflow-")
-    // What: Select one named static rank order, or an empty marker for existing Search results.
-    // Why: Compare visual order without implying that a real search index exists.
+    // What: Select a fixed ranking or middle-of-word boundary fixture, or the default short results.
+    // Why: Compare one Search behavior at a time without implying that a real index exists.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const rankVariant = ['rankfolders', 'rankmixed', 'ranktracks'].find(v => candidate.includes(`-${v}-`)) ?? '';
+    // const rankVariant = ['rankword', 'rankany', 'rankfolders', 'rankmixed', 'ranktracks']
+    //   .find(v => candidate.includes(`-${v}-`)) ?? '';
     // ```
-    val rankVariant = if (candidate.contains("-rankfolders-")) "rankfolders"
+    val rankVariant = if (candidate.contains("-rankword-")) "rankword"
+        else if (candidate.contains("-rankany-")) "rankany"
+        else if (candidate.contains("-rankfolders-")) "rankfolders"
         else if (candidate.contains("-rankmixed-")) "rankmixed"
         else if (candidate.contains("-ranktracks-")) "ranktracks" else ""
     val includeParentHits = candidate.contains("-parenthits-")
@@ -688,7 +691,17 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
                     // ```ts
                     // for (const hit of searchRankingHits(rankVariant, includeParentHits)) render(hit);
                     // ```
-                    for (hit in searchRankingHits(rankVariant, includeParentHits)) {
+                    // What: `rankword` and `rankany` vary only middle-of-word eligibility.
+                    // Why: D60 direct names and D61 mixed priority remain the common comparison controls.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // const hits = boundary ? searchBoundaryHits(rankVariant === 'rankany') : searchRankingHits(rankVariant, false);
+                    // ```
+                    val hits = if (rankVariant == "rankword" || rankVariant == "rankany") {
+                        searchBoundaryHits(allowInterior = rankVariant == "rankany")
+                    } else searchRankingHits(rankVariant, includeParentHits)
+                    for (hit in hits) {
                         PersistentResultLine(title = hit.title, detail = hit.detail, kind = hit.kind,
                             query = query, pageColor = pageColor)
                     }

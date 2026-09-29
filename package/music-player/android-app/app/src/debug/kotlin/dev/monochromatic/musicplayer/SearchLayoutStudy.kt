@@ -148,14 +148,17 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
     // const imeViewportStudy = candidate.includes("-imeviewport-");
     // ```
     val imeViewportStudy = candidate.contains("-imeviewport-")
-    // What: Read the same debug order and parent-field switches as the unfolded Search host.
-    // Why: Folded cover and inner results must compare the same synthetic data.
+    // What: Read the same fixed order or middle-of-word boundary marker as the inner Search host.
+    // Why: Folded cover and inner results must compare identical synthetic data.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const rankVariant = ['rankfolders', 'rankmixed', 'ranktracks'].find(v => candidate.includes(`-${v}`)) ?? '';
+    // const rankVariant = ['rankword', 'rankany', 'rankfolders', 'rankmixed', 'ranktracks']
+    //   .find(v => candidate.includes(`-${v}`)) ?? '';
     // ```
-    val rankVariant = if (candidate.contains("-rankfolders")) "rankfolders"
+    val rankVariant = if (candidate.contains("-rankword")) "rankword"
+        else if (candidate.contains("-rankany")) "rankany"
+        else if (candidate.contains("-rankfolders")) "rankfolders"
         else if (candidate.contains("-rankmixed")) "rankmixed"
         else if (candidate.contains("-ranktracks")) "ranktracks" else ""
     val includeParentHits = candidate.contains("-parenthits")
@@ -360,8 +363,18 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
                 style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         }
         if (rankVariant.isNotEmpty()) {
-            // Render identical synthetic hits on the cover without claiming a live search index.
-            for (hit in searchRankingHits(rankVariant, includeParentHits)) {
+            // What: Keep boundary variants' rows distinct from the earlier fixed ranking matrix.
+            // Why: The cover must show the same accepted controls and optional interior hits as the inner panel.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const hits = isBoundaryVariant ? searchBoundaryHits(rankVariant === 'rankany')
+            //   : searchRankingHits(rankVariant, includeParentHits);
+            // ```
+            val hits = if (rankVariant == "rankword" || rankVariant == "rankany") {
+                searchBoundaryHits(allowInterior = rankVariant == "rankany")
+            } else searchRankingHits(rankVariant, includeParentHits)
+            for (hit in hits) {
                 SearchLayoutRow(title = hit.title, detail = hit.detail, kind = hit.kind,
                     query = query, halfClearance = halfClearance, fullWidth = fullWidth,
                     pageColor = pageColor)

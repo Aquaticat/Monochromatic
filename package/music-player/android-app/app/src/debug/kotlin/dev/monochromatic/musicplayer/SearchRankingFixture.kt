@@ -58,3 +58,42 @@ internal fun searchRankingHits(variant: String, includeParent: Boolean): List<Se
     val direct = listOf(trackExact, folderCamellia, trackCamellia, trackCult, folderCamera, trackContained)
     return if (includeParent) direct + parentOnly else direct
 }
+
+/**
+ * What: Return direct-name result rows with or without middle-of-word `cam` examples.
+ * Why: A native cover/inner comparison can keep D60 and D61 constant while exposing one undecided word boundary.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * function searchBoundaryHits(allowInterior: boolean): readonly SearchRankingHit[] {
+ *   const accepted = [camTrack, camelliaFolder, liveAtCamelliaTrack];
+ *   return allowInterior ? [...accepted, scamperTrack, dreamcamTrack] : accepted;
+ * }
+ * ```
+ */
+internal fun searchBoundaryHits(allowInterior: Boolean): List<SearchRankingHit> {
+    // What: These fixed rows demonstrate accepted exact, prefix and later-word matches.
+    // Why: Both comparisons must contain the already settled `cam` results in the same mixed order.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const accepted = [camTrack, camelliaFolder, liveAtCamelliaTrack];
+    // ```
+    val accepted = listOf(
+        SearchRankingHit("Cam", "Track · Cult of Luna · exact filename", "Track"),
+        SearchRankingHit("Camellia", "Folder · opens this folder", "Folder"),
+        SearchRankingHit("Live at Camellia", "Track · Cult of Luna · later word", "Track"),
+    )
+    if (!allowInterior) return accepted
+    // What: `+` concatenates the accepted rows with two direct track names containing interior `cam`.
+    // Why: The optional rows must never outrank accepted exact and word-start results in this study.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return [...accepted, scamperTrack, dreamcamTrack];
+    // ```
+    return accepted + listOf(
+        SearchRankingHit("Scamper", "Track · Cult of Luna · middle of word", "Track"),
+        SearchRankingHit("Dreamcam", "Track · Cult of Luna · end of word", "Track"),
+    )
+}
