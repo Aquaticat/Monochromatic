@@ -474,10 +474,10 @@ await describe({
       name: 'READS A RESTATEMENT THROUGH THE EVIDENCE FOLD (ledger B24): a prober quoting with a straight apostrophe '
         + 'what the accepted issue quoted with a curly one is restating it',
       fn: async () => {
-        /** Region whose replacement writes a curly apostrophe. */
+        /** Region whose replacement writes a curly apostrophe, under the accepted issue. */
         const curly: RepairRegion = {
           envelopeId: 'envelope/curly',
-          issueIds: [],
+          issueIds: ['adjudicated/nap',],
           before: 'She naps.',
           editorAfter: 'The cat’s nap ran long.',
         };

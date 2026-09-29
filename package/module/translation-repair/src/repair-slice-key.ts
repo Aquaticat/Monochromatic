@@ -468,6 +468,12 @@ import type { RepairModels, } from './repair-contract.ts';
  effect is read from the translate replay, where four wordings of two slices
  now drop a declared form; checked on 2026-09-29: still no slice-cache file
  newer than 04:26 UTC on 2026-09-27.
+
+ Rides inside 34 too: the introduced-defect screen a patched chunk's damage
+ evidence reads takes a prober's quote and an accepted issue's through the
+ evidence fold (ledger B24, `introduced-defect-screen.ts`); of the 650 stored
+ claims one turns from unanchored to corroborated; checked on 2026-09-29: the
+ newest slice-cache file is still the one of 04:26 UTC on 2026-09-27.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**

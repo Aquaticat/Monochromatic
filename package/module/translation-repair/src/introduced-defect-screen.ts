@@ -4,6 +4,7 @@ import {
   type IntroducedDefectCheckWire,
   isIntroducedDefectVerdict,
 } from './introduced-defect-wire.ts';
+import { normalizePunctuation, } from './quote-normalize.ts';
 import { flattenSpace, } from './sheet-line-text.ts';
 
 //region Introduced-defect screening
@@ -158,8 +159,26 @@ export type RegionDefectTally = {
 };
 
 /**
+ Text as the screen compares it: through the evidence fold, then with its
+ whitespace collapsed, so a prober's quote written with straight marks, or
+ rewrapped, still reads as the words it quotes (ledger B24).
+
+ @param text - a prober's quote, or a region's text
+
+ @returns Folded, collapsed text
+
+ @example
+ ```ts
+ asScreened({ text: 'The  cat’s nap', },); // "The cat's nap"
+ ```
+ */
+function asScreened({ text, }: { readonly text: string; },): string {
+  return flattenSpace({ text: normalizePunctuation({ text, },), },);
+}
+
+/**
  Decides what a claim's anchors prove about one region.
- 
+
  The differential runs in BOTH directions, because collateral damage comes in
  two shapes and only one of them can be quoted from the new text. Wording the
  edit ADDED is checkable as present in AFTER and absent from BEFORE. Wording
@@ -199,26 +218,26 @@ export function screenEvidence(
   },
 ): ClaimAdmissibility {
   /**
-   Added-wording anchor, whitespace collapsed as both texts are compared.
+   Added-wording anchor, folded and collapsed as both texts are compared.
    */
-  const added = flattenSpace({ text: evidence, },);
+  const added = asScreened({ text: evidence, },);
 
   /**
-   Dropped-wording anchor, likewise collapsed.
+   Dropped-wording anchor, likewise.
    */
-  const dropped = flattenSpace({ text: omittedText, },);
+  const dropped = asScreened({ text: omittedText, },);
   if ((added === '') === (dropped === ''))
     return 'unanchored';
 
   /**
    Replacement text both directions are checked against.
    */
-  const after = flattenSpace({ text: region.editorAfter, },);
+  const after = asScreened({ text: region.editorAfter, },);
 
   /**
    Replaced text both directions are checked against.
    */
-  const before = flattenSpace({ text: region.before, },);
+  const before = asScreened({ text: region.before, },);
   if (dropped === '') {
     if (!after.includes(added,))
       return 'unanchored';
@@ -366,13 +385,22 @@ function restatesPriorIssue(
 ): boolean {
   if (quoted === '')
     return false;
+  /**
+   The claim's quote through the evidence fold, as its anchor was read
+   (ledger B24).
+   */
+  const folded = normalizePunctuation({ text: quoted, },);
 
   return priorQuotes
-    .some(function overlaps(prior,) {
+    .some(function overlaps(priorQuote,) {
+      /**
+       The accepted issue's quote through the same fold.
+       */
+      const prior = normalizePunctuation({ text: priorQuote, },);
       if (removal)
-        return prior.includes(quoted,);
+        return prior.includes(folded,);
 
-      return prior.includes(quoted,) || quoted.includes(prior,);
+      return prior.includes(folded,) || folded.includes(prior,);
     },);
 }
 
