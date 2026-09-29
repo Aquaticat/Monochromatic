@@ -368,14 +368,87 @@ The user asked why an SDK was involved.
 The clarification was that this is Pi's existing SDK,
 used only to test host instruction collection and tool/session hooks with a fake model,
 not a Jev SDK or a new production judge dependency.
-The user answered "Fine. Continue."
+The user answered "Fine.
+ Continue."
 Keep preparation subordinate to those concrete host tests.
 
-The private draft is `contract/sdk/plan.json`.
-It targets an actual disposable `AgentSession`,
-registered extension/tool callbacks,
-and a capped first-party scripted provider.
-It is not sealed for execution yet.
+The historical draft is `contract/sdk/plan.json`;
+it is not the execution plan and retains the former policy binding.
+The actual session phase is sealed under `contract/sdk/session`.
+Its freeze is `3d487b398d9c13117131126939a127e418613b646a2be80f6b717d6b44f5a0ce`,
+and its image is `83320095b641285f72b9b66b7ea3c7b181183d530f0934fa9068e48de602752c`.
+
+The fixed cases are baseline resources,
+a later `before_agent_start` contribution,
+a request-local system-message change,
+and forced projection.
+Each disposable container admits one real `AgentSession`,
+two scripted provider responses,
+and one inert observation-tool execution.
+No real model or legacy judge is used.
+The full current policy remains in the fixture's model-facing views.
+Refresh,
+retries,
+compaction,
+cache warming,
+and ambient extensions are disabled.
+
+Pure syntax,
+opt-in rejection,
+and separate guard-omission controls passed in `proc_356e`.
+Constructor declarations and callback types were checked against staged Pi `0.87.1`.
+The original actual-case attempt `proc_5d43` stopped in baseline setup,
+with zero sessions,
+provider responses,
+tool calls,
+or fetch calls.
+Node reported `ERR_PACKAGE_PATH_NOT_EXPORTED` because the owned fixture used
+`require.resolve('@earendil-works/pi-ai')`
+for a package whose public root export defines only the `import` condition.
+The ordinary SDK barrel had already imported successfully;
+this was a fixture resolver error,
+not an SDK instruction-view finding.
+
+Task #78 corrected only that import selection in `contract/sdk/session-esm`.
+The corrected fixture follows the verified SDK dependency edge and the package's published ESM import target.
+Case references,
+policy,
+provider/tool behavior,
+and resource limits remained unchanged.
+The original failed epoch and image are retained.
+
+`proc_da53` passed all 4 actual SDK cases:
+4 sessions,
+8 scripted provider responses,
+and 4 inert executions.
+Every session reached disposal with empty stderr,
+one session-start/agent-start/agent-end sequence,
+and zero fetch or external model calls.
+`proc_a79f` reconciled raw stdout,
+per-case receipts,
+fixed references,
+image identities,
+and cleanup markers without replaying sessions.
+Result SHA-256:
+`18ae734862240c7c28d7fb235cfce2972f6de015841311fcf0c45762f8a17e98`.
+Corrected freeze:
+`3dcb6e07fdd2a9e9dc813d5011b4693510ddabc7e08e1f1297529cdf2fea255b`.
+Corrected image:
+`6527f73d748deee6ad0ea84aaea611ad70c8fead2a8c1d05c5b836393fa30c17`.
+
+The real tool-time getter included the deliberately later run contribution,
+but not request-local changes that reached the scripted provider.
+Forced projection removed the request-local marker while retaining the full policy and forced marker.
+The resource owner's baseline inventory remained unchanged in every case.
+An inline system-prompt source had no path.
+These facts constrain collection;
+they do not authenticate sources or provide a complete governing-instruction inventory.
+See the [actual SDK observations](../troubleshooting/pi-instruction-snapshots.md#actual-sdk-session-observations).
+The next #16 work is the source-aware review contract and adapter admission tests,
+not more SDK packaging.
+A marker mismatch is a qualification finding,
+not automatically an SDK defect or an invitation to relabel references.
+SDK-owner access to `ResourceLoader` does not qualify access from the ordinary production extension context.
 Existing repository patterns in auto-mode's SDK scope test and goal's runtime verifier were inspected,
 not rerun as suites.
 

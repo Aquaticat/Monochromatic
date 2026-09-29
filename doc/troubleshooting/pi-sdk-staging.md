@@ -345,6 +345,58 @@ No Podman source or host configuration was modified.
 No upstream contribution is proposed for the owned allowlist correction;
 no claim about absence of an upstream issue or contribution policy is made.
 
+## Fixture import-condition correction
+
+The first actual-session attempt `proc_5d43` stopped before constructing any session:
+
+```text
+Error [ERR_PACKAGE_PATH_NOT_EXPORTED]: No "exports" main defined in .../@earendil-works/pi-ai/package.json
+```
+
+Node's stack identifies `require.resolve` at the owned `contract/sdk/session/probe.mjs:41`.
+The fixture first imported the SDK barrel successfully,
+then incorrectly used a CommonJS resolver to select Pi AI's helper entry:
+
+```javascript
+// Private contract/sdk/session/probe.mjs:41
+const ai = await import(pathToFileURL(require.resolve('@earendil-works/pi-ai')).href);
+```
+
+The staged Pi AI `0.87.1` package metadata declares an import-only root condition:
+
+```jsonc
+// Staged @earendil-works/pi-ai/package.json:13, selected root export.
+{
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  }
+}
+```
+
+This is the owned resolver choosing the wrong public condition,
+not missing SDK files or an instruction-view finding.
+It does not establish a general inability to use ESM from CommonJS.
+The separate `contract/sdk/session-esm` correction follows the already verified dependency edge,
+checks the published `exports['.'].import` target,
+and imports that file URL.
+The original failed epoch remains unchanged.
+The case-reference hashes remain identical:
+`9acfe7b38a559b9044dceeed88b24c4caf5886d46093d0087f2743de9fa83020`.
+No expectation was relabeled to pass.
+The corrected phase passed all 4 actual-session cases in `proc_da53`,
+with 8 scripted responses,
+4 inert tool executions,
+empty stderr,
+and zero fetch or external model calls.
+`proc_a79f` reconciled the saved raw outputs and unchanged references without replay.
+Result SHA-256:
+`18ae734862240c7c28d7fb235cfce2972f6de015841311fcf0c45762f8a17e98`.
+The [SDK observations](pi-instruction-snapshots.md#actual-sdk-session-observations)
+record the measured instruction-view differences and remaining authority limits.
+
 ## What does not work
 
 Treating every nominal dependency declaration as a mandatory installation

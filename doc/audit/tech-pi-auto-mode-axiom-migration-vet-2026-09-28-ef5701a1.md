@@ -1435,12 +1435,71 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Actual SDK instruction-view cases
+
+The original `contract/sdk/session` attempt `proc_5d43` stopped before session construction
+on the owned CommonJS resolver's `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+Pi AI's staged root export declares only an import target.
+A separate `contract/sdk/session-esm` epoch followed the verified dependency edge
+and that published ESM entry.
+All references remained byte-identical:
+`9acfe7b38a559b9044dceeed88b24c4caf5886d46093d0087f2743de9fa83020`.
+The original failure and source epoch remain preserved.
+
+`proc_da53` passed baseline,
+later-handler,
+request-local,
+and forced-projection cases through actual Pi 0.87.1 sessions and registered callbacks.
+There were 4 disposable sessions,
+8 first-party scripted responses,
+and 4 inert tool executions.
+All sessions reached disposal with empty stderr,
+zero fetch calls,
+and zero external model assessments.
+The full current policy remained in every fixture provider view.
+
+The tool-time getter saw the deliberately later run contribution
+but not the request-local marker present in both provider requests.
+Forced projection removed that request-local marker
+while retaining complete policy and the forced marker.
+The SDK resource owner's baseline inventory remained unchanged,
+and the inline system-prompt source had no path.
+These are representation and lifecycle observations,
+not instruction authority or complete source coverage.
+
+`proc_a79f` reconciled raw stdout,
+per-case receipts,
+fixed references,
+image identity,
+and cleanup markers without replaying any session.
+Result SHA-256:
+`18ae734862240c7c28d7fb235cfce2972f6de015841311fcf0c45762f8a17e98`.
+Corrected freeze:
+`3dcb6e07fdd2a9e9dc813d5011b4693510ddabc7e08e1f1297529cdf2fea255b`.
+Image:
+`6527f73d748deee6ad0ea84aaea611ad70c8fead2a8c1d05c5b836393fa30c17`.
+
+The [SDK observations](../troubleshooting/pi-instruction-snapshots.md#actual-sdk-session-observations)
+and [staging diagnosis](../troubleshooting/pi-sdk-staging.md#fixture-import-condition-correction)
+record the boundaries.
+Ordinary production-extension access to the resource owner,
+human-origin authority,
+actual provider encoding,
+complete producer coverage,
+policy semantics,
+finalization,
+and production timing remain unqualified.
+No production cutoff or deployment is selected.
+Task #16 continues with the source-aware review interface and adapter admission tests,
+not additional SDK packaging.
+
 ## SDK module import boundary
 
 The user asked why an SDK was involved.
 This is the existing Pi SDK used for disposable host-integration tests,
 not a Jev SDK or a new judge provider.
-The user answered "Fine. Continue."
+The user answered "Fine.
+ Continue."
 
 The first module preflight stopped before SDK import on the owned environment-name assertion.
 A separate names-only probe found HOSTNAME.

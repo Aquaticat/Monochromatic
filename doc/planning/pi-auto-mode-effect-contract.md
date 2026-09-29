@@ -35,6 +35,34 @@ A changed on-disk policy is not proof that an already-running harness refreshed 
 The collector must keep those source versions and observations distinct.
 See the [freshness checkpoint](../handover/pi-auto-mode-axiom-evaluation.md#policy-freshness-checkpoint).
 
+## Measured SDK collection constraints
+
+A bounded actual Pi `0.87.1` SDK phase passed baseline,
+later-handler,
+request-local,
+and forced-projection cases under the current policy snapshot.
+It used disposable sessions,
+a scripted provider,
+and an inert tool,
+not real model calls or user approvals.
+The [SDK observations](../troubleshooting/pi-instruction-snapshots.md#actual-sdk-session-observations)
+retain raw-result bindings and limits.
+
+The tool-time getter sees the tested later run contribution,
+but misses request-local edits visible to the provider.
+Forced projection can remove markers from rendered views without changing the resource-owner inventory.
+Inline instruction sources can lack a filesystem path.
+Accordingly,
+collection must preserve source inventory,
+observed stage,
+and content version separately.
+Neither rendered text nor a path authenticates a governing source.
+
+The tested SDK construction owner had access to `ResourceLoader`.
+This does not establish that the ordinary production extension context exposes that owner,
+or that the known fixture inventory covers all real producers.
+The private review interface and real-adapter admission tests remain task #16.
+
 ## Current dispatcher and evidence limits
 
 `package/pi-plugin/auto-mode/src/index.ts` checks the fixed virtual-input guard first,

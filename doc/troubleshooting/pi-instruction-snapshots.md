@@ -15,8 +15,9 @@ rather than treating missing human grants as missing authority.
 Unknown instruction coverage is not an instruction-free case.
 The [confirmed contract](../planning/pi-auto-mode-effect-contract.md) remains unqualified at the actual host.
 
-These are inspected source-method observations,
-not a reproduced TUI incident or a claim that Pi cannot support a suitable collector through another interface.
+The original phase used inspected source-method observations.
+The separately recorded SDK phase exercised actual sessions and callbacks.
+Neither is a reproduced TUI incident or a claim that Pi cannot support a suitable collector through another interface.
 No production extension or upstream source was changed.
 The fixture markers demonstrate visibility,
 not authority:
@@ -292,6 +293,99 @@ the retained successful run's stderr is empty.
 These are view differences,
 not interchangeable failures of a single complete-instruction interface.
 Actual host integration and human authority remain unverified.
+
+## Actual SDK session observations
+
+The subsequent private `contract/sdk/session-esm` phase ran the same view questions
+through real Pi `0.87.1` `AgentSession` instances,
+registered extension callbacks,
+and an inert custom tool.
+A first-party scripted provider supplied all responses;
+no external model call or represented operation occurred.
+
+`proc_da53` passed all 4 fixed cases in separate containers:
+4 sessions,
+8 scripted responses,
+and 4 inert tool executions.
+Each session emitted one session-start,
+agent-start,
+and agent-end event,
+then completed disposal with empty stderr.
+The runtime was Node `v26.10.0`,
+with 2 GiB memory,
+2 CPUs,
+zero extra swap,
+64 PIDs,
+256 file descriptors,
+a read-only root,
+disposable tmpfs,
+and no external network or host state mounts.
+
+The corrected phase freeze is
+`3dcb6e07fdd2a9e9dc813d5011b4693510ddabc7e08e1f1297529cdf2fea255b`.
+The image is
+`6527f73d748deee6ad0ea84aaea611ad70c8fead2a8c1d05c5b836393fa30c17`.
+It used the complete 31,214-byte policy snapshot
+`2f4377aa7b950d178999a88337bfd7ec1dba1723313d1650d712e06b2dc3a7cc`,
+not the older source-method policy epoch.
+The scripted provider views retained the full new policy in every case,
+including forced projection.
+
+### Baseline and resource owner
+
+The actual `ResourceLoader` exposed the global fixture file and project policy file.
+Its configured inline system prompt had no source path.
+The early callback,
+tool-time getter,
+and both scripted-provider requests exposed the baseline and global markers with full policy text.
+The owner inventory remained unchanged throughout the run.
+This establishes representation and ownership access from the SDK constructor,
+not legitimacy of arbitrary files or production-extension access to that owner.
+
+### Later run contribution
+
+The earlier callback and resource-owner inventory omitted the later fixture contribution.
+The actual tool callback's getter and both provider requests included it.
+The deliberately registered observer/contributor factory order was exercised by the real runner.
+Installed production-extension ordering remains unmeasured.
+
+### Request-local change
+
+Both provider requests contained the marker introduced by `context_with_system`.
+The tool-time getter did not.
+The handler ran twice,
+and the resource-owner inventory stayed unchanged.
+This confirms that the measured getter cannot substitute for the request-stage observation.
+
+### Forced projection
+
+The request-local handler produced its marker twice,
+but neither provider request retained it after forced projection.
+The tool-time getter and provider requests contained the forced marker and complete policy instead.
+They omitted the baseline/global markers,
+while the resource owner still retained its original inventory.
+A changed rendered view does not itself establish a change in instruction authority.
+
+### Preserved failed setup and limits
+
+The original `contract/sdk/session` attempt stopped before creating a session
+because its owned helper used CommonJS resolution for Pi AI's import-only entry point.
+The correction changed only that import selection in a new epoch;
+reference SHA-256 remained
+`9acfe7b38a559b9044dceeed88b24c4caf5886d46093d0087f2743de9fa83020`.
+No result was relabeled and no completed constructor was replayed.
+The [staging report](pi-sdk-staging.md#fixture-import-condition-correction)
+retains the diagnostic and source trace.
+
+These are real SDK lifecycle observations,
+not real-human authentication,
+TUI/RPC qualification,
+actual provider encoding,
+complete producer coverage,
+governing-instruction semantics,
+finalizer behavior,
+or production timing qualification.
+No production extension or cutoff was changed.
 
 ## Verified workarounds and limits
 
