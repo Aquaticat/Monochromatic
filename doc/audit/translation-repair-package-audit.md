@@ -1204,7 +1204,7 @@ passes.
 `src/repair-unheard.ts` (`RepairUnheardError`) and `src/placement-layout.ts` (`PlacementLayoutError`)
 carry no `messageNamesOnly` and quote nothing,
 so the slice they name is muted at the boundary.
-`repair-unheard.ts:160` spells `archive\`s` with a backtick for an apostrophe.
+`repair-unheard.ts:160` spells `` archive`s `` with a backtick for an apostrophe.
 
 FIXED 2026-08-26 in `9135037e8`:
 `RepairUnheardError` takes a slice index and an `UnheardClaim`,
@@ -2043,13 +2043,26 @@ Each is one linear pass with no accumulator rebuild.
 Guards:
 the identifier start shifted by one fails two footnote-graph cases;
 the closing `closeWord()` dropped fails
-two reading-refusal cases (`ACCEPTS \`note\` AS ITS OWN WORD` among them); the atom slice shortened by one fails four
-inspect-paragraph cases; each restored, passes.
-document-11: the overflow refusal is `FootnoteOverflowError`, marked and in the inventory; `chunk-insertion.ts`
+two reading-refusal cases (`` ACCEPTS `note` AS ITS OWN WORD `` among them);
+the atom slice shortened by one fails four
+inspect-paragraph cases;
+each restored,
+passes.
+document-11:
+the overflow refusal is `FootnoteOverflowError`,
+marked and in the inventory;
+`chunk-insertion.ts`
 reads the source chunk through `nonNullishOrThrow` instead of defaulting to `''`.
-Guard: the marker removed fails the two inventory cases (`KEEPS exactly the classes the inventory records` among
-them); restored, passes. The `nonNullishOrThrow` change has no guard: the defaulted branch was unreachable.
-document-12: `decodeToPng` logs each decoder's refusal through `refusalText` at debug, and `image-ocr.ts` imports
+Guard:
+the marker removed fails the two inventory cases (`KEEPS exactly the classes the inventory records` among
+them);
+restored,
+passes.
+The `nonNullishOrThrow` change has no guard:
+the defaulted branch was unreachable.
+document-12:
+`decodeToPng` logs each decoder's refusal through `refusalText` at debug,
+and `image-ocr.ts` imports
 `MIN_READING_CHARS` instead of copying it.
 Logging;
 no guard.

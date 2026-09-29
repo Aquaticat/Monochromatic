@@ -4,7 +4,7 @@ Measured 2026-08-13 across all 92 entries at pin
  `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`,
 both sides of each.
 
-`#71` was found because the artifact had been recording
+The section-alignment finding was made because the artifact had been recording
  `alignment structure-mismatch` for weeks and nothing read it.
 That is a pattern rather than an incident,
 so every signal the deterministic
@@ -76,7 +76,7 @@ THAT FALLBACK IS GONE:
 `chunk-document.ts` now computes `equalShape` (equal chunk counts and matching
 leading node kinds),
 pairs by index with no finding only when the shape is equal and no roster pairing
-was supplied (the `#98` blind spot the code documents),
+was supplied (the equal-count blind spot the code documents),
 and otherwise runs `alignHeadingsForced`,
 which
 emits a pairing only where the affinity grid gives a unique partner in both directions;
@@ -764,7 +764,7 @@ so it is worth naming as one thing rather than four.
     and the client
     was never the problem".
 -   Accepted issues record their claims but NOT which critic raised each one.
-    So `#65` cannot ask whether a duplicated issue is independent
+    So the duplicate-issue question cannot ask whether a duplicated issue is independent
     corroboration,
     because independence means "different critics" and the
     artifact cannot say.
@@ -801,7 +801,7 @@ so
 
 So the whole remedy costs about a hundredth of what the artifacts already
  occupy,
-and the largest single part is the critic attribution that `#65`
+and the largest single part is the critic attribution that the duplicate-issue question
  needs.
 
 One correction while measuring this:
@@ -819,8 +819,8 @@ The caution was pointing at the wrong thing.
 Raised here rather than acted on,
 on scope rather than on cost.
 It would change
- what `#65`,
-`#72` and `#75` can be answered from,
+ what the duplicate-issue question,
+the quote-anchoring finding and the voice-loss diagnosis can be answered from,
 so it belongs in a priority
  conversation rather than in a commit landed overnight.
 
@@ -839,14 +839,14 @@ but
  nothing acts on them either.
 Whether any of these should is a design question this document does not settle.
 
-## The `#72` re-open alarm was a pooling artifact, and the closure stands
+## The quote-anchoring re-open alarm was a pooling artifact, and the closure stands
 
-Fired 2026-08-13 by the run monitor:
-"`pass13` `#72` VERDICT AT RISK:
+Fired 2026-08-13 by the run monitor,
+which put the quote-anchoring verdict at risk on `pass13`:
 8 of 58
- wrap-explained.
-The closure assumed about 3%;
-this is nearer 10%."
+ wrap-explained,
+where the closure assumed about 3%
+and this was nearer 10%.
 
 The figure is arithmetically right and the conclusion is wrong.
 It pools two
@@ -858,7 +858,7 @@ It pools two
   pooled        58                   8              13.8%
 ```
 
-`#72` was closed on the SETTLED-ARTIFACT population,
+The quote-anchoring finding was closed on the SETTLED-ARTIFACT population,
 and that population reads
  2.6% here against the roughly 3% the closure assumed.
 It is the same number.
@@ -894,7 +894,7 @@ so the cache
  is a window onto work that has not yet reached an artifact.
 If those 7
  collapsible failures settle as they stand,
-the settled share rises and `#72`
+the settled share rises and the finding
  genuinely would need re-taking.
 
 Held as a WATCH ITEM rather than a finding,
@@ -943,7 +943,7 @@ Seven of the eight hits are ONE entry.
 Drop it and the share is 2.6%,
 which is
  the closure's number to within noise.
-`#72` stands,
+The finding stands,
 again.
 
 The watch item recorded when the pooling bug was fixed did predict this
@@ -1149,7 +1149,7 @@ which is how a warning this uninformative survived having tests.
 WHEN IT WILL BE READ,
 and this is NARROWER than the first version of this
  paragraph said.
-It claimed `#75`'s "74-and-counting voice losses become
+It claimed the voice-loss diagnosis work's "74-and-counting voice losses become
  diagnosable",
 which reads as covering the losses already on disk.
 It does not.
@@ -1210,12 +1210,12 @@ and it is the same rule.
 
 THE REMAINING WALL is accepted issues not recording which critic raised each
  claim,
-which blocks `#65`.
+which blocks the duplicate-issue question.
 
-It does NOT block `#68`,
+It does NOT block the prober-disagreement question,
 which earlier versions of this document and of
  `256520df7` both claimed.
-`#68` is about the three PROBERS in the
+That question is about the three PROBERS in the
  introduced-defect probe,
 not the critics,
 and it already has per-model
@@ -1223,12 +1223,12 @@ and it already has per-model
 it carries measured raise rates over the same 857 regions,
 81
  claims against 45 against 5.
-What `#68` waits on is `#66`'s human-graded ground
+What it waits on is the probe calibration's human-graded ground
  truth,
 which says which prober is right when they disagree.
 Getting this
  straight changes the urgency rather than the work:
-`#65` is a DECISION task,
+The duplicate-issue question is a DECISION task,
 so
  critic attribution is groundwork,
 not something gating a measurement about to
@@ -1373,7 +1373,7 @@ The bulk are ordinary stage bookkeeping:
     `editor-envelope-select` 87,
     `editor-chunk-select` 87
 -   `quote-not-found` 69,
-    which is the anchoring loss `#72` already measured
+    which is the anchoring loss the quote-anchoring finding already measured
 -   `refine-candidates` 28,
     `empty-quote` 24,
     `refine-selected` 13,
@@ -1443,7 +1443,7 @@ so
 the leading node kinds differ.
  One document opens with a heading and the other with a paragraph.
 That is the
- asymmetric preamble named in `#74`,
+ asymmetric preamble the aligner-scoring finding named,
 confirmed from the source rather than
  inferred from a sample.
 
@@ -1474,11 +1474,11 @@ arm A2 repeated it for `minimax-m3` and `deepseek-v4-flash-0731`.
 The line was derived from slates,
 and a
 rewriter that answers every ask and leaves the paragraph as it stands reaches no slate.
-`#263` (landed in source,
+The answered-but-unslated fix (landed in source,
 awaiting the build) carries the refine stage's heard ids out to the coverage split,
 which gains an
 answered-but-unslated state;
-the editor and translate seats still carry only a count out and say so (`#266`).
+the editor and translate seats still carry only a count out and say so.
 The general shape is the one this document keeps finding:
 a summary line derived from one record while the
 contradicting record sits three lines below it,
@@ -1490,7 +1490,7 @@ but a slice that
 ships through the repair lane's archive sentence or the contest's incumbent can drop a source hyperlink with no
 finding anywhere;
 the output reading found a page that had.
-`#265` (landed in source) adds the document-level
+The destinations check (landed in source as `fd4f7546f`) adds the document-level
 check at publish:
 `DESTINATIONS <id> source=N page=M dropped=K` on stdout beside the `TALLY` line,
 the

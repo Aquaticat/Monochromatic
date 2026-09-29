@@ -416,8 +416,9 @@ TODO | DONE
     so a probe that injects a fake transport can exercise a provider path end to end
     with no key,
     no network and no build.
-    `#226`,
-    `#227` and `#228` were each verified this way while a pass held the bundle.
+    The refusal report at every entry point,
+    the rule for which classes may repeat their message
+    and the verify wiring on cut streams were each verified this way while a pass held the bundle.
     Two limits:
     a suite that imports `../dist/final/node/index.mjs` still needs the build,
     and a probe run this way exercises the source rather than the artifact,
@@ -580,7 +581,7 @@ So `6` means read the line,
 
     The other wording is `no artifacts directory under the run (<reason>)`,
     which is where a mistyped `TRANSLATION_REPAIR_RUNS_DIR` lands.
-    Before `#217` both cases printed `matched=0` and exited `0`,
+    Before `b6ea1cc51` both cases printed `matched=0` and exited `0`,
     so an empty run and a typo each read as a clean pass over zero entries.
 
     A RUN ALWAYS SHIPS (the owner,
@@ -663,7 +664,7 @@ So `6` means read the line,
     A trailing `destinations-mdx-downgraded (source)` or `(page)` says the strict grammar refused that side
     and the plain-markdown parse was read instead;
     the count still stands.
-    A checkout that predates `#265` prints no such line,
+    A checkout that predates `fd4f7546f` prints no such line,
     and a run made from it recorded nothing to read.
 
     Then read the defect lines the same way:
@@ -708,8 +709,10 @@ So `6` means read the line,
     Every figure is availability WHEN WE WERE ASKING,
     which is not availability.
 
-The three tools that follow arrived with `#210`,
-`#212` and `#215`.
+The three tools that follow
+(the timing,
+spend and ledger reports)
+arrived together in `b6ea1cc51`.
 If `mise run` reports no such task,
 the checkout predates them,
 and a run made from that checkout recorded none of what they read either.
@@ -744,11 +747,11 @@ and a run made from that checkout recorded none of what they read either.
     A peak below the producer count means the pipeline never actually ran that wide,
     whatever it was configured to do.
 
-    A log written before `#215` landed carries neither line,
+    A log written before round lines and call durations were logged carries neither line,
     and the tool says so instead of reporting zero:
 
     ```text
-    NO ROUND LINE. This log predates `#215`, so how long each fan-out took and how much of that was spent waiting after quorum are both unrecorded. That is not the same as a run that never waited.
+    NO ROUND LINE. This log predates round lines and call durations, so how long each fan-out took and how much of that was spent waiting after quorum are both unrecorded. That is not the same as a run that never waited.
     NO TIMED CALL. Nothing here can be counted in flight, which is not the same as a run that made one call at a time.
     ```
 

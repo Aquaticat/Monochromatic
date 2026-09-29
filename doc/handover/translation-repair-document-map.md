@@ -188,7 +188,8 @@ as their split audits require.
 The living documents name the work instead:
 the translation-repair decision records,
 the current handover and its snapshot,
-and the readiness signal and OpenRouter pass log it links as current.
+the readiness signal and OpenRouter pass log it links as current,
+and the translation-repair runbooks and troubleshooting docs.
 Every other document keeps its numbers as written;
 read each against the session and date around it.
 Where a living document quotes the owner,

@@ -95,7 +95,7 @@ Fixed in `front-matter.ts`.
 ## The corpus contains no fenced code blocks at all
 
 Confirmed by fixed-string search across all 184 files:
-no ``` and no `~~~`
+no ```` ``` ```` and no `~~~`
  anywhere.
 That bounds a whole second family.
 Masking cannot corrupt fenced content here,
@@ -105,9 +105,10 @@ and fence markers cannot hide inside comments here,
 because
  there is no code to hide in.
 
-A cross-check with `git grep --extended-regexp '^\s*(\`\`\`|~~~)'` reported
+A cross-check with `` git grep --extended-regexp '^\s*(\`\`\`|~~~)' `` reported
  matches in nearly every file and was wrong.
-Backslash-backtick is the buffer-start anchor in GNU regex, so each `` \` ``
+Backslash-backtick is the buffer-start anchor in GNU regex,
+so each `` \` ``
  became a zero-width assertion and the alternation matched almost every line.
 The fixed-string search is the one to trust.
 
@@ -169,7 +170,7 @@ it hides the
 
 ### Masking does not know about fenced code
 
-Inside a ``` fence,
+Inside a ```` ``` ```` fence,
 a line holding a zero-width space is CONTENT.
 Blanking it rewrites the document being repaired,
 which is the one thing a
@@ -280,8 +281,7 @@ U+2011 occurs 11 times
 in the archive,
 the no-break space and the soft hyphen never.
 
-`foldInvisibleVariants` (`src/invisible-variants.ts`,
-`#264`) folds U+2011 to the hyphen,
+`foldInvisibleVariants` (`src/invisible-variants.ts`) folds U+2011 to the hyphen,
 U+00A0 and U+202F to
 the space,
 and drops U+00AD,
@@ -296,7 +296,7 @@ candidates (`translate-candidates.ts`,
 which the consolidation also builds through).
 It runs before any decider
 judges,
-so the bytes judged are the bytes that ship (`#162`),
+so the bytes judged are the bytes that ship,
 and each fold is a finding,
 `invisible-variant-folded (U+2011 x1)`,
 in the stage's findings.

@@ -80,7 +80,7 @@ so
 -   `pass10`,
     started 01:55 UTC,
     stopped 04:29 UTC with 3 settled entries.
-    Ran the pipeline as of 01:55 throughout:
+    Ran the pipeline as of 01:55 UTC throughout:
     the invisible-line masker was in,
     the CRLF front-matter fix,
     the footnote-graph fix and the footnote gate
@@ -99,7 +99,7 @@ so
     stopped 05:14 UTC with nothing settled and six
     slices cached.
     Ran cache version 7:
-    the typography fix landed 04:34,
+    the typography fix landed 04:34 UTC (`846f9ff6d`),
     one
     minute before it started,
     so it carried that and nothing later.
@@ -359,7 +359,7 @@ not a
 Real style defects
  being missed would produce the same table.
 Only human grading separates those,
- and that is `#66`.
+ and that is what the probe calibration asked for.
 
 So the honest statement is:
 the acceptance rate fell 11 points,
@@ -577,7 +577,7 @@ both worth keeping:
 -   sops decryption had to be proven NON-INTERACTIVE before trusting an
     unattended launch,
     since `createRunClient` refuses to build a client with
-    no key and the run would die instantly at 03:00 with only a log line.
+    no key and the run would die at an unattended overnight launch with only a log line.
     Verified from a `setsid` shell with stdin closed:
     the key resolves.
 
@@ -624,7 +624,7 @@ The check
 not survival,
 and legibility is worth having,
 since a run that
- died at 03:04 and a run that never started read identically in a settled-entry
+ died minutes after launch and a run that never started read identically in a settled-entry
  count.
 
 What can genuinely save a night is the RETRY,

@@ -245,7 +245,7 @@ from 17:00 to 19:54 UTC,
 every Hyper call answered HTTP 429 with the body
 `You've hit your daily rate limit. Please try again in 2h25m18s.`
 (84 bodies logged,
-each wait counting down to 19:53 or 19:54),
+each wait counting down to 19:53 UTC or 19:54 UTC),
 while the balance meter read wet at 909 the whole time and the hourly pacer kept the window exactly full.
 The retry ladder read digits followed by `s` only,
 so a wait written in hours and minutes parsed as no wait;
