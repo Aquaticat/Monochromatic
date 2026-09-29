@@ -1,4 +1,200 @@
-# Sätteri 0.9.4 reports mdast `position` offsets in the wrong units (byte offsets from plugin visitors, code-point offsets from materialized trees), not remark's UTF-16 code units
+# Sätteri 0.10.5 source slices shift under the retained 0.9.4 offset correction
+
+## Current 0.10.5 consumer failure
+
+The historical 0.9.4 investigation is retained,
+but its correction must not be applied to already-correct UTF-16 positions.
+The installed `satteri@0.10.5` returns UTF-16 offsets on the measured Markdown cases.
+The repository wrapper still applies the older conversion when astral text is present,
+shifting those positions again.
+
+This is tracked in [Monochromatic issue 559](https://github.com/Aquaticat/Monochromatic/issues/559).
+The accepted [unified-linter decision](../handover/unified-linter.md) leaves the TypeScript linter unpatched
+because the Rust replacement supersedes it.
+The private auto-mode workaround respects that decision.
+No production parser or dependency configuration was changed.
+
+### Current symptom and source trace
+
+A structural policy-index control on 2026-09-29 failed with Node `AssertionError [ERR_ASSERTION]`:
+expected tagged paragraph `HON`,
+but the wrapper's source interval began with `ON:`.
+The constructor stopped before producing the actual policy index.
+Its preceding controls and failure artifacts remain preserved.
+
+`package/cli/markdown-lint/src/parse.ts:78` still applies the old conversion:
+
+```typescript
+// package/cli/markdown-lint/src/parse.ts:78
+return hasAstralCodePoints(source,)
+  ? correctAstralOffsets({
+      tree: node,
+      source,
+    },)
+  : node;
+```
+
+The helper treats an existing offset as a code-point index:
+
+```typescript
+// package/cli/markdown-lint/src/correct-astral-offsets.ts:97
+const codePointOffset = point.offset;
+if (codePointOffset !== undefined) {
+  point.offset = map[codePointOffset] ?? codePointOffset;
+}
+```
+
+The current read-only Sätteri checkout is `~/temp/agent/satteri-offset-source.dR6ZsYSZ`,
+tag `satteri-v0.10.5`,
+commit `b3d38e1e341c809b20b76a655e9b1601d11bd1f0`.
+The first lookup of tag spelling `v0.10.5` returned HTTP 404;
+the tag list supplied the package-prefixed name.
+No upstream files or build scripts were changed or executed.
+
+At that revision,
+`crates/satteri-arena/src/line_index.rs:226` counts UTF-16 units:
+
+```rust
+// crates/satteri-arena/src/line_index.rs:226, selected statements
+if (b & 0xC0) != 0x80 {
+    count += if b >= 0xF0 { 2 } else { 1 };
+}
+```
+
+The materialized-tree serialization converts offsets at the wire interface:
+
+```rust
+// crates/satteri-arena/src/raw_buffer.rs:116
+let utf16_start = cursor.byte_to_utf16_offset(node.start_offset);
+let utf16_end = cursor.byte_to_utf16_offset(node.end_offset);
+```
+
+The cached path at `raw_buffer.rs:87` also writes UTF-16 values.
+The source revision and installed package label are recorded separately from measured runtime behavior;
+this is not a native-build provenance attestation.
+
+### Current verification
+
+Evidence is retained under `~/temp/agent/auto-mode-consumer-contract.mDLkyNoP/contract`:
+
+- `policy-index-started.json` and `policy-index-failure.json` retain the stopped constructor.
+- `offset-diagnostic/result-initial.json` compares direct,
+  wrapped,
+  and explicitly corrected-clone trees under Node `v26.10.0`.
+- `native-index/result.json` retains the corrected private adapter run.
+- `native-docs/verification.json` retains native-coordinate lint composition checks.
+
+On the original fixture,
+`source.indexOf('HON:')` is 12.
+Direct Sätteri reports 12;
+the wrapper reports 13 and loses the first letter in its slice.
+For the minimized source `"\u{1f680}\n\nx\n"`,
+target `x` begins at 4:
+direct Sätteri returns 4,
+while the wrapper returns 5 and slices the newline.
+Applying the correction directly to a cloned native tree reproduces the shifted wrapper result.
+Selected paragraph/text point objects were not shared.
+
+ASCII and BMP controls retained correct offsets.
+With two preceding astral characters,
+the measured paragraph start shifted from 14 to 16 after the extra conversion.
+Do not infer a uniform shift for every end offset:
+the helper's out-of-range fallback can retain an original value.
+The current failure is not the historical native code-point result or a changed fixture reference.
+
+Recorded invocations were:
+
+```bash
+# Private contract/offset-diagnostic directory
+mise --no-env --no-hooks run probe
+```
+
+```bash
+# Private contract/native-index directory
+mise --no-env --no-hooks run index
+```
+
+These are completed create-new phases,
+not instructions to replay them or delete their receipts.
+A new reproduction requires a separate disposable output namespace.
+
+### Current private workaround and limits
+
+The private adapter uses the same installed `satteri@0.10.5`,
+keeps GFM and frontmatter enabled,
+and applies no second offset conversion.
+It checks the admitted version and a fixed astral coordinate case,
+and rejects its untested MDX path.
+This is not a global dependency pin or a production linter patch.
+
+All 14 recorded structural and admission controls passed,
+including the original failing fixture and the duplicate-guard omission control.
+The original index implementation and parent references remained unchanged.
+The required policy then indexed as 276 tagged paragraphs and 47 headings,
+with no unclassified top-level nodes.
+That is structural coverage only,
+not instruction interpretation or authority qualification.
+No external model call occurred and `AGENTS.md` was unchanged.
+
+For document checks,
+the private composition gives each existing `Rule.check()` the unadjusted native tree
+and uses the existing `applyFixes()` function.
+It does not invoke the legacy parser through `runRules()` or `fixSource()` and disables no rule.
+The fixed Unicode/bold case produced the required `semantic-line-breaks` insertion;
+the legacy path produced no diagnostic.
+The native composition reached an idempotent fixpoint with zero remaining diagnostics.
+Heading,
+blockquote,
+strong,
+code,
+inline-code,
+and link spans matched the predeclared raw fragments.
+Image-bearing inputs are rejected rather than silently skipping required LFS context.
+
+This covers the measured Markdown consumers on the admitted version,
+not MDX,
+visitor/plugin paths,
+future versions,
+or a complete native dependency closure.
+No emoji was removed or mapped to another character to make the index controls pass.
+
+### Current upstream filing disposition
+
+The original issue is [Sätteri 172](https://github.com/bruits/satteri/issues/172),
+closed by [PR 174](https://github.com/bruits/satteri/pull/174),
+merge `6696c1c28b3024c5c8df760cc5af51dd713663fc`.
+[PR 176](https://github.com/bruits/satteri/pull/176) added astral conformance follow-ups.
+Bodies and comments of those threads and repository issue 559 were read.
+The historical draft is not a new fileable report against 0.10.5.
+No duplicate issue,
+comment,
+or upstream patch is proposed.
+
+1.  Upstream fault:
+    not established for the installed materialized path;
+    the reproduced extra shift comes from the retained repository correction.
+2.  Fixability:
+    the private consumer workaround is built and verified;
+    no impossibility claim is made about a future production change.
+3.  Supported use:
+    current source explicitly supplies UTF-16 positions for the JavaScript tree.
+4.  Contribution policy:
+    current `CONTRIBUTING.md` was read;
+    it requires duplicate checks,
+    tests,
+    and changesets.
+    No new upstream contribution is needed here.
+5.  Maintainer willingness:
+    the relevant upstream fix and follow-up tests are merged.
+    Repository issue 559 intentionally defers the TypeScript-side fix to replacement work.
+6.  Fix prototype:
+    the private Markdown adapter and rule composition are verified,
+    not an upstream patch or adopted production implementation.
+
+No `.out-of-scope/` filename identifies Sätteri as excluded.
+The existing duplicate and already-present fix make another upstream filing unnecessary.
+
+## Historical 0.9.4 investigation
 
 Sätteri (<https://satteri.bruits.org/>,
  npm `satteri@0.9.4`,
@@ -21,7 +217,7 @@ linter recovers exact written forms and applies fixes at node offsets,
  so wrong
 offsets misplace slices and edits.
 
-## Symptom
+## Historical 0.9.4 symptom
 
 Two bugs,
  same theme (offset unit mismatch),
@@ -73,7 +269,7 @@ The clean HTML that a correct slice would produce parses fine,
 a consequence of Bug A,
  not a separate MDX defect.
 
-## Root cause
+## Historical 0.9.4 root cause
 
 The arena stores raw UTF-8 byte offsets per node.
  remark's `position.*.offset`
@@ -179,7 +375,7 @@ repeat them:
   `—` is BMP,
    so code point equals UTF-16 there.
 
-## Verification
+## Historical 0.9.4 verification
 
 Version under test:
  npm `satteri@0.9.4` (native `satteri-linux-x64-gnu`),
@@ -259,7 +455,7 @@ Patterns that fail:
   before a node,
    read through `markdownToMdast` / `markdownToHast`.
 
-## Verified workarounds
+## Historical 0.9.4 workarounds
 
 Consumer-side,
  at our boundary (Sätteri is third-party;
@@ -299,7 +495,7 @@ for a local fix).
   rewrite (visitor);
    see `doc/handover/markdown-lint-satteri-benchmark.md`.
 
-## What does not work
+## Historical 0.9.4 rejected approaches
 
 - Trusting the materialized path unconditionally.
    It is correct for BMP text,
@@ -314,7 +510,7 @@ for a local fix).
    Columns are computed with
   the same code-point counter and are equally wrong on astral characters.
 
-## Upstream filing decision
+## Historical upstream filing decision
 
 `.out-of-scope/` was checked:
  `claude-code-upstream-bugs.md` is specific to
@@ -421,12 +617,11 @@ end needs a full napi rebuild;
  the offset-unit core it depends on is proven by
 the cargo test above.
 
-All six constraints hold,
- so the draft below is fileable as-is (it is not marked
-"do not file").
- Filing itself is left to a maintainer of this repo;
- this is the
-record.
+At that historical investigation,
+all six constraints were recorded as satisfied.
+The retained draft is historical evidence only:
+the upstream defect is now covered by issue 172 and merged PRs 174 and 176.
+Do not file this draft against the current 0.10.5 materialized path.
 
 ~~~md
 Title: `position` offsets use the wrong unit: byte offsets from plugin visitors, code-point offsets from materialized trees (should be UTF-16 code units)
