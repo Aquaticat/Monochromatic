@@ -139,6 +139,35 @@ await describe({
       },
     },),
     it({
+      name: 'ANCHORS A QUOTE WHOSE CORNER BRACKETS CAME BACK AS ENGLISH QUOTES (ledger B24), the evidence fold '
+        + 'reading the marks and nothing else',
+      fn: async () => {
+        for (const sourceQuote of [
+          '猫说：“窗边安静。”',
+          '猫说："窗边安静。"',
+        ]) {
+          expect(isArchiveSourceQuoteAnchored({
+            sourceContext: '猫说：「窗边安静。」然后睡了。',
+            sourceQuote,
+          },),).toBe(true,);
+        }
+        expect(isArchiveSourceQuoteAnchored({
+          sourceContext: '猫说：「窗边安静。」然后睡了。',
+          sourceQuote: '猫说：“门边安静。”',
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'COUNTS THE MINIMUM IN CHARACTERS, not UTF-16 units (ledger B24), so two ideographs past the first '
+        + 'plane are two',
+      fn: async () => {
+        expect(isArchiveSourceQuoteAnchored({
+          sourceContext: '猫\u{20000}\u{20001}猫。',
+          sourceQuote: '\u{20000}\u{20001}',
+        },),).toBe(false,);
+      },
+    },),
+    it({
       name: 'CORROBORATES narrow editorial apparatus without licensing factual prose',
       fn: async () => {
         expect(isVerifiableEditorialArchiveBlock({ blockText: 'Translator: Cat Friend', },),).toBe(true,);
