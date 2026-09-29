@@ -185,10 +185,14 @@ The [status evidence](evidence/search-empty-unavailable-boundaries.md)
 and [keyboard-closed native gallery](questions/search-status-evidence.html)
 show these states on the selected Fold layout,
 not an implemented lookup or a selected cause-specific recovery control.
-The [result-activation audit](evidence/search-result-activation-frontier.md)
-and [logic-only track-navigation comparison](questions/search-result-activation.prototype.html)
-keep source-backed folder/track actions separate from the remaining
-Stay-versus-Return preference after a successful track hit.
+D72 to D74 now select folder hits opening their folder without autoplay,
+track hits carrying the existing play/pause row behavior,
+and successful track actions **returning to player**.
+The [activation evidence](evidence/search-result-activation-frontier.md)
+and [archived Stay/Return logic comparison](questions/archive/search-result-activation-before-return.html)
+explain the choice;
+`questions/current.html` shows only the selected action goals.
+No Search result tap handler has been tested or implemented.
 Search accessibility remains a separate review.
 Selection does not authorize production implementation.
  Desktop implementation inherits

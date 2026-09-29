@@ -357,12 +357,16 @@ rounds (2026-09-17):
   Exact cause-specific recovery copy/control depends on a truthful
   source-status owner in a future implementation;
   the broad debug unavailable wording was rejected.
-  The result-activation audit at
-  `evidence/search-result-activation-frontier.md` carries existing
-  folder/track effects forward as recommendations,
-  while `questions/search-result-activation.prototype.html` isolates the
-  remaining Stay-versus-Return preference for a successful track hit.
-  No real result tap has been verified.
+  D72 to D74 settle the desired Search result effects:
+  folder hits open their folder without autoplay,
+  other track hits start playback,
+  already-current track hits toggle play/pause,
+  and successful track actions return to player.
+  See `evidence/search-result-activation-frontier.md` and the archived
+  `questions/archive/search-result-activation-before-return.html`
+  comparison.
+  Stale results must not substitute another target or fake success;
+  no real result tap has been verified.
   Search accessibility (review task 118) remains separate.
   D21's global command hotkey and Settings row
   do not transfer to Search.

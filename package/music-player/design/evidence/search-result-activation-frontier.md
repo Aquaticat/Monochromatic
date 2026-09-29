@@ -1,4 +1,4 @@
-# Search result activation boundaries before selecting tap effects
+# Search result activation evidence for D72 to D74
 
 ## What the rows currently mean
 
@@ -16,9 +16,11 @@ Clear,
 re-entry and same-query row visibility.
 D69 to D71 separate unqueried,
 completed-no-match and known unavailable statuses.
-None of those decisions makes a result row actionable.
-The present `questions/current.html` screenshots are static fixture states;
-result captions are **not** adopted tap promises.
+Those earlier decisions did not choose activation.
+D72 to D74 now select the desired folder/track effects and return path,
+but do **not** make the static rows actionable.
+The present `questions/current.html` screenshots are fixture states;
+result captions remain unimplemented examples.
 
 The debug-only
 `package/music-player/android-app/app/src/debug/kotlin/dev/monochromatic/musicplayer/SearchPersistentDeckStudy.kt`
@@ -38,7 +40,7 @@ The installed corrected fixture APK had SHA-256
 `1caee7060acfb5bbcd9a02142b4c9bada6b5886517157d25fef4a48b9b1e9c05`;
 its static Search-status captures likewise do not test result activation.
 
-## Existing player actions are precedents, not Search decisions
+## Existing player actions supplied the Search-design precedent
 
 `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlayerController.kt`
 implements `selectPage(page)` by updating the selected page,
@@ -74,24 +76,24 @@ D66 already says opening a new Search visit starts with an empty query;
 that rule alone does not choose whether activation ends the current visit.
 The visible Back arrow is a separate explicit exit (D64).
 
-## Incumbent effects and remaining preference
+## Incumbent effects and selected consequence
 
-- **Folder result default:** return to player showing the selected folder,
+- **Folder result (D72):** return to player showing the selected folder,
   without autoplay.
   `selectPage` already performs the selection and queue-scope change;
   closing Search exposes the folder's normal track view on both panels.
   Updating the left browser while retaining Search would obscure that
   folder's track view on the inner panel and be invisible on the cover.
-  This is a coherence recommendation,
-  not a pre-existing Search decision.
-- **Other track default:** start the directly named track using the
+  This coherence recommendation is now the D72 design direction,
+  not evidence of an existing Search handler.
+- **Other track (D73):** start the directly named track using the
   existing non-current player-row semantics.
   `playIndex` and `playCurrent` also select the track's owning page in
   source;
   they do not prove a scroll or focus jump to its row.
   A “reveal but do not play” workflow would be new behavior without a
   prior user signal.
-- **Already-current track default:** carry the existing player-row
+- **Already-current track (D73):** carry the existing player-row
   play/pause distinction into a Search result for a query that actually
   matches that track.
   `togglePlay()` pauses when playing,
@@ -102,16 +104,15 @@ The visible Back arrow is a separate explicit exit (D64).
   do not label that route a toggle.
   The historical `cam` fixture's current deck track is **not** a valid
   result to test this case.
-- **Actual open choice:** after a successful **track** result action,
-  keep Search visible so the user can inspect further hits and use the
-  retained deck,
-  or return to the ordinary folder track view?
-  D47's separate destination,
-  D51's retained deck,
-  D64's Back arrow and D66's fresh-query **next visit** leave both paths
-  coherent.
-  Do not bundle this choice with the folder's return-to-player effect,
-  or split it again between current and other tracks without a reason.
+- **Track navigation (D74):** after a successful **track** result action,
+  the user selected **Return to player**.
+  The normal folder track view appears;
+  a later Search visit begins with an empty query under D66.
+  This applies to a different track starting and the current track
+  toggling,
+  as previewed by the logic comparison.
+  D51's retained deck made Stay coherent but did not make it mandatory.
+  A failed/stale tap does not count as a successful action.
 - **Unavailable/stale target:** a result may disappear before activation.
   Treat that as an action failure requiring a truthful handler,
   not another user-preference axis.
@@ -127,13 +128,13 @@ The visible Back arrow is a separate explicit exit (D64).
 A visual/logic comparison must start from selected A with its real left
 browser and full deck,
 not the obsolete blank-left or two-row parent-only `cam` fixture.
-The [logic-only interaction walkthrough](../questions/search-result-activation.prototype.html)
+The [archived logic-only interaction comparison](../questions/archive/search-result-activation-before-return.html)
 models a directly named `Cam` track,
 a `Camellia` folder and an `Another Xronixle` current-track hit
 under an `Another` query.
-It offers only the remaining **track-success Stay versus Return** choice,
-with folder/current-track defaults carried from incumbent behavior and
-an illustrative D9-style stale-result notice.
+The user selected Return from its historical Stay/Return comparison;
+D72/D73 carry incumbent folder/current-track meanings and show an
+illustrative D9-style stale-result notice.
 Its player,
 queue and navigation outputs are a model,
 not Android verification;

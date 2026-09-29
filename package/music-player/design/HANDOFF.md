@@ -6817,5 +6817,47 @@ these are browser checks,
 not native result activation or TalkBack proof.
 Do not convert the source-backed defaults into another multi-question
 ballot;
-only the consequential track Stay/Return tradeoff needs a user
+only the consequential track Stay/Return tradeoff needed a user
 preference.
+
+## Return chosen for Search result activation
+
+The user chose **Return to the player** for a successful track-result
+activation after inspecting the focused Stay/Return design question.
+D72 to D74 in `decisions.md` record the source-backed folder/track action
+defaults and the user's track-navigation choice separately.
+A folder hit opens its normal folder view,
+changes queue page scope and does not start a different track.
+A different track hit starts it;
+a directly named already-current track hit toggles play/pause instead of
+calling `playIndex(current)` and assuming an equivalent effect.
+Either successful track action returns to the ordinary player view;
+D66 makes the next Search visit fresh.
+A stale/failed tap must not claim success,
+return as if playback started or substitute another result.
+The existing D9 missing-file bar is only a presentation precedent until
+an actual Search handler can be verified.
+Source tracing confirmed `playCurrent()` calls
+`refresh(followCurrent = true)` to select the new track's page in player
+state;
+it does not prove automatic scroll-to-row or accessible focus.
+
+The interactive logic form moved to
+`questions/archive/search-result-activation-before-return.html` with
+Return preselected and the response field removed.
+The generated selected `questions/current.html` includes D63 to D74 as
+closed-by-default explanatory disclosures so the native screenshots remain
+the principal review content;
+only selected behavior is in the active page.
+The archive and active page were browser-tested after the move,
+including both historical logic policies,
+disclosure toggles,
+self-contained images and axe WCAG A/AA with no console errors.
+No production Search,
+result tap,
+IME experiment,
+original-AVD mutation or matcher-library choice occurred.
+The next independent design review is Search accessibility (internal task
+118),
+while internal task 130 still needs to correct misleading bare task-ID
+links in active design prose.

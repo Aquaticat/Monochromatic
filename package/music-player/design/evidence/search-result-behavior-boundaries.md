@@ -170,8 +170,9 @@ priority.
 D62 removes fuzzy-library and W/A matching-policy selection from the
 current UI task.
 No concrete ranking algorithm,
-matcher dependency,
-result-tap effect or production Search code is adopted by this note.
-The current read-only activation audit and its single remaining
-track-navigation preference are in
+matcher dependency or production Search code is adopted by this note.
+D72 to D74 subsequently selected the desired folder/track effects and
+Return-to-player track consequence;
+no result-tap handler was installed or exercised.
+The source audit and historical comparison are in
 `package/music-player/design/evidence/search-result-activation-frontier.md`.
