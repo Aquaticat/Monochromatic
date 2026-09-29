@@ -215,6 +215,68 @@ await describe({
       },
     },),
     it({
+      name: 'NAMES A NAME LOST WHERE THE CANDIDATE HOLDS ITS LETTERS ONLY ACROSS A WORD EDGE (ledger B23): '
+        + '"Ann" inside "cannot" is no Ann',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'Ann', ],
+          baseText: 'Ann naps on the sill.',
+          candidateText: 'The cat cannot nap on the sill.',
+        },),).toEqual([ 'Ann', ],);
+      },
+    },),
+    it({
+      name: 'REQUIRES NOTHING OF A NAME THE BASE HELD ONLY ACROSS A WORD EDGE',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'Ann', ],
+          baseText: 'The cat cannot nap.',
+          candidateText: 'The cat naps.',
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'READS A SMALL LETTER RUNNING ON AS NO EDGE, and a case change or a digit inside a handle as one',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'Blossom', ],
+          baseText: 'Blossom naps.',
+          candidateText: 'The cherryblossom naps.',
+        },),).toEqual([ 'Blossom', ],);
+        for (const candidateText of [
+          'MittensBlossom naps.',
+          'Blossom2024 naps.',
+          '2024Blossom naps.',
+        ]) {
+          expect(findDroppedDeclaredNames({
+            forms: [ 'Blossom', ],
+            baseText: 'Blossom naps.',
+            candidateText,
+          },),).toEqual([],);
+        }
+      },
+    },),
+    it({
+      name: 'NEEDS NO EDGE BESIDE A HAN NAME, since Chinese writes no spaces',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ '\u{732B}\u{5C0F}\u{59D0}', ],
+          baseText: 'Mittens\u{732B}\u{5C0F}\u{59D0}naps.',
+          candidateText: 'cat\u{732B}\u{5C0F}\u{59D0}naps.',
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REPORTS A LOST SHORTER FORM ON ITS OWN when it stood apart and only runs on inside the longer one',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'Annabel', 'Ann', ],
+          baseText: 'Annabel and Ann nap.',
+          candidateText: 'The cats nap.',
+        },),).toEqual([ 'Annabel', 'Ann', ],);
+      },
+    },),
+    it({
       name: 'ACCEPTS a handle whose emoji the candidate leaves out, since an emoji is neither letter nor '
         + 'digit and drops out of both sides alike',
       fn: async () => {

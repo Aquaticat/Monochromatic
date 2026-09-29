@@ -60,6 +60,28 @@ const PAIRS = [
 ] as const;
 
 /**
+ Name pairs for the word-edge cases (ledger B23): a cat declared in
+ Chinese, and one whose source form is itself Latin.
+ */
+const TOM_PAIRS = [
+  {
+    source: '\u{6C64}\u{59C6}',
+    rendering: 'Tom',
+  },
+] as const;
+
+/**
+ Pair whose source form is Latin, so the original's link text names the cat
+ in Latin letters.
+ */
+const LATIN_SOURCE_PAIRS = [
+  {
+    source: 'Tom',
+    rendering: 'Thomas',
+  },
+] as const;
+
+/**
  Logger that forwards every line.
  */
 const l: Logger = tagged({ tag: 'declared-link-name-test', },);
@@ -223,6 +245,69 @@ await describe({
         expect((other.kind === 'invalid') ? other.findings.join(' ',) : '',).toContain(
           'may instead carry the account handle the existing translation writes there (@mi-mi-42)',
         );
+      },
+    },),
+    it({
+      name: 'REFUSES A LINK TEXT HOLDING THE DECLARED FORM ONLY INSIDE A LONGER WORD (ledger B23), and passes it '
+        + 'standing apart',
+      fn: async () => {
+        /**
+         Original breakfast link naming the cat.
+         */
+        const sourceText = '[^3]: [\u{65E9}\u{5B89}\u{FF0C}\u{6C64}\u{59C6}\u{3002}](https://example.invalid/tom)';
+        expect(validateTranslatedSlice({
+          sourceText,
+          candidateText: '[^3]: [Good morning, tomcat.](https://example.invalid/tom)',
+          declared: TOM_PAIRS,
+        },).kind,).toBe('invalid',);
+        expect(validateTranslatedSlice({
+          sourceText,
+          candidateText: '[^3]: [Good morning, Tom.](https://example.invalid/tom)',
+          declared: TOM_PAIRS,
+        },).kind,).toBe('valid',);
+      },
+    },),
+    it({
+      name: 'READS A LATIN SOURCE FORM ONLY WHERE IT ENDS AS A HANDLE WOULD: a link about a tomcat names no '
+        + 'Tom, and one about Tom does',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '[Tomcat\u{7684}\u{65E9}\u{9910}](https://example.invalid/tomcat)',
+          candidateText: '[Tomcat\'s breakfast](https://example.invalid/tomcat)',
+          declared: LATIN_SOURCE_PAIRS,
+        },).kind,).toBe('valid',);
+        expect(validateTranslatedSlice({
+          sourceText: '[Tom\u{7684}\u{65E9}\u{9910}](https://example.invalid/tom)',
+          candidateText: '[Tom\'s breakfast](https://example.invalid/tom)',
+          declared: LATIN_SOURCE_PAIRS,
+        },).kind,).toBe('invalid',);
+      },
+    },),
+    it({
+      name: 'TAKES NO LONGER HANDLE FOR A MENTION OF THE DECLARED FORM, and no longer handle for the one the page '
+        + 'writes',
+      fn: async () => {
+        /**
+         Original link naming Tom and mentioning a different, longer handle.
+         */
+        const sourceText = '[Tom\u{548C}\u{8BBA}\u{575B}\u{7528}\u{6237}@Tomcat](https://example.invalid/pair)';
+
+        /**
+         Page's rendering, which writes that longer handle.
+         */
+        const pageText = '[Tom and forum user @Tomcat](https://example.invalid/pair)';
+        expect(validateTranslatedSlice({
+          sourceText,
+          candidateText: '[Tomcat and forum user @Tomcat](https://example.invalid/pair)',
+          pageText,
+          declared: LATIN_SOURCE_PAIRS,
+        },).kind,).toBe('invalid',);
+        expect(validateTranslatedSlice({
+          sourceText: '[\u{5982}\u{4F55}\u{8BC4}\u{4EF7}\u{8BBA}\u{575B}\u{7528}\u{6237}@\u{54AA}\u{54AA}\u{FF1F}](https://example.invalid/question/7)',
+          candidateText: '[What do you think of forum user @mi-mi-420?](https://example.invalid/question/7)',
+          pageText: '[What do you think of forum user @mi-mi-42 ?](https://example.invalid/question/7)',
+          declared: PAIRS,
+        },).kind,).toBe('invalid',);
       },
     },),
     it({
