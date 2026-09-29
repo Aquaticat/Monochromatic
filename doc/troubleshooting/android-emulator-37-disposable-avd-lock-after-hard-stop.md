@@ -119,8 +119,27 @@ without the earlier observed forced-kill warning.
 `adb devices -l` no longer listed the emulator,
 and `podman ps` no longer listed this container.
 The original AVD was not touched.
-The longer graceful stop is a measured outcome of this visit,
+The longer graceful stop is a measured outcome of that visit,
 not proof that every future emulator exit leaves no stale locks.
+
+A later static Search-status capture on the same disposable AVD completed
+without opening an IME.
+`podman stop --time 60 fold-search-empty-review-avd` then warned:
+
+```text
+StopSignal SIGTERM failed to stop container fold-search-empty-review-avd in 60 seconds, resorting to SIGKILL
+```
+
+The Podman process exited `137`;
+`podman ps` and `adb devices -l` then showed no live emulator container or
+device.
+No subsequent reboot or AVD-lock ownership check was attempted during
+this capture session,
+so it does not establish whether writable restart is affected.
+Do not infer that the earlier three-second graceful exit is reliable,
+or relocate a lock merely because this later stop was forced;
+the owner checks described in this document are still required before a
+writable retry.
 
 ## Verified workaround and tradeoffs
 
