@@ -338,6 +338,20 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    VB6 into VUB;
    CXL widens to any plugin or process cleanup (already applied to pi plugins) and stays under "Package completeness".
    Approved.
+- Batch 18 (prose,
+   Markdown,
+   doc placement):
+   21 rules become 18,
+   1290 to 1056 tokens;
+   retires MD7 into MD6,
+   DL2 into DL1,
+   deletes DL6;
+   DPL drops lint-enforced `CONTEXT.md` clause;
+   WRP drops its fixed-cause rationale;
+   MD5 adds "(pipe or HTML)" against the `no-pipe-tables` autofix.
+   Side finding:
+   `doc/dependency-blocklist.md` and `doc/secret-management-caveman.html` sit outside any family.
+   Approved.
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
@@ -1711,14 +1725,7 @@ TAE:
  never from how it should work.
 ```
 
-## Next action
-
-Batch 18 proposed:
-21 rules become 18,
-1290 to 1056 tokens;
-awaiting user answers.
-
-### Pending batch 18 text
+### Batch 18
 
 ```md
 WR2:
@@ -1845,20 +1852,9 @@ Unrelated change blocks your edit:
  say so and ask.
 ```
 
-Retires MD7 into MD6 (with WR3's heading clauses),
-DL2 into DL1,
-and deletes DL6 (meta statement that no checker exists).
-WR3 absorbs MD1's "no italics";
-MD1 absorbs MD6's 120-char line limit.
-DL1 keeps only the durable naming pattern;
-the `PREFIX.rest.md` migration is finished (no tracked root prefix docs).
-DPL drops "`CONTEXT.md` forbidden" (`mono/forbidden-root-context` blocks it at commit with a fix message) and vague "tidy subdirs".
-WRP drops its rationale and `doc/todo/backtick-split-filenames.md` pointer (the splitting cause is fixed).
-MD5 adds "(pipe or HTML)":
-the `no-pipe-tables` autofix converts pipe tables to HTML tables.
-Markdown rules count as unenforced:
-`lint:markdown` fails repo-wide (48245 `semantic-line-breaks` violations in 129 `doc/` files),
-and dprint's Markdown plugin is commented out.
+## Next action
+
+Propose batch 19.
 
 ### Concurrent `AGENTS.md` changes
 
@@ -1870,15 +1866,8 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
 - 654507bf9 added SBS under "Adding new packages";
    it joins batch 16.
 
-### Remaining batches (45 rules)
+### Remaining batches (24 rules)
 
-- Batch 18:
-   WR2 to WR5,
-   MD1 to MD8,
-   WRP,
-   DPL,
-   DL1 to DL6,
-   EC1.
 - Batch 19:
    GCE,
    GCG,
