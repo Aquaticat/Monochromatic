@@ -82,7 +82,7 @@ fieldset { margin-inline: 0; margin-block: 1rem; padding-inline: 1rem; padding-b
 legend { padding-inline: 0.45rem; font-weight: 700; }
 .notice, .example, .rank-card, .capture-card { padding-inline: 1rem; padding-block: 1rem; }
 .muted { color: var(--color-muted); }
-.choice-grid, .ranking-grid, .gallery {
+.choice-grid, .ranking-grid, .gallery, .highlight-gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 25rem), 1fr));
   gap: 1rem;
@@ -218,10 +218,21 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 <main>
 <header>
   <p class="muted">Music player · design-only Search behavior review · Pixel 9 Pro Fold</p>
-  <h1>Which matches appear, and how are they ordered?</h1>
-  <p>Selected Search A and D58's icon/text columns are unchanged. This <strong>separate pending review</strong> uses keyboard-closed, 200% native debug fixtures on the inner and cover panels. The inner captures keep the actual folder browser, complete playback deck and selected E2 floor; the folded cover keeps its full-width Search destination. The rows are hand-authored illustrations, not a running search index. Captions such as “opens this folder” describe a possible meaning, not an implemented tap. No result activation, arbitrary keyboard or TalkBack behavior is proven.</p>
-  <div class="notice"><p>The question is split into <strong>membership</strong> and <strong>ordering</strong>. Choose either axis independently. The initial checks select recommended previews only; they do not commit your preference. Matching rules such as casefolding, tokens, ancestor paths and fuzzy matching remain outside these examples. The light-scheme APK rasters are fixed; this review's chrome follows your system light/dark setting. Raw status content was replaced before publication.</p></div>
+  <h1>See each highlighted match, then choose results and order</h1>
+  <p>Selected Search A and D58's icon/text columns remain unchanged. D59 now highlights every visible <code>cam</code> match <strong>in place</strong> in result titles and supporting parent-folder text. This separate pending review uses keyboard-closed, 200% native debug fixtures on the inner and cover panels. The inner captures keep the actual folder browser, complete playback deck and selected E2 floor; the folded cover keeps its full-width Search destination. These are hand-authored examples, not a running search index or clickable result rows.</p>
+  <div class="notice"><p>Inspect the theme-derived match treatment first, then choose <strong>membership</strong> and <strong>ordering</strong> independently. Initial checks select recommended previews only; they do not commit your preference. Matching grammar, ancestor paths and fuzzy matching remain outside these examples. Ranking images use a fixed light APK scheme; the separate match-treatment images show both actual light and dark APK schemes. This review's chrome follows your system setting. Full status content was replaced before publication. No arbitrary keyboard or TalkBack behavior is proven.</p></div>
 </header>
+<section aria-labelledby="highlight-title">
+  <h2 id="highlight-title">First: OS-accent match emphasis in both app schemes</h2>
+  <p>Each matching substring, including <code>Cam</code> within <code>Camellia</code>, gets a highlight behind the glyphs and bold ink. The fill comes from the current theme's <strong>OS accent primary color adjusted in OKLCH</strong>, not a fixed purple swatch. In <code>Another Xronixle</code>, the title does not match, but the <code>Cam</code> inside its supporting parent <code>Camellia</code> does. The actual left-side browser is not a Search result and stays unchanged. These samples are the selected short-result layout, not a membership or order choice.</p>
+  <div class="highlight-gallery">
+    <article class="capture-card"><h3>Inner · light app</h3><img data-highlight-panel="inner" data-highlight-scheme="light" data-panel="inner" width="2076" height="2152" alt="Inner Search with blue-tinted OS-accent match highlights in light mode"><button type="button" data-preview="inner" data-position="top" data-highlight-scheme="light">Inspect inner light at device size</button></article>
+    <article class="capture-card"><h3>Inner · dark app</h3><img data-highlight-panel="inner" data-highlight-scheme="dark" data-panel="inner" width="2076" height="2152" alt="Inner Search with OS-accent match highlights in dark mode"><button type="button" data-preview="inner" data-position="top" data-highlight-scheme="dark">Inspect inner dark at device size</button></article>
+    <article class="capture-card"><h3>Cover · light app</h3><img data-highlight-panel="cover" data-highlight-scheme="light" data-panel="cover" width="1080" height="2424" alt="Cover Search with OS-accent match highlights in light mode"><button type="button" data-preview="cover" data-position="top" data-highlight-scheme="light">Inspect cover light at device size</button></article>
+    <article class="capture-card"><h3>Cover · dark app</h3><img data-highlight-panel="cover" data-highlight-scheme="dark" data-panel="cover" width="1080" height="2424" alt="Cover Search with OS-accent match highlights in dark mode"><button type="button" data-preview="cover" data-position="top" data-highlight-scheme="dark">Inspect cover dark at device size</button></article>
+  </div>
+  <p class="muted">The cited app schemes use the measured disposable Fold wallpaper accent. Other wallpaper accents, font scales, keyboard-open fit and a real search algorithm remain unverified. Result activation is still #129.</p>
+</section>
 <section aria-labelledby="scope-title">
   <h2 id="scope-title">Question 1: Can a track match only through its immediate parent folder?</h2>
   <p>Both choices still return folders whose names match and tracks whose own filenames match. Both show a track's parent as context. Only the extra parent-only hit differs: <code>Another Xronixle</code> appears for <code>cam</code> solely because it is inside <code>Camellia</code>.</p>
@@ -283,6 +294,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 </dialog>
 <script>
 const captures = __RANK_CAPTURE_MAP__;
+const highlightCaptures = __HIGHLIGHT_CAPTURE_MAP__;
 const scopeInputs = document.querySelectorAll('input[name="scope"]');
 const orderInputs = document.querySelectorAll('input[name="order"]');
 const dialog = document.querySelector('#preview');
@@ -293,12 +305,16 @@ const previewTitle = document.querySelector('#preview-title');
 const scaleLabel = document.querySelector('#scale-label');
 let selectedPanel = 'inner';
 let selectedPosition = 'top';
+let selectedHighlightScheme = null;
 let scale = 1;
 let returnTarget;
 function scopeValue() { return document.querySelector('input[name="scope"]:checked').value; }
 function orderValue() { return document.querySelector('input[name="order"]:checked').value; }
 function sourceFor(panel, position) { return captures[panel][orderValue()][scopeValue()][position]; }
 function render() {
+  document.querySelectorAll('[data-highlight-panel]').forEach(image => {
+    image.src = highlightCaptures[image.dataset.highlightPanel][image.dataset.highlightScheme];
+  });
   document.querySelectorAll('[data-scope-choice]').forEach(label => {
     label.dataset.selected = String(label.querySelector('input').checked);
     label.querySelector('.selection-note').textContent = label.querySelector('input').checked ? ' · Previewing ' : ' ';
@@ -336,7 +352,9 @@ function showScale() {
 }
 function updatePreview() {
   const panel = geometry();
-  previewImage.src = sourceFor(selectedPanel, selectedPosition);
+  previewImage.src = selectedHighlightScheme === null
+    ? sourceFor(selectedPanel, selectedPosition)
+    : highlightCaptures[selectedPanel][selectedHighlightScheme];
   previewImage.width = panel.pixels[0];
   previewImage.height = panel.pixels[1];
   previewImage.alt = previewTitle.textContent;
@@ -348,8 +366,11 @@ document.querySelectorAll('[data-preview]').forEach(button => {
     returnTarget = button;
     selectedPanel = button.dataset.preview;
     selectedPosition = button.dataset.position;
+    selectedHighlightScheme = button.dataset.highlightScheme ?? null;
     device.dataset.panel = selectedPanel;
-    previewTitle.textContent = `${selectedPanel === 'inner' ? 'Inner Fold' : 'Folded cover'} · ${selectedPosition === 'end' ? 'scrolled last row' : 'initial rows'} · ${scopeValue() === 'direct' ? 'D' : 'P'} + ${{rankmixed:'M',rankfolders:'F',ranktracks:'T'}[orderValue()]} · native light fixture`;
+    previewTitle.textContent = selectedHighlightScheme === null
+      ? `${selectedPanel === 'inner' ? 'Inner Fold' : 'Folded cover'} · ${selectedPosition === 'end' ? 'scrolled last row' : 'initial rows'} · ${scopeValue() === 'direct' ? 'D' : 'P'} + ${{rankmixed:'M',rankfolders:'F',ranktracks:'T'}[orderValue()]} · native light fixture`
+      : `Selected D59 match treatment · ${selectedPanel === 'inner' ? 'inner Fold' : 'folded cover'} · ${selectedHighlightScheme} app scheme · 200% text`;
     updatePreview();
     await previewImage.decode();
     scale = 1;
