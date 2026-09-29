@@ -1,4 +1,6 @@
+import { codePointCount, } from './code-points.ts';
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
+import { normalizePunctuation, } from './quote-normalize.ts';
 
 //region Archive block evidence
 
@@ -26,6 +28,11 @@ const EDITORIAL_PREFIXES: readonly string[] = [
 
 /**
  Checks exact source support is substantive and inside expected aligned section.
+
+ READ THROUGH THE EVIDENCE FOLD (`normalizePunctuation`, ledger B24): a
+ reviewer quoting the original writes its 「」 as English quotes as often as
+ not, and the words are what the anchor asks about. The minimum is counted in
+ characters, not UTF-16 units, as it says.
  
  @param sourceContext - expected source section
  
@@ -51,8 +58,16 @@ export function isArchiveSourceQuoteAnchored(
    Quote without accidental boundary whitespace.
    */
   const normalizedQuote = sourceQuote.trim();
-  return (normalizedQuote.length >= MINIMUM_SOURCE_QUOTE_CHARACTERS)
-    && sourceContext.includes(normalizedQuote,);
+  /**
+   Section as the evidence fold reads it.
+   */
+  const foldedContext = normalizePunctuation({ text: sourceContext, },);
+  /**
+   Quote as the evidence fold reads it.
+   */
+  const foldedQuote = normalizePunctuation({ text: normalizedQuote, },);
+  return (codePointCount({ text: normalizedQuote, },) >= MINIMUM_SOURCE_QUOTE_CHARACTERS)
+    && foldedContext.includes(foldedQuote,);
 }
 
 /**
