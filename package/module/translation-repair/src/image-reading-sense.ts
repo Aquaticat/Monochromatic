@@ -31,11 +31,13 @@
 // names, handles and numbers. What survives here is per-reading and needs no
 // second text.
 
+import { normalizePunctuation, } from './quote-normalize.ts';
 import {
   negatesSomething,
   readsAsRefusal,
   refusalReportsAbsence,
 } from './reading-refusal.ts';
+import { carriesWord, } from './word-bounds.ts';
 
 /**
  Shortest reading worth having, in characters after trimming.
@@ -137,19 +139,28 @@ export function readingMakesSense(
   const trimmed = reading.trim();
 
   /**
-   Opening of the reading, lowercased, where a refusal announces itself.
+   Opening of the reading, lowercased with its quotes folded to ASCII, where a
+   refusal announces itself.
    */
-  const opening = trimmed.slice(
-    0,
-    REFUSAL_WINDOW_CHARS,
-  )
+  const opening = normalizePunctuation({
+    text: trimmed.slice(
+      0,
+      REFUSAL_WINDOW_CHARS,
+    ),
+  },)
     .toLowerCase();
 
   /**
-   Whether the phrase list or the shape test calls this a refusal.
+   Whether the phrase list or the shape test calls this a refusal. A phrase is
+   matched as words (ledger B23): "i cannot" inside "taxi cannot" and "sorry,
+   i" inside "sorry, it" are a sign's text, not an apology.
    */
   const refused = REFUSAL_PHRASES.some(function announced(phrase,): boolean {
-    return opening.includes(phrase,);
+    return carriesWord({
+      text: opening,
+      needle: phrase,
+      end: 'word',
+    },);
   },) || readsAsRefusal({ reading: trimmed, },);
   if (refused) {
     return {

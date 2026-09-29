@@ -31,5 +31,10 @@ export {
   carriesContent,
   pastQuoteMarkers,
 } from './quote-line.ts';
+export {
+  carriesWord,
+  type WordEnd,
+  wordStarts,
+} from './word-bounds.ts';
 
 //endregion Text barrel

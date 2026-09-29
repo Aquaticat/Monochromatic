@@ -1,3 +1,6 @@
+import { normalizePunctuation, } from './quote-normalize.ts';
+import { carriesWord, } from './word-bounds.ts';
+
 //region Refusal detection
 // The models refuse benign requests often enough that refusal handling is a
 // first-class outcome, handled reactively: a refusal-shaped reply reroutes to
@@ -5,6 +8,12 @@
 // and deliberately shallow: refusals lead with the apology, so only the opening
 // window is scanned, keeping legitimate content that quotes refusal phrasing
 // (a critic citing translated dialogue) from being misclassified.
+//
+// A MARKER IS MATCHED AS WORDS, across typographic quotes (ledger B23). A raw
+// substring found "as an ai" inside "as an aide", and a marker written with a
+// straight apostrophe missed "I can’t help", which is how models often write
+// it. The window's quotes are folded to ASCII (`quote-normalize.ts`) and each
+// marker's Latin edges stand at word boundaries (`word-bounds.ts`).
 
 /**
  Character count of the opening window scanned for refusal markers.
@@ -92,20 +101,26 @@ export function detectRefusalShape(
   { text, }: { readonly text: string; },
 ): RefusalScan {
   /**
-   Lowercased opening window; markers are stored lowercase.
+   Lowercased opening window with its quotes folded to ASCII; markers are
+   stored lowercase with straight apostrophes.
    */
-  const opening = text
-    .slice(
+  const opening = normalizePunctuation({
+    text: text.slice(
       0,
       REFUSAL_SCAN_WINDOW,
-    )
+    ),
+  },)
     .toLowerCase();
 
   /**
-   First marker present in the opening window, when any.
+   First marker standing as words in the opening window, when any.
    */
   const marker = REFUSAL_MARKERS.find(function firesIn(candidate,) {
-    return opening.includes(candidate,);
+    return carriesWord({
+      text: opening,
+      needle: candidate,
+      end: 'word',
+    },);
   },);
 
   if (marker === undefined)

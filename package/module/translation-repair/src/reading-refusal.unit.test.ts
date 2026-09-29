@@ -264,11 +264,11 @@ await describe({
     },),
     it({
       name: 'READS AN INABILITY MARKER AS THE START OF A WORD (ledger B23): an absence report that mentions a '
-        + 'download icon or equality holds none, while a marker with an ending or an in- prefix still marks '
-        + 'inability',
+        + 'boatload or equality holds none, while a marker with an ending, and each prefixed form that still '
+        + 'names access, marks inability',
       fn: async () => {
         expect(refusalReportsAbsence({
-          reading: 'There is no visible text in this image; it shows a cat beside a download icon.',
+          reading: 'There is no visible text in this image; it shows a boatload of cats.',
         },),).toBe(true,);
         expect(refusalReportsAbsence({
           reading: 'There is no visible text here, only a poster about equality for cats.',
@@ -276,6 +276,13 @@ await describe({
         for (const reading of [
           'The text in this image could not be loaded; the file seems corrupted.',
           'The text in this image is inaccessible to me.',
+          'No text can be read owing to the inaccessibility of the image.',
+          'The text in this image is unaccessible.',
+          'I cannot see any text; please upload the picture again.',
+          'No text came through, since the picture could not be downloaded.',
+          'I see no text; try reloading the picture.',
+          'No text: the picture is unprocessable.',
+          'No text: the picture is unloadable.',
         ]) {
           expect(refusalReportsAbsence({ reading, },),).toBe(false,);
         }

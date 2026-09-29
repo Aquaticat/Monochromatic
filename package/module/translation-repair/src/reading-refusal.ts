@@ -2,6 +2,7 @@ import {
   isLatinLetter,
   isLatinLetterOrMark,
 } from './latin-letters.ts';
+import { carriesWord, } from './word-bounds.ts';
 
 //region Reading refusal
 // WHETHER A MODEL DECLINED TO READ A PICTURE, rather than read it.
@@ -279,6 +280,21 @@ const TEXT_WORDS: readonly string[] = [
  Phrases about the picture's quality or the model's access to it, lowercased,
  any of which makes a refusal an inability rather than an absence report:
  text the model could not make out is text, not nothing.
+
+ EACH IS READ AS THE START OF A WORD (ledger B23): "load" names "loaded" and
+ "loading" but not "workload", and "quality" is not found in "equality".
+
+ A PREFIXED FORM THAT STILL NAMES ACCESS IS LISTED ON ITS OWN, taken from
+ every word of `/usr/share/dict/words` that carries a marker past its start,
+ plus the two software words that list lacks (`unprocessable`, `unloadable`).
+ "download", "upload" and "reload" stay inability although an absence report
+ could name a download icon, because the costs differ: a reader that never
+ received the picture says "please upload it again", two such replies read
+ as absence would confirm a picture textless in silence, while an absence
+ read as inability leaves the picture unread, and the visual evidence check
+ then pauses the entry and says why. `inaccessib` and `unaccessib` are stems,
+ since the words part at them ("inaccessible", "inaccessibly",
+ "inaccessibility").
  */
 const INABILITY_MARKERS: readonly string[] = [
   'unclear',
@@ -287,8 +303,15 @@ const INABILITY_MARKERS: readonly string[] = [
   'resolution',
   'make out',
   'process',
+  'unprocessable',
   'access',
+  'inaccessib',
+  'unaccessib',
   'load',
+  'download',
+  'upload',
+  'reload',
+  'unloadable',
   'corrupt',
   'distorted',
   'quality',
@@ -355,7 +378,11 @@ export function refusalReportsAbsence({ reading, }: { readonly reading: string; 
    */
   const lowered = trimmed.toLowerCase();
   if (INABILITY_MARKERS.some(function marks(marker,): boolean {
-    return lowered.includes(marker,);
+    return carriesWord({
+      text: lowered,
+      needle: marker,
+      end: 'open',
+    },);
   },))
     return false;
 
