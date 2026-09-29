@@ -88,12 +88,13 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES a formula written inside a paragraph that also carries an HTML comment',
+      name: 'REFUSES a formula in a paragraph whose HTML comment stands outside it, which the strict grammar '
+        + 'would refuse unless the comment is cut first',
       fn: async () => {
         expect(refusedForFormula({
           validation: validateTranslatedSlice({
             sourceText: TREATS,
-            candidateText: 'The kitten\'s treats cost $5 <!-- priced by the cat --> and its bed $10.',
+            candidateText: '<!-- priced by the cat --> The kitten\'s treats cost $5 and its bed $10.',
           },),
         },),).toBe(true,);
       },

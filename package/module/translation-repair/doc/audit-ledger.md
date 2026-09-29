@@ -6750,9 +6750,8 @@ What the census found:
 ### X22: this package's strict parse lacks the site's math grammar
 
 Status:
-open,
-to be built before the next launch;
-found 2026-09-29 closing X21.
+fixed 2026-09-29,
+found the same day closing X21.
 `parse-mdx.ts` says it parses with the grammar family the site compiles with,
 but the site adds `remark-math` and this package does not,
 so a wording that forms a formula passes the strict parse the publisher runs (the eighth class)
@@ -6777,6 +6776,51 @@ first showing the parse tree unchanged over every current input
 (so no cache version moves),
 then a floor where the quote-balance floor stands that refuses a wording forming a math node its incumbent lacks,
 with a guard shown failing first.
+
+What was done:
+
+-   `5ce9370ac` adds `remark-math` to the strict parse,
+    pinned in the catalog to the site's major version with the reason beside it;
+    the lockfile gains `remark-math` 6.0.0 and its own dependencies and nothing else.
+    Over the 457 current inputs
+    (the 92 sources and archive translations at the pin and the 273 settled pages),
+    456 parse to the same tree with and without it,
+    and the one left is refused both ways (the eighth class's page);
+    a planted formula changed the tree,
+    so the comparison could show a difference
+    (`~/temp/agent/x21-math/tree-diff.mjs`).
+    The tolerant fallback stays without it:
+    with no MDX grammar,
+    the template strings of JSX attributes read as prose there,
+    and math changed 171 of the same 457 trees.
+-   `9aecc5277` adds `translate-formula.ts` to the source-carry floors after the quote balance:
+    a candidate forming more formulas than its original is refused before any judge,
+    comments cut first,
+    standing aside where the strict grammar refuses either text.
+    `validateTranslatedSlice` runs it,
+    so the translate lane,
+    the consolidation stages and lane-contest eligibility all read it.
+-   No cache version moves:
+    the translate,
+    consolidation and lane-contest version accounts record that no slice-cache file under the agent runs is newer than
+    04:26 UTC on 2026-09-27,
+    so no answer cached under the current numbers exists to be served.
+
+Guard:
+`src/translate-formula.unit.test.ts`,
+committed red in `deb3406b2`:
+a pair of dollar amounts,
+a TeX command between dollar signs,
+and a formula in a paragraph whose comment stands outside it are refused;
+escaped signs,
+a single amount,
+the original's own formula and dollar signs inside a JSX attribute pass.
+Five mutants (the floor never refusing,
+ignoring the original's formulas,
+keeping comments,
+counting block formulas only,
+and the floor unwired) were each caught,
+the comment mutant only after M56's fixture was corrected.
 
 ## Recurring code families
 
@@ -7856,6 +7900,25 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M56: a red guard whose comment case never reached the comment path
+
+Status:
+happened 2026-09-29 in X22's red guard (`deb3406b2`),
+caught by the mutation check the same hour and corrected.
+The case meant to show the floor still reads a paragraph carrying an HTML comment
+set the comment between the two dollar signs,
+where the formula swallows it as math text,
+so the formula formed whether or not comments were cut,
+and the mutant that kept comments survived.
+The path the cut protects is a comment outside the formula,
+which the strict grammar refuses unless the comment goes first;
+the case now puts it there,
+and the mutant is caught.
+Prevention:
+the M29 rule already asks that each red case fail for the reason its label names;
+a case covering a pre-processing step is paired with the mutant that removes that step
+before the guard is called complete.
 
 ### M55: the handover's next steps still called a read page unread
 
