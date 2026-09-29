@@ -403,6 +403,78 @@ await describe({
       },
     },),
     it({
+      name: 'READS A REFERENCE APART FROM THE HEADING ONLY IN APOSTROPHE STYLE AS THE HEADING\'S (ledger B24): '
+        + 'neither ambiguous beside a second quoted title nor rewritten, since the typography restoration makes them one',
+      fn: async () => {
+        /**
+         Credit quoting the heading with the other apostrophe beside a second title.
+         */
+        const credit = '—— Yunmao “The Cat\'s Afternoon”, from “The Cat Sutra”';
+        /**
+         Pass over a curly heading and a credit writing it straight.
+         */
+        const beside = unifyTitleReferences({
+          slices: [
+            pair({
+              sliceIndex: 0,
+              source: '### 猫的午后',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 1,
+              source: '—— 云猫《猫的午后》，出自《猫经》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            {
+              sliceIndex: 0,
+              replacementText: '### The Cat’s Afternoon',
+            },
+            {
+              sliceIndex: 1,
+              replacementText: credit,
+            },
+          ],
+        },);
+        expect(beside.replacements[1]?.replacementText,).toBe(credit,);
+        expect(beside.findings,).toEqual([],);
+        /**
+         Credit quoting a straight heading with a curly apostrophe.
+         */
+        const curly = '—— Yunmao “The Cat’s Afternoon”';
+        /**
+         Pass over a straight heading and a credit writing it curly.
+         */
+        const alone = unifyTitleReferences({
+          slices: [
+            pair({
+              sliceIndex: 0,
+              source: '### 猫的午后',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 1,
+              source: '—— 云猫《猫的午后》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            {
+              sliceIndex: 0,
+              replacementText: '### The Cat\'s Afternoon',
+            },
+            {
+              sliceIndex: 1,
+              replacementText: curly,
+            },
+          ],
+        },);
+        expect(alone.replacements[1]?.replacementText,).toBe(curly,);
+        expect(alone.findings,).toEqual([],);
+      },
+    },),
+    it({
       name: 'READS past a tag attribute\'s quotes and past a second quoted span that already carries the heading',
       fn: async () => {
         /**
