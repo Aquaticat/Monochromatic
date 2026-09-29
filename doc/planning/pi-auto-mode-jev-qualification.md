@@ -70,6 +70,11 @@ without fitting a Jev calibration adapter or selecting a production cutoff.
 Then close actionable remaining service gates without repeating completed audits or declined dashboard attempts.
 The real authority/lifecycle/finalizer contract remains a separate dependency;
 paused Q16 and Laya work are not silently resumed.
+Task #64's [fresh native-Jev protocol](pi-auto-mode-jev-fresh-qualification.md)
+records the new grouped corpus,
+fixed diagnostic bands,
+client controls,
+and phase-admission boundary.
 
 ## Parser-boundary correction
 

@@ -1383,4 +1383,72 @@ expand private-input recipients,
 change accounts,
 edit `AGENTS.md`,
 use a coding-plan judge,
-or implement production code.
+nor implement production code.
+
+## Fresh native-Jev execution freeze
+
+Task #64 is ready for its bounded live phases in
+`~/temp/agent/jev-native-qualification-2026-09-29`.
+The [fresh qualification protocol](../planning/pi-auto-mode-jev-fresh-qualification.md)
+records the approved scope,
+new source-language evidence,
+controls,
+and remaining limits.
+Public catalogue preflight returned HTTP 200 and the named `typesafe/jev-1.13.0` entry,
+without credentials or inference inputs.
+
+The authored corpus has 216 sources in 54 episode groups,
+split equally between validation and locked test.
+Sibling family/source-kind variants remain grouped.
+Construction checked zero exact overlap against 598 unique named exposed texts,
+with positive/injected-overlap controls and no original reserved-bank access.
+All rendered inputs retained complete policy and the correct source-kind questions.
+The unchanged questions ask only positive relation and explicit prohibition against code-supplied operation facts.
+Same-agent labels,
+recurring semantic families,
+designed prevalence,
+and fixture authority/category assumptions remain explicit.
+
+The schedule is fixed at 120 validation calls including 12 controls,
+then 108 locked-test calls.
+The existing bands remain unvalidated and unchanged.
+The four-role gate is retained;
+twelve role/operation cells are diagnostics,
+not a new mandatory automation floor.
+Proper losses and fixed-bin observations include overall and accepted subsets,
+explicit infinite endpoint losses,
+and null empty cells.
+No model or calibration-adapter fitting occurs.
+
+Processes `proc_5f05`,
+`proc_eb77`,
+and `proc_cba0` passed numerical,
+mocked-client,
+actual reconstruction/admission,
+and guard-omission controls.
+They are not semantic or latency evidence.
+In particular,
+a changed receipt estimate was rejected by the actual admission gate and accepted by a separate
+omission module without its canonical-reconstruction check.
+
+Private commit `4a438e6` freezes 131 listed files before any scored call.
+Execution-manifest SHA-256:
+`5ef4a294595a18474f1e91c653fc7ff1c1cec0fd2740136d66a5e91aa1c14ef4`.
+Current policy remains 42677 bytes with SHA-256
+`4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`.
+This binds listed sources and inputs,
+not a hermetic host runtime/dependency closure.
+
+Both source transports share the five-second preparation/decoding/freshness clock.
+Four-second research gaps are outside that clock and separately measured,
+not live queue-latency qualification.
+There are no client retries;
+gateway-internal attempts remain unknown.
+A protocol or transport failure stops the phase without automatic continuation.
+Semantic validation failure alone does not tune or suppress the unchanged locked test.
+No production deployment,
+cutoff selection,
+private-recipient expansion,
+account mutation,
+Q16 restart,
+or Laya restart follows from this freeze.

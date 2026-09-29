@@ -61,8 +61,23 @@ These are profile-specific reasons to prioritize Jev,
 not a provider-weight ranking.
 Existing private-input consent for Jev remains sufficient for the named evaluation route.
 Task #63 records the approval and scopes remaining gates.
-Task #64 will freeze and execute fresh native-Jev source-language qualification;
-no Jev training or calibration-adapter fitting is authorized.
+Task #64 has frozen the [fresh native-Jev qualification study](../planning/pi-auto-mode-jev-fresh-qualification.md).
+Private root: `~/temp/agent/jev-native-qualification-2026-09-29`.
+Its 216 new sources remain grouped across validation and locked test;
+228 calls include separate repeat/question-order controls.
+The original reserved bank remains unopened.
+Construction checked zero exact overlap with 598 named exposed texts.
+Numerical,
+mocked-client,
+reconstruction/admission,
+and guard-omission controls passed.
+Private commit `4a438e6` binds 131 listed files,
+manifest SHA-256 `5ef4a294595a18474f1e91c653fc7ff1c1cec0fd2740136d66a5e91aa1c14ef4`.
+Collect validation,
+reconstruct it,
+then execute the unchanged locked test regardless of semantic validation success.
+Protocol failure stops collection without automatic retry or continuation.
+No Jev training or calibration-adapter fitting is authorized.
 Task #65 then closes actionable service gaps without repeating completed audits.
 Every new query phase still needs a fixed schedule,
 inputs,
