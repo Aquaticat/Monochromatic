@@ -48,6 +48,8 @@ import {
   type RunClient,
 } from '../../dist/final/node/index.mjs';
 
+import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
+
 /**
  Built pipeline these fixtures claim to have run under.
  */
@@ -947,6 +949,7 @@ await describe({
             sliceCacheDir: dirs.sliceCacheDir,
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
+            outsideReads: NO_OUTSIDE_READS,
             hardCapMs: 60_000,
             baseSignal: new AbortController().signal,
           },);
@@ -974,6 +977,7 @@ await describe({
             sliceCacheDir: dirs.sliceCacheDir,
             tip: 'a'.repeat(40,),
             pipelineDigest: DIGEST,
+            outsideReads: NO_OUTSIDE_READS,
             hardCapMs: 60_000,
             baseSignal: new AbortController().signal,
           },);
@@ -1011,6 +1015,7 @@ await describe({
               sliceCacheDir: dirs.sliceCacheDir,
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
+              outsideReads: NO_OUTSIDE_READS,
               hardCapMs: 60_000,
               baseSignal: new AbortController().signal,
             },);
@@ -1054,6 +1059,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
           visualEvidenceReader: async function pictureEvidence() {
@@ -1097,6 +1103,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
           visualEvidenceReader: async function reviewedVisualEvidence() {
@@ -1139,6 +1146,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1276,6 +1284,56 @@ await describe({
       },
     },),
     it({
+      name: 'READS OUTSIDE THE PIPELINE ONLY THROUGH THE READERS IT IS HANDED, each asked about this entry\'s '
+        + 'original, so a test settling an entry buys no web read with the key the suite inherits (ledger M68)',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+
+        /**
+         Originals each outside reader was asked about, by reader.
+         */
+        const asked: { readonly workTitles: string[]; readonly references: string[]; corpusNames: number; } = {
+          workTitles: [],
+          references: [],
+          corpusNames: 0,
+        };
+        await settleEntry({
+          client: entryClient({ served: [], },),
+          entry: ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          declinedDir: dirs.declinedDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          outsideReads: {
+            workTitles: async function recordWorkTitles({ sourceText, },) {
+              asked.workTitles.push(sourceText,);
+              return [];
+            },
+            references: async function recordReferences({ sourceText, },) {
+              asked.references.push(sourceText,);
+              return '';
+            },
+            corpusNames: async function recordCorpusNames() {
+              asked.corpusNames += 1;
+              return [];
+            },
+          },
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        expect(asked.workTitles.length,).toBeGreaterThan(0,);
+        expect(asked.references.length,).toBeGreaterThan(0,);
+        expect(asked.corpusNames,).toBeGreaterThan(0,);
+        expect(new Set([
+          ...asked.workTitles,
+          ...asked.references,
+        ],),).toEqual(new Set([ENTRY.sourceText,],),);
+      },
+    },),
+    it({
       name: 'PUBLISHES CHANGED FINAL POLISH through artifact parser and page assembly',
       fn: async () => {
         await using dirs = await throwawayDirs();
@@ -1295,6 +1353,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1349,6 +1408,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1397,6 +1457,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1432,6 +1493,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1486,6 +1548,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1530,6 +1593,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1557,6 +1621,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1606,6 +1671,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1650,6 +1716,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1693,6 +1760,7 @@ await describe({
               sliceCacheDir: dirs.sliceCacheDir,
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
+              outsideReads: NO_OUTSIDE_READS,
               hardCapMs: 60_000,
               baseSignal: new AbortController().signal,
             },);
@@ -1728,6 +1796,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1762,6 +1831,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1794,6 +1864,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1844,6 +1915,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1874,6 +1946,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1946,6 +2019,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -1971,6 +2045,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: controller.signal,
         },);
@@ -2019,6 +2094,7 @@ await describe({
           sliceCacheDir: dirs.sliceCacheDir,
           tip: 'a'.repeat(40,),
           pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
           hardCapMs: 60_000,
           baseSignal: new AbortController().signal,
         },);
@@ -2050,6 +2126,7 @@ await describe({
               sliceCacheDir: dirs.sliceCacheDir,
               tip: 'a'.repeat(40,),
               pipelineDigest: DIGEST,
+              outsideReads: NO_OUTSIDE_READS,
               hardCapMs: 60_000,
               baseSignal: new AbortController().signal,
             },);

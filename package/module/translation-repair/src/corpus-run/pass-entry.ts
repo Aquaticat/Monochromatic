@@ -32,7 +32,7 @@ import { unfilledPageFindings, } from './publish-completeness.ts';
 import { settledTallyLine, } from './settled-tally.ts';
 import { readPassOverlap, } from './pass-overlap.ts';
 import { createPassPictureReader, } from './pass-seated-pictures.ts';
-import { RUN_OUTSIDE_READS, } from './pass-outside-reads.ts';
+import type { PassOutsideReads, } from './pass-outside-reads.ts';
 import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 import {
   openEntryCaches,
@@ -89,9 +89,11 @@ import { runPassLanes, } from './pass-lanes.ts';
  @param baseSignal - abort this entry's deadline forwards from
  
  @param overlap - most slices each per-slice driver keeps in flight
- 
+
+ @param outsideReads - what preparation reads from outside the pipeline
+
  @returns Whether an artifact was written
- 
+
  @example
  ```ts
  const outcome = await runEntryPipeline({ client, entry, artifactsDir, entryCacheDir, ... },);
@@ -110,6 +112,7 @@ async function runEntryPipeline(
     hardCapMs,
     baseSignal,
     overlap,
+    outsideReads,
     visualEvidenceReader,
   }: {
     readonly client: RunClient;
@@ -123,6 +126,7 @@ async function runEntryPipeline(
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
     readonly overlap: number;
+    readonly outsideReads: PassOutsideReads;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
   },
 ): Promise<EntryOutcome> {
@@ -238,7 +242,7 @@ async function runEntryPipeline(
       // is the archive as prepared, never these bytes.
       targetText: entry.targetText,
       signal: deadline.callSignal,
-      outsideReads: RUN_OUTSIDE_READS,
+      outsideReads,
     },);
     /**
      Archive after preparation-stage review corrections.
@@ -555,15 +559,21 @@ async function runEntryPipeline(
  
  @param baseSignal - abort every entry deadline forwards from; the pass never
  aborts it, so only a per-entry timeout ever fires
- 
+
+ @param outsideReads - what preparation reads from outside the pipeline:
+ `RUN_OUTSIDE_READS` in a run, a test's own readers in a test. REQUIRED, as
+ it is of the preparation (ledger X19): this driver once handed the run's
+ readers down itself, so its unit test prepared every entry through the key
+ the suite inherits, the real caches and the corpus clone (ledger M68)
+
  @throws StatedRefusalError before entry work when overlap environment value
  is invalid launch configuration
- 
+
  @returns Settlement, resumable operational failure, or stopped incomplete work
- 
+
  @example
  ```ts
- const outcome = await settleEntry({ client, entry, artifactsDir, publishDir, declinedDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, },);
+ const outcome = await settleEntry({ client, entry, artifactsDir, publishDir, declinedDir, sliceCacheDir, tip, pipelineDigest, hardCapMs, baseSignal, outsideReads: RUN_OUTSIDE_READS, },);
  ```
  */
 export async function settleEntry(
@@ -578,6 +588,7 @@ export async function settleEntry(
     pipelineDigest,
     hardCapMs,
     baseSignal,
+    outsideReads,
     visualEvidenceReader,
   }: {
     readonly client: RunClient;
@@ -590,6 +601,7 @@ export async function settleEntry(
     readonly pipelineDigest: PipelineDigest;
     readonly hardCapMs: number;
     readonly baseSignal: AbortSignal;
+    readonly outsideReads: PassOutsideReads;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
   },
 ): Promise<EntryOutcome> {
@@ -622,6 +634,7 @@ export async function settleEntry(
     hardCapMs,
     baseSignal,
     overlap,
+    outsideReads,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
   },);
   if (outcome.kind !== 'settled') {

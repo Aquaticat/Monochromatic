@@ -6989,6 +6989,12 @@ that assertion gave way to the fixture.
 The stray record could not be removed from this session (the removal was refused);
 it holds only the invented title's search,
 and the owner can delete it.
+The fix left one caller supplying the run's readers itself:
+`runEntryPipeline` handed `RUN_OUTSIDE_READS` to `runPassPreparation`,
+so `settleEntry` took no readers
+and `pass-entry.unit.test.ts` still prepared every entry through the key,
+the real caches and the corpus clone,
+until 2026-09-29 (M68).
 
 ### X20: the page-name glossary reads Markdown headings and not HTML ones
 
@@ -9889,6 +9895,54 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M68: a seam required of two functions and supplied by their caller
+
+Status:
+happened 2026-09-28 in `d82dfe559`,
+which made the outside reads a required parameter of `preparePassEntry` and `runPassPreparation`
+while `runEntryPipeline` went on handing `runPassPreparation` the run's readers itself;
+found 2026-09-29 by listing every reference to `RUN_OUTSIDE_READS` while the T8 census reached `corpus-run`,
+fixed the same day.
+`settleEntry` took no readers,
+so `pass-entry.unit.test.ts` prepared each of its entries through `RUN_OUTSIDE_READS`:
+the Exa key the suite inherits,
+the real lookup and reference caches under `~/.cache/translation-repair`,
+and the corpus clone at the pin.
+Its fixtures link `https://example.test/cat-record`,
+and the reference cache holds a record for that address fetched 2026-09-16T16:26:05Z,
+status `error`,
+failure `CRAWL_UNKNOWN_ERROR`,
+a field that holds the endpoint's own error tag
+(the record read 2026-09-29;
+it predates the seam,
+when preparation read the key directly).
+Of the 14 reference records it is the only one at a fixture address,
+and of the 58 lookup records the newest whose title a test file holds is X19's own,
+written at 19:42 UTC,
+before that fix landed at 19:56 UTC
+(`m68-fixture-records.mjs` in the audit's scratch folder;
+its first version compared whole queries,
+missed X19's record,
+and was rewritten to compare the title inside the query before its null was read).
+Every later run of the file read that cached failure instead of asking again,
+so its sheets carried an unread-reference line no fixture chose,
+and on a machine without the record the file would have bought the read again.
+The type check X19 relied on could not see the gap:
+a parameter is required only of the functions that declare it,
+and a caller supplying the run's value itself satisfies it.
+`settleEntry` and `runEntryPipeline` now require `outsideReads`,
+the pass hands over `RUN_OUTSIDE_READS`,
+every entry test hands over `NO_OUTSIDE_READS`,
+and a case in `pass-entry.unit.test.ts` hands over recording readers
+and checks each was asked about the entry's original and nothing else.
+Prevention:
+when a seam becomes required,
+every reference to the production value is listed (`rg RUN_OUTSIDE_READS src`),
+and each one below the function a run itself calls moves to a parameter;
+the seam is done when the production value is named only by that function,
+TSDoc examples,
+and runner commands that build a live client beside it.
 
 ### M67: a cold stretch recorded under the source of its first character alone
 

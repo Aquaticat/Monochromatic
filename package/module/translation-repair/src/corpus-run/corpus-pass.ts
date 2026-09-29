@@ -34,6 +34,7 @@ import {
   assertArtifactsPlaceable,
   assertBuildGenerationResumable,
 } from './pass-generation-guard.ts';
+import { RUN_OUTSIDE_READS, } from './pass-outside-reads.ts';
 import { assertResumableSchemaGeneration, } from './pass-schema-guard.ts';
 import {
   entriesFinishedThisRun,
@@ -614,6 +615,7 @@ async function runCorpusPass(): Promise<void> {
             pipelineDigest,
             hardCapMs: HARD_CAP_MS,
             baseSignal: neverAbort,
+            outsideReads: RUN_OUTSIDE_READS,
           },);
         },
       },);
