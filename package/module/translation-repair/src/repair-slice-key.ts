@@ -452,6 +452,12 @@ import type { RepairModels, } from './repair-contract.ts';
  Rides inside 34 too: the editor sheet and both editor selections say that
  saying something twice adds content unless the ORIGINAL says it again at
  that place (ledger L14(b), `49d3c285b`); same check, same result.
+
+ Rides inside 34 too: the declared-name guard reads text by code point, so a
+ handle written in letters beyond the first plane is checked rather than
+ projected to nothing (ledger B21, `declared-name-survival.ts`); over the
+ pinned archives and settled pages no survival answer changes; checked on
+ 2026-09-29: still no slice-cache file newer than 04:26 UTC on 2026-09-27.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**

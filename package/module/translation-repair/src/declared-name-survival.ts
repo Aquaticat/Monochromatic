@@ -115,17 +115,16 @@ export function nameProjection({ text, }: { readonly text: string; },): string {
 
   /**
    Characters kept, in order.
-   
-   SCANNED BY CODE UNIT rather than by grapheme. A surrogate half is neither a
-   letter nor a digit, so an emoji inside a handle drops out of the key; it
-   drops out of both sides identically, which is all this comparison needs.
+
+   SCANNED BY CODE POINT, not by grapheme and not by UTF-16 unit. A letter
+   beyond the first plane (a Han ideograph from Extension B, a letter in
+   mathematical script) is two units, and neither half is a letter, so a scan
+   by unit dropped it from the key: a handle written in such letters projected
+   to nothing and was never checked (ledger B21). An emoji is neither a letter
+   nor a digit, so it still drops out of the key, from both sides alike.
    */
   const kept: string[] = [];
-  for (let at = 0; at < composed.length; at += 1) {
-    /**
-     Character under the cursor.
-     */
-    const character = composed.charAt(at,);
+  for (const character of composed) {
     if (isNameCharacter({ character, },))
       kept.push(character,);
   }

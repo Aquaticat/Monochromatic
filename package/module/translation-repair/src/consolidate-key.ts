@@ -172,6 +172,12 @@ import type { LaneText, } from './translate-candidates.ts';
  changes what the consolidation accepts; checked on 2026-09-29: still no
  slice-cache file newer than 04:26 UTC on 2026-09-27.
 
+ Rides inside 20 too: the declared-name guard reads text by code point, so a
+ handle written in letters beyond the first plane is checked rather than
+ projected to nothing (ledger B21, `declared-name-survival.ts`); over the
+ pinned archives and settled pages no survival answer changes; same check,
+ same result.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

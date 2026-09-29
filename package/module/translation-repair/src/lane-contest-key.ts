@@ -100,6 +100,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  checked on 2026-09-29: still no slice-cache file newer than 04:26 UTC on
  2026-09-27.
 
+ Rides inside 6 too: the declared-name guard reads text by code point, so a
+ handle written in letters beyond the first plane is checked rather than
+ projected to nothing (ledger B21, `declared-name-survival.ts`); over the
+ pinned archives and settled pages no survival answer changes; same check,
+ same result.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 6 was set
  in `d614a0c1d` at 04:30 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

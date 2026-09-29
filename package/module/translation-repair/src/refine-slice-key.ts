@@ -158,6 +158,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  Rides inside 5 too: claim summaries fold onto one line on the probe and
  recheck sheets the phase sends (ledger L14(d), `3be658509`); same check, same
  result.
+
+ Rides inside 5 too: the declared-name guard reads text by code point, so a
+ handle written in letters beyond the first plane is checked rather than
+ projected to nothing (ledger B21, `declared-name-survival.ts`); over the
+ pinned archives and settled pages no survival answer changes; checked on
+ 2026-09-29: still no slice-cache file newer than 04:26 UTC on 2026-09-27.
  */
 export const REFINE_CACHE_VERSION = 5;
 
