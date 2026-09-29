@@ -1,3 +1,5 @@
+import { tokenStarts, } from './word-bounds.ts';
+
 //region Neutral pronoun rendering
 // A TRANSLATION THAT LEAVES THE CORPUS'S NEUTRAL PRONOUN IN LATIN LETTERS has
 // not translated it. The sources write `TA`, `Ta` or `ta` for a person who did
@@ -12,17 +14,30 @@
 // pronoun the original uses and never says what English makes of it. The rule
 // now says so, and this refuses the candidate before any judge is asked.
 //
-// WHAT THE CORPUS SAYS. Measured over the pinned corpus the same day: sources
+// WHAT THE CORPUS SAYS. Measured over the pinned corpus on 2026-09-04: sources
 // write the pronoun as `TA` in 2 entries, `Ta` in 7 and `ta` in 8, every
 // occurrence a pronoun; of those entries' archives, one (a rewrite) keeps a
 // bare `TA`, and the rest render it "they". An archive that kept it fails this
 // rule as a standing text, which is what the owner's ineligible-standing
-// decision provides for: the slate prefers a valid proposal.
+// decision provides for: the slate prefers a valid proposal. Remeasured on
+// 2026-09-29 under the token reading (`pronoun-entry-census.mjs`): the same
+// figures, the archive XingZ60's. The old list read `Ta` in 6 sources,
+// missing qianyuanakg's.
 //
-// THE BOUNDARY IS THE WORD, NOT THE CASING. `DATA`, `STATION`, `meta`, a
-// romanised handle, a path segment and an address all contain the letters and
-// none is the pronoun, so an occurrence counts only where what precedes it
-// could open a word and what follows it could close one.
+// THE PRONOUN IS A TOKEN OF ITS OWN (ledger B23), read by `tokenStarts`
+// (`word-bounds.ts`): `DATA`, `STATION`, `meta`, a romanised handle, a path
+// segment and an address all contain the letters and none is the pronoun.
+// The floor used to count an occurrence only between listed marks, whitespace
+// or characters at or above U+2E80, compared by UTF-16 unit. That list missed
+// a doubled Chinese dash and a slash after han in three originals
+// (XingZ60, Mizuki_Yuuki, qianyuanakg), so the floor never applied to those
+// slices, and an English em dash beside a kept `TA` in stored renderings
+// (XingZ60, noname), so it passed them (`pronoun-disagreement-census.mjs`,
+// 2026-09-29). The listed 「」 was redundant: it and 『』 sit above U+2E80.
+//
+// WHAT THE TOKEN READING DOES NOT SEE: `he/TA` and `Well...Ta` read as one
+// token each, as an address would, so neither counts. The old list counted
+// neither; the census found neither in any original or stored rendering.
 
 /**
  Spellings the sources give the neutral pronoun, and so the spellings an
@@ -42,140 +57,14 @@ const RENDERING_RULE: string = 'the ORIGINAL writes its neutral pronoun as TA, T
   + 'untranslated word, not a preserved choice.';
 
 /**
- What `indexOf` answers when the spelling is not found.
- */
-const NOT_FOUND = -1;
+ Counts how often one spelling stands as a token of its own.
 
-/**
- First character of the CJK ranges (U+2E80), at or above which a character
- is taken as script rather than as part of a Latin word. A pronoun beside a
- han character is still a word of its own. Compared as a string, which orders
- one-unit characters by code point.
- */
-const CJK_FLOOR = '\u2E80';
+ @param text - original or candidate translation
 
-/**
- Marks that may open a word in English prose: quotes and brackets.
- */
-const OPENING_MARKS = new Set([
-  '"',
-  '\'',
-  '“',
-  '‘',
-  '(',
-  '[',
-  '「',
-],);
-
-/**
- Marks that may close a word in English prose: sentence and clause
- punctuation, quotes and brackets. An apostrophe closes too, so "Ta's" counts.
- */
-const CLOSING_MARKS = new Set([
-  ',',
-  '.',
-  ';',
-  ':',
-  '!',
-  '?',
-  '"',
-  '\'',
-  '’',
-  '”',
-  ')',
-  ']',
-  '」',
-],);
-
-/**
- Whether a character is whitespace, which bounds a word on either side.
- 
- @param character - one character, empty at either end of the text
- 
- @returns Whether it is a space, a tab or a line break
- 
- @example
- ```ts
- isBlank({ character: ' ', },);
- // => true
- ```
- */
-function isBlank({ character, }: { readonly character: string; },): boolean {
-  return (character === ' ')
-    || (character === '\t')
-    || (character === '\n')
-    || (character === '\r');
-}
-
-/**
- Whether a character belongs to a CJK range.
- 
- @param character - one character, empty at either end of the text
- 
- @returns Whether it sits at or above the CJK floor; empty never does
- 
- @example
- ```ts
- isHan({ character: '的', },);
- // => true
- ```
- */
-function isHan({ character, }: { readonly character: string; },): boolean {
-  return (character !== '') && (character >= CJK_FLOOR);
-}
-
-/**
- Whether what precedes an occurrence lets it be a word of its own.
- 
- @param character - character before the occurrence, empty at the start
- 
- @returns Whether the occurrence may begin here
- 
- @example
- ```ts
- opensWord({ character: '', },);
- // => true
- ```
- */
-function opensWord({ character, }: { readonly character: string; },): boolean {
-  return (character === '')
-    || isBlank({ character, },)
-    || OPENING_MARKS.has(character,)
-    || isHan({ character, },);
-}
-
-/**
- Whether what follows an occurrence lets it be a word of its own.
- 
- @param character - character after the occurrence, empty at the end
- 
- @returns Whether the occurrence may end here
- 
- @example
- ```ts
- closesWord({ character: '\'', },);
- // => true
- ```
- */
-function closesWord({ character, }: { readonly character: string; },): boolean {
-  return (character === '')
-    || isBlank({ character, },)
-    || CLOSING_MARKS.has(character,)
-    || isHan({ character, },);
-}
-
-/**
- Counts how often one spelling stands as a word of its own.
- 
- ONE LINEAR PASS with the string API: each occurrence is found from the end
- of the previous one and its two neighbours are read once.
- 
- @param text - candidate translation
- 
  @param spelling - fixed form to count
- 
- @returns Occurrences bounded as words
- 
+
+ @returns Occurrences standing as tokens
+
  @example
  ```ts
  countSpelling({ text: 'Ta smiled. DATA', spelling: 'Ta', },);
@@ -192,33 +81,13 @@ function countSpelling(
   },
 ): number {
   /**
-   Occurrences and the position to search from, advanced together.
+   Starts where the spelling stands as a token.
    */
-  const scan = {
-    count: 0,
-    from: 0,
-  };
-  for (
-    let at = text.indexOf(
-      spelling,
-      scan.from,
-    );
-    at !== NOT_FOUND;
-    at = text.indexOf(
-      spelling,
-      scan.from,
-    )
-  ) {
-    /**
-     Whether both neighbours let this stand as a word.
-     */
-    const standsAlone = opensWord({ character: text.charAt(at - 1,), },)
-      && closesWord({ character: text.charAt(at + spelling.length,), },);
-    if (standsAlone)
-      scan.count += 1;
-    scan.from = at + spelling.length;
-  }
-  return scan.count;
+  const starts = tokenStarts({
+    text,
+    needle: spelling,
+  },);
+  return starts.length;
 }
 
 /**
@@ -226,7 +95,7 @@ function countSpelling(
 
  @param sourceText - original slice
 
- @returns True where it stands as a word at least once
+ @returns True where it stands as a token at least once
 
  @example
  ```ts

@@ -44,6 +44,7 @@ export {
 } from './quote-line.ts';
 export {
   carriesWord,
+  tokenStarts,
   type WordEnd,
   wordStarts,
 } from './word-bounds.ts';

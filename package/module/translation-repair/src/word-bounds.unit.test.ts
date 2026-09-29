@@ -2,7 +2,10 @@
  Tests the word-bounded match the refusal readers share (ledger B23): each
  Latin edge of a needle at a word boundary, the end left open, digits and
  combining marks continuing a word, Han and punctuation edges needing no
- boundary, overlapping starts, and the empty needle.
+ boundary, overlapping starts, and the empty needle. Then the stricter token
+ reading the neutral pronoun floor uses: a word joined to another across an
+ address's joiners, joiners trimmed at a token's ends, a handle, and marks
+ that join nothing.
 
  @module
  */
@@ -15,6 +18,7 @@ import {
 
 import {
   carriesWord,
+  tokenStarts,
   wordStarts,
 } from '../dist/final/node/index.mjs';
 
@@ -108,6 +112,78 @@ await describe({
           text: 'cat',
           needle: '',
           end: 'word',
+        },),).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: tokenStarts.name,
+  children: [
+    it({
+      name: 'JOINS A WORD TO ANOTHER ACROSS AN ADDRESS\'S JOINERS, on either side and through a run of them',
+      fn: async () => {
+        expect(tokenStarts({
+          text: 'meta.cat cat-nap @cat_x /home/cat/ e.-/cat cat',
+          needle: 'cat',
+        },),).toEqual([43,],);
+      },
+    },),
+    it({
+      name: 'TRIMS JOINERS AT A TOKEN\'S ENDS, so a slash after han and a closing mark leave the word standing',
+      fn: async () => {
+        expect(tokenStarts({
+          text: '\u{732B}/cat cat? cat. x',
+          needle: 'cat',
+        },),).toEqual([
+          2,
+          6,
+          11,
+        ],);
+      },
+    },),
+    it({
+      name: 'READS A WORD AFTER A MENTION MARK AS A HANDLE, and one before it as an address',
+      fn: async () => {
+        expect(tokenStarts({
+          text: '@cat cat@example.invalid',
+          needle: 'cat',
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'LEAVES A DASH, AN ELLIPSIS, AN ARROW OR EMPHASIS OUTSIDE THE TOKEN, since none sits inside an address',
+      fn: async () => {
+        expect(tokenStarts({
+          text: 'a\u{2014}cat\u{2026}cat\u{2192}*cat*',
+          needle: 'cat',
+        },),).toEqual([
+          2,
+          6,
+          11,
+        ],);
+      },
+    },),
+    it({
+      name: 'READS A DIGIT BESIDE THE NEEDLE AS THE WORD RUNNING ON, and no edge of a Han needle',
+      fn: async () => {
+        expect(tokenStarts({
+          text: 'cat9',
+          needle: 'cat',
+        },),).toEqual([],);
+        expect(tokenStarts({
+          text: 'a/\u{732B}',
+          needle: '\u{732B}',
+        },),).toEqual([2,],);
+      },
+    },),
+    it({
+      name: 'FINDS NOTHING FOR AN EMPTY NEEDLE',
+      fn: async () => {
+        expect(tokenStarts({
+          text: 'cat',
+          needle: '',
         },),).toEqual([],);
       },
     },),
