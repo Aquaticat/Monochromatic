@@ -525,7 +525,7 @@ export async function settleConsolidation(
   }
 
   /**
-   Model ids the floor passed, read off the floor so the filter below takes
+   Model ids the floor passed, read off the floor so `survivingVoices` takes
    one member step rather than two; none where the floor refused every
    proposal and only lane texts carry the slate on.
    */

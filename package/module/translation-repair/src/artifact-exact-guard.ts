@@ -28,7 +28,8 @@ import {
 // either a field from a generation this reader does not understand or a typo
 // that silently dropped a field it does. Both are cases where reading on
 // produces a confident answer about a file nobody wrote. The tolerance this
-// schema does grant is NAMED and bounded: two fields, described below.
+// schema does grant is NAMED and bounded: each lane's raw `result`, which
+// `requireOpenRecord` reads and says why.
 
 /**
  Refuses a record carrying any key the schema does not name.

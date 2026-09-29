@@ -332,7 +332,8 @@ export function applyPatchOperations(
     }
     /**
      Replacement with the document's quote style restored, which is what
-     ships and therefore what every check below reads.
+     ships and therefore what the unchanged-region check, `checkPreservation`
+     and `markupDelta` read.
      
      RESTORED BEFORE THE CHECKS rather than after them. Editors flatten curly
      quotes to straight ones often enough that a repaired paragraph ends up
@@ -406,9 +407,10 @@ export function applyPatchOperations(
         ...operation,
         newText: restored,
       },
-      // Markup the edit lost that no addition claim quoted, which the rules
-      // above cannot see inside a licensed quote (ledger L4); settled over the
-      // whole patch below, since a sibling edit may write it.
+      // Markup the edit lost that no addition claim quoted, which
+      // `checkPreservation` cannot see inside a licensed quote (ledger L4);
+      // settled over the whole patch once every edit is gated, since a sibling
+      // edit may write it.
       delta: (preservation.mode === 'enforce')
         ? markupDelta({
           before: envelope.baseText,

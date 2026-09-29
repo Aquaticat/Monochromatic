@@ -112,8 +112,8 @@ await describe({
           fn: async () => {
             // The inverted-evidence bug: dividing by the smaller token set let
             // a block carrying a single shared token score a perfect match, so
-            // MORE evidence scored worse. Both blocks below share exactly one
-            // token, so the length fit must decide.
+            // MORE evidence scored worse. Both blocks of this case share exactly
+            // one token, so the length fit must decide.
             /**
              Original blocks: a rich paragraph, then a one-token stub.
              */

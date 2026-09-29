@@ -636,7 +636,7 @@ await describe({
         + 'whichever one it is: a check reading only some fields would pass artifacts it should stop',
       fn: async () => {
         /**
-         One row every case below changes exactly one field of.
+         One row every entry of `variants` changes exactly one field of.
          */
         const [row,] = compareLanes({
           repair: [shipped({ sliceIndex: 0, text: 'The cat naps.', },),],

@@ -396,7 +396,7 @@ await describe({
         + 'preparation produced',
       fn: async () => {
         /**
-         One valid row, which each case below breaks in exactly one way.
+         One valid row, which each refusal this case reads breaks in exactly one way.
          */
         const row = {
           sliceIndex: 0,

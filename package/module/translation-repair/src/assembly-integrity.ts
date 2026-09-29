@@ -285,7 +285,8 @@ export function guardFootnoteAssembly(
   // FIRST, before anything is spliced. Every lane already runs this check, and
   // running it here too is what makes the guard sound for a caller that does
   // not: a replacement repeating its own incumbent is indistinguishable, once
-  // spliced, from a slice nobody touched, and the net-zero branch below would
+  // spliced, from a slice nobody touched, and the net-zero canonicalization
+  // (`assembly-net-zero-canonicalized`) would
   // canonicalize it into an empty surviving set that reads as an honest run.
   assertReplacementsChange({
     slices,

@@ -499,8 +499,8 @@ await describe({
             ((MIN_SELECTION_WEIGHT * reachable) / quorum).toFixed(2,)
           })`,
         );
-        // Every dry seat is reported lost, as before; the finding above is
-        // what says the losses were the bench and not the weather.
+        // Every dry seat is reported lost, as before; the `select-short-bench`
+        // finding is what says the losses were the bench and not the weather.
         for (const seat of DRY_SEATS)
           expect(outcome.findings,).toContain(`stage-voice-lost (select ${seat})`,);
       },

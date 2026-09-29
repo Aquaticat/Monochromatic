@@ -194,7 +194,7 @@ export function wrapConsolidation(
    would put them, which the byte comparison this replaced let ship. The
    standing text is not always lane output: where a lane contest settled on
    the incumbent, what stands is the archive's own wording, which nothing has
-   ever wrapped. The demoted branch below returns `standingText` itself, so
+   ever wrapped. The `demoted` branch returns `standingText` itself, so
    the retained wording still leaves here byte for byte.
    */
   const demoted = sameWording({

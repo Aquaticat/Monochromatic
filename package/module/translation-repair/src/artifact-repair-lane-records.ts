@@ -97,7 +97,8 @@ export function repairLaneRecordsOf(
   /**
    Repair lane's result exactly as the file holds it.
    
-   SPELLED `raw` HERE AND `result` ON DISK. The error paths below use the
+   SPELLED `raw` HERE AND `result` ON DISK. The error paths this function
+   builds use the
    on-disk spelling, because they are read by someone holding the file rather
    than this type.
    */

@@ -180,7 +180,7 @@ type ThrowawayHistory = Readonly<{
  @returns Both checkouts and the commits they share
  
  @throws When git lists other than three commits, which means the fixture
- itself is broken and no case below can mean anything
+ itself is broken and no case in this file can mean anything
  
  @example
  ```ts

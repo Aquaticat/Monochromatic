@@ -419,7 +419,8 @@ await describe({
           .toBe(0,);
 
         // The page IS short here, so a gate reporting only "not inserted" would
-        // read identically to the page-not-short case above, and an operator
+        // read identically to the "REFUSES THE SAME MISSING SECTION when the
+        // page is not short" case, and an operator
         // could not tell a duplication risk from a merge the aligner misread.
         expect(alignment.findings
           .map(function toDetail(finding,) {

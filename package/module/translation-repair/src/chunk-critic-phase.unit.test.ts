@@ -12,7 +12,7 @@
  
  A block is expensive in one direction only. Blocking a faithful translation
  discards the whole slice unrepaired; failing to block a genuinely
- untranslated pair leaves its issues surfaced. So the cases below check that
+ untranslated pair leaves its issues surfaced. So the cases in this file check that
  `votesStand` is true only when the threshold is met AND nothing contradicted
  it.
  

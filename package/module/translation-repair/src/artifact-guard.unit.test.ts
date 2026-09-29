@@ -4,7 +4,7 @@
  These matter more than their size suggests. They stand at the mouth of the
  precision measurement: each one is the difference between a malformed
  artifact aborting loudly and an accepted issue vanishing from the
- denominator without a trace. So the cases below are mostly about what the
+ denominator without a trace. So the cases in this file are mostly about what the
  guards REFUSE, not what they pass.
  
  Fixtures are cat-themed invention mirroring artifact structure only.

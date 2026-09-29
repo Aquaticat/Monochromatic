@@ -174,7 +174,7 @@ export function readStandingVerdict(
   }
 
   /**
-   Why the gate refused the standing, for both lines below.
+   Why the gate refused the standing, for the warning either branch logs.
    */
   const refusal = describeStandingVerdict({ validation, },);
 

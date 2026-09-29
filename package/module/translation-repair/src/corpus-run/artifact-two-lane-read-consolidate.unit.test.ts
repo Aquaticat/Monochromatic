@@ -218,7 +218,8 @@ await describe({
 
     it({
       name: 'READS A SETTLED STAGE with a consolidation that shipped and a slate the floor refused, '
-        + 'which is the positive control: a parser refusing everything would pass every case below '
+        + 'which is the positive control: a parser refusing everything would pass every case of this file '
+        + 'that expects a refusal '
         + 'while making the field unreadable',
       fn: async () => {
         const read = readingOf({

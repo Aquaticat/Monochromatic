@@ -70,7 +70,8 @@ await describe({
     it({
       name:
         'POSITIVE CONTROL: pairing is not always by index, so a scan that answered with the identity '
-        + 'mapping would pass the equal-length case below and fail here. With the MIDDLE target gone, '
+        + 'mapping would pass the "pairs by index when both sides carry the same sections" case and fail '
+        + 'here. With the MIDDLE target gone, '
         + 'source 2 pairs with target 1',
       fn: async () => {
         expect(listed({

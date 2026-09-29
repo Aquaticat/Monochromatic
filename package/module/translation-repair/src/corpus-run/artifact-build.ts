@@ -168,7 +168,7 @@ export function buildSettledArtifact(
     // is that reader, and the schema version above is what tells it which rule
     // to apply.
     //
-    // SPELLED THE WAY GENERATION 1 SPELLED IT, as with the critic record above.
+    // SPELLED THE WAY GENERATION 1 SPELLED IT, as with `chunkCritics`.
     shippedChunkIndices: result.changedSliceIndices,
     withdrawnChunkIndices: result.withdrawnSliceIndices,
   };

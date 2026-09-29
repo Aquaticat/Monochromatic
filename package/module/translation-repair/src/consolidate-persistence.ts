@@ -61,8 +61,8 @@ export function consolidationWorthResuming(
   // AN ARCHIVE-KEPT SETTLEMENT IS NEVER KEPT (owner, 2026-09-27, "Keep
   // archive, ship"). Its mark is what makes the archive ship; a copy resumed
   // without it would ship the refused standing its text holds. Refused here
-  // outright rather than left to the endorsement test below, which reaches the
-  // same answer only while an ineligible standing is never endorsed.
+  // outright rather than left to `baselineSettled`, which reaches the same
+  // answer only while an ineligible standing is never endorsed.
   if (settlement.archiveKept === true)
     return false;
   /**

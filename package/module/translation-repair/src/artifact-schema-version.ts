@@ -97,7 +97,7 @@ import {
  since either landed. They are named anyway, because a reader that meets one
  must not read it as the generation before.
  
- COMPATIBLE ADDITIONS WITHIN VERSION 2, which the rule above requires saying
+ COMPATIBLE ADDITIONS WITHIN VERSION 2, which the VERSION HISTORY rule requires saying
  here rather than only at the field. Each adds an OPTIONAL key to
  `preparation` and each parses to a named absence, so a reader that meets the
  key missing understands the artifact completely and refusing the generation

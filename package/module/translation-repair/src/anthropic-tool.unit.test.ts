@@ -6,7 +6,7 @@
  `tools`, because some model and provider pairs emit the wrong call format
  without it. Two renderings of one schema can disagree, and a disagreement
  here teaches a model to call a tool that is not the one being offered, so the
- cases below check the name and the schema body in BOTH renderings rather than
+ cases in this file check the name and the schema body in BOTH renderings rather than
  checking each rendering alone.
  
  @module

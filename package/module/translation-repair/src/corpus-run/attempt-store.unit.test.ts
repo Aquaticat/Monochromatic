@@ -8,7 +8,7 @@
  Its doctrine is the OPPOSITE of the artifact guards, deliberately: those
  throw on anything malformed because they feed a precision measurement, while
  this tolerates a corrupt cache because losing an ordering hint is cheaper
- than aborting a run that costs hours. The cases below pin where tolerance
+ than aborting a run that costs hours. The cases in this file pin where tolerance
  stops, since a reader that swallowed everything would make a misconfigured
  path look like "no attempts yet" forever and the ordering would never
  deprioritize anything.
@@ -319,7 +319,8 @@ await describe({
       },
     },),
     it({
-      name: 'STAYS QUIET for a well-formed map, so the lines above are worth reading',
+      name: 'STAYS QUIET for a well-formed map, so the warnings the "SAYS it starts the counts over" case '
+        + 'reads are worth reading',
       fn: async () => {
         expect(await warningsReading({ contents: '{"Mittens": 2}', },),).toStrictEqual([],);
       },

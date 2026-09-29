@@ -878,7 +878,7 @@ await describe({
 
     it({
       name: 'REACHES THE ROSTER FOR A SLICE NOTHING HAS SETTLED, which is the positive control for '
-        + 'the resumption case below. A cache test that never proves the uncached path buys anything '
+        + 'the "RESUMES AUDITABLE CHANGED POLISH" case. A cache test that never proves the uncached path buys anything '
         + 'would pass just as well against a driver that had stopped calling the roster at all',
       fn: async () => {
         /**
@@ -1335,7 +1335,8 @@ await describe({
         expect(serial.peak,).toBe(1,);
         expect(overlapped.peak,).toBe(2,);
         // THE SECOND PRODUCER DID ANSWER FIRST: the call started first is not
-        // the first to finish, so the comparison-order check below is exercised.
+        // the first to finish, so the check that the slices come back in
+        // comparison order is exercised.
         expect(overlapped.finished,).toContain(0,);
         expect(overlapped.finished[0],).not.toBe(0,);
         expect(slices.map(function toIndex(slice,) {
@@ -1559,8 +1560,8 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES THE RULE OUT OF A SLICE IT DOES NOT GOVERN, which is what makes the case above '
-        + 'evidence. A sheet carrying the rule unconditionally would satisfy that one just as well, '
+      name: 'LEAVES THE RULE OUT OF A SLICE IT DOES NOT GOVERN, which is what makes the "SHOWS A GOVERNED '
+        + 'SLICE\'S PRODUCERS THE RULE AGAINST MERGING LINES" case evidence. A sheet carrying the rule unconditionally would satisfy that one just as well, '
         + 'and would mean the governed set was never read',
       fn: async () => {
         const { client, bodies, } = recordingClient();
@@ -1600,8 +1601,8 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES A SLICE THE MAP NEVER MENTIONS UNILLUSTRATED, which is what makes the case above '
-        + 'evidence rather than a sheet that always carries a picture heading. It pins the lookup too, '
+      name: 'LEAVES A SLICE THE MAP NEVER MENTIONS UNILLUSTRATED, which is what makes the "SHOWS A '
+        + 'PRODUCER WHAT THE PICTURES NEAR ITS SLICE WERE READ TO SAY" case evidence rather than a sheet that always carries a picture heading. It pins the lookup too, '
         + 'which is why the map here holds a reading for a slice this contest never settles: a driver '
         + 'reading a neighbouring slice\'s entry finds that reading and puts it on the sheet, and both '
         + 'picture cases fail together. A slice index naming three different things is why that is '
@@ -1650,7 +1651,8 @@ await describe({
       name: 'SHOWS THEM THE PASSAGES EITHER SIDE, which neither half of this stage has ever been given. '
         + 'The translate lane\'s judges have had the window since the relocation finding, and a consolidation judge '
         + 'without it cannot tell a passage the archive moved next door from one a candidate invented. '
-        + 'Kept apart from the picture case above so a break in one is not read as a break in the other',
+        + 'Kept apart from the "SHOWS THE SLATE JUDGES WHAT THE PICTURES NEAR THEIR SLICE SAY" case so a '
+        + 'break in one is not read as a break in the other',
       fn: async () => {
         const { client, judgeSheets, } = answeringClient();
 
@@ -1677,7 +1679,8 @@ await describe({
     },),
 
     it({
-      name: 'SHOWS THEM NEITHER WHEN THE DRIVER HOLDS NEITHER, which is the control the case above needs. '
+      name: 'SHOWS THEM NEITHER WHEN THE DRIVER HOLDS NEITHER, which is the control the "SHOWS THEM THE '
+        + 'PASSAGES EITHER SIDE" case needs. '
         + 'A sheet that rendered these blocks unconditionally would satisfy that one just as well and would '
         + 'mean the two maps were never read, and a slice near no readable picture would be shown a '
         + 'heading promising readings it does not have',
@@ -1824,7 +1827,8 @@ await describe({
 
     it({
       name: 'CACHES A GATE THAT REACHED ITS QUORUM, which is the positive control: a predicate that '
-        + 'refused everything would pass the case above while making every run re-buy every slice it '
+        + 'refused everything would pass the "REFUSES TO CACHE A GATE TOO THIN TO SETTLE" case while making '
+        + 'every run re-buy every slice it '
         + 'had already settled',
       fn: async () => {
         expect(consolidationWorthResuming({
@@ -1950,7 +1954,8 @@ await describe({
         },),).toBe(true,);
 
         // THE SETTLED DECLINE, which is why the decision read survived the
-        // terminal split: it shares a terminal with the two above and gets
+        // terminal split: it shares its `slate-declined-standing` terminal with
+        // the `declined-indecision` and `declined-rejection` settlements and gets
         // the opposite answer, so the name alone cannot decide this one.
         expect(consolidationWorthResuming({
           settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'no-candidate-backed', },),
