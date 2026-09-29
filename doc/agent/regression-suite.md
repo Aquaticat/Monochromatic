@@ -78,12 +78,13 @@ Review a plan that proposes `git clean -fdX` in this repo. Find any ignored root
 
 Pass criteria:
 
-- Runs or explicitly requires all three sentinel checks:
+- Runs or explicitly requires the root sentinel checks (GCR) and the ignored-file listing (GCL),
+   in these or equivalent forms:
 
 ```bash
-find . -maxdepth 1 \( -name HEAD -o -name config -o -name hooks -o -name objects -o -name refs \) -print
-git check-ignore -v HEAD config hooks objects refs
-git clean -ndX HEAD config hooks objects refs
+ls -d HEAD config hooks objects refs
+git check-ignore --verbose HEAD config hooks objects refs
+git clean --dry-run -d -X
 ```
 
 - Does not rely on `git status`,
