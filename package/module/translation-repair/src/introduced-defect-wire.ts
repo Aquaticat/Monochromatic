@@ -15,7 +15,10 @@ import {
   isJsonRecord,
 } from './json-guard.ts';
 import { MEASUREMENT_POLICY_BLOCK, } from './house-policy.ts';
-import { APPARATUS_KINDS, } from './page-apparatus-clause.ts';
+import {
+  APPARATUS_KINDS,
+  NARRATIVE_DETAIL_IS_NOT_APPARATUS,
+} from './page-apparatus-clause.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { flattenSpace, } from './sheet-line-text.ts';
 import type { RepairRegion, } from './repair-region.ts';
@@ -165,7 +168,7 @@ THE ORIGINAL IS THE ONLY STANDARD OF ACCURACY. The BEFORE text is a translation 
 
 Rules:
 - A change that brings the AFTER text CLOSER to the ORIGINAL is NEVER damage, however much text it rewrites.
-- Content the AFTER text drops is damage ONLY IF THE ORIGINAL SUPPORTS IT. Dropping wording the ORIGINAL never had is a correct repair, not an omission, unless it is page apparatus (${APPARATUS_KINDS}): the page keeps its apparatus, so dropping it is damage.
+- Content the AFTER text drops is damage ONLY IF THE ORIGINAL SUPPORTS IT. Dropping wording the ORIGINAL never had is a correct repair, not an omission, unless it is page apparatus (${APPARATUS_KINDS}): the page keeps its apparatus, so dropping it is damage. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS}
 - Wording the AFTER text adds is damage only if the ORIGINAL does not support it.
 - "It was in the BEFORE text" is NOT a reason. Say what the ORIGINAL says and how the AFTER text departs from it.
 - Do NOT report a listed pre-existing issue merely because the replacement failed to fix it. That is not damage.

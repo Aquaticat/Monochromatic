@@ -474,6 +474,12 @@ import type { RepairModels, } from './repair-contract.ts';
  evidence fold (ledger B24, `introduced-defect-screen.ts`); of the 650 stored
  claims one turns from unanchored to corroborated; checked on 2026-09-29: the
  newest slice-cache file is still the one of 04:26 UTC on 2026-09-27.
+ 
+ Rides inside 34 too: the introduced-defect probe whose claims a patched
+ chunk's damage evidence reads carries the narrative bound beside the
+ apparatus kinds it excuses a drop by (ledger B28, `introduced-defect-wire.ts`);
+ checked on 2026-09-29: still no slice-cache file written after 04:27 UTC on
+ 2026-09-27, where a control from midnight finds 494.
  */
 export const SLICE_CACHE_VERSION = 34;
 /**

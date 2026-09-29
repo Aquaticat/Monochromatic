@@ -180,6 +180,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  `introduced-defect-screen.ts`); of the 650 stored claims one turns from
  unanchored to corroborated; checked on 2026-09-29: the newest slice-cache
  file is still the one of 04:26 UTC on 2026-09-27.
+ 
+ Rides inside 5 too: the introduced-defect probe a rewrite passes carries the
+ narrative bound beside the apparatus kinds it excuses a drop by (ledger B28,
+ `introduced-defect-wire.ts`); checked on 2026-09-29: still no slice-cache
+ file written after 04:27 UTC on 2026-09-27, where a control from midnight
+ finds 494.
  */
 export const REFINE_CACHE_VERSION = 5;
 
