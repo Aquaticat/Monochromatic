@@ -6207,3 +6207,26 @@ these remain implementation verification work.
 No production change or new IME experiment was performed;
 only the disposable capped Fold was used.
 The original AVD remains untouched.
+
+## Search header and result-column alignment correction
+
+While the debug-only ranking fixture was being captured,
+the user spotted that the Search Back arrow did not align horizontally
+with result type icons,
+and `cam` in the query did not align with the `Cam` result title.
+The 200% inner hierarchy placed the query at x `1249` and title at x `1220`;
+the cover placed them at x `156` and x `127`.
+`PersistentResultLine` and `SearchLayoutRow` used a 24dp icon plus 12dp
+spacer,
+whereas their headers used a 48dp leading icon slot.
+The user directed common icon and text anchors.
+Debug-only prototype commit `baa37caaf` centers result icons inside the
+same 48dp slot and places titles directly after it on both panels.
+The post-edit installed APK SHA-256 is
+`bf9a51c42facfca969e275d5fe55769656c451900f57689dc7c24190e8d6d2ef`.
+Native after-state capture and icon/text paint verification are pending;
+do **not** present earlier ranking rasters as the corrected design.
+The selected A browser,
+deck,
+cover viewport and E2 floor remain unchanged.
+No production Search or new IME experiment was authorized.

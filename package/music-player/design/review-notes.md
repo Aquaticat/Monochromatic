@@ -936,6 +936,10 @@ sensor area measures occlusion,
  not the visible dent.
  Do not borrow the
 unrelated 12dp mode-control text-padding floor as `min_padding` here.
+After native player and Search comparisons,
+the user set `min_padding` to **7.5mm total opposing-information separation**,
+including future devices with a narrower crease.
+Decorative surfaces and hit regions remain outside that floor.
 
 I initially praised the user's YouTube thumbnail timestamp/title example as
 safe near-crease placement.
@@ -945,6 +949,24 @@ within the approximate 7.5mm band;
 readable material on the dent.
  Inspect the center at native physical pixels
 rather than assuming that a familiar app has satisfied this product rule.
+
+## 5u. Search result columns were offset from the integrated header
+
+The debug-only Search result row placed a 24dp type icon plus 12dp spacer
+before its title.
+The header instead placed Back inside a 48dp leading slot.
+In the measured 200% inner capture,
+query `cam` began at x `1249` while the result title `Cam` began at x `1220`;
+on the cover they began at x `156` and x `127`.
+The user required the Back arrow to align with the result music icon and
+query text to align with the result title.
+This is horizontal **paint alignment**,
+not merely a match between hit-region rectangles.
+Use the same 48dp leading-slot anchor for the header and result rows on both
+panels,
+center the 24dp type icon within it,
+and check the native after-state raster and text bounds before presenting it.
+Do not reduce the 48dp interaction minimum to achieve this alignment.
 
 ## Standing standards for this project
 
