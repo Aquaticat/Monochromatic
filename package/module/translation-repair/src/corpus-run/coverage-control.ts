@@ -27,6 +27,10 @@ import { decoyCut, } from './coverage-control-decoy.ts';
 // rendering, rather than some text that happened to sit near it.
 //
 // SPENDS QUOTA: two roster rounds per case.
+//
+// IT ASKS THE SHEET A PAGE WITH NO DECLARED NAMES GETS: its cases are cut from
+// raw archives with no prepared identity, while production coverage has read
+// the page's declared names since ledger B28.
 
 /**
  Cases the control is tried on.

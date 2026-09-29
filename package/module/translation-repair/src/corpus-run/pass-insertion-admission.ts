@@ -165,6 +165,11 @@ export async function decidePassInsertionAdmission(
     },);
 
   /**
+   Declared names preparation built, which every coverage call reads.
+   */
+  const { identityContext, } = prepared;
+
+  /**
    Logger marking admission as one stage beneath entry.
    */
   const al = tagged({
@@ -219,6 +224,8 @@ export async function decidePassInsertionAdmission(
         sourcePassage: sourceText,
         translation: target,
         foreignRegions,
+        // The names the passage writes, as the page renders them (ledger B28).
+        ...((identityContext === undefined) ? {} : { identityContext, }),
         signal,
         exchangeTimeoutMs: perCallTimeoutMs,
         l: al,

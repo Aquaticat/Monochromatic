@@ -65,6 +65,10 @@ export type CoverageAnswer = {
  slices, which a partial claim cannot draw coverage from (class fifty-one)
 
  @param followupEvidence - latest unresolved placement evidence
+
+ @param identityContext - declared names preparation holds, so a name the
+ English writes by a declared handle is found as the name the passage writes
+ (ledger B28)
  
  @param signal - caller abort honored by every exchange
  
@@ -90,6 +94,7 @@ export async function runCoverageStage(
     translation,
     foreignRegions,
     followupEvidence,
+    identityContext,
     signal,
     exchangeTimeoutMs,
     l,
@@ -101,6 +106,7 @@ export async function runCoverageStage(
     readonly translation: AnchorTarget;
     readonly foreignRegions?: readonly TargetRegion[];
     readonly followupEvidence?: CoverageFollowupEvidence;
+    readonly identityContext?: string;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
@@ -114,6 +120,7 @@ export async function runCoverageStage(
     sourcePassage,
     translationText: translation.text,
     ...((followupEvidence === undefined) ? {} : { followupEvidence, }),
+    ...((identityContext === undefined) ? {} : { identityContext, }),
   },);
 
   /**

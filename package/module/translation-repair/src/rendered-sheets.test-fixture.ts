@@ -91,6 +91,8 @@ export function renderedSheets(): readonly RenderedSheet[] {
   const coveragePlan = buildCoverageMessages({
     sourcePassage: SOURCE,
     translationText: ARCHIVE,
+    // What insertion admission passes it since ledger B28.
+    identityContext: IDENTITY,
   },);
   /**
    Resolution exchange, whose messages the sheet joins.

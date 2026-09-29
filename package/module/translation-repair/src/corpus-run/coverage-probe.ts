@@ -34,6 +34,11 @@ import { reportingRefusals, } from './cli-refusal.ts';
 //
 // IT DECIDES NOTHING. No slicing, no artifact and no lane reads its output.
 //
+// IT ASKS THE SHEET A PAGE WITH NO DECLARED NAMES GETS. It reads raw archives,
+// not a prepared pair, so it has no declared identity to pass; production
+// coverage has read the page's declared names since ledger B28, and a rerun
+// measures the sheet without them.
+//
 // IT DOES KEEP ITS ANSWERS, which it did not always. It used to print rows to
 // standard output and write nothing, on the reasoning that a caller would
 // redirect them wherever the measurement was being kept. Nobody did, and both
