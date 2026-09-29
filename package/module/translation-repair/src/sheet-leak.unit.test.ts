@@ -65,7 +65,6 @@ await describe({
     },),
     ...[
       'WHAT THE JUDGES FOUND, claims to check against the original',
-      'PRIOR FAILED CONSOLIDATION STRATEGY',
       'REQUIRED FINDINGS from independent absolute-quality review',
       'PRIOR CORRECTION STRATEGIES THAT FAILED; choose a materially different approach',
       'ORIGINAL (Chinese), the standard',

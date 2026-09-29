@@ -145,17 +145,10 @@ export {
   isConsolidateGateWire,
   readConsolidateGateBallot,
 } from './consolidate-gate-wire.ts';
-export {
-  consolidationFailureEvidence,
-  consolidationNeedsRecovery,
-} from './consolidation-stage-repair.ts';
+export { standingKeptUnendorsed, } from './consolidate-slice-buy.ts';
 export {
   buildConsolidateMessages,
   type ConsolidateSubject,
-  type ConsolidationFailureEvidence,
-  type ConsolidationFailureProducer,
-  type ConsolidationFailureSelectionBallot,
-  type ConsolidationFailureSlateEntry,
 } from './consolidate-wire.ts';
 
 //endregion Consolidation barrel

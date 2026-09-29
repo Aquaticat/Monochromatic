@@ -114,8 +114,8 @@ function capturingLogger({ messages, }: { readonly messages: string[]; },): Logg
  */
 const ROSTER = [SEAT_HYPER_OPENROUTER_VISION_EDITOR,] as const;
 
-/** Roster wide enough for independent recovery selection. */
-const RECOVERY_ROSTER = [
+/** Roster wide enough for independent selection. */
+const WIDE_ROSTER = [
   ...ROSTER,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
@@ -408,24 +408,29 @@ function requestMessages({ body, }: { readonly body: string; }): string {
 }
 
 /**
- Builds client whose first gate keeps unsafe standing and second endorses recovery.
- 
- @returns Client plus producer sheets and full payloads proving failed evidence reached follow-up
- 
+ Builds a client whose producers write one text, whose judges prefer a
+ second text when a sheet carries it, and whose gate keeps the standing
+ unless a sheet carries that second text.
+
+ A STAGE-LOCAL RECOVERY once re-asked the producers with the failed
+ strategy's evidence, and this client answered that second ask differently;
+ the single consolidation attempt (1ba8f713a) ended the re-ask, and its
+ branches here went on 2026-09-29 with the evidence builder (ledger B30).
+
+ @returns Client plus producer sheets and full payloads
+
  @example
  ```ts
- const { client, producerSheets, } = recoveringClient();
+ const { client, producerSheets, } = scriptedClient();
  ```
  */
-function recoveringClient(
+function scriptedClient(
   {
-    abortOnRecovery,
     initialText = 'A cat asleep in the sun.',
-    recoveryText = 'The cat rests naturally in the sunlight.',
+    endorsedText = 'The cat rests naturally in the sunlight.',
   }: {
-    readonly abortOnRecovery?: AbortController;
     readonly initialText?: string;
-    readonly recoveryText?: string;
+    readonly endorsedText?: string;
   } = {},
 ): {
   readonly client: SyntheticClient;
@@ -439,7 +444,7 @@ function recoveringClient(
   return {
     client: createSyntheticClient({
       apiKey: 'test-key',
-      transport: async function recoverOnSecondStrategy(exchange,) {
+      transport: async function answerByScript(exchange,) {
         /** Complete request body carrying stage sheet. */
         const sent = exchange.bodyJson ?? '';
         /** Current role inferred from schema and gate marker. */
@@ -451,30 +456,24 @@ function recoveringClient(
           if (role === 'produce') {
             producerSheets.push(requestMessages({ body: sent, }),);
             producerPayloads.push(sent,);
-            if (sent.includes('PRIOR FAILED CONSOLIDATION STRATEGY',))
-              abortOnRecovery?.abort(new Error('recovery abort',),);
-            return JSON.stringify({
-              translation: sent.includes('PRIOR FAILED CONSOLIDATION STRATEGY',)
-                ? recoveryText
-                : initialText,
-            },);
+            return JSON.stringify({ translation: initialText, },);
           }
           if (role === 'judge') {
             return JSON.stringify({
               best: candidateCarrying({
                 sent,
-                needle: sent.includes(recoveryText,)
-                  ? recoveryText
+                needle: sent.includes(endorsedText,)
+                  ? endorsedText
                   : initialText,
               },),
               reason: 'best supported rendering',
             },);
           }
           return JSON.stringify({
-            choice: sent.includes(recoveryText,) ? 'consolidated' : 'standing',
+            choice: sent.includes(endorsedText,) ? 'consolidated' : 'standing',
             unsupported: [],
             dropped: [],
-            reason: 'recovery now improves fidelity',
+            reason: 'the consolidation improves fidelity',
           },);
         })();
         return {
@@ -948,10 +947,10 @@ await describe({
           client,
           producerSheets,
           producerPayloads,
-        } = recoveringClient();
+        } = scriptedClient();
         const { slices, written, } = await driveWith({
           client,
-          modelIds: RECOVERY_ROSTER,
+          modelIds: WIDE_ROSTER,
           contests: [{
             sliceIndex: 0,
             verdict: {
@@ -963,13 +962,11 @@ await describe({
           },],
         },);
 
-        // One producer round, no failed-strategy re-ask, and the honest
-        // gate-kept terminal ships with the non-endorsement recorded.
+        // One producer round (every producer read the one sheet, so no
+        // second strategy was asked for), and the honest gate-kept terminal
+        // ships with the non-endorsement recorded.
         expect(new Set(producerSheets,).size,).toBe(1);
         expect(new Set(producerPayloads,).size,).toBe(producerPayloads.length);
-        expect(producerSheets.every(function initialOnly(sheet,): boolean {
-          return !sheet.includes('PRIOR FAILED CONSOLIDATION STRATEGY',);
-        },),).toBe(true,);
         expect(slices[0]?.terminal,).toBe('gate-kept-standing');
         // An unendorsed standing settlement is not worth resuming, so nothing
         // is persisted and a warm run asks again.
@@ -985,15 +982,15 @@ await describe({
          Repair lane's text for slice 0, standing in for the archive.
          */
         const standIn = 'repair wording for slice 0';
-        const { client, } = recoveringClient();
+        const { client, } = scriptedClient();
         const { slices, } = await driveWith({
           client,
-          modelIds: RECOVERY_ROSTER,
+          modelIds: WIDE_ROSTER,
           contests: [{
             sliceIndex: 0,
             verdict: { kind: 'settled-neither', },
             ballots: [],
-            usable: RECOVERY_ROSTER.length,
+            usable: WIDE_ROSTER.length,
           },],
           archiveDisputes: new Map([[0, { sliceIndex: 0, standIn, standInEligible: true, acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',], },],],),
         },);
@@ -1007,15 +1004,15 @@ await describe({
     it({
       name: 'SHIPS unjudged settled-neither standing after the single attempt under the same recording',
       fn: async () => {
-        const { client, } = recoveringClient();
+        const { client, } = scriptedClient();
         const { slices, written, } = await driveWith({
           client,
-          modelIds: RECOVERY_ROSTER,
+          modelIds: WIDE_ROSTER,
           contests: [{
             sliceIndex: 0,
             verdict: { kind: 'settled-neither', },
             ballots: [],
-            usable: RECOVERY_ROSTER.length,
+            usable: WIDE_ROSTER.length,
           },],
         },);
 
@@ -1032,8 +1029,8 @@ await describe({
         const destination = 'https://example.test/cat-record';
         const sourceText = `[猫猫的记录](${destination})。`;
         const initialText = `[The cat record](${destination}).`;
-        const recoveryText = `[The cat's final record](${destination}).`;
-        const { client, } = recoveringClient({ initialText, recoveryText, });
+        const endorsedText = `[The cat's final record](${destination}).`;
+        const { client, } = scriptedClient({ initialText, endorsedText, });
         const projected = {
           comparison: [{
             sliceIndex: 0,
@@ -1049,7 +1046,7 @@ await describe({
         } as unknown as ProjectedLanes;
         const { slices, } = await driveWith({
           client,
-          modelIds: RECOVERY_ROSTER,
+          modelIds: WIDE_ROSTER,
           projected,
           contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
         },);
@@ -1066,8 +1063,8 @@ await describe({
         const sourceText = `[猫猫的记录](${destination})。`;
         const incumbentText = `[The cat record](${destination}).`;
         const initialText = `[The cat's record](${destination}).`;
-        const recoveryText = `[The cat's final record](${destination}).`;
-        const { client, } = recoveringClient({ initialText, recoveryText, });
+        const endorsedText = `[The cat's final record](${destination}).`;
+        const { client, } = scriptedClient({ initialText, endorsedText, });
         const projected = {
           comparison: [{
             sliceIndex: 0,
@@ -1083,7 +1080,7 @@ await describe({
         } as unknown as ProjectedLanes;
         const { slices, } = await driveWith({
           client,
-          modelIds: RECOVERY_ROSTER,
+          modelIds: WIDE_ROSTER,
           projected,
           contests: [contestSettling({ sliceIndex: 0, lane: 'repair', }),],
         },);
@@ -1103,23 +1100,23 @@ await describe({
         const {
           client,
           producerPayloads,
-        } = recoveringClient();
+        } = scriptedClient();
         const { slices, written, } = await driveWith({
           client,
-          modelIds: RECOVERY_ROSTER,
+          modelIds: WIDE_ROSTER,
           projected: twinSliceDocument(),
           contests: [
             {
               sliceIndex: 0,
               verdict: { kind: 'settled-neither', archive: 'declined', },
               ballots: [],
-              usable: RECOVERY_ROSTER.length,
+              usable: WIDE_ROSTER.length,
             },
             {
               sliceIndex: 1,
               verdict: { kind: 'settled-neither', archive: 'declined', },
               ballots: [],
-              usable: RECOVERY_ROSTER.length,
+              usable: WIDE_ROSTER.length,
             },
           ],
           overlap: 2,
@@ -1128,7 +1125,7 @@ await describe({
         // Unsafe questions are never twin-memoized, so each twin buys its
         // own single attempt, one window of producers, and both ship the
         // recorded outcome.
-        expect(producerPayloads,).toHaveLength(firstRoundWindow({ benchSize: RECOVERY_ROSTER.length, },) * 2,);
+        expect(producerPayloads,).toHaveLength(firstRoundWindow({ benchSize: WIDE_ROSTER.length, },) * 2,);
         expect(slices,).toHaveLength(2);
         expect(slices.every(function keptWithRecord(slice,): boolean {
           return slice.terminal === 'gate-kept-standing';

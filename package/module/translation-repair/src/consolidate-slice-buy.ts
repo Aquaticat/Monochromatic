@@ -2,7 +2,6 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
-import { consolidationNeedsRecovery, } from './consolidation-stage-repair.ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
 import { produceConsolidations, } from './consolidate-produce.ts';
 import {
@@ -221,6 +220,39 @@ async function buyConsolidationAttempt(
 }
 
 /**
+ Whether the single attempt kept a standing the lane contest never
+ endorsed, which then ships with the non-endorsement recorded as a finding.
+
+ Until 2026-09-29 this was `consolidationNeedsRecovery`, which read as
+ asking for another strategy; the stage-local recovery it once started
+ ended with the single attempt (1ba8f713a), and its evidence builder went
+ on 2026-09-29 (ledger B30).
+
+ @param settlement - what the attempt settled
+
+ @param standingMayShip - whether the contest endorsed the standing
+
+ @returns True when the standing lacks endorsement and the attempt did not
+ consolidate
+
+ @example
+ ```ts
+ const unendorsed = standingKeptUnendorsed({ settlement, standingMayShip: false, },);
+ ```
+ */
+export function standingKeptUnendorsed(
+  {
+    settlement,
+    standingMayShip,
+  }: {
+    readonly settlement: ConsolidationSettlement;
+    readonly standingMayShip: boolean;
+  },
+): boolean {
+  return (!standingMayShip) && (settlement.terminal !== 'consolidated');
+}
+
+/**
  Buys one consolidation and settles it in a single attempt.
  
  SINGLE ATTEMPT BY DESIGN: when the standing baseline lacks contest
@@ -254,7 +286,7 @@ export async function buyConsolidationSlice(
    Settlement from the single attempt.
    */
   const settlement = await buyConsolidationAttempt(input,);
-  if (!consolidationNeedsRecovery({
+  if (!standingKeptUnendorsed({
     settlement,
     standingMayShip,
   }))
