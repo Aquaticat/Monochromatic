@@ -109,6 +109,32 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES the editor sheet\'s region marker and its unfenced line heads copied into a rendering, '
+        + 'unless the original or the page carries them (ledger B24)',
+      fn: async () => {
+        for (const candidateText of [
+          'The cat «REGION 3» is sleeping.',
+          'CURRENT TEXT: The cat is sleeping.',
+          'CONTEXT: ...the cat is sleeping...',
+        ]) {
+          /**
+           What the chain refuses the rendering with.
+           */
+          const result = validateTranslatedSlice({
+            sourceText: '猫在睡觉。',
+            candidateText,
+          },);
+          expect(result.kind,).toBe('invalid',);
+          expect((result.kind === 'invalid') ? result.findings.join(' ',) : '',).toContain('the sheet\'s own',);
+        }
+        expect(sheetLeakFindings({
+          sourceText: '猫在睡觉。',
+          pageText: 'CURRENT TEXT: The cat is sleeping.',
+          candidateText: 'CURRENT TEXT: The cat is sleeping.',
+        },),).toStrictEqual([],);
+      },
+    },),
+    it({
       name: 'ACCEPTS a rendering that leaves the sheet blocks out',
       fn: async () => {
         expect(validateTranslatedSlice({
