@@ -8877,7 +8877,7 @@ Status:
 fixed,
 2026-09-29,
 with one gap left open and named under its own heading.
-The full suite passed on `2beaca02f`,
+The full suite passed on `e396ceb67`,
 the entry's last commit touching source,
 with no failing case among 1355 passing groups.
 
@@ -9120,6 +9120,26 @@ fix `4b02cff72`:
   that is absent when none were shown,
   so a row shown none keys exactly as the rows written before this,
   all of which were shown none.
+- The references are a tagged value,
+  `SettledReferences`:
+  `cited` with the lines,
+  `none` where the page links nowhere,
+  or `unread` with the count of links
+  where the page links pages and the read returned nothing,
+  which `citedReferenceBlock` does for every linked page when no key is set.
+  The first version recorded both empties as `none`,
+  the silent fallback this entry is about,
+  which a review of the fix caught.
+  Red `37c4adbe6`,
+  fix `e396ceb67`:
+  `withCitedReferences` tells the two apart by the page's own links
+  (`citedReferenceUrlsOf`)
+  and warns on an unread page,
+  and an unread row keys as one shown none,
+  since it was shown the same texts.
+  A batch of 5 mutants
+  (`b29-refs-unread-mutants.json`)
+  caught all 5.
 - The attested lines are not shown,
   a quality call recorded here and open to veto:
   they name archive details,
