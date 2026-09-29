@@ -1,5 +1,13 @@
-import { nameProjection, } from './declared-name-survival.ts';
 import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+import {
+  codePointAt,
+  codePointBefore,
+} from './code-points.ts';
+import {
+  carriesName,
+  nameProjection,
+  projectName,
+} from './name-projection.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import {
   type Link,
@@ -21,9 +29,16 @@ import {
 //
 // COMPARED ON THE NAME PROJECTION (letters and digits, lowercased) that the
 // declared-name survival guard uses, so `Mittens'` or an escaped underscore
-// is still the name. Silent without declared pairs, where the original's link
-// names nobody declared, and where the rendering carries no link under that
-// href: a dropped link is the link floor's finding, not this one's.
+// is still the name, and read as a name rather than as letters, so `tomcat`
+// carries no `Tom` (`name-projection.ts`, ledger B23). Silent without
+// declared pairs, where the original's link names nobody declared, and where
+// the rendering carries no link under that href: a dropped link is the link
+// floor's finding, not this one's.
+//
+// THE ORIGINAL'S LINK TEXT AND ITS MENTIONS ARE READ AT HANDLE EDGES (ledger
+// B23). A Latin source form names the person only where no handle character
+// runs on from it, so `Tomcat` and `@Tom_Cat` name no `Tom`, and a page
+// handle is carried only whole, so `@mi-mi-420` does not carry `@mi-mi-42`.
 
 // AN @-MENTION MAY CARRY THE ACCOUNT HANDLE (owner, 2026-09-27, "Account
 // handle"). Zhihu question titles @-mention the entry's subject by display
@@ -50,7 +65,7 @@ const HANDLE_PUNCTUATION: ReadonlySet<string> = new Set([
  Whether a character continues an account handle: an ASCII letter or digit,
  a hyphen or an underscore.
 
- @param character - one code unit
+ @param character - one character, empty past a text's edge
 
  @returns Whether a handle may carry it
 
@@ -61,6 +76,109 @@ const HANDLE_PUNCTUATION: ReadonlySet<string> = new Set([
  */
 function isHandleCharacter({ character, }: { readonly character: string; },): boolean {
   return isAsciiAlphanumeric({ character, },) || HANDLE_PUNCTUATION.has(character,);
+}
+
+/**
+ Whether a needle found at an offset stands as a whole handle token: where
+ its first character could continue a handle the one before it does not, and
+ where its last could the one after it does not. A Han or `@` edge needs no
+ boundary.
+
+ @param text - text the needle was found in
+
+ @param at - offset it was found at
+
+ @param needle - source form or handle
+
+ @returns Whether no handle runs on from either end
+
+ @example
+ ```ts
+ standsAsHandle({ text: 'Tomcat', at: 0, needle: 'Tom', },); // false
+ ```
+ */
+function standsAsHandle(
+  {
+    text,
+    at,
+    needle,
+  }: {
+    readonly text: string;
+    readonly at: number;
+    readonly needle: string;
+  },
+): boolean {
+  /**
+   Whether the needle opens on a character a handle is written with.
+   */
+  const opensHandle = isHandleCharacter({
+    character: codePointAt({
+      text: needle,
+      at: 0,
+    },),
+  },);
+
+  /**
+   Whether it closes on one.
+   */
+  const closesHandle = isHandleCharacter({
+    character: codePointBefore({
+      text: needle,
+      at: needle.length,
+    },),
+  },);
+  if (opensHandle && isHandleCharacter({
+    character: codePointBefore({
+      text,
+      at,
+    },),
+  },))
+    return false;
+  return !(closesHandle && isHandleCharacter({
+    character: codePointAt({
+      text,
+      at: at + needle.length,
+    },),
+  },));
+}
+
+/**
+ Whether a text carries a needle as a whole handle token somewhere.
+
+ @param text - link text
+
+ @param needle - source form or handle
+
+ @returns Whether some occurrence stands as a whole token
+
+ @example
+ ```ts
+ carriesHandleToken({ text: '@mi-mi-420', needle: '@mi-mi-42', },); // false
+ ```
+ */
+function carriesHandleToken(
+  {
+    text,
+    needle,
+  }: {
+    readonly text: string;
+    readonly needle: string;
+  },
+): boolean {
+  if (needle === '')
+    return false;
+  for (let at = text.indexOf(needle,); at !== (-1); at = text.indexOf(
+    needle,
+    at + 1,
+  )) {
+    if (standsAsHandle({
+      text,
+      at,
+      needle,
+    },))
+      return true;
+  }
+  return false;
 }
 
 /**
@@ -138,7 +256,7 @@ function mentionHandles({ text, }: { readonly text: string; },): readonly string
 
 /**
  Whether a link text @-mentions a form: the mention mark, any spaces, then
- the form.
+ the form, with no handle running on from it (`@Tomcat` mentions no `Tom`).
 
  @param text - link text
 
@@ -168,9 +286,28 @@ function mentionsForm(
       at + 1,
     )
   ) {
-    if (text.slice(at + 1,)
-      .trimStart()
-      .startsWith(form,))
+    /**
+     Text after the mark.
+     */
+    const rest = text.slice(at + 1,);
+
+    /**
+     Text after the mark from the mentioned name on, past any spaces.
+     */
+    const named = rest.trimStart();
+
+    /**
+     Where the mentioned name starts.
+     */
+    const nameAt = (at + 1) + (rest.length - named.length);
+    if (text.startsWith(
+      form,
+      nameAt,
+    ) && standsAsHandle({
+      text,
+      at: nameAt,
+      needle: form,
+    },))
       return true;
   }
   return false;
@@ -219,8 +356,10 @@ function namingLinks(
     .flatMap(function named(link,): readonly NamingLink[] {
       return declared
         .filter(function carried(pair,): boolean {
-          return link.text
-            .includes(pair.source,);
+          return carriesHandleToken({
+            text: link.text,
+            needle: pair.source,
+          },);
         },)
         .map(function paired(pair,): NamingLink {
           return {
@@ -320,15 +459,20 @@ export function declaredLinkNameFindings(
        Whether some rendered link text carries the declared form.
        */
       const carriesDeclared = texts.some(function declaredIn(text,): boolean {
-        return nameProjection({ text, },)
-          .includes(declaredKey,);
+        return carriesName({
+          projection: projectName({ text, },),
+          key: declaredKey,
+        },);
       },);
       /**
-       Whether some rendered link text carries a handle the page writes.
+       Whether some rendered link text carries a handle the page writes, whole.
        */
       const carriesHandle = texts.some(function handleIn(text,): boolean {
         return handles.some(function carried(handle,): boolean {
-          return text.includes(handle,);
+          return carriesHandleToken({
+            text,
+            needle: handle,
+          },);
         },);
       },);
       /**

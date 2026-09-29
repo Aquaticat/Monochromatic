@@ -1,4 +1,10 @@
 import type { DeclaredIdentity, } from './identity-context.ts';
+import {
+  carriesName,
+  nameProjection,
+  type NameProjection,
+  projectName,
+} from './name-projection.ts';
 
 //region Declared name survival
 // CHECKS THAT A NAME THE DOCUMENTS DECLARE SURVIVES AN EDIT, rather than asking
@@ -42,10 +48,19 @@ import type { DeclaredIdentity, } from './identity-context.ts';
 // the pinned corpus is wrapped that way today, measured at zero of 212, but the
 // pipeline writes the archive the next pass reads.
 //
-// LOOSER IN THE SAFE DIRECTION. Widening what counts as "carried" both puts
-// more forms at stake and accepts more renderings of them, so it can only turn
-// a missed loss into a caught one or a spurious refusal into an acceptance.
-// Refusals cannot become more common through a name the base never carried.
+// CARRIED AS A NAME, NOT AS LETTERS (ledger B23). This used to say that
+// widening what counts as carried could only turn a missed loss into a caught
+// one or a spurious refusal into an acceptance. It was wrong both ways: the
+// projection drops the spaces between words as well as the marks inside a
+// handle, so containment found `ann` inside `cannot`. A candidate that lost
+// `Ann` but said `cannot` kept the name, and a base that said only `cannot`
+// put an `Ann` it never held at stake. A key now counts only where each Latin
+// end meets a word edge (`name-projection.ts`), a letter meeting a digit and
+// a small letter meeting a capital being edges, since that is how a handle
+// joins a name. Measured on 2026-09-29 over every declared and contributor
+// form against the texts of its own entry: all 285 carriages in the 92
+// archives and all 544 on the 214 settled pages stand as names, and 1,422 of
+// 47,389 in the stored artifacts existed only across a word edge.
 
 /**
  Separator between alternate handles inside one declared field.
@@ -68,68 +83,6 @@ const HANDLE_SEPARATOR = ',';
  right threshold in the right place rather than a change of policy.
  */
 const SHORTEST_CHECKABLE_FORM = 3;
-
-/**
- Whether one character belongs to a name rather than to the punctuation,
- spacing or markup written around it.
- 
- @param character - single character
- 
- @returns Whether it is a letter or a digit in any script
- 
- @example
- ```ts
- const kept = isNameCharacter({ character: '猫', },);
- ```
- */
-function isNameCharacter({ character, }: { readonly character: string; },): boolean {
-  // oxlint-disable-next-line no-restricted-syntax/no-regex -- Unicode letter and number classes have no string-API equivalent and the corpus writes Han, Latin and digits inside one handle; input is ONE character and the pattern carries no quantifier or alternation, so it cannot backtrack.
-  return /[\p{L}\p{N}]/u.test(character,);
-}
-
-/**
- Text reduced to the characters a name is made of, lowercased.
- 
- @param text - any text
- 
- @returns Letters and digits only, in order
- 
- @example
- ```ts
- const key = nameProjection({ text: 'Mittens\_the\_Cat', },);
- ```
- */
-export function nameProjection({ text, }: { readonly text: string; },): string {
-  /**
-   Same text composed and folded, so one spelling of a diacritic cannot
-   project differently from another.
-   
-   COMPOSED BEFORE ANYTHING ELSE, because a combining mark is neither a letter
-   nor a digit and would be dropped where a precomposed one is kept: `Mikä`
-   written the two ways would otherwise yield two different keys and the guard
-   would report a name lost that is sitting right there.
-   */
-  const composed = text
-    .toLowerCase()
-    .normalize('NFC',);
-
-  /**
-   Characters kept, in order.
-
-   SCANNED BY CODE POINT, not by grapheme and not by UTF-16 unit. A letter
-   beyond the first plane (a Han ideograph from Extension B, a letter in
-   mathematical script) is two units, and neither half is a letter, so a scan
-   by unit dropped it from the key: a handle written in such letters projected
-   to nothing and was never checked (ledger B21). An emoji is neither a letter
-   nor a digit, so it still drops out of the key, from both sides alike.
-   */
-  const kept: string[] = [];
-  for (const character of composed) {
-    if (isNameCharacter({ character, },))
-      kept.push(character,);
-  }
-  return kept.join('',);
-}
 
 /**
  Every name form one side declares, as separate strings.
@@ -212,6 +165,12 @@ type KeyedForm = {
    Same form projected onto letters and digits.
    */
   readonly key: string;
+
+  /**
+   Form's own projection, read when one lost form is looked for inside
+   another.
+   */
+  readonly projection: NameProjection;
 };
 
 /**
@@ -244,46 +203,67 @@ export function findDroppedDeclaredNames(
   /**
    Text being replaced, projected once rather than once per form.
    */
-  const base = nameProjection({ text: baseText, },);
+  const base = projectName({ text: baseText, },);
 
   /**
    Proposed replacement, projected the same way.
    */
-  const candidate = nameProjection({ text: candidateText, },);
+  const candidate = projectName({ text: candidateText, },);
 
   /**
    Every form beside the key it is compared under.
    */
   const keyed: readonly KeyedForm[] = forms.map(function toKeyed(form,): KeyedForm {
+    /**
+     Form's own projection.
+     */
+    const projection = projectName({ text: form, },);
     return {
       form,
-      key: nameProjection({ text: form, },),
+      key: projection.key,
+      projection,
     };
   },);
 
   /**
-   Forms the base text actually carried, which are the only ones at stake.
+   Forms the base text actually carried as names, which are the only ones at
+   stake.
    */
   const atStake = keyed.filter(function wasThere({ key, },): boolean {
-    return base.includes(key,);
+    return carriesName({
+      projection: base,
+      key,
+    },);
   },);
 
   /**
-   Forms at stake that the candidate no longer carries.
+   Forms at stake that the candidate no longer carries as names.
    */
   const dropped = atStake.filter(function isGone({ key, },): boolean {
-    return !candidate.includes(key,);
+    return !carriesName({
+      projection: candidate,
+      key,
+    },);
   },);
 
-  // A LONGER FORM CONTAINING A SHORTER LOST ONE REPORTS ONCE. Losing
+  // A LONGER FORM CARRYING A SHORTER LOST ONE REPORTS ONCE. Losing
   // `Zha Ke (Lilith)` should not read as two separate losses when the shorter
-  // form only ever appeared inside the longer.
+  // form only ever appeared inside the longer. Carried as a name, as above:
+  // `Ann` running on inside `Annabel` is its own loss (ledger B23).
   return dropped
     .filter(function isNotInsideAnother({ key: lostKey, },): boolean {
-      return !dropped.some(function contains({ key: otherKey, },): boolean {
+      return !dropped.some(function contains(
+        {
+          key: otherKey,
+          projection: other,
+        },
+      ): boolean {
         return (otherKey !== lostKey)
           && (otherKey.length > lostKey.length)
-          && otherKey.includes(lostKey,);
+          && carriesName({
+            projection: other,
+            key: lostKey,
+          },);
       },);
     },)
     .map(function toForm({ form, },): string {

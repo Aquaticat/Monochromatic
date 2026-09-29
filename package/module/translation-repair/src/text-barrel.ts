@@ -26,6 +26,12 @@ export {
   lowerCaseLatinWords,
 } from './latin-letters.ts';
 export { opensMdxTag, } from './mdx-tag-start.ts';
+export {
+  carriesName,
+  nameProjection,
+  type NameProjection,
+  projectName,
+} from './name-projection.ts';
 export { isIdeograph, } from './preservation-tokens.ts';
 export {
   carriesContent,
