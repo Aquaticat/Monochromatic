@@ -10,7 +10,18 @@ export {
   isAsciiLowerLetter,
   isLowerHexDigit,
 } from './ascii-letters.ts';
+export {
+  isCapitalLetter,
+  isCasedLetter,
+  isSmallLetter,
+} from './cased-letters.ts';
 export { longestRunOf, } from './character-run.ts';
+export {
+  codePointAt,
+  codePointBefore,
+  codePointCount,
+  wholeOpening,
+} from './code-points.ts';
 export { isHanCharacter, } from './han-only-text.ts';
 export {
   carriesHandleToken,
