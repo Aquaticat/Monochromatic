@@ -6720,3 +6720,57 @@ unrelated issues.
 A separate pending internal task will correct active design prose and
 regenerate affected HTML;
 no GitHub issue was mutated.
+
+## Search status evidence and D69 to D71 direction
+
+The static capture retry succeeded on the disposable Fold,
+with the checked installed APK SHA-256
+`1caee7060acfb5bbcd9a02142b4c9bada6b5886517157d25fef4a48b9b1e9c05`.
+Only keyboard-closed states were captured:
+empty query,
+`zzq` no-match fixture,
+and forced unavailable flag on both panels in light/dark at
+100%/200% text.
+The private ImageMagick sanitizer replaced the entire top status strip
+with the existing generic 9:41 bar,
+verified unchanged app pixels,
+opaque output and no metadata.
+`questions/evidence/search-status-review-manifest.json` indexes the
+sanitized physical-pixel rasters;
+private raw images and UI hierarchies stay under
+`/home/user/temp/agent/`.
+The self-contained
+`questions/search-status-evidence.html` embeds only sanitized captures,
+was validated against all manifest hashes,
+and was exercised through every state,
+scale and theme on both panels with no browser console errors or axe WCAG
+A/AA violations.
+Its initial mobile horizontal overflow came from an unbroken digest
+code span;
+wrapping that span resolved the measured overflow.
+At 200% text,
+the empty and unavailable fixture messages wrap within the right pane
+with the actual left browser and full deck retained;
+the unavailable fixture's broad label conflicts with its still-populated
+browser and already-playing track.
+
+D69 to D71 in `decisions.md` now select truthful status conditions,
+keep the already-rendered unqueried and completed-no-match treatments,
+and reject the fixed fixture's “Library unavailable” /
+automatic-recovery wording.
+Only an actual known Search-source failure may show a cause-specific
+unavailable explanation;
+the exact recovery action needs a real source-status owner and is **not**
+selected by the static study.
+No source status,
+search algorithm,
+query-driven transition,
+result action,
+TalkBack traversal,
+keyboard-open D63 fit,
+or arbitrary-IME behavior was verified.
+The next independent UI review is result activation (internal review task
+129),
+then Search accessibility (internal review task 118).
+Internal review-task ID link cleanup remains pending separately;
+never mutate the unrelated GitHub Issues with those numbers.

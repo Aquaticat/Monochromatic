@@ -1,4 +1,4 @@
-# Search empty and unavailable state boundaries before selection
+# Search empty and unavailable state evidence for D69 to D71
 
 ## Existing decisions and visible sources
 
@@ -181,12 +181,24 @@ result set changes.
 Retain the actual left browser and deck without portraying stale browser
 content as newly verified or declaring an already-playing stream stopped.
 
-## Review frontier
+## Selected UI direction and remaining implementation evidence
 
-Compare copy,
-state priority,
-location within selected A,
-and any recovery control for a known cause.
+D69 requires a completed current-query/source evaluation before a
+no-match verdict and distinguishes that verdict from an unqueried prompt,
+confirmed empty searchable inventory and known source failure.
+D70 retains the selected-A unqueried prompt and a no-match diagnostic
+that names the current query and offers another-name guidance;
+the static `zzq` capture is wording/fit evidence,
+not a real Search outcome.
+D71 rejects the generic unavailable/recovery fixture copy.
+A Search-specific failure explanation must name an actually known cause
+and show a recovery action only when its owner can perform that action.
+The exact cause-specific text/control awaits a real source-status signal;
+no generic Retry,
+permission request or new folder operation is selected by a fixture.
+These are design decisions with a veto path,
+not production code or a new user questionnaire.
+
 Do not replace the left folder browser/deck with the obsolete blank-left
 fixture,
 introduce a positive-results heading,

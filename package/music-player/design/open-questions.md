@@ -348,9 +348,17 @@ rounds (2026-09-17):
   its alternative controls are historical rather than open choices.
   Native focus/scroll restoration and system-Back/IME integration still
   need verification when an implementation is authorized.
-  Empty/unavailable behavior (#128),
-  result activation (#129) and Search accessibility (#118) remain
-  separate open decisions.
+  D69 to D71 settle the Search status truth conditions:
+  an empty query is a prompt,
+  no match requires a completed current-query evaluation,
+  and a known source failure must not promise an automatic recovery.
+  See `evidence/search-empty-unavailable-boundaries.md` and the
+  keyboard-closed `questions/search-status-evidence.html` gallery.
+  Exact cause-specific recovery copy/control depends on a truthful
+  source-status owner in a future implementation;
+  the broad debug unavailable wording was rejected.
+  Result activation (review task 129) and Search accessibility
+  (review task 118) remain separate open decisions.
   D21's global command hotkey and Settings row
   do not transfer to Search.
   D25 still reserves Ctrl+F for search and Ctrl+O for the

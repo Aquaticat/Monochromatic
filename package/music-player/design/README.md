@@ -178,8 +178,14 @@ explain the alternatives;
 the [active Search A review](questions/current.html) shows only selected
 goals alongside the retained browser and deck.
 Native realization of focus/scroll behavior remains unverified.
-Continue separate UI reviews for empty/unavailable states,
-result activation and accessibility.
+D69 to D71 distinguish an unqueried prompt,
+a fully evaluated no-match state and a known Search-source failure;
+they reject the debug fixture's unsupported automatic-recovery claim.
+The [status evidence](evidence/search-empty-unavailable-boundaries.md)
+and [keyboard-closed native gallery](questions/search-status-evidence.html)
+show these states on the selected Fold layout,
+not an implemented lookup or a selected cause-specific recovery control.
+Continue separate UI reviews for result activation and accessibility.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.
