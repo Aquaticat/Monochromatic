@@ -129,6 +129,46 @@ Its model-visible result contains answer/status/path data,
 These are inspected source paths,
  not completed new runtime qualification.
 
+## Existing helper return-path result
+
+The actual first-party requester/helper path passed a private scripted-editor check.
+Multiline submission and blank cancellation both launched the built helper and a separate synthetic Node editor.
+The terminal launcher was replaced;
+no genuine human responded.
+Both helpers exited successfully with empty stderr,
+and their disposable answer workspaces were removed.
+The parent retained the expected unauthenticated-candidate warning.
+
+The returned fields were answer/status or cancellation status,
+not question,
+original tool-call identity,
+accepted approval scope,
+or a human authority witness.
+Wrong-token rejection passed.
+A separate omitted guard selected the wrong candidate's distinct cancelled status,
+failing the same settled-result assertion.
+The following connection refusal was recorded,
+not treated as proof by itself.
+
+The reused SDK image was not rebuilt.
+No session,
+fetch,
+external model call,
+human approval,
+or production change was created.
+The corrected execution freeze is
+`fd7663a91ecc399586814705b4da95b78ff5aeed9cdad15ece4f3b9d7592381b`.
+Evidence is retained in the private consumer repository under
+`contract/human-origin/helper-correlated/`.
+Keep the owned preparation-anchor failure and the frozen but unexecuted socket-close predecessor.
+Neither is an upstream defect claim or permission to replay its constructor.
+
+Task #68 remains open:
+retain the writer/original-response/displayed-scope binding,
+then capture a genuine confirmation for a disposable fixture.
+The RPC correlation draft stays secondary.
+See the [source trace and bounded results](../troubleshooting/pi-input-provenance.md).
+
 ## Next bounded work
 
 Task #68 qualifies the existing trusted input and confirmation-writer paths under A.

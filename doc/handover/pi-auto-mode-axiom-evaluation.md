@@ -119,6 +119,44 @@ The previous `ef5701a1...` report remains preserved under its original context.
 The current pointer is `~/temp/agent/auto-mode-current-audit.json`;
 use its full fingerprint for future guarded edits.
 
+## Current human-origin qualification evidence
+
+Task #68 remains in progress.
+The actual existing `ask-user-question` requester/helper/editor return path passed its private scripted checks
+in `contract/human-origin/helper-correlated/`.
+Both multiline submission and blank cancellation exercised the built helper and a separate synthetic Node editor.
+The terminal launcher was injected;
+no genuine human answered and no approval was created.
+Both helper children exited successfully with empty stderr,
+and their answer workspaces were removed.
+The parent retained its expected unauthenticated-token warning.
+
+The requester retained answer/status only,
+not question,
+original tool-call identity,
+accepted approval scope,
+or an original witness.
+Wrong-token rejection passed;
+a separate guard omission selected the wrong candidate's distinct status and failed the same settled-result assertion.
+The existing SDK image was reused;
+there were no sessions,
+fetches,
+external model calls,
+or production changes.
+
+Retain the owned guard-anchor preparation failure,
+its separate correction,
+and the unexecuted predecessor that inferred settlement from socket closure.
+Do not rerun their constructors or the successful actual-helper phase.
+The corrected execution freeze is
+`fd7663a91ecc399586814705b4da95b78ff5aeed9cdad15ece4f3b9d7592381b`.
+The RPC correlation draft remains deferred.
+
+Next work is the scope-binding writer at this existing owner,
+followed by one genuine human confirmation for a disposable fixture.
+Scripted channel checks cannot replace that capture.
+Task #68 is not complete and downstream gates remain separate.
+
 ## Current interview state
 
 The user explicitly resumed the design interview with "Okay resume it now."

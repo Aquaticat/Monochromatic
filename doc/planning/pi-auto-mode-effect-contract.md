@@ -558,6 +558,19 @@ Bind provenance to the original session and entry,
 not a copied entry ID alone.
 No production revocation or inheritance policy was selected by this observation.
 
+The existing `ask-user-question` requester/helper path has now been exercised with a scripted editor
+and a replaced terminal launcher.
+Submission,
+blank cancellation,
+workspace disposal,
+and settled-result token controls passed.
+This is not a human confirmation:
+the returned answer/status fields still lack the original question,
+tool-call identity,
+and accepted approval scope.
+A writer-produced scope binding and genuine disposable-scope confirmation remain required.
+See the [actual-helper evidence](../troubleshooting/pi-input-provenance.md).
+
 ### Grant lifetime decisions and current frontier
 
 Q14 through Q16 addressed reusable trust directives from `/guard` and `propose_trust`.

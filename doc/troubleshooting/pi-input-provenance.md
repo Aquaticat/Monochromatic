@@ -251,6 +251,52 @@ A bare entry ID is consequently not sufficient to bind authority to an original 
 Verified lineage and allowed grant lifetime are separate requirements.
 No policy choosing whether ordinary grants should inherit into forks was implemented.
 
+### The existing editor owner returns an answer, not an approval-scope witness
+
+The first-party `ask-user-question` package is version `0.0.1`.
+Its `src/tool.ts:144` accepts an unused `_toolCallId`;
+`src/tool.ts:165` sends only working directory and cancellation to the requester:
+
+```ts
+// package/pi-plugin/ask-user-question/src/tool.ts
+const outcome = await requestAnswer({
+  cwd: ctx.cwd,
+  ...(signal === undefined ? {} : { signal, }),
+},);
+```
+
+The helper authenticates its channel before running the editor.
+`package/pi-plugin/ask-user-question/src/helper-core.ts:61` writes the request token;
+line 76 then invokes the editor:
+
+```ts
+// package/pi-plugin/ask-user-question/src/helper-core.ts
+socket.write(`${request.token}\n`,);
+const status = await runEditor({
+  answerPath: request.answerPath,
+  editorCommand: request.editorCommand,
+  signal: controller.signal,
+},);
+```
+
+This links a helper to its pending request,
+not an answer to an independently retained approval scope.
+`package/pi-plugin/ask-user-question/src/request-external-answer.ts:260`
+reads the raw file after completion and normalizes one final editor line ending:
+
+```ts
+// package/pi-plugin/ask-user-question/src/request-external-answer.ts
+const rawAnswer = await readWorkspaceAnswer({ workspace, },);
+const answer = normalizeEditorAnswer({ text: rawAnswer, },);
+```
+
+Under Q23 A,
+the concrete host confirmation workflow may be trusted without defending against same-account interference.
+That assumption does not make role labels,
+helper tokens,
+or copied answers into original scope-bound confirmations.
+The retained writer/response/scope binding is still required.
+
 ## Verification
 
 Private harness:
@@ -382,6 +428,78 @@ The probe does not verify live TUI/RPC interaction,
 persistent session copying,
 a production collector,
 or a finalizer.
+
+### Actual requester, helper, and scripted-editor return path
+
+The private `auto-mode-consumer-contract.mDLkyNoP` repository records this new check under
+`contract/human-origin/helper-correlated/`.
+The successful controller was invoked with `mise --no-env --no-hooks run run` in that directory.
+Do not rerun its create-new epoch;
+retain `result.json`,
+`run.stdout.txt`,
+`run.stderr.txt`,
+and `frozen.json`.
+
+The existing requester launched the actual built helper,
+which launched a separate synthetic Node editor.
+Only terminal launch was injected.
+No desktop interaction or genuine human response occurred.
+The reused SDK-input image supplied its existing dependencies;
+no SDK image was rebuilt and no session or model was created.
+Bounds were 2 GiB memory,
+2 CPUs,
+no extra swap,
+64 PIDs,
+256 file descriptors,
+a read-only nonroot container,
+128 MiB disposable temporary storage,
+isolated loopback only,
+and a 60-second container limit.
+
+The admitted first-party artifacts were:
+
+- `index.mjs`:
+   SHA-256 `8e576f31650abb5a9e14ed335fc72b84f0c0af09d35842fc98897358857bec61`.
+- `answer-helper.mjs`:
+   SHA-256 `1cbd92f41372effbfd2cc6a23370d5dd8257798a0a4850908e228083c4675bd9`.
+
+Source traces are separately hashed;
+no source-to-bundle reproducibility claim follows.
+
+Working controls:
+
+- Multiline input preserved its internal CRLF and removed one final CRLF.
+- Blank input returned cancellation.
+- Both actual helper children exited with code zero and empty stderr.
+- Both disposable answer workspaces were removed after settlement.
+- The intact authentication guard rejected the wrong candidate and selected the valid candidate's distinct status.
+
+Rejected assumptions:
+
+- Returned answer/status fields do not contain the original question,
+  tool-call identity,
+  accepted scope,
+  or approval witness.
+- A separate guard-omitted artifact selected the wrong candidate's `cancelled` status,
+  failing the same settled-result assertion.
+  Its valid follow-up received `ECONNREFUSED`;
+  that error was recorded but was not the proof that the wrong token won.
+- Client socket closure is not the channel-settlement assertion.
+  A frozen but unexecuted predecessor used that inference and was retained without dispatch.
+- The owned preparer's initial statement-shaped guard anchor did not match the deployed ternary expression.
+  Its failure and original artifacts were preserved;
+  a separate correction supplied the omission artifact.
+  This was not an upstream defect.
+
+The outer stderr retained the expected warning:
+
+```text
+rejected unauthenticated answer helper connection
+```
+
+No bare shutdown error or logger-internal error was accepted.
+No human approval was created.
+A genuine confirmation capture and the writer's scope binding remain unqualified.
 
 ## Proposed containment and unverified remedies
 
