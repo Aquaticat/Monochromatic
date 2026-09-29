@@ -192,6 +192,40 @@ function repeatSideOf(
 }
 
 /**
+ One repeat pair from two audits of one slice. Both the within-run and the
+ across-run readings build pairs here (audit area six, ledger B18: each kept
+ its own copy).
+
+ @param left - earlier audit, whose slice names the pair
+
+ @param right - later audit of the same slice
+
+ @returns The pair
+
+ @example
+ ```ts
+ const pair = repeatPairOf({ left, right, },);
+ ```
+ */
+function repeatPairOf(
+  {
+    left,
+    right,
+  }: {
+    readonly left: SettledAuditRow;
+    readonly right: SettledAuditRow;
+  },
+): AuditRepeatPair {
+  return {
+    entryId: left.entryId,
+    sliceIndex: left.sliceIndex,
+    auditsArchiveText: left.auditsArchiveText,
+    left: repeatSideOf({ row: left, },),
+    right: repeatSideOf({ row: right, },),
+  };
+}
+
+/**
  Finds texts one run audited more than once.
  
  Two artifacts of one entry sit in different run sets, so a repeat here is a
@@ -251,13 +285,10 @@ export function auditRepeatsWithin(
           },);
         },)
         .map(function asPair(right,): AuditRepeatPair {
-          return {
-            entryId: left.entryId,
-            sliceIndex: left.sliceIndex,
-            auditsArchiveText: left.auditsArchiveText,
-            left: repeatSideOf({ row: left, },),
-            right: repeatSideOf({ row: right, },),
-          };
+          return repeatPairOf({
+            left,
+            right,
+          },);
         },);
     },);
   },);
@@ -363,13 +394,10 @@ export function auditRepeatsAcross(
         left,
         right,
       },): AuditRepeatPair {
-        return {
-          entryId: left.entryId,
-          sliceIndex: left.sliceIndex,
-          auditsArchiveText: left.auditsArchiveText,
-          left: repeatSideOf({ row: left, },),
-          right: repeatSideOf({ row: right, },),
-        };
+        return repeatPairOf({
+          left,
+          right,
+        },);
       },),
     textMoved: witnessed
       .filter(function textDisagrees({

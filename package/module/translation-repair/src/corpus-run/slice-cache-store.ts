@@ -2,6 +2,7 @@ import { rm, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { everyStageHeard, } from '../stage-silence.ts';
+import { isStringList, } from '../contest-ballot-wire.ts';
 import { isJsonRecord, } from '../json-guard.ts';
 import { isIndexPairList, } from '../index-pair-list.ts';
 import type { PairedSectionRecord, } from '../pair-blocks-stage.ts';
@@ -215,26 +216,32 @@ function isPairList(value: unknown,): value is readonly BlockPair[] {
 }
 
 /**
- Whether a parsed cache file is a usable pairing record.
- 
- REFUSES A BARE ARRAY, which is what this namespace stored until 2026-08-22,
+ Whether a parsed cache file is a usable pairing record, block or section:
+ correspondences beside the findings their round produced. The two caches
+ store one shape and only their key spaces tell them apart
+ (`openSectionPairingCache`), so one test reads both.
+
+ REFUSES A BARE ARRAY, which the block namespace stored until 2026-08-22,
  when the findings a section produced became half the record. Nothing has to
  read the old shape: the namespace is discarded whenever the stored
  generation differs from the running pipeline digest, and editing these files
  changes that digest. The refusal is the belt beside that brace.
- 
+
+ Each finding must be text, as both record types say; the two copies this
+ replaced checked only that findings were a list (audit area six, ledger B18).
+
  @param value - parsed JSON of a cache file
- 
+
  @returns Whether it carries correspondences beside their findings
- 
+
  @example
  ```ts
- if (isCachedPairing(parsed,)) resumed.set(key, parsed,);
+ if (isCachedPairingRecord(parsed,)) resumed.set(key, parsed,);
  ```
  */
-function isCachedPairing(value: unknown,): value is PairedSectionRecord {
+function isCachedPairingRecord(value: unknown,): value is PairedSectionRecord & PairedDocumentRecord {
   return isJsonRecord(value,)
-    && Array.isArray(value.findings,)
+    && isStringList(value.findings,)
     && isPairList(value.pairs,);
 }
 
@@ -270,26 +277,8 @@ export async function openPairingCache(
     dir,
     generation,
     namespace: PAIRING_NAMESPACE,
-    isValue: isCachedPairing,
+    isValue: isCachedPairingRecord,
   },);
-}
-
-/**
- Whether a stored value is a settled section pairing.
- 
- @param value - parsed stored record
- 
- @returns Whether it can be republished as one
- 
- @example
- ```ts
- const ok = isCachedSectionPairing({ pairs: [], findings: [], },);
- ```
- */
-function isCachedSectionPairing(value: unknown,): value is PairedDocumentRecord {
-  return isJsonRecord(value,)
-    && Array.isArray(value.findings,)
-    && isPairList(value.pairs,);
 }
 
 /**
@@ -323,7 +312,7 @@ export async function openSectionPairingCache(
     dir,
     generation,
     namespace: SECTION_PAIRING_NAMESPACE,
-    isValue: isCachedSectionPairing,
+    isValue: isCachedPairingRecord,
   },);
 }
 

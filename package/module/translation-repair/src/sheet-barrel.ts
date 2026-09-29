@@ -215,7 +215,9 @@ export {
 export {
   discardSliceCache,
   listResumableEntries,
+  openPairingCache,
   openRefineSliceCache,
+  openSectionPairingCache,
   openSliceCache,
   openTranslateSliceCache,
 } from './corpus-run/slice-cache-store.ts';

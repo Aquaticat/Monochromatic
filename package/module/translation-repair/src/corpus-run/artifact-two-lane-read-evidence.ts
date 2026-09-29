@@ -7,6 +7,7 @@ import {
   requireOpenRecord,
 } from '../artifact-exact-guard.ts';
 import type {
+  ArtifactEvidenceRow,
   ArtifactRepairEvidence,
   ArtifactTranslateEvidence,
 } from './artifact-two-lane-read-contract.ts';
@@ -72,6 +73,54 @@ function requireIndexList(
 }
 
 /**
+ Reads a lane's slice texts, one evidence row each. Both lanes carry them in
+ one shape, so both parsers read them here (audit area six, ledger B18: each
+ kept its own copy).
+
+ @param value - list JSON
+
+ @param path - dotted path for error message
+
+ @param keys - spelling the artifact's own generation gave the renamed keys
+
+ @returns Rows in the order the file lists them
+
+ @throws {@link ArtifactParseError} when the value is not an array, or a row
+ is not the shape the version requires
+
+ @example
+ ```ts
+ const rows = requireEvidenceRows({ value: record.sliceTexts, path: `${path}.sliceTexts`, keys, },);
+ ```
+ */
+function requireEvidenceRows(
+  {
+    value,
+    path,
+    keys,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+    readonly keys: ArtifactKeyVocabulary;
+  },
+): readonly ArtifactEvidenceRow[] {
+  return requireArray({
+    value,
+    path,
+  },)
+    .map(function readRow(
+      row,
+      position,
+    ): ArtifactEvidenceRow {
+      return parseEvidenceRow({
+        value: row,
+        path: `${path}[${String(position,)}]`,
+        keys,
+      },);
+    },);
+}
+
+/**
  Reads what this shape requires of the repair lane's raw result.
  
  @param value - raw result JSON
@@ -132,20 +181,11 @@ export function parseRepairEvidence(
       value: record[keys.withdrawnSliceIndices],
       path: `${path}.${keys.withdrawnSliceIndices}`,
     },),
-    sliceTexts: requireArray({
+    sliceTexts: requireEvidenceRows({
       value: record.sliceTexts,
       path: `${path}.sliceTexts`,
-    },)
-      .map(function readRow(
-        row,
-        position,
-      ) {
-        return parseEvidenceRow({
-          value: row,
-          path: `${path}.sliceTexts[${String(position,)}]`,
-          keys,
-        },);
-      },),
+      keys,
+    },),
   };
 }
 
@@ -217,20 +257,11 @@ export function parseTranslateEvidence(
       value: record[keys.withdrawnSliceIndices],
       path: `${path}.${keys.withdrawnSliceIndices}`,
     },),
-    sliceTexts: requireArray({
+    sliceTexts: requireEvidenceRows({
       value: record.sliceTexts,
       path: `${path}.sliceTexts`,
-    },)
-      .map(function readRow(
-        row,
-        position,
-      ) {
-        return parseEvidenceRow({
-          value: row,
-          path: `${path}.sliceTexts[${String(position,)}]`,
-          keys,
-        },);
-      },),
+      keys,
+    },),
   };
 }
 
