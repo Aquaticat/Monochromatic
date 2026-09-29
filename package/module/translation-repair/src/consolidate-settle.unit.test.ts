@@ -1043,7 +1043,7 @@ await describe({
     it({
       name: 'SHIPS THE PROPOSAL THE SLATE CHOSE when the gate settles on neither over an eligible standing '
         + 'every contest ballot called flawed (class one hundred seventy-seven, one entry\'s slice 13, '
-        + 'owner answer 2026-09-26: "Slate\'s choice"); a gate that refuses the proposal still keeps the standing',
+        + 'owner answer 2026-09-27: "Slate\'s choice"); a gate that refuses the proposal still keeps the standing',
       fn: async () => {
         const { settled, } = await settleWith({
           voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],

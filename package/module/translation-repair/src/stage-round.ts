@@ -23,7 +23,7 @@ import { resolveStragglerGraceMs, } from './grace-override.ts';
 // A round used to await every call together, so a model that hung until its
 // deadline delayed every stage that seated it by the whole of that deadline,
 // 360 seconds on the corpus configuration, however early quorum arrived. The
-// user's standing rule of 2026-08-14 is that the failure of any one model for
+// user's standing rule of 2026-08-15 is that the failure of any one model for
 // the day must not delay the pipeline, and waiting six minutes per gather for a
 // voice that never comes is exactly that delay.
 //
@@ -37,7 +37,7 @@ import { resolveStragglerGraceMs, } from './grace-override.ts';
 /**
  Time a voice still in flight is given once quorum stands.
  
- SIXTY SECONDS ORIGINALLY, a user figure of 2026-08-14 chosen between this and
+ SIXTY SECONDS ORIGINALLY, a user figure of 2026-08-15 chosen between this and
  cutting at quorum outright, and recorded then as not derived from the latency
  distribution and due a revisit against one. That revisit happened on
  2026-08-17 and the window moved; see
@@ -72,7 +72,7 @@ import { resolveStragglerGraceMs, } from './grace-override.ts';
  `doc/decision/translation-repair-straggler-grace.md`. It remains well under
  `RUN_PER_CALL_TIMEOUT_MS` of 360_000, so the window still cuts a genuinely
  hung voice long before its own deadline would, which is the whole purpose
- the user's rule of 2026-08-14 gave it.
+ the user's rule of 2026-08-15 gave it.
  
  THE EDITOR CALIBRATION RUNS UNDER 300000 MS INSTEAD (`adoptCalibrationGrace`
  in `grace-override.ts`, the owner's decision of 2026-08-26 on arm D), because

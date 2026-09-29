@@ -53,7 +53,7 @@ export type RepairModels = {
    Whole roster candidate selection draws judges from, editors included.
    
    Producers used to be removed per round, which is why this once required a
-   model that never edits. Since the ruling of 2026-08-14 they are seated and
+   model that never edits. Since the ruling of 2026-08-15 they are seated and
    a ballot for their own work is discounted instead, so the only requirement
    left is that some candidate could reach the minimum weight: see
    {@link assertJudgeableEditorRoster}.
@@ -222,7 +222,7 @@ export function assertJudgeableEditorRoster(
 /**
  Refuses a roster that could not decide a round however it voted.
  
- WHAT THIS NO LONGER REQUIRES, by the user ruling of 2026-08-14: judges
+ WHAT THIS NO LONGER REQUIRES, by the user ruling of 2026-08-15: judges
  outside the producer roster. Self-judging is allowed and carries reduced
  weight instead, which is `SELF_VOTE_WEIGHT`, so a model grading its own work
  is a discounted opinion rather than a forbidden one. Refusing here would have

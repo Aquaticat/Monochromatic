@@ -43,7 +43,7 @@ import {
 // licensing the whole envelope makes it vacuous.
 //
 // FINDINGS ARE WRITTEN FOR THE MODEL THAT WROTE THE CANDIDATE, not for a log.
-// By user decision of 2026-08-14 an invalid candidate is not dropped: it goes
+// By user decision of 2026-08-15 an invalid candidate is not dropped: it goes
 // back to its own author with these sentences, and that model answers with a
 // revision, an inability, or a defence of what it produced. So each finding
 // names what the original has, what the candidate has, and nothing else.

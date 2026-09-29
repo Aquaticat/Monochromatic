@@ -29,7 +29,7 @@ import type { TranslateReportWire, } from './translate-wire.ts';
 // Structural validation, and the conversation a failing candidate gets instead
 // of being dropped.
 //
-// User decision, 2026-08-14. The alternatives were dropping an invalid
+// User decision, 2026-08-15. The alternatives were dropping an invalid
 // candidate, showing judges everything, and dropping only on reference damage;
 // all three were rejected in favour of asking the model that wrote it. What
 // comes back is one of three answers, and the interesting one is the third: a

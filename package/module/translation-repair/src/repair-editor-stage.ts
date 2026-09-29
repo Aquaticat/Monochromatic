@@ -42,7 +42,7 @@ import { writerRoundGraceMs, } from './writer-grace-override.ts';
 // Several editors rewrite one chunk's envelopes independently, every proposal
 // passes the same deterministic apply gate, and judges choose what ships. An
 // editor may sit among the judges, and its ballot for its own candidate counts
-// at the self-vote weight (the user ruling of 2026-08-14). This is the stage
+// at the self-vote weight (the user ruling of 2026-08-15). This is the stage
 // that used to be one model deciding alone.
 //
 // The stage never returns the untouched translation just because judging failed
@@ -229,7 +229,7 @@ export async function runEditorStage(
     stage: 'editor',
     // Retries stop at QUORUM, which on this three-editor roster is two voices.
     // This stage waited for every voice from 2026-08-12 until the user removed
-    // that option on 2026-08-14: one model degrading for a day made every
+    // that option on 2026-08-15: one model degrading for a day made every
     // editor gather spend four deadlines chasing it, and the ensemble property
     // the wait protected is already held by a quorum of two.
     //

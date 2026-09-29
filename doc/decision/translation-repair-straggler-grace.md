@@ -35,7 +35,7 @@ No grace change is authorized before active runs finish and matched evidence exi
 
 Taken 2026-08-17 on the best-quality guideline, against measurement rather than preference.
 
-THIS OVERRIDES A NUMBER THE OWNER CHOSE. Sixty seconds was their figure on 2026-08-14, picked
+THIS OVERRIDES A NUMBER THE OWNER CHOSE. Sixty seconds was their figure on 2026-08-15, picked
 between a grace window and cutting at quorum outright. It is flagged here for a cheap veto. What
 changed is not the judgement behind it but the evidence: the constant's own comment recorded that it
 was "not derived from the latency distribution, and it should be revisited against one", and that
@@ -97,7 +97,7 @@ margin was about 1.2x rather than 40x. A maximum over a few hundred samples is n
 
 180000 ms sits above the 88.6 second maximum by more than a factor of two, and stays well under
 `RUN_PER_CALL_TIMEOUT_MS` of 360000, so the window still cuts a genuinely hung voice long before its
-own deadline would. The user's rule of 2026-08-14, that one model's failure must not delay the
+own deadline would. The user's rule of 2026-08-15, that one model's failure must not delay the
 pipeline for the day, is preserved: a voice that never comes is now abandoned at roughly 193 seconds
 from dispatch rather than 73, against a deadline of 360.
 

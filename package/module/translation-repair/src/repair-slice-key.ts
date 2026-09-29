@@ -149,7 +149,7 @@ import type { RepairModels, } from './repair-contract.ts';
  landed, while corroborated held its per-region rate.
  
  Version 25 is behaviour by way of WHO WAS HEARD and WHO DECIDED, on two user
- decisions of 2026-08-14. The editor and refiner stages no longer wait for
+ decisions of 2026-08-15. The editor and refiner stages no longer wait for
  their whole roster, so a slice cached under version 24 was settled by a
  gather that could spend four deadlines recovering a voice this one stops
  asking for once quorum stands. And selection now seats producers, counting a

@@ -17,6 +17,21 @@ Later split audits record exact raw-part reassembly as formatted groups were div
 Superseded claims remain historical evidence,
 not current instruction.
 
+Dates in the segments are the working day as written at the time,
+with no zone,
+and the segments are kept byte for byte rather than redated.
+An owner answer given between 20:00 and 24:00 EDT
+(00:00 to 04:00 UTC)
+can carry the day before its UTC date:
+the voting rulings recorded under 2026-08-14,
+for one,
+were given between 00:47 and 01:44 UTC on 2026-08-15.
+The decision records,
+the current handover
+and the package's own docs and source
+date owner answers by their UTC day
+(ledger D12 in `package/module/translation-repair/doc/audit-ledger.md`).
+
 ## Chronological groups
 
 1.  Early foundation:

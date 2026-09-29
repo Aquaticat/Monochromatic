@@ -13,7 +13,7 @@ import type { TranslateReportWire, } from './translate-wire.ts';
 //region Translate floor
 // THE SIXTY-SIXTH CLASS (XingZ615, 2026-09-19). The translate lane sends a
 // candidate the deterministic publication rule refuses back to its author
-// once (the owner's decision of 2026-08-14), and kept it on the slate when
+// once (the owner's decision of 2026-08-15), and kept it on the slate when
 // the revision failed too, on the reading that the original was at least
 // what the model produced with the whole sheet in front of it. The judges
 // do not apply the rule: on the closing poem they chose the rendering that

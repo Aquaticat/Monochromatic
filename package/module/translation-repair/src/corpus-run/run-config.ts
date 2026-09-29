@@ -461,7 +461,7 @@ const CHECKER_BENCH_WIDTH = 3;
  with nothing to report.
  
  Both stages retried to `full-roster` from 2026-08-12 until the user removed
- that target outright on 2026-08-14: waiting for every voice let one model
+ that target outright on 2026-08-15: waiting for every voice let one model
  degraded for a day spend four deadlines per gather on a voice that was not
  coming. Quorum on a roster of three is two, so the ensemble property survives
  the removal.
@@ -479,7 +479,7 @@ const CHECKER_BENCH_WIDTH = 3;
  judges needed two disinterested seats, and the other three models held the
  checker roster. It left the roster on 2026-08-24.
  
- ONE OF THOSE CONSTRAINTS IS GONE. Producers judge as of 2026-08-14, with a
+ ONE OF THOSE CONSTRAINTS IS GONE. Producers judge as of 2026-08-15, with a
  ballot for their own work counted at half weight, so seating another producer
  no longer starves selection: the discount applies to a judge's ballot for its
  OWN candidate only, and every producer votes on every other candidate at full
@@ -510,7 +510,7 @@ const CHECKER_BENCH_WIDTH = 3;
  than it happening unnoticed: `DEFAULT_ADJUDICATION_CONFIG.minBallotWeight` is
  the absolute value 3, so the share of the panel that must cast a non-abstain
  ballot before any decision rises from 3-of-7 (43 percent) to 3-of-6 (50).
- User decision, 2026-08-05: "50% is okay here." At nine the same absolute 3
+ User decision, 2026-08-06: "50% is okay here." At nine the same absolute 3
  is 3-of-9 (33 percent), inside the range already lived at ten (30 percent)
  and at eight (37.5 percent).
  
@@ -537,7 +537,7 @@ const CHECKER_BENCH_WIDTH = 3;
  repair written by one model while reporting a met quorum. Losing a judge is
  the smaller harm.
  
- Judges are the WHOLE roster, and since 2026-08-14 selection seats all of it
+ Judges are the WHOLE roster, and since 2026-08-15 selection seats all of it
  rather than removing producers per round. An editor judging a set holding its
  own text is allowed and counts half for that candidate alone; every other
  ballot it casts carries full weight.
@@ -553,7 +553,7 @@ const CHECKER_BENCH_WIDTH = 3;
  The naturalness lane shares two of its three seats with the editors since
  2026-09-01 (GLM-5.3-Flash and deepseek-v4-pro-0813), with minimax-m3 as its
  third. Nothing forbids a refiner also editing: a judge's ballot for its own
- candidate has counted half since 2026-08-14 and a checker's verdict on text
+ candidate has counted half since 2026-08-15 and a checker's verdict on text
  it helped write has counted half since 2026-08-24, so neither stage is
  decided by the model whose text it is. The tradeoff is real and is accepted
  rather than hidden: a model that just wrote a paragraph is a poor judge of

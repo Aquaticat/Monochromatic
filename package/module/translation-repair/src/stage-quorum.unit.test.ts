@@ -3,7 +3,7 @@
  abandoned a bounded grace after quorum rather than waited out, and roster
  shortfalls surface as findings.
  
- The grace cases are the user's standing rule of 2026-08-14 made testable:
+ The grace cases are the user's standing rule of 2026-08-15 made testable:
  the failure of any one model for the day must not delay the pipeline. Both
  directions are covered, because only the pair distinguishes a grace from a
  cut: a voice arriving inside the window is still heard, and one that never
@@ -1063,7 +1063,7 @@ await describe({
       name: 'STOPS at quorum instead of chasing a voice that will not come, and '
         + 'still records the shortfall: waiting for the whole roster let one '
         + 'model degraded for a day stall every gather that seated it, which '
-        + 'is why the user removed that target on 2026-08-14',
+        + 'is why the user removed that target on 2026-08-15',
       fn: async () => {
         /** Call log shared with the scripted client. */
         const calls: Record<string, number> = {};

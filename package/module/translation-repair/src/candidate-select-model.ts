@@ -15,7 +15,7 @@ export const FULL_VOTE_WEIGHT = 1;
  Weight a judge's ballot carries when it names a candidate that judge helped
  write.
  
- Self-judging is ALWAYS allowed, by user decision on 2026-08-14: these models
+ Self-judging is ALWAYS allowed, by user decision on 2026-08-15: these models
  have different blind spots, and a producer's reading of its own text is a
  weaker instrument than a disinterested reading, not a worthless one. Barring
  producers threw that reading away and, on a six-model roster with three

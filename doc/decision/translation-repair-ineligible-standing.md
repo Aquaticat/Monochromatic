@@ -464,9 +464,9 @@ and the gate went 2 standing,
     and the sheet wording in `consolidate-gate-wire.unit.test.ts`.
     Fixed in `419605ff4` and the sheet fix `0b8788dae`.
 
-## Addendum 2026-09-26, twelfth: an undecided gate over a standing every contest ballot condemned ships the slate's choice
+## Addendum 2026-09-27, twelfth: an undecided gate over a standing every contest ballot condemned ships the slate's choice
 
-Owner's answer of 2026-09-26: "Slate's choice (Recommended)".
+Owner's answer of 2026-09-27: "Slate's choice (Recommended)".
 TianqiChen66610 slice 13 shipped the archive's gloss of the performer's "high-performance robot" image
 as "a cute character she cosplayed as":
 every contest ballot called the archive flawed,
@@ -487,9 +487,9 @@ which settles on neither and so kept the standing.
 - Guard shown to fail first (`6243c68d0`, `consolidate-settle.unit.test.ts`),
     fixed in `325c448ba`.
 
-## Addendum 2026-09-26, eleventh: an accepted accuracy claim at major severity disputes the archive
+## Addendum 2026-09-27, eleventh: an accepted accuracy claim at major severity disputes the archive
 
-Owner's answer of 2026-09-26: "Major+ accuracy".
+Owner's answer of 2026-09-27: "Major+ accuracy".
 On TianqiChen66610 slice 13 the repair lane's adjudicators accepted major mistranslation claims
 against the archive's gloss,
 but only `accuracy/addition` made a class one hundred seven dispute,
@@ -723,14 +723,14 @@ the Chinese original respaced.
     (the attribution moved out of the quote)
     over two valid renderings;
     the lane keeps a refused candidate on its slate after its repair turn
-    (the decision of 2026-08-14),
+    (the decision of 2026-08-15),
     and the judges do not apply the rule.
 - `translate-floor.ts` now withholds from the translate slate every candidate the rule still refuses after that turn,
     recorded as `translate-candidate-refused`;
     the repair turn and the model's defence are unchanged,
     and a rule that cannot say keeps the candidate.
     This is "prefer the best valid proposal" applied one stage earlier,
-    and it narrows the 2026-08-14 reading;
+    and it narrows the 2026-08-15 reading;
     the owner may veto it.
 - The untranslated check compares in all but whitespace,
     so a copy of the original with respaced quote lines is refused at every floor.

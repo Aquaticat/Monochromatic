@@ -263,7 +263,7 @@ export async function runRefineStage(
     // Retries stop at QUORUM, which on this three-refiner roster is two voices.
     // See the same note in `repair-editor-stage.ts`: waiting for every voice
     // let one degraded model stall every gather that seated it, and the user
-    // removed the option on 2026-08-14.
+    // removed the option on 2026-08-15.
     //
     // A WRITER ROUND, so the third voice is a whole candidate and waits under
     // the writer window, built in since 2026-09-06 (`writer-grace-override.ts`).

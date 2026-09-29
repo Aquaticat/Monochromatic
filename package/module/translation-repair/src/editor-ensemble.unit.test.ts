@@ -397,7 +397,7 @@ await describe({
       name: 'ACCEPTS two editors judged by themselves and one other, which the '
         + 'old rule refused: two discounted ballots and one full one reach the '
         + 'minimum weight, so a decision is possible and the ruling of '
-        + '2026-08-14 says a stake discounts an opinion rather than voiding it',
+        + '2026-08-15 says a stake discounts an opinion rather than voiding it',
       fn: async () => {
         expect(function twoEditorsOneOutsider() {
           assertJudgeableEditorRoster({

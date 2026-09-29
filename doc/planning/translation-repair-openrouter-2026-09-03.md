@@ -16920,7 +16920,7 @@ the translate lane's slate carried a candidate that moved the attribution line o
 against the original's two),
 which the deterministic rule had refused and its author's repair turn had not resolved;
 the lane keeps such a candidate on the slate
-(the repair turn of 2026-08-14),
+(the repair turn of 2026-08-15),
 the judges do not apply the rule,
 and they chose it over two renderings that kept the attribution inside the quote.
 The lane contest chose translate 6 of 8 and its guard wrote
@@ -16955,7 +16955,7 @@ and `translate-floor.ts` withholds from the translate slate every candidate the 
 recorded as `translate-candidate-refused (model): reasons`;
 a rule that cannot say keeps the candidate,
 and the repair turn and the model's own defence are unchanged.
-The 2026-08-14 decision that an invalid candidate goes back to its author once is kept;
+The 2026-08-15 decision that an invalid candidate goes back to its author once is kept;
 what changes is that after that turn a text the page cannot carry no longer reaches the judges.
 The owner may veto this reading.
 

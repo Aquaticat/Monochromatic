@@ -1,6 +1,6 @@
 # Ensemble voting: who is waited for, who judges, and what a self-vote is worth
 
-Decided by the user on 2026-08-14, in three separate rulings during the session
+Decided by the user on 2026-08-15, in three separate rulings during the session
 that built the translate lane.
 Each one reverses or narrows an earlier choice recorded in
 `doc/handover/translation-repair-history.md`, so this document is canonical for all
@@ -8,7 +8,7 @@ three and the older passages are history.
 
 ## The standing rule: one model's bad day must not delay the pipeline
 
-User, 2026-08-14:
+User, 2026-08-15:
 "The failure of any one model for the day must not delay the pipeline."
 
 This is the principle the rest of this document applies, and it is wider than
@@ -161,7 +161,7 @@ without them, and they identify nobody.
 
 ## Every producing role widens, and self-certification is weighed too
 
-User ruling, 2026-08-14, asked as a choice between holding the producing roles
+User ruling, 2026-08-15, asked as a choice between holding the producing roles
 where they were and widening them:
 "All producing roles to 4, just assign lower weights to self-certification."
 
@@ -229,7 +229,7 @@ that too.
 
 ## An invalid candidate is sent back to its author, not dropped
 
-User ruling, 2026-08-14, on what a whole-slice validator should do with a
+User ruling, 2026-08-15, on what a whole-slice validator should do with a
 translation whose structure does not match the source.
 Three options were offered, to drop it, to show judges everything, or to drop
 only on reference damage, and all three were rejected:

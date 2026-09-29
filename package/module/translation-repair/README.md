@@ -434,7 +434,7 @@ const result = await repairTranslation({
   A winner needs weight 2,
   so on these rosters no candidate is selected by its own authors alone.
   `assertJudgeableEditorRoster` (`src/repair-contract.ts`) no longer requires judges outside the editor roster:
-  the ruling of 2026-08-14 allows self-judging at reduced weight instead.
+  the ruling of 2026-08-15 allows self-judging at reduced weight instead.
   It refuses a roster that repeats an editor or a judge,
   seats no editor,
   or seats too few judges for any text the editors write to reach the minimum weight,

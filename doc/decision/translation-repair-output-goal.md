@@ -3,7 +3,7 @@
 Decision record for what `@monochromatic-dev/module-translation-repair` is FOR.
 Decision:
  the pipeline yields a good translation of the original,
- taken on 2026-08-12 by the user,
+ taken on 2026-08-13 by the user,
 even where the translation fed in does not make sense.
 
 This supersedes the framing every stage was built under,

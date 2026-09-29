@@ -4765,7 +4765,7 @@ The exit waiter is a scratch node script
 `process.kill(pid, 0)` every 15 s,
 then the log's last TALLY and METERS lines once)
 run as a background Bash task;
-the owner dropped the cron fallback on 2026-09-19 ("You don't need a cron job"),
+the owner dropped the cron fallback on 2026-09-17 ("You don't need a cron job"),
 and the session still starts with `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`.
 
 ## The three checks
@@ -4830,7 +4830,7 @@ each read off the pass log and the shipped page:
     "## TianqiChen6669 read".
     TIANQICHEN66610 READ (`.frozen-dist-7390294ff`): SETTLED in 17.0 min; class one hundred seventy-five (a
     straight stray closing quote on slice 16; guard `3f04e53cb`, fix `c3c96f289`); slice 13 shipped the
-    archive's "a cute character she cosplayed as" on a 2 to 2 gate. Owner's answers of 2026-09-26: "Major+
+    archive's "a cute character she cosplayed as" on a 2 to 2 gate. Owner's answers of 2026-09-27: "Major+
     accuracy, also "high-performance robot" is referring to Atri (search)." and "Slate's choice
     (Recommended)"; built as classes one hundred seventy-six (major accuracy claims dispute the archive,
     `25b9eaec7`), seventy-seven (an undecided gate over a standing every contest ballot condemned ships the

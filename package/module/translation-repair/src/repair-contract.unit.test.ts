@@ -3,7 +3,7 @@
  
  `assertJudgeableProducerRoster` refuses a roster that could not decide a
  round however its judges voted, and NOTHING ELSE. By the user ruling of
- 2026-08-14 self-judging is allowed at reduced weight, so a roster where every
+ 2026-08-15 self-judging is allowed at reduced weight, so a roster where every
  model both produces and judges is legal; what is not legal is a roster too
  small to reach the minimum selection weight, since one judge contributes at
  most one full-weight ballot.
@@ -95,7 +95,7 @@ await describe({
 
     it({
       name: 'ACCEPTS a roster whose judges are mostly producers, which the '
-        + 'old guard refused. This is the ruling of 2026-08-14 in one case: a '
+        + 'old guard refused. This is the ruling of 2026-08-15 in one case: a '
         + 'model grading its own work is a discounted opinion, not a '
         + 'forbidden one, so a provider degraded for the day cannot make a '
         + 'legal roster illegal',

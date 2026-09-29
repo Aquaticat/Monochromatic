@@ -574,7 +574,7 @@ await describe({
     it({
       name: 'SEATS a model that produced a candidate and counts its ballot for '
         + 'its own work at half weight, which is the whole trade the user '
-        + 'chose on 2026-08-14: these models have different blind spots, so a '
+        + 'chose on 2026-08-15: these models have different blind spots, so a '
         + 'producer reading its own text is a weaker instrument than a '
         + 'disinterested one rather than a worthless one',
       fn: async () => {

@@ -35,7 +35,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 //
 // WAITING FOR THE WHOLE ROSTER IS NOT AN OPTION HERE, and used to be. The
 // editor and refiner stages passed `retryTarget: 'full-roster'` from
-// 2026-08-12 until the user removed the option outright on 2026-08-14:
+// 2026-08-12 until the user removed the option outright on 2026-08-15:
 // waiting on every voice makes one provider-side model degrading for a day
 // block every stage that seats it, spending four deadlines per gather on a
 // voice that will not come. The property full-roster was chosen to protect,
@@ -247,7 +247,7 @@ export async function gatherStageVoices<ValueT,>(
    Was "strictly more than half", which differs only on EVEN rosters and was
    costing a round there. At six models the old rule demanded 4 while this
    demands 3; at seven both demand 4, so odd rosters are unaffected. User
-   decision 2026-08-05, taken when the roster shrank to six: exactly half of
+   decision 2026-08-06, taken when the roster shrank to six: exactly half of
    an even panel is a quorum.
    
    SIZED ON THE REACHABLE BENCH SINCE 2026-09-09 (`reachableQuorum`): a

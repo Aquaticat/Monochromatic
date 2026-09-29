@@ -300,7 +300,7 @@ and a standing the rule refused cannot ship whatever the gate thinks of it.
 ## What the translate slate carries
 
 A translate candidate the deterministic publication rule refuses goes back to its author once
-(the decision of 2026-08-14).
+(the decision of 2026-08-15).
 Since class sixty-six (2026-09-19) a candidate the rule still refuses after that turn is withheld from the judges
 and recorded as `translate-candidate-refused (model): reasons`;
 a rule that cannot say keeps the candidate.

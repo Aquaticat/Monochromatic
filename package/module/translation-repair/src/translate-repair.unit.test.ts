@@ -2,7 +2,7 @@
  Tests for what happens to a translated slice that fails structural
  validation.
  
- By user decision of 2026-08-14 it is not dropped: it goes back to the model
+ By user decision of 2026-08-15 it is not dropped: it goes back to the model
  that wrote it, in the same exchange, and that model answers with a revision,
  an inability, or a defence of what it produced. Each of those three lands
  differently, and the third is the one no filter could have collected, so all

@@ -4854,7 +4854,7 @@ Paths below are package-relative.
 Status:
 fixed in `4397d7d2a`.
 `README.md:301-303`;
-`repair-contract.ts:224-229` says the 2026-08-14 ruling removed that requirement,
+`repair-contract.ts:224-229` says the 2026-08-15 ruling removed that requirement,
 and the check refuses only repeats,
 no editor,
 or judge capacity short of the minimum weight.

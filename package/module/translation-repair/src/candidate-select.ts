@@ -43,7 +43,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 //
 // - A model may judge its own work, and its ballot for its own work counts for
 //   LESS. Producers used to be removed from the roster outright; the user
-//   replaced that with a discount on 2026-08-14, because these models have
+//   replaced that with a discount on 2026-08-15, because these models have
 //   different blind spots and dropping three of six judges to keep the rest
 //   disinterested threw away readings nothing else supplies. A producer reading
 //   its own text is a weaker instrument than a disinterested one, not a

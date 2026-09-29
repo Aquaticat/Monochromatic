@@ -7,7 +7,7 @@ import { isJsonRecord, } from './json-guard.ts';
 // The follow-up turn a candidate's own author gets when structural validation
 // found something.
 //
-// User decision, 2026-08-14: an invalid candidate is not dropped. "The pipeline
+// User decision, 2026-08-15: an invalid candidate is not dropped. "The pipeline
 // should try fixing it by giving the findings to the original model in the same
 // chat, and the original model can say it can fix it, it can't fix it, or for
 // whatever reason the 'broken' candidate it produced is the best possible
