@@ -62,6 +62,14 @@ It dozes on the windowsill.`;
 const MERGED_TEXT = 'A day in the cat\'s life: it dozes on the windowsill.';
 
 /**
+ Page carrying the heading the merged translation lost, so validation
+ against it reports the merge and a candidate the copy check does not stop
+ is asked about. Against a page that merged the heading too the candidate is
+ valid, and a copy-check case would pass without the check.
+ */
+const HEADED_PAGE = `## A Day in the Cat's Life\n\n${MERGED_TEXT} It naps.`;
+
+/**
  Model whose candidate every case repairs.
  */
 const TRANSLATOR = SEAT_SYNTHETIC_VISION_WITHHELD;
@@ -408,6 +416,7 @@ await describe({
         const { repaired, log, } = await runRepair({
           translation: MERGED_TEXT,
           incumbentText: MERGED_TEXT,
+          pageText: HEADED_PAGE,
           answer: {
             resolution: 'revised',
             translation: GOOD_TEXT,
@@ -427,6 +436,7 @@ await describe({
         const { repaired, log, } = await runRepair({
           translation: MERGED_TEXT,
           incumbentText: 'A day in the cat\'s life:\nit dozes on the windowsill.',
+          pageText: HEADED_PAGE,
           answer: {
             resolution: 'revised',
             translation: GOOD_TEXT,
@@ -449,7 +459,7 @@ await describe({
           // candidate is checked against still reports it. An incumbent that
           // merged it too would make this candidate valid, and the case would
           // stop testing the collapse rule it was written for.
-          incumbentText: `## A Day in the Cat's Life\n\n${MERGED_TEXT} It naps.`,
+          incumbentText: HEADED_PAGE,
           answer: {
             resolution: 'unable',
             translation: '',
