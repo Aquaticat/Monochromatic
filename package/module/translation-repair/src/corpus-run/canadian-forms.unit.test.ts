@@ -368,6 +368,50 @@ await describe({
       },
     },),
     it({
+      name: 'REWRITES A TEXT WITH DESERET LETTERS AS IT REWRITES THE SAME TEXT WITH LATIN ONES (ledger B21), at '
+        + 'every neighbour the date, spelling and capital readers test: word runs read back, a sentence\'s last '
+        + 'word, a heading\'s capitals, a name\'s second word, emphasis underscores, a year\'s edges and the word '
+        + 'after it, a day\'s suffix, an abbreviation\'s period, an article, a month-first date, and a path',
+      fn: async () => {
+        /**
+         Texts whose outcome turns on a neighbour of a date or a listed word,
+         written with a Deseret capital and small letter, which have case.
+         The prose carries no Latin x, which stands in for them.
+         */
+        const deseret = [
+          'The cat saw \u{10414}my mum.',
+          'She met \u{10414}J. Color was calm.',
+          '## The Color of \u{10414}\u{1043C}\u{1043C}',
+          'Center \u{10414}\u{1043C} hosted the cats.',
+          'Nap \u{10414}_\u{10414} time. Color was calm.',
+          'We napped 2023, 31 Mar.\u{10414} then.',
+          'On 4 May 2024 \u{10414}\u{1043C} napped.',
+          'We napped on 4 May 2024\u{10414}.',
+          'We napped on May 4th\u{10414} then.',
+          'We napped on May 3rd-4th\u{10414}.',
+          'We napped on 4 Sept.\u{10414} then.',
+          'We napped on 2 June \u{10414}\u{1043C} then.',
+          'We napped on 31 Mar. \u{1043C}\u{1043C} then.',
+          'We napped on \u{10414}the 4th May.',
+          'We napped \u{10414}Sept 4 then.',
+          'See color/cat.\u{10414}\u{1043C} now.',
+          'Set \u{10414}_color now.',
+          'Set color_\u{10414} now.',
+        ];
+        expect(deseret.map(function rewrite(text,): string {
+          return rewritten({ text, },);
+        },),).toEqual(deseret.map(function throughLatin(text,): string {
+          return rewritten({
+            text: text
+              .replaceAll('\u{10414}', 'X',)
+              .replaceAll('\u{1043C}', 'x',),
+          },)
+            .replaceAll('X', '\u{10414}',)
+            .replaceAll('x', '\u{1043C}',);
+        },),);
+      },
+    },),
+    it({
       name: 'LEAVES tag attributes, a link destination, code, a comment and a capitalised title in emphasis '
         + 'untouched, and rewrites the prose between them',
       fn: async () => {
