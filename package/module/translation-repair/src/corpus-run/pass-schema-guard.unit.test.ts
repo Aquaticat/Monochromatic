@@ -33,7 +33,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  assertResumableGeneration,
+  assertArtifactsPlaceable,
+  assertBuildGenerationResumable,
   assertResumableSchemaGeneration,
   censusBySchema,
 } from '../../dist/final/node/index.mjs';
@@ -60,11 +61,6 @@ const FIXED_TIP = '1111111111111111111111111111111111111111';
 const PREPARATION_IDENTITY = `sha256-preparation-v1:${'a7'.repeat(32,)}`;
 
 /**
- Environment variable the pipeline guard reads for an explicit drift opt-in.
- */
-const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT';
-
-/**
  What one fixture artifact records about its generation.
  */
 type Fixture = {
@@ -84,37 +80,6 @@ type Fixture = {
    */
   readonly wellFormed?: boolean;
 };
-
-/**
- Sets the drift opt-in for the life of a scope and restores it on exit.
- 
- Restored rather than left set, since a leaked opt-in would silently disarm the
- pipeline guard for every later case in this process.
- 
- @param value - value to set, exact opt-in or otherwise
- 
- @returns Disposable restoring the previous value, including its absence
- 
- @example
- ```ts
- using _override = withDriftVar({ value: 'yes', },);
- ```
- */
-function withDriftVar({ value, }: { readonly value: string; },): Disposable {
-  /**
-   Value before this scope; absent means the variable was unset.
-   */
-  const original = process.env[ALLOW_DRIFT_VAR];
-  process.env[ALLOW_DRIFT_VAR] = value;
-  return {
-    [Symbol.dispose](): void {
-      if (original === undefined)
-        Reflect.deleteProperty(process.env, ALLOW_DRIFT_VAR,);
-      else
-        process.env[ALLOW_DRIFT_VAR] = original;
-    },
-  };
-}
 
 /**
  A complete version 2 artifact describing a document with NO slices.
@@ -372,14 +337,14 @@ await describe({
           },
         },);
 
-        using _override = withDriftVar({ value: 'yes', },);
-
-        // POSITIVE CONTROL, and the point of the case: the pipeline guard is
+        // POSITIVE CONTROL, and the point of the case: the pipeline guard's two
+        // halves, run as the pass runs them with the opt-in asked for, are
         // silent here. Without it this would be checking a directory two guards
         // refuse and proving nothing about which one did the work.
-        await assertResumableGeneration({
-          artifactsDir,
+        assertBuildGenerationResumable({
+          census: await assertArtifactsPlaceable({ artifactsDir, },),
           digest: DIGEST_B,
+          driftAllowed: true,
         },);
         expect(await refusalOf({ artifactsDir, },),).toContain('schema version 1: 1 settled, Mittens',);
       },
@@ -389,8 +354,6 @@ await describe({
         'ACCEPTS a directory of several BUILDS all writing this generation, so the guard is not a second '
         + 'digest check: an operator who opted into build drift keeps exactly what they opted into',
       fn: async () => {
-        using _override = withDriftVar({ value: 'yes', },);
-
         await assertResumableSchemaGeneration({
           artifactsDir: await writeArtifacts({
             entries: {

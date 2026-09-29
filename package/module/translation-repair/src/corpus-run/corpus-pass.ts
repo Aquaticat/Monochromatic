@@ -34,6 +34,7 @@ import {
 import {
   assertArtifactsPlaceable,
   assertBuildGenerationResumable,
+  readDriftOptIn,
 } from './pass-generation-guard.ts';
 import { RUN_OUTSIDE_READS, } from './pass-outside-reads.ts';
 import { assertResumableSchemaGeneration, } from './pass-schema-guard.ts';
@@ -130,9 +131,10 @@ const MS_PER_MINUTE = 60_000;
  directory came to hold 22 entries across four tips.
  
  Three days covers the pessimistic rate with room to spare. It is not a
- prediction that a run will take three days; `assertResumableGeneration` is
- what protects the pool now, and this only stops the BUDGET from being the
- thing that forces a fragmenting resume.
+ prediction that a run will take three days; the resume guards at startup
+ (`assertArtifactsPlaceable`, `assertResumableSchemaGeneration`,
+ `assertBuildGenerationResumable`) are what protect the pool now, and this
+ only stops the BUDGET from being the thing that forces a fragmenting resume.
  */
 const SOFT_BUDGET_MINUTES = 4_320;
 
@@ -306,6 +308,7 @@ async function runCorpusPass(): Promise<void> {
   assertBuildGenerationResumable({
     census: generationCensus,
     digest: pipelineDigest,
+    driftAllowed: readDriftOptIn(),
   },);
 
   /**

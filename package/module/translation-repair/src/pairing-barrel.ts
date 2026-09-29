@@ -115,7 +115,6 @@ export {
   frontMatterContestEligibility,
   type LaneContestEligibility,
   LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,
-  laneContestChoiceMayShip,
   laneContestChoiceVerdict,
   type LaneContestChoiceVerdict,
   settleEligibleLaneContestBallots,

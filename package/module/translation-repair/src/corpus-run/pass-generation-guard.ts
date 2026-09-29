@@ -219,54 +219,6 @@ export class UnplaceableArtifactError extends Error {
 }
 
 /**
- Refuses a resume that would add a second pipeline to one pool.
- 
- Silent on a fresh directory and on a resume under the same build, which are
- the two ordinary cases. It reads the settled artifacts rather than trusting a
- recorded marker, so a directory assembled by hand is judged on what it holds.
- 
- @param artifactsDir - directory holding one JSON per settled entry
- 
- @param digest - built pipeline this invocation would stamp on everything it
- settles
- 
- @param driftAllowed - whether a mixed directory was asked for, defaulting to
- this process's opt-in
- 
- @throws UnplaceableArtifactError when an artifact records nothing usable
- 
- @throws LegacyPipelineError when artifacts predate generation identity
- 
- @throws GenerationDriftError when settled entries record any other build and
- the caller has not opted into drift
- 
- @example
- ```ts
- await assertResumableGeneration({ artifactsDir, digest, },);
- ```
- */
-export async function assertResumableGeneration(
-  {
-    artifactsDir,
-    digest,
-    driftAllowed = readDriftOptIn(),
-  }: {
-    readonly artifactsDir: string;
-    readonly digest: string;
-    readonly driftAllowed?: boolean;
-  },
-): Promise<void> {
-  // BOTH HALVES, IN ORDER, for a caller with nothing to run between them. A
-  // corpus pass has something to run between them and calls the two directly;
-  // see `assertArtifactsPlaceable`.
-  assertBuildGenerationResumable({
-    census: await assertArtifactsPlaceable({ artifactsDir, },),
-    digest,
-    driftAllowed,
-  },);
-}
-
-/**
  Refuses a directory holding an artifact nothing can place, and reports what
  the rest record.
  
@@ -353,26 +305,27 @@ export async function assertArtifactsPlaceable(
  @param digest - built pipeline this invocation would stamp on everything it
  settles
  
- @param driftAllowed - whether a mixed directory was asked for, defaulting to
- this process's opt-in
+ @param driftAllowed - whether a mixed directory was asked for; the pass
+ passes {@link readDriftOptIn}, and a test states it rather than inheriting
+ whatever this process's environment holds (ledger B30)
  
  @throws GenerationDriftError when settled entries record any other build and
  the caller has not opted into drift
  
  @example
  ```ts
- assertBuildGenerationResumable({ census, digest, },);
+ assertBuildGenerationResumable({ census, digest, driftAllowed: readDriftOptIn(), },);
  ```
  */
 export function assertBuildGenerationResumable(
   {
     census,
     digest,
-    driftAllowed = readDriftOptIn(),
+    driftAllowed,
   }: {
     readonly census: GenerationCensus;
     readonly digest: string;
-    readonly driftAllowed?: boolean;
+    readonly driftAllowed: boolean;
   },
 ): void {
   /**

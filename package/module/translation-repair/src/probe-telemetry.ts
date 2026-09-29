@@ -120,24 +120,6 @@ export type ProbeTelemetrySummary = {
 };
 
 /**
- Corroborated claims on one region, in either direction.
- 
- @param tally - screened tally of one region
- 
- @returns Claims the differential upheld
- 
- @example
- ```ts
- const upheld = corroboratedCount({ tally, },);
- ```
- */
-export function corroboratedCount(
-  { tally, }: { readonly tally: TelemetryRegionTally; },
-): number {
-  return tally.corroborated + tally.removalCorroborated;
-}
-
-/**
  Admissibility values that uphold a claim that the edit caused damage.
  */
 const UPHELD_ADMISSIBILITY: ReadonlySet<string> = new Set([
@@ -149,7 +131,7 @@ const UPHELD_ADMISSIBILITY: ReadonlySet<string> = new Set([
  Counts the distinct PROBERS with at least one upheld claim on a region.
  
  The majority rule weighs voices against a roster size, so its numerator has
- to be voices too. {@link corroboratedCount} counts CLAIMS, and one prober may
+ to be voices too. The tally's two upheld counts sum CLAIMS, and one prober may
  file several on a single region, so a three-model roster could reach a
  "majority" on one prober filing twice. The other half of the same tally
  already counts probers rather than claims, since `noneFound` and `uncertain`

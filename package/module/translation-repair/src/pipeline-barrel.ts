@@ -208,7 +208,6 @@ export {
 export {
   type AlignedRun,
   type GroupedRun,
-  groupNodesAligned,
   groupNodesSealed,
   type SealedRun,
 } from './group-aligned.ts';

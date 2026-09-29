@@ -38,7 +38,6 @@ export {
 export {
   assertArtifactsPlaceable,
   assertBuildGenerationResumable,
-  assertResumableGeneration,
   GenerationDriftError,
   LegacyPipelineError,
   readDriftOptIn,

@@ -99,7 +99,6 @@ export {
 export { verifyArtifactAgainstPreparation, } from './corpus-run/artifact-two-lane-corpus-verify.ts';
 export {
   comparisonRowDifferences,
-  comparisonRowsEqual,
   decisionsEqual,
   deliveriesEqual,
   outcomesEqual,

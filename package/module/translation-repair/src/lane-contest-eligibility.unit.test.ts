@@ -15,7 +15,6 @@ import {
   describeInadmissibleLanes,
   frontMatterContestEligibility,
   LANE_CONTEST_ELIGIBILITY_FLOOR_FINDING,
-  laneContestChoiceMayShip,
   laneContestChoiceVerdict,
   type LaneContestBallot,
   type LaneContestOutcome,
@@ -146,12 +145,12 @@ await describe({
 },);
 
 await describe({
-  name: laneContestChoiceMayShip.name,
+  name: 'whether a lane contest choice may ship',
   children: [
     it({
       name: 'REFUSES FRONT MATTER winner retaining directory id',
       fn: async () => {
-        expect(laneContestChoiceMayShip({
+        expect(laneContestChoiceVerdict({
           outcome: outcomeFor({ choice: 'repair', },),
           sourceText: SOURCE,
           incumbentText: ARCHIVE,
@@ -159,14 +158,14 @@ await describe({
           translateText: TRANSLATED,
           lineStructured: false,
           syntax: 'front-matter',
-        },),).toBe(false,);
+        },).mayShip,).toBe(false,);
       },
     },),
 
     it({
       name: 'ACCEPTS FRONT MATTER winner preserving source identity relation',
       fn: async () => {
-        expect(laneContestChoiceMayShip({
+        expect(laneContestChoiceVerdict({
           outcome: outcomeFor({ choice: 'translate', },),
           sourceText: SOURCE,
           incumbentText: ARCHIVE,
@@ -174,36 +173,36 @@ await describe({
           translateText: TRANSLATED,
           lineStructured: false,
           syntax: 'front-matter',
-        },),).toBe(true,);
+        },).mayShip,).toBe(true,);
       },
     },),
 
     it({
       name: 'REFUSES ORDINARY REPAIR-LANE WINNER that respells target contributor authority',
       fn: async () => {
-        expect(laneContestChoiceMayShip({
+        expect(laneContestChoiceVerdict({
           outcome: outcomeFor({ choice: 'repair', },),
           sourceText: '本条目贡献者：雪猫',
           incumbentText: 'Contributors for this entry: [Snow](https://example.test/snow)',
           repairText: 'Contributors for this entry: Snowflake',
           translateText: 'Contributors for this entry: [Snow](https://example.test/snow)',
           lineStructured: false,
-        },),).toBe(false,);
+        },).mayShip,).toBe(false,);
       },
     },),
 
     it({
       name: 'LEAVES ORDINARY PROSE AND DECLINED CONTEST outside syntax rejection',
       fn: async () => {
-        expect(laneContestChoiceMayShip({
+        expect(laneContestChoiceVerdict({
           outcome: outcomeFor({ choice: 'repair', },),
           sourceText: '猫。',
           incumbentText: 'Cat.',
           repairText: 'Cat.',
           translateText: 'A cat.',
           lineStructured: false,
-        },),).toBe(true,);
-        expect(laneContestChoiceMayShip({
+        },).mayShip,).toBe(true,);
+        expect(laneContestChoiceVerdict({
           outcome: outcomeFor({ choice: 'neither', },),
           sourceText: SOURCE,
           incumbentText: ARCHIVE,
@@ -211,7 +210,7 @@ await describe({
           translateText: TRANSLATED,
           lineStructured: false,
           syntax: 'front-matter',
-        },),).toBe(true,);
+        },).mayShip,).toBe(true,);
       },
     },),
   ],

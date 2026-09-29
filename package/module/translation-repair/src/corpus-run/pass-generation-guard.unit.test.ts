@@ -1,15 +1,20 @@
 /**
  Tests for the resume guard that keeps one accumulation at one built pipeline.
- 
+
  The failure these exist for was measured, not imagined. One accumulation
  directory held 22 settled entries across FOUR generations. None of the four
  was a decision: the pass stops at its soft budget, a fresh invocation resumes
  it, and that invocation builds again. Four resumes across an evening of
  ordinary commits produced four generations, and every reader that computes a
  rate then refuses the whole pool.
- 
+
+ THE HALVES ARE CALLED AS THE PASS CALLS THEM (ledger B30): the placement
+ census first, and the build check over what it returns. A wrapper running
+ both was tested here in their place while the pass ran a schema check
+ between them and never called it.
+
  Fixtures are cat-themed invention. No corpus content appears here.
- 
+
  @module
  */
 
@@ -18,13 +23,15 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  assertResumableGeneration,
+  assertArtifactsPlaceable,
+  assertBuildGenerationResumable,
   GenerationDriftError,
   LegacyPipelineError,
   readDriftOptIn,
@@ -53,20 +60,20 @@ const DIGEST_C = `sha256-tree-v1:${'c'.repeat(64,)}`;
 const FIXED_TIP = '1111111111111111111111111111111111111111';
 
 /**
- Environment variable the guard reads for an explicit drift opt-in.
+ Environment variable the drift opt-in reads.
  */
 const ALLOW_DRIFT_VAR = 'TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT';
 
 /**
  Sets the drift opt-in for the life of a scope and restores it on exit.
- 
- Restored rather than left set, since a leaked opt-in would silently disarm
- the guard for every later case in this process.
- 
+
+ Restored rather than left set, since a leaked opt-in would read as asked for
+ in every later case in this process.
+
  @param value - value to set, exact opt-in or otherwise
- 
+
  @returns Disposable restoring the previous value, including its absence
- 
+
  @example
  ```ts
  using _override = withDriftVar({ value: 'yes', },);
@@ -90,15 +97,15 @@ function withDriftVar({ value, }: { readonly value: string; },): Disposable {
 
 /**
  Writes a throwaway artifacts directory.
- 
+
  Written to a fresh temporary directory every time rather than to any real runs
  directory, which holds hours of ungraded work.
- 
+
  @param generations - one artifact per entry, each recording the given built
  pipeline alongside a fixed commit
- 
+
  @returns Path of the artifacts directory
- 
+
  @example
  ```ts
  const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
@@ -139,18 +146,81 @@ async function writeArtifacts(
   return dir;
 }
 
+/**
+ What the placement census reads off a directory of settled entries, as the
+ pass reads it before the build check.
+
+ @param generations - one artifact per entry, each recording the given built
+ pipeline
+
+ @returns The census the build check is handed
+
+ @example
+ ```ts
+ const census = await censusOf({ generations: { Mittens: DIGEST_A, }, },);
+ ```
+ */
+async function censusOf(
+  { generations, }: { readonly generations: Readonly<Record<string, string>>; },
+): Promise<Parameters<typeof assertBuildGenerationResumable>[0]['census']> {
+  return await assertArtifactsPlaceable({ artifactsDir: await writeArtifacts({ generations, },), },);
+}
+
+/**
+ What the build check refused a directory of settled entries with.
+
+ @param generations - one artifact per entry, each recording the given built
+ pipeline
+
+ @param digest - built pipeline this invocation would stamp
+
+ @param driftAllowed - whether the operator asked for a mixed directory
+
+ @returns What the build check threw
+
+ @throws {@link Error} when the build check passed
+
+ @example
+ ```ts
+ const refusal = await buildRefusalOf({ generations: { Mittens: DIGEST_A, }, digest: DIGEST_B, driftAllowed: false, },);
+ ```
+ */
+async function buildRefusalOf(
+  {
+    generations,
+    digest,
+    driftAllowed,
+  }: {
+    readonly generations: Readonly<Record<string, string>>;
+    readonly digest: string;
+    readonly driftAllowed: boolean;
+  },
+): Promise<unknown> {
+  /**
+   What every placeable artifact records.
+   */
+  const census = await censusOf({ generations, },);
+  return caught(function buildCheck(): unknown {
+    assertBuildGenerationResumable({
+      census,
+      digest,
+      driftAllowed,
+    },);
+    return undefined;
+  },);
+}
+
 await describe({
-  name: assertResumableGeneration.name,
+  name: assertBuildGenerationResumable.name,
   children: [
     it({
       name: 'passes a FRESH directory, since a first invocation has nothing to '
         + 'disagree with and must not be made to look like a fault',
       fn: async () => {
-        const dir = await writeArtifacts({ generations: {}, },);
-
-        await assertResumableGeneration({
-          artifactsDir: dir,
+        assertBuildGenerationResumable({
+          census: await censusOf({ generations: {}, },),
           digest: DIGEST_A,
+          driftAllowed: false,
         },);
       },
     },),
@@ -160,16 +230,15 @@ await describe({
         + 'this guard must not make expensive: a pass stopped at its soft '
         + 'budget and is being continued with nothing landed in between',
       fn: async () => {
-        const dir = await writeArtifacts({
-          generations: {
-            Mittens: DIGEST_A,
-            Pepper: DIGEST_A,
-          },
-        },);
-
-        await assertResumableGeneration({
-          artifactsDir: dir,
+        assertBuildGenerationResumable({
+          census: await censusOf({
+            generations: {
+              Mittens: DIGEST_A,
+              Pepper: DIGEST_A,
+            },
+          },),
           digest: DIGEST_A,
+          driftAllowed: false,
         },);
       },
     },),
@@ -180,23 +249,20 @@ await describe({
         + 'pool the budget is already spent, so the refusal has to happen '
         + 'before any entry is settled rather than after',
       fn: async () => {
-        const dir = await writeArtifacts({
+        /**
+         What the build check refused with, read for class as well as wording.
+         */
+        const refusal = await buildRefusalOf({
           generations: {
             Mittens: DIGEST_A,
             Pepper: DIGEST_A,
           },
-        },);
-
-        /**
-         What assertResumableGeneration refused with, read for class as well as wording.
-         */
-        const refusalOfAssertResumableGeneration = assertResumableGeneration({
-          artifactsDir: dir,
           digest: DIGEST_B,
+          driftAllowed: false,
         },);
 
-        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(GenerationDriftError,);
-        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('built by a different pipeline',);
+        expect(refusal,).toBeInstanceOf(GenerationDriftError,);
+        expect((refusal as Error).message,).toContain('built by a different pipeline',);
       },
     },),
 
@@ -205,66 +271,45 @@ await describe({
         + 'reading the refusal can see a directory that is already mixed '
         + 'rather than believing it holds a single clean generation',
       fn: async () => {
-        const dir = await writeArtifacts({
+        /**
+         What the build check refused with, read for class as well as wording.
+         */
+        const refusal = await buildRefusalOf({
           generations: {
             Mittens: DIGEST_A,
             Pepper: DIGEST_B,
           },
-        },);
-
-        /**
-         What assertResumableGeneration refused with, read for class as well as wording.
-         */
-        const refusalOfAssertResumableGeneration = assertResumableGeneration({
-          artifactsDir: dir,
           digest: DIGEST_C,
+          driftAllowed: false,
         },);
 
-        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(GenerationDriftError,);
+        expect(refusal,).toBeInstanceOf(GenerationDriftError,);
         // Sixteen characters, not the full id: every digest opens with the
         // same scheme name, so the abbreviation grows past its floor to the
         // first character that differs. Asserting the full id would pass
         // only if the message stopped abbreviating at all.
-        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('sha256-tree-v1:b',);
+        expect((refusal as Error).message,).toContain('sha256-tree-v1:a',);
+        expect((refusal as Error).message,).toContain('sha256-tree-v1:b',);
       },
     },),
 
     it({
       name: 'permits drift when asked EXPLICITLY, so an operator who wants a '
-        + 'deliberately mixed directory is not blocked, while a stray value '
-        + 'cannot switch the guard off by accident',
+        + 'deliberately mixed directory is not blocked',
       fn: async () => {
-        const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
-
-        await assertResumableGeneration({
-          artifactsDir: dir,
+        assertBuildGenerationResumable({
+          census: await censusOf({ generations: { Mittens: DIGEST_A, }, },),
           digest: DIGEST_B,
           driftAllowed: true,
         },);
       },
     },),
+  ],
+},);
 
-    it({
-      name: 'refuses when drift was NOT asked for, which is what makes the '
-        + 'permission explicit: the guard stays armed for every caller that '
-        + 'does not name the opt-in',
-      fn: async () => {
-        const dir = await writeArtifacts({ generations: { Mittens: DIGEST_A, }, },);
-
-        /**
-         What assertResumableGeneration refused with, read for class as well as wording.
-         */
-        const refusalOfAssertResumableGeneration = assertResumableGeneration({
-          artifactsDir: dir,
-          digest: DIGEST_B,
-          driftAllowed: false,
-        },);
-
-        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(GenerationDriftError,);
-        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('different pipeline',);
-      },
-    },),
-
+await describe({
+  name: assertArtifactsPlaceable.name,
+  children: [
     it({
       name: 'REFUSES to resume a directory whose artifacts predate generation '
         + 'identity, and does NOT tell the operator to delete them. They are '
@@ -287,15 +332,12 @@ await describe({
         );
 
         /**
-         What assertResumableGeneration refused with, read for class as well as wording.
+         What the placement census refused with, read for class as well as wording.
          */
-        const refusalOfAssertResumableGeneration = assertResumableGeneration({
-          artifactsDir: dir,
-          digest: DIGEST_A,
-        },);
+        const refusal = assertArtifactsPlaceable({ artifactsDir: dir, },);
 
-        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(LegacyPipelineError,);
-        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('Deleting them is NOT the remedy',);
+        await expect(refusal,).rejects.toBeInstanceOf(LegacyPipelineError,);
+        await expect(refusal,).rejects.toThrow('Deleting them is NOT the remedy',);
       },
     },),
 
@@ -318,15 +360,12 @@ await describe({
         );
 
         /**
-         What assertResumableGeneration refused with, read for class as well as wording.
+         What the placement census refused with, read for class as well as wording.
          */
-        const refusalOfAssertResumableGeneration = assertResumableGeneration({
-          artifactsDir: dir,
-          digest: DIGEST_A,
-        },);
+        const refusal = assertArtifactsPlaceable({ artifactsDir: dir, },);
 
-        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
-        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('Mittens',);
+        await expect(refusal,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
+        await expect(refusal,).rejects.toThrow('Mittens',);
       },
     },),
 
@@ -346,15 +385,12 @@ await describe({
         );
 
         /**
-         What assertResumableGeneration refused with, read for class as well as wording.
+         What the placement census refused with, read for class as well as wording.
          */
-        const refusalOfAssertResumableGeneration = assertResumableGeneration({
-          artifactsDir: dir,
-          digest: DIGEST_A,
-        },);
+        const refusal = assertArtifactsPlaceable({ artifactsDir: dir, },);
 
-        await expect(refusalOfAssertResumableGeneration,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
-        await expect(refusalOfAssertResumableGeneration,).rejects.toThrow('Biscuit',);
+        await expect(refusal,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
+        await expect(refusal,).rejects.toThrow('Biscuit',);
       },
     },),
   ],

@@ -480,23 +480,4 @@ export function stripStubMarkersWithOrigins(
   };
 }
 
-/**
- {@inheritDoc stripStubMarkersWithOrigins}
- 
- @returns Normalized text and removed markers with the existing public result shape
- */
-export function stripStubMarkers({ text, }: { readonly text: string; },): {
-  readonly text: string;
-  readonly stripped: readonly StrippedStubMarker[];
-} {
-  /**
-   Existing callers retain their exact public result shape.
-   */
-  const result = stripStubMarkersWithOrigins({ text, },);
-  return {
-    text: result.text,
-    stripped: result.stripped,
-  };
-}
-
 //endregion Archive stub markers

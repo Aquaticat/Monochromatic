@@ -233,51 +233,6 @@ export function keptAttestations(
 }
 
 /**
- Items of one reply whose quotes are found: the archive quote in the archive
- and the reference quote in one reference line, the named one first.
-
- @param modelId - voice that answered
-
- @param items - items as answered
-
- @param archiveText - archive rendering the quotes are read against
-
- @param referenceContext - reference lines as `citedReferenceBlock` joins them
-
- @returns Items that verify, in answer order, each under the reference that
- states it
-
- @throws ReferenceLineHeadError when a reference line has no numbered head
-
- @example
- ```ts
- const verified = verifiedAttestations({ modelId, items, archiveText, referenceContext, },);
- ```
- */
-export function verifiedAttestations(
-  {
-    modelId,
-    items,
-    archiveText,
-    referenceContext,
-  }: {
-    readonly modelId: RosterModelId;
-    readonly items: readonly AttestationItemWire[];
-    readonly archiveText: string;
-    readonly referenceContext: string;
-  },
-): readonly VerifiedAttestation[] {
-  return keptAttestations({
-    verdicts: attestationVerdicts({
-      modelId,
-      items,
-      archiveText,
-      referenceContext,
-    },),
-  },);
-}
-
-/**
  Log line for one verdict: the kept item as the sheets will credit it, or
  which quote was not found, so a run log shows why a vote was lost.
 

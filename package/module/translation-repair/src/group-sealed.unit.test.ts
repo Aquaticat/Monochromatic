@@ -18,7 +18,6 @@ import {
   type AlignedRun,
   blockPairingToSteps,
   type DocumentNode,
-  groupNodesAligned,
   groupNodesSealed,
   parseDocument,
 } from '../dist/final/node/index.mjs';
@@ -138,53 +137,6 @@ function sourceIdsOf({ runs, }: { readonly runs: readonly AlignedRun[]; },): rea
 await describe({
   name: groupNodesSealed.name,
   children: [
-    it({
-      name: 'with nothing sealed, groups exactly as groupNodesAligned does',
-      fn: async () => {
-        const sourceNodes = blocksOf({ text: SOURCE_TEXT, },);
-        const targetNodes = blocksOf({ text: TARGET_TEXT, },);
-        /**
-         The roster's pairing: intro, letter and closing paired; the
-         footnote definition unpaired.
-         */
-        const steps = blockPairingToSteps({
-          pairs: [
-            {
-              source: 0,
-              target: 0,
-            },
-            {
-              source: 1,
-              target: 1,
-            },
-            {
-              source: 2,
-              target: 2,
-            },
-          ],
-          sourceCount: sourceNodes.length,
-          targetCount: targetNodes.length,
-        },);
-        expect(groupNodesSealed({
-          sourceNodes,
-          targetNodes,
-          sourceBudget: WIDE_BUDGET,
-          targetBudget: WIDE_BUDGET,
-          steps,
-          sealed: new Set<string>(),
-        },),).toStrictEqual({
-          runs: groupNodesAligned({
-            sourceNodes,
-            targetNodes,
-            sourceBudget: WIDE_BUDGET,
-            targetBudget: WIDE_BUDGET,
-            steps,
-          },),
-          sealedSourceIds: new Set<string>(),
-        },);
-      },
-    },),
-
     it({
       name: 'drops a sealed block with the original paired to it, keeps the runs either side apart, and '
         + 'writes an original behind the seal at the seal end rather than before it',

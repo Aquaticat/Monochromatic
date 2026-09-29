@@ -14,7 +14,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  corroboratedCount,
   corroboratingProberCount,
   type IssueProbeReading,
   judgeRegionProbe,
@@ -213,7 +212,7 @@ await describe({
           ],
         },);
 
-        expect(corroboratedCount({ tally, },),).toBe(2,);
+        expect(tally.claims.length,).toBe(2,);
         expect(corroboratingProberCount({ tally, },),).toBe(1,);
         expect(
           judgeRegionProbe({
@@ -518,16 +517,16 @@ await describe({
 },);
 
 await describe({
-  name: corroboratedCount.name,
+  name: corroboratingProberCount.name,
   children: [
     it({
-      name: 'sums BOTH directions, because the differential upholds a claim '
+      name: 'counts probers upholding EITHER direction, because the differential upholds a claim '
         + 'either by finding wording the edit added or by finding wording it '
         + 'dropped, and counting only the added direction was the original '
         + 'defect: an omission claim could never corroborate at all',
       fn: async () => {
         expect(
-          corroboratedCount({
+          corroboratingProberCount({
             tally: catTally({
               envelopeId: 'envelope/nap',
               corroborated: 2,
@@ -543,7 +542,7 @@ await describe({
         + 'screen would have reported as finding nothing',
       fn: async () => {
         expect(
-          corroboratedCount({
+          corroboratingProberCount({
             tally: catTally({
               envelopeId: 'envelope/nap',
               removalCorroborated: 2,
@@ -559,7 +558,7 @@ await describe({
         + 'damage found',
       fn: async () => {
         expect(
-          corroboratedCount({
+          corroboratingProberCount({
             tally: catTally({
               envelopeId: 'envelope/nap',
               contradicted: 4,
@@ -574,7 +573,7 @@ await describe({
         + 'quiet round produces and must not be confused with a broken probe',
       fn: async () => {
         expect(
-          corroboratedCount({ tally: catTally({ envelopeId: 'envelope/nap', },), },),
+          corroboratingProberCount({ tally: catTally({ envelopeId: 'envelope/nap', },), },),
         ).toBe(0,);
       },
     },),

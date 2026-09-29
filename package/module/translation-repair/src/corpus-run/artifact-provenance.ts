@@ -212,7 +212,7 @@ export class ArtifactProvenanceError extends Error {
  Refuses a loaded artifact that is not the one the pool admitted.
  
  Called by READERS rather than by the census, deliberately. The census now
- runs inside `assertResumableGeneration` at pass startup, and a throw there
+ runs inside `assertArtifactsPlaceable` at pass startup, and a throw there
  would abort an accumulation over a telemetry invariant; a throw here costs
  only the report.
  

@@ -317,7 +317,7 @@ export function subdivideSealedChunkPair(
       },),
     };
   // ONE SIDE HAS NO BLOCKS FROM HERE ON: both-sided pairs took
-  // `groupNodesAligned`, a run list is empty exactly when its side has no
+  // `groupNodesSealed`, a run list is empty exactly when its side has no
   // nodes, and an insertion returned just now. The proportional merge that
   // once followed (the wider side merged greedily by cumulative character
   // fraction) could therefore never run, and it was deleted rather than kept

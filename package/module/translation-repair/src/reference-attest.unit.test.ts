@@ -18,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  attestationVerdicts,
   attestCitedReferences,
   attestedDetailLines,
   attestedDetailsOverlapping,
@@ -30,6 +31,7 @@ import {
   compacted,
   type IssueClaim,
   isReferenceAttestWire,
+  keptAttestations,
   mergedAttestations,
   quoteIsIn,
   REFERENCE_ATTEST_RESPONSE_FORMAT,
@@ -39,7 +41,6 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type SyntheticClient,
-  verifiedAttestations,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -211,25 +212,28 @@ await describe({
         // One run: a voice spaced the reference's Chinese around its Latin tokens.
         expect(quoteIsIn({ quote: '喵喵 的弟弟也睡 box 。', text: '……喵喵的弟弟也睡box。……', },),).toBe(true,);
         /**
-         Three items: one true, one paraphrased, one pointing at the unfetched page.
+         Three items: one true, one paraphrased, one pointing at the unfetched
+         page, kept as the stage keeps them, from every item's verdict.
          */
-        const verified = verifiedAttestations({
-          modelId: ROSTER[0],
-          items: [
-            BROTHER_ITEM,
-            {
-              archiveQuote: 'She has a little brother who sits by the stove too.',
-              reference: 1,
-              referenceQuote: BROTHER_ITEM.referenceQuote,
-            },
-            {
-              archiveQuote: 'She wears a bell.',
-              reference: 2,
-              referenceQuote: 'She wore a bell.',
-            },
-          ],
-          archiveText: ARCHIVE_TEXT,
-          referenceContext: REFERENCE_CONTEXT,
+        const verified = keptAttestations({
+          verdicts: attestationVerdicts({
+            modelId: ROSTER[0],
+            items: [
+              BROTHER_ITEM,
+              {
+                archiveQuote: 'She has a little brother who sits by the stove too.',
+                reference: 1,
+                referenceQuote: BROTHER_ITEM.referenceQuote,
+              },
+              {
+                archiveQuote: 'She wears a bell.',
+                reference: 2,
+                referenceQuote: 'She wore a bell.',
+              },
+            ],
+            archiveText: ARCHIVE_TEXT,
+            referenceContext: REFERENCE_CONTEXT,
+          },),
         },);
         expect(verified,).toHaveLength(1,);
         expect(verified[0]?.item.archiveQuote,).toBe(BROTHER_ITEM.archiveQuote,);
@@ -255,28 +259,30 @@ await describe({
         const twoPages = '- reference 1 https://cats.example/a ("A"): Mittens had a younger brother.\n'
           + '- reference 2 https://cats.example/b ("B"): Mittens had a younger brother who also sat by the stove.';
         /**
-         Items as one voice answered them.
+         Items as one voice answered them, kept as the stage keeps them.
          */
-        const verified = verifiedAttestations({
-          modelId: ROSTER[0],
-          items: [
-            {
-              ...BROTHER_ITEM,
-              reference: 1,
-            },
-            {
-              archiveQuote: 'She has a younger brother',
-              reference: 2,
-              referenceQuote: 'Mittens had a younger brother',
-            },
-            {
-              archiveQuote: 'She wears a bell.',
-              reference: 1,
-              referenceQuote: 'a younger brother. - reference 2',
-            },
-          ],
-          archiveText: ARCHIVE_TEXT,
-          referenceContext: twoPages,
+        const verified = keptAttestations({
+          verdicts: attestationVerdicts({
+            modelId: ROSTER[0],
+            items: [
+              {
+                ...BROTHER_ITEM,
+                reference: 1,
+              },
+              {
+                archiveQuote: 'She has a younger brother',
+                reference: 2,
+                referenceQuote: 'Mittens had a younger brother',
+              },
+              {
+                archiveQuote: 'She wears a bell.',
+                reference: 1,
+                referenceQuote: 'a younger brother. - reference 2',
+              },
+            ],
+            archiveText: ARCHIVE_TEXT,
+            referenceContext: twoPages,
+          },),
         },);
         expect(verified.map(function numberOf(entry,): number {
           return entry.item

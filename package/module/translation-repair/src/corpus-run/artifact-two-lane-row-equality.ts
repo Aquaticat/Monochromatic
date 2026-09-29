@@ -247,37 +247,4 @@ export function comparisonRowDifferences(
     },);
 }
 
-/**
- Whether two comparison rows agree on every field.
- 
- @param left - one row
- 
- @param right - the other row
- 
- @returns Whether no field differs
- 
- @example
- ```ts
- const same = comparisonRowsEqual({ left: stored, right: derived, },);
- ```
- */
-export function comparisonRowsEqual(
-  {
-    left,
-    right,
-  }: {
-    readonly left: ArtifactComparisonRow;
-    readonly right: ArtifactComparisonRow;
-  },
-): boolean {
-  /**
-   Fields that differ, none when the rows agree.
-   */
-  const differing = comparisonRowDifferences({
-    left,
-    right,
-  },);
-  return differing.length === 0;
-}
-
 //endregion Artifact version 2 row equality

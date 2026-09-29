@@ -1,7 +1,9 @@
 /**
  Tests for grouping an aligned block pair into budget-bounded slice runs.
  
- `groupNodesAligned` had no test. Its contract is a coverage claim: the runs
+ The grouping had no test. It is read here through `groupNodesSealed` with
+ nothing sealed (`group-aligned.test-fixture.ts`, ledger B30), the function
+ the slicing calls. Its contract is a coverage claim: the runs
  cover every block on both sides exactly once. That claim is what makes the
  rest of the pipeline safe, because a slice's text is cut from its first to
  its last offset, so a block left out of a run is NOT left out of the text the
@@ -30,9 +32,9 @@ import {
   type AlignedRun,
   blockPairingToSteps,
   type DocumentNode,
-  groupNodesAligned,
   parseDocument,
 } from '../dist/final/node/index.mjs';
+import { groupWithNothingSealed, } from './group-aligned.test-fixture.ts';
 
 /**
  Budget large enough that nothing splits, for shape cases.
@@ -133,7 +135,7 @@ const TARGET_TEXT = 'The cat sleeps on the windowsill.\n\n'
 const NO_RUN = -1;
 
 await describe({
-  name: groupNodesAligned.name,
+  name: groupWithNothingSealed.name,
   children: [
     it({
       name: 'puts everything in one run when both budgets are generous, and '
@@ -152,7 +154,7 @@ await describe({
         /**
          Runs under a budget nothing can exceed.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: WIDE_BUDGET,
@@ -186,7 +188,7 @@ await describe({
         /**
          Runs under a budget roughly one paragraph wide.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: 12,
@@ -221,7 +223,7 @@ await describe({
         /**
          Runs where only the translation side is constrained.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: WIDE_BUDGET,
@@ -261,7 +263,7 @@ await describe({
         /**
          Runs over the mismatched pair.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: WIDE_BUDGET,
@@ -300,7 +302,7 @@ await describe({
         /**
          Runs over the doubly-mismatched pair.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: WIDE_BUDGET,
@@ -349,7 +351,7 @@ await describe({
           /**
            Runs at this budget.
            */
-          const runs = groupNodesAligned({
+          const runs = groupWithNothingSealed({
             sourceNodes,
             targetNodes,
             sourceBudget: budget,
@@ -382,7 +384,7 @@ await describe({
         + 'other side\'s blocks, and the caller\'s own fallback owns that case',
       fn: async () => {
         expect(
-          groupNodesAligned({
+          groupWithNothingSealed({
             sourceNodes: blocksOf({ text: SOURCE_TEXT, },),
             targetNodes: [],
             sourceBudget: WIDE_BUDGET,
@@ -391,7 +393,7 @@ await describe({
         ).toStrictEqual([],);
 
         expect(
-          groupNodesAligned({
+          groupWithNothingSealed({
             sourceNodes: [],
             targetNodes: blocksOf({ text: TARGET_TEXT, },),
             sourceBudget: WIDE_BUDGET,
@@ -405,7 +407,7 @@ await describe({
       name: 'returns no runs for two empty sides rather than throwing',
       fn: async () => {
         expect(
-          groupNodesAligned({
+          groupWithNothingSealed({
             sourceNodes: [],
             targetNodes: [],
             sourceBudget: WIDE_BUDGET,
@@ -433,7 +435,7 @@ await describe({
         /**
          Runs under a budget no single paragraph fits inside.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: 1,
@@ -466,7 +468,7 @@ await describe({
         // waiting for a two-sided run to fold them into, and none ever came, so
         // it returned nothing and the section left the document. Both sides
         // carry blocks here, so the caller's empty-side fallback never fires.
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: 1,
@@ -520,7 +522,7 @@ await describe({
         /**
          A roster pairing leaving the third original unplaced.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: WIDE_BUDGET,
@@ -596,7 +598,7 @@ await describe({
         /**
          A pairing whose second original continues the first one's block.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: WIDE_BUDGET,
@@ -654,7 +656,7 @@ await describe({
         /**
          A pairing leaving the final original unplaced.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes,
           targetNodes,
           sourceBudget: WIDE_BUDGET,
@@ -762,7 +764,7 @@ function groupUnderPairing(
   return {
     sourceNodes,
     targetNodes,
-    runs: groupNodesAligned({
+    runs: groupWithNothingSealed({
       sourceNodes,
       targetNodes,
       sourceBudget: WIDE_BUDGET,
@@ -779,7 +781,7 @@ function groupUnderPairing(
 //endregion Roster-pairing disposal
 
 await describe({
-  name: `${groupNodesAligned.name} disposing of one-sided runs`,
+  name: `${groupWithNothingSealed.name} disposing of one-sided runs`,
   children: [
     it({
       name: 'LEAVES no run empty on a side when held originals settle ahead of an insertion, since '

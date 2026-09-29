@@ -24,7 +24,7 @@ import {
   isStubMarkerParagraph,
   passArchiveText,
   STUB_MARKER_TOKENS,
-  stripStubMarkers,
+  stripStubMarkersWithOrigins,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -127,13 +127,13 @@ await describe({
 },);
 
 await describe({
-  name: stripStubMarkers.name,
+  name: stripStubMarkersWithOrigins.name,
   children: [
     it({
       name: 'REMOVES the stub marker with its following blank line and KEEPS the front matter and the '
         + 'comments byte for byte',
       fn: async () => {
-        const { text, stripped, } = stripStubMarkers({ text: STUB_OPENING, },);
+        const { text, stripped, } = stripStubMarkersWithOrigins({ text: STUB_OPENING, },);
         expect(text,).toBe(STUB_STRIPPED,);
         expect(stripped,).toEqual([{
           lineNumber: 7,
@@ -152,7 +152,7 @@ await describe({
           'Before.\n\n(To-Do) is what she called the list.\n\nAfter.\n',
           'Before.\n\nAfter.\n',
         ]) {
-          const { text: kept, stripped, } = stripStubMarkers({ text, },);
+          const { text: kept, stripped, } = stripStubMarkersWithOrigins({ text, },);
           expect(kept,).toBe(text,);
           expect(stripped,).toEqual([],);
         }
@@ -162,9 +162,9 @@ await describe({
       name: 'REMOVES a marker that ends the document with the blank line above it, so no trailing blank '
         + 'pair is left, and REMOVES a marker that is the whole body',
       fn: async () => {
-        expect(stripStubMarkers({ text: 'Body.\n\n(To-Do)\n', },).text,).toBe('Body.\n',);
-        expect(stripStubMarkers({ text: '---\nname: X\n---\n\nTBD\n', },).text,).toBe('---\nname: X\n---\n',);
-        expect(stripStubMarkers({ text: '(To-Do)', },).text,).toBe('',);
+        expect(stripStubMarkersWithOrigins({ text: 'Body.\n\n(To-Do)\n', },).text,).toBe('Body.\n',);
+        expect(stripStubMarkersWithOrigins({ text: '---\nname: X\n---\n\nTBD\n', },).text,).toBe('---\nname: X\n---\n',);
+        expect(stripStubMarkersWithOrigins({ text: '(To-Do)', },).text,).toBe('',);
       },
     },),
   ],

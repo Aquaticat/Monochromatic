@@ -471,7 +471,9 @@ function walkIntoRuns(
 
 /**
  Groups an aligned block pair into budget-bounded runs, keeping the blocks the
- archive's note seals out of every run.
+ archive's note seals out of every run. A run closes when either side would
+ exceed its budget, so slices stay comparable in size on both sides even
+ though the two languages differ in density.
  
  @param sourceNodes - original blocks in document order
  
@@ -569,57 +571,6 @@ export function groupNodesSealed(
         },),
     ),
   };
-}
-
-/**
- Groups an aligned block pair into budget-bounded runs. A run closes when
- either side would exceed its budget, so slices stay comparable in size on
- both sides even though the two languages differ in density.
- 
- @param sourceNodes - original blocks in document order
- 
- @param targetNodes - translation blocks in document order
- 
- @param sourceBudget - original-side character budget per slice
- 
- @param targetBudget - translation-side character budget per slice
- 
- @returns Runs covering every block on both sides exactly once
- 
- @example
- ```ts
- const runs = groupNodesAligned({
-   sourceNodes,
-   targetNodes,
-   sourceBudget: 900,
-   targetBudget: 1600,
- },);
- ```
- */
-export function groupNodesAligned(
-  {
-    sourceNodes,
-    targetNodes,
-    sourceBudget,
-    targetBudget,
-    steps,
-  }: {
-    readonly sourceNodes: readonly DocumentNode[];
-    readonly targetNodes: readonly DocumentNode[];
-    readonly sourceBudget: number;
-    readonly targetBudget: number;
-    readonly steps?: readonly AlignmentStep[];
-  },
-): readonly AlignedRun[] {
-  return groupNodesSealed({
-    sourceNodes,
-    targetNodes,
-    sourceBudget,
-    targetBudget,
-    ...((steps === undefined) ? {} : { steps, }),
-    sealed: new Set<string>(),
-  },)
-    .runs;
 }
 
 //endregion Aligned run grouping

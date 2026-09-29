@@ -109,7 +109,6 @@ export {
   scoreProbeAgainstGrades,
 } from './probe-agreement.ts';
 export {
-  corroboratedCount,
   corroboratingProberCount,
   judgeRegionProbe,
   ProbeTelemetryError,

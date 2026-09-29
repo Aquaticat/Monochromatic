@@ -30,7 +30,6 @@ import {
   assertDerivationsAgree,
   compareLanes,
   comparisonRowDifferences,
-  comparisonRowsEqual,
   decisionsEqual,
   deliveriesEqual,
   outcomesEqual,
@@ -536,7 +535,7 @@ await describe({
 },);
 
 await describe({
-  name: comparisonRowsEqual.name,
+  name: 'comparison row equality',
   children: [
     it({
       name:
@@ -632,7 +631,7 @@ await describe({
     },),
     it({
       name:
-        'answers over EVERY field version 2 owns, so a row differing in exactly one of them is different '
+        'answers over EVERY field version 2 owns, so a row differing in exactly one of them names that one '
         + 'whichever one it is: a check reading only some fields would pass artifacts it should stop',
       fn: async () => {
         /**
@@ -644,10 +643,10 @@ await describe({
         },);
         if (row === undefined)
           throw new Error('the comparison produced no rows to vary',);
-        expect(comparisonRowsEqual({
+        expect(comparisonRowDifferences({
           left: row,
           right: row,
-        },),).toBe(true,);
+        },),).toStrictEqual([],);
 
         /**
          One altered row per field, each differing from `row` in that field
@@ -702,13 +701,14 @@ await describe({
             translateDelivery: { kind: 'gap-remains', },
           },
         ];
-        expect(variants.map(function isSame(variant,): boolean {
-          return comparisonRowsEqual({
+        expect(variants.map(function differingCount(variant,): number {
+          return comparisonRowDifferences({
             left: row,
             right: variant,
-          },);
-        },),).toEqual(variants.map(function alwaysDifferent(): boolean {
-          return false;
+          },)
+            .length;
+        },),).toEqual(variants.map(function exactlyOne(): number {
+          return 1;
         },),);
       },
     },),

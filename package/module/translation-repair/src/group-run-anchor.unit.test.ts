@@ -25,10 +25,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   blockPairingToSteps,
-  groupNodesAligned,
   parseDocument,
   prepareDocumentPair,
 } from '../dist/final/node/index.mjs';
+import { groupWithNothingSealed, } from './group-aligned.test-fixture.ts';
 
 /**
  Two originals, the second of which no pairing will place.
@@ -74,7 +74,7 @@ await describe({
         /**
          Runs as they ship.
          */
-        const runs = groupNodesAligned({
+        const runs = groupWithNothingSealed({
           sourceNodes: parseDocument({ text: SOURCE_TEXT, },).nodes,
           targetNodes,
           sourceBudget: WIDE_BUDGET,

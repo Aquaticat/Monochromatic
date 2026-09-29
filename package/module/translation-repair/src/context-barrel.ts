@@ -100,7 +100,6 @@ export {
   attestationVerdictLine,
   attestationVerdicts,
   keptAttestations,
-  verifiedAttestations,
 } from './reference-attest-verdict.ts';
 export {
   type NumberedReferenceLine,

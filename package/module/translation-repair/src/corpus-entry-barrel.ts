@@ -4,7 +4,7 @@ export {
   isStubMarkerParagraph,
   STUB_MARKER_TOKENS,
   type StrippedStubMarker,
-  stripStubMarkers,
+  stripStubMarkersWithOrigins,
 } from './corpus-run/archive-stub.ts';
 export {
   type EntryErrorOutcome,
