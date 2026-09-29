@@ -7513,6 +7513,7 @@ Status:
 open,
 recorded 2026-09-29 so the work outlives the session's task list;
 family one (text indexed by UTF-16 unit) is read and fixed as B22,
+family two (matches without word boundaries) is being read as B23,
 and the other families remain.
 B1 to B20 came from the duplicate-body and letter-predicate censuses.
 The class history names other families that recurred across stages,
@@ -7658,6 +7659,139 @@ the page passes and the excerpts key no cache.
 Prevention:
 `mistake-prevention.md`,
 "Text by code point".
+
+### B23: fixed words and phrases found inside longer words (B21, family two)
+
+Status:
+open,
+2026-09-29;
+the refusal readers are fixed,
+and the sites under "Still to read" remain.
+Class one hundred sixty-three found a glossary term inside a longer word,
+and area one bounded the glossary's matcher (C1).
+This pass reads every other site that looks for a fixed word or phrase in text,
+starting from the 460 of 668 `includes`,
+`indexOf`,
+`startsWith` and `endsWith` calls whose needle is not a literal
+(`~/temp/agent/audit-glossary-fix/b23-needle-census.mjs`).
+Those that test membership of a list were set aside,
+and each text search was classed as bounded already,
+a deliberate substring
+(quote and evidence containment,
+the declared-name projection,
+a pinyin prefix),
+a needle with Han edges only,
+or a finding.
+
+#### The refusal readers
+
+`detectRefusalShape` (`refusal.ts`),
+the picture refusal phrases (`image-reading-sense.ts`)
+and the inability markers (`reading-refusal.ts`)
+matched raw substrings of text with straight quotes:
+"as an ai" fired inside "as an aide",
+"i cannot" inside "taxi cannot",
+"load" inside "download",
+"quality" inside "equality",
+and a reply opening with a typographic apostrophe
+("I won’t be able to")
+was no refusal at all.
+`word-bounds.ts` finds a needle whose Latin edges stand at word boundaries,
+the glossary's rule;
+both opening windows fold their quotes to ASCII first (`normalizePunctuation`),
+and the inability markers are read as the starts of words.
+Red `d090a0f0a`,
+fix `23974cfa8`;
+18 mutants,
+each undoing one part,
+are caught,
+and a comment control survives.
+A neighbour is read as a whole character,
+and since every Latin letter the package names sits in the first plane,
+a unit read decides the same;
+that mutant would be equivalent and is not run.
+
+Reading markers as word starts dropped every form a prefix joins to one.
+Every word of `/usr/share/dict/words` that carries a marker past its start was read
+(`b23-inability-lexicon.mjs`).
+The forms that still name access to the picture are listed on their own:
+download,
+upload,
+reload,
+the stems inaccessib and unaccessib,
+and unprocessable and unloadable,
+which that list lacks.
+The rest
+(workload,
+payload,
+overload,
+inequality,
+uncorrupted and the like)
+name no inability.
+Download,
+upload and reload stay inability markers
+although an absence report could name a download icon,
+because the costs differ.
+Two absence reports overrule the deterministic reader
+and confirm a picture textless (`image-reading-pair.ts`),
+so an access failure read as absence is silent.
+An absence read as inability leaves the picture unread,
+and the visual evidence check then pauses the entry and says why.
+The red guard in `d090a0f0a` that took a download icon for absence
+became a boatload in the fix.
+
+Measured with the frozen build `2f26f440d` against the fix
+(`b23-screen-replay.mjs`):
+the 707 distinct stored picture readings,
+from 447 reading-store files,
+get the same verdict under both.
+Over the 409,436 distinct strings of the 370 stored artifacts,
+the refusal detector newly reads 22 openings as "i won't be able to"
+and 1 as "i can't help",
+and no longer reads 2 as "as an ai".
+The picture screen newly refuses 291 strings
+(274 as a refusal,
+17 as an absence report),
+every one through a typographic "I can’t" in its opening,
+and passes 1 it refused,
+a romanized name ending in i before "cannot".
+None of those strings is a picture reading;
+they show what the phrase list now refuses whichever apostrophe a reading uses.
+That list is a heuristic stated as one,
+and an English transcription opening with "I can’t" is refused,
+as one with a straight apostrophe always was.
+
+No cache version moves.
+A gather treats a reply read as refusal-shaped and an unparseable one alike,
+both off-shape (`recovery-nudge.ts`),
+so the detector changes a log line and the scorecard's counts,
+not whose voices a round hears.
+The picture screen's verdict reaches a slice key through the reading's words,
+which the translate and consolidation keys carry,
+and the reading store is stamped with the build's digest.
+
+#### Still to read
+
+- `translate-declared-link-name.ts`:
+  `namingLinks` and `carriesHandle` use `includes`,
+  and `mentionsForm` takes a prefix of a longer handle,
+  which needs a handle-character boundary rather than a Latin one.
+- `linked-title-declared-name.ts`,
+  `title-reference-scope.ts`,
+  `title-reference-unify.ts` (a rendering matched by `endsWith`),
+  `name-gloss-restore.ts` and `work-title-lookup.ts`.
+- `translate-unwrapped-link.ts`:
+  an address matched as the prefix of a longer address.
+- `translate-neutral-pronoun.ts`:
+  the marks allowed beside TA list 「」 but not 『』;
+  the neighbours of TA,
+  Ta and ta on settled pages and in artifacts are measured first.
+
+Every declared-pair and handle site above matches nothing at the pin;
+each is latent.
+Prevention:
+`mistake-prevention.md`,
+"Words inside words".
 
 ## Process mistakes in this audit
 
@@ -8810,6 +8944,12 @@ commit comment 202522217 corrects it.
 The count was a total read as a subtotal,
 which a count taken from a command still allows:
 the message has to name what the command counted.
+A fourth time on 2026-09-29:
+`d090a0f0a` said the first five of its red guard cases fail,
+where six fail against the build it was committed on;
+commit comment 202537574 corrects it.
+The five came from no command's output,
+so the rule held and was not followed.
 
 ### M14: a reproduction check committed without a positive control
 

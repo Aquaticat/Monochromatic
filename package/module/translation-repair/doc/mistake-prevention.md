@@ -476,6 +476,41 @@ tokenizer,
 Han residue and pinyin guards,
 fail when a unit read returns.
 
+## Words inside words
+
+What happened:
+fixed words and phrases were looked for with a raw substring,
+so a glossary term matched inside a longer word
+(class one hundred sixty-three,
+ledger C1),
+"as an ai" read as a refusal inside "as an aide",
+"load" read as an inability inside "download",
+and a refusal written with a typographic apostrophe matched no marker stored with a straight one (ledger B23).
+
+The rule:
+a word or phrase looked for in prose goes through `carriesWord` or `wordStarts` (`word-bounds.ts`),
+or through `glossary-match.ts` where the forms are folded,
+and the text's quotes are folded with `normalizePunctuation` first
+when the needles are stored with straight ones.
+A raw `includes` on prose is kept only for containment,
+a quote or a span found whole inside a text,
+and a comment says so.
+Turning a substring list into a word-bounded one reads,
+for each needle,
+the words that carry it past their start
+(`/usr/share/dict/words` holds them),
+and lists on its own each such word that keeps the needle's meaning.
+
+What enforces it:
+`word-bounds.unit.test.ts` pins both edges,
+the open end,
+digits and combining marks,
+Han and punctuation edges;
+the refusal,
+picture-sense and reading-refusal guards hold a word carrying each marker,
+a typographic apostrophe,
+and each prefixed form listed on its own.
+
 ## Lint and edits
 
 What happened:

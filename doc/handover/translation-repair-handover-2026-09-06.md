@@ -79,8 +79,16 @@ this one says what changed after it.
   its first family,
   text read by UTF-16 unit,
   closed on 2026-09-29 as B22,
-  with `fixed-length-cuts.unit.test.ts` and the Latin-twin cases in `canadian-forms.unit.test.ts` among its guards;
-  word-boundary matches (class one hundred sixty-three) come next.
+  with `fixed-length-cuts.unit.test.ts` and the Latin-twin cases in `canadian-forms.unit.test.ts` among its guards.
+  The second,
+  words found inside longer words (class one hundred sixty-three),
+  is open as B23:
+  the refusal readers are fixed (`23974cfa8`),
+  and B23's "Still to read" names the sites left.
+  Two gaps found on the way are open too:
+  `code-points.ts` and `cased-letters.ts` have no unit tests of their own,
+  and the cache version accounts cite `cache-account-audit.ts`,
+  a scratch script outside the repository.
 
 ### 2026-09-24, 04:30 UTC: one hundred ten classes, eight seats, two wet providers
 
