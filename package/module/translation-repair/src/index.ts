@@ -275,6 +275,7 @@ export * from './lane-barrel.ts';
 export * from './provider-barrel.ts';
 export * from './roster-barrel.ts';
 export * from './bedrock-barrel.ts';
+export * from './cache-account-barrel.ts';
 export * from './cap-census-barrel.ts';
 export * from './source-check-barrel.ts';
 export * from './publish-barrel.ts';

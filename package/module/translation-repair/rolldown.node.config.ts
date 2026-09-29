@@ -47,6 +47,7 @@ export const nodeEntries: Readonly<Record<string, string>> = {
     "sentinel-probe": "./src/corpus-run/sentinel-probe.ts",
     "coverage-control-probe": "./src/corpus-run/coverage-control-probe.ts",
     "coverage-probe": "./src/corpus-run/coverage-probe.ts",
+    "cache-account-audit": "./src/corpus-run/cache-account-audit.ts",
     "cap-census": "./src/corpus-run/cap-census.ts",
     "displacement-probe": "./src/corpus-run/displacement-probe.ts",
     "editor-calibrate": "./src/corpus-run/editor-calibrate.ts",

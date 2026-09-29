@@ -115,6 +115,11 @@ description = "Read what a run cost from the SPEND lines its own log carries, pr
 depends = ["build"]
 run = "node dist/final/node/spend-report.mjs"
 
+[tasks."cache-account-audit"]
+description = "Ledger M28: before a launch, read every cache version constant the source declares, the commit that set each current value, and every non-test source commit since the earliest of them that no version's account names; READ-ONLY, SPENDS NO QUOTA"
+depends = ["build"]
+run = "node dist/final/node/cache-account-audit.mjs"
+
 [tasks."cap-census"]
 description = "Ledger P10: re-read the completion cap rule over pass-run logs before a launch, per seat and provider, with how many capped calls ran to the cap and whether they carried content; flags a pooled placeholder with a distribution, a rule reading off the card, and cuts over one percent; SPENDS NO QUOTA (name log files or directories after --)"
 depends = ["build"]

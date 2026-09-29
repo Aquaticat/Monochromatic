@@ -1,0 +1,185 @@
+/**
+ Tests the declaration reading behind the pre-launch cache version check
+ (ledger M28): every declaration ending in `CACHE_VERSION`, exported or not,
+ read with its name whole; a refusal for one that does not read as
+ `NAME = digits;`; a hash cited by nine characters; and a diff's added and
+ removed declarations of one value,
+ where a longer name or value holding it, a move and a historical line that
+ does not read are each told apart.
+
+ @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  CacheAccountReadError,
+  cacheVersionsIn,
+  citedHash,
+  declarationLineCounts,
+} from '../../dist/final/node/index.mjs';
+
+/**
+ A diff that moves one version from 3 to 34 and adds a longer name holding
+ the shorter one at 34.
+ */
+const NESTED_DIFF = `diff --git a/src/nap-key.ts b/src/nap-key.ts
+--- a/src/nap-key.ts
++++ b/src/nap-key.ts
+@@ -1 +1,2 @@
+-export const SLICE_CACHE_VERSION = 3;
++export const SLICE_CACHE_VERSION = 34;
++export const TRANSLATE_SLICE_CACHE_VERSION = 34;`;
+
+/**
+ A diff moving one declaration between files unchanged.
+ */
+const MOVE_DIFF = `diff --git a/src/purr-key.ts b/src/purr-key.ts
+--- a/src/purr-key.ts
++++ b/src/purr-key.ts
+@@ -1 +0,0 @@
+-export const PURR_CACHE_VERSION = 3;
+diff --git a/src/purr-version.ts b/src/purr-version.ts
+--- /dev/null
++++ b/src/purr-version.ts
+@@ -0,0 +1 @@
++export const PURR_CACHE_VERSION = 3;`;
+
+await describe({
+  name: cacheVersionsIn.name,
+  children: [
+    it({
+      name: 'READS EVERY DECLARATION ENDING IN CACHE_VERSION, exported or not, and nothing in prose or under another name',
+      fn: async () => {
+        expect(cacheVersionsIn({
+          path: 'src/nap-key.ts',
+          text: [
+            '// NAP_CACHE_VERSION = 9 was the old value.',
+            'export const NAP_CACHE_VERSION = 3;',
+            '  const WHISKER_CACHE_VERSION = 12;',
+            'export const NAP_WINDOW = 5;',
+            'export const CACHE_VERSIONS = 7;',
+          ].join('\n',),
+        },),).toEqual([
+          {
+            name: 'NAP_CACHE_VERSION',
+            value: 3,
+            path: 'src/nap-key.ts',
+            declaration: 'NAP_CACHE_VERSION = 3',
+          },
+          {
+            name: 'WHISKER_CACHE_VERSION',
+            value: 12,
+            path: 'src/nap-key.ts',
+            declaration: 'WHISKER_CACHE_VERSION = 12',
+          },
+        ],);
+      },
+    },),
+    it({
+      name: 'READS A NAME WHOLE, so a longer name ending the same way is its own version',
+      fn: async () => {
+        expect(cacheVersionsIn({
+          path: 'src/nap-key.ts',
+          text: 'export const TRANSLATE_SLICE_CACHE_VERSION = 15;',
+        },).map(function nameOf(version,): string {
+          return version.name;
+        },),).toEqual(['TRANSLATE_SLICE_CACHE_VERSION',],);
+      },
+    },),
+    it({
+      name: 'REFUSES A DECLARATION NAMING A VERSION IT CANNOT READ, which the check would otherwise skip',
+      fn: async () => {
+        for (const text of [
+          'export const NAP_CACHE_VERSION: number = 3;',
+          'export const NAP_CACHE_VERSION = 3',
+          'export const NAP_CACHE_VERSION = 0x3;',
+        ]) {
+          expect(function read(): void {
+            cacheVersionsIn({
+              path: 'src/nap-key.ts',
+              text,
+            },);
+          },).toThrow(CacheAccountReadError,);
+        }
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: citedHash.name,
+  children: [
+    it({
+      name: 'CITES A HASH BY ITS FIRST NINE CHARACTERS, as the version accounts do',
+      fn: async () => {
+        expect(citedHash({ hash: 'f6e93ed5f123', },),).toBe('f6e93ed5f',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: declarationLineCounts.name,
+  children: [
+    it({
+      name: 'COUNTS ONLY DECLARATIONS OF THIS NAME AT THIS VALUE, never a longer name or value holding them',
+      fn: async () => {
+        expect(declarationLineCounts({
+          diff: NESTED_DIFF,
+          version: {
+            name: 'SLICE_CACHE_VERSION',
+            value: 34,
+          },
+        },),).toEqual({
+          added: 1,
+          removed: 0,
+        },);
+        expect(declarationLineCounts({
+          diff: NESTED_DIFF,
+          version: {
+            name: 'SLICE_CACHE_VERSION',
+            value: 3,
+          },
+        },),).toEqual({
+          added: 0,
+          removed: 1,
+        },);
+      },
+    },),
+    it({
+      name: 'COUNTS A MOVE BETWEEN FILES AS ONE ADDED AND ONE REMOVED, which sets nothing',
+      fn: async () => {
+        expect(declarationLineCounts({
+          diff: MOVE_DIFF,
+          version: {
+            name: 'PURR_CACHE_VERSION',
+            value: 3,
+          },
+        },),).toEqual({
+          added: 1,
+          removed: 1,
+        },);
+      },
+    },),
+    it({
+      name: 'LEAVES A HISTORICAL LINE THAT DOES NOT READ UNCOUNTED rather than refusing the whole history',
+      fn: async () => {
+        expect(declarationLineCounts({
+          diff: '+export const PURR_CACHE_VERSION: number = 3;',
+          version: {
+            name: 'PURR_CACHE_VERSION',
+            value: 3,
+          },
+        },),).toEqual({
+          added: 0,
+          removed: 0,
+        },);
+      },
+    },),
+  ],
+},);
