@@ -317,6 +317,18 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    69 to 67 tokens,
    kept because pi runs one response's tool calls in parallel by default.
    Approved.
+- Batch 16 (libraries,
+   dependencies,
+   new packages):
+   15 rules become 9 always-loaded,
+   822 to 583 tokens;
+   retires TP2 and TP3 into TP1 (drops vague "Note CLI command patterns across examples"),
+   DM2 and AP3 into DM1;
+   AP1 loses its fuzz-sidecar sentence (SBS covers it);
+   RCI widens to any new owner;
+   RCO moves to the `choosing-technology` skill (user chose move over always-loaded),
+   AP5 to `package/config/rolldown/README.md`.
+   Approved.
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
@@ -1525,15 +1537,7 @@ EDR:
  send dependent commands only after the edit returns.
 ```
 
-## Next action
-
-Batch 16 proposed:
-15 rules become 9 always-loaded,
-822 to 583 tokens;
-RCO moves to the `choosing-technology` skill's "Replacement parity overlay" and AP5 to `package/config/rolldown/README.md` (165 tokens).
-Awaiting user answers.
-
-### Pending batch 16 text
+### Batch 16
 
 ```md
 TP1:
@@ -1589,7 +1593,10 @@ SBS:
  and consumers together.
 ```
 
-### Pending batch 16 moved text
+### Batch 16, moved
+
+RCO goes to the `choosing-technology` skill's "Replacement parity overlay";
+AP5 goes to `package/config/rolldown/README.md`.
 
 ```md
 RCO:
@@ -1607,13 +1614,9 @@ AP5:
  and this package as a devDependency.
 ```
 
-Retires TP2 and TP3 into TP1 (drops vague "Note CLI command patterns across examples"),
-DM2 and AP3 into DM1.
-AP1 loses its fuzz-sidecar sentence (SBS covers it).
-RCI widens from replacement design to any new owner (research found it firing outside that domain).
-No checker validates `package.json` specifiers or lockfile edits;
-866 of 866 internal specs use `workspace:`.
-SGD enforcement is documentation-only by user choice (`doc/planning/singular-dir-name-invariant.md`).
+## Next action
+
+Propose batch 17.
 
 ### Concurrent `AGENTS.md` changes
 
@@ -1625,18 +1628,8 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
 - 654507bf9 added SBS under "Adding new packages";
    it joins batch 16.
 
-### Remaining batches (77 rules)
+### Remaining batches (62 rules)
 
-- Batch 16:
-   TP1 to TP3,
-   DM1,
-   DM2,
-   LFW,
-   RCO,
-   RCI,
-   AP1 to AP5,
-   SGD,
-   SBS.
 - Batch 17:
    PKG,
    TCV,
