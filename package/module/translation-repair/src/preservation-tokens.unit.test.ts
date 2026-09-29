@@ -94,6 +94,19 @@ await describe({
     },),
 
     it({
+      name: 'KEEPS an ideograph beyond the first plane as one token, which a scan by UTF-16 unit read '
+        + 'as two halves, neither an ideograph, and dropped (ledger B21)',
+      fn: async () => {
+        expect(contentTokens({ text: '\u{20BB7}\u{732B}\u{7761}', },),)
+          .toEqual([
+            '\u{20BB7}',
+            '\u{732B}',
+            '\u{7761}',
+          ],);
+      },
+    },),
+
+    it({
       name: 'ends a Latin run at an ideograph and resumes after it, so a '
         + 'mixed line yields both scripts in document order rather than one '
         + 'token spanning the change of script',
