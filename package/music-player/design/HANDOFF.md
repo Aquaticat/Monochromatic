@@ -14,7 +14,11 @@ Historical window IDs and observations remain for traceability, not as instructi
 
 ## Current frontier (2026-09-29)
 
-The Fold Search **design review is complete** through D75 to D80.
+The Search **accessibility design review is complete** through D75 to D80.
+The recorded Search A decisions remain selected;
+file-extension display in result titles is a separate open visual question
+outside that completed round,
+not a silently selected preference or developer-owned matcher rule.
 The selected `questions/current.html` is a correction/veto surface,
 not an unanswered questionnaire.
 `evidence/search-accessibility-boundaries.md` and

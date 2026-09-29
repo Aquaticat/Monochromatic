@@ -27,7 +27,9 @@ rounds (2026-09-17):
 
 ## 0b. Live design backlog (updated 2026-09-29)
 
-The Fold Search design review is complete through D75 to D80.
+The Search accessibility design review is complete through D75 to D80.
+Completion covers the recorded decisions,
+not every future Search presentation detail.
 The selected review at `questions/current.html` remains a correction/veto
 surface,
 not a new questionnaire.
@@ -348,9 +350,11 @@ recorded in `evidence/search-talkback-native-baseline.md`.
   deterministic scoring/ties and result limits belong to future
   implementation work when authorized;
   see `evidence/search-matching-acceptance-ledger.md`.
-  A separate visual question may remain about displaying file extensions
-  in result titles;
-  it is not a reason to pick a matcher library now.
+  Displaying file extensions in result titles remains a **separate open
+  visual question outside the completed accessibility round**.
+  No show/hide-extension preference was selected,
+  and this visual question is not developer-owned matcher eligibility or
+  a reason to pick a library now.
   D63 to D68 settle review task 127's entry edit focus,
   visible Back,
   Clear focus state,
@@ -1012,8 +1016,11 @@ remains unmeasured.
  The command-bar recommendation led to rejected I/G/R prototypes;
  D47 replaces that
 surface with a Search button and page.
- The Fold Search design review is now complete through D75 to D80;
- section 0b separates adopted goals from deferred native acceptance.
+ The recorded Fold Search decisions and accessibility round are settled
+ through D75 to D80;
+ section 0b separates adopted goals,
+ the independent extension-display visual question and deferred native
+ acceptance.
  Reconsidering the picker
 remains a separate pre-1.x question, not a promise to replace it;
  the keyboard-map pass,

@@ -26,7 +26,11 @@ Read these files in order:
 
 ## Current review and historical rounds
 
-The Fold Search design review is complete through D75 to D80.
+The Search accessibility design review is complete through D75 to D80.
+The recorded Search A decisions remain selected.
+Whether result titles display file extensions is a separate open visual
+question outside this completed round;
+no extension-display preference or matcher eligibility rule was selected.
 `questions/current.html` shows selected Search A and adopted accessibility
 goals with a correction/veto path,
 not an unanswered questionnaire.

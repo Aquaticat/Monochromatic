@@ -5,6 +5,9 @@
 `questions/current.html` is the selected Fold Search review through
 D75 to D80,
 not a candidate-selection questionnaire.
+The accessibility round is complete;
+file-extension display in result titles remains a separate open visual
+question outside that round.
 Native Search activation,
 announcements,
 focus transitions and complete cover traversal remain deferred
