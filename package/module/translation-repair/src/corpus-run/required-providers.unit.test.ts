@@ -1,10 +1,25 @@
 /**
  Tests explicit provider requirements for validation and performance arms.
- 
+
+ The gate reads its keys and the Bedrock ledger's place from the environment
+ it is handed and its meters over the transport it is handed, so every case
+ hands over its own of both: no case reads the process's keys, reaches a
+ provider, or opens the real spend ledger (ledger M43, M68).
+
+ Fixtures are invented; the keys are placeholders no provider issued.
+
  @module
  */
 
 import {
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+
+import {
+  caught,
   describe,
   expect,
   it,
@@ -12,10 +27,14 @@ import {
 
 import {
   assertRequiredProvidersReady,
+  BEDROCK_CREDIT_USD_VAR,
+  BEDROCK_LEDGER_PATH_VAR,
   HYPER_CREDITS_URL,
+  type ModelTransport,
   OPENROUTER_CREDITS_URL,
   readRequiredProviders,
   RequiredProviderError,
+  StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -27,83 +46,6 @@ const KEY_NAMES = {
   bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
   openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
 } as const;
-
-/**
- Installs provider keys for scope and restores prior environment.
- 
- @param keys - key value per provider, absent to unset
- 
- @returns Disposable restoring every variable
- 
- @example
- ```ts
- using _keys = withProviderKeys({ synthetic: 'test', hyper: 'test', });
- ```
- */
-function withProviderKeys(
-  keys: {
-    readonly synthetic?: string;
-    readonly hyper?: string;
-    readonly bedrock?: string;
-    readonly openrouter?: string;
-  },
-): Disposable {
-  /**
-   What each variable held before, absent from the map where it was unset.
-   */
-  const prior = new Map<string, string>();
-  for (const name of Object.values(KEY_NAMES,)) {
-    /**
-     Value the variable holds now, if any.
-     */
-    const held = process.env[name];
-    if (held !== undefined)
-      prior.set(
-        name,
-        held,
-      );
-  }
-  /**
-   Values to install, keyed by variable name.
-   */
-  const wanted = new Map<string, string>();
-  if (keys.synthetic !== undefined)
-    wanted.set(
-      KEY_NAMES.synthetic,
-      keys.synthetic,
-    );
-  if (keys.hyper !== undefined)
-    wanted.set(
-      KEY_NAMES.hyper,
-      keys.hyper,
-    );
-  if (keys.bedrock !== undefined)
-    wanted.set(
-      KEY_NAMES.bedrock,
-      keys.bedrock,
-    );
-  if (keys.openrouter !== undefined)
-    wanted.set(
-      KEY_NAMES.openrouter,
-      keys.openrouter,
-    );
-  for (const name of Object.values(KEY_NAMES,)) {
-    if (wanted.has(name,))
-      process.env[name] = wanted.get(name,);
-    else
-      Reflect.deleteProperty(process.env, name,);
-  }
-  return {
-    [Symbol.dispose](): void {
-      for (const name of Object.values(KEY_NAMES,)) {
-        if (prior.has(name,))
-          process.env[name] = prior.get(name,);
-        else
-          Reflect.deleteProperty(process.env, name,);
-      }
-    },
-  };
-}
 
 /**
  Wet Synthetic meter response fixture.
@@ -121,6 +63,35 @@ const WET_SYNTHETIC_BODY = JSON.stringify({
     limited: false,
   },
 },);
+
+/**
+ Transport a case must never reach, since the gate refuses first or reads no
+ meter over HTTP.
+
+ @returns Never
+
+ @throws Error always
+ */
+async function unreachedTransport(): ReturnType<ModelTransport> {
+  throw new Error('the gate asked a meter this case never answers',);
+}
+
+/**
+ What the gate refused with, or that it did not refuse.
+
+ @param act - gate call
+
+ @returns The refusal, or `'passed'`
+ */
+async function gateOutcome(act: () => Promise<void>,): Promise<unknown> {
+  try {
+    await act();
+    return 'passed';
+  }
+  catch (error) {
+    return error;
+  }
+}
 
 await describe({
   name: readRequiredProviders.name,
@@ -142,48 +113,82 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'REQUIRES NOTHING when the flag is absent, which is every ordinary run (ledger T8)',
+      fn: async () => {
+        expect(readRequiredProviders({ argv: ['node', 'corpus-pass',], },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'REFUSES the flag with no value, an empty value or a provider nobody serves, naming what it accepts '
+        + '(ledger T8)',
+      fn: async () => {
+        for (
+          const argv of [
+            ['node', 'corpus-pass', '--require-providers',],
+            ['node', 'corpus-pass', '--require-providers', '',],
+            ['node', 'corpus-pass', '--require-providers', 'synthetic,catnip',],
+          ]
+        ) {
+          /**
+           What the reader raised for these arguments.
+           */
+          const refusal = caught(function readFlag(): unknown {
+            return readRequiredProviders({ argv, },);
+          },);
+          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+          expect((refusal as Error).message,).toContain('synthetic, bedrock, hyper, openrouter',);
+        }
+      },
+    },),
   ],
 },);
 
 await describe({
   name: assertRequiredProvidersReady.name,
-  concurrency: 1,
   children: [
+    it({
+      name: 'ASKS NO METER when nothing is required (ledger T8)',
+      fn: async () => {
+        expect(await gateOutcome(async function gateNothing() {
+          await assertRequiredProvidersReady({
+            required: [],
+            env: {},
+            transport: unreachedTransport,
+            signal: AbortSignal.timeout(5_000,),
+          },);
+        },),).toBe('passed',);
+      },
+    },),
     it({
       name: 'REFUSES MISSING REQUIRED KEY before transport call',
       fn: async () => {
-        using _keys = withProviderKeys({ hyper: 'test-hyper', },);
-        let transportCalls = 0;
-        let caught: unknown;
-        try {
+        /**
+         What the gate raised for a requirement whose key is unset.
+         */
+        const refusal = await gateOutcome(async function gateKeyless() {
           await assertRequiredProvidersReady({
             required: ['synthetic', 'hyper',],
-            transport: async function transport() {
-              transportCalls += 1;
-              return { status: 500, bodyText: '', };
-            },
+            env: { [KEY_NAMES.hyper]: 'test-hyper', },
+            transport: unreachedTransport,
             signal: AbortSignal.timeout(5_000,),
           },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBeInstanceOf(RequiredProviderError,);
-        expect(transportCalls,).toBe(0,);
+        },);
+        expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+        expect((refusal as Error).message,).toContain('synthetic is not ready: key missing',);
       },
     },),
-
     it({
       name: 'ACCEPTS EVERY WET METER without model endpoint call, OpenRouter\'s credits included',
       fn: async () => {
-        using _keys = withProviderKeys({
-          synthetic: 'test-synthetic',
-          hyper: 'test-hyper',
-          openrouter: 'test-openrouter',
-        },);
         const urls: string[] = [];
         await assertRequiredProvidersReady({
           required: ['synthetic', 'hyper', 'openrouter',],
+          env: {
+            [KEY_NAMES.synthetic]: 'test-synthetic',
+            [KEY_NAMES.hyper]: 'test-hyper',
+            [KEY_NAMES.openrouter]: 'test-openrouter',
+          },
           transport: async function transport(exchange,) {
             urls.push(exchange.url,);
             if (exchange.url === HYPER_CREDITS_URL)
@@ -202,27 +207,90 @@ await describe({
         },),).toBe(false,);
       },
     },),
-
     it({
       name: 'REFUSES A DRY REQUIRED METER, naming the provider, so a measured arm never starts on a '
         + 'provider that cannot serve it',
       fn: async () => {
-        using _keys = withProviderKeys({ openrouter: 'test-openrouter', },);
-        let caught: unknown;
-        try {
+        /**
+         What the gate raised over a spent OpenRouter balance.
+         */
+        const refusal = await gateOutcome(async function gateDry() {
           await assertRequiredProvidersReady({
             required: ['openrouter',],
+            env: { [KEY_NAMES.openrouter]: 'test-openrouter', },
             transport: async function transport() {
               return { status: 200, bodyText: '{"data":{"total_credits":10,"total_usage":10}}', };
             },
             signal: AbortSignal.timeout(5_000,),
           },);
+        },);
+        expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+        expect((refusal as Error).message,).toContain('openrouter is not ready: budget dry',);
+      },
+    },),
+    it({
+      name: 'REFUSES A METER THAT CANNOT BE READ as unavailable rather than wet, whatever the transport did '
+        + '(ledger T8)',
+      fn: async () => {
+        /**
+         What the gate raised when the Hyper meter refused the key, a status
+         the client does not retry.
+         */
+        const refusal = await gateOutcome(async function gateUnreadable() {
+          await assertRequiredProvidersReady({
+            required: ['hyper',],
+            env: { [KEY_NAMES.hyper]: 'test-hyper', },
+            transport: async function transport() {
+              return { status: 401, bodyText: 'no such cat', };
+            },
+            signal: AbortSignal.timeout(5_000,),
+          },);
+        },);
+        expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+        expect((refusal as Error).message,).toContain('hyper is not ready: meter unavailable',);
+      },
+    },),
+    it({
+      name: 'READS BEDROCK OFF THE LEDGER THE HANDED ENVIRONMENT NAMES, over no HTTP, wet under its credit and dry '
+        + 'at none (ledger T8)',
+      fn: async () => {
+        /**
+         Directory holding this case's empty ledger.
+         */
+        const dir = await mkdtemp(join(tmpdir(), 'required-providers-ledger-',),);
+        await using cleanup = {
+          [Symbol.asyncDispose]: async function removeLedger(): Promise<void> {
+            await rm(dir, { recursive: true, force: true, },);
+          },
+        };
+        /**
+         Gate over Bedrock with one credit override.
+
+         @param creditUsd - credit the environment grants
+
+         @returns What the gate did
+         */
+        async function gateBedrock(creditUsd: string,): Promise<unknown> {
+          return await gateOutcome(async function gateLedger() {
+            await assertRequiredProvidersReady({
+              required: ['bedrock',],
+              env: {
+                [KEY_NAMES.bedrock]: 'test-bedrock',
+                [BEDROCK_LEDGER_PATH_VAR]: join(dir, 'bedrock-spend.jsonl',),
+                [BEDROCK_CREDIT_USD_VAR]: creditUsd,
+              },
+              transport: unreachedTransport,
+              signal: AbortSignal.timeout(5_000,),
+            },);
+          },);
         }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught,).toBeInstanceOf(RequiredProviderError,);
-        expect((caught as Error).message,).toContain('openrouter is not ready: budget dry',);
+        expect(await gateBedrock('40',),).toBe('passed',);
+        /**
+         What the gate raised with no credit to spend.
+         */
+        const refusal = await gateBedrock('0',);
+        expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+        expect((refusal as Error).message,).toContain('bedrock is not ready: budget dry',);
       },
     },),
   ],

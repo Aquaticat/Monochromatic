@@ -41,6 +41,7 @@ import {
 
 import {
   type ArtifactDeliveryRow,
+  ArtifactParseError,
   compareLanes,
   readArtifactRecords,
 } from '../../dist/final/node/index.mjs';
@@ -78,7 +79,7 @@ const ENVELOPE_ID = 'envelope/purr';
 const ISSUE_ID = 'adjudicated/purr';
 
 /**
- Prober whose recorded tally the fixture carries.
+ Model the fixture's run records as its whole roster.
  */
 const PROBER = 'cat-house/tabbyscribe-2';
 
@@ -506,6 +507,135 @@ await describe({
 
         expect(records.length,).toBe(1,);
         expect(records[0]?.repairRegions,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'RENDERS each recorded probe tally under its envelope, the counts in reading order, a count never '
+        + 'written as 0 and a count of another type as itself (ledger T8)',
+      fn: async () => {
+        /**
+         Records read back from a lane whose record carries one probed region.
+         */
+        const records = await recordsOf({
+          artifact: settledArtifact({
+            issues: [{
+              ...(issueRecord({ withRegions: true, },) as Record<string, unknown>),
+              introducedDefects: {
+                regions: [{
+                  envelopeId: ENVELOPE_ID,
+                  corroborated: 2,
+                  noneFound: 'several',
+                },],
+              },
+            },],
+          },),
+        },);
+        expect(records[0]?.recorded,).toEqual({
+          [ENVELOPE_ID]: 'corroborated=2 removalCorroborated=0 noneFound="several" uncertain=0',
+        },);
+      },
+    },),
+    it({
+      name: 'READS a probe block written as null, or holding no regions, as no tallies (ledger T8)',
+      fn: async () => {
+        /**
+         Tallies read back from a lane whose record carries one probe block.
+
+         @param introducedDefects - probe block as written
+
+         @returns The record's rendered tallies
+         */
+        async function recordedOf(
+          introducedDefects: unknown,
+        ): Promise<Readonly<Record<string, string>> | 'no record'> {
+          /**
+           Records read back.
+           */
+          const records = await recordsOf({
+            artifact: settledArtifact({
+              issues: [{
+                ...(issueRecord({ withRegions: true, },) as Record<string, unknown>),
+                introducedDefects,
+              },],
+            },),
+          },);
+          return records[0]?.recorded ?? 'no record';
+        }
+        // One after the other: the runs directory lives in process.env.
+        expect(await recordedOf(null,),).toEqual({},);
+        expect(await recordedOf({},),).toEqual({},);
+      },
+    },),
+    it({
+      name: 'REFUSES an issue severity or a claim category outside the taxonomy, naming where each sits '
+        + '(ledger T8)',
+      fn: async () => {
+        /**
+         The one fixture record, as a record to vary.
+         */
+        const record = issueRecord({ withRegions: true, },) as {
+          readonly issue: {
+            readonly claims: readonly { readonly claim: Record<string, unknown>; }[];
+          } & Record<string, unknown>;
+        } & Record<string, unknown>;
+        /**
+         Reading of an issue whose severity no taxonomy names.
+         */
+        const severity = recordsOf({
+          artifact: legacyArtifact({
+            issues: [{
+              ...record,
+              issue: {
+                ...record.issue,
+                severity: 'purring',
+              },
+            },],
+          },),
+        },);
+        await expect(severity,).rejects.toBeInstanceOf(ArtifactParseError,);
+        await expect(severity,).rejects.toThrow('issue.severity',);
+        /**
+         Reading of a claim whose category no taxonomy names.
+         */
+        const category = recordsOf({
+          artifact: legacyArtifact({
+            issues: [{
+              ...record,
+              issue: {
+                ...record.issue,
+                claims: record.issue.claims.map(function purring(member,) {
+                  return {
+                    ...member,
+                    claim: {
+                      ...member.claim,
+                      category: 'purr/unknown',
+                    },
+                  };
+                },),
+              },
+            },],
+          },),
+        },);
+        await expect(category,).rejects.toBeInstanceOf(ArtifactParseError,);
+        await expect(category,).rejects.toThrow('issue.claims[].claim.category',);
+      },
+    },),
+    it({
+      name: 'REFUSES a recorded tally with no envelope id, naming where it sits (ledger T8)',
+      fn: async () => {
+        /**
+         Reading of a lane whose probed region names no envelope.
+         */
+        const refusal = recordsOf({
+          artifact: settledArtifact({
+            issues: [{
+              ...(issueRecord({ withRegions: true, },) as Record<string, unknown>),
+              introducedDefects: { regions: [{ corroborated: 1, },], },
+            },],
+          },),
+        },);
+        await expect(refusal,).rejects.toBeInstanceOf(ArtifactParseError,);
+        await expect(refusal,).rejects.toThrow('introducedDefects.region.envelopeId',);
       },
     },),
   ],

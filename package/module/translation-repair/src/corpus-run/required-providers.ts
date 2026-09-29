@@ -1,3 +1,6 @@
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
 import {
   bedrockIsDry,
   hyperIsDry,
@@ -165,8 +168,13 @@ async function gateProvider(
     try {
       return await readDry();
     } catch (error) {
-      if (error instanceof RequiredProviderError)
-        throw error;
+      // Every meter failure refuses the arm alike, and the refusal names only
+      // the provider, so what failed is written to the log here (ledger T8).
+      /**
+       Logger tagged with the gate's name.
+       */
+      const rl = tagged({ tag: gateProvider.name, },);
+      rl.warn(`${provider} meter could not be read: ${caughtValueText(error,)}`,);
       return 'unreadable';
     }
   })();
@@ -189,35 +197,37 @@ async function gateProvider(
  Validation and performance arms name the providers they require explicitly.
  
  @param required - providers measured arm requires wet
- 
- @param transport - optional HTTP seam for tests
- 
+
+ @param env - environment the keys and the Bedrock ledger's place are read
+ from: `process.env` in a run, a test's own otherwise
+
+ @param transport - HTTP the meters are read over: `fetchTransport` in a run.
+ Both are REQUIRED, since each reaches past the process (ledger M43, M68)
+
  @param signal - meter cancellation
- 
+
  @throws {@link RequiredProviderError} before model call when requirement fails
- 
+
  @example
  ```ts
- await assertRequiredProvidersReady({ required: ['synthetic', 'hyper'], signal, });
+ await assertRequiredProvidersReady({ required: ['synthetic', 'hyper'], env: process.env, transport: fetchTransport, signal, });
  ```
  */
 export async function assertRequiredProvidersReady(
   {
     required,
+    env,
     transport,
     signal,
   }: {
     readonly required: readonly RequiredProvider[];
-    readonly transport?: ModelTransport;
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly transport: ModelTransport;
     readonly signal: AbortSignal;
   },
 ): Promise<void> {
   if (required.length === 0)
     return;
-  /**
-   Process environment read once for configured key names.
-   */
-  const environment = process.env;
   /**
    Each required provider's key, read without exposing its value.
    */
@@ -227,7 +237,7 @@ export async function assertRequiredProvidersReady(
   } {
     return {
       provider,
-      key: environment[KEY_VARIABLES[provider]] ?? '',
+      key: env[KEY_VARIABLES[provider]] ?? '',
     };
   },);
   for (
@@ -242,10 +252,6 @@ export async function assertRequiredProvidersReady(
         reason: 'key missing',
       },);
   }
-  /**
-   Optional transport forwarded only in tests.
-   */
-  const seam = (transport === undefined) ? {} : { transport, };
   await Promise.all(keys.map(async function checkProvider(
     {
       provider,
@@ -258,7 +264,7 @@ export async function assertRequiredProvidersReady(
        */
       const client = createSyntheticClient({
         apiKey: key,
-        ...seam,
+        transport,
       },);
       await gateProvider({
         provider,
@@ -274,7 +280,7 @@ export async function assertRequiredProvidersReady(
        */
       const client = createHyperClient({
         apiKey: key,
-        ...seam,
+        transport,
       },);
       await gateProvider({
         provider,
@@ -290,8 +296,8 @@ export async function assertRequiredProvidersReady(
        */
       const client = createBedrockClient({
         apiKey: key,
-        ledger: bedrockLedgerFromEnv({ env: process.env, },),
-        ...seam,
+        ledger: bedrockLedgerFromEnv({ env, },),
+        transport,
       },);
       await gateProvider({
         provider,
@@ -306,7 +312,7 @@ export async function assertRequiredProvidersReady(
      */
     const client = createOpenRouterClient({
       apiKey: key,
-      ...seam,
+      transport,
     },);
     await gateProvider({
       provider,

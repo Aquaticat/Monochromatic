@@ -9,6 +9,7 @@ import {
   resolveStragglerGraceMs,
 } from '../grace-override.ts';
 import { STRAGGLER_GRACE_MS, } from '../stage-round.ts';
+import { fetchTransport, } from '../synthetic-transport.ts';
 import {
   readWriterGrace,
   writerGraceOverrideNote,
@@ -514,6 +515,8 @@ async function runCorpusPass(): Promise<void> {
   const requiredProviders = readRequiredProviders({ argv: process.argv, },);
   await assertRequiredProvidersReady({
     required: requiredProviders,
+    env: process.env,
+    transport: fetchTransport,
     signal: new AbortController().signal,
   },);
   if (requiredProviders.length > 0) {

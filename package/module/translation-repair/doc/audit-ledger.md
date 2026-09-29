@@ -2759,7 +2759,47 @@ Its cases buy a work title and a linked page through a stub transport into a thr
 stamped by the wall clock and then by a handed clock,
 search and read nothing without a key,
 and read the names at the pin handed over.
-A fresh format 2 census of `pass-outside-reads.unit.test.ts` (`census-BsBdqy`) loads `src/corpus-run/pass-outside-reads.ts` with no stretch left.
+A fresh format 2 census of `pass-outside-reads.unit.test.ts` (`census-BsBdqy`) loads `src/corpus-run/pass-outside-reads.ts` with no stretch left
+(`9a03a4852`).
+Two mutants were each caught by one case alone:
+readers that stamp every record by the wall clock,
+a handed clock ignored,
+failed the fixed-clock stamps;
+names read at the run's pin in place of the one handed over failed the pins the lister and reader saw.
+
+The sixth batch gave cases to three more `corpus-run` files.
+`openPageTitleCache` now round-trips a stored round through a throwaway directory,
+and its guard refuses a stored value that is not a round,
+or holds a title or finding of the wrong shape,
+one field at a time.
+The relabel probe's artifact reader renders a recorded tally under its envelope
+(a count never written as 0,
+a count of another type as itself),
+reads a probe block written as null or holding no regions as no tallies,
+and refuses a tally with no envelope,
+an issue severity and a claim category outside the taxonomy,
+each by its path;
+the test file's `PROBER` constant had claimed a recorded tally no fixture carried,
+and now says it is the roster.
+The provider gate for measured arms took an optional transport,
+defaulting to the live one,
+and read its keys and the Bedrock ledger's place from `process.env`;
+its tests set keys by writing `process.env`.
+`assertRequiredProvidersReady` now requires `env` and `transport` (the pass hands over `process.env` and `fetchTransport`),
+and its tests hand over their own,
+the Bedrock case a ledger in a throwaway directory;
+new cases cover an absent flag,
+a flag with no value,
+an empty value or an unknown provider,
+nothing required,
+a meter the transport cannot read,
+and Bedrock wet and dry.
+The gate's catch rethrew a `RequiredProviderError` nothing under a meter read raises,
+and dropped every other failure without a word;
+the rethrow is gone,
+and the failure is logged before the arm is refused as `meter unavailable`.
+A census of the three test files against the format 2 baseline (`census-5MbbbV`) reads the six stretches of the two unedited sources as ran,
+and loads the edited `required-providers.ts` with no stretch left.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 

@@ -9,6 +9,12 @@
  */
 
 import { createHash, } from 'node:crypto';
+import {
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
@@ -23,6 +29,7 @@ import {
   type ChatJsonRequest,
   hashContent,
   keepBench,
+  openPageTitleCache,
   PAGE_TITLE_CACHE_VERSION,
   pageTitleKey,
   type PageTitleLexiconRecord,
@@ -340,6 +347,91 @@ await describe({
           lines: [],
           stored: 0,
         },);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${openPageTitleCache.name} (ledger T8)`,
+  children: [
+    it({
+      name: 'RESUMES A STORED ROUND FROM DISK, and refuses a stored value that is not a round, or holds a title or a '
+        + 'finding of the wrong shape, so a damaged record is asked again rather than read as settled',
+      fn: async () => {
+        /**
+         Entry cache directory this case owns.
+         */
+        const dir = await mkdtemp(join(tmpdir(), 'page-title-cache-',),);
+        await using cleanup = {
+          [Symbol.asyncDispose]: async function removeCache(): Promise<void> {
+            await rm(dir, { recursive: true, force: true, },);
+          },
+        };
+        /**
+         One settled title, every field of the right shape.
+         */
+        const title = {
+          source: '猫之歌',
+          occurrences: 2,
+          rendering: 'Song of the Cat',
+          voices: 2,
+          heard: 3,
+        };
+        /**
+         A round a run stored.
+         */
+        const round: PageTitleLexiconRecord = {
+          titles: [title,],
+          findings: ['the kitten sang twice',],
+        };
+        /**
+         Stored values by label, the round first and every refusal after it.
+         */
+        const stored: readonly (readonly [string, unknown])[] = [
+          ['round', round,],
+          ['not a record', [round,],],
+          ['titles not a list', { titles: title, findings: [], },],
+          ['findings not a list', { titles: [], findings: 'none', },],
+          ['finding not text', { titles: [], findings: [1,], },],
+          ['title not a record', { titles: ['猫之歌',], findings: [], },],
+          ['source not text', { titles: [{ ...title, source: 1, },], findings: [], },],
+          ['rendering not text', { titles: [{ ...title, rendering: null, },], findings: [], },],
+          ['occurrences not whole', { titles: [{ ...title, occurrences: 1.5, },], findings: [], },],
+          ['voices not whole', { titles: [{ ...title, voices: '2', },], findings: [], },],
+          ['heard not whole', { titles: [{ ...title, heard: undefined, },], findings: [], },],
+        ];
+        /**
+         Key a label is stored under, shaped as the lexicon's keys are.
+
+         @param label - stored value's label
+
+         @returns Its key
+         */
+        function keyOf(label: string,): string {
+          return createHash('sha256',).update(label, 'utf8',).digest('hex',);
+        }
+        /**
+         Cache the run wrote through.
+         */
+        const written = await openPageTitleCache({
+          dir,
+          generation: 'page-title-cache-test',
+        },);
+        await Promise.all(stored.map(async function persistOne([label, value,],): Promise<void> {
+          await written.persist({
+            key: keyOf(label,),
+            serialized: JSON.stringify(value,),
+          },);
+        },),);
+        /**
+         Cache a resumed run opens over the same directory.
+         */
+        const reopened = await openPageTitleCache({
+          dir,
+          generation: 'page-title-cache-test',
+        },);
+        expect([...reopened.resumed.entries(),],).toEqual([[keyOf('round',), round,],],);
       },
     },),
   ],
