@@ -104,9 +104,13 @@ Restarting into the existing one would skip every already-settled entry,
 which is precisely the set that needs redoing.
 
 This is now enforced rather than remembered.
-`assertResumableGeneration` in `pass-generation-guard.ts` runs before a pass settles anything
-and refuses when the artifacts already present record a different commit from the one this invocation would stamp.
-`TRANSLATION_REPAIR_ALLOW_TIP_DRIFT=yes` opts out for a deliberately mixed directory.
+Before a pass settles anything,
+`assertArtifactsPlaceable` and `assertBuildGenerationResumable` in `pass-generation-guard.ts`
+(with the schema check `assertResumableSchemaGeneration` between them)
+refuse when the artifacts already present record a different built pipeline from the one this invocation would stamp
+(the guard compared commits when this was decided;
+it has compared build digests since 2026-08-14).
+`TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT=yes` opts out for a deliberately mixed directory.
 
 ## The resume trap this closes
 
