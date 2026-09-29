@@ -494,6 +494,21 @@ await describe({
 
         expect(tally?.corroborated,).toBe(0,);
         expect(tally?.preExisting,).toBe(1,);
+        // The mirror: the prober writes the curly form and the issue the
+        // straight one, so each side's fold is read on its own.
+        const [mirror,] = screenIntroducedDefects({
+          regions: [curly,],
+          ballots: {
+            'hf:cat/one': [catCheck({
+              verdict: 'introduced-defect',
+              evidence: 'The cat’s nap',
+            },),],
+          },
+          issues: [catIssue({ quotedText: 'cat\'s nap', },),],
+        },);
+
+        expect(mirror?.corroborated,).toBe(0,);
+        expect(mirror?.preExisting,).toBe(1,);
       },
     },),
   ],

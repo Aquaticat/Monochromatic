@@ -114,6 +114,9 @@ await describe({
           '- reference 1 https://cats.example/a: Mittens naps.\n- reference two https://cats.example/b: Mittens purrs.',
           '- reference 1 https://cats.example/a: Mittens naps.\n- reference 2',
           '- reference 1 https://cats.example/a: Mittens naps.\n',
+          // A list item as long as the mark, with a number and a space where
+          // the head's number stands: only the mark tells it from a head.
+          '- reference 1 https://cats.example/a: Mittens naps.\n* reference 3 https://cats.example/c: Mittens purrs.',
         ];
         for (const referenceContext of blocks) {
           expect(function read(): void {
