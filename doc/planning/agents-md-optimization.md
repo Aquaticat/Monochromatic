@@ -2121,7 +2121,13 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
    including section moves and new "User interfaces" heading;
    regenerate `CLAUDE.md` via file-enforcer.
 - Create `.agents/skills/visual-design-review/SKILL.md` with an imperative description.
-- Add moved rules to their package docs.
+- Add moved rules to their homes:
+   JEV to `doc/troubleshooting/rtw89-wifi-disconnects.md`,
+   FLK to `package/pi-plugin/advisor/README.md`,
+   GCW and WXG to `package/git-policy/cli/README.md`,
+   MXR and RDC to `package/rust-linter-plugin/builtin/README.md`,
+   RCO to the `choosing-technology` skill's "Replacement parity overlay",
+   AP5 to `package/config/rolldown/README.md`.
 - Rewrite references to retired codes;
    add forbidden-strings entries for retired codes.
 - Update `doc/philosophy/agents.md` and `doc/agent/regression-suite.md` Case 3.
@@ -2131,7 +2137,7 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
 - Add "Prefer an index scan,
    parser,
    or string API" to the `no-regex` `regexpConstructor` message (`package/oxlint-plugin/no-restricted-syntax/src/rule/no-regex.ts`),
-   pending batch 15 approval.
+   approved with batch 15.
 
 ### Resume notes
 
