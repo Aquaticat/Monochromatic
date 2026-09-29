@@ -135,10 +135,11 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES a bundle script whose functions are not a list, or hold one without a name, without an extent, or with a range that is not three numbers',
+      name: 'REFUSES a bundle script whose functions are not a list, or hold one that is not an object, without a name, without an extent, or with a range that is not three numbers',
       fn: async () => {
         for (const functions of [
           'none',
+          [3,],
           [{ ranges: [{
             startOffset: 0,
             endOffset: 9,
@@ -287,6 +288,38 @@ await describe({
           ['nap.mjs', 'yawn', true,],
           ['nap.mjs', 'blink', false,],
           ['purr.mjs', 'knead', false,],
+        ],);
+      },
+    },),
+    it({
+      name: 'ENDS A COLD RUN AT THE BUNDLE\'S LAST BOUNDARY when nothing after it ran, and orders uncalled functions sharing a start by the longer first',
+      fn: async () => {
+        expect(tallied({
+          processes: [[scriptOf({
+            bundle: 'nap.mjs',
+            functions: [['doze', [[0, 10, 0,],],],],
+          },),],],
+        },).coldStretches(),).toEqual([{
+          bundle: 'nap.mjs',
+          start: 0,
+          end: 10,
+          shape: {
+            kind: 'function',
+            name: 'doze',
+          },
+        },],);
+        expect(tallied({
+          processes: [[scriptOf({
+            bundle: 'nap.mjs',
+            functions: [
+              ['', [[0, 100, 1,],],],
+              ['snooze', [[10, 30, 0,],],],
+              ['doze', [[10, 60, 0,],],],
+            ],
+          },),],],
+        },).uncalledFunctions().map((fn,) => [fn.name, fn.nested,]),).toEqual([
+          ['doze', false,],
+          ['snooze', true,],
         ],);
       },
     },),

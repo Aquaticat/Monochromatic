@@ -74,7 +74,9 @@ export const nodeEntries: Readonly<Record<string, string>> = {
 /**
  Source files of the runner entries, as the census names sources: from the
  package directory, with no leading `./`. The library index is left out,
- since what it reaches is library source.
+ since what it reaches is library source. Every entry is written from
+ `./src/`, which `build-entries.unit.test.ts` holds the list to, so the prefix
+ is cut without asking.
 
  @returns Runner entry sources
 
@@ -90,7 +92,7 @@ export function runnerEntrySources(): ReadonlySet<string> {
         return name !== 'index';
       },)
       .map(function sourceOf([, path,],): string {
-        return path.startsWith('./',) ? path.slice('./'.length,) : path;
+        return path.slice('./'.length,);
       },),
   );
 }

@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type {
   BundleScript,
   CoverageRange,
@@ -388,14 +390,15 @@ function stretchesOf(
     /**
      Its first offset.
      */
-    const start = pieces.offsets[first] ?? 0;
+    const start = nonNullishOrThrow(pieces.offsets[first],);
     /**
-     One past its last character.
+     One past its last character: the boundary after the run's last piece,
+     which every piece has.
      */
-    const end = pieces.offsets[lastColdPiece({
+    const end = nonNullishOrThrow(pieces.offsets[lastColdPiece({
       pieces,
       from: first,
-    },) + 1] ?? start;
+    },) + 1],);
     /**
      The function with exactly these ends, when it is one no process called.
      */
@@ -605,7 +608,7 @@ export function createCoverageTally(): CoverageTally {
             );
         }
         for (const [piece, count,] of painted.entries())
-          bundlePieces.total[piece] = (bundlePieces.total[piece] ?? 0) + count;
+          bundlePieces.total[piece] = nonNullishOrThrow(bundlePieces.total[piece],) + count;
         for (const fn of script.functions) {
           /**
            Its whole extent; `bundleScriptsOf` admits no function without one.

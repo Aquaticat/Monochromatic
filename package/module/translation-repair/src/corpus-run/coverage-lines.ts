@@ -5,6 +5,8 @@ import {
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   isJsonArray,
   isJsonRecord,
@@ -304,7 +306,8 @@ export function sourceLineAt(
   },
 ): SourceLine {
   /**
-   Line holding the offset, 0-based.
+   Line holding the offset, 0-based; -1 only for a negative offset, which V8
+   never reports and the lookup of its start refuses.
    */
   const line = lines.lineStarts
     .findLastIndex(function startsAtOrBefore(start,): boolean {
@@ -316,7 +319,7 @@ export function sourceLineAt(
   const entry = lines.map
     .findEntry(
     line,
-    offset - (lines.lineStarts[line] ?? 0),
+    offset - nonNullishOrThrow(lines.lineStarts[line],),
   );
   if (!('originalSource' in entry))
     return { kind: 'unmapped', };

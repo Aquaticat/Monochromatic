@@ -126,6 +126,22 @@ await describe({
         expect(map.payload.names,).toEqual(['nap',],);
       },
     },),
+    it({
+      name: 'KEEPS THE FILE A MAP NAMES, and reads a map with no names list as naming none',
+      fn: async () => {
+        const { map, } = readSourceMap({
+          path: 'nap.mjs.map',
+          text: JSON.stringify({
+            version: 3,
+            file: 'nap.mjs',
+            sources: ['../../../src/nap.ts',],
+            mappings: ';AAAA',
+          },),
+        },);
+        expect(map.payload.file,).toBe('nap.mjs',);
+        expect(map.payload.names,).toEqual([],);
+      },
+    },),
   ],
 },);
 
@@ -169,6 +185,15 @@ await describe({
           source: 'src/nap.ts',
           line: 2,
         },);
+      },
+    },),
+    it({
+      name: 'REFUSES A NEGATIVE OFFSET, which no line holds and V8 never reports',
+      fn: async () => {
+        expect(() => sourceLineAt({
+          lines: linesWith({ source: '../../../src/nap.ts', },),
+          offset: -1,
+        },),).toThrow();
       },
     },),
     it({
