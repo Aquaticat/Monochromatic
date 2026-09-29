@@ -370,6 +370,14 @@ The [native player/Search comparison](evidence/crease-floor-native-comparison.md
 shows the selected P7.5 floor alongside rejected larger hard-floor proposals
 at the measured 200% text scale;
 it is not a universal implementation pass.
+The later [D58 native alignment measurement](evidence/search-header-result-alignment.md)
+placed the Back/folder/music icon-paint centers at x `1190` inner and x `97`
+cover;
+query/result text starts coincided at x `1249` inner and x `156` cover
+at both 100% and 200% text.
+This applies to the keyboard-closed debug Search fixtures only,
+not every font scale,
+keyboard state or painted mark near the crease.
 
 This formula is **not** a mandatory unpainted gap between visible panes.
 Borders,

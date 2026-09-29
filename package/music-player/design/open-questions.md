@@ -281,13 +281,14 @@ rounds (2026-09-17):
   The accepted direction keeps the fixed header and selected inner A;
   it is not a production fix or evidence for other IME heights.
   The prototype needed another swipe after keyboard dismissal and refocus;
-  that behavior is still open under #116.
+  that navigation/scroll-restoration behavior is still open under #127.
   D57 separately accepts the **observed** real floating-Gboard overlap
   with some inner right-pane result lettering while `cam` remains visible.
   D53's deck exception and D55's folded-cover exception are distinct;
   no other inner floating placement or ordinary keyboard overlap is waived.
-  Whether covered matches are scroll-reachable and activatable remains open
-  under #116.
+  Whether covered matches are scroll-reachable after focus changes remains
+  open under #127;
+  their activation remains open under #129.
   See `evidence/search-result-overflow.md` for bounds and test limitations.
 - **OPEN: remaining Search behavior after D51/D52.**
   Keep positive results,

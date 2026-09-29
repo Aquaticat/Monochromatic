@@ -6231,9 +6231,17 @@ D58 records the user-directed correction.
 Only the newly recaptured rasters from this APK may be used for the ranking
 review;
 earlier unaligned scratch captures are not review assets.
-At 100% text,
-that shared 48dp-slot geometry still needs a bounded verification before
-claiming scale-independent pixel alignment.
+The keyboard-closed native check at 100% confirmed those same x starts
+and the painted icon centers,
+with the former 29px offset as a positive control.
+Both text scales now appear in the active selected-only review;
+pre-D58 keyboard-open images remain labeled geometry-only evidence.
+The installed APK hash matched the local build and all published captures
+had their full status region replaced without changing app pixels.
+See `evidence/search-header-result-alignment.md`.
+The alternate `SearchLayoutStudy` correction built but was not natively
+exercised;
+no arbitrary keyboard-open alignment claim is made.
 The selected A browser,
 deck,
 cover viewport and E2 floor remain unchanged.

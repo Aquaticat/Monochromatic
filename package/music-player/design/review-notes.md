@@ -966,9 +966,15 @@ Use the same 48dp leading-slot anchor for the header and result rows on both
 panels,
 center the 24dp type icon within it,
 and check the native after-state raster and text bounds before presenting it.
-The corrected 200% debug capture put `cam` and `Cam` at the same x `1249`
-on the inner panel and x `156` on the cover;
-the icon columns visibly aligned in both native screenshots.
+The corrected keyboard-closed 100% and 200% debug captures put `cam`
+and `Cam` at the same x `1249` inner and x `156` cover.
+Pixel sampling at 200% also placed Back,
+folder and note glyph centers at x `1190` inner and x `97` cover;
+a pre-correction positive control detected the prior 29px offset.
+The 48dp Back target remains,
+but a decorative 48dp result slot is not a tappable row or an
+accessibility pass.
+See `evidence/search-header-result-alignment.md` for bounded proof.
 Do not reduce the 48dp interaction minimum to achieve this alignment.
 
 ## Standing standards for this project

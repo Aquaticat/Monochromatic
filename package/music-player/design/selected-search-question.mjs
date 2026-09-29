@@ -28,10 +28,12 @@ const e2Captures = Object.fromEntries(['player', 'empty', 'results'].map((state)
   return [state, `data:image/png;base64,${png.toString('base64')}`];
 }));
 const captures = Object.fromEntries(['inner', 'cover'].map((panel) => [panel,
-  Object.fromEntries(['results', 'typing', 'empty'].map((state) => [state,
+  Object.fromEntries(['results', 'results200', 'typing', 'empty'].map((state) => [state,
     Object.fromEntries(['light', 'dark'].map((scheme) => {
-      const scale = state === 'typing' ? '200' : '100';
-      const name = `search-selected-review-${panel}-${state}-${scheme}-s${scale}.png`;
+      const scale = state === 'typing' || state === 'results200' ? '200' : '100';
+      const name = state === 'results' || state === 'results200'
+        ? `search-selected-aligned-review-${panel}-results-${scheme}-s${scale}.png`
+        : `search-selected-review-${panel}-${state}-${scheme}-s${scale}.png`;
       const png = readFileSync(join(render, name));
       const dimensions = panel === 'inner' ? [2076, 2152] : [1080, 2424];
       if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
@@ -77,7 +79,8 @@ if (command === 'build') {
     throw new Error('Accepted E2 player/Search rasters differ from sanitized sources.');
   }
   for (const marker of ['Search A, with reachable folded-cover results',
-    'D51', 'D52', 'D56', 'D57', 'not Gboard', '7.5mm total', 'Reset 100%', 'data-panel="inner"',
+    'D51', 'D52', 'D56', 'D57', 'D58', 'results200', 'predates D58',
+    'not Gboard', '7.5mm total', 'Reset 100%', 'data-panel="inner"',
     'data-panel="cover"', 'data-preview="overflow"', 'data-preview="floating"',
     'data-preview="e2"', 'Reply in this chat']) {
     if (!html.includes(marker)) throw new Error(`Selected review contract missing ${marker}.`);

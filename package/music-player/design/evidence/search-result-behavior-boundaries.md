@@ -12,6 +12,9 @@ keyboards,
 and D57 permits only the measured real floating-Gboard overlap with
 some inner result lettering.
 E2's selected physical floor applies only to meaning-bearing marks.
+D58 aligns Back/result icons and query/result titles in the debug-only
+keyboard-closed native study at 100% and 200% on both Fold panels;
+see `search-header-result-alignment.md`.
 None of these choices specifies result ranking or what tapping a result does.
 `package/music-player/design/decisions.md` records those bounds.
 
@@ -29,9 +32,18 @@ not a decided rule that every matching folder expands into all its tracks.
 The longer overflow fixture repeats synthetic folder rows to test viewport
 scrolling,
 not a ranking algorithm.
+A separate debug-only `SearchRankingFixture.kt` now lists fixed result
+identities in multiple hand-authored orders for the #116 review.
+Those rows are not produced by a search index:
+their exact/prefix/contained and parent-only captions describe
+illustrative categories,
+not exercised matching rules or selected tap effects.
+The installed fixture APK SHA-256 is
+`bf9a51c42facfca969e275d5fe55769656c451900f57689dc7c24190e8d6d2ef`.
 These source fixtures cannot prove actions,
 search scope,
-or sorting.
+matching algorithms,
+or production sorting.
 
 ## Incumbent library behavior
 

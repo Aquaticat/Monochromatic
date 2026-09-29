@@ -1732,11 +1732,20 @@ Debug-only commit `baa37caaf` centers 24dp result icons inside the same
 48dp leading slot as Back on both panels.
 On the subsequently installed disposable Fold APK,
 UI Automator reported `cam` and `Cam` both starting at x `1249` on the
-inner display and both at x `156` on the cover at 200% text.
-Native screenshots visually retain the Back/result icon column.
-The larger leading slot does not reduce the existing 48dp interaction floor,
-move meaning into E2's crease,
-or change the selected A layout and result order.
+inner display and both at x `156` on the cover at **100% and 200% text**.
+In native 200% light-scheme screenshots,
+the Back,
+folder and music glyphs had respective horizontal centers x `1190`
+on the inner panel and x `97` on the cover;
+the old folder icon centers were x `1161` and x `68`.
+The Back `IconButton` remains 48dp in the debug source;
+the 48dp result slot is decorative,
+not an activated result target.
+The corrected icon paint starts beyond the measured inner crease,
+and the browser/deck and static fixture order remain as before.
+This is not a universal E2 glyph-ink or accessibility pass.
+See `evidence/search-header-result-alignment.md` for the pixel method,
+positive control and bounded image set.
 Result activation,
 ranking and accessibility still require separate decisions and verification.
 This is a design-only alignment correction,
