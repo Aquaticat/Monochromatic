@@ -1,5 +1,3 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
 //region Code points
 // One counter, shared by everything that compares a Chinese size against an
 // English one, and the two readers that take the whole code point at or before
@@ -18,70 +16,6 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
  surrogate pair.
  */
 const BMP_MAX = 0xFF_FF;
-
-/**
- First UTF-16 unit that can only be the FIRST half of a surrogate pair.
- */
-const HIGH_SURROGATE_FIRST = 0xD8_00;
-
-/**
- Last such unit.
- */
-const HIGH_SURROGATE_LAST = 0xDB_FF;
-
-/**
- First UTF-16 unit that can only be the SECOND half of a surrogate pair.
- */
-const LOW_SURROGATE_FIRST = 0xDC_00;
-
-/**
- Last such unit.
- */
-const LOW_SURROGATE_LAST = 0xDF_FF;
-
-/**
- Counts code points rather than UTF-16 units.
- 
- `length` counts surrogate halves, so a rare CJK character measures twice on
- one side of a ratio and once on the other. Every comparison this serves runs
- between a Chinese source and an English translation, which is exactly where
- that asymmetry lands, and it lands in the unsafe direction: a doubled source
- size halves a ratio and passes a pairing a guard would otherwise refuse.
- 
- An index scan rather than spreading or `Array.from`, both of which the linter
- refuses over strings for breaking grapheme clusters. Every code point
- contributes exactly one unit that is not a low surrogate, so counting those
- counts code points without materializing an array.
- 
- @param text - text to measure
- 
- @returns Code points after trimming surrounding whitespace
- 
- @example
- ```ts
- const count = codePointCount({ text: '其一：', },);
- ```
- */
-export function codePointCount({ text, }: { readonly text: string; },): number {
-  /**
-   Trimmed text, since surrounding whitespace is content on neither side.
-   */
-  const trimmed = text.trim();
-
-  /**
-   Running count, mutated only inside this function.
-   */
-  const counted = { points: 0, };
-  for (let index = 0; index < trimmed.length; index += 1) {
-    /**
-     Unit at the cursor.
-     */
-    const unit = nonNullishOrThrow(trimmed.codePointAt(index,),);
-    if ((unit < LOW_SURROGATE_FIRST) || (unit > LOW_SURROGATE_LAST))
-      counted.points += 1;
-  }
-  return counted.points;
-}
 
 /**
  Whole code point starting at an offset, empty past either end of the text.
@@ -152,12 +86,65 @@ export function codePointBefore({
 }
 
 /**
+ Counts code points rather than UTF-16 units.
+
+ `length` counts surrogate halves, so a rare CJK character measures twice on
+ one side of a ratio and once on the other. Every comparison this serves runs
+ between a Chinese source and an English translation, which is exactly where
+ that asymmetry lands, and it lands in the unsafe direction: a doubled source
+ size halves a ratio and passes a pairing a guard would otherwise refuse.
+
+ An index scan stepping one whole code point at a time ({@link codePointAt}),
+ rather than spreading or `Array.from`, both of which the linter refuses over
+ strings for breaking grapheme clusters. A pair counts once and a lone half
+ counts once, as the string's own iteration reads them (ledger B22): counting
+ every unit that is not a second half, as this did, read a lone second half
+ as nothing.
+
+ @param text - text to measure
+
+ @returns Code points after trimming surrounding whitespace
+
+ @example
+ ```ts
+ const count = codePointCount({ text: '其一：', },);
+ ```
+ */
+export function codePointCount({ text, }: { readonly text: string; },): number {
+  /**
+   Trimmed text, since surrounding whitespace is content on neither side.
+   */
+  const trimmed = text.trim();
+
+  /**
+   Offset reached and code points passed, mutated only inside this function.
+   */
+  const cursor = {
+    at: 0,
+    points: 0,
+  };
+  while (cursor.at < trimmed.length) {
+    /**
+     Whole code point under the cursor, one unit or a pair.
+     */
+    const point = codePointAt({
+      text: trimmed,
+      at: cursor.at,
+    },);
+    cursor.at += point.length;
+    cursor.points += 1;
+  }
+  return cursor.points;
+}
+
+/**
  The opening of a text, at most a number of UTF-16 units long, that never
  ends inside a character: where the limit falls between the two halves of a
  surrogate pair, the first half is left out too (ledger B21). A cut by
  `slice` alone kept half an emoji in an error's excerpt, a stream's opening
  and a refused reply's opening, and the log showed `\ud83d` or a
- replacement character.
+ replacement character. A lone first half no pair follows is a whole
+ character as the string reads it, and stays (ledger B22).
 
  @param text - text to cut
 
@@ -181,22 +168,14 @@ export function wholeOpening({
   if (text.length <= units)
     return text;
   /**
-   The opening cut by units.
+   Whether the code point starting at the limit's last unit runs past the
+   limit, which only a surrogate pair split by it does.
    */
-  const cut = text.slice(
+  const cutsPair = (units > 0) && ((text.codePointAt(units - 1,) ?? 0) > BMP_MAX);
+  return text.slice(
     0,
-    units,
+    cutsPair ? (units - 1) : units,
   );
-  /**
-   Its last unit, none for an empty cut.
-   */
-  const last = cut.codePointAt(cut.length - 1,) ?? 0;
-  return ((last >= HIGH_SURROGATE_FIRST) && (last <= HIGH_SURROGATE_LAST))
-    ? cut.slice(
-      0,
-      -1,
-    )
-    : cut;
 }
 
 //endregion Code points
