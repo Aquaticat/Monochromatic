@@ -4,6 +4,7 @@ import {
 } from './corpus-run/prose-ranges.ts';
 import { isAsciiLetter, } from './ascii-letters.ts';
 import { codePointAt, } from './code-points.ts';
+import { lineStartsOf, } from './line-starts.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
 import { withoutHtmlComments, } from './translate-address-drop.ts';
 import { withoutGlossedTitles, } from './translate-han-title.ts';
@@ -510,35 +511,6 @@ function lineRuns(
 }
 
 /**
- Offsets each line of a text starts at.
-
- @param text - text to read
-
- @returns Start offsets, the first always zero
-
- @example
- ```ts
- lineStarts({ text: 'a\nbc', },); // [0, 2]
- ```
- */
-function lineStarts({ text, }: { readonly text: string; },): readonly number[] {
-  /**
-   Starts found so far.
-   */
-  const starts = [0,];
-  for (
-    let at = text.indexOf('\n',);
-    at !== (-1);
-    at = text.indexOf(
-      '\n',
-      at + 1,
-    )
-  )
-    starts.push(at + 1,);
-  return starts;
-}
-
-/**
  Han runs a text carries in prose.
 
  @param text - text to read
@@ -561,7 +533,7 @@ export function hanRuns({ text, }: { readonly text: string; },): readonly HanRun
   /**
    Where each line starts.
    */
-  const starts = lineStarts({ text, },);
+  const starts = lineStartsOf({ text, },);
   return starts.flatMap(function runsOf(
     start,
     index,

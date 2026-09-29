@@ -9,6 +9,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from '../json-guard.ts';
+import { lineStartsOf, } from '../line-starts.ts';
 import type {
   ColdStretch,
   UncalledFunction,
@@ -237,31 +238,6 @@ export function readSourceMap(
     },),
     sources,
   };
-}
-
-/**
- Offset of each line's first character.
-
- @param text - bundle text
-
- @returns Line starts, the first being 0
-
- @example
- ```ts
- lineStartsOf({ text: 'a\nb', },); // [0, 2]
- ```
- */
-export function lineStartsOf({ text, }: { readonly text: string; },): readonly number[] {
-  /**
-   Starts found so far.
-   */
-  const starts = [0,];
-  for (let at = text.indexOf('\n',); at !== (-1); at = text.indexOf(
-    '\n',
-    at + 1,
-  ))
-    starts.push(at + 1,);
-  return starts;
 }
 
 /**

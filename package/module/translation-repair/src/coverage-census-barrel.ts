@@ -49,10 +49,10 @@ export {
   type CoverageRange,
   type FunctionCoverage,
 } from './corpus-run/coverage-file.ts';
+export { lineStartsOf, } from './line-starts.ts';
 export {
   type BundleLines,
   bundleLinesOf,
-  lineStartsOf,
   type MappedFunction,
   mapFunction,
   type MappedStretch,

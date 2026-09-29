@@ -120,13 +120,16 @@ description = "Ledger M28: before a launch, read every cache version constant th
 depends = ["build"]
 run = "node dist/final/node/cache-account-audit.mjs"
 
-[tasks."build:coverage"]
-description = "Ledger T8: the node build with a source map beside every chunk, which the coverage census maps V8's offsets through; the same code as the normal build, each chunk gaining a sourceMappingURL comment"
+# Named outside `build:` on purpose: the build template runs every `build:*`
+# child at once, so a `build:coverage` task raced the normal build for
+# dist/final/node on every `mise run build` (ledger T8, 2026-09-29).
+[tasks."coverage-census:build"]
+description = "Ledger T8: the node build with a source map beside every chunk, which the coverage census maps V8's offsets through; the same code as the normal build, each chunk gaining a sourceMappingURL comment; never a child of build, whose fan-out would run it beside the normal build into the same directory"
 run = "rolldown --configLoader native --config rolldown.coverage.config.ts"
 
 [tasks."coverage-census"]
 description = "Ledger T8: build with source maps, run the unit suite (or the unit test files named after --) under V8 coverage, and print the package code no test ran, mapped to source lines; add --baseline <census.json> and --source <src/file.ts> after -- to read an earlier census's stretches against this run; rebuilds without maps after; SPENDS NO QUOTA (the whole suite writes about 8 GB of coverage under ~/.cache/translation-repair/coverage, on disk rather than in a memory-backed /tmp, deleted once read; the census and the suite's log stay beside it)"
-depends = ["build:coverage"]
+depends = ["coverage-census:build"]
 depends_post = ["build"]
 run = "node dist/final/node/coverage-census.mjs"
 
