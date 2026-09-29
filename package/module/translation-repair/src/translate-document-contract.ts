@@ -181,11 +181,13 @@ import type { SliceReplacement, } from './splice-slices.ts';
  changes what the lane accepts; checked on 2026-09-29: still no slice-cache
  file newer than 04:26 UTC on 2026-09-27.
 
- Rides inside 15 too: the declared-name guard reads text by code point, so a
- handle written in letters beyond the first plane is checked rather than
- projected to nothing (ledger B21, `declared-name-survival.ts`); over the
- pinned archives and settled pages no survival answer changes; same check,
- same result.
+ Rides inside 15 too: the declared-name guard and the Han residue floor
+ read text by code point, so a handle written in letters beyond the first
+ plane is checked rather than projected to nothing, and an ideograph beyond
+ it left in prose is refused (ledger B21, `declared-name-survival.ts`,
+ `translate-han-residue.ts`); over the pinned archives and settled pages no
+ survival answer changes, and neither they nor any stored artifact carries
+ such an ideograph; same check, same result.
 
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the

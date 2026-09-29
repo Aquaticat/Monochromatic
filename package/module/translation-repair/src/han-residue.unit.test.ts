@@ -164,7 +164,7 @@ await describe({
       },
     },),
     it({
-      name: 'READS PROSE BY UTF-16 UNIT, so a character outside the basic plane before a code span neither '
+      name: 'INDEXES PROSE BY UTF-16 OFFSET, so a character outside the basic plane before a code span neither '
         + 'unmasks the span nor masks the prose after it',
       fn: async () => {
         expect(hanResidueFindings({

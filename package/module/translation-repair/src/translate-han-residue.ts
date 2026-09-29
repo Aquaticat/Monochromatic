@@ -3,6 +3,7 @@ import {
   protectedRanges,
 } from './corpus-run/prose-ranges.ts';
 import { isAsciiLetter, } from './ascii-letters.ts';
+import { codePointAt, } from './code-points.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
 import { withoutComments, } from './translate-address-drop.ts';
 import { withoutGlossedTitles, } from './translate-han-title.ts';
@@ -104,7 +105,7 @@ export type HanRun = {
 /**
  Whether a character is hiragana or katakana.
 
- @param character - one code unit
+ @param character - one whole character, as `codePointAt` reads it
 
  @returns Whether it falls in the kana blocks
 
@@ -120,7 +121,9 @@ function isKana({ character, }: { readonly character: string; },): boolean {
 /**
  Whether a character belongs inside a run: Han, kana or the iteration mark.
 
- @param character - one code unit
+ @param character - one whole character, as `codePointAt` reads it; a
+ surrogate half is none of these, so an ideograph beyond the first plane
+ read by UTF-16 unit never joined a run (ledger B21)
 
  @returns Whether a run may carry it
 
@@ -177,23 +180,25 @@ function proseFlags(
 }
 
 /**
- Prose code units of one line, the only ones a line's kind is read from.
+ Prose characters of one line, the only ones a line's kind is read from.
 
- BY UTF-16 UNIT, NOT CODE POINT: the flags index the text as `charAt` does,
- and spreading the string would shift every flag after an astral character.
+ WHOLE CHARACTERS AT UTF-16 OFFSETS: the flags index the text as `charAt`
+ does, so the scan steps through offsets, reading the whole character at each
+ and stepping past it (ledger B21); spreading the string would shift every
+ flag after a character beyond the first plane.
 
  @param line - one line of the text
 
  @param flags - prose flags of that line's units
 
- @returns Units in prose, in order
+ @returns Characters in prose, in order
 
  @example
  ```ts
- proseUnits({ line: 'a `b`', flags: [true, true, false, false, false,], },); // ['a', ' ']
+ proseCharacters({ line: 'a `b`', flags: [true, true, false, false, false,], },); // ['a', ' ']
  ```
  */
-function proseUnits(
+function proseCharacters(
   {
     line,
     flags,
@@ -203,39 +208,47 @@ function proseUnits(
   },
 ): readonly string[] {
   /**
-   Units kept so far.
+   Characters kept so far.
    */
-  const units: string[] = [];
-  for (let at = 0; at < line.length; at += 1) {
+  const characters: string[] = [];
+  for (let at = 0; at < line.length;) {
+    /**
+     Whole character at this offset.
+     */
+    const character = codePointAt({
+      text: line,
+      at,
+    },);
     if (flags[at] === true)
-      units.push(line.charAt(at,),);
+      characters.push(character,);
+    at += character.length;
   }
-  return units;
+  return characters;
 }
 
 /**
  Whether a line is a kana line: kana in its prose and no Latin letter.
 
- @param units - prose units of the line
+ @param characters - prose characters of the line
 
  @returns Whether the line reads as a Japanese quotation
 
  @example
  ```ts
- isKanaLine({ units: ['君', 'の', '歌',], },); // true
+ isKanaLine({ characters: ['君', 'の', '歌',], },); // true
  ```
  */
-function isKanaLine({ units, }: { readonly units: readonly string[]; },): boolean {
+function isKanaLine({ characters, }: { readonly characters: readonly string[]; },): boolean {
   /**
-   Whether any unit is kana.
+   Whether any character is kana.
    */
-  const kanaSeen = units.some(function kana(character,): boolean {
+  const kanaSeen = characters.some(function kana(character,): boolean {
     return isKana({ character, },);
   },);
   /**
-   Whether any unit is a Latin letter.
+   Whether any character is a Latin letter.
    */
-  const carriesLatin = units.some(function latin(character,): boolean {
+  const carriesLatin = characters.some(function latin(character,): boolean {
     return isAsciiLetter({ character, },);
   },);
   return kanaSeen && (!carriesLatin);
@@ -247,7 +260,7 @@ function isKanaLine({ units, }: { readonly units: readonly string[]; },): boolea
 
  @param run - characters of a run
 
- @returns Whether some unit is an ideograph
+ @returns Whether some character is an ideograph
 
  @example
  ```ts
@@ -255,23 +268,23 @@ function isKanaLine({ units, }: { readonly units: readonly string[]; },): boolea
  ```
  */
 function carriesIdeograph({ run, }: { readonly run: string; },): boolean {
-  for (let at = 0; at < run.length; at += 1) {
-    if (isIdeograph(run.charAt(at,),))
+  for (const character of run) {
+    if (isIdeograph(character,))
       return true;
   }
   return false;
 }
 
 /**
- Offset just past the run that starts at a unit.
+ Offset just past the run that starts at an offset.
 
  @param line - one line of the text
 
  @param flags - prose flags of that line's units
 
- @param start - first unit of the run
+ @param start - offset of the run's first character
 
- @returns Offset of the first unit that is not a prose run character
+ @returns Offset of the first character that is not a prose run character
 
  @example
  ```ts
@@ -289,14 +302,22 @@ function runEnd(
     readonly start: number;
   },
 ): number {
-  for (let at = start; at < line.length; at += 1) {
+  for (let at = start; at < line.length;) {
     /**
-     Whether this unit continues the run.
+     Whole character at this offset.
+     */
+    const character = codePointAt({
+      text: line,
+      at,
+    },);
+    /**
+     Whether this character continues the run.
      */
     const continues = (flags[at] === true)
-      && isRunCharacter({ character: line.charAt(at,), },);
+      && isRunCharacter({ character, },);
     if (!continues)
       return at;
+    at += character.length;
   }
   return line.length;
 }
@@ -320,7 +341,7 @@ const CLOSING_QUOTES: ReadonlySet<string> = new Set([
 
  @param run - characters of a run
 
- @returns Whether some unit is hiragana or katakana
+ @returns Whether some character is hiragana or katakana
 
  @example
  ```ts
@@ -328,8 +349,8 @@ const CLOSING_QUOTES: ReadonlySet<string> = new Set([
  ```
  */
 function carriesKana({ run, }: { readonly run: string; },): boolean {
-  for (let at = 0; at < run.length; at += 1) {
-    if (isKana({ character: run.charAt(at,), },))
+  for (const character of run) {
+    if (isKana({ character, },))
       return true;
   }
   return false;
@@ -420,7 +441,7 @@ function lineRuns(
    Whether the line is a kana line with no Latin letter.
    */
   const kanaLine = isKanaLine({
-    units: proseUnits({
+    characters: proseCharacters({
       line,
       flags,
     },),
@@ -433,15 +454,18 @@ function lineRuns(
    Parentheses open at the cursor.
    */
   let depth = 0;
-  // ONE LINEAR PASS: the cursor only advances, a run's end becoming the next
-  // start.
+  // ONE LINEAR PASS: the cursor only advances, past a whole character or a
+  // run, a run's end becoming the next start.
   for (let at = 0; at < line.length;) {
     /**
-     Character under the cursor.
+     Whole character under the cursor.
      */
-    const character = line.charAt(at,);
+    const character = codePointAt({
+      text: line,
+      at,
+    },);
     if (flags[at] !== true) {
-      at += 1;
+      at += character.length;
       continue;
     }
     if (GLOSS_OPENERS.has(character,))
@@ -449,7 +473,7 @@ function lineRuns(
     if (GLOSS_CLOSERS.has(character,) && (depth > 0))
       depth -= 1;
     if (!isRunCharacter({ character, },)) {
-      at += 1;
+      at += character.length;
       continue;
     }
     /**
