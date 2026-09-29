@@ -41,7 +41,8 @@ Node.js makes no guarantees about the exact timing of when callbacks will fire,
 nor of their ordering.
 ```
 
-The source clone is `~/temp/agent/node-timer-floor-2026-09-29`,
+The [Node release source](https://github.com/nodejs/node/tree/v26.10.0)
+was cloned to `~/temp/agent/node-timer-floor-2026-09-29`,
 commit `151845ab90d3926ceb36eedf1eade09619c3adc9`.
 No upstream source or build was modified or executed.
 
@@ -149,19 +150,36 @@ Neither lower bounds nor provider capacity should be inferred from the requested
 
 ## Upstream filing decision
 
-- Upstream fault: not established.
-  The caller demanded a guarantee that Node's documentation does not make.
-- Upstream fix: no upstream change is required for the verified consumer-side correction.
-- Supported use: ordinary timer scheduling is supported;
-  this exact measured-floor inference is not its documented contract.
-- Contribution policy: not investigated because no upstream issue or patch is proposed.
-- Maintainer willingness: no claim is made.
-  The read-only query `gh search issues 'setTimeout early' --repo nodejs/node --limit 20`
-  returned no results;
-  that bounded literal search is not proof no related issue exists.
-- Upstream prototype: not applicable.
-  The tested change belongs in the caller,
-  not Node's timer implementation.
+### Upstream fault
+
+Not established.
+The caller demanded a guarantee that Node's documentation does not make.
+
+### Upstream fix
+
+No upstream change is required for the verified consumer-side correction.
+
+### Supported use
+
+Ordinary timer scheduling is supported;
+this exact measured-floor inference is not its documented contract.
+
+### Contribution policy
+
+Not investigated because no upstream issue or patch is proposed.
+
+### Maintainer willingness
+
+No claim is made.
+The read-only query `gh search issues 'setTimeout early' --repo nodejs/node --limit 20`
+returned no results;
+that bounded literal search is not proof no related issue exists.
+
+### Upstream prototype
+
+Not applicable.
+The tested change belongs in the caller,
+not Node's timer implementation.
 
 Nothing is filed or drafted upstream.
 The first filing condition fails;

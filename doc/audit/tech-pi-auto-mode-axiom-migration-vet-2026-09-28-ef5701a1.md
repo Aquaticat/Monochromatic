@@ -1435,6 +1435,52 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Separately frozen Jev recovery
+
+Task #66 verified the original accepted pair with `proc_55dc`;
+its receipt deliberately retains `completePhase: false`.
+Prefix-receipt SHA-256:
+`a2f7b92e181b59a41b6adf2669f70d56920225af79447be0013dfa4aa3938887`.
+Original stopped raw and semantic source/input manifests remain untouched.
+
+The new combined validation lives only in `recovery/`.
+It retains the original pair once and separately hashes its newly collected suffix.
+Both execution epochs,
+the stopped original,
+and the prefix receipt bind the new source ledger.
+Original native request/response reconstruction plus a separate recovered-validation admission receipt
+are required before test dispatch.
+
+The initial actual composition/admission controls passed `proc_54ce`.
+Independent review identified that they hand-built completion records rather than exercising collector persistence.
+The shared `collectPhase()` now owns the actual CLI collector and real atomic file persistence.
+Follow-up `proc_0171` passed both complete mocked phases and stopped paths,
+including missing admission,
+existing-output replay rejection,
+source-epoch/prefix/suffix mutation,
+startup/inter-pair timing records,
+excessive wakeups,
+changed prefix receipts,
+and a startup-guard omission control.
+These fixtures contain the retained original pair plus mocked new replies,
+not additional model-quality or latency evidence.
+The credentialed CLI subprocess itself was not executed by these controls.
+
+Private commit `6520c34` seals 23 recovery files after `proc_dbb9` syntax and receipt checks.
+Recovery-manifest SHA-256:
+`764d50be393fc4995ae5e16639503d241bbff3d918710806d75d40921091d892`.
+No recovery model call occurred before this freeze.
+The bound continuation permits only 118 remaining validation calls and 108 test calls,
+with unchanged native questions,
+references,
+bands,
+complete policy,
+and five-second assessments.
+Elapsed-time pacing keeps its four-second floor outside the assessment clock,
+including a separately recorded recovery-start wait.
+Unmeasured inter-epoch idle time is excluded from reported research-wait totals.
+No completed original entry is replayed or silently promoted to a completed original phase.
+
 ## Fresh native-Jev execution freeze
 
 Task #64 is ready for its bounded live phases in

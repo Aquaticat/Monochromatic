@@ -181,7 +181,30 @@ and finite real-timer checks.
 The real-timer checks did not reproduce the original early wakeup;
 that limitation remains explicit.
 
-Task #66 must verify the accepted prefix and bind a no-replay continuation before further model calls.
+Task #66 verified the accepted prefix with `proc_55dc`,
+retaining `completePhase: false` in `original-prefix.verified.json`.
+Its SHA-256 is `a2f7b92e181b59a41b6adf2669f70d56920225af79447be0013dfa4aa3938887`.
+
+Independent review identified missing actual-collector coverage in the first integration test.
+The CLI now delegates to the same `collectPhase()` function exercised by `proc_0171`.
+That follow-up used actual atomic file persistence,
+226 mocked successful calls,
+and stopped paths for a zero-call pacing failure and a one-call transport refusal.
+It verified startup/inter-pair timing records,
+source-epoch binding,
+missing admission,
+existing-output replay rejection,
+changed prefix receipts,
+and startup-guard omission behavior.
+The credentialed CLI subprocess itself is not claimed as tested by these mocks.
+All prior controls remain retained without reruns.
+
+Private commit `6520c34` seals 23 recovery files after these checks.
+Recovery-manifest SHA-256:
+`764d50be393fc4995ae5e16639503d241bbff3d918710806d75d40921091d892`.
+The original stopped record and its frozen sources remain unchanged.
+The new combined validation file retains the original pair once and separately hashes the newly collected suffix.
+Actual raw-response reconstruction and a new admission receipt must both pass before test.
 The declared recovery has at most 118 remaining validation calls and 108 test calls.
 No original completed entry,
 policy,

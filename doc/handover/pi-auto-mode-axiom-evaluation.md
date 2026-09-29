@@ -88,10 +88,23 @@ The measured-deadline pacing helper passed `proc_726c`;
 its injected early wakeup was extended,
 and the omission accepted it prematurely.
 Finite real-timer checks did not reproduce the early wakeup.
-Next: verify the accepted prefix,
-build and control actual recovery assembly/admission,
-freeze the correction,
-then resume only that missing schedule.
+The accepted prefix was verified by `proc_55dc`,
+with receipt SHA-256 `a2f7b92e181b59a41b6adf2669f70d56920225af79447be0013dfa4aa3938887`.
+The initial composition/admission control passed `proc_54ce`.
+Advisor review then required actual collector coverage;
+`proc_0171` exercised the shared CLI collector and real atomic persistence with mocked transport and clocks,
+including both complete phases,
+zero-call pacing failure,
+one-call refusal,
+startup/inter-pair records,
+and source/admission mutations.
+Private `6520c34` freezes 23 recovery files,
+manifest SHA-256 `764d50be393fc4995ae5e16639503d241bbff3d918710806d75d40921091d892`.
+Next: collect the remaining validation through `recovery/run.mjs validation`,
+then reconstruct,
+admit,
+and evaluate it using recovery tasks before the unchanged locked test.
+No recovery call had occurred at the freeze.
 Never rerun the original completed constructors,
 controls,
 freezer,
