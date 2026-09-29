@@ -106,6 +106,32 @@ await describe({
       },
     },),
     it({
+      name: 'READS THE NAME AS A WORD (ledger B23): a text carrying it only inside a longer word gets no gloss, and '
+        + 'one carrying it as a word later gets the gloss after that line',
+      fn: async () => {
+        /**
+         Archive paragraph naming the sparrow, with its gloss.
+         */
+        const sparrow = 'The sparrow "Pip" sang.\n"Pip" means a seed.\n';
+        const restored = restoreNameGlossLines({
+          slices: [
+            pair({ sliceIndex: 0, target: sparrow, },),
+            pair({ sliceIndex: 1, target: sparrow, },),
+          ],
+          replacements: [
+            { sliceIndex: 0, replacementText: 'The sparrow Pipit sang.', },
+            { sliceIndex: 1, replacementText: 'Pipits sang.\nThe sparrow Pip joined them.', },
+          ],
+        },);
+        expect(restored.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).toEqual([
+          'The sparrow Pipit sang.',
+          'Pipits sang.\nThe sparrow Pip joined them.\n"Pip" means a seed.',
+        ],);
+      },
+    },),
+    it({
       name: 'LEAVES a text glossing the name its own way (a parenthesis, "means" on the line, the archive\'s line kept), '
         + 'one that never carries the name, and an archive quoting a phrase it never uses',
       fn: async () => {
