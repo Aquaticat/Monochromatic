@@ -173,5 +173,50 @@ await describe({
         },),).toBe(true,);
       },
     },),
+    it({
+      name: 'REFUSES a polish that lands on a disputed wording (ledger B29): the consolidation refuses the '
+        + 'archive\'s disputed reading as standing, lane offer and proposal, and the polish ran after it '
+        + 'without the list',
+      fn: async () => {
+        /** Text the settlement approved before the polish. */
+        const base = 'The tabby spent the whole afternoon napping in the warm window.';
+        /** The final settlement over a slice whose disputed wording is exactly what the refiner proposes. */
+        const final = await applyFinalPolish({
+          client: recordingClient({ gateSheets: [], },),
+          settlement: {
+            terminal: 'consolidated',
+            text: base,
+            floor: { kind: 'proposals', validModelIds: [], },
+            verdicts: [],
+            rewrapped: false,
+            demoted: false,
+            findings: [],
+          },
+          subject: {
+            sourceText: '虎斑猫整个下午都在温暖的窗边打盹。',
+            incumbentText: 'The tabby dozed by the warm window all afternoon long.',
+            archiveDisputeNote: DISPUTE_NOTE,
+            disputedWordings: [{
+              text: 'The tabby napped in the warm window all afternoon.',
+              reason: 'the archive rendering the adjudicators disputed',
+            },],
+          },
+          lineStructured: false,
+          sliceIndex: 2,
+          polishConfig: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          eligible: true,
+          signal: AbortSignal.timeout(20_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'polish-disputed-wording-test', },),
+        },);
+        expect(final.text,).toBe(base,);
+      },
+    },),
   ],
 },);
