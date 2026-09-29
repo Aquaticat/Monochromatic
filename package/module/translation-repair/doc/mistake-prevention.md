@@ -212,7 +212,7 @@ M49).
 
 The rule:
 a message states only what `git show --stat` of that commit shows;
-the type follows `git diff --cached --stat` (any file outside tests makes it more than `test`);
+the type follows `git diff --cached --stat` (any production file under `src` makes it more than `test`);
 every hash is resolved with `git rev-parse` in the command that uses it;
 an issue number goes in only after `gh issue view` shows it is the one meant;
 a cause goes in only after the command that shows it (blame,
@@ -243,6 +243,9 @@ One number named different tasks in different sessions,
 and on GitHub each named an unrelated issue,
 so no reader could recover any of them.
 Several sat beside claims the work they named had since overtaken.
+The repository-level docs carried 1,206 more (D26),
+and the current handover's open-work list was task numbers
+naming two pieces of work recorded nowhere else.
 
 The rule:
 a reference names something a later reader can open:
@@ -252,11 +255,18 @@ a file or symbol,
 a commit,
 a date,
 or the finding itself in words.
+Open work goes in the ledger,
+not only on a task list.
 A GitHub issue is cited only after `gh issue view` shows it is the one meant,
 and is added to the guard's list in the same commit.
 Before a citation is rewritten,
 the claim beside it is checked against the code,
-since the work it named may have changed that claim.
+since the work it named may have changed that claim,
+and the number is read in the task record of the session that wrote it,
+since the same number names different work in another.
+An owner's words keep their number verbatim,
+checked against the transcript or the file the owner wrote in,
+and are listed in the guard.
 
 What enforces it:
 `src/task-list-numbers.unit.test.ts`,
@@ -264,9 +274,10 @@ which fails on a sign followed by one to four digits
 anywhere in the package's source,
 tests,
 docs,
-README or `mise.toml`
-unless it is a listed issue,
-and on a listed issue that is no longer cited.
+README or `mise.toml`,
+and in the living repository-level docs `src/living-docs.test-fixture.ts` locates,
+unless it is a listed issue or sits inside a listed owner quotation,
+and on a listed issue or quotation that no longer occurs.
 
 ## Dates and clock times
 

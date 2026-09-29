@@ -5522,7 +5522,7 @@ and the README was restored from the commit.
 ### D26: task-list numbers in the repository-level translation-repair docs
 
 Status:
-open,
+fixed 2026-09-29,
 found 2026-09-28 while closing D22,
 whose census covered the package directory only.
 The same shape stands 120 times in the translation-repair decision records,
@@ -5539,6 +5539,69 @@ get a note on the index saying what those numbers name;
 and the D22 guard's scope,
 or a sibling,
 reaches the living repository-level docs.
+
+What was done:
+
+-   The living set is the one `src/living-docs.test-fixture.ts` locates:
+    the decision records,
+    the canonical handover and the snapshot it links,
+    and the two planning docs that handover links as current
+    (the readiness signal and the OpenRouter pass log).
+    Every number was read against the task record of the session that wrote it:
+    the earlier session's stored list,
+    and for the current session's early numbers,
+    which its list no longer holds,
+    the transcript's creation record.
+    D22's names were reused where the work is the same,
+    and not where one number meant different work
+    (108 was the window trial in one session and a selection rerun in the other).
+-   `e4a862372` named the work behind 117 citations in 16 decision records,
+    `e58bcfb52` behind 4 in the snapshot,
+    and `5a5611f4e` behind 25 in the two planning docs
+    (each count from its staged diff).
+    Three owner quotations kept their numbers:
+    the choice of option 1 of 2026-09-19,
+    checked against the transcript,
+    and the two decision-sheet answers of 2026-08-16
+    (the judge-quality bench first,
+    and landing the record of who won each slice),
+    checked against the sheet's history,
+    where the owner wrote them;
+    a fourth quotation cites real issue 563,
+    and the pass log cites real issue 556.
+    A fifth "quotation" was the sheet's own record,
+    not the owner's words,
+    and became a paraphrase.
+-   The snapshot's open-work line listed this session's task numbers,
+    and two open items lived nowhere else:
+    they became X21 and B21,
+    and the line now points at the ledger's open and recurring entries.
+-   The sections the living docs carry from the sessions of 2026-09-10 to 2026-09-15
+    cite that tracker's own items as "task N" and as bare numbers.
+    They keep them as written,
+    under a note in each doc saying whose numbering it is
+    and that the planning records those sections link describe each item;
+    renaming an abandoned plan's items one by one would risk misnaming the evidence
+    and still leave the linked records numbered.
+    For the same reason the guard does not read the unsigned form.
+-   `73a5254cc` put the note for the archived documents on the document map,
+    which indexes every archive family,
+    with a pointer on the history index.
+    Those documents are pinned by their split audits and keep their numbers.
+
+Guard:
+`e6051a966` extends `src/task-list-numbers.unit.test.ts` to the living set,
+allowing the listed owner quotations verbatim
+(one occurrence each,
+so the same number cited again beside a quotation is still found)
+and issue 556,
+and asserting both lists still occur.
+The clock guard reads its repository docs through the same fixture
+(the planning docs join it with D29).
+Three planted controls each failed the new case and were restored from the commit:
+a citation in a decision record,
+a listed quotation no doc holds,
+and a current planning doc nothing links.
 
 ### D27: the repository-level translation-repair docs have never passed the Markdown linter
 
