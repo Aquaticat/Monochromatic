@@ -16,6 +16,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ARCHIVE_BLOCK_SELECTION_CRITERIA,
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
   NoProviderForModelError,
@@ -66,6 +67,35 @@ const REFUSED_SEATS: ReadonlySet<string> = new Set([
   'hf:cat/Cat-G',
   'hf:cat/Cat-H',
 ],);
+
+/**
+ What the one page the invented original links says, then one detail the
+ attestation verified in it, in the shape `pass-prepare.ts` joins them.
+ */
+const REFERENCE_CONTEXT = [
+  '- reference 1 https://cats.example/posts/mittens ("Mittens"): Mittens had an older sister who was also a tabby, '
+    + 'and she slept by the stove.',
+  '- attested: the ARCHIVE\'s "The cat has a tabby sister who sleeps by the stove." is stated by reference 1 '
+    + '("an older sister who was also a tabby"), 3 of 4 voices checked word for word',
+].join('\n',);
+
+/** Declared identity of the invented page. */
+const IDENTITY_CONTEXT = '- name: ORIGINAL declares "猫猫", TRANSLATION declares "Mittens"';
+
+/** Archive block only the cited page supports. */
+const SISTER_BLOCK = 'The cat has a tabby sister who sleeps by the stove.';
+
+/**
+ A text as a captured prompt carries it: the scripted client records each
+ exchange as JSON, which escapes quotation marks.
+
+ @param text - text to find
+
+ @returns Text as JSON writes it inside a string
+ */
+function asCaptured(text: string,): string {
+  return JSON.stringify(text,).slice(1, -1,);
+}
 
 /** Logger for archive-block stage tests. */
 const l = tagged({ tag: 'archive-block-review-stage-test', },);
@@ -766,6 +796,135 @@ await describe({
         },);
         expect(new Set(reviewPrompts,).size,).toBe(1);
         expect(new Set(payloads,).size,).toBe(payloads.length);
+      },
+    },),
+    it({
+      name: 'SHOWS the reviewers and the correction selectors the declared names and the cited references '
+        + '(ledger B28): the review judges archive wording against the original, and a detail a cited page '
+        + 'states is the translator\'s knowledge rather than an addition',
+      fn: async () => {
+        const prompts: string[] = [];
+        await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'revise',
+                sourceQuote: '',
+                replacementText: 'The cat sleeps by the window.',
+                finding: 'Remove unsupported sister claim.',
+              }
+              : { best: 1, reason: 'Only supported details remain.', },
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边安静地睡觉。',
+          targetText: `The cat sleeps by the window.\n\n${SISTER_BLOCK}`,
+          blockText: SISTER_BLOCK,
+          priorFindings: [],
+          identityContext: IDENTITY_CONTEXT,
+          referenceContext: REFERENCE_CONTEXT,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        /** Prompts of the review round. */
+        const reviews = prompts.filter(function isReview(prompt,): boolean {
+          return prompt.includes('Review English archive wording',);
+        },);
+        /** Prompts of the correction slate. */
+        const selections = prompts.filter(function isSelection(prompt,): boolean {
+          return prompt.includes('CURRENT ARCHIVE BLOCK',);
+        },);
+        // Both rounds ran, so the case reads prompts that exist.
+        expect(reviews.length,).toBeGreaterThan(0,);
+        expect(selections.length,).toBeGreaterThan(0,);
+        for (const prompt of [...reviews, ...selections,]) {
+          expect(prompt,).toContain(asCaptured(IDENTITY_CONTEXT,),);
+          expect(prompt,).toContain(asCaptured(REFERENCE_CONTEXT.split('\n',)[0] ?? '',),);
+          expect(prompt,).toContain('CITED REFERENCES',);
+        }
+        // The selector's first criterion counts a cited page as support, or the
+        // evidence beside it is overruled by the instruction to remove.
+        expect(ARCHIVE_BLOCK_SELECTION_CRITERIA[0],).toContain('CITED REFERENCES',);
+      },
+    },),
+    it({
+      name: 'ANCHORS a retention in one cited reference page (ledger B28), and the naturalness read it buys '
+        + 'sees the declared names',
+      fn: async () => {
+        const prompts: string[] = [];
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'source-supported',
+                sourceQuote: 'an older sister who was also a tabby',
+                replacementText: '',
+                finding: 'The cited page states the sister.',
+              }
+              : ACCEPTABLE_NATURALNESS,
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边安静地睡觉。',
+          targetText: `The cat sleeps by the window.\n\n${SISTER_BLOCK}`,
+          blockText: SISTER_BLOCK,
+          priorFindings: [],
+          identityContext: IDENTITY_CONTEXT,
+          referenceContext: REFERENCE_CONTEXT,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(outcome.kind,).toBe('retained',);
+        expect(outcome.text,).toBe(SISTER_BLOCK,);
+        expect(outcome.findings,).not.toContain('archive review discarded uncorroborated retention claim',);
+        expect(outcome.findings,).toContain('archive block absolute naturalness accepted and challenged',);
+        /** Prompts of the naturalness read. */
+        const naturalness = prompts.filter(function isNaturalness(prompt,): boolean {
+          return prompt.includes('publication-ready English',);
+        },);
+        expect(naturalness.length,).toBeGreaterThan(0,);
+        for (const prompt of naturalness)
+          expect(prompt,).toContain(asCaptured(IDENTITY_CONTEXT,),);
+      },
+    },),
+    it({
+      name: 'DISCARDS a retention quoting the archive\'s own words off an attested line, or a reference\'s address '
+        + '(ledger B28): an attested line carries an archive quote, and only a page\'s text is support',
+      fn: async () => {
+        /** One review per quote: the archive's own words, then the page's address. */
+        const outcomes = await Promise.all([SISTER_BLOCK, 'https://cats.example/posts/mittens',]
+          .map(async function reviewQuoting(sourceQuote,) {
+            return await runArchiveBlockReviewStage({
+              client: scriptedClient({
+                prompts: [],
+                replyFor: ({ schema, },) => schema === 'archive_block_review'
+                  ? {
+                    disposition: 'source-supported',
+                    sourceQuote,
+                    replacementText: '',
+                    finding: 'Supported.',
+                  }
+                  : ACCEPTABLE_NATURALNESS,
+              },),
+              modelIds: ROSTER,
+              sourceText: '猫在窗边安静地睡觉。',
+              targetText: `The cat sleeps by the window.\n\n${SISTER_BLOCK}`,
+              blockText: SISTER_BLOCK,
+              priorFindings: [],
+              identityContext: IDENTITY_CONTEXT,
+              referenceContext: REFERENCE_CONTEXT,
+              signal: new AbortController().signal,
+              exchangeTimeoutMs: 5_000,
+              l,
+            },);
+          },),);
+        for (const outcome of outcomes) {
+          expect(outcome.kind,).toBe('retained',);
+          expect(outcome.findings,).toContain('archive review discarded uncorroborated retention claim',);
+          expect(outcome.findings.join('\n',),).toContain('archive review left the block unresolved: 0 of',);
+        }
       },
     },),
   ],
