@@ -124,6 +124,12 @@ export async function applyFinalPolish(
     ...((subject.archiveDisputeNote === undefined)
       ? {}
       : { archiveDisputeNote: subject.archiveDisputeNote, }),
+    // THE WORDINGS THE SLICE REFUSES reach the polish too (ledger B29): the
+    // consolidation refused them as standing, lane offer and proposal, and a
+    // polish landing on one would ship it past all three.
+    ...((subject.disputedWordings === undefined)
+      ? {}
+      : { disputedWordings: subject.disputedWordings, }),
     sliceIndex,
     ...((polishConfig === undefined) ? {} : { config: polishConfig, }),
     eligible,

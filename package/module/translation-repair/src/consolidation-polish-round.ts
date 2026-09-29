@@ -4,6 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish-model.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import {
   type ConsolidationPolishGateOutcome,
   gateConsolidationPolish,
@@ -168,6 +169,9 @@ export function reviewParagraphsOf(
  @param archiveDisputeNote - accepted claims against the archive rendering
  on a disputed slice, which the gate reads (ledger S12)
  
+ @param disputedWordings - wordings the slice refuses, which the rule refuses
+ as the polished text as it does every other text on the slice (ledger B29)
+ 
  @param mode - comparative polish or required correction findings
  
  @param sliceIndex - prepared slice position
@@ -198,6 +202,7 @@ export async function runConsolidationPolishRound(
     identityContext,
     referenceContext,
     archiveDisputeNote,
+    disputedWordings,
     mode,
     sliceIndex,
     config,
@@ -214,6 +219,7 @@ export async function runConsolidationPolishRound(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly archiveDisputeNote?: string;
+    readonly disputedWordings?: readonly DisputedWording[];
     readonly mode: RefineStageMode;
     readonly sliceIndex: number;
     readonly config: ConsolidationPolishConfig;
@@ -352,6 +358,7 @@ export async function runConsolidationPolishRound(
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     ...((config.declaredNamePairs === undefined) ? {} : { declared: config.declaredNamePairs, }),
+    ...((disputedWordings === undefined) ? {} : { disputedWordings, }),
   },);
   if (validation.kind !== 'valid') {
     return {

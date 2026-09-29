@@ -14,6 +14,7 @@ import {
   runConsolidationPolishRound,
 } from './consolidation-polish-round.ts';
 import { unpolishedBaseline, } from './consolidation-polish-skip.ts';
+import type { DisputedWording, } from './disputed-wording.ts';
 import type { RefineStageMode, } from './refine-selection-context.ts';
 
 export type {
@@ -98,6 +99,9 @@ function objectionPolishFindings(
  @param archiveDisputeNote - accepted claims against the archive rendering
  on a disputed slice, for the gate (ledger S12)
  
+ @param disputedWordings - wordings the slice refuses, which the polish may
+ not land on any more than a proposal may (ledger B29)
+ 
  @param sliceIndex - prepared slice position
  
  @param config - model roles and document-wide guard facts
@@ -132,6 +136,7 @@ export async function polishConsolidation(
     identityContext,
     referenceContext,
     archiveDisputeNote,
+    disputedWordings,
     sliceIndex,
     config,
     eligible = true,
@@ -149,6 +154,7 @@ export async function polishConsolidation(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly archiveDisputeNote?: string;
+    readonly disputedWordings?: readonly DisputedWording[];
     readonly sliceIndex: number;
     readonly config?: ConsolidationPolishConfig;
     readonly eligible?: boolean;
@@ -179,6 +185,7 @@ export async function polishConsolidation(
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
+    ...((disputedWordings === undefined) ? {} : { disputedWordings, }),
     mode,
     sliceIndex,
     config,
