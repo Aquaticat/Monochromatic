@@ -13,7 +13,9 @@
 
  The critic and panel sheets also licensed accurate added detail without the
  narrative bound the contest and the writers carried, so an invented event
- could pass there as "accurate detail a translator added".
+ could pass there as "accurate detail a translator added". The archive block
+ review and the introduced-defect probe still listed the kinds without it
+ (ledger B28).
 
  Fixtures are cat-themed invention.
 
@@ -36,6 +38,21 @@ import {
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
   PAGE_APPARATUS_IS_KEPT,
 } from '../dist/final/node/index.mjs';
+import { renderedSheets, } from './rendered-sheets.test-fixture.ts';
+
+/**
+ Whether a sheet carries a rule as written, or as a JSON state escapes it,
+ since the typed decision sends its policy inside a JSON document.
+
+ @param text - sheet text
+
+ @param rule - rule text to find
+
+ @returns Whether the sheet carries the rule
+ */
+function carries({ text, rule, }: { readonly text: string; readonly rule: string; },): boolean {
+  return text.includes(rule,) || text.includes(JSON.stringify(rule,).slice(1, -1,),);
+}
 
 /**
  Joins every system message, since each sheet's rules live there.
@@ -146,6 +163,32 @@ await describe({
         expect(panel,).toContain(NARRATIVE_DETAIL_IS_NOT_APPARATUS,);
         expect(critic,).toContain('WHAT HAPPENED IS NEVER APPARATUS',);
         expect(panel,).toContain('WHAT HAPPENED IS NEVER APPARATUS',);
+      },
+    },),
+    it({
+      name: 'PAIRS the kinds with the narrative bound on every rendered sheet (ledger B28): a sheet that excuses '
+        + 'wording as apparatus is told what apparatus never is, where the archive block review and the '
+        + 'introduced-defect probe listed the kinds alone',
+      fn: async () => {
+        /** Every rendered sheet that lists the apparatus kinds. */
+        const withKinds = renderedSheets().filter(function listsKinds(sheet,): boolean {
+          return carries({ text: sheet.text, rule: APPARATUS_KINDS, },);
+        },);
+        /** Names of those sheets. */
+        const names = withKinds.map(function nameOf(sheet,): string {
+          return sheet.name;
+        },);
+        // The scan reaches the sheets this case is about before it judges them.
+        expect(names,).toContain('critic',);
+        expect(names,).toContain('archive block review',);
+        expect(names,).toContain('introduced defect',);
+        expect(withKinds
+          .filter(function lacksBound(sheet,): boolean {
+            return !carries({ text: sheet.text, rule: NARRATIVE_DETAIL_IS_NOT_APPARATUS, },);
+          },)
+          .map(function nameOf(sheet,): string {
+            return sheet.name;
+          },),).toEqual([],);
       },
     },),
   ],
