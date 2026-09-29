@@ -1,7 +1,7 @@
 # Translation repair: the production readiness signal, and what it rests on
 
 Proposal for the owner,
-written 2026-08-26 ahead of the `AskUserQuestion` call that `#219` prescribes.
+written 2026-08-26 ahead of the `AskUserQuestion` call the readiness task prescribes.
 The signal is the owner's cue to disable branch protection temporarily so the corpus text committed along
 the way can be sanitized (`doc/handover/translation-repair.md`,
 "Corpus exposure is not a blocker").
@@ -9,7 +9,7 @@ This document is the evidence behind the question and the decisions the question
 
 ## What "ready" rests on
 
--   The whole-package audit (`#236`) is closed on a measured tally:
+-   The whole-package audit is closed on a measured tally:
     every register entry carries a FIXED,
     CLOSED,
     folded or tracked marker,
@@ -17,7 +17,7 @@ This document is the evidence behind the question and the decisions the question
     28 MAJOR,
     35 MINOR (`doc/audit/translation-repair-package-audit.md`,
     "Closing tally").
--   Every MAJOR (`#237` to `#257`) and every MINOR group landed with a guard shown to fail when its fix is removed.
+-   Every MAJOR and every MINOR group landed with a guard shown to fail when its fix is removed.
 -   Whole-suite `buildAndTest` after `4c070f729`:
     819 PASS,
     0 FAIL,
@@ -29,9 +29,9 @@ This document is the evidence behind the question and the decisions the question
     a half-dark roster is loud (`SEAT` lines end every command),
     and the two calibration arms of 2026-08-26 ran the full ten-model roster with 304 and 302 of 312 voices heard.
 -   The three measurements the queue held open are paid:
-    `#213` (overlap),
-    `#230` (recovery rate:
-    3 of 4 re-asked answers came back) and `#229` lever 1 (arm C,
+    overlap,
+    the recovery rate
+    (3 of 4 re-asked answers came back) and the straggler window's lever 1 (arm C,
     below).
 
 ## What is known and not done
@@ -143,7 +143,7 @@ run arm D (overlap 4 at 300000 ms) before moving it.
 DECIDED later the same day,
 on arm D:
 the calibration runs under 300000 ms together with overlap 4;
-    the pass keeps 180000 ms until `#261`.
+    the pass keeps 180000 ms until the overlap dial is measured on the pass.
     Record:
     `doc/decision/translation-repair-calibration-overlap.md`.
 
@@ -153,7 +153,7 @@ WHAT THE REJECTION CHANGED.
 The signal had rested on process gates;
 the deliverable is the published page,
 and none had been read by the session that put the signal.
-`#259` opened as the gate that now precedes any re-signal:
+The actual-output reading opened as the gate that now precedes any re-signal:
 read pages against source and archive,
 trace every defect into the artifact (slice,
 lane,
@@ -169,20 +169,20 @@ WHAT THE FIRST READING FOUND,
 on four older-build pages (`doc/audit/translation-repair-output-reading-20260826.md`):
 six defect classes no gate measured.
 Three became code that is landed in source and awaits the build the running arms forbid:
-`#263` (a refiner that answered every ask reported as silent;
-recurred on arm A2 on two seats),
-`#264` (invisible-variant punctuation,
-U+2011 for the hyphen,
+a refiner that answered every ask reported as silent
+(recurred on arm A2 on two seats),
+invisible-variant punctuation
+(U+2011 for the hyphen,
 folded at every lane's intake;
 U+2019 measured as the archive's own convention and kept),
-`#265` (a source hyperlink absent from the page,
-now a `DESTINATIONS` line per entry with the addresses in the run log).
+a source hyperlink absent from the page
+(now a `DESTINATIONS` line per entry with the addresses in the run log).
 The other three (name rendering where the source uses an alias,
 lexical ambiguity introduced by a change,
 coverage misdiagnosis) are recorded in the reading and re-read on the fresh pass before anything is built for them.
 
 WHAT THE MEASUREMENTS SAID.
-Arm A2 (`#260`) put the run-to-run band at 37% of wall clock on an unchanged build,
+Arm A2 put the run-to-run band at 37% of wall clock on an unchanged build,
 driven by provider speed (stream sum 9294 s against 6312 s).
 Normalized as wall clock over stream sum:
 A 0.41,
@@ -191,8 +191,8 @@ C 0.43,
 B 0.23.
 So question 2's overlap effect stands (six bands wide) and question 4's
 window cost is unmeasured at this scale rather than the +24.7% one pair of runs suggested.
-Arm D (`#262`) is running as this is written.
-Question 3's dial is designed (`#261`) and waits for the fresh pass to launch,
+Arm D is running as this is written.
+Question 3's dial is designed and waits for the fresh pass to launch,
 because the pass task builds what it runs and a driver edit present at launch would ship into the reading.
 
 WHAT COMES BEFORE ANY RE-SIGNAL,
@@ -203,7 +203,7 @@ the fresh pass at production defaults over ten entries (`XingZ60` second);
 each page read twice and traced;
 a spot re-read on the fixed build if the reading finds publishability blockers;
 then this document gains a section that says what the pages showed,
-and `#219` is put again.
+and the readiness question is put again.
 ## The owner's words on the goal, 2026-09-04
 
 Asked when a supervised sweep over all 92 entries should launch,
@@ -1728,6 +1728,12 @@ and the next pass must carry both the picture-support fix and the structural-wit
 queue advances.
 
 ## Archive correction has current-stage evidence; audit and temporal context remain (2026-09-10)
+
+This section was written by the sessions of 2026-09-10 to 2026-09-15.
+A "task N" there names an item of those sessions' own tracker
+(the plan `doc/handover/translation-repair-handover-2026-09-06.md` records as abandoned),
+described in the planning record the section links;
+it is not a GitHub issue.
 
 Verified `ba01babda` preserves the archive selector's original option,
 review actions and context without lowering either quorum.

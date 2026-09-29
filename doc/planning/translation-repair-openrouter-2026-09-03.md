@@ -1726,7 +1726,8 @@ the standing lacked endorsement,
 and the single consolidation attempt kept the archive's `name: uekawakuyuurei`,
 `alias: Ying (Hotaru), Qiu Yun (Akigumo)`.
 The contest's log line named the floor and not the finding,
-which task 78 of this session corrects.
+which a later change corrected:
+the line now names each excluded lane and its finding (`lane-contest-eligibility.ts`).
 
 THE BALANCE RAN OUT UNDER CONSOLIDATION.
 The lanes finished at 16:06 with 1.98 USD left;
@@ -1837,9 +1838,9 @@ and the instruction not to wait on it.
     the first chance at a consolidation that completes unstarved,
     and a fresh page to read.
 - **The production default had never shipped a page.**
-  `PASS_OVERLAP` in `corpus-run/pass-overlap.ts` was 1 "until `#261` decides";
+  `PASS_OVERLAP` in `corpus-run/pass-overlap.ts` was 1 until the overlap dial was decided;
     every page that shipped ran at 4 through `TRANSLATION_REPAIR_SLICE_OVERLAP`.
-    `#261` had been measured on four matched pairs on 2026-08-27 and 2026-08-28
+    The overlap dial had been measured on four matched pairs on 2026-08-27 and 2026-08-28
     (`keyword233`,
     `Toka_ls`,
     `Zha_Ke`,
@@ -2878,7 +2879,7 @@ The entry then stopped at the publisher:
 The rule,
 the owner's of 2026-09-02 in `doc/decision/translation-repair-front-matter-guard.md`,
 refuses a page whose visible `name` is the directory id while the source's is not,
-written for `#269`,
+written for
 archives whose metadata was never translated and still name the folder.
 The source names the person 椛笙,
 whose pinyin is Huasheng;
@@ -2912,7 +2913,7 @@ the other 7
 `Weideriche_`,
 `XingZ60`)
 are handles the source does not use as the name,
-the `#269` shape.
+the directory-id shape.
 Under the rule as written the first 7 cannot ship unless a lane renders the name some other way.
 
 A design question on a decided rule,
@@ -2928,7 +2929,7 @@ recorded for the owner:
   the judges see the source name and the sheet's rules;
   the owner's own premise of 2026-09-02 was to stop caring about metadata differing from the source.
   Con:
-  a folder name the judges keep on one of the `#269` 7 ships,
+  a folder name the judges keep on one of the seven handles ships,
   and only the reading catches it.
 - D,
   a romanisation check:
@@ -2948,7 +2949,7 @@ recorded for the owner:
   no dependency,
   and the identity rule already puts the source name in the alias.
   Con:
-  the `#269` 7 can pass the same way,
+  the seven handles can pass the same way,
   so it is A with a weaker reading.
 - B,
   keep the rule and tell the producers to render the name otherwise.
@@ -7451,7 +7452,7 @@ weight 2.5 of 6),
 which drops the chat translation;
 the incumbent (chat alone) fails the link rule (the poem's bilibili link);
 the consolidate gate settled on the withheld standing,
-and the rule of 2026-09-09 (#134) stopped the entry.
+and the rule of 2026-09-09 stopped the entry.
 Every outcome was wrong because the pair was wrong:
 the chat quote translates a picture,
 not the poem.
@@ -7652,7 +7653,7 @@ no `InStreamProviderError`.
   noted because it drops a fact the human translator added.
 
 No defect class.
-#123 closes.
+That closes the Mio reading owed for a horizontal rule in the body and a bare URL.
 
 ## hulicaijia5 launches on the tip, 2026-09-16, 15:58 UTC
 
@@ -12035,7 +12036,7 @@ so the page carried every word of the definition and ended "below.\n";
 `pageCarriesEveryWording` (`corpus-run/published-page-check.ts`) searched the raw would-ship wording, "below.  ", found no such stretch, and the entry stopped ERROR.
 The two page-assembly passes of classes ninety-nine and one hundred were silent (no `page assembly:` line), so the class is the check's, not theirs;
 class seventy-five had taught the weight check to read through `matchSpanEdges` (c5470163d) and left the wording check reading the stage's text.
-`shi_Yumiaoya1` to `14` never met it because no chosen candidate on an inserted slice had ended in spaces; the check has been one-sided in the wrong direction since #194 whenever one does.
+`shi_Yumiaoya1` to `14` never met it because no chosen candidate on an inserted slice had ended in spaces; the check has been one-sided in the wrong direction since the publish fix of 2026-08-24 for silent anchors whenever one does.
 
 Fixed in 314ca4b8c: the wording scan searches `fragmentBody({ fragment: reading.text })`, the body both splice paths leave on the page
 (an inserted slice writes exactly that body; a content span keeps its interior with the archive span's line-ending edges, and the body is inside it), so the check stays one-sided and can still refuse a lost or reordered passage;
@@ -18367,7 +18368,7 @@ through a decisions transport beside the chat clients
 and a per-stage question the stage builds from the same sheet;
 the judge fidelity probe seats it or not,
 as for every candidate.
-Open as task 185;
+Open as the work of seating `typesafe/jev-1.13` in the vote-shaped seats by measured fidelity;
 nothing is wired yet.
 
 Measured at 01:05 UTC on the source-reviewed fidelity matrix
@@ -20132,6 +20133,12 @@ the diff against Mio12 is the Mio21 diff again
 (the archive's wording kept where Mio19 rewrote it).
 
 ## Clustered panels and complete repair evidence implemented, 2026-09-10
+
+This section and the two after it were written by the sessions of 2026-09-10 to 2026-09-15.
+A "task N" there names an item of those sessions' own tracker
+(the plan `doc/handover/translation-repair-handover-2026-09-06.md` records as abandoned),
+described in the planning record the section links;
+it is not a GitHub issue.
 
 The final comparison-input probe selects the correct-disclosure draft at weight five over six ballots,
 after the existing English before repair is supplied to whole-chunk selection.

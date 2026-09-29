@@ -190,7 +190,7 @@ which the takeover session does not have.
   kept as written:
   a bare number there ("task 38", "35 remains blocked by 38") names an item of their tracker,
   described in the planning record the section links,
-  and never a Claude session's task or a GitHub issue.
+  and is not a GitHub issue.
 - Not removed,
   for want of permission in the takeover session:
   171 stopped `podman` containers named `preparation-owner-*` and `comparison-*` on the
