@@ -5746,6 +5746,9 @@ Guard:
 `src/living-docs.test-fixture.ts` adds the runbooks and troubleshooting docs as a kind,
 the task-list-number guard reads them with issue 541 allowed,
 and the clock guard reads them.
+A citation planted in the corpus-pass runbook failed the first,
+a zone-less time planted in a troubleshooting doc failed the second,
+and both files were restored from the commit.
 
 ## Found while fixing
 
@@ -7683,6 +7686,18 @@ Against the rule that a call depending on another's output waits for it (reposit
 Prevention:
 a command reading a file written in the same response runs in a later call,
 and each new scratch spec takes a name not used before (`ls` the name first).
+Again on 2026-09-29 (D30):
+a ledger edit and the commit of that ledger went out in one batch;
+the edit was refused (the file had changed since it was read),
+and the commit found nothing staged and failed,
+so no wrong commit landed.
+Minutes later,
+recording this,
+the lint of that ledger ran in the same batch as the edit it read,
+and happened to run after it.
+The edit and any command that reads its result,
+commit or lint,
+go in separate responses.
 
 ### M50: a mutation runner that read a crashed test run as a survivor
 
