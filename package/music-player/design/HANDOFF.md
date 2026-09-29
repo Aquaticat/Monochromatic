@@ -6910,3 +6910,9 @@ Do not touch the original AVD or infer stale-lock causation beyond this
 bounded failing case;
 read-only mode would not meet the writable study.
 No IME was opened or probed in this attempt.
+The accessibility evidence now compares query-first,
+Back-first and unchanged player-order initial traversal,
+with query-first provisionally ranked ahead of Back-first because Search
+was the action just invoked.
+This is an unselected design inference,
+not measured TalkBack behavior or a reason to trigger an IME study.
