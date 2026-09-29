@@ -48,12 +48,22 @@ permission recovery or result activation is implemented by these fixtures.
   results.”
   D63's intended keyboard-open entry means a keyboard-closed old screenshot
   cannot certify final fit.
-- **Nonempty query, zero direct-name hits:** the library was searched and
-  yielded no matching folder/track names.
+- **Nonempty query, zero direct-name hits:** evaluation must have
+  **completed** for the current query and established source scope with
+  enough coverage to assert there are no matching folder or track names.
   Keep the query and Clear accessible;
-  do not call the whole library empty or missing.
-- **Usable but empty library:** no tracks/folders to search;
-  this is not evidence that permission is absent or an error occurred.
+  a temporarily empty batch,
+  stale prior-query results or an incomplete read do not prove no match.
+  Folder hits without track hits (or the reverse) are ordinary positive
+  results,
+  not a no-match state.
+- **Confirmed empty searchable inventory:** no searchable items are
+  established in the selected scope,
+  not merely a zero-length track list.
+  `LibrarySource.load` returns tracks;
+  it does not prove that there are no folder names D60 could match.
+  D51's visible browser location does not determine whether Search spans
+  the current folder or a wider library.
   D10's player-level empty treatment and Search's right-pane message may
   need different affordances without duplicating them.
 - **Known access or source failure:** only a genuinely known cause can
@@ -61,28 +71,82 @@ permission recovery or result activation is implemented by these fixtures.
   This state can take precedence over either empty query or no-match
   messages;
   avoid telling the user to try another name when no source is readable.
-- **Loading or analysis in progress:** not a failed query or an inaccessible
-  library.
+  A playable file becoming inaccessible is not by itself proof that
+  folder/track names cannot be searched;
+  row activation belongs to the later result-action review.
+- **Source loading, partial coverage or refresh:** a temporarily empty
+  result list is not a completed failed query or an inaccessible library.
+  Do not pass off last-known results from another query/source as current
+  matches,
+  nor claim a full no-match verdict before current enumeration ends.
+- **Analysis in progress:** peak analysis is distinct from discovering
+  searchable folder/track names.
   D27 allows playback before analysis;
-  do not show “library unavailable” merely because analysis is pending.
+  do not gate Search or show “library unavailable” merely because analysis
+  is pending.
 
 `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/LibrarySource.kt`
-currently chooses a held folder,
-then device-wide audio permission,
-then an empty list.
-It also turns a failed whole-folder scan into an empty list after logging.
+currently chooses a live held folder **before** checking the device-wide
+audio permission,
+then uses MediaStore if that permission exists,
+then returns an empty list.
+`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/LibraryRoot.kt`
+checks the persisted folder read grant in `heldRoot` rather than trusting
+a saved URI alone.
+A denied device-wide permission therefore does not independently prove the
+source cannot be read,
+while held permission does not guarantee a successful read.
+`LibrarySource.scanRoot` also turns a failed whole-folder scan into an
+empty list after logging;
+its `onBatch` callback permits partial enumeration.
+The current
 `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/MainActivity.kt`
-gates the current player behind audio permission.
-An empty returned list therefore cannot distinguish an intentionally
-empty folder,
-no permission and some scan failures,
-and the current gate does not demonstrate that Search can be opened while
-permission is absent.
+executable branch,
+however,
+shows the player only if its own audio permission check passes and
+otherwise renders a permission gate.
+That current gate does not demonstrate that Search can be opened without
+audio permission even when the source-selection seam could see a held
+folder.
+An empty returned track list cannot distinguish an intentionally empty
+folder,
+no permission,
+incomplete enumeration and some scan failures,
+let alone establish that no folder names are searchable.
 A designed unavailable state must be conditional on actual source status
 available to the eventual implementation;
 static text must not pretend that a missing status already exists.
 This is an evidence constraint,
 not authorization to change the production library seam now.
+
+## Truthful transitions and recovery
+
+The fixture's “Search returns when the library is available” implies a
+status change is detected and the current query is reevaluated.
+Its fixed unavailable marker demonstrates none of those mechanisms.
+Retry cannot be promised to restore a revoked grant;
+choosing a different folder changes scope rather than repairing the
+original one;
+Clear cannot repair unreadable storage;
+opening Search again need not rescan successfully.
+A recovery button belongs only to an identified cause and an available
+owner with a verified action.
+Do not widen an intentionally chosen empty folder to device-wide media
+without an explicit separate decision.
+
+When source status changes during a visit,
+D63 to D66 still govern focus,
+Clear,
+visible Back and fresh-query **re-entry**.
+An outage during typing must not erase the query or close Search;
+Clear during an outage must not relabel the source usable;
+a source becoming usable while Search stays open is not a D66 new visit;
+a status refresh must not steal edit focus or reopen a dismissed keyboard.
+D68 only concerns the same result set through keyboard refocus;
+it cannot ensure that a removed result row remains visible after the
+result set changes.
+Retain the actual left browser and deck without portraying stale browser
+content as newly verified or declaring an already-playing stream stopped.
 
 ## Review frontier
 
