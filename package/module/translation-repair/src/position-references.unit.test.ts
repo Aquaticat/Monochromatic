@@ -14,17 +14,29 @@
 
  WHAT IS FOUND is the shapes a positional reference takes, matched over words:
  a reference verb before "above" or "below" ("see above", "described
- below"); "above" or "below" in parentheses; a text-structure noun before
- either ("the case above", "the two below", "every count below"), unless what
- follows makes it a comparison ("ranks the house rules above its own", "a
- rate above one") or names the target ("a heading above" a quoted heading);
- a structure noun before "before this" or "after it"; "earlier in this file"
- and its kin; and "the former" or "the latter".
+ below"); "above" or "below" in parentheses; ANY WORD before either ("the case
+ above", "the estimate below", "either early return below"), unless that word
+ marks a comparison, a bound or a placement ("at or above", "unbounded below",
+ "far above", "sits above"), what follows makes it a comparison ("ranks the
+ house rules above its own", "a rate above one", "the threshold below which")
+ or what follows names the target ("a heading above" a quoted heading, "above
+ `limit`"); a structure noun before "before this" or "after it"; "earlier in
+ this file" and its kin; and "the former" or "the latter".
+
+ ANY WORD, NOT A LIST OF NOUNS, since 2026-09-29. The guard first read a
+ position as a pointer only after a listed structure noun ("case", "list",
+ "count"), and a scan for "above" and "below" ending a phrase then found a
+ couple of hundred pointers after nouns no list held ("the estimate below",
+ "the walk below", "the rethrows below", "the standing directive below"). A
+ physical position ending a phrase ("slept below.") now reads as a pointer
+ too; outside page text, which is exempt, the texts this guard reads hold
+ none.
 
  WHAT IS LEFT is a phrase inside double quotes, which quotes the words rather
- than using them, and the exemptions, each named with its reason: positions in
- a page's own text (a note above a letter), comparisons the shapes cannot tell
- apart, and the text of a model-facing sheet. A sheet is rendered whole, in the
+ than using them, a position inside a Markdown code span, which quotes data,
+ and the exemptions, each named with its reason: positions in a page's own
+ text (a note above a letter), comparisons the shapes cannot tell apart,
+ Unicode character names, and the text of a model-facing sheet. A sheet is rendered whole, in the
  one order its builder fixes, and read once; editing one changes the cache key
  it is stored under, so a sheet's wording is exempt as a class. "The next
  heading" and "the previous section" are not read at all: this package handles
@@ -132,8 +144,33 @@ await describe({
       },
     },),
     it({
-      name: 'LEAVES a comparison, a named target, a quoted phrase, a position in running text and a position '
-        + 'with no structure noun before it',
+      name: 'FINDS A POSITION AFTER A WORD NO NOUN LIST HOLDS, ending a phrase or running on into a verb, in a '
+        + 'comment and in a printed line',
+      fn: async () => {
+        expect(positionReferences({
+          file: {
+            path: 'src/cat.ts',
+            text: [
+              '// More than the estimate below, and the walk below is type-checked.',
+              '// Read before either early return below: the bowl is full.',
+              'console.log(`naps: 3, never summed with the whiskers above`,);',
+              '// The kitten slept below.',
+            ].join('\n',),
+          },
+        },).map(function phraseOf({ phrase, },): string {
+          return phrase;
+        },),).toEqual([
+          'estimate below',
+          'walk below',
+          'return below',
+          'whiskers above',
+          'slept below',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES a comparison, a bound, a placement, a named target, a quoted phrase and a position in a '
+        + 'Markdown code span',
       fn: async () => {
         expect(positionReferences({
           file: {
@@ -142,7 +179,24 @@ await describe({
               'The cat ranks the house rules above its own, at a rate above one.',
               'Record it under a new heading above "## Naps" and the counts above 3 and above `limit`.',
               'Never write "see above" or "the case above".',
-              'The kitten leapt above the bowl and slept below.',
+              'The kitten leapt above the bowl at or above quorum, unbounded below and above.',
+              'The threshold below which a nap counts sits above U+2E80, far above anything, set above {@link NAPS}.',
+              'The label read `Translation of the above photos:` on the page.',
+            ].join('\n',),
+          },
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'LEAVES a comparison wrapped across a string joined by a sign, since the quote and the sign between '
+        + 'the position and its object join them',
+      fn: async () => {
+        expect(positionReferences({
+          file: {
+            path: 'src/cat.unit.test.ts',
+            text: [
+              'const name = \'NAPS at any ratio, since below \'',
+              '  + \'the floor a nap is short\';',
             ].join('\n',),
           },
         },),).toEqual([],);
