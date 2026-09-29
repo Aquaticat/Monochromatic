@@ -171,6 +171,20 @@ await describe({
       },
     },),
     it({
+      name: 'FINDS A POSITION AFTER A BACKTICK RUN NOTHING CLOSES, which Markdown prints as a plain backtick '
+        + 'rather than opening a code span',
+      fn: async () => {
+        expect(positionReferences({
+          file: {
+            path: 'doc/cat.md',
+            text: 'A stray `` opens nothing, so the note above counts.',
+          },
+        },).map(function phraseOf({ phrase, },): string {
+          return phrase;
+        },),).toEqual(['note above',],);
+      },
+    },),
+    it({
       name: 'LEAVES a comparison, a bound, a placement, a named target, a quoted phrase and a position in a '
         + 'Markdown code span',
       fn: async () => {
@@ -185,6 +199,8 @@ await describe({
               'The threshold below which a nap counts sits above U+2E80, far above anything, kept below {@link NAPS}.',
               'The label read `Translation of the above photos:` on the page, and a below-threshold vote counts.',
               '            `the above note`',
+              'The report printed `` the credits above` `` on its last line.',
+              'A log line read `` total` then the note above was cut `` in full.',
             ].join('\n',),
           },
         },),).toEqual([],);

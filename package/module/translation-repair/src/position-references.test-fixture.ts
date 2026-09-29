@@ -3,13 +3,18 @@
  functions that find a reference by position in a file and match it against
  the guard's exemptions. Split out of the guard so a probe can print every
  reference the guard would name, whole, where a failing assertion shows a
- truncated list; its vocabulary and its reading of a text sit in the two
- sibling fixtures.
+ truncated list; its vocabulary, its reading of a text and where a phrase
+ stands (quotes, paragraphs, code spans) sit in the three sibling fixtures.
 
  @module
  */
 
 import { isAsciiDigit, } from '../dist/final/node/index.mjs';
+import {
+  insideCodeSpan,
+  insideQuotes,
+  paragraphStart,
+} from './position-references-context.test-fixture.ts';
 import {
   joinedText,
   type Word,
@@ -252,166 +257,6 @@ function comparesOrNames(
       right: next,
     },)
     && COMPARED_OBJECTS.has(next.text,);
-}
-
-/**
- How often one character occurs in a text.
-
- @param text - text to count in
-
- @param character - one UTF-16 unit, which every quote mark is
-
- @returns Occurrences
-
- @example
- ```ts
- countOf({ text: 'a "b" c', character: '"', },); // 2
- ```
- */
-function countOf(
-  {
-    text,
-    character,
-  }: {
-    readonly text: string;
-    readonly character: string;
-  },
-): number {
-  return text.split(character,)
-    .length
-    - 1;
-}
-
-/**
- Whether an offset stands inside double quotes in its paragraph.
-
- READ FROM THE PARAGRAPH'S START, not the line's: a quotation wrapped across
- two lines opens on one and closes on the next, so counting from the line's
- start reads every phrase after it on the second line as quoted and every
- quoted phrase as bare.
-
- @param flat - joined text
-
- @param lineStart - offset its paragraph starts at
-
- @param offset - offset of the phrase
-
- @returns Whether an odd number of straight quotes, or more opening than
- closing curly quotes, stand before it in its paragraph
-
- @example
- ```ts
- insideQuotes({ flat: 'a "see above" rule', lineStart: 0, offset: 3, },); // true
- ```
- */
-function insideQuotes(
-  {
-    flat,
-    lineStart,
-    offset,
-  }: {
-    readonly flat: string;
-    readonly lineStart: number;
-    readonly offset: number;
-  },
-): boolean {
-  /**
-   The paragraph before the phrase.
-   */
-  const before = flat.slice(
-    lineStart,
-    offset,
-  );
-  return ((countOf({
-    text: before,
-    character: '"',
-  },) % 2) === 1)
-    || (countOf({
-      text: before,
-      character: '\u{201C}',
-    },) > countOf({
-      text: before,
-      character: '\u{201D}',
-    },));
-}
-
-/**
- Whether an offset stands inside a Markdown code span on its line, which
- quotes data (a label a page carries, a log line) rather than pointing.
-
- READ FROM THE LINE AS WRITTEN, not as joined: joining strips a backtick that
- opens a line, since in a source file that backtick opens a wrapped template,
- and a Markdown line opening with a code span would then count one short.
-
- @param line - the line as written
-
- @param offset - offset of the phrase in it
-
- @returns Whether an odd number of backticks stand before it on its line
-
- @example
- ```ts
- insideCodeSpan({ line: 'a `the above` b', offset: 3, },); // true
- ```
- */
-function insideCodeSpan(
-  {
-    line,
-    offset,
-  }: {
-    readonly line: string;
-    readonly offset: number;
-  },
-): boolean {
-  return (countOf({
-    text: line.slice(
-      0,
-      offset,
-    ),
-    character: '`',
-  },) % 2) === 1;
-}
-
-/**
- Offset of the paragraph a line belongs to: the line after the last blank one
- at or before it.
-
- @param flat - joined text
-
- @param lineStarts - where each line starts
-
- @param lineIndex - index of the line
-
- @returns Offset the paragraph starts at
-
- @example
- ```ts
- paragraphStart({ flat: 'a  b', lineStarts: [0, 1, 2,], lineIndex: 2, },); // 2
- ```
- */
-function paragraphStart(
-  {
-    flat,
-    lineStarts,
-    lineIndex,
-  }: {
-    readonly flat: string;
-    readonly lineStarts: readonly number[];
-    readonly lineIndex: number;
-  },
-): number {
-  for (let at = lineIndex; at > 0; at -= 1) {
-    /**
-     The line before this one, as joined.
-     */
-    const previous = flat.slice(
-      lineStarts[at - 1] ?? 0,
-      lineStarts[at] ?? 0,
-    );
-    if (previous.trim() === '')
-      return lineStarts[at] ?? 0;
-  }
-  return 0;
 }
 
 /**

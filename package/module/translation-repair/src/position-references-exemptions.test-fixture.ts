@@ -205,7 +205,7 @@ export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
     reason: 'the guard\'s own example of a file it reads',
   },
   {
-    path: 'src/position-references.test-fixture.ts',
+    path: 'src/position-references-context.test-fixture.ts',
     holds: 'line: \'a `the above` b\'',
     reason: 'the guard\'s own example of a code span',
   },
