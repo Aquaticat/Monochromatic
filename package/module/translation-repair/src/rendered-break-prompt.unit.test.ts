@@ -93,8 +93,14 @@ await describe({
           subject: { sourceText: SOURCE, incumbentText: '', repairText: '', translateText: KEPT, ballots: [], lineStructured: false, },
         },);
         expect(system?.content,).toContain(`${JSON.stringify('CANDIDATE "translate"',)} explicit breaks by top-level block: [1]`,);
-        expect(system?.content,).not
-          .toContain(`${JSON.stringify('CANDIDATE "repair"',)} explicit breaks`,);
+        // COUNTED BY LINE, not by label: a lane whose text is the archive's
+        // carries a longer label, which a label search would miss (ledger
+        // B29 mutation batch). The original's line and the one candidate's.
+        expect((system?.content ?? '')
+          .split('\n',)
+          .filter(function countsBreaks(line,): boolean {
+            return line.includes(' explicit breaks by top-level block: ',);
+          },),).toHaveLength(2,);
       },
     },),
     // LEDGER B29: the follow-up writer is shown the candidates the judges

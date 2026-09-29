@@ -61,6 +61,19 @@ await describe({
         expect(handleReading({ name: '\u{1F408}雨猫', },),).toBe('\u{1F408}Yumao',);
       },
     },),
+    // The ledger B29 mutation batch: the run's own offset moves by two units
+    // past a Han character beyond the first plane too, or the run is cut
+    // short and the syllables after it are lost. Only the syllable after it
+    // is asserted: pinyin-pro reads no such character, which passes through
+    // as written, and the ledger records that rather than this test pinning it.
+    it({
+      name: 'READS every syllable of a run that opens on a Han character beyond the first plane',
+      fn: async () => {
+        expect(handleReading({ name: '\u{20BB7}猫 cat', },)
+          .toLowerCase()
+          .endsWith('mao cat',),).toBe(true,);
+      },
+    },),
     it({
       name: 'KEEPS AN ACCENTED WORD a space apart too, opening after the reading or ending, accent composed or '
         + 'combining, before it; ASCII letters alone wrote them against the reading (ledger B18)',
