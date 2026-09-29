@@ -151,6 +151,47 @@ was used from `/home/user/temp/agent/emulator-grpc-swipe.py`.
 - UI Automator XML contained application semantics but no speech-overlay text.
 - Google TTS logcat contained synthesis lifecycle lines without the utterance.
 
+## Folded-cover positive-control gap
+
+The later disposable `Fold_No_Hardware_Probe` Search baseline used the
+same installed emulator and TalkBack versions,
+font scale `2.0`,
+and no keyboard input.
+The inner physical-swipe path advanced actual TalkBack focus and speech.
+On the folded 1080 × 2424px cover,
+UI Automator showed the Search controls and an overlay showed
+“Back to player. Button”,
+but the swipe path was not validated.
+
+The shipped controller schema at
+`emulator/lib/emulator_controller.proto:1061-1063` defines the target:
+
+```protobuf
+// The display device where the touch event occurred.
+// Omitting or using the value 0 indicates the main display.
+int32 display = 2;
+```
+
+The helper had defaulted to display `0`.
+Encoding a host `TouchEvent.display = 1` also left the shown cover Back
+focus unchanged in the sampled probe.
+The controller's `getDisplayConfigurations` reported its main
+2076 × 2152 configuration while Android's active cover logical display
+was `0`.
+A guest `input touchscreen -d 0 swipe` did not move the shown focus
+either.
+There was no positive control establishing that any sampled cover path
+could advance TalkBack focus.
+Repeated OCR of app text is therefore **not** a cover speech transcript.
+The exact controller-to-folded-display mapping remains unresolved;
+these null probes establish neither a cover traversal order nor an
+upstream defect or inability.
+
+The bounded Search observations and inspected inner witnesses live at
+`package/music-player/design/evidence/search-talkback-native-baseline.md`.
+The inner success does not remove this separate cover harness gate.
+No additional keyboard or original-AVD experiment was performed.
+
 ## Verified workarounds
 
 ### Use emulator gRPC touch on loopback

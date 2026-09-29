@@ -84,6 +84,7 @@ if (command === 'build') {
     'D51', 'D52', 'D56', 'D57', 'D58', 'D59', 'D60', 'D61',
     'D63', 'D64', 'D65', 'D66', 'D67', 'D68',
     'D69', 'D70', 'D71', 'D72', 'D73', 'D74',
+    'D75', 'D76', 'D77', 'D78', 'D79', 'D80', 'accessibility-title',
     'archive/search-navigation-focus-before-selection.html',
     'archive/search-result-activation-before-return.html',
     'results200', 'predates D58',

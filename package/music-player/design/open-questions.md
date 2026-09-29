@@ -368,7 +368,18 @@ rounds (2026-09-17):
   comparison.
   Stale results must not substitute another target or fake success;
   no real result tap has been verified.
-  Search accessibility (review task 118) remains separate.
+  D75 to D80 settle the Search accessibility design through adopted
+  recommendations with a correction/veto path:
+  query-first accessibility focus,
+  contiguous Search traversal,
+  single-action rows,
+  truthful non-stealing announcements,
+  outcome-aware return focus and identity-preserving updates.
+  See `evidence/search-accessibility-boundaries.md` and
+  `evidence/search-talkback-native-baseline.md`.
+  Native entry/row/status/return behavior is not implemented or verified;
+  cover swipe delivery lacks a positive control.
+  Internal review task 118 closes design choices only.
   D21's global command hotkey and Settings row
   do not transfer to Search.
   D25 still reserves Ctrl+F for search and Ctrl+O for the

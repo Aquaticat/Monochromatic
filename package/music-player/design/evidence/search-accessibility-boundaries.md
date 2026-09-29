@@ -1,4 +1,4 @@
-# Search accessibility boundaries before traversal choices
+# Search accessibility goals and native evidence boundaries
 
 ## Settled behavior that accessibility must express
 
@@ -111,7 +111,7 @@ Browser axe results from the design forms are evidence about those HTML
 forms only,
 not Android TalkBack.
 
-## Search entry options and consequential tradeoff
+## Entry recommendation and its tradeoff
 
 - **Query-first accessibility focus:** start the separate Search task on
   its editable field,
@@ -143,18 +143,24 @@ not Android TalkBack.
   not the measured Search fixture sequence that reached Back after two
   swipes.
 
-**Provisional ranking: query-first > Back-first > unchanged player order.**
+**Ranking: query-first > Back-first > unchanged player order.**
 Query-first prioritizes the action just invoked over one additional
 escape gesture;
 Back-first preserves escape discoverability without burying the field;
 unchanged player order buries the active destination behind a long
 browser traversal.
-This is a design inference,
-not a selection or native TalkBack finding.
-The two Search-first variants may differ meaningfully in accessibility
-focus but need not change D63's independent edit-focus intent.
+D75 adopts query-first as an evidence-led recommendation under the user's
+instruction to record strongly determined defaults with a correction/veto
+path rather than another ratification question.
+This is a **new design policy**,
+not a consequence of D63 or an observed native entry transition.
+Back remains reachable by reverse navigation.
+D76 keeps Search contiguous and retains accessible browser/deck regions,
+without treating Search as a modal focus trap or burying the deck behind
+every hit of an unbounded result list.
+The user may correct or veto this policy in chat.
 
-## Consequences requiring a design and later native verification
+## Adopted goals requiring later native verification
 
 - **Search entry:** orient the user to the just-opened destination without
   losing the Back path or forcing traversal through the full left browser
@@ -181,12 +187,36 @@ focus but need not change D63's independent edit-focus intent.
   not a disposed Search result.
   A current-track action needs structured play/pause state speech under
   D40's principle;
-  exact target and spoken sequence remain unverified.
+  D79 names the desired destination targets:
+  the invoking Search control after visible Back,
+  selected folder context after folder activation,
+  or the activated track row after track activation.
+  A current track absent from the retained page uses the deck's current
+  context without inventing a page change.
+  Target removal has a folder-context fallback;
+  exact native focus and spoken sequence remain unverified.
 - **Reflow and targets:** readable text at the measured 100%/200% scales,
   an actual 48dp minimum action target and a focus indicator cannot be
   proven by keyboard-closed screenshots or a debug result row without
   handlers.
   D56/D57's visual keyboard bounds do not waive accessibility reach.
+
+D77 specifies single-action row meaning,
+D78 defines non-stealing current-query announcements,
+and D80 defines identity continuity and fallback when a row or Clear
+control disappears.
+These are adopted recommendations,
+not six independent implementation claims.
+The design choices for internal review task 118 are closed;
+native entry,
+activation,
+status announcements,
+focus continuity and both-panel traversal remain implementation acceptance
+gates.
+The exact source-status recovery owner remains internal review task 131.
+No keyboard-open accessibility verification was attempted.
+The inspected cropped native witnesses are linked in
+`search-talkback-native-baseline.md`.
 
 A disposable Fold TalkBack study may inspect **accessibility traversal only**
 under a 6 GiB/2 CPU cap,

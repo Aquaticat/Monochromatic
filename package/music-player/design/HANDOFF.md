@@ -6888,9 +6888,10 @@ this is not Search traversal evidence.
 Archived Material Search guidance permits initial focus on a leading
 button or text field and calls for result-change announcements,
 while icon/list guidance supplies action-label and target bounds.
-Debug Search result rows currently have no click handler or bundled
-single-action semantics;
-no Search TalkBack speech or activation has been verified.
+At this initial boundary check,
+debug Search result rows had no click handler or bundled single-action
+semantics;
+Search TalkBack speech and activation had not yet been verified.
 
 A bounded disposable Fold TalkBack **traversal-only** boot was attempted
 in 6 GiB/2 CPU Podman with emulator gRPC on loopback.
@@ -6973,9 +6974,65 @@ Raw status-bearing screenshots and speech-overlay crops remain private.
 Do not touch the original AVD or infer stale-lock causation beyond this
 bounded failing/passing boot pair;
 read-only mode would not meet the writable study.
-The accessibility evidence now compares query-first,
-Back-first and unchanged player-order initial traversal,
-with query-first provisionally ranked ahead of Back-first because Search
-was the action just invoked.
-This is an unselected design inference,
-not measured TalkBack behavior or a reason to trigger an IME study.
+The entry comparison ranked query-first ahead of Back-first because
+Search was the action just invoked.
+D75 to D80 now adopt evidence-led recommendations with a chat
+correction/veto path,
+following the user's instruction against ceremonial ratification:
+query-first accessibility focus,
+Search-contiguous traversal,
+one named action per row,
+non-stealing current-query announcements,
+navigation-outcome return targets and identity-preserving focus updates.
+This is an explicit new design policy,
+not a claim that D63 previously selected screen-reader focus.
+Back remains reachable by reverse navigation;
+the retained inner browser/deck remain accessible named regions,
+not controls hidden behind a modal focus trap.
+The cover still has one full-width Search destination and no added deck.
+Exact recovery copy/control remains internal review task 131,
+pending a genuine source-status owner and future implementation authority.
+
+The inspected inner query,
+alphabet-rail,
+title and support witnesses are now published as opaque,
+metadata-stripped,
+status-cropped PNGs linked from
+`evidence/search-talkback-native-baseline.md`,
+with SHA-256 provenance in
+`questions/evidence/search-talkback-witnesses.json`.
+They retain exact source pixels;
+no raw OCR or private system-status strip was published.
+The retained bottom navigation strip can be behind the speech overlay.
+
+Cleanup verified the disposable guest's speech overlay off,
+Speak usage hints on,
+`accessibility_enabled=0` and
+`enabled_accessibility_services=null`.
+The owning-container `adb -s emulator-5580 emu kill` returned
+`OK: killing emulator, bye bye`.
+The container and guest disappeared on a subsequent owner check with no
+forced container stop needed;
+the auto-removed container's final exit status was not retained.
+No emulator is left running from this study,
+and the original AVD remains untouched.
+The further failing/passing lock-start pair and bounded shutdown outcome
+are in
+`doc/troubleshooting/android-emulator-37-disposable-avd-lock-after-hard-stop.md`.
+The independent cover-input positive-control gap is recorded in
+`doc/troubleshooting/android-emulator-37-talkback-speech-capture.md`.
+
+Internal review task 118 closes **accessibility design choices only**.
+Native Search-entry focus,
+row activation/speech,
+dynamic announcements,
+return focus,
+fold continuity,
+cover traversal and keyboard-open accessibility remain unverified
+implementation acceptance gates.
+No production code,
+matcher/library choice,
+new IME experiment or `AGENTS.md` change is authorized.
+The next work is scoped review-artifact verification and recording its
+results,
+not implementation of these goals.

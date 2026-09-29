@@ -2089,6 +2089,161 @@ was not an Android tap test.
 No production Search implementation,
 fuzzy matcher selection or new IME experiment is authorized.
 
+### D75. Search opens with query accessibility focus (2026-09-29)
+
+Adopted as an evidence-led recommendation under the user's instruction
+to record strongly determined defaults with a correction/veto path,
+not as a separately answered questionnaire.
+Initial accessibility focus goes to the query field on both Fold panels.
+Its accessible name remains “Search music”;
+the current value is separate from that name.
+Back remains the preceding reachable control in the header's reading order.
+This is separate from D63's request for **edit focus** and a keyboard:
+neither focus system proves or overrides the other.
+Query-first prioritizes the Search task just invoked;
+Back-first would announce escape first but require another forward
+gesture to reach the field.
+Material guidance permits either initial target and does not select ours.
+The fixed `cam` fixture did not exercise a real Search-entry transition,
+so this is a design goal,
+not verified initial TalkBack focus.
+
+### D76. Keep Search together in reading order (2026-09-29)
+
+The linear Search region is Back,
+query,
+Clear when present,
+then the current results or status.
+On the inner panel,
+the retained folder region follows as a whole,
+including its header,
+alphabet rail and folder grid,
+then the complete playback deck.
+Do not interleave the left alphabet rail between the query and results.
+The cover has only its full-width Search destination;
+do not add a cover Search deck to reproduce the inner layout.
+D39 still governs the ordinary player outside Search.
+
+Search is not an accessibility modal or focus trap.
+Expose named regions so retained browser/deck controls are discoverable
+without traversing every hit in a large result list;
+the host application's actual region-navigation route needs verification.
+Keep visual composition unchanged and do not add repeated visible headings
+or hide the retained controls merely to simplify traversal.
+
+### D77. Each result is one named action (2026-09-29)
+
+Expose each result as one actionable semantic unit:
+own filename/folder name once,
+track/folder kind,
+useful parent context and the real activation meaning.
+A folder offers Open folder without autoplay under D72.
+A different track offers Play track.
+An already-current track offers Pause track while playing,
+or Play track while paused/unloaded,
+using D73's actual toggle semantics.
+“Current track” is structured state,
+not a synonym for “playing” or a second copied title.
+The resulting playback state remains discoverable on return.
+
+Disambiguate equal names with their relative parent path.
+For a root-level item,
+use the library-root context rather than inventing a parent or saying
+“unknown”.
+Parent context describes location,
+never eligibility from a parent-only match.
+Decorative type icons and D59 highlight fragments are not extra
+accessibility stops.
+Retain visible title/support text,
+actual minimum 48dp action targets and a labeled focus boundary;
+do not replace useful child text with a synthetic duplicated sentence.
+Exact platform speech and row activation remain implementation gates.
+
+### D78. Announce meaningful current Search changes without focus theft (2026-09-29)
+
+Make the results/status region persistently discoverable and announce
+meaningful changes without moving query edit or accessibility focus.
+Coalesce result updates rather than interrupting speech for every key,
+and cancel superseded announcements after another query,
+Clear or leaving Search.
+Completion belongs to the **current query and source evaluation**,
+not a silence timer.
+Announce an exact result count only when its scope is known;
+partial/stale results never establish completed no match under D69.
+If useful results appear while evaluation continues,
+distinguish availability from completion instead of announcing absence.
+
+An empty query retains D70's search invitation,
+not a failed lookup announcement.
+Completed no match may name the query;
+confirmed empty searchable inventory and known source failure retain
+their distinct D69/D71 meanings.
+Do not announce an unsupported recovery action,
+a fabricated total or hidden old-query success.
+Exact cause-specific error/recovery language remains dependent on
+internal review task 131's future source-status owner.
+
+### D79. Return focus explains the actual navigation outcome (2026-09-29)
+
+Visible Back returns accessibility focus to the player control that
+invoked Search when it still exists.
+If that control disappeared,
+use the current folder context as a deterministic fallback,
+not a disposed Search node.
+This does not change the distinct system-Back/IME boundary in D64.
+
+After a successful folder action,
+focus the selected folder context in the ordinary player:
+its selected folder item on the inner panel or folder title on the cover.
+After a successful other-track action,
+reveal and focus that track's player row on its owning page.
+After a successful current-track toggle,
+focus its player row if present on the retained page;
+otherwise use the deck's current-track context without changing pages
+solely for the toggle.
+A missing target falls back to the destination's folder context.
+
+Transfer focus only after the selected action genuinely succeeds and
+the destination is ready.
+A stale/failed activation remains in Search with a truthful,
+discoverable diagnostic and no substitute target.
+Do not let a delayed completion move focus after later navigation.
+These are desired targets,
+not proof of scroll-to-row,
+native success/error handling or TalkBack return speech.
+
+### D80. Preserve meaningful focus through Search changes (2026-09-29)
+
+For same-query updates,
+keyboard refocus and fold/layout changes,
+preserve the focused result's identity and make its target visible when
+that item still exists.
+This complements D68's visibility goal without promising arbitrary
+keyboard fit.
+If an item vanishes,
+focus the next surviving item in the current order,
+then the preceding one,
+or the query if no result survives;
+do not silently activate a replacement.
+If Clear removes its own focused control,
+accessibility focus falls back to the query while D65's edit-focus and
+keyboard-state contract remains unchanged.
+A new query cancels old-result focus restoration,
+but an update must not steal focus from editing.
+Hardware-keyboard mapping remains separate from these screen-reader goals.
+
+These recommendations can be corrected or vetoed in chat.
+They close the **design choices** for internal review task 118,
+not native accessibility acceptance.
+See `evidence/search-accessibility-boundaries.md` and
+`evidence/search-talkback-native-baseline.md`.
+The inner baseline is fixed-query,
+keyboard-closed and 200% only;
+cover physical-swipe delivery has no positive control.
+No production Search code,
+matcher selection,
+new IME experiment or original-AVD change is authorized.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)

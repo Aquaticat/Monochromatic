@@ -141,6 +141,54 @@ or relocate a lock merely because this later stop was forced;
 the owner checks described in this document are still required before a
 writable retry.
 
+## TalkBack-study restart recurrence and console shutdown
+
+A later 6 GiB/2 CPU `Fold_No_Hardware_Probe` TalkBack study reproduced
+the writable-startup FATAL before guest boot.
+The container named `fold-search-talkback-review-avd` returned code `1`.
+ADB,
+Podman,
+process listing,
+`lsof`,
+`fuser` and `lslocks` found no owner of the disposable AVD's exact lock
+paths before they were jointly moved to private backup
+`/home/user/temp/agent/fold-search-talkback-lock-backup.ugdNRZd1/`.
+The same bounded launch in `fold-search-talkback-review-avd-retry`
+then reached `ADB_BOOT_READY emulator-5580`.
+Inspection reported memory `6442450944` bytes and NanoCPUs
+`2000000000`.
+This is a further bounded failing/passing pair for joint lock relocation,
+not identification of which lock failed or proof of a forced-stop cause.
+
+At study end,
+the disposable guest's speech overlay was verified disabled,
+Speak usage hints restored enabled,
+and `accessibility_enabled=0` with
+`enabled_accessibility_services=null`.
+Shutdown used the owning container's ADB context:
+
+```text
+podman exec fold-search-talkback-review-avd-retry /home/user/Android/Sdk/platform-tools/adb -s emulator-5580 emu kill
+OK: killing emulator, bye bye
+OK
+```
+
+Immediately after that accepted command,
+the container and ADB device were still present.
+A later owner check found no matching container,
+ADB device or `Fold_No_Hardware_Probe` emulator process.
+No `podman stop` or forced kill was needed in this visit.
+The automatically removed container's final exit status/log was not
+retained,
+so console acceptance plus eventual disappearance is the measured
+shutdown evidence,
+not a stronger assertion about exit code or every saved guest setting.
+No subsequent restart was attempted and no further locks were moved.
+The original AVD remained untouched.
+See [the console-token boundary](android-emulator-console-token-container-home.md)
+for why the owning container's ADB avoids the previously observed host
+authentication mismatch.
+
 ## Verified workaround and tradeoffs
 
 For this **disposable AVD only**,
