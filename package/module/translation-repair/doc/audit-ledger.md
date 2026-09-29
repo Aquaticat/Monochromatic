@@ -9048,6 +9048,19 @@ and an astral case that exercised the other branch's offset.
 `c0738cda9` closes both,
 and a rerun caught each.
 
+`fba7ec063` adds two more scans,
+so the catch and accumulator rules are not left to review:
+`caught-errors-kept.unit.test.ts` fails on a catch clause that binds nothing,
+discards its error with `void`,
+or neither logs,
+rethrows nor names it;
+`text-accumulators.unit.test.ts` fails on a `let` begun as text and grown inside a loop,
+with `roman` in `corpus-run/ordinal-style.ts` named,
+since it reads a fixed table.
+Three mutants
+(`b29-guard-mutants.json`)
+were each caught.
+
 #### Open
 
 - The rendering audit shows its auditors the declared names the producers had

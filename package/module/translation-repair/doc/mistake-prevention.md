@@ -925,5 +925,11 @@ unless the call is named with its reason or sits in a named measurement file,
 and on a named call or file that no longer leaves anything out;
 it cannot see a key nested in a named type or a parameter typed by a named alias.
 `exported-function-names.unit.test.ts` fails on a name two source files export.
-The catch and accumulator rules are enforced by review and the ledger's census,
-not by a guard.
+`caught-errors-kept.unit.test.ts` fails on a catch clause that binds nothing,
+discards its error with `void`,
+or neither logs,
+rethrows nor names it;
+a clause that names the error only to test its class passes,
+so review still reads what a clause returns.
+`text-accumulators.unit.test.ts` fails on a `let` begun as text and grown inside a loop,
+unless it is named as reading no text.
