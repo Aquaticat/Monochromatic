@@ -365,6 +365,19 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    No breaking-change clause (unused in 3000 commits).
    No corrective comments on this session's 35 `docs(*)` commits (user choice over GCA's letter).
    Approved.
+- Batch 20 (`AGENTS.md` meta rules,
+   diagnostics,
+   JCH,
+   EPR):
+   10 rules stay 10,
+   694 tokens both ways;
+   NCD and CRN now point at tracked `forbidden-strings.append.txt`;
+   TAG states round 4 uniqueness scope;
+   CRN covers retired codes;
+   JCH stays always-loaded until #423 (reopened round 2:
+   `tsdoc/check-mutates` cannot detect absent effects);
+   meta rules stay in `AGENTS.md` (`writing-for-agents` loads in 25% of pi sessions).
+   Approved.
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
@@ -1995,14 +2008,11 @@ SK3:
    which does not exist here (`doc/agent/`),
    so SK1's path pointer is what redirects agents.
 
-## Next action
+### Batch 20
 
-Batch 20 proposed:
-10 rules stay 10,
-694 tokens both ways;
-awaiting user answers.
-
-### Pending batch 20 text
+Placement:
+DGT and DNL move to "Before editing code" under a "Logging and diagnostics" heading;
+JCH moves to "TSDoc comments".
 
 ```md
 ORG:
@@ -2076,28 +2086,21 @@ EPR:
  ask which to omit.
 ```
 
-Fixes:
-NCD and CRN pointed at untracked `forbidden-strings.append.local.txt`;
-reserved and retired codes live in tracked `forbidden-strings.append.txt` (lines 12 to 137).
-TAG states round 4's uniqueness scope;
-CRN covers retired codes.
-Placement:
-DGT and DNL move from "Communication style" to "Before editing code" ("Logging" becomes "Logging and diagnostics");
-JCH moves to "TSDoc comments".
+## Next action
 
-JCH evidence (reopens round 2):
-`tsdoc/check-mutates` messages are syntactic only (`package/oxlint-plugin/tsdoc/src/rule/mutates.ts:108`),
-so it cannot carry JCH;
-the fitting message,
-`staleMutatesTag`,
-belongs to `no-invalid-parameter-effect-contracts`,
-off until #423 (`package/config/oxlint/src/rule/restriction.ts:186`).
-837 `@mutates` tags in 392 package files;
-27 commits in the last month changed them.
+Walk complete (2026-09-29).
+Awaiting user confirmation of shared understanding before the apply phase.
 
-Meta-rule placement evidence:
-`writing-for-agents` loads in 25% of pi sessions;
-143 commits touched `AGENTS.md` between 2026-06-25 and 2026-09-25.
+### Walk totals
+
+Rule text only (no headings),
+Opus 5.5 tokens via `mise run //package/module/token-count:count`:
+276 rules and 17192 tokens become 204 always-loaded rules and 12488 tokens.
+73 codes leave `AGENTS.md` (merged,
+deleted,
+or moved);
+SLF is the only new code;
+no duplicate codes.
 
 ### Concurrent `AGENTS.md` changes
 
@@ -2108,20 +2111,6 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
 - b9c0e6e48 added a fuzz-sidecar sentence to AP1.
 - 654507bf9 added SBS under "Adding new packages";
    it joins batch 16.
-
-### Remaining batches (10 rules)
-
-- Batch 20:
-   ORG,
-   TAG,
-   RLM,
-   NCD,
-   CRN,
-   APG,
-   DGT,
-   DNL,
-   JCH (guidance moves into `tsdoc/check-mutates` diagnostic),
-   EPR.
 
 ### Apply phase (after the walk)
 
@@ -2136,8 +2125,9 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
 - Rewrite references to retired codes;
    add forbidden-strings entries for retired codes.
 - Update `doc/philosophy/agents.md` and `doc/agent/regression-suite.md` Case 3.
-- Move JCH guidance into the `tsdoc/check-mutates` diagnostic
-   (OWB guidance is already in the prefer-readonly diagnostic).
+- Follow-up after #423 enables `no-invalid-parameter-effect-contracts`:
+   move JCH guidance into its `staleMutatesTag` message and delete JCH
+   (`tsdoc/check-mutates` is syntax-only and cannot carry it).
 - Add "Prefer an index scan,
    parser,
    or string API" to the `no-regex` `regexpConstructor` message (`package/oxlint-plugin/no-restricted-syntax/src/rule/no-regex.ts`),
