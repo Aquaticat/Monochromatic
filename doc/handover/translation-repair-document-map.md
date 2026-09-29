@@ -2,12 +2,34 @@
 
 ## Current status
 
-Work is on the LEGACY slice pipeline,
-which is being made production ready with OpenRouter as the paid per-token fallback.
-It is not production ready:
-three entries shipped and were read on 2026-09-04,
-the reading found four defect classes in the pipeline's own screens,
-and the first pass on the plain invocation on 2026-09-06 found a fifth.
+As of 2026-09-29,
+work is on the LEGACY slice pipeline,
+under the owner's direction decision of 2026-09-01 and the OpenRouter order of 2026-09-03,
+with Synthetic,
+Amazon Bedrock,
+Hyper and OpenRouter as its providers.
+It is not production ready.
+
+Since 2026-09-27 the work has been the owner's audit of the whole package
+("audit the whole translation-repair pkg for all the mistakes we've made and fix all of them").
+The package's
+[audit ledger](../../package/module/translation-repair/doc/audit-ledger.md)
+holds every finding with its measurement,
+its fix and its guard,
+and every mistake made while fixing;
+[`mistake-prevention.md`](../../package/module/translation-repair/doc/mistake-prevention.md)
+holds the rule that prevents each family of mistakes.
+Open work is every ledger entry whose status reads open or recurring.
+The last pass,
+`TianqiChen66621` on `.frozen-dist-9a3f28b30`,
+settled on 2026-09-28 and was read the same day;
+the class it found,
+one hundred eighty-seven,
+is fixed.
+No pass has launched since:
+the owner allowed the next launch to wait for the audit's fixes
+("You don't need to immediately start/restart a costly run if you believe further fixes should be done before
+launching it.").
 
 The finite redesign stopped after Candidate M failed on 2026-09-01.
 No Candidate A through M is production-eligible,
@@ -16,23 +38,34 @@ That closure does not bound the legacy pipeline.
 
 Start with:
 
-1.  [`translation-repair-handover-2026-09-06.md`](translation-repair-handover-2026-09-06.md)
-    for the current session state and the next passes,
-    with [`translation-repair-handover-2026-09-04.md`](translation-repair-handover-2026-09-04.md)
-    for the four earlier classes and the seven steps by which a page is read;
-2.  [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md)
+1.  [`translation-repair-handover-2026-09-06.md`](translation-repair-handover-2026-09-06.md),
+    the current snapshot whatever its date:
+    its "Where the work stands" opens with dated checkpoints,
+    newest first,
+    and its "What to do next" carries the state each session left and the next launch;
+2.  the package's [audit ledger](../../package/module/translation-repair/doc/audit-ledger.md)
+    and [`mistake-prevention.md`](../../package/module/translation-repair/doc/mistake-prevention.md)
+    for the audit in progress,
+    and the [package README](../../package/module/translation-repair/README.md)'s "Where the rest lives"
+    for the package docs on configuration,
+    the roster,
+    the providers and the seats;
+3.  [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md)
     for what production ready would take and why the answer is still no;
-3.  [`translation-repair-openrouter-2026-09-03.md`](../planning/translation-repair-openrouter-2026-09-03.md)
+4.  [`translation-repair-openrouter-2026-09-03.md`](../planning/translation-repair-openrouter-2026-09-03.md)
     for every OpenRouter run and its reading,
-    one section per run;
-4.  [`translation-repair-redesign-failure-2026-09-01.md`](../audit/translation-repair-redesign-failure-2026-09-01.md)
+    one section per run or read,
+    each heading dated;
+    when this map was written the newest was TianqiChen66621's read of 2026-09-28;
+5.  [`translation-repair-redesign-failure-2026-09-01.md`](../audit/translation-repair-redesign-failure-2026-09-01.md)
     for the redesign's terminal disposition and A through M reconstruction;
-5.  [`translation-repair.md`](translation-repair.md)
-    for repository state,
-    private evidence paths,
-    spent prompts,
-    and stop conditions;
-6.  this map for the remaining document families and its [redaction timing](#redaction-timing).
+6.  [`translation-repair.md`](translation-repair.md)
+    for the owner's operating rule,
+    and for the private evidence paths,
+    spent prompts and stop conditions of the 2026-09-01 handover it keeps;
+    its repository state is that handover's,
+    and the current one is the snapshot's "Repository state";
+7.  this map for the remaining document families and its [redaction timing](#redaction-timing).
 
 ## Finite-interface design
 
@@ -85,11 +118,14 @@ The timestamped failure report and current handover take precedence.
 
 ## Superseded handovers
 
-The current handover links three dated snapshots:
+The split of 2026-09-01 moved three dated snapshots out of the handover:
 
 - 2026-08-29 pipeline and stopped-run state;
 - 2026-08-25 to 2026-08-27 provider and production state;
 - 2026-08-26 session close and open register.
+
+The handover index also links the 2026-09-04 snapshot among these historical ones,
+and the 2026-09-06 snapshot as current.
 
 The pre-split handover had SHA-256
 `285c54e35836750d110a544bd9e93ae08980b0cb989e4eef95820af478a670aa`.
@@ -107,8 +143,9 @@ Do not follow their next-action lists without reconciling them against the curre
   restart measurement,
   and cache-fix history.
 - [`translation-repair-corpus-pass.md`](../runbook/translation-repair-corpus-pass.md)
-  is the manual corpus-pass runbook,
-  but no new pass is currently authorized.
+  is the manual corpus-pass runbook.
+  Passes on the legacy pipeline are authorized;
+  when the next one launches is in the current snapshot's "What to do next".
 
 The pre-split continuity document had SHA-256
 `14c7e46f7b54867af4539cca0ba493302da06ff5a7e16a76d32d8be18a281806`.

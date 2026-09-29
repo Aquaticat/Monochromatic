@@ -5672,8 +5672,8 @@ What was done:
 ### D28: the document map's current status stopped at 2026-09-06
 
 Status:
-open,
-found 2026-09-29 while scoping D26.
+fixed 2026-09-29,
+found the same day while scoping D26.
 `doc/handover/translation-repair-document-map.md` opens with a "Current status" section
 that still describes the legacy pipeline as read on 2026-09-04 and 2026-09-06
 and names the 2026-09-06 snapshot as the place to start,
@@ -5682,6 +5682,43 @@ Fix:
 rewrite the section from the current handover and the package README,
 each claim checked against the code or a log,
 and have it point at the package docs that now carry the current state.
+
+What was done:
+
+-   The map's "Current status" now carries its date,
+    the providers,
+    the audit in progress and where its record lives,
+    and the last pass with why none has launched since.
+    Each claim was read from its source:
+    the pass log's section on TianqiChen66621's read for the run and its class,
+    the owner's words from the pass log's audit section,
+    `PROVIDER_ORDER` as the README states it,
+    and the absence of a later pass from `~/temp/agent`,
+    where no run log or runs directory is newer than `TianqiChen66621.log`,
+    and from the pass log,
+    ledger and snapshot,
+    none of which names a class one hundred eighty-eight.
+-   Its reading list starts at the current snapshot's checkpoints and "What to do next",
+    adds this ledger,
+    the prevention doc and the README's list of package docs,
+    and names the pass log's newest heading with the date it was read rather than its place,
+    since the pass log runs oldest first to the Mio23 launch of 2026-09-16 and newest first after it.
+-   Three more stale claims on the same two pages:
+    the map said no new pass is authorized,
+    where the index has said since `c4e65a545` (2026-09-04) that corpus runs on the legacy pipeline are authorized;
+    the map said the handover links three dated snapshots,
+    where the index links four historical ones and the current one;
+    and the index described the snapshot as it stood on 2026-09-06
+    and put the kill-and-relaunch rule in the package README,
+    whose section of that name moved to `doc/configuration.md` with the README's split (`bc0050366`,
+    2026-09-16).
+-   Every relative link in the two files resolves
+    (`~/temp/agent/audit-glossary-fix/local-links.mjs`,
+    53 links,
+    shown first to report a planted missing file and a missing fragment).
+
+No guard can tell a current status paragraph from a stale one,
+so the prevention is a habit.
 
 ### D29: zone-less clock times in the living planning docs
 
@@ -8053,6 +8090,18 @@ Prevention:
 find an entry by `--files-with-matches` over the pinned clone,
 or by `--count` first;
 an `--only-matching` pattern never carries wildcard context around corpus text.
+
+Recurred 2026-09-29 during D28,
+again with nothing written to a file or a commit:
+looking for provider balances in `TianqiChen66621.log`,
+an `--only-matching` search with 60 characters of context either side of "spent"
+printed three fragments of model reasoning that quote the page.
+A run log carries the models' reasoning,
+which quotes the corpus,
+so the prevention covers run logs too:
+search a run log by its line tags (`TALLY`,
+`SEAT`) or its JSON keys,
+never with wildcard context around an ordinary word.
 
 ### M35: a teardown that kept what only its consumers read, and an audit that listed the sites it saw
 

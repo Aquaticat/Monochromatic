@@ -3,14 +3,20 @@
 ## Current handover, 2026-09-06
 
 The current session snapshot is
-[`translation-repair-handover-2026-09-06.md`](translation-repair-handover-2026-09-06.md).
+[`translation-repair-handover-2026-09-06.md`](translation-repair-handover-2026-09-06.md),
+named for the day it was opened and kept current since.
 Read it first:
-it carries the repository tip,
-the pass in flight,
-the fifth defect class,
-the two defaults that moved,
-the operating rule,
-and the next passes in order.
+"Where the work stands" opens with dated checkpoints,
+newest first;
+"Repository state" carries the worktree,
+branch and corpus pin;
+sections on the fifth to twenty-third defect classes follow,
+the later classes being in the
+[OpenRouter pass log](../planning/translation-repair-openrouter-2026-09-03.md);
+and "What to do next" carries the state each session left and the next launch.
+Since 2026-09-27 the work has been the owner's audit of the whole package,
+recorded finding by finding in the package's
+[audit ledger](../../package/module/translation-repair/doc/audit-ledger.md).
 The 2026-09-04 snapshot,
 [`translation-repair-handover-2026-09-04.md`](translation-repair-handover-2026-09-04.md),
 still carries the four earlier classes,
@@ -37,7 +43,9 @@ Never let a pass finish on a build a commit has superseded,
 and never read its page as readiness evidence.
 When the fix is known before the launch,
 land it first and launch once.
-The rule is written in the package README ("A source change while a pass is in flight means kill and relaunch")
+The rule is written in the package's
+[`doc/configuration.md`](../../package/module/translation-repair/doc/configuration.md)
+("A source change while a pass is in flight means kill and relaunch")
 and in the runbook's launch and restore steps;
 it is deliberately not a root `AGENTS.md` rule.
 
