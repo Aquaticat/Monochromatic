@@ -12,10 +12,7 @@ import {
   isJsonRecord,
 } from '../json-guard.ts';
 import { lineStartsOf, } from '../line-starts.ts';
-import type {
-  ColdStretch,
-  UncalledFunction,
-} from './coverage-tally.ts';
+import type { UncalledFunction, } from './coverage-tally.ts';
 
 //region Coverage lines
 // Ledger T8: carries a bundle offset V8 counted back to the source line it was
@@ -24,7 +21,8 @@ import type {
 // asked about. Under the minifier a stretch can therefore start a line late,
 // on the return where it folds a log call and that return into one statement
 // (`src/repair-chunk.ts` on 2026-09-29), so triage reads the bundle text beside
-// the source lines.
+// the source lines. A cold stretch, which can cross modules, is split by
+// source in `coverage-pieces.ts` (ledger M67).
 
 /**
  A source map file that does not read as a version 3 map.
@@ -119,24 +117,27 @@ export type SourceLine = {
 } | { readonly kind: 'unmapped'; };
 
 /**
- A cold stretch with the source lines of its first and last characters.
+ The source a map entry names, as the map writes it, with the 1-based line;
+ or that none is named.
 
  @example
  ```ts
- const mapped: MappedStretch = { ...stretch, from: place, to: place, };
+ const entry: SourceEntry = { kind: 'mapped', written: '../../../src/nap.ts', line: 4, };
  ```
  */
-export type MappedStretch = ColdStretch & {
-  /**
-   Source line of its first character.
-   */
-  readonly from: SourceLine;
+export type SourceEntry = {
+  readonly kind: 'mapped';
 
   /**
-   Source line of its last character.
+   Source as the map writes it, relative to the map or a file URL.
    */
-  readonly to: SourceLine;
-};
+  readonly written: string;
+
+  /**
+   Its 1-based line.
+   */
+  readonly line: number;
+} | { readonly kind: 'unmapped'; };
 
 /**
  An uncalled function with the source line it starts on.
@@ -282,6 +283,141 @@ export function bundleLinesOf(
 }
 
 /**
+ The bundle line holding an offset.
+
+ @param lines - bundle's positions and map
+
+ @param offset - bundle offset V8 reported
+
+ @returns Its 0-based line and that line's start
+
+ @throws where the offset is negative, which no line holds and V8 never
+ reports
+
+ @example
+ ```ts
+ const { line, lineStart, } = bundleLineAt({ lines, offset: 120, },);
+ ```
+ */
+export function bundleLineAt(
+  {
+    lines,
+    offset,
+  }: {
+    readonly lines: BundleLines;
+    readonly offset: number;
+  },
+): {
+  readonly line: number;
+  readonly lineStart: number;
+} {
+  /**
+   Line holding the offset, 0-based; -1 only for a negative offset, whose
+   start the lookup then refuses.
+   */
+  const line = lines.lineStarts
+    .findLastIndex(function startsAtOrBefore(start,): boolean {
+    return start <= offset;
+  },);
+  return {
+    line,
+    lineStart: nonNullishOrThrow(lines.lineStarts[line],),
+  };
+}
+
+/**
+ The source a map entry names at a position. None is named before the first
+ mapping, or under a segment that names no source, which a map may write for
+ code the bundler generated: Node then returns an entry whose source is
+ undefined, though its declaration types the field as always a string
+ (`lib/internal/source_map/source_map.js` in Node 26.10.0 stores such a
+ segment as its two generated coordinates alone), so the fields are read as
+ unknown.
+
+ @param lines - bundle's positions and map
+
+ @param line - 0-based bundle line
+
+ @param column - 0-based column on it
+
+ @returns The source as written and its 1-based line, or that none is named
+
+ @example
+ ```ts
+ const entry = entryAt({ lines, line: 3, column: 0, },);
+ ```
+ */
+export function entryAt(
+  {
+    lines,
+    line,
+    column,
+  }: {
+    readonly lines: BundleLines;
+    readonly line: number;
+    readonly column: number;
+  },
+): SourceEntry {
+  /**
+   Source and line of the nearest mapping at or before the position, absent
+   where none precedes it.
+   */
+  const {
+    originalSource,
+    originalLine,
+  }: {
+    readonly originalSource?: unknown;
+    readonly originalLine?: unknown;
+  } = lines.map
+    .findEntry(
+      line,
+      column,
+    );
+  if (((typeof originalSource) !== 'string') || ((typeof originalLine) !== 'number'))
+    return { kind: 'unmapped', };
+  return {
+    kind: 'mapped',
+    written: originalSource,
+    line: originalLine + 1,
+  };
+}
+
+/**
+ Names a source as the map writes it from the package directory.
+
+ @param lines - bundle's positions and map
+
+ @param written - source as the map writes it, relative to the map or a file
+ URL
+
+ @returns Source file relative to the package
+
+ @example
+ ```ts
+ const source = packageSourceOf({ lines, written: '../../../src/nap.ts', },);
+ ```
+ */
+export function packageSourceOf(
+  {
+    lines,
+    written,
+  }: {
+    readonly lines: BundleLines;
+    readonly written: string;
+  },
+): string {
+  return relative(
+    lines.packageDirectory,
+    written.startsWith('file:',)
+      ? fileURLToPath(written,)
+      : resolve(
+        lines.mapDirectory,
+        written,
+      ),
+  );
+}
+
+/**
  Names the source line under one bundle offset.
 
  @param lines - bundle's positions and map
@@ -289,7 +425,7 @@ export function bundleLinesOf(
  @param offset - bundle offset V8 reported
 
  @returns Source file relative to the package and its 1-based line, or that no
- mapping precedes the offset
+ mapping names a source there
 
  @example
  ```ts
@@ -306,79 +442,32 @@ export function sourceLineAt(
   },
 ): SourceLine {
   /**
-   Line holding the offset, 0-based; -1 only for a negative offset, which V8
-   never reports and the lookup of its start refuses.
+   The bundle line holding it.
    */
-  const line = lines.lineStarts
-    .findLastIndex(function startsAtOrBefore(start,): boolean {
-    return start <= offset;
+  const {
+    line,
+    lineStart,
+  } = bundleLineAt({
+    lines,
+    offset,
   },);
   /**
-   The nearest mapping at or before it.
+   The source named there.
    */
-  const entry = lines.map
-    .findEntry(
+  const entry = entryAt({
+    lines,
     line,
-    offset - nonNullishOrThrow(lines.lineStarts[line],),
-  );
-  if (!('originalSource' in entry))
-    return { kind: 'unmapped', };
-  /**
-   The source as a path on disk.
-   */
-  const onDisk = entry.originalSource
-    .startsWith('file:',)
-    ? fileURLToPath(entry.originalSource,)
-    : resolve(
-      lines.mapDirectory,
-      entry.originalSource,
-    );
+    column: offset - lineStart,
+  },);
+  if (entry.kind === 'unmapped')
+    return entry;
   return {
     kind: 'mapped',
-    source: relative(
-      lines.packageDirectory,
-      onDisk,
-    ),
-    line: entry.originalLine + 1,
-  };
-}
-
-/**
- Names the source lines of a cold stretch's first and last characters.
-
- @param lines - bundle's positions and map
-
- @param stretch - stretch in that bundle
-
- @returns The stretch with both lines
-
- @example
- ```ts
- const mapped = mapStretch({ lines, stretch, },);
- ```
- */
-export function mapStretch(
-  {
-    lines,
-    stretch,
-  }: {
-    readonly lines: BundleLines;
-    readonly stretch: ColdStretch;
-  },
-): MappedStretch {
-  return {
-    ...stretch,
-    from: sourceLineAt({
+    source: packageSourceOf({
       lines,
-      offset: stretch.start,
+      written: entry.written,
     },),
-    to: sourceLineAt({
-      lines,
-      offset: Math.max(
-        stretch.start,
-        stretch.end - 1,
-      ),
-    },),
+    line: entry.line,
   };
 }
 

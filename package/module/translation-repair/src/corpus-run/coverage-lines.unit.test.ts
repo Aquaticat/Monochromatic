@@ -3,8 +3,11 @@
  (ledger T8): which map files it refuses, what it keeps of one it reads, line
  starts, a position before the first mapping read as unmapped rather than as
  line 1, sources named from the package whether the map writes them relative
- or as file URLs, and a stretch's or function's lines. The map is written by
- hand: bundle line 0 has no mapping, lines 1 and 2 map to source lines 1 and 2.
+ or as file URLs, a segment naming no source read as unmapped, a stretch split
+ into one piece per source its characters map to (ledger M67), and a
+ function's line. The maps are written by hand: in the one-source map, bundle
+ line 0 has no mapping and lines 1 and 2 map to source lines 1 and 2; the
+ two-source map and the sourceless one are described where they are declared.
 
  @module
  */
@@ -75,6 +78,51 @@ function linesWith({ source, }: { readonly source: string; },) {
     packageDirectory: PACKAGE,
   },);
 }
+
+/**
+ Bundle text of two modules: an unmapped first line, one line of `nap.ts`,
+ then two of `purr.ts`.
+ */
+const TWO_MODULES_TEXT = 'x\ny\nz\nw';
+
+/**
+ The two-module bundle's lines: line 1 maps to `nap.ts` line 0, lines 2 and 3
+ to `purr.ts` lines 4 and 5 (0-based).
+ */
+const TWO_MODULES = bundleLinesOf({
+  text: TWO_MODULES_TEXT,
+  map: readSourceMap({
+    path: 'nap.mjs.map',
+    text: JSON.stringify({
+      version: 3,
+      sources: ['../../../src/nap.ts', '../../../src/purr.ts',],
+      mappings: ';AAAA;ACIA;AACA',
+    },),
+  },).map,
+  mapDirectory: DIST,
+  packageDirectory: PACKAGE,
+},);
+
+/**
+ A bundle whose second line holds a mapped character and then one the map
+ marks with a segment naming no source, as a bundler may write for code it
+ generated. The separator closing the mappings matters: Node 26.10.0 reads a
+ one-field segment as sourceless only when a separator follows it, and at the
+ end of the string reads it as continuing the previous source.
+ */
+const SOURCELESS = bundleLinesOf({
+  text: 'x\nyz',
+  map: readSourceMap({
+    path: 'nap.mjs.map',
+    text: JSON.stringify({
+      version: 3,
+      sources: ['../../../src/nap.ts',],
+      mappings: ';AAAA,C;',
+    },),
+  },).map,
+  mapDirectory: DIST,
+  packageDirectory: PACKAGE,
+},);
 
 await describe({
   name: readSourceMap.name,
@@ -197,6 +245,15 @@ await describe({
       },
     },),
     it({
+      name: 'READS A SEGMENT NAMING NO SOURCE AS UNMAPPED, which Node reports as an entry whose source is undefined',
+      fn: async () => {
+        expect(sourceLineAt({
+          lines: SOURCELESS,
+          offset: 3,
+        },),).toEqual({ kind: 'unmapped', },);
+      },
+    },),
+    it({
       name: 'NAMES A SOURCE THE MAP WRITES AS A FILE URL from the package too',
       fn: async () => {
         expect(sourceLineAt({
@@ -216,42 +273,131 @@ await describe({
   name: mapStretch.name,
   children: [
     it({
-      name: 'NAMES THE LINES OF A STRETCH\'S FIRST AND LAST CHARACTERS, a one-character stretch reading one line for both',
+      name: 'SPLITS A STRETCH WHERE ITS SOURCE CHANGES, each piece with its own offsets and the lines its characters map to (ledger M67)',
       fn: async () => {
-        const lines = linesWith({ source: '../../../src/nap.ts', },);
         const stretch = {
           bundle: 'nap.mjs',
-          start: BUNDLE_TEXT.indexOf('y',),
-          end: BUNDLE_TEXT.length,
+          start: TWO_MODULES_TEXT.indexOf('y',),
+          end: TWO_MODULES_TEXT.length,
           shape: { kind: 'block', },
         } as const;
         expect(mapStretch({
-          lines,
+          lines: TWO_MODULES,
           stretch,
         },),).toEqual({
           ...stretch,
-          from: {
-            kind: 'mapped',
-            source: 'src/nap.ts',
-            line: 1,
-          },
-          to: {
-            kind: 'mapped',
-            source: 'src/nap.ts',
-            line: 2,
-          },
+          pieces: [
+            {
+              start: TWO_MODULES_TEXT.indexOf('y',),
+              end: TWO_MODULES_TEXT.indexOf('z',),
+              span: {
+                kind: 'mapped',
+                source: 'src/nap.ts',
+                firstLine: 1,
+                lastLine: 1,
+              },
+            },
+            {
+              start: TWO_MODULES_TEXT.indexOf('z',),
+              end: TWO_MODULES_TEXT.length,
+              span: {
+                kind: 'mapped',
+                source: 'src/purr.ts',
+                firstLine: 5,
+                lastLine: 6,
+              },
+            },
+          ],
         },);
+      },
+    },),
+    it({
+      name: 'KEEPS AN UNMAPPED RUN AS ITS OWN PIECE, before the first mapping or under a segment naming no source',
+      fn: async () => {
+        expect(mapStretch({
+          lines: TWO_MODULES,
+          stretch: {
+            bundle: 'nap.mjs',
+            start: 0,
+            end: TWO_MODULES_TEXT.indexOf('y',) + 1,
+            shape: { kind: 'block', },
+          },
+        },).pieces,).toEqual([
+          {
+            start: 0,
+            end: TWO_MODULES_TEXT.indexOf('y',),
+            span: { kind: 'unmapped', },
+          },
+          {
+            start: TWO_MODULES_TEXT.indexOf('y',),
+            end: TWO_MODULES_TEXT.indexOf('y',) + 1,
+            span: {
+              kind: 'mapped',
+              source: 'src/nap.ts',
+              firstLine: 1,
+              lastLine: 1,
+            },
+          },
+        ],);
+        expect(mapStretch({
+          lines: SOURCELESS,
+          stretch: {
+            bundle: 'nap.mjs',
+            start: 2,
+            end: 4,
+            shape: { kind: 'block', },
+          },
+        },).pieces,).toEqual([
+          {
+            start: 2,
+            end: 3,
+            span: {
+              kind: 'mapped',
+              source: 'src/nap.ts',
+              firstLine: 1,
+              lastLine: 1,
+            },
+          },
+          {
+            start: 3,
+            end: 4,
+            span: { kind: 'unmapped', },
+          },
+        ],);
+      },
+    },),
+    it({
+      name: 'READS A ONE-CHARACTER STRETCH AS ONE PIECE ON ONE LINE, and refuses an empty one, which holds no character to map',
+      fn: async () => {
+        const lines = linesWith({ source: '../../../src/nap.ts', },);
+        const start = BUNDLE_TEXT.indexOf('z',);
         expect(mapStretch({
           lines,
           stretch: {
-            ...stretch,
-            end: stretch.start + 1,
+            bundle: 'nap.mjs',
+            start,
+            end: start + 1,
+            shape: { kind: 'block', },
           },
-        },).to,).toEqual({
-          kind: 'mapped',
-          source: 'src/nap.ts',
-          line: 1,
-        },);
+        },).pieces,).toEqual([{
+          start,
+          end: start + 1,
+          span: {
+            kind: 'mapped',
+            source: 'src/nap.ts',
+            firstLine: 2,
+            lastLine: 2,
+          },
+        },],);
+        expect(() => mapStretch({
+          lines,
+          stretch: {
+            bundle: 'nap.mjs',
+            start,
+            end: start,
+            shape: { kind: 'block', },
+          },
+        },),).toThrow();
       },
     },),
   ],

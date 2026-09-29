@@ -8,6 +8,7 @@ export {
   runnerEntrySources,
 } from './build-entries.ts';
 export {
+  CENSUS_FORMAT,
   CensusBaselineError,
   type CensusArguments,
   FAIL_MARKER,
@@ -25,9 +26,10 @@ export {
 export {
   baselineStatusesOf,
   type CensusStretch,
-  censusStretchOf,
+  censusStretchesOf,
   type KindTotal,
   kindTotalsOf,
+  requirePlacedFunctions,
   type SourceKind,
   sourceKindOf,
   type SourceRow,
@@ -55,13 +57,18 @@ export {
   bundleLinesOf,
   type MappedFunction,
   mapFunction,
-  type MappedStretch,
-  mapStretch,
   readSourceMap,
+  type SourceEntry,
   SourceMapFileError,
   type SourceLine,
   sourceLineAt,
 } from './corpus-run/coverage-lines.ts';
+export {
+  type MappedStretch,
+  mapStretch,
+  type SourceSpan,
+  type StretchPiece,
+} from './corpus-run/coverage-pieces.ts';
 export {
   type ColdStretch,
   type CoverageTally,

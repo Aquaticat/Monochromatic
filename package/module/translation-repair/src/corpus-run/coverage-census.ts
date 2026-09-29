@@ -15,6 +15,7 @@ import { packageCacheDir, } from '../lookup-cache.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import {
+  CENSUS_FORMAT,
   type CensusArguments,
   readBaselineStretches,
   readCensusArguments,
@@ -25,8 +26,9 @@ import {
 } from './coverage-census-print.ts';
 import {
   baselineStatusesOf,
-  censusStretchOf,
+  censusStretchesOf,
   kindTotalsOf,
+  requirePlacedFunctions,
   sourceRowsOf,
 } from './coverage-census-report.ts';
 import {
@@ -39,8 +41,8 @@ import {
 import {
   type BundleLines,
   mapFunction,
-  mapStretch,
 } from './coverage-lines.ts';
+import { mapStretch, } from './coverage-pieces.ts';
 import type { CoverageTally, } from './coverage-tally.ts';
 
 //region Coverage census
@@ -166,11 +168,11 @@ async function reportCensus(
     return reading.lines;
   }
   /**
-   Cold stretches as the census records them.
+   Cold stretches as the census records them, one per piece.
    */
   const stretches = tally.coldStretches()
-    .map(function recorded(stretch,) {
-    return censusStretchOf({
+    .flatMap(function recorded(stretch,) {
+    return censusStretchesOf({
       stretch: mapStretch({
         lines: linesOf(stretch.bundle,),
         stretch,
@@ -186,6 +188,10 @@ async function reportCensus(
       lines: linesOf(fn.bundle,),
       uncalled: fn,
     },);
+  },);
+  requirePlacedFunctions({
+    stretches,
+    uncalled,
   },);
   /**
    Sources the loaded bundles carry.
@@ -233,6 +239,7 @@ async function reportCensus(
     censusPath,
     JSON.stringify(
       {
+        format: CENSUS_FORMAT,
         head,
         clean,
         testFiles: asked.testFiles,

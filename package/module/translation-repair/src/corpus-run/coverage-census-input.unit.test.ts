@@ -2,7 +2,8 @@
  Tests what the coverage census reads (ledger T8): the suite's markers
  counted by occurrence rather than by line, its command line with every
  refusal strict `parseArgs` and the census add, and an earlier census's
- stretches. Paths are cat-themed invention.
+ stretches, read only from a file of the current census format. Paths are
+ cat-themed invention.
 
  @module
  */
@@ -14,6 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  CENSUS_FORMAT,
   CensusBaselineError,
   FAIL_MARKER,
   markerCount,
@@ -114,11 +116,12 @@ await describe({
   name: readBaselineStretches.name,
   children: [
     it({
-      name: 'READS THE STRETCHES OF A CENSUS FILE',
+      name: 'READS THE STRETCHES OF A CENSUS FILE of the current format',
       fn: async () => {
         expect(readBaselineStretches({
           path: '/tmp/census.json',
           text: JSON.stringify({
+            format: CENSUS_FORMAT,
             head: 'abc',
             stretches: [STRETCH,],
           },),
@@ -126,15 +129,30 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES a file that is not an object, has no stretches, or holds a stretch missing a field',
+      name: 'REFUSES a file that is not an object, one of an earlier format or none (the census before ledger M67), '
+        + 'one with no stretches, or one holding a stretch missing a field',
       fn: async () => {
         for (const text of [
           'null',
-          JSON.stringify({ head: 'abc', },),
-          JSON.stringify({ stretches: [{
-            ...STRETCH,
-            startLine: '1',
-          },], },),
+          JSON.stringify({
+            head: 'abc',
+            stretches: [STRETCH,],
+          },),
+          JSON.stringify({
+            format: CENSUS_FORMAT - 1,
+            stretches: [STRETCH,],
+          },),
+          JSON.stringify({
+            format: CENSUS_FORMAT,
+            head: 'abc',
+          },),
+          JSON.stringify({
+            format: CENSUS_FORMAT,
+            stretches: [{
+              ...STRETCH,
+              startLine: '1',
+            },],
+          },),
         ]) {
           expect(() => readBaselineStretches({
             path: '/tmp/census.json',

@@ -170,6 +170,14 @@ export function readCensusArguments({ argv, }: { readonly argv: readonly string[
 }
 
 /**
+ Format of the census file, written into it and required of a baseline.
+ Format 2 splits a cold stretch wherever its source changes (ledger M67); a
+ file without it came from the census that recorded a whole stretch under its
+ first source, whose stretches no batch can be read against.
+ */
+export const CENSUS_FORMAT = 2;
+
+/**
  An earlier census file that does not read as one this census wrote.
 
  @example
@@ -240,7 +248,8 @@ function isCensusStretch(value: unknown,): value is CensusStretch {
 
  @returns Its stretches
 
- @throws CensusBaselineError where the file holds no list of stretches
+ @throws CensusBaselineError where the file is not the current census format
+ or holds no list of stretches
 
  @example
  ```ts
@@ -264,6 +273,12 @@ export function readBaselineStretches(
     throw new CensusBaselineError({
       path,
       says: 'it is not an object',
+    },);
+  if (parsed.format !== CENSUS_FORMAT)
+    throw new CensusBaselineError({
+      path,
+      says: `it is not census format ${String(CENSUS_FORMAT,)}; a census written before stretches were split where their `
+        + 'source changes (ledger M67) records cold code under the wrong source, so run a fresh baseline',
     },);
   /**
    Its stretches as parsed.

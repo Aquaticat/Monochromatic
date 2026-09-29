@@ -1,8 +1,9 @@
 /**
  Tests the coverage census's report (ledger T8): how a mapped stretch is
- recorded by the lines it covers, how sources are sorted into kinds, the rows
- and totals, and how a batch's run reads an earlier census's stretches. Paths
- and names are cat-themed invention.
+ recorded, one record per source piece, the refusal of a census that places an
+ uncalled function outside its own source's stretches (ledger M67), how
+ sources are sorted into kinds, the rows and totals, and how a batch's run
+ reads an earlier census's stretches. Paths and names are cat-themed invention.
 
  @module
  */
@@ -16,11 +17,13 @@ import {
 import {
   baselineStatusesOf,
   type CensusStretch,
-  censusStretchOf,
+  censusStretchesOf,
   kindTotalsOf,
   type MappedStretch,
+  requirePlacedFunctions,
   sourceKindOf,
   sourceRowsOf,
+  StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -88,103 +91,193 @@ function recorded({
 }
 
 await describe({
-  name: censusStretchOf.name,
+  name: censusStretchesOf.name,
   children: [
     it({
-      name: 'COVERS FROM THE FIRST CHARACTER\'S LINE TO THE LAST\'S in one source, the later of the two when the minifier puts the end first',
+      name: 'RECORDS EACH PIECE UNDER ITS OWN SOURCE, offsets and lines, so no source after the first drops out (ledger M67)',
       fn: async () => {
         const stretch: MappedStretch = {
           ...BLOCK,
-          from: at({
-            source: 'src/nap.ts',
-            line: 4,
-          },),
-          to: at({
-            source: 'src/nap.ts',
-            line: 7,
-          },),
+          pieces: [
+            {
+              start: 10,
+              end: 14,
+              span: {
+                kind: 'mapped',
+                source: 'src/nap.ts',
+                firstLine: 4,
+                lastLine: 7,
+              },
+            },
+            {
+              start: 14,
+              end: 20,
+              span: {
+                kind: 'mapped',
+                source: 'src/purr.ts',
+                firstLine: 1,
+                lastLine: 9,
+              },
+            },
+          ],
         };
-        expect(censusStretchOf({ stretch, },),).toEqual({
-          bundle: 'nap.mjs',
-          start: 10,
-          end: 20,
-          name: '',
-          source: 'src/nap.ts',
-          startLine: 4,
-          endLine: 7,
-        },);
-        expect(censusStretchOf({
-          stretch: {
-            ...stretch,
-            to: at({
-              source: 'src/nap.ts',
-              line: 2,
-            },),
+        expect(censusStretchesOf({ stretch, },),).toEqual([
+          {
+            bundle: 'nap.mjs',
+            start: 10,
+            end: 14,
+            name: '',
+            source: 'src/nap.ts',
+            startLine: 4,
+            endLine: 7,
           },
-        },).endLine,).toBe(4,);
+          {
+            bundle: 'nap.mjs',
+            start: 14,
+            end: 20,
+            name: '',
+            source: 'src/purr.ts',
+            startLine: 1,
+            endLine: 9,
+          },
+        ],);
       },
     },),
     it({
-      name: 'KEEPS THE FIRST LINE ALONE where the stretch ends in another source or unmapped, and names an uncalled function it is exactly',
+      name: 'RECORDS AN UNMAPPED PIECE under its bundle at line 0, and names an uncalled function on its first piece alone',
       fn: async () => {
-        for (const to of [
-          at({
-            source: 'src/purr.ts',
-            line: 9,
-          },),
-          { kind: 'unmapped', } as const,
-        ]) {
-          expect(censusStretchOf({
-            stretch: {
-              ...BLOCK,
-              from: at({
-                source: 'src/nap.ts',
-                line: 4,
-              },),
-              to,
-            },
-          },),).toMatchObject({
-            startLine: 4,
-            endLine: 4,
-          },);
-        }
-        expect(censusStretchOf({
+        expect(censusStretchesOf({
           stretch: {
             ...BLOCK,
             shape: {
               kind: 'function',
               name: 'doze',
             },
-            from: at({
-              source: 'src/nap.ts',
-              line: 4,
-            },),
-            to: at({
-              source: 'src/nap.ts',
-              line: 4,
-            },),
+            pieces: [
+              {
+                start: 10,
+                end: 12,
+                span: { kind: 'unmapped', },
+              },
+              {
+                start: 12,
+                end: 20,
+                span: {
+                  kind: 'mapped',
+                  source: 'src/nap.ts',
+                  firstLine: 4,
+                  lastLine: 4,
+                },
+              },
+            ],
           },
-        },).name,).toBe('doze',);
+        },),).toEqual([
+          {
+            bundle: 'nap.mjs',
+            start: 10,
+            end: 12,
+            name: 'doze',
+            source: '(unmapped) nap.mjs',
+            startLine: 0,
+            endLine: 0,
+          },
+          {
+            bundle: 'nap.mjs',
+            start: 12,
+            end: 20,
+            name: '',
+            source: 'src/nap.ts',
+            startLine: 4,
+            endLine: 4,
+          },
+        ],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requirePlacedFunctions.name,
+  children: [
+    it({
+      name: 'ACCEPTS A CENSUS PLACING EVERY UNCALLED FUNCTION in a stretch of its own bundle and source, unmapped ones at line 0',
+      fn: async () => {
+        const uncalled = {
+          bundle: 'nap.mjs',
+          start: 0,
+          end: 1,
+          name: 'doze',
+          nested: false,
+        };
+        expect(() =>
+          requirePlacedFunctions({
+            stretches: [
+              recorded({
+                source: 'src/purr.ts',
+                startLine: 2,
+                endLine: 6,
+              },),
+              recorded({
+                source: '(unmapped) nap.mjs',
+                startLine: 0,
+                endLine: 0,
+              },),
+            ],
+            uncalled: [
+              {
+                ...uncalled,
+                at: at({
+                  source: 'src/purr.ts',
+                  line: 6,
+                },),
+              },
+              {
+                ...uncalled,
+                at: { kind: 'unmapped', },
+              },
+            ],
+          },)
+        ,).not.toThrow();
       },
     },),
     it({
-      name: 'RECORDS A STRETCH BEFORE ANY MAPPING under its bundle, at line 0',
+      name: 'REFUSES THE SHAPE LEDGER M67 LEFT: a function in a second source whose cold code was recorded under the first, '
+        + 'or in a stretch of another bundle',
       fn: async () => {
-        expect(censusStretchOf({
-          stretch: {
-            ...BLOCK,
-            from: { kind: 'unmapped', },
-            to: { kind: 'unmapped', },
-          },
-        },),).toEqual({
+        const inPurr = {
           bundle: 'nap.mjs',
-          start: 10,
-          end: 20,
-          name: '',
-          source: '(unmapped) nap.mjs',
-          startLine: 0,
-          endLine: 0,
-        },);
+          start: 0,
+          end: 1,
+          name: 'doze',
+          nested: false,
+          at: at({
+            source: 'src/purr.ts',
+            line: 3,
+          },),
+        };
+        expect(() =>
+          requirePlacedFunctions({
+            stretches: [recorded({
+              source: 'src/nap.ts',
+              startLine: 172,
+              endLine: 172,
+            },),],
+            uncalled: [inPurr,],
+          },)
+        ,).toThrow(StatedRefusalError,);
+        expect(() =>
+          requirePlacedFunctions({
+            stretches: [{
+              ...recorded({
+                source: 'src/purr.ts',
+                startLine: 1,
+                endLine: 9,
+              },),
+              bundle: 'purr.mjs',
+            },],
+            uncalled: [inPurr,],
+          },)
+        ,).toThrow(StatedRefusalError,);
       },
     },),
   ],

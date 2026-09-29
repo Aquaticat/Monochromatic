@@ -65,6 +65,10 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'a list of entries',
   ],
   [
+    'corpus-run/coverage-census-report.ts#MISPLACED_NAMED',
+    'a list of uncalled functions',
+  ],
+  [
     'corpus-run/window-trial-order.ts#DIGEST_CHARS',
     'a hex digest',
   ],

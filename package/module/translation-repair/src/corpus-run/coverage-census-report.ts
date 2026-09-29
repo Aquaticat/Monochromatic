@@ -1,7 +1,6 @@
-import type {
-  MappedFunction,
-  MappedStretch,
-} from './coverage-lines.ts';
+import { StatedRefusalError, } from '../stated-refusal.ts';
+import type { MappedFunction, } from './coverage-lines.ts';
+import type { MappedStretch, } from './coverage-pieces.ts';
 
 //region Coverage census report
 // Ledger T8: what the census says about the unit suite, from the cold
@@ -129,67 +128,138 @@ export type KindTotal = Omit<SourceRow, 'source'> & {
 export type StretchStatus = 'not loaded' | 'ran' | 'still cold';
 
 /**
- Records a mapped stretch by the source lines it covers: from its first
- character's line to its last's when both sit in one source, else its first
- character's line alone.
+ Records a mapped stretch as one census stretch per piece, each over the
+ source lines its characters map to (ledger M67: one record per stretch put
+ every source after the first out of the census).
 
- @param stretch - stretch with the lines of both ends
+ @param stretch - stretch split into its pieces
 
- @returns The census record
+ @returns The census records, in bundle order
 
  @example
  ```ts
- const recorded = censusStretchOf({ stretch, },);
+ const recorded = censusStretchesOf({ stretch, },);
  ```
  */
-export function censusStretchOf({ stretch, }: { readonly stretch: MappedStretch; },): CensusStretch {
+export function censusStretchesOf({ stretch, }: { readonly stretch: MappedStretch; },): readonly CensusStretch[] {
   /**
-   Uncalled function name, when the stretch is exactly one.
+   Uncalled function name, when the stretch is exactly one; it starts in the
+   first piece.
    */
   const name = (stretch.shape
     .kind
     === 'function') ? stretch.shape
       .name : '';
-  if (stretch.from
-    .kind
-    === 'unmapped')
-    return {
-      bundle: stretch.bundle,
-      start: stretch.start,
-      end: stretch.end,
-      name,
-      source: `(unmapped) ${stretch.bundle}`,
-      startLine: 0,
-      endLine: 0,
-    };
+  return stretch.pieces
+    .map(function recordOf(
+      piece,
+      index,
+    ): CensusStretch {
+      /**
+       The fields every record carries.
+       */
+      const placed = {
+        bundle: stretch.bundle,
+        start: piece.start,
+        end: piece.end,
+        name: (index === 0) ? name : '',
+      };
+      if (piece.span
+        .kind
+        === 'unmapped') {
+        return {
+          ...placed,
+          source: `(unmapped) ${stretch.bundle}`,
+          startLine: 0,
+          endLine: 0,
+        };
+      }
+      return {
+        ...placed,
+        source: piece.span
+          .source,
+        startLine: piece.span
+          .firstLine,
+        endLine: piece.span
+          .lastLine,
+      };
+    },);
+}
+
+/**
+ How many misplaced functions the refusal names; the count names the rest.
+ */
+const MISPLACED_NAMED = 5;
+
+/**
+ Refuses a census that places an uncalled function in no cold stretch of its
+ own source. An uncalled function is cold throughout, so its first line must
+ sit in one; one that does not names cold code the census recorded under
+ another source, which is how ledger M67 hid `src/repair-chunk.ts`.
+
+ @param stretches - census stretches
+
+ @param uncalled - uncalled functions with their lines
+
+ @throws StatedRefusalError naming up to five functions left uncovered
+
+ @example
+ ```ts
+ requirePlacedFunctions({ stretches, uncalled, },);
+ ```
+ */
+export function requirePlacedFunctions(
+  {
+    stretches,
+    uncalled,
+  }: {
+    readonly stretches: readonly CensusStretch[];
+    readonly uncalled: readonly MappedFunction[];
+  },
+): void {
   /**
-   Last line, when the stretch ends in the source it starts in.
+   Uncalled functions no stretch of their own source covers.
    */
-  const endLine = ((stretch.to
-    .kind
-    === 'mapped') && (stretch.to
-      .source
-      === stretch.from
-      .source))
-    ? Math.max(
-      stretch.from
-        .line,
-      stretch.to
-        .line,
+  const misplaced = uncalled.filter(function uncovered(fn,): boolean {
+    /**
+     Source and line the function starts on, as the census records them.
+     */
+    const {
+      source,
+      line,
+    } = (fn.at
+      .kind
+      === 'mapped')
+      ? fn.at
+      : {
+        source: `(unmapped) ${fn.bundle}`,
+        line: 0,
+      };
+    return !stretches.some(function covers(stretch,): boolean {
+      return (stretch.bundle === fn.bundle)
+        && (stretch.source === source)
+        && (stretch.startLine <= line)
+        && (stretch.endLine >= line);
+    },);
+  },);
+  if (misplaced.length === 0)
+    return;
+  /**
+   The first few named by bundle, offset and name.
+   */
+  const named = misplaced
+    .slice(
+      0,
+      MISPLACED_NAMED,
     )
-    : stretch.from
-      .line;
-  return {
-    bundle: stretch.bundle,
-    start: stretch.start,
-    end: stretch.end,
-    name,
-    source: stretch.from
-      .source,
-    startLine: stretch.from
-      .line,
-    endLine,
-  };
+    .map(function nameOf(fn,): string {
+      return `${fn.bundle}:${String(fn.start,)} ${fn.name}`;
+    },)
+    .join(', ',);
+  throw new StatedRefusalError({
+    says: `the census places ${String(misplaced.length,)} uncalled functions in no cold stretch of their own source `
+      + `(${named}); an uncalled function is cold throughout, so the mapping is wrong and no report is written`,
+  },);
 }
 
 /**
