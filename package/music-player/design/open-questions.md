@@ -303,9 +303,13 @@ rounds (2026-09-17):
   on both Fold panels;
   measured 100% and 200% text starts and icon-paint centers matched after
   correction.
-  The separate `questions/ranking-review.html` shows unselected #116
-  membership and ordering choices from a fixed 200% debug fixture.
-  It does not decide matching grammar,
+  D59 requires every visible result title/parent-context `cam` occurrence
+  to be emphasized from the OS accent with OKLCH adjustment,
+  not the rejected purple tertiary-container role.
+  The separate `questions/ranking-review.html` still shows pre-D59
+  unhighlighted evidence and must be refreshed before #116 is re-asked.
+  Membership/order remain unselected;
+  the visual fixture does not decide matching grammar,
   tie-break implementation or a real index.
   Search matching/ranking (#116),
   result activation (#129),

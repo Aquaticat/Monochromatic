@@ -1751,6 +1751,29 @@ ranking and accessibility still require separate decisions and verification.
 This is a design-only alignment correction,
 not a production Search implementation or permission for new IME tests.
 
+### D59. Emphasize each visible Search match using the OS accent in OKLCH (2026-09-29)
+
+Before deciding #116 membership or order,
+the user required each visible `cam` match (including case variants such as
+`Cam`) to be highlighted **in place** in Search results.
+That includes result titles and the supporting parent-folder text when it
+contains the match;
+it does not restyle the retained left folder browser or turn a static row
+into an action.
+The first debug-only highlight used the theme's tertiary-container role
+and rendered purple;
+the user rejected that color and specified a color **derived from the
+selected theme and adjusted in OKLCH**.
+A3 makes the OS accent the theme source.
+The revised debug fixture uses `MaterialTheme.colorScheme.primary` and the
+existing `mixOklchWithNeutral` utility to derive light and dark match fills,
+with bold text as a second cue.
+No fixed purple swatch,
+new production Search feature,
+result membership/rank,
+Unicode matching grammar or keyboard behavior is decided here.
+The exact prototype blend is reviewable and not a universal palette pass.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)

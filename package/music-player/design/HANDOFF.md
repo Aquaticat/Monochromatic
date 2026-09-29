@@ -6312,3 +6312,33 @@ container returned `OK: killing emulator`;
 `doc/troubleshooting/android-emulator-console-token-container-home.md`
 records that boundary.
 The original AVD was not touched.
+
+## Search match emphasis correction before #116 choice
+
+The user deferred the proposed Scope D/P and Order M/F/T choices:
+first highlight each visible `cam` occurrence in result titles and
+supporting matching parent-folder text,
+then re-present and re-ask.
+A first debug-only bold-on-tertiary-container rendering was purple.
+The user rejected that color and required the selected theme's color
+adjusted in OKLCH.
+D59 records the directive.
+The corrected debug-only prototype commit `b471ec537` derives span fill
+from `MaterialTheme.colorScheme.primary` (the A3 OS accent) through the
+existing `mixOklchWithNeutral` utility;
+it changes neither result membership nor item activation.
+The installed disposable APK and local build share SHA-256
+`7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`.
+Keyboard-closed 200% light/dark native short-result samples on both
+panels show a blue-toned accent highlight rather than purple;
+the previous purple scratch captures must not be published or used in the
+final comparison.
+The full accent-corrected ranking/selected-image recapture,
+contrast and bounds check,
+sanitation,
+review regeneration and browser verification remain in progress.
+Do not ask for Scope D/P or Order M/F/T until the updated form shows
+this accent-derived emphasis.
+No production Search edit,
+IME experiment,
+original AVD edit or KWin automation is authorized.
