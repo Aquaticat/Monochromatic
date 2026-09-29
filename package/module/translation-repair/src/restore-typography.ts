@@ -4,7 +4,7 @@ import {
   bindsWord,
   closesSpan,
   codePointAt,
-  codePointBefore,
+  sequenceBefore,
 } from './quote-neighbours.ts';
 import { restoreEllipsis, } from './restore-ellipsis.ts';
 import { proseMask, } from './typography-prose-mask.ts';
@@ -173,7 +173,7 @@ function countOpeningSingles(
       /**
        Whether a word character precedes it.
        */
-      const boundBefore = bindsWord({ character: codePointBefore({
+      const boundBefore = bindsWord({ character: sequenceBefore({
         text,
         at: index,
       },), },);
@@ -349,7 +349,7 @@ export function restoreTypography(
         /**
          Whether the character before binds this quote into a word.
          */
-        const boundBefore = bindsWord({ character: codePointBefore({
+        const boundBefore = bindsWord({ character: sequenceBefore({
           text: replacement,
           at: index,
         },), },);
@@ -365,7 +365,7 @@ export function restoreTypography(
         /**
          Whether a closed inline span stands before the quote.
          */
-        const spanBefore = closesSpan({ character: codePointBefore({
+        const spanBefore = closesSpan({ character: sequenceBefore({
           text: replacement,
           at: index,
         },), },);

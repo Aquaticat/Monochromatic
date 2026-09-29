@@ -291,6 +291,35 @@ await describe({
       },
     },),
     it({
+      name: 'RESTORES a possessive apostrophe after a letter written with a combining accent as after its '
+        + 'composed spelling, and reads the trailing one after it (ledger B18: the mark stood beside the '
+        + 'quote, was no letter, and read as an opening quote); a standalone accent, a mark on a space, is '
+        + 'still no space a quotation opens after',
+      fn: async () => {
+        const convention = `Every other line here reads didn${APOSTROPHE}t.`;
+        expect(restoreTypography({
+          replacement: "The cafe\u{0301}'s cats sat on the girls' side.",
+          replaced: 'The cats sat.',
+          convention,
+        },),).toBe(`The cafe\u{0301}${APOSTROPHE}s cats sat on the girls${APOSTROPHE} side.`,);
+        expect(restoreTypography({
+          replacement: "The caf\u{00E9}'s cats sat on the girls' side.",
+          replaced: 'The cats sat.',
+          convention,
+        },),).toBe(`The caf\u{00E9}${APOSTROPHE}s cats sat on the girls${APOSTROPHE} side.`,);
+        expect(restoreTypography({
+          replacement: "She said 'Noe\u{0301}l' twice.",
+          replaced: 'She said it.',
+          convention,
+        },),).toBe(`She said \u{2018}Noe\u{0301}l${APOSTROPHE} twice.`,);
+        expect(restoreTypography({
+          replacement: "She said \u{0301}'nap' twice.",
+          replaced: 'She said it.',
+          convention,
+        },),).toBe("She said \u{0301}'nap' twice.",);
+      },
+    },),
+    it({
       name: 'RESTORES three dots where the document writes three dots, collapsing the doubled '
         + 'U+2026 Chinese carries, and leaves a tag alone (yulianNyanner, 2026-09-07)',
       fn: async () => {

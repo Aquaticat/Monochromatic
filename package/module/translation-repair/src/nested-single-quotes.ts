@@ -1,7 +1,7 @@
 import {
   bindsWord,
   codePointAt,
-  codePointBefore,
+  sequenceBefore,
 } from './quote-neighbours.ts';
 
 //region Nested single quotes
@@ -97,9 +97,9 @@ function singleShape(
   },
 ): 'opening' | 'closing' | 'neither' {
   /**
-   Code point before the quote.
+   Character before the quote, with any combining marks on it.
    */
-  const before = codePointBefore({
+  const before = sequenceBefore({
     text,
     at,
   },);
