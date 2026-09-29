@@ -1344,7 +1344,8 @@ No new call or implementation was authorized by the recommendation alone.
 
 ## Approved Jev qualification direction
 
-The user subsequently approved it with "Okay, I'm approving it."
+The user subsequently approved it with "Okay,
+ I'm approving it."
 Proceed with Jev through LLM Gateway as the chosen candidate for remaining qualification.
 The approved antecedent explicitly excluded production approval and cutoff selection;
 those boundaries remain intact.

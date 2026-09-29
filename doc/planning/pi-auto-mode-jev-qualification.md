@@ -31,7 +31,8 @@ and gateway-internal retry choices remain settled.
 
 ## Recommended next qualification candidate
 
-The user accepted the recommendation with "Okay, I'm approving it."
+The user accepted the recommendation with "Okay,
+ I'm approving it."
 Proceed with Jev through LLM Gateway for remaining qualification.
 The approved direction is not a completed finalist ranking,
 a selected production cutoff,

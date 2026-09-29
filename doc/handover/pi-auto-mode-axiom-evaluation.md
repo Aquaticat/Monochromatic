@@ -36,7 +36,8 @@ Current references:
 
 ## Approved Jev qualification direction
 
-The user accepted the overall candidate recommendation with "Okay, I'm approving it."
+The user accepted the overall candidate recommendation with "Okay,
+ I'm approving it."
 Proceed with **Jev through LLM Gateway** for remaining qualification,
 not another Voyage head experiment.
 The approval selects this qualification direction,
