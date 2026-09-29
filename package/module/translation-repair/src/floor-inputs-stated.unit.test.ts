@@ -691,10 +691,6 @@ const NAMED_OMISSIONS: readonly NamedOmission[] = [
       + 'readStandingVerdict)',
   },
   {
-    omission: 'prepare-entry.ts#prepareBenchmarkEntry -> buildCriticMessages: omits [identityContext, referenceContext]',
-    why: 'a seeded-error benchmark entry carries the pair and its seeds alone (BenchmarkEntry)',
-  },
-  {
     omission: 'repair-entry.ts#repairTranslation -> prepareDocumentPair: omits [attestedDetails, referenceContext]',
     why: 'the library entry takes no cited references or attestations; the corpus pass fetches and attests them '
       + '(corpus-run/pass-prepare.ts)',

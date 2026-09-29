@@ -1,15 +1,14 @@
 import type { CompletionUsage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { wholeOpening, } from './code-points.ts';
-import {
-  isJsonArray,
-  isJsonRecord,
-} from './json-guard.ts';
+import { isJsonRecord, } from './json-guard.ts';
 
 //region Completion shape
-// Provider protocol parsing for chat-completion bodies. A 200 body that fails these
-// expectations is a provider defect and throws; what the model wrote inside
-// `message.content` is never judged here, that is chatJson's job and flows as data.
+// Provider protocol reading the streaming clients share. A 200 reply that fails
+// these expectations is a provider defect and throws; what the model wrote is
+// never judged here, that is chatJson's job and flows as data. The non-streaming
+// body parser that once lived here went with the last non-streaming call
+// (ledger B30).
 //
 // BOTH PROVIDERS THROW THESE CLASSES, so neither message names one. `hyper-client.ts`
 // records why it reuses `SyntheticHttpError` rather than adding a class of its own,
@@ -264,117 +263,6 @@ export function readUsage({ parsed, }: { readonly parsed: Readonly<Record<string
       prompt_tokens: promptTokens,
       completion_tokens: completionTokens,
     },
-  };
-}
-
-/**
- Parses body text as JSON, converting parse failures into contract errors.
- 
- @param bodyText - raw response body
- 
- @returns Parsed JSON value
- 
- @throws {@link MalformedCompletionError} when body is not valid JSON
- 
- @example
- ```ts
- const parsed = parseCompletionJson({ bodyText, },);
- ```
- */
-function parseCompletionJson({ bodyText, }: { readonly bodyText: string; },): unknown {
-  try {
-    return JSON.parse(bodyText,);
-  }
-  catch (error) {
-    throw new MalformedCompletionError({
-      detail: 'body is not valid JSON',
-      cause: error,
-    },);
-  }
-}
-
-/**
- Parses and validates one success-status completion body,
- returning content text and usage.
- 
- @param bodyText - raw 2xx response body
- 
- @returns Content of first choice plus usage when reported
- 
- @throws {@link MalformedCompletionError} when body is not JSON or lacks `choices[0].message.content`
- 
- @example
- ```ts
- const { text, usage, } = extractCompletion({ bodyText: reply.bodyText, },);
- ```
- */
-export function extractCompletion(
-  { bodyText, }: { readonly bodyText: string; },
-): ExtractedCompletion {
-  /**
-   Whole parsed body, probed field by field.
-   */
-  const parsed = parseCompletionJson({ bodyText, },);
-  if (!isJsonRecord(parsed,))
-    throw new MalformedCompletionError({ detail: 'body is not a JSON object', },);
-
-  /**
-   Choices array as delivered.
-   */
-  const { choices, } = parsed;
-  if (!isJsonArray(choices,))
-    throw new MalformedCompletionError({ detail: 'choices is not an array', },);
-
-  /**
-   First choice; single-completion requests return exactly one.
-   */
-  const [first,] = choices;
-  if (!isJsonRecord(first,))
-    throw new MalformedCompletionError({ detail: 'choices[0] is missing', },);
-
-  /**
-   Message block of first choice.
-   */
-  const { message, } = first;
-  if (!isJsonRecord(message,))
-    throw new MalformedCompletionError({ detail: 'choices[0].message is not an object', },);
-
-  /**
-   Answer channel plus first-class refusal field as delivered.
-   */
-  const {
-    content,
-    refusal,
-  } = message;
-
-  /**
-   Non-empty refusal string when the API refused explicitly.
-   */
-  const refusalText = (((typeof refusal) === 'string') && (refusal !== ''))
-    ? refusal
-    : undefined;
-
-  if ((typeof content) !== 'string') {
-    // A refused completion may carry null content; that is a valid refusal
-    // reply, not a contract violation.
-    if (refusalText !== undefined) {
-      return {
-        text: '',
-        refusal: refusalText,
-        ...readUsage({ parsed, },),
-      };
-    }
-    throw new MalformedCompletionError({ detail: 'choices[0].message.content is not a string', },);
-  }
-
-  return {
-    text: content,
-    // Conditional spread keeps refusal absent when the API did not refuse.
-    ...(refusalText === undefined
-      ? {}
-      : { refusal: refusalText, }),
-    ...readUsage({ parsed, },),
-    ...readFinishReason({ choice: first, },),
   };
 }
 

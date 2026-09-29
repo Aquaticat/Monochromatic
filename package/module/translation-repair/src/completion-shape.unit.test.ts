@@ -1,9 +1,10 @@
 /**
- Tests for provider protocol parsing of completion bodies:
- every contract violation throws with its own detail, refusals with
- null content pass as valid replies, and mistyped usage is dropped
- rather than trusted.
- 
+ Tests for reading a completion's usage block and for the HTTP error a
+ failed exchange raises: mistyped usage is dropped rather than trusted, and
+ the error's body excerpt ends on a whole character. The non-streaming body
+ parser these cases once shared a file with is gone, since every provider
+ streams (ledger B30).
+
  @module
  */
 
@@ -13,8 +14,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  extractCompletion,
-  MalformedCompletionError,
   readUsage,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
@@ -25,103 +24,9 @@ import {
  */
 const BODY_EXCERPT_LIMIT = 600;
 
-/**
- Runs one extraction expected to throw, returning the caught error.
- */
-function caughtFrom({ bodyText, }: { readonly bodyText: string; },): unknown {
-  try {
-    extractCompletion({ bodyText, },);
-  }
-  catch (error) {
-    return error;
-  }
-  throw new Error('extraction unexpectedly succeeded',);
-}
-
-/**
- Contract-violating bodies paired with the detail each must throw.
- */
-const VIOLATION_CASES = [
-  ['{"cat":', 'body is not valid JSON',],
-  ['"喵"', 'body is not a JSON object',],
-  ['{"choices":{}}', 'choices is not an array',],
-  ['{"choices":[]}', 'choices[0] is missing',],
-  ['{"choices":[{"message":"喵"}]}', 'choices[0].message is not an object',],
-  ['{"choices":[{"message":{"content":null}}]}', 'choices[0].message.content is not a string',],
-] as const;
-
 await describe({
   name: '',
   children: [
-    describe({
-      name: extractCompletion.name,
-      children: [
-        it({
-          name: 'extracts content and usage from a conforming body',
-          fn: async () => {
-            expect(
-              extractCompletion({
-                bodyText:
-                  '{"choices":[{"message":{"content":"喵"}}],"usage":{"prompt_tokens":3,"completion_tokens":7}}',
-              },),
-            ).toEqual({
-              text: '喵',
-              usage: {
-                prompt_tokens: 3,
-                completion_tokens: 7,
-              },
-            },);
-          },
-        },),
-        it({
-          name: 'passes a refusal with null content as a valid refusal reply',
-          fn: async () => {
-            expect(
-              extractCompletion({
-                bodyText:
-                  '{"choices":[{"message":{"content":null,"refusal":"no cats today"}}]}',
-              },),
-            ).toEqual({
-              text: '',
-              refusal: 'no cats today',
-            },);
-          },
-        },),
-        it({
-          name: 'carries a refusal beside delivered content',
-          fn: async () => {
-            expect(
-              extractCompletion({
-                bodyText:
-                  '{"choices":[{"message":{"content":"喵","refusal":"reluctantly"}}]}',
-              },),
-            ).toEqual({
-              text: '喵',
-              refusal: 'reluctantly',
-            },);
-          },
-        },),
-        it({
-          name: 'treats an empty refusal string as no refusal',
-          fn: async () => {
-            const caught = caughtFrom({
-              bodyText: '{"choices":[{"message":{"content":null,"refusal":""}}]}',
-            },);
-            expect(caught,).toBeInstanceOf(MalformedCompletionError,);
-          },
-        },),
-        ...VIOLATION_CASES.map(function toCase([bodyText, detail,],) {
-          return it({
-            name: `throws naming the violation: ${detail}`,
-            fn: async () => {
-              const caught = caughtFrom({ bodyText, },);
-              expect(caught,).toBeInstanceOf(MalformedCompletionError,);
-              expect((caught as Error).message,).toContain(detail,);
-            },
-          },);
-        },),
-      ],
-    },),
     describe({
       name: readUsage.name,
       children: [

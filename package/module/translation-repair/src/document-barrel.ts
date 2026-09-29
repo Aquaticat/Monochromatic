@@ -98,16 +98,6 @@ export {
 export { isIndexPairList, } from './index-pair-list.ts';
 export { groupNodes, } from './group-nodes.ts';
 export {
-  AlignedIndexError,
-  groupAlignedSteps,
-  groupSourceFirst,
-} from './group-source-first.ts';
-export { reflowOrphans, } from './reflow-orphans.ts';
-export type {
-  SourceFirstUnit,
-  TargetBoundary,
-} from './source-first-unit.ts';
-export {
   composeInsertion,
   documentLineEnding,
   fragmentBody,

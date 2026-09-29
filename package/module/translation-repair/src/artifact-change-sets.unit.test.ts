@@ -14,10 +14,8 @@ import {
 import {
   ARTIFACT_SCHEMA_VERSION_V2,
   ArtifactParseError,
-  buildSettledArtifact,
   KNOWN_ARTIFACT_SCHEMA_VERSIONS,
   parseSettledArtifact,
-  type PipelineDigest,
   readArtifactChangeSets,
   readArtifactSchemaVersion,
   ARTIFACT_SCHEMA_VERSION_V1,
@@ -641,42 +639,6 @@ await describe({
 
         expect(refusalOfSingleLaneParse,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfSingleLaneParse as Error).message,).toContain('one change set',);
-      },
-    },),
-    it({
-      name: 'ROUND-TRIPS what the pass actually writes, through JSON, into what the parser reads. Every '
-        + 'other test here hand-builds the record, so removing or misspelling a field in the writer would '
-        + 'leave all of them passing while no real artifact carried it',
-      fn: async () => {
-        /** Artifact the writer produces for a two-slice document. */
-        const artifact = buildSettledArtifact({
-          entryId: 'Mittens',
-          tip: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          pipelineDigest: 'sha256-tree-v1:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' as PipelineDigest,
-          corpusSha: 'cccccccccccccccccccccccccccccccccccccccc',
-          callConfig: { perCallTimeoutMs: 1_000, },
-          durationMs: 12,
-          sourceText: '猫在晒太阳。',
-          targetText: 'The cat naps in the sun.',
-          result: {
-            status: 'repaired',
-            issues: [],
-            findings: [],
-            sliceCritics: [],
-            repairedText: 'The cat naps in the warm sun.',
-            sliceCount: 2,
-            changedSliceIndices: [0,],
-            withdrawnSliceIndices: [1,],
-          },
-        },);
-        /** What lands on disk, which is where a later reader meets it. */
-        const onDisk = JSON.stringify(artifact,);
-        expect(parseSettledArtifact({ value: JSON.parse(onDisk,), },).changeSets,).toEqual({
-          kind: 'counted',
-          sliceCount: 2,
-          shipped: [0,],
-          withdrawn: [1,],
-        },);
       },
     },),
   ],

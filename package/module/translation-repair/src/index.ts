@@ -99,7 +99,6 @@ export {
   type RepairDocument,
 } from './parse-document.ts';
 export {
-  extractCompletion,
   type ExtractedCompletion,
   MalformedCompletionError,
   readUsage,
@@ -109,12 +108,7 @@ export {
   failureForReply,
   SyntheticRequestTooLargeError,
 } from './request-size-refusal.ts';
-export {
-  type BenchmarkEntry,
-  type CriticBenchmarkResult,
-  MIN_DISPATCH_BUDGET_MS,
-  runCriticBenchmark,
-} from './benchmark.ts';
+export type { BenchmarkEntry, } from './prepare-entry.ts';
 export {
   CORPUS_COMMIT_SHA,
   type CorpusPin,
@@ -190,10 +184,6 @@ export {
   type CallDeadline,
 } from './call-deadline.ts';
 export {
-  prepareBenchmarkEntry,
-  type PreparedEntry,
-} from './prepare-entry.ts';
-export {
   createSyntheticClient,
   SYNTHETIC_PER_MODEL_CONCURRENCY,
 } from './synthetic-client.ts';
@@ -212,18 +202,6 @@ export {
   hyperRequestsPerHour,
   type RequestPace,
 } from './request-pace.ts';
-export {
-  type BenchmarkScorecard,
-  computeScorecard,
-  type CriticAttemptOutcomeKind,
-  type CriticAttemptRecord,
-  type ModelScorecardRow,
-} from './scorecard.ts';
-export {
-  COMPLETION_TOKEN_CEILING,
-  isRetryableAttempt,
-  isTruncatedAttempt,
-} from './attempt-retry.ts';
 export {
   applySeededErrors,
   SEED_MATCH_TOLERANCE,

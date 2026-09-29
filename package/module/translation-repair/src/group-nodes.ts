@@ -3,10 +3,10 @@ import type { DocumentNode, } from './document-node.ts';
 //region Node grouping
 // Partitioning one side's blocks into runs a slice can carry.
 //
-// ITS OWN MODULE so that both groupers can use it. `slice-pair.ts` carves
-// section pairs and `group-source-first.ts` splits an untranslated passage by
-// budget; while this lived in the first, the second could only reach it by
-// importing the file that was about to import it back.
+// ITS OWN MODULE because two groupers once used it: `slice-pair.ts`, which
+// carves section pairs, and a source-first grouper built beside it and never
+// wired in, removed on 2026-09-29 (ledger B30) since the sealed grouper's
+// block-scale insertions had taken over its job.
 
 /**
  Groups one side's nodes into paragraph-bound runs within budget.

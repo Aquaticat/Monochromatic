@@ -113,7 +113,11 @@ the pipeline is not production ready by the rule in `doc/planning/translation-re
 
 Milestone one (detection) is complete:
 the seven-critic ensemble reached 0.981 recall on seeded errors over the reference corpus,
-gated by the seeded-error benchmark harness.
+gated by the seeded-error benchmark harness
+(`runCriticBenchmark`,
+which no runner called by 2026-09-29 and which was removed then,
+ledger B30;
+the recall benchmark measures detection now).
 Read that figure with its date attached.
 It was measured on 2026-07-17 over 54 seeds against a roster of seven models,
 and that roster no longer exists:
