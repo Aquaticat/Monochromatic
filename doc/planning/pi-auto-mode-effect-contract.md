@@ -499,6 +499,21 @@ this is not permission to silently widen the structured scope.
 
 ### Human request provenance remains an integration gate
 
+Q23 selected a trusted-host-workflow boundary:
+same-account interference with that concrete confirmation workflow is assumed absent,
+not defended against by the witness guarantee.
+The actual admitted writer,
+original response,
+and exact accepted scope still need qualification.
+This does not admit roles,
+channel labels,
+UI booleans,
+helper tokens,
+or copied history as witnesses by themselves.
+It does not permit headless synthesized approvals.
+Administrator/kernel compromise and broader physical-human proof were not selected.
+
+
 `src/context.ts` currently uses session messages as judge context
 and custom session entries as active trust directives.
 Its latest-user window is not proof that the latest `user` message was typed by the human.

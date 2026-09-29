@@ -33,7 +33,7 @@ Current references:
 
 - [Axiom architecture and interview answers](../planning/pi-auto-mode-axioms.md).
 - [Effect and authorization contract](../planning/pi-auto-mode-effect-contract.md).
-- [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
+- [Current trusted-host qualification audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-29.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
 ## Policy freshness checkpoint
@@ -84,6 +84,40 @@ production cutoff,
 or cutover is authorized by this freshness event.
 The audit fingerprint's requirement remains complete current policy and stale-result invalidation;
 that context compatibility is distinct from the now-stale per-study policy binding.
+
+## Current human-origin trust boundary
+
+The user selected A for Q23:
+trust the concrete host confirmation workflow,
+assuming same-account programs do not interfere with that workflow.
+Same-account forgery resistance is outside the selected witness guarantee.
+Still require the actual admitted writer,
+original response,
+and exact accepted scope.
+Roles,
+channel labels,
+`hasUI`,
+copied IDs/history,
+helper tokens,
+and fabricated entries are not authentication by themselves.
+Headless operation cannot synthesize a human approval.
+
+No existing workflow is admitted merely by selecting A.
+Task #68 still qualifies the actual host path.
+Administrator/kernel compromise,
+broader physical-human proof,
+a new broker,
+and deployment were not selected.
+The inspected existing owners include Pi TUI/RPC handling,
+the incumbent `askUser` grant writer,
+and the repository's `ask-user-question` helper/editor workflow.
+No live pending answer workspace or credential value was read.
+
+The explicit trust-boundary choice creates audit fingerprint
+`236fca682c6399027d0d29ff26ad05384500a9757a6be0339b04d1f506a2862e`.
+The previous `ef5701a1...` report remains preserved under its original context.
+The current pointer is `~/temp/agent/auto-mode-current-audit.json`;
+use its full fingerprint for future guarded edits.
 
 ## Current interview state
 

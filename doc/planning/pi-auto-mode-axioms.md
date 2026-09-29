@@ -1128,6 +1128,34 @@ reserved-bank access,
 or paused-candidate restart follows.
 Keep completed phases and their frozen evidence unchanged.
 
+### Q23: Trust boundary for original human confirmations
+
+The user selected A:
+trust the concrete host confirmation workflow,
+assuming same-account programs do not interfere with that trusted workflow.
+Resistance to same-account programs forging its output is outside the selected guarantee.
+The stronger same-account-forgery requirement was not selected.
+
+The actual admitted confirmation writer,
+original response,
+and exact accepted scope remain required.
+Role/channel labels,
+`hasUI`,
+copied IDs/history,
+helper tokens,
+and fabricated records do not become authentication by themselves.
+Headless execution cannot synthesize a human approval.
+The choice does not automatically admit an existing UI return value or token workflow;
+task #68 still qualifies the actual path.
+
+Administrator/kernel compromise,
+physical-human proof beyond the measured trusted boundary,
+a new broker,
+and deployment were not selected by this answer.
+The newly explicit trust boundary has a
+[separate audit context](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-29.md).
+Prior reports and studies remain unchanged under their original bindings.
+
 ## Accepted TypeSafe AUP scope
 
 The user explicitly stated that TypeSafe AUP section 1.5 is acceptable.
