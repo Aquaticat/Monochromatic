@@ -89,8 +89,20 @@ export {
   mergedAttestations,
   quoteIsIn,
   type VerifiedAttestation,
-  verifiedAttestations,
 } from './reference-attest-match.ts';
+export {
+  type AttestationVerdict,
+  attestationVerdictLine,
+  attestationVerdicts,
+  keptAttestations,
+  verifiedAttestations,
+} from './reference-attest-verdict.ts';
+export {
+  type NumberedReferenceLine,
+  numberedReferenceLines,
+  referenceLineHead,
+  ReferenceLineHeadError,
+} from './reference-line-head.ts';
 export {
   attestCitedReferences,
   type ReferenceAttestation,

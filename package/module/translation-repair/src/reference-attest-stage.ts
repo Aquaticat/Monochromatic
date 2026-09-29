@@ -17,8 +17,13 @@ import {
   attestedDetailLines,
   mergedAttestations,
   type VerifiedAttestation,
-  verifiedAttestations,
 } from './reference-attest-match.ts';
+import {
+  type AttestationVerdict,
+  attestationVerdictLine,
+  attestationVerdicts,
+  keptAttestations,
+} from './reference-attest-verdict.ts';
 import {
   buildReferenceAttestMessages,
   isReferenceAttestWire,
@@ -299,11 +304,11 @@ export async function attestCitedReferences(
   const heard = gather.voices
     .length;
   /**
-   Items whose quotes verify, from every voice.
+   What the check made of every item, from every voice (ledger B25).
    */
-  const verified: readonly VerifiedAttestation[] = gather.voices
-    .flatMap(function verifiedOf(voice,): readonly VerifiedAttestation[] {
-      return verifiedAttestations({
+  const verdicts: readonly AttestationVerdict[] = gather.voices
+    .flatMap(function verdictsOf(voice,): readonly AttestationVerdict[] {
+      return attestationVerdicts({
         modelId: voice.modelId,
         items: voice.value
           .attested,
@@ -311,17 +316,12 @@ export async function attestCitedReferences(
         referenceContext,
       },);
     },);
-  for (const entry of verified) {
-    /**
-     Item this voice gave.
-     */
-    const { item, } = entry;
-    al.info(
-      `ATTESTED item ${entry.modelId}: "${item.archiveQuote}" is stated by reference ${
-        String(item.reference,)
-      } ("${item.referenceQuote}")`,
-    );
-  }
+  for (const verdict of verdicts)
+    al.info(attestationVerdictLine({ verdict, },),);
+  /**
+   Items whose quotes verify, each under the reference that states it.
+   */
+  const verified: readonly VerifiedAttestation[] = keptAttestations({ verdicts, },);
   /**
    Items answered in all, verified or not.
    */

@@ -4,10 +4,11 @@ import type { AttestationItemWire, } from './reference-attest-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Reference attestation matching
-// Pure text: which attested items verify against the archive and the
-// reference lines, how items from several voices merge into one detail, how
-// a detail reads on a sheet, and whether a claim's quote overlaps one. No
-// provider, no disk (class thirty-seven, 2026-09-16).
+// Pure text: whether a quote is found in a text, how verified items from
+// several voices merge into one detail, how a detail reads on a sheet, and
+// whether a claim's quote overlaps one. No provider, no disk (class
+// thirty-seven, 2026-09-16). Which items verify, and under which reference,
+// is `reference-attest-verdict.ts` (ledger B25).
 
 /**
  What `indexOf` answers when nothing is found.
@@ -131,57 +132,6 @@ export function quoteIsIn(
     return false;
   return compacted({ text, },)
     .includes(compact,);
-}
-
-/**
- Items of one reply whose quotes are found character for character, the
- archive quote in the archive and the reference quote in the reference
- lines.
-
- @param modelId - voice that answered
-
- @param items - items as answered
-
- @param archiveText - archive rendering the quotes are read against
-
- @param referenceContext - reference lines
-
- @returns Items that verify, in answer order
-
- @example
- ```ts
- const verified = verifiedAttestations({ modelId, items, archiveText, referenceContext, },);
- ```
- */
-export function verifiedAttestations(
-  {
-    modelId,
-    items,
-    archiveText,
-    referenceContext,
-  }: {
-    readonly modelId: RosterModelId;
-    readonly items: readonly AttestationItemWire[];
-    readonly archiveText: string;
-    readonly referenceContext: string;
-  },
-): readonly VerifiedAttestation[] {
-  return items
-    .filter(function verifies(item,): boolean {
-      return quoteIsIn({
-        quote: item.archiveQuote,
-        text: archiveText,
-      },) && quoteIsIn({
-        quote: item.referenceQuote,
-        text: referenceContext,
-      },);
-    },)
-    .map(function withVoice(item,): VerifiedAttestation {
-      return {
-        modelId,
-        item,
-      };
-    },);
 }
 
 /**

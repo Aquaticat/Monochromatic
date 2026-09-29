@@ -52,9 +52,9 @@ const SOURCE_TEXT = '猫有一个弟弟。';
 const ARCHIVE_TEXT = 'The cat has a younger brother who also dozes on the windowsill.';
 
 /**
- One reference stating it.
+ One reference stating it, as `citedReferenceBlock` renders it.
  */
-const REFERENCE_CONTEXT = 'REFERENCE 1 https://example.invalid/cat-notes: Mittens had a younger brother who also dozed on the windowsill.';
+const REFERENCE_CONTEXT = '- reference 1 https://example.invalid/cat-notes: Mittens had a younger brother who also dozed on the windowsill.';
 
 /**
  The item one voice extracts.
