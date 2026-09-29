@@ -6645,3 +6645,45 @@ A proposed clarification to the existing `AGENTS.md` QGR guidance would
 say to adopt a strongly determined recommendation with a veto path rather
 than ask for ceremonial ratification;
 this session's explicit prohibition on `AGENTS.md` edits remains in force.
+
+## Empty and unavailable Search review started
+
+`evidence/search-empty-unavailable-boundaries.md` records selected A's
+existing empty-query view,
+the historical no-match/unavailable strings,
+and the fact that those historical rasters used a rejected blank-left
+layout rather than the retained browser/deck.
+It separates empty query,
+zero direct-name hits,
+usable empty library,
+known source failure and loading/analysis.
+Production `LibrarySource.load` can return an empty list for no permission,
+an intentionally empty chosen folder or a failed folder scan;
+that list alone cannot justify an “unavailable” diagnostic.
+Current production `MainActivity.kt` gates the player behind audio
+permission,
+so Search access without permission is not established.
+No matcher or production Search change was made.
+
+A disposable `Fold_No_Hardware_Probe` boot was started in a Podman
+container capped at 6 GiB and 2 CPUs for **static keyboard-closed**
+selected-A status captures only.
+Its bounded process is named `fold-search-empty-review-avd`;
+there is no verified boot or capture yet.
+The private scratch capture script
+`/home/user/temp/agent/capture-search-empty-static.mjs` refuses the
+original AVD,
+checks each expected state and aborts if an input method appears.
+Raw status-bearing screenshots must stay private,
+with generic status-strip sanitization before any design publication.
+Do not claim that the native comparison exists until the boot and capture
+actually complete.
+
+Review-task numbers 118 and 127 to 129 are **internal Pi task IDs**,
+not GitHub Issues:
+`gh issue view` found unrelated repository subjects at each number.
+GitHub Markdown currently auto-links bare `#N` references to those
+unrelated issues.
+A separate pending internal task will correct active design prose and
+regenerate affected HTML;
+no GitHub issue was mutated.
