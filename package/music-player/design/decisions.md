@@ -1779,6 +1779,46 @@ was captured at 100% and 200% in light/dark with the keyboard closed;
 text bounds and provenance.
 The exact prototype blend is reviewable and not a universal palette pass.
 
+### D60. Search results use direct names, not parent-only track expansion (2026-09-29)
+
+After reviewing D59-highlighted native inner and cover examples,
+the user selected **Scope D** over P.
+A folder may appear because its own name matches;
+a track may appear because its own filename matches.
+The displayed parent-folder name remains disambiguating context,
+not a separate source of track matches.
+The synthetic `Another Xronixle` row must **not** appear solely because
+its immediate parent is `Camellia` for query `cam`.
+This keeps matching-folder results visible without deciding what tapping
+that folder does (#129).
+It does not decide Unicode casefolding,
+filename extension handling,
+partial-token matching,
+ancestor-path search,
+result count limits or an index implementation.
+The user's choice is a design direction,
+not authorization for production Search code.
+
+### D61. Mix result types by relevance rather than grouping by kind (2026-09-29)
+
+The user independently selected **Order M** over folders-first F and
+tracks-first T in the same D59-highlighted matrix.
+For the illustrative `cam` fixture,
+an exact `Cam` track precedes the prefix `Camellia` folder,
+which stays near the top;
+other direct track and folder hits are interleaved by the shown
+exact/prefix/contained relationship.
+This does not select a concrete scorer,
+normalization rule,
+locale-aware or deterministic tie-break,
+result action,
+or a production implementation.
+The selected A header,
+actual left browser,
+complete deck,
+D58 columns,
+D59 theme-derived highlighting and E2 floor remain unchanged.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)

@@ -306,19 +306,26 @@ rounds (2026-09-17):
   D59 requires every visible result title/parent-context `cam` occurrence
   to be emphasized from the OS accent with OKLCH adjustment,
   not the rejected purple tertiary-container role.
-  The separate `questions/ranking-review.html` now embeds the OS-accent
-  OKLCH highlight on native light/dark selected examples and every visible
-  ranking-matrix row;
-  see `evidence/search-match-emphasis-native.md`.
+  D60 selects **Scope D**:
+  direct folder names and track filenames,
+  with parent context shown but no parent-only track expansion.
+  D61 independently selects **Order M**:
+  mix types by illustrative relevance,
+  not all folders or all tracks first.
+  The D59-highlighted native D/P and M/F/T comparison is historical
+  decision evidence;
+  see `evidence/search-ranking-native-comparison.md` and
+  `evidence/search-match-emphasis-native.md`.
   The cover M/P and T/P fixture needed a second keyboard-closed swipe
   to reveal the last supporting line fully;
-  the final comparison uses those complete frames.
-  Membership/order remain unselected;
-  the visual fixture does not decide matching grammar,
-  tie-break implementation or a real index.
-  Search matching/ranking (#116),
-  result activation (#129),
-  Back/Clear/focus (#127) and empty/unavailable behavior (#128) remain
+  those were comparison cases,
+  not selected directions.
+  Matching grammar,
+  deterministic tie-breaks,
+  large-library limits and a real index remain open under #116.
+  Back/Clear/focus and scroll restoration (#127),
+  empty/unavailable behavior (#128),
+  result activation (#129) and Search accessibility (#118) remain
   separate open decisions.
   D21's global command hotkey and Settings row
   do not transfer to Search.

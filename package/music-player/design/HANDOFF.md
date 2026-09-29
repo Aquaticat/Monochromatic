@@ -6401,3 +6401,26 @@ returned `OK: killing emulator`.
 `adb devices -l` and `podman ps` subsequently listed neither the
 emulator nor that container.
 The user's original AVD remains untouched.
+
+## D60 and D61 selected after highlighted review
+
+The user answered **D** for membership and **M** for ordering when the
+accent-highlighted native comparison was re-presented.
+D60 keeps matches to a folder's own name or a track's own filename;
+it does not add `Another Xronixle` solely because its parent
+`Camellia` matches `cam`.
+D61 mixes folder and track results by illustrative relevance:
+exact `Cam` track before the prefix `Camellia` folder,
+without adopting a concrete scorer or tie-break.
+Neither selection authorizes production Search,
+result activation,
+new keyboard tests or a universal matching grammar.
+The D/P/M/F/T questionnaire and its retained rejected alternatives are
+now historical evidence;
+only the active D/M direction belongs in the selected review.
+The earlier `questions/current.html` still has an illustrative
+parent-only `Another Xronixle` result,
+so it must be recaptured/rebuilt from a direct-name mixed-order fixture
+before presenting it as the current design.
+#116 stays in progress for matching grammar and deterministic tie-breaks;
+#127 through #129 and #118 remain separate pending reviews.
