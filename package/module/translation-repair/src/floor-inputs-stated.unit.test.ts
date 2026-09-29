@@ -16,8 +16,11 @@
  own argument and is taken as stating everything: the call that built that
  argument is read where it is a literal. Anything else is unreadable and has
  to be named. Out of reach: a key nested inside a named type (a `subject`
- or a settlement `identity`), and a parameter typed by a named alias rather
- than a literal, whose optional keys the scan cannot see.
+ or a settlement `identity`), a parameter typed by a named alias rather
+ than a literal, whose optional keys the scan cannot see, and a literal a
+ function returns for its caller to spread. A name is read as a forwarded
+ parameter before any same-file constant, so a local constant shadowing an
+ enclosing function's parameter would be taken as forwarded; none does.
 
  THE FIXTURE CASE COMES FIRST, so the package-wide case is read against a
  scan shown able to find each kind (ledger M21). Fixtures are cat-themed;
