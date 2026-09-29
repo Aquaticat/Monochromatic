@@ -35,10 +35,29 @@ That demonstrates the player D39 path;
 it does **not** show what happens when a separate Search destination opens.
 Reusing the entire folder-first traversal before the Search field could
 make the just-opened destination hard to reach by sequential exploration.
-The design may retain D39's local browser/deck order while giving Search's
-header/results a task-appropriate entry point,
-but actual TalkBack traversal must be measured before describing it as
-working.
+The disposable debug Search A `cam` fixture was then launched with TalkBack
+17.0.0.889642762 and speech overlay enabled.
+Its **initial** spoken focus was “Folders”; one physical emulator-gRPC
+right swipe spoke “Open. Button” and the next spoke “Back to player.
+Button”.
+The subsequent physical-swipe segment spoke
+`cam. Edit box. Search music` at recorded step `3` and
+`Clear search. Button` at step `4`.
+Steps `5` through `20` then moved into the **left alphabet rail**,
+not the Search result list.
+That verifies an interleaved current-debug order:
+left browser header,
+right Search header,
+then left browser navigation.
+It does **not** literally reuse D39's whole player-first traversal,
+nor does it keep Search results adjacent to their query for sequential
+TalkBack exploration.
+Read-only input-method state stayed at `mInputShown=false` and
+`mImeWindowVis=0` through the captured segment.
+These private speech-overlay observations do not prove activation,
+return focus,
+D63 edit-focus request or a final Search accessibility design;
+a longer bounded sequence is being collected without typing or tapping.
 
 ## Primary guidance and its limits
 
@@ -88,8 +107,8 @@ not Android TalkBack.
   its editable field,
   with Back available by reverse navigation and the result list next.
   Pro:
-  the user can engage the requested Search without traversing the
-  retained folder picker.
+  the user can engage the requested Search and its result list without
+  traversing the retained folder picker between header and hits.
   Con:
   Back is not the first announced control,
   and native edit-focus/keyboard behavior needs a separate verification
@@ -101,15 +120,18 @@ not Android TalkBack.
   escape discoverable.
   Con:
   Search entry takes another gesture before reaching the field.
+  Both Search-first variants should keep the result list adjacent in
+  traversal before moving to the left browser/deck.
 - **Reuse ordinary-player folder-first traversal unchanged:** keep D39's
   full folder region and deck before Search.
   Pro:
   spatial order stays familiar.
   Con:
-  the existing player transcript reached its deck only at recorded step
-  `45`,
-  so placing the new Search destination after those regions would
-  postpone its principal task.
+  the ordinary player's transcript reached its deck only at recorded
+  step `45`.
+  This remains a hypothetical design variant,
+  not the measured Search fixture sequence that reached Back after two
+  swipes.
 
 **Provisional ranking: query-first > Back-first > unchanged player order.**
 Query-first prioritizes the action just invoked over one additional

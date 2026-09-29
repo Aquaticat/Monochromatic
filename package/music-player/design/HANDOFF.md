@@ -6905,11 +6905,44 @@ Podman,
 Only its exact `hardware-qemu.ini.lock` and `multiinstance.lock` were
 moved into private
 `/home/user/temp/agent/fold-search-talkback-lock-backup.ugdNRZd1/`.
-A second bounded boot has started but is not yet confirmed successful.
+The second bounded boot reached `ADB_BOOT_READY emulator-5580` with
+`Fold_No_Hardware_Probe` unfolded and the container still capped at
+6 GiB/2 CPUs.
+Installed APK SHA-256 remained
+`1caee7060acfb5bbcd9a02142b4c9bada6b5886517157d25fef4a48b9b1e9c05`.
+TalkBack 17.0.0.889642762 was present but initially disabled;
+it was enabled on this **disposable** guest,
+and its own notification permission and Display speech output setting were
+activated so the visible overlay could serve as a speech witness.
+A positive-control launch of the existing debug Search A `cam` result
+fixture showed `Folders` as initial speech,
+`Open. Button` after one physical emulator-gRPC right swipe and
+`Back to player. Button` after the second.
+This current debug traversal **did not** require navigating the entire
+folder list before reaching the Search header;
+the D39 player order cannot be copied over as a measured Search order.
+Read-only input-method state still reported
+`mInputShown=false`,
+`mImeWindowVis=0`.
+The first bounded continuation recorded `cam. Edit box. Search music`
+at step `3`,
+`Clear search. Button` at step `4`,
+then left alphabet-rail entries through step `20` rather than a result
+row.
+This is an interleaved debug traversal:
+left browser header,
+right Search header,
+then left browser navigation.
+It reaches the Search header early but separates the query from its hits
+with left-pane stops.
+The input method stayed hidden in read-only state checks on each swipe.
+A further private bounded segment is inspecting where result speech
+starts;
+its script stops rather than testing an IME if one appears.
+Raw status-bearing screenshots and speech-overlay crops remain private.
 Do not touch the original AVD or infer stale-lock causation beyond this
-bounded failing case;
+bounded failing/passing boot pair;
 read-only mode would not meet the writable study.
-No IME was opened or probed in this attempt.
 The accessibility evidence now compares query-first,
 Back-first and unchanged player-order initial traversal,
 with query-first provisionally ranked ahead of Back-first because Search
