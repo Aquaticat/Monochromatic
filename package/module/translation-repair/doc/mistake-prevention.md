@@ -445,6 +445,7 @@ the linter's `--fix` split 186 headings in a file with astral characters,
 through an offset defect of its own (issue 559);
 code spans closed early by a backtick inside them rendered as loose backticks,
 which no linter rule reports (D30);
+a page's link markup quoted as prose rendered as fifteen live links to files that do not exist (D32);
 changes that stopped calling a function left it behind,
 and nothing reported one (ledger B20).
 
@@ -473,12 +474,20 @@ Until issue 559 is fixed,
 A code span holding a backtick uses a longer backtick run as its delimiter,
 since a backslash does not escape it,
 and a rendered doc is scanned for stray backticks and asterisks (`stray-contexts.mjs`).
+Markup quoted in prose,
+a link above all,
+goes in a code span,
+or behind an escaped bracket inside a quotation that spans lines.
 
 What enforces it:
 the linter's `max-lines` and every other rule,
 read in full before staging;
 the Markdown linter,
 which exits 0 only when no finding remains;
+`src/living-doc-links.unit.test.ts`,
+which fails on a relative link,
+image or link definition in the living docs,
+the package's docs or its README whose file or heading does not exist;
 `src/dead-functions.unit.test.ts`,
 which fails on a top-level function its file never names beyond its declaration
 and on an export no other package file names.

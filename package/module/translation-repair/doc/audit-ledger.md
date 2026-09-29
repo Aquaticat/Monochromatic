@@ -5789,6 +5789,75 @@ A citation planted in the corpus-pass runbook failed the first,
 a zone-less time planted in a troubleshooting doc failed the second,
 and both files were restored from the commit.
 
+### D31: task-list numbers written as words, which no guard reads
+
+Status:
+open,
+found 2026-09-29 while scoping D28.
+The D22 and D26 guard reads the sign followed by digits,
+and D26 left the word form ("task N") unread on purpose,
+for the sections the living docs carry from the sessions of 2026-09-10 to 2026-09-15,
+which keep that tracker's numbers under a note.
+Outside those sections the word form stands three times,
+each a tracker number written after the word:
+the package README's redesign constraints cite the redesign by its number (forty-one;
+`cbdcb84f8`,
+2026-08-30),
+which another session's tracker gave to different work on 2026-09-11;
+the round-three grading runbook names the decision on its silent refiner lane by its number (sixty-four)
+and calls it still open,
+though a later history segment records the same number closed on 2026-08-12
+by a parser fix for the same model's schema mismatch
+(whether both name one tracker's item is to be read from the session record);
+and the native-runtime bundling troubleshooting doc names its launch probe by its number (forty-seven).
+The README's same paragraph also says the shipped pipeline stays non-conforming "until replacement lands",
+where the direction decision of 2026-09-01 keeps the replacement closed.
+Fix:
+name each from its session's record,
+correct the runbook's open decision and the README's replacement,
+and have the guard read the word form outside the noted sections.
+
+### D32: link markup quoted as prose rendered as links that lead nowhere
+
+Status:
+fixed 2026-09-29,
+found the same day while checking the links D28 added.
+A page's link markup written into prose without a code span,
+such as a title linked to a placeholder `url` or an ellipsis,
+renders as a live link to a file that does not exist.
+Fifteen stood:
+thirteen in the OpenRouter pass log,
+one in the current snapshot and one in the Toka_ls reading of 2026-09-02,
+found by rendering every translation-repair doc with marked and checking every relative link target
+(`~/temp/agent/audit-glossary-fix/rendered-links.mjs`,
+shown first to report a planted missing file and a missing fragment).
+No linter rule reads a link's target,
+and the link audit of 2026-09-01 was never rerun.
+The pinned archives render no dead link.
+`3e16a16ae` put each in a code span,
+or,
+inside a quotation that spans lines,
+escaped its opening bracket.
+
+Guard:
+`src/living-doc-links.unit.test.ts` parses the living repository-level docs,
+the package's docs and its README with the package's own Markdown parser,
+so a code span or an escaped bracket renders no link and is never read,
+and fails on a relative link,
+image or link definition whose file does not exist,
+or whose fragment names no heading of the Markdown doc it points at
+(by GitHub's heading id,
+a repeated heading suffixed).
+Restoring the three docs from before `3e16a16ae` made it report the fourteen sites it reads
+(the Toka_ls reading is not a living doc),
+and five mutants of its own checks
+(fragments into other docs,
+fragments into its own doc,
+the repeated-heading suffix,
+images,
+and absolute URLs)
+were each caught.
+
 ## Found while fixing
 
 ### X1: the translate lane stopped the entry on a rejected slate over an archive the floor refuses
@@ -8129,6 +8198,16 @@ so the prevention covers run logs too:
 search a run log by its line tags (`TALLY`,
 `SEAT`) or its JSON keys,
 never with wildcard context around an ordinary word.
+
+Recurred again the same day during D32:
+a probe listing placeholder links masked every non-ASCII character as its code point
+but printed the ASCII link text around each,
+which is page text (film and song titles).
+A probe masks the text it prints,
+not only its script:
+print the markup and a length,
+or a hash,
+for any text a page wrote.
 
 ### M35: a teardown that kept what only its consumers read, and an audit that listed the sites it saw
 
