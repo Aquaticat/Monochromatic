@@ -18,6 +18,7 @@ import {
   EXA_API_KEY_VAR,
   searchWorkTitle,
 } from './work-title-search.ts';
+import { carriesWord, } from './word-bounds.ts';
 
 //region Work-title lookup
 // Official English titles of the works an original names, looked up on the
@@ -226,7 +227,11 @@ export function bareTitleOf(
 /**
  Whether a result names the work asked about, in its title or its
  highlight.
- 
+
+ AS WORDS WHERE THE TITLE IS LATIN (ledger B23): a result titled
+ "Catcraftopia" does not name 《Catcraft》. A Han edge needs no boundary, as
+ Chinese writes none, so a Han title is still found inside a longer run.
+
  @param hit - one result
  
  @param bare - title without its marks
@@ -254,7 +259,16 @@ export function namesWork(
     title,
     highlight,
   } = hit;
-  return title.includes(bare,) || highlight.includes(bare,);
+  return [
+    title,
+    highlight,
+  ].some(function carries(text,): boolean {
+    return carriesWord({
+      text,
+      needle: bare,
+      end: 'word',
+    },);
+  },);
 }
 
 /**
