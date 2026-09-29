@@ -6874,3 +6874,39 @@ code spans to explain the original problem,
 not live issue references.
 No GitHub issue was mutated,
 and no `AGENTS.md` rule was edited under the user's explicit constraint.
+
+## Search accessibility boundary and disposable TalkBack boot
+
+Review task 118 is active.
+`evidence/search-accessibility-boundaries.md` distinguishes D39's
+folder/deck/track traversal for the ordinary player from initial
+accessibility focus in Search,
+which D63's edit-focus decision did not settle.
+The previously verified player TalkBack transcript reached the current
+track at recorded step `45` after the folder region;
+this is not Search traversal evidence.
+Archived Material Search guidance permits initial focus on a leading
+button or text field and calls for result-change announcements,
+while icon/list guidance supplies action-label and target bounds.
+Debug Search result rows currently have no click handler or bundled
+single-action semantics;
+no Search TalkBack speech or activation has been verified.
+
+A bounded disposable Fold TalkBack **traversal-only** boot was attempted
+in 6 GiB/2 CPU Podman with emulator gRPC on loopback.
+It stopped before guest boot with Android Emulator 37.1.11's
+`FATAL | Running multiple emulators with the same AVD ... -read-only`
+diagnostic after the prior forced container stop.
+ADB,
+Podman,
+`ps`,
+`lsof`,
+`fuser` and `lslocks` found no owner of this disposable AVD.
+Only its exact `hardware-qemu.ini.lock` and `multiinstance.lock` were
+moved into private
+`/home/user/temp/agent/fold-search-talkback-lock-backup.ugdNRZd1/`.
+A second bounded boot has started but is not yet confirmed successful.
+Do not touch the original AVD or infer stale-lock causation beyond this
+bounded failing case;
+read-only mode would not meet the writable study.
+No IME was opened or probed in this attempt.
