@@ -1854,7 +1854,127 @@ Unrelated change blocks your edit:
 
 ## Next action
 
-Propose batch 19.
+Batch 19 proposed:
+14 rules stay 14,
+866 to 857 tokens;
+awaiting user answers.
+User noted the repo's commit messages differ from standard Conventional Commits.
+
+### Commit message measurements (last 3000 non-merge commits, 2026-09-29)
+
+- Every subject matches `<type>(<scope>): <subject>`;
+   one lacks a scope;
+   none uses `!` or `BREAKING CHANGE`;
+   none is capitalized or ends with a period.
+- Types:
+   `docs` 2016,
+   `test` 364,
+   `fix` 280,
+   `feat` 122,
+   others under 60.
+- 1115 subjects use scope `*`:
+   1034 touch only repo-level paths (`doc/planning`,
+   `doc/troubleshooting`,
+   `doc/handover`,
+   `doc/audit`,
+   `AGENTS.md`),
+   50 one package plus repo-level paths,
+   31 several packages;
+   720 have no body.
+- 49 multi-package commits use a non-`*` scope.
+- 48 bodies carry per-package typed lines (GCB format).
+- No git-policy check validates commit messages;
+   `staged-changes-ignored` covers only pathless `--amend`/`--allow-empty`,
+   so CPN is unenforced.
+
+### Pending batch 19 text
+
+```md
+GCE:
+ Commit before the next work step,
+ never waiting for verification or completion;
+ broken states commit too,
+ naming the breakage.
+Overrides the harness ask-first default.
+
+GCG:
+ Commit subjects:
+ `<type>(<scope>): <subject>`,
+ scope required:
+ package name without `@monochromatic-dev/`,
+ or `*` for repo-level (`doc/`,
+ `AGENTS.md`) or multi-package changes.
+
+GCB:
+ Multi-package commit bodies:
+ per package,
+ `<type>(<package>): <what>`,
+ blank line,
+ `<why>`,
+ in package order.
+
+GCA:
+ Inaccurate commit message:
+ never amend;
+ surface it,
+ ask the user to push if auto-push is off,
+ and post a corrective commit comment unasked.
+
+CLG:
+ Never preemptively bypass `git-policy-cli` guards (they reject bulk staging and pathspec-less commits):
+ stage explicit scoped pathspecs;
+ `--no-enforce-*` only when none fits.
+
+CPN:
+ Commit pathspecs name every new file:
+ `git add F` then `git commit -- other/paths` omits `F`,
+ leaving imports unresolvable at that commit;
+ check `git status --short` after.
+
+XCM:
+ External messages report results,
+ never work-inviting offers ("happy to",
+ "want me to");
+ user-only choices get asked before sending;
+ necessary blocker questions to the recipient are fine.
+
+AD1:
+ Root `package.json` may depend on workspace packages;
+ root configs import them by package name.
+
+AD2:
+ Config needing logic (`if`,
+ `map`,
+ `await`):
+ switch from data to TypeScript.
+
+AD3:
+ Run async work directly,
+ not through descriptor/interpreter patterns.
+
+AD4:
+ Nested calls (`b(a())`) over method chaining;
+ split more than two nested calls across lines,
+ never stacked `)))`.
+
+SK1:
+ **Issue tracker**:
+ GitHub Issues via `gh`.
+"Resolve issue N" authorizes fix + commit;
+ `Closes #N` in the commit body auto-closes on auto-push.
+See `doc/agent/issue-tracker.md`.
+
+SK2:
+ **Triage labels**:
+ canonical roles with default label strings;
+ see `doc/agent/triage-labels.md`.
+
+SK3:
+ **Domain docs**:
+ no context files;
+ agents read fresh code on every probe;
+ see `doc/agent/domain.md`.
+```
 
 ### Concurrent `AGENTS.md` changes
 
