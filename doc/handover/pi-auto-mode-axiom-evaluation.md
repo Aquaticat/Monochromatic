@@ -364,6 +364,13 @@ or new issue was made.
 
 ## Actual SDK source-capture preparation
 
+The user asked why an SDK was involved.
+The clarification was that this is Pi's existing SDK,
+used only to test host instruction collection and tool/session hooks with a fake model,
+not a Jev SDK or a new production judge dependency.
+The user answered "Fine. Continue."
+Keep preparation subordinate to those concrete host tests.
+
 The private draft is `contract/sdk/plan.json`.
 It targets an actual disposable `AgentSession`,
 registered extension/tool callbacks,
@@ -426,10 +433,27 @@ Its Containerfile copies only the measured runtime files,
 staged SDK artifacts,
 and new complete-policy input.
 It has no `RUN` instruction and defaults to Node's version command.
-No SDK package code or session has been executed yet.
-In-container resolution,
-native/Wasm compatibility,
-and actual import/startup still need verification.
+Image construction executed no SDK package code.
+The first module preflight `proc_0e8c` stopped at its environment-name guard before SDK import.
+A names-only diagnostic found `HOSTNAME`.
+Read-only Podman `5.8.7` source explains its late addition after default-environment clearing.
+The corrected new epoch explicitly sets and checks `HOSTNAME=sdk-preflight`,
+while retaining rejection of every other unexpected key.
+
+`proc_4708` passed the real SDK module import after byte,
+link,
+resolution,
+and resource checks.
+The separate required-TypeBox-metadata omission image failed that same import with `ERR_MODULE_NOT_FOUND`,
+as expected.
+No original constructor was replayed;
+the existing omission image was reused.
+Both runs had empty stderr and zero fetch calls.
+No `AgentSession` was constructed and no external model call ran.
+Actual session/tool callbacks,
+complete native/API coverage,
+human-origin authority,
+and finalization remain unqualified.
 See the [SDK staging diagnosis](../troubleshooting/pi-sdk-staging.md).
 No removed cloud SDK was installed,
 no production source or lockfile was edited,

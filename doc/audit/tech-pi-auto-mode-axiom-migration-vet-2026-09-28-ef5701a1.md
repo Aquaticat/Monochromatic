@@ -1435,6 +1435,39 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## SDK module import boundary
+
+The user asked why an SDK was involved.
+This is the existing Pi SDK used for disposable host-integration tests,
+not a Jev SDK or a new judge provider.
+The user answered "Fine. Continue."
+
+The first module preflight stopped before SDK import on the owned environment-name assertion.
+A separate names-only probe found HOSTNAME.
+Read-only Podman 5.8.7 source at commit
+`c593b672bf3db1173aebea565ebf1a724ea196dc`
+shows default-environment clearing followed by hostname addition unless explicitly supplied.
+The new epoch sets and checks the synthetic `HOSTNAME=sdk-preflight`
+and keeps all other unknown environment keys rejected.
+No environment values or credentials were printed.
+
+`proc_4708` passed the actual intact SDK barrel import after byte,
+link,
+package-resolution,
+and resource checks.
+The existing separate image omitting only TypeBox package metadata
+failed the same import with `ERR_MODULE_NOT_FOUND` naming TypeBox.
+The original failed epoch is retained and the omission image was reused,
+not rebuilt.
+Both runs had empty stderr and zero fetch calls.
+No AgentSession was constructed and no external model assessment ran.
+This closes the environment-admission blocker at module-import scope only.
+Actual session/tool callbacks,
+human-origin authority,
+provider encoding,
+and deterministic finalization remain unqualified.
+See the [staging report](../troubleshooting/pi-sdk-staging.md#module-preflight-environment-admission).
+
 ## SDK staging prerequisites and policy freshness
 
 The nominal SDK dependency inventory `proc_1af5` stopped before package execution.

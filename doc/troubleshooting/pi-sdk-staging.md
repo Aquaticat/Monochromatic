@@ -261,6 +261,90 @@ provider,
 resource,
 and lifetime caps before session construction.
 
+## Module-preflight environment admission
+
+The first actual-module preflight `proc_0e8c` stopped at the owned probe's assertion:
+
+```text
+Unexpected environment variable names
+```
+
+This occurred before SDK import.
+A separate names-only diagnostic `proc_bf98` found `HOSTNAME`
+besides the explicitly configured probe variables,
+`HOME`,
+and `PATH`.
+No environment values were printed.
+The installed tool reported Podman `5.8.7`.
+
+The read-only source checkout is `~/temp/agent/podman-sdk-env-5.8.7`,
+commit `c593b672bf3db1173aebea565ebf1a724ea196dc`.
+Its default-environment processing clears defaults:
+
+```go
+// Podman pkg/specgen/generate/container.go:222
+if s.UnsetEnvAll != nil && *s.UnsetEnvAll {
+    defaultEnvs = make(map[string]string)
+}
+```
+
+At line 240 it combines those defaults with explicit environment values.
+Later hostname handling checks whether an explicit value already exists:
+
+```go
+// Podman libpod/container_internal_linux.go:537
+needEnv := true
+for _, checkEnv := range g.Config.Process.Env {
+    if strings.SplitN(checkEnv, "=", 2)[0] == "HOSTNAME" {
+        needEnv = false
+        break
+    }
+}
+if needEnv {
+    g.AddProcessEnv("HOSTNAME", hostname)
+}
+```
+
+The owned assumption that `--unsetenv-all` left only the enumerated explicit names was wrong.
+The correction is not to admit arbitrary environment variables.
+The new `contract/sdk/module-preflight-hostname` epoch supplies
+`--env=HOSTNAME=sdk-preflight`,
+requires that exact synthetic value,
+and still rejects every other unexpected name.
+Its diagnostic names unexpected keys without exposing values.
+
+`proc_4708` passed both fixed cases:
+
+- The intact image verified recorded bytes,
+  links,
+  package lookup/absence edges,
+  and the resource envelope,
+  then imported the real SDK barrel and observed the expected exported APIs.
+- The preserved throwaway image with only TypeBox's package metadata removed
+  failed the same SDK import with `ERR_MODULE_NOT_FOUND` naming TypeBox.
+  This control intentionally was not admitted as an intact artifact.
+
+Both cases observed Node `v26.10.0`,
+2 GiB memory,
+zero extra swap,
+2 CPUs,
+64 PIDs,
+read-only root,
+and loopback-only networking.
+They used declared disposable tmpfs and a synthetic home.
+Stderr was empty and the fetch counter stayed zero.
+No `AgentSession` was constructed and no external model call ran.
+The original failed epoch and unused original control schedule remain preserved;
+the existing omission image was reused rather than rebuilt.
+This qualifies the measured module-import boundary,
+not actual session lifecycle,
+human-input authority,
+or every native/API path.
+
+No Podman source or host configuration was modified.
+No upstream contribution is proposed for the owned allowlist correction;
+no claim about absence of an upstream issue or contribution policy is made.
+
 ## What does not work
 
 Treating every nominal dependency declaration as a mandatory installation
