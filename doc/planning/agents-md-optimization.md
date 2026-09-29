@@ -1616,7 +1616,107 @@ AP5:
 
 ## Next action
 
-Propose batch 17.
+Batch 17 proposed:
+17 rules become 12,
+964 to 796 tokens;
+awaiting user answers.
+
+### Pending batch 17 text
+
+```md
+PKG:
+ A package is complete only with `README.md`,
+ zero lint errors,
+ and passing tests covering every exported code path.
+
+TCV:
+ Tests cover every implementation branch (sync/async,
+ string/object,
+ direct/delegated),
+ not just the happy path;
+ passing tests show completeness only after comparing test names against branches.
+
+GFP:
+ A guard test proves nothing until shown to fail:
+ commit it,
+ remove the guard,
+ rebuild,
+ run,
+ restore;
+ restoring discards uncommitted work on that file.
+
+CXL:
+ Plugin and process cleanup must not emit bare shutdown errors (e.g. `context canceled`):
+ capture stderr in lifecycle tests and fix hook ordering;
+ never filter the noise.
+
+VUB:
+ After building,
+ deploying,
+ or installing,
+ verify the artifact the way its consumer uses it;
+ compiling or installing alone isn't verification.
+
+VB1:
+ Servers:
+ check responses,
+ not startup.
+CLIs:
+ run the real command,
+ check output.
+Hooks/plugins:
+ trigger via the host app.
+Libraries:
+ import and call from a consumer.
+
+VB5:
+ Web pages/HTML artifacts:
+ load in `agent-browser`,
+ confirm no console errors,
+ exercise every interactive element,
+ read rendered state via `agent-browser eval`;
+ drive each rewritten JS path.
+
+ABR:
+ End browser verification with `agent-browser close`:
+ open pages keep animating,
+ and WebAudio unlocked by scripted clicks plays on system speakers.
+
+VB7:
+ Markdown ships only after a rendered check (live page or renderer output);
+ lint misses CommonMark emphasis edge cases.
+
+URF:
+ Verification needing a user-provided resource runs first,
+ before other work or other parts of the task;
+ scope growth never defers it;
+ not done until the resource is exercised.
+
+THR:
+ State-mutating verification uses disposable fixtures (`mktemp -d`,
+ throwaway worktree,
+ container),
+ never real or shared state,
+ even when idempotent;
+ guard tests need allowed and rejected fixtures.
+
+TAE:
+ Before prescribing tool/API behavior in prompts,
+ docs,
+ configs,
+ or CI scripts,
+ test it with a real invocation,
+ never from how it should work.
+```
+
+Retires TC2 into TCV,
+VB2 to VB4 into VB1,
+VB6 into VUB.
+CXL widens from semantic plugin cleanup to any plugin or process cleanup:
+`doc/planning/pi-goal-stop-hook.md` and `doc/troubleshooting/pi-auto-mode-subagent-model-scope.md` already apply it to pi plugins.
+CXL stays under "Package completeness":
+the audit's misplacement flag echoed an example from the audit prompt,
+and its stderr-capture requirement is a completion check.
 
 ### Concurrent `AGENTS.md` changes
 
