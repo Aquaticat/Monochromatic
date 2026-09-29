@@ -6339,6 +6339,30 @@ so the shared reader,
 which stops at six,
 reads the corpus as the old one did.
 
+### X21: a `$...$` pair is a formula on the site and prose here
+
+Status:
+open,
+found 2026-09-29 rereading `doc/repetition.md` ("The site's grammar is not this one").
+The site compiles each page under `remark-math` and `rehype-katex`,
+so a `$...$` pair is a formula there,
+while this package parses it as prose;
+six source pages at the pin carry one.
+No pass that rewrites prose
+(the typography restore,
+the Canadian forms passes,
+the prose masks)
+has been checked inside a formula,
+so a prime curled or a word respelled inside one would ship unseen.
+Fix:
+census every math pair in the sources,
+the archive English,
+the settled pages and the artifact strings;
+replay those passes over them;
+if any rewrites inside a formula,
+protect math pairs in `corpus-run/prose-ranges.ts` and `typography-prose-mask.ts` as the site's compiler reads them,
+with a guard shown failing first.
+
 ## Recurring code families
 
 Audit area six:
@@ -7023,6 +7047,37 @@ a control copy of the source with one planted function of each kind reported bot
   a dead export,
   and restoring a merged copy are each caught;
   a comment control survives.
+
+### B21: the other recurring families have no recorded code-reading pass
+
+Status:
+open,
+recorded 2026-09-29 so the work outlives the session's task list.
+B1 to B20 came from the duplicate-body and letter-predicate censuses.
+The class history names other families that recurred across stages,
+and this ledger records no code-reading pass over them:
+text indexed by UTF-16 unit (class ninety-six),
+substring or prefix matches without word boundaries
+(class one hundred sixty-three;
+area one fixed the glossary's matcher,
+and no pass over the other sites is recorded),
+straight against curly quotes
+(classes thirty-eight,
+seventy,
+one hundred sixty-eight and one hundred seventy-five),
+trimmed text compared with raw text
+(classes sixty-five and one hundred one),
+quorum denominators that count unreachable seats
+(classes twenty-six and fifty),
+sheets missing blocks,
+and silent fallbacks.
+Fix:
+read each family's sites across translate,
+repair,
+consolidation,
+the provider clients and the corpus-run driver;
+each finding gets its file and line and a probe that reproduces it,
+and is fixed with a guard shown failing first.
 
 ## Process mistakes in this audit
 

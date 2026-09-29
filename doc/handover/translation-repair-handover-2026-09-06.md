@@ -178,13 +178,19 @@ which the takeover session does not have.
   types and the unit suite pass on the result.
   The decision record is
   [the teardown decision](../decision/translation-repair-provider-free-layer-teardown-2026-09-16.md).
-- The task-numbered plan of those sessions (tasks 31 to 67:
+- The task-numbered plan of those sessions (items 31 to 67 of their own tracker:
   "no paid model invocation",
   finite plans,
   journals,
   DTO readers) is abandoned.
   Its records stay in `doc/planning/` under an abandonment note;
   no step of it is next.
+  The sections from "Latest checkpoint: V4.1 judge admission on 2026-09-11"
+  to "Repository state" are those sessions' own record,
+  kept as written:
+  a bare number there ("task 38", "35 remains blocked by 38") names an item of their tracker,
+  described in the planning record the section links,
+  and never a Claude session's task or a GitHub issue.
 - Not removed,
   for want of permission in the takeover session:
   171 stopped `podman` containers named `preparation-owner-*` and `comparison-*` on the
@@ -318,7 +324,7 @@ which the takeover session does not have.
   the seven checks against Mio12 all better or equal,
   the three checks passed,
   four wording notes recorded and not fixed.
-  #123 closes.
+  That closes the Mio reading owed for a horizontal rule in the body and a bare URL.
   `hulicaijia5` launched at 15:58 UTC on frozen `1cfd9d2fe` (pid 1470018,
   runs `~/temp/agent/hulicaijia5-20260916`,
   log `~/temp/agent/hulicaijia5-20260916.log`).
@@ -1076,7 +1082,7 @@ The unstaged `mise.lock` change (tool-version downgrades only) was discarded on 
 The exact frozen container sample and budget setup passed,
 but full sample reading exposed a different issue.
 `windward0032#14` has source heading only and incumbent heading plus three body paragraphs;
-its body source is in sibling `#15`.
+its body source is in sibling `windward0032#15`.
 The compiled archive-floor validator rejects a heading-only candidate,
 while retaining the incumbent passes.
 A valid `lintong#0` heading-to-heading control passes.
@@ -3457,7 +3463,7 @@ The 2026-09-08 commits:
     the 2026-09-04 snapshot,
     and the run-continuity and overlap-dial handovers.
 -   `e50be2299` keeps four slices in flight in the corpus pass by default,
-    on the four matched pairs `#261` asked for,
+    on the four matched pairs the overlap-dial work asked for,
     with guard `bb5e97e0e` shown to fail first;
     record `doc/decision/translation-repair-pass-overlap.md`,
     flagged for the owner's veto.
@@ -4923,7 +4929,7 @@ each read off the pass log and the shipped page:
     (M30). Under it: L4 refined so authored markup may be re-marked and atoms may move between envelopes, which
     replays 24 refusals down to the 7 pure removals (`b07f8ac48`, `ab84cbfd7`; M31 records the DottedNumber
     misreading); L11's probe rolls back a rewrite it admits a claim against (`d41ad44c4`, 175 of 2,144 kept
-    rewrites flagged, a graded six of ten true); P9's nudge worded apart from the recovery round's. #395 found
+    rewrites flagged, a graded six of ten true); P9's nudge worded apart from the recovery round's. The M28 check found
     every cache version set after the newest slice-cache file and none written since (`097e5ecde`,
     `9a3f28b30`). A full suite at `9a3f28b30` passed, 1,228 cases. TIANQICHEN66621 LAUNCHED on
     `.frozen-dist-9a3f28b30`, pid 431565, log `~/temp/agent/TianqiChen66621.log`, with a waiter.
@@ -4940,14 +4946,14 @@ each read off the pass log and the shipped page:
     `12ed82cee`, so the change was reverted (`80a18dd53`) and M32 records the mistake. The remedy in progress is
     `DECLARED_IDENTITY_RULES`' framing, which calls note lines vocabulary for the terms they name "and nothing else".
     NEXT: that rule fix with its cache accounts, the rest of L5, then read TianqiChen66621's page; then L10,
-    L14, L12, L13 and the D series. DEFERRED PAST THE LAUNCH: L6 (task 401), H5's consolidation half.
+    L14, L12, L13 and the D series. DEFERRED PAST THE LAUNCH: L6, H5's consolidation half.
     Probe scripts, the single-file runner (`run-files.ts`) and the mutation harness (`mutants.ts`, JSON spec)
     live in `~/temp/agent/audit-glossary-fix/`, which survives a reboot; the scratchpad did not.
     AUDIT IN PROGRESS (owner 2026-09-27: "audit the whole translation-repair pkg for all the mistakes we've
     made and fix all of them", "Mistakes made, ever, for this pkg"): every finding, fix and status is in
     `package/module/translation-repair/doc/audit-ledger.md`; the planning doc section "Whole-package audit,
     2026-09-27" lists the owner's answers and the commits. The owner was told the 治愈 安慰 misquotation.
-    Open work is tracked as tasks 363, 367 to 369, 381, 395 and 397 to 401 (as of 2026-09-28).
+    Open work is every ledger entry whose status reads open or recurring.
     LANDED SINCE (2026-09-27): the dispute rule reads the panel severity (L9, guard `b15ba5464`, fix
     `6a0f68cec`); a slate declined twice over wording that cannot ship ships by preference with its
     reasons to the polish, on the translate lane too (fifteenth addendum, guard `37128bf6c`); the
