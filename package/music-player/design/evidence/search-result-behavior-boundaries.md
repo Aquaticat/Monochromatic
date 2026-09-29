@@ -1,0 +1,108 @@
+# Search result behavior boundaries before an action decision
+
+## Settled composition, unresolved effects
+
+D47 opens a separate Search page.
+D48 gives it one Back/query/Clear header.
+D51 keeps query and results on the right of the unfolded Fold with the
+same browser and playback deck on the left;
+D52 starts positive matches immediately under the header.
+D56 keeps the folded-cover results list scrollable above ordinary bottom
+keyboards,
+and D57 permits only the measured real floating-Gboard overlap with
+some inner result lettering.
+E2's selected physical floor applies only to meaning-bearing marks.
+None of these choices specifies result ranking or what tapping a result does.
+`package/music-player/design/decisions.md` records those bounds.
+
+The debug-only
+`package/music-player/android-app/app/src/debug/kotlin/dev/monochromatic/musicplayer/SearchPersistentDeckStudy.kt`
+on branch `prototype/music-player-theme-compose` renders a folder result
+`Camellia` with detail `Folder · opens this folder` and a track
+`Another Xronixle` with detail `Track · Camellia · reveals track` for
+query `cam`.
+`PersistentResultLine` has no click handler;
+the app under review has no production Search index or result activation.
+The track title itself does **not** contain `cam`:
+its appearance in the fixture might illustrate a parent-folder match,
+not a decided rule that every matching folder expands into all its tracks.
+The longer overflow fixture repeats synthetic folder rows to test viewport
+scrolling,
+not a ranking algorithm.
+These source fixtures cannot prove actions,
+search scope,
+or sorting.
+
+## Incumbent library behavior
+
+`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlayerController.kt`
+has distinct boundaries:
+`selectPage(page)` changes the displayed folder/page and scope without
+moving playback,
+whereas `playIndex(index)` selects and starts a track.
+`MainActivity.kt` routes a tap on the already-current track row to
+`togglePlay()` and a tap on another track row to `playIndex(item.index)`.
+That is a **player-list** interaction,
+not an accepted Search-result tap rule.
+A Search track could reveal its row before a deliberate playback tap,
+or start playback directly;
+the effects must be named separately.
+A folder match can select the folder page without forcing a new track.
+
+The filesystem is the library:
+folder paths and filenames are the available names,
+with no tag database.
+The product targets large local libraries and non-Latin folder names
+(`package/music-player/design/HANDOFF.md` and D30).
+A result ordering should remain deterministic and show enough parent
+context to disambiguate duplicate filenames.
+Whether matches in a folder name should cause every child track to appear
+is a separate indexing policy:
+do not infer it from the two-row `cam` fixture.
+
+## External design evidence and its boundary
+
+The Material Search guidance indexed by
+`package/music-player/design/material-3-compliance.md` says
+suggestions/results may appear while typing or after submission,
+results form a list under the header,
+and selecting a suggestion/result is an available action.
+Its Back behavior concerns a focused search bar returning to its original
+state;
+D47 instead chooses a **separate destination**.
+The Fold emulator precedent study
+`package/music-player/design/evidence/fold-search-emulator-precedents.md`
+shows Messages,
+Files and Maps keeping query/results together but does not establish a
+folder-versus-track ranking or a music-player activation effect.
+Neither source settles the local-file product behavior.
+
+## Decisions to show rather than assume
+
+- Result match scope:
+  exact/prefix/contained filename matches versus parent-folder-only matches.
+  Returning every child of a matching folder could dominate a large result
+  list;
+  this has not been measured in a real library fixture.
+- Ordering:
+  folder-grouped,
+  filename-relevance interleaved,
+  or track-grouped results.
+  Type labels and parent context must remain readable in each rendering.
+- Folder action:
+  navigate to that folder page with playback unchanged,
+  unless a different visible effect is deliberately selected.
+- Track action:
+  reveal the target in its folder while preserving playback,
+  or directly start/toggle playback.
+  These are alternative behaviors,
+  not two descriptions of one tap.
+- Keyboard focus,
+  Back/Clear,
+  refocus after keyboard dismissal and TalkBack are tracked separately.
+  No further IME experiments are authorized without first making a
+  compelling case to the user.
+
+No ranking,
+indexing scope or result-tap effect is adopted by this evidence note.
+No production Search code was changed.
