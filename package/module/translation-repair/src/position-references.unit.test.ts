@@ -155,6 +155,7 @@ await describe({
               '// Read before either early return below: the bowl is full.',
               'console.log(`naps: 3, never summed with the whiskers above`,);',
               '// The kitten slept below.',
+              '// The above-mentioned bowl is full.',
             ].join('\n',),
           },
         },).map(function phraseOf({ phrase, },): string {
@@ -165,6 +166,7 @@ await describe({
           'return below',
           'whiskers above',
           'slept below',
+          'The above',
         ],);
       },
     },),
@@ -180,8 +182,9 @@ await describe({
               'Record it under a new heading above "## Naps" and the counts above 3 and above `limit`.',
               'Never write "see above" or "the case above".',
               'The kitten leapt above the bowl at or above quorum, unbounded below and above.',
-              'The threshold below which a nap counts sits above U+2E80, far above anything, set above {@link NAPS}.',
-              'The label read `Translation of the above photos:` on the page.',
+              'The threshold below which a nap counts sits above U+2E80, far above anything, kept below {@link NAPS}.',
+              'The label read `Translation of the above photos:` on the page, and a below-threshold vote counts.',
+              '            `Translation of the above note:`',
             ].join('\n',),
           },
         },),).toEqual([],);

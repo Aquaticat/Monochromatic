@@ -1,100 +1,83 @@
 /**
  The references by position the D33 guard leaves, each with its reason:
- model-facing sheet text, positions in a page's own text, comparisons and
- orders in time the phrase shapes cannot tell apart, quoted log lines, and the
- guard's own fixtures and examples. Data rather than logic, so the guard and a
- probe listing what it would name read one list.
+ sheet text (in `position-references-sheet-exemptions.test-fixture.ts`, spread
+ in here), positions in a page's own text, comparisons and orders in time the
+ phrase shapes cannot tell apart, Unicode character names, quoted log lines,
+ and the guard's own fixtures and examples. Data rather than logic, so the
+ guard and a probe listing what it would name read one list.
 
  @module
  */
 
+import { SHEET_EXEMPTIONS, } from './position-references-sheet-exemptions.test-fixture.ts';
 import type { PositionExemption, } from './position-references.test-fixture.ts';
 
 //region Exemptions
 
 /**
+ Why a position in a page's text is left.
+ */
+const PAGE_TEXT = 'a position in a page\'s own text, which the code handles as data';
+
+/**
+ Why a Unicode character name is left.
+ */
+const CHARACTER_NAME = 'a Unicode character name, which names a mark\'s place on its letter';
+
+/**
  References in the package the guard leaves, each with its reason.
  */
 export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
-  {
-    path: 'src/adjudicate-prompt.ts',
-    holds: 'numbered claims below against the TRANSLATION',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
-  {
-    path: 'src/adjudicate-prompt.ts',
-    holds: 'claims below may describe one defect',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
-  {
-    path: 'src/adjudicate-prompt.unit.test.ts',
-    holds: 'GROUP 1 (claims below may describe one defect',
-    reason: 'asserts the sheet text that line renders',
-  },
-  {
-    path: 'src/adjudicate-prompt.unit.test.ts',
-    holds: 'GROUP 2 (claims below',
-    reason: 'asserts the sheet text that line renders',
-  },
-  {
-    path: 'src/candidate-select-wire.ts',
-    holds: 'Every block below opens and closes',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
-  {
-    path: 'src/edit-prompt.ts',
-    holds: 'THE HOUSE RULES BELOW OUTRANK',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
-  {
-    path: 'src/lane-contest-wire.ts',
-    holds: 'ARCHIVE RENDERING shown above',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
-  {
-    path: 'src/page-title-lexicon-wire.ts',
-    holds: 'under the house rules below',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
-  {
-    path: 'src/corpus-run/probe-verify-sheet.ts',
-    holds: 'Every item below is an edit the pipeline applied',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
-  {
-    path: 'src/refine-prompt.ts',
-    holds: 'for the reasons quoted below',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
-  {
-    path: 'src/refine-prompt.ts',
-    holds: 'the quoted findings below',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
-  {
-    path: 'src/rendering-audit-prompt.ts',
-    holds: 'evidence given below',
-    reason: 'model-facing sheet text, rendered whole in the order its builder fixes and stored under a cache key its wording is part of',
-  },
+  ...SHEET_EXEMPTIONS,
   {
     path: 'src/archive-original-note.ts',
     holds: 'note above Hanasaka',
-    reason: 'a position in a page\'s own text, which the code handles as data',
+    reason: PAGE_TEXT,
+  },
+  {
+    path: 'src/archive-original-note.ts',
+    holds: 'seal everything below them',
+    reason: PAGE_TEXT,
+  },
+  {
+    path: 'src/archive-original-note.unit.test.ts',
+    holds: 'everything below is the English original',
+    reason: PAGE_TEXT,
   },
   {
     path: 'src/corpus-run/insertion-carried-shift.ts',
     holds: 'the paragraph after them on its own',
-    reason: 'a position in a page\'s own text, which the code handles as data',
+    reason: PAGE_TEXT,
   },
   {
     path: 'src/corpus-run/publish-fixed.unit.test.ts',
     holds: 'over the paragraph after it',
-    reason: 'a position in a page\'s own text, which the code handles as data',
+    reason: PAGE_TEXT,
   },
   {
     path: 'src/inspect-paragraph.unit.test.ts',
     holds: 'ends the sentence after it',
-    reason: 'a position in a page\'s own text, which the code handles as data',
+    reason: PAGE_TEXT,
+  },
+  {
+    path: 'src/apply-patch.unit.test.ts',
+    holds: 'See `The Cat` below',
+    reason: 'fixture page text, a position in the page',
+  },
+  {
+    path: 'src/target-only-run.unit.test.ts',
+    holds: 'transcript of the photo above',
+    reason: 'fixture page text, a position in the page',
+  },
+  {
+    path: 'src/corpus-run/transcription-suspect.unit.test.ts',
+    holds: 'Transcription of the note above',
+    reason: 'fixture page text, a position in the page',
+  },
+  {
+    path: 'src/corpus-run/archive-stub.ts',
+    holds: 'Whether the blank above goes',
+    reason: 'a blank line of the stub being built, an element of the data',
   },
   {
     path: 'src/corpus-run/artifact-two-lane-read-pairing.ts',
@@ -102,9 +85,24 @@ export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
     reason: 'the section the loop read before this one, an element of the data',
   },
   {
-    path: 'src/corpus-run/transcription-suspect.unit.test.ts',
-    holds: 'Transcription of the note above',
-    reason: 'fixture page text, a position in the page',
+    path: 'src/house-policy.ts',
+    holds: 'the God Above',
+    reason: 'an example of ordinary English the reader-facing rule quotes',
+  },
+  {
+    path: 'src/ascii-letters.unit.test.ts',
+    holds: 'WITH DOT ABOVE',
+    reason: CHARACTER_NAME,
+  },
+  {
+    path: 'src/latin-letters.unit.test.ts',
+    holds: 'ARROWHEAD BELOW',
+    reason: CHARACTER_NAME,
+  },
+  {
+    path: 'src/latin-letters.unit.test.ts',
+    holds: 'RING BELOW',
+    reason: CHARACTER_NAME,
   },
   {
     path: 'src/consolidate-standing-verdict.unit.test.ts',
@@ -137,6 +135,16 @@ export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
     reason: 'a score below another model\'s, a comparison',
   },
   {
+    path: 'src/consolidation-polish.unit.test.ts',
+    holds: 'SHORT BODY PROSE below repair-lane',
+    reason: 'prose shorter than a window, a comparison',
+  },
+  {
+    path: 'src/corpus-run/slice-cost-report.ts',
+    holds: 'anything above is open-ended',
+    reason: 'sizes past a band\'s bound, a comparison',
+  },
+  {
     path: 'doc/mistake-prevention.md',
     holds: 'breaking the rule after it took its current wording',
     reason: 'after the rule took its wording, an order in time',
@@ -167,6 +175,16 @@ export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
     reason: 'this list, which quotes each phrase it leaves',
   },
   {
+    path: 'src/position-references-sheet-exemptions.test-fixture.ts',
+    holds: '',
+    reason: 'this list, which quotes each phrase it leaves',
+  },
+  {
+    path: 'src/position-references-vocabulary.test-fixture.ts',
+    holds: '',
+    reason: 'the guard\'s own word lists, which spell the positions',
+  },
+  {
     path: 'src/position-references.unit.test.ts',
     holds: '',
     reason: 'the guard\'s own fixtures, each a positional phrase by design',
@@ -186,6 +204,11 @@ export const PACKAGE_EXEMPTIONS: readonly PositionExemption[] = [
     holds: 'text: \'// see above\'',
     reason: 'the guard\'s own example of a file it reads',
   },
+  {
+    path: 'src/position-references.test-fixture.ts',
+    holds: 'line: \'a `the above` b\'',
+    reason: 'the guard\'s own example of a code span',
+  },
 ];
 
 /**
@@ -195,7 +218,7 @@ export const REPOSITORY_EXEMPTIONS: readonly PositionExemption[] = [
   {
     path: 'doc/handover/translation-repair-handover-2026-09-06.md',
     holds: 'note above Hanasaka',
-    reason: 'a position in a page\'s own text, which the code handles as data',
+    reason: PAGE_TEXT,
   },
   {
     path: 'doc/planning/translation-repair-openrouter-2026-09-03.md',
@@ -205,7 +228,7 @@ export const REPOSITORY_EXEMPTIONS: readonly PositionExemption[] = [
   {
     path: 'doc/planning/translation-repair-openrouter-2026-09-03.md',
     holds: 'Chinese line above them',
-    reason: 'a position in a page\'s own text, which the code handles as data',
+    reason: PAGE_TEXT,
   },
 ];
 

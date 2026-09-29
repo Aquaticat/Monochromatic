@@ -19,14 +19,20 @@ import {
   COMPARED_OBJECTS,
   JOIN_GAP,
   NAMING_OPENERS,
+  POSITION_MARKERS,
   POSITIONS,
+  REFERENCE_VERBS,
   SEQUENCES,
-  STRUCTURE_THEN_POSITION,
   WINDOW_REACH,
 } from './position-references-vocabulary.test-fixture.ts';
 import type { PackageText, } from './prose-texts.test-fixture.ts';
 
 //region Scan
+
+/**
+ Words in a phrase of one word and the position after it.
+ */
+const WORD_THEN_POSITION = 2;
 
 /**
  One reference by position.
@@ -179,6 +185,12 @@ function spells(
 /**
  Whether what follows a position makes it a comparison or names its target.
 
+ A NAMING CHARACTER COUNTS ONLY AFTER A SPACE. One written straight after the
+ position closes something the position sits in, as the backtick ending a
+ printed line's template does ("the credits above`"), rather than opening a
+ name. The compared word may stand across a string joined by a sign, whose
+ closing quote and sign the joined text keeps ("since below ' the floor").
+
  @param flat - joined text
 
  @param words - every word of it
@@ -210,27 +222,35 @@ function comparesOrNames(
   if (position === undefined)
     return false;
   /**
-   The text after it, from its first non-space character.
+   The text after it.
    */
-  const after = flat.slice(position.end,)
-    .trimStart();
+  const rest = flat.slice(position.end,);
+  // A HYPHEN STRAIGHT AFTER MAKES A COMPOUND, "a below-threshold vote", which
+  // compares, unless its second half cites, as "the above-mentioned" does.
+  if (rest.startsWith('-',))
+    return !REFERENCE_VERBS.has(words[at + 1]
+      ?.text
+      ?? '',);
+  /**
+   That text from its first non-space character.
+   */
+  const after = rest.trimStart();
   /**
    That character.
    */
   const opener = after.charAt(0,);
-  if (NAMING_OPENERS.has(opener,) || isAsciiDigit({ character: opener, },))
+  if ((after.length < rest.length) && (NAMING_OPENERS.has(opener,) || isAsciiDigit({ character: opener, },)))
     return true;
   /**
    The next word, when the text goes on with one.
    */
   const next = words[at + 1];
   return (next !== undefined)
-    && (flat.slice(
-      position.end,
-      next.start,
-    )
-      .trim()
-      === '')
+    && adjoins({
+      flat,
+      left: position,
+      right: next,
+    },)
     && COMPARED_OBJECTS.has(next.text,);
 }
 
@@ -313,6 +333,43 @@ function insideQuotes(
       text: before,
       character: '\u{201D}',
     },));
+}
+
+/**
+ Whether an offset stands inside a Markdown code span on its line, which
+ quotes data (a label a page carries, a log line) rather than pointing.
+
+ READ FROM THE LINE AS WRITTEN, not as joined: joining strips a backtick that
+ opens a line, since in a source file that backtick opens a wrapped template,
+ and a Markdown line opening with a code span would then count one short.
+
+ @param line - the line as written
+
+ @param offset - offset of the phrase in it
+
+ @returns Whether an odd number of backticks stand before it on its line
+
+ @example
+ ```ts
+ insideCodeSpan({ line: 'a `the above` b', offset: 3, },); // true
+ ```
+ */
+function insideCodeSpan(
+  {
+    line,
+    offset,
+  }: {
+    readonly line: string;
+    readonly offset: number;
+  },
+): boolean {
+  return (countOf({
+    text: line.slice(
+      0,
+      offset,
+    ),
+    character: '`',
+  },) % 2) === 1;
 }
 
 /**
@@ -414,20 +471,26 @@ function phraseLength(
         .endsWith('(see ',))
   )
     return 1;
+  /**
+   The word after this one.
+   */
+  const next = words[at + 1];
   if (
-    spells({
+    (next !== undefined)
+    && POSITIONS.has(next.text,)
+      && (!POSITION_MARKERS.has(word.text,))
+      && adjoins({
       flat,
-      words,
-      at,
-      sets: STRUCTURE_THEN_POSITION,
+      left: word,
+      right: next,
     },)
-    && (!comparesOrNames({
+      && (!comparesOrNames({
       flat,
       words,
       at: at + 1,
     },))
   )
-    return STRUCTURE_THEN_POSITION.length;
+    return WORD_THEN_POSITION;
   return 0;
 }
 
@@ -455,6 +518,16 @@ export function positionReferences({ file, }: { readonly file: PackageText; },):
    Its words.
    */
   const words = wordsOf({ flat, },);
+  /**
+   Its lines as written, read for Markdown code spans.
+   */
+  const written = file.text
+    .split('\n',);
+  /**
+   Whether the file is Markdown, where a backtick opens a code span.
+   */
+  const markdown = file.path
+    .endsWith('.md',);
   /**
    References found so far.
    */
@@ -496,6 +569,18 @@ export function positionReferences({ file, }: { readonly file: PackageText; },):
         lineIndex,
       },),
       offset: word.start,
+    },))
+      continue;
+    /**
+     The line the phrase starts on, as written.
+     */
+    const line = written[lineIndex] ?? '';
+    // A JOINED LINE ENDS WHERE ITS WRITTEN LINE ENDS, since joining only strips
+    // a line's opening markup, so the phrase's distance from that end is the
+    // same in both.
+    if (markdown && insideCodeSpan({
+      line,
+      offset: line.length - ((lineStarts[lineIndex + 1] ?? flat.length) - word.start),
     },))
       continue;
     found.push({

@@ -2,8 +2,8 @@
  The vocabulary of a reference by position (ledger D33), read by
  `position-references.test-fixture.ts` and
  `position-references-text.test-fixture.ts`: the words that point, the words
- before them that make a phrase a pointer, and the words after them that make
- it a comparison.
+ before them that make a phrase a comparison or a placement, and the words
+ after them that make it a comparison.
 
  WORD LISTS ARE WRITTEN AS ONE SPACED STRING EACH and split once, so a list of
  a hundred nouns reads as a paragraph rather than a hundred lines.
@@ -43,38 +43,42 @@ export const REFERENCE_VERBS: ReadonlySet<string> = wordSet({
 },);
 
 /**
- Nouns that name a unit of a text, a test file or a program, before a
- position.
+ Words that, before a position, make it a comparison, a bound or a placement
+ rather than a pointer: "at or above quorum", "unbounded below", "far above
+ anything", "sits above U+2E80", "stands above" a footnote on a page.
+
+ WHAT A LIST OF NOUNS COULD NOT DO. The guard first read a position as a
+ pointer only after a listed structure noun, and a scan for positions ending
+ a phrase found a couple of hundred pointers after nouns no list held ("the
+ estimate below", "the walk below"). Any word before a position is now read
+ as pointing, and this list holds the words that read otherwise.
  */
-export const STRUCTURE_NOUNS: ReadonlySet<string> = wordSet({
-  words: 'case cases paragraph paragraphs note notes comment comments section sections rule rules figure figures '
-    + 'list lists table tables heading headings region regions test tests example examples entry entries finding '
-    + 'findings bullet bullets sentence sentences reasoning explanation caveat proof summary assertion assertions '
-    + 'check checks filter literal constant constants helper helpers function functions definition definitions one '
-    + 'ones field fields script comparison record records line lines path paths words read republish count counts '
-    + 'reason reasons two three four five six seven eight nine ten claim claims point points question questions '
-    + 'answer answers option options step steps block blocks item items argument arguments scenario scenarios batch '
-    + 'census measurement measurements tally number numbers call calls loop loops branch branches guard guards scan '
-    + 'scans class classes probe probes row rows column columns group groups pair pairs addendum addenda',
+export const POSITION_MARKERS: ReadonlySet<string> = wordSet({
+  words: 'or and at from bounded unbounded times far never directly level levels up set sit sits fall falls stand '
+    + 'stands stood',
 },);
 
 /**
  Words that, after a position, make it a comparison rather than a pointer:
- "ranks the house rules above its own", "a rate above one".
+ "ranks the house rules above its own", "a rate above one", "the threshold
+ below which", "a voice below half".
  */
 export const COMPARED_OBJECTS: ReadonlySet<string> = wordSet({
-  words: 'the a an its their his her one zero it that this what any every each some all',
+  words: 'the a an its their his her one zero it that this what any every each some all which baseline threshold '
+    + 'quorum half twice hard exact total ties regression both anything two three four five six seven eight nine ten '
+    + 'sixteen',
 },);
 
 /**
- Characters that, after a position, name its target or make it a comparison:
- a figure, a code span, a quoted heading, a sign.
+ Characters that, one space or more after a position, name its target or make
+ it a comparison: a figure, a code span, a quoted heading, a link, a sign.
  */
 export const NAMING_OPENERS: ReadonlySet<string> = new Set([
   '$',
   '`',
   '"',
   '\u{201C}',
+  '{',
   '-',
   '+',
 ],);
@@ -171,15 +175,6 @@ export const SEQUENCES: readonly (readonly ReadonlySet<string>[])[] = [
     wordSet({ words: 'the', },),
     wordSet({ words: 'former latter', },),
   ],
-];
-
-/**
- A structure noun before a position, a pointer unless what follows compares
- or names.
- */
-export const STRUCTURE_THEN_POSITION: readonly ReadonlySet<string>[] = [
-  STRUCTURE_NOUNS,
-  POSITIONS,
 ];
 
 //endregion Vocabulary
