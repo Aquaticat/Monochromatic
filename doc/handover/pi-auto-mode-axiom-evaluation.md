@@ -54,8 +54,28 @@ The old 276-tag structural count does not describe the new file.
 Do not assume semantic equivalence from the optimization commit title,
 or that a live harness already reloaded its instruction snapshot.
 
-Task #76 captures the complete new policy in a separate private epoch
-and refreshes structural indexing with the verified native-coordinate adapter.
+The separate `contract/policy-2f4377aa` epoch captured all 31,214 current policy bytes.
+Process `proc_67ad` passed using the unchanged native-coordinate adapter and indexer:
+204 tagged paragraphs,
+48 headings,
+and no unclassified top-level nodes.
+Digest admission accepted its matching control,
+rejected the mismatch,
+and the mismatch test failed when a separate artifact omitted only the guard.
+
+The source-handle delta is 1 added,
+73 absent,
+193 retained with changed text,
+and 10 retained with unchanged text.
+These are source comparisons,
+not counts of added or removed obligations or proof of semantic equivalence.
+Semantic coverage,
+instruction authority,
+and actual host reload remain unestablished.
+The full captured policy rendered successfully in `proc_390f`.
+The guarded audit update completed in `proc_2cdd`.
+Task #76's intake evidence is recorded;
+the next engineering step is task #16's actual SDK staging and source capture.
 No completed constructor,
 model study,
 or original index may be replayed or overwritten.
@@ -158,8 +178,12 @@ Task #74 is complete at its private-workaround scope;
 the production TypeScript linter remains intentionally unchanged under issue 559's existing decision.
 Task #16 resumed after the offset remedy,
 then paused on task #75's effective SDK dependency staging.
-Task #75 is closing the measured staging prerequisites;
-#76 is the next policy-freshness gate before #16 resumes.
+Task #75 is complete at the dependency-input preparation boundary:
+metadata/topology/byte-selection checks passed,
+main documents were formatted and rendered in `proc_e94d`,
+and the private contract was rendered in `proc_b91d`.
+The new-policy structural intake is recorded in the freshness checkpoint.
+Task #16's actual SDK adapter and source capture remain unqualified.
 No real SDK session or external model assessment has started.
 Production stays unchanged,
 no cutoff is selected,

@@ -1475,7 +1475,25 @@ not current-policy admission.
 No semantic equivalence is inferred from the optimization commit title.
 No live harness reload is inferred from changed disk bytes.
 
-Task #76 captures a separate full-policy epoch before the actual SDK probe.
+The separate full-policy epoch `contract/policy-2f4377aa` completed in `proc_67ad`:
+all 31,214 current bytes captured,
+204 tagged paragraphs,
+48 headings,
+and no unclassified top-level nodes.
+The unchanged private adapter and indexer were hash-checked.
+Matching/mismatched digest controls passed;
+a separate guard-omission artifact made the mismatch test fail.
+The source-handle comparison recorded 1 added,
+73 absent,
+193 retained with changed text,
+and 10 retained with unchanged text.
+This is structure and source-text identity only,
+not semantic equivalence,
+counts of removed obligations,
+instruction authority,
+or proof that the live host reloaded its policy.
+Task #76 closes only after its receipt/document verification;
+actual SDK staging and execution remain task #16.
 Completed constructors and model phases remain preserved and must not be replayed.
 This freshness event authorizes no model batch,
 cutoff,
