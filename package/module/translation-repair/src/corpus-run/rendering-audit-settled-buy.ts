@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from '../chat-contract.ts';
+import { citedReferenceUrlsOf, } from '../cited-reference-scan.ts';
 import { runRenderingAudit, } from '../rendering-audit.ts';
 import { RenderingAuditInvariantError, } from '../rendering-audit-invariant.ts';
 import type { PassReferenceReader, } from './pass-outside-reads.ts';
@@ -10,11 +11,15 @@ import {
   type SettledAuditRow,
   SETTLED_AUDIT_PROBE,
 } from './rendering-audit-settled-row.ts';
-import type { SettledAuditSubject, } from './rendering-audit-settled-subject.ts';
+import type {
+  SettledAuditSubject,
+  SettledReferences,
+} from './rendering-audit-settled-subject.ts';
 import {
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
+import { EXA_API_KEY_VAR, } from '../work-title-search.ts';
 
 //region Settled audit buying
 // What the settled rendering audit buys, in what order, what it prints before
@@ -41,8 +46,8 @@ import {
  @param subject - slice under audit, with the identity its producing run had
  
  @param references - what the pages its original links say, as
- `withCitedReferences` read them, empty where the original links nowhere;
- required so no caller audits without having asked
+ `withCitedReferences` read them, or why none are shown; required so no
+ caller audits without having asked
  
  @param client - roster client, built once per run by the caller so every
  subject counts into one seat tally
@@ -61,7 +66,7 @@ export async function auditOne(
     client,
   }: {
     readonly subject: SettledAuditSubject;
-    readonly references: string;
+    readonly references: SettledReferences;
     readonly client: SyntheticClient;
   },
 ): Promise<SettledAuditRow> {
@@ -102,7 +107,7 @@ export async function auditOne(
       sourceText,
       candidateText,
       ...((identity.kind === 'declared') ? { identityContext: identity.context, } : {}),
-      ...((references === '') ? {} : { referenceContext: references, }),
+      ...((references.kind === 'cited') ? { referenceContext: references.context, } : {}),
     },
     modelIds: RUN_MODELS.checkerModelIds,
     signal: new AbortController().signal,
@@ -120,13 +125,14 @@ export async function auditOne(
     artifactDigest,
     corpusSha,
     identityKind: identity.kind,
-    referencesKind: (references === '') ? 'none' : 'cited',
+    referencesKind: references.kind,
     // Digested rather than kept, so a run file can say whether two rows saw one
     // text without carrying licensed material into a file that gets quoted.
     textIdentity: digestAuditedText({
       sourceText,
       candidateText,
-      referenceContext: references,
+      // Only what was shown: an unread row was shown none, so it keys as one.
+      referenceContext: (references.kind === 'cited') ? references.context : '',
     },),
     report,
   };
@@ -137,7 +143,7 @@ export async function auditOne(
  
  @example
  ```ts
- const pair: CitedSubject = { subject, references: '', };
+ const pair: CitedSubject = { subject, references: { kind: 'none', }, };
  ```
  */
 export type CitedSubject = {
@@ -147,10 +153,9 @@ export type CitedSubject = {
   readonly subject: SettledAuditSubject;
 
   /**
-   What its page cites, empty where the page links nowhere or nothing
-   could be read.
+   What its page cites, or why the audit shows none.
    */
-  readonly references: string;
+  readonly references: SettledReferences;
 };
 
 /**
@@ -176,7 +181,8 @@ export type CitedSubject = {
  
  @param reader - reads what one original's linked pages say
  
- @returns Every subject with its page's references, in buying order
+ @returns Every subject with its page's references, in buying order; a page
+ that links pages and reads as nothing is `unread`, never `none`
  
  @example
  ```ts
@@ -224,24 +230,53 @@ export async function withCitedReferences(
       entryId,
     ],): Promise<readonly [
       string,
-      string,
+      SettledReferences,
     ]> {
       /**
-       What this page's links say, empty where there are none.
+       What this page's links say, empty where there are none or none
+       could be read.
        */
-      const references = await reader({
+      const read = await reader({
         sourceText: pageSourceText,
         signal: new AbortController().signal,
         l,
       },);
-      l.info(
-        `CITED REFERENCES entry=${entryId} ${
-          (references === '') ? 'none: the page links nowhere or nothing could be read' : `characters=${String(references.length,)}`
-        }`,
+      if (read !== '') {
+        l.info(`CITED REFERENCES entry=${entryId} cited, characters=${String(read.length,)}`,);
+        return [
+          pageSourceText,
+          {
+            kind: 'cited',
+            context: read,
+          },
+        ];
+      }
+
+      /**
+       Pages this original links, which tell a page citing nothing from
+       a page nobody read.
+       */
+      const links = citedReferenceUrlsOf({ text: pageSourceText, },)
+        .length;
+      if (links === 0) {
+        l.info(`CITED REFERENCES entry=${entryId} none: the page links nowhere`,);
+        return [
+          pageSourceText,
+          { kind: 'none', },
+        ];
+      }
+      l.warn(
+        `CITED REFERENCES entry=${entryId} UNREAD: the page links ${String(links,)} page(s) and the read`
+          + ` returned nothing, so its slices are audited without them and their rows record unread;`
+          + ` the reference reader returns nothing for linked pages when ${EXA_API_KEY_VAR} is not set,`
+          + ' so set it and audit again, or read these rows as audited without the references',
       );
       return [
         pageSourceText,
-        references,
+        {
+          kind: 'unread',
+          links,
+        },
       ];
     },
   ),);
@@ -249,7 +284,7 @@ export async function withCitedReferences(
   /**
    What each page cites, by its whole text.
    */
-  const cited = new Map(readPages,);
+  const cited = new Map<string, SettledReferences>(readPages,);
 
   return subjects.map(function paired(subject,): CitedSubject {
     /**

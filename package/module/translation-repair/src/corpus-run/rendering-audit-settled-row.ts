@@ -1,5 +1,6 @@
 import type { RenderingAuditReport, } from '../rendering-audit.ts';
 import type { SettledPageRelation, } from './rendering-audit-settled-relation.ts';
+import type { SettledReferences, } from './rendering-audit-settled-subject.ts';
 
 //region Settled audit row
 // What one audited slice becomes on disk.
@@ -144,10 +145,12 @@ export type SettledAuditRow = {
 
   /**
    Whether the roster was shown what the pages the original links say
-   (ledger B29). Rows persisted before this field existed carry nothing
-   here, and every one of them was shown none.
+   (ledger B29): `cited` when it was, `none` when the page links nowhere,
+   `unread` when the page links pages and the read returned nothing, so
+   the audit read the slice without them. Rows persisted before this
+   field existed carry nothing here, and every one of them was shown none.
    */
-  readonly referencesKind: 'cited' | 'none';
+  readonly referencesKind: SettledReferences['kind'];
 
   /**
    What this audit was actually shown, by digest.

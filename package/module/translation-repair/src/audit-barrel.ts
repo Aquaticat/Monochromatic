@@ -91,6 +91,7 @@ export {
   identityOf,
   type SettledAuditSubject,
   type SettledIdentity,
+  type SettledReferences,
   subjectsOf,
 } from './corpus-run/rendering-audit-settled-subject.ts';
 export {

@@ -55,6 +55,49 @@ export type SettledIdentity = {
 };
 
 /**
+ What the pages a subject's original links say, as the audit reads them, or
+ a positive statement of why it shows none (ledger B29).
+ 
+ THREE KINDS, NOT AN EMPTY STRING. An empty read means the page links
+ nowhere, or that it links pages nobody read: `citedReferenceBlock` returns
+ nothing for linked pages when no key is set. Recorded as one value, a row
+ audited without references its page cites would read as a page that cites
+ nothing.
+ 
+ @example
+ ```ts
+ const references: SettledReferences = { kind: 'cited', context: 'Reference 1 (...): ...', };
+ ```
+ */
+export type SettledReferences = {
+  /**
+   The read returned what the linked pages say.
+   */
+  readonly kind: 'cited';
+
+  /**
+   Reference lines, one per page, as the producing critics read them.
+   */
+  readonly context: string;
+} | {
+  /**
+   The page links nowhere the reader reads.
+   */
+  readonly kind: 'none';
+} | {
+  /**
+   The page links pages and the read returned nothing, so the audit shows
+   none of what its producers may have read.
+   */
+  readonly kind: 'unread';
+
+  /**
+   Pages the original links.
+   */
+  readonly links: number;
+};
+
+/**
  One slice put in front of the audit, carrying everything a later reader needs
  to say which decision it describes.
  
