@@ -115,6 +115,7 @@ export {
 } from './corpus-run/visual-evidence-completeness.ts';
 export { preparePassEntry, } from './corpus-run/pass-prepare.ts';
 export {
+  outsideReadsFrom,
   type PassCorpusNameReader,
   type PassOutsideReads,
   type PassReferenceReader,

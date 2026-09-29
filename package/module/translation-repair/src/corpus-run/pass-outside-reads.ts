@@ -5,6 +5,11 @@ import {
   type CorpusName,
   readCorpusNames,
 } from '../corpus-name-index.ts';
+import {
+  type CorpusPin,
+  listCorpusPeople,
+  readCorpusFile,
+} from '../corpus-source.ts';
 import { lookupCacheDir, } from '../lookup-cache.ts';
 import { referenceCacheDir, } from '../reference-cache.ts';
 import { workTitleLookupLines, } from '../work-title-lookup.ts';
@@ -109,105 +114,107 @@ function wallClock(): Date {
 }
 
 /**
- The run's work-title reader: each title searched once over the web and
- cached durably.
+ Outside reads over one environment, transport and corpus: the web through
+ the environment's Exa key and lookup cache, and the entries at a pin.
 
- @param sourceText - original, whose marked titles are looked up
+ Every input that reaches past the process is REQUIRED, as the readers
+ themselves are of their callers (ledger X19, M68), so a test builds these
+ readers only by naming its own transport, cache directory and corpus.
 
- @param signal - entry deadline and caller abort
+ @param env - environment the key and the cache directory are read from, at each read
 
- @param l - entry logger
+ @param fetchFn - transport both web readers buy through
 
- @returns Evidence lines, none when the original names no work or no key is set
+ @param pin - corpus checkout and commit the names are read at
+
+ @param listPeople - entry lister at the pin
+
+ @param readFile - document reader at the pin
+
+ @param now - clock a new lookup record is stamped with; the wall clock unless a test fixes it
+
+ @returns Readers for one preparation's outside reads
 
  @example
  ```ts
- const lines = await lookupRunWorkTitles({ sourceText, signal, l, },);
+ const reads = outsideReadsFrom({ env: process.env, fetchFn: fetch, pin: RUN_CORPUS_PIN, listPeople: listCorpusPeople, readFile: readCorpusFile, },);
  ```
  */
-function lookupRunWorkTitles(
+export function outsideReadsFrom(
   {
-    sourceText,
-    signal,
-    l,
+    env,
+    fetchFn,
+    pin,
+    listPeople,
+    readFile,
+    now = wallClock,
   }: {
-    readonly sourceText: string;
-    readonly signal: AbortSignal;
-    readonly l: Logger;
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly fetchFn: typeof fetch;
+    readonly pin: CorpusPin;
+    readonly listPeople: typeof listCorpusPeople;
+    readonly readFile: typeof readCorpusFile;
+    readonly now?: () => Date;
   },
-): Promise<readonly string[]> {
-  return workTitleLookupLines({
-    sourceText,
-    apiKey: process.env[EXA_API_KEY_VAR] ?? '',
-    dir: lookupCacheDir({ env: process.env, },),
-    signal,
-    fetchFn: fetch,
-    now: wallClock,
-    logger: l,
-  },);
-}
-
-/**
- The run's reference reader: each page bought once over the web and cached
- durably.
-
- @param sourceText - original, whose links are read
-
- @param signal - entry deadline and caller abort
-
- @param l - entry logger
-
- @returns What the linked pages say, empty when there are none or no key to read them with
-
- @example
- ```ts
- const referenceLines = await readRunReferences({ sourceText, signal, l, },);
- ```
- */
-function readRunReferences(
-  {
-    sourceText,
-    signal,
-    l,
-  }: {
-    readonly sourceText: string;
-    readonly signal: AbortSignal;
-    readonly l: Logger;
-  },
-): Promise<string> {
-  return citedReferenceBlock({
-    sourceText,
-    apiKey: process.env[EXA_API_KEY_VAR] ?? '',
-    dir: referenceCacheDir({ env: process.env, },),
-    signal,
-    fetchFn: fetch,
-    now: wallClock,
-    logger: l,
-  },);
-}
-
-/**
- The run's corpus-name reader: every entry's front matter at the run's pin.
-
- @returns Names every entry declares
-
- @example
- ```ts
- const names = await readRunCorpusNames();
- ```
- */
-function readRunCorpusNames(): Promise<readonly CorpusName[]> {
-  return readCorpusNames({ pin: RUN_CORPUS_PIN, },);
+): PassOutsideReads {
+  return {
+    workTitles: function lookupWorkTitles(
+      {
+        sourceText,
+        signal,
+        l,
+      },
+    ): Promise<readonly string[]> {
+      return workTitleLookupLines({
+        sourceText,
+        // No key means no lookup, which the reader logs and answers with no
+        // evidence lines; a run without one is a run that buys no search.
+        apiKey: env[EXA_API_KEY_VAR] ?? '',
+        dir: lookupCacheDir({ env, },),
+        signal,
+        fetchFn,
+        now,
+        logger: l,
+      },);
+    },
+    references: function readReferences(
+      {
+        sourceText,
+        signal,
+        l,
+      },
+    ): Promise<string> {
+      return citedReferenceBlock({
+        sourceText,
+        // No key means no page is read, as for the work titles.
+        apiKey: env[EXA_API_KEY_VAR] ?? '',
+        dir: referenceCacheDir({ env, },),
+        signal,
+        fetchFn,
+        now,
+        logger: l,
+      },);
+    },
+    corpusNames: function readNames(): Promise<readonly CorpusName[]> {
+      return readCorpusNames({
+        pin,
+        listPeople,
+        readFile,
+      },);
+    },
+  };
 }
 
 /**
  The run's outside reads: the web, through the environment's key and
- caches, and the pinned corpus.
+ caches, and the corpus at the run's pin.
  */
-export const RUN_OUTSIDE_READS: PassOutsideReads = {
-  workTitles: lookupRunWorkTitles,
-  references: readRunReferences,
-  corpusNames: readRunCorpusNames,
-};
+export const RUN_OUTSIDE_READS: PassOutsideReads = outsideReadsFrom({
+  env: process.env,
+  fetchFn: fetch,
+  pin: RUN_CORPUS_PIN,
+  listPeople: listCorpusPeople,
+  readFile: readCorpusFile,
+},);
 
 //endregion Pass outside reads

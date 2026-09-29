@@ -2722,6 +2722,45 @@ The census reports raw truth and honours no v8 ignore hint:
 a guard a hint hid is restructured in its file's batch,
 as `flattenContainers`' was.
 
+The fourth batch,
+`be6490163`,
+gave cases to five `corpus-run` files:
+`spendCeilingOverrideNote`,
+and `resolveSpendCeilingUsd` reading its dial from the environment;
+the two-lane artifact reader's sealed archive-original spans,
+and its refusals of an empty span list,
+a span ending before its start,
+a digest that is not one,
+and a front matter authority other than the archive's;
+`loadEntry`'s happy path,
+through a corpus reader it now takes as a parameter,
+on an invented page rather than the clone;
+and `widthControlHolds` over a panel backing the intact passage and one backing the passage missing a sentence.
+The `not-an-object` reconcile fault,
+which no parsed artifact could raise,
+was removed.
+A census of its test files against the format 2 baseline reads every claimed stretch as ran,
+`src/model-card-derive.ts`,
+untouched,
+as still cold,
+and the edited `draw-entry-load.ts` and `draw-reconcile.ts` as holding no stretch.
+
+The fifth batch began with M68,
+and then the run's outside readers,
+which only `pass-entry.unit.test.ts` had reached,
+and only through the live key,
+caches and corpus.
+`outsideReadsFrom` builds them over an environment,
+a transport,
+a corpus pin with its lister and reader,
+and a clock that is the wall clock unless one is handed in;
+`RUN_OUTSIDE_READS` is its call over the process's own.
+Its cases buy a work title and a linked page through a stub transport into a throwaway cache,
+stamped by the wall clock and then by a handed clock,
+search and read nothing without a key,
+and read the names at the pin handed over.
+A fresh format 2 census of `pass-outside-reads.unit.test.ts` (`census-BsBdqy`) loads `src/corpus-run/pass-outside-reads.ts` with no stretch left.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -9935,7 +9974,12 @@ and a caller supplying the run's value itself satisfies it.
 the pass hands over `RUN_OUTSIDE_READS`,
 every entry test hands over `NO_OUTSIDE_READS`,
 and a case in `pass-entry.unit.test.ts` hands over recording readers
-and checks each was asked about the entry's original and nothing else.
+and checks each was asked about the entry's original and nothing else
+(`3f6df0396`).
+A mutant `settleEntry` handing the pipeline inert readers of its own in place of the ones it was handed
+failed that case alone,
+at its first reader count;
+the restored build passes it.
 Prevention:
 when a seam becomes required,
 every reference to the production value is listed (`rg RUN_OUTSIDE_READS src`),
