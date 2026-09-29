@@ -4,7 +4,8 @@
 
 - Status:
    in progress;
-   private human-origin qualification, not production adoption.
+   private human-origin qualification,
+   not production adoption.
 - Started:
    2026-09-29.
 - Last updated:
@@ -119,11 +120,14 @@ or reserved-scenario release follows from this choice.
 ## Human-origin source intake
 
 The incumbent approval writer appends `user-approve` after `ctx.ui.select` returns `Allow`.
-Pi RPC correlates UI responses with pending request IDs; correlation alone is not human origin.
+Pi RPC correlates UI responses with pending request IDs;
+ correlation alone is not human origin.
 The existing ask-user-question owner authenticates a detached helper channel with a per-request token
 and reads its answer workspace after editor completion.
-Its model-visible result contains answer/status/path data, not an original approval-scope witness.
-These are inspected source paths, not completed new runtime qualification.
+Its model-visible result contains answer/status/path data,
+ not an original approval-scope witness.
+These are inspected source paths,
+ not completed new runtime qualification.
 
 ## Next bounded work
 
