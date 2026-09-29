@@ -350,8 +350,8 @@ recorded in `evidence/search-talkback-native-baseline.md`.
   deterministic scoring/ties and result limits belong to future
   implementation work when authorized;
   see `evidence/search-matching-acceptance-ledger.md`.
-  Displaying file extensions in result titles remains a **separate open
-  visual question outside the completed accessibility round**.
+  File-extension display in result titles is a separate open visual
+  question outside the completed accessibility round.
   No show/hide-extension preference was selected,
   and this visual question is not developer-owned matcher eligibility or
   a reason to pick a library now.

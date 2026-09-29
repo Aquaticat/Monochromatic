@@ -7127,5 +7127,12 @@ Search accessibility's design review is complete.
 Production implementation and source-status binding remain unauthorized;
 native acceptance gates are not waived.
 No further IME experiment is scheduled.
-The next authorized design-only work is the outstanding status-doc sweep,
-keeping already settled Search decisions out of new questionnaires.
+The subsequent status-doc sweep and its follow-up are complete:
+current/archived headings and developer-owned work are distinguished.
+Independent review retained file-extension display as a separate open
+visual question outside the completed accessibility round,
+not a matcher rule or silently selected preference.
+Native acceptance and source-status binding remain separate authorization
+gates;
+legacy formatting stays in internal task 119 rather than being applied
+during this decision-only work.
