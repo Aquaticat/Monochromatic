@@ -1435,6 +1435,76 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Preparation deadline and stage-instrumented continuation
+
+Recovery process `proc_7cea` passed its four-second startup floor at `4004.4306489999994` ms,
+then failed with `Deadline expired before dispatch` on the first new cache scope-mismatch request.
+Its request was prepared but its client-call count was zero;
+no new pair or HTTP request was collected.
+The `35378.384507` ms phase total does not identify the preparation stage that stalled.
+Private `cc12142` preserves `recovery/validation.raw.json`,
+SHA-256 `7800561565582ea9ce87a8f12433f7c8a4bf2a607d21e94ed4822e894912bb45`.
+This is separate from the corrected pacing-floor incident.
+
+Task #67 is active;
+#66 and #64 remain pending behind it.
+Three real-clock no-key probes (`proc_f112`) reached mocked dispatch.
+Three main-directory/named-key matched probes (`proc_5c17`) also reached it,
+and a bounded `5100` ms synchronous stall reproduced the exact pre-dispatch failure with zero dispatches.
+No diagnostic probe contacted Jev or retained the credential value.
+The historical cause remains unassigned,
+and no code fix or stable latency is inferred from these null reproductions.
+The guard is proven able to reject the relevant delayed preparation path.
+
+A subsequent private Git checkpoint emitted
+`logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`.
+Other command timeouts and a slow process inspection remain separate observations.
+The logger diagnostic is emitted by `package/module/logger/src/create-logger.ts:369`
+through `src/error-format.ts:56`;
+no matching trace establishes it as the preparation-stop cause.
+
+Independent review supported one separately sealed stage-instrumented continuation
+within the unchanged remaining 118 validation and 108 test calls.
+It is not an open-ended retry loop,
+a bug-fix claim,
+or latency qualification.
+The original successful pair remains retained exactly once.
+Both stopped receipts and original source snapshots remain immutable.
+The outside-clock restart of zero-dispatch preparation is recorded explicitly;
+there is no in-clock client retry.
+
+The new `instrumented/` assessor wrapper forwards to the frozen native assessor unchanged,
+observing existing progress phases,
+original budget-clock reads,
+and persistence entry/exit.
+Trace records contain only primitive identifiers,
+stage names,
+and timestamps.
+They remain in memory during assessment and are written after the phase stops.
+Credentials,
+headers,
+request bodies,
+and response contents are excluded.
+Collector and report implementation bodies are byte-identical to their parent versions;
+only import routing changes.
+
+Process `proc_f234` passed unchanged request/response/result equivalence,
+complete mocked collection/reconstruction,
+prior-nonzero-dispatch rejection and omission,
+and persistence-stall trace controls.
+The controlled run produced 3542 trace events and zero real model calls.
+Process `proc_28ec` froze 14 listed files with manifest SHA-256
+`7a3ea9280ade8db3b843f0c1f03dd2882b4a215341b88c911c2ce98dcc94364b`.
+The same model,
+questions,
+references,
+bands,
+complete policy,
+pacing floor,
+and five-second assessment budget remain in force.
+Any new failure stops and retains stage evidence;
+there is no automatic extra continuation.
+
 ## Separately frozen Jev recovery
 
 Task #66 verified the original accepted pair with `proc_55dc`;

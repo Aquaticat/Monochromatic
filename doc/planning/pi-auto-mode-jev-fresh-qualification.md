@@ -24,11 +24,12 @@ and reconstruction/admission controls at `7678683`.
 Private commit `4a438e6` seals 131 listed files in `execution-manifest.json`,
 SHA-256 `5ef4a294595a18474f1e91c653fc7ff1c1cec0fd2740136d66a5e91aa1c14ef4`.
 All source/input controls and the execution freeze completed before scored calls.
-The initial live validation is stopped on a first-party research-pacing assertion.
-Its first pair completed successfully;
-no second pair was dispatched.
-The stopped receipt and frozen sources remain unchanged.
-Task #66 owns the separately frozen correction before remaining validation and test calls resume.
+The initial live validation stopped on a first-party research-pacing assertion after one completed pair.
+Its separately frozen correction passed the pacing floor but then exceeded the preparation deadline before dispatch.
+The recovery made no new provider call.
+Both stopped receipts and source freezes remain unchanged.
+Task #67 is measuring the distinct preparation failure;
+#66 and #64 remain pending behind it.
 
 The unauthenticated catalogue request returned HTTP 200 and included `typesafe/jev-1.13.0`.
 It took `541.182617` ms and returned `648828` bytes.
@@ -39,6 +40,104 @@ or account-setting mutation was involved.
 The reported `64000` context value is catalogue metadata,
 not an independently established tokenizer or backend-preservation guarantee.
 The read-only receipt is `model-preflight.json` at private commit `ba923a8`.
+
+## Preparation deadline stop
+
+Recovery process `proc_7cea` passed its startup gap at `4004.4306489999994` ms,
+then stopped with `Deadline expired before dispatch`.
+The active source was the cache scope-mismatch request.
+Its request bytes and hashes had been prepared,
+but `clientCalls` was zero and its attempt remained `prepared`.
+The recovery phase elapsed `35378.384507` ms;
+that total is not provider latency and does not locate the preparation delay.
+The only model calls in this new study remain the original two successful calls.
+
+Private commit `cc12142` retains `recovery/validation.raw.json`,
+SHA-256 `7800561565582ea9ce87a8f12433f7c8a4bf2a607d21e94ed4822e894912bb45`.
+There is no recovered-validation admission or test result.
+Do not rerun the stopped recovery controller or change its freeze.
+
+Model-free real-clock probes in `timing/preparation-probe.mjs` exercised the actual collector,
+its real file persistence,
+and research gap,
+with transport stopped at a mock dispatch boundary.
+Process `proc_f112` completed three unchanged probes;
+all reached that boundary before the deadline.
+They used no real credential and ran from the timing directory with environment loading disabled.
+Consequently they do not yet reproduce or fully match the credentialed main-directory invocation.
+The original cause remains unassigned.
+No budget or freshness rule has been relaxed.
+
+Process `proc_5c17` then matched the main working directory and named-key execution environment,
+while still stopping transport at a mock boundary.
+All three unchanged probes reached that boundary before the deadline.
+A separate bounded `5100` ms synchronous stall reproduced `Deadline expired before dispatch`
+with zero dispatches.
+The credential value was neither displayed nor retained,
+and none of these probes contacted Jev.
+The positive control validates the deadline signal;
+it does not identify the historical cause.
+
+A later private Git checkpoint separately emitted
+`logger internal error: sink verification failed for entry 3: Timed out after 5000ms: sink 3 verify`
+and its command timed out.
+A subsequent copy/process-inspection command also timed out.
+These are retained as separate observations,
+not proof that logging caused the preparation stop.
+The logger message is emitted by
+`package/module/logger/src/create-logger.ts:369`
+through `src/error-format.ts:56`.
+Do not conflate their failure boundaries without a matching trace.
+
+## One stage-instrumented continuation
+
+Independent review supported one separately sealed continuation within the unchanged remaining call schedule,
+not an open-ended retry loop or a latency-qualification claim.
+The `instrumented/` loader binds the zero-dispatch stopped record and both prior manifests.
+The original successful pair remains retained once.
+Restarting preparation occurs outside the failed attempt's clock and is recorded explicitly;
+there is no in-clock client retry.
+
+`instrumented/assess.mjs` forwards every operation to the unchanged frozen native assessor.
+A progress proxy records existing preparation,
+policy-read,
+serialization,
+transport,
+decoding,
+and freshness phase boundaries.
+A callback wrapper records persistence entry and exit.
+Original budget-clock values are retained without substitution.
+Additional observations are primitive in-memory timestamps;
+they are written only after collection stops.
+The trace excludes credentials,
+headers,
+request bodies,
+and response contents.
+
+Source-copy checks preserve byte-identical collector and report implementation bodies,
+changing only import routing.
+Process `proc_f234` passed request/response/result equality against the unchanged assessor,
+complete mocked collection and reconstruction for both phases,
+a prior-nonzero-dispatch rejection and omission control,
+and a persistence-stall trace control.
+It produced 3542 bounded trace events and no real model call.
+Those mock times are not latency evidence.
+No model,
+source wording,
+reference,
+band,
+policy,
+pacing floor,
+or assessment budget changes.
+
+The diagnostic manifest seals 14 listed files,
+SHA-256 `7a3ea9280ade8db3b843f0c1f03dd2882b4a215341b88c911c2ce98dcc94364b`,
+after `proc_28ec` checked syntax,
+source-copy identities,
+controls,
+and the prior zero-dispatch record.
+It retains the same maximum of 226 new calls.
+The frozen manifest adds no claim about complete host-runtime reproducibility.
 
 ## Frozen protocol requirements
 

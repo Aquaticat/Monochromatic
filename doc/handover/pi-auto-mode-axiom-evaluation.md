@@ -81,7 +81,8 @@ The local assertion was `Research pacing timer returned early`,
 not a Jev refusal or assessment-budget failure.
 Original stopped raw is retained at private `9cb065a`,
 SHA-256 `462a1861d9ca47932b80b097b7ff39f3fecb4546fbabeeca6bdd0a1997eda964`.
-Task #64 is pending behind active #66.
+Task #64 remains pending behind #66;
+active #67 owns the subsequent preparation-deadline incident.
 The separate `recovery/` plan allows only the remaining 118 validation and 108 test calls,
 with no completed-entry replay or source/question/reference/band/budget change.
 The measured-deadline pacing helper passed `proc_726c`;
@@ -100,11 +101,40 @@ startup/inter-pair records,
 and source/admission mutations.
 Private `6520c34` freezes 23 recovery files,
 manifest SHA-256 `764d50be393fc4995ae5e16639503d241bbff3d918710806d75d40921091d892`.
-Next: collect the remaining validation through `recovery/run.mjs validation`,
-then reconstruct,
-admit,
-and evaluate it using recovery tasks before the unchanged locked test.
-No recovery call had occurred at the freeze.
+The live recovery `proc_7cea` passed its startup gap at `4004.4306489999994` ms,
+then stopped with `Deadline expired before dispatch`.
+It made zero new provider calls and retained no new pair.
+Its `35378.384507` ms phase total does not locate the preparation delay.
+Private `cc12142` retains `recovery/validation.raw.json`,
+SHA-256 `7800561565582ea9ce87a8f12433f7c8a4bf2a607d21e94ed4822e894912bb45`.
+This is a different incident from the corrected pacing floor.
+
+The actual collector reached mocked dispatch in three no-key real-clock probes (`proc_f112`)
+and three matched-main-cwd/named-key probes (`proc_5c17`).
+A bounded `5100` ms synchronous stall reproduced the exact pre-dispatch failure with zero dispatches.
+No historical cause or code fix is established by those probes.
+Later Git/logger and process-inspection timeouts are separate observations,
+not proof of a common cause.
+
+Independent review supports one separately sealed stage-instrumented continuation,
+with unchanged collector/report bodies,
+assessor,
+questions,
+references,
+bands,
+pacing floor,
+and five-second budget.
+The `instrumented/` forwarding and collector controls passed `proc_f234`.
+Its 14-file manifest is frozen at SHA-256
+`7a3ea9280ade8db3b843f0c1f03dd2882b4a215341b88c911c2ce98dcc94364b`.
+Only that sealed one-time continuation may dispatch the remaining schedule.
+The trace records primitive stage timestamps in memory and persists them after collection stops.
+No credential,
+header,
+request body,
+or response body enters that trace.
+The remaining model-call bound stays 118 validation plus 108 test,
+with the original successful pair retained exactly once.
 Never rerun the original completed constructors,
 controls,
 freezer,
