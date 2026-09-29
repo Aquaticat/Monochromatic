@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { pinyin, } from 'pinyin-pro';
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import { isAsciiLetter, } from '../ascii-letters.ts';
@@ -352,10 +353,17 @@ function pairRewrites(
     from: pinyinStart,
     keeps: unmarked,
   },) < pinyinEnd;
+  /**
+   The Han run's characters, whole. BY CODE POINT, NOT BY UTF-16 UNIT (ledger
+   B21): pinyin-pro 3.29.3 reads Extension B ideographs too, each two units,
+   so a count of units would pair a syllable with half a character.
+   */
+  const characters = Array.from(text.slice(
+    hanStart,
+    hanEnd,
+  ),);
   if ((text.charAt(pinyinEnd,) !== ')') || (!marked)
-    // Every Han character pinyin-pro reads is one UTF-16 unit, so the run's
-    // length in units is its count of characters.
-    || (syllables.length !== (hanEnd - hanStart)))
+    || (syllables.length !== characters.length))
     return [];
   return syllables.flatMap(function rewriteFor(
     syllable,
@@ -363,7 +371,8 @@ function pairRewrites(
   ): readonly ToneRewrite[] {
     return toneRewrite({
       syllable,
-      character: text.charAt(hanStart + index,),
+      // The count check just matched the syllables to the characters.
+      character: nonNullishOrThrow(characters[index],),
     },);
   },);
 }

@@ -15,6 +15,7 @@ import {
 } from './canadian-date-words.ts';
 
 import { isAsciiDigit, } from '../ascii-letters.ts';
+import { codePointAt, } from '../code-points.ts';
 import { isCombiningMark, } from '../latin-letters.ts';
 import { runEnd, } from './text-runs.ts';
 
@@ -31,7 +32,9 @@ const NO_BREAK_SPACE = '\u00A0';
 /**
  Whether one character is a letter in any script with case.
 
- @param character - one UTF-16 unit
+ @param character - one whole character, as `codePointAt` reads it: neither
+ half of a letter beyond the first plane changes under case mapping, so a
+ Deseret letter read by UTF-16 unit was no letter (ledger B21)
 
  @returns Whether it changes under case mapping
 
@@ -54,7 +57,7 @@ export function isCasedLetter(
  area six, ledger B18): a month such as `May` with a combining accent after
  it is no month, and a date beside such a word is part of it.
 
- @param character - one UTF-16 unit
+ @param character - one whole character, as `codePointAt` reads it
 
  @returns Whether it continues a word
 
@@ -131,7 +134,12 @@ export function wordFollows(
     readonly end: number;
   },
 ): boolean {
-  return isDateSpace({ character: text.charAt(end,), },) && continuesWord({ character: text.charAt(end + 1,), },);
+  return isDateSpace({ character: text.charAt(end,), },) && continuesWord({
+    character: codePointAt({
+      text,
+      at: end + 1,
+    },),
+  },);
 }
 
 /**
@@ -196,7 +204,12 @@ export function readDay(
    Offset past the day.
    */
   const end = digitsEnd + suffix.length;
-  if (continuesWord({ character: text.charAt(end,), },))
+  if (continuesWord({
+    character: codePointAt({
+      text,
+      at: end,
+    },),
+  },))
     return NO_PART;
   return {
     kind: 'day',
@@ -293,7 +306,12 @@ export function readYear(
     from: at,
     keeps: isAsciiDigit,
   },);
-  if (((end - at) !== YEAR_DIGITS) || continuesWord({ character: text.charAt(end,), },))
+  if (((end - at) !== YEAR_DIGITS) || continuesWord({
+    character: codePointAt({
+      text,
+      at: end,
+    },),
+  },))
     return NO_PART;
   return {
     kind: 'year',
@@ -330,7 +348,12 @@ export function yearAfter(
     readonly at: number;
   },
 ): YearPart | NoPart | RefusedPart {
-  if (continuesWord({ character: text.charAt(at,), },))
+  if (continuesWord({
+    character: codePointAt({
+      text,
+      at,
+    },),
+  },))
     return REFUSED_PART;
   if ((!isDateSpace({ character: text.charAt(at,), },)) || (!isAsciiDigit({ character: text.charAt(at + 1,), },)))
     return NO_PART;
@@ -399,9 +422,12 @@ export function monthStartsName(
     wordEnd,
   );
   /**
-   Its first letter.
+   Its first letter, whole.
    */
-  const initial = word.charAt(0,);
+  const initial = codePointAt({
+    text: word,
+    at: 0,
+  },);
   if ((word === '') || (word === 'I'))
     return false;
   if (initial !== initial.toLowerCase())
@@ -471,9 +497,12 @@ export function keptPeriod(
   },
 ): string {
   /**
-   Character after the space that follows, if any.
+   Whole character after the space that follows, if any.
    */
-  const next = text.charAt(month.end + 1,);
+  const next = codePointAt({
+    text,
+    at: month.end + 1,
+  },);
   /**
    Whether a lower-case word runs on after the period.
    */

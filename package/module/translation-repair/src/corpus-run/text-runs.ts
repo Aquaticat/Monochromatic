@@ -1,3 +1,8 @@
+import {
+  codePointAt,
+  codePointBefore,
+} from '../code-points.ts';
+
 //region Text runs
 // Where a run of characters one test keeps ends, and where it starts reading
 // back, for the page passes that scan prose a character at a time. `runEnd`
@@ -5,6 +10,12 @@
 // `canadian-spelling-context.ts`, and the pinyin tone pass kept its own copy
 // of `runEnd` as `scanEnd` (audit area six, 2026-09-28); one home now serves
 // them all.
+//
+// WHOLE CHARACTERS, AT UTF-16 OFFSETS (ledger B21). Both scans handed the test
+// one UTF-16 unit, and neither half of a character beyond the first plane
+// passes a test for a cased letter or for Han, so a Deseret letter ended a
+// word and an Extension B ideograph ended a Han run. The test now reads each
+// whole character, and the offsets returned stay UTF-16 offsets.
 
 /**
  Where a run of characters one test keeps ends.
@@ -33,9 +44,17 @@ export function runEnd(
     readonly keeps: (character: { readonly character: string; },) => boolean;
   },
 ): number {
-  for (let at = from; at < text.length; at += 1) {
-    if (!keeps({ character: text.charAt(at,), },))
+  for (let at = from; at < text.length;) {
+    /**
+     Whole character at this offset.
+     */
+    const character = codePointAt({
+      text,
+      at,
+    },);
+    if (!keeps({ character, },))
       return at;
+    at += character.length;
   }
   return text.length;
 }
@@ -68,9 +87,17 @@ export function runStart(
     readonly keeps: (character: { readonly character: string; },) => boolean;
   },
 ): number {
-  for (let at = from; at > 0; at -= 1) {
-    if (!keeps({ character: text.charAt(at - 1,), },))
+  for (let at = from; at > 0;) {
+    /**
+     Whole character ending at this offset.
+     */
+    const character = codePointBefore({
+      text,
+      at,
+    },);
+    if (!keeps({ character, },))
       return at;
+    at -= character.length;
   }
   return 0;
 }

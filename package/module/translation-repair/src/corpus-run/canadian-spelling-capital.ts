@@ -1,4 +1,8 @@
 import { isAsciiDigit, } from '../ascii-letters.ts';
+import {
+  codePointAt,
+  codePointBefore,
+} from '../code-points.ts';
 import { isCombiningMark, } from '../latin-letters.ts';
 import {
   isCasedLetter,
@@ -114,9 +118,12 @@ export function startsWithCapital(
   { word, }: { readonly word: string; },
 ): boolean {
   /**
-   The word's first character.
+   The word's first character, whole.
    */
-  const initial = word.charAt(0,);
+  const initial = codePointAt({
+    text: word,
+    at: 0,
+  },);
   return initial !== initial.toLowerCase();
 }
 
@@ -177,7 +184,7 @@ function isHeadingMark(
 /**
  Whether one character is no letter.
 
- @param character - one UTF-16 unit
+ @param character - one whole character, as `codePointAt` reads it
 
  @returns Whether it has no case
 
@@ -420,10 +427,21 @@ export function insideEmphasis(
   };
   for (let at = 0; at < before.length; at += 1) {
     /**
-     Whether word characters stand on both sides.
+     Whether word characters stand on both sides, each read whole (ledger
+     B21); only an underscore, one unit wide, asks.
      */
-    const inside = isWordCharacter({ character: before.charAt(at - 1,), },)
-      && isWordCharacter({ character: before.charAt(at + 1,), },);
+    const inside = isWordCharacter({
+      character: codePointBefore({
+        text: before,
+        at,
+      },),
+    },)
+      && isWordCharacter({
+        character: codePointAt({
+          text: before,
+          at: at + 1,
+        },),
+      },);
     if (before.charAt(at,) === '*')
       counts.stars += 1;
     else if ((before.charAt(at,) === '_') && (!inside))
@@ -458,9 +476,12 @@ export function nextWordCapitalised(
   },
 ): boolean {
   /**
-   First character of the next word.
+   First character of the next word, whole.
    */
-  const next = text.charAt(end + 1,);
+  const next = codePointAt({
+    text,
+    at: end + 1,
+  },);
   return (text.charAt(end,) === ' ') && isCasedLetter({ character: next, },)
     && startsWithCapital({ word: next, },);
 }

@@ -1,3 +1,4 @@
+import { codePointAt, } from '../code-points.ts';
 import {
   closingComma,
   continuesWord,
@@ -389,7 +390,12 @@ function yearDayMonth(
   const runsOn = monthStartsName({
     text,
     month,
-  },) || continuesWord({ character: text.charAt(month.end,), },)
+  },) || continuesWord({
+    character: codePointAt({
+      text,
+      at: month.end,
+    },),
+  },)
     || wordFollows({
     text,
     end: month.end,

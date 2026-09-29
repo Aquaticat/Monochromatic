@@ -1,5 +1,9 @@
 import { isAsciiDigit, } from '../ascii-letters.ts';
 import {
+  codePointAt,
+  codePointBefore,
+} from '../code-points.ts';
+import {
   continuesWord,
   isCasedLetter,
   isDateSpace,
@@ -60,17 +64,6 @@ const DAY_OPENERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- First UTF-16 unit that ends a surrogate pair, as an emoji before a date
- does.
- */
-const FIRST_LOW_SURROGATE = 0xDC_00;
-
-/**
- Last UTF-16 unit that ends a surrogate pair.
- */
-const LAST_LOW_SURROGATE = 0xDF_FF;
-
-/**
  Article a day-first date may carry before its ordinal day, in either case.
  */
 const ARTICLES: ReadonlySet<string> = new Set([
@@ -120,6 +113,12 @@ type ScanState = {
  space, an opening mark, a dash or an emoji, or after a hyphen that directly
  follows the date read before it.
 
+ AN EMOJI, NOT EVERY CHARACTER BEYOND THE FIRST PLANE (ledger B21): the test
+ read the unit before the digit and took any low surrogate as an emoji, so a
+ date glued to a Deseret letter opened where one glued to a Latin letter did
+ not. The whole character before the digit is read, and one beyond the first
+ plane opens a date only where it continues no word.
+
  @param text - text under scan
 
  @param state - where the scan stands, the digit under the cursor
@@ -141,19 +140,17 @@ function opensDate(
   },
 ): boolean {
   /**
-   UTF-16 unit before the digit: read at a pair's second half, `codePointAt`
-   returns that half alone. Zero at the text's start.
+   Whole character before the digit, empty at the text's start.
    */
-  const code = text.codePointAt(state.at - 1,) ?? 0;
+  const before = codePointBefore({
+    text,
+    at: state.at,
+  },);
   /**
-   Character before the digit.
+   Whether the digit follows an emoji or another character beyond the first
+   plane that is no part of a word.
    */
-  const before = text.charAt(state.at - 1,);
-  /**
-   Whether the digit follows an emoji or another character outside the
-   basic plane.
-   */
-  const afterPair = (code >= FIRST_LOW_SURROGATE) && (code <= LAST_LOW_SURROGATE);
+  const afterPair = (before.length > 1) && (!continuesWord({ character: before, },));
   /**
    Whether a hyphen joins the digit to the date just read.
    */
@@ -203,7 +200,12 @@ function rewriteStart(
   const article = ARTICLES.has(text.slice(
     start,
     state.at - 1,
-  ),) && (!continuesWord({ character: text.charAt(start - 1,), },));
+  ),) && (!continuesWord({
+    character: codePointBefore({
+      text,
+      at: start,
+    },),
+  },));
   /**
    Whether the article may be dropped with the date.
    */
@@ -237,9 +239,12 @@ function readingAt(
   },
 ): DateReading | NoPart {
   /**
-   Character under the cursor.
+   Whole character under the cursor.
    */
-  const character = text.charAt(state.at,);
+  const character = codePointAt({
+    text,
+    at: state.at,
+  },);
   /**
    Where the date would start, for the readers.
    */
@@ -263,7 +268,12 @@ function readingAt(
       NO_PART,
     );
   }
-  return (isCasedLetter({ character, },) && (!continuesWord({ character: text.charAt(state.at - 1,), },)))
+  return (isCasedLetter({ character, },) && (!continuesWord({
+    character: codePointBefore({
+      text,
+      at: state.at,
+    },),
+  },)))
     ? readMonthFirst(place,)
     : NO_PART;
 }

@@ -1,5 +1,9 @@
 import { isAsciiDigit, } from '../ascii-letters.ts';
 import {
+  codePointAt,
+  codePointBefore,
+} from '../code-points.ts';
+import {
   isCasedLetter,
   isWordCharacter,
 } from './canadian-date-parts.ts';
@@ -172,9 +176,12 @@ function carriesDottedName(
     at + 1,
   )) {
     /**
-     Character after the dot.
+     Whole character after the dot.
      */
-    const next = token.charAt(at + 1,);
+    const next = codePointAt({
+      text: token,
+      at: at + 1,
+    },);
     if (isCasedLetter({ character: next, },) || isAsciiDigit({ character: next, },))
       return true;
   }
@@ -268,14 +275,23 @@ export function besideNonProse(
     readonly end: number;
   },
 ): boolean {
+  // THE FAR CHARACTERS ARE READ WHOLE (ledger B21). They count only where the
+  // neighbour is an underscore or a dot, one unit wide, so each stands one
+  // unit past the word's edge.
   /**
-   Character past the neighbour before the word.
+   Whole character past the neighbour before the word.
    */
-  const farBefore = text.charAt(start - 2,);
+  const farBefore = codePointBefore({
+    text,
+    at: start - 1,
+  },);
   /**
-   Character past the neighbour after the word.
+   Whole character past the neighbour after the word.
    */
-  const farAfter = text.charAt(end + 1,);
+  const farAfter = codePointAt({
+    text,
+    at: end + 1,
+  },);
   /**
    The word's two sides.
    */

@@ -5,6 +5,7 @@ import {
   opensSentence,
   startsWithCapital,
 } from './canadian-spelling-capital.ts';
+import { codePointAt, } from '../code-points.ts';
 import { isWordCharacter, } from './canadian-date-parts.ts';
 import {
   besideNonProse,
@@ -352,9 +353,19 @@ export function canadianSpellings(
    Rewrites found so far.
    */
   const rewrites: SpellingRewrite[] = [];
+  // WHOLE CHARACTERS AT UTF-16 OFFSETS (ledger B21): a cased letter beyond the
+  // first plane opens a word as a Latin letter does, so a listed word glued
+  // to one is part of a longer token.
   for (let at = 0; at < text.length;) {
-    if (!isWordCharacter({ character: text.charAt(at,), },)) {
-      at += 1;
+    /**
+     Whole character at this offset.
+     */
+    const character = codePointAt({
+      text,
+      at,
+    },);
+    if (!isWordCharacter({ character, },)) {
+      at += character.length;
       continue;
     }
     /**
