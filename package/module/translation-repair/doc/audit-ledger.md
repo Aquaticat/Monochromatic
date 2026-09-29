@@ -4515,8 +4515,9 @@ same result.
 
 Status:
 (a) to (d) fixed;
-(e) closed as a census artifact,
-with two sites unclassified.
+(e) closed:
+seven sites a census artifact,
+two faithful refrains.
 
 #### L14(a): the resolution checker sheet carried none of the panel's evidence
 
@@ -4701,8 +4702,8 @@ same result.
 #### L14(e): a repaired text repeating a sentence no recorded stage wrote
 
 Status:
-closed as a census artifact at 7 of 9 sites;
-2 unclassified;
+closed at all 9 sites,
+7 a census artifact and 2 faithful refrains (classified 2026-09-28);
 found while measuring L14(b).
 In 9 slices the repaired text carries a sentence more often than the archive English
 while no chunk candidate of the slice does and no repair region's replacement carries it:
@@ -4727,7 +4728,14 @@ What that step did (`l14e-lines.mjs`,
 at all 9 sites the repaired text holds more lines than the archive English and the selected candidate
 (1 or 3 lines becoming 11 to 17,
 and 76 becoming 91 or 92),
-so a later step set the text on the ORIGINAL's lines,
+so a later step set the text on more lines
+(first written here as the ORIGINAL's lines;
+the ORIGINALs of the two sites below hold 3 lines and 1,
+and the step is the semantic wrap,
+`wrapReplacementText`:
+both repaired texts equal their own wrap,
+and wrapping TianqiChen66613's selected candidate gives its 13 lines,
+`l14e-original-wrap.mjs`),
 and the "repeated sentences" are short verse fragments (a single word and a comma,
 a four-word line)
 that the census's sentence rule counts only once they stand on their own lines.
@@ -4745,16 +4753,23 @@ refined without an accuracy patch (archive and candidate 0,
 refined text 4).
 Neither ORIGINAL repeats a line of text (`l14e-source.mjs`;
 only markup lines repeat),
-but a refrain within a line is not excluded,
-and the slice's own ORIGINAL is not in the artifact,
-so both stay unclassified.
-Candidate kept out:
-the refine sheet states no rule about saying something twice,
-and the L14(b) rule,
-conditioned on the ORIGINAL,
-would carry over;
-its only case is the unclassified XingZ6010 slice 38,
-so it waits for evidence.
+which left a refrain within a line open while the slice's own ORIGINAL was not in the artifact.
+Rebuilt from each run's own preparation
+(`rebuildPreparation`;
+each rebuilt slice's archive text equals the run's recorded row,
+`l14e-original-structure.mjs`),
+both ORIGINALs repeat a phrase within a line,
+counted as the most repeated Han runs (`l14e-original-ngrams.mjs`):
+at TianqiChen66613 slice 12 a four-character phrase stands twice,
+matching the candidate's and the repaired text's two where the archive has one,
+and at XingZ6010 slice 38 a three-character adverb opens a clause four times,
+matching the refined text's four where the archive and the candidate have none.
+Both are the ORIGINAL's own refrain,
+rendered as often as the ORIGINAL says it;
+how the archive English renders each refrain was not read.
+No rule follows:
+the refine sheet needs none about saying something twice,
+since its only case turned out faithful.
 Lesson for any later census of repetition:
 count substrings as well as split sentences,
 since setting a text on its lines changes what a sentence splitter sees.
