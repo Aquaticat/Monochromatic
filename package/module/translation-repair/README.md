@@ -126,7 +126,8 @@ a width-32 chat-completions arm completed 32 of 32 on two models with no refusal
 and the provider states no request-rate limit for paid models.
 Amazon Bedrock,
 the fourth provider since 2026-09-07,
-publishes no requests-per-minute quota and no token quota for the four models it serves here,
+publishes no requests-per-minute quota and no token quota for the four models whose cards name a Bedrock id
+(three in use since `hf:openai/gpt-oss-120b` left every role),
 asks for retry with backoff on throttling and a gradual ramp,
 and has no local ceiling either.
 Routing walks `PROVIDER_ORDER` (Synthetic,
@@ -139,7 +140,9 @@ the first provider that serves the model and has budget takes the call,
 a saturated provider overflows to the next usable one,
 and a dry provider passes the call down the order.
 See `doc/troubleshooting/translation-repair-provider-concurrency.md`.
-A2's 432-second intentionally serial run measures its implementation,
+Candidate A2's 432-second intentionally serial run
+(`doc/planning/translation-repair-interface-candidates-a-d.md` at the repository root)
+measures its implementation,
 not provider concurrency capacity.
 Measured arms may explicitly require any subset of the providers.
 Each node prompt digest binds exact source,

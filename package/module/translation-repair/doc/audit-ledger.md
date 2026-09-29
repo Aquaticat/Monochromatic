@@ -5237,6 +5237,31 @@ which is now a link;
 the comparison first reported exactly that difference,
 so it can see one.
 
+### D24: the README's provider section counted a culled model and named a candidate by a label the ledger reuses
+
+Status:
+fixed 2026-09-28,
+found re-reading the section against the code after the provider changes.
+The section said Bedrock serves four models here;
+four cards name a Bedrock id (`model-cards.ts`),
+but `hf:openai/gpt-oss-120b` carries `owner-culled` and left every role on 2026-09-24,
+which the same section says two sentences earlier,
+so three are in use.
+It also cited "A2's 432-second" serial run with no source,
+where this ledger's A2 is a page-assembly finding;
+the run is Candidate A2 in `doc/planning/translation-repair-interface-candidates-a-d.md` at the repository root,
+now named.
+Every other claim in the section holds against the code:
+`SYNTHETIC_PER_MODEL_CONCURRENCY` is 5 (`synthetic-client.ts`),
+Synthetic serves two roster models (GLM-5.3-Flash is `synthetic-withheld`,
+gpt-oss-120b `owner-culled`),
+Hyper,
+OpenRouter and Bedrock set no per-model ceiling (`Number.POSITIVE_INFINITY` in each client),
+and `PROVIDER_ORDER` is Synthetic,
+Bedrock,
+Hyper,
+OpenRouter (`provider-name.ts`).
+
 ## Found while fixing
 
 ### X1: the translate lane stopped the entry on a rejected slate over an archive the floor refuses
