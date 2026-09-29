@@ -50,6 +50,46 @@ const UNWRAPPED = '[^2]: A Nap on the Windowsill (https://example.invalid/window
  */
 const URL_WORDED = '[^2]: A Nap on the Windowsill [https://example.invalid/windowsill-nap.html](https://example.invalid/windowsill-nap.html)';
 
+/**
+ Original linking the post and ending on an opening tag without its close,
+ which the strict grammar refuses, so the validator reads it only through the
+ floors that need no grammar.
+ */
+const TORN_SOURCE = `猫的博客：[窗台上的午睡](https://example.invalid/windowsill-nap.html)
+
+<summary>猫的请求`;
+
+/**
+ Original linking the post that the strict grammar reads.
+ */
+const WHOLE_SOURCE = '猫的博客：[窗台上的午睡](https://example.invalid/windowsill-nap.html)';
+
+/**
+ Rendering keeping the link, torn the way its original is.
+ */
+const TORN_LINKED = `The cat's blog: [A Nap on the Windowsill](https://example.invalid/windowsill-nap.html)
+
+<summary>The cat's requests`;
+
+/**
+ Rendering unwrapping the link, torn the way its original is.
+ */
+const TORN_UNWRAPPED = `The cat's blog: A Nap on the Windowsill (https://example.invalid/windowsill-nap.html)
+
+<summary>The cat's requests`;
+
+/**
+ Rendering with a longer bare address, torn the way its original is.
+ */
+const TORN_LONGER = `The cat's blog: A Nap on the Windowsill (https://example.invalid/windowsill-nap.html2)
+
+<summary>The cat's requests`;
+
+/**
+ Words of the unwrapped-link finding.
+ */
+const UNWRAPPED_FINDING = 'carries that destination without words linked to it';
+
 await describe({
   name: 'a source link rendered as words and a bare destination (class one hundred fifteen)',
   children: [
@@ -85,7 +125,56 @@ await describe({
         expect(verdict.kind,).toBe('invalid',);
         if (verdict.kind !== 'invalid')
           throw new Error('unreachable',);
-        expect(verdict.findings.join('\n',),).not.toContain('carries that destination without words linked to it',);
+        expect(verdict.findings.join('\n',),).not.toContain(UNWRAPPED_FINDING,);
+      },
+    },),
+    it({
+      name: 'TEARS BOTH SIDES of the plain-markdown cases: the strict grammar refuses the rendering and the original',
+      fn: async () => {
+        // The positive control for the two cases after it. A rendering the
+        // strict grammar reads, or an original it reads, would send those
+        // cases through the strict path and prove nothing about the fallback.
+        /**
+         Verdict on the torn rendering against an original the grammar reads.
+         */
+        const candidateTorn = validateTranslatedSlice({
+          sourceText: WHOLE_SOURCE,
+          candidateText: TORN_LINKED,
+        },);
+        expect(candidateTorn.kind,).toBe('invalid',);
+        if (candidateTorn.kind !== 'invalid')
+          throw new Error('unreachable',);
+        expect(candidateTorn.findings.join('\n',),).toContain('could not be parsed as Markdown',);
+        expect(validateTranslatedSlice({
+          sourceText: TORN_SOURCE,
+          candidateText: TORN_LINKED,
+        },).kind,).toBe('unknown',);
+      },
+    },),
+    it({
+      name: 'REFUSES AN UNWRAP IN A RENDERING THE STRICT GRAMMAR REFUSES (ledger B23), reading its destinations under '
+        + 'plain markdown, since where the original is refused too nothing else would',
+      fn: async () => {
+        /**
+         Verdict on the torn unwrapped rendering.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: TORN_SOURCE,
+          candidateText: TORN_UNWRAPPED,
+        },);
+        expect(verdict.kind,).toBe('invalid',);
+        if (verdict.kind !== 'invalid')
+          throw new Error('unreachable',);
+        expect(verdict.findings.join('\n',),).toContain(UNWRAPPED_FINDING,);
+      },
+    },),
+    it({
+      name: 'LEAVES A LONGER ADDRESS UNREAD AS THE ORIGINAL\'S under plain markdown too',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: TORN_SOURCE,
+          candidateText: TORN_LONGER,
+        },).kind,).toBe('unknown',);
       },
     },),
     it({
