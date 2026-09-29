@@ -933,13 +933,13 @@ concurrently with the Toka_ls pronoun re-run (Synthetic wet,
 Hyper unset),
 at the owner's instruction that OpenRouter has no meaningful rate limits:
 Hangmster at 04:26 UTC (`~/temp/agent/hangmster-pictures-20260904.log`,
-one picture) and BI4PBV at 04:28 (`~/temp/agent/bi4pbv-pictures-20260904.log`,
+one picture) and BI4PBV at 04:28 UTC (`~/temp/agent/bi4pbv-pictures-20260904.log`,
 four pictures,
 two of them carrying text).
 
 - **BI4PBV's picture stage took one millisecond and said nothing.**
-  `JUDGE SEATS phase=pictures` at 04:29:16.205,
-    `phase=lanes` at 04:29:16.206,
+  `JUDGE SEATS phase=pictures` at 04:29:16.205 UTC,
+    `phase=lanes` at 04:29:16.206 UTC,
     and no `gathered N of M pictures` or `reading N pictures` line between them,
     where Hangmster's log has both.
     Its `page.md` writes its `PhotoScroll` paths in double quotes,
@@ -967,7 +967,7 @@ two of them carrying text).
     the captioned case then read the apostrophe in the caption as an opening quote and lost the path entirely.
     Suite 922,
     lint and types clean.
-- **BI4PBV relaunched on the fixed build at 04:43:35** (`~/temp/agent/bi4pbv-pictures2-20260904.log`,
+- **BI4PBV relaunched on the fixed build at 04:43:35 UTC** (`~/temp/agent/bi4pbv-pictures2-20260904.log`,
     fresh runs dir):
     `gathered 4 of 4 pictures`,
     `reading 4 pictures`,
@@ -999,7 +999,7 @@ two of them carrying text).
     The seats line is what made it visible,
     by putting a timestamp on each side of the stage.
 - **The second pass's picture stage,
-  04:43:52 to 04:49:59**:
+  04:43:52 to 04:49:59 UTC**:
   `image0.webp` and `image2.webp` carried no OCR text (0 and 15 characters,
     under 16),
     so no model was asked;
@@ -1052,12 +1052,12 @@ two of them carrying text).
     it is not regenerated here,
     since the pipeline digest changed with the build
     and a regeneration would be a full paid re-run rather than a replay.
-- **The first BI4PBV pass settled at 05:02** (34 min,
+- **The first BI4PBV pass settled at 05:02 UTC** (34 min,
   1.57 USD,
   verify-published 1 of 1,
   no Kimi-K3 call) as the no-picture control;
     its page keeps both photo elements as the source writes them.
-- **The second BI4PBV pass settled at 05:19** (`TALLY BI4PBV status=SETTLED slices=5 ... ms=2142085`,
+- **The second BI4PBV pass settled at 05:19 UTC** (`TALLY BI4PBV status=SETTLED slices=5 ... ms=2142085`,
     35.7 min,
     1.3827 USD,
     verify-published 1 of 1 at `chars=1077=expected`,
@@ -1410,7 +1410,7 @@ What the tally exposed next:
 `entryErrorOutcome` classed `ConsolidationStandingIneligibleError` as a resumable failure,
 so the pass logged `REATTEMPT luxuanwen3 queued` and started the lanes again at
 10:08:12 UTC against the same deterministic refusal;
-it was stopped by hand at 10:09 and the error joined the stopped list (`ae1d2b55f`,
+it was stopped by hand at 10:09 UTC and the error joined the stopped list (`ae1d2b55f`,
 guard shown to fail without it).
 The log now names both verdicts and their findings (`558b46e11`).
 
@@ -1422,7 +1422,7 @@ which rendering a candidate owes where the archive rewrote a destination.
 Launched at 12:43:50 UTC on `82888d43b` (the rendering pools) plus the docs commit,
 OpenRouter alone,
 into `~/temp/agent/luxuanwen3-shapes3-20260904` (log of the same name).
-Balance 22.53 USD at the SS3B_0016 launch that followed at 13:20.
+Balance 22.53 USD at the SS3B_0016 launch that followed at 13:20 UTC.
 
 What the slices did:
 slice 1,
@@ -1434,7 +1434,7 @@ The contest recorded eight ballots across the slices (four `repair`,
 two `translate`,
 two `neither`,
 five to seven usable each).
-Consolidation started at 13:18:47 on all nine slices;
+Consolidation started at 13:18:47 UTC on all nine slices;
 slice 1 exited `computed` in 536 s with no verdict warning;
 slices 2 and 6 logged `consolidation standing text lacks contest endorsement and remains retryable`,
 and slice 2's single attempt kept the standing (`slate-declined-standing`) with the finding recorded.
@@ -1482,8 +1482,8 @@ suite 931 groups,
 0 FAIL.
 
 SS3B_0016 (the Wikipedia shape,
-912 source characters) had been launched at 13:20 on the same build;
-it was stopped at 13:51 during its lanes (422 calls,
+912 source characters) had been launched at 13:20 UTC on the same build;
+it was stopped at 13:51 UTC during its lanes (422 calls,
 1.84 USD) because its page could only reach the same refusal,
 and relaunched with luxuanwen3 on `e66da50ef` at 13:51:31 UTC (`~/temp/agent/<id>-shapes4-20260904`),
 balance 18.49 USD.
@@ -1730,9 +1730,9 @@ which a later change corrected:
 the line now names each excluded lane and its finding (`lane-contest-eligibility.ts`).
 
 THE BALANCE RAN OUT UNDER CONSOLIDATION.
-The lanes finished at 16:06 with 1.98 USD left;
-consolidation began at 16:11;
-from 16:15:00 OpenRouter refused calls while the meter still read 1.12 USD (the last reading before the refusal),
+The lanes finished at 16:06 UTC with 1.98 USD left;
+consolidation began at 16:11 UTC;
+from 16:15:00 UTC OpenRouter refused calls while the meter still read 1.12 USD (the last reading before the refusal),
 and `EveryProviderDryError` was raised 166 times through the gate and refiner rounds,
 205 voices lost,
 with the meter reading `openrouter=wet` and falling to 0.36 USD as smaller calls kept buying.
@@ -1800,7 +1800,7 @@ and the gather then waited about six minutes for `hf:zai-org/GLM-5.3-Flash`,
 which ended in `StreamCutShortError` and contributed nothing.
 Corroboration needs two readings,
 so those six minutes bought a verdict that was already settled.
-The apparent 2707-second stage in the luxuanwen3 pass of 09:23 is not a second case:
+The apparent 2707-second stage in the luxuanwen3 pass of 09:23 UTC is not a second case:
 that log holds two picture stages,
 a 13-second gather and a resume from cache 45 minutes later.
 
@@ -1867,7 +1867,7 @@ and the instruction not to wait on it.
     the 2026-09-04 snapshot,
     the run-continuity and overlap-dial handovers (`0d2203abd`),
     and deliberately not into the root `AGENTS.md`.
-    The 19:53 run was killed at 20:01:44 UTC under it,
+    The 19:53 UTC run was killed at 20:01:44 UTC under it,
     264 calls in (148 Hyper,
     116 Synthetic),
     still in the lanes phase.
@@ -1984,7 +1984,7 @@ which prices one stopped attempt at about 0.8 percent of the week and 36 credits
     plain invocation,
     fresh runs dir `~/temp/agent/yuliannyanner3-20260906`,
     log beside it,
-    under the kill-and-relaunch rule (the 20:21 run had already exited on its own).
+    under the kill-and-relaunch rule (the 20:21 UTC run had already exited on its own).
     The reading follows.
 
 ## The third launch, 2026-09-06, 21:03 UTC: the first page on the plain invocation, and the sixth class
@@ -2120,7 +2120,7 @@ Hyper 2622 to 2559.
 three pictures textless,
 all fourteen comments rendered in place,
 both `PhotoScroll` shapes intact,
-"her mind" in the objective section where the 21:03 page had slipped to "my".
+"her mind" in the objective section where the 21:03 UTC page had slipped to "my".
 
 - **The headings hold.**
   Introduction,
@@ -2147,7 +2147,7 @@ both `PhotoScroll` shapes intact,
     wouldn't,
     Let's)
     against thirty curly ones and an archive that is curly throughout;
-    the 21:03 page had none,
+    the 21:03 UTC page had none,
     and measured on the pages that shipped on 2026-09-04,
     `Uekawakuyuurei` carries five straight against two curly and nobody read it.
     `restore-typography.ts` exists for exactly this and runs on every editor and refiner replacement;
@@ -2170,7 +2170,7 @@ both `PhotoScroll` shapes intact,
   贴贴 kept in Chinese with a gloss where the archive had "get close to someone online":
     the community-vocabulary rule was applied to a term that has an everyday English equivalent,
     and the house policy now says so with this example (`bc42fe330`).
-    自慰 rendered by its blunt literal sense in a quoted despairing thought where the archive and the 21:03 page
+    自慰 rendered by its blunt literal sense in a quoted despairing thought where the archive and the 21:03 UTC page
     read it as self-consolation;
     a polysemous word,
     the judges' call,
@@ -2209,7 +2209,7 @@ three pictures textless,
 
 - **The apostrophes hold.**
   Zero straight apostrophes inside words against forty curly ones,
-    where the 22:10 page had five against twenty-nine and the archive has none against thirty-six.
+    where the 22:10 UTC page had five against twenty-nine and the archive has none against thirty-six.
     The one straight quote left after a letter is `girls'`,
     a plural possessive,
     which the restoration's apostrophe rule skipped because a quote with a space on one side may be
@@ -2263,7 +2263,7 @@ three pictures textless,
     and the apostrophe count now reads any straight quote after a letter,
     not only one inside a word.
 - **A page from a superseded build no longer verifies.**
-  `verify-published` against the 22:10 runs dir on the class-seven build reads 0 of 1,
+  `verify-published` against the 22:10 UTC runs dir on the class-seven build reads 0 of 1,
     because the would-ship reading moved under it;
     the tool now says what the rule says.
 - **Recorded,
@@ -2274,7 +2274,7 @@ three pictures textless,
     since the site strips the front matter before the body is compiled.
     贴贴 now reads "cuddle online" under the house rule;
     自慰 reads "masturbation fantasies" again,
-    the same literal sense as the 22:10 page,
+    the same literal sense as the 22:10 UTC page,
     the judges' call.
     The alias and the `desc` are as before,
     the one by the identity rule and the other from the source.
@@ -2303,7 +2303,7 @@ zero USD.
 `verify-published` matched,
 1 of 1 at the length the artifact implies.
 `DESTINATIONS source=0 page=0 dropped=0` with no finding,
-where the 23:11 line carried `destinations-mdx-downgraded (page)`.
+where the 23:11 UTC line carried `destinations-mdx-downgraded (page)`.
 
 - **The component line holds.**
   `> <PhotoScroll photos={["${path}/photos/photo3.webp"]} />`,
@@ -2604,7 +2604,7 @@ At 02:54 UTC,
 70 minutes in and at the lane contest,
 the slice floor reported slice 9 as an original that could not be read
 (`MdxParseError at 1:1 (mdast-util-mdx-jsx/end-tag-mismatch)`)
-and at 02:55 slice 12 the same
+and at 02:55 UTC slice 12 the same
 (`3:2-3:3 (mdast-util-mdx-jsx/unexpected-closing-slash)`):
 slice 9 owns the `<details>` opener and slice 12 its `</details>` closer,
 by the design of `container-extents.ts`,
@@ -2694,8 +2694,8 @@ It is the poem "To the Eternal Star",
 which the source writes as two paragraphs whose lines end in `<br/>`,
 and the archive as five paragraphs with soft line breaks and no `<br/>`.
 Every producer followed the source:
-the contest winner carried two paragraphs at 04:27,
-the consolidation standing two at 05:07,
+the contest winner carried two paragraphs at 04:27 UTC,
+the consolidation standing two at 05:07 UTC,
 and the consolidation "left nothing valid to ship",
 so `ConsolidationStandingIneligibleError` stopped the entry under the 2026-09-04 decision that an
 ineligible standing stops rather than reattempts.
@@ -2832,10 +2832,10 @@ types clean,
 and the either-rendering guard read 14 `FAIL` neutralised and 0 restored.
 Meters at launch:
 Synthetic wet again at 2 percent of the week
-(0 at 05:31,
+(0 at 05:31 UTC,
 so the week trickles back rather than resetting on a day;
 the schedule is still not on record),
-Hyper 2080 (1843 at 05:31,
+Hyper 2080 (1843 at 05:31 UTC,
 237 credits returned without a top-up on record),
 OpenRouter 0.32 USD,
 every seat filled,
@@ -3038,20 +3038,20 @@ the poem and both footnote conventions.
 ## The fourth Huasheng launch finds the twelfth class, 2026-09-07, 19:40 UTC: Hyper's daily limit
 
 The monitor timed out at 19:40 UTC with the pass alive and in consolidation,
-begun at 18:01 on an eight-model roster and heavily degraded.
-Measured off the log at 19:40:
-`createRequestPace` had written "window full (1000 starts in 3600000ms)" 1,028 times since 16:42;
+begun at 18:01 UTC on an eight-model roster and heavily degraded.
+Measured off the log at 19:40 UTC:
+`createRequestPace` had written "window full (1000 starts in 3600000ms)" 1,028 times since 16:42 UTC;
 `exchangeWithRetry` had logged `HTTP 429` 2,693 times;
 `markRefused` had held Hyper out 831 times,
 60 s each,
 "while its meter reads wet";
 `HTTP 402` from OpenRouter,
 "This request requires more credits",
-463 times since 17:01;
+463 times since 17:01 UTC;
 and `EveryProviderDryError` 34 times.
 Per ten-minute bucket,
-Hyper's streams carried content until 16:59 (83 to 202 per bucket)
-and none at all from 17:00 on (106 to 285 empty streams per bucket),
+Hyper's streams carried content until 16:59 UTC (83 to 202 per bucket)
+and none at all from 17:00 UTC on (106 to 285 empty streams per bucket),
 while the meter read `hyper=wet` at a balance of 909 the whole time,
 unchanged.
 Consolidation chunks 1,
@@ -3065,8 +3065,8 @@ logged where a voice was lost:
 `You've hit your daily rate limit. Please try again in 2h25m18s.`,
 84 bodies,
 every wait counting down to one instant:
-17:27:55 plus 2h25m18s is 19:53:13,
-19:39:19 plus 14m40s is 19:53:59.
+17:27:55 UTC plus 2h25m18s is 19:53:13 UTC,
+19:39:19 UTC plus 14m40s is 19:53:59 UTC.
 Hyper's daily limit,
 not its hourly one,
 and its wording names its return.
@@ -3130,7 +3130,7 @@ The worktree's `git worktree add` wedged every cli-git call for ten minutes unde
 and its `cli-git.config.ts` had to be trusted and the forbidden-strings scanner copied in before a commit went through;
 the system git answered throughout.
 
-Hyper came back at 19:54 as the bodies said.
+Hyper came back at 19:54 UTC as the bodies said.
 Chunk 6 then settled in 43 min,
 chunk 9 in 9 min,
 chunks 19 to 24 in 4 to 7 min each.
@@ -3364,7 +3364,7 @@ until then the provider serves the two seats the roster already names.
 
 ## The fourth Huasheng page, 2026-09-07, 20:49 UTC
 
-`TALLY Huasheng status=SETTLED slices=25` at 20:48:51,
+`TALLY Huasheng status=SETTLED slices=25` at 20:48:51 UTC,
 a page of 9,436 characters,
 `DESTINATIONS source=0 page=0 dropped=0`,
 `verify-published` matched 1 of 1 at the length its artifact implies,
@@ -3441,8 +3441,8 @@ tenth and ninth classes closed on the entry that found them,
 and no thirteenth at the publisher.
 What it is not evidence of:
 judge quality.
-Synthetic was dry from 17:00,
-Hyper answered nothing from 17:00 to 19:54,
+Synthetic was dry from 17:00 UTC,
+Hyper answered nothing from 17:00 to 19:54 UTC,
 and four consolidation chunks settled on nobody;
 the roster that judged this page is not the roster a production pass would have.
 
@@ -3460,7 +3460,7 @@ and 0 after).
 Types clean,
 oxlint 0 and 0,
 the full suite green with those four.
-`budget-sample` at 21:00 read every meter wet:
+`budget-sample` at 21:00 UTC read every meter wet:
 Synthetic 0.97 percent of the week,
 Hyper 828,
 Bedrock 200.00 USD off an empty ledger,
@@ -3527,7 +3527,7 @@ Hyper serves both,
 so when Synthetic dried at 21:24 UTC
 (the week at 0 percent after the seated fidelity run and this pass)
 the two seats went to Hyper,
-60 and 40 calls by 21:35,
+60 and 40 calls by 21:35 UTC,
 and the pass had made no Bedrock call at all.
 Bedrock takes them when Hyper holds,
 which today means its daily limit,
@@ -3552,7 +3552,7 @@ the README's routing paragraph,
 and the tests that had spelled the walk out:
 `providerServing` and `routeProviderFor` now reach Bedrock after Synthetic and Hyper after Bedrock,
 `otherProviders` and the hold-wait refusal list the four in the new order).
-The second hakureico pass was killed by pid at 21:41 under the kill-and-relaunch rule,
+The second hakureico pass was killed by pid at 21:41 UTC under the kill-and-relaunch rule,
 33 minutes and 559 calls in,
 in the repair lane at chunk 13;
 Hyper read 664 at the relaunch,
@@ -3587,7 +3587,7 @@ then whether Hyper's daily limit named a return and Bedrock carried the shared s
 
 ## The first hakureico page, 2026-09-07, 22:00 UTC, and the thirteenth class
 
-`TALLY hakureico status=SETTLED slices=18` at 22:00:47,
+`TALLY hakureico status=SETTLED slices=18` at 22:00:47 UTC,
 13.3 wall minutes,
 the shortest settled pass on record;
 `repairIssues=80 repairAccepted=38 repairResolved=26 repairChanged=3`,
@@ -3605,7 +3605,7 @@ Hyper 151 (664 to 593),
 Synthetic 0,
 OpenRouter 0.
 The first pass in which Bedrock took the two seats it shares with Hyper:
-its first two calls went to `gemma-4-26b-a4b` and `gpt-oss-120b` at 21:47:27,
+its first two calls went to `gemma-4-26b-a4b` and `gpt-oss-120b` at 21:47:27 UTC,
 and neither seat touched Hyper all pass.
 `SEATS DARK` names Qwen3.8-27B,
 thrown 30 of 30,
@@ -3613,15 +3613,15 @@ which is the hold below and not the model.
 
 ### The twelfth class working, and what it uncovered
 
-At 21:57:25 three Hyper calls answered 429 naming a return in 538000 ms;
+At 21:57:25 UTC three Hyper calls answered 429 naming a return in 538000 ms;
 the ladder ended at once ("past this ladder's reach of 16000ms"),
 and `markRefused` held Hyper out for 538000 ms,
-to 22:06:24.
+to 22:06:24 UTC.
 That is the twelfth class as built.
 What it uncovered is the thirteenth:
 Bedrock stayed wet,
 so nothing waited.
-The translate lane started at 21:58:46 and every Hyper-only writer
+The translate lane started at 21:58:46 UTC and every Hyper-only writer
 (GLM-5.3-Flash,
 Kimi-K3,
 minimax-m3,
@@ -3635,11 +3635,11 @@ leaving the two Bedrock seats to write;
 and chunk 17,
 the passage only the translate lane owns,
 stayed unfilled.
-The lane contest at 22:00:14 read `hyper=dry openrouter=dry` (OpenRouter had just refused at 0.01 USD),
+The lane contest at 22:00:14 UTC read `hyper=dry openrouter=dry` (OpenRouter had just refused at 0.01 USD),
 settled its three differing slices on repair with the two Bedrock judges,
-and the consolidation at 22:00:24 ran every select and refiner round at 0 to 1 ms with nobody heard:
+and the consolidation at 22:00:24 UTC ran every select and refiner round at 0 to 1 ms with nobody heard:
 three chunks `quorum-not-met`,
-done by 22:00:46,
+done by 22:00:46 UTC,
 five and a half minutes before Hyper came back.
 
 The router already waits out the shortest hold once,
@@ -3661,9 +3661,9 @@ the budgets' own) and reads again;
 the `JUDGE SEATS` line carries `waited=`.
 The lanes driver takes a `reseatTranslate` reader and the pass gives it one,
 so the translate lane reads its seats when it is about to start rather than inheriting a reading minutes old
-(the lanes were seated at 21:52,
-the hold began at 21:57,
-the writers were asked at 21:58).
+(the lanes were seated at 21:52 UTC,
+the hold began at 21:57 UTC,
+the writers were asked at 21:58 UTC).
 Per phase rather than per call,
 because a call's deadline (360 s) is shorter than a daily-limit hold and would cut the wait it was serving.
 Six guards bite
@@ -3773,29 +3773,29 @@ the footnotes first
 the two definitions the translate lane owns),
 then every `JUDGE SEATS` line's `waited=` and any `short of quorum` line,
 then the Bedrock `SPEND` lines and the ledger against `bedrockUsd=`.
-Hyper's daily limit reopened at 22:06 and its next closing is unpublished;
+Hyper's daily limit reopened at 22:06 UTC and its next closing is unpublished;
 a pass that meets it now waits at the next phase boundary instead of settling on nobody.
 
 ## The fourth hakureico pass stops INCOMPLETE; the thirteenth class's second face, 2026-09-07, 22:56 UTC
 
 Every `JUDGE SEATS` line read `waited=0ms`
-(preparation 22:21,
-pictures 22:21,
-lanes 22:23,
-translate lane 22:42 with six writers reachable,
-lane contest 22:49,
-consolidation 22:53),
+(preparation 22:21 UTC,
+pictures 22:21 UTC,
+lanes 22:23 UTC,
+translate lane 22:42 UTC with six writers reachable,
+lane contest 22:49 UTC,
+consolidation 22:53 UTC),
 the translate lane ran on the full bench,
 and `consolidation: 18 contested slices to settle`.
-Then at 22:55:54,
+Then at 22:55:54 UTC,
 two minutes into consolidation,
 Hyper's daily limit answered 429 naming 923 s
 (nine bodies,
-held out to 23:11:18);
+held out to 23:11:18 UTC);
 the phase had already seated,
 so the chunks in flight and after ran on the two Bedrock seats
 (`absolute naturalness review: 2/7 usable, quorum-not-met`).
-Slice 5's contest winner had failed the block floor at 22:50
+Slice 5's contest winner had failed the block floor at 22:50 UTC
 (`Your translation is 2 blocks (paragraph, paragraph) and the PAGE AS IT STANDS is 1`,
 the games-and-IKEA paragraph split in two,
 where the third pass's repair had kept it whole);
@@ -3844,7 +3844,7 @@ Synthetic dry,
 Bedrock 199.36 USD,
 Hyper 301,
 OpenRouter 0.01 USD.
-Hyper's hold from the fourth pass (to 23:11:18) lived in that process's budgets and not in this one's,
+Hyper's hold from the fourth pass (to 23:11:18 UTC) lived in that process's budgets and not in this one's,
 so this pass reads Hyper wet,
 meets the same refusal on its first Hyper call,
 and holds it out for what the body names;
@@ -3855,15 +3855,15 @@ then every `JUDGE SEATS` line's `waited=` and every `chunk resumes` line,
 then the Bedrock `SPEND` lines and the ledger,
 then Hyper's balance against 301.
 Hyper's balance is the day's constraint now:
-828 at 21:00,
-301 at 23:09,
+828 at 21:00 UTC,
+301 at 23:09 UTC,
 the owner will not recharge it,
 and each hakureico pass has spent 70 to 290 of it.
 
 ## The fifth pass stops in 67 seconds; the fourteenth class, 2026-09-07, 23:10 UTC
 
 `TALLY hakureico status=INCOMPLETE ms=66920 error=visual evidence incomplete for 2 referenced assets`.
-The first Hyper calls at 23:09:44 met the daily limit still running from the fourth pass
+The first Hyper calls at 23:09:44 UTC met the daily limit still running from the fourth pass
 (429 naming 94 s;
 this process had no hold for it),
 and in the same second six OpenRouter calls answered
@@ -3871,7 +3871,7 @@ and in the same second six OpenRouter calls answered
 OpenRouter's meter reads 0.01 USD,
 which `openrouterIsDry` reads as wet,
 so `markRefused` held it out for the 60 s rate-limit backoff.
-At 23:10:00 the pictures phase read
+At 23:10:00 UTC the pictures phase read
 `readers 0 of 4 reachable, quorum 2; holds hyper 77970ms, openrouter 44473ms; waiting 44473ms`:
 the thirteenth class waited for the shortest hold,
 which was OpenRouter's,
@@ -3926,7 +3926,7 @@ and whether Hyper's next daily-limit hold is waited out at a chunk boundary
 
 ## The sixth pass settles; the second footnote page, 2026-09-08, 00:38 UTC
 
-`TALLY hakureico status=SETTLED slices=18` at 00:38:13,
+`TALLY hakureico status=SETTLED slices=18` at 00:38:13 UTC,
 `repairIssues=181 repairAccepted=114 repairResolved=109 repairFindings=279 repairChanged=13`,
 `translateChanged=16 documentsDiffer=18 pageChanged=16 pageSilent=0 alignmentFindings=5 selection=contested`,
 `ms=3610303`:
@@ -3961,24 +3961,24 @@ no `names its return`:
 Hyper's daily limit did not close during the pass,
 so the thirteenth class had nothing to wait for.
 Synthetic read wet at one reading of the six,
-`phase=lanes` at 23:43,
+`phase=lanes` at 23:43 UTC,
 where the bench was whole
 (`wide=8 select=8 late=9 slate=9 checkers=3 translators=7 readers=4 writers=9 roster=10 withheld=none`);
 the other five read it dry with the two Hyper-slow judges withheld
 (`wide=7 select=6 late=8 slate=7 checkers=3 translators=6 readers=3 writers=8 roster=9`).
 The phases by their readings:
-preparation 23:38:03,
-pictures 23:38:38,
-lanes 23:43:03,
-translate lane 00:16:01,
-lane contest 00:25:24,
-consolidation 00:31:28,
-tally 00:38:13.
-The lanes took 33 minutes where the third pass's took 8 (21:52 to 22:00).
+preparation 23:38:03 UTC,
+pictures 23:38:38 UTC,
+lanes 23:43:03 UTC,
+translate lane 00:16:01 UTC,
+lane contest 00:25:24 UTC,
+consolidation 00:31:28 UTC,
+tally 00:38:13 UTC.
+The lanes took 33 minutes where the third pass's took 8 (21:52 to 22:00 UTC).
 
 ### The fourteenth class in production
 
-At 00:36:13,
+At 00:36:13 UTC,
 two minutes into consolidation,
 Hyper answered 402 on seven concurrent calls
 (`hyperBalance=0`;
@@ -3999,7 +3999,7 @@ From that instant every voice a model without a Bedrock seat owed was lost at on
 (`no provider can take <model>: every provider serving this model is out of budget, voice lost`,
 625 lines),
 and the consolidation finished its fifteen remaining slices on the Bedrock seats alone,
-00:36:14 to 00:38:13.
+00:36:14 to 00:38:13 UTC.
 
 ### The consolidation on two seats
 
@@ -4038,7 +4038,7 @@ Bedrock 199.34 to 198.99 USD on the meter;
 `openai.gpt-oss-120b` 153 calls 0.22 USD,
 `google.gemma-4-e2b` 160 calls 0.03 USD).
 Hyper 277 to 0 over 748 calls,
-spent out at 00:36:13;
+spent out at 00:36:13 UTC;
 the owner will not recharge it.
 Synthetic 212 calls in its one wet window,
 `syntheticWeekly=0%` throughout,
@@ -4308,7 +4308,7 @@ Bedrock 198.93 USD,
 Hyper 0,
 OpenRouter 0.01 USD reading wet.
 `phase=preparation` read `readers=5` with Kimi-K3 withheld under OpenRouter;
-`phase=pictures` at 02:20:11,
+`phase=pictures` at 02:20:11 UTC,
 after OpenRouter's six 402s,
 read
 `synthetic=dry bedrock=wet hyper=dry openrouter=dry`
@@ -4422,7 +4422,7 @@ The owner topped OpenRouter up
 and answered the single-provider question:
 a pass whose writing bench has no reachable seat stops INCOMPLETE
 ([`translation-repair-writing-bench-floor.md`](../decision/translation-repair-writing-bench-floor.md)).
-`budget-sample` at 11:26 read every provider wet:
+`budget-sample` at 11:26 UTC read every provider wet:
 `syntheticWeekly=5.8%`,
 Bedrock 198.71 USD,
 Hyper 250,
@@ -4510,7 +4510,7 @@ THE SHAPE:
     restored 0.
 
 WHAT THE EIGHTH PASS WOULD HAVE DONE ON THIS BUILD:
-stopped at 02:21:13 at the lanes reading with
+stopped at 02:21:13 UTC at the lanes reading with
 `writing bench unreachable at lanes: editors 0 of 3 reachable, floor 2; refiners 0 of 3 reachable, floor 2;`
 `translators 1 of 7 reachable, floor 2`,
 after its pictures and for the Bedrock cost of the pairing and the pictures alone.
@@ -4531,11 +4531,11 @@ no `quorum-not-met`,
 no `chunk resumes`,
 no hold named.
 The phases:
-pictures at 11:28:41,
-lanes at 11:35:04,
-translate lane at 12:01:28,
-lane contest at 12:16:47,
-consolidation at 12:21:04.
+pictures at 11:28:41 UTC,
+lanes at 11:35:04 UTC,
+translate lane at 12:01:28 UTC,
+lane contest at 12:16:47 UTC,
+consolidation at 12:21:04 UTC.
 
 WHAT A WHOLE BENCH BOUGHT,
 the reading this page owed:
@@ -4569,17 +4569,17 @@ The sixth pass's consolidation had run short of quorum from slice 3;
 this one never did.
 
 WHAT IT COST.
-Synthetic's week went from 5.83 percent to 0 at 12:25
+Synthetic's week went from 5.83 percent to 0 at 12:25 UTC
 (615 calls);
-at 12:26:22 Synthetic answered HTTP 429 with its meter reading dry,
+at 12:26:22 UTC Synthetic answered HTTP 429 with its meter reading dry,
 was held out 300 s and the call routed on.
-Hyper's balance went from 250 to 0 at 12:45
+Hyper's balance went from 250 to 0 at 12:45 UTC
 (898 calls).
 Bedrock 198.71 to 198.39 USD
 (463 calls).
 OpenRouter 200.01 to 199.56 USD:
 33 calls,
-every one after 12:45:53 when Hyper's meter read dry,
+every one after 12:45:53 UTC when Hyper's meter read dry,
 the first paid OpenRouter calls that were not 402s.
 Both went dry inside the consolidation;
 the per-chunk reading costs nothing while nothing is held,
@@ -4650,9 +4650,9 @@ the contest gave the slice to translate 6 ballots to 3,
 the three reasoning that the declared names settle the visible name as Hanasaka,
 the six that 千歌 is Chika and the alias should carry the given name;
 the consolidation slate endorsed it 9 of 9.
-In the body the repair lane's judges chose Chika for the IKEA sentence 8 of 8 at 11:41,
+In the body the repair lane's judges chose Chika for the IKEA sentence 8 of 8 at 11:41 UTC,
 the consolidation's refine stage chose it again,
-and the guard refused it at 12:28:
+and the guard refused it at 12:28 UTC:
 `translate-refused-declared-name (slice 4: archive text carries "Hanasaka" and the replacement does not;`
 `keeping the archive text)`;
 the letter's signature stays `Kagurazaka Hanasaka`.
@@ -4745,7 +4745,7 @@ and the body would agree with it.
 launched 13:07:14 UTC on `5462257b4`,
 log `~/temp/agent/producer-calibrate-e2b-20260908.log`,
 runs dir beside it holding only the candidate ledger)
-printed `STANDING over 40 rounds` at 16:07:09,
+printed `STANDING over 40 rounds` at 16:07:09 UTC,
 10795 s wall clock,
 about four and a half minutes a slice.
 Read by the scratch `read-standing.mjs`,
@@ -4973,7 +4973,7 @@ The tenth pass was killed at 16:55:44 UTC (pid 276432,
 in the repair lane at its sixteenth chunk) under the kill-and-relaunch rule.
 What it had shown before the kill:
 `FRONT MATTER entry=hakureico authority=archive` on its first reading;
-Synthetic's rolling window returned at 16:27:29,
+Synthetic's rolling window returned at 16:27:29 UTC,
 nine minutes into the pass,
 and served 186 calls after it;
 Bedrock 191 calls for 0.09 USD;
@@ -5006,19 +5006,19 @@ and every `json false start` line a voice kept where the tenth pass lost one.
 ## The eleventh pass is killed at 85 minutes; the eighteenth class; the twelfth launch, 2026-09-08, 18:21 UTC
 
 What the eleventh pass showed before it was killed.
-`FRONT MATTER entry=hakureico authority=archive` at 16:56:23.
+`FRONT MATTER entry=hakureico authority=archive` at 16:56:23 UTC.
 The pictures phase lost one GLM-5.3-Flash reading of `photo1.webp` to the 360000 ms deadline after
-3.5 M characters (17:04:29);
+3.5 M characters (17:04:29 UTC);
 five readers remained.
-Synthetic's rolling week ran dry at 17:21:15 inside the lanes phase
+Synthetic's rolling week ran dry at 17:21:15 UTC inside the lanes phase
 (`markRefused synthetic: refused us while its meter reads dry ... held out for 300000ms`,
 six calls in ten seconds,
 each routed to the next provider),
-and the translate lane opened at 17:51:13 on
+and the translate lane opened at 17:51:13 UTC on
 `synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8 slate=8 checkers=3 translators=7
 readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3`.
 E2B wrote and voted in that lane:
-`candidate 1 from google.gemma-4-e2b won weight 3 across 7 ballots` at 18:03:02,
+`candidate 1 from google.gemma-4-e2b won weight 3 across 7 ballots` at 18:03:02 UTC,
 the lane's other winners Qwen3.8-27B (twice),
 a GLM-5.3-Flash and glm-5.3 composite,
 GLM-5.3-Flash,
@@ -5031,11 +5031,11 @@ abandoned openings of 2,
 2 and 3 characters,
 and no `schema-mismatch` beside any of them:
 the seventeenth class's fix read live.
-Two transport failures retried on the first attempt (a 503 from Together at 17:31:59,
-a 502 from NextBit at 17:39:42).
+Two transport failures retried on the first attempt (a 503 from Together at 17:31:59 UTC,
+a 502 from NextBit at 17:39:42 UTC).
 
 The one lost voice,
-18:08:45 in the lane contest:
+18:08:45 UTC in the lane contest:
 `lane-contest deepseek-v4-pro-0813: schema-mismatch (content is not valid JSON: SyntaxError: Unexpected end of
 JSON input (model stopped with finish_reason=error)) raw="", voice lost`,
 on a stream served by CoreWeave that completed after 24291 ms with 315414 raw characters,
@@ -5088,7 +5088,7 @@ log beside it,
 pid 369919;
 `JUDGE SEATS phase=preparation synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8 slate=8
 checkers=3 translators=7 readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3 waited=0ms`
-and `FRONT MATTER entry=hakureico authority=archive` at 18:21:58.
+and `FRONT MATTER entry=hakureico authority=archive` at 18:21:58 UTC.
 What the page must show when it settles:
 the eleventh's checks,
 and no `schema-mismatch` line naming `finish_reason=error`;
@@ -5105,7 +5105,7 @@ against the ninth's 83.3 on a whole bench.
 Every seat line of the six phases read
 `synthetic=dry bedrock=wet hyper=dry openrouter=wet wide=7 select=7 late=8 slate=8 checkers=3 translators=7
 readers=5 writers=9 roster=9 withheld=hf:moonshotai/Kimi-K3 waited=0ms`;
-Synthetic's rolling week returned at 19:48:52 (`METERS synthetic=wet`,
+Synthetic's rolling week returned at 19:48:52 UTC (`METERS synthetic=wet`,
 1.23 percent used at the tally) and the per-chunk re-seating of the thirteenth class routed 159 calls to it
 before the end
 (gpt-oss-120b 71,
@@ -5118,7 +5118,7 @@ The page's front matter is the archive's seven lines byte for byte
 `name: Hanasaka`,
 alias `Kagurazaka Hanasaka, Hakureico`),
 the artifact carries `artifactSchemaVersion: 11` and `frontMatterAuthority: "archive"`,
-the log `FRONT MATTER entry=hakureico authority=archive` at 18:21:58,
+the log `FRONT MATTER entry=hakureico authority=archive` at 18:21:58 UTC,
 and the blank line after the front matter that the ninth page lacked is back,
 since the archive's is what ships.
 E2B in the translate lane:
@@ -5126,7 +5126,7 @@ E2B in the translate lane:
 one at weight 0.5),
 two `translate-repair: google.gemma-4-e2b revised its candidate`,
 and one win,
-in the consolidation (`translate stage: google.gemma-4-e2b won weight 6.5` at 20:02:53);
+in the consolidation (`translate stage: google.gemma-4-e2b won weight 6.5` at 20:02:53 UTC);
 the translate-stage winners across lane and consolidation were GLM-5.3-Flash 8,
 minimax-m3 5,
 Qwen3.8-27B 5,
@@ -5138,7 +5138,7 @@ E2B,
 glm-5.3 and deepseek-v4-pro-0813.
 Eight `json false start` lines
 (seven deepseek-v4-flash-0731 through OpenRouter at openings of 2 to 12 characters,
-one Synthetic gpt-oss-120b at 19:45:04),
+one Synthetic gpt-oss-120b at 19:45:04 UTC),
 no `schema-mismatch` beside any of them:
 eight voices kept.
 No line names `finish_reason=error`,
@@ -5149,7 +5149,7 @@ this pass had none),
 so the eighteenth class did not occur and its guard was not exercised live;
 it stands on its unit suite.
 The pass's one `schema-mismatch`,
-19:45:21,
+19:45:21 UTC,
 `produceConsolidations deepseek-v4-flash-0731: ... Unexpected end of JSON input (model stopped with
 finish_reason=stop) raw=""`,
 is an empty answer on a normal stop,
@@ -5306,7 +5306,7 @@ pid 393298,
 on three providers
 (`JUDGE SEATS phase=preparation synthetic=wet bedrock=wet hyper=dry openrouter=wet wide=8 select=8 late=9 slate=9
 checkers=3 translators=8 readers=6 writers=10 roster=10 withheld=none waited=0ms`)
-and `FRONT MATTER entry=yuki418330012 authority=archive` at 20:18:17.
+and `FRONT MATTER entry=yuki418330012 authority=archive` at 20:18:17 UTC.
 Watched by the filtered poller that reports only the tally,
 a stop,
 a crash,
@@ -5344,8 +5344,8 @@ Verified live:
 `declined/cheonwoomaeng.json` written and no page;
 the thirteenth `hakureico` launch (`439667ec3`,
 `~/temp/agent/hakureico13-20260908`,
-21:46 UTC) logged `ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)` under the letter's note at 21:46:19
-and reached the lanes at 21:52.
+21:46 UTC) logged `ARCHIVE ORIGINAL entry=hakureico span=0 [3966, 4561)` under the letter's note at 21:46:19 UTC
+and reached the lanes at 21:52 UTC.
 One thing `verify-published` still does:
 a runs dir holding only declines prints `NOTHING VERIFIED` and exits 2,
 since no page was published;
@@ -5362,8 +5362,8 @@ pageChanged=5 pageSilent=1 alignmentFindings=8 selection=contested ms=3862504`:
 64.4 minutes on three providers
 (`synthetic=wet bedrock=wet hyper=dry openrouter=wet wide=8 select=8 late=9 slate=9 checkers=3 translators=8
 readers=6 writers=10 roster=10 withheld=none` at the preparation;
-Synthetic refused at 20:33 and was held out for 300 s under the fourteenth class's reading,
-14 `HTTP 429` retries at 20:32 to 20:33).
+Synthetic refused at 20:33 UTC and was held out for 300 s under the fourteenth class's reading,
+14 `HTTP 429` retries at 20:32 to 20:33 UTC).
 The three checks passed:
 the front matter is the archive's byte for byte (`FRONT MATTER entry=yuki418330012 authority=archive`),
 30 `json false start` reads (26 of them deepseek-v4-flash-0731) every one kept with no `schema-mismatch` beside it,
@@ -5456,8 +5456,8 @@ so the first build's abort on a count mismatch was wrong;
 `ea07a1512` leaves that slice out of the reading,
 named,
 and reads the map off the rest.
-Under the kill-and-relaunch rule the thirteenth pass was killed at 22:04 for `1ba94c27a`,
-the fourteenth and the second `yuki418330012` (22:05) at 22:07 for `ea07a1512`,
+Under the kill-and-relaunch rule the thirteenth pass was killed at 22:04 UTC for `1ba94c27a`,
+the fourteenth and the second `yuki418330012` (22:05 UTC) at 22:07 UTC for `ea07a1512`,
 and the fifteenth `hakureico` (`~/temp/agent/hakureico15-20260908`,
 pid 461533) and the third `yuki418330012` (`~/temp/agent/yuki3-20260908`,
 pid 461634) launched at 22:08 UTC on `ea07a1512`,
@@ -5647,7 +5647,7 @@ then passed;
 full suite 975 `PASS` and 0 `FAIL`,
 oxlint and types clean.
 Under the rule the seventeenth `hakureico` was killed at 00:22 UTC,
-in consolidation since 23:46,
+in consolidation since 23:46 UTC,
 and the eighteenth `hakureico` (`~/temp/agent/hakureico18-20260908`,
 pid 528810) and the sixth `yuki418330012` (`~/temp/agent/yuki6-20260908`,
 pid 528921) launched at 00:22 UTC on `11143f681`,
@@ -5750,7 +5750,7 @@ since the tally carried the reason alone and two passes stopped with nothing in 
 Full suite 975 `PASS` and 0 `FAIL`,
 oxlint and types clean.
 Under the rule the eighteenth `hakureico` was killed at 01:34 UTC,
-in consolidation since 01:19,
+in consolidation since 01:19 UTC,
 and the nineteenth `hakureico` (`~/temp/agent/hakureico19-20260909`,
 pid 546904) and the seventh `yuki418330012` (`~/temp/agent/yuki7-20260909`,
 pid 547017) launched at 01:35 UTC on `d6db46519`,
@@ -6860,10 +6860,10 @@ not only by the maximum argument.
 
 THE PASS:
 launched 16:45 UTC on frozen `33a023445`,
-SETTLED at 18:08 after 83 minutes,
+SETTLED at 18:08 UTC after 83 minutes,
 13 slices,
 `pageChanged=9`,
-Synthetic wet at 2 percent of the week at launch and dry from 17:25 inside the translate lane,
+Synthetic wet at 2 percent of the week at launch and dry from 17:25 UTC inside the translate lane,
 Hyper dry throughout,
 Bedrock and OpenRouter wet.
 Meters:
@@ -10767,8 +10767,9 @@ which the comma keeps out.
 hulicaijia21 (frozen `7292556b7`) died silently at 01:19 UTC,
 five minutes in,
 with no line in its log.
-systemd-oomd killed the whole `app.slice/claude-code-bash` cgroup at 21:19:47 local time
-("memory pressure for …/app.slice being 86.54% > 80.00% for > 20s"),
+systemd-oomd killed the whole `app.slice/claude-code-bash` cgroup at 01:19:47 UTC
+(21:19:47 EDT in the journal,
+"memory pressure for …/app.slice being 86.54% > 80.00% for > 20s"),
 the cgroup every Bash command runs in,
 while `mise run build` ran beside the pass
 and 33 GiB of swap was already in use.
@@ -12551,7 +12552,7 @@ no abstention line.
 
 Class one hundred eighteen live:
 no `SPEND provider=synthetic model=hf:zai-org/GLM-5.3-Flash` line;
-its first streams went to Hyper at 09:44 while Synthetic still read wet,
+its first streams went to Hyper at 09:44 UTC while Synthetic still read wet,
 and 15 of 15 GLM-5.3-Flash seats were usable.
 The longest log gap is 89 s against CuspariaKLSY13's 179 s and 175 s.
 Class one hundred seventeen not exercised:
@@ -12638,7 +12639,7 @@ the page's list loosened to the archive's four blank-line gaps.
 
 Class one hundred eighteen:
 the two longest gaps in the log (179 s and 175 s,
-08:49 and 08:52) are one editor round
+08:49 and 08:52 UTC) are one editor round
 that waited 175 s in grace for GLM-5.3-Flash's 230 s cap-cut runaway on Synthetic,
 then a recovery round that waited 180 s more for nothing,
 with no other chunk in flight.
@@ -12678,9 +12679,9 @@ Jev 32 of 32;
 12 abstention lines with reasons.
 
 Class one hundred sixteen live.
-The stages ran archive block review 08:25 to 08:31,
-repair 08:31 to 08:36,
-translate 08:36:35 to 08:37:37 and consolidation 08:38 to 08:42:
+The stages ran archive block review 08:25 to 08:31 UTC,
+repair 08:31 to 08:36 UTC,
+translate 08:36:35 to 08:37:37 UTC and consolidation 08:38 to 08:42 UTC:
 the translate lane took 62 s against zheermao11's 616 and zheermao9's 77 with Hyper dry.
 One `StreamOverrunError` in the whole log against 22:
 gemma-4-26b-a4b-it on `produceTranslateSlate`,
@@ -12794,10 +12795,10 @@ the contest won a lane on nine slices and settled on neither on 12 and 13.
 
 Class one hundred sixteen,
 found on the clock.
-The stages ran archive block review 07:43 to 07:49,
-repair 07:50 to 07:55,
-translate 07:55 to 08:05 and consolidation 08:06 to 08:10,
-against zheermao9's translate lane of 77 s (03:00:38 to 03:01:55) with Hyper dry.
+The stages ran archive block review 07:43 to 07:49 UTC,
+repair 07:50 to 07:55 UTC,
+translate 07:55 to 08:05 UTC and consolidation 08:06 to 08:10 UTC,
+against zheermao9's translate lane of 77 s (03:00:38 to 03:01:55 UTC) with Hyper dry.
 Twenty-two translate streams ended on the produced volume bound (`StreamOverrunError`,
 1,024 or 1,536 characters for a picture component or the sentence introducing it),
 every one rendering a neighbouring picture's transcript into the passage:
@@ -13313,7 +13314,7 @@ Frozen `.frozen-dist-caac222a6`.
 `mikaela13` (entry `mikaela_khara`,
 frozen `457765221`,
 pid 344865) stopped INCOMPLETE at 04:33 UTC 2026-09-24,
-15 min after its 04:18 start (TALLY `ms=903894`,
+15 min after its 04:18 UTC start (TALLY `ms=903894`,
 `error=translation repair interrupted: carried-evidence-lost`),
 one attempt,
 2,093 seats,
@@ -13325,11 +13326,11 @@ on Bedrock and OpenRouter alone (Synthetic dry for the week,
 Hyper dry),
 roster 8 (`wide=6 select=7 late=7 slate=7 checkers=3 translators=7 readers=5 writers=8`).
 Stages:
-admission at 04:19:34,
-repair lane from 04:19:34,
-translate lane to 04:25,
+admission at 04:19:34 UTC,
+repair lane from 04:19:34 UTC,
+translate lane to 04:25 UTC,
 contest 24 of 34 slices differ,
-consolidation from 04:28 to 04:33;
+consolidation from 04:28 to 04:33 UTC;
 Jev 68 of 68;
 56 abstention lines with reasons;
 all 16 checker rounds heard 2 of 3,
@@ -13416,7 +13417,7 @@ Frozen `.frozen-dist-0ab0abdd8`.
 `mikaela12` (entry `mikaela_khara`,
 frozen `21ea25993`,
 pid 125750) stopped INCOMPLETE at 03:54 UTC 2026-09-24,
-15 min after its 03:38 start (TALLY `ms=905150`,
+15 min after its 03:38 UTC start (TALLY `ms=905150`,
 `error=translation repair interrupted: carried-evidence-lost`),
 one attempt,
 2,196 seats,
@@ -13427,10 +13428,10 @@ OpenRouter 95.13 to 94.69),
 on Bedrock and OpenRouter alone (Synthetic dry for the week,
 Hyper dry).
 Stages:
-repair lane from 03:39:31,
-translate lane from 03:42:38,
-contest from 03:44:28 (27 of 36 slices differ),
-consolidation 03:45:17 to 03:54;
+repair lane from 03:39:31 UTC,
+translate lane from 03:42:38 UTC,
+contest from 03:44:28 UTC (27 of 36 slices differ),
+consolidation 03:45:17 to 03:54 UTC;
 Jev 78 of 78;
 49 abstention lines with reasons.
 No page,
@@ -13549,8 +13550,8 @@ Then `yingying` or `zheermao101`.
 
 `shi_Yumiaoya18` (frozen `21ea25993`,
 pid 91959) SETTLED at 03:35 UTC 2026-09-24,
-7 min after the pass's 03:28 start (TALLY `ms=423317`;
-the launch command ran at 03:23),
+7 min after the pass's 03:28 UTC start (TALLY `ms=423317`;
+the launch command ran at 03:23 UTC),
 one attempt,
 865 seats,
 38 retry rounds,
@@ -13563,10 +13564,10 @@ Hyper dry;
 Qwen3.8-27B 99 asked 99 threw and glm-5.3 79 asked 79 threw,
 both dark by design).
 Stages:
-repair from 03:28:50,
-translate lane from 03:30:08,
-contest from 03:32:38,
-consolidation 03:32:55 to 03:35:28;
+repair from 03:28:50 UTC,
+translate lane from 03:30:08 UTC,
+contest from 03:32:38 UTC,
+consolidation 03:32:55 to 03:35:28 UTC;
 Jev 24 of 24;
 9 abstention lines with reasons.
 
@@ -13684,7 +13685,7 @@ Then `yingying` or `zheermao101`.
 `zheermao9` (entry `zheermao101`,
 frozen `85ed2881f`,
 pid 4089371) SETTLED at 03:04 UTC 2026-09-24,
-20 min after its 02:44 launch (TALLY `ms=1191927`),
+20 min after its 02:44 UTC launch (TALLY `ms=1191927`),
 one attempt,
 988 seats asked,
 759 calls,
@@ -13742,7 +13743,7 @@ the reply label and the opening quote among them.
 Class one hundred three live for the first time:
 Synthetic dried at 02:56:03 UTC eleven minutes into the repair lane,
 and five chunks starting after it logged "chunk re-seated under a hold:
-checkers=hf:Qwen/Qwen3.8-27B,gemma-4-26b-a4b-it,google.gemma-4-e2b" (02:56:16 to 02:56:34),
+checkers=hf:Qwen/Qwen3.8-27B,gemma-4-26b-a4b-it,google.gemma-4-e2b" (02:56:16 to 02:56:34 UTC),
 the dry reading keeping the unreachable Qwen seat and substituting the withheld Kimi with `google.gemma-4-e2b`.
 
 Class one hundred nine:
@@ -13821,7 +13822,7 @@ Then `mikaela_khara`.
 
 `CuspariaKLSY12` (frozen `85ed2881f`,
 pid 3947732) SETTLED at 02:42 UTC 2026-09-24,
-25 min after its 02:17 launch (TALLY `ms=1478275`),
+25 min after its 02:17 UTC launch (TALLY `ms=1478275`),
 one attempt,
 437 seats asked,
 420 calls,
@@ -13912,7 +13913,7 @@ Then `shi_Yumiaoya` or `mikaela_khara`.
 ## CuspariaKLSY11 read, 2026-09-24, 02:20 UTC: SETTLED in 5 min, class one hundred seven live on slices 1 and 3, the stand-in still carrying "took medication that night"; class one hundred eight built (the dispute note on every sheet), CuspariaKLSY12 launched
 
 `CuspariaKLSY11` (frozen `a40c28cad`) SETTLED at 01:55 UTC 2026-09-24,
-5 min after its 01:49 launch (TALLY `ms=323459`),
+5 min after its 01:49 UTC launch (TALLY `ms=323459`),
 one attempt,
 327 seats,
 13 retry rounds,
@@ -14020,7 +14021,7 @@ then `shi_Yumiaoya` or `mikaela_khara`.
 
 `yingying8` (frozen `d2e39e095`,
 pid 3077650) SETTLED at 00:31 UTC 2026-09-24,
-5 min after its 00:26 launch,
+5 min after its 00:26 UTC launch,
 one attempt,
 310 seats,
 13 retry rounds,
@@ -14147,7 +14148,7 @@ in order:
 `zheermao8` (frozen `d2e39e095`,
 pid 3041616,
 entry `zheermao101`) SETTLED at 00:23 UTC 2026-09-24,
-14 min after its 00:09 launch (TALLY `ms=831400`),
+14 min after its 00:09 UTC launch (TALLY `ms=831400`),
 one attempt,
 859 seats,
 33 retry rounds,
@@ -14264,7 +14265,7 @@ no double blank line).
 
 `CuspariaKLSY10` (frozen `d2e39e095`,
 pid 3035347) SETTLED at 00:06 UTC 2026-09-24,
-7 min after its 23:59 launch (TALLY `ms=425863`),
+7 min after its 23:59 UTC launch (TALLY `ms=425863`),
 one attempt,
 375 seats,
 12 retry rounds,
@@ -14363,7 +14364,7 @@ the email conversation as the archive).
 
 `CuspariaKLSY9` (frozen `334c02f23`,
 pid 2992337) SETTLED at 23:41 UTC,
-4 min after its 23:37 launch,
+4 min after its 23:37 UTC launch,
 one attempt,
 357 seats,
 11 retry rounds,
@@ -14457,7 +14458,7 @@ the nickname gloss).
 `zheermao7` (frozen `6361d74d0`,
 pid 2972518,
 entry `zheermao101`) SETTLED at 23:20 UTC,
-17 min after its 23:05 launch (TALLY `ms=1019223`),
+17 min after its 23:05 UTC launch (TALLY `ms=1019223`),
 one attempt,
 972 seats,
 32 retry rounds,
@@ -14466,14 +14467,14 @@ one attempt,
 0.52 USD by the meters (Bedrock 49.30 to 49.07,
 OpenRouter 96.63 to 96.37),
 on Synthetic,
-Bedrock and OpenRouter until 23:15:27 UTC and on Bedrock and OpenRouter after (Synthetic's five-hour window read 2,747 of 2,750 at launch and 2,750 of 2,750 from 23:15;
+Bedrock and OpenRouter until 23:15:27 UTC and on Bedrock and OpenRouter after (Synthetic's five-hour window read 2,747 of 2,750 at launch and 2,750 of 2,750 from 23:15 UTC;
 Hyper dry;
 glm-5.3 dark by design).
 Stages:
-archive block review from 23:08,
-lanes from 23:13,
-contest 23:18,
-consolidation 23:18 to 23:20.
+archive block review from 23:08 UTC,
+lanes from 23:13 UTC,
+contest 23:18 UTC,
+consolidation 23:18 to 23:20 UTC.
 Endpoints:
 minimax on CoreWeave 126 streams at 3.4 s,
 deepseek on Morph 122 at 3.4 s,
@@ -14531,7 +14532,7 @@ hyper dry,
 openrouter wet;
 held out for 300000ms"),
 two minutes into the repair lane.
-The repair lane's benches had been read once at the lanes boundary (23:13:36,
+The repair lane's benches had been read once at the lanes boundary (23:13:36 UTC,
 Synthetic wet:
 checkers Qwen3.8-27B,
 Kimi-K3 and gpt-oss),
@@ -14609,7 +14610,7 @@ the nickname gloss).
 
 `yingying7` (frozen `6361d74d0`,
 pid 2969122) SETTLED at 23:01 UTC,
-19 min after its 22:42 launch (TALLY `ms=1142400`) against `yingying6`'s 4,
+19 min after its 22:42 UTC launch (TALLY `ms=1142400`) against `yingying6`'s 4,
 one attempt,
 365 seats,
 1 retry round,
@@ -14622,9 +14623,9 @@ OpenRouter and Synthetic (Synthetic read wet again from the launch,
 `syntheticFiveHour=2713`;
 Hyper dry).
 Stages:
-repair 22:43 to 22:54,
-contest from 22:54,
-consolidation 22:55 to 23:01;
+repair 22:43 to 22:54 UTC,
+contest from 22:54 UTC,
+consolidation 22:55 to 23:01 UTC;
 Jev 8 of 8;
 3 abstention lines with reasons;
 terminals:
@@ -14688,7 +14689,7 @@ and for the Synthetic latency again (grace per round against `zheermao6`'s).
 
 `shi_Yumiaoya17` (frozen `6361d74d0`,
 pid 2953486) SETTLED at 22:42 UTC,
-6 min after its 22:36 launch (TALLY `ms=360484`),
+6 min after its 22:36 UTC launch (TALLY `ms=360484`),
 one attempt,
 879 seats,
 33 retry rounds,
@@ -14700,9 +14701,9 @@ on Bedrock and OpenRouter alone (Synthetic spent,
 Hyper dry;
 glm-5.3 and Qwen3.8-27B dark by design).
 Stages:
-repair from 22:36,
-contest from 22:39,
-consolidation 22:39 to 22:42;
+repair from 22:36 UTC,
+contest from 22:39 UTC,
+consolidation 22:39 to 22:42 UTC;
 Jev 22 of 22;
 16 abstention lines with reasons;
 terminals:
@@ -14774,7 +14775,7 @@ no double blank line).
 
 `shi_Yumiaoya16` (frozen `314ca4b8c`,
 pid 2942500) SETTLED at 22:29 UTC,
-6 min after its 22:26 launch (TALLY `ms=368514`),
+6 min after its 22:26 UTC launch (TALLY `ms=368514`),
 one attempt,
 880 seats,
 32 retry rounds,
@@ -14786,9 +14787,9 @@ on Bedrock and OpenRouter alone (Synthetic spent,
 Hyper dry;
 glm-5.3 and Qwen3.8-27B dark by design).
 Stages:
-repair from 22:24,
-contest from 22:26,
-consolidation 22:26 to 22:29;
+repair from 22:24 UTC,
+contest from 22:26 UTC,
+consolidation 22:26 to 22:29 UTC;
 Jev 20 of 20;
 13 abstention lines with reasons;
 terminals:
@@ -14892,7 +14893,7 @@ no double blank line).
 
 `shi_Yumiaoya15` (frozen `0f685f551`,
 pid 2923082) stopped ERROR at 22:14 UTC,
-7 min after its 22:07 launch (first attempt TALLY `ms=415307`,
+7 min after its 22:07 UTC launch (first attempt TALLY `ms=415307`,
 the second resumed from the caches and stopped again in `ms=1521`),
 two attempts,
 1,020 seats,
@@ -14905,10 +14906,10 @@ on Bedrock and OpenRouter alone (Synthetic spent,
 Hyper dry;
 glm-5.3 and Qwen3.8-27B dark by design).
 Stages:
-repair from 22:08,
-translate from 22:10,
-contest from 22:11,
-consolidation 22:12 to 22:14;
+repair from 22:08 UTC,
+translate from 22:10 UTC,
+contest from 22:11 UTC,
+consolidation 22:12 to 22:14 UTC;
 Jev 25 of 25;
 24 abstention lines with reasons;
 one unendorsed standing (16,
@@ -14984,7 +14985,7 @@ no double blank line).
 `mikaela11` (frozen `0f685f551`,
 pid 2920908,
 entry id `mikaela_khara`) SETTLED at 22:07 UTC,
-11 min after its 21:56 launch (TALLY `ms=644898`),
+11 min after its 21:56 UTC launch (TALLY `ms=644898`),
 one attempt,
 2,124 seats,
 60 retry rounds,
@@ -15041,7 +15042,7 @@ no double blank line).
 
 `hulicaijia16` (frozen `0f685f551`,
 pid 2917545) SETTLED at 21:55 UTC,
-27 min after its 21:29 launch (TALLY `ms=1596637`),
+27 min after its 21:29 UTC launch (TALLY `ms=1596637`),
 one attempt,
 4,482 seats,
 144 retry rounds,
@@ -15052,10 +15053,10 @@ OpenRouter 99.75 to 97.97),
 on Bedrock and OpenRouter alone (Synthetic spent,
 Hyper dry).
 Stages:
-repair from 21:32,
-translate from 21:45,
-contest from 21:47,
-consolidation 21:49 to 21:55,
+repair from 21:32 UTC,
+translate from 21:45 UTC,
+contest from 21:47 UTC,
+consolidation 21:49 to 21:55 UTC,
 the fastest hulicaijia run to date (37 min on `hulicaijia15`,
 68 on `hulicaijia13`).
 Endpoints:
@@ -15120,7 +15121,7 @@ no error finish).
 
 `XingZ631` (frozen `5e21134ee`,
 pid 2893880) SETTLED at 21:22 UTC,
-43 min after its 20:39 launch (TALLY `ms=2607181`),
+43 min after its 20:39 UTC launch (TALLY `ms=2607181`),
 one attempt,
 8,077 seats,
 244 retry rounds,
@@ -15132,10 +15133,10 @@ on Bedrock and OpenRouter alone (Synthetic spent,
 Hyper dry;
 glm-5.3 and Qwen3.8-27B dark by design).
 Stages:
-repair from 20:44,
-translate from 20:57,
-contest from 21:05,
-consolidation 21:08 to 21:22,
+repair from 20:44 UTC,
+translate from 20:57 UTC,
+contest from 21:05 UTC,
+consolidation 21:08 to 21:22 UTC,
 the fastest XingZ60 run to date.
 Endpoints:
 deepseek on Morph 1,194 streams at 5.1 s (4 CoreWeave fallbacks),
@@ -15239,7 +15240,7 @@ no double blank line).
 
 `XingZ630` (frozen `2c3a80370`,
 pid 2844294) SETTLED at 20:15 UTC,
-76 min after its 18:59 launch (TALLY `ms=4572808`),
+76 min after its 18:59 UTC launch (TALLY `ms=4572808`),
 one attempt,
 8,436 seats,
 326 retry rounds,
@@ -15253,10 +15254,10 @@ and served no completed stream;
 Hyper dry;
 glm-5.3 and Qwen3.8-27B dark by design).
 Stages:
-repair from 19:06,
-translate from 19:38,
-contest from 19:51,
-consolidation 19:54 to 20:15;
+repair from 19:06 UTC,
+translate from 19:38 UTC,
+contest from 19:51 UTC,
+consolidation 19:54 to 20:15 UTC;
 the repair lane took 32 min against `XingZ629`'s 16 and the translate lane 13 against 6.
 Endpoints:
 deepseek on Morph 1,221 streams at 9.2 s (3 CoreWeave fallbacks at 35.6 s),
@@ -15392,7 +15393,7 @@ beside every check of `XingZ630`.
 
 `XingZ629` (frozen `e78515f56`,
 pid 2793259) SETTLED at 18:39 UTC,
-50 min after its 17:49 launch (TALLY `ms=3007748`),
+50 min after its 17:49 UTC launch (TALLY `ms=3007748`),
 one attempt,
 8,350 seats,
 286 retry rounds,
@@ -15406,10 +15407,10 @@ glm-5.3 asked 577 and threw 577,
 Qwen3.8-27B asked 1,164 and threw 1,164,
 both Hyper-only seats dark by design).
 Stages:
-repair from 17:55,
-translate from 18:11,
-contest from 18:17,
-consolidation 18:20 to 18:39.
+repair from 17:55 UTC,
+translate from 18:11 UTC,
+contest from 18:17 UTC,
+consolidation 18:20 to 18:39 UTC.
 Endpoints:
 deepseek on Morph 1,203 streams at 7.2 s (2 CoreWeave fallbacks,
 1 Fireworks),
@@ -15557,7 +15558,7 @@ beside every check of `XingZ629`.
 
 `yingying6` (frozen `e78515f56`,
 pid 2791373) SETTLED at 17:49 UTC,
-4 min after its 17:45 launch (TALLY `ms=239557`),
+4 min after its 17:45 UTC launch (TALLY `ms=239557`),
 one attempt,
 327 seats,
 9 retry rounds,
@@ -15650,7 +15651,7 @@ Jinxin glossed once).
 
 `CuspariaKLSY8` (frozen `e78515f56`,
 pid 2788469) SETTLED at 17:44 UTC,
-10 min after its 17:34 launch (TALLY `ms=593557`),
+10 min after its 17:34 UTC launch (TALLY `ms=593557`),
 one attempt,
 383 seats,
 11 retry rounds,
@@ -15725,7 +15726,7 @@ no double blank line).
 `zheermao6` (frozen `e78515f56`,
 pid 2784441,
 entry `zheermao101`) SETTLED at 17:33 UTC,
-12 min after its 17:21 launch (TALLY `ms=726839`),
+12 min after its 17:21 UTC launch (TALLY `ms=726839`),
 one attempt,
 958 seats,
 34 retry rounds,
@@ -15811,7 +15812,7 @@ no double blank line).
 
 `yingying5` (frozen `c62ce70b3`,
 pid 2760848) SETTLED at 17:11 UTC,
-6 min after its 17:05 launch (TALLY `ms=336854`),
+6 min after its 17:05 UTC launch (TALLY `ms=336854`),
 one attempt,
 298 seats,
 11 retry rounds,
@@ -15951,7 +15952,7 @@ the email label as the archive).
 
 `shi_Yumiaoya14` (frozen `c62ce70b3`,
 pid 2758225) SETTLED at 17:05 UTC,
-9 min after its 16:56 launch,
+9 min after its 16:56 UTC launch,
 one attempt,
 880 seats,
 38 retry rounds,
@@ -16022,7 +16023,7 @@ no double blank line).
 `mikaela10` (frozen `c62ce70b3`,
 pid 2742636,
 entry id `mikaela_khara`) SETTLED at 16:55 UTC,
-15 min after its 16:40 launch,
+15 min after its 16:40 UTC launch,
 one attempt,
 2,336 seats,
 65 retry rounds,
@@ -16088,7 +16089,7 @@ no double blank line).
 `mikaela9` (frozen `b26ea1990`,
 pid 2731285,
 entry id `mikaela_khara`) SETTLED at 16:35 UTC,
-18.5 min after its 16:17 launch (TALLY `ms=1113750`),
+18.5 min after its 16:17 UTC launch (TALLY `ms=1113750`),
 one attempt,
 2,673 seats,
 135 retry rounds,
@@ -16184,7 +16185,7 @@ no error finish).
 
 `hulicaijia15` (frozen `b26ea1990`,
 pid 2723733) SETTLED at 16:15 UTC,
-37 min after its 15:38 launch,
+37 min after its 15:38 UTC launch,
 one attempt,
 4,697 seats,
 125 retry rounds,
@@ -16270,7 +16271,7 @@ no error finish).
 
 `hulicaijia14` (frozen `7295b33ab`,
 pid 2695022) INCOMPLETE at 15:36 UTC,
-22.5 min after its 15:13 launch (TALLY `ms=1352891`),
+22.5 min after its 15:13 UTC launch (TALLY `ms=1352891`),
 one attempt,
 4,111 seats,
 135 retry rounds,
@@ -16376,7 +16377,7 @@ no error finish).
 
 `XingZ628` (frozen `7295b33ab`,
 pid 2675240) SETTLED at 15:10 UTC,
-51 min after its 14:19 launch (TALLY `ms=3032284`),
+51 min after its 14:19 UTC launch (TALLY `ms=3032284`),
 one attempt,
 8,487 seats,
 256 retry rounds,
@@ -16387,10 +16388,10 @@ OpenRouter 121.90 to 117.85),
 on Bedrock and OpenRouter alone (Synthetic spent,
 Hyper dry).
 Stages:
-repair from 14:21,
-translate from 14:37,
-contest from 14:45,
-consolidation 14:48 to 15:10.
+repair from 14:21 UTC,
+translate from 14:37 UTC,
+contest from 14:45 UTC,
+consolidation 14:48 to 15:10 UTC.
 
 Class ninety-four live:
 the archive block review removed the placeholder line again (the two alert lines kept,
@@ -16451,7 +16452,7 @@ beside every check of `hulicaijia13`.
 
 `XingZ627` (frozen `9c83fb5f7`,
 pid 2629556) SETTLED at 14:09 UTC,
-56 min after its 13:13 launch (TALLY `ms=3314899`),
+56 min after its 13:13 UTC launch (TALLY `ms=3314899`),
 one attempt,
 8,948 seats,
 447 retry rounds,
@@ -16463,10 +16464,10 @@ Synthetic wet at launch (weekly 1.25 percent) and spent to 0 by the end,
 Hyper dry,
 glm-5.3 dark as on `XingZ626`.
 Stages:
-repair from 13:22,
-translate from 13:43,
-contest from 13:51,
-consolidation 13:53 to 14:09.
+repair from 13:22 UTC,
+translate from 13:43 UTC,
+contest from 13:51 UTC,
+consolidation 13:53 to 14:09 UTC.
 
 Class ninety-three on the wire.
 Every deepseek-v4.1-flash stream but four served by Morph (1,276 at 5.0 s a stream;
@@ -16567,7 +16568,7 @@ beside every check of `XingZ627`.
 
 `XingZ626` (frozen `5fd39cdcc`,
 pid 2574294) SETTLED at 12:53 UTC,
-3h30m after its 09:23 launch (TALLY `ms=12600158`),
+3h30m after its 09:23 UTC launch (TALLY `ms=12600158`),
 one attempt,
 9,277 seats,
 507 retry rounds,
@@ -16583,10 +16584,10 @@ the seat is Hyper-only since 2026-09-09,
 so a Hyper-dry day leaves it nothing,
 by design).
 Stages:
-repair from 09:32,
-translate from 10:33,
-contest from 11:19,
-consolidation 11:33 to 12:53.
+repair from 09:32 UTC,
+translate from 10:33 UTC,
+contest from 11:19 UTC,
+consolidation 11:33 to 12:53 UTC.
 
 Class ninety live:
 the bench wrote "### The Ninth:
@@ -16737,7 +16738,7 @@ beside every check of `XingZ626`.
 
 `XingZ625` (frozen `d8f847e3c`,
 pid 2506867) SETTLED at 09:12 UTC,
-6h54m after its 02:21 launch (TALLY `ms=24873175`),
+6h54m after its 02:21 UTC launch (TALLY `ms=24873175`),
 one attempt,
 8,812 seats,
 521 retry rounds,
@@ -16753,11 +16754,11 @@ glm-5.3 asked 586 and threw 310,
 Kimi-K3 asked 814 and threw 578,
 Jev 231 of 234.
 Every stage slower than `XingZ624`:
-admission 03:06 (45 min after launch against 17),
-repair lane to 05:46 (2h34m against 57 min),
-translate to 07:02 (76 min against 64),
-contest to 07:10 (9 min against 34),
-consolidation 07:10 to 09:12 (2h02m against 1h25m).
+admission 03:06 UTC (45 min after launch against 17),
+repair lane to 05:46 UTC (2h34m against 57 min),
+translate to 07:02 UTC (76 min against 64),
+contest to 07:10 UTC (9 min against 34),
+consolidation 07:10 to 09:12 UTC (2h02m against 1h25m).
 
 Class eighty-eight live.
 Two `handle-gloss-placed` lines at page assembly:
@@ -16920,7 +16921,7 @@ beside every check of `XingZ625`.
 
 `XingZ624` (frozen `da02857b1`,
 pid 2237613) SETTLED at 02:06 UTC,
-4h23m after its 21:43 launch (TALLY `ms=15774160`),
+4h23m after its 21:43 UTC launch (TALLY `ms=15774160`),
 one attempt,
 8,302 seats,
 331 retry rounds,
@@ -16933,11 +16934,11 @@ glm-5.3 dark (asked 554,
 threw 554),
 Jev 249 of 249.
 Slower than `XingZ623` at every stage on the same two providers:
-admission to 22:00,
-repair lane to 22:57 (57 min against 32),
-translate to 00:01 (64 against 52),
-contest to 00:35 (34 against 22),
-consolidation 00:41 to 02:06 (85 against 56).
+admission to 22:00 UTC,
+repair lane to 22:57 UTC (57 min against 32),
+translate to 00:01 UTC (64 against 52),
+contest to 00:35 UTC (34 against 22),
+consolidation 00:41 to 02:06 UTC (85 against 56).
 
 Class eighty-seven live.
 The bare `<TextRing text="⊕⊕⊕⊕" fontSize="1.25rem"/>` line sliced alone again (slice 88 this run);
@@ -17059,7 +17060,7 @@ beside every check of `XingZ624`.
 
 `XingZ623` (frozen `40679244d`,
 pid 2184330) ended INCOMPLETE at 21:32 UTC,
-3h01m after its 18:31 launch (TALLY `ms=10862998`),
+3h01m after its 18:31 UTC launch (TALLY `ms=10862998`),
 one attempt,
 8,163 seats,
 257 retry rounds,
@@ -17076,8 +17077,8 @@ the reading below comes from the run log and the slice cache.
 The stop:
 `TALLY ... error=slice 89 did not meet absolute naturalness floor`,
 thrown by `assertFinalNaturalnessComplete` at publish,
-after the page assembly had already run (its contributor-name-restored lines are timestamped 21:32:46,
-the TALLY 21:32:46).
+after the page assembly had already run (its contributor-name-restored lines are timestamped 21:32:46 UTC,
+the TALLY 21:32:46 UTC).
 Slice 89 this run is the bare `<TextRing text="⊕⊕⊕⊕" fontSize="1.25rem"/>` line alone
 (one mdxJsxFlowElement;
 `XingZ622` had sliced it together with the `<h3>` heading above it),
@@ -17164,11 +17165,11 @@ no repeat,
 run-off,
 archive-revision-refused or error-finish line.
 Timing as `XingZ622`:
-admission 18:50,
-repair lane 18:50 to 19:22,
-translate to 20:14,
-contest to 20:36,
-consolidation 20:36 to 21:32.
+admission 18:50 UTC,
+repair lane 18:50 to 19:22 UTC,
+translate to 20:14 UTC,
+contest to 20:36 UTC,
+consolidation 20:36 to 21:32 UTC.
 
 `XingZ624` (frozen `da02857b1`,
 pid 2237613,
@@ -17191,7 +17192,7 @@ beside every check of `XingZ622`.
 
 `yingying4` (frozen `40679244d`,
 pid 2180429) SETTLED at 18:30 UTC,
-23 minutes after its 18:07 launch (TALLY `ms=1384777`),
+23 minutes after its 18:07 UTC launch (TALLY `ms=1384777`),
 one attempt,
 326 seats,
 15 retry rounds,
@@ -17270,7 +17271,7 @@ no error finish).
 
 `yingying3` (frozen `7ad1b8ec7`,
 pid 2155878) SETTLED at 17:56 UTC,
-14 minutes after its 17:42 launch (TALLY `ms=854118`),
+14 minutes after its 17:42 UTC launch (TALLY `ms=854118`),
 one attempt,
 268 seats,
 8 retry rounds,
@@ -17355,7 +17356,7 @@ then `XingZ60` again for the handles.
 `zheermao4` (frozen `7ad1b8ec7`,
 pid 2151756,
 entry `zheermao101`) SETTLED at 17:40 UTC,
-32 minutes after its 17:08 launch (TALLY `ms=1898177`),
+32 minutes after its 17:08 UTC launch (TALLY `ms=1898177`),
 one attempt,
 902 seats,
 31 retry rounds,
@@ -17436,7 +17437,7 @@ then `XingZ60` again for the handles.
 
 `CuspariaKLSY7` (frozen `7ad1b8ec7`,
 pid 2147965) SETTLED at 17:08 UTC,
-22 minutes after its 16:46 launch (TALLY `ms=1303584`),
+22 minutes after its 16:46 UTC launch (TALLY `ms=1303584`),
 one attempt,
 405 seats,
 5 retry rounds,
@@ -17501,7 +17502,7 @@ then `XingZ60` again for the handles.
 
 `CuspariaKLSY6` (frozen `59fe52b51`,
 pid 2121546) SETTLED at 16:33 UTC,
-16 minutes after its 16:22 launch (TALLY `ms=934677`),
+16 minutes after its 16:22 UTC launch (TALLY `ms=934677`),
 one attempt,
 413 seats,
 14 retry rounds,
@@ -17629,7 +17630,7 @@ then `XingZ60` again for the handles.
 
 `hulicaijia13` (frozen `59fe52b51`,
 pid 2112448) SETTLED at 16:16 UTC,
-68 minutes after its 15:08 launch (TALLY `ms=4068612`),
+68 minutes after its 15:08 UTC launch (TALLY `ms=4068612`),
 one attempt,
 4,497 seats,
 147 retry rounds,
@@ -17698,7 +17699,7 @@ then `XingZ60` again for the handles.
 
 `hulicaijia12` (frozen `4e5cf65e0`,
 pid 2066905) SETTLED at 14:57 UTC,
-79 minutes after its 13:38 launch (TALLY `ms=4721721`),
+79 minutes after its 13:38 UTC launch (TALLY `ms=4721721`),
 one attempt,
 4,577 seats,
 149 retry rounds,
@@ -17991,12 +17992,12 @@ Qwen3.8-27B unusable on the naturalness bench.
 Meters 112.15 to 107.68 USD on Bedrock and 165.84 to 157.77 on OpenRouter,
 12.54 USD together against `XingZ620`'s 10.24.
 Phases:
-repair lane 09:44 to 10:22 (38 min against `XingZ620`'s 78),
-translate lane 10:40 to 11:28 (48 against 41),
-contest to 11:34,
-consolidation 11:34 to 13:06 (92 against 69,
+repair lane 09:44 to 10:22 UTC (38 min against `XingZ620`'s 78),
+translate lane 10:40 to 11:28 UTC (48 against 41),
+contest to 11:34 UTC,
+consolidation 11:34 to 13:06 UTC (92 against 69,
 110 contested slices at a median of 6.4 minutes a chunk against 4.0),
-page written 13:09.
+page written 13:09 UTC.
 
 ### Why the consolidation ran slower than XingZ620's
 
@@ -18150,10 +18151,10 @@ Seats asked 7,229,
 Qwen3.8-27B and glm-5.3 dark on the OpenRouter side.
 Meters 115.74 to 112.16 USD on Bedrock and 171.10 to 165.86 on OpenRouter,
 8.82 USD together.
-Repair lane from 06:12 to about 07:24,
-contest from 08:45,
-consolidation from 08:52 (113 contested slices),
-stop at 09:05 on slice 14 with the tally written at 09:14.
+Repair lane from 06:12 UTC to about 07:24 UTC,
+contest from 08:45 UTC,
+consolidation from 08:52 UTC (113 contested slices),
+stop at 09:05 UTC on slice 14 with the tally written at 09:14 UTC.
 No page was written,
 so the seven steps and three checks against `XingZ620` and the archive wait for `XingZ622`.
 
@@ -18203,10 +18204,10 @@ and the other parts write 她.
 A judge reading the count and the "whole ORIGINAL" clause resolved TA to she;
 a judge reading the TA sentence rendered it they;
 the bench never agreed and the same split ran through every pronoun slice of Part One
-(the judges' reasons at 08:57,
-08:58,
-09:01,
-09:03 and 09:05 all name one rule or the other).
+(the judges' reasons at 08:57 UTC,
+08:58 UTC,
+09:01 UTC,
+09:03 and 09:05 UTC all name one rule or the other).
 `XingZ616`,
 `619` and `620` shipped "She once said" for this paragraph,
 the same wrong choice by the settled rule,
@@ -18779,9 +18780,9 @@ launched 02:51 UTC on Bedrock and OpenRouter with Synthetic wet again at launch,
 Hyper dry)
 SETTLED at 03:33 UTC on one attempt,
 45 minutes by the artifact against `shi_Yumiaoya9`'s 28:
-repair lane 02:54 to 03:00,
-translate lane 03:00 to 03:20 (against 8 minutes on `shi_Yumiaoya9`),
-consolidation 03:20 to 03:33.
+repair lane 02:54 to 03:00 UTC,
+translate lane 03:00 to 03:20 UTC (against 8 minutes on `shi_Yumiaoya9`),
+consolidation 03:20 to 03:33 UTC.
 Seats asked 964,
 39 retry rounds,
 888 calls,
@@ -20109,11 +20110,11 @@ against "But the person who once sat beside me was gone.";
 the sample is bench variance).
 
 Time and spend:
-preparation 19:31 to 19:37,
-repair lane to 19:58,
-translate lane to 20:12,
-contest to 20:14,
-consolidation to 20:53 (39 minutes against `hulicaijia8`'s 25).
+preparation 19:31 to 19:37 UTC,
+repair lane to 19:58 UTC,
+translate lane to 20:12 UTC,
+contest to 20:14 UTC,
+consolidation to 20:53 UTC (39 minutes against `hulicaijia8`'s 25).
 3,851 calls,
 4,398 seats asked,
 92 retry rounds,
@@ -20223,7 +20224,7 @@ After it,
 ## XingZ620 read, 2026-09-21, 19:00 UTC: the queue is run through on the current build; three observations put to the owner
 
 `XingZ620` (frozen `364b83557`) SETTLED at 18:47 UTC on its first attempt:
-3h59m (14:48:09 to 18:47:48) against `XingZ619`'s 2h57m and `XingZ616`'s 2h04m,
+3h59m (14:48:09 to 18:47:48 UTC) against `XingZ619`'s 2h57m and `XingZ616`'s 2h04m,
 119 slices,
 8,990 seats,
 309 retry rounds,
@@ -20300,7 +20301,7 @@ and a tense that drifts between the archive's present and a lane's past across s
 ## yingying2 read, 2026-09-21, 14:50 UTC: clean, XingZ620 launched as the queue's last entry
 
 `yingying2` (frozen `364b83557`) SETTLED at 14:47 UTC on its first attempt:
-25 min (14:22:03 to 14:47:18) against `yingying1`'s 15,
+25 min (14:22:03 to 14:47:18 UTC) against `yingying1`'s 15,
 5 slices,
 364 seats,
 no retry round,
@@ -20346,7 +20347,7 @@ then the seven steps and the three checks against `XingZ619`.
 ## shi_Yumiaoya7 read, 2026-09-21, 14:25 UTC: the attribution once, the source footnote glossed inline under the house rule, yingying2 launched
 
 `shi_Yumiaoya7` (frozen `364b83557`) SETTLED at 14:19 UTC on its first attempt:
-62 min (13:17:23 to 14:19:54),
+62 min (13:17:23 to 14:19:54 UTC),
 18 slices,
 1,053 seats,
 2 retry rounds,
@@ -20404,7 +20405,7 @@ then the seven steps and the three checks against `yingying1`.
 ## shi_Yumiaoya6 read and class seventy-four, 2026-09-21, 13:25 UTC: a repeated line on a line-structured slice, shi_Yumiaoya7 launched
 
 `shi_Yumiaoya6` (frozen `155c6aa65`) SETTLED at 13:10 UTC on its first attempt:
-58 min (12:12:05 to 13:10:06) against `shi_Yumiaoya5`'s 40,
+58 min (12:12:05 to 13:10:06 UTC) against `shi_Yumiaoya5`'s 40,
 18 slices,
 1,051 seats,
 5 retry rounds,
@@ -20473,7 +20474,7 @@ then the seven steps and the three checks against `shi_Yumiaoya6`.
 `hulicaijia8` (frozen `155c6aa65`,
 launched 2026-09-19 23:18 UTC as the queue's next entry once `mikaela5` was read)
 SETTLED at 00:17 UTC on 2026-09-20 on its first attempt:
-59 min (23:18:57 to 00:17:39) against `hulicaijia7`'s 150,
+59 min (23:18:57 to 00:17:39 UTC) against `hulicaijia7`'s 150,
 72 slices,
 4,550 seats,
 151 retry rounds,
@@ -20530,7 +20531,7 @@ then the seven steps and the three checks against `shi_Yumiaoya5`.
 ## mikaela5 read and the abstention log, 2026-09-19, 23:20 UTC: class seventy-two on the page, the slate settled slice 28 on its first round
 
 `mikaela5` (frozen `6a9a7ce27`) SETTLED at 23:15 UTC on its first attempt:
-27 min (22:48:46 to 23:15:37),
+27 min (22:48:46 to 23:15:37 UTC),
 33 slices,
 2,118 seats,
 54 retry rounds,
@@ -20585,7 +20586,7 @@ no pass has run on it yet.
 ## mikaela4 read and class seventy-three, 2026-09-19, 22:50 UTC: the glossary reading lands in the lane, the entry stops at a run-off two judges decided, mikaela5 launched
 
 `mikaela4` (frozen `c807572ca`) stopped INCOMPLETE at 22:32 UTC:
-24 min (22:09:14 to 22:32:49),
+24 min (22:09:14 to 22:32:49 UTC),
 2,392 seats,
 64 retry rounds,
 1.17 USD by the meters
@@ -20673,7 +20674,7 @@ then the seven steps and the three checks against `mikaela3`.
 ## mikaela3 read and class seventy-two, 2026-09-19, 22:10 UTC: classes seventy and seventy-one live, 炸柜 seeded in the community glossary, mikaela4 launched
 
 `mikaela3` (frozen `cc088bc4b`) SETTLED at 22:03 UTC on its first attempt:
-34 min (21:29:38 to 22:03:31),
+34 min (21:29:38 to 22:03:31 UTC),
 33 slices,
 2,644 seats,
 129 retry rounds,
@@ -21012,11 +21013,11 @@ then the seven steps and the three checks.
 
 `TALLY XingZ60 status=SETTLED slices=120`,
 20:17 UTC,
-2h57m from the 17:20 launch
-(admission 17:39,
-translate lane 18:35 to 19:10,
-contest to 19:14,
-consolidation to 20:17),
+2h57m from the 17:20 UTC launch
+(admission 17:39 UTC,
+translate lane 18:35 to 19:10 UTC,
+contest to 19:14 UTC,
+consolidation to 20:17 UTC),
 frozen `bb4bb7556`,
 one attempt.
 Page 50,156 chars at `~/temp/agent/XingZ619/fixed/people/XingZ60/page.en.md`.
@@ -21355,11 +21356,11 @@ The first settled XingZ60 page.
 `TALLY XingZ60 status=SETTLED slices=119`,
 published at 14:50 UTC,
 2h04m from launch
-(admission 13:04,
-repair lane to 13:40 at 82 s a slice,
-translate lane to 14:03,
-lane contest 113 of 119 differ to 14:07,
-consolidation to 14:50),
+(admission 13:04 UTC,
+repair lane to 13:40 UTC at 82 s a slice,
+translate lane to 14:03 UTC,
+lane contest 113 of 119 differ to 14:07 UTC,
+consolidation to 14:50 UTC),
 against XingZ608's 2h16m to an INCOMPLETE publish.
 9.19 USD by the meters
 (Bedrock 139.52 to 135.20,
@@ -21538,7 +21539,7 @@ the repair lane 41 minutes at a mean of 91 s a slice
 XingZ608 62 s),
 the translate lane 45 minutes at 137 s,
 the lane contest 113 of 120 differ,
-consolidation from 11:40;
+consolidation from 11:40 UTC;
 the `其九：空白` slice settled on its first slate round
 (gpt-oss's proposal,
 weight 2 of 4),
@@ -21778,7 +21779,7 @@ which read every 429 as the provider's budget refusal
 and held the whole of OpenRouter out for 60 s
 (`markRefused`,
 "refused us while its meter reads wet",
-16 holds between 06:06 and 06:12).
+16 holds between 06:06 and 06:12 UTC).
 Every OpenRouter seat read unreachable for the minute,
 the editors and refiners have no seat elsewhere while Synthetic and Hyper are dry,
 and the seat wait stopped the entry at the hold's end:
@@ -22154,13 +22155,13 @@ OpenRouter 227.93 to 222.07,
 `pass-spend.mjs` logs 7,958 seats and 284 retry rounds.
 
 The run time first.
-Preparation 00:16,
-pictures 00:24,
-repair lane 00:33,
-translate lane 01:10,
-lane contest 01:41,
-consolidation 01:45,
-publish 02:31:
+Preparation 00:16 UTC,
+pictures 00:24 UTC,
+repair lane 00:33 UTC,
+translate lane 01:10 UTC,
+lane contest 01:41 UTC,
+consolidation 01:45 UTC,
+publish 02:31 UTC:
 the whole pipeline in 2h15m where XingZ607 attempt 1 reached consolidation at 5h05m and the deadline at 7h.
 deepseek-v4.1-flash was served by Morph 680 times,
 Krea 291 and Makora 4,
@@ -22392,11 +22393,11 @@ three to one with gemma-e2b again the one,
 No slice stopped.
 Where the seven hours went,
 phase by phase:
-pictures and preparation 14:40 to 14:55,
-repair lane 14:55 to 17:50,
-translate lane 17:50 to about 19:20,
-lane contests to 20:00,
-consolidation 20:00 to the deadline at 21:39 with 56 of the slices started and chunk 69 the furthest.
+pictures and preparation 14:40 to 14:55 UTC,
+repair lane 14:55 to 17:50 UTC,
+translate lane 17:50 UTC to about 19:20 UTC,
+lane contests to 20:00 UTC,
+consolidation 20:00 UTC to the deadline at 21:39 UTC with 56 of the slices started and chunk 69 the furthest.
 Slice time by lane
 (`SLICE-COST`,
 concurrent):
@@ -22503,13 +22504,13 @@ translate 168 rounds,
 676 asked,
 497 heard).
 Phases:
-preparation 11:18,
-pictures 11:25,
-lanes 11:31,
-translate lane 13:05,
-lane contest 13:56,
-consolidation 14:03,
-stop 14:22;
+preparation 11:18 UTC,
+pictures 11:25 UTC,
+lanes 11:31 UTC,
+translate lane 13:05 UTC,
+lane contest 13:56 UTC,
+consolidation 14:03 UTC,
+stop 14:22 UTC;
 Synthetic and Hyper dry throughout
 (`wide=7 select=8`),
 the fastest of the three XingZ60 consolidations to be reached.
@@ -22611,13 +22612,13 @@ translate 179 rounds,
 706 asked,
 511 heard).
 Phases:
-preparation 07:01,
-pictures 07:05,
-lanes 07:13,
-translate lane 09:47,
-lane contest 10:50,
-consolidation 10:55,
-stop 11:08;
+preparation 07:01 UTC,
+pictures 07:05 UTC,
+lanes 07:13 UTC,
+translate lane 09:47 UTC,
+lane contest 10:50 UTC,
+consolidation 10:55 UTC,
+stop 11:08 UTC;
 Synthetic dry throughout,
 Hyper wet at launch and dry by the consolidation
 (`wide=7 select=8`).
@@ -22720,12 +22721,12 @@ translate 189 rounds,
 731 asked,
 489 heard).
 Phases:
-preparation 01:56,
-lanes 02:10,
-translate lane 05:19,
-lane contest 06:33,
-consolidation 06:38,
-stop 06:47;
+preparation 01:56 UTC,
+lanes 02:10 UTC,
+translate lane 05:19 UTC,
+lane contest 06:33 UTC,
+consolidation 06:38 UTC,
+stop 06:47 UTC;
 Synthetic went dry during the lanes and the contest and consolidation ran `wide=7 select=8`.
 The stop is class fifty-four
 (the heading dated 2026-09-18 06:58 UTC).
@@ -23004,7 +23005,7 @@ so class fifty-two held on the picture that stopped XingZ601 at 0.297.
 Attempt 2 ran from 21:34 UTC,
 resumed 143 cache records,
 re-bought slice 14 with a winner,
-reached the lane contest at 00:24 and the consolidation at 00:47,
+reached the lane contest at 00:24 UTC and the consolidation at 00:47 UTC,
 and was killed by pid at 00:56 UTC under always-kill-and-relaunch once `012b9ccc3` landed,
 5 hours and 57 minutes after launch,
 three consolidation slices in.
@@ -24984,7 +24985,7 @@ six `PhotoScroll` components and archive front matter survived.
 Assembly has no withdrawals,
 trims or findings.
 
-The initial writer's source display logged five explicit breaks at 06:11:04.
+The initial writer's source display logged five explicit breaks at 06:11:04 UTC.
 The final source-only poem is slice 16,
 with five parsed `<br/>` nodes and no trailing break after attribution.
 Its six visible rows are the title,
@@ -25080,7 +25081,7 @@ oxlint,
 edited markdown and full suite pass;
 the suite ends `unit exit 0` in `~/temp/agent/source-display-verified-unit-20260910.out`.
 
-Prelaunch at 03:42 and launch meters at 03:45:
+Prelaunch at 03:42 UTC and launch meters at 03:45 UTC:
 OpenRouter 268.73 USD,
 Bedrock 185.78 USD,
 Synthetic weekly 1.9636833484848484 percent with five-hour 2750/2750,
@@ -25226,7 +25227,7 @@ oxlint,
 edited markdown and the final focused publisher/explicit-break tests pass.
 No source changes are planned while the pass runs.
 
-Prelaunch meter at 02:13 and launch meter at 02:16:
+Prelaunch meter at 02:13 UTC and launch meter at 02:16 UTC:
 OpenRouter 268.74 USD,
 Bedrock 185.78 USD,
 Synthetic weekly 2 percent with five-hour 2750/2750,
@@ -25382,7 +25383,7 @@ log `~/temp/agent/Mio10-20260910.log`.
 The terminal-only managed supervisor is `proc_abcf`.
 No source changes are planned while it runs.
 
-Prelaunch meter at 00:14 and launch meter at 00:15:
+Prelaunch meter at 00:14 UTC and launch meter at 00:15 UTC:
 OpenRouter 269.36 USD,
 Bedrock 186.05 USD,
 Synthetic weekly zero and five-hour 2750/2750,
@@ -25500,7 +25501,7 @@ not a failed translation of that poem.
 The cache's slice 17 contains the chosen complete linked poem.
 Slice 16 contains a selected malformed `PhotoScroll` with `photos=[` instead of `photos={[`,
 retained after its author's unresolved repair.
-At 22:46:27 the translate assembly logged `assembly-structure-unattributable mdx-downgraded`,
+At 22:46:27 UTC the translate assembly logged `assembly-structure-unattributable mdx-downgraded`,
 then `assembly-withdrew-every-replacement (15 slices)`.
 The valid poem went with the malformed component;
 repair had no archive text for the poem,
@@ -25766,7 +25767,7 @@ The archive block review revised it away as
 which is true of the source TEXT and false of the section,
 whose pictures carry exactly that conversation:
 the review ran at 18:25 to 18:29 UTC inside preparation,
-and the readers transcribed `photo6.webp` and `photo7.webp` at 18:30,
+and the readers transcribed `photo6.webp` and `photo7.webp` at 18:30 UTC,
 one phase later.
 The second such block (`photo3.webp`,
 "Quit my QQ groups") survived only because its section's source names the chat in prose.

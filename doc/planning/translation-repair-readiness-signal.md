@@ -835,7 +835,7 @@ The first two were killed under the rule before a page:
 the first for seating two unmeasured Gemma sizes (`645c8787b` unseats them),
 the second for the owner's order decision (`a317f4e03`,
 Bedrock ahead of Hyper).
-The third settled at 22:00 in 13.3 minutes,
+The third settled at 22:00 UTC in 13.3 minutes,
 read in [`translation-repair-openrouter-2026-09-03.md`](translation-repair-openrouter-2026-09-03.md)
 under "The first hakureico page".
 
@@ -1161,7 +1161,7 @@ and the seven components no read page has met.
 
 The eleventh pass,
 the first on the false-start reading,
-ran 85 minutes on three providers until Synthetic's rolling week ran dry at 17:21,
+ran 85 minutes on three providers until Synthetic's rolling week ran dry at 17:21 UTC,
 then on Bedrock and OpenRouter.
 Its log showed the front matter standing (`authority=archive`),
 E2B writing and winning in the translate lane,
@@ -1201,7 +1201,7 @@ and the seven components no read page has met.
 The twelfth pass,
 the first on the error-finish reading,
 settled in 108 minutes on Bedrock and OpenRouter,
-Synthetic's week returning at 19:48.
+Synthetic's week returning at 19:48 UTC.
 Its page passed the three checks:
 the front matter is the archive's byte for byte with the artifact at schema 11 and `frontMatterAuthority: "archive"`,
 E2B voted 18 times and won once across the translate stages,
@@ -1940,7 +1940,7 @@ but the same page exposes another unguarded representation of authored structure
 `Mio` must be rerun and read after the guard;
 the queue has not advanced.
 
-## What the ninth Mio launch showed (2026-09-09, 23:49 to 2026-09-10, 00:07 UTC)
+## What the ninth Mio launch showed (2026-09-09, 23:49 UTC to 2026-09-10, 00:07 UTC)
 
 The pass stopped before lanes,
 so it did not exercise class twenty-seven on a page.
