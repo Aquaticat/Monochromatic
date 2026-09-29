@@ -506,7 +506,7 @@ await describe({
             sliceIndex: 1,
             auditsArchiveText: false,
           },),
-          references: '',
+          references: { kind: 'none', },
           client: quietClient({
             asked,
             shown,
@@ -548,7 +548,7 @@ await describe({
               context: IDENTITY_CONTEXT,
             },
           },),
-          references: '',
+          references: { kind: 'none', },
           client: quietClient({
             asked: [],
             shown: shownDeclared,
@@ -565,7 +565,7 @@ await describe({
             sliceIndex: 0,
             auditsArchiveText: true,
           },),
-          references: '',
+          references: { kind: 'none', },
           client: quietClient({
             asked: [],
             shown: shownNone,
@@ -594,7 +594,7 @@ await describe({
          */
         const cited = await auditOne({
           subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
-          references: REFERENCE_CONTEXT,
+          references: { kind: 'cited', context: REFERENCE_CONTEXT, },
           client: quietClient({ asked: [], shown: shownCited, },),
         },);
         /**
@@ -606,10 +606,28 @@ await describe({
          */
         const none = await auditOne({
           subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
-          references: '',
+          references: { kind: 'none', },
           client: quietClient({ asked: [], shown: shownNone, },),
         },);
+        /**
+         What it was shown where the page links pages nobody could read.
+         */
+        const shownUnread: string[] = [];
+        /**
+         Row audited without the references its page links.
+         */
+        const unread = await auditOne({
+          subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+          references: { kind: 'unread', links: 1, },
+          client: quietClient({ asked: [], shown: shownUnread, },),
+        },);
         expect(shownCited.join('\n',),).toContain(REFERENCE_CONTEXT,);
+        expect(shownUnread.join('\n',),).not
+          .toContain('CITED REFERENCES',);
+        expect(unread.referencesKind,).toBe('unread',);
+        // SHOWN THE SAME TEXTS as the row shown none, so a repeat; only the
+        // kind says the page linked pages the audit never read.
+        expect(sameAuditedText({ left: unread, right: none, },),).toBe(true,);
         expect(shownNone.join('\n',),).not
           .toContain('CITED REFERENCES',);
         expect(cited.referencesKind,).toBe('cited',);
@@ -654,7 +672,35 @@ await describe({
         },),).toStrictEqual(buying,);
         expect(paired.map(function referencesOf(pair,) {
           return pair.references;
-        },),).toStrictEqual([REFERENCE_CONTEXT, '', REFERENCE_CONTEXT,],);
+        },),).toStrictEqual([
+          { kind: 'cited', context: REFERENCE_CONTEXT, },
+          { kind: 'none', },
+          { kind: 'cited', context: REFERENCE_CONTEXT, },
+        ],);
+      },
+    },),
+    it({
+      name: 'RECORDS A PAGE THAT LINKS PAGES AND READ AS NOTHING AS UNREAD, never as none, since a missing key '
+        + 'reads every linked page as nothing',
+      fn: async () => {
+        /**
+         Each subject beside what its page cites, every read empty.
+         */
+        const paired = await withCitedReferences({
+          subjects: [
+            subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+            subjectAt({ entryId: 'tabby', sliceIndex: 0, auditsArchiveText: false, pageSourceText: OTHER_PAGE_TEXT, },),
+          ],
+          reader: async function unkeyed() {
+            return '';
+          },
+        },);
+        expect(paired.map(function referencesOf(pair,) {
+          return pair.references;
+        },),).toStrictEqual([
+          { kind: 'unread', links: 1, },
+          { kind: 'none', },
+        ],);
       },
     },),
     it({
