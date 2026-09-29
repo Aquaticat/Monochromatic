@@ -82,6 +82,46 @@ Browser axe results from the design forms are evidence about those HTML
 forms only,
 not Android TalkBack.
 
+## Search entry options and consequential tradeoff
+
+- **Query-first accessibility focus:** start the separate Search task on
+  its editable field,
+  with Back available by reverse navigation and the result list next.
+  Pro:
+  the user can engage the requested Search without traversing the
+  retained folder picker.
+  Con:
+  Back is not the first announced control,
+  and native edit-focus/keyboard behavior needs a separate verification
+  gate before claiming this works.
+- **Back-first accessibility focus:** start on the leading Back action,
+  then move to the query and results.
+  Pro:
+  follows the archived guidance's common leading-button order and makes
+  escape discoverable.
+  Con:
+  Search entry takes another gesture before reaching the field.
+- **Reuse ordinary-player folder-first traversal unchanged:** keep D39's
+  full folder region and deck before Search.
+  Pro:
+  spatial order stays familiar.
+  Con:
+  the existing player transcript reached its deck only at recorded step
+  `45`,
+  so placing the new Search destination after those regions would
+  postpone its principal task.
+
+**Provisional ranking: query-first > Back-first > unchanged player order.**
+Query-first prioritizes the action just invoked over one additional
+escape gesture;
+Back-first preserves escape discoverability without burying the field;
+unchanged player order buries the active destination behind a long
+browser traversal.
+This is a design inference,
+not a selection or native TalkBack finding.
+The two Search-first variants may differ meaningfully in accessibility
+focus but need not change D63's independent edit-focus intent.
+
 ## Consequences requiring a design and later native verification
 
 - **Search entry:** orient the user to the just-opened destination without
