@@ -175,6 +175,22 @@ await describe({
             expect(error.message,).toContain('HTTP 429',);
           },
         },),
+        it({
+          name: 'ENDS THE EXCERPT BEFORE A CHARACTER THE LIMIT WOULD CUT IN HALF, so neither the excerpt nor '
+            + 'the message carries half an emoji (ledger B21)',
+          fn: async () => {
+            /**
+             Body whose emoji straddles the excerpt's limit.
+             */
+            const bodyText = `${'猫'.repeat(BODY_EXCERPT_LIMIT - 1,)}\u{1F431} purrs`;
+            const error = new SyntheticHttpError({
+              status: 503,
+              bodyText,
+            },);
+            expect(error.bodyExcerpt,).toBe('猫'.repeat(BODY_EXCERPT_LIMIT - 1,),);
+            expect(error.message.isWellFormed(),).toBe(true,);
+          },
+        },),
       ],
     },),
   ],
