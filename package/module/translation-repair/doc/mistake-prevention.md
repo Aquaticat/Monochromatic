@@ -846,6 +846,11 @@ and the judges choosing among its rewrites were not.
 The fixture rendered 13 of its 38 sheets naming the block without it,
 so no guard reading the rendered sheets could tell a sheet that lacks the block from one the fixture left bare,
 and the fence each new block needed and the follow-up coverage sheet went untested until a mutation batch.
+The rendering audit,
+which reads settled renderings after a run,
+was shown the declared names and never the cited references the critics and panels had read (ledger B29),
+and the rule it needed could not be the critics' copy:
+that one names a TRANSLATION the audit never shows and a category its wire rejects.
 
 The rule:
 a sheet whose rules name a block carries that block wherever its caller holds it.
@@ -856,9 +861,11 @@ the stage)
 in the same change,
 and a case drives the caller and reads the model call.
 What a writer is shown,
-the judges of its text are shown:
+the judges of its text are shown,
+and so is any instrument that audits the text afterwards:
 the names,
 the references and the bounds.
+A rule shown with a block names the texts and the categories of the sheet it sits on.
 A block a sheet encloses goes into the texts its fence is chosen against,
 and every branch of a sheet
 (a first ask,

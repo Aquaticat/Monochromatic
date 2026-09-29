@@ -8877,9 +8877,9 @@ Status:
 fixed,
 2026-09-29,
 with one gap left open and named under its own heading.
-The full suite passed on `1aa472e32`,
+The full suite passed on `2beaca02f`,
 the entry's last commit touching source,
-with no failing case among 1354 passing groups.
+with no failing case among 1355 passing groups.
 
 A silent fallback is a value the code supplies where the caller held a real one:
 a parameter default read as "none",
@@ -9086,14 +9086,74 @@ since no slice-cache file has been written since:
 `30e66051e`),
 60 of them named by an account.
 
+#### The rendering audit's cited references
+
+The settled rendering audit showed its auditors the declared names the producers had
+and not the cited references
+(`corpus-run/rendering-audit-settled-input.ts`),
+which by that module's own reasoning lets an auditor mark a reference-backed rendering wrong.
+Artifacts record no references,
+so the audit reads them the way the pass does.
+Red `45ef57b2e`,
+fix `4b02cff72`:
+
+- The audit sheet carries the references in a fenced block
+  under `CITED_REFERENCE_AUDIT_RULE`,
+  its own wording rather than the critics' copy,
+  which names a TRANSLATION the audit never shows
+  and an accuracy/addition label its wire rejects.
+  The rule names the CANDIDATE and the unsupported-addition category,
+  says a CANDIDATE leaving out what only a reference states has omitted nothing,
+  and keeps reader protection above the references.
+  A page linking nowhere gets no block,
+  so its sheet reads as audits did before.
+- Every subject carries its whole page original,
+  and `withCitedReferences` reads each bought page once
+  through `RUN_OUTSIDE_READS.references`,
+  the reader the pass uses,
+  and reads nothing when nothing is bought.
+  The reader is required,
+  so no unit test can fall back on the environment's key (ledger X19).
+- `auditOne` takes the references as a required input,
+  records `referencesKind`,
+  and keys `textIdentity` on a references digest
+  that is absent when none were shown,
+  so a row shown none keys exactly as the rows written before this,
+  all of which were shown none.
+- The attested lines are not shown,
+  a quality call recorded here and open to veto:
+  they name archive details,
+  and the CANDIDATE under audit is often a fresh rendering.
+
+Exposure,
+measured by `b29-audit-refs-exposure.ts`
+through the pass's own `citedReferenceUrlsOf`:
+34 of the 92 originals at the run pin link at least one page the reader would read,
+67 links in all;
+in the settled archive,
+`zheermao101` links one page in both run sets,
+and `Aniloviraw` links none.
+
+The mutation batch
+(`b29-audit-refs-mutants.json`,
+13 mutants over the sheet block,
+its fence and rule,
+the row's references,
+kind and digest,
+the per-page read and pairing,
+the subject and the input module)
+caught all 13.
+
+Beside it,
+the audit sheet showed DECLARED NAMES over an empty fence
+when handed an empty identity string,
+unlike the references block;
+no caller passes one.
+Red `a174c5d66`,
+fix `2beaca02f`.
+
 #### Open
 
-- The rendering audit shows its auditors the declared names the producers had
-  and not the cited references
-  (`corpus-run/rendering-audit-settled-input.ts`),
-  which by that module's own reasoning lets an auditor mark a reference-backed rendering wrong.
-  Artifacts record no references,
-  so closing it needs the reference fetch the pass makes.
 - A Han character beyond the first plane that pinyin-pro cannot read passes through the handle reading as written.
   No pinned original or stored artifact carries one
   (ledger B21's census).

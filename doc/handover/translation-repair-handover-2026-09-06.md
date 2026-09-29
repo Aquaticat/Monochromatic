@@ -135,8 +135,12 @@ this one says what changed after it.
   and `floor-inputs-stated.unit.test.ts` fails on a production call leaving a floor input or gate flag to its default unnamed;
   three names exported twice are renamed,
   and `exported-function-names.unit.test.ts` keeps them apart.
+  The rendering audit's auditors now read the cited references the producers had
+  (`4b02cff72`),
+  under a rule worded for the audit's own categories.
   B29 leaves one gap open:
-  the rendering audit's auditors are not shown the cited references the producers had.
+  a Han character beyond the first plane that pinyin-pro cannot read passes through the handle reading as written,
+  which no pinned original carries.
   D33 (references by position) is open.
   Both gaps found on the way are closed:
   `code-points.ts` and `cased-letters.ts` have unit tests of their own,
