@@ -38,16 +38,16 @@ import {
   readsImages,
   ROSTER_MODEL_IDS,
 } from '../roster-reach.ts';
-import type { ModelTransport, } from '../synthetic-transport.ts';
+import {
+  fetchTransport,
+  type ModelTransport,
+} from '../synthetic-transport.ts';
 import type { ProviderName, } from '../provider-name.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { promptPayloadStore, } from '../prompt-payload-store.ts';
 import { configureProviders, } from './run-providers.ts';
 import { promptUniqueClient, } from '../prompt-uniqueness-client.ts';
-import {
-  createRoutingClient,
-  NoProviderForModelError,
-} from '../provider-router.ts';
+import { createRoutingClient, } from '../provider-router.ts';
 import {
   RUN_SEATS,
   seatTallyClient,
@@ -440,6 +440,28 @@ export const RUN_CHECKER_ORDER: readonly RosterModelId[] = [
 const CHECKER_BENCH_WIDTH = 3;
 
 /**
+ The run's repair roster: the contract, with the refiners and the checkers'
+ self-certification a run always sets required rather than optional, so no
+ reader of the run's roster needs a fallback for either (ledger T8).
+
+ @example
+ ```ts
+ const refiners: readonly RosterModelId[] = RUN_MODELS.refinerModelIds;
+ ```
+ */
+export type RunRepairModels = RepairModels & {
+  /**
+   Naturalness refiners, which every run seats.
+   */
+  readonly refinerModelIds: readonly RosterModelId[];
+
+  /**
+   Whether a checker may confirm a repair it helped write, which every run states.
+   */
+  readonly checkerSelfCertificationPermitted: boolean;
+};
+
+/**
  Role roster for a corpus run: SEVEN of the nine critique and adjudicate (six while Synthetic is dry), THREE edit
  against each other, THREE refine the result for naturalness, and three check
  the shipped repair.
@@ -573,8 +595,13 @@ const CHECKER_BENCH_WIDTH = 3;
  set, and adds a naturalness pass at once, so a precision delta cannot be
  attributed to any single change. Record this in the round-three verdict
  rather than rediscovering it during analysis.
+
+ TYPED AS `RunRepairModels` since 2026-09-29: typed as the contract, the
+ run's refiners and self-certification read as optional, and the
+ independence check read them through fallbacks no run could reach
+ (ledger T8).
  */
-export const RUN_MODELS: RepairModels = {
+export const RUN_MODELS: RunRepairModels = {
   // THE ROSTER LESS ITS SLOWEST VOICE since 2026-09-01 in every nine-wide
   // seat; the reason sits on `WIDE_SEAT_DROPPED`.
   criticModelIds: RUN_WIDE_SEATS,
@@ -742,9 +769,9 @@ export const RUN_MODELS: RepairModels = {
 // after a live corpus pass has already paid for critics, panels, and editors.
 assertCheckerIndependence({
   editorModelIds: RUN_MODELS.editorModelIds,
-  refinerModelIds: RUN_MODELS.refinerModelIds ?? [],
+  refinerModelIds: RUN_MODELS.refinerModelIds,
   checkerModelIds: RUN_MODELS.checkerModelIds,
-  selfCertificationPermitted: RUN_MODELS.checkerSelfCertificationPermitted ?? false,
+  selfCertificationPermitted: RUN_MODELS.checkerSelfCertificationPermitted,
 },);
 assertCheckerQuorumReachable({
   checkerModelIds: RUN_MODELS.checkerModelIds,
@@ -1048,32 +1075,6 @@ export async function resolveRunsDir(): Promise<string> {
 const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
- Builds caller that should remain unreachable while unconfigured provider is dry.
- 
- @param provider - absent provider named in invariant diagnostic
- 
- @returns Text caller refusing accidental dispatch
- 
- @example
- ```ts
- const caller = unconfiguredProviderCaller({ provider: 'hyper', });
- ```
- */
-function unconfiguredProviderCaller(
-  { provider, }: { readonly provider: ProviderName; },
-): Pick<ModelCaller, 'chatText'> {
-  return {
-    // oxlint-disable-next-line require-await, typescript/require-await -- caller contract is asynchronous; refusal must occur without provider call
-    chatText: async function refuseUnconfigured(request,) {
-      throw new NoProviderForModelError({
-        modelId: request.modelId,
-        reason: `${provider} provider is not configured`,
-      },);
-    },
-  };
-}
-
-/**
  Synthetic quota shape used only when Hyper is sole configured provider.
  
  Router receives absent Synthetic as dry directly;
@@ -1134,34 +1135,40 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
  usable is named in the closing lines of every command rather than only in
  the calibration's coverage sentence.
  
- @param transport - HTTP seam handed to both providers' clients; tests inject
- one to watch where a call goes, production leaves it absent for fetch
- 
+ @param env - environment the provider keys, the Hyper pace and the Bedrock
+ ledger's place are read from: `process.env` in a run, a test's own otherwise
+
+ @param transport - HTTP every provider client calls over: `fetchTransport`
+ in a run. Both are REQUIRED (ledger M43, M68); `createRunClient` is how a
+ runner hands over the process's own
+
  @param promptPayloadDir - optional durable payload checkpoint beneath run root
- 
+
  @returns Ready client, routed across configured providers and counted per seat
- 
+
  @throws {@link RunConfigError} when every provider key variable is unset or empty
- 
+
  @example
  ```ts
- const client = createRunClient();
+ const client = runClientFrom({ env: { TRANSLATION_REPAIR_SYNTHETIC_API_KEY: 'test', }, transport, },);
  ```
  */
-export function createRunClient(
+export function runClientFrom(
   {
+    env,
     transport,
     promptPayloadDir,
   }: {
-    readonly transport?: ModelTransport;
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly transport: ModelTransport;
     readonly promptPayloadDir?: string;
-  } = {},
+  },
 ): RunClient {
   /**
    Logger pre-tagged with this function's name.
    */
   const rl = tagged({
-    tag: createRunClient.name,
+    tag: runClientFrom.name,
     l,
   },);
 
@@ -1169,25 +1176,33 @@ export function createRunClient(
    Every configured provider's client and the budget view over them.
    */
   const {
+    decisions,
+    budgets,
+    ...clients
+  } = configureProviders({
+    env,
+    transport,
+  },);
+  /**
+   Each configured provider's client, absent where its key is unset.
+   */
+  const {
     synthetic,
     hyper,
     bedrock,
     openrouter,
-    decisions,
-    budgets,
-  } = configureProviders((transport === undefined) ? {} : { transport, },);
+  } = clients;
 
   /**
    Routed client with stable compatibility quota surface.
    */
   const routed: SyntheticClient = {
     ...createRoutingClient({
-      callers: {
-        synthetic: synthetic ?? unconfiguredProviderCaller({ provider: 'synthetic', },),
-        hyper: hyper ?? unconfiguredProviderCaller({ provider: 'hyper', },),
-        bedrock: bedrock ?? unconfiguredProviderCaller({ provider: 'bedrock', },),
-        openrouter: openrouter ?? unconfiguredProviderCaller({ provider: 'openrouter', },),
-      },
+      // THE CONFIGURED CLIENTS AND NO OTHERS: a provider with no key has no
+      // caller, reads dry, and is never routed to (ledger T8). A stand-in
+      // caller refusing by name stood here for each absent provider until
+      // 2026-09-29, and no call could reach one.
+      callers: clients,
       budgets,
       // Hyper paces its calls to the account's hourly limit; while that
       // window is full, a model another provider serves goes there instead
@@ -1231,6 +1246,32 @@ export function createRunClient(
     providerDryness: budgets.read,
     providerHolds: budgets.holds,
   };
+}
+
+/**
+ The run client a runner calls over: the process's environment and the live
+ transport, handed to `runClientFrom`. The one place those two are named for
+ every runner, so no library function or test reaches them by default.
+
+ @param options - payload checkpoint, when the runner keeps one
+
+ @returns Ready client, routed across configured providers and counted per seat
+
+ @throws {@link RunConfigError} when every provider key variable is unset or empty
+
+ @example
+ ```ts
+ const client = createRunClient();
+ ```
+ */
+export function createRunClient(
+  options: { readonly promptPayloadDir?: string; } = {},
+): RunClient {
+  return runClientFrom({
+    ...options,
+    env: process.env,
+    transport: fetchTransport,
+  },);
 }
 
 //endregion Corpus-run configuration

@@ -37,7 +37,7 @@ import { RunConfigError, } from './run-config-error.ts';
  
  @example
  ```ts
- const { budgets, } = configureProviders({},);
+ const { budgets, } = configureProviders({ env: process.env, transport: fetchTransport, },);
  ```
  */
 export type ConfiguredProviders = {
@@ -75,46 +75,50 @@ export type ConfiguredProviders = {
 
 /**
  Builds every configured provider's client and the budget view over them.
- 
- @param transport - HTTP seam handed to every client; tests inject one
- 
+
+ @param env - environment the keys, the Hyper pace and the Bedrock ledger's
+ place are read from: `process.env` in a run, a test's own otherwise
+
+ @param transport - HTTP every client calls over: `fetchTransport` in a run.
+ Both are REQUIRED (ledger M43, M68): a test that took the process's
+ environment would build clients on the keys the suite inherits and a
+ Bedrock client over the real spend ledger
+
  @returns Clients present per key, plus the budgets
- 
+
  @throws {@link RunConfigError} when every provider key variable is unset or empty
- 
+
  @example
  ```ts
- const providers = configureProviders({},);
+ const providers = configureProviders({ env: process.env, transport: fetchTransport, },);
  ```
  */
 export function configureProviders(
-  { transport, }: { readonly transport?: ModelTransport; } = {},
+  {
+    env,
+    transport,
+  }: {
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly transport: ModelTransport;
+  },
 ): ConfiguredProviders {
   /**
-   Synthetic API key, resolved by name from the mise-injected env.
+   Synthetic API key, resolved by name from the environment handed over.
    */
-  const apiKey = process.env
-    .TRANSLATION_REPAIR_SYNTHETIC_API_KEY
-    ?? '';
+  const apiKey = env.TRANSLATION_REPAIR_SYNTHETIC_API_KEY ?? '';
   /**
    Second provider key,
    independently optional because either provider may run alone.
    */
-  const hyperKey = process.env
-    .TRANSLATION_REPAIR_CHARM_HYPER_API_KEY
-    ?? '';
+  const hyperKey = env.TRANSLATION_REPAIR_CHARM_HYPER_API_KEY ?? '';
   /**
    Third provider key, the paid fallback, optional for the same reason.
    */
-  const openRouterKey = process.env
-    .TRANSLATION_REPAIR_OPENROUTER_API_KEY
-    ?? '';
+  const openRouterKey = env.TRANSLATION_REPAIR_OPENROUTER_API_KEY ?? '';
   /**
    Fourth provider key, the prepaid per-token provider, optional likewise.
    */
-  const bedrockKey = process.env
-    .TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY
-    ?? '';
+  const bedrockKey = env.TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY ?? '';
   /**
    Whether no provider at all is configured, which nothing can run on.
    */
@@ -130,21 +134,13 @@ export function configureProviders(
   }
 
   /**
-   Transport handed to configured clients,
-   absent when production's fetch is meant.
-   */
-  const seam = (transport === undefined)
-    ? {}
-    : { transport, };
-
-  /**
    First provider client when configured.
    */
   const synthetic = (apiKey === '')
     ? undefined
     : createSyntheticClient({
       apiKey,
-      ...seam,
+      transport,
     },);
 
   /**
@@ -154,8 +150,8 @@ export function configureProviders(
     ? undefined
     : createHyperClient({
       apiKey: hyperKey,
-      requestsPerHour: hyperRequestsPerHour({ env: process.env, },),
-      ...seam,
+      requestsPerHour: hyperRequestsPerHour({ env, },),
+      transport,
     },);
 
   /**
@@ -165,7 +161,7 @@ export function configureProviders(
     ? undefined
     : createOpenRouterClient({
       apiKey: openRouterKey,
-      ...seam,
+      transport,
     },);
 
   /**
@@ -176,7 +172,7 @@ export function configureProviders(
     ? undefined
     : createDecisionsClient({
       apiKey: openRouterKey,
-      ...seam,
+      transport,
     },);
 
   /**
@@ -187,8 +183,8 @@ export function configureProviders(
     ? undefined
     : createBedrockClient({
       apiKey: bedrockKey,
-      ledger: bedrockLedgerFromEnv({ env: process.env, },),
-      ...seam,
+      ledger: bedrockLedgerFromEnv({ env, },),
+      transport,
     },);
 
   /**

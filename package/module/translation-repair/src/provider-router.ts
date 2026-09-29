@@ -1,4 +1,5 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { contextRoot, } from './log-context.ts';
@@ -140,10 +141,43 @@ function reachFor(
 }
 
 /**
+ Each configured provider's text call. A provider with no key has none: its
+ meter reads dry (`UNCONFIGURED_METER`), so no route names it.
+
+ @example
+ ```ts
+ const callers: ProviderCallers = { synthetic, hyper, };
+ ```
+ */
+export type ProviderCallers = {
+  /**
+   First provider's text call, when its key is set.
+   */
+  readonly synthetic?: Pick<ModelCaller, 'chatText'>;
+
+  /**
+   Second provider's text call, when its key is set.
+   */
+  readonly hyper?: Pick<ModelCaller, 'chatText'>;
+
+  /**
+   Fourth provider's text call, when its key is set.
+   */
+  readonly bedrock?: Pick<ModelCaller, 'chatText'>;
+
+  /**
+   Third provider's text call, when its key is set.
+   */
+  readonly openrouter?: Pick<ModelCaller, 'chatText'>;
+};
+
+/**
  Builds the client that routes each call to whichever provider can serve it.
  
- @param callers - each provider's text call, which is all this delegates
- 
+ @param callers - each configured provider's text call, which is all this
+ delegates; a provider with no caller has no key, its meter reads dry
+ (`UNCONFIGURED_METER`), and the route never picks it
+
  @param budgets - shared budget view every call is routed by
  
  @param slotLimits - concurrent calls each limiting provider's client grants
@@ -183,7 +217,7 @@ export function createRoutingClient(
     now = Date.now,
     paces = {},
   }: {
-    readonly callers: ProviderRecord<Pick<ModelCaller, 'chatText'>>;
+    readonly callers: ProviderCallers;
     readonly budgets: ProviderBudgets;
     readonly slotLimits?: SlotLimits;
     readonly holdPollMs?: number;
@@ -367,9 +401,11 @@ export function createRoutingClient(
     void slot;
 
     /**
-     The provider's own client, which is all this delegates to.
+     The provider's own client, which is all this delegates to. Present for
+     every provider a route can name: one with no caller has no key, reads
+     dry, and is never chosen (ledger T8).
      */
-    const caller = callers[provider];
+    const caller = nonNullishOrThrow(callers[provider],);
     return await caller.chatText(request,);
   }
 

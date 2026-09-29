@@ -2799,7 +2799,28 @@ and dropped every other failure without a word;
 the rethrow is gone,
 and the failure is logged before the arm is refused as `meter unavailable`.
 A census of the three test files against the format 2 baseline (`census-5MbbbV`) reads the six stretches of the two unedited sources as ran,
-and loads the edited `required-providers.ts` with no stretch left.
+and loads the edited `required-providers.ts` with no stretch left
+(`4138c5ade`).
+
+The seventh batch closed `run-config.ts` with X23.
+Its baseline stretches were the checker-independence call's fallbacks for the run's refiners and self-certification,
+which `RUN_MODELS` always sets
+(it is now typed `RunRepairModels`,
+the contract with both required,
+and the fallbacks are gone);
+the stand-in caller for an absent provider,
+removed as unreachable;
+the exhausted meter answered when the first provider has no key;
+the Bedrock and OpenRouter arms and the decisions client no case had built without the suite's keys;
+and the payload store.
+New cases build on Hyper alone and read the exhausted meter,
+build on all four stand-in keys and read Bedrock wet under its credit and dry at none,
+refuse a seat whose only provider has no key without asking anyone,
+and replay a prompt from a payload directory in a second client without asking.
+A fresh format 2 census of `run-config.unit.test.ts` and `provider-router.unit.test.ts` (`census-IHg9So`) loads `run-config.ts` and `run-providers.ts` with no stretch left;
+`provider-router.ts` keeps the baseline's lines 506 to 509 (now 542 to 545),
+left to the batch of anonymous callbacks and library stretches,
+beside lines the router's other test files run.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
@@ -7241,6 +7262,51 @@ keeping comments,
 counting block formulas only,
 and the floor unwired) were each caught,
 the comment mutant only after M56's fixture was corrected.
+
+### X23: the run client and the provider gate read the process's keys by default
+
+Status:
+fixed 2026-09-29 for the provider gate (`4138c5ade`) and the run client;
+the provider clients' own transport defaults are open.
+`configureProviders` read the four provider keys,
+the Hyper pace and the Bedrock ledger's place from `process.env`,
+and `createRunClient` and `assertRequiredProvidersReady` took an optional transport defaulting to the live one.
+`run-config.unit.test.ts` wrote one or two keys into `process.env` and built the client on the rest,
+so every one of its client cases ran on the OpenRouter and Bedrock keys the suite inherits from `mise`
+and the real Bedrock ledger's path;
+its refusal cases had to clear each new key by hand,
+and its own comments record two landings,
+on 2026-09-03 and 2026-09-07,
+that turned four of them into builds.
+The format 2 baseline shows it:
+of the four unconfigured-provider arms in `createRunClient`,
+the Bedrock and OpenRouter ones never ran in the whole suite (`census-qilSwP`).
+The wiring cases hand over a transport,
+so none reached a provider;
+of the 189,941 lines in the live Bedrock ledger,
+none has a prompt under 200 tokens,
+the size of a fixture's message
+(`x23-ledger-tiny.mjs` in the audit's scratch folder,
+read 2026-09-29).
+`configureProviders` now requires `env` and `transport`;
+`runClientFrom` builds the run client over both,
+and `createRunClient`,
+which every runner calls,
+hands it `process.env` and `fetchTransport`.
+The client cases build on environments they hand over,
+the Bedrock one over a ledger in a throwaway directory,
+and the one case of `createRunClient` clears every key and expects the refusal.
+The stand-in caller that refused by name for each absent provider went with it:
+an absent provider's meter is `UNCONFIGURED_METER`,
+which reads dry (`provider-meters.ts`),
+and the route never picks a dry provider (`routeProviderFor` in `budget-routing.ts`),
+so no call could reach one;
+the router now takes only the configured callers and asserts one is present where it calls.
+Prevention is M43's:
+a builder that reads a key,
+a cache or a transport takes it as a required parameter,
+and the process's own is named once,
+in the function runners call.
 
 ## Recurring code families
 

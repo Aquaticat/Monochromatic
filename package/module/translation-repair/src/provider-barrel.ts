@@ -33,6 +33,7 @@ export { isSuccessStatus, } from './http-success.ts';
 export {
   createRoutingClient,
   NoProviderForModelError,
+  type ProviderCallers,
 } from './provider-router.ts';
 export { refusingCulledSeats, } from './culled-seat-guard.ts';
 export {

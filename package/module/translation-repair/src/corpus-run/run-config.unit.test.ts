@@ -16,7 +16,13 @@
  The override is injected as a disposable so the variable is restored however
  a case ends, following the pattern in
  `package/pi-plugin/morph-compact/src/api-key.unit.test.ts`.
- 
+
+ The run client's cases build it with `runClientFrom` on an environment and
+ a transport each case hands over (ledger M43, M68), so no case builds a
+ client on a key the suite inherits or over the real Bedrock ledger; the one
+ case of `createRunClient`, which reads the process's own, clears every key
+ first and expects the refusal.
+
  @module
  */
 
@@ -26,16 +32,23 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import {
+  mkdtemp,
+  rm,
+} from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  BEDROCK_CREDIT_USD_VAR,
+  BEDROCK_LEDGER_PATH_VAR,
   createRunClient,
   HYPER_MESSAGES_URL,
   NoProviderForModelError,
   OWNER_CULLED,
   readHeadSha,
   resolveRunsDir,
+  runClientFrom,
   RUN_SEATS,
   RunConfigError,
   SEAT_HYPER_VISION,
@@ -199,7 +212,7 @@ await describe({
 
 /**
  Environment variable carrying the Synthetic API key.
- 
+
  Only its NAME appears in this file. No case asserts on the value, prints it,
  or compares against it, so a failure message can never carry a real key from
  a developer's environment into a log.
@@ -207,213 +220,102 @@ await describe({
 const API_KEY_VAR = 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY';
 
 /**
- Sets the API key for the life of a scope and restores it on exit.
- 
- @param value - stand-in key; the empty string is meaningful here
- 
- @returns Disposable restoring the previous value, including its absence
- 
- @example
- ```ts
- using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
- ```
- */
-function withApiKey({ value, }: { readonly value: string; },): Disposable {
-  /**
-   Value before this scope; absent means the variable was unset.
-   */
-  const original = process.env[API_KEY_VAR];
-  process.env[API_KEY_VAR] = value;
-  return {
-    [Symbol.dispose](): void {
-      if (original === undefined)
-        Reflect.deleteProperty(process.env, API_KEY_VAR,);
-      else
-        process.env[API_KEY_VAR] = original;
-    },
-  };
-}
-
-/**
- Environment variable carrying the second provider's API key.
- 
- Only its NAME appears in this file, for the same reason as
- `API_KEY_VAR`.
+ Environment variable carrying the second provider's API key, named only.
  */
 const HYPER_KEY_VAR = 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY';
 
 /**
- Sets the second provider's key for the life of a scope, or removes it.
- 
- @param value - stand-in key; the empty string removes the variable
- 
- @returns Disposable restoring the previous value, including its absence
- 
- @example
- ```ts
- using _second = withHyperKey({ value: '', },);
- ```
- */
-function withHyperKey({ value, }: { readonly value: string; },): Disposable {
-  /**
-   Value before this scope; absent means the variable was unset.
-   */
-  const original = process.env[HYPER_KEY_VAR];
-
-  if (value === '')
-    Reflect.deleteProperty(process.env, HYPER_KEY_VAR,);
-  else
-    process.env[HYPER_KEY_VAR] = value;
-  return {
-    [Symbol.dispose](): void {
-      if (original === undefined)
-        Reflect.deleteProperty(process.env, HYPER_KEY_VAR,);
-      else
-        process.env[HYPER_KEY_VAR] = original;
-    },
-  };
-}
-
-/**
- Environment variable carrying the third provider's API key.
- 
- Only its NAME appears in this file, for the same reason as
- `API_KEY_VAR`. THE REFUSAL CASES MUST CLEAR IT TOO: a worktree whose
- secrets file carries the third key injects it into every `mise run`, and
- the day that key landed (2026-09-03) four refusal cases that cleared only
- the first two keys built a client instead of refusing.
+ Environment variable carrying the third provider's API key, named only.
  */
 const OPENROUTER_KEY_VAR = 'TRANSLATION_REPAIR_OPENROUTER_API_KEY';
 
 /**
- Sets the third provider's key for the life of a scope, or removes it.
- 
- @param value - stand-in key; the empty string removes the variable
- 
- @returns Disposable restoring the previous value, including its absence
- 
- @example
- ```ts
- using _third = withOpenRouterKey({ value: '', },);
- ```
- */
-function withOpenRouterKey({ value, }: { readonly value: string; },): Disposable {
-  /**
-   Value before this scope; absent means the variable was unset.
-   */
-  const original = process.env[OPENROUTER_KEY_VAR];
-
-  if (value === '')
-    Reflect.deleteProperty(process.env, OPENROUTER_KEY_VAR,);
-  else
-    process.env[OPENROUTER_KEY_VAR] = value;
-  return {
-    [Symbol.dispose](): void {
-      if (original === undefined)
-        Reflect.deleteProperty(process.env, OPENROUTER_KEY_VAR,);
-      else
-        process.env[OPENROUTER_KEY_VAR] = original;
-    },
-  };
-}
-
-/**
- Environment variable carrying the fourth provider's API key.
- 
- Only its NAME appears in this file, for the same reason as
- `API_KEY_VAR`. THE REFUSAL CASES MUST CLEAR IT TOO, as the third: the day
- this key landed (2026-09-07) the same four refusal cases built a client in
- the worktree whose secrets file carries it.
+ Environment variable carrying the fourth provider's API key, named only.
  */
 const BEDROCK_KEY_VAR = 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY';
 
 /**
- Sets the fourth provider's key for the life of a scope, or removes it.
- 
- @param value - stand-in key; the empty string removes the variable
- 
- @returns Disposable restoring the previous value, including its absence
- 
- @example
- ```ts
- using _fourth = withBedrockKey({ value: '', },);
- ```
+ Every provider key variable.
  */
-function withBedrockKey({ value, }: { readonly value: string; },): Disposable {
-  /**
-   Value before this scope; absent means the variable was unset.
-   */
-  const original = process.env[BEDROCK_KEY_VAR];
+const PROVIDER_KEY_VARS = [
+  API_KEY_VAR,
+  HYPER_KEY_VAR,
+  OPENROUTER_KEY_VAR,
+  BEDROCK_KEY_VAR,
+] as const;
 
-  if (value === '')
-    Reflect.deleteProperty(process.env, BEDROCK_KEY_VAR,);
-  else
-    process.env[BEDROCK_KEY_VAR] = value;
-  return {
-    [Symbol.dispose](): void {
-      if (original === undefined)
-        Reflect.deleteProperty(process.env, BEDROCK_KEY_VAR,);
-      else
-        process.env[BEDROCK_KEY_VAR] = original;
-    },
-  };
+/**
+ Stand-in keys for the first two providers and nothing else.
+
+ EVERY CLIENT HERE IS BUILT ON AN ENVIRONMENT THE CASE HANDS OVER (ledger
+ M43, M68). Until 2026-09-29 these cases wrote one or two keys into
+ `process.env` and built the client on the rest of it, so every case ran on
+ the third and fourth keys the suite inherits from `mise` and the real
+ Bedrock ledger's path; the refusal cases had to clear each new key by hand,
+ and two landings (2026-09-03, 2026-09-07) turned four of them into builds
+ until they did.
+ */
+const TWO_KEYS = {
+  [API_KEY_VAR]: 'whiskers-not-a-real-key',
+  [HYPER_KEY_VAR]: 'mittens-not-a-real-key',
+};
+
+/**
+ Transport for cases that build a client and ask nothing.
+
+ @returns Never
+
+ @throws Error always
+ */
+async function unaskedTransport(): Promise<{ readonly status: number; readonly bodyText: string; }> {
+  throw new Error('a case that only builds a client asked a provider',);
 }
 
 /**
- Removes the API key for the life of a scope and restores it on exit.
- 
- @returns Disposable restoring the previous value
- 
+ Clears every provider key from the process for the life of a scope and
+ restores each on exit, for the one case that asks what `createRunClient`
+ reads.
+
+ @returns Disposable restoring every key the process held
+
  @example
  ```ts
- using _unset = withoutApiKey();
+ using _cleared = withoutProviderKeys();
  ```
  */
-function withoutApiKey(): Disposable {
+function withoutProviderKeys(): Disposable {
   /**
-   Value before this scope; absent means the variable was already unset.
+   Each key the process held, by variable.
    */
-  const original = process.env[API_KEY_VAR];
-  Reflect.deleteProperty(process.env, API_KEY_VAR,);
+  const held = new Map<string, string>();
+  for (const name of PROVIDER_KEY_VARS) {
+    /**
+     Value the variable holds now, if any.
+     */
+    const value = process.env[name];
+    if (value !== undefined)
+      held.set(name, value,);
+    Reflect.deleteProperty(process.env, name,);
+  }
   return {
     [Symbol.dispose](): void {
-      if (original !== undefined)
-        process.env[API_KEY_VAR] = original;
+      for (const [name, value,] of held)
+        process.env[name] = value;
     },
   };
 }
 
 await describe({
-  name: createRunClient.name,
+  name: runClientFrom.name,
   children: [
     it({
-      name: 'builds a client when both keys are injected',
+      name: 'builds a client with the chat and meter surface from the keys handed over, so every existing caller '
+        + 'and the bench recorder are untouched by routing',
       fn: async () => {
-        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
-        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
-
         /**
          Client built from the stand-in keys.
          */
-        const client = createRunClient();
-
-        expect(typeof client.chatJson,).toBe('function',);
-        expect(typeof client.chatText,).toBe('function',);
-        expect(typeof client.quotas,).toBe('function',);
-      },
-    },),
-
-    it({
-      name: 'keeps the same surface when the second provider is keyed too, so '
-        + 'every existing caller and the bench recorder are untouched by routing',
-      fn: async () => {
-        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
-        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
-
-        /**
-         Client built over both providers.
-         */
-        const client = createRunClient();
+        const client = runClientFrom({ env: TWO_KEYS, transport: unaskedTransport, },);
 
         // `quotas` is the first provider's meter and nothing else; the routing
         // client does not offer one, and this wiring layer supplies it.
@@ -426,106 +328,152 @@ await describe({
     it({
       name: 'BUILDS with only Synthetic configured because one wet provider is normal mode',
       fn: async () => {
-        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
-        using _second = withHyperKey({ value: '', },);
-        const client = createRunClient();
+        const client = runClientFrom({
+          env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', },
+          transport: unaskedTransport,
+        },);
         expect(typeof client.chatText,).toBe('function',);
       },
     },),
 
     it({
-      name: 'BUILDS with only Hyper configured because no provider family is mandatory',
+      name: 'BUILDS with only Hyper configured because no provider family is mandatory, and answers the '
+        + 'first provider\'s meter as exhausted rather than asking anyone (ledger T8)',
       fn: async () => {
-        using _unset = withoutApiKey();
-        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
-        const client = createRunClient();
-        expect(typeof client.chatText,).toBe('function',);
+        const client = runClientFrom({
+          env: { [HYPER_KEY_VAR]: 'mittens-not-a-real-key', },
+          transport: unaskedTransport,
+        },);
+        expect(await client.quotas({ signal: new AbortController().signal, },),).toEqual({
+          fiveHour: {
+            remaining: 0,
+            max: 0,
+            limited: true,
+            nextTickAt: '',
+          },
+          weekly: {
+            percentRemaining: 0,
+            nextRegenAt: '',
+          },
+        },);
       },
     },),
 
     it({
-      name: 'refuses as a STATED refusal, so the CLI boundary repeats the '
-        + 'variable name and exits 6 instead of printing a fault with frames: '
-        + 'the message names a variable and a fix, never content',
+      name: 'BUILDS ON EVERY KEY, the Bedrock client reading the ledger and credit the handed environment names, '
+        + 'wet under its credit and dry at none, while the meters it cannot read stay spendable (ledger T8)',
       fn: async () => {
-        using _unset = withoutApiKey();
-        using _second = withHyperKey({ value: '', },);
-        using _third = withOpenRouterKey({ value: '', },);
-        using _fourth = withBedrockKey({ value: '', },);
-
         /**
-         What buildWithoutKey raised, read for the marker the boundary checks.
+         Directory holding this case's empty ledger.
          */
-        const refusalReadForItsMarker = caught(function buildWithoutKey() {
-          createRunClient();
-        },);
+        const dir = await mkdtemp(join(tmpdir(), 'run-client-ledger-',),);
+        await using _cleanup = {
+          [Symbol.asyncDispose]: async function removeLedger(): Promise<void> {
+            await rm(dir, { recursive: true, force: true, },);
+          },
+        };
+        /**
+         What each provider's meter read as, on a client keyed for all four.
 
-        expect(refusalReadForItsMarker,).toBeInstanceOf(StatedRefusalError,);
-        expect((refusalReadForItsMarker as StatedRefusalError).messageNamesOnly,).toBe(true,);
+         @param creditUsd - Bedrock credit the environment grants
+
+         @returns Dryness per provider
+         */
+        async function drynessAt(creditUsd: string,): Promise<unknown> {
+          return await runClientFrom({
+            env: {
+              ...TWO_KEYS,
+              [OPENROUTER_KEY_VAR]: 'tabby-not-a-real-key',
+              [BEDROCK_KEY_VAR]: 'calico-not-a-real-key',
+              [BEDROCK_LEDGER_PATH_VAR]: join(dir, 'bedrock-spend.jsonl',),
+              [BEDROCK_CREDIT_USD_VAR]: creditUsd,
+            },
+            transport: async function refuseEveryMeter() {
+              return { status: 400, bodyText: '{}', };
+            },
+          },).providerDryness({ signal: new AbortController().signal, },);
+        }
+        expect(await drynessAt('40',),).toEqual({
+          synthetic: false,
+          hyper: false,
+          bedrock: false,
+          openrouter: false,
+        },);
+        expect(await drynessAt('0',),).toEqual({
+          synthetic: false,
+          hyper: false,
+          bedrock: true,
+          openrouter: false,
+        },);
       },
     },),
 
     it({
-      name: 'REFUSES to build client when no provider is configured',
+      name: 'refuses with no key at all as a STATED refusal, so the CLI boundary repeats the variable name and '
+        + 'exits 6 instead of printing a fault with frames: a RunConfigError naming the variable and mise, '
+        + 'never content',
       fn: async () => {
-        using _unset = withoutApiKey();
-        using _second = withHyperKey({ value: '', },);
-        using _third = withOpenRouterKey({ value: '', },);
-        using _fourth = withBedrockKey({ value: '', },);
-
         /**
-         What buildWithoutKey raised, read for its class as well as its wording.
+         What building with no key raised, read for its marker, class and wording.
          */
-        const refusalOfBuildingWithNoKeyAtAll = caught(function buildWithoutKey() {
-          createRunClient();
+        const refusal = caught(function buildWithoutKey() {
+          runClientFrom({ env: {}, transport: unaskedTransport, },);
         },);
 
-        expect(refusalOfBuildingWithNoKeyAtAll,).toBeInstanceOf(RunConfigError,);
-        expect((refusalOfBuildingWithNoKeyAtAll as Error).message,).toContain(API_KEY_VAR,);
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as StatedRefusalError).messageNamesOnly,).toBe(true,);
+        expect(refusal,).toBeInstanceOf(RunConfigError,);
+        expect((refusal as Error).message,).toContain(API_KEY_VAR,);
+        expect((refusal as Error).message,).toContain('mise',);
       },
     },),
 
     it({
-      name: 'REFUSES when every provider key is empty',
+      name: 'REFUSES when every provider key is empty, since an exported empty variable is no key',
       fn: async () => {
-        using _empty = withApiKey({ value: '', },);
-        using _second = withHyperKey({ value: '', },);
-        using _third = withOpenRouterKey({ value: '', },);
-        using _fourth = withBedrockKey({ value: '', },);
-
         /**
-         What buildWithEmptyKey raised, read for its class as well as its wording.
+         What building with four empty keys raised.
          */
-        const refusalOfBuildingWithAnEmptyKey = caught(function buildWithEmptyKey() {
-          createRunClient();
+        const refusal = caught(function buildWithEmptyKeys() {
+          runClientFrom({
+            env: Object.fromEntries(PROVIDER_KEY_VARS.map(function empty(name,) {
+              return [name, '',];
+            },),),
+            transport: unaskedTransport,
+          },);
         },);
 
-        expect(refusalOfBuildingWithAnEmptyKey,).toBeInstanceOf(RunConfigError,);
-        expect((refusalOfBuildingWithAnEmptyKey as Error).message,).toContain(API_KEY_VAR,);
-      },
-    },),
-
-    it({
-      name: 'names mise in total-configuration failure so operator learns fix',
-      fn: async () => {
-        using _unset = withoutApiKey();
-        using _second = withHyperKey({ value: '', },);
-        using _third = withOpenRouterKey({ value: '', },);
-        using _fourth = withBedrockKey({ value: '', },);
-
-        /**
-         What buildWithoutKey raised, read for its class as well as its wording.
-         */
-        const refusalOfBuildWithoutKey = caught(function buildWithoutKey() {
-          createRunClient();
-        },);
-
-        expect(refusalOfBuildWithoutKey,).toBeInstanceOf(RunConfigError,);
-        expect((refusalOfBuildWithoutKey as Error).message,).toContain('mise',);
+        expect(refusal,).toBeInstanceOf(RunConfigError,);
+        expect((refusal as Error).message,).toContain(API_KEY_VAR,);
       },
     },),
   ],
 },);
+
+await describe({
+  name: createRunClient.name,
+  children: [
+    it({
+      name: 'READS THE PROCESS ENVIRONMENT, the one place a runner hands it over, and refuses when it holds no '
+        + 'provider key (ledger T8)',
+      fn: async () => {
+        using _cleared = withoutProviderKeys();
+
+        /**
+         What building on a process holding no key raised.
+         */
+        const refusal = caught(function buildOnProcess() {
+          createRunClient();
+        },);
+
+        expect(refusal,).toBeInstanceOf(RunConfigError,);
+      },
+    },),
+  ],
+  concurrency: 1,
+},);
+
+
 
 /**
  Streamed reply the first provider's chat endpoint answers with in the wiring
@@ -674,7 +622,7 @@ async function askSeat(
     client,
     modelId,
   }: {
-    readonly client: ReturnType<typeof createRunClient>;
+    readonly client: ReturnType<typeof runClientFrom>;
     readonly modelId: typeof CULLED_SEAT | typeof SHARED_SEAT | typeof SECOND_ONLY_SEAT;
   },
 ): Promise<unknown> {
@@ -691,15 +639,13 @@ async function askSeat(
 }
 
 await describe({
-  name: `${createRunClient.name} wiring`,
+  name: `${runClientFrom.name} wiring`,
   children: [
     it({
       name: 'ROUTES a Charm Hyper endpoint label to the second provider and '
         + 'never to the first, with the first provider live: serving '
         + 'capability is a property of the pair, not of a provider\'s health',
       fn: async () => {
-        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
-        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
         using _fresh = withFreshRunSeats();
 
         /**
@@ -708,7 +654,7 @@ await describe({
         const { transport, urls, } = recordingTransport();
 
         await askSeat({
-          client: createRunClient({ transport, },),
+          client: runClientFrom({ env: TWO_KEYS, transport, },),
           modelId: SECOND_ONLY_SEAT,
         },);
 
@@ -721,8 +667,6 @@ await describe({
       name: 'SENDS a seat the first provider serves to the first provider, so '
         + 'the routing does not push the whole roster onto the second',
       fn: async () => {
-        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
-        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
         using _fresh = withFreshRunSeats();
 
         /**
@@ -734,7 +678,7 @@ await describe({
          What the shared seat answered.
          */
         const came = await askSeat({
-          client: createRunClient({ transport, },),
+          client: runClientFrom({ env: TWO_KEYS, transport, },),
           modelId: SHARED_SEAT,
         },);
 
@@ -747,8 +691,6 @@ await describe({
     it({
       name: 'WRAPS ROUTED CLIENT with model-prompt payload reuse',
       fn: async () => {
-        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
-        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
         using _fresh = withFreshRunSeats();
 
         /**
@@ -758,7 +700,7 @@ await describe({
         /**
          One configured client preserving prompt claims across calls.
          */
-        const client = createRunClient({ transport, },);
+        const client = runClientFrom({ env: TWO_KEYS, transport, },);
         await askSeat({ client, modelId: SHARED_SEAT, },);
         const duplicate = await askSeat({ client, modelId: SHARED_SEAT, },);
 
@@ -771,8 +713,6 @@ await describe({
       name: 'COUNTS every call against its seat on the run-wide tally, so the '
         + 'closing report can say which seat never answered',
       fn: async () => {
-        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
-        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
         using _fresh = withFreshRunSeats();
 
         /**
@@ -783,7 +723,7 @@ await describe({
         /**
          Client under test, built once for both seats.
          */
-        const client = createRunClient({ transport, },);
+        const client = runClientFrom({ env: TWO_KEYS, transport, },);
 
         await askSeat({ client, modelId: SHARED_SEAT, },);
         await askSeat({ client, modelId: SECOND_ONLY_SEAT, },);
@@ -817,15 +757,13 @@ await describe({
         + 'prompt-uniqueness wrapper, which parses the reply itself, so every reply that arrived read as usable '
         + '("SEAT inception/mercury-2.5 asked=1007 usable=1007 unusable=0" beside 40 schema losses)',
       fn: async () => {
-        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
-        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
         using _fresh = withFreshRunSeats();
 
         /**
          Transport answering the first provider with text no schema reads.
          */
         const { transport, } = recordingTransport();
-        await createRunClient({ transport, },).chatJson({
+        await runClientFrom({ env: TWO_KEYS, transport, },).chatJson({
           modelId: SHARED_SEAT,
           messages: MESSAGES,
           signal: new AbortController().signal,
@@ -870,8 +808,6 @@ await describe({
         + 'bench the run derives, and a path that named the seat itself, the recall benchmark\'s default '
         + 'judges, would have bought it; the refusal is the one a round reads as an unreachable seat',
       fn: async () => {
-        using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
-        using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);
         using _fresh = withFreshRunSeats();
 
         /**
@@ -883,7 +819,7 @@ await describe({
          What the culled seat's call came to.
          */
         const came = await askSeat({
-          client: createRunClient({ transport, },),
+          client: runClientFrom({ env: TWO_KEYS, transport, },),
           modelId: CULLED_SEAT,
         },);
 
@@ -896,6 +832,66 @@ await describe({
           refused: true,
           chatted: false,
         },);
+      },
+    },),
+    it({
+      name: 'REFUSES A SEAT WHOSE ONLY PROVIDER HAS NO KEY without asking any provider (ledger T8)',
+      fn: async () => {
+        using _fresh = withFreshRunSeats();
+
+        /**
+         Transport recording where any call went.
+         */
+        const { transport, urls, } = recordingTransport();
+
+        /**
+         What the second provider's seat came to on a client keyed for the first alone.
+         */
+        const came = await askSeat({
+          client: runClientFrom({ env: { [API_KEY_VAR]: 'whiskers-not-a-real-key', }, transport, },),
+          modelId: SECOND_ONLY_SEAT,
+        },);
+
+        expect(came,).toBeInstanceOf(NoProviderForModelError,);
+        expect(urls.some(isFirstProviderChat,) || urls.includes(HYPER_MESSAGES_URL,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'KEEPS PROMPT PAYLOADS UNDER THE DIRECTORY HANDED OVER, so a second client over it answers the same '
+        + 'prompt without asking (ledger T8)',
+      fn: async () => {
+        using _fresh = withFreshRunSeats();
+
+        /**
+         Payload directory this case owns.
+         */
+        const dir = await mkdtemp(join(tmpdir(), 'run-client-payloads-',),);
+        await using _cleanup = {
+          [Symbol.asyncDispose]: async function removePayloads(): Promise<void> {
+            await rm(dir, { recursive: true, force: true, },);
+          },
+        };
+
+        /**
+         Transport recording provider calls.
+         */
+        const { transport, urls, } = recordingTransport();
+        await askSeat({
+          client: runClientFrom({ env: TWO_KEYS, transport, promptPayloadDir: dir, },),
+          modelId: SHARED_SEAT,
+        },);
+
+        /**
+         What a fresh client over the same payloads answered.
+         */
+        const replayed = await askSeat({
+          client: runClientFrom({ env: TWO_KEYS, transport, promptPayloadDir: dir, },),
+          modelId: SHARED_SEAT,
+        },);
+
+        expect(Error.isError(replayed,),).toBe(false,);
+        expect(urls.filter(isFirstProviderChat,),).toHaveLength(1,);
       },
     },),
   ],

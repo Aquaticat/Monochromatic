@@ -90,6 +90,8 @@ export {
   createRunClient,
   readHeadSha,
   resolveRunsDir,
+  runClientFrom,
+  type RunRepairModels,
   RUN_CHECKER_ORDER,
   RUN_DECISION_JUDGES,
   RUN_LATE_JUDGES,
