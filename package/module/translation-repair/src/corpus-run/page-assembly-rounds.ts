@@ -17,47 +17,19 @@ import {
 // stayed day first. And a cross-slice pass (a handle's gloss placed at its
 // first appearance) could decide on a row the page no longer carries (A15).
 // So the passes and the guard run again over the rows left, until a round
-// takes nothing back; each round's input lacks every row taken back before,
-// so the rounds are at most one more than the rows.
-
-/**
- A round took back a row it was never given, which would stop the rounds from
- ever settling.
-
- @example
- ```ts
- throw new PageAssemblyRoundError({ sliceIndex: 4, round: 2, },);
- ```
- */
-export class PageAssemblyRoundError extends Error {
-  /**
-   Declares this message safe to forward: it names a slice index and a round
-   number.
-   */
-  readonly messageNamesOnly: true = true;
-
-  /**
-   Builds the unsettled-rounds failure.
-
-   @param sliceIndex - slice the round took back
-
-   @param round - round that took it back, from one
-   */
-  constructor(
-    {
-      sliceIndex,
-      round,
-    }: {
-      readonly sliceIndex: number;
-      readonly round: number;
-    },
-  ) {
-    super(
-      `page assembly round ${String(round,)} took back slice ${String(sliceIndex,)}, whose row an earlier round had already taken back`,
-    );
-    this.name = 'PageAssemblyRoundError';
-  }
-}
+// takes back no slice an earlier round had not; each round after the first
+// adds a slice to those taken back, so the rounds are at most one more than
+// the slices.
+//
+// A ROUND THAT TAKES BACK ONLY WHAT WAS ALREADY TAKEN BACK SETTLES (ledger
+// T8, 2026-09-29). Two passes rewrite the archive's text on every slice the
+// page carries, so a later round can hand the guard a pass-made row at a
+// slice whose lane row an earlier round withdrew; were the guard to take that
+// row back, every later round would make and lose it again. That round threw
+// until 2026-09-29, which stopped the entry's page; the owner's rule is that
+// a run always ships. The page it settles on is consistent: the slice stays
+// withdrawn and ships the archive's text, and the caller writes no pass row
+// the settling round's guard took back.
 
 /**
  One round: the container halves, every page pass, and the footnote guard.
@@ -82,6 +54,27 @@ export type PageAssemblyRound = {
    The footnote guard's reading of the page the passes left.
    */
   readonly guarded: ReturnType<typeof guardFootnoteAssembly>;
+};
+
+/**
+ What a round took back: the halves it withheld and the rows its guard
+ withdrew, the two fields the rounds read to decide whether to run again.
+
+ @example
+ ```ts
+ const taken: RoundTakeBacks = { halves: { withheld: [], }, guarded: { revertedChunkIndices: [3,], }, };
+ ```
+ */
+export type RoundTakeBacks = {
+  /**
+   Container halves the round withheld.
+   */
+  readonly halves: Pick<PageAssemblyRound['halves'], 'withheld'>;
+
+  /**
+   Rows the round's guard withdrew.
+   */
+  readonly guarded: Pick<PageAssemblyRound['guarded'], 'revertedChunkIndices'>;
 };
 
 /**
@@ -203,7 +196,7 @@ function assembleRound(
  const taken = takenBackIn({ round, },);
  ```
  */
-function takenBackIn({ round, }: { readonly round: PageAssemblyRound; },): readonly number[] {
+function takenBackIn({ round, }: { readonly round: RoundTakeBacks; },): readonly number[] {
   return [
     ...round.halves
       .withheld,
@@ -213,27 +206,55 @@ function takenBackIn({ round, }: { readonly round: PageAssemblyRound; },): reado
 }
 
 /**
- Whether one round took anything back.
- 
+ Slices one round took back that no earlier round had.
+
  @param round - round to read
- 
- @returns True when it withheld a half or withdrew a row
- 
+
+ @param takenBack - slices earlier rounds took back
+
+ @returns Its new withdrawals and withheld halves, in round order, each once
+
  @example
  ```ts
- if (tookBack({ round, },)) rerun();
+ freshlyTakenBack({ round, takenBack: [3,], },);
  ```
  */
-function tookBack({ round, }: { readonly round: PageAssemblyRound; },): boolean {
-  /**
-   Slices it took back.
-   */
-  const taken = takenBackIn({ round, },);
-  return taken.length > 0;
+export function freshlyTakenBack(
+  {
+    round,
+    takenBack,
+  }: {
+    readonly round: RoundTakeBacks;
+    readonly takenBack: readonly number[];
+  },
+): readonly number[] {
+  return [
+    ...new Set(takenBackIn({ round, },)
+      .filter(function fresh(sliceIndex,): boolean {
+        return !takenBack.includes(sliceIndex,);
+      },),),
+  ];
 }
 
 /**
- Runs rounds until one takes nothing back.
+ Whether a round took back any slice for the first time, which is what runs
+ another round.
+
+ @param fresh - slices it took back that no earlier round had
+
+ @returns True when there is at least one
+
+ @example
+ ```ts
+ if (takesBackAny({ fresh, },)) rerun();
+ ```
+ */
+function takesBackAny({ fresh, }: { readonly fresh: readonly number[]; },): boolean {
+  return fresh.length > 0;
+}
+
+/**
+ Runs rounds until one takes back nothing an earlier round had not.
 
  @param slices - preparation defining replacement spans
 
@@ -248,10 +269,8 @@ function tookBack({ round, }: { readonly round: PageAssemblyRound; },): boolean 
  @param incumbentBySlice - archive text of every slice, by index
 
  @returns The settling round, every slice taken back in round order, and the
- findings of the rounds that took them back
-
- @throws {@link PageAssemblyRoundError} when a round takes back a row an
- earlier round already had
+ findings of the rounds that took them back; the settling round's own guard
+ may take back again a pass-made row at a slice already among them
 
  @example
  ```ts
@@ -288,30 +307,29 @@ export function settlePageRounds(
    */
   const earlierFindings: string[] = [];
   /**
-   The latest round and its number, from one: A NAMED CELL, since the loop
-   replaces both.
+   The first round.
+   */
+  const first = assembleRound({
+    slices,
+    sourceText,
+    targetText,
+    replacements,
+    archiveOriginalSpans,
+    incumbentBySlice,
+  },);
+  /**
+   The latest round and what it took back that no earlier round had: A NAMED
+   CELL, since the loop replaces both.
    */
   const state = {
-    roundNumber: 1,
-    round: assembleRound({
-      slices,
-      sourceText,
-      targetText,
-      replacements,
-      archiveOriginalSpans,
-      incumbentBySlice,
+    round: first,
+    fresh: freshlyTakenBack({
+      round: first,
+      takenBack,
     },),
   };
-  while (tookBack({ round: state.round, },)) {
-    for (const sliceIndex of takenBackIn({ round: state.round, },)) {
-      if (takenBack.includes(sliceIndex,)) {
-        throw new PageAssemblyRoundError({
-          sliceIndex,
-          round: state.roundNumber,
-        },);
-      }
-      takenBack.push(sliceIndex,);
-    }
+  while (takesBackAny({ fresh: state.fresh, },)) {
+    takenBack.push(...state.fresh,);
     /**
      What the round that took them back found.
      */
@@ -323,7 +341,6 @@ export function settlePageRounds(
       ...halves.findings,
       ...guarded.findings,
     );
-    state.roundNumber += 1;
     state.round = assembleRound({
       slices,
       sourceText,
@@ -333,6 +350,10 @@ export function settlePageRounds(
       },),
       archiveOriginalSpans,
       incumbentBySlice,
+    },);
+    state.fresh = freshlyTakenBack({
+      round: state.round,
+      takenBack,
     },);
   }
   return {

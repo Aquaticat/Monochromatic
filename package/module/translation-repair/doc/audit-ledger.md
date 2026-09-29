@@ -2841,8 +2841,44 @@ it now takes only the numeral `roman` writes for a number from one to ninety-nin
 No stored page carries either
 (`t8-roman-headings.mjs` in the audit's scratch folder read 894 headings on 23 published pages and 251 on 92 archive pages,
 and its positive control file found one of each kind).
-A fresh format 2 census of the new test file (`census-c3xfXm`) loads the edited `ordinal-style.ts` with no stretch left.
+A fresh format 2 census of the new test file (`census-c3xfXm`) loads the edited `ordinal-style.ts` with no stretch left
+(`08eb4cba0`).
+The mutant restoring the letters-only reading failed the roman refusal case alone,
+at "Mittens DID" read as roman.
 With it the corpus-run named functions no test called are done.
+
+`PageAssemblyRoundError` (the baseline's `page-assembly-rounds.ts` lines 37 and 46 to 59,
+and the throw at 308 to 311) was decided rather than tested.
+The page-assembly rounds threw it when a round took back a slice an earlier round had taken back.
+A round's lane rows exclude every slice taken back before,
+so only a pass-made row can bring one back,
+and two passes do write rows on every slice the page carries
+(`canadianizePage`,
+`correctPinyinPage`);
+the guard takes back every row when a structural break has no single culprit,
+so such a row can be taken back again.
+No fixture or stored run is known to reach it.
+Were one to,
+the throw stopped the entry's page,
+against the owner's rule that a run always ships,
+and without it the rounds would make and lose the same row forever.
+The rounds now settle on a round that takes back nothing new:
+each further round must add a slice to those taken back,
+so they still end,
+and the page they settle on is consistent,
+since the slice stays withdrawn and ships the archive's text
+and `guardPageAssembly` writes no pass row the settling round's guard took back.
+A quality call under the standing directive,
+recorded for the owner to veto.
+`freshlyTakenBack` carries the rule and `page-assembly-rounds.unit.test.ts` drives it:
+a round's new take-backs each once,
+none for a round that took back only what earlier rounds had,
+and none for a round that took back nothing.
+A fresh format 2 census of that file and `page-assembly-guard.unit.test.ts` (`census-gBeTc1`) loads `page-assembly-rounds.ts` with no stretch left;
+`page-assembly-guard.ts` keeps its baseline lines 114 to 116,
+`namesIt`,
+which needs a pass-restored row and a guard-trimmed row on one page,
+for the batch of anonymous callbacks and library stretches.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 

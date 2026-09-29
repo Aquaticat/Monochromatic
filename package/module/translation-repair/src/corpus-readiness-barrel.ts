@@ -6,6 +6,10 @@ export { assertCarriedInsertionsRemain, } from './corpus-run/carried-insertion-c
 export { assertPageFootnotesIntact, } from './corpus-run/page-footnote-integrity.ts';
 export { assertPageGuards, } from './corpus-run/pass-page-guards.ts';
 export { guardPageAssembly, } from './corpus-run/page-assembly-guard.ts';
+export {
+  freshlyTakenBack,
+  type RoundTakeBacks,
+} from './corpus-run/page-assembly-rounds.ts';
 export { restoreContributorNames, } from './corpus-run/contributor-name-restore.ts';
 export { placeHandleGlosses, } from './corpus-run/handle-gloss-place.ts';
 export {
