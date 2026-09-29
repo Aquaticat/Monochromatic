@@ -289,8 +289,9 @@ The remaining consumer gates are:
 - Replacement responsibility coverage and final shared-understanding confirmation before production mutation.
 
 These are not solved by another generic provider comparison or a dashboard inspection.
-Q16 and production implementation remain paused;
-the next transition must preserve that authority boundary.
+The user has explicitly resumed the integration interview at Q16.
+Production implementation still requires the remaining design and qualification gates
+and final shared-understanding confirmation.
 
 [typesafe-models]: https://docs.typesafe.ai/models
 [typesafe-api]: https://docs.typesafe.ai/api

@@ -1435,6 +1435,42 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Integration interview explicitly resumed
+
+After completed bounded Jev qualification and service-evidence reconciliation,
+the user instructed: "Okay resume it now."
+This resumes the design interview only.
+Task #3 is active at unanswered Q16,
+whether an originating session's reset revokes reusable directives already inherited by a verified fork.
+Q14 A and Q15 B remain accepted;
+the outdated pending wording and rejected Q15 recommendation in the effect-contract inventory were corrected.
+
+The [current frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
+asks whether the inherited grant becomes ineligible by default after A resets,
+or remains valid in B.
+Independent frontier review identified that an explicit reset-scope prompt would bundle a UI decision
+with revocation semantics,
+so that option was removed from Q16.
+No storage/copy mechanism is selected by either answer.
+Linked revocation is recommended but not selected.
+The question excludes separate exact-action approval records
+and does not undo completed operations or independently confirmed grants.
+Downstream fork-local reset and lifetime details wait for this answer.
+
+No production code,
+confidence threshold,
+new model call,
+`AGENTS.md` edit,
+reserved-bank access,
+or Laya restart is authorized by this resumption.
+The existing evaluation fingerprint remains compatible:
+recipient,
+resource,
+privacy,
+and no-production boundaries are unchanged.
+Earlier pause statements retain their historical checkpoint scope,
+but the new explicit instruction supersedes the interview pause.
+
 ## Service and real-consumer gate reconciliation
 
 Task #65 refreshed known primary Jev/Gateway API,

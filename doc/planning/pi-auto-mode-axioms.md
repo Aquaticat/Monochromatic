@@ -749,6 +749,20 @@ The adapter cannot declare itself validated merely by returning that field.
 A changed definition or model invalidates qualification unless the relevant revalidation passes.
 No production thresholds have been chosen.
 
+## Resumed integration interview
+
+The user explicitly resumed the interview with "Okay resume it now."
+The Jev qualification direction remains approved;
+this does not authorize production implementation or select a cutoff.
+The current frontier is Q16,
+revocation of ordinary reusable trust directives already inherited by a verified fork.
+Q14 and Q15 remain settled.
+Reset behavior originating inside a fork and subsequent inherited-grant lifecycle details
+are downstream of this answer.
+Other contract and qualification branches remain open;
+final shared-understanding confirmation is still required.
+Laya work and the original reserved corpus remain outside this resumption.
+
 ## Confirmed interview answers
 
 An independent Advisor review of the interview frontier returned successfully.
@@ -875,6 +889,47 @@ or model-generated final verdicts.
 The rejected alternative required code to admit an operation family and establish its effect scope before approval.
 Do not silently retain that stricter prerequisite under another name.
 The current fixture-only prototype and its test results do not establish the qualification required by B.
+
+### Q14: Same-session reset survives branch navigation
+
+Reset revokes preceding reusable trust directives across branches sharing the same session ID.
+Navigating to an older history position cannot revive those reset directives.
+This does not expand reset to separate exact-action approval records
+or settle revocation in already-forked sessions.
+
+### Q15: Verified fork inheritance
+
+Eligible human-confirmed reusable trust directives may inherit into a new forked session.
+Verified lineage and a valid original human witness are required.
+Copied text or a copied entry ID alone does not supply authority.
+Revocation linkage between the originating session and an existing fork remains Q16.
+
+### Q16: Revoking inherited directives
+
+Unanswered.
+An ordinary session-scoped directive is human-confirmed in session A
+and inherited by verified fork B.
+By default after A resets its trust directives,
+should that inherited permission become ineligible in B,
+or remain valid in B?
+
+The recommendation is linked revocation:
+A's reset makes B's inherited directive ineligible for subsequent approvals,
+without undoing completed operations or revoking a separately confirmed grant in B.
+That is a proposal,
+not an accepted policy.
+It concerns reusable directives only,
+not exact-action approval records or explicitly broader grant lifetimes.
+
+Ranking:
+linked revocation > the inherited grant remaining valid.
+Linked revocation makes the originating reset effective for this inherited authority,
+but can interrupt a fork's continuing workflow.
+Keeping the inherited grant valid preserves fork continuity,
+but A's reset no longer removes that authority from B.
+No reset prompt,
+scope-selection UI,
+or storage/copy mechanism is selected by this question.
 
 ## Accepted TypeSafe AUP scope
 

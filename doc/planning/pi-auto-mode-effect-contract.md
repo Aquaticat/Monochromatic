@@ -391,60 +391,39 @@ Bind provenance to the original session and entry,
 not a copied entry ID alone.
 No production revocation or inheritance policy was selected by this observation.
 
-### Grant lifetime questions awaiting confirmation
+### Grant lifetime decisions and current frontier
 
-These questions concern reusable trust directives from `/guard` and `propose_trust`,
+These decisions concern reusable trust directives from `/guard` and `propose_trust`,
 not separate exact-action approval records.
-Every option requires verifiable original human confirmation;
+Every inherited directive requires verifiable original human confirmation;
 lineage alone cannot supply that witness.
-The current `/guard reset` appends a null trust entry,
+The inspected `/guard reset` appends a null trust entry,
 while exact-action approvals are read separately by `getReusableApproval()`.
-These questions do not silently expand reset to those approval records.
+Do not silently expand reset to those approval records.
 
-Q14 asks whether reset revokes prior trust directives across the same session's branches
-or only on the active history path.
-The same session means the same session ID;
-already-forked sessions are outside this question.
+The user selected Q14 A:
+reset revokes prior directives across branches sharing the same session ID.
+History navigation must not reactivate them.
+The branch-local replay alternative was not selected.
+This is an accepted design requirement,
+not an implemented fix.
 
-- A,
-  session-wide revocation:
-  history navigation does not undo a human reset;
-  permission state no longer replays entirely with conversation state.
-- B,
-  branch-local reset:
-  preserves the incumbent's history-replay behavior;
-  moving before a reset exposes the prior permission again.
+The user selected Q15 B:
+a new forked session may inherit eligible directives through verified lineage
+and a valid original human witness.
+The earlier recommendation to require new confirmation for every fork was rejected.
+Copied text or an entry ID alone cannot establish inheritance authority.
+Explicitly broader grant scope remains outside this ordinary session-scoped default.
 
-Ranking:
-A > B,
-because keeping an explicit reset effective across navigation is preferable to restoring revoked authority implicitly.
-This is a recommendation,
-not an adopted change.
-
-Q15 independently asks about an ordinary session-scoped trust directive in a new forked session,
-with a new session ID,
-not ordinary branch navigation within the same session.
-The in-memory fork-method probe copied the directive;
-persisted replay remains unqualified.
-Q9b settles semantic prose matching,
-not this lifetime question:
-
-- A,
-  new confirmation:
-  preserves the new session's authority boundary;
-  introduces additional approval interruptions.
-- B,
-  verified inheritance:
-  preserves workflow continuity for an active witnessed grant;
-  extends its effective lifetime beyond the original session and needs explicit inheritance/revocation semantics.
-
-Ranking:
-A > B,
-because the new session identity should not silently widen the default grant lifetime.
-Explicitly broader grant scope is outside this default-scope question.
-If inheritance is selected,
-its revocation linkage and lifetime become a later dependent question.
-Neither choice authorizes trusting an unwitnessed historical string or bypassing fixed blocks.
+The user has now explicitly resumed the interview.
+[Q16](pi-auto-mode-axioms.md#q16-revoking-inherited-directives)
+asks what happens by default to an already inherited directive in B when its originating session A resets:
+the inherited grant becomes ineligible,
+or it remains valid.
+Linked revocation is recommended but remains unanswered.
+Reset-UI choices and the storage mechanism are not part of this question.
+Reset behavior originating inside a fork and subsequent lifecycle details depend on this choice.
+No option permits unwitnessed authority or a fixed-block override.
 
 ### Existing approval reuse
 

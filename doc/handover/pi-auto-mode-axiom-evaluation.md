@@ -34,6 +34,27 @@ Current references:
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
+## Current interview state
+
+The user explicitly resumed the design interview with "Okay resume it now."
+Task #3 is active at unanswered Q16:
+revocation of reusable trust directives inherited by an already-created verified fork.
+Q14 A and Q15 B remain settled and must not be re-asked.
+The [resumed design frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
+records the question and its dependent branches.
+Linked revocation is recommended,
+not selected.
+The alternative is keeping the inherited grant valid in B after A resets.
+The question selects default revocation semantics,
+not a new scope-selection prompt or a storage/copy mechanism.
+No production implementation,
+cutoff selection,
+Laya restart,
+reserved-bank access,
+or `AGENTS.md` change follows from resuming the interview.
+Historical statements that Q16 was paused retain their original checkpoint scope;
+this explicit resumption supersedes that pause.
+
 ## Completed fresh Jev study and next gate
 
 The approved Jev direction now has completed fresh validation and locked-test evidence.
@@ -99,8 +120,8 @@ Vendor-documented adversarial-state sensitivity and the recurring read-scope pat
 Complete current policy is still mandatory despite generic vendor filtering advice.
 
 Real human-authority/lifecycle/finalizer qualification remains separate.
-Q16 is still paused,
-no production cutoff or code change has been approved,
+Q16 is now the resumed interview frontier.
+No production cutoff or code change has been approved,
 and the final shared-design confirmation is not complete.
 
 ## Approved Jev qualification direction
