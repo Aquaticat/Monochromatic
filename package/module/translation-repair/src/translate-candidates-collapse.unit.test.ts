@@ -172,6 +172,55 @@ await describe({
     },),
 
     it({
+      name: 'COLLAPSES a rendering onto the incumbent when it differs only in the style of its prose apostrophes '
+        + 'and quotation marks, which the typography restoration makes one after the ballot (ledger B24), '
+        + 'and KEEPS one apart whose quotes differ inside a code span, where a quote is content',
+      fn: async () => {
+        /**
+         Archive text with curly quotes in its prose.
+         */
+        const incumbent = 'The cat didn’t say “meow” today.';
+        const prose = buildTranslateCandidates({
+          voices: [
+            voiceOf({
+              at: 0,
+              translation: 'The cat didn\'t say "meow" today.',
+            },),
+            voiceOf({
+              at: 1,
+              translation: 'The cat didn’t say "meow" today.',
+            },),
+          ],
+          translatorModelIds: [...TRANSLATORS,],
+          incumbentText: incumbent,
+        },);
+        expect(prose.candidates
+          .map(function toRendering(candidate,): string {
+            return candidate.rendered;
+          },),).toEqual([incumbent,],);
+        expect(prose.collapsed,).toBe(2,);
+        /**
+         Two renderings apart only inside a code span.
+         */
+        const code = buildTranslateCandidates({
+          voices: [
+            voiceOf({
+              at: 0,
+              translation: 'Type `say "meow"` to wake the cat.',
+            },),
+            voiceOf({
+              at: 1,
+              translation: 'Type `say “meow”` to wake the cat.',
+            },),
+          ],
+          translatorModelIds: [...TRANSLATORS,],
+          incumbentText: '',
+        },);
+        expect(code.candidates,).toHaveLength(2,);
+      },
+    },),
+
+    it({
       name: 'FOLDS an invisible variant out of a translation at intake, names it with its author, '
         + 'and collapses the folded rendering into a plain one that says the same',
       fn: async () => {
