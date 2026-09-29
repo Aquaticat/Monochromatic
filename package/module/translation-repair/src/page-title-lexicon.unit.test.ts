@@ -176,6 +176,29 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'SHOWS the lexicon the page\'s declared identity (ledger B28): it is told to give a work its official '
+        + 'English title, and the web lookups and notes that establish one are there',
+      fn: async () => {
+        /** Identity lines: a web lookup for the song, and a note naming it. */
+        const identityContext = [
+          'web lookup 《猫之歌》: "Song of the Cats", the official English title of the album track',
+          'ARCHIVE note [^1]: the song is known in English as "Song of the Cats"',
+        ].join('\n',);
+        /** The request, as the model reads it. */
+        const text = buildPageTitleLexiconMessages({
+          sourceText: SOURCE,
+          titles: ['猫之歌',],
+          identityContext,
+        },)
+          .map(function contentOf(message,): string {
+            return message.content;
+          },)
+          .join('\n',);
+        expect(text,).toContain(identityContext,);
+        expect(text,).toContain('Declared identity, when a DECLARED NAMES block precedes the documents:',);
+      },
+    },),
   ],
 },);
 
