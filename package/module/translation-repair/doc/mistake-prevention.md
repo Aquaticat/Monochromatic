@@ -492,6 +492,11 @@ a word or phrase looked for in prose goes through `carriesWord` or `wordStarts` 
 or through `glossary-match.ts` where the forms are folded,
 and the text's quotes are folded with `normalizePunctuation` first
 when the needles are stored with straight ones.
+A name compared on its letters and digits goes through `carriesName` (`name-projection.ts`),
+never containment in a projection,
+which has lost the spaces between words;
+a handle or a source form inside a link text is matched at handle edges,
+where a hyphen and an underscore join.
 A raw `includes` on prose is kept only for containment,
 a quote or a span found whole inside a text,
 and a comment says so.
@@ -509,7 +514,11 @@ Han and punctuation edges;
 the refusal,
 picture-sense and reading-refusal guards hold a word carrying each marker,
 a typographic apostrophe,
-and each prefixed form listed on its own.
+and each prefixed form listed on its own;
+`name-projection.unit.test.ts`,
+the survival guard and the link-name guard hold a key inside a longer word,
+a case change and a digit inside a handle,
+and a handle running on at either end.
 
 ## Lint and edits
 

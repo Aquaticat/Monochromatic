@@ -7770,12 +7770,76 @@ The picture screen's verdict reaches a slice key through the reading's words,
 which the translate and consolidation keys carry,
 and the reading store is stamped with the build's digest.
 
+#### Declared names and the link-name floor
+
+The census had classed the survival guard's projection containment as deliberate,
+and it is,
+for what the projection sees through:
+a `\_` escape,
+a space or underscore where the other side writes none,
+a name wrapped behind a `> ` prefix.
+It also drops the spaces between words,
+so containment found a declared key across a word edge:
+a candidate that lost "Ann" but said "cannot" kept the name,
+and a base that said only "cannot" put an "Ann" it never held at stake.
+The guard's header claimed that widening what counts as carried
+could only turn a missed loss into a caught one;
+that was wrong in both directions.
+The link-name floor compared the same projection,
+and matched a Latin source form,
+a mention and a page handle as raw substrings,
+so a tomcat named Tom and `@mi-mi-420` carried `@mi-mi-42`.
+
+The edge rule came from the glue itself,
+read by general category only (`b23-projection-bounds.mjs`).
+Where a declared key sat inside a longer word in the stored texts,
+the long keys and the one settled page were glued by a case change or a digit
+inside a handle,
+and the lowercase-to-lowercase glue was prose collision
+(one handle stem inside a common first name among them).
+`name-projection.ts` keeps,
+per projected unit,
+where its character sits in the text as composed,
+and `carriesName` counts a key only where each Latin end meets a word edge,
+a letter meeting a digit and a small letter meeting a capital being edges.
+The form-inside-form check that reports a lost long form once reads the same way,
+so a shorter form running on inside a longer one is its own loss.
+The link floor reads its source forms,
+mentions and page handles at handle edges,
+where a hyphen and an underscore join.
+Red `83a3457d0`,
+fix `11d029fde`,
+the before-edge case `edac4d209`;
+15 mutants,
+each restoring containment at one site or dropping one edge rule,
+are caught,
+and a comment control survives.
+
+Measured with the fix
+(`b23-projection-final.mjs`):
+over every declared and contributor form against the texts of its own entry,
+all 285 carriages in the 92 archives
+and all 544 on the 214 settled pages stand as names,
+and 1,422 of 47,389 in the stored artifacts existed only across a word edge.
+Replayed against the frozen build `2f26f440d` over 1,264 archive slices and 3,975 would-ship slices
+(`~/temp/agent/audit-floor-replay/names-replay.mjs`):
+the survival guard now refuses four would-ship wordings of two slices,
+each of which dropped a declared form the incumbent carried as a word
+and kept its letters only inside a longer word;
+contributor authority moves nothing;
+the link floor's three moves on archive slices come from the account-handle rule of `9c085dcd3`,
+which the frozen build predates,
+and none from this change.
+The translate,
+consolidation,
+contest,
+refine and repair versions carry rides-inside accounts
+(`3a68938ef`);
+the refine and repair accounts rest on the translate replay,
+since no stored rewrite or patch was replayed.
+
 #### Still to read
 
-- `translate-declared-link-name.ts`:
-  `namingLinks` and `carriesHandle` use `includes`,
-  and `mentionsForm` takes a prefix of a longer handle,
-  which needs a handle-character boundary rather than a Latin one.
 - `linked-title-declared-name.ts`,
   `title-reference-scope.ts`,
   `title-reference-unify.ts` (a rendering matched by `endsWith`),
@@ -7787,7 +7851,7 @@ and the reading store is stamped with the build's digest.
   the neighbours of TA,
   Ta and ta on settled pages and in artifacts are measured first.
 
-Every declared-pair and handle site above matches nothing at the pin;
+The declared-pair sites in this list match nothing at the pin;
 each is latent.
 Prevention:
 `mistake-prevention.md`,
@@ -8950,6 +9014,22 @@ where six fail against the build it was committed on;
 commit comment 202537574 corrects it.
 The five came from no command's output,
 so the rule held and was not followed.
+The same day,
+three more:
+`11d029fde`'s message lost an apostrophe to shell quoting
+("The guard headers claim"),
+and commit comment 202542820 gives the wording meant;
+`edac4d209` said a mutant survived without its new case,
+which was inferred from reading the tests rather than run,
+and commit comment 202543210 says so;
+and two hashes were typed into ledger B23 rather than resolved,
+caught on reading the edit back,
+before any commit.
+Prevention:
+a message with an apostrophe goes through `git commit --file` from a written file,
+never a single-quoted shell argument;
+a claim in a message is either a command's output or labelled an inference;
+and every hash in a doc comes from `git log` output in the same step that writes it.
 
 ### M14: a reproduction check committed without a positive control
 
