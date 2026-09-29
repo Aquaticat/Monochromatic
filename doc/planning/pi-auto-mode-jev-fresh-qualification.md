@@ -9,8 +9,10 @@ or authorization for a calibration adapter or model training.
 The [Jev qualification record](pi-auto-mode-jev-qualification.md)
 and [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md)
 retain the broader constraints.
-Q16 and Laya remain paused.
-The original 24 reserved scenarios remain unopened.
+Q16 and Laya were paused at this study's authorization checkpoint.
+The user has since resumed the integration interview;
+its [current decisions](pi-auto-mode-axioms.md#resumed-integration-interview) are recorded separately.
+Laya remains paused and the original 24 reserved scenarios remain unopened.
 
 ## Outcome and next engineering step
 

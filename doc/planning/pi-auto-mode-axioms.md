@@ -762,8 +762,10 @@ The user classified that scenario as user error and accepts any system response 
 Independent safeguards and the deterministic finalizer remain required.
 Q18 A permits verified fork inheritance of separate human approvals for the same eligible action scope.
 Q19 A expands ordinary reset to both reusable directives and remembered human action approvals in its session.
-The current frontier is Q20,
-whether an originating reset also revokes an action approval already inherited by a verified fork.
+Q20 A keeps an already inherited human action approval eligible when its originating session resets.
+The current frontier is Q21,
+immediate prompting versus denial for a protected transfer with established absent authority,
+without an explicit prohibition or another independent blocker.
 Other contract and qualification branches remain open;
 final shared-understanding confirmation is still required.
 Laya work and the original reserved corpus remain outside this resumption.
@@ -988,24 +990,52 @@ Propagation to already-created forks is separate.
 
 ### Q20: Origin reset after human action-approval inheritance
 
-Unanswered.
-Verified fork B has inherited A's explicit human approval for a particular action scope under Q18.
-A then resets both permission record kinds under Q19.
-Should B keep its inherited action approval,
-or should A's reset revoke it in B too?
-
-Keeping B's inherited approval is recommended:
-it matches Q16's independent inherited-directive eligibility and keeps reset local to the originating session,
-but the approval must be revoked in B separately.
-Propagating revocation removes that inherited approval in both sessions,
-but interrupts B and creates different reset linkage for human action approvals and reusable directives.
-Ranking:
-keep B's inherited approval > propagate A's reset.
-Both options retain current scope,
+The user selected A:
+resetting A leaves a human action approval already inherited by verified fork B eligible in B.
+Revoke it in B separately.
+This matches Q16's inherited-directive behavior.
+All current scope,
 policy,
 provenance,
-and freshness requirements;
-neither applies to unqualified old machine verdicts.
+and freshness checks still apply.
+It does not make an old machine verdict a human approval.
+Together Q14 and Q19 retain a session-wide reset of both stored human permission kinds;
+Q16 and Q20 prevent that local reset from revoking already inherited permissions in other sessions.
+
+### Q21: Protected transfer with no existing permission
+
+Unanswered.
+The effect contract explicitly left the prototype's protected-transmission rule unadopted.
+The inspected private `policy.mjs` returns deny for an established protected transfer
+when both request and grant relations are false;
+`definitions.mjs` sets `denyWhenUnrequested` only for that transfer effect.
+The other authorization-required demonstration effects ask in that situation.
+These are source-inspected prototype rules,
+not selected production behavior.
+
+The decision case has an established protected transfer,
+no covering current request,
+reusable directive,
+or human action approval,
+and no applicable explicit prohibition or fixed block.
+All other required evidence is current and qualified;
+this is absent authority,
+not uncertain authority or Q17's contradictory instructions.
+
+Should the guard immediately ask for informed approval of the specific transfer,
+or deny the proposal and leave permission-seeking to a separate step?
+Immediate prompting is recommended:
+it resolves the missing authority without executing the transfer,
+but interrupts the user for an unsolicited proposal.
+Denial avoids that immediate prompt and blocks the proposal,
+but requires a separate permission request if the transfer is wanted.
+Ranking:
+immediate scoped approval prompt > deny the proposal.
+Neither option permits automatic approval without authority.
+Any prompt must expose the source,
+destination,
+and permission scope;
+no standing grant is silently created.
 
 ## Accepted TypeSafe AUP scope
 

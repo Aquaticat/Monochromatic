@@ -73,12 +73,22 @@ A derived cached decision cannot preserve an approval whose authority was reset.
 This is an accepted expansion of the inspected directive-only implementation,
 not a production change.
 
-Task #3 is active at unanswered Q20:
-whether A's reset revokes a human action approval already inherited by verified fork B.
+The user selected Q20 A:
+A's reset leaves a human action approval already inherited by verified fork B eligible in B.
+Revoke it in B separately,
+just as with Q16's inherited directives.
+All current eligibility checks remain required.
+
+Task #3 is active at unanswered Q21:
+immediate prompting versus denial for a protected transfer with established absent authority,
+no explicit prohibition or fixed block,
+and all other required evidence current and qualified.
 The [resumed design frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
 records the question.
-Keeping B's inherited approval eligible is recommended but unaccepted,
-for consistency with Q16's directive behavior.
+Immediate informed approval of the specific transfer is recommended but unaccepted.
+The inspected scratch policy's deny-without-permission rule was never adopted.
+Independent frontier review confirmed this is a genuine policy preference,
+not a choice already determined by Q17 or the prohibition on approval without authority.
 No production implementation,
 cutoff selection,
 Laya restart,
@@ -155,8 +165,9 @@ Real human-authority/lifecycle/finalizer qualification remains separate.
 Q16 B,
 Q17's unconstrained conflict outcome,
 Q18 A,
-and Q19 A are settled;
-Q20 is now the resumed interview frontier.
+Q19 A,
+and Q20 A are settled;
+Q21 is now the resumed interview frontier.
 No production cutoff or code change has been approved,
 and the final shared-design confirmation is not complete.
 

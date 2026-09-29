@@ -1435,6 +1435,39 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Accepted Q20 local action-approval revocation
+
+The user selected Q20 A:
+A's reset leaves a human action approval already inherited by verified fork B eligible in B.
+Revoke it in B separately.
+All current scope,
+policy,
+provenance,
+and freshness checks still apply.
+This matches Q16's independent inherited-directive behavior.
+The resetting session clears both stored human permission kinds under Q19,
+without automatically revoking already inherited permissions in other sessions.
+
+The remaining contract review found an unadopted policy choice,
+now Q21 in the [live interview frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview):
+immediate prompting versus denial for an established protected transfer with no covering authority.
+No explicit prohibition or fixed block applies,
+and all other required evidence is current and qualified.
+This is distinct from Q17's contradictory human instructions and from uncertain evidence.
+
+Actual source inspection of the private demonstration's `policy.mjs` and `definitions.mjs`
+confirmed a transfer-only deny-when-unrequested rule;
+the effect contract had explicitly retained it as demonstration-only.
+Independent review confirmed that neither prompt nor deny is selected by the settled requirements.
+An immediate informed prompt for the specific transfer is recommended but unaccepted.
+Neither option permits approval without authority.
+Other remaining provenance,
+effect-catalog,
+profile,
+deadline,
+and parity work consists of engineering qualification gates.
+No new model assessment or production mutation was made.
+
 ## Accepted Q19 reset record kinds
 
 The user selected Q19 A:

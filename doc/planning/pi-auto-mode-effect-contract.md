@@ -462,13 +462,18 @@ with the original human witness and current scope,
 policy,
 and freshness checks.
 Old machine verdicts are not eligible through this human-approval route.
-This does not settle subsequent cross-session revocation.
+Q20 subsequently settled independent eligibility after an originating reset.
 The user selected [Q19 A](pi-auto-mode-axioms.md#q19-reset-scope-for-remembered-human-action-approvals):
 reset clears both directives and remembered human action approvals within its session.
 Derived cached decisions cannot preserve an approval whose authority was reset.
-[Q20](pi-auto-mode-axioms.md#q20-origin-reset-after-human-action-approval-inheritance)
-now asks whether an originating reset also revokes an action approval already inherited by a verified fork.
-Keeping the fork's approval eligible is recommended but unaccepted.
+The user selected [Q20 A](pi-auto-mode-axioms.md#q20-origin-reset-after-human-action-approval-inheritance):
+resetting A leaves an already inherited human action approval eligible in B,
+subject to all B's current scope,
+policy,
+provenance,
+and freshness requirements.
+Revoke it in B separately.
+Both stored human permission kinds now share session-local reset and verified fork-inheritance semantics.
 
 ## Decision and finalization interface
 
@@ -536,10 +541,14 @@ deadline expiry,
 and headless review.
 Current pure-policy vector tests and single-axiom model probes do not cover these integration paths.
 
-The initial prototype's conflict precedence,
-protected-transmission rule,
-and threshold bands remain demonstration rules.
-Do not freeze them by documentation alone.
+Q17 does not require the initial prototype's conflict-to-ask outcome for its demonstrated human conflict.
+The protected-transmission rule and threshold bands remain unadopted demonstration rules.
+[Q21](pi-auto-mode-axioms.md#q21-protected-transfer-with-no-existing-permission)
+asks whether an otherwise established protected transfer without covering authority
+should prompt immediately or be denied pending a separate permission request.
+The recommendation to prompt is not yet accepted.
+Neither option authorizes the transfer without human permission.
+Do not freeze the prototype rule or thresholds by documentation alone.
 The next work is to prototype provenance binding and its failure cases,
 make the first-deployment profile applicability explicit without reinstating the rejected code-proof prerequisite,
 and build corresponding independent fixtures and policy tests in private scratch.
