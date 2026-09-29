@@ -1435,6 +1435,60 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Source-collection interface admission
+
+The private responsibility map now separates mandatory policy,
+base resource ownership,
+run contributions,
+request-local edits,
+forced projection,
+provider-native payloads,
+and human/carried sources.
+It does not assign authority from text or paths.
+
+The internal collector exposes capture and observed-freshness revalidation.
+Construction binds ordinary-context or separately supplied resource-owner access.
+Caller roles,
+completeness,
+authority flags,
+and fabricated owner fields cannot expand the capture request.
+Unavailable inventory differs from an observed empty inventory;
+pathless inline sources and unpaired append observations remain representable.
+All results keep authority,
+human witness,
+and later-stage coverage unqualified.
+
+`proc_6990` passed pure interface checks.
+`proc_9f59` exercised both adapters through the same collector interface
+in one actual disposable SDK session,
+with zero provider/fetch calls and empty stderr.
+Ordinary inventory remained unavailable;
+the construction owner supplied two files and pathless inline/append observations.
+A global fixture edit plus owner reload invalidated its old checkpoint.
+`proc_7564` showed selected binding,
+checkpoint ownership,
+freshness,
+source/total-byte,
+and before/after cancellation checks fail when their individual guards are omitted in separate artifacts.
+The earlier caller-option omission also failed as expected.
+No real guard source was removed.
+
+Task #16 closes only at specification and collection-admission scope.
+The full review engine,
+production owner bridge,
+human provenance,
+source authority,
+semantic profiles,
+finalizer,
+handback,
+and parity remain downstream qualification.
+Actual-SDK mandatory-policy mutation was not exercised;
+that mutation was checked in-memory.
+Rendered-only changes conservatively invalidate the combined fingerprint too.
+Bindings are module/collector-local identities,
+not authentication.
+Task #68 next qualifies human-input and approval-writer origins.
+
 ## Actual SDK instruction-view cases
 
 The original `contract/sdk/session` attempt `proc_5d43` stopped before session construction

@@ -444,8 +444,32 @@ An inline system-prompt source had no path.
 These facts constrain collection;
 they do not authenticate sources or provide a complete governing-instruction inventory.
 See the [actual SDK observations](../troubleshooting/pi-instruction-snapshots.md#actual-sdk-session-observations).
-The next #16 work is the source-aware review contract and adapter admission tests,
-not more SDK packaging.
+The source-responsibility map is `contract/source-map.md`.
+The internal collector is `contract/collector`,
+with a capture/observed-freshness interface and ordinary-context/construction-owner adapters.
+`proc_6990` passed pure admission checks;
+`proc_9f59` crossed the same interface in one actual SDK session with zero provider/fetch calls and empty stderr.
+Ordinary owner inventory remained unavailable;
+construction-owner inventory contained two files with pathless inline/append observations.
+Changing the global fixture and reloading the owner invalidated its old checkpoint.
+`proc_7564` verified separate omissions of the selected binding,
+checkpoint,
+freshness,
+byte,
+and cancellation guards.
+
+Task #16 closes at specification and collection-admission scope only.
+There is no full review engine,
+production owner bridge,
+authenticated human source,
+semantic profile,
+or production adoption in this result.
+Actual-SDK mandatory project-policy mutation remains unexercised;
+that path was tested in-memory.
+Rendered-only changes intentionally invalidate the combined fingerprint,
+and module/collector-local handles are not authentication.
+Task #68 is next:
+qualify real human-input and approval-writer origins without promoting roles or channel labels into witnesses.
 A marker mismatch is a qualification finding,
 not automatically an SDK defect or an invitation to relabel references.
 SDK-owner access to `ResourceLoader` does not qualify access from the ordinary production extension context.

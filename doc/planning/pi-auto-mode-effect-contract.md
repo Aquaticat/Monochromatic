@@ -61,7 +61,32 @@ Neither rendered text nor a path authenticates a governing source.
 The tested SDK construction owner had access to `ResourceLoader`.
 This does not establish that the ordinary production extension context exposes that owner,
 or that the known fixture inventory covers all real producers.
-The private review interface and real-adapter admission tests remain task #16.
+Task #16's specification and collection-admission checks now cover that distinction.
+The private collector's ordinary adapter reports owner inventory as unavailable,
+while its construction-owner adapter reads the separately bound loader.
+Caller role,
+authority,
+and completeness flags cannot expand the collection request.
+Available base inventory still leaves later producer/stage coverage unqualified.
+
+`proc_9f59` exercised both adapters through the same interface in one disposable SDK session,
+with zero provider or fetch calls and empty stderr.
+A global fixture edit plus owner reload invalidated the old owner checkpoint.
+Pure checks covered mandatory-policy changes,
+copied snapshots,
+cancellation,
+input limits,
+and immutable owned copies.
+Separate omission controls demonstrated the selected admission/freshness guards.
+The results do not implement policy decisions,
+qualify source authority,
+or establish a production owner bridge.
+
+Task #68 next qualifies actual human-input and approval-writer origins.
+Lifecycle/finalization,
+semantic instruction/effect profiles,
+preparation-inclusive handback,
+and replacement parity remain separate downstream gates.
 
 ## Current dispatcher and evidence limits
 
