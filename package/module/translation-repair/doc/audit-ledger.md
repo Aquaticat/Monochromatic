@@ -6322,7 +6322,7 @@ The suite after it:
 ### B18: letter, digit and hex tests kept in many copies, and prose scanners that test ASCII letters only
 
 Status:
-in progress,
+fixed,
 2026-09-28.
 Letter tests were kept as named functions in eleven modules (`72bbe6500` merged them into `ascii-letters.ts`)
 and inline in more (M48),
@@ -6540,16 +6540,60 @@ the characters an ASCII test and a Latin letter-or-mark test disagree on
 occur in 2 of 92 sources (7 characters),
 9 of 92 archive pages (20) and 2 of 40 settled pages (4).
 
-Still to do:
-the three `opensTag` copies move to what the MDX compiler reads after `<`
-(`micromark-extension-mdx-jsx`:
-a space,
-tab or line end leaves it text;
-`/`,
-`>` or an identifier start,
-which includes Han,
-opens a tag;
-anything else fails to compile).
+The last copies were three `opensTag` tests,
+one per scanner that reads markup:
+- `7a46c8be8`:
+  the typography mask took ASCII letters and `/`,
+  the markup atom scan the same and `!`,
+  and the prose ranges `/` and any cased letter.
+  `mdx-tag-start.ts` now answers for all three as `micromark-extension-mdx-jsx` 3.0.2 does
+  (`dev/lib/factory-tag.js`,
+  `startAfter` and `nameBefore`):
+  a space,
+  tab or line end after `<` leaves it text,
+  other whitespace is stepped over,
+  and `/`,
+  `>` or an identifier start (`$`,
+  `_` or Unicode ID_Start,
+  Han included) opens a tag;
+  anything else fails the compile.
+  The atom scan names `<!--` explicitly,
+  which the corpus build rewrites into a JSX comment.
+  Before the fix a tag named in Han,
+  or opening on `_` or `$`,
+  or after a no-break space,
+  was prose to all three,
+  so its quoted attributes were curled (which compiles nowhere) and respelled.
+  The new test checks 19 probes against the package's own MDX parser.
+  Over the sources,
+  the archive's English,
+  the settled pages and 372,489 artifact strings,
+  what follows `<` is an ASCII letter,
+  `/`,
+  `<!--`,
+  markdown whitespace,
+  or `|`,
+  `]` and `@`,
+  on all of which every version agrees.
+  Page assembly replayed over 222 settled artifacts against the tree before the change differs on none;
+  a control tree whose test never opens a tag makes 38 differ and 96 fail the guard.
+
+What remains tests letters in any script on purpose:
+`isCasedLetter` in the Canadian passes
+(a Cyrillic letter glued to a listed word makes a longer token),
+their capital tests,
+the quote neighbours' general categories,
+and `declared-name-survival.ts`'s letters and numbers after NFC
+(handles are written in Han).
+A last shape census over non-test source,
+asserted and negated forms,
+character-code ranges,
+case-fold comparisons and regex classes,
+finds nothing else outside `ascii-letters.ts` and `latin-letters.ts`,
+and no regex uses `\w` or `\b`,
+which are ASCII-only in JavaScript
+(control:
+the same search finds the `\s` in `mdx-tag-start.ts`).
 
 ## Process mistakes in this audit
 
@@ -6638,10 +6682,13 @@ and reads of the MDX parser's source while the full suite went,
 against the rule that the wait for a background task is to end the turn.
 None touched a file the running task read,
 which the rule does not make an exception for.
-Three more later in B18:
+Four more later in B18:
 `rg --count <literal mark> <files> ; rg --count <escape> <file>`,
 `<lint> && <test> > log ; rg --count FAIL log`,
-and `sed <range> | rg <heading> ; sed <range>` reading this entry.
+`sed <range> | rg <heading> ; sed <range>` reading this entry,
+and `rg <old name> src ; mise run build > log`,
+a leftover check chained to the build,
+the same form recorded during X20.
 Also in B18,
 `git diff --stat` ran from the package directory,
 and cli-git refused it for not running at the repository root.
