@@ -298,6 +298,25 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    about 10 files cite it as design rationale,
    and a late lint error forces reworking every caller (round 7 principle).
    Approved.
+- Batch 15 (programming patterns,
+   regex):
+   14 rules become 8,
+   800 to 379 tokens;
+   deletes PP3,
+   PP7,
+   PP9,
+   RG1,
+   RG3 (lint messages name the fix),
+   and OWB (prefer-readonly guidance and the ForeignBorrowed README carry it);
+   PPX keeps only `#private`;
+   PP1 kept as a compact principle (`prefer-await-to-then` misses `return p.then(...)`).
+   Apply phase adds the prefer-index-scan clause to the `no-regex` `RegExp` constructor message.
+   Approved.
+- EDR (added concurrently after batch 9):
+   compressed,
+   69 to 67 tokens,
+   kept because pi runs one response's tool calls in parallel by default.
+   Approved.
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
@@ -1455,12 +1474,7 @@ VA5:
  destructure dependent values in separate statements.
 ```
 
-## Next action
-
-Batch 15 proposed (14 rules become 8, 800 to 379 tokens) with EDR (69 to 67 tokens);
-awaiting user answers.
-
-### Pending batch 15 text
+### Batch 15
 
 ```md
 PP1:
@@ -1502,25 +1516,7 @@ RG2:
  proven O(n) for unbounded input.
 ```
 
-Deletes:
-PP3 (`no-try-finally` message names `using`),
-PP7 (`no-process-exit` help says throw;
-swallowing is LG2),
-PP9 (`no-switch` message names both fixes),
-OWB (prefer-readonly external-path guidance plus `package/ownership-marker/foreign-borrowed/README.md` already carry it),
-RG1 and RG3 (`no-regex` literal and string-method messages carry both;
-the `RegExp` constructor message lacks the prefer-index-scan clause,
-so the apply phase adds it;
-no rule checks justification text,
-but 97 of 97 repo disables have one).
-RG2 drops the rationale clause "Original may backtrack superlinearly".
-PPX drops composition (`no-class` message),
-`readonly` (IMM plus readonly lint),
-and `unknown` (`no-explicit-any` help).
-PP1 kept as a compact principle (round 7):
-`prefer-await-to-then` misses `return p.then(...)`.
-
-### Pending EDR text
+### EDR (late addition, placed after NXR)
 
 ```md
 EDR:
@@ -1529,28 +1525,22 @@ EDR:
  send dependent commands only after the edit returns.
 ```
 
-pi runs one response's tool calls concurrently by default
-(`pi-agent-core` `dist/agent-loop.js` `executeToolCallsParallel`,
-`dist/agent.js` `toolExecution ?? "parallel"`).
+## Next action
+
+Propose batch 16.
 
 ### Concurrent `AGENTS.md` changes
 
 Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- AGENTS.md`, checked 2026-09-29):
 
 - 0879faf1f added EDR to "Command execution conventions" after batch 9 was approved;
-   it is reviewed alongside batch 15.
+   approved with batch 15.
 - b9c0e6e48 added a fuzz-sidecar sentence to AP1.
 - 654507bf9 added SBS under "Adding new packages";
    it joins batch 16.
 
-### Remaining batches (92 rules)
+### Remaining batches (77 rules)
 
-- Batch 15:
-   PP1 to PP9,
-   PPX,
-   OWB (guidance moves into prefer-readonly diagnostics per round 2),
-   RG1 to RG3 (RG2 recursion clause already absorbed by ITR),
-   plus late addition EDR.
 - Batch 16:
    TP1 to TP3,
    DM1,
