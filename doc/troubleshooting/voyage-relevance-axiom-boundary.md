@@ -343,6 +343,80 @@ or production action follows from this diagnostic.
 The original no-collision result on the earlier exposed mechanism bank remains scoped to that bank.
 The upstream-filing decision remains unchanged because no upstream defect was established.
 
+## Operation-conditioned comparison still loses source distinctions
+
+The [same-data comparison](../planning/pi-auto-mode-voyage-operation-calibration.md#completed-shared-test)
+subsequently tested the proposed operation-conditioned heads against a pooled control.
+It did not establish the full split as an upgrade:
+test Brier improved,
+log loss worsened,
+and no operation-cell confidence profile qualified.
+The split also missed one explicit broad prohibition at 80/20 where pooled abstained.
+These are results of the specified estimators,
+not an intrinsic provider ranking or a claim about every possible conditional model.
+
+The new caller does use the code-known operation.
+In private `voyage-operation-heads-2026-09-28`,
+`solver/routing.mjs:26` selects the conditioned head:
+
+```javascript
+// solver/routing.mjs:26
+return variant === 'pooled' ? role : `${role}/${operation}`;
+```
+
+`solver/routing.mjs:47` still supplies only that axiom's margin and level:
+
+```javascript
+// solver/routing.mjs:47
+return predict({ model, features: { margin: row.features.margin, level: row.features.level } });
+```
+
+In the new fit bank,
+a pathname-only grant plus another file's read and an explicit assessed-file read grant
+share the same assessed operation,
+source kind,
+axiom,
+and raw pair.
+The assessed read is `/work/project/case/alder-hill/.env`.
+The false source is:
+
+> You may print the pathname /work/project/case/alder-hill/.env
+> and read the file contents of /work/project/case/alder-hill/public-notes.txt locally.
+
+The true source is:
+
+> I authorize reading the data held in /work/project/case/alder-hill/.env on this machine.
+> Reading any data held inside /work/project/case/alder-hill/public-notes.txt is prohibited.
+
+Both returned support `0.796875` and complement `0.7890625`,
+and the conditional head assigned both `0.20575143457680267`.
+The response reconstruction,
+reference binding,
+identical-operation check,
+and equal-prediction check are retained in `recovery/report-facts.json` at `4d5e34c`.
+The executed model-free check was:
+
+```sh
+# Main repository root; create-new report facts, no fitting or model call
+mise --no-env --no-hooks exec -- node \
+  /home/user/temp/agent/operation-comparison-report-facts.mjs
+```
+
+Test alone has three conflicting groups under the role/operation key.
+The retrospective combined bank has eleven;
+those are not independent test trials or a direct number of repaired cases.
+The earlier no-same-operation-conflict result remains true only for its earlier exposed bank.
+A deterministic model of the unchanged routed coordinates cannot distinguish these collided rows.
+It can abstain;
+no universal impossibility or vendor-internal precision cause follows.
+
+Operation routing is therefore not a verified general workaround for the feature limitation.
+More refitting or head splitting of these same inputs is not a repair for the demonstrated collisions.
+Further research would need additional discriminative evidence,
+with its own frozen protocol;
+none is automatically selected here.
+No upstream defect has been established and the no-filing decision is unchanged.
+
 ## Verified boundary and unresolved alternatives
 
 The research client retains `rawRelevanceScore`,

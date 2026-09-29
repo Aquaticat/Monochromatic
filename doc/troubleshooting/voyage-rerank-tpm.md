@@ -147,7 +147,24 @@ A synthetic clock recorded waits of 70,001 and 4,001 ms separately from 40 ms mo
 An early-returning timer was rejected;
 an isolated omitted pacing guard exposed that violation.
 The original reader still rejects the incomplete original evidence because its required verification receipt is absent.
-No live paced result or verified quota workaround is claimed yet.
+`proc_ee57` subsequently completed the three missing pairs with six new calls,
+no completed-request replay,
+and no new quota refusal in that suffix.
+It recorded `78009.94261299999` ms of research waiting separately from `81774.210385` ms total phase time.
+`proc_0107` then reconstructed all 228 composed successful responses and admitted the new evidence,
+while preserving the original stopped state and rejected attempt.
+This verifies recovery for that bounded suffix,
+not future quota availability or live-guard queue latency.
+Both candidates were then fitted and locked before the original 108-call shared test.
+`proc_c4b9` completed that paced test without a further refusal;
+`proc_6e57` reconstructed its responses and both predictions.
+Test pairs ranged from `1036.3708619999961` to `1606.8648460000113` ms,
+with `282047.93324999994` ms of separately recorded research waiting.
+The completed accounting is 336 scored calls plus the original rejected attempt,
+with 15,712,072 reported successful-response tokens and unknown rejected usage.
+The original failure is not reclassified as a success.
+This is bounded recovery evidence,
+not a quota or future-latency guarantee.
 
 ## What does not establish recovery
 

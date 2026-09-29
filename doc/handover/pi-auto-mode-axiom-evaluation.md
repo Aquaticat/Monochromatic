@@ -34,7 +34,46 @@ Current references:
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
-## Authorized operation-conditioned comparison
+## Completed operation-conditioned comparison
+
+The requested same-data comparison is complete,
+including explicit paced recovery from the retained HTTP 429.
+Results are in the
+[operation-calibration report](../planning/pi-auto-mode-voyage-operation-calibration.md#outcome-and-practical-recommendation).
+Do not adopt the tested full independent operation split as a demonstrated upgrade.
+It improved test Brier but worsened log loss,
+introduced a missed explicit prohibition at 80/20,
+and passed no twelve-cell test gate.
+Every validation gate failed for both candidates.
+Pooled remains a research control only,
+not a production recommendation.
+
+Exact opposite-reference coordinates remain within the same operation:
+test has three such groups;
+the retrospective combined bank has eleven.
+A same-assessed-read fit witness gives identical features to a valid read grant and an unrelated-file read grant.
+Refitting or threshold changes on unchanged routed coordinates cannot distinguish those particular rows.
+Resolving those collided rows needs additional discriminative evidence,
+not another assumption that splitting heads fixes the representation.
+Other calibrators could still affect distinguishable rows and selective coverage with abstention.
+No new phase is automatically selected.
+
+The final verified summary SHA-256 is
+`f8ac59e647eaf88db97bda07a985ac8c86b0ef62a84a0f173f8236a73f77cb46`,
+retained at private `d627283`;
+`4d5e34c` retains detailed witnesses and independent review.
+There were 336 scored calls plus one rejected attempt,
+15,712,072 reported successful-response tokens,
+and unknown usage for the rejection.
+All accepted pair clocks passed;
+research waits and three collection windows remain explicit.
+No original reserved scenario,
+`AGENTS.md`,
+production code,
+Q16,
+or Laya scope changed.
+
+### Authorization and execution record
 
 The user accepted the proposed experiment with "Okay so do it."
 Tasks #57 to #60 implement that research comparison,
@@ -147,12 +186,68 @@ and froze 34 listed files at `2f7ecf7`.
 Recovery manifest SHA-256:
 `6ea3ec5230ee939ea3a108a03657aa2389a666db7a151183a973e478bdc841ba`.
 No new live call or semantic fit preceded that freeze.
-Next resume #60 through `recovery/collect.mjs suffix`,
-not the original stopped collector.
-After complete suffix collection,
-assemble,
-fully verify,
-and admit the new pretest before both fits.
+`proc_ee57` completed the three missing pairs with six new calls and no completed-request replay.
+Raw suffix is retained at private `1b83f16`.
+Research waiting totaled `78009.94261299999` ms;
+phase time was `81774.210385` ms,
+not a five-second batch-latency claim.
+The original phase still remains stopped.
+`proc_0107` assembled,
+fully verified,
+and admitted the composed 228-call pretest in `recovery/`.
+Private checkpoint is `8db8c2b`;
+composed SHA-256 is `77e6505888afa12460dde58907e7646bc9b950453652ecdf5b814c256c75bc97`.
+Successful-response usage is 10,661,768 tokens;
+all accepted pairs met five seconds.
+The original 429 and stopped state remain preserved.
+`proc_b9f9` prepared 216 shared fit rows,
+input SHA-256 `bc34035e8503d356b3dec3d9750a6d7852d569ab6300bfb62de13ad198ca1262`.
+`proc_dace` built and bound the shared input image:
+`152de094c65ece8abf79edfbd310d70960ee56b0c5acb390d383d6bc40be2e50`.
+`proc_b052` completed the pooled four-head fit,
+candidate SHA-256 `8a7a281ec60ed2f0b02aaaca3ab39c7a6a0f1fb487e080ac5c29f1c63c2116ef`.
+`proc_3d4d` completed the twelve-head operation-conditioned fit,
+candidate SHA-256 `b1d2c8b5dea811930711ef15722e97bf331a095a23a37a59cabfb8f318416bc9`.
+`proc_09d3` evaluated both on fit/validation without tuning and locked the pair at `72cd413`.
+Bundle SHA-256:
+`64784556902b593d6df52cafd4e9ff5d5bd462dd4caa29f8583d9c616c37b4fc`.
+Lock SHA-256:
+`58ff2891a659252eb47f823fc7a0d58d85f5450df981ecbc13da87a82ee031f0`.
+Validation was mixed:
+operation-minus-pooled log loss `0.009719605016045785`,
+Brier `-0.00196728538194618`;
+all declared finite validation gates failed for both.
+No model or threshold changed.
+`proc_c4b9` completed the original 108-call shared locked test through the paced recovery collector.
+No completed request was replayed;
+both candidates ran inside each pair clock.
+Research waiting was `282047.93324999994` ms,
+separate from `348883.860682` ms phase time.
+`proc_6e57` reconstructed the raw test and both prediction paths;
+raw checkpoint is `ec7b2d3`,
+SHA-256 `292c0a12b06bdcbe2f5f5319bcbea5627a2cc0deb170e5fd6774df6399ba03eb`.
+`proc_8a5a` evaluated test and `proc_29ee` recomputed every paired report.
+Model-free summaries are retained in `recovery/result-note.json`,
+`report-facts.json`,
+and `transition-check.json`.
+No completed collector,
+fit,
+verifier,
+or create-new summary should be rerun.
+
+Test pooled log loss/Brier were `0.21613469440195884`/`0.06177862607679643`;
+operation-conditioned values were `0.22136119680676367`/`0.05764040017088699`.
+At 80/20,
+pooled had 152 correct/0 wrong/64 unresolved;
+operation had 142/1/73.
+Pooled 80/20 and operation 90/10 pass only the four-role test gate,
+not the stricter operation-cell gate or any validation gate.
+The one wrong split result resolves a real synthetic cache-preservation prohibition as false at `0.18114538658222706`;
+pooled abstains at `0.24147452217763654`.
+These results do not establish a production profile.
+Do not rerun completed collection,
+admission,
+or fitting controllers.
 The [rate-limit record](../troubleshooting/voyage-rerank-tpm.md)
 preserves provider diagnostics,
 source trace,

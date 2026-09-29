@@ -1174,3 +1174,129 @@ The first fixture-directory failure `proc_98f4` is preserved separately and invo
 Recovery manifest SHA-256:
 `6ea3ec5230ee939ea3a108a03657aa2389a666db7a151183a973e478bdc841ba`.
 No new feature request or semantic fit preceded this freeze.
+
+### Admitted pretest and locked comparison
+
+`proc_ee57` completed the three missing pairs with six new calls and no completed-request replay.
+Raw suffix is retained at `1b83f16`,
+SHA-256 `8fc3f33c26f022ca6d7c3dbb9718eac8f8b72ce4464bc877f3e23097fbffc599`.
+Research waits totaled `78009.94261299999` ms separately from `81774.210385` ms phase time.
+`proc_0107` assembled,
+fully reconstructed,
+and admitted all 228 successful pretest calls with 10,661,768 reported successful-response tokens.
+All accepted pairs met five seconds;
+the original stopped phase and rejected request remain separate.
+Admission checkpoint `8db8c2b` retains composed SHA-256
+`77e6505888afa12460dde58907e7646bc9b950453652ecdf5b814c256c75bc97`.
+
+The shared 216-row fit input has SHA-256
+`bc34035e8503d356b3dec3d9750a6d7852d569ab6300bfb62de13ad198ca1262`.
+`proc_dace` bound input image
+`152de094c65ece8abf79edfbd310d70960ee56b0c5acb390d383d6bc40be2e50`.
+`proc_b052` completed the four-head pooled fit;
+`proc_3d4d` completed the twelve-head operation fit.
+Each ran once in a separate declared offline sandbox invocation.
+
+`proc_09d3` evaluated fit/validation without tuning and locked both candidates at `72cd413`.
+Bundle SHA-256:
+`64784556902b593d6df52cafd4e9ff5d5bd462dd4caa29f8583d9c616c37b4fc`.
+Lock SHA-256:
+`58ff2891a659252eb47f823fc7a0d58d85f5450df981ecbc13da87a82ee031f0`.
+On validation,
+operation conditioning increased log loss by `0.009719605016045785`
+and reduced Brier by `0.00196728538194618`;
+all declared finite gates failed for both candidates.
+No model,
+normalization,
+label,
+threshold,
+or test schedule changed.
+
+`proc_c4b9` completed the fixed 108-call shared test through the paced collector after the lock.
+Raw checkpoint `ec7b2d3` has SHA-256
+`292c0a12b06bdcbe2f5f5319bcbea5627a2cc0deb170e5fd6774df6399ba03eb`.
+`proc_6e57` reconstructed all responses and both in-clock predictions.
+Accepted test pairs ranged from `1036.3708619999961` to `1606.8648460000113` ms;
+research waiting was separately `282047.93324999994` ms.
+`proc_8a5a` evaluated test and `proc_29ee` recomputed every paired report without refitting.
+Private `d627283` retains the summary and result note;
+`4d5e34c` retains witnesses and independent-review dispositions.
+Verified summary SHA-256:
+`f8ac59e647eaf88db97bda07a985ac8c86b0ef62a84a0f173f8236a73f77cb46`.
+
+### Paired test result and practical disposition
+
+On the same 216 test rows,
+pooled log loss/Brier were `0.21613469440195884`/`0.06177862607679643`;
+operation-conditioned values were `0.22136119680676367`/`0.05764040017088699`.
+Paired operation-minus-pooled differences were `0.005226502404804916`
+and `-0.004138225905909477`.
+This is a mixed result,
+not dominance.
+Parameter count,
+normalization,
+per-head data,
+and effective per-row regularization also change;
+no pure operation-label causal effect is claimed.
+
+Pooled test counts at 80/20,
+90/10,
+and 95/05 were 152 correct/0 wrong/64 unresolved,
+121/0/95,
+and 84/0/132.
+Operation-conditioned counts were 142/1/73,
+88/0/128,
+and 52/0/164.
+Pooled 80/20 and operation 90/10 pass only the four-role test gate.
+Neither passes any twelve-cell test gate,
+and every validation gate failed for both.
+Neither isolated test pass qualifies a production profile.
+
+The split's wrong 80/20 resolution misses a true cache-preservation prohibition at `0.18114538658222706`;
+pooled abstains at `0.24147452217763654`.
+The exact synthetic source and paired transition are retained in the
+[result report](../planning/pi-auto-mode-voyage-operation-calibration.md#missed-explicit-prohibition).
+All 24 sampled repeat/order axiom pairs matched in the original window only.
+Accepted-subset losses and bin gaps,
+empty-cell nulls,
+role/operation/family/episode slices,
+and paired transitions remain in the full reports.
+They are constructed-sample diagnostics,
+not independent trials or population calibration bounds.
+
+Test has six opposite-reference coordinate groups by role and three by role plus operation.
+The retrospective combined bank has 21 and eleven respectively;
+those grouping counts are not direct numbers of repaired cases.
+A same-assessed-read fit witness has opposite references but identical support `0.796875`
+and complement `0.7890625`,
+and receives conditional probability `0.20575143457680267` for both.
+No deterministic refit of unchanged role/operation/margin/level inputs can distinguish those particular rows.
+It can abstain;
+other representations,
+calibrators on distinguishable rows,
+or provider configurations are not universally excluded.
+No internal quantization or serving-precision cause is inferred.
+
+Do not adopt the tested full independent operation split as a demonstrated upgrade.
+Keep pooled only as a research control,
+not a production recommendation.
+Resolving the demonstrated collisions requires additional discriminative evidence,
+not an assumption that more head splitting recovers it.
+No further phase or production change is selected.
+
+Final accounting is 336 scored calls,
+1,344 raw scores,
+and one additional rejected request.
+Successful responses report 15,712,072 tokens;
+rejected usage is unknown.
+The original pretest remains stopped.
+Research pacing,
+three collection windows,
+original-window-only controls,
+and the non-hermetic host boundary remain explicit.
+The requested comparison and bounded continuation are complete;
+no original reserved-bank,
+`AGENTS.md`,
+production,
+Q16,
+or Laya change occurred.
