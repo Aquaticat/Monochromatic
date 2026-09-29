@@ -2878,7 +2878,12 @@ A fresh format 2 census of that file and `page-assembly-guard.unit.test.ts` (`ce
 `page-assembly-guard.ts` keeps its baseline lines 114 to 116,
 `namesIt`,
 which needs a pass-restored row and a guard-trimmed row on one page,
-for the batch of anonymous callbacks and library stretches.
+for the batch of anonymous callbacks and library stretches
+(`1891634ee`).
+The mutant whose filter in `freshlyTakenBack` keeps every slice failed the first two cases;
+the third,
+a round that took nothing back,
+reads the same under both.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
