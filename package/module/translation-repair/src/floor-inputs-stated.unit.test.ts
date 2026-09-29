@@ -711,7 +711,9 @@ const NAMED_OMISSIONS: readonly NamedOmission[] = [
   {
     omission: 'translate-slice.ts#settleTranslateSlice -> runTranslateStage: unreadable <opaque:stageInput> [archiveDisputeNote, '
       + 'attestedLines, declared, disputedWordings, identityContext, pictureContext, referenceContext]',
-    why: 'stageInput is translateSliceInput\'s stage input, whose literal states each of them (translate-slice-input.ts)',
+    why: 'stageInput is translateSliceInput\'s stage input, whose literal states each of them (translate-slice-input.ts); '
+      + 'this scan cannot read a returned literal, so translate-slice-input.unit.test.ts and the stage-threading tests '
+      + 'pin each input (b29-stage-input-mutants.json caught all seven)',
   },
 ];
 
