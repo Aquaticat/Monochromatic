@@ -1947,6 +1947,87 @@ Treat these choices as selected,
 not as pending defaults in the review form.
 No production Search change or search-library choice is authorized.
 
+### D69. Search status claims follow verified query and source state (2026-09-29)
+
+The empty/unavailable review has one evidence-led direction,
+not an additional preference ballot:
+keep **no query yet**,
+**completed current-query no match**,
+**confirmed empty searchable inventory** and **known source failure**
+separate in the selected A result region.
+A partial scan,
+source refresh,
+prior-query results or an empty track list cannot by itself establish
+that no folder/track name matches the current query.
+Peak analysis is not a prerequisite for name Search under D27.
+An explicit source failure takes precedence over ordinary empty-query or
+no-match copy;
+it does not silently erase the query,
+leave Search,
+steal edit focus or reopen a dismissed keyboard.
+The fixed debug states and
+`package/music-player/design/questions/search-status-evidence.html`
+illustrate this distinction on both Fold panels at 100% and 200% text
+without executing a real lookup.
+This selects status **truth conditions**,
+not an index scope,
+matcher,
+backend state implementation or result tap.
+
+### D70. Keep the unqueried prompt and completed-no-match treatment (2026-09-29)
+
+The selected A right pane may show the existing “Search your music” /
+“Type a name to explore your library” prompt while a usable source has
+no query.
+Do not label this first visit “No results.”
+For a **fully evaluated** nonempty query with zero direct-name hits,
+keep the query and Clear in the fixed header and show a no-match title
+naming the entered text with “Try another name” support.
+The native `zzq` fixture demonstrates this paint only;
+it does not prove a search ran,
+long-query wrapping,
+keyboard-open fit or arbitrary text.
+D52's rejected repeated **positive-results heading** does not ban a
+no-match diagnostic from naming the affected input.
+The real Search scope and completion signal belong to implementation
+work;
+without that signal,
+do not render a final no-match verdict.
+
+### D71. Do not promise a library recovery that has no owner (2026-09-29)
+
+Reject the debug fixture's broad “Library unavailable” /
+“Search returns when the library is available” as selected Search copy.
+Its inner screenshot keeps visible folders and an already-playing track,
+while the fixed unavailable marker proves neither total library loss nor
+automatic recovery.
+Only a **known inability to search the current source** may replace the
+result region with a Search-specific unavailable explanation.
+Name the cause when known and present only a recovery action whose owner
+can actually perform it;
+changing to another folder is a scope change,
+not repair of the original source.
+Do not infer unavailability from a zero-length track list or missing
+device-wide permission alone:
+a held folder may still be a readable source,
+while the current production permission gate may prevent Search opening.
+The exact cause-specific sentence and control depend on a future real
+source-status signal;
+no generic button or successful retry is promised by this decision.
+Preserve the integrated header,
+query,
+actual left browser and complete deck without presenting their stale
+content as freshly verified.
+
+These D69 to D71 directions were derived from the existing decisions,
+production source selection and sanitized native fixture review.
+They are recorded with a correction/veto path rather than another
+ceremonial preference question,
+in response to the user's correction after the D63 to D68 selection.
+No production Search change,
+fuzzy-library work,
+new IME experiment or original-AVD modification is authorized.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
