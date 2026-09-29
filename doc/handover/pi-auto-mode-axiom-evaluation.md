@@ -125,7 +125,10 @@ scoped lint `proc_a8b2`,
 and unchanged-policy hashing.
 Task #74 is complete at its private-workaround scope;
 the production TypeScript linter remains intentionally unchanged under issue 559's existing decision.
-Task #16 has resumed and remains in progress.
+Task #16 resumed after the offset remedy,
+then paused on task #75's effective SDK dependency staging.
+Task #75 is the active work item;
+no real SDK session or external model assessment has started.
 Production stays unchanged,
 no cutoff is selected,
 and no engineering gate is declared passed by the confirmation.
@@ -302,6 +305,50 @@ No model call,
 production parser edit,
 upstream patch,
 or new issue was made.
+
+## Actual SDK source-capture preparation
+
+The private draft is `contract/sdk/plan.json`.
+It targets an actual disposable `AgentSession`,
+registered extension/tool callbacks,
+and a capped first-party scripted provider.
+It is not sealed for execution yet.
+Existing repository patterns in auto-mode's SDK scope test and goal's runtime verifier were inspected,
+not rerun as suites.
+
+Read-only dependency inventory `proc_1af5` retained 54 installed package records
+and 26 missing optional declarations,
+then stopped on these staging assumptions:
+
+- `@earendil-works/pi-ai` declares `@aws-sdk/client-bedrock-runtime` and `@google/genai`,
+  but neither is installed in its resolution paths.
+- `proper-lockfile` resolves to the repository-owned `package/shim/proper-lockfile`,
+  outside the initial external-store-only admission rule.
+
+The original inventory is committed as `contract/sdk/sdk-dependency-inventory.json`.
+Do not replay its constructor or label these findings proof that SDK startup is impossible.
+`pnpm-workspace.yaml` explicitly removes the cloud SDK edges and substitutes the lockfile shim.
+Current Pi AI source uses lazy Google/Bedrock implementations;
+the planned scripted provider must not exercise those routes.
+The shim remains the incumbent owner and must not be replaced or omitted.
+
+A separate composition under `contract/sdk/effective` binds the retained inventory,
+reviewed override-configuration hash,
+exact shim metadata/code,
+and inspected lazy-route sources.
+It is metadata classification only;
+file-layout/source staging and actual import/startup still need verification.
+No removed cloud SDK was installed,
+no production source or lockfile was edited,
+and no package code was executed by the inventory.
+
+Task #75 resolves these bounded staging prerequisites,
+then #16 continues the source-aware consumer contract and actual SDK probe.
+The first SDK session must remain behind a sealed case schedule,
+explicit opt-in,
+transcript and invocation caps,
+isolated disposable state,
+and verified resource/runtime inputs.
 
 ## Completed fresh Jev study and next gate
 
