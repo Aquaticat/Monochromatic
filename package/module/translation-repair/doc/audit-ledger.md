@@ -8637,14 +8637,15 @@ coverage,
 the rendering audit,
 the naturalness review,
 and the introduced-defect probe.
+The page-title lexicon writes the English every passage uses for a title the original names,
+under the house rules.
 Readers extract or align and write nothing that ships:
 the picture readers,
 reference attestation and its confirmation,
-section and block pairing,
-and the page-title lexicon.
+and section and block pairing.
 The restoration judge and the derivability probe are measurement probes.
 
-#### Findings so far
+#### Findings fixed
 
 - The archive block review lists the apparatus kinds without the shared narrative bound
   (`NARRATIVE_DETAIL_IS_NOT_APPARATUS`);
@@ -8665,7 +8666,62 @@ The restoration judge and the derivability probe are measurement probes.
   which `slice-context.md` says every such sheet does with the references beside it,
   and the house rules it carries tell it to read a pronoun line and footnote vocabulary in a DECLARED NAMES block it never sees.
   Of 381 stored run logs under `~/temp/agent/` in which the review ran,
-  95 are entries citing at least one reference.
+  95 are entries citing at least one reference,
+  and 73 of those reached a correction slate,
+  the path on which a detail a cited page states could be removed.
+  The review's outcome findings reach stored files too rarely
+  (2 files hold any)
+  to count what the slates chose.
+
+The narrative bound:
+red `f8f5ec907`
+(every rendered sheet listing the kinds carries the bound),
+fix `678b1d725`.
+The archive review's editorial-context line now states the shared bound,
+keeping its own sentence for biography and quoted dialogue,
+and the probe's apparatus excuse carries the bound after it.
+The probe runs inside the repair and refine slice caches,
+so both key files record the change riding inside versions 34 and 5:
+no slice-cache file was written after 04:27 UTC on 2026-09-27,
+where a control from midnight that day finds 494.
+
+The declared names and references:
+red `590a98921`,
+fix `06c6d22ad`.
+`pass-prepare.ts` passes both through `repairArchiveBlocks` to the review,
+whose sheet,
+correction slate and naturalness read now carry them;
+the slate's first criterion removes a claim supported neither by the original nor by a page it cites,
+since earlier criteria outrank later ones.
+A retention may anchor in one cited page's own text
+(`isArchiveReferenceQuoteAnchored`,
+the source anchor's fold and minimum);
+`referencePageTexts` in `reference-line-head.ts` cuts each line's head and address
+and skips the attested lines,
+each of which quotes the archive back,
+and the lookup's failure notes,
+whose wording the lookup now writes from constants in the same module.
+The mutation batch (`b28-mutants.json`,
+fourteen mutants over the anchor,
+the page reader,
+every thread,
+the criterion and both bounds)
+caught all fourteen,
+and its comment control survived.
+The full suite passed on `06c6d22ad` with no failing case.
+
+#### Still open
+
+- Coverage finds "a fact,
+  a name,
+  a number" of a Chinese passage in the English
+  without the declared names its house rules point to,
+  so a passage anchored mainly by a declared name can read as uncovered.
+  Preparation holds the identity where `pass-insertion-admission.ts` calls the stage.
+- The page-title lexicon writes shipped title renderings under house rules that say to use vocabulary a note line in the DECLARED NAMES block establishes,
+  and gets no such block;
+  its lines are themselves part of the identity preparation builds,
+  so what it could be given is the rest of that identity.
 
 #### Read and left as they are
 
@@ -8681,7 +8737,8 @@ the editor and the rendering audit the declared names and references the fixture
 `editor-ensemble.ts`,
 `repair-editor-stage.ts`,
 `rendering-audit.ts`).
-The readers and pairing sheets carry no house rules,
+The readers,
+the attestation and the pairing sheets carry no house rules,
 and write nothing that ships.
 
 ## Process mistakes in this audit
