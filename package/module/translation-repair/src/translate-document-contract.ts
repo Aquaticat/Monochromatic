@@ -199,6 +199,14 @@ import type { SliceReplacement, } from './splice-slices.ts';
  answer moves that this change explains; checked on 2026-09-29: still no
  slice-cache file newer than 04:26 UTC on 2026-09-27.
 
+ Rides inside 15 too: `collapseKey` reads prose quotes through the typography
+ fold (ledger B24, `straightenProseQuotes`), so a rendering apart from the
+ incumbent or another only in straight against curly prose quotes collapses
+ into it on the slate, and the repair lane skips validating it as a copy of
+ the incumbent. Over the 2,905 stored slates, 305 carried such a twin and in
+ 30 the chosen candidate was the incumbent's; checked on 2026-09-29: the
+ newest slice-cache file is still the one of 04:26 UTC on 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

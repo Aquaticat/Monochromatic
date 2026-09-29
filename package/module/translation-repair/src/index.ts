@@ -43,6 +43,7 @@ export {
   collapseLineBreaks,
   collapseSoftLineBreaks,
   normalizePunctuation,
+  straightenProseQuotes,
   straightenQuotes,
 } from './quote-normalize.ts';
 export {

@@ -1,3 +1,5 @@
+import { proseMask, } from './typography-prose-mask.ts';
+
 //region Quote normalization
 // Models copy quote evidence with ASCII punctuation while the corpus uses
 // curly variants (the en editing guide mandates them), so byte-exact
@@ -147,6 +149,46 @@ export function straightenQuotes({ text, }: { readonly text: string; },): string
     text,
     map: TYPOGRAPHY_CANON,
   },);
+}
+
+/**
+ Straightens the curly quotation marks of a rendering's prose only: the
+ typography fold read where the typography restoration reads. A quote inside
+ a backtick span or a tag is code or markup, which the restoration never
+ touches (`typography-prose-mask.ts`), so two renderings apart there are two
+ texts. For a whole slice, which may carry code; a title or a single phrase
+ has none, and takes {@link straightenQuotes}.
+ Length-preserving like {@link straightenQuotes}.
+
+ @param text - rendering whose prose quotes straighten
+
+ @returns Same-length text with straight quotes in its prose
+
+ @example
+ ```ts
+ straightenProseQuotes({ text: 'the cat’s `“nap”`', },); // 'the cat\'s `“nap”`'
+ ```
+ */
+export function straightenProseQuotes({ text, }: { readonly text: string; },): string {
+  /**
+   Which units are prose rather than code or markup.
+   */
+  const mask = proseMask({ text, },);
+  /**
+   Text with every quote straightened, the same length as the input.
+   */
+  const straight = straightenQuotes({ text, },);
+  /**
+   Units in input order, each taken straightened where it is prose.
+   */
+  const units: string[] = [];
+  for (
+    let index = 0;
+    index < text.length;
+    index += 1
+  )
+    units.push(((mask[index] === true) ? straight : text).charAt(index,),);
+  return units.join('',);
 }
 
 /**

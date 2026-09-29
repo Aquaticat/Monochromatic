@@ -7,6 +7,7 @@ import {
   type FoldedText,
   foldInvisibleVariants,
 } from './invisible-variants.ts';
+import { straightenProseQuotes, } from './quote-normalize.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
@@ -176,7 +177,15 @@ function isBlankQuoteLine({ line, }: { readonly line: string; },): boolean {
  newline; saurikissa's archive has 35 such lines), and those are content.
  Leading whitespace is NOT stripped, since Markdown list indentation is
  content.
- 
+
+ PROSE QUOTE STYLE TOO, since 2026-09-29 (ledger B24): a rendering apart
+ from another only in whether its prose apostrophes and quotation marks are
+ straight or curly is one wording, which the typography restoration makes one
+ after the ballot. Of 2,905 stored slates, 305 carried such a twin, 246 of the
+ pairs with the incumbent, and in 30 the chosen candidate was the incumbent
+ with its quotes straightened. Quotes in code and markup stay as written
+ (`straightenProseQuotes`), since there they are content.
+
  @param text - candidate text
  
  @returns Comparison key
@@ -190,7 +199,7 @@ export function collapseKey({ text, }: { readonly text: string; },): string {
   /**
    Each line, blank and blank-quote lines without their trailing spaces.
    */
-  const lines = text
+  const lines = straightenProseQuotes({ text, },)
     .split('\n',)
     .map(function foldedBlank(line,): string {
       return isBlankQuoteLine({ line, },) ? line.trimEnd() : line;

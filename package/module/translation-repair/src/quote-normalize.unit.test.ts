@@ -17,6 +17,7 @@ import {
 import {
   collapseLineBreaks,
   normalizePunctuation,
+  straightenProseQuotes,
   straightenQuotes,
 } from '../dist/final/node/index.mjs';
 
@@ -130,6 +131,37 @@ await describe({
         const kept = '「猫」『喵』\u{00A0}nap';
         expect(straightenQuotes({ text: kept, },),).toBe(kept,);
         expect(normalizePunctuation({ text: kept, },),).not.toBe(kept,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: straightenProseQuotes.name,
+  children: [
+    it({
+      name: 'STRAIGHTENS THE QUOTES OF PROSE ONLY, leaving a backtick span and a tag as written, where the '
+        + 'typography restoration never reaches',
+      fn: async () => {
+        expect(straightenProseQuotes({ text: 'the cat’s “nap”, then `say “purr”`', },),)
+          .toBe('the cat\'s "nap", then `say “purr”`',);
+        expect(straightenProseQuotes({ text: '<Cat name=“Mittens”>she didn’t</Cat>', },),)
+          .toBe('<Cat name=“Mittens”>she didn\'t</Cat>',);
+      },
+    },),
+    it({
+      name: 'KEEPS THE LENGTH AND EVERY CHARACTER PAST THE FIRST PLANE, so an offset still indexes the input',
+      fn: async () => {
+        /**
+         Prose with an astral ideograph beside a curly apostrophe.
+         */
+        const text = '𠀀’s “nap”';
+        /**
+         What the fold makes of it.
+         */
+        const folded = straightenProseQuotes({ text, },);
+        expect(folded,).toBe('𠀀\'s "nap"',);
+        expect(folded.length,).toBe(text.length,);
       },
     },),
   ],

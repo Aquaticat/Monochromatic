@@ -189,6 +189,13 @@ import type { LaneText, } from './translate-candidates.ts';
  checked on 2026-09-29: still no slice-cache file newer than 04:26 UTC on
  2026-09-27.
 
+ Rides inside 20 too: the consolidation slate collapses a rendering apart
+ from the standing or a lane text only in straight against curly prose quotes
+ into it (ledger B24, `collapseKey`, `straightenProseQuotes`); over the 2,905
+ stored translate and consolidation slates, 305 carried such a twin; checked
+ on 2026-09-29: the newest slice-cache file is still the one of 04:26 UTC on
+ 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
