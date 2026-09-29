@@ -475,6 +475,45 @@ await describe({
       },
     },),
     it({
+      name: 'SETTLES SEVERAL QUOTED SPANS ONLY BY ONE CARRYING THE HEADING AS WORDS (ledger B23, found under B24): '
+        + '"Catnip Days" does not carry "Cat", so the credit is ambiguous rather than rewritten',
+      fn: async () => {
+        /**
+         Credit quoting two titles, neither of them the heading.
+         */
+        const credit = '—— Yunmao “Catnip Days”, from “Dog Days”';
+        /**
+         Pass over a heading and that credit.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            pair({
+              sliceIndex: 0,
+              source: '### 猫',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 1,
+              source: '—— 云猫《猫》，出自《狗日》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            {
+              sliceIndex: 0,
+              replacementText: '### Cat',
+            },
+            {
+              sliceIndex: 1,
+              replacementText: credit,
+            },
+          ],
+        },);
+        expect(unified.replacements[1]?.replacementText,).toBe(credit,);
+        expect(unified.findings.join('\n',),).toContain('title-reference-ambiguous (slice 1',);
+      },
+    },),
+    it({
       name: 'READS past a tag attribute\'s quotes and past a second quoted span that already carries the heading',
       fn: async () => {
         /**
