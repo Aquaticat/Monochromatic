@@ -71,6 +71,24 @@ await describe({
       },
     },),
     it({
+      name: 'LEAVES A LONGER ADDRESS TO THE DESTINATION FLOOR (ledger B23): one that only begins with the original\'s '
+        + 'is not that destination kept, so the finding does not say it is',
+      fn: async () => {
+        /**
+         Verdict on a rendering whose bare address runs on past the original's.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: SOURCE,
+          candidateText: '[^2]: A Nap on the Windowsill (https://example.invalid/windowsill-nap.html2)',
+          pageText: LINKED,
+        },);
+        expect(verdict.kind,).toBe('invalid',);
+        if (verdict.kind !== 'invalid')
+          throw new Error('unreachable',);
+        expect(verdict.findings.join('\n',),).not.toContain('carries that destination without words linked to it',);
+      },
+    },),
+    it({
       name: 'REFUSES a rendering whose link words became the destination',
       fn: async () => {
         expect(validateTranslatedSlice({
