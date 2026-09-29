@@ -371,7 +371,15 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    EPR):
    10 rules stay 10,
    694 tokens both ways;
-   NCD and CRN now point at tracked `forbidden-strings.append.txt`;
+   NCD and CRN keep the split (user choice after correction):
+   reserved codes and renamed identifiers live in tracked `forbidden-strings.append.txt`,
+   retired or rejected codes in untracked `forbidden-strings.append.local.txt` (ATR,
+   VPH);
+   NCD checks both.
+   Retracted claim:
+   Q47 said the local file "holds no codes";
+   it holds both retired codes,
+   misread from combined search output.
    TAG states round 4 uniqueness scope;
    CRN covers retired codes;
    JCH stays always-loaded until #423 (reopened round 2:
@@ -2042,18 +2050,17 @@ NCD:
  fresh,
  unique,
  semi-meaningful;
- check `forbidden-strings.append.txt`;
+ check both forbidden-strings appendixes;
  reject unrelated first readings (acronyms,
  products,
  ordinary words,
  external prefix+digit namespaces).
 
 CRN:
- Never reuse a code except to rename a misleading one,
- updating every occurrence in the same change;
- renamed,
- rejected,
- or retired codes get a comment + regex entry in `forbidden-strings.append.txt`.
+ Reuse a code only to rename a misleading one,
+ updating all uses at once;
+ retired/rejected codes go in `forbidden-strings.append.local.txt`,
+ renamed identifiers in `forbidden-strings.append.txt`.
 
 APG:
  Auto-push is enabled.
