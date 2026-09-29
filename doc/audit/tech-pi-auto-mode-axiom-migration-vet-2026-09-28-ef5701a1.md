@@ -1300,3 +1300,47 @@ no original reserved-bank,
 production,
 Q16,
 or Laya change occurred.
+
+## Candidate priority after the completed comparisons
+
+The user now asks which candidate is recommended.
+Prioritize Jev through LLM Gateway for remaining qualification.
+This is a research-priority recommendation,
+not a completed finalist ranking or production adoption.
+No candidate has completed every required production gate;
+no production confidence cutoff is selected.
+
+Jev provides the required independent source-language axiom probabilities directly,
+without the separately fitted relevance adapter tested for Voyage.
+Its predeclared 95/05 synthetic screen resolved 45 claims correctly,
+none incorrectly,
+and left 27 uncertain while satisfying the four-role novel-text coverage rule.
+Observed full-policy two-source profiles took `554.7223100000001` to `1182.7266599999998` ms.
+The retained policy hash
+`4731752e57e66bf587462e86aff22cbae7b4f073cb1f125f965438268e7c064b`
+still matches current `AGENTS.md`,
+verified by `sha256sum` for this recommendation.
+This is recorded screening evidence,
+not a repeated timing guarantee,
+all-operation coverage,
+or population calibration.
+One novel example supplies the strict band's true request-prohibition coverage.
+
+The tested Drex v1.0 and direct Respan Lite profiles passed none of their declared semantic bands.
+Voyage's tested composed designs did not establish a qualified upgrade and retain same-operation feature collisions.
+The tested Laya CPU route missed the five-second budget,
+and its alternative runtime branch remains paused.
+These are profile-specific reasons to prioritize the next qualification effort,
+not an intrinsic provider-weight ranking or a rejection of untested versions.
+
+The [Jev recommendation record](../planning/pi-auto-mode-jev-qualification.md#recommended-next-qualification-candidate)
+retains the benefits and limitations.
+Fresh semantic/calibration qualification,
+remaining service evidence,
+and the real human-authority/lifecycle/finalizer boundary remain open.
+Existing private-input consent for the named Jev route stays sufficient;
+do not reopen declined dashboard access.
+No new calls,
+production implementation,
+Q16 interview,
+or Laya restart follows automatically from this recommendation.

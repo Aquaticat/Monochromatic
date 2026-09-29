@@ -7,8 +7,9 @@ preparation-inclusive budget,
 and semantic studies are complete at their recorded scopes.
 This completes Jev's bounded semantic prerequisite,
 not the full multi-candidate investigation.
-The user asked about Voyage-rerank when the design interview resumed;
-that interview is paused while Voyage's incomplete assessment is addressed.
+The design interview remains paused.
+The subsequent Voyage composed-estimator comparisons are complete;
+none established a production-qualified replacement.
 The `0.95/0.05` diagnostic band passed only the frozen semantic gate.
 Broader service,
 calibration,
@@ -16,7 +17,7 @@ and live-consumer qualification remain open.
 Native development and overflow probes remain scoped evidence,
 not production qualification.
 See the [axiom record](pi-auto-mode-axioms.md)
-and [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-80e67cc0.md).
+and [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 No model winner,
 threshold,
 account mutation,
@@ -27,6 +28,42 @@ and declined dashboard access.
 The accepted AUP,
 necessity-based retention,
 and gateway-internal retry choices remain settled.
+
+## Recommended next qualification candidate
+
+In response to the user's request for an overall candidate recommendation,
+prioritize Jev through LLM Gateway for remaining qualification.
+This is a research-priority recommendation,
+not a completed finalist ranking,
+a selected production cutoff,
+or authorization to deploy.
+No production candidate has completed every required gate.
+
+Jev supplies the required source-isolated axiom probabilities directly,
+without a separately fitted relevance-score adapter.
+Its predeclared 95/05 semantic screen resolved 45 claims correctly,
+none incorrectly,
+and left 27 uncertain while satisfying the four-role novel-text coverage rule.
+Measured two-source profiles retained full policy and took `554.7223100000001` to `1182.7266599999998` ms.
+The policy hash in that evidence still matches the current `AGENTS.md` hash checked for this recommendation.
+
+The tested Drex v1.0 and direct Respan Lite profiles passed none of their declared semantic bands.
+The Voyage comparisons did not establish the tested estimators as a qualified upgrade,
+and retained same-operation information loss.
+The tested Laya CPU route missed the five-second budget;
+its alternative runtime branch remains paused.
+These are route/profile-specific observations,
+not an intrinsic ranking of provider weights or untested versions.
+
+The 95/05 pass is synthetic screening,
+not broad calibration or all-operation coverage.
+One novel example supplies its true request-prohibition coverage.
+Fresh qualification,
+remaining service evidence,
+and the real human-authority/lifecycle/finalizer boundary still need completion.
+Existing private-input consent is sufficient for the named Jev evaluation route;
+do not reopen declined dashboard access or silently resume Q16/Laya.
+No new call or implementation follows automatically from this recommendation.
 
 ## Parser-boundary correction
 

@@ -34,6 +34,36 @@ Current references:
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
+## Current candidate recommendation
+
+The user asked which candidate is recommended after the completed comparisons.
+Prioritize **Jev through LLM Gateway** for remaining qualification,
+not another Voyage head experiment.
+This selects a research priority,
+not a production provider or threshold.
+No candidate has completed all production/adoption gates.
+
+The [Jev evidence and recommendation](../planning/pi-auto-mode-jev-qualification.md#recommended-next-qualification-candidate)
+records its direct axiom interface,
+45 correct/0 wrong/27 uncertain at the predeclared 95/05 semantic screen,
+and preparation-inclusive two-source measurements of `554.7223100000001` to `1182.7266599999998` ms.
+Its retained policy hash still matches current `AGENTS.md`.
+The screen is not broad calibration,
+operation-cell qualification,
+or a deployment guarantee;
+one novel case supplies its true request-prohibition coverage.
+
+Drex v1.0 and direct Respan Lite failed their tested semantic bands;
+Voyage's tested composed designs did not establish a qualified upgrade;
+Laya's measured CPU route missed the budget and its alternative runtime work remains paused.
+These are profile-specific reasons to prioritize Jev,
+not a provider-weight ranking.
+Existing private-input consent for Jev remains sufficient for the named evaluation route.
+Do not reopen dashboard access,
+select 95/05 for production,
+start new calls/implementation,
+or resume Q16/Laya from this recommendation alone.
+
 ## Completed operation-conditioned comparison
 
 The requested same-data comparison is complete,
