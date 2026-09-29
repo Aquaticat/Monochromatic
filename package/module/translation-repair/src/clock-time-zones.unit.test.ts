@@ -37,6 +37,10 @@ import {
 
 import { isAsciiDigit, } from '../dist/final/node/index.mjs';
 import {
+  readLivingRepositoryDocs,
+  REPOSITORY_ROOT,
+} from './living-docs.test-fixture.ts';
+import {
   parseSource,
   readPackageSource,
 } from './source-scan.test-fixture.ts';
@@ -601,13 +605,15 @@ function commentProse(
 }
 
 /**
- Every prose file the guard reads.
+ Every prose file the guard reads. The living planning docs are not read yet:
+ 404 zone-less times stand in the pass log, each to be resolved from its
+ source first (ledger D29).
 
  @returns Prose of the package's source comments, docs and README, the
  decision records, and the current handover
 
- @throws {@link Error} when the canonical handover links no snapshot, since the
- guard would then read less than it claims
+ @throws {@link Error} when the living docs cannot be located, since the guard
+ would then read less than it claims
 
  @example
  ```ts
@@ -616,53 +622,31 @@ function commentProse(
  */
 async function readLivingProse(): Promise<readonly Prose[]> {
   /**
-   Repository root, four levels above `src`.
+   Package root, from the repository root.
    */
-  const repo = join(import.meta.dirname, '..', '..', '..', '..',);
+  const pkg = join('package', 'module', 'translation-repair',);
   /**
-   Package root.
+   Living repository-level docs.
    */
-  const pkg = join(repo, 'package', 'module', 'translation-repair',);
-  /**
-   The canonical handover, which links the current snapshot.
-   */
-  const handover = await readFile(join(repo, 'doc', 'handover', 'translation-repair.md',), 'utf8',);
-  /**
-   The snapshot's file name, from the first link to one.
-   */
-  const snapshot = handover
-    .split('(',)
-    .map(function target(piece,): string {
-      return piece.slice(0, piece.indexOf(')',),);
-    },)
-    .find(function isSnapshot(target,): boolean {
-      return target.startsWith('translation-repair-handover-',) && target.endsWith('.md',);
-    },);
-  if (snapshot === undefined)
-    throw new Error('doc/handover/translation-repair.md links no handover snapshot',);
+  const { decisionRecords, handover, } = await readLivingRepositoryDocs();
   /**
    Markdown paths from the repository root.
    */
   const markdown = [
-    ...(await readdir(join(pkg, 'doc',),)).filter(function isMarkdown(name,): boolean {
+    ...(await readdir(join(REPOSITORY_ROOT, pkg, 'doc',),)).filter(function isMarkdown(name,): boolean {
       return name.endsWith('.md',);
     },).map(function underDoc(name,): string {
-      return join('package', 'module', 'translation-repair', 'doc', name,);
+      return join(pkg, 'doc', name,);
     },),
-    join('package', 'module', 'translation-repair', 'README.md',),
-    ...(await readdir(join(repo, 'doc', 'decision',),)).filter(function isRecord(name,): boolean {
-      return name.startsWith('translation-repair',) && name.endsWith('.md',);
-    },).map(function underDecision(name,): string {
-      return join('doc', 'decision', name,);
-    },),
-    join('doc', 'handover', 'translation-repair.md',),
-    join('doc', 'handover', snapshot,),
+    join(pkg, 'README.md',),
+    ...decisionRecords,
+    ...handover,
   ];
   /**
    Markdown prose.
    */
   const docs = await Promise.all(markdown.map(async function read(path,): Promise<Prose> {
-    return markdownProse({ path, text: await readFile(join(repo, path,), 'utf8',), },);
+    return markdownProse({ path, text: await readFile(join(REPOSITORY_ROOT, path,), 'utf8',), },);
   },),);
   /**
    Comment prose of every TypeScript file.

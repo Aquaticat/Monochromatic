@@ -5574,6 +5574,25 @@ rewrite the section from the current handover and the package README,
 each claim checked against the code or a log,
 and have it point at the package docs that now carry the current state.
 
+### D29: zone-less clock times in the living planning docs
+
+Status:
+open,
+found 2026-09-29 while widening the guards to the living repository-level docs for D26.
+`src/living-docs.test-fixture.ts` counts the readiness signal and the OpenRouter pass log as living,
+since the current handover links both as current,
+but the clock guard does not read them yet:
+a scan approximating the guard (`~/temp/agent/audit-glossary-fix/zoneless-files.mjs`,
+which agrees with the guard on a decision record the guard passes)
+finds 404 zone-less times in the pass log and 4 in the readiness signal.
+Fix:
+as D25 did,
+resolve each from its source
+(a run log prints UTC;
+`git log` and `find` print local time),
+write its zone,
+and add both docs to the clock guard's read.
+
 ## Found while fixing
 
 ### X1: the translate lane stopped the entry on a rejected slate over an archive the floor refuses
