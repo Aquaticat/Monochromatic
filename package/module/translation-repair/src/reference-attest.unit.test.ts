@@ -236,6 +236,15 @@ await describe({
       },
     },),
     it({
+      name: 'VERIFIES A QUOTE WHOSE MARKS DIFFER FROM THE TEXT\'S (ledger B24): a straight apostrophe against the '
+        + 'archive\'s curly one, English quotes against the reference\'s corner brackets',
+      fn: async () => {
+        expect(quoteIsIn({ quote: 'the cat\'s "bell"', text: 'She found the cat’s “bell” by the door.', },),).toBe(true,);
+        expect(quoteIsIn({ quote: '她说“铃铛”', text: '她说「铃铛」在门边。', },),).toBe(true,);
+        expect(quoteIsIn({ quote: 'the dog\'s "bell"', text: 'She found the cat’s “bell” by the door.', },),).toBe(false,);
+      },
+    },),
+    it({
       name: 'MERGES overlapping quotes from distinct voices into one detail and drops one short of the quorum',
       fn: async () => {
         /**
