@@ -3,6 +3,7 @@ import { RENDERING_GLOSSARY, } from './rendering-glossary.ts';
 import { droppedAddressFindings, } from './translate-address-drop.ts';
 import { communityTermFindings, } from './translate-community-term.ts';
 import { declaredLinkNameFindings, } from './translate-declared-link-name.ts';
+import { addedFormulaFindings, } from './translate-formula.ts';
 import { hanTitleFindings, } from './translate-han-title.ts';
 import { latinTitleFindings, } from './translate-latin-title.ts';
 import { droppedMarkerFindings, } from './translate-marker-drop.ts';
@@ -13,7 +14,8 @@ import { unwrappedLinkFindings, } from './translate-unwrapped-link.ts';
 //region Source carry floors
 // What the original passage carries that every candidate must carry too,
 // read before any judge: its footnote markers (class ninety-two), its
-// quotations opened before they close (class one hundred sixty-five), its
+// quotations opened before they close (class one hundred sixty-five), no
+// formula it does not set (ledger X22), its
 // second-person address (class ninety-seven), the suicide it names (class
 // one hundred fifty), its bracketed work titles
 // in English (class ninety-eight) and set in quotation marks rather than
@@ -78,6 +80,15 @@ export function sourceCarryFindings(
   },);
   if (quoteFindings.length > 0)
     return quoteFindings;
+  /**
+   Formulas the candidate forms and the original does not.
+   */
+  const formulaFindings = addedFormulaFindings({
+    sourceText,
+    candidateText,
+  },);
+  if (formulaFindings.length > 0)
+    return formulaFindings;
   /**
    Second-person address the candidate turned into the third person.
    */

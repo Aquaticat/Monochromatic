@@ -94,6 +94,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  judged by the judges it hands over and keyed by them (ledger X12); a slice
  nobody re-seated keys as before, so no key moves. Same check, same result.
 
+ Rides inside 6 too: the strict parse reads a formula as the site does
+ (`5ce9370ac`), and a lane wording forming a formula its original lacks is
+ no longer eligible for the contest (ledger X22, `translate-formula.ts`);
+ checked on 2026-09-29: still no slice-cache file newer than 04:26 UTC on
+ 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 6 was set
  in `d614a0c1d` at 04:30 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

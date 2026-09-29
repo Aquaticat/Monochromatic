@@ -166,6 +166,12 @@ import type { LaneText, } from './translate-candidates.ts';
  keyed by them (ledger H5); a slice nobody re-seated keys as before, so no
  key moves. Same check, same result.
 
+ Rides inside 20 too: the strict parse reads a formula as the site does
+ (`5ce9370ac`), and a proposal forming a formula its original lacks is
+ refused before any judge (ledger X22, `translate-formula.ts`), which
+ changes what the consolidation accepts; checked on 2026-09-29: still no
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
