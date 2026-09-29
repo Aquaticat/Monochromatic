@@ -161,5 +161,38 @@ await describe({
           expect(text,).toContain(LOOKUP_LINE,);
       },
     },),
+    it({
+      name: 'THREADS the names other entries declare and the ARCHIVE\'s own declared name, read off the archive '
+        + 'rather than the original, into every lexicon call',
+      fn: async () => {
+        /** Lexicon exchanges. */
+        const lexicon: string[] = [];
+        /** Directory this case owns for its entry caches. */
+        const dir = await mkdtemp(join(tmpdir(), 'pass-prepare-lexicon-context-',),);
+        await preparePassEntry({
+          client: lexiconClient({ lexicon, },),
+          entryId: 'CatEntry',
+          entryCacheDir: dir,
+          pipelineDigest: DIGEST,
+          modelIds: ROSTER,
+          sourceText: `---\nname: 咪咪\n---\n\n${SOURCE}\n`,
+          targetText: `---\nname: Mittens\n---\n\n${ARCHIVE}\n`,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+          outsideReads: {
+            ...NO_OUTSIDE_READS,
+            corpusNames: async () => [{ source: '小猫', renderings: ['Little Cat',], entryId: 'OtherCat', },],
+          },
+        },);
+        await rm(dir, { recursive: true, force: true, },);
+        // The lexicon ran, so the case reads calls that exist.
+        expect(lexicon.length,).toBeGreaterThan(0,);
+        for (const text of lexicon) {
+          expect(text,).toContain('- 小猫 (entry OtherCat): "Little Cat"',);
+          expect(text,).toContain('- name: ORIGINAL declares "咪咪", TRANSLATION declares "Mittens"',);
+        }
+      },
+    },),
   ],
 },);

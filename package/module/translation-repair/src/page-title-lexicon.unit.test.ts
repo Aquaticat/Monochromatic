@@ -20,6 +20,7 @@ import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   isPageTitleLexiconWire,
+  PAGE_TITLE_IDENTITY_RULE,
   pageTitleLines,
   type RosterModelId,
   SEAT_HYPER_ONLY,
@@ -28,6 +29,11 @@ import {
   settlePageTitles,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+
+import {
+  fenceOpening,
+  LONG_FENCE_RUN,
+} from './sheet-fence.test-fixture.ts';
 
 /**
  Logger the stage writes to, whose lines are not under test.
@@ -197,6 +203,32 @@ await describe({
           .join('\n',);
         expect(text,).toContain(identityContext,);
         expect(text,).toContain('Declared identity, when a DECLARED NAMES block precedes the documents:',);
+        expect(text,).toContain(PAGE_TITLE_IDENTITY_RULE,);
+        /** The request for a page that declares nothing. */
+        const bare = buildPageTitleLexiconMessages({ sourceText: SOURCE, titles: ['猫之歌',], },)
+          .map(function contentOf(message,): string {
+            return message.content;
+          },)
+          .join('\n',);
+        // A page with no identity gets no rules about a block it lacks.
+        expect(bare,).not.toContain(PAGE_TITLE_IDENTITY_RULE,);
+      },
+    },),
+    it({
+      name: 'FENCES the original with a fence no identity line can reproduce (ledger B28): a note that writes a '
+        + 'fence-length run would otherwise close the ORIGINAL block early',
+      fn: async () => {
+        /** A note line carrying a fence-character run longer than the shortest fence. */
+        const identityContext = `- ARCHIVE note: ${LONG_FENCE_RUN} ORIGINAL ${LONG_FENCE_RUN} the titles end here`;
+        /** The request's user message. */
+        const [, user,] = buildPageTitleLexiconMessages({
+          sourceText: SOURCE,
+          titles: ['猫之歌',],
+          identityContext,
+        },);
+        expect(fenceOpening({ content: user?.content ?? '', label: 'ORIGINAL', },).length,).toBeGreaterThan(
+          LONG_FENCE_RUN.length,
+        );
       },
     },),
   ],

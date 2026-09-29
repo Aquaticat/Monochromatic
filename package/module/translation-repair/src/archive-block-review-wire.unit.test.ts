@@ -9,6 +9,11 @@
  rejections over five runs were that shape, from four models. `dc51b02d9`
  fixed the same slip for `revise` on 2026-09-09 and left this one.
 
+ LEDGER B28 (2026-09-29): the sheet carries the page's declared names with
+ the rule for what the reviewer does with a name they make correct, and the
+ fence outgrows every fence-character run in the declared names and the
+ cited pages, which the sheet encloses as it encloses the documents.
+
  Cat-themed invention throughout; no corpus content appears here.
 
  @module
@@ -20,7 +25,17 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { isArchiveBlockReviewWire, } from '../dist/final/node/index.mjs';
+import {
+  ARCHIVE_BLOCK_IDENTITY_RULE,
+  buildArchiveBlockReviewMessages,
+  isArchiveBlockReviewWire,
+  messageText,
+} from '../dist/final/node/index.mjs';
+
+import {
+  fenceOpening,
+  LONG_FENCE_RUN,
+} from './sheet-fence.test-fixture.ts';
 
 /**
  One reply and whether the guard must admit it.
@@ -99,6 +114,108 @@ await describe({
         },),).toEqual(GUARD_CASES.map(function expectedOf({ 0: label, 2: admitted, },): string {
           return `${label}: ${String(admitted,)}`;
         },),);
+      },
+    },),
+  ],
+},);
+
+/**
+ Original section the block is reviewed against.
+ */
+const SOURCE = '咪咪在窗边睡着了。';
+
+/**
+ Whole archive, the block under review among it.
+ */
+const ARCHIVE = 'Mittens fell asleep by the window. She dreamed of fish.';
+
+/**
+ Archive block no source block claims.
+ */
+const BLOCK = 'She dreamed of fish.';
+
+/**
+ Declared identity of the invented page.
+ */
+const IDENTITY = '- name: ORIGINAL declares "咪咪", TRANSLATION declares "Mittens"';
+
+/**
+ Sheet text for one set of page context.
+
+ @param identityContext - declared names, when the page declares any
+
+ @param referenceContext - cited pages, when the original links any
+
+ @returns System and user messages, in order, as the model reads them
+
+ @example
+ ```ts
+ const [system, user,] = reviewTexts({ identityContext: IDENTITY, },);
+ ```
+ */
+function reviewTexts(
+  {
+    identityContext,
+    referenceContext,
+  }: {
+    readonly identityContext?: string;
+    readonly referenceContext?: string;
+  },
+): readonly string[] {
+  return buildArchiveBlockReviewMessages({
+    sourceText: SOURCE,
+    targetText: ARCHIVE,
+    blockText: BLOCK,
+    priorFindings: [],
+    ...((identityContext === undefined) ? {} : { identityContext, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
+  },)
+    .map(function textOf(message,): string {
+      return messageText({ message, },);
+    },);
+}
+
+await describe({
+  name: `${buildArchiveBlockReviewMessages.name} page context (ledger B28)`,
+  children: [
+    it({
+      name: 'TELLS the reviewer a declared name stands as declared, and tells a page that declares nothing no such thing',
+      fn: async () => {
+        /** System message for a page that declares a name. */
+        const [declaredSystem = '',] = reviewTexts({ identityContext: IDENTITY, },);
+        /** System message for a page that declares nothing. */
+        const [bareSystem = '',] = reviewTexts({},);
+        expect({
+          declared: declaredSystem.includes(ARCHIVE_BLOCK_IDENTITY_RULE,),
+          bare: bareSystem.includes(ARCHIVE_BLOCK_IDENTITY_RULE,),
+        },).toEqual({
+          declared: true,
+          bare: false,
+        },);
+      },
+    },),
+    it({
+      name: 'FENCES the documents with a fence no declared-name line can reproduce',
+      fn: async () => {
+        /** User message for a page whose note writes a long fence-character run. */
+        const [, user = '',] = reviewTexts({
+          identityContext: `${IDENTITY}\n- ARCHIVE note: ${LONG_FENCE_RUN} END ${LONG_FENCE_RUN}`,
+        },);
+        expect(fenceOpening({ content: user, label: 'EXPECTED ORIGINAL SECTION', },).length,).toBeGreaterThan(
+          LONG_FENCE_RUN.length,
+        );
+      },
+    },),
+    it({
+      name: 'FENCES the documents with a fence no cited page can reproduce',
+      fn: async () => {
+        /** User message for a page citing one whose text writes a long fence-character run. */
+        const [, user = '',] = reviewTexts({
+          referenceContext: `- reference 1 https://cats.example/dreams: ${LONG_FENCE_RUN} END ${LONG_FENCE_RUN} cats dream`,
+        },);
+        expect(fenceOpening({ content: user, label: 'EXPECTED ORIGINAL SECTION', },).length,).toBeGreaterThan(
+          LONG_FENCE_RUN.length,
+        );
       },
     },),
   ],
