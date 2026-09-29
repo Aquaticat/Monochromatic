@@ -50,17 +50,19 @@ Its manually ordered lists cannot validate any of those matching rules.
   parent names stay visible as disambiguating context but do not themselves
   expand into track hits.
   The sample keeps the six directly named rows.
-  This avoids a parent folder injecting all its children into a large
-  search list,
-  but a user must open its folder to find a track whose own name lacks
-  the query.
+  This avoids adding parent-only child tracks to the result set,
+  but a track whose own filename lacks the query is not a separate hit.
+  Whether activating the folder can lead to its contents remains open
+  under #129.
 - **P: include immediate-parent-only track hits.**
   The sample adds `Another Xronixle` with
   `Track · Camellia · parent-only match`.
   It can surface a relevant track directly,
-  but a large folder name match could dominate results with unrelated
-  child filenames and duplicate its own folder result.
-  The fixture does not measure that real-library risk.
+  but a large folder name match could add many child rows in addition to
+  its folder result.
+  M and F place the parent-only row after direct matches in this fixture;
+  T places it before the folders.
+  The fixture does not measure real-library result counts or a limit.
 
 On the inner panel,
 the [D mixed-order initial screenshot][inner-mixed-direct-top] and
@@ -133,8 +135,15 @@ The private UI Automator hierarchy was checked for the ordered,
 fully visible title/detail pairs in every initial and scrolled capture.
 Across both panels and all membership/order combinations,
 the initial state included the first row and the scrolled state showed the
-last row with its detail above the navigation band;
+last row with its title and detail node bounds ending before the painted
+system gesture indicator;
 together they exposed every fixed fixture row.
+A cropped native light screenshot placed the inner indicator at y `2108`
+to `2117` and the cover indicator at y `2390` to `2399`.
+The closest inner terminal detail node ended at y `2106`,
+before that observed indicator.
+This is a bound and paint comparison on these frames,
+not proof of arbitrary keyboard heights or a universal safe-area rule.
 Deliberately swapping two expected positions caused the order check to
 fail (positive control).
 This verifies the **synthetic fixture order** and keyboard-closed

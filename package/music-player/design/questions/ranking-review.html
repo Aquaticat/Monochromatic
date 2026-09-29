@@ -228,8 +228,8 @@ dialog::backdrop { background-color: var(--color-backdrop); }
   <fieldset>
     <legend>Preview membership scope</legend>
     <div class="choice-grid">
-      <label class="option" data-scope-choice="direct"><input type="radio" name="scope" value="direct" checked><span><strong>Scope D: names only (Recommended)</strong><span class="selection-note"></span><p><strong>Pros:</strong> bounded results and no unrelated child tracks from a matching folder; folder hit remains a route to its contents.</p><p><strong>Cons:</strong> a track whose own name lacks the query is not a separate hit, even when its parent matches.</p></span></label>
-      <label class="option" data-scope-choice="parenthits"><input type="radio" name="scope" value="parenthits"><span><strong>Scope P: include immediate-parent-only tracks</strong><span class="selection-note"></span><p><strong>Pros:</strong> exposes a track directly when its containing folder matches.</p><p><strong>Cons:</strong> a matching folder can add many children, crowding out directly named matches and repeating the folder result. This fixture does not measure a real library's scale.</p></span></label>
+      <label class="option" data-scope-choice="direct"><input type="radio" name="scope" value="direct" checked><span><strong>Scope D: names only (Recommended)</strong><span class="selection-note"></span><p><strong>Pros:</strong> avoids adding every child of a matching folder as a separate track hit; the matching folder still appears as its own result.</p><p><strong>Cons:</strong> a track whose own name lacks the query is not a separate hit. Whether opening the folder can lead to that track is a separate #129 action decision.</p></span></label>
+      <label class="option" data-scope-choice="parenthits"><input type="radio" name="scope" value="parenthits"><span><strong>Scope P: include immediate-parent-only tracks</strong><span class="selection-note"></span><p><strong>Pros:</strong> exposes a track directly when its containing folder matches.</p><p><strong>Cons:</strong> a matching folder can add many additional child rows. M and F append these after direct matches; T can put them before the folders. Real-library result counts were not measured.</p></span></label>
     </div>
   </fieldset>
   <div class="example">
@@ -242,7 +242,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
       <figure><img data-scope-asset="parenthits" data-panel="cover" width="1080" height="2424" alt="Parent-only match included on the cover"><figcaption class="preview-label">P · cover, initial</figcaption></figure>
     </div>
   </div>
-  <p><strong>Ranking: D &gt; P.</strong> D preserves a concise list while the matching folder already provides a route into its tracks. P improves direct discovery for a parent match, but the unmeasured flood and duplication risk makes it second. A collapsible child group was considered, but it adds an untested interaction and would depend on the still-open folder action (#129); it is not a fourth visual choice.</p>
+  <p><strong>Ranking: D &gt; P.</strong> D avoids unmeasured expansion by parent-only child rows while still displaying the matching folder. Whether that folder leads to its contents depends on #129 and is not assumed. P improves direct track discovery, but its unmeasured increase in result membership makes it second; displacement also depends on the chosen order. A collapsible child group was considered, but it adds an untested interaction and would depend on #129; it is not a third membership choice.</p>
 </section>
 <section aria-labelledby="order-title">
   <h2 id="order-title">Question 2: Which result type gets priority?</h2>

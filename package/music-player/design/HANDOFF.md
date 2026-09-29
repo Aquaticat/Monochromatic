@@ -6274,8 +6274,12 @@ Sanitized images are at `questions/render/search-rank-review-*.png`;
 private raw screen/status and XML source stay under the private agent
 scratch root.
 
-The form recommends D over P to avoid flooding a large folder match;
-it ranks M over F because the exact track remains first,
+The form recommends D over P to avoid unmeasured expansion of
+parent-only child rows while still showing the matching folder;
+it does not assume the folder opens until #129 decides that action.
+P's displacement depends on M/F/T order,
+not membership alone.
+It ranks M over F because the exact track remains first,
 and F over T because the folder route stays prominent.
 Those are reasoned recommendations,
 not adopted choices.
