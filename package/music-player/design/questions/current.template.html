@@ -76,6 +76,8 @@ button:focus-visible, select:focus-visible, .preview-stage:focus-visible {
 }
 .note { padding-inline: 1rem; padding-block: 0.35rem; }
 .note + .note { margin-block-start: 1rem; }
+details.note summary { display: flex; align-items: center; min-block-size: 3rem; cursor: pointer; font-weight: 700; font-size: 1.15rem; }
+details.note summary:focus-visible { outline: 0.1875rem solid var(--color-accent); outline-offset: 0.1875rem; }
 .muted { color: var(--color-muted); }
 .controls { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: end; margin-block: 1rem; }
 .controls label { display: grid; gap: 0.3rem; }
@@ -183,18 +185,18 @@ dialog::backdrop { background-color: var(--color-backdrop); }
   <p class="muted">D56 adds keyboard-aware bottom space only to the folded-cover scrolling results viewport for ordinary docked/full-width keyboards; the header stays fixed. D57 separately accepts the observed inner real floating-Gboard overlap with some result lettering while the query stays clear. The inner layout is unchanged. Neither decision validates every IME height, animation frame, floating placement or result action.</p>
   <p class="muted">Native source: unfolded 2076 × 2152 physical px (approximately 852 × 883dp) and cover 1080 × 2424px (approximately 443 × 994dp) at this AVD's 390dpi. Meaning-bearing app marks stay clear of the approximate physical crease at inner-panel x[983,1093); surfaces may cross it. E2 now sets an independent 7.5mm <strong>total opposing-information minimum</strong> even on a future narrower-crease device; a wider actual crease still governs. Status notification content is replaced with a generic clock.</p>
 </header>
-<section class="note" aria-labelledby="behavior-title">
-  <h2 id="behavior-title">Selected Search interaction (D63 to D68)</h2>
+<details class="note">
+  <summary id="behavior-title">Selected Search interaction (D63 to D68)</summary>
   <p>Opening Search requests query edit focus and a keyboard (D63). The visible Back arrow returns directly to the player, including while the keyboard is shown (D64). Clear erases the query but keeps Search and its existing edit-focus/keyboard state (D65). Opening Search again from the player starts a fresh empty query (D66); if a future design instead restores query text, it would begin its results at the top (conditional D67). With the same query after hiding and refocusing the keyboard, the intended result row should remain <strong>visible</strong> in the resized viewport, not merely retain a raw scroll offset (D68). These are selected interaction goals, not demonstrated by the keyboard-closed captures or the archived logic-only comparison. The D56 final-row extra swipe is an observed limitation, not accepted behavior; native restoration across keyboards still needs implementation-boundary verification. System Back may first be handled by the IME and is not promised to be identical to the visible Back arrow. The left browser context and full playback deck remain intact. <a href="archive/search-navigation-focus-before-selection.html">Historical interaction alternatives</a> are archived, not active choices.</p>
-</section>
-<section class="note" aria-labelledby="status-title">
-  <h2 id="status-title">Selected Search status meanings (D69 to D71)</h2>
+</details>
+<details class="note">
+  <summary id="status-title">Selected Search status meanings (D69 to D71)</summary>
   <p>An empty query shows an invitation to search, not a failed lookup. A “no results” message requires a completed evaluation of the current query and source; an empty track list or partial read cannot prove it (D69). The existing unqueried prompt and the no-match treatment naming the entered query remain the visual directions (D70). The old forced “Library unavailable” fixture and its automatic-recovery promise are <strong>not selected</strong>: only a known Search-source failure can show a cause-specific unavailable message with a genuinely owned recovery action (D71). The <a href="search-status-evidence.html">keyboard-closed native status gallery</a> retains those historical fixture strings for evidence, not as a selected recovery UI. No search engine, live source-health signal or error action is present in these screenshots.</p>
-</section>
-<section class="note" aria-labelledby="activation-title">
-  <h2 id="activation-title">Selected result action (D72 to D74)</h2>
+</details>
+<details class="note">
+  <summary id="activation-title">Selected result action (D72 to D74)</summary>
   <p>A folder result returns to the player with that folder selected, changing the queue page scope without starting another track (D72). A directly named track result starts a different track, or toggles play/pause if it is already current, as existing player rows do (D73). After either successful track action, Search <strong>returns to the player</strong> (D74), so the ordinary folder view is visible and a later Search opens empty under D66. A stale result must not start a substitute or pretend playback succeeded; D9's missing-item bar is a precedent to verify later. Neither the static result rows nor the older captions “opens this folder” and “reveals track” have a working tap handler; actual activation, row scrolling and TalkBack behavior remain unverified. The <a href="archive/search-result-activation-before-return.html">historical interaction comparison</a> is not an active choice.</p>
-</section>
+</details>
 <section aria-labelledby="states-title">
   <h2 id="states-title">Inspect the selected design on both panels</h2>
   <p><strong>Selected D58 to D61:</strong> Back and result-type icons share a leading center; <code>cam</code> and result titles share a text start. Every visible <code>Cam</code> substring in a matching title or supporting context is bold on a fill derived from the OS accent in OKLCH. Results now follow Scope D and Order M: exact <code>Cam</code> track first, matching <code>Camellia</code> folder next, then other directly named track/folder examples in mixed order. A parent name disambiguates a track but never adds it as a parent-only hit. The keyboard-closed native views were recaptured at 100% and 200% on both panels in light and dark app modes. Inspect the in-place highlights, aligned columns, actual left browser and complete deck.</p>
@@ -226,7 +228,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 </section>
 <section class="accepted-floating" aria-labelledby="floating-title">
   <h2 id="floating-title">Accepted D57: the observed inner floating overlay</h2>
-  <p>This separate 200% light-scheme long-results capture uses real floating Gboard. It covers portions of middle right-pane result lettering and parts of the already D53-exempt deck while the <code>cam</code> query stays readable. D57 accepts only this measured visual overlap, not an obscured query, missing matches, failed activation or other floating placements. Covered-row reachability after focus changes is unverified against D68, and activation remains #129. This pre-D58-to-D61 image does not establish selected Search paint or D/M results and does not change with the selected-results state or screenshot-scheme controls.</p>
+  <p>This separate 200% light-scheme long-results capture uses real floating Gboard. It covers portions of middle right-pane result lettering and parts of the already D53-exempt deck while the <code>cam</code> query stays readable. D57 accepts only this measured visual overlap, not an obscured query, missing matches, failed activation or other floating placements. Covered-row reachability after focus changes is unverified against D68, and result activation has no native handler despite the D72 to D74 design direction. This pre-D58-to-D61 image does not establish selected Search paint or D/M results and does not change with the selected-results state or screenshot-scheme controls.</p>
   <img id="accepted-floating" src="__ACCEPTED_INNER_FLOATING__" width="2076" height="2152" alt="Accepted inner Search A state at 200 percent text with real floating Gboard covering portions of right result lettering while the cam query remains clear">
   <button type="button" data-preview="floating">Inspect accepted inner floating overlap at device size</button>
 </section>
