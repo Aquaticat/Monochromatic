@@ -1854,11 +1854,25 @@ Unrelated change blocks your edit:
 
 ## Next action
 
-Batch 19 proposed:
-14 rules stay 14,
-866 to 857 tokens;
-awaiting user answers.
-User noted the repo's commit messages differ from standard Conventional Commits.
+Batch 19 answers so far:
+rest of batch (all but GCG) approved;
+no breaking-change clause in GCG (0 of 3000 commits use `!` or `BREAKING CHANGE`).
+GCG decision (user):
+`*` is only for multi-package changes;
+repo-level doc commits use the bare doc family as scope (`docs(planning)`,
+`docs(troubleshooting)`).
+History disagrees:
+1034 of 1115 `(*)` commits touch only repo-level paths,
+including every one of this session's 35 planning-doc commits;
+bare family scopes appear 20 times (`troubleshooting` 13,
+`audit` 6,
+`runbook` 1).
+Open:
+scope for root files (`root` has 2 commits,
+`mise` 4;
+32 `AGENTS.md` commits used `*`),
+and whether to post corrective comments on this session's 35 `docs(*)` commits (GCA).
+This session's commits use `docs(planning)` from now on.
 
 ### Commit message measurements (last 3000 non-merge commits, 2026-09-29)
 
