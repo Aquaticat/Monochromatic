@@ -1435,6 +1435,83 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Service and real-consumer gate reconciliation
+
+Task #65 refreshed known primary Jev/Gateway API,
+model,
+privacy,
+retention,
+terms,
+DPA/MCA,
+and declared-subprocessor pages without another model call.
+The [gate ledger](../planning/pi-auto-mode-jev-service-gates.md)
+separates accepted choices,
+service evidence,
+hosted uncertainty,
+and real-consumer work.
+It does not mark production qualified.
+
+The user-authorized private-input,
+necessity-retention,
+TypeSafe AUP,
+and gateway-internal retry choices remain settled.
+No dashboard setting or account was inspected or changed.
+The public TypeSafe subprocessor page required an isolated rendered read after the web extractor returned only a shell.
+That anonymous page showed AWS,
+Modal,
+Slack,
+Google Workspace,
+Nebius,
+and CoreWeave with USA locations and their stated roles.
+The browser was closed without login,
+access-request submission,
+or NDA acceptance.
+These remain vendor declarations,
+not a per-request data-flow observation.
+
+Current documents retain native Noul semantics,
+version-pin guidance,
+separate 64k combined and 32k state/longest-question limits,
+no-training statements,
+and necessity-based data handling.
+They do not attest internal model identity,
+token-by-token backend preservation,
+account retention configuration,
+cache behavior,
+or post-abort billing cessation.
+The gateway's TypeSafe entry still labels prompt logging and retention Unknown,
+not none.
+The existing pinned-source/model-response and metadata-error-channel controls retain their exact scopes.
+
+The accepted Q11 cap is two client calls across the whole assessment,
+not two attempts per selected source.
+The tested request/prose path consumes both calls and enables no retry;
+a third call is not an allowed retry.
+The optional retry and provider backoff guidance remain subordinate to the same aggregate call and five-second budgets.
+The source-documented same-provider internal retries are already accepted.
+No coding-plan fallback,
+model substitution,
+or SDK-default retry policy is introduced.
+
+A guard rejecting late output is not proof that the real user interface yields to manual approval within five seconds
+when preparation blocks.
+That host boundary still needs qualification,
+and the historical preparation stall remains unassigned under #67.
+Jev's documented adversarial-state sensitivity and the recurring read-scope binding pattern
+remain consumer-test concerns.
+The completed English synthetic bank does not establish adversarial or multilingual qualification.
+Vendor context-filtering advice does not override the complete-current-policy requirement.
+
+Remaining work is the real human-origin witness,
+source eligibility and lifecycle,
+Q13 B's qualified semantic-effect inventory,
+versioned applicability and cutoff choice,
+finalizer/failure/freshness behavior,
+replacement parity,
+and final shared-design confirmation.
+Q16 remains paused and production code is unchanged.
+No new provider experiment or reopened retention/dashboard question follows from this reconciliation.
+
 ## Completed fresh Jev qualification result
 
 The approved Jev direction now has completed fresh validation and locked-test evidence

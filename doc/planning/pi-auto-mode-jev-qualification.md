@@ -11,9 +11,10 @@ The design interview remains paused.
 The subsequent Voyage composed-estimator comparisons are complete;
 none established a production-qualified replacement.
 The `0.95/0.05` diagnostic band passed only the frozen semantic gate.
-Broader service,
-calibration,
-and live-consumer qualification remain open.
+The [service and consumer gate ledger](pi-auto-mode-jev-service-gates.md)
+separates the refreshed provider evidence and settled consent choices
+from residual hosted uncertainty and the still-open real-consumer qualification.
+Broader workload calibration and live-consumer qualification remain open.
 Native development and overflow probes remain scoped evidence,
 not production qualification.
 See the [axiom record](pi-auto-mode-axioms.md)

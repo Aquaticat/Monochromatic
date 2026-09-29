@@ -78,9 +78,30 @@ production change,
 reserved-bank access,
 Q16,
 or Laya work follows automatically.
-Finish the result documentation checks under #64,
-then #65 closes actionable service gates without repeating settled audits or declined dashboards.
+Task #64 is complete;
+full renders and scoped Markdown lint passed at `proc_943e`,
+with main commits `1f0fd0d6b` and `9baaf1788` retaining the result and prose correction.
+The [service and consumer gate ledger](../planning/pi-auto-mode-jev-service-gates.md)
+records #65's bounded primary-document refresh and remaining boundaries.
+No new model call,
+account change,
+or vendor contact occurred in that refresh.
+The public TypeSafe subprocessor page was rendered in an isolated unauthenticated browser,
+then the browser was closed;
+no access-request form or dashboard setting was used.
+
+The accepted aggregate two-call cap is not two attempts per source.
+The tested request/prose path uses both slots;
+no third call may be added as a retry.
+A five-second manual handback under stalled preparation still needs real-host qualification,
+not just later successful timings.
+Vendor-documented adversarial-state sensitivity and the recurring read-scope pattern remain consumer-test concerns.
+Complete current policy is still mandatory despite generic vendor filtering advice.
+
 Real human-authority/lifecycle/finalizer qualification remains separate.
+Q16 is still paused,
+no production cutoff or code change has been approved,
+and the final shared-design confirmation is not complete.
 
 ## Approved Jev qualification direction
 
