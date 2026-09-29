@@ -3,10 +3,11 @@
  neutral pronoun in Latin letters.
  
  WHAT THESE PIN: every spelling the sources use counts; the letters inside a
- word, a handle, a path or an address do not; an apostrophe or a han
- character beside the pronoun still leaves it a word of its own; the finding
- names each spelling with its count and says what English renders it as; a
- candidate carrying none yields nothing.
+ word, a handle, a path or an address do not; an apostrophe, a han character,
+ a dash, an ellipsis, an arrow, emphasis or a slash after han beside the
+ pronoun still leaves it a word of its own, in the original and in the
+ rendering (ledger B23); the finding names each spelling with its count and
+ says what English renders it as; a candidate carrying none yields nothing.
  
  Fixtures are cat-themed invention. No corpus content appears here.
  
@@ -83,6 +84,37 @@ await describe({
         },);
 
         expect(findings[0],).toContain('"Ta" (4 times)',);
+      },
+    },),
+
+    it({
+      name: 'READS THE PRONOUN AFTER A DASH OR A SLASH IN THE ORIGINAL (ledger B23): a doubled Chinese dash '
+        + 'or a slash after han leaves it a word of its own, so the rendering owes its rendering',
+      fn: async () => {
+        expect(neutralPronounFindings({
+          sourceText: '猫说——TA 睡着了。',
+          candidateText: 'The cat said TA was asleep.',
+        },),).toHaveLength(1,);
+        expect(neutralPronounFindings({
+          sourceText: '猫/Ta 睡着了。',
+          candidateText: 'Ta slept.',
+        },),).toHaveLength(1,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS THE PRONOUN BESIDE A DASH, AN ELLIPSIS, AN ARROW, EMPHASIS OR A CLOSING MARK (ledger B23), '
+        + 'none of which joins it into a longer token',
+      fn: async () => {
+        /**
+         Finding on a rendering keeping the pronoun beside each of those.
+         */
+        const findings = neutralPronounFindings({
+          sourceText: WRITES_TA,
+          candidateText: 'The cat said—TA slept, and ta—curled up. We said *Ta* twice…Ta, then asked: Ta? '
+            + '『TA』 Ta→home.',
+        },);
+        expect(findings[0],).toContain('"TA" (2 times) and "Ta" (4 times) and "ta" (1 time)',);
       },
     },),
 
