@@ -7644,14 +7644,18 @@ a control copy of the source with one planted function of each kind reported bot
 ### B21: the other recurring families have no recorded code-reading pass
 
 Status:
-open,
-recorded 2026-09-29 so the work outlives the session's task list;
-family one (text indexed by UTF-16 unit) is read and fixed as B22,
+fixed,
+2026-09-29,
+recorded the same day so the work outlived the session's task list;
+every family is read and fixed:
+family one (text indexed by UTF-16 unit) as B22,
 family two (matches without word boundaries) as B23,
 family three (straight against curly quotes) as B24,
 family four (trimmed text compared with raw text) as B26,
 family five (quorum denominators counting unreachable seats) as B27,
-and the other families remain.
+family six (sheets missing blocks) as B28,
+and family seven (silent fallbacks) as B29,
+which names the one gap it leaves open under its own heading.
 B1 to B20 came from the duplicate-body and letter-predicate censuses.
 The class history names other families that recurred across stages,
 and this ledger records no code-reading pass over them:
