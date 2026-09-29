@@ -6595,6 +6595,48 @@ which are ASCII-only in JavaScript
 (control:
 the same search finds the `\s` in `mdx-tag-start.ts`).
 
+### B19: copies inside one file, which the cross-file census never showed, and no guard against a new copy
+
+Status:
+fixed,
+2026-09-28.
+The census behind B1 to B15 grouped bodies kept in two or more files,
+so a body kept twice in one file never showed.
+Widened to any two places,
+it found three more beside B15's frozen pairs:
+- `f72d96d18`:
+  `rendering-audit-settled-repeat.ts` built a repeat pair twice (now `repeatPairOf`);
+  `artifact-two-lane-read-evidence.ts` read each lane's slice texts twice (now `requireEvidenceRows`;
+  both parsers read one artifact version,
+  so they may share);
+  and `slice-cache-store.ts` kept `isCachedPairing` and `isCachedSectionPairing`,
+  one check under two type guards (now `isCachedPairingRecord`).
+  Both copies of that check tested only that findings were a list,
+  where both record types promise text,
+  so a record with a non-text finding is no longer resumed.
+  The pairing caches are exported for a new test (`slice-cache-pairing.unit.test.ts`),
+  which round-trips a record through each and refuses a numeric finding,
+  a non-index pair (`23ce27694`) and a bare list;
+  mutants restoring the list-only finding check or dropping the pair check are each caught by 2 assertions,
+  and the control survives.
+- `4e79127ad`:
+  `duplicate-bodies.unit.test.ts` parses every non-test source file with rolldown's parser
+  (`parseSync` from `rolldown/utils`,
+  as the repository's import-attributes plugin reads source;
+  TypeScript 7 exposes no stable compiler API),
+  compares each function body with its comments cut out and whitespace dropped,
+  and fails on a body of 80 or more such characters kept in two places,
+  except B15's frozen copies,
+  listed with their reasons;
+  a listed copy that no longer stands fails it too.
+  Its fixtures first show the scan finds a copy across files whatever the comments and layout,
+  and a copy inside one file,
+  and leaves bodies differing in one name and short ones.
+  A mutant restoring one merged copy and a mutant drifting a frozen copy are each caught;
+  a comment control survives.
+  `rolldown` joined the package's devDependencies from the catalog,
+  and the lockfile gained that importer entry only.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

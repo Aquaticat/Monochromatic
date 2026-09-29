@@ -303,8 +303,14 @@ verdicts) calls the pipeline's own function,
 or measures its agreement over the corpus and records the result.
 
 What enforces it:
-`duplicate-bodies.mjs` (`~/temp/agent/audit-glossary-fix/`) found the groups;
-nothing in the package fails on a new one yet.
+`src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
+comments and whitespace aside,
+kept in two places in the package's source,
+in one file or two,
+except the frozen copies it lists with their reasons,
+and fails when a listed copy no longer stands.
+A copy that must stay separate is added to that list in the same change that makes it,
+with the reason and the check that compares it.
 The shared helpers (`code-points.ts`,
 `han-only-text.ts`,
 `page-headings.ts`,
