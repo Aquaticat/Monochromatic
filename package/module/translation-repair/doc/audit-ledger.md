@@ -7511,7 +7511,9 @@ a control copy of the source with one planted function of each kind reported bot
 
 Status:
 open,
-recorded 2026-09-29 so the work outlives the session's task list.
+recorded 2026-09-29 so the work outlives the session's task list;
+family one (text indexed by UTF-16 unit) is read and fixed as B22,
+and the other families remain.
 B1 to B20 came from the duplicate-body and letter-predicate censuses.
 The class history names other families that recurred across stages,
 and this ledger records no code-reading pass over them:
@@ -7537,6 +7539,125 @@ consolidation,
 the provider clients and the corpus-run driver;
 each finding gets its file and line and a probe that reproduces it,
 and is fixed with a guard shown failing first.
+
+### B22: text read by UTF-16 unit where the test reaches past the first plane (B21, family one)
+
+Status:
+fixed,
+2026-09-29.
+Class ninety-six read a quote's neighbour one UTF-16 unit at a time,
+so the low half of a script letter was no letter.
+The pass over the family read every test whose domain reaches past the first plane
+(the Han blocks from Extension B on,
+`\p{L}`,
+case)
+and every scan that feeds one:
+
+- Declared names.
+  `nameProjection` (`declared-name-survival.ts`) scanned by unit,
+  so a handle in mathematical script projected to nothing
+  and one holding an Extension B ideograph fell under the shortest checkable form;
+  neither was ever checked.
+  Before the fix,
+  no declared name or contributor form at the pin held a letter beyond the first plane,
+  and over 835 form and text pairs from the 92 archives and 214 settled pages
+  no survival answer changed,
+  where a script letter planted inside a form's occurrence did.
+  Red `409114af6`,
+  fix `6346909fc`;
+  a mutant restoring the unit scan is caught.
+- The preservation tokenizer.
+  `contentTokens` (`preservation-tokens.ts`) read `text[index]`,
+  so the gate never saw an Extension B ideograph,
+  although audit area six widened the Han test to every block (`han-only-text.ts`).
+  `348e97c58` moved `codePointAt` and `codePointBefore` from `quote-neighbours.ts` into `code-points.ts`
+  and dropped the private copy in `mdx-tag-start.ts`;
+  red `328a35e6e`,
+  fix `9816ae18a`.
+- The Han residue floor.
+  `translate-han-residue.ts` built its runs from single units,
+  so such an ideograph left alone in prose passed,
+  and a run it opened was named from its second character.
+  Red `08f797e48`,
+  fix `fdaf1752a`.
+- The Canadian and pinyin page passes.
+  `runEnd`,
+  `runStart` and 19 other character reads in the date,
+  spelling and capital readers took one unit,
+  so a date or listed word glued to a Deseret letter was rewritten
+  where one glued to a Latin letter is not.
+  The pinyin pass never took an Extension B ideograph for Han,
+  and its comment that every ideograph pinyin-pro reads is one unit was false:
+  pinyin-pro 3.29.3 gives a reading for 196 of the 65,312 code points in Extensions B to H
+  (`~/temp/agent/audit-glossary-fix/b21-pinyin-astral.mjs`).
+  Red `4b4066c86`,
+  fix `73e158c8b`;
+  `52fe27efd` adds one Latin-twin case per converted read,
+  and a unit read restored at any of them breaks the comparison,
+  except the date cursor,
+  where no month name starts beyond the first plane,
+  so the whole letter opens no month either;
+  that mutant is equivalent.
+- Two readings of a cased letter.
+  `quote-neighbours.ts` read one by general category
+  (class ninety-six:
+  script letters are cased letters with no case mapping),
+  the Canadian passes by case mapping,
+  so a script letter bound an apostrophe but was no letter beside a date,
+  and the capital and small-letter tests read a script capital as neither.
+  `cased-letters.ts` holds one reading for both;
+  red `9369541f4`,
+  fix `f94718959`.
+  Over 306 pages,
+  settled and archived,
+  the Canadian pass wrote the same text under either reading,
+  and a control page glued to a script letter differed.
+- Text excerpts.
+  Eleven limits at thirteen cuts
+  (an error body excerpt,
+  a stream opening,
+  a refused reading,
+  a raw reply preview,
+  bench and probe failure details,
+  a ledger report,
+  a tally line,
+  a rendering-audit drop reason and a blockquote note)
+  could keep half an emoji in a log line or a persisted run row.
+  `wholeOpening` (`code-points.ts`) cuts on a whole character;
+  red `95c13f282`,
+  fix `9830a6a4c`.
+  `fixed-length-cuts.unit.test.ts` lists every other `.slice(0, LIMIT)` and `.slice(-LIMIT)` with its reason,
+  so a new fixed-length cut is classed before it lands.
+  `NOTE_WORDS` counted units and is `NOTE_OPENING_UNITS`.
+
+Read and left as they stand:
+`translate-neutral-pronoun.ts` compares one unit with U+2E80,
+and a surrogate half compares above it as its whole code point would;
+the recurrence watcher's tails are compared unit for unit with the buffer they came from;
+the refusal windows are searched for markers a cut character cannot match;
+and `latin-letters.ts`,
+the ASCII tests and the handle scans test first-plane blocks only,
+where a unit read answers as a code-point read does.
+
+Exposure at the pin:
+the pinned sources and archives,
+the settled pages and the 370 stored artifacts hold no Han,
+kana-supplement or case-mapped letter beyond the first plane;
+what lies beyond it is bold script
+(328 letters on pages,
+12,390 in artifacts)
+and emoji,
+which every site above reads the same either way,
+the cased-letter reading aside,
+measured above.
+The translate,
+consolidation,
+contest,
+refine and repair versions carry rides-inside accounts;
+the page passes and the excerpts key no cache.
+Prevention:
+`mistake-prevention.md`,
+"Text by code point".
 
 ## Process mistakes in this audit
 
@@ -7666,6 +7787,13 @@ the same form recorded during X20.
 Also in B18,
 `git diff --stat` ran from the package directory,
 and cli-git refused it for not running at the repository root.
+Three more during B22 on 2026-09-29:
+`git log <count> ; git log <tip>`,
+checking whether a commit type had precedent,
+`rg <escape> <files> ; rg <bytes> <files> || echo`,
+checking that an escape landed as written,
+and `rg <references> <src> ; <type check>`,
+a leftover search chained to the type check.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -7900,6 +8028,28 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M57: a cache-file check whose time this host's `find` refused, with its error discarded
+
+Status:
+happened 2026-09-29 during B22,
+caught by its control before any account used it.
+The rides-inside check for the declared-name fix ran
+`find <runs> -path '*slice-cache*' -type f -newermt '2026-09-26 20:00 UTC' 2>/dev/null`
+as its control and printed a count of zero.
+This host's `find` is bfs,
+which takes ISO 8601 times only and refuses `… UTC` as an invalid timestamp;
+with its error discarded,
+the refusal read as no file.
+The control's zero,
+where files had to exist,
+exposed it,
+and the checks rerun as `-newermt '2026-09-26T20:00:00Z'` found 495 files for the control
+and none newer than the consolidation entry of 04:26:57 UTC on 2026-09-27.
+Prevention:
+step 4 of the pre-launch list in `mistake-prevention.md` names the ISO form,
+and a check's error output goes to a file that is read,
+never to `/dev/null`.
 
 ### M56: a red guard whose comment case never reached the comment path
 

@@ -45,7 +45,10 @@ not a memory of having done it.
     a change that alters what the stage asks or accepts moves the version,
     unless no cache file was written after the change
     (`find <runs dir> -path '*slice-cache*' -type f -newermt '<time>'`,
-    with a control time that must find files,
+    with the time in ISO 8601 (`2026-09-27T04:26:30Z`),
+    since this host's `find` is bfs and refuses `… UTC` as an invalid timestamp (M57),
+    its errors written to a file that is read,
+    a control time that must find files,
     and an output file named so the pattern cannot match it).
 5.  No source file holds control bytes (M40):
     `rg --text --files-with-matches '[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]' src` prints nothing,
@@ -432,6 +435,46 @@ The shared helpers (`code-points.ts`,
 `index-pair-list.ts`,
 `sse-data-line.ts`,
 `corpus-run/span-rewrites.ts`) say so in their headers.
+
+## Text by code point
+
+What happened:
+scans handed a character test one UTF-16 unit at a time,
+and neither half of a character beyond the first plane passes a test for Han,
+a letter or case:
+a quote's neighbour after a script handle (class ninety-six),
+a declared handle in script letters,
+an Extension B ideograph in the tokenizer and the Han residue floor,
+a Deseret letter beside a Canadian date,
+and a pinyin pair over such an ideograph (ledger B22).
+Two readings of a cased letter disagreed about script letters,
+and eleven fixed-length text cuts could keep half an emoji.
+
+The rule:
+a test whose domain reaches past the first plane
+(Han beyond the unified block,
+`\p{L}` or any general category,
+case)
+takes a whole character:
+`for...of` over the text,
+or `codePointAt` and `codePointBefore` from `code-points.ts` where the scan keeps UTF-16 offsets,
+stepping by the character's length.
+A unit read is kept only where every test on it is ASCII or first-plane only,
+and a comment says so.
+A cased,
+capital or small letter is read by general category (`cased-letters.ts`),
+never by comparing a character with its case mapping.
+A text's opening cut at a fixed length goes through `wholeOpening`.
+A guard for such a scan runs its text in a script beyond the first plane
+and compares the result with the same text in Latin letters.
+
+What enforces it:
+`src/fixed-length-cuts.unit.test.ts` fails on any `.slice(0, LIMIT)` or `.slice(-LIMIT)` it does not list with a reason;
+the Latin-twin cases in `corpus-run/canadian-forms.unit.test.ts`,
+and the script and Extension B cases in the declared-name,
+tokenizer,
+Han residue and pinyin guards,
+fail when a unit read returns.
 
 ## Lint and edits
 
