@@ -282,16 +282,22 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
 - Batch 14 (TypeScript standards,
    type system,
    variables):
-   21 rules become 16,
-   968 to 625 tokens;
-   deletes lint-enforced ST9,
-   TQ1,
+   21 rules become 17,
+   968 to 667 tokens;
+   deletes lint-enforced TQ1,
    TY1,
    TY4,
    VA6;
-   ST9 deletion open (cited as design rationale in about 10 files).
-   Proposed,
-   awaiting user review.
+   trims lint-enforced clauses from ST5,
+   TY2,
+   TY3,
+   TY5,
+   TY6;
+   TY7 absorbs TY6's type-guard clause.
+   ST9 kept compressed despite `require-destructured-params`:
+   about 10 files cite it as design rationale,
+   and a late lint error forces reworking every caller (round 7 principle).
+   Approved.
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
@@ -1373,14 +1379,7 @@ TD7:
  Async function docs never mention Promise wrapping.
 ```
 
-## Next action
-
-Paused before compaction with batch 14 awaiting user answers:
-Q32 (delete ST9,
-or keep it compressed;
-recommended keep) and Q33 (approve the rest).
-
-### Pending batch 14 text
+### Batch 14
 
 ```md
 ST2:
@@ -1409,6 +1408,10 @@ ST6:
 ST8:
  Declare functions before calling them in source order,
  despite hoisting.
+
+ST9:
+ Functions with 2+ parameters take one destructured object,
+ except callbacks with externally dictated signatures.
 
 TQ2:
  Export at declaration,
@@ -1452,21 +1455,28 @@ VA5:
  destructure dependent values in separate statements.
 ```
 
-Proposed compressed ST9 if kept:
+## Next action
 
-```md
-ST9:
- Functions with 2+ parameters take one destructured object,
- except callbacks with externally dictated signatures.
-```
+Propose batch 15.
 
-### Remaining batches (90 rules)
+### Concurrent `AGENTS.md` changes
+
+Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- AGENTS.md`, checked 2026-09-29):
+
+- 0879faf1f added EDR to "Command execution conventions" after batch 9 was approved;
+   it is reviewed alongside batch 15.
+- b9c0e6e48 added a fuzz-sidecar sentence to AP1.
+- 654507bf9 added SBS under "Adding new packages";
+   it joins batch 16.
+
+### Remaining batches (92 rules)
 
 - Batch 15:
    PP1 to PP9,
    PPX,
    OWB (guidance moves into prefer-readonly diagnostics per round 2),
-   RG1 to RG3 (RG2 recursion clause already absorbed by ITR).
+   RG1 to RG3 (RG2 recursion clause already absorbed by ITR),
+   plus late addition EDR.
 - Batch 16:
    TP1 to TP3,
    DM1,
@@ -1475,7 +1485,8 @@ ST9:
    RCO,
    RCI,
    AP1 to AP5,
-   SGD.
+   SGD,
+   SBS.
 - Batch 17:
    PKG,
    TCV,
@@ -1519,6 +1530,9 @@ ST9:
 
 ### Apply phase (after the walk)
 
+- Before rewriting,
+   rerun `git diff d38e8e6ca HEAD -- AGENTS.md`;
+   review every concurrent change not yet covered by approved text.
 - Rewrite `AGENTS.md` from approved text,
    including section moves and new "User interfaces" heading;
    regenerate `CLAUDE.md` via file-enforcer.
