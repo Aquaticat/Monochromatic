@@ -51,6 +51,16 @@ await describe({
         expect(handleReading({ name: 'Mikä', },),).toBe('Mikä',);
       },
     },),
+    // Pinned before the reading stopped rebuilding its text a character at
+    // a time (ledger B29): a character beyond the first plane between two
+    // runs moves every index after it by two units.
+    it({
+      name: 'READS each run on its own side of a character beyond the first plane, and keeps that character',
+      fn: async () => {
+        expect(handleReading({ name: '猫猫\u{1F408}猫', },),).toBe('Maomao\u{1F408}Mao',);
+        expect(handleReading({ name: '\u{1F408}雨猫', },),).toBe('\u{1F408}Yumao',);
+      },
+    },),
     it({
       name: 'KEEPS AN ACCENTED WORD a space apart too, opening after the reading or ending, accent composed or '
         + 'combining, before it; ASCII letters alone wrote them against the reading (ledger B18)',

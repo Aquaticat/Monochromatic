@@ -21,6 +21,7 @@ import {
 import {
   findIntroducedRepetitions,
   repetitionFindings,
+  whitespaceTokensOf,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -253,6 +254,37 @@ await describe({
           shippedText: `The kitten dozes. ${PASSAGE}.`,
         },);
         expect(findings.length,).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+// Pinned before the tokenizer stopped rebuilding each token a character at
+// a time (ledger B29), so the index-slicing rewrite is read against what the
+// accumulator returned, a letter beyond the first plane included.
+await describe({
+  name: whitespaceTokensOf.name,
+  children: [
+    it({
+      name: 'SPLITS AT every whitespace run, leading and trailing ones included, and keeps punctuation on its token',
+      fn: async () => {
+        expect(whitespaceTokensOf({ text: '  the cat,\n\tnaps.  ', },),).toEqual(['the', 'cat,', 'naps.',],);
+        expect(whitespaceTokensOf({ text: 'cat\u{3000}naps', },),).toEqual(['cat', 'naps',],);
+        expect(whitespaceTokensOf({ text: 'cat\u{A0}naps', },),).toEqual(['cat', 'naps',],);
+      },
+    },),
+    it({
+      name: 'KEEPS a letter beyond the first plane whole inside its token',
+      fn: async () => {
+        expect(whitespaceTokensOf({ text: 'cat\u{1D49C} naps', },),).toEqual(['cat\u{1D49C}', 'naps',],);
+        expect(whitespaceTokensOf({ text: '\u{1D49C}\u{1D49C} \u{1D49C}', },),).toEqual(['\u{1D49C}\u{1D49C}', '\u{1D49C}',],);
+      },
+    },),
+    it({
+      name: 'READS NO TOKEN in empty or blank text',
+      fn: async () => {
+        expect(whitespaceTokensOf({ text: '', },),).toEqual([],);
+        expect(whitespaceTokensOf({ text: ' \n ', },),).toEqual([],);
       },
     },),
   ],
