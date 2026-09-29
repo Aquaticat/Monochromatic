@@ -1,4 +1,5 @@
 import { foldedLine, } from './entry-notes.ts';
+import { normalizePunctuation, } from './quote-normalize.ts';
 import type { AttestationItemWire, } from './reference-attest-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -20,20 +21,26 @@ const NOT_FOUND = -1;
  around its Latin tokens, and a check that only folded whitespace lost the
  quorum on that space.
 
+ READ THROUGH THE EVIDENCE FOLD (`normalizePunctuation`, ledger B24): a voice
+ quoting the archive writes its curly apostrophe straight, or the
+ reference's 「」 as English quotes, as often as not, and the words are what
+ verification asks about. Every placement and overlap offset is taken in
+ compacted text only, so the fold never shifts a span read elsewhere.
+
  @param text - text to compact
 
- @returns Text without whitespace
+ @returns Text without whitespace, its quote marks folded
 
  @example
  ```ts
- compacted({ text: 'Mio 的姐姐也是 MtF。', },);
- // => 'Mio的姐姐也是MtF。'
+ compacted({ text: 'Mio 的姐姐也是「MtF」。', },);
+ // => 'Mio的姐姐也是"MtF"。'
  ```
  */
 export function compacted(
   { text, }: { readonly text: string; },
 ): string {
-  return foldedLine({ text, },)
+  return foldedLine({ text: normalizePunctuation({ text, },), },)
     .split(' ',)
     .join('',);
 }
