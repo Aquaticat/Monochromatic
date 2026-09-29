@@ -52,6 +52,9 @@ not a memory of having done it.
     after the same search has found a scratch file written with one.
 6.  The launch reads the plan first:
     `mise run corpus-pass -- --plan` before any spending run.
+7.  The current handover says what is launching and why (M55):
+    the snapshot's "What to do next" and its newest checkpoint name this launch,
+    and the document map's "Current status" names the last pass read.
 
 ## Shell commands
 
@@ -198,6 +201,31 @@ or traced in the code before it is written.
 What enforces it:
 habit;
 `rendered-sheets.test-fixture.ts` renders every sheet so reading one is a call away.
+
+## Current-state docs
+
+What happened:
+the document map's current status still described the pipeline of 2026-09-06 three weeks later,
+and said no new pass was authorized while passes kept running (D28);
+the handover index put the kill-and-relaunch rule in a README section that had moved;
+and the day after TianqiChen66621's page was read,
+the current snapshot still listed reading it as a next step (M55).
+
+The rule:
+a page read,
+an owner ruling built
+or a change of plan updates the current snapshot's "What to do next" in the same sitting,
+before the next piece of work,
+and its newest checkpoint when the next steps change;
+the map's "Current status" moves with them when what it states has changed.
+A status paragraph carries the date it was written,
+and points at a record by its name and date,
+not by its place in a file that grows.
+
+What enforces it:
+habit,
+and step 7 of the launch checklist;
+no test can tell a current paragraph from a stale one.
 
 ## Commit messages
 

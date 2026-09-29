@@ -24,13 +24,64 @@ and the reason is recorded in
 
 ## Where the work stands
 
+### 2026-09-29: the whole-package audit, and no pass since 2026-09-28
+
+The checkpoint of 2026-09-24 (next heading) left the pipeline at class one hundred ten;
+this one says what changed after it.
+
+- CLASSES.
+  Classes one hundred eleven to one hundred eighty-seven were found between 2026-09-24 and 2026-09-28,
+  most on read pages;
+  the pass log records each under the section that found it,
+  with what was done about it.
+  The newest,
+  class one hundred eighty-seven:
+  a patch left a quote nested two levels deep where neither the original nor the archive nests,
+  and patch application now clamps each replacement line to the depth its context allows
+  (`58287ebe3`,
+  `05a18ed02`;
+  guards `d661bb51f`,
+  `9e4d7dafb`).
+- THE AUDIT.
+  On 2026-09-27 the owner asked for an audit of the whole package
+  ("Mistakes made,
+  ever,
+  for this pkg,
+  not just today.")
+  and allowed the next launch to wait for its fixes.
+  Every finding with its measurement,
+  fix and guard,
+  and every mistake made while fixing,
+  is in the package's
+  [audit ledger](../../package/module/translation-repair/doc/audit-ledger.md);
+  the rule that prevents each family of mistakes is in
+  [`mistake-prevention.md`](../../package/module/translation-repair/doc/mistake-prevention.md).
+  Open work is every ledger entry whose status reads open or recurring;
+  L6 waits for the next launch by its own entry.
+- THE LAST PASS.
+  `TianqiChen66621` on `.frozen-dist-9a3f28b30` settled on 2026-09-28 in 3,169,499 ms
+  and was read the same day
+  (pass log,
+  "TianqiChen66621 read,
+  2026-09-28").
+  No pass has launched since.
+- ROSTER.
+  The checker seats were measured on 2026-09-27 and Mimo v2.6 Flash joined them;
+  [`roster-changes.md`](../../package/module/translation-repair/doc/roster-changes.md)
+  has every change with its date.
+- NEXT.
+  The open ledger entries,
+  then the prevention doc's "Before a run launches",
+  then `TianqiChen666` again on the audit build,
+  so that class one hundred eighty-seven and every fix since `9a3f28b30` are read live.
+
 ### 2026-09-24, 04:30 UTC: one hundred ten classes, eight seats, two wet providers
 
 The snapshot of 2026-09-16 (next heading) describes the takeover;
 everything after it is in the pass log
 ([`translation-repair-openrouter-2026-09-03.md`](../planning/translation-repair-openrouter-2026-09-03.md),
-one heading per read page,
-newest first)
+one heading per run or read,
+oldest first up to the Mio23 launch of 2026-09-16 and newest first after it)
 and in step 1 of "What to do next".
 This checkpoint says where those eight days left the pipeline,
 so a reader does not have to walk eighty headings to find out.
@@ -2619,8 +2670,9 @@ markdown lint clean on every line written today.
   `translation-repair-rebased`,
   auto-push on.
 - Tip:
-  `e964d2f3a` for the code;
-  the documents move after it.
+  moves with every commit,
+  so read it with `git log --max-count 1`;
+  this line named `e964d2f3a` (2026-09-16) until 2026-09-29.
 - Corpus pinned at `a41fc607ea5a70d8a7625cc67d5ed8c444f53379` in `~/one-among-us/data`.
 - The scratch tools every reading and launch in this document uses are copied,
   as of 2026-09-09,
@@ -5282,6 +5334,19 @@ each read off the pass log and the shipped page:
     live in `~/temp/agent/audit-glossary-fix/`,
     which survives a reboot;
     the scratchpad did not.
+    STATE 2026-09-29:
+    TianqiChen66621's page was read against the source on 2026-09-28
+    (pass log,
+    "TianqiChen66621 read,
+    2026-09-28"),
+    and the class it found,
+    one hundred eighty-seven,
+    is fixed (`58287ebe3`,
+    `05a18ed02`).
+    L5,
+    L10 and L12 to L14 are closed in the ledger.
+    NO PASS HAS LAUNCHED SINCE.
+    The next steps are the checkpoint of 2026-09-29 under "Where the work stands".
     AUDIT IN PROGRESS (owner 2026-09-27:
     "audit the whole translation-repair pkg for all the mistakes we've
     made and fix all of them",

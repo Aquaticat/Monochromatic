@@ -5718,7 +5718,9 @@ What was done:
     shown first to report a planted missing file and a missing fragment).
 
 No guard can tell a current status paragraph from a stale one,
-so the prevention is a habit.
+so the prevention is a habit,
+recorded under M55,
+which found the snapshot's own next steps stopped the same way.
 
 ### D29: zone-less clock times in the living planning docs
 
@@ -7654,6 +7656,31 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M55: the handover's next steps still called a read page unread
+
+Status:
+happened 2026-09-28,
+found 2026-09-29 while fixing D28,
+and fixed the same day.
+TianqiChen66621's page was read against the source on 2026-09-28,
+its class was fixed,
+and the pass log recorded both,
+but the current snapshot's "What to do next" still said the page was not yet read
+and still listed reading it as a next step;
+its "Where the work stands" had no checkpoint after 2026-09-24,
+and its repository state named a tip from 2026-09-16.
+A session starting from the handover would have read the page again,
+or taken the checkpoint of 2026-09-24 for where the work stands.
+The document map's current status (D28) had stopped the same way three weeks earlier.
+Prevention:
+a page read,
+an owner ruling built or a change of plan updates the snapshot's "What to do next" in the same sitting,
+before the next piece of work,
+and its newest checkpoint when the next steps change;
+the map's "Current status" moves with them when what it states has changed.
+The prevention doc's "Current-state docs" holds the rule,
+and its launch checklist asks for it.
 
 ### M54: doc commits that never ran the Markdown linter
 
