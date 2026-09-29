@@ -75,6 +75,12 @@ const BROTHER_ITEM = {
 
  @param prompts - sink for every sheet seen
 
+ @param silentOnExtraction - seats whose every call to the open question
+ fails, as a seat that never answers does
+
+ @param silentOnConfirmation - seats whose every call to the yes-or-no
+ question fails
+
  @returns Client
 
  @example
@@ -87,10 +93,14 @@ function twoRoundClient(
     extraction,
     confirmation,
     prompts,
+    silentOnExtraction = [],
+    silentOnConfirmation = [],
   }: {
     readonly extraction: Readonly<Record<string, unknown>>;
     readonly confirmation: Readonly<Record<string, unknown>>;
     readonly prompts: string[];
+    readonly silentOnExtraction?: readonly string[];
+    readonly silentOnConfirmation?: readonly string[];
   },
 ): SyntheticClient {
   return {
@@ -113,6 +123,8 @@ function twoRoundClient(
        Whether this is the yes-or-no round.
        */
       const confirming = sheet.includes('CANDIDATE',);
+      if ((confirming ? silentOnConfirmation : silentOnExtraction).includes(request.modelId,))
+        throw new Error('scripted transport failure',);
       /**
        Scripted reply for this seat and round.
        */
@@ -287,6 +299,75 @@ await describe({
         expect(kept[0]?.archiveQuote,).toBe(BROTHER_ITEM.archiveQuote,);
         expect(kept[0]?.voices,).toBe(2,);
         expect(kept[0]?.heard,).toBe(3,);
+      },
+    },),
+  ],
+},);
+
+/**
+ Every seat but the first, which is silent in the cases on a lone voice.
+ */
+const ALL_BUT_FIRST: readonly string[] = ROSTER.slice(1,);
+
+await describe({
+  name: 'reference attestation on a lone voice (ledger B29)',
+  children: [
+    it({
+      name: 'ATTESTS NOTHING when one voice alone answers both rounds: no stage is decided by a single model '
+        + '(MIN_STAGE_VOICES), and an attested detail shields an archive addition from the repair lane',
+      fn: async () => {
+        /** The attestation over a bench only its first seat answers. */
+        const attestation = await attestCitedReferences({
+          client: twoRoundClient({
+            prompts: [],
+            extraction: { [ROSTER[0] ?? '']: { attested: [BROTHER_ITEM,], }, },
+            confirmation: { [ROSTER[0] ?? '']: { confirmed: [1,], }, },
+            silentOnExtraction: ALL_BUT_FIRST,
+            silentOnConfirmation: ALL_BUT_FIRST,
+          },),
+          modelIds: ROSTER,
+          // WHOLE BENCH, PINNED (ledger X2): this case scripts seats by name.
+          fanOut: 'whole-bench',
+          sourceText: SOURCE_TEXT,
+          archiveText: ARCHIVE_TEXT,
+          referenceContext: REFERENCE_CONTEXT,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(attestation.details,).toHaveLength(0,);
+      },
+    },),
+    it({
+      name: 'LETS THE EXTRACTION QUORUM STAND when one voice alone answers the confirmation, as when nobody does: '
+        + 'a lone confirming voice decides nothing, either way',
+      fn: async () => {
+        /** The attestation whose extraction quorum kept the detail and whose confirmation only one seat answered. */
+        const attestation = await attestCitedReferences({
+          client: twoRoundClient({
+            prompts: [],
+            extraction: {
+              [ROSTER[0] ?? '']: { attested: [BROTHER_ITEM,], },
+              [ROSTER[1] ?? '']: { attested: [BROTHER_ITEM,], },
+              [ROSTER[2] ?? '']: { attested: [BROTHER_ITEM,], },
+            },
+            // The one voice heard on the confirmation confirms nothing.
+            confirmation: { [ROSTER[0] ?? '']: { confirmed: [], }, },
+            silentOnConfirmation: ALL_BUT_FIRST,
+          },),
+          modelIds: ROSTER,
+          // WHOLE BENCH, PINNED (ledger X2): this case scripts seats by name.
+          fanOut: 'whole-bench',
+          sourceText: SOURCE_TEXT,
+          archiveText: ARCHIVE_TEXT,
+          referenceContext: REFERENCE_CONTEXT,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(attestation.details.map(function quoteOf(detail,): string {
+          return detail.archiveQuote;
+        },),).toEqual([BROTHER_ITEM.archiveQuote,],);
       },
     },),
   ],
