@@ -886,3 +886,44 @@ fail when a caller stops threading the names;
 A sheet whose rules name no block,
 and a caller whose fixture passes a block production does not,
 are outside what these can see.
+
+## Defaults that stand in for an input
+
+What happened:
+the final polish held the slice's disputed wordings and never passed them,
+so a polish landing on one shipped past the three checks that had refused it;
+the chunk's checker check left the refiners out,
+and the bench read at the checker stage was read for quorum alone;
+two writers' sheets displayed candidates without their break counts;
+reference attestation decided on one voice;
+and a chunk scan swallowed a parse error with `void error` (ledger B29).
+Each default read as "none",
+and the code compiled and ran.
+Three exported names were each declared twice,
+one pair with one signature for two comment grammars.
+
+The rule:
+a call states every input that decides what a floor refuses,
+what a sheet shows or whether a text may ship,
+even where the default happens to equal it;
+a call that leaves one out says why at the call or in the guard's named list.
+A gate flag never defaults to the permissive answer without every caller stating it.
+A check re-read mid-run applies every rule the first read applied.
+A caught error is logged,
+rethrown,
+or returned as data carrying it;
+a parse whose failure is ordinary goes through `parseModelJson`,
+never a catch that drops the error.
+Each exported function has a name no other file exports,
+chosen for its role and its boundary.
+Text is sliced by index,
+never grown a character at a time.
+
+What enforces it:
+`floor-inputs-stated.unit.test.ts` fails on a production call leaving a floor input or gate flag out,
+unless the call is named with its reason or sits in a named measurement file,
+and on a named call or file that no longer leaves anything out;
+it cannot see a key nested in a named type or a parameter typed by a named alias.
+`exported-function-names.unit.test.ts` fails on a name two source files export.
+The catch and accumulator rules are enforced by review and the ledger's census,
+not by a guard.

@@ -125,8 +125,19 @@ this one says what changed after it.
   two sheets gained the narrative bound beside the apparatus kinds,
   and `rendered-sheets-context.unit.test.ts` fails on a rendered sheet naming a block it does not carry,
   now that the fixtures render every sheet with the context production gives it.
-  The family left is silent fallbacks,
-  and D33 (references by position) is open.
+  The seventh,
+  silent fallbacks,
+  closed on 2026-09-29 as B29:
+  the final polish refuses the slice's disputed wordings,
+  reference attestation needs two voices,
+  a checker bench holds none of the chunk's writers when it is re-read at the stage,
+  two writers' sheets state their candidates' break counts,
+  and `floor-inputs-stated.unit.test.ts` fails on a production call leaving a floor input or gate flag to its default unnamed;
+  three names exported twice are renamed,
+  and `exported-function-names.unit.test.ts` keeps them apart.
+  B29 leaves one gap open:
+  the rendering audit's auditors are not shown the cited references the producers had.
+  D33 (references by position) is open.
   Both gaps found on the way are closed:
   `code-points.ts` and `cased-letters.ts` have unit tests of their own,
   which found and fixed two lone-surrogate faults

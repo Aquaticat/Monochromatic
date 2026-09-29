@@ -8871,6 +8871,195 @@ The readers,
 the attestation and the pairing sheets carry no house rules,
 and write nothing that ships.
 
+### B29: silent fallbacks (B21, family seven)
+
+Status:
+fixed,
+2026-09-29,
+with one gap left open and named under its own heading.
+The full suite passed on `39e61d6d0`,
+the entry's last code commit,
+with no failing case among 1352 passing groups.
+
+A silent fallback is a value the code supplies where the caller held a real one:
+a parameter default read as "none",
+a caught error turned into nothing,
+a nullish fallback substituting another text.
+The census read all three,
+and the permissive gate defaults and string accumulators found beside them.
+
+#### Census
+
+Parameter defaults:
+`~/temp/agent/f7-fallbacks/default-census.ts`
+(esbuild and acorn over the package's non-test source)
+found 144 functions whose destructured first parameter defaults a key,
+and listed every call leaving one out.
+Most are test seams
+(a transport,
+a clock,
+a poll interval)
+that production never passes.
+The floor-inputs prototype
+(`floor-scan-probe.ts`,
+over the package's own oxc parse,
+which keeps the types)
+then read defaulted and optional keys alike:
+89 functions let a caller leave out an input that decides what a floor refuses or what a sheet shows,
+over 162 calls.
+
+Caught errors:
+`catch-census.ts` read 142 catch clauses;
+15 neither log nor rethrow,
+and 14 of those return or record the caught error for their caller.
+One dropped it
+(`openrouter-chunk-scan.ts`).
+
+Nullish fallbacks:
+623 `??` uses,
+101 substituting something other than a literal.
+Read one by one,
+they are sentinels,
+map lookups,
+the documented seating fallback
+(no fresh reading leaves the roster the driver was given standing,
+`repair-checker-reseat.ts`,
+`standingSeating`),
+and text fallbacks each commented at its line
+(the archive's front-matter shape,
+else the source's,
+for a new insertion;
+the first rendering an answer was seen under).
+None is silent.
+
+Gate defaults:
+12 gate parameters default to the permissive answer
+(`eligible`,
+`incumbentEligible` twice,
+`standingValid`,
+`standingMayShip` four times,
+`standingEligible` twice,
+`choiceMayShip` twice).
+Every production call states them;
+only the judging-window trial,
+a measurement file,
+leaves `incumbentEligible` out.
+
+#### Findings fixed
+
+- Reference attestation decided on a lone voice:
+  the extraction's votes-needed was `rosterQuorumSize` of the voices heard,
+  which is one when one is heard,
+  and a confirmation hearing one voice confirmed alone,
+  against `MIN_STAGE_VOICES`
+  (no stage is decided by a single model).
+  Red `7d28373e7`,
+  fix `e903f4a15`:
+  `attestationVotesNeeded` floors the count at `MIN_STAGE_VOICES`,
+  and a confirmation hearing fewer keeps the extraction's details with a warning and a finding.
+  Over the stored rounds
+  (944 extractions,
+  205 confirmations)
+  none heard exactly one voice,
+  and the attestation keeps no cache
+  (`corpus-run/pass-attest-references.ts`).
+- The final polish dropped the slice's disputed wordings:
+  `applyFinalPolish` held them on its subject and never passed them,
+  so a polish landing on one,
+  in all but whitespace,
+  shipped past the standing verdict,
+  the lane offer and the producers' floor that had each refused it.
+  Red `907572336`,
+  fix `6df19b319`,
+  riding inside consolidation version 20.
+- The chunk's checker check left the refiners out,
+  though its TSDoc said it refused a checker who refines
+  and the other three callers pass them;
+  and the bench read again at the checker stage was read for quorum alone,
+  so a re-seat naming this chunk's editor would have had it grade its own rewrite.
+  Red `645b60fbc`,
+  fix `6c9e948e2`
+  (`assertBenchAgainstWriters`).
+  Neither reached a run:
+  `corpus-run/run-seats.ts` asserts every derived bench against the static editors and refiners.
+- Two writers' sheets displayed candidates without their break counts,
+  which `renderedBreakPrompt` defaults to none:
+  the consolidation writer,
+  shown both lanes' texts,
+  and the translate follow-up writer,
+  shown the candidates the judges declined;
+  the gates,
+  the lane contest and the slate judges pass theirs.
+  Red `b34848d40`,
+  fix `0335bd489`,
+  riding inside consolidation version 20 and translate version 15.
+- The translate producer left `pageText` to its default;
+  the value was the same,
+  and `e97c46e88` states it,
+  matching the floor after the repair turn.
+- Three names were exported by two files each
+  (`settleTranslateSlice`,
+  `withoutComments` under one signature for two comment grammars,
+  `wordsOf`),
+  which conflated the census's first read and names two functions alike in every `fn.name` logger tag.
+  Red `f51407716`
+  (`exported-function-names.unit.test.ts`),
+  fix `c9e78d56b`.
+- `whitespaceTokensOf` and `handleReading` grew strings a character at a time,
+  the accumulator rebuild RG2 in `AGENTS.md` rules out for text.
+  Pinned `c360b4c01`,
+  rewritten `13adce419` to slice by index.
+- `openRouterChunksOf` swallowed a parse error with `void error`,
+  the only such line;
+  `07d4a4504` reads the failure as data through `parseModelJson`.
+
+#### The guard
+
+`628404247` adds `floor-inputs-stated.unit.test.ts`,
+and `39e61d6d0` extends its key set to the gate flags
+(the corrective comment on that commit fixes its count of them to twelve).
+It fails on a production call leaving a floor input or gate flag out,
+unless the call is named with its reason
+or sits in a named measurement file.
+Nine calls are named:
+the dispute note,
+which reads no stand-in eligibility;
+three lane-contest eligibility calls,
+since front matter carries no dispute
+(`0bf3305ba` pins that the repair lane raises no issue there)
+and the contest verdict decides only persistence and the log,
+while the consolidation re-reads every contested standing against the disputed wordings;
+the seeded-error benchmark twice;
+the library entry,
+which takes no cited references;
+the artifact rebuild,
+which re-carves recorded slices;
+and the translate slice's stage input,
+whose literal states all seven inputs it forwards.
+Fourteen measurement files are named as files.
+
+The mutation batch
+(`b29-mutants.json`,
+15 mutants over every fix and both guards)
+caught 13.
+The two survivors were gaps in cases written this day:
+a negative assertion that searched for a label the empty lane never carries,
+and an astral case that exercised the other branch's offset.
+`c0738cda9` closes both,
+and a rerun caught each.
+
+#### Open
+
+- The rendering audit shows its auditors the declared names the producers had
+  and not the cited references
+  (`corpus-run/rendering-audit-settled-input.ts`),
+  which by that module's own reasoning lets an auditor mark a reference-backed rendering wrong.
+  Artifacts record no references,
+  so closing it needs the reference fetch the pass makes.
+- A Han character beyond the first plane that pinyin-pro cannot read passes through the handle reading as written.
+  No pinned original or stored artifact carries one
+  (ledger B21's census).
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
