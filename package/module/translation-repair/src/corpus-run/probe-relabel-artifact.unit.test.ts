@@ -472,7 +472,7 @@ await describe({
     },),
     it({
       name: 'READS the issues from the ROOT of a legacy artifact, which is what the round-three draw '
-        + 'consists of (`#257`)',
+        + 'consists of',
       fn: async () => {
         // The reader once looked only at the lane, so every artifact written
         // before schema versions refused at its first field, and the two

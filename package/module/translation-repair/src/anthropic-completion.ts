@@ -68,7 +68,7 @@ type AnthropicFold = {
 
   /**
    Tool-argument fragments, in arrival order, from `input_json_delta`
-   frames: the answer whenever there are any (`#242`).
+   frames: the answer whenever there are any.
    */
   readonly toolParts: string[];
 
@@ -556,7 +556,7 @@ export function extractAnthropicCompletion(
   // `tool_choice: auto` a model may write a text block before the tool block;
   // folding both into one string handed the schema reader prose glued to JSON
   // and lost the voice, and a Hyper-only seat has no other stack for a second
-  // opinion (`#242`). The prose is set aside and its size logged, never its
+  // opinion. The prose is set aside and its size logged, never its
   // content.
   if ((toolAnswer !== '') && (prose !== ''))
     rl.info(

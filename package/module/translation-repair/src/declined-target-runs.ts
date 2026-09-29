@@ -11,7 +11,7 @@ import type { BlockPair, } from './pair-blocks-wire.ts';
 // `doc/planning/one-sided-pairing-census.md`. Its English page carries a letter
 // its Chinese page does not, 2909 dense characters of it. The roster paired all
 // four source blocks correctly and left the letter's two blocks unpaired, which
-// is exactly the refusal `#71` asked for. Grouping then closed the run on
+// is exactly the refusal a wrong pairing calls for. Grouping then closed the run on
 // budget, `mergeOneSidedRuns` folded the target-only run BACKWARDS into its
 // neighbour, and the slice reached the judges as 41 characters of source
 // against 3875 characters of standing English. Ninety-three percent of what

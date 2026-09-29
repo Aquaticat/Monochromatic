@@ -16,7 +16,7 @@ import { foldCarriageReturns, } from './line-endings.ts';
 // which is why the control was run before the threshold was chosen.
 //
 // The counts were 55 of 286 across 34 entries when first taken. Nothing about
-// this predicate changed; the ALIGNER did, in `#71`, and chunk boundaries are
+// this predicate changed; the ALIGNER did, and chunk boundaries are
 // its output. Re-measured through the shipped predicate on the forced aligner.
 
 /**

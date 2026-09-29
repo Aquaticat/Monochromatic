@@ -4,8 +4,8 @@
  `selectRepairCandidate` is already covered, and it exercises these branches
  indirectly, but nothing asserted the ORDER OF THE TIERS themselves. That
  order is a design decision rather than an implementation detail: it encodes
- what the pipeline is willing to trade for what, and issue #53 is an open
- question about exactly that. A test that pins each tier against every tier
+ what the pipeline is willing to trade for what, and that trade is itself an open
+ question. A test that pins each tier against every tier
  below it turns a future reordering into a deliberate act instead of a silent
  one.
  

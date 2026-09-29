@@ -1,7 +1,8 @@
 import { foldedLatinWords, } from './latin-letters.ts';
 
 //region Heading affinity
-// Written as a prototype for `#71`, and WIRED SINCE: `align-headings-grid.ts`
+// Written as a prototype for the section-alignment fix, and WIRED SINCE:
+// `align-headings-grid.ts`
 // calls it for every candidate pairing, and `alignHeadingsForced` decides on
 // the grid that builds.
 //

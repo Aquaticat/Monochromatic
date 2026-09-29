@@ -8,7 +8,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 // PERSISTED so the second twin reused it: a cold run then settled what a warm
 // run resumes. The memo held persisted records only, on purpose: a record the
 // driver refused to store (nobody heard, an unfilled passage) was not
-// memoized, so the twin asked again, exactly as a warm run would (`#238`).
+// memoized, so the twin asked again, exactly as a warm run would.
 //
 // WHAT OVERLAP ADDS. The twin may arrive while the first is still buying. It
 // must neither buy the same question twice nor reuse what will not be stored,

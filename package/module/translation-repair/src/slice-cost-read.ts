@@ -10,7 +10,7 @@ import {
 
 //region Slice cost read
 // Reads back what `armSliceCost` wrote, so a pass's log answers whether a
-// slice's cost scales with its size (`#92`).
+// slice's cost scales with its size.
 //
 // REFUSES RATHER THAN GUESSES, and says why. A log is written while a pass runs,
 // so its last line can be half-written, and a reader that silently skipped

@@ -256,7 +256,7 @@ export function buildTranslateCandidates(
 
   /**
    Translators that proposed text, each with its translation folded at
-   intake so the judges see the bytes that would ship (`#264`).
+   intake so the judges see the bytes that would ship.
    */
   const folded = ordered
     .filter(function isUsable(voice,): boolean {

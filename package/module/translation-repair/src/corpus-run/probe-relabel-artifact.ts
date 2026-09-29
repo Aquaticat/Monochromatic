@@ -459,7 +459,7 @@ export async function readArtifactRecords(
    `artifact.issues` only, which version 2 does not write, so every call
    refused a well-formed two-lane artifact; the move to the lane then refused
    every legacy artifact instead, which is what the round-three draw consists
-   of (`#257`). The dispatching reader already knows which is which.
+   of. The dispatching reader already knows which is which.
    */
   const issues = inLane
     ? laneIssues({

@@ -23,7 +23,7 @@ import type { RosterModelId, } from './roster-id.ts';
 // slices separate it from a model that lost.
 //
 // WHO ANSWERED IS KNOWN ONLY WHERE THE STAGE CARRIES IT OUT. The refine stage
-// does; the editor and translate stages carry only a count out (`#266`). A
+// does; the editor and translate stages carry only a count out. A
 // seat that cannot say who answered says so in its line rather than folding
 // the unknown into "wrote nothing", because that fold is exactly the misreport.
 //

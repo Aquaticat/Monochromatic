@@ -126,7 +126,7 @@ await describe({
         + 'gets one line and no debugger. It states what was sent, what passes, how far over the '
         + 'request was, what to do about it, and where the measurement lives, and it keeps the '
         + 'gateway\'s own words OFF the line, which a class that declares its message quote-free '
-        + 'may not repeat (`#244`)',
+        + 'may not repeat',
       fn: async () => {
         /**
          Message composed for a body 699575 bytes past the passing size.
@@ -149,7 +149,7 @@ await describe({
     },),
     it({
       name: 'KEEPS whatever the gateway echoed on the excerpt for the log and out of the message, so a '
-        + 'gateway that repeats request bytes cannot put corpus text on a CLI line (`#244`)',
+        + 'gateway that repeats request bytes cannot put corpus text on a CLI line',
       fn: async () => {
         /**
          Refusal built from a gateway body that echoes something of ours.

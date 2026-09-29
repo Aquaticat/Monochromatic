@@ -219,9 +219,10 @@ export type SectionAlignment = {
    EMPTY DOES NOT MEAN VERIFIED. Two sides of equal shape pair by index
    without the aligner being consulted at all, so a document that dropped one
    section and gained an unrelated one later has equal counts, pairs straight
-   through, and reports nothing. `#98` holds that, and it waits on an aligner
-   that can score headings across languages: today, refusing those pairings
-   would discard real repair coverage to catch a case nothing can detect.
+   through, and reports nothing. A roster reading both documents agreed with
+   index order on all 56 equal-count entries of the pinned corpus, so the fast
+   path stays: refusing those pairings would discard real repair coverage to
+   catch a case measured absent there.
    */
   readonly findings: readonly AlignmentFinding[];
 };
@@ -373,9 +374,9 @@ function describeSourceOnly(
  every leading kind is `heading`, so that half of the test holds by
  construction and the path reduces to "the counts match". A document that
  dropped one section and gained an unrelated one later has matching counts and
- pairs straight through with no finding. `#98` holds it; it waits on heading
- scoring that works across languages, since refusing every equal-count pairing
- would discard real repair coverage to catch a case nothing here can detect.
+ pairs straight through with no finding. A roster reading both documents agreed
+ with index order on all 56 equal-count entries of the pinned corpus, and
+ refusing every equal-count pairing would discard real repair coverage to catch a case nothing here can detect.
  
  @param source - parsed original document
  
@@ -457,7 +458,7 @@ export function alignDocumentSections(
     },);
 
   // A ROSTER PAIRING SUPPRESSES THE FAST PATH. Equal shape pairs by index
-  // without anything being consulted, which `#98` records as a known blind
+  // without anything being consulted, which is a known blind
   // spot; a roster was shown both documents and its answer is the better one
   // wherever the two disagree.
   if (equalShape && (sectionPairing === undefined)) {

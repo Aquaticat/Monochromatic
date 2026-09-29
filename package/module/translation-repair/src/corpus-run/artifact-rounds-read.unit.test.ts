@@ -481,7 +481,7 @@ await describe({
 
     it({
       name: 'READS an adopted round, which carries its one slate entry and index and nothing a vote '
-        + 'would have produced (`#239`)',
+        + 'would have produced',
       fn: async () => {
         /**
          Rounds read back, one chunk holding one adopted round.

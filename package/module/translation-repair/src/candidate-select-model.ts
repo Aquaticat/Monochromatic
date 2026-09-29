@@ -26,7 +26,7 @@ export const FULL_VOTE_WEIGHT = 1;
  candidate is its own and cannot set out to back it; it is only somewhat more
  likely to land there. Sizing this as though every self-vote were deliberate
  would overcorrect a bias nobody has measured on this roster yet, which is
- what `#84` is for.
+ what the judge-quality bench is for.
  
  A half rather than some tuned fraction, and the arithmetic is the argument:
  one author draws at most this much for its own text and three authors at most

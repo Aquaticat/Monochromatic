@@ -30,7 +30,8 @@ import {
 import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Translate probe
-// PROTOTYPE for `#70`. Asks whether a translate stage can do what the repair
+// PROTOTYPE for the translate-first re-design. Asks whether a translate stage
+// can do what the repair
 // loop demonstrably cannot: render a section the corpus never translated.
 //
 // The case is real and is the worst one measured. In `XingZ60` an aligned
@@ -51,8 +52,8 @@ const PROBE_ENTRY = 'XingZ60';
  Ratio below which a section counts as barely translated for this probe.
  
  Only picks which section to demonstrate on. Nothing downstream reads it, and
- choosing a threshold for production is exactly the question `#69` asked and
- the user rejected, so it is deliberately local to this file.
+ choosing a threshold for production is exactly the partial-translation question
+ the owner rejected, so it is deliberately local to this file.
  */
 const SPARSE_RATIO = 0.25;
 

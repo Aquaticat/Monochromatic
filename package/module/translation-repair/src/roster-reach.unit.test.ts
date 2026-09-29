@@ -62,7 +62,7 @@ await describe({
   children: [
     it({
       name: 'SERVES every roster id from at least one catalog, so a roster label without a catalog '
-        + 'row fails here rather than as one lost voice per call (`#241`)',
+        + 'row fails here rather than as one lost voice per call',
       fn: async () => {
         /**
          Roster ids no catalog has a row for under the roster's own spelling.

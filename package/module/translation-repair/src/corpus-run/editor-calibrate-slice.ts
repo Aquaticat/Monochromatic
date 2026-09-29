@@ -7,7 +7,7 @@ import type { SelectionRound, } from '../self-preference.ts';
 // WHAT ONE SLICE OF THE EDITOR CALIBRATION PRODUCES, and the one line the
 // driver prints about it while the run is still going.
 //
-// SPLIT OUT OF `editor-calibrate.ts` when the overlap dial (`#213`) put that
+// SPLIT OUT OF `editor-calibrate.ts` when the overlap dial put that
 // file over its line budget. The type moved with the line because the line is
 // its only reader outside the driver, and the driver is an entry module:
 // nothing an entry module declares may be exported through a barrel, since

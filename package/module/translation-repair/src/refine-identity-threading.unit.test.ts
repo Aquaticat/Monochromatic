@@ -15,7 +15,7 @@
  survive exactly, which is the protection `#137` and `#143` put there.
  
  THE FAILURE MODE IS INVISIBLE TO EVERY OTHER KIND OF TEST, for the reason
- `#68` records: the block is an optional property spread into an object
+ already found once: the block is an optional property spread into an object
  literal, TypeScript does not excess-property-check a spread, and the sheet
  still renders without it. A wrapper that forwarded nothing compiled, linted
  and passed its own suite while asking the models a strictly smaller question.

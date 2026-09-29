@@ -11,7 +11,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // (`doc/decision/translation-repair-calibration-overlap.md`): four slices in
 // flight took the same call time in 0.23 of the wall clock that one at a time
 // took in 0.41. This is the dial those drivers turn so a corpus pass can be
-// measured the same way (`#261`), and `overlap: 1` is exactly the loop it
+// measured the same way, and `overlap: 1` is exactly the loop it
 // replaces.
 //
 // WHAT A DRIVER'S LOOP HAD THAT THIS KEEPS. Items START in item order, so a

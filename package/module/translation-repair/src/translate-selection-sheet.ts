@@ -10,7 +10,8 @@ import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
 // What the judges of the translate lane are asked, kept apart from the stage
 // that asks it.
 //
-// WHY IT IS ITS OWN FILE: `#84` measures whether these judges can tell a
+// WHY IT IS ITS OWN FILE: the judge-quality bench measures whether these
+// judges can tell a
 // faithful rendering from a fluent one, and a measurement that carries its own
 // copy of the sheet measures a copy. The harness and the stage import the same
 // two values, so the sheet cannot drift out from under the number that says it
@@ -141,7 +142,7 @@ const SHAPE_IS_JUDGED_WITHIN_THE_CANDIDATE =
  COVERAGE AND FAITHFULNESS LEAD, and fluency comes last, which is the ordering
  the whole lane rests on: a candidate that reads better while saying less must
  lose. Whether the judges actually honour that ordering is the open question in
- `#84`, and it is not answerable from the wording alone.
+ the judge-quality bench, and it is not answerable from the wording alone.
  
  WHY FAITHFULNESS NAMES DECLARED NAMES ITSELF. A separate criterion has always
  said declared names are used exactly as given, and judges read that as
@@ -209,7 +210,7 @@ export const TRANSLATE_FRONT_MATTER_CRITERIA: readonly string[] = [
  
  A FUNCTION RATHER THAN A SECOND ARRAY. Two arrays would answer the same
  question in two places and drift the moment either is edited, and the
- ungoverned answer is the one `#84` measured, so it has to stay exactly what
+ ungoverned answer is the one the judge-quality bench measured, so it has to stay exactly what
  it was.
  
  INSERTED BY IDENTITY, NOT BY INDEX. The criterion belongs immediately ahead

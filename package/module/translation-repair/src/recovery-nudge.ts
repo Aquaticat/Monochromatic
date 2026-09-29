@@ -59,7 +59,7 @@ export type UnreadableCause = typeof UNREADABLE_CAUSES[number];
  second call for the same model and prompt from its cache, schema mismatch
  included, so a recovery round that re-sent the same bytes was answered with
  the same unreadable bytes in 0 to 1 ms on every one of the five occasions
- measured across two passes on 2026-09-02 (`#473`). The guard here is a type
+ measured across two passes on 2026-09-02. The guard here is a type
  predicate and carries no message of its own, so the complaint names the
  failure in general terms: the answer arrived and its shape was not the one
  asked for. That is enough to make the digest new and to tell the model what

@@ -76,7 +76,7 @@ const REFUSAL_COOLDOWN_MS = 300_000;
  How long a provider stays out after refusing us while its meter reads wet.
  
  A 429 FROM A WET PROVIDER IS A CONCURRENCY LIMIT, NOT EXHAUSTION. The pin
- pass of 2026-09-02 (`#474`) held Synthetic out for the whole cooldown on a
+ pass of 2026-09-02 held Synthetic out for the whole cooldown on a
  burst of 429s while its meter read 2729 of 2750, and two such holds ended the
  pass for every remaining entry. The bursts measured there lasted 31 s
  (01:39:20 to 01:39:51), 3 s (01:40:32 to 01:40:35) and 2 s (01:54:06 to
@@ -646,7 +646,7 @@ export function createProviderBudgets(
       // THE METER IS ASKED AT ONCE, freshness window or not. A refusal from a
       // provider whose meter still reads wet is its concurrency limit, which
       // clears in seconds, and holding it out for the exhaustion cooldown is
-      // what ended the pin pass of 2026-09-02 (`#474`). A meter that agrees, or
+      // what ended the pin pass of 2026-09-02. A meter that agrees, or
       // one that cannot be read, keeps the refusal stickier than the reading.
       /**
        What every meter said just now.

@@ -48,7 +48,7 @@ import {
 // WHAT IT DOES NOT MEASURE: self-preference, since neither candidate is written
 // by a model on the roster, and fluency-versus-faithfulness in the hard case,
 // since both fixtures move a whole sentence rather than quietly dropping a
-// qualifier inside one. Both are recorded in `#84`.
+// qualifier inside one.
 
 /**
  Which side of the ballot holds the clean text.
@@ -388,7 +388,8 @@ export async function runFidelityTrial(
     judgeModelIds,
     task: TRANSLATE_SELECTION_TASK,
     // THE UNGOVERNED SHEET, named explicitly rather than taken by default.
-    // `#84` measured whether these judges can tell a faithful rendering from a
+    // The judge-quality bench measured whether these judges can tell a
+    // faithful rendering from a
     // fluent one, and it measured them on the prose criteria. Letting this bed
     // follow whatever the production default became would silently re-point the
     // number at a sheet nobody measured.

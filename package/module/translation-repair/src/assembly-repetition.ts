@@ -8,7 +8,7 @@ import {
 // DAMAGE THAT IS ONLY VISIBLE IN THE WHOLE DOCUMENT, which every per-slice
 // instrument in this package is structurally blind to.
 //
-// `#66` measured the introduced-defect probe against two defects known to have
+// The introduced-defect probe was measured against two defects known to have
 // shipped and it named neither. One was an ordinary miss. The other,
 // `lintong`'s duplicated farewell, could not have been caught by that probe at
 // any setting: it compares one edited region against itself before the edit,
@@ -17,7 +17,7 @@ import {
 // each edit is defensible alone. Only the assembled document shows it.
 //
 // NO MODEL, NO ROSTER, NO QUOTA. The comparison that makes this decidable is
-// the ARCHIVE, which `#96` decided to store in the artifact and `#128` wired in.
+// the ARCHIVE, which the artifact stores whole beside its preparation hash.
 // A phrase the archive says once and the shipped document says twice is a
 // repetition this pipeline introduced. That is a fact about two strings.
 //
@@ -48,7 +48,7 @@ const CONTENT_WORD_LETTERS = 5;
  
  MEASURED RATHER THAN CHOSEN, on the five settled artifacts. Counting by words
  alone, this returned five findings, and their content-word counts separate
- them sharply: the duplication `#66` established by reading `lintong`'s
+ them sharply: the duplication established by reading `lintong`'s
  finished text carries THREE content words in 33 characters, while two of the
  others carry ZERO and ONE. Six words with no word longer than four letters is
  an ordinary English collocation that any two paragraphs may share, not a

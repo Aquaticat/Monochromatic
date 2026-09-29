@@ -120,8 +120,9 @@ function deterministicRefuses(
    Whether both sides have equal counts and matching leading node kinds.
    
    EQUAL SHAPE PAIRS BY INDEX without the aligner being consulted, so there is
-   no refusal to repair. `#98` holds whether that fast path should be checked
-   at all, and answering it here would decide that question by a side effect.
+   no refusal to repair. The fast path stays by a measured decision (a roster
+   agreed with index order on every equal-count entry), and checking it here
+   would reopen that decision by a side effect.
    */
   const equalShape = (sourceChunks.length === targetChunks.length)
     && sourceChunks.every(function leadingKindMatches(

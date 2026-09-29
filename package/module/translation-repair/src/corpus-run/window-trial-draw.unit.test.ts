@@ -6,7 +6,8 @@
  are adjacencies, spends quota twice and counts one model's answer twice.
  Drawing controls badly, or not at all, leaves a general context-induced
  conservatism indistinguishable from the window working on relocations, and
- `#84` measured the roster declining on any archive imperfection, so that is a
+ the judge-quality bench measured the roster declining on any archive
+ imperfection, so that is a
  live possibility.
  
  Fixtures are cat-themed invention mirroring corpus structure only.

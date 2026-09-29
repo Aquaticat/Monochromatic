@@ -59,7 +59,7 @@ export type SampleManifestItem = {
  A TAGGED ABSENCE rather than an optional string, for the reason this whole
  generation runs on: a manifest written before this field existed cannot claim
  a generation, and reading its silence as any particular one would attribute a
- sample to a pipeline nobody checked. `#60` records exactly this gap, that
+ sample to a pipeline nobody checked. The gap is exactly this, that
  `EligibleEntries` already carries the selection and the digests while the
  manifest wrote neither.
  

@@ -5,7 +5,7 @@
  WHY THIS IS SEPARATE FROM THE SHEET TEST. `introduced-defect-wire` already
  renders a window it is HANDED, and the accuracy lane already hands it one.
  Whether the REFINEMENT lane computes one and passes it over is a different
- question, and it is the one `#68` records going wrong: this lane's probe was
+ question, and it is the one that once went wrong: this lane's probe was
  called with no window at all for as long as it existed, so the naturalness
  lane's auditor reasoned about a slice alone while the accuracy lane's auditor
  reasoned about one in context, and their findings were never comparable.

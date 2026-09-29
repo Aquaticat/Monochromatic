@@ -247,7 +247,7 @@ export type SettledChunk = ChunkVerdict & {
  
  MEASURING AND SELECTING ARE ONE STEP HERE, though they are two functions,
  because the resolved count is both an input to the measurement and an output
- of the slice. Computed at the caller they drift: `#52` is the case where a
+ of the slice. Computed at the caller they drift: in one recorded case a
  count credited issues no applied envelope ever served, and the only reason
  that was findable is that one place owned both.
  

@@ -37,8 +37,9 @@ import {
 // judges about a fixed set of texts. While the two were one call, any caller
 // wanting to ask that question twice had to buy a second slate, so the two
 // answers differed in the candidates as well as in whatever the caller meant to
-// vary. `#108` wants the judged evidence varied with the slate held still, and
-// `#84`'s position-bias attempt wants the slate held still while ballot position
+// vary. The window trial wants the judged evidence varied with the slate held
+// still, and the judge-quality bench's position-bias attempt wants the slate
+// held still while ballot position
 // moves; neither is expressible against a stage that reproduces on every call.
 //
 // The rosters are NOT checked here. `assertJudgeableProducerRoster` needs both

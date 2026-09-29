@@ -262,7 +262,7 @@ export function assembleRepair(
       ...guarded.findings,
       // REPETITION IS A RELATION BETWEEN SLICES, exactly like the footnote graph
       // the guard above exists for, so this is the only layer that can see it.
-      // `#66` measured the introduced-defect probe against `lintong`'s
+      // The introduced-defect probe was measured against `lintong`'s
       // duplicated farewell and it could not have caught it at any setting: the
       // probe compares one edited region against itself, and no single region
       // contains the duplication.

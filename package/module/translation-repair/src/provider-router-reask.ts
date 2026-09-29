@@ -38,7 +38,7 @@ import type { SlotLedger, } from './provider-router-slots.ts';
 //
 // IT IS NOT A BUDGET FAILOVER and does not pretend to be one. A bad answer
 // marks nobody as refusing. The re-ask is skipped where no other provider
-// serves the model, which is the `#88` invalid-candidate path the policy
+// serves the model, which is the invalid-candidate path the policy
 // names, and skipped where every other provider is dry. When the second stack
 // disagrees with the schema too, the FIRST provider's answer is returned,
 // because the caller's own handling is written against it; both are logged.
@@ -286,7 +286,7 @@ export async function routedTextElsewhere(
   // DECISION: `callOn` releases one slot on every call to a limiting provider,
   // and a re-ask that reached one without a take released a slot nothing
   // held, so the count drifted negative and overflow needed that many extra
-  // concurrent calls before it resumed (`#240`). No `await` sits between the
+  // concurrent calls before it resumed. No `await` sits between the
   // budget read in `secondOpinionsFrom` and this line.
   core.ledger
     .take({

@@ -187,7 +187,7 @@ await describe({
     },),
     it({
       name: 'THROWS on a STAMPED chunk index that is not this array position, which is the live '
-        + 'mistake `#99` recorded: the same number names three different things, and two of them '
+        + 'mistake already recorded once: the same number names three different things, and two of them '
         + 'silently read the wrong neighbours or none',
       fn: async () => {
         /**

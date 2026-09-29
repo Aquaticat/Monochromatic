@@ -137,9 +137,9 @@ export type BenchRow = {
    holding NO stake in the same candidate thought of it, and that needs the
    slate and the ballots rather than a sum.
    
-   This is the cheaper of the two routes to that number. The other is `#83`'s
+   This is the cheaper of the two routes to that number. The other is the
    per-slice selection field in the settled artifact, which answers it
-   corpus-wide instead of on a bench and is blocked behind `#89`.
+   corpus-wide instead of on a bench.
    */
   readonly round: SelectionRound;
 

@@ -7,7 +7,7 @@
  nothing about whether any caller hands it over. The evidence is an optional
  property spread into an object literal, so a caller that forwards nothing
  compiles, lints and passes its own suite while asking the checkers a smaller
- question (`#68`). Three callers own a checker round: the stage itself, the
+ question. Three callers own a checker round: the stage itself, the
  repair lane's proof and its worse-vote recheck (ledger L3), and the
  refinement recheck (ledger L11).
 

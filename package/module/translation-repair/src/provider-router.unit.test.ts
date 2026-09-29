@@ -869,7 +869,7 @@ await describe({
 
     it({
       name: 'PAIRS the re-ask\'s slot release with a take, so the Synthetic count does not drift '
-        + 'negative and overflow to Hyper keeps working afterwards (`#240`)',
+        + 'negative and overflow to Hyper keeps working afterwards',
       fn: async () => {
         /**
          Providers asked, in call order.
@@ -965,7 +965,7 @@ await describe({
         },);
         const outcome = await client.chatJson({
           // Synthetic never served this model and OpenRouter is dry, so the
-          // answer falls to `#88`'s invalid-candidate path.
+          // answer falls to the invalid-candidate path.
           modelId: SEAT_HYPER_ONLY,
           messages: MESSAGES,
           signal: SIGNAL,

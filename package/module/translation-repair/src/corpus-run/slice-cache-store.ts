@@ -400,7 +400,7 @@ function isRefinedSliceSettlement(value: unknown,): value is RefinedSliceSettlem
 /**
  Whether a stored repair outcome may be resumed: the shape is right AND every
  stage that settled it was heard. A record written while a stage fell short
- of quorum is an outage frozen as a decision, and is recomputed (`#238`).
+ of quorum is an outage frozen as a decision, and is recomputed.
  
  @param value - parsed cache file
  

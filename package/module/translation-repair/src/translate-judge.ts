@@ -46,8 +46,8 @@ import { JUDGE_PICTURE_SCOPE_RULE, } from './translate-wire.ts';
 // TAKES ITS SLATE RATHER THAN MAKING ONE, which is the whole reason for the
 // split. Everything here is a question about a fixed set of texts, so the same
 // slate can be asked more than once and the answers differ only in what the
-// caller varied. `#108` varies the evidence the judges are shown; `#84`'s
-// position-bias attempt wants to vary ballot position. Neither is expressible
+// caller varied. The window trial varies the evidence the judges are shown;
+// the judge-quality bench's position-bias attempt wants to vary ballot position. Neither is expressible
 // against a stage that reproduces its candidates on every call, because a second
 // call would resample them.
 //
@@ -91,7 +91,7 @@ import { JUDGE_PICTURE_SCOPE_RULE, } from './translate-wire.ts';
  caller that does not ask for it gets the sheet production has always sent.
  `#107` is why it exists: where the archive carried a passage across a section
  boundary, a judge shown one slice pair sees invention on one side and omission
- on the other, and `#84`'s alteration arm went from 12 of 16 to 15 of 16 when
+ on the other, and the judge-quality bench's alteration arm went from 12 of 16 to 15 of 16 when
  the same trial was given exactly this
  
  @param neighbouringIncumbentText - archive English of the sections either

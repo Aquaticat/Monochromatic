@@ -200,7 +200,7 @@ export type RepairJudgedRound =
   | {
     /**
      Sole distinct proposal, adopted without a vote: nothing to compare it
-     against, so no judge was asked and no ballot exists (`#239`).
+     against, so no judge was asked and no ballot exists.
      */
     readonly kind: 'adopted';
 

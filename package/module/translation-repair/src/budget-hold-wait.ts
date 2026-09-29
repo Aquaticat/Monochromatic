@@ -20,7 +20,7 @@ import type { RosterModelId, } from './roster-id.ts';
 // provider dry.
 //
 // ALL HELD IS NOT ALL DRY. A hold is process state set by a refusal, and the
-// pin pass of 2026-09-02 (`#474`) ended for every remaining entry inside one
+// pin pass of 2026-09-02 ended for every remaining entry inside one
 // second because two holds were read as two empty meters while both meters
 // read wet. When every provider reads dry and at least one is held, the
 // shortest hold is waited out and the budgets are read again; only a second

@@ -359,7 +359,7 @@ async function main(): Promise<void> {
         };
       },),
       // Half of these the probe never flagged, so the grader is told a mix
-      // is coming and nothing about which is which (`#248`).
+      // is coming and nothing about which is which.
       framing: 'blind',
     },),
     manifest: formatVerifyManifest({ items, },),

@@ -22,7 +22,7 @@ import { contextRoot, } from './log-context.ts';
 //
 // NUDGED, SO THE RE-ASK IS A NEW PROMPT. The uniqueness wrapper samples one
 // model and prompt once; the same bytes asked again would be the same sample
-// by that rule, and would come back from its cache in no time (`#473`).
+// by that rule, and would come back from its cache in no time.
 //
 // A WORDING OF ITS OWN, not either of the stage recovery round's
 // (`recovery-nudge.ts`). That round later re-asks every seat still unreadable

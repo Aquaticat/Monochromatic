@@ -325,7 +325,7 @@ export async function lockRunsDir(
  A RENAME, NOT A REMOVE. Two starters that both found the lock stale and both
  removed it could interleave as remove, claim, remove, claim, the second
  remove deleting the first starter's fresh lock, and both passes then ran in
- one directory (`#243`). A rename to a name only this call knows is atomic:
+ one directory. A rename to a name only this call knows is atomic:
  the first starter's rename succeeds and the second's finds nothing to
  rename, so the second proceeds straight to a claim it will lose.
  
@@ -370,7 +370,7 @@ export async function evictStaleLock(
 /**
  Removes the lock file only when it still carries this acquisition's token,
  so a starter that lost a takeover cannot delete the winner's lock on its
- way out (`#243`). Says so when it keeps one.
+ way out. Says so when it keeps one.
  
  @param path - lock file
  

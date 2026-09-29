@@ -77,7 +77,7 @@ await describe({
   name: 'SENSITIVITY_ARMS',
   children: [
     it({
-      name: 'SENDS the disclosure its list names, so the printed label is what the prober got (`#247`)',
+      name: 'SENDS the disclosure its list names, so the printed label is what the prober got',
       fn: async () => {
         for (const arm of SENSITIVITY_ARMS) {
           if (arm.list === 'rendered')

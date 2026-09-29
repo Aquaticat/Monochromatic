@@ -14,7 +14,8 @@
  every kept name. A pool where half the artifacts predate digest recording
  still has one generation and still offered the sample its full width, so
  collapsing the two counts would understate the pool a graded sheet was drawn
- from. `#60` is the gap this closes, and that asymmetry is the closing.
+ from. A manifest that recorded no generation is the gap this closes, and that
+ asymmetry is the closing.
  
  @module
  */

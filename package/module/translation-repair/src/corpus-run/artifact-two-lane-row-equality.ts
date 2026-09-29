@@ -152,7 +152,7 @@ type FieldCheck = {
  order the row is written, empty when the rows agree.
  
  NAMES, NEVER VALUES: the rows carry the archive text and both lanes' output,
- and the callers put this into refusal messages that reach stdout (`#237`).
+ and the callers put this into refusal messages that reach stdout.
  
  @param left - one row
  

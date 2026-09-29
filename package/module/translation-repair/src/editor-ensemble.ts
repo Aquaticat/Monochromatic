@@ -204,7 +204,7 @@ export async function selectPerEnvelope(
       counters.sole += 1;
       winners.push(sole.value,);
       // Recorded as a round of its own kind, so the authors of what shipped
-      // survive into the attribution and the artifact (`#239`).
+      // survive into the attribution and the artifact.
       rounds.push(describeAdoptedRound({
         stage: 'envelope',
         envelopeId: envelope.envelopeId,

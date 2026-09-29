@@ -38,7 +38,7 @@ import {
 // (`findDroppedDeclaredNames`), against the forms preparation parsed from the
 // front matter; this note once said the check was missing, from before it
 // existed. What this stage still does not do is check anything that crosses a
-// slice boundary, which is `#92`.
+// slice boundary.
 
 
 /**
@@ -101,7 +101,7 @@ function floorFindings({ verdict, }: { readonly verdict: SliceValidation; },): r
  caller that does not ask for it gets the sheet production has always sent.
  `#107` is why it exists: where the archive carried a passage across a section
  boundary, a judge shown one slice pair sees invention on one side and omission
- on the other, and `#84`'s alteration arm went from 12 of 16 to 15 of 16 when
+ on the other, and the judge-quality bench's alteration arm went from 12 of 16 to 15 of 16 when
  the same trial was given exactly this
  
  @param neighbouringIncumbentText - archive English of the sections either

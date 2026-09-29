@@ -163,7 +163,7 @@ async function probeCorpusEntries(): Promise<void> {
     catch (error) {
       /**
        Failure text for the PROBE line: a marked class in its own words,
-       anything else by name only (`#237`); capped after that.
+       anything else by name only; capped after that.
        */
       const message = refusalText({ error, },)
         .slice(

@@ -325,7 +325,7 @@ export function assertDerivationsAgree(
     }
     /**
      Fields the two derivations disagree on, named and never quoted: the rows
-     carry slice text, and this message reaches the pass's stdout (`#237`).
+     carry slice text, and this message reaches the pass's stdout.
      */
     const differing = comparisonRowDifferences({
       left: row,

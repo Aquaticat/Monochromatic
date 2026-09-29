@@ -122,7 +122,7 @@ export function printVoices({ rates, }: { readonly rates: readonly VoiceRate[]; 
 
     /**
      Subjects the roster lost this auditor on, which is the number a
-     `#77`-class question reads and the one line used to hide.
+     voice-loss question reads and the one line used to hide.
      */
     const lost = asked - answered;
 

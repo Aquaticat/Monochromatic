@@ -10,7 +10,7 @@ import type { ChunkPair, } from './chunk-document.ts';
 // pairs sections whose two indices need not match, and only `subdivideChunkPair`
 // restamps both sides from a running counter. Three stampings with three
 // meanings reach one field called `sliceIndex`, so which one a given chunk
-// carries depends on where it came from. `#99` reshapes that; this checks the
+// carries depends on where it came from. Reshaping that is open; this checks the
 // invariant the reshape has to preserve, and would catch the reshape breaking it.
 
 /**

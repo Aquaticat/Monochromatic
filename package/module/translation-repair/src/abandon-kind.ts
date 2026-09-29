@@ -22,8 +22,8 @@ import { refusalText, } from './refusal-text.ts';
 //
 // `#118` made the evidence available by keeping what the stream delivered.
 // This reads it. Without this the information exists on the error and nothing
-// looks at it, which is the failure `#71` names: telemetry written and never
-// read is worse than none, because it looks like the question is covered.
+// looks at it, which is the failure the section aligner once had:
+// telemetry written and never read is worse than none, because it looks like the question is covered.
 
 /**
  Threshold below which a first byte never arrived at all.

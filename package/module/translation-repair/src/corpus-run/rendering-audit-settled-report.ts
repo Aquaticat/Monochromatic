@@ -115,7 +115,7 @@ async function main(): Promise<void> {
   // quoted without it.
   console.log(
     `\nTWO ENTRIES. Nothing here settles anything about a particular entry, and nothing here may`
-      + ` gate what ships: the instrument's own error rate is unmeasured (#66, #68).`
+      + ` gate what ships: the instrument's own error rate is unmeasured.`
       + `\nArchive that run read: ${archiveDir}`,
   );
 }

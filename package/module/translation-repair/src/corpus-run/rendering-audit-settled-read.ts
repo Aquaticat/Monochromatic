@@ -8,7 +8,8 @@ import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
 // WRITTEN BEFORE THE NUMBERS EXISTED, deliberately, while the full run was
 // still buying its subjects. Every rule here is one that was already argued for
 // somewhere else: the archive-versus-fresh split from the population doc, the
-// per-voice raise rate from `#68`, the relocation pairing from `#107`. Writing
+// per-voice raise rate from the probe measurement, the relocation pairing from
+// the relocation finding. Writing
 // them afterwards would let each threshold drift toward whatever the tally
 // happened to show, which is the move that was refused when the voice-loss
 // re-read was read on the at-risk population.
@@ -71,7 +72,7 @@ export type AudienceSplit = {
 /**
  How often one auditor thinks a rendering is worth a claim.
  
- `#68` measured exactly this over the introduced-defect probe and found the
+ Exactly this was measured over the introduced-defect probe, finding the
  three voices disagreeing by more than an order of magnitude. This is the same
  reading on a different stage, so the two can be compared.
  
@@ -371,7 +372,7 @@ export function splitFor(
  
  ONE ROW PER ROSTER MEMBER when the run recorded its roster, in roster order,
  so a member the roster lost on every subject is a row at zero rather than an
- absence: the run file says it was asked, and a reader of `#77`-class
+ absence: the run file says it was asked, and a reader of voice-loss
  questions needs the loss on the page. Voices heard outside that roster are
  appended in first-seen order. Where the run recorded no roster, which every
  run written before the field existed did, one row per voice heard is all

@@ -2,7 +2,7 @@
  Tests for the document-scale repetition check: what it names, and the three
  things it must NOT name.
  
- WHY IT EXISTS, from `#66`: the introduced-defect probe compares one edited
+ WHY IT EXISTS: the introduced-defect probe compares one edited
  region against itself, so `lintong`'s duplicated farewell was invisible to it
  at any setting. The duplication lives in no single region, only in the
  assembled document. This check reads the whole document against the archive

@@ -182,7 +182,7 @@ await describe({
 
     it({
       name: 'KEEPS a correspondence two later voices named though the first voice omitted it, since '
-        + 'agreement is per pair and not per reply (`#245`)',
+        + 'agreement is per pair and not per reply',
       fn: async () => {
         const outcome = await pairSectionsWithRoster({
           // Whole bench: this case scripts every seat and reads over the bench it wrote.

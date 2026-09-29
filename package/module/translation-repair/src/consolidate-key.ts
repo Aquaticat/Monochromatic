@@ -438,7 +438,7 @@ export function consolidateSliceKey(
       // resumable. Nearly every slice of a multi-slice document HAS a window,
       // so nearly every settlement keyed before this is re-bought. That is the
       // correct outcome rather than a regrettable one: resuming them would
-      // return answers to a question nobody asked, which is `#95`.
+      // return answers to a question nobody asked.
       ...(((neighbouringSourceText === undefined) || (neighbouringSourceText === ''))
         ? []
         : [

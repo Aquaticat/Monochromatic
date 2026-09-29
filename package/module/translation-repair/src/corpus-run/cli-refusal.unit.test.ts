@@ -359,7 +359,7 @@ await describe({
     it({
       name: 'PRINTS the seat report when the run ends clean, naming the seat '
         + 'that never answered, so a roster half that failed every call cannot '
-        + 'pass as a comparison (`#235`)',
+        + 'pass as a comparison',
       fn: async () => {
         using held = holdingExitCode();
         using printed = collectingErrors({ lines: [], },);

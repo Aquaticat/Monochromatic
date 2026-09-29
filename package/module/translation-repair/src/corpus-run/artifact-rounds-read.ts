@@ -274,7 +274,7 @@ function requireJudgedRound(
   // partial one every later reader has to re-check.
   // AN ADOPTED ROUND HELD NO VOTE: its vote fields are present and empty, so
   // they are read like any round's, and only the winner and the reason are
-  // its own (`#239`).
+  // its own.
   if (kind === 'adopted') {
     return {
       kind: 'adopted',

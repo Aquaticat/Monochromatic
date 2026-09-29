@@ -85,7 +85,7 @@ export type LockHolder = Readonly<{
 
   /**
    Random per-acquisition token, so a release removes only the lock this
-   acquisition wrote and never a later holder's (`#243`). Empty on locks
+   acquisition wrote and never a later holder's. Empty on locks
    written before the token existed, which therefore never read as ours.
    */
   token: string;

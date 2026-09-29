@@ -4,7 +4,7 @@
  WHAT THESE PIN is the distinction the ledger exists for: "the judges kept the
  archive" and "the archive was reinstated after the judges replaced it" are
  different facts, and every count the lane reported before this collapsed them.
- `#83` asked for the first; the assembly guard is what makes the second
+ Recording who won each slice gives the first; the assembly guard is what makes the second
  possible. A reader holding one number cannot tell them apart, and the
  replacement rate every quality claim rests on is computed from exactly this.
  

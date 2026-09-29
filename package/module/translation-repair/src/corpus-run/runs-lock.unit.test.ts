@@ -238,7 +238,7 @@ await describe({
   children: [
     it({
       name: 'EVICTS a stale lock exactly once when two starters race for it, since the eviction is a '
-        + 'rename and a rename is atomic (`#243`)',
+        + 'rename and a rename is atomic',
       fn: async () => {
         const runsDir = await scratch();
         /**
@@ -268,7 +268,7 @@ await describe({
     },),
     it({
       name: 'KEEPS a lock it does not own on release, so a starter that lost a takeover cannot delete '
-        + 'the winner\'s lock on its way out (`#243`)',
+        + 'the winner\'s lock on its way out',
       fn: async () => {
         const runsDir = await scratch();
         /**

@@ -27,7 +27,7 @@
  Decided 2026-08-16, question 7 answer B, in
  `doc/decision/translation-repair-question-answers.md`: keep the slice
  denominator, and stop calling it the document's. Reporting an entry as
- unexaminable is a different behaviour that waits on `#96`.
+ unexaminable is a different behaviour, and this finding does not do it.
  
  @param standingChars - characters under standing non-translation votes
  

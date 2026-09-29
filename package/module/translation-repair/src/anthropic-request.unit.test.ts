@@ -155,7 +155,7 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS a repair conversation alternating, which is the shape #88 sends: the question, '
+      name: 'KEEPS a repair conversation alternating, which is the shape an invalid-candidate re-ask sends: the question, '
         + 'the answer that failed, and the correction',
       fn: async () => {
         expect(speakingTurns({

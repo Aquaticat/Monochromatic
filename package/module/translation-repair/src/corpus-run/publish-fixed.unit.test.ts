@@ -929,7 +929,7 @@ await describe({
     it({
       name:
         'REFUSES A READING NAMING A SLICE THE PREPARATION NEVER PRODUCED, instead of writing the page '
-        + 'without it. The two sides are stamped by different stages, and `#99` is the record of what '
+        + 'without it. The two sides are stamped by different stages, and it is known what '
         + 'index disagreement costs: silently dropping the reading would publish archive wording at a '
         + 'slice the deciders replaced',
       fn: async () => {

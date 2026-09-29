@@ -105,7 +105,7 @@ export class SyntheticRequestTooLargeError extends SyntheticHttpError {
       bodyText,
       // THE GATEWAY'S OWN WORDS ARE KEPT OFF THIS MESSAGE. This class declares
       // its message quote-free, and a gateway that echoed request bytes would
-      // otherwise print corpus text at every CLI boundary (`#244`); the words
+      // otherwise print corpus text at every CLI boundary; the words
       // stay on `bodyExcerpt` for the log, where the searchable byte position
       // still is.
       excerpt: 'withheld',

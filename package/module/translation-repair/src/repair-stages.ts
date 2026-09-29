@@ -62,8 +62,8 @@ export type CriticStageResult = {
    was heard and raised nothing produces no attribution entry, and so does a
    critic that was never heard at all; without the roster those two are
    indistinguishable, so hits can be counted but rates cannot. That is the
-   same silence-reads-as-clean failure `#68` documents, and `#68` is
-   answerable only because its telemetry carries the denominator.
+   same silence-reads-as-clean failure the per-voice probe
+   rates exposed, and those rates are answerable only because its telemetry carries the denominator.
    */
   readonly heardCriticIds: readonly RosterModelId[];
 

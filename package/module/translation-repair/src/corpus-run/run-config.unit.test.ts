@@ -770,7 +770,7 @@ await describe({
 
     it({
       name: 'COUNTS every call against its seat on the run-wide tally, so the '
-        + 'closing report can say which seat never answered (`#235`)',
+        + 'closing report can say which seat never answered',
       fn: async () => {
         using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
         using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);

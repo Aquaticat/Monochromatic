@@ -10,8 +10,9 @@ import type { TranslateSliceRecord, } from './translate-document-contract.ts';
 // judges got there. Every question anyone has asked of this lane since is per
 // slice and per producer: how often the archive's English was kept, whether a
 // producer favours its own rendering, whether ballot position moves a verdict.
-// `#83` asked for this, and `#84` could only answer its half on a bench because
-// no settled artifact carries it.
+// Recording who won each slice was asked for, and the judge-quality bench could
+// only answer its half of those questions on a bench because no settled
+// artifact carried it.
 //
 // TWO FACTS THAT COME APART, and keeping them apart is the point. "The incumbent
 // won selection" is a decision the judges made. "The incumbent shipped

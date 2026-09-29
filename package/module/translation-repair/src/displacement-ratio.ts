@@ -9,7 +9,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // neighbouring section, the archive looks like it invented content on one slice
 // and dropped content on the next, and a per-slice roster condemns it at both
 // ends while preferring a fresh rendering that says only what its own slice's
-// original says. Found on `Dethelly/0` by `#84`'s alteration arm and confirmed
+// original says. Found on `Dethelly/0` by the judge-quality bench's alteration arm and confirmed
 // by hand: the English `Description` carries four sentences whose Chinese sits
 // in the NEXT slice.
 //

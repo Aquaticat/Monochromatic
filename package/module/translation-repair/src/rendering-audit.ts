@@ -43,7 +43,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // which compares FOCUS INTERVALS rather than quoted text, and reports overlap
 // as a near miss rather than merging it.
 //
-// PER-VOICE ROWS ARE KEPT. `#68` measured three probers disagreeing by an order
+// PER-VOICE ROWS ARE KEPT. Three probers were measured disagreeing by an order
 // of magnitude about how often an edit is worth a claim, and the decision about
 // how to read a tally over such a roster is still open. A report that kept only
 // the aggregate would have to be re-run to answer it; one that keeps the rows

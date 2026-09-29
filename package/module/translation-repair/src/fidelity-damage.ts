@@ -8,7 +8,7 @@ import { spliceOutSentence, } from './fidelity-splice.ts';
 import { applySeededErrors, } from './seeded-error.ts';
 
 //region Fidelity damage
-// The two constructed defects `#84` puts on the ballot, kept apart from the
+// The two constructed defects the judge-quality bench puts on the ballot, kept apart from the
 // probe that runs them because WHICH DEFECT IS BUILT decides what the resulting
 // number can be read to mean.
 //

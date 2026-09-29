@@ -316,7 +316,7 @@ export async function recordContest<ValueT,>(
   };
 
   /**
-   File this contest is written to, unique across launches (`#246`).
+   File this contest is written to, unique across launches.
    */
   const fileName = ledgerFileName({
     ordinal,

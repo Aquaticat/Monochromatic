@@ -763,7 +763,7 @@ await describe({
       },
     },),
     it({
-      name: 'NAMES differing fields in row order, text before relation, and never a value (`#237`)',
+      name: 'NAMES differing fields in row order, text before relation, and never a value',
       fn: async () => {
         /**
          Rows derived once from two agreeing ledgers.

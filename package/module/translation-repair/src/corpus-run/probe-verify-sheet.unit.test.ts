@@ -377,7 +377,7 @@ await describe({
     },),
     it({
       name: 'TELLS a blind grader that the reviewer flagged some items and not others, and never that '
-        + 'it flagged each, since the damage sheet mixes both with the claims stripped (`#248`)',
+        + 'it flagged each, since the damage sheet mixes both with the claims stripped',
       fn: async () => {
         /**
          The damage sheet's page.

@@ -3,7 +3,7 @@ import { refusalText, } from '../refusal-text.ts';
 //region Tally error text
 // FAILURE TEXT FOR A STDOUT LINE. A class that declared its message quote-free
 // says it, anything else is named and not quoted, since stdout is read,
-// grepped, and pasted (`#237`); capped after that so one runaway message
+// grepped, and pasted; capped after that so one runaway message
 // cannot swallow the line a reader counts by.
 
 /**

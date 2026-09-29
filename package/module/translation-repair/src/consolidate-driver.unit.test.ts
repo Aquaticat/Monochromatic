@@ -1604,7 +1604,8 @@ await describe({
         + 'evidence rather than a sheet that always carries a picture heading. It pins the lookup too, '
         + 'which is why the map here holds a reading for a slice this contest never settles: a driver '
         + 'reading a neighbouring slice\'s entry finds that reading and puts it on the sheet, and both '
-        + 'picture cases fail together. `#99` is the record of why that is the defect worth pinning',
+        + 'picture cases fail together. A slice index naming three different things is why that is '
+        + 'the defect worth pinning',
       fn: async () => {
         const { client, bodies, } = recordingClient();
 

@@ -41,7 +41,7 @@ import {
 // Production has since withheld it and moved the excusing to the screen
 // (`introduced-defect-wire.ts`), and for a while the two arms here relied on
 // that default, so both sent the same prompt and differed only in the screen,
-// under labels that said otherwise (`#247`). Every arm now names its
+// under labels that said otherwise. Every arm now names its
 // disclosure, and the third arm, no list at all, separates the screen's effect
 // from the prompt's.
 //
@@ -121,7 +121,7 @@ async function probeOnce(
   // Which prober spoke is printed rather than only how many did, because the
   // corpus telemetry shows the three disagree by more than an order of
   // magnitude about how often an edit is worth a claim, 0.095 against 0.006,
-  // and `#68` cannot be settled from counts that hide the speaker.
+  // and that disagreement cannot be settled from counts that hide the speaker.
   for (const claim of tally?.claims ?? [])
     console.log(`    ${claim.modelId} ${claim.admissibility} (${claim.category})`,);
 

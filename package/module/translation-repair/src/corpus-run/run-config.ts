@@ -490,8 +490,8 @@ const CHECKER_BENCH_WIDTH = 3;
  refiner, so a fourth editor would leave two checkers at a quorum of one, the
  exact single-voice failure the 2026-08-12 roster change closed. Next to it
  sit `assertJudgeableProducerRoster`'s two-disinterested-judge floor, now a
- policy rather than an arithmetic necessity, and judge quality, which `#84`
- has not measured. Widening was question 1 of the handover's next steps and
+ policy rather than an arithmetic necessity, and judge quality, which the judge-quality
+ bench has not measured. Widening was question 1 of the handover's next steps and
  was answered by the calibration recorded at `editorModelIds`. GLM-4.7-Flash
  was also the model that most often lost its voice, which argued FOR seating
  it as a third editor rather than against: a third editor that sometimes
@@ -767,7 +767,7 @@ assertCheckerQuorumReachable({
  Self-certification is HANDLED RATHER THAN FORBIDDEN: a judge ranking a slate
  that holds its own translation counts half for that candidate alone, exactly
  as the repair lane's selection round does. Whether that weighting is the right
- one is `#91`, and it is the same open question for both lanes rather than a
+ one is the same open question for both lanes rather than a
  new one this constant introduces.
  
  The width the judge-fidelity probe and the window trial MEASURED was the

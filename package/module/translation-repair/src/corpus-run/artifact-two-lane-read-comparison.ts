@@ -146,7 +146,7 @@ export function assertRecordedComparisonMatches(
     /**
      Fields on which the stored row and the derived one disagree. NAMES ONLY:
      the rows carry the archive text and both lanes' output, and this reason
-     reaches a marked class whose message every CLI prints (`#237`).
+     reaches a marked class whose message every CLI prints.
      */
     const differing = comparisonRowDifferences({
       left: row,

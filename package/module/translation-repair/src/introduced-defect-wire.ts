@@ -362,7 +362,7 @@ function renderPriorIssues(
  THE PROBE IS AN AUDITOR, so its rule differs from the editor's: it is not
  being asked to change anything, only to say what the edit broke. What the
  neighbours buy it is the ability to tell a passage that MOVED from one that
- was invented or lost, which is the distinction `#66` found it making wrongly
+ was invented or lost, which is the distinction a reading of shipped damage found it making wrongly
  by never making it at all.
  */
 const NEARBY_RULE = 'THE TWO NEARBY BLOCKS ARE CONTEXT, not text under review. '
@@ -451,7 +451,7 @@ export function buildIntroducedDefectMessages(
   /**
    The passages either side, or nothing when this slice stands alone.
    
-   `#66` MEASURED WHY THIS IS HERE. Probed against `lintong`'s duplicated
+   A MEASUREMENT IS WHY THIS IS HERE. Probed against `lintong`'s duplicated
    farewell, this stage reported nothing, and it could not have reported
    otherwise: it compares one region against itself, and the wording it should
    have objected to sits in the slice next door. A prober that can see the

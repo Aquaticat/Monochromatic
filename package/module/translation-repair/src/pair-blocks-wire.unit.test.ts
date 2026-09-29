@@ -3,7 +3,7 @@
  
  WHY REFUSAL MATTERS MORE THAN ACCEPTANCE HERE. A wrong pairing puts two
  passages that were never about the same thing in front of the critics, which
- then report differences between them and are right to. `#71` recorded that a
+ then report differences between them and are right to. It is known that a
  wrong pairing is worse than no pairing for exactly this reason, so every
  malformed reply below must throw rather than be tidied into something usable.
  

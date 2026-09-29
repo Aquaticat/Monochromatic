@@ -182,7 +182,7 @@ await describe({
   children: [
     it({
       name: 'HANDS BACK THE MEASURED ARRAY ITSELF FOR A PROSE SLICE, not a copy of it and not a rebuild. '
-        + '`#84` measured whether these judges can tell a faithful rendering from a fluent one, and it measured '
+        + 'The judge-quality bench measured whether these judges can tell a faithful rendering from a fluent one, and it measured '
         + 'them on these exact criteria. Identity rather than equality is the assertion, because a rebuilt array '
         + 'that happened to match today is the thing that drifts tomorrow',
       fn: async () => {

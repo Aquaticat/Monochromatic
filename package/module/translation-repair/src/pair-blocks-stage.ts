@@ -116,8 +116,8 @@ export type PairedSectionRecord = {
  
  REFUSES RATHER THAN GUESSES. When no voice answers usably the outcome carries
  no pairs and says why, and the caller falls back to the deterministic aligner
- rather than proceeding on one model's word. `#71` recorded the rule this
- follows: a wrong pairing is worse than no pairing, because it manufactures
+ rather than proceeding on one model's word. It follows the section aligner's
+ rule: a wrong pairing is worse than no pairing, because it manufactures
  issues rather than skipping work.
  
  @param client - injected model client

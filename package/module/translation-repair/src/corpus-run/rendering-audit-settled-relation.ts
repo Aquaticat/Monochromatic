@@ -321,7 +321,7 @@ type RelationRunning = {
  reported defects in wording no reader of a document would meet.
  
  NOT A DEFECT RATE, and it may not be read as one. The instrument's own
- error rate is unmeasured (`#66`, `#68`), so a count here says how much of
+ error rate is unmeasured, so a count here says how much of
  its output describes overruled text, never how much of that text is bad.
  
  @param rows - every persisted row of one run

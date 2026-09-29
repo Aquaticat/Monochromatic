@@ -12,7 +12,7 @@ import type { EligibleEntries, } from './artifact-eligible.ts';
 // the other for a single function, and `artifact-eligible.ts` was already at its
 // line budget.
 //
-// `#60` names the gap this closes: `EligibleEntries` has carried `selection`,
+// The gap this closes: `EligibleEntries` has carried `selection`,
 // `tipByEntry` and `digestByEntry` for some time while the manifest wrote none
 // of them, so a graded sheet could not say which pipeline produced the entries
 // it was drawn from.

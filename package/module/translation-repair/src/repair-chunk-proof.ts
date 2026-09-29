@@ -147,7 +147,7 @@ export async function proveRepairedChunk(
 ): Promise<ChunkProof> {
   /**
    Auditor's window, the same one the stages it audits saw. Without it,
-   `#66` measured the probe reporting nothing about a duplication whose
+   the probe was measured reporting nothing about a duplication whose
    other half sits in the slice next door, which no setting could have
    fixed.
    */

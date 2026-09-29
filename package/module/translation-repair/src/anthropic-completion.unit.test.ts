@@ -201,7 +201,7 @@ await describe({
 
     it({
       name: 'KEEPS the tool arguments as the whole answer when the model also wrote prose before '
-        + 'calling the tool, since gluing the two lost the voice on a schema\'d call (`#242`)',
+        + 'calling the tool, since gluing the two lost the voice on a schema\'d call',
       fn: async () => {
         /**
          Stream with a text block before the tool block, which `tool_choice:

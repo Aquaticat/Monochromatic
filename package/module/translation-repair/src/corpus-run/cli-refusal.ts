@@ -132,7 +132,7 @@ function framesOf({ error, }: { readonly error: unknown; },): string {
 /**
  Prints the seat report to stderr when its scope ends, after whatever the
  command said, so the closing lines of every command name any seat that
- produced nothing usable (`#235`). Nothing at all when no seat was asked, so
+ produced nothing usable. Nothing at all when no seat was asked, so
  a command that never built a client prints nothing extra.
  
  @param seats - tally to render
@@ -183,7 +183,7 @@ export async function reportingRefusals(
   /**
    Prints the seat report when this scope ends, whatever happened inside it:
    under the refusal line on a refusal, alone on a clean run, so a seat that
-   produced nothing usable is in the closing lines of every command (`#235`).
+   produced nothing usable is in the closing lines of every command.
    */
   using _report = printingSeatReport({ seats, },);
 

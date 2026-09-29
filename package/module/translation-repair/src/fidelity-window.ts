@@ -21,7 +21,7 @@ import { fidelityWindowPositions, } from './fidelity-window-positions.ts';
 // WHAT IS SOLID is the mechanism, on one hand-verified case. A judge shown one
 // slice pair of `Dethelly/0` sees the archive inventing content there and
 // dropping it next door, and refuses both candidates. Every miss the alteration
-// arm of `#84` recorded fell on that entry, and widening the window turned three
+// arm of the judge-quality bench recorded fell on that entry, and widening the window turned three
 // of those four into correct choices.
 //
 // SO THE WINDOW IS A VARIABLE. Running the same trial narrow and wide, with the
@@ -43,7 +43,7 @@ import { fidelityWindowPositions, } from './fidelity-window-positions.ts';
  that means NO WINDOW. The wide arm would then send the narrow arm's sheet, the
  comparison would report the window as making no difference, and that null
  would be indistinguishable from a real one. The risk is live rather than
- theoretical: `#99` recorded that `sliceIndex` names three different things
+ theoretical: `sliceIndex` has named three different things
  depending on who stamped it, and a caller passing a stamped index where a
  slice position belongs is the exact mistake this catches. Empty may therefore
  mean ONE thing only, a lone slice with no neighbours.
@@ -233,7 +233,7 @@ export type SliceNeighbourContext = {
  exactly such a consumer, which is why it is handed this rather than the slices.
  
  KEYED BY THE STAMPED INDEX, NOT THE POSITION, matching
- `slicePictureContexts`. `#99` recorded that `sliceIndex` names three different
+ `slicePictureContexts`. `sliceIndex` has named three different
  things depending on who stamped it, and a consumer looking a slice up by its
  own stamp must find the window computed for that same slice.
  

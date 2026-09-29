@@ -291,8 +291,8 @@ export function assembleTranslation(
       ...alignmentRefusals({ records: settled, },),
       ...halves.findings,
       ...guarded.findings,
-      // BOTH LANES, not only the one whose damage was found first. `#66`
-      // established the repetition in `lintong`'s repair lane, and reading the
+      // BOTH LANES, not only the one whose damage was found first. Reading
+      // shipped text established the repetition in `lintong`'s repair lane, and reading the
       // settled pool against each entry's true archive finds one in
       // `saurikissa`'s TRANSLATE lane too. Writing a slice from its source
       // rather than editing an incumbent does not stop a lane saying the same

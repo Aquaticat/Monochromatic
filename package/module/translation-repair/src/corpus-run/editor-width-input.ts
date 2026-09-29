@@ -26,9 +26,10 @@ import {
 // expensive one deliberately.
 //
 // The cheap route reads issues out of a settled artifact. It was rejected: the
-// artifacts were written by earlier slicings, `#157` and `#159` both moved
-// where slice boundaries fall, and `#99` is the standing record of sliceIndex
-// meaning different things to different stamps. Issues carrying offsets into a
+// artifacts were written by earlier slicings, two later slicing fixes (declined
+// blocks leaving the slice, unpaired sections reaching subdivision as absent)
+// both moved where slice boundaries fall, and sliceIndex has meant different
+// things to different stamps. Issues carrying offsets into a
 // target that today's slicer cuts differently would place envelopes over the
 // wrong words, and the probe would be measuring editors handed nonsense.
 //

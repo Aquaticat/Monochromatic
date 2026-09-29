@@ -24,7 +24,7 @@ await describe({
   children: [
     it({
       name: 'NAMES the same ordinal differently under two launches, so a relaunch appends rather than '
-        + 'overwrites (`#246`)',
+        + 'overwrites',
       fn: async () => {
         expect(ledgerFileName({
           ordinal: 0,

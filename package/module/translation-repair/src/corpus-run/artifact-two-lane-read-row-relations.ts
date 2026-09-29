@@ -179,7 +179,7 @@ export function assertEvidenceMatchesLedger(
  STRICTLY INCREASING, which is the property the writer actually has and the
  weakest one that anchors a positional read. A first version of this checked
  DISTINCTNESS only, on the reasoning that the writer renumbers slices by
- design (`#100`) so a reader must not assume `0` to `length - 1`. That
+ design so a reader must not assume `0` to `length - 1`. That
  reasoning is sound and does not reach this far: renumbering produces GAPS,
  and gaps are still increasing. Distinct-but-permuted was accepted, which is
  the defect this replaces. Measured before choosing: `prepareDocumentPair`

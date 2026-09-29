@@ -2,7 +2,7 @@
  Tests for the aligner that can refuse.
  
  The case that matters is `XingZ60`, whose headings are reproduced here from
- the defect record in `#71`. The shipped aligner paired every one of its
+ the section-alignment defect record. The shipped aligner paired every one of its
  sections with the wrong one, shifted by two, because its scorer cannot
  withhold a pairing: pairing two headings that share nothing scores zero
  against a negative for leaving both unpaired, so the maximum always prefers

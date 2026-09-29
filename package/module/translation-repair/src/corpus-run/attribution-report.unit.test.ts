@@ -12,8 +12,8 @@
  nothing" becomes unreadable against "this entry could not have recorded it".
  
  The second is conflating self-repetition with agreement. One critic saying a
- thing twice and two critics saying it once produce the same claim, and the
- whole point of `#65` is which of those a duplicate came from.
+ thing twice and two critics saying it once produce the same claim, and whether
+ a duplicate counts against precision turns on which of those it came from.
  
  Fixtures are cat-themed invention.
  
@@ -163,7 +163,7 @@ await describe({
     it({
       name: 'separates SELF-REPETITION from agreement: one critic emitting a '
         + 'claim twice counts as a sole proposer that repeated itself, never '
-        + 'as two critics agreeing, which is exactly what #65 asks of a '
+        + 'as two critics agreeing, which is exactly what a precision count asks of a '
         + 'duplicate',
       fn: async () => {
         /**

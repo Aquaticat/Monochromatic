@@ -156,9 +156,9 @@ export type SettledAuditRow = {
    claiming two defects each and a third dropping one, and nothing in the file
    could say WHAT any of them claimed. That leaves three questions
    unanswerable from the artifact this probe exists to produce: whether the
-   matcher was right to bring nothing together (`#68`), which voice was right
-   when they disagreed (`#66`), and whether a paired omission and addition on
-   adjacent slices is one relocation rather than two defects (`#107`), a rule
+   matcher was right to bring nothing together, which voice was right
+   when they disagreed, and whether a paired omission and addition on
+   adjacent slices is one relocation rather than two defects, a rule
    fixed before the run and unenforceable without categories and spans.
    
    Every count a reader wants is derivable from this. None of this is

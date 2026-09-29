@@ -52,7 +52,7 @@ await describe({
       },
     },),
     it({
-      name: 'ANSWERS false when any stage fell short of quorum, wherever the finding sits (`#238`)',
+      name: 'ANSWERS false when any stage fell short of quorum, wherever the finding sits',
       fn: async () => {
         expect(everyStageHeard({
           findings: [

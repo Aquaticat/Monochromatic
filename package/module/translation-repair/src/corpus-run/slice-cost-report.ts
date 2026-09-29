@@ -9,15 +9,16 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Slice cost report
 // Reads the per-slice cost telemetry a pass writes, and answers the one
-// question `#92` was left holding.
+// question it was written for: whether a slice's cost scales with its size.
 //
 // WHY IT EXISTS AT ALL: `slice-cost-log.ts` writes a line per slice per lane and
 // `slice-cost-read.ts` parses them back, and until now NOTHING CALLED THE
-// READER. Telemetry written and never read is the failure `#71` names in as many
-// words, and it is worse than no telemetry, because it looks like the question
+// READER. Telemetry written and never read is a failure this package has named
+// before, and it is worse than no telemetry, because it looks like the question
 // is covered.
 //
-// THE QUESTION. `#114` measured that per-slice cost FALLS as entries get larger,
+// THE QUESTION. The two-lane cost measurement of 2026-08-17 found that
+// per-slice cost FALLS as entries get larger,
 // 7.07 minutes a slice on the smallest entry against 2.47 on the largest, and
 // could not say why. Two explanations fit that equally: larger entries have
 // larger slices and size is what costs, or cost is mostly a fixed per-slice
@@ -433,7 +434,7 @@ async function main(): Promise<void> {
     '\nREAD THE ms/char COLUMN. Flat across bands means size drives the cost and'
       + ' slicing differently changes the bill. Falling steeply as slices grow means'
       + ' a fixed per-slice overhead divided by more characters, and only asking'
-      + ' fewer times changes anything. `#92` and `#114`.',
+      + ' fewer times changes anything.',
   );
 
   console.log('\nBY LANE',);

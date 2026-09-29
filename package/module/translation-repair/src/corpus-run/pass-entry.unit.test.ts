@@ -2095,7 +2095,7 @@ await describe({
         expect(cleanups.length,).toBe(1,);
         expect(cleanups[0]?.includes('cache=retained',),).toBe(true,);
         // The unlink failure is an unmarked Node error, so the line names its
-        // class and never repeats its message, which carries a path (`#237`).
+        // class and never repeats its message, which carries a path.
         expect(cleanups[0]?.includes('error=refused by ',),).toBe(true,);
         expect(cleanups[0]?.includes('permission denied',),).toBe(false,);
 

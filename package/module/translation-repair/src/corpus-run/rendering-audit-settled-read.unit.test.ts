@@ -256,7 +256,7 @@ await describe({
   children: [
     it({
       name: 'reports how often each auditor thought a rendering was worth a claim, which is the '
-        + 'reading `#68` used to find three voices disagreeing by more than an order of magnitude',
+        + 'reading that once found three voices disagreeing by more than an order of magnitude',
       fn: async () => {
         /**
          Two slices, one auditor speaking on both and one on neither.
@@ -324,7 +324,7 @@ await describe({
     it({
       name: 'REFUSES to invent a row for an auditor that never answered, because a fabricated zero '
         + 'says it was asked and stayed quiet, which is a different claim from never being reached '
-        + 'and would read as the very silence `#68` is trying to measure',
+        + 'and would read as the very silence the per-voice rates exist to measure',
       fn: async () => {
         /**
          One slice, answered by one voice only.

@@ -306,7 +306,7 @@ export async function settleTranslateSlice(
   /**
    What the pictures this slice and its neighbours show were read as, and
    which of them nobody could read. One value feeds both the key and the
-   call, for the same reason the window does (`#107`).
+   call, for the same reason the window does.
    */
   const pictures = slicePictures({
     slices: prepared.slices,

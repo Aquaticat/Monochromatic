@@ -217,7 +217,7 @@ await describe({
 
     it({
       name: 'DISCARDS a persisted slice whose findings say a stage heard fewer than quorum, so an '
-        + 'outage is re-asked on the next run rather than resumed as a decision (`#238`)',
+        + 'outage is re-asked on the next run rather than resumed as a decision',
       fn: async () => {
         await using scratch = await scratchDir();
         /**

@@ -53,7 +53,7 @@ import {
 //     real one: `玖月折耳猫` is declared as `Zheermao September`, `柠檬酸` as
 //     `Citric Acid`. An auditor shown the rendering WITHOUT that block sees a
 //     name it cannot derive from the source and has every reason to call it a
-//     fabrication. That is the defect `#36` was opened for, and rediscovering
+//     fabrication. That defect was found once already, and rediscovering
 //     it as "defects" would poison every name-bearing slice.
 // -   Provenance. The rebuild's rows are checked against the rows the run
 //     recorded, and the artifact's measurements against the rebuild, since the

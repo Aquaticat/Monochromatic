@@ -1,5 +1,6 @@
 /**
- Tests for the two constructed defects `#84` puts on the ballot.
+ Tests for the two constructed defects the judge-quality bench puts on the
+ ballot.
  
  What these pin is the property each fixture EXISTS for: the deletion leaves
  the complete text longer, the insertion leaves it shorter, and both leave

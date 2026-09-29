@@ -368,7 +368,7 @@ await describe({
 
     it({
       name: 'NAMES THE AUTHOR OF AN ENVELOPE ADOPTED WITHOUT A VOTE, so a checker who wrote that '
-        + 'text is discounted on it like any other winner (`#239`)',
+        + 'text is discounted on it like any other winner',
       fn: async function adoptedEnvelopesKeepTheirAuthors() {
         expect(collectIssueAuthors({
           editor: editorOf({

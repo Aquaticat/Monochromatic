@@ -207,7 +207,7 @@ export const SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN = 0.000003;
  
  THE CHECK THE WIRE NEVER MADE. Five roster seats are Charm Hyper endpoint
  labels with no Synthetic spelling, and a client handed one of them used to
- send it anyway and collect an HTTP 400 per call (`#235`). This is the one
+ send it anyway and collect an HTTP 400 per call. This is the one
  question the catalog can answer before a request is built.
  
  @param modelId - roster model a caller wants to address

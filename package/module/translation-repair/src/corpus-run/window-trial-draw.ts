@@ -7,8 +7,8 @@ import type { DocumentDisplacement, } from '../displacement-class.ts';
 // Flagged slices come from the displacement screen. Matched UNFLAGGED slices
 // come from the same documents, and without them a wide arm that keeps the
 // archive more often everywhere would read as the window working on
-// relocations. `#84` measured the roster declining on any archive imperfection,
-// so a general context-induced conservatism is a live possibility rather than a
+// relocations. The judge-quality bench measured the roster declining on any
+// archive imperfection, so a general context-induced conservatism is a live possibility rather than a
 // theoretical one.
 //
 // RELOCATION CANDIDATES ARE ADJACENCIES, so one slice can appear in several. The

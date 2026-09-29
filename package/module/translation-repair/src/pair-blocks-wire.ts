@@ -18,7 +18,7 @@ import { selectFence, } from './prompt-fence.ts';
 // which passage renders which is comprehension, and
 // `doc/decision/llm-assisted-block-pairing.md` decides it is done by a model.
 //
-// A REFUSED PAIRING MUST NOT SILENTLY PROCEED, which `#71` already demanded of
+// A REFUSED PAIRING MUST NOT SILENTLY PROCEED, which was already demanded of
 // the section aligner: a wrong pairing manufactures issues rather than skipping
 // work, so it is worse than no pairing. Everything this file parses is checked
 // against the block counts it was built from, and anything that does not hold

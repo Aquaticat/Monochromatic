@@ -26,7 +26,7 @@ await describe({
   name: agreePairs.name,
   children: [
     it({
-      name: 'KEEPS a pair two later voices named though the first voice omitted it (`#245`)',
+      name: 'KEEPS a pair two later voices named though the first voice omitted it',
       fn: async () => {
         expect(agreePairs({
           pairings: [

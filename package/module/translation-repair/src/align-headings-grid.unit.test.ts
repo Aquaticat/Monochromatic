@@ -1,7 +1,7 @@
 /**
  Tests for where the heading-affinity grid draws its trust line.
  
- WHY THIS FILE EXISTS. `#71` recorded what a wrong section pairing costs: on
+ WHY THIS FILE EXISTS. It is known what a wrong section pairing costs: on
  one entry every critic call compared the wrong original against the wrong
  translation, so every issue filed was noise and every repair damaged correct
  text. The grid is what stops that, and the type's own words are "pairings AT

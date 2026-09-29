@@ -1,7 +1,7 @@
 /**
  Tests for reading every optimal alignment out of the heading table.
  
- WHY THIS ONE IS WORTH PINNING DIRECTLY. `#71` is what a wrong answer here
+ WHY THIS ONE IS WORTH PINNING DIRECTLY. It is known what a wrong answer here
  costs: facing 14 source sections and 12 target ones, the old aligner slid
  every pairing by two, so every critic call afterwards compared the wrong
  original against the wrong translation and every issue it filed was noise. A
@@ -123,7 +123,7 @@ await describe({
     it({
       name:
         'leaves the earlier pairs alone when the LAST section is missing, and records the gap at the '
-        + 'END column. This is `#71` exactly: a gap at the end used to slide every pairing before it, '
+        + 'END column. This is the section-alignment defect exactly: a gap at the end used to slide every pairing before it, '
         + 'so a document lost its alignment from the first section rather than the last',
       fn: async () => {
         /**

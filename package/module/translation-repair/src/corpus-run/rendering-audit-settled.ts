@@ -31,8 +31,8 @@ import {
 //
 // THIS IS TELEMETRY AND NOTHING ELSE. The producing path does not change, and
 // nothing this reports may gate what ships. The instrument's own production
-// error rate is unmeasured: `#66`, its false-negative half, is open, and `#68`
-// records that one of the three checkers raises claims at a tenth the rate of
+// error rate is unmeasured: its false-negative half is open, and a measurement
+// found one of the three checkers raises claims at a tenth the rate of
 // the others. An instrument in that state can be believed about itself and not
 // about the corpus.
 //

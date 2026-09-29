@@ -544,7 +544,7 @@ await describe({
       name: 'KEYS EVERY SLICE BY THE STAMP ITS CONSUMERS READ, IN DOCUMENT ORDER, which is the '
         + 'whole job. A stage downstream of preparation holds rows stamped with an index and no '
         + 'array to count positions in, so somebody holding the slices has to do the translation, '
-        + 'and `#99` is the record of what assuming it costs. The order is asserted rather than '
+        + 'and assuming it has a recorded cost. The order is asserted rather than '
         + 'sorted away, since the fold walks the document and a map that came out unordered would '
         + 'mean it had stopped doing that',
       fn: async () => {

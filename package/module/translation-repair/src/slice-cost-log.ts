@@ -2,17 +2,17 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 //region Slice cost log
 // Records what one slice cost, so a later reader can ask whether cost scales
-// with size (`#92`).
+// with size.
 //
 // A LOG LINE RATHER THAN AN ARTIFACT FIELD, deliberately. The version 2 artifact
-// parser landed on 2026-08-16 and `#96` is an open question about what the
-// artifact stores at all, so adding a field now would churn a schema while the
-// decision that governs it is unanswered. A line costs nothing to add, nothing
+// parser landed on 2026-08-16 while what the artifact stores at all was still
+// an open question, so adding a field then would have churned a schema while
+// the decision that governed it was unanswered. A line costs nothing to add, nothing
 // to parse, and nothing to take back.
 //
 // THE LINE IS SELF-SUFFICIENT, carrying the lane, the slice, its size and its
-// elapsed time. A reader needs the log and nothing else, so whatever `#96`
-// decides about artifact contents cannot reach this measurement.
+// elapsed time. A reader needs the log and nothing else, so whatever the
+// artifact stores cannot reach this measurement.
 //
 // ELAPSED IS WALL TIME. With overlap one it prices one slice directly. With
 // higher overlap it deliberately includes contention for shared provider limits,

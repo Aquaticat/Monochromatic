@@ -205,7 +205,7 @@ function readUsablePairings(
  
  REFUSES RATHER THAN GUESSES. When no voice answers usably the outcome carries
  no pairs and says why, and the caller keeps the deterministic aligner's own
- refusals rather than proceeding on one model's word. `#71` recorded the rule:
+ refusals rather than proceeding on one model's word, by the standing rule:
  a wrong pairing is worse than no pairing, because it manufactures issues
  rather than skipping work.
  
@@ -335,7 +335,7 @@ export async function pairSectionsWithRoster(
 
   /**
    Pairs the roster agreed on, counted over every usable voice's pairs and
-   kept strictly increasing on both sides (`#245`).
+   kept strictly increasing on both sides.
    */
   const agreement = agreePairs({
     pairings,

@@ -323,7 +323,7 @@ export function createOpenRouterClient(
 
       /**
        Messages as they go on the wire, carrying this call's own response
-       schema inside the system prompt, as on the Synthetic path (`#216`).
+       schema inside the system prompt, as on the Synthetic path.
        */
       const asked = withSchemaInSystemPrompt({
         messages: request.messages,

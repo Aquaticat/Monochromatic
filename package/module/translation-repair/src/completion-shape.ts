@@ -83,7 +83,7 @@ export class SyntheticHttpError extends Error {
   ) {
     // THE EXCERPT IS QUOTED INTO THE MESSAGE ON PURPOSE for this class, which
     // stays unmarked for that reason; a subclass that declares its message
-    // quote-free withholds it (`#244`) and keeps it on `bodyExcerpt` for the
+    // quote-free withholds it and keeps it on `bodyExcerpt` for the
     // log alone.
     super(
       (excerpt === 'withheld')

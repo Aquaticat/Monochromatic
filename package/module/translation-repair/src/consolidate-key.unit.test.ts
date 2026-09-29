@@ -267,7 +267,7 @@ await describe({
       name: 'SEPARATES A SLICE JUDGED WITH A WINDOW FROM ONE JUDGED WITHOUT, because from 2026-08-22 the '
         + 'judges of a consolidation are shown the passages either side. A settlement decided without them '
         + 'answered a different question, and handing it back for a windowed slice would return an answer '
-        + 'to a question nobody asked, which is `#95`',
+        + 'to a question nobody asked',
       fn: async () => {
         expect(consolidateSliceKey(SLICE,),).not.toBe(
           consolidateSliceKey({
