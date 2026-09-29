@@ -5560,6 +5560,20 @@ the archived segments are kept byte for byte,
 so they need an exclusion the linter supports
 or a recorded reason they stay as they are.
 
+### D28: the document map's current status stopped at 2026-09-06
+
+Status:
+open,
+found 2026-09-29 while scoping D26.
+`doc/handover/translation-repair-document-map.md` opens with a "Current status" section
+that still describes the legacy pipeline as read on 2026-09-04 and 2026-09-06
+and names the 2026-09-06 snapshot as the place to start,
+while the package has since been audited and rebuilt through this ledger.
+Fix:
+rewrite the section from the current handover and the package README,
+each claim checked against the code or a log,
+and have it point at the package docs that now carry the current state.
+
 ## Found while fixing
 
 ### X1: the translate lane stopped the entry on a rejected slate over an archive the floor refuses
