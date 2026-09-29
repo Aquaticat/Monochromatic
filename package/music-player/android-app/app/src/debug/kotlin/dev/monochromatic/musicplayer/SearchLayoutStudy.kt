@@ -364,7 +364,7 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
         }
         if (rankVariant.isNotEmpty()) {
             // What: Keep boundary variants' rows distinct from the earlier fixed ranking matrix.
-            // Why: The cover must show the same accepted controls and optional interior hits as the inner panel.
+            // Why: Cover and inner must share illustrative membership; appended rows do not define relevance.
             //
             // In TS you'd write (pseudocode):
             // ```ts

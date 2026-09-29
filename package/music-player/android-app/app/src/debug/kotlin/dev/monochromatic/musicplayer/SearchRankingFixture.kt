@@ -85,15 +85,15 @@ internal fun searchBoundaryHits(allowInterior: Boolean): List<SearchRankingHit> 
         SearchRankingHit("Live at Camellia", "Track · Cult of Luna · later word", "Track"),
     )
     if (!allowInterior) return accepted
-    // What: `+` concatenates the accepted rows with two direct track names containing interior `cam`.
-    // Why: The optional rows must never outrank accepted exact and word-start results in this study.
+    // What: `+` appends one direct folder and one direct track with interior `cam`.
+    // Why: Identical accepted controls make membership easy to compare; appended placement is not a ranking rule.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return [...accepted, scamperTrack, dreamcamTrack];
     // ```
     return accepted + listOf(
-        SearchRankingHit("Scamper", "Track · Cult of Luna · middle of word", "Track"),
+        SearchRankingHit("Scamper", "Folder · own-name middle of word", "Folder"),
         SearchRankingHit("Dreamcam", "Track · Cult of Luna · end of word", "Track"),
     )
 }

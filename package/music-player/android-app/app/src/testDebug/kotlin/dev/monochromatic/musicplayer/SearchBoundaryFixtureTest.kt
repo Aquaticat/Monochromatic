@@ -56,7 +56,7 @@ class SearchBoundaryFixtureTest {
         assertTrue(anywhere.none { it.title == "Another Xronixle" })
     }
 
-    /** Checks that middle-of-word matches occur only in the anywhere-substring variant. */
+    /** Checks that one folder and one track with interior matches occur only in the anywhere variant. */
     @Test
     fun onlyAnywhereVariantAddsInteriorDirectTrackNames() {
         val wordStart = searchBoundaryHits(allowInterior = false)
@@ -64,7 +64,7 @@ class SearchBoundaryFixtureTest {
 
         assertEquals(3, wordStart.size)
         assertEquals(listOf("Scamper", "Dreamcam"), anywhere.drop(wordStart.size).map { it.title })
-        assertTrue(anywhere.drop(wordStart.size).all { it.kind == "Track" })
+        assertEquals(listOf("Folder", "Track"), anywhere.drop(wordStart.size).map { it.kind })
     }
 
     /** Checks D59's paint locates the interior substring without highlighting unrelated letters. */
