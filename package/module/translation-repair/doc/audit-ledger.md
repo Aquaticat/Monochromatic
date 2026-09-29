@@ -8602,8 +8602,11 @@ The full suite passed on `b968cbdc6` with no failing case.
 ### B28: sheets missing a block their role needs (B21, family six)
 
 Status:
-in progress,
+fixed,
 2026-09-29.
+The full suite passed on `b01129566`,
+the entry's last commit,
+with no failing case among 1347 passing groups.
 The census rendered every model-facing sheet the rendered-sheets fixtures build (38)
 and asked which shared blocks each carries
 (`~/temp/agent/f6-sheets/`:

@@ -115,8 +115,17 @@ this one says what changed after it.
   the archive block review now holds its anchored voices to the reachable quorum its gather closed on,
   where it had kept the whole bench's,
   a defect no stored run shows firing.
-  The families left are sheets missing blocks
-  and silent fallbacks,
+  The sixth,
+  sheets missing a block their role needs,
+  closed on 2026-09-29 as B28:
+  the archive block review and its slate,
+  coverage,
+  the page-title lexicon and the refine slates now carry the declared names their house rules point to
+  (the review and its slate the cited references too),
+  two sheets gained the narrative bound beside the apparatus kinds,
+  and `rendered-sheets-context.unit.test.ts` fails on a rendered sheet naming a block it does not carry,
+  now that the fixtures render every sheet with the context production gives it.
+  The family left is silent fallbacks,
   and D33 (references by position) is open.
   Both gaps found on the way are closed:
   `code-points.ts` and `cased-letters.ts` have unit tests of their own,
