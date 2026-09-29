@@ -1,25 +1,6 @@
 import type { AbsoluteNaturalnessReviewOutcome, } from './absolute-naturalness-review-stage.ts';
-import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Consolidation naturalness state helpers
-
-/**
- Deduplicates model credits while preserving first occurrence.
- 
- @param modelIds - credits across bounded generations
- 
- @returns Stable unique model ids
- 
- @example
- ```ts
- const unique = uniqueRosterModelIds({ modelIds, });
- ```
- */
-export function uniqueRosterModelIds(
-  { modelIds, }: { readonly modelIds: readonly RosterModelId[]; },
-): readonly RosterModelId[] {
-  return [...new Set(modelIds,),];
-}
 
 /**
  Renders latest structured findings for stage telemetry.

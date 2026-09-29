@@ -398,22 +398,6 @@ function isMisattributed(claim: WeighedVoice,): boolean {
 }
 
 /**
- Whether a claim was found in the document.
- 
- @param claim - weighed reply
- 
- @returns Whether its quote was located
- 
- @example
- ```ts
- const anchored = isAnchored(claim,);
- ```
- */
-function isAnchored(claim: WeighedVoice,): boolean {
-  return claim.anchored;
-}
-
-/**
  Reads one claim's quote.
  
  @param claim - weighed reply
