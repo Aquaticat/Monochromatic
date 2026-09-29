@@ -152,7 +152,6 @@ export {
 } from './repair-slice-key.ts';
 export { footnoteIdentifiers, } from './footnote-mentions.ts';
 export { compareLineCounts, } from './line-structure-guard.ts';
-export { sheetLeakFindings, } from './translate-sheet-leak.ts';
 export { isLineStructured, } from './line-structure.ts';
 export {
   checkPreservation,

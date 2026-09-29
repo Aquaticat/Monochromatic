@@ -25,7 +25,10 @@ import {
 
 /**
  Heads of the labels the sheets fence their evidence blocks with, none of
- which a page carries; matched anywhere, fenced or not.
+ which a page carries; matched anywhere, fenced or not. The last three are
+ the editor sheet's (`edit-prompt.ts`): the marker it sets where a region
+ stands in its context, and its two unfenced line heads, none of which any
+ pinned original or archive carries (ledger B24).
  */
 const SHEET_LABELS: readonly string[] = [
   'WHAT THE PICTURES HERE SAY',
@@ -45,6 +48,9 @@ const SHEET_LABELS: readonly string[] = [
   'SURROUNDING ENGLISH',
   'PASSAGE BEING REPLACED',
   'EXISTING ENGLISH BEFORE REPAIR',
+  '«REGION',
+  'CURRENT TEXT:',
+  'CONTEXT: ...',
 ];
 
 /**

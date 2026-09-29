@@ -196,6 +196,13 @@ import type { LaneText, } from './translate-candidates.ts';
  on 2026-09-29: the newest slice-cache file is still the one of 04:26 UTC on
  2026-09-27.
 
+ Rides inside 20 too: the validator that judges the standing, every lane
+ text offered and each consolidation candidate refuses prose guillemets and
+ the editor sheet's «REGION marker and line heads (ledger B24,
+ `translate-guillemets.ts`, `translate-sheet-leak.ts`); one comparison row
+ of 6,285 across the stored artifacts carries a guillemet its incumbent
+ lacks. Same cache check as the paragraph before.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

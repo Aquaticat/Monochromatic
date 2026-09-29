@@ -17,7 +17,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
+import {
+  guillemetFindings,
+  validateTranslatedSlice,
+} from '../dist/final/node/index.mjs';
 
 /**
  Original with a quotation in corner brackets.
@@ -89,6 +92,27 @@ await describe({
           candidateText: 'The cat said, «I am hungry.»',
           pageText: 'The cat said, «I’m hungry.»',
         },),).toBe('',);
+      },
+    },),
+    it({
+      name: 'READS PROSE ONLY: a guillemet inside a code span, a tag or a comment is content, and names each '
+        + 'guillemet of the prose once',
+      fn: async () => {
+        for (const candidateText of [
+          'Type `«meow»` to feed the cat.',
+          'The cat <Paw label="«left»" /> waved.',
+          'The cat waved. <!-- «left» -->',
+        ])
+          expect(guillemetFindings({ sourceText: SOURCE, candidateText, },),).toStrictEqual([],);
+        /**
+         Findings for prose with two quotations and a code span.
+         */
+        const findings = guillemetFindings({
+          sourceText: SOURCE,
+          candidateText: 'The cat said, «I am hungry.» Then, «Feed me.» Type `‹x›`.',
+        },);
+        expect(findings,).toHaveLength(1,);
+        expect(findings[0],).toContain('guillemets « »,',);
       },
     },),
   ],

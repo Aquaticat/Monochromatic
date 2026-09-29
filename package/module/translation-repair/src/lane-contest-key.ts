@@ -116,6 +116,13 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  answer moves that this change explains; checked on 2026-09-29: still no
  slice-cache file newer than 04:26 UTC on 2026-09-27.
 
+ Rides inside 6 too: the validator that decides each lane's eligibility
+ refuses prose guillemets and the editor sheet's «REGION marker and line
+ heads (ledger B24, `translate-guillemets.ts`, `translate-sheet-leak.ts`);
+ one comparison row of 6,285 across the stored artifacts carries a guillemet
+ its incumbent lacks; checked on 2026-09-29: the newest slice-cache file is
+ still the one of 04:26 UTC on 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 6 was set
  in `d614a0c1d` at 04:30 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

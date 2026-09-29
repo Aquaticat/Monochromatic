@@ -207,6 +207,14 @@ import type { SliceReplacement, } from './splice-slices.ts';
  30 the chosen candidate was the incumbent's; checked on 2026-09-29: the
  newest slice-cache file is still the one of 04:26 UTC on 2026-09-27.
 
+ Rides inside 15 too: the validator refuses a candidate whose prose sets a
+ quotation in guillemets (ledger B24, `translate-guillemets.ts`), and the
+ sheet-leak floor the editor sheet's «REGION marker and its CURRENT TEXT: and
+ CONTEXT: ... heads; over the stored artifacts one comparison row of 6,285
+ carries a guillemet its incumbent lacks, and none of the pinned originals
+ or archives carries a guillemet or those heads. Same cache check as the
+ paragraph before.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

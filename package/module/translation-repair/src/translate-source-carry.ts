@@ -4,6 +4,7 @@ import { droppedAddressFindings, } from './translate-address-drop.ts';
 import { communityTermFindings, } from './translate-community-term.ts';
 import { declaredLinkNameFindings, } from './translate-declared-link-name.ts';
 import { addedFormulaFindings, } from './translate-formula.ts';
+import { guillemetFindings, } from './translate-guillemets.ts';
 import { hanTitleFindings, } from './translate-han-title.ts';
 import { latinTitleFindings, } from './translate-latin-title.ts';
 import { droppedMarkerFindings, } from './translate-marker-drop.ts';
@@ -19,7 +20,8 @@ import { unwrappedLinkFindings, } from './translate-unwrapped-link.ts';
 // second-person address (class ninety-seven), the suicide it names (class
 // one hundred fifty), its bracketed work titles
 // in English (class ninety-eight) and set in quotation marks rather than
-// 《》 (class one hundred forty-one), its community terms as the glossary
+// 《》 (class one hundred forty-one), its quotations in quotation marks rather
+// than guillemets (ledger B24), its community terms as the glossary
 // renders them (class one hundred nineteen), its ordinary words without the
 // calques the rendering glossary refuses (class one hundred twenty-three),
 // its worded links as links (class one
@@ -126,6 +128,16 @@ export function sourceCarryFindings(
   },);
   if (latinFindings.length > 0)
     return latinFindings;
+  /**
+   A quotation the candidate set in guillemets (ledger B24).
+   */
+  const guillemetMarks = guillemetFindings({
+    sourceText,
+    candidateText,
+    pageText,
+  },);
+  if (guillemetMarks.length > 0)
+    return guillemetMarks;
   /**
    Community terms the candidate kept in Han or wrote in a refused form.
    */
