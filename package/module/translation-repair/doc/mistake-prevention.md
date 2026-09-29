@@ -305,7 +305,10 @@ docs,
 README or `mise.toml`,
 and in the living repository-level docs `src/living-docs.test-fixture.ts` locates,
 unless it is a listed issue or sits inside a listed owner quotation,
-and on a listed issue or quotation that no longer occurs.
+and on a listed issue or quotation that no longer occurs;
+it fails too on a number written after the word "task" (D31)
+outside the listed takeover-era stretches,
+which keep that tracker's numbers under their notes.
 
 ## Dates and clock times
 

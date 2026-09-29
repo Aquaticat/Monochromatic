@@ -5792,8 +5792,8 @@ and both files were restored from the commit.
 ### D31: task-list numbers written as words, which no guard reads
 
 Status:
-open,
-found 2026-09-29 while scoping D28.
+fixed 2026-09-29,
+found the same day while scoping D28.
 The D22 and D26 guard reads the sign followed by digits,
 and D26 left the word form ("task N") unread on purpose,
 for the sections the living docs carry from the sessions of 2026-09-10 to 2026-09-15,
@@ -5816,6 +5816,29 @@ Fix:
 name each from its session's record,
 correct the runbook's open decision and the README's replacement,
 and have the guard read the word form outside the noted sections.
+
+What was done:
+
+-   The README's paragraph now names the finite redesign,
+    says it stopped on 2026-09-01 and stays closed under that day's direction decision,
+    and says the shipped pipeline was not rebuilt to the constraints:
+    the two bounded errors they name exist nowhere in `src`.
+-   The runbook's decision is the one the earlier session's stored task record
+    and both history segments describe:
+    whether the refiner's schema-mismatch was a provider window,
+    closed on 2026-08-12 by a parser fix for a channel marker ahead of Kimi-K3's JSON;
+    the runbook now says so and links the history section that records it.
+-   The troubleshooting doc's sentence says what the probe checks,
+    and the snapshot's note on the takeover sections no longer quotes one of their numbers as its example.
+
+Guard:
+`src/task-list-numbers.unit.test.ts` reads a number written after "task" or "tasks",
+in any case,
+across the package and the living repository-level docs,
+and skips three listed stretches,
+each from the heading that opens a takeover-era section under its note to the heading after it;
+the living-docs case asserts every listed heading still stands.
+Restoring the four docs from before the fix made it report the four sites and nothing else.
 
 ### D32: link markup quoted as prose rendered as links that lead nowhere
 

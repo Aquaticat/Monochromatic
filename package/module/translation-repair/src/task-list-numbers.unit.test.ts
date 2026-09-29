@@ -13,6 +13,12 @@
  owner quotation keeps its number verbatim, listed
  exactly; the archived documents are not read and keep theirs as written.
 
+ THE WORD FORM is read too (ledger D31): a number written after "task" or
+ "tasks". The sections the living docs carry from the sessions of 2026-09-10
+ to 2026-09-15 keep that tracker's numbers under a note (ledger D26); each is
+ listed by the headings that open and close it, and each case asserts both
+ headings still stand, so a listed stretch cannot outlive its section.
+
  A REAL GITHUB ISSUE IS ALLOWED ONLY BY NUMBER, each checked with
  `gh issue view` before it was listed, and each case also asserts that every
  allowed number and quotation still occurs, so the lists cannot outlive their
@@ -126,6 +132,56 @@ const OWNER_QUOTATIONS: readonly string[] = [
   `"do \`${HASH}84\` first"`,
   `"land \`${HASH}83\`"`,
   `"${HASH}563 is fixed in main branch`,
+];
+
+/**
+ The word a task-list number follows when written out, kept out of this file's
+ own text beside a number.
+ */
+const TASK_WORD = 'task';
+
+/**
+ One stretch of a living doc that keeps another session's tracker numbers as
+ written: from the line of one heading up to the line of the next heading
+ outside it.
+ */
+type KeptRange = {
+  /**
+   Doc's path from the repository root.
+   */
+  readonly path: string;
+
+  /**
+   Heading line that opens the stretch, exactly as written.
+   */
+  readonly from: string;
+
+  /**
+   Heading line that closes it, exactly as written.
+   */
+  readonly to: string;
+};
+
+/**
+ The sections the living docs carry from the sessions of 2026-09-10 to
+ 2026-09-15, each under a note saying whose numbering it keeps (ledger D26).
+ */
+const TAKEOVER_RANGES: readonly KeptRange[] = [
+  {
+    path: join('doc', 'handover', 'translation-repair-handover-2026-09-06.md',),
+    from: '### Latest checkpoint: V4.1 judge admission on 2026-09-11',
+    to: '## Repository state',
+  },
+  {
+    path: join('doc', 'planning', 'translation-repair-readiness-signal.md',),
+    from: '## Archive correction has current-stage evidence; audit and temporal context remain (2026-09-10)',
+    to: '## Naming has current-stage evidence; archive and context work remains (2026-09-10)',
+  },
+  {
+    path: join('doc', 'planning', 'translation-repair-openrouter-2026-09-03.md',),
+    from: '## Clustered panels and complete repair evidence implemented, 2026-09-10',
+    to: '## Naming scope reaches a bounded production stage, 2026-09-10',
+  },
 ];
 
 /**
@@ -269,6 +325,139 @@ function citations({ files, quotations, }: {
 }
 
 /**
+ Every number one line writes after the word "task" or "tasks", in any case:
+ the word standing alone, then spaces, then one to four digits that no word
+ character continues.
+
+ @param text - one line
+
+ @returns Numbers cited, in order
+
+ @example
+ ```ts
+ wordNumbers({ text: 'nap', },); // []
+ ```
+ */
+function wordNumbers({ text, }: { readonly text: string; },): readonly number[] {
+  /**
+   Text between the words, one more piece than there are words.
+   */
+  const pieces = text.toLowerCase().split(TASK_WORD,);
+  return pieces
+    .slice(1,)
+    .flatMap(function cited(after, at,): readonly number[] {
+      if (continuesWord({ character: (pieces[at] ?? '').slice(-1,), },))
+        return [];
+      /**
+       Text past a plural's `s`.
+       */
+      const spaced = after.startsWith('s',) ? after.slice(1,) : after;
+      /**
+       Text past the spaces, where the number would open.
+       */
+      const rest = spaced.trimStart();
+      if (rest.length === spaced.length)
+        return [];
+      /**
+       How many digits open it.
+       */
+      const length = leadingDigitCount({ text: rest, },);
+      if ((length === 0) || (length > MAX_DIGITS) || continuesWord({ character: rest.charAt(length,), },))
+        return [];
+      return [Number(rest.slice(0, length,),),];
+    },);
+}
+
+/**
+ Zero-based indices of the lines a file keeps as another session's record.
+
+ @param file - file read
+
+ @param ranges - kept stretches, of this file or any other
+
+ @returns Line indices inside a stretch of this file
+
+ @example
+ ```ts
+ const kept = keptLines({ file, ranges: TAKEOVER_RANGES, },);
+ ```
+ */
+function keptLines(
+  {
+    file,
+    ranges,
+  }: {
+    readonly file: PackageText;
+    readonly ranges: readonly KeptRange[];
+  },
+): ReadonlySet<number> {
+  /**
+   The file's lines.
+   */
+  const lines = file.text.split('\n',);
+  return new Set(ranges
+    .filter(function isOfFile({ path, },): boolean {
+      return path === file.path;
+    },)
+    .flatMap(function lineIndices({ from, to, },): readonly number[] {
+      /**
+       Line that opens the stretch.
+       */
+      const start = lines.indexOf(from,);
+      /**
+       Line that closes it, after the opening one.
+       */
+      const end = lines.indexOf(to, start + 1,);
+      if ((start === (-1)) || (end === (-1)))
+        return [];
+      return Array.from(lines.slice(start, end,).keys(), function located(step,): number {
+        return start + step;
+      },);
+    },),);
+}
+
+/**
+ Every number written after "task" in a set of files, each as
+ `path:line number`, less those inside a kept stretch.
+
+ @param files - files read
+
+ @param ranges - stretches that keep another session's numbers
+
+ @returns Citations in file and line order
+
+ @example
+ ```ts
+ const found = wordCitations({ files, ranges: [], },);
+ ```
+ */
+function wordCitations(
+  {
+    files,
+    ranges,
+  }: {
+    readonly files: readonly PackageText[];
+    readonly ranges: readonly KeptRange[];
+  },
+): readonly string[] {
+  return files.flatMap(function inFile(file,): readonly string[] {
+    /**
+     Lines this file keeps as written.
+     */
+    const kept = keptLines({ file, ranges, },);
+    return file.text
+      .split('\n',)
+      .flatMap(function inLine(line, index,): readonly string[] {
+        if (kept.has(index,))
+          return [];
+        return wordNumbers({ text: line, },).map(function located(number,): string {
+          return `${file.path}:${String(index + 1,)} ${String(number,)}`;
+        },);
+      },);
+  },);
+}
+
+/**
  The number a located citation carries.
 
  @param citation - `path:line number`
@@ -396,6 +585,38 @@ await describe({
       },
     },),
     it({
+      name: 'FINDS a number written after the word, singular or plural in any case, and leaves the word joined to '
+        + 'a hyphen, inside a longer word, joined to its digits, before a longer run or before a sign',
+      fn: async () => {
+        expect(wordNumbers({
+          text: `the ${TASK_WORD} 12 nap, ${TASK_WORD.toUpperCase()}S  7 and ${TASK_WORD}s 8 treats`,
+        },),).toEqual([12, 7, 8,],);
+        expect(wordNumbers({
+          text: `${TASK_WORD}-list 3, sub${TASK_WORD} 4, ${TASK_WORD}12, ${TASK_WORD} 12345 and ${TASK_WORD} ${HASH}5`,
+        },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'LOCATES each written-out number by path and line, and skips a kept stretch between its two headings',
+      fn: async () => {
+        expect(wordCitations({
+          files: [
+            {
+              path: 'doc/cat.md',
+              text: [
+                `${TASK_WORD} 1 naps`,
+                '## Kept',
+                `${TASK_WORD} 2 naps`,
+                '## After',
+                `${TASK_WORD} 3 naps`,
+              ].join('\n',),
+            },
+          ],
+          ranges: [{ path: 'doc/cat.md', from: '## Kept', to: '## After', },],
+        },),).toEqual(['doc/cat.md:1 1', 'doc/cat.md:5 3',],);
+      },
+    },),
+    it({
       name: 'LOCATES each citation by path and line, and allows only the listed GitHub issues',
       fn: async () => {
         /**
@@ -448,6 +669,7 @@ await describe({
         expect([...new Set(found.map(function numberOf(citation,): number {
           return citedNumber({ citation, },);
         },),),].toSorted(ascending,),).toEqual([...GITHUB_ISSUES,].toSorted(ascending,),);
+        expect(wordCitations({ files, ranges: [], },),).toEqual([],);
       },
     },),
     it({
@@ -498,6 +720,16 @@ await describe({
             return text.includes(quotation,);
           },);
         },),).toEqual([],);
+        expect(TAKEOVER_RANGES.filter(function isGone(range,): boolean {
+          /**
+           The file the stretch belongs to, when it is read.
+           */
+          const file = files.find(function isOfRange({ path, },): boolean {
+            return path === range.path;
+          },);
+          return (file === undefined) || (keptLines({ file, ranges: [range,], },).size === 0);
+        },),).toEqual([],);
+        expect(wordCitations({ files, ranges: TAKEOVER_RANGES, },),).toEqual([],);
       },
     },),
   ],
