@@ -225,6 +225,52 @@ await describe({
         expect(() => flattenContainers({ children: unpositioned, },),).toThrow(UnpositionedContainerError,);
       },
     },),
+    it({
+      name: 'NAMES A FRAGMENT <> IN THE REFUSAL, the name the MDX extension writes as null read as empty (ledger T8)',
+      fn: async () => {
+        /**
+         A parsed fragment, dissolved once as parsed so the refusal cannot pass
+         for the wrong reason.
+         */
+        const { children: parsed, } = parseMdxBody({
+          body: '<>\n\n> Mittens on the windowsill\n\n</>\n',
+        },);
+        expect(flattenContainers({ children: parsed, },).containers,).toHaveLength(1,);
+
+        /**
+         The fragment stripped of its own position.
+         */
+        const unpositioned = parsed.map(function dropPosition(child,) {
+          return {
+            ...child,
+            position: undefined,
+          };
+        },);
+        expect(() => flattenContainers({ children: unpositioned, },),).toThrow('container <> carries block children',);
+      },
+    },),
+    it({
+      name: 'KEEPS AS A BLOCK A CONTAINER WHOSE CHILDREN ARE NOT A LIST, which no parse writes and the walk cannot read (ledger T8)',
+      fn: async () => {
+        /**
+         A parsed disclosure, its children replaced by a value that is not a
+         list, cast past the type as foreign input can arrive.
+         */
+        const malformed = parseMdxBody({
+          body: '<details>\n\n> Mittens on the windowsill\n\n</details>\n',
+        },)
+          .children
+          .map(function unlisted(child,) {
+            return {
+              ...child,
+              children: 'naps',
+            };
+          },) as unknown as Parameters<typeof flattenContainers>[0]['children'];
+        const flattened = flattenContainers({ children: malformed, },);
+        expect(flattened.containers,).toHaveLength(0,);
+        expect(flattened.blocks,).toEqual(malformed,);
+      },
+    },),
   ],
 },);
 

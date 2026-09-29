@@ -2650,15 +2650,47 @@ read through a census of its three test files that showed `coverage-tally.ts`,
 `coverage-lines.ts`,
 `coverage-file.ts` and `build-entries.ts` loaded with no stretch left;
 that reading went through the M67 mapping,
-so it proves nothing until a format 2 census repeats it.
+and the format 2 baseline repeats it.
 The second batch,
 `f2c96d7dd`,
 gave cases to the refusals of `decisionsCardOf`,
 `flattenContainers`,
 `footnoteIdentifiers` and `clusterReadings`,
 and removed two throws no input reaches (`AtomFloorError`,
-`AnchorRegionError`) and one v8-ignored guard;
-its reach is read from the same format 2 census.
+`AnchorRegionError`) and one v8-ignored guard.
+
+The whole-suite census at `77de8e685` (1,386 passes,
+`census-qilSwP`,
+format 2) is the baseline from M67 on:
+library source holds 1,207 stretches over 3,473 lines in 445 files,
+with 63 functions never called;
+the six runner entry files tests load hold 27 stretches over 799 lines,
+with 14 never called;
+the 36 bundles no test loads carry 13,418 physical lines in 39 sources;
+other workspace packages hold 230 stretches over 4,278 lines in 61 files.
+In it the first batch's four sources,
+and every census module,
+are loaded with no stretch.
+The second batch's sources are loaded with no stretch but two:
+`src/model-card-derive.ts` keeps lines 374 and 429 to 435,
+table checks of its own file batch rather than the refusal the batch claimed,
+and `src/unwrap-container.ts` kept three,
+two of them the refused container's fragment arms
+(a fragment's name,
+which the MDX extension writes as null,
+and `<>` in the message)
+and one a container whose children are not a list.
+Cases for all three followed,
+and a census of their test file against this baseline reads the three as ran and `src/model-card-derive.ts`,
+the untouched control,
+as still cold.
+A stretch's line range runs from the lowest line its characters map to to the highest,
+so where the minifier moves an early return behind the code after it,
+the range can take in lines that ran:
+the bundle writes that non-list return as `isNodeList(children)?…:!1`,
+and the separator before `!1` maps to the last line of the arm before it,
+so the stretch read 278 to 284 where only 278 was cold.
+The error is only ever toward calling code cold.
 The census reports raw truth and honours no v8 ignore hint:
 a guard a hint hid is restructured in its file's batch,
 as `flattenContainers`' was.
