@@ -2,7 +2,8 @@
 
 ## Scope and controls
 
-This is a **debug-only baseline**, not native verification of a finished
+This is a **debug-only baseline**,
+ not native verification of a finished
 Search implementation.
 The disposable `Fold_No_Hardware_Probe` ran in a Podman container with
 inspected limits of 6 GiB memory and 2 CPUs.
@@ -25,7 +26,8 @@ this document reports bounded inspected utterances,
 not those raw files.
 
 The baseline-control launch showed “Folders” as initial speech and
-“Open. Button” after the first emulator-gRPC right swipe.
+“Open.
+ Button” after the first emulator-gRPC right swipe.
 That positive control exercised the **same** real TalkBack overlay later
 used for Search.
 The emulator's shipped
@@ -40,10 +42,12 @@ physical-swipe speech-overlay capture.
 
 ## Inspected unfolded sequence
 
-The scripted inner swipes reached “Back to player. Button” at recorded
+The scripted inner swipes reached “Back to player.
+ Button” at recorded
 step `2`,
 `cam. Edit box. Search music` at step `3`,
-and “Clear search. Button” at step `4`.
+and “Clear search.
+ Button” at step `4`.
 The next captured stops entered the **left alphabet rail** (recorded
 steps `5` to `21`) before leaving that list at step `22`.
 The right-side positive results were reached at step `23`:
@@ -87,7 +91,8 @@ UI Automator found Back,
 query,
 Clear and result text,
 and read-only input-method state remained hidden.
-A TalkBack overlay showed initial focus on “Back to player. Button”.
+A TalkBack overlay showed initial focus on “Back to player.
+ Button”.
 However,
 cover physical-swipe delivery was **not** validated:
 the prior host-gRPC helper targeted the inner main display by default,
@@ -153,7 +158,9 @@ not a recording of audio timing or pronunciation.
 ### Query at scripted swipe 3
 
 The green focus rectangle encloses the query;
-the overlay reads “cam. Edit box. Search music”.
+the overlay reads “cam.
+ Edit box.
+ Search music”.
 
 ![Query focus and matching TalkBack overlay](https://monochromatic-lfs.an1298.workers.dev/d43727d93dd33debf56196c182163346e7e35a05a46d1c7321325d7cda0937cd/package/music-player/design/questions/evidence/search-talkback-inner-query-s200.png)
 

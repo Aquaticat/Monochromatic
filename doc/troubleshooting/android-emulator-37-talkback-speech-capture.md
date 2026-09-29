@@ -160,7 +160,8 @@ and no keyboard input.
 The inner physical-swipe path advanced actual TalkBack focus and speech.
 On the folded 1080 × 2424px cover,
 UI Automator showed the Search controls and an overlay showed
-“Back to player. Button”,
+“Back to player.
+ Button”,
 but the swipe path was not validated.
 
 The shipped controller schema at
@@ -246,20 +247,26 @@ neither alone proves the other layer.
 
 ## Upstream filing decision
 
-1. **Is it really upstream's fault?** No.
+1. **Is it really upstream's fault?**
+    No.
    The emulator gRPC controller and TalkBack speech
    overlay both work as documented.
    Guest input,
    UI Automator,
    and logcat answer different
    questions.
-2. **Can upstream fix it?** Not applicable because no upstream defect is established.
-3. **Are they supporting this use case?** The emulator explicitly supports host touch injection,
+2. **Can upstream fix it?**
+    Not applicable because no upstream defect is established.
+3. **Are they supporting this use case?**
+    The emulator explicitly supports host touch injection,
    and TalkBack explicitly supports visible speech output.
-4. **Would the repositories welcome our contribution?** Not evaluated because no defect or
+4. **Would the repositories welcome our contribution?**
+    Not evaluated because no defect or
    missing source behavior remains.
-5. **Will they likely fix it?** Not applicable.
-6. **Have we prototyped a minimal fix?** No upstream fix is needed;
+5. **Will they likely fix it?**
+    Not applicable.
+6. **Have we prototyped a minimal fix?**
+    No upstream fix is needed;
    the verified composition is
    entirely at the consumer boundary.
 
