@@ -966,6 +966,9 @@ Use the same 48dp leading-slot anchor for the header and result rows on both
 panels,
 center the 24dp type icon within it,
 and check the native after-state raster and text bounds before presenting it.
+The corrected 200% debug capture put `cam` and `Cam` at the same x `1249`
+on the inner panel and x `156` on the cover;
+the icon columns visibly aligned in both native screenshots.
 Do not reduce the 48dp interaction minimum to achieve this alignment.
 
 ## Standing standards for this project

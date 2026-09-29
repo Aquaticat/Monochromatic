@@ -298,7 +298,13 @@ rounds (2026-09-17):
   or TalkBack.
   Baseline M3 Search evidence is in
   `material-3-compliance.md`.
-  Search targets and result effects/ranking remain open;
+  D58 settles horizontal Back/result-icon and query/result-title alignment
+  on both Fold panels;
+  the measured 200% text starts matched after correction.
+  Search matching/ranking (#116),
+  result activation (#129),
+  Back/Clear/focus (#127) and empty/unavailable behavior (#128) remain
+  separate open decisions.
   D21's global command hotkey and Settings row
   do not transfer to Search.
   D25 still reserves Ctrl+F for search and Ctrl+O for the

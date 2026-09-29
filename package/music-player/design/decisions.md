@@ -1717,6 +1717,31 @@ The sanitized native capture and bounded fixture are in
 `package/music-player/design/questions/floating-results-review.html`
 and `package/music-player/design/evidence/search-result-overflow.md`.
 
+### D58. Search header and result rows share leading columns (2026-09-29)
+
+The user corrected a visible offset in the Search-opened state:
+**Back arrow and folder/music result icons share one horizontal center**,
+and **query text and result titles share one horizontal start**.
+The integrated header already used a 48dp leading icon target,
+but debug result rows used a 24dp icon plus 12dp spacer.
+At 200% text before the correction,
+inner query `cam` began at x `1249` while result `Cam` began at x `1220`;
+on the cover the same pair began at x `156` and x `127`.
+
+Debug-only commit `baa37caaf` centers 24dp result icons inside the same
+48dp leading slot as Back on both panels.
+On the subsequently installed disposable Fold APK,
+UI Automator reported `cam` and `Cam` both starting at x `1249` on the
+inner display and both at x `156` on the cover at 200% text.
+Native screenshots visually retain the Back/result icon column.
+The larger leading slot does not reduce the existing 48dp interaction floor,
+move meaning into E2's crease,
+or change the selected A layout and result order.
+Result activation,
+ranking and accessibility still require separate decisions and verification.
+This is a design-only alignment correction,
+not a production Search implementation or permission for new IME tests.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)

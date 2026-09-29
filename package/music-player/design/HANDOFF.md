@@ -6224,8 +6224,16 @@ Debug-only prototype commit `baa37caaf` centers result icons inside the
 same 48dp slot and places titles directly after it on both panels.
 The post-edit installed APK SHA-256 is
 `bf9a51c42facfca969e275d5fe55769656c451900f57689dc7c24190e8d6d2ef`.
-Native after-state capture and icon/text paint verification are pending;
-do **not** present earlier ranking rasters as the corrected design.
+The 200% after-state hierarchies now place `cam` and `Cam` at identical
+x `1249` on the inner display and x `156` on the cover.
+The full native captures visually align the Back/result-icon column too;
+D58 records the user-directed correction.
+Only the newly recaptured rasters from this APK may be used for the ranking
+review;
+earlier unaligned scratch captures are not review assets.
+At 100% text,
+that shared 48dp-slot geometry still needs a bounded verification before
+claiming scale-independent pixel alignment.
 The selected A browser,
 deck,
 cover viewport and E2 floor remain unchanged.
