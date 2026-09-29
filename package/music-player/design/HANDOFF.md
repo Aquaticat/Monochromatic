@@ -6669,7 +6669,25 @@ A disposable `Fold_No_Hardware_Probe` boot was started in a Podman
 container capped at 6 GiB and 2 CPUs for **static keyboard-closed**
 selected-A status captures only.
 Its bounded process is named `fold-search-empty-review-avd`;
-there is no verified boot or capture yet.
+the guest subsequently reached `ADB_BOOT_READY emulator-5580`,
+identified itself as `Fold_No_Hardware_Probe` in unfolded state `2`,
+and `podman inspect` confirmed `6442450944` memory bytes and
+`2000000000` NanoCPUs.
+The installed debug APK's SHA-256 matched the private artifact
+`1caee7060acfb5bbcd9a02142b4c9bada6b5886517157d25fef4a48b9b1e9c05`.
+The read-only input-method state before capture reported
+`mInputShown=false` and `mImeWindowVis=0`.
+The first capture attempt rejected an otherwise populated empty state
+because the private assertion compared Android's `1.0` font scale text
+against `1` literally;
+the script now compares numeric values.
+The retry completed the static keyboard-closed inner/cover,
+light/dark,
+100%/200% captures of empty query,
+no match and unavailable fixtures.
+Each raw PNG and hierarchy remains private in
+`/home/user/temp/agent/`;
+no sanitized capture is published yet.
 The private scratch capture script
 `/home/user/temp/agent/capture-search-empty-static.mjs` refuses the
 original AVD,
