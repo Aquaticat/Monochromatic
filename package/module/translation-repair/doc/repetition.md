@@ -72,7 +72,7 @@ Verified with the site's own renderer on 2026-08-26:
 a footnote reference compiles to literal text there and to structure here,
 a `$...$` pair compiles to math there and to prose here.
 Six source pages at the pin carry a math pair.
-`#267` holds the reconciliation question;
+Whether to reconcile them is open;
 nothing published changes either way,
 since the text is preserved as written,
 but a formula is unprotected structure until the strict grammar knows it.

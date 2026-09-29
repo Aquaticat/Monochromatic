@@ -1157,7 +1157,7 @@ every other production `validateTranslatedSlice`,
 `buildTranslateMessages` caller passes `lineStructured`,
 the two front-matter calls in `lane-contest-eligibility.ts` return before any line check,
 and `corpus-run/translate-probe.ts`,
-the `#70` prototype still runnable as the `translate-probe` task,
+the translate-first prototype of `f87dda263` still runnable as the `translate-probe` task,
 omitted it.
 The probe now decides governance with the pipeline's own `governedSliceIndices` over its section and slices.
 Replayed offline over its entry,
@@ -5049,7 +5049,9 @@ Of the four dates named here,
 class one hundred seventy-eight's was right
 (its run began at 20:12 UTC on 2026-09-26),
 and the class seventy-seven site carries no date to correct.
-A census of every owner-answer date against the transcript timestamps belongs to #367.
+A census of every owner-answer date against the transcript timestamps was deferred here to the docs audit
+and never run;
+it stays open until its result is recorded under D12.
 The finding as first recorded:
 four class dates match only the local day of their commit
 (class seventy-seven,
@@ -6781,7 +6783,7 @@ and once during S19 (`sleep 1 && rg --count PASS log ; tail <output>`),
 a foreground sleep as well,
 and once during S5 (`build > log && tsc | rg --count ; true`),
 and once during S12 (`rg --count <file> ; rg --line-number <file>`),
-and a foreground `sleep 1 && tail <log>` during #379.
+and a foreground `sleep 1 && tail <log>` during the page-assembly fixes (A1 to A16).
 During A6 a test file was edited while the full suite ran,
 against the rule that nothing the suite reads changes until it finishes.
 Twice more during A11 (`node --print ... ; ls`,
@@ -7034,7 +7036,7 @@ not the ones remembered,
 and for each one runs `git log` since it last moved over every file its stage's sheet or floors import,
 the shared house rules and prose ranges included.
 
-The pre-launch check (task #395),
+The first pre-launch check under this rule,
 2026-09-28,
 run by `cache-account-audit.ts` over all six constants:
 translate 15 and consolidation 20 set in `66703994a` (22:56 on 2026-09-27),
@@ -7727,15 +7729,13 @@ Prevention for the type:
 read `git diff --cached --stat` before choosing it;
 any file outside tests makes the commit more than `test`.
 Once more on 2026-09-28:
-`67243edae` wrote "(#368)" in its subject,
-the audit's task-list number,
+`67243edae` wrote the audit's task-list number in its subject,
 which on GitHub is an unrelated file-enforcer issue;
 commit comment 202472839 corrects it.
 Prevention for references:
 a commit message names a GitHub issue only after `gh issue view` shows it is the one meant,
 and never a task-list number.
-Within the hour `3f29feb30` wrote "(#369 of the audit)",
-the task number of the prevention doc,
+Within the hour `3f29feb30` wrote the prevention doc's task-list number in its subject,
 which on GitHub is an unrelated kwin-key-helper issue;
 commit comment 202478725 corrects it.
 A rule written an hour before did not stop it,

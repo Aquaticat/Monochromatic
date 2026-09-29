@@ -303,7 +303,7 @@ beside each settled entry's `TALLY` line,
 `DESTINATIONS <id> source=N page=M dropped=K`:
 how many distinct web addresses the source page links to,
 how many the published page carries,
-and how many of the source's the page lacks (`#265`).
+and how many of the source's the page lacks.
 A source destination the archive rendered another way is not lacking when the page carries the archive's rendering
 (`doc/decision/translation-repair-rewritten-destination.md`):
 the line then ends with `destinations-archive-rendering`,

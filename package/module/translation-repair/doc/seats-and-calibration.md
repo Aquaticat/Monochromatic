@@ -125,7 +125,7 @@ and `120000` reproduces the pass's own window:
 the pass's window moved from 180000 to 120000 on
 2026-09-03 by the owner's decision on a measured pair (`doc/decision/translation-repair-straggler-grace.md`).
 The pass keeps four slices in flight as well since 2026-09-06,
-read off the four matched pass pairs `#261` asked for
+read off four matched pass pairs
 (`doc/decision/translation-repair-pass-overlap.md`);
 `TRANSLATION_REPAIR_SLICE_OVERLAP=1` reproduces the sequential driver for one launch.
 `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR` (`request-pace.ts`) sets how many Hyper requests may start
@@ -250,7 +250,7 @@ and its absence would otherwise read exactly like a model that wrote and lost.
 During a provider outage that is half the roster.
 
 Three different things put a seated model outside the table,
-and the calibrations name them apart rather than reporting one absence (`#263`):
+and the calibrations name them apart rather than reporting one absence:
 
 -   `WROTE AND WAS NEVER VOTED ON` names a seat whose text reached a slate
     with no disinterested ballot cast over it,
@@ -277,7 +277,7 @@ and the calibrations name them apart rather than reporting one absence (`#263`):
 
 Only a seat that records who answered can tell the last two apart.
 The refiner seat does (`settleRefinedSlice` returns `refinersHeard`);
-the editor and translate seats carry only a heard count out of their stages (`#266`),
+the editor and translate seats carry only a heard count out of their stages,
 so their silent line reads `NO CANDIDATE OF THEIRS REACHED ANY SLATE` and says the seat does not record who answered,
 instead of calling the unknown silent.
 

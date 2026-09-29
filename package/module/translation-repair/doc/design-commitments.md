@@ -101,8 +101,7 @@ Part of [the package README](../README.md).
   every region with a corroborated claim across the four probed landings,
   found six of ten true (three of them the house tense rule),
   three false (two misparse 我方才知道 as "our side") and one borderline.
-  Shadow mode stands until a human grades a sample:
-  `#66`.
+  Shadow mode stands until a human grades a sample.
   What changed on that reading:
   the lane contest is shown the corroborated
   claims against the repair candidate as evidence lines after both candidates,

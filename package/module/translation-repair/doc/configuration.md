@@ -67,7 +67,7 @@ each uses an empty export as given.
     a run starts on whichever provider keys are present,
     an absent provider is marked dry before routing so its seats are unavailable,
     and every key absent is a stated refusal naming the variables (exit 6).
-    A calibration once settled clean with half its roster dark (`#235`) because a missing key was silent;
+    A calibration once settled clean with half its roster dark because a missing key was silent;
     it is not silent now,
     and the seat lines at the end of every command name what was dark.
     Note the `CHARM` in the middle;
@@ -181,7 +181,7 @@ copy the encrypted file into the worktree root (it stays encrypted at rest) or l
 Either way,
 launch under `mise run`:
 a bare `node dist/...` launch has no key,
-and since `#235` it fails at once with the refusal instead of running half-dark.
+and since 2026-08-25 it fails at once with the refusal instead of running half-dark.
 
 Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N` line per seat to stderr,
 and a `SEATS DARK:` line naming every seat that was asked and never once produced a usable answer.

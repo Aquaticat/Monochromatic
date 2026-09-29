@@ -228,8 +228,7 @@ while final assembly revives archive.
 One slice reached that path after 9 of 10 contest voices called archive flawed.
 A favourable page does not close mechanism that can recur on next entry.
 
-Fixed-build overlap-4 `Zha_Ke` exposed separate readiness blocker,
-`#272`.
+Fixed-build overlap-4 `Zha_Ke` exposed a separate readiness blocker.
 Source Markdown carries central letter only as image asset,
 while archive carries English transcription inside unmatched block.
 Artifact and image share pinned corpus commit `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`.
@@ -271,7 +270,7 @@ Both pages retained byte-identical blocked details transcript,
 while surrounding wording differed stochastically.
 Both are mechanically complete and neither is acceptable production output.
 
-Fixed-build matched `Weideriche_` pair exposed liveness blocker `#273`.
+Fixed-build matched `Weideriche_` pair exposed a liveness blocker.
 In both fresh roots pairing roster heard all 10 voices,
 contested same source block,
 and committed same pairing without it.
@@ -322,15 +321,15 @@ More importantly,
 whole-page reading failed publication:
 target front matter still names entry id instead of source person's declared name,
 and build script uses that `name` as visible localized list metadata.
-This is inherited archive defect on exact path `#269` names,
+This is inherited archive defect on the front-matter path,
 not settlement regression.
-Affected-entry evidence validates `#273` progress through settlement and publication only;
+Affected-entry evidence validates progress on that liveness blocker through settlement and publication only;
 general pipeline closure still requires seeded recontest evidence and current-build front-matter rerun.
 Unit guard now proves contested pairing is not cached,
 second attempt is actually bought,
 and recovered one-to-many split becomes cacheable.
 
-Front-matter path `#269` is implemented after that reading and remains under live validation.
+The front-matter path is implemented after that reading and remains under live validation.
 Visible YAML metadata is explicit syntax-bearing slice zero in artifact generation 5;
 repair and naturalness lanes emit deliberate no-op rows,
 while translate ensemble,
@@ -356,7 +355,7 @@ Consolidation produced another changed candidate,
 but its final gate restored exact incumbent metadata.
 The final guard refused that output as `incumbent-fallback` on three attempts;
 subsequent attempt stalled because invalid contest and consolidation decisions had become cache-terminal.
-This confirms final refusal but not live closure of `#269`.
+This confirms final refusal but not live closure of the front-matter path.
 Candidate validation now preserves source `name` and `info.alias` identity equality,
 contest winners that fail publication invariants remain retryable,
 and consolidation standing text must pass same syntax guard before unchanged result becomes resumable.

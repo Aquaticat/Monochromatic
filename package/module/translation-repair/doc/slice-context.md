@@ -567,7 +567,7 @@ about 5,100 source code points where the whole-page budget had 10,794 for the wh
 ## What is folded out of candidate and archive text at intake
 
 Characters a reader cannot tell from their plain counterpart are folded
-where each lane turns an answer into a candidate (`#264`).
+where each lane turns an answer into a candidate.
 Corpus pass applies same fold to archive before preparation,
 so incumbent,
 candidates,
