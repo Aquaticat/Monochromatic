@@ -626,8 +626,13 @@ mode group wrapped 2×2.
 The 9×3 grid of rounded cells (unf-a/unf-b/unf-c) "looks like a keyboard,
  which
 doesn't fly."
- Open between a fast-scroll rail with drag bubble (unf-d) and a
-borderless text index (unf-e) — see open-questions.md #1.
+The historical rail-with-bubble (`unf-d`) versus borderless-index (`unf-e`)
+comparison is not open:
+D17 rejects their one-folder-per-row list model and selects the filtering
+picker,
+with D31's wrapped plain names.
+Retain these files as historical rejection evidence,
+not candidate instructions for a new fast-scroller round.
 
 ## E. Foldable
 
