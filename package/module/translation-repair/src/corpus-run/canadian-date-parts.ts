@@ -15,6 +15,11 @@ import {
 } from './canadian-date-words.ts';
 
 import { isAsciiDigit, } from '../ascii-letters.ts';
+import {
+  isCapitalLetter,
+  isCasedLetter,
+  isSmallLetter,
+} from '../cased-letters.ts';
 import { codePointAt, } from '../code-points.ts';
 import { isCombiningMark, } from '../latin-letters.ts';
 import { runEnd, } from './text-runs.ts';
@@ -28,26 +33,6 @@ import { runEnd, } from './text-runs.ts';
  No-break space, which may stand between a date's words.
  */
 const NO_BREAK_SPACE = '\u00A0';
-
-/**
- Whether one character is a letter in any script with case.
-
- @param character - one whole character, as `codePointAt` reads it: neither
- half of a letter beyond the first plane changes under case mapping, so a
- Deseret letter read by UTF-16 unit was no letter (ledger B21)
-
- @returns Whether it changes under case mapping
-
- @example
- ```ts
- isCasedLetter({ character: 'é', },); // true
- ```
- */
-export function isCasedLetter(
-  { character, }: { readonly character: string; },
-): boolean {
-  return character.toLowerCase() !== character.toUpperCase();
-}
 
 /**
  Whether one character belongs to a word: a letter with case, or a
@@ -430,7 +415,7 @@ export function monthStartsName(
   },);
   if ((word === '') || (word === 'I'))
     return false;
-  if (initial !== initial.toLowerCase())
+  if (isCapitalLetter({ character: initial, },))
     return true;
   /**
    Nouns the month forms with the word after it.
@@ -506,7 +491,7 @@ export function keptPeriod(
   /**
    Whether a lower-case word runs on after the period.
    */
-  const runsOn = isDateSpace({ character: text.charAt(month.end,), },) && (next !== next.toUpperCase());
+  const runsOn = isDateSpace({ character: text.charAt(month.end,), },) && isSmallLetter({ character: next, },);
   return (month.period && (!runsOn)) ? '.' : '';
 }
 

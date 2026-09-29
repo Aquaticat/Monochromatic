@@ -1,13 +1,14 @@
 import { isAsciiDigit, } from '../ascii-letters.ts';
 import {
+  isCapitalLetter,
+  isCasedLetter,
+} from '../cased-letters.ts';
+import {
   codePointAt,
   codePointBefore,
 } from '../code-points.ts';
 import { isCombiningMark, } from '../latin-letters.ts';
-import {
-  isCasedLetter,
-  isWordCharacter,
-} from './canadian-date-parts.ts';
+import { isWordCharacter, } from './canadian-date-parts.ts';
 import { lineStartOf, } from './canadian-spelling-context.ts';
 import {
   runEnd,
@@ -107,7 +108,8 @@ const LIST_MARKERS: readonly string[] = [
 
  @param word - word as written
 
- @returns Whether its first character is an upper-case letter
+ @returns Whether its first character is a capital letter by general
+ category, a script capital with no case mapping included (ledger B21)
 
  @example
  ```ts
@@ -124,7 +126,7 @@ export function startsWithCapital(
     text: word,
     at: 0,
   },);
-  return initial !== initial.toLowerCase();
+  return isCapitalLetter({ character: initial, },);
 }
 
 /**

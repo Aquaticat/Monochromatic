@@ -1,12 +1,10 @@
 import { isAsciiDigit, } from '../ascii-letters.ts';
+import { isCasedLetter, } from '../cased-letters.ts';
 import {
   codePointAt,
   codePointBefore,
 } from '../code-points.ts';
-import {
-  isCasedLetter,
-  isWordCharacter,
-} from './canadian-date-parts.ts';
+import { isWordCharacter, } from './canadian-date-parts.ts';
 import {
   runEnd,
   runStart,

@@ -1,3 +1,5 @@
+import { isAsciiDigit, } from './ascii-letters.ts';
+import { isCasedLetter, } from './cased-letters.ts';
 import { codePointBefore, } from './code-points.ts';
 
 //region Quote neighbours
@@ -11,15 +13,6 @@ import { codePointBefore, } from './code-points.ts';
 // acute has the mark, not the `e`, beside the quote, and a mark is no cased
 // letter, so the composed spelling curled and the combining one stayed
 // straight on a curly page.
-
-/**
- Whether one code point is a cased letter or an ASCII digit. Cased letters by
- general category, not by case mapping: the mathematical script letters the
- corpus writes handles in are cased letters with no case mapping, and Han is
- neither cased nor a word an apostrophe binds into (class ninety-six).
- */
-// oxlint-disable-next-line no-restricted-syntax/no-regex -- the input is one code point, anchored at both ends, so the test is bounded and cannot backtrack; the Unicode general categories have no string API
-const WORD_CODE_POINT = /^(?:\p{Lu}|\p{Ll}|\p{Lt}|[0-9])$/u;
 
 /**
  Whether a character can sit beside an apostrophe inside one word.
@@ -47,7 +40,14 @@ export function bindsWord({ character, }: { readonly character: string; },): boo
   if (base === undefined)
     return false;
 
-  return WORD_CODE_POINT.test(String.fromCodePoint(base,),);
+  /**
+   That code point as a character. A cased letter by general category, not by
+   case mapping (`cased-letters.ts`): the mathematical script letters the
+   corpus writes handles in are cased letters with no case mapping, and Han
+   is neither cased nor a word an apostrophe binds into (class ninety-six).
+   */
+  const first = String.fromCodePoint(base,);
+  return isCasedLetter({ character: first, },) || isAsciiDigit({ character: first, },);
 }
 
 // CLASS NINETY-SIX (mikaela_khara, 2026-09-23). The archive writes a handle
