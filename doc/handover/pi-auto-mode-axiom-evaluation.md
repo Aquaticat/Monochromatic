@@ -46,13 +46,25 @@ Keep B's current eligibility distinct from the original human-confirmation witne
 A's reset does not erase that historical confirmation for B.
 No global-reset command or storage/copy mechanism was selected.
 
-Task #3 is active at unanswered Q17:
-a later explicit human request conflicts with an ordinary active standing prohibition.
+For Q17 the user answered:
+"Treat this as user error and treat any response by our system as legal."
+The demonstrated conflict between an ordinary standing prohibition
+and the same verified human's later explicit request has no required approve/deny/ask outcome.
+Neither proposed A nor B was selected.
+Do not impose mandatory confirmation or newer-request precedence.
+Independent guards,
+provenance,
+semantic qualification,
+and deterministic finalization remain required.
+This does not authorize changing the standing directive or treating uncertain model estimates as a human conflict.
+
+Task #3 is active at unanswered Q18:
+fork inheritance of separate explicit human approvals for a particular action scope.
 The [resumed design frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
 records the question.
-Explicit exception confirmation is recommended but unaccepted;
-the alternative is treating the later request as sufficient authority for this action.
-Neither option overrides a fixed block or selects persistent directive edits.
+Verified inheritance is recommended but unaccepted;
+the alternative requires confirmation in the new fork.
+Later revocation and reset scope are outside that question.
 No production implementation,
 cutoff selection,
 Laya restart,
@@ -126,8 +138,8 @@ Vendor-documented adversarial-state sensitivity and the recurring read-scope pat
 Complete current policy is still mandatory despite generic vendor filtering advice.
 
 Real human-authority/lifecycle/finalizer qualification remains separate.
-Q16 B is settled;
-Q17 is now the resumed interview frontier.
+Q16 B and Q17's unconstrained conflict outcome are settled;
+Q18 is now the resumed interview frontier.
 No production cutoff or code change has been approved,
 and the final shared-design confirmation is not complete.
 

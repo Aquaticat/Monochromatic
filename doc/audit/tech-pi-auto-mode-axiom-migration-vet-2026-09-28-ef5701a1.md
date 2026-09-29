@@ -1435,6 +1435,42 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Accepted Q17 conflict outcome
+
+The user answered Q17:
+
+> Treat this as user error and treat any response by our system as legal.
+
+The question concerned an ordinary active human prohibition
+followed by the same verified human explicitly requesting the prohibited action.
+No fixed block applied and all other required evidence was assumed satisfied.
+For this demonstrated conflicting-instruction case alone,
+approve,
+deny,
+and ask are acceptable outcomes.
+Neither the proposed mandatory-confirmation rule nor newer-request precedence was selected.
+This is an acceptance criterion for the described behavior,
+not external legal clearance.
+
+Independent safeguards,
+human provenance,
+semantic qualification,
+freshness,
+deadlines,
+and deterministic code-owned finalization remain required.
+Uncertain or contradictory model estimates do not themselves establish the human conflict.
+Semantic truth labels remain unchanged.
+No persistent directive edit follows.
+
+The [live interview frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
+now asks Q18 about inheriting separate explicit human action approvals into a verified fork.
+Q15 and Q16 addressed reusable directives,
+not those separate approval records.
+Inheritance at fork creation is separate from later revocation and reset scope.
+No production change or new model assessment was made.
+Earlier interview sections in this audit are historical checkpoints;
+the linked planning document and handover carry the live question state.
+
 ## Accepted Q16 and next policy question
 
 The user answered Q16 with "B":

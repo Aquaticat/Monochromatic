@@ -757,10 +757,11 @@ this does not authorize production implementation or select a cutoff.
 The user selected Q16 B:
 resetting the originating session leaves its already inherited directive valid in the verified fork.
 Q14 and Q15 remain settled.
-The current frontier is Q17,
-handling a new explicit human request that conflicts with an active ordinary standing prohibition.
-This concerns authorization precedence,
-not model judgment of the final action or a fixed-block override.
+Q17's conflicting same-human instructions impose no required approve/deny/ask outcome.
+The user classified that scenario as user error and accepts any system response to that conflict.
+Independent safeguards and the deterministic finalizer remain required.
+The current frontier is Q18,
+fork inheritance of separate human approvals for a particular action scope.
 Other contract and qualification branches remain open;
 final shared-understanding confirmation is still required.
 Laya work and the original reserved corpus remain outside this resumption.
@@ -908,7 +909,8 @@ Q16 B leaves the inherited directive valid after the originating session resets.
 
 ### Q16: Revoking inherited directives
 
-Settled: B.
+Settled:
+ B.
 An ordinary session-scoped directive is human-confirmed in session A
 and inherited by verified fork B.
 Resetting A leaves that inherited directive valid in B;
@@ -928,23 +930,57 @@ or explicitly broader grant lifetime is selected by this answer.
 
 ### Q17: New request conflicting with an active standing prohibition
 
-Unanswered.
-An active ordinary human directive forbids uploading the repository's `.env`.
-The same human later explicitly requests that upload,
-without explicitly addressing the earlier prohibition.
-Assume no fixed block applies and all other required evidence is satisfied.
+The user supplied a different requirement rather than selecting A or B:
 
-Should code ask for explicit confirmation of an exception for this action,
-or treat the later explicit request as sufficient authority for this action?
-The recommendation is confirmation:
-it distinguishes a deliberate exception from an ordinary request that overlooks the standing restriction,
-at the cost of another prompt.
-Treating the later request as sufficient follows current intent without that extra interaction,
-but allows a standing restriction to be bypassed without acknowledgement.
+> Treat this as user error and treat any response by our system as legal.
+
+The presented scenario was an active ordinary human prohibition on uploading the repository's `.env`,
+followed by the same verified human explicitly requesting that upload without addressing the prohibition.
+No fixed block applied and all other required evidence was assumed satisfied.
+For this conflicting-instruction case alone,
+approve,
+deny,
+and ask are all acceptable outcomes.
+"Legal" means acceptable under this requested behavior specification,
+not a statement about external law or provider terms.
+
+Do not impose exception confirmation or newer-request precedence as a user requirement.
+Code still owns the deterministic final decision;
+the model must not judge overall permission or label an aggregate policy exception.
+An implementation may use ask as its default without making ask the only acceptable conflict outcome.
+This does not waive independent fixed blocks,
+human provenance,
+required evidence qualification,
+freshness,
+or deadline constraints.
+Uncertain or contradictory model estimates do not by themselves establish this human-instruction scenario.
+The independent semantic truth references and calibration requirements remain unchanged.
+No persistent edit to the standing directive is authorized by this answer.
+
+### Q18: Fork inheritance of human action approvals
+
+Unanswered.
+Q15 and Q16 concern reusable directives,
+not the separate record created when the human allows a particular flagged action.
+Q9b retains action-approval reuse but does not settle its cross-session lifetime.
+
+At fork creation,
+should B be able to reuse A's explicit human approval for the same verified action scope,
+or require its own confirmation before reusing that scope?
+Both choices require an original human witness and all current scope,
+policy,
+and freshness checks.
+Machine-generated approvals are not human approvals.
+
+Verified inheritance is recommended:
+it preserves continuity for the already approved action,
+but carries that approval into another session without a new confirmation.
+Requiring confirmation in B makes that new session boundary explicit,
+but repeats approval even when the action scope is unchanged.
 Ranking:
-confirmation > the later request alone.
-The question does not decide a persistent edit to the standing directive.
-No model chooses the precedence or overrides fixed blocks.
+verified inheritance > new confirmation in B.
+This question concerns eligibility at fork creation only;
+it does not select later revocation behavior or change what `/guard reset` clears.
 
 ## Accepted TypeSafe AUP scope
 

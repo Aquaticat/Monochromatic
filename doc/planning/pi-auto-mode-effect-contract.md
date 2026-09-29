@@ -424,14 +424,19 @@ the original human-confirmation witness is still required.
 A reset inside B has Q14's branch-wide effect for B's session ID.
 No new global-reset behavior or storage/copy mechanism is selected.
 
-The resumed interview now asks
-[Q17](pi-auto-mode-axioms.md#q17-new-request-conflicting-with-an-active-standing-prohibition):
-whether a later explicit human request requires exception confirmation
-when an ordinary active standing prohibition covers the requested action.
-The recommendation to confirm remains unaccepted.
-This question concerns one action,
-not persistent changes to the standing directive.
-No option permits unwitnessed authority or a fixed-block override.
+For [Q17](pi-auto-mode-axioms.md#q17-new-request-conflicting-with-an-active-standing-prohibition),
+the user classified the demonstrated same-human contradictory instructions as user error
+and accepted any system response to that conflict.
+Approve,
+deny,
+and ask are acceptable conflict outcomes when all independent requirements are satisfied.
+Do not require the proposed confirmation or newer-request precedence.
+Code still owns the deterministic choice.
+No persistent directive edit,
+unwitnessed authority,
+fixed-block override,
+or relaxation of semantic qualification follows.
+Contradictory or uncertain model estimates alone do not establish this scenario.
 
 ### Existing approval reuse
 
@@ -450,6 +455,11 @@ policy,
 branch,
 and provenance still match.
 Any new qualification-dependent cache must also identify the definitions and profile that justified it.
+[Q18](pi-auto-mode-axioms.md#q18-fork-inheritance-of-human-action-approvals)
+now asks whether a verified fork may inherit separate explicit human action approvals.
+Verified inheritance is recommended but unaccepted.
+Q15 and Q16 did not settle this separate record's lifetime.
+The current question does not alter reset scope or decide later cross-session revocation.
 
 ## Decision and finalization interface
 

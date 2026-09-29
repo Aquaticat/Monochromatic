@@ -269,7 +269,8 @@ The remaining consumer gates are:
 - A real human-origin witness and verified grant eligibility,
   rather than fixture authority or a message role alone.
 - The accepted reset/navigation/fork behavior,
-  including the still-paused Q16 fork-revocation choice.
+  including Q16 B's independent eligibility after the originating session resets,
+  and the remaining lifetime rules for separate human action approvals.
 - The complete effect and policy inventory under Q13 B,
   including qualified semantic-effect estimates for inspected forms where code has not established effects.
   Do not replace that choice with a code-only-effect prerequisite.
@@ -291,7 +292,10 @@ The remaining consumer gates are:
 These are not solved by another generic provider comparison or a dashboard inspection.
 The user has explicitly resumed the integration interview and selected Q16 B:
 resetting the originating session leaves its already inherited directive valid in the fork.
-Q17 now concerns later requests conflicting with ordinary standing prohibitions.
+Q17 accepts any approve/deny/ask outcome for its demonstrated same-human instruction conflict,
+without relaxing independent safeguards or changing standing directives.
+The [current interview frontier](pi-auto-mode-axioms.md#resumed-integration-interview)
+tracks the remaining choices.
 Production implementation still requires the remaining design and qualification gates
 and final shared-understanding confirmation.
 
