@@ -394,7 +394,7 @@ Part of [the package README](../README.md).
   and a rewrite the checkers find worse keeps the text before it (ledger L11).
   Decided for quality,
   2026-09-28,
-  under the standing directive below:
+  under the owner's standing directive that the quality of the end result decides:
   a rewrite the regression probe admits a claim against keeps the text before it too;
   175 of 2,144 kept rewrites carried one,
   and a graded reading of flagged regions found six of ten true.
@@ -413,7 +413,7 @@ Part of [the package README](../README.md).
   prose damage inside the quote stays with the checkers (ledger L4).
   Refined for quality,
   2026-09-28,
-  under the standing directive below:
+  under the owner's standing directive that the quality of the end result decides:
   a replay of the ruling's wording refused 24 recorded edits,
   17 of which re-marked markup or moved it rather than lost it.
   Markup the source carries survives;
@@ -438,7 +438,7 @@ Part of [the package README](../README.md).
   and prompt uniqueness holds (ledger P9).
   Refined for quality,
   2026-09-28,
-  under the standing directive below:
+  under the owner's standing directive that the quality of the end result decides:
   the re-ask's nudge is worded apart from the stage recovery round's,
   since the round re-asks every seat still unreadable and a shared wording would make its prompt
   this re-ask's digest,
@@ -449,7 +449,7 @@ Part of [the package README](../README.md).
   not as off the shape.**
   Decided for quality,
   2026-09-28,
-  under the standing directive below (ledger P10):
+  under the owner's standing directive that the quality of the end result decides (ledger P10):
   the recovery round told every unreadable seat its reply "did not match the required response shape",
   while 74 of the 75 cap-cut deepseek-v4.1-flash replies on Hyper had streamed no content at all.
   Each cause now has its own wording (`src/recovery-nudge.ts`);
@@ -460,7 +460,7 @@ Part of [the package README](../README.md).
   the sheets define every severity.**
   Decided for quality,
   2026-09-28,
-  under the standing directive below (ledger L5):
+  under the owner's standing directive that the quality of the end result decides (ledger L5):
   neutral asserts no defect,
   yet 28 accepted neutral issues shipped an edit,
   8 of them claims calling the rendering correct.

@@ -4298,7 +4298,7 @@ and its comment claiming every rewritten slice had its issues repaired is correc
 Its role was first left as in the accuracy lane,
 deciding nothing directly;
 the owner's answer to that question (2026-09-28) made it a quality call,
-below.
+recorded under "The probe rolls a rewrite back".
 Scope beyond the question's wording:
 an accepted issue a winning patch left open is checked by the same rule,
 since the rewrite was never shown it either;
@@ -7235,7 +7235,7 @@ each with the same admitted characters as before unless stated:
   those three scans were one scan in three copies;
   `latinWordSpans` and `lowerCaseLatinWords`
   in `latin-letters.ts` replace them,
-  matching HEAD on every measure above.
+  matching HEAD on every measure this entry records for the three.
   Mutants making the shared scan ASCII at the start or in the loop are caught by 6 assertions each.
 - `bdc0112e6`:
   heading affinity's `latinTokens` come from the shared scan,
@@ -7696,9 +7696,9 @@ what lies beyond it is bold script
 (328 letters on pages,
 12,390 in artifacts)
 and emoji,
-which every site above reads the same either way,
+which every site this entry lists reads the same either way,
 the cased-letter reading aside,
-measured above.
+measured under "Two readings of a cased letter".
 The translate,
 consolidation,
 contest,

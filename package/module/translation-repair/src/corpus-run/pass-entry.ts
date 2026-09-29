@@ -459,12 +459,12 @@ async function runEntryPipeline(
     /**
      This entry's TALLY line, read off the artifact BEFORE it is written.
      
-     NOT INLINED INTO THE `console.log` BELOW, which is where it sat until
+     NOT INLINED INTO THE `console.log` THAT PRINTS IT, which is where it sat until
      2026-08-22 and where the obvious tidying would put it back. The line asks
      what each slice would carry, and that question raises
      `UnansweredContestSliceError` on a document whose lanes differ at a slice
-     the contest names nowhere. Raised after the write, that lands in the catch
-     below, which prints `status=ERROR` for an entry whose complete artifact is
+     the contest names nowhere. Raised after the write, that lands in the entry's
+     `catch`, which prints `status=ERROR` for an entry whose complete artifact is
      already on disk: every later reader would then find a settled file the
      pass reported as failed.
      

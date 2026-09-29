@@ -19,8 +19,8 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
 // otherwise leaves alone.
 //
 // BOTH LANES IN ONE FILE, rather than one file each as the seam sketch had it:
-// the two parsers differ by three fields, they share the index-list reading
-// below, and splitting them would put the shared part somewhere neither lane
+// the two parsers differ by three fields, they share `requireIndexList`,
+// and splitting them would put the shared part somewhere neither lane
 // owns. Either grows a file of its own the day it needs more than this.
 //
 // TOLERANT, and deliberately so. These records are typed by the live pipeline,

@@ -459,7 +459,7 @@ export async function runGatherRound<ValueT,>(
   const quorumAt = Date.now();
 
   // Whichever comes first: everyone answers, or the grace expires. A round
-  // that never reaches quorum has already waited for every ask above, since
+  // that never reaches quorum has already waited for every one of `asks`, since
   // `awaitHeard` also stops when nothing is pending, so this resolves at once
   // rather than adding a window to a round that had nothing left to wait for.
   //

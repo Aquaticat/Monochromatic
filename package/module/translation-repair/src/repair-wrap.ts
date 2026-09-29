@@ -126,7 +126,7 @@ export function wrapRepairOutcomes(
       : wrapReplacementText({ text: outcome.repairedText, },);
 
     // THE ARCHIVE'S WORDING IN ALL BUT LAYOUT IS THE ARCHIVE'S (ledger B26),
-    // read before either early return below: a proposal the wrap leaves as it
+    // read before either early return of this function: a proposal the wrap leaves as it
     // is can still be the archive with its soft breaks elsewhere, and a
     // governed one the archive with a trailing newline. Either would ship a
     // change the page does not show, so the outcome keeps the archive's own

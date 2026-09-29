@@ -160,7 +160,7 @@ because naming them would
 anchor you toward agreeing and this same sheet produces the gate number.
 So grade the sheet without looking at that file,
 and the agreement rate falls
-out of the command below.
+out of the `score-agreement` command.
 
 One asymmetry to know when you read that rate.
 The sheet shows no source anchor for addition-class claims,

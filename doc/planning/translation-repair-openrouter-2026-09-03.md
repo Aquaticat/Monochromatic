@@ -3307,7 +3307,7 @@ in the same throwaway worktree and for the same reason.
   Seatable is not seated:
   which roles the two new sizes take is a decision on evidence,
   as the roster calibration of 2026-09-01 was,
-  and is asked below.
+  and is asked under "What is asked of the owner".
 - `budget-routing.ts`,
   `provider-budget.ts`,
   `run-config.ts`,

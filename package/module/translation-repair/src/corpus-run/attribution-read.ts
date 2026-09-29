@@ -208,7 +208,7 @@ function toEntry(
   const { id, } = parsed;
 
   /**
-   Identity used in any failure message below, so a throw names the file.
+   Identity used in every failure message this function throws, so a throw names the file.
    */
   const entryId = ((typeof id) === 'string') ? id : name;
 

@@ -381,7 +381,7 @@ it reaches the next launch.
 
 ## Addendum 2026-09-07: `google.gemma-4-e2b` joins the judge seats; `google.gemma-4-31b` stays out
 
-Taken on the same delegation as the seating above,
+Taken on the same delegation as this record's 2026-09-01 seating,
 under a rule pre-registered in `doc/planning/translation-repair-openrouter-2026-09-03.md`
 ("Measuring the two Bedrock-only sizes",
 "The rule,

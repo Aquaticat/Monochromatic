@@ -56,7 +56,7 @@ const TRANSLATE_NAP = 'The cat dozes in the attic of the bookshop.';
 /**
  Every input to the key, in one place, so a case changes exactly one of them.
  
- @returns Key inputs for the slice above
+ @returns Key inputs for the `SOURCE_NAP` slice
  
  @example
  ```ts

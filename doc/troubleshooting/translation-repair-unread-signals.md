@@ -1270,7 +1270,7 @@ const reports = gather.voices
 ```
 
 The speaker is discarded one line after arriving,
-and every claim built below
+and every claim built after
  that line comes from `reports`,
 which no longer knows who said anything.
 This

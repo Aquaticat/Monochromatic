@@ -201,7 +201,8 @@ What it means concretely:
 -   The number was a stated preference rather than a derived one when it was chosen.
     It has since been
     measured,
-    below.
+    under "Measured after the fact,
+    twice".
 
 ### The half cannot take effect yet, and that is not a defect
 

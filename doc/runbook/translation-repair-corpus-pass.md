@@ -793,7 +793,7 @@ and a run made from that checkout recorded none of what they read either.
     OpenRouter seats, billed in USD per token, each priced from the cost= its own lines carried:
       deepseek/deepseek-v4-pro-0813: 0.0701 USD (94.1%) over 8 calls, in 22643 out 13706
       minimax/minimax-m3: 0.0044 USD (5.9%) over 2 calls, in 3514 out 91
-    OpenRouter run total: 0.0745 USD, never summed with the credits above
+    OpenRouter run total: 0.0745 USD, never summed with this report's credits
     subscription seats, which bill no credits and are metered as a percentage of a weekly allowance on the METERS line:
       hf:zai-org/GLM-5.3-Flash: 1 calls, in 4096 out 2048
     ```
@@ -810,7 +810,7 @@ and a run made from that checkout recorded none of what they read either.
     `FLOOR, NOT A TOTAL` appears when any call reported no usage block:
 
     ```text
-    FLOOR, NOT A TOTAL: 1 calls reported no usage block, so their tokens are in no figure above
+    FLOOR, NOT A TOTAL: 1 calls reported no usage block, so their tokens are in no figure of this report
     ```
 
     Read the total as a lower bound whenever that line is present.

@@ -32,7 +32,7 @@ This document is the evidence behind the question and the decisions the question
     overlap,
     the recovery rate
     (3 of 4 re-asked answers came back) and the straggler window's lever 1 (arm C,
-    below).
+    under "The decisions the question keeps apart").
 
 ## What is known and not done
 

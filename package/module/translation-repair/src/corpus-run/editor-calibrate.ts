@@ -264,7 +264,7 @@ function reportRefineReach(
  repaired one of them and reported zero editor rounds.
  
  SHIPPING IS NOT WINNING. Nobody preferred this text to anything, so these
- counts must never be read as a rate against the standing above.
+ counts must never be read as a rate against the standing this report prints.
  
  @param perSlice - what every slice produced
  

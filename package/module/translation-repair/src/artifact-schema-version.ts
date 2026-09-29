@@ -242,7 +242,7 @@ export function readArtifactSchemaVersion(
 
   /**
    Generation the artifact names, checked as a count first so a string or a
-   fraction is refused here rather than compared numerically below.
+   fraction is refused here rather than compared numerically.
    */
   const version = requireCount({
     value: artifact.artifactSchemaVersion,

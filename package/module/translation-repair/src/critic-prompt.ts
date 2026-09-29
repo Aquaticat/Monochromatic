@@ -153,7 +153,7 @@ export function buildCriticMessages(
   },
 ): readonly ChatMessage[] {
   /**
-   Fence no enclosed text can reproduce, chosen against every text below.
+   Fence no enclosed text can reproduce, chosen against every text the sheet encloses.
    */
   const fence = selectFence({
     texts: [

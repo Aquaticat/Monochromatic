@@ -605,9 +605,10 @@ ranked,
 are in `doc/planning/translation-repair-open-decisions.md`,
 Question 9.
 The idle-window
-re-arming posture this section leaves open,
-whether 600000 should ever be lowered given the
-tail evidence above,
+re-arming posture "The idle windows' premise,
+re-derived from first production traffic" leaves open,
+whether 600000 should ever be lowered given that section's
+tail evidence,
 is the same document's Question 10.
 
 ## Both channels were scanned and one of them was never read

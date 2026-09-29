@@ -239,7 +239,7 @@ async function main(): Promise<void> {
   if (malformed.length > 0) {
     console.log(
       `WARNING ${String(malformed.length,)} artifacts could not be read and are `
-        + 'in NEITHER population below, so every count is over the rest:',
+        + 'in NEITHER population this report counts, so every count is over the rest:',
     );
     for (const failure of malformed)
       console.log(`  ${failure.name}: ${failure.reason}`,);

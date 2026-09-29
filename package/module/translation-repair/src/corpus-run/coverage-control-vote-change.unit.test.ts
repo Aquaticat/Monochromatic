@@ -53,7 +53,7 @@ const l = tagged({ tag: 'coverage-control-vote-change-test', },);
 //region Fixtures
 
 /**
- Sentence every scripted judge quotes, verbatim from the translation below, so
+ Sentence every scripted judge quotes, verbatim from `TRANSLATION`, so
  the standing verdict carries and its evidence can be located and cut.
  */
 const QUOTED = 'Whiskers counts the birds outside.';

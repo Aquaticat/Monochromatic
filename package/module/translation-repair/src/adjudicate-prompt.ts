@@ -278,7 +278,7 @@ ${evidence}`;
   },);
 
   /**
-   Fence no enclosed text can reproduce, chosen against every text below,
+   Fence no enclosed text can reproduce, chosen against every text the sheet encloses,
    the rendered claims included.
    */
   const fence = selectFence({

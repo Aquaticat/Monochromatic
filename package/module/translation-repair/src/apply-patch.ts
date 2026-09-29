@@ -353,8 +353,8 @@ export function applyPatchOperations(
         convention: targetText,
       },),
       // No quote nests deeper than its context allows (TianqiChen66621
-      // slice 16, `quote-depth-clamp.ts`), clamped here so every gate below
-      // reads the depth that ships.
+      // slice 16, `quote-depth-clamp.ts`), clamped here so every gate this
+      // call runs reads the depth that ships.
       bound: quoteDepthBound({
         targetText,
         startOffset: envelope.startOffset,

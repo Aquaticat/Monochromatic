@@ -177,7 +177,7 @@ async function main(): Promise<void> {
   if (malformed.length > 0) {
     console.log(
       `WARNING ${String(malformed.length,)} artifacts could not be read and are `
-        + 'in NEITHER population below, so every count is over the rest. Named '
+        + 'in NEITHER population this report counts, so every count is over the rest. Named '
         + 'rather than summarized, because a truncated artifact is a different '
         + 'problem from a malformed one:',
     );

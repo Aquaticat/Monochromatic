@@ -467,7 +467,7 @@ await describe({
          Filler well past the length bar, delivered as one whole frame so
          the recurrence check that fires at the end of it lands on a clean
          phase: sinceLastCheck resets to exactly zero the instant the
-         candidate starts arriving, which is what lets the fixture below
+         candidate starts arriving, which is what lets `candidate`
          land on the exact worst-case alignment rather than an arbitrary
          one.
          */
@@ -482,8 +482,8 @@ await describe({
          at which a back-to-back requote's consecutive-hit count reaches
          its proven maximum rather than staying below it. Quoted twice back
          to back and delivered one character per frame, so the checks stay
-         locked to the exact 512-character grid the whole-frame prefix
-         above established, landing on that worst-case alignment rather
+         locked to the exact 512-character grid the whole-frame `prefix`
+         established, landing on that worst-case alignment rather
          than being blurred by a coarser frame size that could skip past it.
          */
         const candidate = variedBlock({

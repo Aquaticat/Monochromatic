@@ -165,8 +165,8 @@ export function decoyCut(
   // see where it stopped.
   for (let cursor = last; cursor >= 0;) {
     /**
-     Start of the window under test, bound once per turn so the search below
-     cannot see the cursor move under it.
+     Start of the window under test, bound once per turn so the `covered.find`
+     search cannot see the cursor move under it.
      */
     const from = cursor;
 

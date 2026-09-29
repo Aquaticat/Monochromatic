@@ -344,7 +344,7 @@ async function attemptExchange(
   }
   catch (error) {
     // EVERY ATTEMPT THAT DELIVERED SOMETHING WAS BILLED (ledger P1,
-    // 2026-09-28), and told here, before any of the rethrows below, because
+    // 2026-09-28), and told here, before any of this catch's rethrows, because
     // the attempts this ladder ends without retrying leave by those. A reply
     // the check refused carried its whole body; a stream that ended early
     // says on its error what it had read. A failure that delivered nothing

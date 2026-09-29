@@ -137,7 +137,7 @@ await describe({
     },),
 
     it({
-      name: 'still protects a REAL number, so the formatting tolerance above '
+      name: 'still protects a REAL number, so the ordinal formatting tolerance '
         + 'does not amount to ignoring digits',
       fn: async () => {
         /**

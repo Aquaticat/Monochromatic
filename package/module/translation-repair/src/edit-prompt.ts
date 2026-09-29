@@ -357,7 +357,7 @@ export function buildEditorMessages(
   },);
 
   /**
-   Fence no enclosed text can reproduce, chosen against every text below,
+   Fence no enclosed text can reproduce, chosen against every text the sheet encloses,
    the rendered regions included.
    */
   const fence = selectFence({

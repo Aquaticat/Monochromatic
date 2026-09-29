@@ -163,7 +163,7 @@ async function versionSetting(
 ): Promise<SourceCommit> {
   /**
    Commits whose diffs change how often the declaration appears, newest first;
-   a longer name or value holding it as a substring is sorted out below.
+   a longer name or value holding it as a substring is sorted out by `declarationLineCounts` and `settingCommit`.
    */
   const commits = commitsOf({
     output: await gitOutput({

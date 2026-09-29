@@ -130,7 +130,7 @@ await describe({
         + 'itself, only against a limit somebody chose',
       fn: async () => {
         /**
-         A picture between the two ceilings below.
+         A picture between the 200 KiB and 400 KiB ceilings this case passes.
          */
         const bytes = bytesOf({ length: 300 * 1_024, },);
 

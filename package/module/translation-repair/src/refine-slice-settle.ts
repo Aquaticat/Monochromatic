@@ -231,7 +231,7 @@ export async function settleRefinedSlice(
    This slice with the refinement round appended to what the editor stage
    already recorded.
    
-   BUILT BEFORE THE EXITS BELOW, because a refinement that lost is exactly the
+   BUILT BEFORE ANY EXIT OF THIS FUNCTION, because a refinement that lost is exactly the
    round worth reading: it says the panel looked at the repaired text and
    either could not agree or preferred a rewrite the guards then refused.
    Returning the bare outcome on those paths would keep the ballots only when
@@ -319,7 +319,7 @@ export async function settleRefinedSlice(
 
   /**
    Audit of damage the REWRITE caused, which rolls it back on any claim the
-   screen admits (ledger L11, below).
+   screen admits (ledger L11).
 
    The accuracy probe already ran, but it compared the original translation
    with the repaired one and finished before this lane started, so it says

@@ -372,8 +372,8 @@ export function findIntroducedRepetitions(
    
    THIS LAYER IS HANDLED APART FROM THE REST, because it is the only one that
    can over-report. Growth stops at {@link MAX_PHRASE_WORDS}, so a passage
-   longer than that spans several windows of this length and nothing below
-   suppresses one same-length window with another. Every shorter layer is
+   longer than that spans several windows of this length, and containment
+   cannot suppress one same-length window with another. Every shorter layer is
    already covered by the containment rule, since a shorter phrase inside a
    reported passage is contained in it.
    */

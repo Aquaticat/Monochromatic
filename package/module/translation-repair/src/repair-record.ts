@@ -430,7 +430,7 @@ export function buildIssueRecords(
           ...((outcome.refined && replacementShipped)
             ? { finalSliceText: outcome.repairedText, }
             : {}),
-          // Carried unfiltered, unlike introducedDefects above. That one is
+          // Carried unfiltered, unlike the `introducedDefects` field. That one is
           // narrowed to the regions serving THIS issue, because the accuracy
           // stage replaces one region per envelope and an issue is served by
           // some of them. The lane rewrites the whole slice as one edit, so

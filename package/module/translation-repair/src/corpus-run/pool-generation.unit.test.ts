@@ -6,7 +6,7 @@
  entry the pool ADMITTED, while a draw keeps a subset of those; reading the
  lookup's values directly would let an entry the draw never touched decide the
  pool's generation, or turn a clean single-generation draw into the
- two-generation refusal below. Every case here therefore hands over a lookup
+ two-generation refusal the "REFUSES a pool spanning two builds" case pins. Every case here therefore hands over a lookup
  wider than the kept names.
  
  THE COUNT AND THE DIGEST ARE COUNTED OVER DIFFERENT SETS, deliberately. The
@@ -51,7 +51,7 @@ const SAFFRON = 'saffron.json';
 /**
  Artifact the pool admitted and the draw did NOT keep.
  
- Present in every lookup below, so any case that starts reading the lookup
+ Present in every lookup this file builds, so any case that starts reading the lookup
  rather than the kept names fails on the extra generation it introduces.
  */
 const UNDRAWN = 'pepperbox.json';

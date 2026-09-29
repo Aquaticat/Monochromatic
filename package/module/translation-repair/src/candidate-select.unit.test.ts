@@ -294,7 +294,8 @@ async function runSelection(
     judgeModelIds,
     // THE WHOLE BENCH BY DEFAULT HERE, since these cases script every seat's
     // ballot and read the tally over the bench they wrote; production asks the
-    // window of quorum plus one (`stage-fanout-window.ts`), pinned below.
+    // window of quorum plus one (`stage-fanout-window.ts`), pinned by the
+    // "ASKS a window of quorum plus one judges in production" case.
     fanOut,
     runoff,
     task: 'Pick one.',

@@ -5,7 +5,7 @@
  THE POSITION GUARD IS THE POINT. A ballot names a candidate by number, so
  the projection's whole correctness rests on slate order matching the numbers
  judges were shown. A slate that disagrees must refuse rather than quietly
- credit the wrong model, and that refusal is exercised below.
+ credit the wrong model, and that refusal is exercised in this file.
  
  @module
  */

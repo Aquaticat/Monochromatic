@@ -559,7 +559,7 @@ export function repairRunShape(
     // NOT `checkerSelfCertificationPermitted` (ledger X11, M37). Every reader
     // hands it to `assertCheckerIndependence`, which only refuses a roster
     // before anything is bought; a roster it admits is asked and weighed the
-    // same either way, and the checkers themselves are keyed above.
+    // same either way, and the checkers themselves are keyed by `models.checkerModelIds`.
   ],);
 }
 

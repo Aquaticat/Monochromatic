@@ -23,7 +23,7 @@ import type {
 // discriminator and then taking whatever fields it recognizes would accept it
 // and hand a reader an outcome carrying a wording nobody decided.
 //
-// AN UNKNOWN DISCRIMINATOR IS ALWAYS REFUSED, in both modes below. It names a
+// AN UNKNOWN DISCRIMINATOR IS ALWAYS REFUSED, in both `unknownKeys` modes. It names a
 // member this version cannot project into any of its own, so there is no
 // tolerant reading of it: taking the row anyway would mean recording a slice
 // under a name this reader made up.

@@ -182,8 +182,8 @@ export async function settleTranslateSlice(
   const standInDiffers = (archiveDispute?.standInEligible === true)
     && (archiveText !== pageWording);
   /**
-   Whether the incumbent is wording the slice refuses, so no refusal below
-   may keep it: there is nothing to keep, and the consolidation's floors judge
+   Whether the incumbent is wording the slice refuses, so no refusal this
+   function raises may keep it: there is nothing to keep, and the consolidation's floors judge
    what the stage chose (owner, 2026-09-27).
    */
   const incumbentRefused = (archiveDispute !== undefined) && (!archiveDispute.standInEligible);

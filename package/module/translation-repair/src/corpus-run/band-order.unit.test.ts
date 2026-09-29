@@ -7,7 +7,7 @@
  whichever band the ordering favored, and the precision number the milestone
  gate reads is measured on the wrong population.
  
- The rank offset is the subtle part and gets the most attention below. Without
+ The rank offset is the subtle part and gets the most attention in this file. Without
  it every run restarts each band at zero, the within-rank tiebreak hands every
  run to the same band, and the starvation this ordering exists to prevent
  comes back.

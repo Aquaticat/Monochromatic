@@ -7,7 +7,7 @@ import type { UnfilledSlice, } from '../translate-document-contract.ts';
 // THE PAGE SHIPS WITHOUT THE PASSAGE, since the no-loop design of 2026-09-01
 // (doc/planning/translation-repair-no-loop-design.md, "Insertion placement,
 // single round"): an insertion is recovered supplementary content whose
-// absence is a recorded gap, not a missing required page. The refusal below
+// absence is a recorded gap, not a missing required page. `UnfilledPageError`
 // predates that design and outlived it: on 2026-09-02 it dropped XIEPT2 after
 // 35 minutes over one passage the judges could not back in two rounds, and
 // the publish test records an earlier XIEPT2 attempt lost the same way after

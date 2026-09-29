@@ -261,7 +261,7 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
         totalUsd: cost.totalUsd,
       },),);
     }
-    console.log(`OpenRouter run total: ${asUsd({ usd: cost.totalUsd, },)} USD, never summed with the credits above`,);
+    console.log(`OpenRouter run total: ${asUsd({ usd: cost.totalUsd, },)} USD, never summed with this report's credits`,);
   }
 
   if (subscriptionCount > 0) {

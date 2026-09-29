@@ -236,7 +236,7 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // served 7,601 streams, p50 1.9 s and p90 5.5 s, 18 not completed;
       // CoreWeave 37,870, p50 2.7 s and p90 9.7 s, 99 not completed. Observed,
       // not controlled for load. Together costs 0.30 and 1.20 a million, the
-      // prices below; CoreWeave 0.23 and 0.96. Fallbacks stay allowed.
+      // prices this card carries; CoreWeave 0.23 and 0.96. Fallbacks stay allowed.
       preferredEndpoints: [
         'together',
         'coreweave',

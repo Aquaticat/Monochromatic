@@ -302,8 +302,8 @@ export async function gatherStageVoices<ValueT,>(
     /**
      Everything a round needs except who to ask and how many to wait for.
      
-     Hoisted so the recovery round below cannot drift from the quorum rounds
-     above: they differ in exactly two fields, and writing the other ten twice
+     Hoisted so the recovery round cannot drift from the quorum rounds: they
+     differ in exactly two fields, and writing the other ten twice
      is how the two would eventually disagree about a deadline or a guard.
      */
     const roundRequest = {
@@ -368,7 +368,8 @@ export async function gatherStageVoices<ValueT,>(
         modelIds: asking,
         // A REFUSED SEAT HANDS ITS PLACE TO THE NEXT PENDING ONE in this
         // round (`stage-round.ts`), so the seats past the window are its
-        // reserve and the ones it took leave `pending` below.
+        // reserve and the ones it took leave `pending` through
+        // `pending.slice(outcomes.length)`.
         reserve: pending.slice(asking.length,),
         heardNeeded: quorumNeeded - collected.length,
       },);

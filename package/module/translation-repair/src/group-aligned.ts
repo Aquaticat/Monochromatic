@@ -292,7 +292,7 @@ function walkIntoRuns(
    inside a neighbour's span.
    
    THE SCORER CANNOT TELL A MERGE FROM AN OMISSION, which is the same reason
-   its `target-only` steps decline nothing above. It scores kind, script-
+   its `target-only` steps decline nothing in `declined`. It scores kind, script-
    neutral tokens and length; facing four originals rendered as one
    translation block it reports one pairing and three bare `source-only`
    steps, indistinguishable from three originals nobody translated. A roster

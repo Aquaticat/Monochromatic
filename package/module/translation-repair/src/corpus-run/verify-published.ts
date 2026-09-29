@@ -383,7 +383,7 @@ async function verifyPublished(): Promise<void> {
   }
 
   /**
-   This build, which reads every artifact below; an artifact another build
+   This build, which reads every artifact this check compares; an artifact another build
    settled can read differently here (ledger A16b).
    */
   const { digest: thisBuild, } = await digestPipeline({ dir: import.meta.dirname, },);

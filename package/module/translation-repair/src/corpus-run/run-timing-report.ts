@@ -253,8 +253,8 @@ async function reportRunTiming(): Promise<void> {
   if (reading.callsWithoutDuration > 0) {
     console.log(
       `${String(reading.callsWithoutDuration,)} completion lines carry no elapsed field, so they `
-        + 'predate call durations and no interval exists for them. Concurrency below, if any, describes '
-        + 'only the calls that could be timed.',
+        + 'predate call durations and no interval exists for them. Any concurrency this report prints '
+        + 'describes only the calls that could be timed.',
     );
   }
 

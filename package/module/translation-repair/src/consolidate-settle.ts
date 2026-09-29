@@ -444,11 +444,11 @@ export async function settleConsolidation(
   // publish. A lane text the rule admits is the slate the owner's rule of
   // 2026-09-04 asks for (the best valid proposal, else fail at once), so the
   // empty standing is withheld exactly as an ineligible one is and the lane
-  // texts are judged below.
+  // texts go to the judges.
   //
   // AND WITHOUT ONE NO WORDING PASSES THE RULE, so the archive keeps the slice
   // (owner, 2026-09-27, "Keep archive, ship"; ledger E4), as at the
-  // incumbent-only exit below. This exit used to settle with no polish, and
+  // incumbent-only exit. This exit used to settle with no polish, and
   // the final naturalness check stopped the entry at persist after every later
   // slice was bought. An empty standing passes the rule only over a blank
   // original, where keeping nothing is the right rendering; the pinned corpus

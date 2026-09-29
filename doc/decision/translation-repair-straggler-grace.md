@@ -172,7 +172,7 @@ since a residual concentrated in the tail is a different finding from one spread
 
 ## What it costs
 
-MORE THAN THE ESTIMATE BELOW,
+MORE THAN THIS SECTION'S ESTIMATE,
 and the estimate is left standing because the re-measure contradicted
 it and that is worth showing rather than hiding.
 
@@ -316,7 +316,7 @@ both learned from getting them wrong elsewhere:
 
 The per-slice cost telemetry now carries an `exit` key,
 so the same run reports what the wider
-window costs directly rather than by the estimate above.
+window costs directly rather than by the estimate in "What it costs".
 That run is also the telemetry's first
 emission in production,
 so it doubles as the user-boundary check that `SLICE-COST` lines appear and
