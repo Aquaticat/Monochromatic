@@ -82,6 +82,8 @@ if (command === 'build') {
   }
   for (const marker of ['Search A, with reachable folded-cover results',
     'D51', 'D52', 'D56', 'D57', 'D58', 'D59', 'D60', 'D61',
+    'D63', 'D64', 'D65', 'D66', 'D67', 'D68',
+    'archive/search-navigation-focus-before-selection.html',
     'results200', 'predates D58',
     'not Gboard', '7.5mm total', 'Reset 100%', 'data-panel="inner"',
     'data-panel="cover"', 'data-preview="overflow"', 'data-preview="floating"',

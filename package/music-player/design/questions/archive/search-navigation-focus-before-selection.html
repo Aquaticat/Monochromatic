@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fold Search navigation and focus state review</title>
+<title>Historical Fold Search navigation and focus comparison</title>
 <style>
 :root {
   color-scheme: light dark;
@@ -35,7 +35,7 @@ h1 { font-size: clamp(1.9rem, 3vw, 2.8rem); line-height: 1.2; }
 h2 { margin-block: 2rem 0.6rem; }
 h3 { margin-block: 0.5rem; }
 p { max-inline-size: 92ch; }
-button, input, textarea { font: inherit; }
+button, input { font: inherit; }
 button {
   min-inline-size: 3rem;
   min-block-size: 3rem;
@@ -48,7 +48,7 @@ button {
   cursor: pointer;
 }
 button:hover { background-color: var(--raised); }
-button:focus-visible, input:focus-visible, textarea:focus-visible {
+button:focus-visible, input:focus-visible {
   outline: 0.1875rem solid var(--accent);
   outline-offset: 0.1875rem;
 }
@@ -86,42 +86,41 @@ legend { padding-inline: 0.45rem; font-weight: 700; }
 .scenario { margin-block: 1rem; }
 .scenario[hidden] { display: none; }
 .steps button[data-completed='true'] { background-color: var(--raised); }
-textarea { display: block; inline-size: min(100%, 50rem); min-block-size: 7rem; padding: 0.7rem; border: 0.0625rem solid var(--edge); border-radius: 0.5rem; background-color: var(--panel); color: var(--ink); }
 </style>
 </head>
 <body>
 <main>
 <header>
-  <p class="muted">Music player · design-only Search behavior · Pixel 9 Pro Fold</p>
-  <h1>What happens when Search gains and loses focus?</h1>
-  <p>Selected Search A retains the actual folder browser and playback deck beside the right-side query/results on the unfolded Fold; the cover has one full-width Search page. Back/query/Clear remain one integrated header. D59 accent highlights, D60 direct-name scope, D61 mixed order and E2's information-only crease clearance stay fixed. This <strong>logic-only prototype</strong> explores navigation, edit focus, query lifetime and result position. It is not an Android screen, input method, native accessibility test or production Search implementation.</p>
-  <div class="notice"><p>Keyboard and visibility labels are <strong>schematic simulated states</strong>. No Gboard or debug IME was opened for this review. D56's accepted cover viewport exposed the final result above a measured bottom keyboard after scrolling, but after hiding and refocusing the keyboard that row needed another swipe. D56 did not accept the extra swipe. This form compares a proposed visibility guarantee against that observed failure without claiming to prove native restoration. Initial radio selections are recommendations, not adopted decisions. Change choices independently, then replay a case.</p></div>
+  <p class="muted">Music player · archived Search behavior comparison · Pixel 9 Pro Fold</p>
+  <h1>Historical Search navigation and focus comparison</h1>
+  <p>Selected Search A retains the actual folder browser and playback deck beside the right-side query/results on the unfolded Fold; the cover has one full-width Search page. Back/query/Clear remain one integrated header. D59 accent highlights, D60 direct-name scope, D61 mixed order and E2's information-only crease clearance stay fixed. This <strong>archived logic-only prototype</strong> illustrates the alternatives considered before D63 to D68. It is not an Android screen, input method, native accessibility test, current question or production Search implementation. <a href="../current.html">Return to the selected Search review</a>.</p>
+  <div class="notice"><p>Keyboard and visibility labels are <strong>schematic simulated states</strong>. No Gboard or debug IME was opened for this review. D56's accepted cover viewport exposed the final result above a measured bottom keyboard after scrolling, but after hiding and refocusing the keyboard that row needed another swipe. D56 did not accept the extra swipe. This form compares a proposed visibility guarantee against that observed failure without claiming to prove native restoration. The initial radio selections were all adopted as D63 to D68; switching to a historical alternative only replays that former comparison and does not reopen these choices.</p></div>
 </header>
 <section aria-labelledby="options-title">
-  <h2 id="options-title">Independent choices and full rankings</h2>
+  <h2 id="options-title">Historical alternatives and rankings</h2>
   <div class="axes">
     <article class="axis"><h3>Entry edit focus</h3><fieldset><legend>When Search opens</legend><div class="choices">
-      <label class="choice"><input type="radio" name="entry" value="immediate" checked><span><strong>E-fast: request query focus and keyboard (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> the next key can start a search immediately.</p><p><strong>Cons:</strong> with the measured bottom keyboard, less of the browser is visible and the deck lifts.</p></span></label>
+      <label class="choice"><input type="radio" name="entry" value="immediate" checked><span><strong>E-fast: request query focus and keyboard (Selected D63)</strong><span class="selected-label"></span><p><strong>Pros:</strong> the next key can start a search immediately.</p><p><strong>Cons:</strong> with the measured bottom keyboard, less of the browser is visible and the deck lifts.</p></span></label>
       <label class="choice"><input type="radio" name="entry" value="tap"><span><strong>E-tap: wait for explicit field focus</strong><span class="selected-label"></span><p><strong>Pros:</strong> initially leaves more of the page visible.</p><p><strong>Cons:</strong> typing takes another focus action.</p></span></label>
     </div></fieldset><p><strong>Ranking: E-fast &gt; E-tap.</strong> A Search action usually starts with typing; E-tap gives an unobstructed initial view at the cost of another action. These E labels do not rename the accepted E2 crease decision.</p></article>
     <article class="axis"><h3>Visible Back arrow</h3><fieldset><legend>When a keyboard is shown</legend><div class="choices">
-      <label class="choice"><input type="radio" name="arrow" value="exit" checked><span><strong>A-exit: return to player (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> the visible page-level Back path behaves as an explicit exit.</p><p><strong>Cons:</strong> it cannot be used just to dismiss the keyboard while staying in Search.</p></span></label>
+      <label class="choice"><input type="radio" name="arrow" value="exit" checked><span><strong>A-exit: return to player (Selected D64)</strong><span class="selected-label"></span><p><strong>Pros:</strong> the visible page-level Back path behaves as an explicit exit.</p><p><strong>Cons:</strong> it cannot be used just to dismiss the keyboard while staying in Search.</p></span></label>
       <label class="choice"><input type="radio" name="arrow" value="hide"><span><strong>A-hide: hide keyboard first</strong><span class="selected-label"></span><p><strong>Pros:</strong> reveals more results without losing the query.</p><p><strong>Cons:</strong> the same visible arrow takes another tap to return to player.</p></span></label>
     </div></fieldset><p><strong>Ranking: A-exit &gt; A-hide.</strong> D47 requires a Back path, not its first action during typing. A-exit gives that page control one stable exit meaning; A-hide adds a useful intermediate view but makes the control state-dependent.</p></article>
     <article class="axis"><h3>Clear and focus</h3><fieldset><legend>After × erases query text</legend><div class="choices">
-      <label class="choice"><input type="radio" name="clearFocus" value="keep" checked><span><strong>C-keep: retain prior focus and keyboard state (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> preserves typing if active without reopening a previously hidden keyboard.</p><p><strong>Cons:</strong> after focus was lost, typing a replacement requires another focus action.</p></span></label>
+      <label class="choice"><input type="radio" name="clearFocus" value="keep" checked><span><strong>C-keep: retain prior focus and keyboard state (Selected D65)</strong><span class="selected-label"></span><p><strong>Pros:</strong> preserves typing if active without reopening a previously hidden keyboard.</p><p><strong>Cons:</strong> after focus was lost, typing a replacement requires another focus action.</p></span></label>
       <label class="choice"><input type="radio" name="clearFocus" value="focus"><span><strong>C-focus: request field focus and keyboard</strong><span class="selected-label"></span><p><strong>Pros:</strong> prepares for an immediate replacement query.</p><p><strong>Cons:</strong> can change the visible layout even if the user deliberately dismissed the keyboard.</p></span></label>
     </div></fieldset><p><strong>Ranking: C-keep &gt; C-focus.</strong> C-keep changes only what Clear names; C-focus predicts the next action. Both keep the Search destination open.</p></article>
     <article class="axis"><h3>Query on a new Search visit</h3><fieldset><legend>After returning to player and reopening</legend><div class="choices">
-      <label class="choice"><input type="radio" name="queryReturn" value="new" checked><span><strong>Q-new: empty query (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> a new visit begins without stale results.</p><p><strong>Cons:</strong> returning users must repeat the old query.</p></span></label>
+      <label class="choice"><input type="radio" name="queryReturn" value="new" checked><span><strong>Q-new: empty query (Selected D66)</strong><span class="selected-label"></span><p><strong>Pros:</strong> a new visit begins without stale results.</p><p><strong>Cons:</strong> returning users must repeat the old query.</p></span></label>
       <label class="choice"><input type="radio" name="queryReturn" value="restore"><span><strong>Q-restore: retain query text</strong><span class="selected-label"></span><p><strong>Pros:</strong> easy to continue a brief interrupted search.</p><p><strong>Cons:</strong> older text can surprise a user starting a different search.</p></span></label>
     </div></fieldset><p><strong>Ranking: Q-new &gt; Q-restore.</strong> Q-new matches a new player-to-Search task; Q-restore is quicker for the same task. This choice does not select the returning result position.</p></article>
     <article class="axis"><h3>Results on a restored query</h3><fieldset><legend>Only when Q-restore is chosen</legend><div class="choices">
-      <label class="choice"><input type="radio" name="returnPosition" value="top" checked><span><strong>P-top: show first results (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> starts each visit at the most relevant rows even if the old query returns.</p><p><strong>Cons:</strong> requires scrolling to recover a deep position.</p></span></label>
+      <label class="choice"><input type="radio" name="returnPosition" value="top" checked><span><strong>P-top: show first results (Conditional D67)</strong><span class="selected-label"></span><p><strong>Pros:</strong> starts each visit at the most relevant rows even if the old query returns.</p><p><strong>Cons:</strong> requires scrolling to recover a deep position.</p></span></label>
       <label class="choice"><input type="radio" name="returnPosition" value="prior"><span><strong>P-prior: restore prior result position</strong><span class="selected-label"></span><p><strong>Pros:</strong> resumes browsing after a brief visit to playback.</p><p><strong>Cons:</strong> can reopen far from the top; visibility with an opening keyboard is unverified.</p></span></label>
     </div></fieldset><p><strong>Ranking: P-top &gt; P-prior.</strong> P-top limits surprise on a new visit; P-prior favors continuity. With Q-new there are no results to restore, so this preference has no effect.</p></article>
     <article class="axis"><h3>Same-query keyboard refocus</h3><fieldset><legend>Scrolled row after the viewport shrinks</legend><div class="choices">
-      <label class="choice"><input type="radio" name="refocus" value="visible" checked><span><strong>S-visible: keep intended row visible (Recommended proposal)</strong><span class="selected-label"></span><p><strong>Pros:</strong> avoids another swipe just to see the same row.</p><p><strong>Cons:</strong> needs later native verification; a schematic cannot guarantee it for arbitrary keyboards.</p></span></label>
+      <label class="choice"><input type="radio" name="refocus" value="visible" checked><span><strong>S-visible: keep intended row visible (Selected goal D68)</strong><span class="selected-label"></span><p><strong>Pros:</strong> avoids another swipe just to see the same row.</p><p><strong>Cons:</strong> needs later native verification; a schematic cannot guarantee it for arbitrary keyboards.</p></span></label>
       <label class="choice"><input type="radio" name="refocus" value="offset"><span><strong>S-offset: retain raw list offset, without compensation</strong><span class="selected-label"></span><p><strong>Pros:</strong> leaves scroll offset unchanged.</p><p><strong>Cons:</strong> in the measured D56 final-row case, another swipe was needed after refocus.</p></span></label>
       <label class="choice"><input type="radio" name="refocus" value="top"><span><strong>S-top: reset results to top</strong><span class="selected-label"></span><p><strong>Pros:</strong> immediately shows the first ranked rows.</p><p><strong>Cons:</strong> discards the user's place even when the query has not changed.</p></span></label>
     </div></fieldset><p><strong>Ranking: S-visible &gt; S-offset &gt; S-top.</strong> Visibility without extra recovery is preferable to an observed extra swipe; preserving the nearby offset still retains more context than jumping to top. A changed query resets to top in this schematic only.</p></article>
@@ -146,7 +145,7 @@ textarea { display: block; inline-size: min(100%, 50rem); min-block-size: 7rem; 
   <section class="scenario" role="tabpanel" id="case-middle" aria-labelledby="tab-middle" hidden><h3>Middle result through refocus</h3><p>In this illustration the middle row remains visible when the viewport shrinks under S-offset; S-top still resets the list.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus field</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="middle">Scroll to middle</button><button type="button" data-action="hide">Hide keyboard</button><button type="button" data-action="focus">Show keyboard again</button></div></section>
   <section class="scenario" role="tabpanel" id="case-last" aria-labelledby="tab-last" hidden><h3>Final result through refocus</h3><p>S-offset schematically reproduces D56's observed hidden final row and extra swipe. S-visible is a proposed correction that still needs later native verification; S-top loses the previous row entirely.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus field</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="last">Scroll to last</button><button type="button" data-action="hide">Hide keyboard</button><button type="button" data-action="focus">Show keyboard again</button></div></section>
 </section>
-<section aria-labelledby="reply-title"><h2 id="reply-title">Separable answers</h2><p>Reply in this chat with entry <strong>E-fast/E-tap</strong>, visible Back <strong>A-exit/A-hide</strong>, Clear <strong>C-keep/C-focus</strong>, re-entry query <strong>Q-new/Q-restore</strong>, restored-query position <strong>P-top/P-prior</strong> (only if Q-restore), and same-query refocus <strong>S-visible/S-offset/S-top</strong>. For example, “E-fast, A-exit, C-keep, Q-restore, P-top, S-visible” combines independent choices. Add a concern or alternative in the field if these options miss your intended behavior; paste the text into your chat response. These selections do not adopt a search library, result activation, keyboard compatibility or TalkBack behavior.</p><label for="reply-notes">Other concerns or preferred behavior</label><textarea id="reply-notes" placeholder="Describe a different transition or reason for a choice; copy this text into your chat response."></textarea></section>
+<section aria-labelledby="archive-title"><h2 id="archive-title">Recorded selection</h2><p>The user selected E-fast, A-exit, C-keep, Q-new, conditional P-top and S-visible. D63 to D68 in <code>package/music-player/design/decisions.md</code> are authoritative. This archival comparison preserves rejected alternatives for history, not an active response form. S-visible is a desired interaction that still requires native verification before production can claim it works with arbitrary keyboards. No search library, result activation or TalkBack behavior was chosen here. <a href="../current.html">Inspect the active selected Search A review</a>.</p></section>
 </main>
 <script>
 // This self-contained model is illustrative, not a substitute for an Android flow.
@@ -216,7 +215,7 @@ let nextStep = -1;
 function render(message) {
   document.querySelectorAll('.choice').forEach(label => {
     label.dataset.selected = String(label.querySelector('input').checked);
-    label.querySelector('.selected-label').textContent = label.querySelector('input').checked ? ' · Previewing' : '';
+    label.querySelector('.selected-label').textContent = label.querySelector('input').checked ? ' · Simulating' : '';
   });
   document.querySelector('#page-value').textContent = model.page === 'player' ? 'Player' : 'Search';
   document.querySelector('#query-value').textContent = model.page === 'search' && model.query ? model.query : 'None';
