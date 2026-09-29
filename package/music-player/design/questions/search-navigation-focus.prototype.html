@@ -7,113 +7,86 @@
 <style>
 :root {
   color-scheme: light dark;
-  --color-page: #f5f6fa;
-  --color-panel: #fff;
-  --color-raised: #e9eaf0;
-  --color-selected: #dfe7fa;
-  --color-ink: #262b35;
-  --color-muted: #505764;
-  --color-edge: #777e8d;
-  --color-accent: #345286;
+  --page: #f5f6fa;
+  --panel: #fff;
+  --raised: #e9eaf0;
+  --selected: #dfe7fa;
+  --ink: #262b35;
+  --muted: #505764;
+  --edge: #777e8d;
+  --accent: #345286;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-page: #0d0f14;
-    --color-panel: #1a1d25;
-    --color-raised: #292d38;
-    --color-selected: #283951;
-    --color-ink: #e8eaf2;
-    --color-muted: #bdc1ce;
-    --color-edge: #9ea4b2;
-    --color-accent: #bfd0ff;
+    --page: #0d0f14;
+    --panel: #1a1d25;
+    --raised: #292d38;
+    --selected: #283951;
+    --ink: #e8eaf2;
+    --muted: #bdc1ce;
+    --edge: #9ea4b2;
+    --accent: #bfd0ff;
   }
 }
 * { box-sizing: border-box; }
-body {
-  margin-inline: 0;
-  margin-block: 0;
-  background-color: var(--color-page);
-  color: var(--color-ink);
-  font-family: system-ui, sans-serif;
-  line-height: 1.5;
-}
-main {
-  max-inline-size: 90rem;
-  margin-inline: auto;
-  padding-inline: clamp(1rem, 3vw, 3rem);
-  padding-block: 1rem 4rem;
-}
+body { margin: 0; background-color: var(--page); color: var(--ink); font-family: system-ui, sans-serif; line-height: 1.5; }
+main { max-inline-size: 90rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 3rem); padding-block: 1rem 4rem; }
 h1 { font-size: clamp(1.9rem, 3vw, 2.8rem); line-height: 1.2; }
 h2 { margin-block: 2rem 0.6rem; }
 h3 { margin-block: 0.5rem; }
 p { max-inline-size: 92ch; }
-button, input { font: inherit; }
+button, input, textarea { font: inherit; }
 button {
   min-inline-size: 3rem;
   min-block-size: 3rem;
   padding-inline: 0.85rem;
   padding-block: 0.4rem;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-edge);
+  border: 0.0625rem solid var(--edge);
   border-radius: 0.6rem;
-  background-color: var(--color-panel);
-  color: var(--color-ink);
+  background-color: var(--panel);
+  color: var(--ink);
   cursor: pointer;
 }
-button:hover { background-color: var(--color-raised); }
-button:focus-visible, input:focus-visible {
-  outline: 0.1875rem solid var(--color-accent);
+button:hover { background-color: var(--raised); }
+button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 0.1875rem solid var(--accent);
   outline-offset: 0.1875rem;
 }
 button:disabled { opacity: 0.55; cursor: not-allowed; }
-.notice, .state, .axis, .scenario, fieldset {
-  min-inline-size: 0;
-  border-width: 0.0625rem;
-  border-style: solid;
-  border-color: var(--color-edge);
-  border-radius: 0.8rem;
-  background-color: var(--color-panel);
-}
-.notice, .state, .scenario { padding-inline: 1rem; padding-block: 1rem; }
-fieldset { margin-inline: 0; margin-block: 1rem; padding-inline: 1rem; padding-block: 1rem; }
+.notice, .state, .axis, .scenario, fieldset { min-inline-size: 0; border: 0.0625rem solid var(--edge); border-radius: 0.8rem; background-color: var(--panel); }
+.notice, .state, .scenario { padding: 1rem; }
+fieldset { margin: 1rem 0; padding: 1rem; }
 legend { padding-inline: 0.45rem; font-weight: 700; }
-.muted { color: var(--color-muted); }
+.muted { color: var(--muted); }
 .axes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 27rem), 1fr)); gap: 1rem; }
-.axis { padding-inline: 1rem; padding-block: 0.4rem; }
-.axis fieldset { border-width: 0; padding-inline: 0; padding-block: 0; margin-block: 0.5rem; }
+.axis { padding: 0.4rem 1rem; }
+.axis fieldset { border: 0; padding: 0; margin-block: 0.5rem; }
 .choices { display: grid; gap: 0.65rem; }
 .choice {
   display: grid;
   grid-template-columns: 1.5rem 1fr;
   gap: 0.7rem;
   min-block-size: 3rem;
-  padding-inline: 0.8rem;
-  padding-block: 0.8rem;
-  border-width: 0.125rem;
-  border-style: solid;
-  border-color: var(--color-edge);
+  padding: 0.8rem;
+  border: 0.125rem solid var(--edge);
   border-radius: 0.7rem;
-  background-color: var(--color-panel);
+  background-color: var(--panel);
   cursor: pointer;
 }
-.choice[data-selected='true'] {
-  border-color: var(--color-accent);
-  background-color: var(--color-selected);
-}
-.choice input { inline-size: 1.3rem; block-size: 1.3rem; accent-color: var(--color-accent); }
+.choice[data-selected='true'] { border-color: var(--accent); background-color: var(--selected); }
+.choice input { inline-size: 1.3rem; block-size: 1.3rem; accent-color: var(--accent); }
 .choice p { margin-block: 0.35rem; }
-.choice .selected-label { color: var(--color-accent); font-weight: 700; }
+.choice .selected-label, .status { color: var(--accent); font-weight: 700; }
 .state dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 0.7rem; }
-.state dl div { padding-inline: 0.75rem; padding-block: 0.6rem; background-color: var(--color-raised); border-radius: 0.5rem; }
-.state dt { font-size: 0.9rem; color: var(--color-muted); }
-.state dd { margin-inline: 0; font-weight: 700; }
+.state dl div { padding: 0.6rem 0.75rem; background-color: var(--raised); border-radius: 0.5rem; }
+.state dt { font-size: 0.9rem; color: var(--muted); }
+.state dd { margin: 0; font-weight: 700; }
 .buttons, .tabs, .steps { display: flex; flex-wrap: wrap; gap: 0.65rem; }
-.tabs button[aria-selected='true'] { border-color: var(--color-accent); background-color: var(--color-selected); font-weight: 700; }
+.tabs button[aria-selected='true'] { border-color: var(--accent); background-color: var(--selected); font-weight: 700; }
 .scenario { margin-block: 1rem; }
 .scenario[hidden] { display: none; }
-.steps button[data-completed='true'] { background-color: var(--color-raised); }
-.status { font-weight: 700; color: var(--color-accent); }
+.steps button[data-completed='true'] { background-color: var(--raised); }
+textarea { display: block; inline-size: min(100%, 50rem); min-block-size: 7rem; padding: 0.7rem; border: 0.0625rem solid var(--edge); border-radius: 0.5rem; background-color: var(--panel); color: var(--ink); }
 </style>
 </head>
 <body>
@@ -121,139 +94,144 @@ legend { padding-inline: 0.45rem; font-weight: 700; }
 <header>
   <p class="muted">Music player · design-only Search behavior · Pixel 9 Pro Fold</p>
   <h1>What happens when Search gains and loses focus?</h1>
-  <p>Selected Search A keeps the actual folder browser and playback deck beside the right-side query/results on the unfolded Fold; the cover has one full-width Search page. Back/query/Clear remain one integrated header. D59 accent highlights, D60 direct-name scope, D61 mixed order and E2's information floor are fixed. This <strong>logic-only prototype</strong> explores page entry, focus, Clear, Back, re-entry and scroll position. It is not an Android screen, input method, native accessibility test or production Search implementation.</p>
-  <div class="notice"><p>All keyboard labels on this page are <strong>simulated state</strong>. No Gboard or debug IME was opened. The accepted D56 cover viewport brought the final row above a measured bottom keyboard after scrolling; hiding and refocusing required another swipe in that prototype. D56 did not select the extra swipe. The five preferences below are independent: change one at a time, then use the guided cases or free-play controls to see the result. Initial radio checks are recommended previews, not decisions.</p></div>
+  <p>Selected Search A retains the actual folder browser and playback deck beside the right-side query/results on the unfolded Fold; the cover has one full-width Search page. Back/query/Clear remain one integrated header. D59 accent highlights, D60 direct-name scope, D61 mixed order and E2's information-only crease clearance stay fixed. This <strong>logic-only prototype</strong> explores navigation, edit focus, query lifetime and result position. It is not an Android screen, input method, native accessibility test or production Search implementation.</p>
+  <div class="notice"><p>Keyboard and visibility labels are <strong>schematic simulated states</strong>. No Gboard or debug IME was opened for this review. D56's accepted cover viewport exposed the final result above a measured bottom keyboard after scrolling, but after hiding and refocusing the keyboard that row needed another swipe. D56 did not accept the extra swipe. This form compares a proposed visibility guarantee against that observed failure without claiming to prove native restoration. Initial radio selections are recommendations, not adopted decisions. Change choices independently, then replay a case.</p></div>
 </header>
 <section aria-labelledby="options-title">
-  <h2 id="options-title">Independent choices, with my ranking</h2>
+  <h2 id="options-title">Independent choices and full rankings</h2>
   <div class="axes">
     <article class="axis"><h3>Entry edit focus</h3><fieldset><legend>When Search opens</legend><div class="choices">
-      <label class="choice" data-policy="entry" data-value="auto"><input type="radio" name="entry" value="auto" checked><span><strong>E1: focus query and show keyboard (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> the next key starts the search immediately.</p><p><strong>Cons:</strong> opening Search immediately shortens the visible browser area and lifts the deck.</p></span></label>
-      <label class="choice" data-policy="entry" data-value="passive"><input type="radio" name="entry" value="passive"><span><strong>E2: open Search without edit focus</strong><span class="selected-label"></span><p><strong>Pros:</strong> keeps the keyboard closed until requested, leaving more of the page visible.</p><p><strong>Cons:</strong> typing takes another tap or focus action.</p></span></label>
-    </div></fieldset><p><strong>Ranking: E1 &gt; E2.</strong> E1 starts the explicitly requested Search task with fewer actions; E2 buys an unobstructed first view but delays typing.</p></article>
-    <article class="axis"><h3>System Back with keyboard visible</h3><fieldset><legend>One system Back gesture</legend><div class="choices">
-      <label class="choice" data-policy="systemBack" data-value="keyboardFirst"><input type="radio" name="systemBack" value="keyboardFirst" checked><span><strong>B1: hide keyboard first (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> leaves query/results available with more screen space; another Back returns to player.</p><p><strong>Cons:</strong> returning to player takes two Back actions when typing.</p></span></label>
-      <label class="choice" data-policy="systemBack" data-value="leave"><input type="radio" name="systemBack" value="leave"><span><strong>B2: leave Search immediately</strong><span class="selected-label"></span><p><strong>Pros:</strong> one Back returns to the player.</p><p><strong>Cons:</strong> may discard a search the user only wanted to view without a keyboard.</p></span></label>
-    </div></fieldset><p><strong>Ranking: B1 &gt; B2.</strong> B1 preserves the active result context before exiting; B2 is quicker to leave but easier to invoke unintentionally. The visible Back arrow always returns to the player under D47.</p></article>
-    <article class="axis"><h3>Clear and edit focus</h3><fieldset><legend>After the × clears text</legend><div class="choices">
-      <label class="choice" data-policy="clearFocus" data-value="preserve"><input type="radio" name="clearFocus" value="preserve" checked><span><strong>C1: keep prior focus/keyboard state (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> the keyboard stays for someone already typing, without unexpectedly appearing for someone reading results.</p><p><strong>Cons:</strong> a user clearing after dismissal must focus the field to type again.</p></span></label>
-      <label class="choice" data-policy="clearFocus" data-value="request"><input type="radio" name="clearFocus" value="request"><span><strong>C2: focus field and show keyboard</strong><span class="selected-label"></span><p><strong>Pros:</strong> ready to type a replacement immediately.</p><p><strong>Cons:</strong> can move the deck and obscure content when the keyboard had been hidden.</p></span></label>
-    </div></fieldset><p><strong>Ranking: C1 &gt; C2.</strong> C1 changes only what Clear names (the query); C2 anticipates the next action but changes visible layout too. Both keep Search open.</p></article>
-    <article class="axis"><h3>Reopen after returning to player</h3><fieldset><legend>Next Search visit</legend><div class="choices">
-      <label class="choice" data-policy="reentry" data-value="fresh"><input type="radio" name="reentry" value="fresh" checked><span><strong>R1: fresh empty query (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> a new Search visit starts unambiguously, without stale results.</p><p><strong>Cons:</strong> a returning user must repeat the last query.</p></span></label>
-      <label class="choice" data-policy="reentry" data-value="restore"><input type="radio" name="reentry" value="restore"><span><strong>R2: restore query and result position</strong><span class="selected-label"></span><p><strong>Pros:</strong> easy to resume after briefly checking playback.</p><p><strong>Cons:</strong> an old query or distant scroll position may surprise the next search.</p></span></label>
-    </div></fieldset><p><strong>Ranking: R1 &gt; R2.</strong> R1 treats the player-to-Search action as a new task; R2 favors rapid return to the prior task.</p></article>
-    <article class="axis"><h3>Refocus without changing query</h3><fieldset><legend>Results position after keyboard returns</legend><div class="choices">
-      <label class="choice" data-policy="refocus" data-value="preserve"><input type="radio" name="refocus" value="preserve" checked><span><strong>S1: preserve the visible result (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> no extra swipe simply to recover the same row after refocusing.</p><p><strong>Cons:</strong> a restored deep position may omit the top matches from the viewport.</p></span></label>
-      <label class="choice" data-policy="refocus" data-value="top"><input type="radio" name="refocus" value="top"><span><strong>S2: reset to top</strong><span class="selected-label"></span><p><strong>Pros:</strong> always begins with the most relevant visible rows.</p><p><strong>Cons:</strong> loses the user's place even though the query did not change.</p></span></label>
-    </div></fieldset><p><strong>Ranking: S1 &gt; S2.</strong> S1 treats refocus as a viewport change, not a new search; S2 makes the user retrace the list. A changed query resets to top in this demonstration only.</p></article>
+      <label class="choice"><input type="radio" name="entry" value="immediate" checked><span><strong>E-fast: request query focus and keyboard (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> the next key can start a search immediately.</p><p><strong>Cons:</strong> with the measured bottom keyboard, less of the browser is visible and the deck lifts.</p></span></label>
+      <label class="choice"><input type="radio" name="entry" value="tap"><span><strong>E-tap: wait for explicit field focus</strong><span class="selected-label"></span><p><strong>Pros:</strong> initially leaves more of the page visible.</p><p><strong>Cons:</strong> typing takes another focus action.</p></span></label>
+    </div></fieldset><p><strong>Ranking: E-fast &gt; E-tap.</strong> A Search action usually starts with typing; E-tap gives an unobstructed initial view at the cost of another action. These E labels do not rename the accepted E2 crease decision.</p></article>
+    <article class="axis"><h3>Visible Back arrow</h3><fieldset><legend>When a keyboard is shown</legend><div class="choices">
+      <label class="choice"><input type="radio" name="arrow" value="exit" checked><span><strong>A-exit: return to player (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> the visible page-level Back path behaves as an explicit exit.</p><p><strong>Cons:</strong> it cannot be used just to dismiss the keyboard while staying in Search.</p></span></label>
+      <label class="choice"><input type="radio" name="arrow" value="hide"><span><strong>A-hide: hide keyboard first</strong><span class="selected-label"></span><p><strong>Pros:</strong> reveals more results without losing the query.</p><p><strong>Cons:</strong> the same visible arrow takes another tap to return to player.</p></span></label>
+    </div></fieldset><p><strong>Ranking: A-exit &gt; A-hide.</strong> D47 requires a Back path, not its first action during typing. A-exit gives that page control one stable exit meaning; A-hide adds a useful intermediate view but makes the control state-dependent.</p></article>
+    <article class="axis"><h3>Clear and focus</h3><fieldset><legend>After × erases query text</legend><div class="choices">
+      <label class="choice"><input type="radio" name="clearFocus" value="keep" checked><span><strong>C-keep: retain prior focus and keyboard state (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> preserves typing if active without reopening a previously hidden keyboard.</p><p><strong>Cons:</strong> after focus was lost, typing a replacement requires another focus action.</p></span></label>
+      <label class="choice"><input type="radio" name="clearFocus" value="focus"><span><strong>C-focus: request field focus and keyboard</strong><span class="selected-label"></span><p><strong>Pros:</strong> prepares for an immediate replacement query.</p><p><strong>Cons:</strong> can change the visible layout even if the user deliberately dismissed the keyboard.</p></span></label>
+    </div></fieldset><p><strong>Ranking: C-keep &gt; C-focus.</strong> C-keep changes only what Clear names; C-focus predicts the next action. Both keep the Search destination open.</p></article>
+    <article class="axis"><h3>Query on a new Search visit</h3><fieldset><legend>After returning to player and reopening</legend><div class="choices">
+      <label class="choice"><input type="radio" name="queryReturn" value="new" checked><span><strong>Q-new: empty query (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> a new visit begins without stale results.</p><p><strong>Cons:</strong> returning users must repeat the old query.</p></span></label>
+      <label class="choice"><input type="radio" name="queryReturn" value="restore"><span><strong>Q-restore: retain query text</strong><span class="selected-label"></span><p><strong>Pros:</strong> easy to continue a brief interrupted search.</p><p><strong>Cons:</strong> older text can surprise a user starting a different search.</p></span></label>
+    </div></fieldset><p><strong>Ranking: Q-new &gt; Q-restore.</strong> Q-new matches a new player-to-Search task; Q-restore is quicker for the same task. This choice does not select the returning result position.</p></article>
+    <article class="axis"><h3>Results on a restored query</h3><fieldset><legend>Only when Q-restore is chosen</legend><div class="choices">
+      <label class="choice"><input type="radio" name="returnPosition" value="top" checked><span><strong>P-top: show first results (Recommended)</strong><span class="selected-label"></span><p><strong>Pros:</strong> starts each visit at the most relevant rows even if the old query returns.</p><p><strong>Cons:</strong> requires scrolling to recover a deep position.</p></span></label>
+      <label class="choice"><input type="radio" name="returnPosition" value="prior"><span><strong>P-prior: restore prior result position</strong><span class="selected-label"></span><p><strong>Pros:</strong> resumes browsing after a brief visit to playback.</p><p><strong>Cons:</strong> can reopen far from the top; visibility with an opening keyboard is unverified.</p></span></label>
+    </div></fieldset><p><strong>Ranking: P-top &gt; P-prior.</strong> P-top limits surprise on a new visit; P-prior favors continuity. With Q-new there are no results to restore, so this preference has no effect.</p></article>
+    <article class="axis"><h3>Same-query keyboard refocus</h3><fieldset><legend>Scrolled row after the viewport shrinks</legend><div class="choices">
+      <label class="choice"><input type="radio" name="refocus" value="visible" checked><span><strong>S-visible: keep intended row visible (Recommended proposal)</strong><span class="selected-label"></span><p><strong>Pros:</strong> avoids another swipe just to see the same row.</p><p><strong>Cons:</strong> needs later native verification; a schematic cannot guarantee it for arbitrary keyboards.</p></span></label>
+      <label class="choice"><input type="radio" name="refocus" value="offset"><span><strong>S-offset: retain raw list offset, without compensation</strong><span class="selected-label"></span><p><strong>Pros:</strong> leaves scroll offset unchanged.</p><p><strong>Cons:</strong> in the measured D56 final-row case, another swipe was needed after refocus.</p></span></label>
+      <label class="choice"><input type="radio" name="refocus" value="top"><span><strong>S-top: reset results to top</strong><span class="selected-label"></span><p><strong>Pros:</strong> immediately shows the first ranked rows.</p><p><strong>Cons:</strong> discards the user's place even when the query has not changed.</p></span></label>
+    </div></fieldset><p><strong>Ranking: S-visible &gt; S-offset &gt; S-top.</strong> Visibility without extra recovery is preferable to an observed extra swipe; preserving the nearby offset still retains more context than jumping to top. A changed query resets to top in this schematic only.</p></article>
   </div>
 </section>
-<section aria-labelledby="state-title">
-  <h2 id="state-title">Current simulated state</h2>
-  <div class="state" aria-live="polite"><p id="last-change" class="status">Start on player. Choose a case or use free play.</p><dl>
-    <div><dt>Destination</dt><dd id="page-value">Player</dd></div>
-    <div><dt>Visible query</dt><dd id="query-value">None</dd></div>
-    <div><dt>Query edit focus</dt><dd id="focus-value">No</dd></div>
-    <div><dt>Simulated keyboard</dt><dd id="keyboard-value">Hidden</dd></div>
-    <div><dt>Result position</dt><dd id="anchor-value">Top</dd></div>
-    <div><dt>Remembered for re-entry</dt><dd id="memory-value">None</dd></div>
-    <div><dt>Player context</dt><dd>Camellia browser · Another Xronixle playing · deck retained</dd></div>
-  </dl></div>
+<section aria-labelledby="state-title"><h2 id="state-title">Current simulated state</h2><div class="state" aria-live="polite"><p id="last-change" class="status">Start on player. Choose a case or use free play.</p><dl>
+  <div><dt>Destination</dt><dd id="page-value">Player</dd></div><div><dt>Visible query</dt><dd id="query-value">None</dd></div>
+  <div><dt>Query edit focus</dt><dd id="focus-value">No</dd></div><div><dt>Simulated keyboard</dt><dd id="keyboard-value">Hidden</dd></div>
+  <div><dt>Result position</dt><dd id="position-value">Top</dd></div><div><dt>Intended row visible</dt><dd id="visibility-value">No result yet</dd></div>
+  <div><dt>Remembered query/position</dt><dd id="memory-value">None</dd></div>
+  <div><dt>Retained player context</dt><dd id="browser-value">Camellia folder · fifth child · Another Xronixle playing · deck intact</dd></div>
+</dl><p class="muted">The folder/track context is a fixed non-default fixture: it tests that this state model does not change it during Search. It does not establish native browser scrolling, return focus, lifecycle restoration or a tap outcome.</p></div></section>
+<section aria-labelledby="free-title"><h2 id="free-title">Free play</h2><p>These controls affect only the simulation. Free play pauses any guided case; choose a case again to restart it. Impossible actions explain why the state did not move.</p>
+  <div class="buttons" id="free-actions"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus query / show keyboard</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="replace">Change query to camera</button><button type="button" data-action="middle">Scroll to middle result</button><button type="button" data-action="last">Scroll to last result</button><button type="button" data-action="hide">Hide keyboard</button><button type="button" data-action="away">Move edit focus away</button><button type="button" data-action="clear">Clear ×</button><button type="button" data-action="arrow">Visible Back arrow</button><button type="button" data-action="system">System Back</button><button type="button" data-action="reset">Reset to player</button></div></section>
+<section aria-labelledby="cases-title"><h2 id="cases-title">Guided cases</h2><p>Choose a case to reset the model, then advance its buttons. For E-tap, the explicit Focus step is necessary before Type. For the Back comparison, the system Back illustration assumes a shown keyboard consumes the first Back; Android/IME dispatch is not established by this page.</p>
+  <div class="tabs" role="tablist" aria-label="Search navigation cases"><button type="button" role="tab" id="tab-entry" aria-controls="case-entry" aria-selected="true" data-case="entry">Entry and Clear</button><button type="button" role="tab" id="tab-away" aria-controls="case-away" aria-selected="false" data-case="away">Clear after focus loss</button><button type="button" role="tab" id="tab-arrow" aria-controls="case-arrow" aria-selected="false" data-case="arrow">Visible Back</button><button type="button" role="tab" id="tab-system" aria-controls="case-system" aria-selected="false" data-case="system">System Back</button><button type="button" role="tab" id="tab-return" aria-controls="case-return" aria-selected="false" data-case="return">Leave and reopen</button><button type="button" role="tab" id="tab-middle" aria-controls="case-middle" aria-selected="false" data-case="middle">Middle result</button><button type="button" role="tab" id="tab-last" aria-controls="case-last" aria-selected="false" data-case="last">Final result</button></div>
+  <section class="scenario" role="tabpanel" id="case-entry" aria-labelledby="tab-entry"><h3>Entry and Clear while editing</h3><p>For E-tap, typing is blocked until Focus. Compare C-keep and C-focus with the keyboard shown.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus field</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="clear">Clear ×</button></div></section>
+  <section class="scenario" role="tabpanel" id="case-away" aria-labelledby="tab-away" hidden><h3>Clear after focus loss</h3><p>Compare this with Clear while editing and with Clear after Hide keyboard: focus loss is a separate state.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus field</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="away">Move focus away</button><button type="button" data-action="clear">Clear ×</button></div></section>
+  <section class="scenario" role="tabpanel" id="case-arrow" aria-labelledby="tab-arrow" hidden><h3>Visible Back arrow</h3><p>A-exit returns to the player directly; A-hide first leaves Search open without a keyboard.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus field</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="arrow">Tap Back arrow</button></div></section>
+  <section class="scenario" role="tabpanel" id="case-system" aria-labelledby="tab-system" hidden><h3>System Back, illustrative baseline</h3><p>The default IME may consume Back while shown; these controls do not promise that every keyboard does.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus field</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="system">System Back once</button><button type="button" data-action="system">System Back again</button></div></section>
+  <section class="scenario" role="tabpanel" id="case-return" aria-labelledby="tab-return" hidden><h3>Leave and reopen</h3><p>Choose Q-restore and compare P-top with P-prior. “Finish Search” isolates re-entry choices from the visible arrow policy.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus field</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="last">Scroll to last</button><button type="button" data-action="finish">Finish Search</button><button type="button" data-action="open">Open Search again</button></div></section>
+  <section class="scenario" role="tabpanel" id="case-middle" aria-labelledby="tab-middle" hidden><h3>Middle result through refocus</h3><p>In this illustration the middle row remains visible when the viewport shrinks under S-offset; S-top still resets the list.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus field</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="middle">Scroll to middle</button><button type="button" data-action="hide">Hide keyboard</button><button type="button" data-action="focus">Show keyboard again</button></div></section>
+  <section class="scenario" role="tabpanel" id="case-last" aria-labelledby="tab-last" hidden><h3>Final result through refocus</h3><p>S-offset schematically reproduces D56's observed hidden final row and extra swipe. S-visible is a proposed correction that still needs later native verification; S-top loses the previous row entirely.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus field</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="last">Scroll to last</button><button type="button" data-action="hide">Hide keyboard</button><button type="button" data-action="focus">Show keyboard again</button></div></section>
 </section>
-<section aria-labelledby="free-title">
-  <h2 id="free-title">Free play</h2>
-  <p>These controls change only the model panel, not Android or the real keyboard. Use them in any order; impossible actions explain why they did nothing.</p>
-  <div class="buttons" id="free-actions"><button type="button" data-action="open">Open Search</button><button type="button" data-action="focus">Focus query</button><button type="button" data-action="type">Type cam</button><button type="button" data-action="replace">Change query</button><button type="button" data-action="scroll">Scroll to last result</button><button type="button" data-action="hide">Hide keyboard</button><button type="button" data-action="refocus">Refocus same query</button><button type="button" data-action="clear">Clear ×</button><button type="button" data-action="arrow">Back arrow</button><button type="button" data-action="system">System Back</button><button type="button" data-action="reset">Reset to player</button></div>
-</section>
-<section aria-labelledby="cases-title">
-  <h2 id="cases-title">Guided cases</h2>
-  <p>Choosing a case resets the simulation; advance its buttons in order. Each step uses the same transition as free play.</p>
-  <div class="tabs" role="tablist" aria-label="Search navigation cases"><button type="button" role="tab" id="tab-entry" aria-controls="case-entry" aria-selected="true" data-case="entry">Enter and clear</button><button type="button" role="tab" id="tab-back" aria-controls="case-back" aria-selected="false" data-case="back">System Back</button><button type="button" role="tab" id="tab-return" aria-controls="case-return" aria-selected="false" data-case="return">Leave and reopen</button><button type="button" role="tab" id="tab-refocus" aria-controls="case-refocus" aria-selected="false" data-case="refocus">Scroll and refocus</button></div>
-  <section class="scenario" role="tabpanel" id="case-entry" aria-labelledby="tab-entry"><h3>Enter and clear</h3><p>Watch how entry focus changes the initial view, then clear a query with the keyboard visible.</p><div class="steps"><button type="button" data-step="0" data-action="open">Open Search</button><button type="button" data-step="1" data-action="type">Type cam</button><button type="button" data-step="2" data-action="clear">Clear ×</button></div></section>
-  <section class="scenario" role="tabpanel" id="case-back" aria-labelledby="tab-back" hidden><h3>System Back</h3><p>With a typed query and visible simulated keyboard, observe whether Back hides it or leaves Search. The arrow is a separate page-return action.</p><div class="steps"><button type="button" data-step="0" data-action="open">Open Search</button><button type="button" data-step="1" data-action="type">Type cam</button><button type="button" data-step="2" data-action="system">System Back once</button><button type="button" data-step="3" data-action="system">System Back again</button></div></section>
-  <section class="scenario" role="tabpanel" id="case-return" aria-labelledby="tab-return" hidden><h3>Leave and reopen</h3><p>Check whether a visit to the player discards or restores the query and result position.</p><div class="steps"><button type="button" data-step="0" data-action="open">Open Search</button><button type="button" data-step="1" data-action="type">Type cam</button><button type="button" data-step="2" data-action="scroll">Scroll to last</button><button type="button" data-step="3" data-action="arrow">Back arrow</button><button type="button" data-step="4" data-action="open">Open Search again</button></div></section>
-  <section class="scenario" role="tabpanel" id="case-refocus" aria-labelledby="tab-refocus" hidden><h3>Scroll and refocus</h3><p>Keep the same query; dismiss then restore the simulated keyboard. Compare the last visible result under S1 versus S2.</p><div class="steps"><button type="button" data-step="0" data-action="open">Open Search</button><button type="button" data-step="1" data-action="type">Type cam</button><button type="button" data-step="2" data-action="scroll">Scroll to last</button><button type="button" data-step="3" data-action="hide">Hide keyboard</button><button type="button" data-step="4" data-action="refocus">Refocus same query</button></div></section>
-</section>
-<section aria-labelledby="reply-title"><h2 id="reply-title">Separable answers</h2><p>Reply in this chat with your preferences for <strong>E1/E2</strong> entry focus, <strong>B1/B2</strong> system Back, <strong>C1/C2</strong> Clear focus, <strong>R1/R2</strong> re-entry and <strong>S1/S2</strong> same-query refocus. For example, “E1 B1 C1 R2 S1” is valid; mix choices freely. The visible Back arrow always returns to the player; no result activation, library choice or Android IME behavior is decided by the simulation.</p></section>
+<section aria-labelledby="reply-title"><h2 id="reply-title">Separable answers</h2><p>Reply in this chat with entry <strong>E-fast/E-tap</strong>, visible Back <strong>A-exit/A-hide</strong>, Clear <strong>C-keep/C-focus</strong>, re-entry query <strong>Q-new/Q-restore</strong>, restored-query position <strong>P-top/P-prior</strong> (only if Q-restore), and same-query refocus <strong>S-visible/S-offset/S-top</strong>. For example, “E-fast, A-exit, C-keep, Q-restore, P-top, S-visible” combines independent choices. Add a concern or alternative in the field if these options miss your intended behavior; paste the text into your chat response. These selections do not adopt a search library, result activation, keyboard compatibility or TalkBack behavior.</p><label for="reply-notes">Other concerns or preferred behavior</label><textarea id="reply-notes" placeholder="Describe a different transition or reason for a choice; copy this text into your chat response."></textarea></section>
 </main>
 <script>
-// The state transitions are pure; this self-contained shell only renders and dispatches them.
-const initialState = () => ({ page: 'player', query: '', editing: false, keyboard: false, anchor: 'top', rememberedQuery: '', rememberedAnchor: 'top' });
+// This self-contained model is illustrative, not a substitute for an Android flow.
+const initialState = () => ({ page: 'player', query: '', editing: false, keyboard: false, anchor: 'top', visible: 'no result', rememberedQuery: '', rememberedAnchor: 'top', browserFolder: 'Camellia', browserRow: 'fifth child', playing: 'Another Xronixle' });
 function closeSearch(state) {
-  if (state.page !== 'search') return { state, message: 'Search is already closed.' };
-  return { state: { ...state, page: 'player', rememberedQuery: state.query,
-    rememberedAnchor: state.anchor, query: '', editing: false, keyboard: false, anchor: 'top' },
-    message: 'Back returned to player; the deck and browser stayed in place.' };
+  return { state: { ...state, page: 'player', rememberedQuery: state.query, rememberedAnchor: state.anchor, query: '', editing: false, keyboard: false, anchor: 'top', visible: 'no result' }, message: 'Returned to player; retained folder location, browser position and deck did not change in this model.', accepted: true };
 }
-function transition({ state, action, policy }) {
-  if (action === 'reset') return { state: initialState(), message: 'Reset to player.' };
+function nextState({ state, action, policy }) {
+  if (action === 'reset') return { state: initialState(), message: 'Reset to player.', accepted: true };
   if (action === 'open') {
-    if (state.page === 'search') return { state, message: 'Search is already open.' };
-    const restore = policy.reentry === 'restore';
-    const editing = policy.entry === 'auto';
-    return { state: { ...state, page: 'search', query: restore ? state.rememberedQuery : '',
-      anchor: restore ? state.rememberedAnchor : 'top', editing, keyboard: editing },
-      message: editing ? 'Opened Search with query edit focus and simulated keyboard.' : 'Opened Search with query unfocused and keyboard hidden.' };
+    if (state.page === 'search') return { state, message: 'Search is already open.', accepted: false };
+    const restore = policy.queryReturn === 'restore' && state.rememberedQuery.length > 0;
+    const editing = policy.entry === 'immediate';
+    const anchor = restore && policy.returnPosition === 'prior' ? state.rememberedAnchor : 'top';
+    return { state: { ...state, page: 'search', query: restore ? state.rememberedQuery : '', anchor, editing, keyboard: editing,
+      visible: anchor === 'last' && editing ? 'unverified on re-entry' : restore ? 'yes' : 'no result' },
+      message: editing ? 'Opened Search requesting query edit focus and keyboard.' : 'Opened Search without query edit focus.', accepted: true };
   }
-  if (state.page !== 'search') return { state, message: 'Open Search before using that action.' };
-  if (action === 'arrow') return closeSearch(state);
-  if (action === 'system') {
-    if (state.keyboard && policy.systemBack === 'keyboardFirst') {
-      return { state: { ...state, keyboard: false }, message: 'System Back hid the simulated keyboard; Search and query remain.' };
-    }
+  if (state.page !== 'search') return { state, message: 'Open Search before using that action.', accepted: false };
+  if (action === 'finish') return closeSearch(state);
+  if (action === 'arrow') {
+    if (state.keyboard && policy.arrow === 'hide') return { state: { ...state, keyboard: false, visible: state.query ? 'yes' : 'no result' }, message: 'Visible Back arrow hid the simulated keyboard; Search remains open.', accepted: true };
     return closeSearch(state);
   }
-  if (action === 'focus' || action === 'refocus') {
-    return { state: { ...state, editing: true, keyboard: true,
-      anchor: policy.refocus === 'preserve' ? state.anchor : 'top' },
-      message: policy.refocus === 'preserve' ? 'Same query focused; visible result position retained.' : 'Same query focused; results returned to top.' };
+  if (action === 'system') {
+    if (state.keyboard) return { state: { ...state, keyboard: false, visible: state.query ? 'yes' : 'no result' }, message: 'Illustrative system Back: keyboard hidden; Search remains. Actual IME dispatch may differ.', accepted: true };
+    return closeSearch(state);
   }
-  if (action === 'hide') {
-    if (!state.keyboard) return { state, message: 'Simulated keyboard is already hidden.' };
-    return { state: { ...state, keyboard: false }, message: 'Keyboard hidden without changing query or result position.' };
+  if (action === 'hide' || action === 'away') {
+    if (action === 'hide' && !state.keyboard) return { state, message: 'Simulated keyboard is already hidden.', accepted: false };
+    if (action === 'away' && !state.editing) return { state, message: 'Query already lacks edit focus.', accepted: false };
+    return { state: { ...state, keyboard: false, editing: action === 'away' ? false : state.editing, visible: state.query ? 'yes' : 'no result' },
+      message: action === 'away' ? 'Edit focus moved away; Search and query remain.' : 'Keyboard hidden; query edit focus and list position remain.', accepted: true };
+  }
+  if (action === 'focus') {
+    if (state.editing && state.keyboard) return { state, message: 'Query already has edit focus and keyboard; no refocus occurred.', accepted: true };
+    const anchor = state.query && policy.refocus === 'top' ? 'top' : state.anchor;
+    const visible = !state.query ? 'no result' : anchor === 'last' && policy.refocus === 'offset' ? 'no (one more swipe)' : 'yes';
+    return { state: { ...state, editing: true, keyboard: true, anchor, visible }, message: state.query
+      ? policy.refocus === 'visible' ? 'Proposed visibility: intended row stays in view after keyboard returns; native proof pending.'
+        : policy.refocus === 'offset' && anchor === 'last' ? 'D56-like outcome: offset remains, final row needs another swipe.'
+          : policy.refocus === 'top' ? 'Refocus reset results to top.' : 'Middle row remains visible in this illustration.'
+      : 'Requested query edit focus and keyboard.', accepted: true };
   }
   if (action === 'type' || action === 'replace') {
+    if (!state.editing) return { state, message: 'Focus the query before typing; the model does not silently grant edit focus.', accepted: false };
     const query = action === 'type' ? 'cam' : 'camera';
-    return { state: { ...state, query, editing: true, keyboard: true, anchor: 'top' },
-      message: `Query changed to ${query}; this demonstration resets the result list to top.` };
+    if (query === state.query) return { state, message: 'Query is unchanged; result position remains.', accepted: true };
+    return { state: { ...state, query, anchor: 'top', visible: 'yes' }, message: `Query changed to ${query}; this schematic starts new results at top.`, accepted: true };
   }
-  if (action === 'scroll') {
-    if (state.query.length === 0) return { state, message: 'Type a query before scrolling results.' };
-    return { state: { ...state, anchor: 'last' }, message: 'Last result is the visible anchor.' };
+  if (action === 'middle' || action === 'last') {
+    if (!state.query) return { state, message: 'Type a query before scrolling results.', accepted: false };
+    return { state: { ...state, anchor: action, visible: 'yes' }, message: `${action === 'last' ? 'Final' : 'Middle'} result is the intended visible row.`, accepted: true };
   }
   if (action === 'clear') {
-    if (state.query.length === 0) return { state, message: 'Query is already empty; Search stays open.' };
-    const request = policy.clearFocus === 'request';
-    return { state: { ...state, query: '', anchor: 'top',
-      editing: request ? true : state.editing, keyboard: request ? true : state.keyboard },
-      message: request ? 'Cleared query and requested edit focus/keyboard.' : 'Cleared query, keeping the prior focus/keyboard state.' };
+    if (!state.query) return { state, message: 'Query is already empty; Search remains open.', accepted: false };
+    const request = policy.clearFocus === 'focus';
+    return { state: { ...state, query: '', anchor: 'top', visible: 'no result', editing: request ? true : state.editing, keyboard: request ? true : state.keyboard }, message: request ? 'Query cleared; requested edit focus and keyboard.' : 'Query cleared; prior edit focus and keyboard state retained.', accepted: true };
   }
-  throw new Error(`Unexpected prototype action: ${action}`);
+  throw new Error(`Unexpected design-prototype action: ${action}`);
 }
-const policyKeys = ['entry', 'systemBack', 'clearFocus', 'reentry', 'refocus'];
-const chosenPolicy = () => Object.fromEntries(policyKeys.map(key => [key, document.querySelector(`input[name="${key}"]:checked`).value]));
+const policyKeys = ['entry', 'arrow', 'clearFocus', 'queryReturn', 'returnPosition', 'refocus'];
+const selectedPolicy = () => Object.fromEntries(policyKeys.map(key => [key, document.querySelector(`input[name="${key}"]:checked`).value]));
 let model = initialState();
 let activeCase = 'entry';
-let nextStep = 0;
+let nextStep = -1;
 function render(message) {
   document.querySelectorAll('.choice').forEach(label => {
     label.dataset.selected = String(label.querySelector('input').checked);
-    label.querySelector('.selected-label').textContent = label.querySelector('input').checked ? ' · Previewing ' : ' ';
+    label.querySelector('.selected-label').textContent = label.querySelector('input').checked ? ' · Previewing' : '';
   });
   document.querySelector('#page-value').textContent = model.page === 'player' ? 'Player' : 'Search';
   document.querySelector('#query-value').textContent = model.page === 'search' && model.query ? model.query : 'None';
   document.querySelector('#focus-value').textContent = model.editing ? 'Yes' : 'No';
-  document.querySelector('#keyboard-value').textContent = model.keyboard ? 'Shown (simulated)' : 'Hidden';
-  document.querySelector('#anchor-value').textContent = model.page === 'search' && model.query && model.anchor === 'last' ? 'Last result' : 'Top';
-  document.querySelector('#memory-value').textContent = model.rememberedQuery ? `${model.rememberedQuery} · ${model.rememberedAnchor === 'last' ? 'last result' : 'top'}` : 'None';
+  document.querySelector('#keyboard-value').textContent = model.keyboard ? 'Requested/shown (simulated)' : 'Hidden';
+  document.querySelector('#position-value').textContent = model.page === 'search' && model.query ? model.anchor : 'Top';
+  document.querySelector('#visibility-value').textContent = model.page === 'search' ? model.visible : 'No active result';
+  document.querySelector('#memory-value').textContent = model.rememberedQuery ? `${model.rememberedQuery} · ${model.rememberedAnchor}` : 'None';
+  document.querySelector('#browser-value').textContent = `${model.browserFolder} folder · ${model.browserRow} · ${model.playing} playing · deck intact`;
   document.querySelector('#last-change').textContent = message;
   document.querySelectorAll('.scenario').forEach(section => {
     section.hidden = section.id !== `case-${activeCase}`;
-    section.querySelectorAll('[data-step]').forEach(button => {
-      const index = Number(button.dataset.step);
+    section.querySelectorAll('.steps button').forEach((button, index) => {
       button.disabled = index !== nextStep;
-      button.dataset.completed = String(index < nextStep);
+      button.dataset.completed = String(nextStep >= 0 && index < nextStep);
     });
   });
   document.querySelectorAll('[role=tab]').forEach(tab => {
@@ -262,18 +240,19 @@ function render(message) {
   });
 }
 function act(action) {
-  const result = transition({ state: model, action, policy: chosenPolicy() });
+  const result = nextState({ state: model, action, policy: selectedPolicy() });
   model = result.state;
-  render(result.message);
+  nextStep = -1;
+  render(`${result.message} Guided steps paused; choose a case to restart.`);
 }
-document.querySelectorAll('input[type=radio]').forEach(input => input.addEventListener('change', () => render('Preview policy updated; use an action to see its effect.')));
-document.querySelectorAll('#free-actions [data-action]').forEach(button => button.addEventListener('click', () => act(button.dataset.action)));
+document.querySelectorAll('input[type=radio]').forEach(input => input.addEventListener('change', () => render('Preview policy changed; replay a case to see its effect.')));
+document.querySelectorAll('#free-actions button').forEach(button => button.addEventListener('click', () => act(button.dataset.action)));
 const tabs = [...document.querySelectorAll('[role=tab]')];
 tabs.forEach(tab => tab.addEventListener('click', () => {
   activeCase = tab.dataset.case;
   model = initialState();
   nextStep = 0;
-  render(`Started ${tab.textContent} from player.`);
+  render(`Started ${tab.textContent} from the player.`);
 }));
 tabs.forEach((tab, index) => tab.addEventListener('keydown', event => {
   const target = event.key === 'ArrowRight' ? (index + 1) % tabs.length
@@ -284,11 +263,11 @@ tabs.forEach((tab, index) => tab.addEventListener('keydown', event => {
   tabs[target].click();
   tabs[target].focus();
 }));
-document.querySelectorAll('.scenario [data-step]').forEach(button => button.addEventListener('click', () => {
-  if (Number(button.dataset.step) !== nextStep) return;
-  const result = transition({ state: model, action: button.dataset.action, policy: chosenPolicy() });
+document.querySelectorAll('.scenario .steps button').forEach(button => button.addEventListener('click', () => {
+  if (button.disabled) return;
+  const result = nextState({ state: model, action: button.dataset.action, policy: selectedPolicy() });
   model = result.state;
-  nextStep += 1;
+  if (result.accepted) nextStep += 1;
   render(result.message);
 }));
 render('Start on player. Choose a guided case or use free play.');

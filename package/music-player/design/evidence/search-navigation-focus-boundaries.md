@@ -64,57 +64,86 @@ These observations come from debug source on
 `prototype/music-player-theme-compose`,
 not a production Search implementation or a live user-boundary flow.
 
-## Observed refocus limitation
+## Observed refocus limitation and Android Back boundary
 
 `package/music-player/design/evidence/search-result-overflow.md` records
-that one cover viewport candidate showed its last result above a measured
+that one cover viewport candidate showed its final result above a measured
 bottom keyboard after scrolling.
-Hiding then refocusing that keyboard shrank the viewport and required
-another upward swipe to restore the last row's visibility.
+Hiding then refocusing that keyboard shrank the viewport;
+the list offset did not need to jump to the top for the final row to
+require another upward swipe.
 D56 chose the cover-only keyboard-aware viewport,
-**not** that extra swipe as a desired interaction.
-This is a bounded observation from the already completed debug and
-settled-Gboard studies,
+**not** that extra swipe as desired behavior.
+That is a bounded observation from the completed debug and settled-Gboard
+studies,
 not a claim about every input method,
 posture or animation frame.
+A scroll **anchor** and whether its row is **visible** are different
+facts;
+the logic prototype must represent both.
+The desired same-query visibility guarantee still needs native
+verification before any production implementation claims it works.
 No new IME experiment is authorized without first explaining a compelling
 need to the user.
 
+Android SDK 37 `android/inputmethodservice/InputMethodService.java`
+documents that its default `onKeyDown` intercepts `KEYCODE_BACK` while the
+IME is shown and its default `onKeyUp` hides that IME UI.
+The same source describes a conditional IME-owned
+`BACK_DISPOSITION_ADJUST_NOTHING` path under which Back can instead reach
+the app.
+This is not evidence that our app can make one system Back exit Search
+across arbitrary keyboards.
+Treat keyboard-first system Back as an illustrative platform baseline,
+not a user-selected cross-IME guarantee or a universal native claim.
+The visible header Back action is a distinct design choice:
+D47 promises a Back **path** from a separate destination,
+not the first tap's exact outcome while typing.
+
 ## Independent decisions to expose
 
-- **Entry edit focus:** ask whether opening Search immediately requests
-  query edit focus and the keyboard,
-  or opens with an unfocused empty query until the user selects it.
-  One path is quicker for typing;
-  the other initially preserves more visible content.
-- **Visible Back versus system Back:** the header Back path returns to the
-  player under D47/D48.
-  With the keyboard already visible,
-  a separate preference can decide whether system Back first hides that
-  keyboard and leaves Search open or returns to the player immediately.
-  Do not present Material's in-place bar-collapse behavior as the page's
-  Back action.
-- **Clear:** the `×` action should remove query text while keeping the
-  Search destination.
-  Whether it preserves the prior edit-focus/keyboard state or forces a
-  new focus request is distinct from page navigation.
-- **Re-entry:** reopening Search may begin with an empty query,
-  or restore the previous query and result position.
+- **Entry edit focus:** immediate query focus/keyboard request versus
+  waiting for explicit field focus.
+  The accepted E2 code already names crease clearance;
+  do not reuse it for passive entry.
+- **Visible Back arrow:** return directly to player versus hide a shown
+  keyboard first,
+  keeping Search and its query.
+  The decision is not fixed by Material's in-place bar-collapse guidance.
+- **Clear:** erase query and stay in Search;
+  independently keep the existing edit-focus/keyboard state or request
+  focus and a keyboard.
+  Compare while typing,
+  after keyboard dismissal with edit focus retained,
+  and after moving edit focus away.
+- **Re-entry query:** open with a fresh empty query versus restore the
+  previous query.
+  If it is restored,
+  **separately** choose top results versus the prior position.
   The temporary debug `onBack` reset is not a user decision.
-- **Result position:** changing the query produces a different result set;
-  hiding/refocusing a keyboard with the **same** query need not reset
-  the user's position.
-  These events should not be treated as one scroll-reset policy.
-  The observed extra swipe is evidence to compare against a proposed
-  preserved anchor,
-  not evidence that one is selected.
+- **Same-query refocus:** keep the intended row visible after the viewport
+  shrinks,
+  retain the raw list offset without visibility compensation (the
+  observed final-row extra-swipe case),
+  or reset to top.
+  A middle row and final row must be distinguishable.
+  Changing the query is a different event;
+  a repeated identical query must not reset the position.
 
+The Search result position is distinct from the visible left folder
+browser's own location and scroll position.
+The demonstration fixes a non-default browser context and playback deck
+across Search entry/exit;
+it does not prove native retention or define a return focus target.
+The re-entry comparison concerns visits in one running session;
+posture changes and process restoration are not modeled.
 Result activation (#129),
 empty/unavailable content (#128),
 TalkBack traversal and announcements (#118),
 and search-library selection (D62,
 future implementation work) stay separate.
-Any HTML state walkthrough would be a **logic-only** design aid,
-not a new Android or IME verification run.
+`package/music-player/design/questions/search-navigation-focus.prototype.html`
+is an interactive **logic-only** walkthrough for these pending choices,
+not a new Android/IME verification run or adoption of its defaults.
 
 [m3-accessibility]: https://m3.material.io/components/search/accessibility
