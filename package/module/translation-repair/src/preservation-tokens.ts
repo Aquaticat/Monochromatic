@@ -1,3 +1,4 @@
+import { codePointAt, } from './code-points.ts';
 import {
   continuesLatinWord,
   isLatinCapital,
@@ -168,15 +169,31 @@ export function contentTokens(
    */
   let runStart = -1;
 
-  for (let index = 0; index <= text.length; index += 1) {
+  // BY CODE POINT, NOT BY UTF-16 UNIT (ledger B21): an ideograph beyond the
+  // first plane is two units, neither of which passes the Han test, so a scan
+  // by unit dropped it. Offsets stay UTF-16 offsets, so a word run slices as
+  // before; the terminator past the end steps one to close the loop.
+  for (let index = 0; index <= text.length;) {
     /**
-     Character at this position, or a terminator past the end.
+     Whole character at this position, or a terminator past the end.
      */
-    const character = (index < text.length) ? text[index] ?? '' : '';
+    const character = codePointAt({
+      text,
+      at: index,
+    },);
+
+    /**
+     Offset of the next character.
+     */
+    const next = index + Math.max(
+      character.length,
+      1,
+    );
 
     if ((index < text.length) && isWordCharacter(character,)) {
       if (runStart < 0)
         runStart = index;
+      index = next;
       continue;
     }
 
@@ -197,6 +214,7 @@ export function contentTokens(
 
     if ((index < text.length) && isIdeograph(character,))
       tokens.push(character,);
+    index = next;
   }
 
   return tokens;
