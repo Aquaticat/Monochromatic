@@ -404,12 +404,12 @@ dir = "{{config_root}}"
 run = "node search-ranking-question.mjs validate"
 
 [tasks."build:search:word-boundary"]
-description = "Build native Fold mid-word matching choice with selected D/M and D59 held fixed"
+description = "Rebuild archived unselected mid-word Search exploration"
 dir = "{{config_root}}"
 run = "node search-word-boundary-question.mjs build"
 
 [tasks."lint:search:word-boundary"]
-description = "Validate the self-contained mid-word Search question"
+description = "Validate archived self-contained Search word-boundary evidence"
 dir = "{{config_root}}"
 run = "node search-word-boundary-question.mjs validate"
 

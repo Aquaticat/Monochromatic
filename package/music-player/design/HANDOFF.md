@@ -6461,12 +6461,14 @@ Unicode equivalence,
 multiple terms and deterministic ties.
 D60 also forbids indexing a whole relative display path as a track name,
 since that would reintroduce parent-only hits.
-#116 stays in progress for those bounded matching/tie questions;
-#127 through #129 and #118 remain separate pending reviews.
+At this checkpoint #116 continued toward matching/tie questions;
+D62 later removed that backend choice from the current UI frontier.
+#127 through #129 and #118 remain separate pending UI reviews.
 
-## Mid-word matching question after D/M selection
+## Historical mid-word exploration, superseded by D62
 
-`questions/word-boundary-review.html` presents one **unselected** #116
+`questions/archive/search-word-boundary-deferred.html` preserves one
+**unselected**, now-withdrawn #116
 question for both eligible D60 item kinds:
 should `cam` inside an uninterrupted own name count?
 W retains three accepted controls in selected D61 mixed order:
@@ -6479,13 +6481,15 @@ and duplicate `Camellia Waltz` examples only to isolate the boundary;
 they are not excluded by W.
 The two optional rows are appended for visual comparison,
 **not** because D61 chose their relative relevance tier.
-The form ranks **W > A** as a personal preference for predictable word
-starts over interior-fragment recall;
-real-library relevance and result volume were not measured.
-The user has **not** chosen W or A.
+The initial form provisionally ranked **W > A** on predictable word
+starts,
+without measuring real-library relevance or volume.
+D62 withdrew that recommendation's UI-choice premise;
+the user has **not** chosen W or A.
 Extensions,
 Unicode equivalence,
-multiple terms and deterministic ties remain separate.
+multiple terms and deterministic ties are future engine concerns,
+not current UI questions.
 No result row was made interactive.
 
 Prototype commits `72da1d925` and `cc66a0dcf` built and corrected the
@@ -6523,6 +6527,34 @@ which says nothing about native TalkBack or result activation.
 The capped disposable emulator was stopped through the owning container;
 `adb devices -l` and `podman ps` showed it absent.
 The original AVD was untouched.
-The single W/A boundary is now ready to ask;
-no production Search,
+At that checkpoint the W/A boundary was prepared for the user;
+the user's later D62 correction withdrew the premise.
+No production Search,
 IME experiment or KWin automation was performed.
+
+## D62 returns this session to Search UI design
+
+The user corrected the agent's scope after the W/A question:
+the **eventual choice of a good fuzzy search library is not this UI
+design task**,
+and its eventual selection does not impact the Search interface being
+reviewed now.
+The agent had started reading the technology-vetting skill but had not
+created a candidate ledger,
+cloned a fuzzy library,
+installed a dependency or changed product Search code.
+Stop that research;
+do not ask W/A or treat the provisional W > A ranking as an adoption.
+The archived W/A fixtures still explain the exploratory question but
+represent no selected backend behavior.
+D59's theme-derived highlighting,
+D60's direct-name result presentation and D61's mixed result priority
+remain the accepted visible constraints.
+A future implementation may choose and vet a library only under a
+separate request;
+if its output forces a visible conflict with those constraints,
+bring that concrete conflict back to design rather than presupposing one.
+The next active UI area is #127 Back/Clear/focus and scroll restoration,
+then #128 empty/unavailable messaging,
+#129 result activation and #118 Search accessibility.
+The original AVD remains untouched and the disposable Fold is stopped.

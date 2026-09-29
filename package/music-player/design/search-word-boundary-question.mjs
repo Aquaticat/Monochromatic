@@ -4,8 +4,8 @@ import { join } from 'node:path';
 // Embed only status-sanitized native Fold frames; leave raw capture metadata in private scratch.
 const root = process.cwd();
 const render = join(root, 'questions', 'render');
-const templateFile = join(root, 'questions', 'word-boundary.template.html');
-const outputFile = join(root, 'questions', 'word-boundary-review.html');
+const templateFile = join(root, 'questions', 'archive', 'search-word-boundary-deferred.template.html');
+const outputFile = join(root, 'questions', 'archive', 'search-word-boundary-deferred.html');
 const captures = Object.fromEntries(['inner', 'cover'].map(panel => [panel,
   Object.fromEntries(['rankword', 'rankany'].map(variant => {
     const name = `search-word-boundary-review-${panel}-${variant}-s200.png`;
@@ -24,7 +24,7 @@ if (command === 'build') {
     throw new Error('Expected one embedded word-boundary capture slot.');
   }
   writeFileSync(outputFile, template.replace('__WORD_BOUNDARY_CAPTURES__', JSON.stringify(captures)));
-  console.log(`Built the separate direct-name word-boundary question in ${outputFile}.`);
+  console.log(`Built the archived unselected word-boundary exploration in ${outputFile}.`);
 } else if (command === 'validate') {
   const html = readFileSync(outputFile, 'utf8');
   const begin = html.indexOf('const captures = ');
@@ -33,8 +33,8 @@ if (command === 'build') {
       JSON.stringify(JSON.parse(html.slice(begin + 'const captures = '.length, end))) !== JSON.stringify(captures)) {
     throw new Error('Embedded word-boundary frames differ from native sanitized evidence.');
   }
-  for (const marker of ['Scope D', 'Order M', 'D59', 'Scamper', 'Dreamcam',
-    'Ranking: W &gt; A', 'Reset 100%', 'Reply in this chat', 'data-variant="rankword"',
+  for (const marker of ['D59', 'D60', 'D61', 'D62', 'Scamper', 'Dreamcam',
+    'Reset 100%', 'not a current question', 'data-variant="rankword"',
     'data-variant="rankany"', 'data-panel="inner"', 'data-panel="cover"']) {
     if (!html.includes(marker)) throw new Error(`Word-boundary review missing ${marker}`);
   }
@@ -42,7 +42,7 @@ if (command === 'build') {
       html.includes('<link rel="stylesheet"')) {
     throw new Error('Word-boundary review must be self-contained.');
   }
-  console.log('Validated independent middle-of-word choice and native Fold frames.');
+  console.log('Validated archived native word-boundary exploration without an active choice.');
 } else {
   throw new Error('Expected build or validate.');
 }

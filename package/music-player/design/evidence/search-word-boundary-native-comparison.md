@@ -1,7 +1,11 @@
-# Word-start versus middle-of-word Search on the disposable Fold
+# Historical word-boundary fixture before D62 removed the UI question
 
-## Question and fixed controls
+## Exploratory question and fixed controls
 
+D62 later records the user's correction:
+the eventual fuzzy search library is not part of the current UI review,
+and this W/A fixture is **not** a question to answer.
+Neither W nor A was selected.
 D60 searches each folder's own name and each track's final filename
 component;
 parent and ancestor names cannot generate track hits.
@@ -95,42 +99,41 @@ The host-JVM debug-variant tests passed for stable D/M controls,
 folder/track interior-only membership and highlight offsets
 `Scamper[1,4)` and `Dreamcam[5,8)`.
 Those tests do not implement a production Unicode word parser.
-The source assets and instructions are embedded in the
-[separate review form][review].
-The selected-only `questions/current.html` continues to show D/M with
-no mid-word answer assumed.
+The source assets are retained in the
+[archived comparison][review].
+The selected-only [Search review][current-review] continues to show D/M;
+it does not assume W or A or direct a user to choose a backend library.
 
-## Unselected options and separate questions
+## Unadopted comparison and scope correction
 
-- **W, word start only:** pros:
-  preserves every accepted control without adding interior-only folder or
-  track hits of unknown relevance;
-  cons:
-  a user recalling only part of an uninterrupted name cannot find it.
-- **A, substring anywhere:** pros:
-  finds the `Scamper` folder and `Dreamcam` track from `cam`;
-  cons:
-  can add other interior-only results of unknown relevance.
+- **W, word-start-only fixture:** demonstrates the accepted controls and
+  excludes the two interior-only names.
+  A user remembering an interior fragment would not find them under
+  this illustrative rule.
+- **A, anywhere-substring fixture:** demonstrates optional `Scamper` and
+  `Dreamcam` rows;
+  additional interior matches could vary in usefulness.
   Real-library counts were not measured.
 
-Personal ranking:
-**W > A** because I prefer predictable word starts over interior
-fragment recall for this review,
-while A can recover partially remembered names at the possible cost of
-additional hits.
-The appended fixture order does not settle how those hits would rank.
-No W/A choice is recorded yet.
+An earlier provisional W > A ranking preferred predictable word starts,
+but D62 withdrew the entire W/A UI-choice premise.
+These are historical fixture alternatives,
+not ranked finalist designs or backend recommendations.
+The displayed append position does not select an interior-hit relevance
+tier.
 Whitespace,
 hyphens,
 apostrophes,
-extensions,
+filename extensions,
 Unicode equivalence,
-multiple query terms and deterministic tie-breaks are **separate**
-open decisions.
+multiple terms and deterministic tie-breaks are outside the present
+**UI** review and may be addressed with the eventual library during a
+separately authorized implementation task.
 No production Search or new IME experiment was authorized.
 
 [inner-word]: ../questions/render/search-word-boundary-review-inner-rankword-s200.png
 [inner-any]: ../questions/render/search-word-boundary-review-inner-rankany-s200.png
 [cover-word]: ../questions/render/search-word-boundary-review-cover-rankword-s200.png
 [cover-any]: ../questions/render/search-word-boundary-review-cover-rankany-s200.png
-[review]: ../questions/word-boundary-review.html
+[review]: ../questions/archive/search-word-boundary-deferred.html
+[current-review]: ../questions/current.html

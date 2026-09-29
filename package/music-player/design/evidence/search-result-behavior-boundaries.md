@@ -20,6 +20,8 @@ accent with OKLCH adjustment;
 see `search-match-emphasis-native.md`.
 D60 later selects direct names without parent-only track expansion,
 and D61 independently selects mixed relevance across result types.
+D62 explicitly defers the eventual fuzzy-library choice outside this
+UI review.
 Neither visual rule nor those priority choices specifies what tapping a
 result does or how a production search scorer operates.
 `package/music-player/design/decisions.md` records those bounds.
@@ -106,7 +108,7 @@ Files and Maps keeping query/results together but does not establish a
 folder-versus-track ranking or a music-player activation effect.
 Neither source settles the local-file product behavior.
 
-## Settled fields and order, unresolved matching and actions
+## Settled result presentation, deferred engine and open UI actions
 
 - D60 searched fields:
   each folder's own name and each track's final filename component.
@@ -126,18 +128,21 @@ Neither source settles the local-file product behavior.
   exact-only,
   whole-word-only and whole-name-prefix-only menus conflict with the
   selected design.
-- Matching questions still open:
-  `Scamper` tests a middle-of-word occurrence not shown in the fixture;
-  extension-only hits such as `flac`,
-  whether `Cam.flac` counts as an exact stem,
-  punctuation/multiple-term parsing and broader Unicode equivalence are
-  independent decisions.
-  A static caption does not choose their implementation.
+- Deferred matching-engine distinctions:
+  a historical `Scamper`/`Dreamcam` W/A fixture explored interior-word
+  matches,
+  but D62 withdrew that UI-choice premise.
+  Extension-only hits such as `flac`,
+  whether `Cam.flac` is an exact stem,
+  punctuation/multiple-term parsing and broader Unicode equivalence
+  belong to future implementation work when separately authorized.
+  A static caption does not choose a library or matcher rule.
 - D61 ordering priority:
   mixed relevance across folder and track types rather than whole-type
   grouping.
-  Deterministic tie-breaking and a real scoring algorithm are separate
-  open decisions;
+  Deterministic tie-breaking and a real scoring algorithm belong to
+  future implementation,
+  not another current UI menu;
   type labels and parent context must remain readable.
 - Folder action:
   close Search and select its folder page,
@@ -155,7 +160,10 @@ Neither source settles the local-file product behavior.
   No further IME experiments are authorized without first making a
   compelling case to the user.
 
-D60/D61 select a direct-name result scope and mixed cross-type priority.
+D60/D61 select direct-name result presentation and mixed cross-type
+priority.
+D62 removes fuzzy-library and W/A matching-policy selection from the
+current UI task.
 No concrete ranking algorithm,
-matching grammar,
+matcher dependency,
 result-tap effect or production Search code is adopted by this note.

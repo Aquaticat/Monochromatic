@@ -322,20 +322,20 @@ rounds (2026-09-17):
   not selected directions.
   The accepted `cam` examples already require `Cam` case equivalence,
   prefix `Camellia` and later-word `Live at Camellia` matches.
-  The separate `questions/word-boundary-review.html` now presents an
-  **unselected** W/A native Fold comparison for `cam` inside the
-  `Scamper` folder's own name or `Dreamcam` track filename,
-  holding D59/D60/D61 fixed;
-  appended fixture position is not a selected relevance tier;
-  see `evidence/search-word-boundary-native-comparison.md`.
-  Remaining #116 design questions also concern filename extensions,
-  broader Unicode equivalence,
+  D62 removes fuzzy-library choice and the W/A word-boundary menu from
+  this UI review:
+  the [historical native comparison](questions/archive/search-word-boundary-deferred.html)
+  is unselected evidence,
+  not a question to answer.
+  Backend extension eligibility,
+  Unicode equivalence,
   multiple terms,
-  deterministic ties and large-library result limits;
-  see `evidence/search-matching-acceptance-ledger.md` for separate
-  examples and accepted controls.
-  A real index is implementation work,
-  not a user-facing policy selected by the fixture.
+  deterministic scoring/ties and result limits belong to future
+  implementation work when authorized;
+  see `evidence/search-matching-acceptance-ledger.md`.
+  A separate visual question may remain about displaying file extensions
+  in result titles;
+  it is not a reason to pick a matcher library now.
   Back/Clear/focus and scroll restoration (#127),
   empty/unavailable behavior (#128),
   result activation (#129) and Search accessibility (#118) remain

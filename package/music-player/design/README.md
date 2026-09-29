@@ -159,18 +159,17 @@ The [archived native comparison](questions/archive/search-ranking-before-dm.html
 and [fixture evidence](evidence/search-ranking-native-comparison.md) retain
 all D/P and M/F/T alternatives as decision history,
 not active choices or a selected scorer.
-The [matching acceptance ledger](evidence/search-matching-acceptance-ledger.md)
-separates settled `cam` examples from still-open mid-word,
-extension,
-Unicode,
-term and tie-break behavior.
-The [native mid-word review](questions/word-boundary-review.html)
-compares W (word-start only) with A (interior substring included)
-for a folder and track without changing selected D/M or D59 highlights;
-appended fixture placement does not settle their future rank;
-[its evidence](evidence/search-word-boundary-native-comparison.md)
-is illustrative and the choice is not yet made.
-Result activation and Search accessibility remain open.
+D62 records that choosing an eventual fuzzy search library does not
+change this UI review and is not work to undertake now.
+The [matching boundary ledger](evidence/search-matching-acceptance-ledger.md)
+separates selected visible examples from future engine concerns.
+The W/A [native mid-word exploration](questions/archive/search-word-boundary-deferred.html)
+and [its evidence](evidence/search-word-boundary-native-comparison.md)
+are historical and unadopted;
+no matcher rule or library is selected by them.
+Continue the open UI reviews for Back/Clear/focus,
+empty/unavailable states,
+result activation and accessibility.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.
@@ -180,12 +179,10 @@ they do not silently move to Search.
  D25's Ctrl+F reservation remains pending the
 whole keyboard-map pass.
  Search result actions,
- matching grammar and tie-breaks,
  tall-keyboard fit,
- and final empty/error behavior remain to be designed;
- the
-canned captures are a design review,
- not a running search index.
+ and final empty/error behavior remain in this UI review.
+ Matcher grammar and tie-break implementation are deferred;
+ the canned captures do not constitute a running search index.
  The live backlog and developer-owned items are in
 `open-questions.md` section 0b.
 

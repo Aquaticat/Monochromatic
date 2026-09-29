@@ -1,4 +1,4 @@
-# Accepted Search matching outcomes and remaining policy questions
+# Selected Search visuals and deferred engine distinctions
 
 ## Why this ledger exists
 
@@ -11,8 +11,11 @@ D59 settled in-place highlight of visible query substrings from the
 OS accent in OKLCH.
 The accepted `cam` result examples constrain more behavior than the
 phrase "matching grammar remains open" suggested.
-This ledger keeps the selected outcomes separate from illustrative debug
-captions and still-unanswered product policies.
+This ledger keeps selected **visible outcomes** separate from
+illustrative debug captions and eventual engine behavior.
+D62 records the user's correction that selecting a fuzzy search library
+is not part of the current UI review and need not change the UI.
+The engine distinctions are not a new user-choice menu here.
 No production Search implementation is authorized by these examples.
 
 `Track.displayPath` is a source-root-relative slash path
@@ -58,36 +61,33 @@ records after-state bounds and image provenance.
 The D/P and M/F/T comparisons are historical at
 `package/music-player/design/questions/archive/search-ranking-before-dm.html`.
 
-## Independent unresolved boundaries
+## Deferred engine distinctions, not current UI questions
 
 ### Middle-of-word eligibility
 
 `Scamper` includes `cam` starting after `S` inside one uninterrupted
-word.
-Should it match?
+word;
+`Dreamcam` ends with the same fragment.
 `Live at Camellia` is not a control for this case because `Cam` starts
 a separate word.
-A direct mid-word result could help a listener who remembers only an
-interior fragment,
-but could also add entries of uncertain relevance to a large local
-library.
-The [pending native W/A review][word-review] pairs a direct
-`Scamper` folder with a `Dreamcam` track while retaining the accepted
-controls;
-its appended fixture order does not decide the new rows' rank.
+An [archived W/A native exploration][word-review] displayed a direct
+`Scamper` folder and `Dreamcam` track while retaining accepted controls.
+The user did **not** select W or A;
+D62 removed the library-driven W/A choice from the UI frontier.
+Its appended fixture order does not decide either result's rank.
 
 ### Filename extension and exactness
 
 The visible `Cam` fixture is extensionless,
 while the actual library can expose final filenames such as `Cam.flac`.
-These are independent questions:
+Future implementation must distinguish:
 
-- Should `flac` by itself generate a hit from the extension?
-- If the user's query is `cam`,
-  should `Cam.flac` rank as an exact basename/stem match or as a prefix
-  of the full filename?
-- Should the rendered title display the extension?
-  Display text is not automatically the matching field.
+- extension-only hit eligibility from a query such as `flac`;
+- whether query `cam` treats `Cam.flac` as an exact stem or as a prefix
+  of the full filename;
+- the rendered title's extension presentation,
+  which is a separate visual concern and is not automatically the match
+  field.
 
 A path segment like `Album` may appear beside `Cam.flac` as context,
 but `Album` cannot itself generate this track hit under D60.
@@ -98,10 +98,10 @@ The accepted ASCII `cam`/`Cam` example does not settle canonical composed
 versus decomposed spellings,
 accent-sensitive versus accent-insensitive matching,
 locale-specific case mappings or scripts without letter case.
-A multiple-term query such as `live cam` could require terms in order,
-allow terms in any order,
-or treat the space literally.
-Those are separate choices from middle-of-word eligibility.
+A multiple-term query such as `live cam` might be parsed differently by
+an eventual fuzzy engine.
+These examples bound future implementation research,
+not questions to put to the user in the current UI session.
 
 ### Deterministic ties and result volume
 
@@ -125,11 +125,12 @@ order;
 it does **not** implement a matcher.
 `SearchFixtureHighlights.kt` visibly colors every literal `cam` range,
 but that visual helper is not a Unicode search grammar.
-New comparisons should hold D59,
-D60,
-D61,
-the actual left browser and complete deck constant while varying one
-unresolved boundary at a time.
-They must not turn illustrative captions into navigation or playback.
+If future engine behavior creates a **visible** conflict with D59,
+D60 or D61,
+return that concrete state for design review while keeping the actual
+browser/deck and nonfunctional captions clear.
+Do not proactively choose a library,
+ask W/A,
+or turn illustrative captions into navigation or playback now.
 
-[word-review]: ../questions/word-boundary-review.html
+[word-review]: ../questions/archive/search-word-boundary-deferred.html

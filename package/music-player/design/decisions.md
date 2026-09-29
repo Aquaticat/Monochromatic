@@ -1833,6 +1833,30 @@ complete deck,
 D58 columns,
 D59 theme-derived highlighting and E2 floor remain unchanged.
 
+### D62. Search-library choice is outside the current UI review (2026-09-29)
+
+After the D/M selection,
+a further W/A word-boundary question was prepared.
+The user corrected the task boundary:
+**the eventual choice of a good fuzzy search library does not affect the
+UI design and is not this agent's job right now**.
+Withdraw the W/A question rather than asking the user to specify a
+hand-rolled matcher or evaluating/installing a library now.
+The W/A native fixtures remain historical exploratory evidence only;
+neither rule is selected.
+D60's direct-name result presentation,
+D61's mixed visual order,
+D59's in-place OS-accent match highlighting,
+and the selected A layout remain the current design.
+Future implementation may use a library to produce result identities and
+match ranges,
+but must not silently change these selected visible behaviors;
+a genuine conflict returns for design review then.
+Continue the separate UI questions for Back/Clear/focus,
+empty/unavailable states,
+result activation and accessibility.
+No production Search implementation is authorized by this correction.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)

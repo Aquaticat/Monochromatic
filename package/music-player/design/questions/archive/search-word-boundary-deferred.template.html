@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fold Search middle-of-word matching review</title>
+<title>Historical Fold Search word-boundary exploration</title>
 <style>
 :root {
   color-scheme: light dark;
@@ -199,21 +199,21 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 <body>
 <main>
 <header>
-  <p class="muted">Music player · pending Search match rule · Pixel 9 Pro Fold</p>
-  <h1>Should <code>cam</code> match inside one word?</h1>
-  <p>Scope D and Order M are already selected: match each item's own folder name or track filename, interleaving result types by relevance. D59 keeps every visible <code>Cam</code> substring bold on the OS-accent OKLCH highlight; the actual left folder browser and complete deck stay intact. Both native candidates retain the accepted exact <code>Cam</code> track, prefix <code>Camellia</code> folder and later-word <code>Live at Camellia</code> track in that order. The question is only whether one directly named <strong>folder</strong>, <code>Scamper</code>, and one directly named <strong>track filename</strong>, <code>Dreamcam</code>, also count because <code>cam</code> starts inside an uninterrupted word.</p>
+  <p class="muted">Music player · archived design exploration · Pixel 9 Pro Fold</p>
+  <h1>Historical word-boundary exploration, not a current question</h1>
+  <p>D62 records the user's correction: choosing a fuzzy search library is <strong>outside the current UI review</strong> and does not alter selected Search A, D59 highlights, D60 direct-name presentation or D61 mixed visual priority. The W/A fixtures compare how a <code>Scamper</code> folder and <code>Dreamcam</code> track could appear for <code>cam</code>, while preserving the accepted <code>Cam</code>, <code>Camellia</code> and <code>Live at Camellia</code> controls. Neither W nor A was selected; this page is historical evidence only. See the <a href="../current.html">active D/M Search review</a> for the selected UI.</p>
   <div class="notice"><p>These are keyboard-closed debug fixtures at 200% text from the same installed Fold APK. They are not a running search index or a new keyboard test. The shared fixture is a <strong>reduced control set</strong>: it omits the already accepted <code>Camera Obscura</code> and two <code>Camellia Waltz</code> rows solely to isolate this boundary. The two optional names are appended for a visible comparison; their eventual relevance relative to other matches is <strong>not selected</strong>. Bold letters on the blue-toned fill use the theme accent in OKLCH; fixed light app rasters sit in chrome that follows your system mode. Full status content is replaced. Captions are not working taps.</p></div>
 </header>
 <section aria-labelledby="choice-title">
-  <h2 id="choice-title">One independent matching boundary</h2>
+  <h2 id="choice-title">Historical comparison of one matching boundary</h2>
   <fieldset>
-    <legend>Preview the result membership</legend>
+    <legend>Explore the archived fixture membership</legend>
     <div class="choices">
-      <label class="option" data-choice="rankword"><input type="radio" name="wordboundary" value="rankword" checked><span><strong>W: start of a name or separated word (Recommended)</strong><span class="selection-note"></span><p><strong>Pros:</strong> keeps the accepted <code>Cam</code>, <code>Camellia</code> and <code>Live at Camellia</code> controls without adding interior-only folder or track hits of unknown relevance.</p><p><strong>Cons:</strong> a listener remembering only an interior fragment of the <code>Scamper</code> folder or <code>Dreamcam</code> track could not find that item by <code>cam</code>.</p></span></label>
+      <label class="option" data-choice="rankword"><input type="radio" name="wordboundary" value="rankword" checked><span><strong>W: word-start-only illustration</strong><span class="selection-note"></span><p><strong>Pros:</strong> keeps the accepted <code>Cam</code>, <code>Camellia</code> and <code>Live at Camellia</code> controls without adding interior-only folder or track hits of unknown relevance.</p><p><strong>Cons:</strong> a listener remembering only an interior fragment of the <code>Scamper</code> folder or <code>Dreamcam</code> track could not find that item by <code>cam</code>.</p></span></label>
       <label class="option" data-choice="rankany"><input type="radio" name="wordboundary" value="rankany"><span><strong>A: substring anywhere in the own name</strong><span class="selection-note"></span><p><strong>Pros:</strong> includes the <code>Scamper</code> folder and <code>Dreamcam</code> track for partial recall.</p><p><strong>Cons:</strong> could add interior-only hits of mixed relevance; their volume in a real library has not been measured. Appended fixture placement is not a chosen relevance tier.</p></span></label>
     </div>
   </fieldset>
-  <p><strong>Ranking: W &gt; A.</strong> I prefer W's predictable word starts over A's interior-fragment recall. A may find useful partially remembered names, but may also add other hits; neither the count nor their ranking is measured. This preference is not a decision until you answer. Neither choice decides hyphen/apostrophe boundaries, file extensions, Unicode equivalence, multiple terms or tie-breaks.</p>
+  <p>The earlier provisional W &gt; A preference was withdrawn when the user clarified D62. These images do not ask for a matcher rule or determine the eventual library's result semantics. Hyphen/apostrophe boundaries, extensions, Unicode, multiple terms and tie-breaks belong to future backend work if separately authorized, not this UI review.</p>
 </section>
 <section aria-labelledby="screens-title">
   <h2 id="screens-title">Inspect each variant on both Fold panels</h2>
@@ -224,8 +224,8 @@ dialog::backdrop { background-color: var(--color-backdrop); }
   </div>
 </section>
 <section aria-labelledby="reply-title">
-  <h2 id="reply-title">Response path</h2>
-  <p>Reply in this chat with <strong>W</strong> (word start) or <strong>A</strong> (anywhere inside the item's own name), plus any correction after inspecting both panels. Your answer decides only this word-boundary question; D/M membership/order stay selected, and title/parent context highlighting remains D59. A folder or track tap is still an open #129 decision.</p>
+  <h2 id="reply-title">Recorded scope</h2>
+  <p>This is not a current question. The UI decisions remain D59/D60/D61; the native results here are not a library recommendation or implementation. Continue with <a href="../current.html">the selected Search UI</a>. Search Back/Clear/focus (#127), empty/unavailable states (#128), result activation (#129) and accessibility (#118) remain separate UI reviews.</p>
 </section>
 </main>
 <dialog id="preview" aria-labelledby="preview-title">
