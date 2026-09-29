@@ -99,6 +99,7 @@ const OBJECT_ID_LENGTH = 40;
 const SAME_TEXTS = {
   sourceText: '毛毛跳上窗台。',
   candidateText: 'Mittens jumped onto the windowsill.',
+  referenceContext: '',
 } as const;
 
 /**
@@ -107,6 +108,7 @@ const SAME_TEXTS = {
 const OTHER_TEXTS = {
   sourceText: '毛毛跳上窗台。',
   candidateText: 'Mittens hopped up on the sill.',
+  referenceContext: '',
 } as const;
 
 /**
@@ -132,6 +134,7 @@ function rowFor(
     readonly texts?: {
       readonly sourceText: string;
       readonly candidateText: string;
+      readonly referenceContext: string;
     };
   },
 ): SettledAuditRow {

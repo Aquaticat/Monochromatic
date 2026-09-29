@@ -66,6 +66,7 @@ function rowFor(
     readonly texts?: {
       readonly sourceText: string;
       readonly candidateText: string;
+      readonly referenceContext: string;
     };
   },
 ): SettledAuditRow {
@@ -110,6 +111,15 @@ function rowFor(
 const SAME_TEXTS = {
   sourceText: '毛毛跳上窗台。',
   candidateText: 'Mittens jumped onto the windowsill.',
+  referenceContext: '',
+} as const;
+
+/**
+ The same pair, shown with what the page cites.
+ */
+const SAME_TEXTS_CITED = {
+  ...SAME_TEXTS,
+  referenceContext: 'Reference 1 (https://example.org/mittens): Mittens naps on sills.',
 } as const;
 
 /**
@@ -118,6 +128,7 @@ const SAME_TEXTS = {
 const OTHER_TEXTS = {
   sourceText: '毛毛跳上窗台。',
   candidateText: 'Mittens hopped up on the sill.',
+  referenceContext: '',
 } as const;
 
 await describe({
@@ -159,6 +170,30 @@ await describe({
         expect(identity.source.includes('毛毛',),).toBe(false,);
         expect(identity.candidate.includes('Mittens',),).toBe(false,);
         expect(identity.source.startsWith('sha256-audited-v1:',),).toBe(true,);
+      },
+    },),
+
+    // LEDGER B29: the audit now shows what the page cites, and an auditor
+    // shown references answers a different question from one shown none.
+    it({
+      name: 'DIGESTS THE REFERENCES WHERE SOME WERE SHOWN and records nothing for them where none were, so a '
+        + 'row persisted before the audit showed references keys exactly as one shown none today',
+      fn: async () => {
+        /**
+         Shown none.
+         */
+        const none = digestAuditedText(SAME_TEXTS,);
+
+        /**
+         Shown what the page cites.
+         */
+        const cited = digestAuditedText(SAME_TEXTS_CITED,);
+
+        expect(Object.keys(none,),).toStrictEqual(['kind', 'source', 'candidate',],);
+        if (cited.kind !== 'digested')
+          throw new Error('digested by construction',);
+        expect(cited.references?.startsWith('sha256-audited-v1:',),).toBe(true,);
+        expect(cited.references?.includes('Mittens',),).toBe(false,);
       },
     },),
   ],
@@ -216,6 +251,30 @@ await describe({
           left,
           right,
         },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'REFUSES TO MATCH A ROW SHOWN CITED REFERENCES with one shown none over the same pair, and matches '
+        + 'two shown the same references',
+      fn: async () => {
+        /**
+         Row shown the references.
+         */
+        const cited = rowFor({ runSet: 'first', entryId: 'mittens', sliceIndex: 0, claims: 0, texts: SAME_TEXTS_CITED, },);
+
+        /**
+         Same pair shown none.
+         */
+        const none = rowFor({ runSet: 'second', entryId: 'mittens', sliceIndex: 0, claims: 1, texts: SAME_TEXTS, },);
+
+        /**
+         Same pair shown the same references again.
+         */
+        const again = rowFor({ runSet: 'third', entryId: 'mittens', sliceIndex: 0, claims: 2, texts: SAME_TEXTS_CITED, },);
+
+        expect(sameAuditedText({ left: cited, right: none, },),).toBe(false,);
+        expect(sameAuditedText({ left: none, right: cited, },),).toBe(false,);
+        expect(sameAuditedText({ left: cited, right: again, },),).toBe(true,);
       },
     },),
   ],

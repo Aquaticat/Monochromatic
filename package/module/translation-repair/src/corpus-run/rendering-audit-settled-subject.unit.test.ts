@@ -62,6 +62,12 @@ const TRANSLATE_NAP = 'Mittens naps on the windowsill.';
 const REPAIR_NAP = 'Mittens is asleep on the sill.';
 
 /**
+ Whole original page both slices were cut from, which every subject carries
+ unchanged so the audit can read what the page cites.
+ */
+const PAGE_NAP = `${SOURCE_NAP}\n\n${SOURCE_FEATHER}\n`;
+
+/**
  Names this run licensed, which every subject carries unchanged.
  */
 const IDENTITY: SettledIdentity = {
@@ -246,6 +252,7 @@ await describe({
           artifact: ARTIFACT,
           runSet: 'run-cc33',
           identity: IDENTITY,
+          pageSourceText: PAGE_NAP,
         },);
 
         expect(subjects.length,).toBe(1,);
@@ -271,6 +278,7 @@ await describe({
           artifact: ARTIFACT,
           runSet: 'run-cc33',
           identity: IDENTITY,
+          pageSourceText: PAGE_NAP,
         },);
 
         /**
@@ -283,6 +291,7 @@ await describe({
         expect(subject.artifactDigest,).toBe('digest-aa11',);
         expect(subject.corpusSha,).toBe('sha-bb22',);
         expect(subject.identity,).toEqual(IDENTITY,);
+        expect(subject.pageSourceText,).toBe(PAGE_NAP,);
       },
     },),
   ],

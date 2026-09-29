@@ -649,6 +649,15 @@ await describe({
         expect(first?.candidateText,).toContain('It purrs.',);
         expect(first?.sourceText,).toBe(prepared.slices[0]?.source
           .text,);
+        // THE WHOLE PAGE at the artifact's commit, since the producing run
+        // read the links of the page and not of one slice (ledger B29).
+        /**
+         Whether every subject carries the page the corpus holds.
+         */
+        const carriesPage = reading.subjects.every(function isWholePage(subject,): boolean {
+          return subject.pageSourceText === SOURCE_PAGE;
+        },);
+        expect(carriesPage,).toBe(true,);
       },
     },),
 

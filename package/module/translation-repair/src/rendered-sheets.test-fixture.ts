@@ -255,8 +255,10 @@ export function renderedSheets(): readonly RenderedSheet[] {
           subject: {
             sourceText: SOURCE,
             candidateText: ARCHIVE,
-            // What `corpus-run/rendering-audit-settled-buy.ts` passes a page that declares names.
+            // What `corpus-run/rendering-audit-settled-buy.ts` passes a page that
+            // declares names and links a page.
             identityContext: IDENTITY,
+            referenceContext: REFERENCES,
           },
         },),
       },),

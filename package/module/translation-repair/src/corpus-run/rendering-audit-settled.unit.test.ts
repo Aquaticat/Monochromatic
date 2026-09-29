@@ -33,6 +33,8 @@ import {
   type ChatJsonRequest,
   eligibleSubjects,
   printPopulation,
+  sameAuditedText,
+  withCitedReferences,
   type SettledArtifactReading,
   type SettledAuditSubject,
   type SettledIdentity,
@@ -87,6 +89,22 @@ const SMALL_BUY = 2;
 const IDENTITY_CONTEXT = 'Mittens is written Mao Mao on the Chinese side';
 
 /**
+ What the pages an original cites say, in the shape the reference reader returns.
+ */
+const REFERENCE_CONTEXT = 'Reference 1 (https://example.org/mittens): Mittens naps in the bakery window.';
+
+/**
+ Whole original page every subject was cut from unless a case says, linking
+ the page the references read.
+ */
+const PAGE_TEXT = `${SOURCE_TEXT}\n\n[毛毛的博客](https://example.org/mittens)\n`;
+
+/**
+ A second entry's whole original, which links nowhere.
+ */
+const OTHER_PAGE_TEXT = '虎斑猫在屋顶上晒太阳。\n';
+
+/**
  Builds one audit subject.
  
  @param entryId - corpus entry
@@ -96,6 +114,9 @@ const IDENTITY_CONTEXT = 'Mittens is written Mao Mao on the Chinese side';
  @param auditsArchiveText - whether it audits the archive's own English
  
  @param identity - what the producing run declared, none unless a case says
+ 
+ @param pageSourceText - whole original the slice was cut from, the linking
+ page unless a case says
  
  @returns Subject as the input module offers one
  
@@ -110,11 +131,13 @@ function subjectAt(
     sliceIndex,
     auditsArchiveText,
     identity = { kind: 'none', },
+    pageSourceText = PAGE_TEXT,
   }: {
     readonly entryId: string;
     readonly sliceIndex: number;
     readonly auditsArchiveText: boolean;
     readonly identity?: SettledIdentity;
+    readonly pageSourceText?: string;
   },
 ): SettledAuditSubject {
   return {
@@ -127,6 +150,7 @@ function subjectAt(
     auditsArchiveText,
     sourceText: SOURCE_TEXT,
     candidateText: CANDIDATE_TEXT,
+    pageSourceText,
     pageRelation: { kind: 'survives', },
     identity,
   };
@@ -482,6 +506,7 @@ await describe({
             sliceIndex: 1,
             auditsArchiveText: false,
           },),
+          references: '',
           client: quietClient({
             asked,
             shown,
@@ -523,6 +548,7 @@ await describe({
               context: IDENTITY_CONTEXT,
             },
           },),
+          references: '',
           client: quietClient({
             asked: [],
             shown: shownDeclared,
@@ -539,6 +565,7 @@ await describe({
             sliceIndex: 0,
             auditsArchiveText: true,
           },),
+          references: '',
           client: quietClient({
             asked: [],
             shown: shownNone,
@@ -549,6 +576,106 @@ await describe({
           .includes(IDENTITY_CONTEXT,),).toBe(true,);
         expect(shownNone.join('\n',)
           .includes(IDENTITY_CONTEXT,),).toBe(false,);
+      },
+    },),
+    // LEDGER B29, the rendering audit's open gap: the producing judges had
+    // the pages the original cites; an auditor without them calls a detail
+    // one states an addition.
+    it({
+      name: 'SHOWS THE ROSTER THE CITED REFERENCES, records that it did, and keys the row on them, and shows and '
+        + 'records none where the original cites nothing',
+      fn: async () => {
+        /**
+         What the roster was shown with references.
+         */
+        const shownCited: string[] = [];
+        /**
+         Row audited with references.
+         */
+        const cited = await auditOne({
+          subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+          references: REFERENCE_CONTEXT,
+          client: quietClient({ asked: [], shown: shownCited, },),
+        },);
+        /**
+         What it was shown with none.
+         */
+        const shownNone: string[] = [];
+        /**
+         Row audited with none.
+         */
+        const none = await auditOne({
+          subject: subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+          references: '',
+          client: quietClient({ asked: [], shown: shownNone, },),
+        },);
+        expect(shownCited.join('\n',),).toContain(REFERENCE_CONTEXT,);
+        expect(shownNone.join('\n',),).not
+          .toContain('CITED REFERENCES',);
+        expect(cited.referencesKind,).toBe('cited',);
+        expect(none.referencesKind,).toBe('none',);
+        expect(sameAuditedText({ left: cited, right: none, },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: withCitedReferences.name,
+  children: [
+    it({
+      name: 'READS EACH PAGE ONCE and pairs every bought subject with its own page\'s references, in buying order',
+      fn: async () => {
+        /**
+         Pages the reader was asked for, in order.
+         */
+        const read: string[] = [];
+        /**
+         Subjects bought over two pages, the linking one twice.
+         */
+        const buying = [
+          subjectAt({ entryId: 'mittens', sliceIndex: 0, auditsArchiveText: true, },),
+          subjectAt({ entryId: 'tabby', sliceIndex: 0, auditsArchiveText: false, pageSourceText: OTHER_PAGE_TEXT, },),
+          subjectAt({ entryId: 'mittens', sliceIndex: 1, auditsArchiveText: false, },),
+        ];
+        /**
+         Each subject beside what its page cites.
+         */
+        const paired = await withCitedReferences({
+          subjects: buying,
+          reader: async function recorded({ sourceText, },) {
+            read.push(sourceText,);
+            return (sourceText === PAGE_TEXT) ? REFERENCE_CONTEXT : '';
+          },
+        },);
+        expect(read,).toStrictEqual([PAGE_TEXT, OTHER_PAGE_TEXT,],);
+        expect(paired.map(function subjectOf(pair,) {
+          return pair.subject;
+        },),).toStrictEqual(buying,);
+        expect(paired.map(function referencesOf(pair,) {
+          return pair.references;
+        },),).toStrictEqual([REFERENCE_CONTEXT, '', REFERENCE_CONTEXT,],);
+      },
+    },),
+    it({
+      name: 'READS NOTHING when nothing is bought, so the wiring check that buys nothing spends nothing',
+      fn: async () => {
+        /**
+         Pages the reader was asked for.
+         */
+        const read: string[] = [];
+        /**
+         Pairs for an empty buy.
+         */
+        const paired = await withCitedReferences({
+          subjects: [],
+          reader: async function recorded({ sourceText, },) {
+            read.push(sourceText,);
+            return REFERENCE_CONTEXT;
+          },
+        },);
+        expect(read,).toStrictEqual([],);
+        expect(paired,).toStrictEqual([],);
       },
     },),
   ],

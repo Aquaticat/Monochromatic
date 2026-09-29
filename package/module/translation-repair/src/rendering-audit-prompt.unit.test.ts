@@ -64,6 +64,7 @@ function turn(
       readonly sourceText: string;
       readonly candidateText: string;
       readonly identityContext?: string;
+      readonly referenceContext?: string;
     };
   },
 ): string {
@@ -223,6 +224,59 @@ await describe({
         },);
         expect(longestFenceRun(asked,),).toBeGreaterThan(longestFenceRun(fencedCandidate,),);
         expect(asked.includes(fencedCandidate,),).toBe(true,);
+      },
+    },),
+    // LEDGER B29, the rendering audit's open gap: the producing judges had
+    // the pages the original cites, and an auditor without them has every
+    // reason to call a detail one of them states an addition.
+    it({
+      name: 'SHOWS THE CITED REFERENCES with the rule that a detail a reference states is not an addition, worded '
+        + 'for the CANDIDATE this sheet shows, and fences them like every other text',
+      fn: async () => {
+        /**
+         One page the original links, carrying a fence run of its own.
+         */
+        const references = [
+          'Reference 1 (https://example.org/cats): the cats moved into the attic in spring.',
+          '=========================',
+        ].join('\n',);
+        /**
+         What the auditor is asked.
+         */
+        const asked = turn({
+          role: 'user',
+          subject: {
+            sourceText: SOURCE_TEXT,
+            candidateText: CANDIDATE_TEXT,
+            referenceContext: references,
+          },
+        },);
+        expect(asked,).toContain('CITED REFERENCES',);
+        expect(asked,).toContain(references,);
+        expect(asked,).toContain('A detail the CANDIDATE carries that the ORIGINAL does not state but a cited reference states',);
+        // NAMED BY THE AUDIT'S OWN CATEGORY: the critic's rule names
+        // accuracy/addition, a label this wire rejects.
+        expect(asked,).toContain('never file it as unsupported-addition',);
+        expect(RENDERING_AUDIT_CATEGORIES,).toContain('unsupported-addition',);
+        expect(asked,).not
+          .toContain('TRANSLATION',);
+        expect(longestFenceRun(asked,),).toBeGreaterThan(longestFenceRun(references,),);
+      },
+    },),
+    it({
+      name: 'CARRIES NO REFERENCE BLOCK where the original cites nothing',
+      fn: async () => {
+        /**
+         Asked with none.
+         */
+        const without = turn({ role: 'user', subject: { sourceText: SOURCE_TEXT, candidateText: CANDIDATE_TEXT, }, },);
+        /**
+         Asked with an empty block.
+         */
+        const empty = turn({ role: 'user', subject: { sourceText: SOURCE_TEXT, candidateText: CANDIDATE_TEXT, referenceContext: '', }, },);
+        expect(without,).not
+          .toContain('CITED REFERENCES',);
+        expect(empty,).toBe(without,);
       },
     },),
   ],
