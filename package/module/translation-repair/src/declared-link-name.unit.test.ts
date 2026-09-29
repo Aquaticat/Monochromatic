@@ -268,12 +268,17 @@ await describe({
       },
     },),
     it({
-      name: 'READS A LATIN SOURCE FORM ONLY WHERE IT ENDS AS A HANDLE WOULD: a link about a tomcat names no '
+      name: 'READS A LATIN SOURCE FORM ONLY AS A WHOLE HANDLE: a link about a tomcat or about BigTom names no '
         + 'Tom, and one about Tom does',
       fn: async () => {
         expect(validateTranslatedSlice({
           sourceText: '[Tomcat\u{7684}\u{65E9}\u{9910}](https://example.invalid/tomcat)',
           candidateText: '[Tomcat\'s breakfast](https://example.invalid/tomcat)',
+          declared: LATIN_SOURCE_PAIRS,
+        },).kind,).toBe('valid',);
+        expect(validateTranslatedSlice({
+          sourceText: '[BigTom\u{7684}\u{65E9}\u{9910}](https://example.invalid/bigtom)',
+          candidateText: '[BigTom\'s breakfast](https://example.invalid/bigtom)',
           declared: LATIN_SOURCE_PAIRS,
         },).kind,).toBe('valid',);
         expect(validateTranslatedSlice({
