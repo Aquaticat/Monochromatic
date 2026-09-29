@@ -1457,7 +1457,77 @@ VA5:
 
 ## Next action
 
-Propose batch 15.
+Batch 15 proposed (14 rules become 8, 800 to 379 tokens) with EDR (69 to 67 tokens);
+awaiting user answers.
+
+### Pending batch 15 text
+
+```md
+PP1:
+ `async`/`await` only:
+ no promise chains or `new Promise`.
+
+PP2:
+ Concurrent async work:
+ `Promise.all`,
+ or `Promise.allSettled` when failures must not discard other results;
+ cancel via `AbortController`.
+
+PP4:
+ Signal failure by throwing custom error classes,
+ never error codes,
+ null,
+ or result types;
+ document with `@throws`.
+
+PP5:
+ Replace `!` with `nonNullishOrThrow` (`@monochromatic-dev/module-or-throw`);
+ build multi-line error messages with `dedent` (`string-dedent`).
+
+PP6:
+ Put error text in the thrown error,
+ not a preceding `console.log`/`console.error`;
+ set `process.exitCode` only for non-standard exit codes.
+
+PP8:
+ Throw on unreachable branches;
+ never silently discard unexpected states.
+
+PPX:
+ Class members default to `#private`.
+
+RG2:
+ Code replacing a regex makes one linear pass (O(n) time,
+ O(1) stack),
+ proven O(n) for unbounded input.
+```
+
+Deletes:
+PP3 (`no-try-finally` message names `using`),
+PP7 (`no-process-exit` help says throw;
+swallowing is LG2),
+PP9 (`no-switch` message names both fixes),
+OWB (prefer-readonly external-path guidance plus `package/ownership-marker/foreign-borrowed/README.md` already carry it),
+RG1 and RG3 (`no-regex` message carries both;
+97 of 97 repo disables have justifications).
+PPX drops composition (`no-class` message),
+`readonly` (IMM plus readonly lint),
+and `unknown` (`no-explicit-any` help).
+PP1 kept as a compact principle (round 7):
+`prefer-await-to-then` misses `return p.then(...)`.
+
+### Pending EDR text
+
+```md
+EDR:
+ Parallel tool calls may run in any order,
+ so a command reading a fresh edit can see the pre-edit file;
+ send dependent commands only after the edit returns.
+```
+
+pi runs one response's tool calls concurrently by default
+(`pi-agent-core` `dist/agent-loop.js` `executeToolCallsParallel`,
+`dist/agent.js` `toolExecution ?? "parallel"`).
 
 ### Concurrent `AGENTS.md` changes
 
@@ -1541,7 +1611,8 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
 - Rewrite references to retired codes;
    add forbidden-strings entries for retired codes.
 - Update `doc/philosophy/agents.md` and `doc/agent/regression-suite.md` Case 3.
-- Move JCH and OWB guidance into linter diagnostics.
+- Move JCH guidance into the `tsdoc/check-mutates` diagnostic
+   (OWB guidance is already in the prefer-readonly diagnostic).
 
 ### Resume notes
 
