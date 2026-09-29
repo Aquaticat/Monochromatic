@@ -1713,7 +1713,152 @@ TAE:
 
 ## Next action
 
-Propose batch 18.
+Batch 18 proposed:
+21 rules become 18,
+1290 to 1056 tokens;
+awaiting user answers.
+
+### Pending batch 18 text
+
+```md
+WR2:
+ Prose never uses em-dashes,
+ en-dashes,
+ or ASCII substitutes for them:
+ use paired commas/parentheses,
+ colon,
+ semicolon,
+ or period;
+ "to" for ranges.
+Hyphenated compounds and CLI `--flags` are fine.
+
+WR3:
+ Emphasis:
+ **bold** inline only;
+ never italics or ALL CAPS.
+
+WR4:
+ Numerals only where exact count,
+ order,
+ version,
+ ID,
+ or measurement matters;
+ prefer count-neutral wording;
+ mention list length only when it is the claim.
+
+WR5:
+ Never point by relative position ("above",
+ "below",
+ "earlier");
+ name the tag,
+ heading,
+ path,
+ or symbol,
+ in prose,
+ TSDoc,
+ and comments.
+
+MD1:
+ Break lines at semantic boundaries,
+ under 120 chars,
+ so text reads without editor wrapping.
+
+MD2:
+ `-` for unordered lists;
+ pad numbered markers to 4 chars (`1.`,
+ `10.`).
+
+MD3:
+ Fenced code blocks with language tags and file-path comments.
+
+MD4:
+ Reference-style links for repeated URLs;
+ relative links for internal docs.
+
+MD5:
+ No tables (pipe or HTML);
+ use headings or lists.
+
+MD6:
+ Headings:
+ ATX,
+ sentence case,
+ max 4 levels,
+ blank line before.
+Standalone titles and labeled points become headings plus prose,
+ never bold lines or bold-label bullets.
+
+MD8:
+ Hard wraps fall only between whole inline spans;
+ keep code spans,
+ emphasis,
+ and link syntax on one line,
+ or the closing delimiter renders literally.
+
+WRP:
+ Backtick file names,
+ identifiers,
+ commands,
+ and code tokens in Markdown prose.
+
+DPL:
+ Repo-wide docs live in `doc/`;
+ root docs are only `README.md`,
+ `SECURITY.md`,
+ `AGENTS.md`,
+ `CLAUDE.md`,
+ `LICENSE`,
+ `LICENSES/`.
+Package docs stay beside code.
+
+DL1:
+ Repo-wide doc paths:
+ `doc/<family>/<kebab-topic>.md`;
+ a family index,
+ if any,
+ is `doc/<family>/README.md`.
+
+DL3:
+ Bug reports become a section of the most relevant `doc/troubleshooting/<topic>.md`,
+ never their own family.
+
+DL4:
+ Delete a doc only when its work landed and no durable fact (root causes,
+ workarounds,
+ tradeoffs) lacks a new home;
+ read it first;
+ git history isn't a home.
+
+DL5:
+ Reference source files by repo-relative path,
+ never pinned GitHub blob URLs,
+ which break when targets move.
+
+EC1:
+ Worktree changes you did not make are concurrent work,
+ not emergencies:
+ never restore,
+ stash,
+ or revert them;
+ touch only task files.
+Unrelated change blocks your edit:
+ say so and ask.
+```
+
+Retires MD7 into MD6 (with WR3's heading clauses),
+DL2 into DL1,
+and deletes DL6 (meta statement that no checker exists).
+WR3 absorbs MD1's "no italics";
+MD1 absorbs MD6's 120-char line limit.
+DL1 keeps only the durable naming pattern;
+the `PREFIX.rest.md` migration is finished (no tracked root prefix docs).
+DPL drops "`CONTEXT.md` forbidden" (`mono/forbidden-root-context` blocks it at commit with a fix message) and vague "tidy subdirs".
+WRP drops its rationale and `doc/todo/backtick-split-filenames.md` pointer (the splitting cause is fixed).
+MD5 adds "(pipe or HTML)":
+the `no-pipe-tables` autofix converts pipe tables to HTML tables.
+Markdown rules count as unenforced:
+`lint:markdown` fails repo-wide (48245 `semantic-line-breaks` violations in 129 `doc/` files),
+and dprint's Markdown plugin is commented out.
 
 ### Concurrent `AGENTS.md` changes
 
