@@ -5056,7 +5056,7 @@ The census read every owner-side entry in both package sessions' transcripts:
 typed messages,
 messages queued while the agent worked
 (stored as `queued_command` attachments,
-which a first reader missed until the known 01:59:59 answer failed to appear),
+which a first reader missed until the known 01:59:59 UTC answer failed to appear),
 and AskUserQuestion answers.
 The Codex prompt history holds no owner prompt between 00:00 and 04:00 UTC.
 Every entry in that window,

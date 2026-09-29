@@ -79,8 +79,8 @@ const REFUSAL_COOLDOWN_MS = 300_000;
  pass of 2026-09-02 held Synthetic out for the whole cooldown on a
  burst of 429s while its meter read 2729 of 2750, and two such holds ended the
  pass for every remaining entry. The bursts measured there lasted 31 s
- (01:39:20 to 01:39:51), 3 s (01:40:32 to 01:40:35) and 2 s (01:54:06 to
- 01:54:08).
+ (01:39:20 to 01:39:51 UTC), 3 s (01:40:32 to 01:40:35 UTC) and 2 s
+ (01:54:06 to 01:54:08 UTC).
  
  TIED TO THE FRESHNESS WINDOW rather than picked: the reading that excused
  the refusal is trusted for this long, so the hold expires with it, and the

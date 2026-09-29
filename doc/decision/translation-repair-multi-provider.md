@@ -794,11 +794,14 @@ and survival is the larger term.
 
 THE OUTAGE TABLE STOPPED BEING AN ARGUMENT THE SAME AFTERNOON.
 The 15:36 UTC pass reached the naturalness lane with Charm Hyper still dry
-and logged both halves of the prediction within ten milliseconds:
+and logged both halves of the prediction within ten milliseconds
+(log times, UTC):
 
-    17:01:28.240  chunk 2: nothing to edit, unchanged
-    17:01:28.250  refiner gemma-4-26b-a4b-it: NoProviderForModelError: no provider can take it
-    17:04:18.932  refinement from hf:Qwen/Qwen3.8-27B won
+```text
+17:01:28.240  chunk 2: nothing to edit, unchanged
+17:01:28.250  refiner gemma-4-26b-a4b-it: NoProviderForModelError: no provider can take it
+17:04:18.932  refinement from hf:Qwen/Qwen3.8-27B won
+```
 
 The newly seated Hyper model went dark in the seat it had just been given,
 the stage ran on its two remaining seats,

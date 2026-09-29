@@ -15,7 +15,7 @@ import { StatedRefusalError, } from './stated-refusal.ts';
 // HTTP 429 ("You've hit your hourly rate limit. Please try again in 1s").
 // Measured on XIEPT2, 2026-09-03 00:55 to 01:39 UTC, Hyper the only provider
 // left: 612 successful requests in the whole run (SPEND lines), refusals from
-// 01:00:33 once the hour's thousand was spent (257 of them in this run, the
+// 01:00:33 UTC once the hour's thousand was spent (257 of them in this run, the
 // rest in the run before it), then a trickle of 100 to 140 successes per ten
 // minutes, which is the rate at which requests from an hour earlier left the
 // window; 6,441 retry attempts and 1,487 calls refused five times over, every
@@ -28,7 +28,7 @@ import { StatedRefusalError, } from './stated-refusal.ts';
 // so that count was successes plus refusals. The SPEND lines are the count.
 //
 // CLASS ONE HUNDRED FORTY-NINE (hulicaijia30, 2026-09-26). The pass spent the
-// hour's thousand starts between 07:31 and 08:04 UTC, and at 08:04:20 one take
+// hour's thousand starts between 07:31 and 08:04 UTC, and at 08:04:20 UTC one take
 // slept 1,640,012 ms until the first start left the window. Takes then ran
 // through one promise chain and the sleep did not hear an abort, so every Hyper
 // call behind it waited too, and the 360 s call deadlines that fired at about

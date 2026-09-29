@@ -5298,9 +5298,9 @@ each read off the pass log and the shipped page:
     MIKAELA16 READ (frozen `a43c5d88d`): SETTLED 05:58 UTC 2026-09-24 in 20.6 min, 2,483 seats, 2,051 calls, 0.74 USD by the meters;
     class one hundred twelve not exercised (the roster placed every block, section 2 merging sources 2 and 3 into target 2), the HRT passage on the page once, "That night, Spring, Mika, and I" as the archive;
     every mikaela11 check holds (the classmate line reads "a classmate of mine" so no possessive to curl);
-    class one hundred nine live (eight re-seated proof rounds at 2 of 3 after Synthetic dried out at 05:47:59), class one hundred seven on slices 11, 13, 17, 23, contest 26 of 33 differ, one unendorsed (9), 60 abstention lines, Jev 78 of 78.
+    class one hundred nine live (eight re-seated proof rounds at 2 of 3 after Synthetic dried out at 05:47:59 UTC), class one hundred seven on slices 11, 13, 17, 23, contest 26 of 33 differ, one unendorsed (9), 60 abstention lines, Jev 78 of 78.
     CLASS ONE HUNDRED THIRTEEN BUILT (375a9b3e8 over 6dec56b0b; phase guards red first 24b9ab623, which withdrew the settle guard e003d4c1d; full suite `suite-class113b.log` 1116 PASS):
-    ten refine rechecks from 05:51:51 heard 1 of 3 on the chunk's bench because the refine stage never read the re-seat hook;
+    ten refine rechecks from 05:51:51 UTC heard 1 of 3 on the chunk's bench because the refine stage never read the re-seat hook;
     `settleRefinedSlice` now reads the bench through `checkerBenchAtStage` right before the recheck (after the unchanged exit, so a slice whose rewrite changed nothing asks no hook) and runs the recheck and the rewrite probe on it, the hook threaded from the lane driver through `refineSettledSlices`, `runRefinePhase` and `settleRefinePhaseSlice`.
     Not exercised live yet.
     MIKAELA15 READ (frozen `caac222a6`): SETTLED 05:19 UTC 2026-09-24 in 10.5 min, 2,116 seats, 1,687 calls, 0.75 USD by the meters;
