@@ -168,8 +168,9 @@ and [its evidence](evidence/search-word-boundary-native-comparison.md)
 are historical and unadopted;
 no matcher rule or library is selected by them.
 Continue the open UI reviews for
-[Back/Clear/focus and same-query scroll behavior](evidence/search-navigation-focus-boundaries.md),
-empty/unavailable states,
+[Back/Clear/focus and same-query scroll behavior](evidence/search-navigation-focus-boundaries.md)
+using the [logic-only choice walkthrough](questions/search-navigation-focus.prototype.html),
+then empty/unavailable states,
 result activation and accessibility.
 Selection does not authorize production implementation.
  Desktop implementation inherits

@@ -339,7 +339,11 @@ rounds (2026-09-17):
   Back/Clear/focus,
   entry/re-entry and same-query scroll restoration (#127) are being
   reviewed separately in
-  `evidence/search-navigation-focus-boundaries.md`.
+  `evidence/search-navigation-focus-boundaries.md`
+  and the pending logic-only
+  `questions/search-navigation-focus.prototype.html` form.
+  Its checked defaults are recommendations,
+  not adopted decisions.
   Empty/unavailable behavior (#128),
   result activation (#129) and Search accessibility (#118) remain
   separate open decisions.

@@ -6579,11 +6579,38 @@ after hiding and refocusing the keyboard,
 but D56 accepted the viewport direction,
 not that extra swipe as a requirement.
 Entry edit focus,
-system Back when a keyboard is visible,
-re-entry query lifetime and same-query scroll restoration are independent
-UI decisions to compare.
+visible-header Back,
+Clear focus,
+re-entry query lifetime,
+re-entry position and same-query row visibility are independently
+compared in
+`questions/search-navigation-focus.prototype.html`.
+The checked defaults are recommendations awaiting user choice,
+not adoptions.
+Its self-contained HTML logic model was browser-tested in light and dark,
+at desktop and mobile widths;
+free-play and guided transitions,
+keyboard-operable tabs,
+all offered options and free text were exercised with zero axe WCAG A/AA
+violations or console errors.
+A browser test is not native Android,
+actual IME dispatch,
+result activation or TalkBack proof.
+The model distinguishes a retained offset from a row still visible after
+keyboard refocus;
+S-offset schematically reproduces D56's final-row extra swipe while
+S-visible is an unverified design goal.
+Android SDK 37 `InputMethodService.java` describes a default interception
+of Back by a shown IME,
+with an IME-controlled bypass condition;
+the form treats system Back as an illustrative baseline,
+not a cross-keyboard app guarantee.
+The visible Back arrow's first action while typing is open under D47,
+which only settles the existence of a return path.
 No new IME experiment is authorized unless a compelling reason is first
-explained to the user;
-plan a logic-only walkthrough rather than claiming new native focus evidence.
+explained to the user.
+Re-entry covers one running-session visit;
+posture changes,
+process restoration and return-focus target are outside this schematic.
 #128,
 #129 and #118 stay separate.
