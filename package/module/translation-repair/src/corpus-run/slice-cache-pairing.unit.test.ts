@@ -146,8 +146,9 @@ await describe({
       },
     },),
     it({
-      name: 'NEVER RESUMES a record whose findings are not all text, which both record types promise, nor a bare '
-        + 'list, in either cache (ledger B18: the copies checked only that findings were a list)',
+      name: 'NEVER RESUMES a record whose findings are not all text, which both record types promise, nor one '
+        + 'whose pairs are not index pairs, nor a bare list, in either cache (ledger B18: the copies checked only '
+        + 'that findings were a list)',
       fn: async () => {
         await using scratch = await scratchDir();
         expect(await resumedAfter({
@@ -158,6 +159,19 @@ await describe({
           serialized: JSON.stringify({
             pairs: [],
             findings: [7,],
+          },),
+        },),).toEqual([[], [],],);
+        expect(await resumedAfter({
+          dir: join(
+            scratch.path,
+            'pairs',
+          ),
+          serialized: JSON.stringify({
+            pairs: [{
+              source: 'the first block',
+              target: 1,
+            },],
+            findings: [],
           },),
         },),).toEqual([[], [],],);
         expect(await resumedAfter({
