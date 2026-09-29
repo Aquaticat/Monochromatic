@@ -220,6 +220,38 @@ await describe({
       },
     },),
     it({
+      name: 'COUNTS AS ONE RENDERING two that differ only in apostrophe style, spacing of any kind, or corner-bracket '
+        + 'and underscore wrappers (ledger B24)',
+      fn: async () => {
+        /**
+         Straight and curly apostrophes; a nonbreaking space and a tab.
+         */
+        const { lexicon: typography, } = await settled({
+          replies: {
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { titles: [{ title: 1, rendering: 'Song of the Cat', },], },
+            [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: 'The Cat\'s\u{00A0}Song', },], },
+            [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: 'The Cat’s\tSong', },], },
+          },
+        },);
+        expect(typography.titles,).toEqual([
+          { source: '猫之歌', occurrences: 2, rendering: 'The Cat\'s\u{00A0}Song', voices: 2, heard: 3, },
+        ],);
+        /**
+         Corner brackets and underscores around the same words.
+         */
+        const { lexicon: wrapped, } = await settled({
+          replies: {
+            [SEAT_SYNTHETIC_TEXT_EVERYWHERE]: { titles: [{ title: 1, rendering: 'Cat Song', },], },
+            [SEAT_HYPER_ONLY]: { titles: [{ title: 1, rendering: '「Song of the Cat」', },], },
+            [SEAT_OPENROUTER_ONLY]: { titles: [{ title: 1, rendering: '_Song of the Cat_', },], },
+          },
+        },);
+        expect(wrapped.titles,).toEqual([
+          { source: '猫之歌', occurrences: 2, rendering: 'Song of the Cat', voices: 2, heard: 3, },
+        ],);
+      },
+    },),
+    it({
       name: 'BREAKS A TIE BY THE EARLIEST SEAT ON THE ROSTER, so a resumed page reads the same answer',
       fn: async () => {
         const { lexicon, } = await settled({
