@@ -25,7 +25,6 @@ import {
 } from './archive-block-review-wire.ts';
 import { decideBestCandidate, } from './candidate-select.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
-import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
 import { reachableQuorum, } from './stage-reachable-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -206,6 +205,21 @@ export async function runArchiveBlockReviewStage(
   // reached and answered; only the shape was lost. So the outage test counts
   // them beside the heard voices, and a bench that answered falls through
   // to the same retention an unanchored one gets.
+  //
+  // ONE QUORUM SIZES BOTH TESTS, on the bench the router could serve (ledger
+  // B27). The participation threshold was once the exact half of the whole
+  // bench while the outage test beside it already counted refused seats out
+  // of reach, so a short bench whose every reachable seat anchored its quote
+  // was left unresolved and never bought its naturalness read.
+  /**
+   Voices the gather needed, and the anchored voices the review needs, on
+   the bench the router could serve.
+   */
+  const { needed, } = reachableQuorum({
+    benchSize: modelIds.length,
+    unreachable: gather.unreachable
+      .size,
+  },);
   if (!gather.quorumMet) {
     /**
      Voices read.
@@ -217,18 +231,6 @@ export async function runArchiveBlockReviewStage(
      */
     const unread = gather.unreadable
       .size;
-    /**
-     Seats the router refused.
-     */
-    const refused = gather.unreachable
-      .size;
-    /**
-     Voices the gather needed, on the bench the router could serve.
-     */
-    const { needed, } = reachableQuorum({
-      benchSize: modelIds.length,
-      unreachable: refused,
-    },);
     if ((heard + unread) < needed) {
       throw new TranslationRepairInterruptedError({
         reason: 'provider-unavailable',
@@ -242,15 +244,13 @@ export async function runArchiveBlockReviewStage(
     );
   }
   /**
-   Participation required after unsupported anchors are removed.
-   */
-  const requiredParticipation = rosterQuorumSize({ rosterSize: modelIds.length, });
-  /**
    Replies heard at all, anchored or not.
    */
   const heardCount = gather.voices
     .length;
-  if ((anchoredVoices.length < requiredParticipation) && (revisions.length === 0)) {
+  // Participation after unsupported anchors are removed is held to the same
+  // reachable quorum, since a refused seat can anchor nothing.
+  if ((anchoredVoices.length < needed) && (revisions.length === 0)) {
     return {
       kind: 'retained',
       text: blockText,
@@ -259,7 +259,7 @@ export async function runArchiveBlockReviewStage(
         `archive review left the block unresolved: ${String(anchoredVoices.length,)} of ${
           String(heardCount,)
         } replies supplied eligible review evidence, below the ${
-          String(requiredParticipation,)
+          String(needed,)
         } required; the block stands as the archive wrote it`,
       ],
     };

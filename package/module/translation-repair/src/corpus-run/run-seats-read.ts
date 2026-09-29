@@ -206,7 +206,7 @@ async function readDrynessPastShortBench(
   },);
   l.warn(
     `JUDGE SEATS phase=${phase} short of quorum: ${short.join('; ',)}; holds ${held.join(', ',)}; `
-      + `waiting ${String(waitMs,)}ms for the shortest hold to end rather than seating a bench that cannot settle`,
+      + `waiting ${String(waitMs,)}ms for the shortest hold to end rather than seating a bench short of its quorum`,
   );
   await waitOutHold({
     ms: waitMs,
@@ -243,8 +243,8 @@ async function readDrynessPastShortBench(
 
 /**
  Reads every provider's dryness and derives the benches for one phase of
- one entry, waiting out a named hold first when the phase could not settle
- without it.
+ one entry, waiting out a named hold first when a bench the phase leans on
+ would otherwise sit short of its quorum.
  
  @param client - run client whose dryness view and holds are the router's own
  

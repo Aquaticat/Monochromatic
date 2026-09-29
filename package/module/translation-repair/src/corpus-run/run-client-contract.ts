@@ -35,10 +35,14 @@ export type RunClient = SyntheticClient & {
   /**
    How long each provider's last refusal still holds it out, in
    milliseconds, zero when it is not held.
-   READ BESIDE THE DRYNESS by `run-seats.ts` since the thirteenth class: a
-   bench that cannot reach quorum among the seats a wet provider serves waits
-   out the shortest running hold once, as the router does when every provider
-   reads dry, rather than seating a phase that settles on nobody.
+   READ BESIDE THE DRYNESS by `run-seats-read.ts` since the thirteenth class:
+   a bench that cannot reach quorum among the seats a wet provider serves
+   waits out the shortest running hold once, as the router does when every
+   provider reads dry, rather than seating a bench short of its quorum, which
+   decides on a share of the seats a wet provider serves, or is an outage
+   below two of them (`doc/decision/translation-repair-short-bench-share.md`,
+   ledger B27).
+   `pass-reseat-hook.ts` reads it too, to re-seat only while a hold runs.
    */
   readonly providerHolds: () => ProviderRecord<number>;
 };
