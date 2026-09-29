@@ -5,9 +5,9 @@ import {
   opensSentence,
   startsWithCapital,
 } from './canadian-spelling-capital.ts';
+import { isWordCharacter, } from './canadian-date-parts.ts';
 import {
   besideNonProse,
-  isWordCharacter,
   wordsOf,
 } from './canadian-spelling-context.ts';
 import {

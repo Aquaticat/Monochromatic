@@ -4,7 +4,7 @@ import type { SliceReplacement, } from '../splice-slices.ts';
 import { rewriteEverySlice, } from './page-slice-rewrite.ts';
 import { runEnd, } from './text-runs.ts';
 import { monthFirstDates, } from './canadian-date.ts';
-import { isWordCharacter, } from './canadian-spelling-context.ts';
+import { isWordCharacter, } from './canadian-date-parts.ts';
 import { canadianSpellings, } from './canadian-spelling.ts';
 import {
   inProse,

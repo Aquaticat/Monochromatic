@@ -1,9 +1,10 @@
 import { isAsciiDigit, } from '../ascii-letters.ts';
-import { isCasedLetter, } from './canadian-date-parts.ts';
+import { isCombiningMark, } from '../latin-letters.ts';
 import {
+  isCasedLetter,
   isWordCharacter,
-  lineStartOf,
-} from './canadian-spelling-context.ts';
+} from './canadian-date-parts.ts';
+import { lineStartOf, } from './canadian-spelling-context.ts';
 import {
   runEnd,
   runStart,
@@ -253,16 +254,25 @@ export function opensSentence(
     keeps: isSentenceGap,
   },);
   /**
-   The word before the closing mark.
+   The word before the closing mark, with any combining marks on its letters.
    */
   const before = text.slice(
     runStart({
       text,
       from: closeEnd - 1,
-      keeps: isCasedLetter,
+      keeps: isWordCharacter,
     },),
     closeEnd - 1,
   );
+  /**
+   Letters in that word, its combining marks left out, so an initial written
+   with a combining accent is one letter as its composed spelling is.
+   */
+  const letters = Array.from(before,)
+    .filter(function isLetter(character,): boolean {
+      return !isCombiningMark({ character, },);
+    },)
+    .length;
   /**
    Whether a blank line, or the text's start, opens the word's paragraph.
    */
@@ -276,7 +286,7 @@ export function opensSentence(
    Whether a sentence's closing mark, not a title's or an initial's period,
    stands before the word.
    */
-  const afterSentence = SENTENCE_ENDS.has(text.charAt(closeEnd - 1,),) && (before.length !== 1)
+  const afterSentence = SENTENCE_ENDS.has(text.charAt(closeEnd - 1,),) && (letters !== 1)
     && (!NAME_TITLES.has(before,));
   return marked || paragraphStart
     || afterSentence;
@@ -351,7 +361,7 @@ export function inTitleCaseHeading(
       runEnd({
         text: word,
         from: 0,
-        keeps: isCasedLetter,
+        keeps: isWordCharacter,
       },),
     ),);
   },);

@@ -1,7 +1,7 @@
 import {
   closingComma,
-  isCasedLetter,
   isDateSpace,
+  isWordCharacter,
   keptPeriod,
   monthStartsName,
   readDay,
@@ -229,7 +229,7 @@ export function readJoin(
     : runEnd({
       text,
       from: joinStart,
-      keeps: isCasedLetter,
+      keeps: isWordCharacter,
     },);
   /**
    Where the space after the word or dash ends.

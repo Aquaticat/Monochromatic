@@ -301,6 +301,45 @@ await describe({
       },
     },),
     it({
+      name: 'READS a word written with a combining accent as its composed spelling is read (ledger B18): a month '
+        + 'with a mark after it is no month, a compound, an initial, a heading\'s small word and an identifier '
+        + 'keep their marks, and a year or an underscore with a mark on it reads as the composed forms do',
+      fn: async () => {
+        /**
+         Each text written with combining marks.
+         */
+        const combining = [
+          'We napped on 4 May\u{0301}.',
+          'On 2 May bug\u{0301}s swarmed.',
+          'She met E\u{0301}. Color at noon.',
+          '## The Color of a\u{0300} Cat\n\nShe napped.',
+          'Set cafe\u{0301}_color now.',
+          'On 4 May 2024\u{0301} she napped.',
+          'Set color_\u{0301} now.',
+        ];
+        /**
+         Each rewritten.
+         */
+        const outputs = combining.map(function rewrite(text,): string {
+          return rewritten({ text, },);
+        },);
+        expect(outputs,).toEqual([
+          'We napped on 4 May\u{0301}.',
+          'On May 2 bug\u{0301}s swarmed.',
+          'She met E\u{0301}. Color at noon.',
+          '## The Color of a\u{0300} Cat\n\nShe napped.',
+          'Set cafe\u{0301}_color now.',
+          'On 4 May 2024\u{0301} she napped.',
+          'Set colour_\u{0301} now.',
+        ],);
+        expect(outputs.map(function composed(text,): string {
+          return text.normalize('NFC',);
+        },),).toEqual(combining.map(function composedFirst(text,): string {
+          return rewritten({ text: text.normalize('NFC',), },).normalize('NFC',);
+        },),);
+      },
+    },),
+    it({
       name: 'LEAVES tag attributes, a link destination, code, a comment and a capitalised title in emphasis '
         + 'untouched, and rewrites the prose between them',
       fn: async () => {

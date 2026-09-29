@@ -1,6 +1,8 @@
 import { isAsciiDigit, } from '../ascii-letters.ts';
-import { isCasedLetter, } from './canadian-date-parts.ts';
-import { isCombiningMark, } from '../latin-letters.ts';
+import {
+  isCasedLetter,
+  isWordCharacter,
+} from './canadian-date-parts.ts';
 import {
   runEnd,
   runStart,
@@ -45,7 +47,7 @@ const PATH_MARKS: readonly string[] = [
 ];
 
 /**
- The two neighbours on one side of a word.
+ What stands on one side of a word.
  */
 type Side = Readonly<{
   /**
@@ -54,29 +56,10 @@ type Side = Readonly<{
   neighbour: string;
 
   /**
-   Character past it.
+   Whether a word stands past the neighbour.
    */
-  far: string;
+  farWord: boolean;
 }>;
-
-/**
- Whether one character belongs to a word: a letter with case, or a
- combining mark that continues one ("idée" written with a separate accent).
-
- @param character - one UTF-16 unit
-
- @returns Whether it continues a word
-
- @example
- ```ts
- isWordCharacter({ character: '́', },); // true
- ```
- */
-export function isWordCharacter(
-  { character, }: { readonly character: string; },
-): boolean {
-  return isCasedLetter({ character, },) || isCombiningMark({ character, },);
-}
 
 /**
  Whether one character belongs to a whitespace-delimited token.
@@ -256,6 +239,11 @@ export function inPathToken(
  a listed neighbour, an underscore or a dot with a letter or digit on its far
  side (an identifier, a file name, a domain), or a slash inside a path.
 
+ Before the word, the far character may be a combining mark ending the word
+ there (`café_color` with a combining acute), which counts as that word;
+ after it, a mark right past the underscore or dot sits on that character
+ and opens no word (audit area six, ledger B18).
+
  @param text - text under scan
 
  @param start - word's first offset
@@ -281,27 +269,31 @@ export function besideNonProse(
   },
 ): boolean {
   /**
+   Character past the neighbour before the word.
+   */
+  const farBefore = text.charAt(start - 2,);
+  /**
+   Character past the neighbour after the word.
+   */
+  const farAfter = text.charAt(end + 1,);
+  /**
    The word's two sides.
    */
   const sides: readonly Side[] = [
     {
       neighbour: text.charAt(start - 1,),
-      far: text.charAt(start - 2,),
+      farWord: isWordCharacter({ character: farBefore, },) || isAsciiDigit({ character: farBefore, },),
     },
     {
       neighbour: text.charAt(end,),
-      far: text.charAt(end + 1,),
+      farWord: isCasedLetter({ character: farAfter, },) || isAsciiDigit({ character: farAfter, },),
     },
   ];
   return sides.some(function marks(side: Side,): boolean {
-    /**
-     Whether a letter or digit stands past the neighbour.
-     */
-    const farWord = isCasedLetter({ character: side.far, },) || isAsciiDigit({ character: side.far, },);
     if (isAsciiDigit({ character: side.neighbour, },) || NON_PROSE_NEIGHBOURS.has(side.neighbour,))
       return true;
     if ((side.neighbour === '_') || (side.neighbour === '.'))
-      return farWord;
+      return side.farWord;
     return (side.neighbour === '/') && inPathToken({
       text,
       start,

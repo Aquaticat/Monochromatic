@@ -15,6 +15,7 @@ import {
 } from './canadian-date-words.ts';
 
 import { isAsciiDigit, } from '../ascii-letters.ts';
+import { isCombiningMark, } from '../latin-letters.ts';
 import { runEnd, } from './text-runs.ts';
 
 //region Canadian date parts
@@ -46,12 +47,35 @@ export function isCasedLetter(
 }
 
 /**
+ Whether one character belongs to a word: a letter with case, or a
+ combining mark that continues one ("idée" written with a separate accent).
+ The Canadian passes read every word through this test, so a word written
+ with a combining accent is read whole, as its composed spelling is (audit
+ area six, ledger B18): a month such as `May` with a combining accent after
+ it is no month, and a date beside such a word is part of it.
+
+ @param character - one UTF-16 unit
+
+ @returns Whether it continues a word
+
+ @example
+ ```ts
+ isWordCharacter({ character: '\u{0301}', },); // true
+ ```
+ */
+export function isWordCharacter(
+  { character, }: { readonly character: string; },
+): boolean {
+  return isCasedLetter({ character, },) || isCombiningMark({ character, },);
+}
+
+/**
  Whether one character continues a word, so a date touching it is part of a
  longer token.
 
  @param character - character beside the date, empty at a text edge
 
- @returns Whether it is a letter or a digit
+ @returns Whether it is a letter, a combining mark or a digit
 
  @example
  ```ts
@@ -61,7 +85,7 @@ export function isCasedLetter(
 export function continuesWord(
   { character, }: { readonly character: string; },
 ): boolean {
-  return isAsciiDigit({ character, },) || isCasedLetter({ character, },);
+  return isAsciiDigit({ character, },) || isWordCharacter({ character, },);
 }
 
 /**
@@ -211,7 +235,7 @@ export function readMonth(
   const lettersEnd = runEnd({
     text,
     from: at,
-    keeps: isCasedLetter,
+    keeps: isWordCharacter,
   },);
   /**
    The name as written.
@@ -365,7 +389,7 @@ export function monthStartsName(
   const wordEnd = runEnd({
     text,
     from: month.end + 1,
-    keeps: isCasedLetter,
+    keeps: isWordCharacter,
   },);
   /**
    The next word.
