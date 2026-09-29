@@ -98,6 +98,29 @@ function coverageText({
  */
 const PREFIX = 'file:///cattery/dist/final/node/';
 
+/**
+ Stand-in command text that prints a marker the runner writes, built from
+ two halves when the stand-in runs. A marker written whole in the command
+ would reach this suite's own log through the warning `runSuite` prints on a
+ failed command, and a census of the whole suite would count it as a
+ failing test and refuse to run.
+
+ @param marker - marker to print, `PASS` or `FAIL`
+
+ @param label - text after it
+
+ @returns A statement printing `[<marker>] <label>`
+ */
+function printMarker({
+  marker,
+  label,
+}: {
+  readonly marker: 'FAIL' | 'PASS';
+  readonly label: string;
+},): string {
+  return `console.log("[" + "${marker}] ${label}");`;
+}
+
 await describe({
   name: runSuite.name,
   children: [
@@ -117,7 +140,13 @@ await describe({
           command: [
             process.execPath,
             '--eval',
-            'console.log("[PASS] nap [PASS] purr"); console.log(process.env.NODE_V8_COVERAGE);',
+            `${printMarker({
+              marker: 'PASS',
+              label: 'nap',
+            },)} ${printMarker({
+              marker: 'PASS',
+              label: 'purr',
+            },)} console.log(process.env.NODE_V8_COVERAGE);`,
           ],
           cwd: directory.path,
           coverageDirectory,
@@ -145,7 +174,10 @@ await describe({
           command: [
             process.execPath,
             '--eval',
-            'console.log("[FAIL] knead"); process.exit(3);',
+            `${printMarker({
+              marker: 'FAIL',
+              label: 'knead',
+            },)} process.exit(3);`,
           ],
           cwd: directory.path,
           coverageDirectory: join(
