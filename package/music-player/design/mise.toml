@@ -403,6 +403,16 @@ description = "Validate the archived self-contained Search ranking comparison"
 dir = "{{config_root}}"
 run = "node search-ranking-question.mjs validate"
 
+[tasks."build:search:word-boundary"]
+description = "Build native Fold mid-word matching choice with selected D/M and D59 held fixed"
+dir = "{{config_root}}"
+run = "node search-word-boundary-question.mjs build"
+
+[tasks."lint:search:word-boundary"]
+description = "Validate the self-contained mid-word Search question"
+dir = "{{config_root}}"
+run = "node search-word-boundary-question.mjs validate"
+
 [tasks."evidence:gboard"]
 description = "Sanitize real Gboard screenshots and retain selected app geometry"
 dir = "{{config_root}}"

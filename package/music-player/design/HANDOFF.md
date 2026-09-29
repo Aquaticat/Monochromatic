@@ -6463,3 +6463,52 @@ D60 also forbids indexing a whole relative display path as a track name,
 since that would reintroduce parent-only hits.
 #116 stays in progress for those bounded matching/tie questions;
 #127 through #129 and #118 remain separate pending reviews.
+
+## Mid-word matching question prepared after D/M selection
+
+`questions/word-boundary-review.html` presents one **unselected** #116
+choice while holding D59's OS-accent highlight,
+D60's own-name scope,
+D61's mixed order,
+the actual left browser and full deck constant.
+W returns only the accepted direct-name controls:
+`Cam` track,
+`Camellia` folder,
+`Live at Camellia` later-word track.
+A appends the direct track names `Scamper` and `Dreamcam`,
+highlighting `cam` inside those uninterrupted words.
+Both are illustrative debug fixtures,
+not a real matcher or any navigation/playback action.
+The form ranks **W > A** because it avoids possible incidental hits,
+while A supports interior-fragment recall;
+the user has **not** chosen either.
+Extension behavior,
+Unicode equivalence,
+multiple terms and tie-breaks remain separate after this one question.
+
+Prototype commit `72da1d925` built the two candidate variants in the
+existing `search-deck-*` debug route;
+commit `449bb53bb` added passing host-JVM fixture tests.
+The installed/local disposable-AVD APK SHA-256 was
+`5a484da7ad8f46db12d53cc5b84f2f9239f4e9a769486fe3e1804e9d6b46c351`.
+Keyboard-closed 200% inner/cover light captures were sanitized to
+`questions/render/search-word-boundary-review-*.png` with whole-status
+replacement and exact app pixels.
+Every accepted title retained its order and shared x anchor;
+A added only the two interior-name rows.
+Same-panel pixel comparison found zero difference in the left browser/deck
+or cover header,
+while the results differed.
+All final subtitles were fully visible without a swipe in this bounded
+fixture.
+`evidence/search-word-boundary-native-comparison.md` has the source,
+positive control and limits.
+The self-contained HTML form was built and validated,
+all four panel/variant previews and zoom controls exercised at native dp,
+light/dark review chrome verified,
+mobile width checked for overflow,
+and axe WCAG A/AA reported no HTML-form violations.
+No new IME test or production Search edit occurred.
+The capped disposable Fold was stopped via its owning container;
+`adb devices -l` and `podman ps` showed it absent.
+The original AVD remains untouched.

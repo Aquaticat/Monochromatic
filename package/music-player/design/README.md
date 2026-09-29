@@ -164,6 +164,11 @@ separates settled `cam` examples from still-open mid-word,
 extension,
 Unicode,
 term and tie-break behavior.
+The [native mid-word review](questions/word-boundary-review.html)
+compares W (word-start only) with A (interior substring included)
+without changing the selected D/M layout or D59 highlights;
+[its evidence](evidence/search-word-boundary-native-comparison.md)
+is illustrative and the choice is not yet made.
 Result activation and Search accessibility remain open.
 Selection does not authorize production implementation.
  Desktop implementation inherits

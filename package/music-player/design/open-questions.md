@@ -322,8 +322,12 @@ rounds (2026-09-17):
   not selected directions.
   The accepted `cam` examples already require `Cam` case equivalence,
   prefix `Camellia` and later-word `Live at Camellia` matches.
-  Remaining #116 design questions concern mid-word fragments,
-  filename extensions,
+  The separate `questions/word-boundary-review.html` now presents an
+  **unselected** W/A native Fold comparison for `cam` inside
+  `Scamper` or `Dreamcam`,
+  holding D59/D60/D61 fixed;
+  see `evidence/search-word-boundary-native-comparison.md`.
+  Remaining #116 design questions also concern filename extensions,
   broader Unicode equivalence,
   multiple terms,
   deterministic ties and large-library result limits;
