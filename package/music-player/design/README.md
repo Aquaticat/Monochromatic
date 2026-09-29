@@ -166,7 +166,8 @@ Unicode,
 term and tie-break behavior.
 The [native mid-word review](questions/word-boundary-review.html)
 compares W (word-start only) with A (interior substring included)
-without changing the selected D/M layout or D59 highlights;
+for a folder and track without changing selected D/M or D59 highlights;
+appended fixture placement does not settle their future rank;
 [its evidence](evidence/search-word-boundary-native-comparison.md)
 is illustrative and the choice is not yet made.
 Result activation and Search accessibility remain open.

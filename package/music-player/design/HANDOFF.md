@@ -6464,51 +6464,65 @@ since that would reintroduce parent-only hits.
 #116 stays in progress for those bounded matching/tie questions;
 #127 through #129 and #118 remain separate pending reviews.
 
-## Mid-word matching question prepared after D/M selection
+## Mid-word matching question after D/M selection
 
 `questions/word-boundary-review.html` presents one **unselected** #116
-choice while holding D59's OS-accent highlight,
-D60's own-name scope,
-D61's mixed order,
-the actual left browser and full deck constant.
-W returns only the accepted direct-name controls:
+question for both eligible D60 item kinds:
+should `cam` inside an uninterrupted own name count?
+W retains three accepted controls in selected D61 mixed order:
 `Cam` track,
-`Camellia` folder,
-`Live at Camellia` later-word track.
-A appends the direct track names `Scamper` and `Dreamcam`,
-highlighting `cam` inside those uninterrupted words.
-Both are illustrative debug fixtures,
-not a real matcher or any navigation/playback action.
-The form ranks **W > A** because it avoids possible incidental hits,
-while A supports interior-fragment recall;
-the user has **not** chosen either.
-Extension behavior,
+`Camellia` folder and `Live at Camellia` later-word track.
+A adds a direct `Scamper` **folder** and `Dreamcam` **track**,
+highlighting `cam` within each title.
+The reduced common fixture deliberately omits accepted `Camera Obscura`
+and duplicate `Camellia Waltz` examples only to isolate the boundary;
+they are not excluded by W.
+The two optional rows are appended for visual comparison,
+**not** because D61 chose their relative relevance tier.
+The form ranks **W > A** as a personal preference for predictable word
+starts over interior-fragment recall;
+real-library relevance and result volume were not measured.
+The user has **not** chosen W or A.
+Extensions,
 Unicode equivalence,
-multiple terms and tie-breaks remain separate after this one question.
+multiple terms and deterministic ties remain separate.
+No result row was made interactive.
 
-Prototype commit `72da1d925` built the two candidate variants in the
-existing `search-deck-*` debug route;
-commit `449bb53bb` added passing host-JVM fixture tests.
-The installed/local disposable-AVD APK SHA-256 was
-`5a484da7ad8f46db12d53cc5b84f2f9239f4e9a769486fe3e1804e9d6b46c351`.
-Keyboard-closed 200% inner/cover light captures were sanitized to
-`questions/render/search-word-boundary-review-*.png` with whole-status
-replacement and exact app pixels.
-Every accepted title retained its order and shared x anchor;
-A added only the two interior-name rows.
-Same-panel pixel comparison found zero difference in the left browser/deck
-or cover header,
-while the results differed.
-All final subtitles were fully visible without a swipe in this bounded
-fixture.
-`evidence/search-word-boundary-native-comparison.md` has the source,
-positive control and limits.
-The self-contained HTML form was built and validated,
-all four panel/variant previews and zoom controls exercised at native dp,
-light/dark review chrome verified,
-mobile width checked for overflow,
-and axe WCAG A/AA reported no HTML-form violations.
-No new IME test or production Search edit occurred.
-The capped disposable Fold was stopped via its owning container;
+Prototype commits `72da1d925` and `cc66a0dcf` built and corrected the
+existing `search-deck-*` debug comparison;
+`449bb53bb` and `f56989d4f` contain passing host-JVM fixture checks.
+The original track-only `5a484da7...` APK/captures were superseded
+before presentation.
+The corrected installed/local disposable-AVD APK SHA-256 is
+`1caee7060acfb5bbcd9a02142b4c9bada6b5886517157d25fef4a48b9b1e9c05`.
+Four keyboard-closed 200% inner/cover light captures were sanitized to
+`questions/render/search-word-boundary-review-*.png` with entire status
+replacement,
+unchanged app pixels and no PNG metadata.
+Native hierarchies retained the three controls and query/title x anchors;
+A alone added the folder and track.
+Pixel comparisons gave zero difference over the inner left browser/deck,
+both headers and sampled shared-result rectangles;
+measured result regions differed.
+All terminal supporting lines were visible without a swipe in this
+bounded fixture.
+`evidence/search-word-boundary-native-comparison.md` records sources,
+measurements and limits.
+The HTML form was regenerated with an explicit folder-and-track scope,
+a reduced-fixture notice and no implication of a chosen relevance tier
+for interior hits.
+All four embedded corrected frames decoded at physical panel size;
+the W/A radio controls,
+four device-size previews,
+fit/reset/zoom,
+return focus,
+light/dark review chrome and 390px mobile viewport were exercised
+without console errors or horizontal overflow.
+The HTML form's axe WCAG A/AA audit returned no violations,
+which says nothing about native TalkBack or result activation.
+The capped disposable emulator was stopped through the owning container;
 `adb devices -l` and `podman ps` showed it absent.
-The original AVD remains untouched.
+The original AVD was untouched.
+The single W/A boundary is now ready to ask;
+no production Search,
+IME experiment or KWin automation was performed.

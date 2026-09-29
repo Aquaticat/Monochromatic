@@ -69,7 +69,12 @@ Should it match?
 a separate word.
 A direct mid-word result could help a listener who remembers only an
 interior fragment,
-but could also add unrelated entries to a large local library.
+but could also add entries of uncertain relevance to a large local
+library.
+The [pending native W/A review][word-review] pairs a direct
+`Scamper` folder with a `Dreamcam` track while retaining the accepted
+controls;
+its appended fixture order does not decide the new rows' rank.
 
 ### Filename extension and exactness
 
@@ -126,3 +131,5 @@ D61,
 the actual left browser and complete deck constant while varying one
 unresolved boundary at a time.
 They must not turn illustrative captions into navigation or playback.
+
+[word-review]: ../questions/word-boundary-review.html
