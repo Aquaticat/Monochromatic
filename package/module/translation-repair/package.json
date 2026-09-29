@@ -27,9 +27,10 @@
     "p-limit": "catalog:",
     "pinyin-pro": "catalog:",
     "remark-gfm": "catalog:",
-    "satteri": "catalog:",
+    "remark-math": "catalog:",
     "remark-mdx": "catalog:",
     "remark-parse": "catalog:",
+    "satteri": "catalog:",
     "unified": "catalog:",
     "yaml": "catalog:"
   },

@@ -1,5 +1,6 @@
 import type { Root, } from 'mdast';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import remarkMdx from 'remark-mdx';
 import remarkParse from 'remark-parse';
 import { unified, } from 'unified';
@@ -11,6 +12,14 @@ import { NAMED_POSITION_UNSTATED, } from './refusal-text.ts';
 // parses with the same grammar family. GFM is enabled here even though upstream omits
 // it: footnote reference/definition nodes carry the semantic graph this library
 // validates, while emitted repairs preserve the literal textual convention.
+//
+// LEDGER X22 (2026-09-29): the site also compiles with remark-math
+// (one-among-us/data scripts/mdx.ts), so text between dollar signs is a
+// formula there, and the strict parse reads it the same way. Over the 92
+// sources and archives at the pin and 273 settled pages, adding it changed no
+// tree. The tolerant fallback stays without it: with no MDX grammar, the
+// template strings inside JSX attributes (`'${...}'`) read as prose there, and
+// math would pair their dollar signs in 171 of those 457 inputs.
 
 /**
  Signals MDX source that refuses to parse;
@@ -197,6 +206,7 @@ export function parseMdxBody({ body, }: { readonly body: string; },): Root {
       .use(remarkParse,)
       .use(remarkMdx,)
       .use(remarkGfm,)
+      .use(remarkMath,)
       .parse(body,);
   }
   catch (error) {

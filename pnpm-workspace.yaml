@@ -121,6 +121,10 @@ catalog:
   'rehype-stringify': '>=10.0.1'
   'remark-gfm': '>=4.0.1'
   'remark-github-blockquote-alert': '>=2.0.1'
+  # translation-repair mirrors the site it publishes to, whose scripts/mdx.ts
+  # compiles every page with remark-math ^6 (one-among-us/data package.json);
+  # a later major could read `$` differently from the site, so this stays on 6.
+  'remark-math': '^6.0.0'
   'remark-mdx': '>=3.1.1'
   'remark-parse': '>=11.0.0'
   'remark-rehype': '>=11.1.2'
