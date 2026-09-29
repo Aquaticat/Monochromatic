@@ -106,8 +106,9 @@ await describe({
       },
     },),
     it({
-      name: 'READS THE NAME AS A WORD (ledger B23): a text carrying it only inside a longer word gets no gloss, and '
-        + 'one carrying it as a word later gets the gloss after that line',
+      name: 'READS THE NAME AS A WORD (ledger B23): a text carrying it only inside a longer word gets no gloss, one '
+        + 'carrying it as a word later gets the gloss after that line, and an archive using it only inside a longer '
+        + 'word glosses no name of its own',
       fn: async () => {
         /**
          Archive paragraph naming the sparrow, with its gloss.
@@ -117,10 +118,12 @@ await describe({
           slices: [
             pair({ sliceIndex: 0, target: sparrow, },),
             pair({ sliceIndex: 1, target: sparrow, },),
+            pair({ sliceIndex: 2, target: 'Pipits sang.\n"Pip" means a seed.\n', },),
           ],
           replacements: [
             { sliceIndex: 0, replacementText: 'The sparrow Pipit sang.', },
             { sliceIndex: 1, replacementText: 'Pipits sang.\nThe sparrow Pip joined them.', },
+            { sliceIndex: 2, replacementText: 'The sparrow Pip sang.', },
           ],
         },);
         expect(restored.replacements.map(function textOf(row,): string {
@@ -128,6 +131,7 @@ await describe({
         },),).toEqual([
           'The sparrow Pipit sang.',
           'Pipits sang.\nThe sparrow Pip joined them.\n"Pip" means a seed.',
+          'The sparrow Pip sang.',
         ],);
       },
     },),
