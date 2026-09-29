@@ -1508,8 +1508,12 @@ PP7 (`no-process-exit` help says throw;
 swallowing is LG2),
 PP9 (`no-switch` message names both fixes),
 OWB (prefer-readonly external-path guidance plus `package/ownership-marker/foreign-borrowed/README.md` already carry it),
-RG1 and RG3 (`no-regex` message carries both;
-97 of 97 repo disables have justifications).
+RG1 and RG3 (`no-regex` literal and string-method messages carry both;
+the `RegExp` constructor message lacks the prefer-index-scan clause,
+so the apply phase adds it;
+no rule checks justification text,
+but 97 of 97 repo disables have one).
+RG2 drops the rationale clause "Original may backtrack superlinearly".
 PPX drops composition (`no-class` message),
 `readonly` (IMM plus readonly lint),
 and `unknown` (`no-explicit-any` help).
@@ -1613,6 +1617,10 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
 - Update `doc/philosophy/agents.md` and `doc/agent/regression-suite.md` Case 3.
 - Move JCH guidance into the `tsdoc/check-mutates` diagnostic
    (OWB guidance is already in the prefer-readonly diagnostic).
+- Add "Prefer an index scan,
+   parser,
+   or string API" to the `no-regex` `regexpConstructor` message (`package/oxlint-plugin/no-restricted-syntax/src/rule/no-regex.ts`),
+   pending batch 15 approval.
 
 ### Resume notes
 
