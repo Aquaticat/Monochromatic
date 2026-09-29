@@ -46,25 +46,25 @@ Accepted-pair timing observations are not a guarantee of end-to-end production l
 Validation retained 108 core source calls plus 12 diagnostic control calls.
 Its 216 core axiom rows contained 72 true and 144 false references.
 
-- 80/20: 193 correct,
+- The 80/20 band had 193 correct,
   3 wrong,
   20 uncertain.
-- 90/10: 175 correct,
+- The 90/10 band had 175 correct,
   0 wrong,
   41 uncertain.
-- 95/05: 149 correct,
+- The 95/05 band had 149 correct,
   0 wrong,
   67 uncertain.
 
 The locked test retained 108 source calls and the same declared reference counts.
 
-- 80/20: 192 correct,
+- The 80/20 band had 192 correct,
   3 wrong,
   21 uncertain.
-- 90/10: 182 correct,
+- The 90/10 band had 182 correct,
   0 wrong,
   34 uncertain.
-- 95/05: 139 correct,
+- The 95/05 band had 139 correct,
   0 wrong,
   77 uncertain.
 
