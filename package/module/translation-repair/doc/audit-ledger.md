@@ -7543,6 +7543,7 @@ family one (text indexed by UTF-16 unit) is read and fixed as B22,
 family two (matches without word boundaries) as B23,
 family three (straight against curly quotes) as B24,
 family four (trimmed text compared with raw text) as B26,
+family five (quorum denominators counting unreachable seats) as B27,
 and the other families remain.
 B1 to B20 came from the duplicate-body and letter-predicate censuses.
 The class history names other families that recurred across stages,
@@ -8496,6 +8497,106 @@ no preparation is stored for a resume to reuse,
 and neither the review stage nor `archive-block-repair.ts` stores,
 persists or memoizes a reply.
 The full suite passed on `f0ddd425d` with no failing case.
+
+### B27: a quorum counting seats the router refused (B21, family five)
+
+Status:
+fixed,
+2026-09-29.
+The short-bench rule
+(`doc/decision/translation-repair-short-bench-share.md`)
+sizes a gather's quorum on the seats a wet provider serves.
+Family five asked where a threshold derived from a gather still counted the whole bench.
+
+#### The census
+
+Every quorum-sizing line in the package's source was read
+(`f5-sites.txt` in `~/temp/agent/audit-glossary-fix/`,
+157 lines,
+18 of them calls or mentions of `rosterQuorumSize` or `reachableQuorum`),
+and each threshold was asked which seats its denominator counts.
+Outside its own file,
+`rosterQuorumSize` has 8 calls.
+The gather itself (`stage-quorum.ts`),
+the windowed rounds,
+the select minimum
+and the naturalness verdict rebuilt from its recorded basis
+all take `reachableQuorum`.
+The first round's window (`firstRoundWindow`) sizes a round before any seat is lost,
+and `shortBenches` uses the whole bench's quorum to say what short means;
+both count the whole bench by design.
+Reference attestation takes its majority over the voices heard,
+the vote tally over the ballots cast,
+and insertion admission over the reachable seats coverage asked.
+The checker bench width is a roster floor,
+and the non-translation finding compares characters,
+not seats.
+
+#### What was wrong
+
+`runArchiveBlockReviewStage` held its anchored voices to `rosterQuorumSize` over the whole bench,
+while the same function's outage test had taken `reachableQuorum` since the short-bench rule.
+On a bench whose reachable seats fell short of the whole bench's quorum,
+a block every reachable seat anchored in the original was left unresolved:
+it skipped its naturalness read
+and carried a finding naming the whole bench's quorum as the number required.
+The archive's own text ships either way,
+so the defect cost evidence rather than wording.
+
+Two sentences claimed what a short bench cannot do.
+The seat reader's wait line said it waits "rather than seating a bench that cannot settle",
+and its function's TSDoc said the same;
+the run client contract said "a phase that settles on nobody"
+and named `run-seats.ts`,
+from which the reading had moved to `run-seats-read.ts`.
+Since the short-bench rule,
+a short bench decides on a share of the seats a wet provider serves,
+or is an outage below two of them.
+
+#### Exposure
+
+Under `~/temp/agent/`,
+1,404 stored logs and JSON files name the stage,
+which is the control that the store is live,
+and 10 carry the review's uncorroborated-claim finding,
+which is the control that its findings reach stored files.
+5 carry the unresolved finding:
+2 are test output
+(`audit-tests/it-blocks.json`,
+`gfp-20260902/anchor-test.log`),
+and 3 are replays or a probe from 2026-09-10
+whose benches heard 7 of 11 seats,
+so at least 7 were reachable and the quorum stays 6 under the fix.
+No stored file outside the test output carries the review's short-bench finding.
+The defect was latent.
+
+#### The fix
+
+One `reachableQuorum` is computed from `gather.unreachable` before the outage test,
+and both the outage test and the participation threshold read it.
+The wait line now says "rather than seating a bench short of its quorum",
+the TSDoc says when a bench the phase leans on would sit short of its quorum,
+and the contract names `run-seats-read.ts` and `pass-reseat-hook.ts`
+and says what a short bench decides.
+Red `dd6d22874`,
+fix `a3c83b333`,
+boundary case `b968cbdc6`.
+
+#### Mutants and caches
+
+The red case seats eight reviewers with five refused,
+asserts from the exported helpers that the reachable seats fall below the whole bench's quorum
+and meet the reachable share,
+and asserts the review gather recorded the short bench.
+The mutation batch (`b27-mutants.json`) caught ignoring the refusals,
+but a boundary mutant turning the threshold's `<` into `<=` survived:
+no case held anchored voices exactly at the quorum.
+The boundary case has exactly the first quorum's worth of reviewers anchor,
+and the rerun caught both mutants,
+with the comment control surviving both times.
+The archive block review keeps no cache (B26),
+and the seat reader's line is a log.
+The full suite passed on `b968cbdc6` with no failing case.
 
 ## Process mistakes in this audit
 

@@ -109,8 +109,13 @@ this one says what changed after it.
   which reads a paragraph's soft line breaks as the site renders them,
   so a lane text that is the archive in all but layout keeps the archive's bytes
   (263 such lane texts in the stored runs).
-  The families left are quorum denominators,
-  sheets missing blocks
+  The fifth,
+  quorum denominators counting unreachable seats,
+  closed on 2026-09-29 as B27:
+  the archive block review now holds its anchored voices to the reachable quorum its gather closed on,
+  where it had kept the whole bench's,
+  a defect no stored run shows firing.
+  The families left are sheets missing blocks
   and silent fallbacks,
   and D33 (references by position) is open.
   Both gaps found on the way are closed:

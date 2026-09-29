@@ -669,6 +669,50 @@ the polish round,
 the lane offer,
 the repair turn's copy check and the archive block review each hold a layout-only twin.
 
+## Which seats a quorum counts
+
+What happened:
+the short-bench rule moved every gather's quorum onto the seats a wet provider serves,
+and the archive block review's outage test moved with it,
+but the same function's second threshold,
+the anchored voices a review needs,
+stayed at the whole bench's quorum (ledger B27).
+A short bench whose every reachable seat anchored its quote was left unresolved
+and skipped its naturalness read.
+Two sentences kept saying a short bench cannot settle,
+which the rule had made false.
+
+The rule:
+when a rule changes what a quorum counts,
+census every threshold derived from a gather,
+not only the gather:
+every `rosterQuorumSize` call,
+every "half the bench",
+every count compared with a bench size,
+and every sentence saying what a short bench can do.
+A threshold on voices a gather produced takes the `reachableQuorum` the gather closed on,
+computed once and shared by every test in the function;
+only a size taken before any seat is lost
+(the first round's window)
+or the definition of short itself counts the whole bench.
+A threshold is a floor a count reaches,
+so a case holds the count exactly at it,
+or a boundary mutant survives.
+
+What enforces it:
+`archive-block-review-stage.unit.test.ts` holds a bench with most seats refused,
+asserting from the exported helpers that the case discriminates,
+and a count exactly at the quorum;
+the gather,
+the windowed rounds,
+coverage,
+the select minimum and the naturalness review each hold a refused seat
+(`stage-quorum.unit.test.ts`,
+`stage-windowed-rounds.unit.test.ts`,
+`coverage-stage-reachable.unit.test.ts`,
+`candidate-select.unit.test.ts`,
+`absolute-naturalness-review-stage.unit.test.ts`).
+
 ## Lint and edits
 
 What happened:
