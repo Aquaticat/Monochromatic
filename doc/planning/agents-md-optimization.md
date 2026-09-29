@@ -2137,6 +2137,9 @@ only the #423-gated JCH follow-up remains (issue comment posted on #423).
    types,
    and lint pass;
    root oxlint shows the new message.
+- Verified after apply:
+   `AGENTS.md` lints clean and renders 204 rule paragraphs;
+   `codex exec --config project_doc_max_bytes=32768` reports SK3 as the last rule code (RCO before the rewrite).
 - Not touched:
    `package/music-player/design/HANDOFF.md` still says `AGENTS.md` rule `PFG` (another session's active file).
 
