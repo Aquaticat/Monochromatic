@@ -120,6 +120,16 @@ description = "Ledger M28: before a launch, read every cache version constant th
 depends = ["build"]
 run = "node dist/final/node/cache-account-audit.mjs"
 
+[tasks."build:coverage"]
+description = "Ledger T8: the node build with a source map beside every chunk, which the coverage census maps V8's offsets through; the same code as the normal build, each chunk gaining a sourceMappingURL comment"
+run = "rolldown --configLoader native --config rolldown.coverage.config.ts"
+
+[tasks."coverage-census"]
+description = "Ledger T8: build with source maps, run the unit suite (or the unit test files named after --) under V8 coverage, and print the package code no test ran, mapped to source lines; add --baseline <census.json> and --source <src/file.ts> after -- to read an earlier census's stretches against this run; rebuilds without maps after; SPENDS NO QUOTA (the whole suite writes about 8 GB of coverage to a temporary directory, deleted once read)"
+depends = ["build:coverage"]
+depends_post = ["build"]
+run = "node dist/final/node/coverage-census.mjs"
+
 [tasks."cap-census"]
 description = "Ledger P10: re-read the completion cap rule over pass-run logs before a launch, per seat and provider, with how many capped calls ran to the cap and whether they carried content; flags a pooled placeholder with a distribution, a rule reading off the card, and cuts over one percent; SPENDS NO QUOTA (name log files or directories after --)"
 depends = ["build"]

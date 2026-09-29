@@ -20,6 +20,46 @@ import type { CensusStretch, } from './coverage-census-report.ts';
 // refuses that shape, and an unknown flag, itself.
 
 /**
+ Marker the test runner prints for a passing test.
+ */
+export const PASS_MARKER = '[PASS]';
+
+/**
+ Marker the test runner prints for a failing test.
+ */
+export const FAIL_MARKER = '[FAIL]';
+
+/**
+ How often a marker appears in the suite's log.
+
+ @param text - log text
+
+ @param marker - marker counted
+
+ @returns Occurrences, not lines: two tests' lines can share one line of a
+ log written by processes in parallel (the 2026-09-29 coverage run printed
+ 1,356 passes on 1,355 lines)
+
+ @example
+ ```ts
+ markerCount({ text: 'a [PASS] b [PASS]', marker: '[PASS]', },); // 2
+ ```
+ */
+export function markerCount(
+  {
+    text,
+    marker,
+  }: {
+    readonly text: string;
+    readonly marker: string;
+  },
+): number {
+  return text.split(marker,)
+    .length
+    - 1;
+}
+
+/**
  What the census was asked to do.
 
  @example
