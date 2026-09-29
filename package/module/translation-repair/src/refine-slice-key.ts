@@ -186,6 +186,12 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  `introduced-defect-wire.ts`); checked on 2026-09-29: still no slice-cache
  file written after 04:27 UTC on 2026-09-27, where a control from midnight
  finds 494.
+ 
+ Rides inside 5 too: the refine slates show their judges the declared names
+ the refiner reads, labelled with the rule a slate needs (ledger B28,
+ `declared-names-evidence.ts`); the key already hashes the identity, and the
+ same find, rerun for this change, finds none after 04:27 UTC on 2026-09-27
+ against a control of 494.
  */
 export const REFINE_CACHE_VERSION = 5;
 

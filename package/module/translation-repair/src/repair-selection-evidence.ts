@@ -1,5 +1,6 @@
 import type { SelectEvidence, } from './candidate-select-wire.ts';
 import { citedReferenceEvidence, } from './cited-reference-rule.ts';
+import { declaredNamesEvidence, } from './declared-names-evidence.ts';
 
 /**
  Supplies factual support without making neighboring passages additional translation obligations.
@@ -51,13 +52,7 @@ export function repairSelectionSourceEvidence(
         label: 'FULL ORIGINAL DOCUMENT, factual evidence only: use it to check current claims without requiring the rest of this document to be translated in this passage',
         text: documentSourceText,
       },]),
-    ...((identityContext === undefined) || (identityContext === '')
-      ? []
-      : [{
-        label: 'DECLARED NAMES from the documents\' own front matter: a declared name or handle used to refer to its '
-          + 'person or place is correct, never an addition or a wrong term',
-        text: identityContext,
-      },]),
+    ...declaredNamesEvidence((identityContext === undefined) ? {} : { identityContext, },),
     ...citedReferenceEvidence((referenceContext === undefined) ? {} : { referenceContext, },),
   ];
 }

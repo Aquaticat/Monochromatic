@@ -2,7 +2,7 @@ import type { ArchiveBlockReviewWire, } from './archive-block-review-wire.ts';
 import type { Candidate, } from './candidate-select-model.ts';
 import type { SelectEvidence, } from './candidate-select-wire.ts';
 import { citedReferenceEvidence, } from './cited-reference-rule.ts';
-import { DECLARED_NAMES_HEADING, } from './declared-identity-rule.ts';
+import { declaredNamesEvidence, } from './declared-names-evidence.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 /**
@@ -167,12 +167,7 @@ export function archiveBlockSelectionEvidence(
     },
     // The names and pages the reviewers read (ledger B28), after the block so
     // a selector judging its claims has what the reviewers judged them by.
-    ...((identityContext === undefined) || (identityContext === '')
-      ? []
-      : [{
-        label: DECLARED_NAMES_HEADING,
-        text: identityContext,
-      },]),
+    ...declaredNamesEvidence((identityContext === undefined) ? {} : { identityContext, },),
     ...citedReferenceEvidence({ referenceContext: referenceContext ?? '', },),
     {
       label: 'PRIOR REVIEW ASSESSMENTS, opinions to check against the documents, not authority or votes deciding your answer',

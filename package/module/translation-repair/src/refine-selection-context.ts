@@ -1,6 +1,7 @@
 import type { AbsoluteNaturalnessFinding, } from './absolute-naturalness-review-wire.ts';
 import type { SelectEvidence, } from './candidate-select-wire.ts';
 import { citedReferenceEvidence, } from './cited-reference-rule.ts';
+import { declaredNamesEvidence, } from './declared-names-evidence.ts';
 import { HOUSE_FORM_CORRECTION_KEEPS_MEANING, } from './house-form-corrections.ts';
 
 //region Refinement selection context
@@ -227,6 +228,9 @@ export type RefineSelectionContext = {
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
  
+ @param identityContext - declared names and handles the refiner was told
+ survive exactly, so its judges are told so too (ledger B28)
+ 
  @returns Candidate-ranking context with review findings fenced as evidence
  
  @example
@@ -240,20 +244,27 @@ export function buildRefineSelectionContext(
     sourceText,
     repairedText,
     referenceContext,
+    identityContext,
   }: {
     readonly mode: RefineStageMode;
     readonly sourceText: string;
     readonly repairedText: string;
     readonly referenceContext?: string;
+    readonly identityContext?: string;
   },
 ): RefineSelectionContext {
   /**
-   The references as evidence the judges read beside the texts, none when
-   the original cites nowhere (class forty-one).
+   The declared names and then the references, as evidence the judges read
+   beside the texts: the names the refiner was told survive exactly (ledger
+   B28), and the pages the original cites (class forty-one), each none when
+   the page has none.
    */
-  const referenceEvidence = citedReferenceEvidence(
-    (referenceContext === undefined) ? {} : { referenceContext, },
-  );
+  const pageEvidence = [
+    ...declaredNamesEvidence((identityContext === undefined) ? {} : { identityContext, },),
+    ...citedReferenceEvidence(
+      (referenceContext === undefined) ? {} : { referenceContext, },
+    ),
+  ];
   if (mode.kind === 'comparative') {
     return {
       task: 'Each candidate is a revision of the CURRENT English translation below, meant to read more naturally without changing what it says.',
@@ -271,7 +282,7 @@ export function buildRefineSelectionContext(
           label: 'CURRENT English translation, which ships unchanged unless a candidate clearly beats it',
           text: repairedText,
         },
-        ...referenceEvidence,
+        ...pageEvidence,
       ],
     };
   }
@@ -298,7 +309,7 @@ export function buildRefineSelectionContext(
             + 'the ORIGINAL supports',
           text: repairedText,
         },
-        ...referenceEvidence,
+        ...pageEvidence,
         ...mode.groups
           .map(function groupEvidence(group,): SelectEvidence {
             return {
@@ -349,7 +360,7 @@ export function buildRefineSelectionContext(
         label: 'CURRENT English translation, which cannot ship unchanged',
         text: repairedText,
       },
-      ...referenceEvidence,
+      ...pageEvidence,
       {
         label: 'REQUIRED FINDINGS from independent absolute-quality review',
         text: selectionFindings,

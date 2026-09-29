@@ -14,6 +14,10 @@ export {
   type NoteSide,
 } from './entry-notes.ts';
 export {
+  DECLARED_NAMES_EVIDENCE_LABEL,
+  declaredNamesEvidence,
+} from './declared-names-evidence.ts';
+export {
   type CachedLookup,
   isLookupHit,
   isLookupRecord,

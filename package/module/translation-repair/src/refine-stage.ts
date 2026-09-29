@@ -401,16 +401,16 @@ export async function runRefineStage(
   }
 
   /**
-   Judges verdict over the whole-slice proposals.
-   */
-  /**
-   Selector question matching whether current text may survive.
+   Selector question matching whether current text may survive, which the
+   judges answer over the whole-slice proposals with the declared names the
+   refiner read (ledger B28).
    */
   const selectionContext = buildRefineSelectionContext({
     mode,
     sourceText,
     repairedText,
     ...(referenceContext === undefined ? {} : { referenceContext, }),
+    ...(identityContext === undefined ? {} : { identityContext, }),
   },);
   /**
    Candidate decision over structurally admissible rewrites.
