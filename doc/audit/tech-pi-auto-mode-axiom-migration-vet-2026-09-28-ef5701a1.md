@@ -1340,7 +1340,46 @@ remaining service evidence,
 and the real human-authority/lifecycle/finalizer boundary remain open.
 Existing private-input consent for the named Jev route stays sufficient;
 do not reopen declined dashboard access.
-No new calls,
-production implementation,
-Q16 interview,
-or Laya restart follows automatically from this recommendation.
+No new call or implementation was authorized by the recommendation alone.
+
+## Approved Jev qualification direction
+
+The user subsequently approved it with "Okay, I'm approving it."
+Proceed with Jev through LLM Gateway as the chosen candidate for remaining qualification.
+The approved antecedent explicitly excluded production approval and cutoff selection;
+those boundaries remain intact.
+This is not authorization to deploy the plugin change or mark 95/05 validated.
+The existing audit fingerprint remains compatible because recipient,
+resource,
+privacy-consent,
+and no-production constraints are unchanged.
+
+Task #63 records scope and current prerequisites.
+Task #64 will freeze fresh native-Jev source-language validation and locked-test evidence,
+with independent positive-relation/prohibition questions,
+complete policy,
+code-owned operation facts,
+shared five-second assessments,
+and no model or calibration-adapter fitting.
+Keep the existing diagnostic bands fixed and report proper losses,
+role/operation coverage,
+and overall/accepted-subset diagnostics without claiming population calibration.
+Every new query schedule,
+reference bank,
+control,
+and stop condition must precede dispatch.
+Previously exposed examples are not fresh held-out evidence;
+the original 24 reserved scenarios remain unopened.
+
+Task #65 then closes actionable service gaps without repeating completed audits
+or reopening accepted AUP,
+retention,
+gateway-retry,
+and declined-dashboard choices.
+The real human-authority/lifecycle/finalizer contract remains a separate dependency.
+Do not silently resume paused Q16 or Laya,
+expand private-input recipients,
+change accounts,
+edit `AGENTS.md`,
+use a coding-plan judge,
+or implement production code.

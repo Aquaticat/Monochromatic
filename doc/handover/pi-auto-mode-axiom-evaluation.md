@@ -34,13 +34,13 @@ Current references:
 - [Current multi-candidate audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
 - [Historical interview and responsibility ledger](../planning/pi-auto-mode-laya.md).
 
-## Current candidate recommendation
+## Approved Jev qualification direction
 
-The user asked which candidate is recommended after the completed comparisons.
-Prioritize **Jev through LLM Gateway** for remaining qualification,
+The user accepted the overall candidate recommendation with "Okay, I'm approving it."
+Proceed with **Jev through LLM Gateway** for remaining qualification,
 not another Voyage head experiment.
-This selects a research priority,
-not a production provider or threshold.
+The approval selects this qualification direction,
+not production deployment or a confidence threshold.
 No candidate has completed all production/adoption gates.
 
 The [Jev evidence and recommendation](../planning/pi-auto-mode-jev-qualification.md#recommended-next-qualification-candidate)
@@ -59,10 +59,19 @@ Laya's measured CPU route missed the budget and its alternative runtime work rem
 These are profile-specific reasons to prioritize Jev,
 not a provider-weight ranking.
 Existing private-input consent for Jev remains sufficient for the named evaluation route.
+Task #63 records the approval and scopes remaining gates.
+Task #64 will freeze and execute fresh native-Jev source-language qualification;
+no Jev training or calibration-adapter fitting is authorized.
+Task #65 then closes actionable service gaps without repeating completed audits.
+Every new query phase still needs a fixed schedule,
+inputs,
+references,
+controls,
+and stop conditions before dispatch.
 Do not reopen dashboard access,
 select 95/05 for production,
-start new calls/implementation,
-or resume Q16/Laya from this recommendation alone.
+start production implementation,
+or silently resume Q16/Laya.
 
 ## Completed operation-conditioned comparison
 

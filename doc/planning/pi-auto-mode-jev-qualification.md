@@ -18,8 +18,8 @@ Native development and overflow probes remain scoped evidence,
 not production qualification.
 See the [axiom record](pi-auto-mode-axioms.md)
 and [current audit](../audit/tech-pi-auto-mode-axiom-migration-vet-2026-09-28-ef5701a1.md).
-No model winner,
-threshold,
+Jev through LLM Gateway is approved as the candidate to take through remaining qualification.
+No production threshold,
 account mutation,
 or production cutover is selected.
 The user has separately authorized all task-relevant assessment content through LLM Gateway/Jev,
@@ -31,10 +31,9 @@ and gateway-internal retry choices remain settled.
 
 ## Recommended next qualification candidate
 
-In response to the user's request for an overall candidate recommendation,
-prioritize Jev through LLM Gateway for remaining qualification.
-This is a research-priority recommendation,
-not a completed finalist ranking,
+The user accepted the recommendation with "Okay, I'm approving it."
+Proceed with Jev through LLM Gateway for remaining qualification.
+The approved direction is not a completed finalist ranking,
 a selected production cutoff,
 or authorization to deploy.
 No production candidate has completed every required gate.
@@ -63,7 +62,13 @@ remaining service evidence,
 and the real human-authority/lifecycle/finalizer boundary still need completion.
 Existing private-input consent is sufficient for the named Jev evaluation route;
 do not reopen declined dashboard access or silently resume Q16/Laya.
-No new call or implementation follows automatically from this recommendation.
+The approval authorizes the next bounded qualification work,
+with each new query schedule and input/reference bank frozen before calls.
+Start with fresh source-language and probability-assessment evidence,
+without fitting a Jev calibration adapter or selecting a production cutoff.
+Then close actionable remaining service gates without repeating completed audits or declined dashboard attempts.
+The real authority/lifecycle/finalizer contract remains a separate dependency;
+paused Q16 and Laya work are not silently resumed.
 
 ## Parser-boundary correction
 
