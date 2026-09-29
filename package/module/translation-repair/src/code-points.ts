@@ -2,12 +2,22 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 //region Code points
 // One counter, shared by everything that compares a Chinese size against an
-// English one.
+// English one, and the two readers that take the whole code point at or before
+// an offset, shared by every scan that tests a character whose class reaches
+// past the first plane.
 //
 // EXTRACTED RATHER THAN COPIED. The refusal guard in `translate-alignment.ts`
 // and the corroboration gate in `coverage-corroboration.ts` both divide one of
 // these counts by another, and a copy that drifted would let the two disagree
-// about the same page while both looked right.
+// about the same page while both looked right. The readers lived in
+// `quote-neighbours.ts` (class ninety-six) with a private copy of the forward
+// one in `mdx-tag-start.ts`, until the scans of ledger B21 needed them too.
+
+/**
+ Highest code point one UTF-16 unit can carry; anything above it is a
+ surrogate pair.
+ */
+const BMP_MAX = 0xFF_FF;
 
 /**
  First UTF-16 unit that can only be the SECOND half of a surrogate pair.
@@ -61,6 +71,74 @@ export function codePointCount({ text, }: { readonly text: string; },): number {
       counted.points += 1;
   }
   return counted.points;
+}
+
+/**
+ Whole code point starting at an offset, empty past either end of the text.
+
+ @param text - text being read
+
+ @param at - offset of the code point wanted
+
+ @returns The code point there, as a string of one or two units
+
+ @example
+ ```ts
+ const after = codePointAt({ text: 'ab', at: 1, },); // 'b'
+ ```
+ */
+export function codePointAt({
+  text,
+  at,
+}: {
+  readonly text: string;
+  readonly at: number;
+},): string {
+  if (at >= text.length)
+    return '';
+  /**
+   Code point there, read by the string's own decoding.
+   */
+  const point = text.codePointAt(at,);
+  if (point === undefined)
+    return '';
+  return String.fromCodePoint(point,);
+}
+
+/**
+ Whole code point ending just before an offset, empty at the text's start.
+
+ @param text - text being read
+
+ @param at - offset of the character whose predecessor is wanted
+
+ @returns The code point before, as a string of one or two units
+
+ @example
+ ```ts
+ const before = codePointBefore({ text: 'ab', at: 1, },); // 'a'
+ ```
+ */
+export function codePointBefore({
+  text,
+  at,
+}: {
+  readonly text: string;
+  readonly at: number;
+},): string {
+  if (at <= 0)
+    return '';
+  /**
+   Code point starting two units back, which ends just before the offset
+   when it is a surrogate pair.
+   */
+  const paired = (at >= 2) ? text.codePointAt(at - 2,) : undefined;
+  if ((paired !== undefined) && (paired > BMP_MAX))
+    return text.slice(
+      at - 2,
+      at,
+    );
+  return text.charAt(at - 1,);
 }
 
 //endregion Code points

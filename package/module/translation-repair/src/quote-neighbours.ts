@@ -1,3 +1,5 @@
+import { codePointBefore, } from './code-points.ts';
+
 //region Quote neighbours
 // WHAT STANDS BESIDE A STRAIGHT QUOTE, read by whole code point: whether a
 // letter or digit binds it into a word, and whether an inline span closes
@@ -9,12 +11,6 @@
 // acute has the mark, not the `e`, beside the quote, and a mark is no cased
 // letter, so the composed spelling curled and the combining one stayed
 // straight on a curly page.
-
-/**
- Highest code point one UTF-16 unit can carry; anything above it is a
- surrogate pair.
- */
-const BMP_MAX = 0xFF_FF;
 
 /**
  Whether one code point is a cased letter or an ASCII digit. Cased letters by
@@ -59,43 +55,8 @@ export function bindsWord({ character, }: { readonly character: string; },): boo
 // its possessive with a straight apostrophe. The neighbours of a quote were
 // read by UTF-16 unit, so the unit before the apostrophe was the low half of
 // the last letter, which is no letter at all, and the apostrophe stayed
-// straight on a curly page. THE NEIGHBOURS ARE WHOLE CODE POINTS.
-
-/**
- Whole code point ending just before an offset, empty at the text's start.
-
- @param text - text being read
-
- @param at - offset of the character whose predecessor is wanted
-
- @returns The code point before, as a string of one or two units
-
- @example
- ```ts
- const before = codePointBefore({ text: 'ab', at: 1, },); // 'a'
- ```
- */
-function codePointBefore({
-  text,
-  at,
-}: {
-  readonly text: string;
-  readonly at: number;
-},): string {
-  if (at <= 0)
-    return '';
-  /**
-   Code point starting two units back, which ends just before the offset
-   when it is a surrogate pair.
-   */
-  const paired = (at >= 2) ? text.codePointAt(at - 2,) : undefined;
-  if ((paired !== undefined) && (paired > BMP_MAX))
-    return text.slice(
-      at - 2,
-      at,
-    );
-  return text.charAt(at - 1,);
-}
+// straight on a curly page. THE NEIGHBOURS ARE WHOLE CODE POINTS, read by
+// `code-points.ts`.
 
 /**
  Whether one code point is a combining mark (general category M, variation
@@ -195,38 +156,6 @@ export function sequenceBefore({
     start - base.length,
     at,
   );
-}
-
-/**
- Whole code point starting at an offset, empty past the text's end.
-
- @param text - text being read
-
- @param at - offset of the code point wanted
-
- @returns The code point there, as a string of one or two units
-
- @example
- ```ts
- const after = codePointAt({ text: 'ab', at: 1, },); // 'b'
- ```
- */
-export function codePointAt({
-  text,
-  at,
-}: {
-  readonly text: string;
-  readonly at: number;
-},): string {
-  if (at >= text.length)
-    return '';
-  /**
-   Code point there, read by the string's own decoding.
-   */
-  const point = text.codePointAt(at,);
-  if (point === undefined)
-    return '';
-  return String.fromCodePoint(point,);
 }
 
 /**

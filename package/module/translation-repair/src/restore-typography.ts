@@ -1,9 +1,9 @@
 import { placeClosingPunctuation, } from './closing-punctuation.ts';
+import { codePointAt, } from './code-points.ts';
 import { nestedSinglePairs, } from './nested-single-quotes.ts';
 import {
   bindsWord,
   closesSpan,
-  codePointAt,
   sequenceBefore,
 } from './quote-neighbours.ts';
 import { restoreEllipsis, } from './restore-ellipsis.ts';

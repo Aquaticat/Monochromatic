@@ -1,6 +1,6 @@
+import { codePointAt, } from './code-points.ts';
 import {
   bindsWord,
-  codePointAt,
   sequenceBefore,
 } from './quote-neighbours.ts';
 

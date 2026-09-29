@@ -1,3 +1,5 @@
+import { codePointAt, } from './code-points.ts';
+
 //region MDX tag start
 // WHETHER A `<` OPENS A TAG, answered as the MDX compiler the corpus is built
 // with answers it (`micromark-extension-mdx-jsx` 3.0.2, `dev/lib/factory-tag.js`,
@@ -42,34 +44,6 @@ const LEAVES_TEXT: ReadonlySet<string> = new Set([
 ],);
 
 /**
- Whole code point starting at an offset, empty past the text's end.
-
- @param text - text being read
-
- @param at - offset of the code point
-
- @returns The code point, as a string of one or two units
-
- @example
- ```ts
- const point = pointAt({ text: '<猫', at: 1, },); // '猫'
- ```
- */
-function pointAt({
-  text,
-  at,
-}: {
-  readonly text: string;
-  readonly at: number;
-},): string {
-  /**
-   Code point there, read by the string's own decoding.
-   */
-  const point = text.codePointAt(at,);
-  return (point === undefined) ? '' : String.fromCodePoint(point,);
-}
-
-/**
  Offset past the whitespace the compiler steps over, starting at an offset.
 
  @param text - text being read
@@ -95,11 +69,11 @@ function pastWhitespace({
    Offset moved past each whitespace code point.
    */
   let at = from;
-  while (WHITESPACE.test(pointAt({
+  while (WHITESPACE.test(codePointAt({
     text,
     at,
   },),)) {
-    at += pointAt({
+    at += codePointAt({
       text,
       at,
     },)
@@ -136,7 +110,7 @@ export function opensMdxTag({
   /**
    Character right after the `<`.
    */
-  const next = pointAt({
+  const next = codePointAt({
     text,
     at: at + 1,
   },);
@@ -145,7 +119,7 @@ export function opensMdxTag({
   /**
    First character past any whitespace the compiler steps over.
    */
-  const first = pointAt({
+  const first = codePointAt({
     text,
     at: pastWhitespace({
       text,
