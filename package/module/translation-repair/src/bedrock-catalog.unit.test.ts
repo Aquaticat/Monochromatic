@@ -19,13 +19,13 @@ import {
   BEDROCK_MODELS,
   BEDROCK_ONLY_ROSTER_IDS,
   bedrockChatUrlFor,
-  bedrockServesLabel,
   ROSTER_MODEL_IDS,
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '../dist/final/node/index.mjs';
+import { bedrockServesLabel, } from './catalog-lookups.test-fixture.ts';
 
 await describe({
   name: 'BEDROCK_MODELS',

@@ -28,10 +28,10 @@ import {
   buildAnthropicBody,
   EmptyConversationError,
   HYPER_MODELS,
-  hyperServesLabel,
   speakingTurns,
   systemTextOf,
 } from '../dist/final/node/index.mjs';
+import { hyperServesLabel, } from './catalog-lookups.test-fixture.ts';
 
 /**
  Structured-output constraint standing in for a real stage's.

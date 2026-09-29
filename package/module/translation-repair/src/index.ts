@@ -275,7 +275,6 @@ export * from './bedrock-barrel.ts';
 export * from './cache-account-barrel.ts';
 export * from './cap-census-barrel.ts';
 export * from './coverage-census-barrel.ts';
-export * from './source-check-barrel.ts';
 export * from './publish-barrel.ts';
 export * from './pairing-barrel.ts';
 export * from './editor-barrel.ts';

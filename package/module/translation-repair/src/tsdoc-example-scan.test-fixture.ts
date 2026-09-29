@@ -4,7 +4,7 @@ import {
   topLevelPieces,
   wholeWordAt,
   withoutBlockAndLineComments,
-} from './source-text-scan.ts';
+} from './source-text-scan.test-fixture.ts';
 
 //region TSDoc example scan
 // LEDGER D9: examples that called the wrong function or left out a key the
@@ -19,6 +19,9 @@ import {
 // guesses: a parameter typed by a named alias, an argument passed as a
 // variable, and an example that elides its keys with `...` say nothing about
 // keys, and arrow functions and methods are not read at all.
+//
+// TEST SUPPORT (ledger B30): only its test reads it, so it is a fixture rather
+// than package source; it shipped in the build until 2026-09-29.
 
 /**
  One example that does not show the call it documents.

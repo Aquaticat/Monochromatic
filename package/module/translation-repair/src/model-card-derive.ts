@@ -41,7 +41,7 @@ export type CardProvider = 'synthetic' | 'hyper' | 'openrouter' | 'bedrock';
 
  @example
  ```ts
- const card: RosterCard = cardOf({ modelId: 'minimax-m3', },);
+ const card: RosterCard | undefined = ROSTER_CARDS.find(function isMinimax(entry,) { return entry.id === 'minimax-m3'; },);
  ```
  */
 export type RosterCard = ModelCard & {
@@ -150,27 +150,6 @@ export function cardsServing<Provider extends CardProvider>(
   return ROSTER_CARDS.filter(function serves(card,): card is ServingCard<Provider> {
     return card[provider] !== undefined;
   },);
-}
-
-/**
- Card of one roster model.
-
- @param modelId - roster model to look up
-
- @returns Its card beside its id
-
- @example
- ```ts
- const card = cardOf({ modelId: 'minimax-m3', },);
- ```
- */
-export function cardOf(
-  { modelId, }: { readonly modelId: RosterModelId; },
-): RosterCard {
-  return {
-    id: modelId,
-    ...MODEL_CARDS[modelId],
-  };
 }
 
 /**

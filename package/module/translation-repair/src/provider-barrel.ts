@@ -197,7 +197,6 @@ export {
   type OpenRouterProviderPreferences,
   type OpenRouterServedId,
   openRouterProviderPreferencesFor,
-  openRouterServesLabel,
 } from './openrouter-catalog.ts';
 export {
   COMPLETION_CAP,
@@ -267,9 +266,6 @@ export {
   HYPER_ORIGIN_NAMES_ARE_SERVED,
   type HyperModelInfo,
   type HyperServedId,
-  hyperServesLabel,
-  hyperModelsWithSyntheticCounterparts,
-  hyperModelsWithoutSyntheticCounterparts,
 } from './hyper-catalog.ts';
 export {
   createHyperClient,

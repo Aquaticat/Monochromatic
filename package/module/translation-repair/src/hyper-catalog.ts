@@ -190,50 +190,6 @@ export function answerCeilingFor(
 }
 
 /**
- Models on this provider that stand in for one the other provider serves.
- 
- @returns Their identifiers, in catalog order
- 
- @example
- ```ts
- const shared = hyperModelsWithSyntheticCounterparts();
- ```
- */
-export function hyperModelsWithSyntheticCounterparts(): readonly HyperServedId[] {
-  return Object
-    .values(HYPER_MODELS,)
-    .filter(function shared(info,): boolean {
-      return info.sharedWith !== NO_SYNTHETIC_COUNTERPART;
-    },)
-    .map(function toId(info,): HyperServedId {
-      return info.id;
-    },);
-}
-
-/**
- Historical Hyper/Synthetic projection: models without a Synthetic counterpart.
- Other provider reach is determined by `reachOf`, not by this bucket;
- an OpenRouter route may still exist for the same model.
- 
- @returns Their identifiers, in catalog order
- 
- @example
- ```ts
- const withoutSynthetic = hyperModelsWithoutSyntheticCounterparts();
- ```
- */
-export function hyperModelsWithoutSyntheticCounterparts(): readonly HyperServedId[] {
-  return Object
-    .values(HYPER_MODELS,)
-    .filter(function alone(info,): boolean {
-      return info.sharedWith === NO_SYNTHETIC_COUNTERPART;
-    },)
-    .map(function toId(info,): HyperServedId {
-      return info.id;
-    },);
-}
-
-/**
  Proof that every roster name for a Hyper-only model is an id this provider
  serves.
  
@@ -258,29 +214,5 @@ export type HyperOriginNamesAreServed = HyperOriginRosterId extends HyperServedI
  ```
  */
 export const HYPER_ORIGIN_NAMES_ARE_SERVED: HyperOriginNamesAreServed = true;
-
-/**
- Whether Charm Hyper's catalog carries a label under that exact spelling.
- 
- A LABEL, NOT A ROSTER ID: the roster names shared models by their Synthetic
- spelling and reaches Hyper for them through `hyperIdFor`, so this answers
- only whether the given spelling is a Hyper row, which for the roster means
- the Hyper-only labels. `syntheticServes` is the roster-typed counterpart.
- 
- @param label - spelling being looked up
- 
- @returns Whether `HYPER_MODELS` has a row under it
- 
- @example
- ```ts
- const served = hyperServesLabel('minimax-m3',);
- ```
- */
-export function hyperServesLabel(label: string,): label is HyperServedId {
-  return Object.hasOwn(
-    HYPER_MODELS,
-    label,
-  );
-}
 
 //endregion Hyper catalog

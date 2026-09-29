@@ -265,29 +265,6 @@ export function openRouterProviderPreferencesFor(
 }
 
 /**
- Whether OpenRouter's catalog carries a label under that exact spelling.
- 
- A LABEL, NOT A ROSTER ID, mirroring `hyperServesLabel`: the roster never
- names a model the OpenRouter way, so this answers only whether a spelling
- read off a log or a flag is one of this provider's rows.
- 
- @param label - spelling being looked up
- 
- @returns Whether `OPENROUTER_MODELS` has a row under it
- 
- @example
- ```ts
- const served = openRouterServesLabel('moonshotai/kimi-k3',);
- ```
- */
-export function openRouterServesLabel(label: string,): label is OpenRouterServedId {
-  return Object.hasOwn(
-    OPENROUTER_MODELS,
-    label,
-  );
-}
-
-/**
  Roster seats this provider stopped serving on 2026-09-09, named so the
  seat accounting and the tests can say which seats a dry Synthetic leaves
  unreachable rather than rediscovering it from an absent row.

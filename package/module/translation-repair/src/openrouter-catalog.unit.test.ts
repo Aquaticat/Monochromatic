@@ -21,7 +21,6 @@ import {
   OPENROUTER_WITHHELD,
   openRouterIdFor,
   openRouterProviderPreferencesFor,
-  openRouterServesLabel,
   reachOf,
   ROSTER_MODEL_IDS,
   SEAT_HYPER_ONLY,
@@ -31,6 +30,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
   visionReachOf,
 } from '../dist/final/node/index.mjs';
+import { openRouterServesLabel, } from './catalog-lookups.test-fixture.ts';
 
 await describe({
   name: 'OPENROUTER_MODELS',

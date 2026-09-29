@@ -15,7 +15,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  cardOf,
   readsImages,
   reachOf,
   ROSTER_MODEL_IDS,
@@ -34,6 +33,7 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../dist/final/node/index.mjs';
+import { cardOf, } from './catalog-lookups.test-fixture.ts';
 
 /**
  What each seat's name claims, checked against the cards.

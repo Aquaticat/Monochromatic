@@ -1,9 +1,9 @@
-import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+import { isAsciiAlphanumeric, } from '../dist/final/node/index.mjs';
 
 //region Source text scan
 // Index scans over this package's own formatted source: matching brackets,
 // splitting at depth zero, dropping comments, finding a whole identifier.
-// Split from `tsdoc-example-scan.ts` at its line budget; strings and comments
+// Split from `tsdoc-example-scan.test-fixture.ts` at its line budget; strings and comments
 // are skipped so a bracket inside either is text, not structure.
 
 /**

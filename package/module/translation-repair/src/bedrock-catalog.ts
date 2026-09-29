@@ -230,22 +230,4 @@ export function bedrockChatUrlFor(
   return `${baseUrl}${BEDROCK_ROUTE_PREFIX[route]}/chat/completions`;
 }
 
-/**
- Whether a label is one of this provider's spellings.
- 
- @param label - model label as a log line or a caller wrote it
- 
- @returns Whether this catalog has a row for it
- 
- @example
- ```ts
- if (bedrockServesLabel(label,)) price(label,);
- ```
- */
-export function bedrockServesLabel(label: string,): label is BedrockServedId {
-  return Object
-    .keys(BEDROCK_MODELS,)
-    .includes(label,);
-}
-
 //endregion Bedrock catalog

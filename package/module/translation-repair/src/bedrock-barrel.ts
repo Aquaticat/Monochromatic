@@ -13,7 +13,6 @@ export {
   type BedrockServedId,
   type BedrockStreamEnd,
   bedrockChatUrlFor,
-  bedrockServesLabel,
 } from './bedrock-catalog.ts';
 export {
   BEDROCK_PER_MODEL_CONCURRENCY,

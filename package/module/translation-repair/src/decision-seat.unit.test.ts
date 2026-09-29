@@ -16,7 +16,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  cardOf,
   DECISION_ONLY_ROSTER_IDS,
   isDecisionSeat,
   judgeSeatsFor,
@@ -34,6 +33,7 @@ import {
   RUN_WRITERS,
   SEAT_OPENROUTER_DECISIONS,
 } from '../dist/final/node/index.mjs';
+import { cardOf, } from './catalog-lookups.test-fixture.ts';
 
 await describe({
   name: 'a decision-only seat',

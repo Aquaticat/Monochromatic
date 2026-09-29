@@ -21,8 +21,6 @@ import {
 import {
   answerCeilingFor,
   HYPER_MODELS,
-  hyperModelsWithoutSyntheticCounterparts,
-  hyperModelsWithSyntheticCounterparts,
   NO_SYNTHETIC_COUNTERPART,
   SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -32,6 +30,10 @@ import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '../dist/final/node/index.mjs';
+import {
+  hyperModelsWithoutSyntheticCounterparts,
+  hyperModelsWithSyntheticCounterparts,
+} from './catalog-lookups.test-fixture.ts';
 
 await describe({
   name: 'hyper-catalog',

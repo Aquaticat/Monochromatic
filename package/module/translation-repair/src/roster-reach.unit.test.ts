@@ -20,14 +20,11 @@ import {
 
 import {
   bedrockIdFor,
-  bedrockServesLabel,
   HYPER_ORIGIN_NAMES_ARE_SERVED,
   HYPER_ORIGIN_ROSTER_IDS,
   hyperIdFor,
-  hyperServesLabel,
   isDecisionSeat,
   openRouterIdFor,
-  openRouterServesLabel,
   reachOf,
   readsImages,
   ROSTER_MODEL_IDS,
@@ -45,6 +42,11 @@ import {
   syntheticServes,
   visionReachOf,
 } from '../dist/final/node/index.mjs';
+import {
+  bedrockServesLabel,
+  hyperServesLabel,
+  openRouterServesLabel,
+} from './catalog-lookups.test-fixture.ts';
 
 /**
  Models the owner removed from every active stage.

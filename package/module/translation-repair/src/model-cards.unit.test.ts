@@ -18,7 +18,6 @@ import {
   BEDROCK_MODELS,
   BEDROCK_ONLY_ROSTER_IDS,
   BEDROCK_SERVED_IDS,
-  cardOf,
   cardsServing,
   COMPLETION_CAP,
   holdSet,
@@ -35,6 +34,7 @@ import {
   SYNTHETIC_MODELS,
   SYNTHETIC_SERVED_IDS,
 } from '../dist/final/node/index.mjs';
+import { cardOf, } from './catalog-lookups.test-fixture.ts';
 
 await describe({
   name: 'model-cards',

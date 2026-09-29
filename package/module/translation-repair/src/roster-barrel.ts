@@ -32,7 +32,6 @@ export type {
 export { MODEL_CARDS, } from './model-cards.ts';
 export {
   BEDROCK_ONLY_ROSTER_IDS,
-  cardOf,
   type CardProvider,
   cardsServing,
   DECISION_ONLY_ROSTER_IDS,

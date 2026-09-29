@@ -19,7 +19,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { exampleFindingsOf, } from '../dist/final/node/index.mjs';
+import { exampleFindingsOf, } from './tsdoc-example-scan.test-fixture.ts';
 
 /**
  A documented function, as the formatter writes one.
