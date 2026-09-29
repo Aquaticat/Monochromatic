@@ -392,6 +392,49 @@ await describe({
       },
     },),
     it({
+      name: 'REVIEWS the block when its anchored voices exactly meet the quorum (ledger B27): the threshold is a '
+        + 'floor the block reaches, not one it must exceed',
+      fn: async () => {
+        /** Anchored voices the four-seat bench needs, every seat reachable. */
+        const quorum = rosterQuorumSize({ rosterSize: ROSTER.length, },);
+        /**
+         Seats asked for a review, in first-call order; exactly the first
+         `quorum` of them anchor their quote, since the gather rotates the
+         bench by the prompt and a seat named by roster position could fall
+         outside the seats it closes on.
+         */
+        const reviewers: string[] = [];
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts: [],
+            replyFor: ({ schema, modelId, },) => {
+              if (schema !== 'archive_block_review')
+                return ACCEPTABLE_NATURALNESS;
+              if (!reviewers.includes(modelId,))
+                reviewers.push(modelId,);
+              return {
+                disposition: 'source-supported',
+                sourceQuote: reviewers.indexOf(modelId,) < quorum ? '窗边安静地睡觉' : '不存在的来源句子',
+                replacementText: '',
+                finding: 'Source support claim.',
+              };
+            },
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边安静地睡觉。',
+          targetText: 'The cat sleeps quietly by the window.',
+          blockText: 'The cat sleeps quietly by the window.',
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        expect(outcome.kind,).toBe('retained',);
+        expect(outcome.findings.join('\n',),).not.toContain('archive review left the block unresolved',);
+        expect(outcome.findings,).toContain('archive block absolute naturalness accepted and challenged',);
+      },
+    },),
+    it({
       name: 'SHIPS a revision in the archive quote style when the reviewer wrote straight quotes (class thirty-eight)',
       fn: async () => {
         /** Prompts, captured so the judges are shown to read the restored bytes. */
