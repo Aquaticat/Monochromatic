@@ -151,6 +151,33 @@ await describe({
       },
     },),
     it({
+      name: 'READS THE NOTE AS THE LINK-NAME FLOOR DOES (ledger B23): a declared form only inside a longer word is '
+        + 'not rendered, an escaped handle is, and a Latin source form inside a longer word names no one',
+      fn: async () => {
+        expect(pageNameLines({
+          sourceText: '[\u{65E9}\u{5B89}\u{FF0C}\u{6C64}\u{59C6}\u{3002}](https://example.invalid/tom)\n',
+          targetText: '[Good morning, Tomcat.](https://example.invalid/tom)\n',
+          declared: [{ source: '\u{6C64}\u{59C6}', rendering: 'Tom', },],
+        },),).toContain(
+          '- \u{65E9}\u{5B89}\u{FF0C}\u{6C64}\u{59C6}\u{3002} (link text, https://example.invalid/tom): "Good morning, Tomcat."; names \u{6C64}\u{59C6}, declared "Tom": the declared form inside the title, the archive\'s words for the rest',
+        );
+        expect(pageNameLines({
+          sourceText: '[\u{6C38}\u{522B}\u{4E86}\u{FF0C}\u{732B}\u{732B}\u{3002}](https://example.invalid/farewell)\n',
+          targetText: String.raw`[Farewell, Mittens\_Cat.](https://example.invalid/farewell)` + '\n',
+          declared: [{ source: '\u{732B}\u{732B}', rendering: 'Mittens_Cat', },],
+        },),).toContain(
+          String.raw`- 永别了，猫猫。 (link text, https://example.invalid/farewell): "Farewell, Mittens\_Cat."`,
+        );
+        expect(pageNameLines({
+          sourceText: '[Tomcat\u{7684}\u{65E9}\u{9910}](https://example.invalid/tomcat)\n',
+          targetText: '[Tomcat\'s breakfast](https://example.invalid/tomcat)\n',
+          declared: [{ source: 'Tom', rendering: 'Thomas', },],
+        },),).toContain(
+          '- Tomcat\u{7684}\u{65E9}\u{9910} (link text, https://example.invalid/tomcat): "Tomcat\'s breakfast"',
+        );
+      },
+    },),
+    it({
       name: 'LEAVES OUT a link the archive keeps in the same words, a sentence-long link text, an href only one side '
         + 'carries, and signatures whose counts differ between the documents',
       fn: async () => {
