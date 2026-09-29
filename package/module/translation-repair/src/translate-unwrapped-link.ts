@@ -2,6 +2,7 @@ import {
   type Link,
   linksOf,
 } from './page-name-glossary.ts';
+import { readSliceSkeleton, } from './translate-skeleton.ts';
 
 //region Unwrapped link floor
 // THE ONE HUNDRED FIFTEENTH CLASS (yingying10, 2026-09-24). A translate
@@ -20,6 +21,12 @@ import {
 // rendering does while the rendering still carries the href, the link was
 // unwrapped. Silent where the rendering drops the href outright: that is the
 // destination floor's finding, not this one's.
+//
+// "STILL CARRIES THE HREF" IS THE DESTINATION FLOOR'S READING (ledger B23):
+// the rendering's link destinations, worded or bare, as the slice grammar
+// parses them. A raw substring took an address that only begins with the
+// href (`windowsill-nap.html2`) for the href kept, and told the model its
+// destination was intact when it had changed.
 
 /**
  Whether a link carries words of its own rather than its destination.
@@ -79,6 +86,39 @@ function wordedCounts({ text, }: { readonly text: string; },): ReadonlyMap<strin
 }
 
 /**
+ Destinations a text carries as links, worded or bare, as the destination
+ floor reads them.
+
+ EMPTY FOR A TEXT THE SLICE GRAMMAR REFUSES, which the skeleton floor refuses
+ in its own words; this floor then says nothing about it.
+
+ @param text - rendering to read
+
+ @returns Every link destination the text carries
+
+ @example
+ ```ts
+ carriedDestinations({ text: 'A nap (https://example.invalid/nap)', },); // Set { 'https://example.invalid/nap' }
+ ```
+ */
+function carriedDestinations({ text, }: { readonly text: string; },): ReadonlySet<string> {
+  /**
+   Rendering's skeleton, or the grammar's refusal.
+   */
+  const read = readSliceSkeleton({ text, },);
+  if (read.kind !== 'read')
+    return new Set();
+  return new Set(read.skeleton
+    .atoms
+    .filter(function isLinkDestination(atom,): boolean {
+      return atom.kind === 'link-url';
+    },)
+    .map(function destinationOf(atom,): string {
+      return atom.value;
+    },),);
+}
+
+/**
  Findings for every source href whose worded link the rendering unwrapped
  while keeping the destination.
 
@@ -107,9 +147,13 @@ export function unwrappedLinkFindings(
    Worded links the rendering carries, by href.
    */
   const rendered = wordedCounts({ text: candidateText, },);
+  /**
+   Destinations the rendering carries, worded or bare.
+   */
+  const destinations = carriedDestinations({ text: candidateText, },);
   return [...wordedCounts({ text: sourceText, },),]
     .filter(function unwrapped([href, owed,],): boolean {
-      return ((rendered.get(href,) ?? 0) < owed) && candidateText.includes(href,);
+      return ((rendered.get(href,) ?? 0) < owed) && destinations.has(href,);
     },)
     .map(function finding([href,],): string {
       return `The ORIGINAL links words to ${href} as [words](${href}), but your translation carries that destination without words linked to it. Keep the link: put the rendered words inside the brackets and the destination in the parentheses right after them, as the ORIGINAL does.`;
