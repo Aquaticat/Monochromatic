@@ -203,6 +203,14 @@ and caught failure.
 Those controls do not cover escaping callback rejection,
 lease placement in a new genuine entrypoint,
 or bounded-stop behavior.
+Separate no-desktop `proc_dba6` controls subsequently passed escaping asynchronous rejection,
+synchronous throw,
+returned-value propagation,
+and cleanup omission reaching its bounded stop.
+Lease integration,
+request cancellation,
+human-response deadline,
+and controller-loss verification remain before a new genuine dispatch.
 The prior source-review clearance is explicitly retracted in a separate correction.
 No Node/Pi defect or actual SDK-session failure is established.
 
