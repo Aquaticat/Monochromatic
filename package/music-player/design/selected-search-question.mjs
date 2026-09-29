@@ -19,7 +19,9 @@ if (floatingPng.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
 }
 const floatingUrl = `data:image/png;base64,${floatingPng.toString('base64')}`;
 const e2Captures = Object.fromEntries(['player', 'empty', 'results'].map((state) => {
-  const name = `search-e2-complete-7p5-${state}-inner-light-s200.png`;
+  const name = state === 'results'
+    ? 'search-selected-dm-review-inner-results-light-s200.png'
+    : `search-e2-complete-7p5-${state}-inner-light-s200.png`;
   const png = readFileSync(join(render, name));
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
       png.readUInt32BE(16) !== 2076 || png.readUInt32BE(20) !== 2152) {
@@ -32,7 +34,7 @@ const captures = Object.fromEntries(['inner', 'cover'].map((panel) => [panel,
     Object.fromEntries(['light', 'dark'].map((scheme) => {
       const scale = state === 'typing' || state === 'results200' ? '200' : '100';
       const name = state === 'results' || state === 'results200'
-        ? `search-selected-accent-review-${panel}-results-${scheme}-s${scale}.png`
+        ? `search-selected-dm-review-${panel}-results-${scheme}-s${scale}.png`
         : `search-selected-review-${panel}-${state}-${scheme}-s${scale}.png`;
       const png = readFileSync(join(render, name));
       const dimensions = panel === 'inner' ? [2076, 2152] : [1080, 2424];
@@ -79,7 +81,8 @@ if (command === 'build') {
     throw new Error('Accepted E2 player/Search rasters differ from sanitized sources.');
   }
   for (const marker of ['Search A, with reachable folded-cover results',
-    'D51', 'D52', 'D56', 'D57', 'D58', 'D59', 'results200', 'predates D58',
+    'D51', 'D52', 'D56', 'D57', 'D58', 'D59', 'D60', 'D61',
+    'results200', 'predates D58',
     'not Gboard', '7.5mm total', 'Reset 100%', 'data-panel="inner"',
     'data-panel="cover"', 'data-preview="overflow"', 'data-preview="floating"',
     'data-preview="e2"', 'Reply in this chat']) {

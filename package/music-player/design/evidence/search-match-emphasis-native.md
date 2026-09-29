@@ -53,20 +53,51 @@ the cover 1080 × 2424,
 at 390dpi.
 All published captures are keyboard-closed;
 there was no new Gboard or debug-IME experiment.
-The [inner light 200% selected result][inner-light],
-[inner dark 200% selected result][inner-dark],
-[cover light 200% selected result][cover-light] and
-[cover dark 200% selected result][cover-dark]
-show the actual theme-derived highlight under both app schemes.
-Equivalent 100% frames and the complete two-scope by three-order
-200% matrix are in `questions/render/` with the
-`search-selected-accent-review-` and
-`search-rank-accent-review-` prefixes.
+The earlier [inner light 200% short fixture][inner-light],
+[inner dark 200% short fixture][inner-dark],
+[cover light 200% short fixture][cover-light] and
+[cover dark 200% short fixture][cover-dark]
+show the theme-derived color in both app schemes,
+but include a parent-only track that D60 later rejected.
+The active D/M result state is represented by
+[inner light][current-inner-light],
+[inner dark][current-inner-dark],
+[cover light][current-cover-light] and
+[cover dark][current-cover-dark] native 200% samples;
+corresponding 100% frames are retained under the
+`search-selected-dm-review-` prefix.
+The original complete D/P by M/F/T comparison remains under
+`search-rank-accent-review-` as historical decision evidence.
 The [inner parent-only scrolled result][inner-parent] and
 [cover tracks-first parent-only scrolled result][cover-parent]
 show a parent-name highlight alongside the other matching titles.
-The [separate membership/order review][ranking-review]
-embeds only these corrected sanitized captures.
+The [archived membership/order comparison][ranking-review]
+embeds sanitized pre-decision fixtures;
+[the selected-only review][current-review] embeds active D/M frames.
+
+## D60/D61 selected-result recapture
+
+After the user chose direct-name Scope D and mixed Order M,
+the same installed APK was launched with
+`search-deck-right-lift-retain-e2floor7p5-imeviewport-rankmixed-results`
+(light variants append `-light`).
+Keyboard-closed native captures cover inner and cover panels at both
+100% and 200% text in actual light and dark modes.
+Every capture retained `cam` in the header,
+then an exact `Cam` track before the `Camellia` folder;
+both result-title starts matched the query start at x `1249` inner or
+x `156` cover.
+The parent-only `Another Xronixle` was absent from the Search result
+subtree in every hierarchy,
+while an older short-result fixture did include it (positive exclusion
+control).
+`Another Xronixle` remains visible on the **left playback deck** as
+the current track and is not a Search hit.
+The new native rasters were separately verified for full generic status
+replacement,
+unchanged app pixels below it and absent PNG metadata.
+They do not implement a search index,
+settle filename matching grammar or prove row activation.
 
 ## Bounded after-state checks
 
@@ -137,8 +168,10 @@ they remain bounded keyboard evidence,
 not proof that highlighted rows remain readable with a keyboard.
 Other OS accent seeds and scale-dependent paint contrast are untested.
 The match spans do not create a click handler.
-Scope D/P,
-Order M/F/T and #127 through #129 are still separate open design questions.
+D60/D61 subsequently selected direct-name membership and mixed relevance.
+Matching grammar,
+deterministic tie-breaks,
+#127 through #129 and #118 accessibility remain separate open questions.
 
 [inner-light]: ../questions/render/search-selected-accent-review-inner-results-light-s200.png
 [inner-dark]: ../questions/render/search-selected-accent-review-inner-results-dark-s200.png
@@ -146,4 +179,9 @@ Order M/F/T and #127 through #129 are still separate open design questions.
 [cover-dark]: ../questions/render/search-selected-accent-review-cover-results-dark-s200.png
 [inner-parent]: ../questions/render/search-rank-accent-review-inner-rankmixed-parenthits-end-s200.png
 [cover-parent]: ../questions/render/search-rank-accent-review-cover-ranktracks-parenthits-end-s200.png
-[ranking-review]: ../questions/ranking-review.html
+[ranking-review]: ../questions/archive/search-ranking-before-dm.html
+[current-review]: ../questions/current.html
+[current-inner-light]: ../questions/render/search-selected-dm-review-inner-results-light-s200.png
+[current-inner-dark]: ../questions/render/search-selected-dm-review-inner-results-dark-s200.png
+[current-cover-light]: ../questions/render/search-selected-dm-review-cover-results-light-s200.png
+[current-cover-dark]: ../questions/render/search-selected-dm-review-cover-results-dark-s200.png

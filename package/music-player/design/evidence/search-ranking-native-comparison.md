@@ -1,12 +1,17 @@
-# Search result-order comparison on the disposable Fold
+# Historical Search result-order comparison before D60/D61
 
 ## What the fixture does and does not do
 
-This #116 comparison uses only debug fixture rows from
+This #116 comparison preceded the user's independent selection of
+**Scope D** (D60) and **Order M** (D61).
+The [active selected-only review][current-review] now shows just that
+combination;
+the [archived native matrix][archived-matrix] retains the alternatives.
+This historical comparison uses only debug fixture rows from
 `SearchRankingFixture.kt` on prototype commit `6addfc139`,
 D58's aligned row correction from `baa37caaf`,
 and D59's OS-accent match spans from `b471ec537`.
-The currently linked sanitized images come from the installed debug APK
+The linked historical decision images come from the installed debug APK
 whose SHA-256 matched the local build:
 `7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`.
 The earlier `bf9a51c42facfca969e275d5fe55769656c451900f57689dc7c24190e8d6d2ef`
@@ -169,7 +174,7 @@ The parent-only row in the inner mixed/folders initial view was below the
 viewport,
 so the paired scrolled view is essential.
 
-Each active reviewed PNG is named
+Each archived comparison PNG is named
 `search-rank-accent-review-{inner|cover}-{rankfolders|rankmixed|ranktracks}-{direct|parenthits}[-end]-s200.png`.
 The corresponding private capture used the same panel/order/membership
 suffix under `search-accent-rank-` for initial,
@@ -189,12 +194,15 @@ and removed PNG metadata.
 Only sanitized PNGs are published;
 raw status-bearing screenshots and UI hierarchies are private.
 
-No matching scope,
-relevance/tie-break algorithm or result activation is selected in this
-evidence note.
-No production Search code,
-original AVD setting or new IME test was changed.
+D60 selected direct-name scope and D61 selected mixed cross-type priority
+after this comparison.
+No concrete relevance scorer,
+deterministic tie-break,
+result activation or production Search code was added.
+The original AVD and IME settings remained unchanged.
 
+[current-review]: ../questions/current.html
+[archived-matrix]: ../questions/archive/search-ranking-before-dm.html
 [inner-mixed-direct-top]: ../questions/render/search-rank-accent-review-inner-rankmixed-direct-s200.png
 [inner-mixed-direct-end]: ../questions/render/search-rank-accent-review-inner-rankmixed-direct-end-s200.png
 [inner-mixed-parent-top]: ../questions/render/search-rank-accent-review-inner-rankmixed-parenthits-s200.png

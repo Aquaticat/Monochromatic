@@ -20,8 +20,12 @@ Each linked image is a native keyboard-closed screenshot with the full
 status region replaced by a generic reference of the same dimensions;
 app pixels are unchanged and PNG metadata removed.
 The raw status-bearing frames and UI Automator hierarchies stay private.
-The selected short-results fixture still has no result activation and
-its parent-only track example does not settle matching scope.
+At the D58 checkpoint,
+the short-results fixture included a parent-only illustrative track with
+no activation handler.
+D60 later excluded that track from the selected result set;
+this historical alignment image does not override the active D/M
+membership or order in `package/music-player/design/questions/current.html`.
 
 ## Before and after at native resolution
 

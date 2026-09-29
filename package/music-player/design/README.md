@@ -149,15 +149,19 @@ not the rejected purple tertiary container.
 The [native alignment evidence](evidence/search-header-result-alignment.md),
 [native match-emphasis evidence](evidence/search-match-emphasis-native.md)
 and refreshed selected-only `questions/current.html` show these corrections;
-historical keyboard-open captures remain labeled as pre-D58/D59
+historical keyboard-open captures remain labeled as pre-D58-to-D61
 geometry evidence.
-The separate [Search membership and order review](questions/ranking-review.html)
-now shows accent-highlighted native samples before comparing direct-name
-and immediate-parent-only track membership with mixed,
-folders-first and tracks-first display priorities.
-Its [fixture evidence](evidence/search-ranking-native-comparison.md) is
-illustrative,
-not a selected ranking algorithm or result action.
+D60 selects direct folder/filename matches,
+not parent-only track expansion.
+D61 selects mixed relevance across folder and track types,
+not grouped folder-first or track-first display.
+The [archived native comparison](questions/archive/search-ranking-before-dm.html)
+and [fixture evidence](evidence/search-ranking-native-comparison.md) retain
+all D/P and M/F/T alternatives as decision history,
+not active choices or a selected scorer.
+Matching grammar,
+deterministic tie-breaks,
+result activation and Search accessibility remain open.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.
@@ -166,10 +170,10 @@ D21's configurable global hotkey and extra Settings row belonged to the command 
 they do not silently move to Search.
  D25's Ctrl+F reservation remains pending the
 whole keyboard-map pass.
- Search result actions/ranking,
+ Search result actions,
+ matching grammar and tie-breaks,
  tall-keyboard fit,
- and final empty/error
-behavior remain to be designed;
+ and final empty/error behavior remain to be designed;
  the
 canned captures are a design review,
  not a running search index.

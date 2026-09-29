@@ -4,8 +4,8 @@ import { join } from 'node:path';
 // Embed only the sanitized aligned native evidence, never raw status-bearing captures.
 const root = process.cwd();
 const render = join(root, 'questions', 'render');
-const templatePath = join(root, 'questions', 'ranking.template.html');
-const artifactPath = join(root, 'questions', 'ranking-review.html');
+const templatePath = join(root, 'questions', 'archive', 'search-ranking-before-dm.template.html');
+const artifactPath = join(root, 'questions', 'archive', 'search-ranking-before-dm.html');
 const captures = Object.fromEntries(['inner', 'cover'].map(panel => [panel,
   Object.fromEntries(['rankmixed', 'rankfolders', 'ranktracks'].map(rank => [rank,
     Object.fromEntries(['direct', 'parenthits'].map(scope => [scope,
@@ -40,7 +40,7 @@ if (command === 'build') {
   }
   writeFileSync(artifactPath, template.replace('__RANK_CAPTURE_MAP__', JSON.stringify(captures))
     .replace('__HIGHLIGHT_CAPTURE_MAP__', JSON.stringify(highlightCaptures)));
-  console.log(`Built the separate design-only Search ranking review in ${artifactPath}.`);
+  console.log(`Built the historical D/P and M/F/T Search comparison in ${artifactPath}.`);
 } else if (command === 'validate') {
   const html = readFileSync(artifactPath, 'utf8');
   const begin = html.indexOf('const captures = ');
@@ -58,14 +58,14 @@ if (command === 'build') {
   }
   for (const required of ['D58', 'D59', 'OKLCH', 'Scope D', 'Scope P', 'Order M', 'Order F', 'Order T',
     'Ranking: D &gt; P', 'Ranking: M &gt; F &gt; T', 'exact', 'Reset 100%',
-    'Reply in this chat', 'data-preview="inner"', 'data-preview="cover"']) {
+    'D/M selected', 'Historical', 'data-preview="inner"', 'data-preview="cover"']) {
     if (!html.includes(required)) throw new Error(`Ranking review missing ${required}`);
   }
   if (html.includes('__RANK_CAPTURE_MAP__') || html.includes('__HIGHLIGHT_CAPTURE_MAP__') ||
       html.includes('<script src=') || html.includes('<link rel="stylesheet"')) {
     throw new Error('Ranking form is not self-contained.');
   }
-  console.log('Validated aligned native ranking assets and two independent choice axes.');
+  console.log('Validated archived native ranking evidence and recorded D/M selection.');
 } else {
   throw new Error('Expected build or validate.');
 }

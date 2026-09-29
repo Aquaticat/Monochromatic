@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fold Search result membership and order review</title>
+<title>Historical Fold Search D/P and M/F/T comparison</title>
 <style>
 :root {
   color-scheme: light dark;
@@ -217,14 +217,14 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 <body>
 <main>
 <header>
-  <p class="muted">Music player · design-only Search behavior review · Pixel 9 Pro Fold</p>
-  <h1>See each highlighted match, then choose results and order</h1>
-  <p>Selected Search A and D58's icon/text columns remain unchanged. D59 now highlights every visible <code>cam</code> match <strong>in place</strong> in result titles and supporting parent-folder text. This separate pending review uses keyboard-closed, 200% native debug fixtures on the inner and cover panels. The inner captures keep the actual folder browser, complete playback deck and selected E2 floor; the folded cover keeps its full-width Search destination. These are hand-authored examples, not a running search index or clickable result rows.</p>
-  <div class="notice"><p>Inspect the theme-derived match treatment first, then choose <strong>membership</strong> and <strong>ordering</strong> independently. Initial checks select recommended previews only; they do not commit your preference. Matching grammar, ancestor paths and fuzzy matching remain outside these examples. Ranking images use a fixed light APK scheme; the separate match-treatment images show both actual light and dark APK schemes. This review's chrome follows your system setting. Full status content was replaced before publication. No arbitrary keyboard or TalkBack behavior is proven.</p></div>
+  <p class="muted">Music player · archived design comparison · Pixel 9 Pro Fold</p>
+  <h1>Historical Search membership and order evidence</h1>
+  <p>The user selected <strong>Scope D and Order M</strong> after this D59-highlighted native comparison. D60 excludes parent-only track hits, and D61 mixes direct folder/track results by illustrative relevance. Other combinations remain visible here only as decision evidence. The <a href="../current.html">selected-only Search review</a> shows the active D/M result state; the archived form does not reopen the choice.</p>
+  <div class="notice"><p>The controls preview historical membership and ordering alternatives; they do not change D60/D61. Native ranking frames use a fixed light app scheme and a keyboard-closed 200% fixture. The short-result highlight examples also include actual dark app captures, but their parent-only track predates D60. Matching grammar, activation, arbitrary keyboard fit and TalkBack remain outside these images. The review chrome follows your system setting; full status content was replaced before publication.</p></div>
 </header>
 <section aria-labelledby="highlight-title">
   <h2 id="highlight-title">First: OS-accent match emphasis in both app schemes</h2>
-  <p>Each matching substring, including <code>Cam</code> within <code>Camellia</code>, gets a highlight behind the glyphs and bold ink. The fill comes from the current theme's <strong>OS accent primary color adjusted in OKLCH</strong>, not a fixed purple swatch. In <code>Another Xronixle</code>, the title does not match, but the <code>Cam</code> inside its supporting parent <code>Camellia</code> does. The actual left-side browser is not a Search result and stays unchanged. These samples are the selected short-result layout, not a membership or order choice.</p>
+  <p>Each matching substring, including <code>Cam</code> within <code>Camellia</code>, gets a highlight behind the glyphs and bold ink. The fill comes from the current theme's <strong>OS accent primary color adjusted in OKLCH</strong>, not a fixed purple swatch. In <code>Another Xronixle</code>, the title does not match, but the <code>Cam</code> inside its supporting parent <code>Camellia</code> does. The actual left-side browser is not a Search result and stays unchanged. These short-result samples predate D60/D61 and are retained for D59 color evidence only; their parent-only track is not part of the active D/M design.</p>
   <div class="highlight-gallery">
     <article class="capture-card"><h3>Inner · light app</h3><img data-highlight-panel="inner" data-highlight-scheme="light" data-panel="inner" width="2076" height="2152" alt="Inner Search with blue-tinted OS-accent match highlights in light mode"><button type="button" data-preview="inner" data-position="top" data-highlight-scheme="light">Inspect inner light at device size</button></article>
     <article class="capture-card"><h3>Inner · dark app</h3><img data-highlight-panel="inner" data-highlight-scheme="dark" data-panel="inner" width="2076" height="2152" alt="Inner Search with OS-accent match highlights in dark mode"><button type="button" data-preview="inner" data-position="top" data-highlight-scheme="dark">Inspect inner dark at device size</button></article>
@@ -283,8 +283,8 @@ dialog::backdrop { background-color: var(--color-backdrop); }
   </div>
 </section>
 <section aria-labelledby="answer-title">
-  <h2 id="answer-title">Two separable answers</h2>
-  <p>Reply in this chat with <strong>Scope D or P</strong> and <strong>Order M, F or T</strong>, plus any correction. For example, “D and M” chooses direct names and mixed relevance; “P and F” includes immediate-parent-only tracks while listing folders first. If both have merits, “D now, P only after a measured large-library safeguard; M” is a valid conditional response. The controls only preview, and no answer is inferred from their initial state.</p>
+  <h2 id="answer-title">Recorded decision</h2>
+  <p><strong>D/M selected.</strong> D60 chose direct folder names and track filenames without parent-only track expansion. D61 chose mixed relevance instead of folders-first or tracks-first. The controls in this archive only expose the evidence that led to that decision. Inspect <a href="../current.html">the active selected Search review</a> for the D/M state; this archival matrix is not a question to answer.
   <p class="muted">Matching grammar, locale/tie-break behavior and limits on result counts need separate evidence after these priorities. Search navigation/focus (#127), empty/unavailable states (#128), result activation (#129), accessibility (#118) and production implementation remain outside this question. Source and limitations: <code>package/music-player/design/evidence/search-ranking-native-comparison.md</code>.</p>
 </section>
 </main>
@@ -337,7 +337,7 @@ function render() {
   });
   const scopeLabel = scopeValue() === 'direct' ? 'D: direct names only' : 'P: include immediate-parent-only tracks';
   const orderLabel = {rankmixed: 'M: relevance-mixed', rankfolders: 'F: folders first', ranktracks: 'T: tracks first'}[orderValue()];
-  document.querySelector('#current-combination').textContent = `Previewing ${scopeLabel} and ${orderLabel}. This is not yet a design decision.`;
+  document.querySelector('#current-combination').textContent = `Historical preview: ${scopeLabel} and ${orderLabel}. D/M was selected; this control does not change that decision.`;
   if (dialog.open) updatePreview();
 }
 function geometry() {

@@ -6257,7 +6257,7 @@ No production Search or new IME experiment was authorized.
 ## Historical pre-D59 Search membership and order checkpoint
 
 At this earlier checkpoint,
-`questions/ranking-review.html` was a **separate, unselected** #116
+`questions/archive/search-ranking-before-dm.html` was a **separate, unselected** #116
 review from the D58-corrected APK.
 D59 later superseded its unhighlighted evidence and rebuilt the form
 with OS-accent OKLCH match highlights;
@@ -6378,8 +6378,9 @@ That does not validate post-refocus reachability or every keyboard.
 `evidence/search-match-emphasis-native.md` records the bounded method.
 The selected-only `questions/current.html` now uses accent-highlighted
 short results on both panels at both scales in light/dark,
-and `questions/ranking-review.html` begins with visible light/dark
-highlight examples before the full updated two-scope by three-order matrix.
+and `questions/archive/search-ranking-before-dm.html` preserves the
+light/dark highlight examples and the full two-scope by three-order
+matrix as historical decision evidence.
 Both HTML pages were built,
 validated and exercised in a browser without console errors;
 the ranking form was checked at desktop and mobile width with working
@@ -6418,9 +6419,37 @@ new keyboard tests or a universal matching grammar.
 The D/P/M/F/T questionnaire and its retained rejected alternatives are
 now historical evidence;
 only the active D/M direction belongs in the selected review.
-The earlier `questions/current.html` still has an illustrative
-parent-only `Another Xronixle` result,
-so it must be recaptured/rebuilt from a direct-name mixed-order fixture
-before presenting it as the current design.
+`questions/current.html` now embeds newly sanitized keyboard-closed
+D/M direct-name mixed-order captures on inner and cover at 100% and 200%
+text in light/dark.
+The exact `Cam` track appears first,
+followed by the directly named `Camellia` folder and other direct matches;
+`Another Xronixle` remains only the playback deck's current-track label,
+not a Search hit.
+Its E2 positive-results scene uses that same selected D/M capture;
+older keyboard/occlusion scenes remain labeled as historical bounded
+evidence,
+not current Search paint or membership.
+The D/P/M/F/T interactive comparison was moved to
+`questions/archive/search-ranking-before-dm.html` and explicitly labeled
+as a recorded D/M decision,
+not an unanswered form.
+All new D/M captures came from the existing installed debug APK SHA-256
+`7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`;
+no prototype or production code was changed for D60/D61.
+A native hierarchy check confirmed exact `Cam` precedes `Camellia` at
+x `1249` inner or x `156` cover in all eight captures,
+no parent-only track occurs in the Search subtree,
+and the older parent-only cover capture triggers the exclusion control.
+The selected-only HTML embeds all eight new rasters and its E2 positive
+scene uses the selected D/M inner 200% frame;
+browser state/scheme controls,
+modal source geometry,
+light/dark chrome and axe WCAG A/AA were exercised without errors.
+No IME was reopened.
+The disposable emulator was stopped through its owning container after
+these keyboard-closed captures;
+`adb devices -l` and `podman ps` showed it absent.
+The original AVD remains untouched.
 #116 stays in progress for matching grammar and deterministic tie-breaks;
 #127 through #129 and #118 remain separate pending reviews.

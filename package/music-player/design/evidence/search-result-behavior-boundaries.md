@@ -18,7 +18,10 @@ see `search-header-result-alignment.md`.
 D59 highlights matching `cam` substrings in place from the theme's OS
 accent with OKLCH adjustment;
 see `search-match-emphasis-native.md`.
-Neither visual rule specifies result ranking or what tapping a result does.
+D60 later selects direct names without parent-only track expansion,
+and D61 independently selects mixed relevance across result types.
+Neither visual rule nor those priority choices specifies what tapping a
+result does or how a production search scorer operates.
 `package/music-player/design/decisions.md` records those bounds.
 
 The debug-only
@@ -30,8 +33,12 @@ query `cam`.
 `PersistentResultLine` has no click handler;
 the app under review has no production Search index or result activation.
 The track title itself does **not** contain `cam`:
-its appearance in the fixture might illustrate a parent-folder match,
-not a decided rule that every matching folder expands into all its tracks.
+its appearance in this historical pre-D60 fixture illustrated a
+parent-folder match that D60 later **excluded** from the selected result
+set.
+`Another Xronixle` still appears as the current track on the retained
+left playback deck,
+not as a Search hit.
 The longer overflow fixture repeats synthetic folder rows to test viewport
 scrolling,
 not a ranking algorithm.
@@ -99,23 +106,25 @@ Files and Maps keeping query/results together but does not establish a
 folder-versus-track ranking or a music-player activation effect.
 Neither source settles the local-file product behavior.
 
-## Decisions to show rather than assume
+## Settled fields and order, unresolved matching and actions
 
-- Searched fields:
-  folder names,
-  track filenames,
-  and optional parent-folder/path names on track results.
-  Returning every child of a matching folder could dominate a large result
-  list;
-  this has not been measured in a real library fixture.
-- Matching rules:
+- D60 searched fields:
+  direct folder names and track filenames.
+  Parent-folder names remain visible as context but do not create
+  parent-only track hits.
+  A large-library result limit has not been selected.
+- Matching rules still open:
   exact,
-  prefix and substring matches are separate from which field matches.
-- Ordering:
-  folder-versus-track grouping,
-  relevance across types,
-  and deterministic tie-breaking are separable policies.
-  Type labels and parent context must remain readable in each rendering.
+  prefix and substring relationships in the fixture are examples,
+  not decisions about casefolding,
+  normalization,
+  filename extension parsing or token boundaries.
+- D61 ordering priority:
+  mixed relevance across folder and track types rather than whole-type
+  grouping.
+  Deterministic tie-breaking and a real scoring algorithm are separate
+  open decisions;
+  type labels and parent context must remain readable.
 - Folder action:
   close Search and select its folder page,
   or update the retained upper-left browser while Search remains open.
@@ -132,6 +141,7 @@ Neither source settles the local-file product behavior.
   No further IME experiments are authorized without first making a
   compelling case to the user.
 
-No ranking,
-indexing scope or result-tap effect is adopted by this evidence note.
-No production Search code was changed.
+D60/D61 select a direct-name result scope and mixed cross-type priority.
+No concrete ranking algorithm,
+matching grammar,
+result-tap effect or production Search code is adopted by this note.

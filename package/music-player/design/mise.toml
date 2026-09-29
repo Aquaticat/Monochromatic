@@ -394,12 +394,12 @@ dir = "{{config_root}}"
 run = "node selected-search-question.mjs validate"
 
 [tasks."build:search:ranking"]
-description = "Build the separate Search membership and order review from aligned native captures"
+description = "Rebuild the archived D/P and M/F/T comparison from sanitized native captures"
 dir = "{{config_root}}"
 run = "node search-ranking-question.mjs build"
 
 [tasks."lint:search:ranking"]
-description = "Validate the self-contained Search ranking comparison"
+description = "Validate the archived self-contained Search ranking comparison"
 dir = "{{config_root}}"
 run = "node search-ranking-question.mjs validate"
 
