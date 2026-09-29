@@ -8041,6 +8041,70 @@ Prevention:
 `mistake-prevention.md`,
 "Words inside words".
 
+### B25: the attestation checked a reference quote against every reference at once
+
+Status:
+fixed,
+2026-09-29.
+Found while fixing the attestation's quote fold (B24):
+`verifiedAttestations` looked for an item's reference quote anywhere in the reference block,
+while the sheet told voices an entry is discarded unless the quote is found "in the named reference".
+So an item kept the number it answered even when that page does not state it,
+the `- attested:` line every sheet carries then credited the wrong page,
+and a quote running from the end of one reference line into the next verified,
+since `compacted` removes the line break between them.
+Only verified items were logged,
+so a lost vote left no trace in a run log.
+
+Measured with `~/temp/agent/audit-glossary-fix/b25-named-reference.mjs`,
+which rebuilds each entry's reference lines from the lookup cache with `referenceLineOf`
+and reads every `ATTESTED item` line of every run log:
+106 verified items are logged,
+25 could not be rebuilt from the cache,
+and all 81 of the rest quote the reference they name.
+The positive control names the next reference instead
+and moves all 49 of the checked items on entries with two or more references.
+So no stored result moves.
+
+The fix reads the block one line per reference.
+`reference-line-head.ts` owns the head both ways:
+`referenceLineHead` writes it at both lookup sites,
+and `numberedReferenceLines` reads the number back
+and throws `ReferenceLineHeadError` on a line without one,
+naming where the line sits and never what it says.
+`reference-attest-verdict.ts` gives each item a verdict:
+verified under the named reference,
+relabelled to the first reference whose line states the quote,
+or dropped with the side not found;
+the stage logs every verdict.
+Relabelling rather than dropping is a quality call under the owner's standing directive,
+open to veto:
+the quote was found word for word,
+a lost vote can cost the detail its quorum,
+and a detail that misses its quorum reaches no sheet,
+which is the Mio20 loss the cited-reference rule was written against;
+the confirmation round still asks the bench about every candidate.
+The lookup now folds the endpoint's failure tag onto its line too,
+so the block stays one line per reference.
+The refusal found a fixture drift on its first run:
+`reference-attest-confirm.unit.test.ts` wrote its reference as `REFERENCE 1 <url>`,
+a form the lookup never writes.
+The sheet's consequence clause now says what is kept
+(word for word,
+spacing and quotation-mark style aside,
+the reference quote within one reference's line),
+and its instructions stay strict.
+Red `44e02fcda`,
+fix `5bf2388ff`,
+sheet `f2ddc237c`.
+
+Left open:
+a reference quote is looked for in the whole line,
+head included,
+so a quote of a page's address or title verifies as if the page stated it.
+The body cannot be cut from the line reliably while a title may itself contain the separator,
+so this waits on a line format that marks where the body starts.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

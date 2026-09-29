@@ -97,8 +97,15 @@ So when the original cites a page,
 preparation asks the bench one focused question:
 which details the archive rendering states that the original does not but a cited reference does,
 each as a verbatim archive quote plus a verbatim reference quote.
-Both quotes are checked as substrings with whitespace removed,
-items from distinct voices whose archive quotes overlap merge into one detail,
+Both quotes are checked as substrings with whitespace removed and quotation marks folded
+(`audit-ledger.md` B24),
+the archive quote in the archive
+and the reference quote in one reference line at a time
+(B25):
+an item naming a reference that does not state its quote
+is kept under the first one that does,
+and an item with a quote found nowhere is dropped.
+Items from distinct voices whose archive quotes overlap merge into one detail,
 and every verified detail then goes back to the same bench as a numbered yes-or-no candidate
 carrying both quotes
 (class forty-three,
@@ -112,7 +119,9 @@ both rules name those lines,
 and in the repair lane an `accuracy/addition` claim whose archive-side quote overlaps an attested quote
 is recorded rejected with an empty tally before the panel and never reaches the editor.
 The log prints `ATTESTED heard=H answered=A verified=V needed=N details=D`,
-one `ATTESTED item <seat>` line per verified item,
+one `ATTESTED item <seat>` line per kept item
+(naming the reference answered when it was relabelled),
+one `ATTESTED dropped <seat>` line per dropped item saying which quote was not found,
 and one `- attested:` line per detail.
 The translate writers see the same lines as an `ATTESTED DETAILS` block after the existing translation,
 with a rule to carry every one
