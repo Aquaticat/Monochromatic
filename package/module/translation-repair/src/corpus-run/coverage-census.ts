@@ -26,6 +26,7 @@ import {
 } from './coverage-census-print.ts';
 import {
   baselineStatusesOf,
+  type CensusStretch,
   censusStretchesOf,
   kindTotalsOf,
   requirePlacedFunctions,
@@ -56,7 +57,8 @@ import type { CoverageTally, } from './coverage-tally.ts';
 //
 // A BATCH OF TESTS PROVES ITS REACH by running its own test files with
 // `--baseline <an earlier census.json>` and `--source` for each source it
-// claims: every claimed stretch must read as ran.
+// claims: every claimed stretch must read as ran. The baseline must be of the
+// current census format, and is read before the suite runs.
 //
 // SPENDS NO QUOTA, and the raw coverage (about 8 GB for the whole suite) is
 // deleted once the census is written; the census and the suite's log stay in
@@ -74,6 +76,21 @@ import type { CoverageTally, } from './coverage-tally.ts';
  Logger for the census's progress lines, apart from the report on stdout.
  */
 const censusLog = contextRoot({ tag: 'coverage-census', },);
+
+/**
+ An earlier census named on the command line, read.
+ */
+type Baseline = {
+  /**
+   File named.
+   */
+  readonly path: string;
+
+  /**
+   Its stretches.
+   */
+  readonly stretches: readonly CensusStretch[];
+};
 
 /**
  Maps the tally to source lines, writes the census file and prints the
@@ -97,12 +114,15 @@ const censusLog = contextRoot({ tag: 'coverage-census', },);
 
  @param reportDirectory - where the census file goes
 
+ @param baselines - earlier census files named, already read
+
  @throws StatedRefusalError where the coverage names a bundle the build
- does not hold
+ does not hold, or the census places an uncalled function outside its own
+ source's stretches
 
  @example
  ```ts
- await reportCensus({ asked, packageDirectory, distDirectory, bundles, head, clean, passes, tally, reportDirectory, },);
+ await reportCensus({ asked, packageDirectory, distDirectory, bundles, head, clean, passes, tally, reportDirectory, baselines, },);
  ```
  */
 async function reportCensus(
@@ -116,6 +136,7 @@ async function reportCensus(
     passes,
     tally,
     reportDirectory,
+    baselines,
   }: {
     readonly asked: CensusArguments;
     readonly packageDirectory: string;
@@ -126,6 +147,7 @@ async function reportCensus(
     readonly passes: number;
     readonly tally: CoverageTally;
     readonly reportDirectory: string;
+    readonly baselines: readonly Baseline[];
   },
 ): Promise<void> {
   /**
@@ -271,22 +293,6 @@ async function reportCensus(
     ),
   );
   /**
-   Each earlier census named, with its text.
-   */
-  const baselines = await Promise.all(asked.baseline
-    .map(async function readBaseline(path,): Promise<{
-    readonly path: string;
-    readonly text: string;
-  }> {
-    return {
-      path,
-      text: await readFile(
-        path,
-        'utf8',
-      ),
-    };
-  },),);
-  /**
    Every line of the report, then each baseline reading.
    */
   const lines = [
@@ -306,15 +312,12 @@ async function reportCensus(
     },),
     ...baselines.flatMap(function baselineLines({
       path,
-      text,
+      stretches: baseline,
     },): readonly string[] {
       return baselineReportLines({
         path,
         statuses: baselineStatusesOf({
-          baseline: readBaselineStretches({
-            path,
-            text,
-          },),
+          baseline,
           current: stretches,
           loadedSources,
           sources: new Set(asked.sources,),
@@ -345,6 +348,24 @@ async function runCoverageCensus(): Promise<void> {
    What was asked.
    */
   const asked = readCensusArguments({ argv: process.argv, },);
+  /**
+   Each earlier census named, read before the suite runs, so a file that
+   does not read as one refuses at once rather than after the whole suite
+   (ledger M67's control run spent a suite on one).
+   */
+  const baselines = await Promise.all(asked.baseline
+    .map(async function readBaseline(path,): Promise<Baseline> {
+    return {
+      path,
+      stretches: readBaselineStretches({
+        path,
+        text: await readFile(
+          path,
+          'utf8',
+        ),
+      },),
+    };
+  },),);
   /**
    Package directory, where the mise task runs.
    */
@@ -455,6 +476,7 @@ async function runCoverageCensus(): Promise<void> {
         .href}/`,
     },),
     reportDirectory,
+    baselines,
   },);
 }
 
