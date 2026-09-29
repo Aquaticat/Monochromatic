@@ -16,6 +16,7 @@ import { gatherControlCases, } from './probe-relabel-control.ts';
 import {
   createRunClient,
   resolveRunsDir,
+  RUN_CORPUS_PIN,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
@@ -229,6 +230,7 @@ async function main(): Promise<void> {
   const cases = await gatherRelabelCases({
     manifestPath:
       `${dir}/sample-manifest-milestone-three-precision-round-three.json`,
+    pin: RUN_CORPUS_PIN,
   },);
   console.log(
     `RELABEL rebuilt ${String(cases.length,)} distinct damaged regions`,
@@ -246,6 +248,7 @@ async function main(): Promise<void> {
     manifestPath:
       `${dir}/sample-manifest-milestone-three-precision-round-three.json`,
     damaged: cases,
+    pin: RUN_CORPUS_PIN,
   },);
   console.log(
     `RELABEL gathered ${String(controls.length,)} unflagged control regions`,

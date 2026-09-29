@@ -135,7 +135,7 @@ export class OpenRouterModelNotServedError extends Error {
  
  @example
  ```ts
- const client: OpenRouterClient = createOpenRouterClient({ apiKey, },);
+ const client: OpenRouterClient = createOpenRouterClient({ apiKey, transport, },);
  ```
  */
 export type OpenRouterClient = ModelCaller & {
@@ -208,7 +208,9 @@ function servedIdFor(
  
  @param apiKey - bearer token; never logged
  
- @param transport - HTTP seam; tests inject recorded replies
+ @param transport - HTTP the client calls over: `fetchTransport` in a run, a
+ recorded one in a test. REQUIRED, since a test that left it out would reach
+ the provider (ledger M43, X24)
  
  @param chatUrl - completion endpoint, overridable for tests
  
@@ -223,20 +225,20 @@ function servedIdFor(
  
  @example
  ```ts
- const client = createOpenRouterClient({ apiKey: process.env['TRANSLATION_REPAIR_OPENROUTER_API_KEY'] ?? '', },);
+ const client = createOpenRouterClient({ apiKey: process.env['TRANSLATION_REPAIR_OPENROUTER_API_KEY'] ?? '', transport: fetchTransport, },);
  ```
  */
 export function createOpenRouterClient(
   {
     apiKey,
-    transport = fetchTransport,
+    transport,
     chatUrl = OPENROUTER_CHAT_URL,
     creditsUrl = OPENROUTER_CREDITS_URL,
     perModelConcurrency = OPENROUTER_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
   }: {
     readonly apiKey: string;
-    readonly transport?: ModelTransport;
+    readonly transport: ModelTransport;
     readonly chatUrl?: string;
     readonly creditsUrl?: string;
     readonly perModelConcurrency?: number;

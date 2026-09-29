@@ -445,7 +445,7 @@ export type ModelCaller = {
  
  @example
  ```ts
- const client: SyntheticClient = createSyntheticClient({ apiKey, },);
+ const client: SyntheticClient = createSyntheticClient({ apiKey, transport, },);
  ```
  */
 export type SyntheticClient = ModelCaller & {

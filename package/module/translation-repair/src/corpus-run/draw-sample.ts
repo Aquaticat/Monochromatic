@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { reportingRefusals, } from './cli-refusal.ts';
+import { readCorpusFile, } from '../corpus-source.ts';
 import { formatGradingSheet, } from '../grading-sheet.ts';
 import { formatRepairSheet, } from '../repair-sheet.ts';
 import { drawStratifiedSample, } from '../sample-draw.ts';
@@ -151,6 +152,7 @@ async function drawGradingSample(): Promise<void> {
         artifactsDir,
         name,
         eligible,
+        readSource: readCorpusFile,
       },);
     },),
   );

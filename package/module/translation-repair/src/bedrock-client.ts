@@ -133,7 +133,7 @@ export class BedrockModelNotServedError extends Error {
  
  @example
  ```ts
- const client: BedrockClient = createBedrockClient({ apiKey, ledger, },);
+ const client: BedrockClient = createBedrockClient({ apiKey, ledger, transport, },);
  ```
  */
 export type BedrockClient = ModelCaller & {
@@ -179,7 +179,9 @@ function servedIdFor(
  @param ledger - durable spend record the meter reads and every priced call
  writes
  
- @param transport - HTTP seam; tests inject recorded replies
+ @param transport - HTTP the client calls over: `fetchTransport` in a run, a
+ recorded one in a test. REQUIRED, since a test that left it out would reach
+ the provider (ledger M43, X24)
  
  @param baseUrl - host both routes hang off, overridable for tests
  
@@ -196,14 +198,14 @@ function servedIdFor(
  
  @example
  ```ts
- const client = createBedrockClient({ apiKey: process.env['TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY'] ?? '', ledger, },);
+ const client = createBedrockClient({ apiKey: process.env['TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY'] ?? '', ledger, transport: fetchTransport, },);
  ```
  */
 export function createBedrockClient(
   {
     apiKey,
     ledger,
-    transport = fetchTransport,
+    transport,
     baseUrl = BEDROCK_MANTLE_BASE_URL,
     perModelConcurrency = BEDROCK_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
@@ -211,7 +213,7 @@ export function createBedrockClient(
   }: {
     readonly apiKey: string;
     readonly ledger: BedrockLedger;
-    readonly transport?: ModelTransport;
+    readonly transport: ModelTransport;
     readonly baseUrl?: string;
     readonly perModelConcurrency?: number;
     readonly retryPolicy?: RetryPolicy;

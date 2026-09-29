@@ -150,7 +150,9 @@ function wholeMessage(attemptReply: TransportReply,): void {
  
  @param apiKey - bearer token; never logged
  
- @param transport - HTTP seam; tests inject recorded replies
+ @param transport - HTTP the client calls over: `fetchTransport` in a run, a
+ recorded one in a test. REQUIRED, since a test that left it out would reach
+ the provider (ledger M43, X24)
  
  @param chatBaseUrl - OpenAI-compatible base, overridable for tests
  
@@ -166,20 +168,20 @@ function wholeMessage(attemptReply: TransportReply,): void {
  
  @example
  ```ts
- const client = createSyntheticClient({ apiKey: process.env['TRANSLATION_REPAIR_SYNTHETIC_API_KEY'] ?? '', },);
+ const client = createSyntheticClient({ apiKey: process.env['TRANSLATION_REPAIR_SYNTHETIC_API_KEY'] ?? '', transport: fetchTransport, },);
  ```
  */
 export function createSyntheticClient(
   {
     apiKey,
-    transport = fetchTransport,
+    transport,
     chatBaseUrl = SYNTHETIC_CHAT_BASE_URL,
     quotasUrl = SYNTHETIC_QUOTAS_URL,
     perModelConcurrency = SYNTHETIC_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
   }: {
     readonly apiKey: string;
-    readonly transport?: ModelTransport;
+    readonly transport: ModelTransport;
     readonly chatBaseUrl?: string;
     readonly quotasUrl?: string;
     readonly perModelConcurrency?: number;

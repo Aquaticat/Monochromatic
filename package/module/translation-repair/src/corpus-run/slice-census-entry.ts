@@ -13,7 +13,6 @@ import {
   subdivideChunkPair,
 } from '../slice-pair.ts';
 import type { PairingRecipe, } from './artifact-two-lane-rebuild.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Slice census entry
 // One corpus entry, measured after slicing.
@@ -126,9 +125,9 @@ export type CensusCarve = 'settled-complete' | 'settled-partial' | 'deterministi
  
  @throws {@link CorpusReadError} when either side is absent
  
- @param pin - corpus clone and commit to read, defaulting to the run pin;
- passed rather than read so this is testable against a throwaway clone instead
- of the unlicensed one
+ @param pin - corpus clone and commit to read: `RUN_CORPUS_PIN` in a run, a
+ throwaway clone in a test, since the real one is unlicensed. REQUIRED: a
+ default read the clone for any caller that left it out (ledger M43, X24)
  
  @param recipe - pairing recipe the entry's settled artifact records, which
  makes the slice sizes those of the slicing the lanes judged; absent, the
@@ -136,17 +135,17 @@ export type CensusCarve = 'settled-complete' | 'settled-partial' | 'deterministi
  
  @example
  ```ts
- const row = await censusEntry({ entryId: 'Toka_ls', },);
+ const row = await censusEntry({ entryId: 'Toka_ls', pin: RUN_CORPUS_PIN, },);
  ```
  */
 export async function censusEntry(
   {
     entryId,
-    pin = RUN_CORPUS_PIN,
+    pin,
     recipe,
   }: {
     readonly entryId: string;
-    readonly pin?: CorpusPin;
+    readonly pin: CorpusPin;
     readonly recipe?: PairingRecipe;
   },
 ): Promise<EntryCensus> {

@@ -139,7 +139,7 @@ export class ModelNotServedError extends Error {
  
  @example
  ```ts
- const client: HyperClient = createHyperClient({ apiKey, },);
+ const client: HyperClient = createHyperClient({ apiKey, transport, },);
  ```
  */
 export type HyperClient = ModelCaller & {
@@ -214,7 +214,9 @@ function servedIdFor(
  
  @param apiKey - bearer token; never logged
  
- @param transport - HTTP seam; tests inject recorded replies
+ @param transport - HTTP the client calls over: `fetchTransport` in a run, a
+ recorded one in a test. REQUIRED, since a test that left it out would reach
+ the provider (ledger M43, X24)
  
  @param messagesUrl - completion endpoint, overridable for tests
  
@@ -234,13 +236,13 @@ function servedIdFor(
  
  @example
  ```ts
- const client = createHyperClient({ apiKey: process.env['TRANSLATION_REPAIR_CHARM_HYPER_API_KEY'] ?? '', },);
+ const client = createHyperClient({ apiKey: process.env['TRANSLATION_REPAIR_CHARM_HYPER_API_KEY'] ?? '', transport: fetchTransport, },);
  ```
  */
 export function createHyperClient(
   {
     apiKey,
-    transport = fetchTransport,
+    transport,
     messagesUrl = HYPER_MESSAGES_URL,
     creditsUrl = HYPER_CREDITS_URL,
     perModelConcurrency = HYPER_PER_MODEL_CONCURRENCY,
@@ -248,7 +250,7 @@ export function createHyperClient(
     requestsPerHour = HYPER_REQUESTS_PER_HOUR,
   }: {
     readonly apiKey: string;
-    readonly transport?: ModelTransport;
+    readonly transport: ModelTransport;
     readonly messagesUrl?: string;
     readonly creditsUrl?: string;
     readonly perModelConcurrency?: number;

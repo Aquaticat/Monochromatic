@@ -7266,8 +7266,8 @@ the comment mutant only after M56's fixture was corrected.
 ### X23: the run client and the provider gate read the process's keys by default
 
 Status:
-fixed 2026-09-29 for the provider gate (`4138c5ade`) and the run client;
-the provider clients' own transport defaults are open.
+fixed 2026-09-29 for the provider gate (`4138c5ade`) and the run client (`3510c8336`);
+the provider clients' own transport defaults went in X24.
 `configureProviders` read the four provider keys,
 the Hyper pace and the Bedrock ledger's place from `process.env`,
 and `createRunClient` and `assertRequiredProvidersReady` took an optional transport defaulting to the live one.
@@ -7307,6 +7307,53 @@ a builder that reads a key,
 a cache or a transport takes it as a required parameter,
 and the process's own is named once,
 in the function runners call.
+
+### X24: parameters that fell back to the live transport or the corpus clone
+
+Status:
+fixed 2026-09-29.
+A census of every parameter in package source whose default reaches past the process
+(`x24-default-callers.mjs` in the audit's scratch folder,
+beside a search for defaults naming `fetch`,
+`fetchTransport`,
+`process.env`,
+`homedir()`,
+a cache directory or a corpus reader)
+found three kinds.
+The five provider clients (`createSyntheticClient`,
+`createHyperClient`,
+`createDecisionsClient`,
+`createOpenRouterClient`,
+`createBedrockClient`) defaulted their transport to the live one;
+every test handed one over,
+and the one runner that did not,
+`budget-sample.ts`,
+meant the live one.
+Six corpus readers defaulted to the clone:
+`readCorpusNames` its lister and reader,
+`loadEntry` its source reader (M70),
+and `censusEntry`,
+`gatherControlCases`,
+`gatherRelabelCases` and `sampleBenchSlices` their pin;
+every test handed over a fixture or a throwaway clone,
+and the runners that left them out meant the run's pin.
+Each is now required:
+the runners hand over `fetchTransport`,
+`readCorpusFile` or `RUN_CORPUS_PIN`,
+`slice-census.ts` hands over the run's pin for an entry whose artifact predates the recipe,
+where it had left the pin out,
+and `draw-entry-load.unit.test.ts` hands its refusal cases a reader that refuses any corpus read.
+The third kind was read and kept:
+the operator dials `resolveSpendCeilingUsd`,
+`resolveHardCapMinutes`,
+`resolveStragglerGraceMs` and `resolveWriterGraceMs` default `raw` to their variable,
+which is configuration a run is launched with rather than a key,
+a cache or the network,
+and their tests hand `raw` over.
+Library code reading a key from `process.env` in a function body turned up only in runners
+(`model-catalog.ts`,
+`roster-card.ts`),
+which the runner batch of T8 reads.
 
 ## Recurring code families
 
@@ -10040,6 +10087,24 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M70: a corpus seam added optional a day after the rule said required
+
+Status:
+happened 2026-09-29 in `be6490163`,
+found the same day by X24's census,
+fixed the same day.
+To give `loadEntry`'s happy path a test,
+that commit took the corpus reader as a parameter and defaulted it to `readCorpusFile`,
+the clone,
+a day after M43's prevention had said a seam reaching the corpus is required and never optional.
+Every caller that left it out read the clone;
+the runner meant to,
+and the unit file's refusal cases did not reach the read.
+The parameter is now required (X24).
+Prevention:
+a seam added to make a function testable is checked against `mistake-prevention.md`'s real-world rule before it is written,
+and never takes the production value as its default.
 
 ### M69: a real-clock case that needed the machine to keep pace with a 20 ms window
 

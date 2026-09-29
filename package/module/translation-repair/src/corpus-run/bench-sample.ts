@@ -10,7 +10,6 @@ import { isLineStructured, } from '../line-structure.ts';
 import { parseDocument, } from '../parse-document.ts';
 import { subdivideChunkPair, } from '../slice-pair.ts';
 import { pickSpreadSample, } from './bench-draw.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Bench sample
 // The slices a roster-width bench runs, drawn the same way every time.
@@ -153,9 +152,9 @@ async function sliceEntry(
  @param count - slices wanted; fewer come back only when the corpus holds
  fewer
  
- @param pin - corpus clone and commit to read, defaulting to the run pin;
- passed rather than read so this is testable against a throwaway clone instead
- of the unlicensed one
+ @param pin - corpus clone and commit to read: `RUN_CORPUS_PIN` in a run, a
+ throwaway clone in a test, since the real one is unlicensed. REQUIRED: a
+ default read the clone for any caller that left it out (ledger M43, X24)
  
  @returns Sample ordered by source size, smallest first
  
@@ -165,7 +164,7 @@ async function sliceEntry(
  
  @example
  ```ts
- const sample = await sampleBenchSlices({ count: 12, },);
+ const sample = await sampleBenchSlices({ count: 12, pin: RUN_CORPUS_PIN, },);
  ```
  
  @internal
@@ -173,10 +172,10 @@ async function sliceEntry(
 export async function sampleBenchSlices(
   {
     count,
-    pin = RUN_CORPUS_PIN,
+    pin,
   }: {
     readonly count: number;
-    readonly pin?: CorpusPin;
+    readonly pin: CorpusPin;
   },
 ): Promise<readonly BenchSlice[]> {
   /**

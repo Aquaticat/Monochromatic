@@ -21,6 +21,7 @@ import {
 import {
   createRunClient,
   readHeadSha,
+  RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
 import { readAskedCount, } from './asked-count.ts';
@@ -197,7 +198,10 @@ async function main(): Promise<void> {
   /**
    Slices every model writes.
    */
-  const sample = await sampleBenchSlices({ count: wanted, },);
+  const sample = await sampleBenchSlices({
+    count: wanted,
+    pin: RUN_CORPUS_PIN,
+  },);
 
   /**
    Pipeline commit this calibration was produced by.

@@ -4,7 +4,7 @@ import { join, } from 'node:path';
 import { readRunJson, } from '../run-json-read.ts';
 import { parseSettledArtifact, } from '../artifact-read.ts';
 import { requireRecord, } from '../artifact-guard.ts';
-import { readCorpusFile, } from '../corpus-source.ts';
+import type { readCorpusFile, } from '../corpus-source.ts';
 import { DrawReconcileError, } from './draw-reconcile.ts';
 import type { EligibleEntries, } from './artifact-eligible.ts';
 import { assertArtifactProvenance, } from './artifact-provenance.ts';
@@ -72,8 +72,10 @@ export type EntryContribution = {
  @param eligible - resolved pool, whose recorded commit for this entry is
  checked against the bytes actually read
 
- @param readSource - reads a corpus file at a pin: the pinned clone in a run,
- a fixture in a test, since the clone is unlicensed and absent elsewhere
+ @param readSource - reads a corpus file at a pin: `readCorpusFile` in a run,
+ a fixture in a test, since the clone is unlicensed and absent elsewhere.
+ REQUIRED: a default read the clone for any caller that left it out
+ (ledger M43, X24)
 
  @returns The banded entry
 
@@ -85,7 +87,7 @@ export type EntryContribution = {
 
  @example
  ```ts
- const entry = await loadEntry({ artifactsDir, name, eligible, },);
+ const entry = await loadEntry({ artifactsDir, name, eligible, readSource: readCorpusFile, },);
  ```
  */
 export async function loadEntry(
@@ -93,12 +95,12 @@ export async function loadEntry(
     artifactsDir,
     name,
     eligible,
-    readSource = readCorpusFile,
+    readSource,
   }: {
     readonly artifactsDir: string;
     readonly name: string;
     readonly eligible: EligibleEntries;
-    readonly readSource?: typeof readCorpusFile;
+    readonly readSource: typeof readCorpusFile;
   },
 ): Promise<BandedEntry> {
   /**

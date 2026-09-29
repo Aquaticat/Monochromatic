@@ -57,7 +57,9 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
  @param apiKey - OpenRouter key, the same one the chat client carries
 
- @param transport - HTTP seam; tests inject a recorded one
+ @param transport - HTTP the client calls over: `fetchTransport` in a run, a
+ recorded one in a test. REQUIRED, since a test that left it out would reach
+ the provider (ledger M43, X24)
 
  @param url - endpoint, overridable for a recorded test
 
@@ -67,18 +69,18 @@ const l = contextRoot({ tag: 'translation-repair', },);
 
  @example
  ```ts
- const client = createDecisionsClient({ apiKey: process.env['TRANSLATION_REPAIR_OPENROUTER_API_KEY'] ?? '', },);
+ const client = createDecisionsClient({ apiKey: process.env['TRANSLATION_REPAIR_OPENROUTER_API_KEY'] ?? '', transport: fetchTransport, },);
  ```
  */
 export function createDecisionsClient(
   {
     apiKey,
-    transport = fetchTransport,
+    transport,
     url = OPENROUTER_DECISIONS_URL,
     retryPolicy = DEFAULT_RETRY_POLICY,
   }: {
     readonly apiKey: string;
-    readonly transport?: ModelTransport;
+    readonly transport: ModelTransport;
     readonly url?: string;
     readonly retryPolicy?: RetryPolicy;
   },

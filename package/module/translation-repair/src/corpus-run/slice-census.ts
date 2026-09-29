@@ -155,6 +155,8 @@ async function main(): Promise<void> {
       /* oxlint-disable-next-line no-await-in-loop -- sequential by design: this reads git at a pinned commit and a fan-out would only contend for the same object store */
       rows.push(await censusEntry({
         entryId,
+        // The commit the settled artifact read, or the run's own for an entry
+        // whose artifact predates the recipe.
         ...((settled.kind === 'settled')
           ? {
             pin: {
@@ -163,7 +165,7 @@ async function main(): Promise<void> {
             },
             recipe: settled.recipe,
           }
-          : {}),
+          : { pin: RUN_CORPUS_PIN, }),
       },),);
     }
     catch (error) {

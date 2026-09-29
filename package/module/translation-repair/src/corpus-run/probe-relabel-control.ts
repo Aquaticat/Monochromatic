@@ -10,7 +10,6 @@ import {
   readArtifactRecords,
 } from './probe-relabel-artifact.ts';
 import type { RelabelCase, } from './probe-relabel-case.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Probe relabel control
 // Builds the arm that decides whether the damaged-region result means anything.
@@ -123,8 +122,9 @@ function byLengthDistance<Region extends { readonly before: string; },>(
  
  @param damaged - damaged cases, whose envelopes are excluded
  
- @param pin - corpus commit to read the pages at, defaulting to the run pin so
- nothing production does changes
+ @param pin - corpus commit to read the pages at: `RUN_CORPUS_PIN` in a run, a
+ throwaway clone in a test. REQUIRED: a default read the clone for any caller
+ that left it out (ledger M43, X24)
  
  @returns Control cases, at most {@link CONTROL_REGIONS_PER_ENTRY} per entry
  
@@ -132,18 +132,18 @@ function byLengthDistance<Region extends { readonly before: string; },>(
  
  @example
  ```ts
- const controls = await gatherControlCases({ manifestPath, damaged, },);
+ const controls = await gatherControlCases({ manifestPath, damaged, pin: RUN_CORPUS_PIN, },);
  ```
  */
 export async function gatherControlCases(
   {
     manifestPath,
     damaged,
-    pin = RUN_CORPUS_PIN,
+    pin,
   }: {
     readonly manifestPath: string;
     readonly damaged: readonly RelabelCase[];
-    readonly pin?: CorpusPin;
+    readonly pin: CorpusPin;
   },
 ): Promise<readonly RelabelCase[]> {
   /**

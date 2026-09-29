@@ -1,8 +1,6 @@
 import {
   type CorpusPin,
   isMissingCorpusObject,
-  listCorpusPeople,
-  readCorpusFile,
 } from './corpus-source.ts';
 import { splitFrontMatter, } from './front-matter.ts';
 import { extractDeclaredIdentity, } from './identity-context.ts';
@@ -317,9 +315,11 @@ export function corpusNameLines(
 
  @param pin - corpus checkout and commit
 
- @param listPeople - entry lister, the pinned corpus's by default
+ @param listPeople - entry lister: `listCorpusPeople` in a run, a test's own
+ otherwise. REQUIRED, since a default read the clone (ledger M43, X24)
 
- @param readFile - document reader, the pinned corpus's by default
+ @param readFile - document reader: `readCorpusFile` in a run, a test's own
+ otherwise, required likewise
 
  @returns Corpus name index
 
@@ -328,18 +328,18 @@ export function corpusNameLines(
 
  @example
  ```ts
- const names = await readCorpusNames({ pin: RUN_CORPUS_PIN, },);
+ const names = await readCorpusNames({ pin: RUN_CORPUS_PIN, listPeople: listCorpusPeople, readFile: readCorpusFile, },);
  ```
  */
 export async function readCorpusNames(
   {
     pin,
-    listPeople = listCorpusPeople,
-    readFile = readCorpusFile,
+    listPeople,
+    readFile,
   }: {
     readonly pin: CorpusPin;
-    readonly listPeople?: (args: { readonly pin: CorpusPin; },) => Promise<readonly string[]>;
-    readonly readFile?: (args: {
+    readonly listPeople: (args: { readonly pin: CorpusPin; },) => Promise<readonly string[]>;
+    readonly readFile: (args: {
       readonly pin: CorpusPin;
       readonly relPath: string;
     },) => Promise<string>;

@@ -17,6 +17,7 @@ import {
 import {
   createRunClient,
   resolveRunsDir,
+  RUN_CORPUS_PIN,
   RUN_MODELS,
   RUN_PER_CALL_TIMEOUT_MS,
 } from './run-config.ts';
@@ -178,7 +179,10 @@ async function main(): Promise<void> {
   /**
    Regions a human read as damaged.
    */
-  const damaged = await gatherRelabelCases({ manifestPath, },);
+  const damaged = await gatherRelabelCases({
+    manifestPath,
+    pin: RUN_CORPUS_PIN,
+  },);
 
   /**
    Regions from the same entries that nobody read.
@@ -186,6 +190,7 @@ async function main(): Promise<void> {
   const controls = await gatherControlCases({
     manifestPath,
     damaged,
+    pin: RUN_CORPUS_PIN,
   },);
   console.log(
     `VERIFY probing ${String(damaged.length,)} damaged and ${

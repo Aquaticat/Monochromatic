@@ -9,7 +9,6 @@ import { prepareDocumentPair, } from '../document-preparation.ts';
 import type { RepairRegion, } from '../repair-region.ts';
 import { parseSampleManifest, } from '../sample-manifest.ts';
 import { readArtifactRecords, } from './probe-relabel-artifact.ts';
-import { RUN_CORPUS_PIN, } from './run-config.ts';
 
 //region Probe relabel cases
 // Rebuilds the exact prober inputs for regions a HUMAN read as damaged, so the
@@ -86,7 +85,7 @@ const DAMAGED_POSITIONS: ReadonlySet<number> = new Set(
  
  @example
  ```ts
- const [first,] = await gatherRelabelCases({ manifestPath, },);
+ const [first,] = await gatherRelabelCases({ manifestPath, pin: RUN_CORPUS_PIN, },);
  ```
  */
 export type RelabelCase = {
@@ -224,8 +223,9 @@ export function locateSlice(
  
  @param manifestPath - sample manifest the positions index into
  
- @param pin - corpus commit to read the pages at, defaulting to the run pin so
- nothing production does changes
+ @param pin - corpus commit to read the pages at: `RUN_CORPUS_PIN` in a run, a
+ throwaway clone in a test. REQUIRED: a default read the clone for any caller
+ that left it out (ledger M43, X24)
  
  @returns One case per distinct region, in sample order
  
@@ -234,16 +234,16 @@ export function locateSlice(
  
  @example
  ```ts
- const cases = await gatherRelabelCases({ manifestPath, },);
+ const cases = await gatherRelabelCases({ manifestPath, pin: RUN_CORPUS_PIN, },);
  ```
  */
 export async function gatherRelabelCases(
   {
     manifestPath,
-    pin = RUN_CORPUS_PIN,
+    pin,
   }: {
     readonly manifestPath: string;
-    readonly pin?: CorpusPin;
+    readonly pin: CorpusPin;
   },
 ): Promise<readonly RelabelCase[]> {
   /**

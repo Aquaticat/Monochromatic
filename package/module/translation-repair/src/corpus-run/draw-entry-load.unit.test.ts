@@ -204,8 +204,9 @@ async function scratchDir(): Promise<{
  
  @param eligible - pool to check the bytes against
 
- @param readSource - source reader for a load that gets past every refusal,
- absent for the refusal cases, which never reach it
+ @param readSource - source reader for a load that gets past every refusal;
+ the refusal cases leave it out and get one that refuses any read, so a
+ refusal that read the corpus first would say so rather than read the clone
 
  @returns What `loadEntry` made of it
 
@@ -241,7 +242,9 @@ async function loadingFrom(
     artifactsDir: scratch.path,
     name: ARTIFACT_NAME,
     eligible,
-    ...((readSource === undefined) ? {} : { readSource, }),
+    readSource: readSource ?? async function refuseCorpusRead(): Promise<string> {
+      throw new Error('a refusal case read a corpus page before refusing',);
+    },
   },);
 }
 

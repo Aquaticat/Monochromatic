@@ -35,6 +35,7 @@ import {
 } from './editor-calibrate-slice.ts';
 import {
   createRunClient,
+  RUN_CORPUS_PIN,
   RUN_PER_CALL_TIMEOUT_MS,
   RUN_ROSTER,
 } from './run-config.ts';
@@ -373,7 +374,10 @@ async function main(): Promise<void> {
   /**
    Slices every model edits.
    */
-  const sample = await sampleBenchSlices({ count: wanted, },);
+  const sample = await sampleBenchSlices({
+    count: wanted,
+    pin: RUN_CORPUS_PIN,
+  },);
 
   console.log(
     `editor-calibrate: ${String(sample.length,)} slices, `

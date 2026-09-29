@@ -8,6 +8,7 @@ import { createOpenRouterClient, } from '../openrouter-client.ts';
 import { createProviderBudgets, } from '../provider-budget.ts';
 import { PROVIDER_ORDER, } from '../provider-name.ts';
 import { createSyntheticClient, } from '../synthetic-client.ts';
+import { fetchTransport, } from '../synthetic-transport.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
@@ -127,13 +128,23 @@ async function sampleBudgets(): Promise<void> {
    first call always reaches the wire, and this process makes exactly one.
    */
   const budgets = createProviderBudgets({
-    synthetic: createSyntheticClient({ apiKey: syntheticKey, },),
-    hyper: createHyperClient({ apiKey: hyperKey, },),
+    synthetic: createSyntheticClient({
+      apiKey: syntheticKey,
+      transport: fetchTransport,
+    },),
+    hyper: createHyperClient({
+      apiKey: hyperKey,
+      transport: fetchTransport,
+    },),
     bedrock: createBedrockClient({
       apiKey: bedrockKey,
       ledger: bedrockLedgerFromEnv({ env: process.env, },),
+      transport: fetchTransport,
     },),
-    openrouter: createOpenRouterClient({ apiKey: openRouterKey, },),
+    openrouter: createOpenRouterClient({
+      apiKey: openRouterKey,
+      transport: fetchTransport,
+    },),
   },);
 
   /**

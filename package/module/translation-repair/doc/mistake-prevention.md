@@ -464,7 +464,10 @@ and tests pass `NO_OUTSIDE_READS` (`corpus-run/pass-outside-reads.test-fixture.t
 `configureProviders`,
 `runClientFrom` and `assertRequiredProvidersReady` require `env` and `transport`;
 `outsideReadsFrom` requires the environment,
-the transport and the corpus readers.
+the transport and the corpus readers;
+the five provider clients require their transport,
+and every corpus reader its pin or reader (X24).
+A seam added to make a function testable never takes the production value as its default (M70).
 
 ## Tests on the real clock
 

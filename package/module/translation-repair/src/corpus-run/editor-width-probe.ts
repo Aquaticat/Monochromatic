@@ -13,6 +13,7 @@ import { runWidthSlice, } from './editor-width-slice.ts';
 import {
   createRunClient,
   readHeadSha,
+  RUN_CORPUS_PIN,
   RUN_MODELS,
   RUN_ROSTER,
 } from './run-config.ts';
@@ -149,7 +150,10 @@ async function main(): Promise<void> {
   /**
    Whole sample, spread across the corpus.
    */
-  const sample = await sampleBenchSlices({ count: wanted, },);
+  const sample = await sampleBenchSlices({
+    count: wanted,
+    pin: RUN_CORPUS_PIN,
+  },);
 
   /**
    Positions this draw takes out of the sample.
