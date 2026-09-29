@@ -1887,6 +1887,18 @@ User noted the repo's commit messages differ from standard Conventional Commits.
    `staged-changes-ignored` covers only pathless `--amend`/`--allow-empty`,
    so CPN is unenforced.
 
+### SK1 to SK3 consumers (checked 2026-09-29)
+
+- The synced `setup-matt-pocock-skills` skill finds the block by its `## Agent skills` heading and writes `### Issue tracker`-style subheadings;
+   no skill matches the bold labels,
+   so they are cosmetic.
+- Consumer skills (`code-review`,
+   `to-spec`,
+   `wayfinder`) expect the tracker info in context;
+   the synced `code-review` skill checks `docs/agents/issue-tracker.md`,
+   which does not exist here (`doc/agent/`),
+   so SK1's path pointer is what redirects agents.
+
 ### Pending batch 19 text
 
 ```md
