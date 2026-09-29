@@ -10041,6 +10041,31 @@ and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
 
+### M69: a real-clock case that needed the machine to keep pace with a 20 ms window
+
+Status:
+happened 2026-09-29 in `ee6b012c2`,
+found the same day as the only failing case of the whole unit suite run after `3510c8336`,
+fixed the same day.
+The case filled a pacer's 20 ms window on the real clock,
+slept through it,
+then started a third take and aborted it at once,
+expecting the abort to end a sleep.
+Under the whole suite's load the window had emptied before the third take began,
+so the take found room,
+never slept,
+and resolved;
+the case had passed every time its own file ran alone.
+The case is now two:
+a short window whose second take is checked by a one-sided bound
+(it cannot finish before the first take leaves the window,
+and a stall only lengthens it),
+and a 60 second window whose second take is certainly asleep when the abort lands.
+Prevention (T5):
+a real-clock case asserts only bounds that load can widen and not break,
+a case that needs a caller asleep uses a window no stall outlasts,
+and a new timing case counts as passing only once the whole suite has run it.
+
 ### M68: a seam required of two functions and supplied by their caller
 
 Status:

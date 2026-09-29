@@ -205,17 +205,36 @@ await describe({
     },),
 
     it({
-      name: 'SLEEPS ON THE REAL CLOCK WITH THE DEFAULT SLEEPER until the window has room, and an abort ends that '
-        + 'sleep with the abort reason (ledger T8)',
+      name: 'SLEEPS ON THE REAL CLOCK WITH THE DEFAULT SLEEPER until the window has room (ledger T8)',
       fn: async () => {
         const pace = createRequestPace({
           perWindow: 1,
           windowMs: REAL_WINDOW_MS,
         },);
+        /**
+         Real clock before the first take, which the second cannot pass the
+         window of however loaded the machine is.
+         */
+        const startedAt = performance.now();
         await pace.take({ signal: SIGNAL, },);
-        // A second take must now sleep, which is what the default sleeper is
-        // for; its return is the take resolving.
-        expect(pace.waitMs(),).toBeGreaterThan(0,);
+        await pace.take({ signal: SIGNAL, },);
+        // ONE-SIDED, so load cannot fail it: the second place opens only once
+        // the first has left the window, a stall only lengthens the wait, and
+        // the millisecond allows for timer rounding.
+        expect(performance.now() - startedAt,).toBeGreaterThanOrEqual(REAL_WINDOW_MS - 1,);
+      },
+    },),
+
+    it({
+      name: 'ENDS A REAL-CLOCK SLEEP ON ABORT with the abort reason (ledger T8)',
+      fn: async () => {
+        // A WINDOW NO STALL CAN OUTLAST, so the second take is certainly
+        // asleep when the abort lands. On a window of 20 ms a loaded suite
+        // run let the window empty first, and the take resolved (2026-09-29).
+        const pace = createRequestPace({
+          perWindow: 1,
+          windowMs: WINDOW_MS,
+        },);
         await pace.take({ signal: SIGNAL, },);
 
         /**

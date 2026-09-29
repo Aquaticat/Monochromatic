@@ -428,6 +428,13 @@ a unit test prepared an original naming a title,
 and the preparation bought a live web search with the key the suite inherits from `mise`
 and wrote the answer into the real lookup cache (M43,
 X19).
+The fix made the seam required of the preparation,
+but the entry driver above it went on handing down the run's readers itself,
+so the entry tests still prepared through the key,
+the real caches and the corpus clone (M68).
+The run client and the provider gate read the provider keys,
+the Bedrock ledger's place and the transport from the process by default,
+and their tests set some keys and built on the rest the suite inherits (X23).
 
 The rule:
 before a test drives a production entry point,
@@ -439,11 +446,41 @@ the pinned corpus) and hand each a fixture.
 A seam that reaches the network,
 a real cache or the corpus is a required parameter,
 never an optional one.
+When a seam becomes required,
+every reference to the production value is listed (`rg RUN_OUTSIDE_READS src`),
+and each one below the function a run calls moves to a parameter:
+the process's own values are named once,
+in that function (`createRunClient`,
+`RUN_OUTSIDE_READS`,
+the pass's own calls),
+and in TSDoc examples.
 
 What enforces it:
 the type checker:
-`preparePassEntry` and `runPassPreparation` require `outsideReads`,
-and tests pass `NO_OUTSIDE_READS` (`corpus-run/pass-outside-reads.test-fixture.ts`).
+`preparePassEntry`,
+`runPassPreparation`,
+`runEntryPipeline` and `settleEntry` require `outsideReads`,
+and tests pass `NO_OUTSIDE_READS` (`corpus-run/pass-outside-reads.test-fixture.ts`);
+`configureProviders`,
+`runClientFrom` and `assertRequiredProvidersReady` require `env` and `transport`;
+`outsideReadsFrom` requires the environment,
+the transport and the corpus readers.
+
+## Tests on the real clock
+
+What happened:
+a case filled a 20 ms window on the real clock and expected a take started after it to still be asleep;
+under the whole suite's load the window emptied first,
+and the case failed only there (M69,
+T5).
+
+The rule:
+a real-clock case asserts only bounds that load can widen and not break;
+a case that needs a caller asleep uses a window no stall outlasts;
+a new timing case counts as passing only once the whole suite has run it.
+
+What enforces it:
+the whole unit suite run before a batch's work is called done.
 
 ## Copies of shared code
 
