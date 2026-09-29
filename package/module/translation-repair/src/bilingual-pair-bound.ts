@@ -2,6 +2,7 @@ import {
   carriesContent,
   pastQuoteMarkers,
 } from './quote-line.ts';
+import { straightenQuotes, } from './quote-normalize.ts';
 
 //region Bilingual pair bound
 // CLASS EIGHTY, SECOND ARM (shi_Yumiaoya11 and 12, 2026-09-22). The sheet
@@ -69,17 +70,6 @@ type LineBlock = {
 };
 
 /**
- Straight forms of the quote marks a rendering may curl, so a line matches
- its page copy through the typography restoration.
- */
-const STRAIGHT_QUOTES: Readonly<Record<string, string>> = {
-  '‘': '\'',
-  '’': '\'',
-  '“': '"',
-  '”': '"',
-};
-
-/**
  Whether a line is inside a quote, by its marker.
 
  @param line - one raw line
@@ -102,7 +92,8 @@ function isQuoted({ line, }: { readonly line: string; },): boolean {
 /**
  Wording of a line for matching across page and rendering: quote markers
  and surrounding whitespace off, inner whitespace collapsed, curled quotes
- straightened.
+ straightened by the typography fold (`straightenQuotes`, ledger B24), so a
+ line matches its page copy through the typography restoration.
 
  @param line - one raw line
 
@@ -125,23 +116,7 @@ function wordingOf({ line, }: { readonly line: string; },): string {
     .filter(function nonEmpty(word,): boolean {
       return word !== '';
     },);
-  return Object
-    .entries(STRAIGHT_QUOTES,)
-    .reduce(
-      function straighten(
-        text,
-        [
-          curled,
-          straight,
-        ],
-      ): string {
-        return text.replaceAll(
-          curled,
-          straight,
-        );
-      },
-      words.join(' ',),
-    );
+  return straightenQuotes({ text: words.join(' ',), },);
 }
 
 /**

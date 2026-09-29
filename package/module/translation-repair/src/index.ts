@@ -43,6 +43,7 @@ export {
   collapseLineBreaks,
   collapseSoftLineBreaks,
   normalizePunctuation,
+  straightenQuotes,
 } from './quote-normalize.ts';
 export {
   type ForcedAlignStep,

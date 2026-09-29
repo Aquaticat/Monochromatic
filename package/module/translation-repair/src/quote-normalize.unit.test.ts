@@ -2,7 +2,9 @@
  Tests for punctuation normalization:
  every mapped variant collapses to its canonical character while
  length is preserved unit for unit, so offsets found in normalized
- text index the original exactly.
+ text index the original exactly. The typography fold straightens curly
+ quotes only and leaves the corner brackets and the no-break space alone
+ (ledger B24).
  
  @module
  */
@@ -15,6 +17,7 @@ import {
 import {
   collapseLineBreaks,
   normalizePunctuation,
+  straightenQuotes,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -104,6 +107,29 @@ await describe({
       name: 'leaves punctuation variants alone, unlike normalizePunctuation',
       fn: async () => {
         expect(collapseLineBreaks({ text: '老猫说：“喵。”', },),).toBe('老猫说：“喵。”',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: straightenQuotes.name,
+  children: [
+    it({
+      name: 'STRAIGHTENS EVERY CURLY QUOTE, as the typography restoration would read it',
+      fn: async () => {
+        expect(straightenQuotes({ text: 'the cat’s ‘nap’ and “purr”', },),).toBe('the cat\'s \'nap\' and "purr"',);
+      },
+    },),
+    it({
+      name: 'LEAVES THE CORNER BRACKETS AND THE NO-BREAK SPACE ALONE, which the evidence fold folds',
+      fn: async () => {
+        /**
+         Text carrying every mark the evidence fold maps and this one does not.
+         */
+        const kept = '「猫」『喵』\u{00A0}nap';
+        expect(straightenQuotes({ text: kept, },),).toBe(kept,);
+        expect(normalizePunctuation({ text: kept, },),).not.toBe(kept,);
       },
     },),
   ],

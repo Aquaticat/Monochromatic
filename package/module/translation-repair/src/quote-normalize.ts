@@ -6,6 +6,16 @@
 // punctuation variants onto one canonical character, strictly one-to-one in
 // UTF-16 units, so an offset found in normalized text indexes the original
 // text unchanged and anchors keep the document's canonical bytes.
+//
+// TWO FOLDS, FOR TWO QUESTIONS (ledger B24). The EVIDENCE fold
+// (`normalizePunctuation`) asks whether a model's quote is the document's
+// words: it also folds the corner brackets, because a model quoting a Chinese
+// passage paraphrases them. The TYPOGRAPHY fold (`straightenQuotes`) asks
+// whether two renderings are the same wording up to what the typography
+// restoration (`restore-typography.ts`) would make of them: curly and straight
+// only, since a rendering that kept 「」 and one that wrote English quotes are
+// different renderings, one of them wrong. A comparison of a quote against its
+// source takes the first; a comparison of two renderings takes the second.
 
 /**
  Punctuation variants mapped onto canonical ASCII, one UTF-16 unit each.
@@ -24,6 +34,18 @@ const PUNCTUATION_CANON: Readonly<Record<string, string>> = {
   '『': "'",
   '』': "'",
   ' ': ' ',
+};
+
+/**
+ Curly quotation marks mapped onto their straight forms, one UTF-16 unit
+ each: the typography fold. The corner brackets stay as they are, since
+ keeping them is a rendering choice rather than a typography one.
+ */
+const TYPOGRAPHY_CANON: Readonly<Record<string, string>> = {
+  '‘': '\'',
+  '’': '\'',
+  '“': '"',
+  '”': '"',
 };
 
 /**
@@ -83,7 +105,8 @@ function canonicalize(
 }
 
 /**
- Normalizes punctuation variants onto canonical characters.
+ Normalizes punctuation variants onto canonical characters: the evidence
+ fold, under which a model's quote matches the document it quotes.
  Length-preserving by construction:
  every mapping replaces one UTF-16 unit with one UTF-16 unit,
  so offsets in the result index the input exactly.
@@ -101,6 +124,28 @@ export function normalizePunctuation({ text, }: { readonly text: string; },): st
   return canonicalize({
     text,
     map: PUNCTUATION_CANON,
+  },);
+}
+
+/**
+ Straightens curly quotation marks: the typography fold, under which two
+ renderings are the same wording when they differ only in what the
+ typography restoration would change.
+ Length-preserving like {@link normalizePunctuation}.
+
+ @param text - rendering whose curly quotes straighten
+
+ @returns Same-length text with straight quotes
+
+ @example
+ ```ts
+ straightenQuotes({ text: 'the cat’s “nap”', },); // 'the cat\'s "nap"'
+ ```
+ */
+export function straightenQuotes({ text, }: { readonly text: string; },): string {
+  return canonicalize({
+    text,
+    map: TYPOGRAPHY_CANON,
   },);
 }
 
