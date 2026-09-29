@@ -1,0 +1,51 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+// Embed only the sanitized aligned native evidence, never raw status-bearing captures.
+const root = process.cwd();
+const render = join(root, 'questions', 'render');
+const templatePath = join(root, 'questions', 'ranking.template.html');
+const artifactPath = join(root, 'questions', 'ranking-review.html');
+const captures = Object.fromEntries(['inner', 'cover'].map(panel => [panel,
+  Object.fromEntries(['rankmixed', 'rankfolders', 'ranktracks'].map(rank => [rank,
+    Object.fromEntries(['direct', 'parenthits'].map(scope => [scope,
+      Object.fromEntries(['top', 'end'].map(position => {
+        const suffix = position === 'end' ? '-end' : '';
+        const name = `search-rank-review-${panel}-${rank}-${scope}${suffix}-s200.png`;
+        const png = readFileSync(join(render, name));
+        const dimensions = panel === 'inner' ? [2076, 2152] : [1080, 2424];
+        if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
+            png.readUInt32BE(16) !== dimensions[0] || png.readUInt32BE(20) !== dimensions[1]) {
+          throw new Error(`${name}: unexpected physical Fold panel or non-PNG evidence`);
+        }
+        return [position, `data:image/png;base64,${png.toString('base64')}`];
+      }))]))]))]));
+const command = process.argv[2];
+if (command === 'build') {
+  const template = readFileSync(templatePath, 'utf8');
+  if (template.split('__RANK_CAPTURE_MAP__').length !== 2) {
+    throw new Error('The ranking form requires exactly one native-capture slot.');
+  }
+  writeFileSync(artifactPath, template.replace('__RANK_CAPTURE_MAP__', JSON.stringify(captures)));
+  console.log(`Built the separate design-only Search ranking review in ${artifactPath}.`);
+} else if (command === 'validate') {
+  const html = readFileSync(artifactPath, 'utf8');
+  const begin = html.indexOf('const captures = ');
+  const end = html.indexOf(';\nconst scopeInputs = ', begin);
+  if (begin < 0 || end < 0 ||
+      JSON.stringify(JSON.parse(html.slice(begin + 'const captures = '.length, end))) !== JSON.stringify(captures)) {
+    throw new Error('Embedded ranking rasters differ from the sanitized aligned Fold sources.');
+  }
+  for (const required of ['D58', 'Scope D', 'Scope P', 'Order M', 'Order F', 'Order T',
+    'Ranking: D &gt; P', 'Ranking: M &gt; F &gt; T', 'exact', 'Reset 100%',
+    'Reply in this chat', 'data-preview="inner"', 'data-preview="cover"']) {
+    if (!html.includes(required)) throw new Error(`Ranking review missing ${required}`);
+  }
+  if (html.includes('__RANK_CAPTURE_MAP__') || html.includes('<script src=') ||
+      html.includes('<link rel="stylesheet"')) {
+    throw new Error('Ranking form is not self-contained.');
+  }
+  console.log('Validated aligned native ranking assets and two independent choice axes.');
+} else {
+  throw new Error('Expected build or validate.');
+}
