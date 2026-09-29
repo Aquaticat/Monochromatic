@@ -6637,6 +6637,23 @@ it found three more beside B15's frozen pairs:
   `rolldown` joined the package's devDependencies from the catalog,
   and the lockfile gained that importer entry only.
 
+The other cache readers (`slice-cache-store.ts`,
+`consolidate-cache-store.ts`,
+`lane-contest-cache-store.ts`,
+`reading-cache-store.ts`) check that a record's fields are present and its lists are lists,
+not every element.
+That was read as deliberate rather than a defect:
+each lane cache is opened with the built pipeline's digest as its generation
+(`pass-entry-caches.ts`,
+`pass-prepare.ts`,
+`pass-consolidate.ts`),
+and a namespace whose generation moves is deleted (`slice-cache-namespace.ts`),
+so a file these readers accept was written by the same built code from values of these types;
+the shape checks are the belt the module comment names beside that brace.
+The lookup cache,
+which outlives builds,
+already checks every hit (`isLookupRecord`).
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
