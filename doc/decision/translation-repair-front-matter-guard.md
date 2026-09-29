@@ -242,7 +242,7 @@ and aliases gained forms in the original script.
 
 Options offered,
 ranked 1 over 2 over 3:
-1 as above;
+1 publish the archive's front matter as is and render it only where the archive never translated it;
 2 freeze `name` and `desc` and leave `alias` and `location` repairable;
 3 keep the lanes' rendering and add the front matter to the read-page checks.
 1 over 2 because the owner's expectation is no change and a rewritten `desc` is an editorial change nobody asked for;

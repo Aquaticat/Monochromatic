@@ -300,7 +300,7 @@ nothing resting on one should be trusted until the rate is read again.
 TWO CONSTRAINTS ON THAT RUN,
 both learned from getting them wrong elsewhere:
 
--   COMPARE ON THE DEFINITION ABOVE,
+-   COMPARE ON PER-STAGE VOICE COMPLETENESS,
     not on loss lines and not on judgings.
 -   RUN ENTRIES THAT ACTUALLY LOST VOICES,
     or a clean result proves nothing.
@@ -337,7 +337,9 @@ Nothing below displaces it.
 
 What follows is a second reading taken from a different population:
 the evening corpus pass,
-five entries none of which appear in that audit or in the baseline table above.
+five entries none of which appear in that audit
+or in the baseline table of "The baseline to compare against,
+on one definition".
 It was read from a frozen snapshot,
 `~/temp/agent/grace-remeasure-snapshot.log`,
 3271 lines,

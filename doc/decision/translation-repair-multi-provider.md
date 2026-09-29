@@ -912,7 +912,7 @@ not a rate limit.
 WHAT THIS DOES TO THE DECISION:
 nothing,
 and it strengthens the reasoning.
-The outage-exposure table below does not rest on recoverability at all;
+The count of editors each arrangement keeps when a provider goes dry does not rest on recoverability at all;
 it rests on how many editors survive each provider going dry,
 and those counts are unchanged.
 The correction bears only on the quality-times-availability counter-argument,
@@ -1155,7 +1155,9 @@ which is the same outage the roster probe found earlier that day.
 
 ### The editor seats get their own instrument, 2026-08-24
 
-That instrument was started on a self-correction recorded above:
+That instrument was started on a self-correction recorded in "The forty-round pass seats the writers,
+2026-08-24"
+(its "THE INSTRUMENT IS ONE STEP FROM THE SEAT IT WAS USED ON" paragraph):
 the forty-round pass was described as measuring the job both stages do,
 and it does not.
 `producer-calibrate.ts` drives `runTranslateStage`,

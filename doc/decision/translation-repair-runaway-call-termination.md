@@ -790,7 +790,9 @@ not a runaway's size.
 A cut call was stopped by the clock at 180 seconds,
 so its recorded characters say how far it got,
 not how far it would have gone.
-The cut column above therefore understates the population it describes,
+The cut figures in "The size a cap should read,
+measured over 515 calls"
+therefore understate the population they describe,
 which makes both bounds conservative rather than tight.
 
 ONE SILENT COMPLETION IS A THIN MARGIN.
@@ -1005,7 +1007,10 @@ THEIR THINKING SIDE WAS LEFT ALONE,
 at 6,000 frames and roughly 420,000 reasoning
 characters,
 because no volume bound applies to reasoning and that fixture is now
-what pins the refusal recorded above.
+what pins the refusal to bound reasoning,
+recorded in "Correction:
+the silent-reasoning bound at 40,000 is unsound,
+and measured to be so".
 
 A repetitive ANSWER now reports `overrun` where it would once have reported
 `degenerate`,
@@ -1017,7 +1022,7 @@ counting two different partitions of the same population.
 
 ## Correction: 10,000 was set on an unrepresentative population, and shipped at 32,000
 
-The bound recorded above was measured on completions drawn from the consolidation bed.
+The 10,000 content bound was measured on completions drawn from the consolidation bed.
 That bed replays the reading,
 pairing and critic lanes from cache,
 so none of their calls were in the sample.

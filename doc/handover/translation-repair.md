@@ -29,7 +29,8 @@ not the finite redesign.
 Corpus runs,
 model calls,
 and implementation on that pipeline ARE authorized;
-the redesign-scope prohibitions in the 2026-09-01 section below remain in force,
+the redesign-scope prohibitions in "Superseded handover,
+2026-09-01" remain in force,
 and the readiness judgement lives in
 [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md).
 The pipeline is not production ready.
@@ -218,9 +219,10 @@ Do not reconstruct partial JSON or hidden reasoning.
 
 ### What remains authorized
 
-The paragraph below was written on 2026-09-01 and states the redesign scope's standing prohibitions,
+The "Inside the redesign scope" and "Outside the redesign scope" paragraphs were written on 2026-09-01.
+The "Inside" paragraph states the redesign scope's standing prohibitions,
 which hold.
-Its account of legacy work is superseded by the 2026-09-04 snapshot:
+The "Outside" paragraph's account of legacy work is superseded by the 2026-09-04 snapshot:
 the OpenRouter fallback landed on 2026-09-03,
 and three entries have since been run and read.
 

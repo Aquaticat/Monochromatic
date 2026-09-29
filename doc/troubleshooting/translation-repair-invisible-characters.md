@@ -261,7 +261,7 @@ a hit inside visible text is not.
 
 ## Invisible variants a model writes, folded at intake (2026-08-26)
 
-The census above is about the corpus.
+The census in "What the corpus actually contains" is about the corpus.
 A second class arrives from the models:
 characters a reader cannot tell
 from their plain counterpart,

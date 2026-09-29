@@ -6510,8 +6510,8 @@ that decision was taken on `luxuanwen3`,
 where the incumbent was the ineligible thing,
 and it says every exit that would keep the standing throws.
 On a full bench the slate's nine producers are told the finding and one of them keeps the list;
-whether a thin bench should stop the entry or keep the incumbent for the slice is the second thin-bench
-question below.
+whether a thin bench should stop the entry or keep the incumbent for the slice is the second of the questions
+the handover records under "The thin-bench questions".
 
 THE QUEUE PAUSES.
 The 2026-09-08 rule stands:
@@ -7064,7 +7064,7 @@ what is read is the log.
   and not a defect class:
   seven of twelve seats cannot review that chat block within their measured caps.
   Under class thirty-one the block ships as the archive wrote it,
-  with the four findings above recorded,
+  with the four heard seats' findings recorded,
   unless the heard revisions win the independent selection.
   The levers are the owner's:
   the caps are measured,
@@ -10623,7 +10623,7 @@ full suite `suite-class142.log` 1142 PASS with one FAIL,
 the load-sensitive grace-window case of `lane-contest-stage.unit.test.ts` (seen before under class one hundred ten),
 which passes alone.
 Replayed over seven read pages and every archive page:
-XingZ6012 curled on four blocks (the four lines above),
+XingZ6012 curled on four blocks (the four lines "What the page showed" names),
 the lin10104 and shihai4h archives one apostrophe each ("it’s",
 "doesn’t"),
 nothing else changed,
@@ -11904,7 +11904,9 @@ a rendering that reads badly is a class to fix,
 not an observation to record,
 and the reader-protection rule (`src/house-policy.ts`) is the authority on method detail.
 
-CORRECTION of the shi_Yumiaoya23 read below:
+CORRECTION of "shi_Yumiaoya23 read,
+2026-09-25,
+01:49 UTC":
 it called "Although before her passing she took three bottles of some kind of sedative-hypnotic" closer to the original.
 Under the reader-protection rule it is a violation:
 the rule keeps "a method,
@@ -20802,7 +20804,7 @@ NAMES AND LINKED TEXT THE ARCHIVE RENDERS ON THIS PAGE (render the same person o
 ```
 
 Probed through the built dist on real pages:
-`mikaela_khara` the line above;
+`mikaela_khara` the line the `text` block shows;
 `zheermao101` `悼文` to "epitaph";
 `XingZ60` `仓山静叶` to "Shizuha";
 `hulicaijia` `櫻崎詩月` to "Poetry Luna";
@@ -25163,7 +25165,7 @@ archive-backed layout authority and ordinary-passage prompt identity are preserv
 Build,
 types,
 oxlint and full suite pass;
-the latter ends `unit exit 0` in `~/temp/agent/rendered-contract-verified-unit-20260910.out`.
+the full suite ends `unit exit 0` in `~/temp/agent/rendered-contract-verified-unit-20260910.out`.
 
 A bounded matched comparison is running,
 not a full-entry pass:

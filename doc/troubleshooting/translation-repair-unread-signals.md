@@ -83,7 +83,7 @@ emits a pairing only where the affinity grid gives a unique partner in both dire
 every unpaired
 section becomes a `structure-mismatch` finding and a source-only section is placed as an insertion or
 refused.
-The table below is the measurement as it was taken,
+The seven-entry table in this section is the measurement as it was taken,
 kept for the blast-radius argument.
 Only ONE of the seven actually mispaired:
 
@@ -1213,8 +1213,8 @@ THE REMAINING WALL is accepted issues not recording which critic raised each
 which blocks the duplicate-issue question.
 
 It does NOT block the prober-disagreement question,
-which earlier versions of this document and of
- `256520df7` both claimed.
+which earlier versions of this document
+ claimed.
 That question is about the three PROBERS in the
  introduced-defect probe,
 not the critics,
@@ -1236,10 +1236,12 @@ not something gating a measurement about to
 
 ## The third wall is the same shape after all, and I said it was not
 
-The paragraph above,
-and commit `256520df7`'s message,
-both say the attribution
+The remaining-wall paragraph of "Both fixes make the run log corpus-bearing,
+which it was not before",
+as `eab15a03c` wrote it,
+said the attribution
  is "genuinely absent rather than discarded downstream",
+and that commit's message says the same,
 so the fix would need
  the claim to carry its speaker from the critic stage onward.
 That is wrong,

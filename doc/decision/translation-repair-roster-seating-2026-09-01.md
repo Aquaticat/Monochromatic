@@ -739,7 +739,7 @@ The bench that judged it sat without Hyper (its daily limit spent,
 so `glm-5.3` threw 48 of 48) and without Synthetic from 17:25 UTC
 (Qwen3.8-27B threw 35 of 56),
 and `deepseek-v4-pro-0813` wrote and judged from NextBit without its reasoning
-(the addendum below).
+(the 2026-09-09 addendum).
 Every candidate was compared under the same judges,
 so the standing among them holds.
 

@@ -1296,7 +1296,7 @@ a proposed forty-parent pool spans 32 entries.
 hold its exact inputs and full entry contexts.
 Parent scope reading has begun in `preparation-pool-scope-reading.json`:
 `AmbeR_the_anpa` and `ArtsEpiphany` have been read.
-The latter is a preservation-only control,
+`ArtsEpiphany` is a preservation-only control,
 not positive writing-quality evidence;
 shared-incumbent accounting was checked provider-free with a positive control.
 Full-entry parent scope reading has reached eighteen of the thirty-two selected entries.
@@ -5658,7 +5658,7 @@ each read off the pass log and the shipped page:
     every XingZ6013 check held;
     class one hundred fifty-two live on slice 30;
     recorded under "## XingZ6014 read" in the pass log.
-    shi_Yumiaoya38 ran on the class one hundred fifty-three build (the entry above).
+    shi_Yumiaoya38 ran on the class one hundred fifty-three build (the CLASS ONE HUNDRED FIFTY-THREE BUILT entry).
     CLASS ONE HUNDRED FIFTY-TWO BUILT (2026-09-26),
     RAN ON XINGZ6014:
     yingying12's polish gate tied 2 to 2 and shipped the calque "It is a pity that all this stopped abruptly",
@@ -5677,7 +5677,7 @@ each read off the pass log and the shipped page:
     SETTLED at 10:35 UTC in 10.4 min on `.frozen-dist-0de47d546`,
     every yingying11 check held;
     recorded under "## yingying12 read" in the pass log.
-    XingZ6014 read it live on slice 30 and found class one hundred fifty-three (the entry above).
+    XingZ6014 read it live on slice 30 and found class one hundred fifty-three (the CLASS ONE HUNDRED FIFTY-THREE BUILT entry).
     CLASS ONE HUNDRED FIFTY-ONE BUILT (2026-09-26),
     RAN ON YINGYING12 (NOT EXERCISED;
     NO 逆子 ON THAT PAGE):
@@ -6755,7 +6755,7 @@ each read off the pass log and the shipped page:
     the consolidated proposal dropped it,
     the gate split 2 to 2 and kept the stand-in on "dropped page content ... which the Chinese does not contradict":
     class one hundred eight,
-    built (the line below).
+    built (the CLASS ONE HUNDRED EIGHT BUILT line).
     CLASS ONE HUNDRED EIGHT BUILT:
     `archiveDisputeNote` (`archive-dispute.ts`) writes the ARCHIVE RENDERING DISPUTED block naming the accepted claims and saying a detail they name is neither page content nor apparatus,
     in the archive's wording or any softer one;
@@ -6874,7 +6874,7 @@ each read off the pass log and the shipped page:
     the reply label kept the archive's "one member ... immediately" for 那些秋叶的成员…连夜 on a 2 to 2 contest (every ballot calling the archive flawed) and a 1/1/1 slate with both lane texts on offer through the class forty path,
     the eligible standing keeping its single round:
     class one hundred six,
-    built (see the line above).
+    built (see the CLASS ONE HUNDRED SIX BUILT line).
     CUSPARIAKLSY10 READ (frozen `d2e39e095`):
     SETTLED at 00:06 UTC 2026-09-24 in 7 min,
     one attempt,

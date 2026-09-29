@@ -230,7 +230,7 @@ Measurements and the build record are in `doc/planning/translation-repair-openro
   so `68ad11530` adds
     `roster` to `JudgeSeats` and every roster-wide stage takes it from its own reading.
   The Kimi-K3 rule in
-    the standing rules above means every call,
+    "Standing rules that follow" means every call,
   not every judge call.
   Verified live on the fifth pass
     (keyword233,

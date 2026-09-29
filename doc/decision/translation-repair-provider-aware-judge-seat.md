@@ -160,7 +160,7 @@ per seat,
 which provider would take its calls (`providerServing`,
 the first in `PROVIDER_ORDER` that serves the
 model and reads wet).
-The Hyper-slow rules above apply where that provider is Hyper;
+The Hyper-slow rules in "The rule" apply where that provider is Hyper;
 the owner's cost decision on Kimi-K3
 applies where it is OpenRouter,
 with gemma seated as the substitute checker.

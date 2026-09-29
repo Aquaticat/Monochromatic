@@ -586,7 +586,7 @@ So `6` means read the line,
 
     A RUN ALWAYS SHIPS (the owner,
     2026-09-27),
-    so every finding below is printed and the exit is still `0`.
+    so every finding line is printed and the exit is still `0`.
     Only a run that could not be read at all exits `2`.
     Read the lines,
     not the exit code.
@@ -893,7 +893,7 @@ and a run made from that checkout recorded none of what they read either.
     Passing `--model <id>` prints that seat's candidate text verbatim,
     which on a real run is corpus wording from an unlicensed archive,
     along with the judges' reasons quoting it.
-    The summary above names only models and counts and is safe to share;
+    The summary without `--model` names only models and counts and is safe to share;
     the per-model view is not.
 
     THIS ONE EXITS `1` WHEN IT FINDS NOTHING,
@@ -922,7 +922,7 @@ and a run made from that checkout recorded none of what they read either.
     A byte offset joins the class where the parser stated one,
     as `(SyntaxError at byte 42)`.
     A file truncated at the end states none,
-    which is the case above.
+    which is the `UNREADABLE 000001.json` example's case.
 
     Read a `2` as a floor rather than a standing.
     The refusal names the class that refused and where it stopped,

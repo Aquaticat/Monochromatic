@@ -1045,7 +1045,7 @@ The fifteenth class landed after the tally (`d74ef4a43`,
 so a single-provider night now stops INCOMPLETE at the lanes instead of shipping a one-writer page.
 The readiness belief moves from "waits on the owner's answer" to this:
 on a whole bench the pipeline produces the page it should,
-and what remains before an all-entries launch is the name question above,
+and what remains before an all-entries launch is the SIXTEENTH THING's name question,
 the translator-seat calibration for the E2B size,
 the next entries (`yuki418330012`,
 `Arita`) and the seven components no read page has met.
@@ -1487,7 +1487,7 @@ and the components no read page has met.
 
 ## Where readiness stands on 2026-09-24
 
-The sections after this one are the 2026-09-09 and 2026-09-10 readings and stay as evidence.
+The sections dated 2026-09-09 and 2026-09-10 are those days' readings and stay as evidence.
 The current state is in the handover
 ([`translation-repair-handover-2026-09-06.md`](../handover/translation-repair-handover-2026-09-06.md),
 "What to do next")

@@ -36,7 +36,7 @@ and `PASS_OVERLAP` in `package/module/translation-repair/src/corpus-run/pass-ove
 
 ## The evidence
 
-Every pair below ran both arms on one pipeline digest into separate run roots,
+Every pair in this section ran both arms on one pipeline digest into separate run roots,
 with both subscription providers wet throughout,
 and is read as wall clock over the sum of stream time,
 since single-run wall clock moves 37 percent on provider speed alone

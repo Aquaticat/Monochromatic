@@ -217,7 +217,7 @@ and neither is a reason to abandon it:
     because equal section counts skip it (the equal-count fast path),
     and the scorer is broken with
     asymmetric preambles causing most fallbacks.
-    Every section-scale number above was drawn
+    Every section-scale number this section cites was drawn
     from the 7 entries that do reach it.
     Landing insertion on top of an aligner that never runs for
     92 percent of the corpus would ship a feature whose input is decided by a fallback.

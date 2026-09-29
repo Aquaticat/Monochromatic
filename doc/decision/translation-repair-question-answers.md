@@ -48,7 +48,7 @@ What it means concretely:
     "self-votes and self-certifications are the norm rather than the exception,
     which makes
     the discounts load-bearing in a way nothing has measured".
-    The self-preference bench recorded below under
+    The self-preference bench recorded under
     question 4 measures exactly that,
     and finds self-preference positive at every width from two to six with
     no trend distinguishable from the run-to-run band.
@@ -231,7 +231,8 @@ not before it.
 WHAT THE HALF STILL BUYS BY BEING DECIDED NOW:
 whoever relaxes the assertion does not also have to pick a
 number,
-and the self-preference measurement below says the number is about right.
+and the self-preference measurement in "Measured after the fact,
+twice" says the number is about right.
 
 ### Measured after the fact, twice, and it supports the half at a smaller size than first reported
 

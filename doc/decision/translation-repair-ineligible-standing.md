@@ -96,7 +96,7 @@ Decided by the owner on 2026-09-09 ("Keep the incumbent"),
 asked with two options after the sixth `Mio` on Bedrock alone:
 at slice 3 the translate lane's standing failed the deterministic gate,
 the archive's paragraph and list for that slice were valid and were never offered,
-and the entry stopped under the rule above.
+and the entry stopped under the rule in "The rule".
 
 - The consolidation reads the gate's verdict on the incumbent
     (`row.incumbentText`,

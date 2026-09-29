@@ -312,7 +312,9 @@ and chasing it to a single
 
 ### The drop is concentrated in the most SUBJECTIVE category, which hints at direction
 
-The section above says the direction of quality is unknown.
+"The acceptance RATE has moved between passes,
+which invalidates cross-pass precision"
+says the direction of quality is unknown.
 It can be narrowed
  without human grading,
 by asking WHICH issues the panel stopped accepting.
@@ -508,7 +510,9 @@ so a slice cached before it and
 
 ### The next run is armed by a detached watcher, not by a note
 
-SUPERSEDES the `pass14` framing below,
+SUPERSEDES the `pass14` framing of "Superseded:
+`pass14` is armed by a detached watcher,
+not by a note",
 which was written before the target
  changed.
 The watcher RESUMES `translation-repair-runs-pass13` rather than
@@ -710,7 +714,9 @@ since the smoke check uses a creatable
 
 ### Superseded: `pass14` is armed by a detached watcher, not by a note
 
-The paragraph above says `pass14` should start when `pass13` stops,
+The needle-telemetry section ("The needle telemetry was landed WITHOUT restarting,
+and why that differs from `pass12`")
+says `pass14` should start when `pass13` stops,
 and the run
  monitor emits `PROCESS GONE` as the cue.
 That is a note to whoever reads it,
