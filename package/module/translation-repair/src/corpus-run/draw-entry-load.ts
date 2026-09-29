@@ -3,8 +3,8 @@ import { join, } from 'node:path';
 
 import { readRunJson, } from '../run-json-read.ts';
 import { parseSettledArtifact, } from '../artifact-read.ts';
+import { requireRecord, } from '../artifact-guard.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
-import { isJsonRecord, } from '../json-guard.ts';
 import { DrawReconcileError, } from './draw-reconcile.ts';
 import type { EligibleEntries, } from './artifact-eligible.ts';
 import { assertArtifactProvenance, } from './artifact-provenance.ts';
@@ -71,15 +71,18 @@ export type EntryContribution = {
  
  @param eligible - resolved pool, whose recorded commit for this entry is
  checked against the bytes actually read
- 
+
+ @param readSource - reads a corpus file at a pin: the pinned clone in a run,
+ a fixture in a test, since the clone is unlicensed and absent elsewhere
+
  @returns The banded entry
- 
- @throws {@link Error} when the parsed accepted count disagrees with the
- artifact's recorded `acceptedCount`
- 
+
+ @throws DrawReconcileError when the artifact records no numeric
+ `acceptedCount`, or one the parsed accepted issues disagree with
+
  @throws ArtifactProvenanceError when the loaded bytes are not the entry the
  pool admitted
- 
+
  @example
  ```ts
  const entry = await loadEntry({ artifactsDir, name, eligible, },);
@@ -90,10 +93,12 @@ export async function loadEntry(
     artifactsDir,
     name,
     eligible,
+    readSource = readCorpusFile,
   }: {
     readonly artifactsDir: string;
     readonly name: string;
     readonly eligible: EligibleEntries;
+    readonly readSource?: typeof readCorpusFile;
   },
 ): Promise<BandedEntry> {
   /**
@@ -110,6 +115,16 @@ export async function loadEntry(
    Parsed accepted issues for this entry.
    */
   const parsed = parseSettledArtifact({ value: raw, },);
+
+  /**
+   The artifact as a record, which parsing just proved it is, for the fields
+   the parser does not read. A reconcile fault for a file that is not an
+   object stood here and could not fire after the parse (ledger T8).
+   */
+  const artifact = requireRecord({
+    value: raw,
+    path: 'artifact',
+  },);
 
   /**
    Entry id the pool keyed this file by, which is its file name.
@@ -141,13 +156,12 @@ export async function loadEntry(
   assertArtifactProvenance({
     name,
     observedId: parsed.id,
-    observedTip: (isJsonRecord(raw,) && ((typeof raw.tip) === 'string'))
-      ? raw.tip
+    observedTip: ((typeof artifact.tip) === 'string')
+      ? artifact.tip
       : '',
-    observedDigest:
-      (isJsonRecord(raw,) && ((typeof raw.pipelineDigest) === 'string'))
-        ? raw.pipelineDigest
-        : '',
+    observedDigest: ((typeof artifact.pipelineDigest) === 'string')
+      ? artifact.pipelineDigest
+      : '',
     ...((expectedTip === undefined) ? {} : { expectedTip, }),
     ...((expectedDigest === undefined) ? {} : { expectedDigest, }),
   },);
@@ -159,16 +173,10 @@ export async function loadEntry(
   // `corpus-pass.ts` writes this field on every artifact it produces, so an
   // artifact without it did not come from this pipeline, and this reader feeds
   // the precision gate where a short population is the exact harm.
-  if (!isJsonRecord(raw,))
-    throw new DrawReconcileError({
-      entryId: parsed.id,
-      fault: { kind: 'not-an-object', },
-    },);
-
   /**
    The accepted count the pipeline recorded when it wrote the artifact.
    */
-  const declaredAccepted = raw.acceptedCount;
+  const declaredAccepted = artifact.acceptedCount;
   if ((typeof declaredAccepted) !== 'number')
     throw new DrawReconcileError({
       entryId: parsed.id,
@@ -193,7 +201,7 @@ export async function loadEntry(
   /**
    The entry's zh source at the pinned corpus commit.
    */
-  const source = await readCorpusFile({
+  const source = await readSource({
     pin: RUN_CORPUS_PIN,
     relPath: `people/${parsed.id}/page.md`,
   },);

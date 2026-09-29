@@ -74,8 +74,15 @@ export type ArchiveSelectionFixtureMode = 'revision' | 'original' | 'unavailable
  @param wanted - exact candidate value expected on its slate
  
  @returns One-based candidate number
+
+ @throws Error where no candidate on the slate is the wanted text
+
+ @example
+ ```ts
+ const best = candidateNumber({ text: sheet, wanted: ARCHIVE_TEST_CORRECTION, },);
+ ```
  */
-function candidateNumber({
+export function candidateNumber({
   text,
   wanted,
 }: {

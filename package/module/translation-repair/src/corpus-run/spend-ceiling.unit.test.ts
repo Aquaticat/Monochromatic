@@ -17,8 +17,10 @@ import {
 import {
   resolveSpendCeilingUsd,
   SPEND_CEILING_PROVIDER,
+  SPEND_CEILING_USD,
   SPEND_CEILING_VAR,
   spendCeilingNote,
+  spendCeilingOverrideNote,
   spendCeilingReached,
   SpendCeilingOverrideError,
 } from '../../dist/final/node/index.mjs';
@@ -79,6 +81,28 @@ await describe({
         }
       },
     },),
+    it({
+      name: 'READS THE DIAL FROM THE ENVIRONMENT when no value is handed in, and the built-in when the dial is unset '
+        + '(ledger T8)',
+      fn: async () => {
+        /**
+         The dial as this process found it, put back when the case ends.
+         */
+        const found = process.env[SPEND_CEILING_VAR];
+        await using restore = {
+          [Symbol.asyncDispose]: async function restoreDial(): Promise<void> {
+            if (found === undefined)
+              Reflect.deleteProperty(process.env, SPEND_CEILING_VAR,);
+            else
+              process.env[SPEND_CEILING_VAR] = found;
+          },
+        };
+        process.env[SPEND_CEILING_VAR] = '12.5';
+        expect(resolveSpendCeilingUsd({ fallback: FALLBACK, },),).toBe(12.5,);
+        Reflect.deleteProperty(process.env, SPEND_CEILING_VAR,);
+        expect(resolveSpendCeilingUsd({ fallback: FALLBACK, },),).toBe(FALLBACK,);
+      },
+    },),
   ],
 },);
 
@@ -126,6 +150,26 @@ await describe({
         expect(note,).toContain('20.4 of 20 USD',);
         expect(note,).toContain(SPEND_CEILING_PROVIDER,);
         expect(note,).toContain(SPEND_CEILING_VAR,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: spendCeilingOverrideNote.name,
+  children: [
+    it({
+      name: 'SAYS NOTHING UNDER THE BUILT-IN, and names an overridden allowance with the built-in, the metered provider '
+        + 'and the dial that set it, so a run never hides which ceiling it ran under (ledger T8)',
+      fn: async () => {
+        expect(spendCeilingOverrideNote({ ceilingUsd: SPEND_CEILING_USD, },),).toBe('',);
+        /**
+         The line for a launch that raised the allowance.
+         */
+        const note = spendCeilingOverrideNote({ ceilingUsd: SPEND_CEILING_USD + FALLBACK, },);
+        expect(note.startsWith(`SPEND CEILING OVERRIDDEN by ${SPEND_CEILING_VAR}`,),).toBe(true,);
+        expect(note,).toContain(`${String(SPEND_CEILING_USD + FALLBACK,)} USD on ${SPEND_CEILING_PROVIDER}`,);
+        expect(note,).toContain(`rather than the built-in ${String(SPEND_CEILING_USD,)}`,);
       },
     },),
   ],

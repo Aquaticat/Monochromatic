@@ -614,6 +614,95 @@ await describe({
       },
     },),
     it({
+      name: 'ROUND-TRIPS THE SPANS AN ARCHIVE NOTE SEALED, and refuses an empty list and a span ending before its '
+        + 'start, each by the path of the field (ledger T8)',
+      fn: async () => {
+        /**
+         {@inheritDoc preparation}
+         */
+        const preparation = artifactWith()
+          .preparation as Record<string, unknown>;
+        /**
+         One sealed span, as a generation-twelve preparation records it.
+         */
+        const sealed = {
+          startOffset: 4,
+          endOffset: 30,
+          note: 'Original English by the cat herself',
+        };
+        const parsed = parseSettledTwoLaneArtifact({
+          value: artifactWith({
+            preparation: {
+              ...preparation,
+              archiveOriginalSpans: [sealed,],
+            },
+          },),
+        },);
+        expect(parsed.preparation
+          .archiveOriginalSpans,).toStrictEqual([sealed,],);
+
+        /**
+         Refusals of a list recorded empty and of a span recorded backwards.
+         */
+        const refusals = [
+          [],
+          [{
+            ...sealed,
+            endOffset: sealed.startOffset - 1,
+          },],
+        ].map(function readSpans(archiveOriginalSpans,): unknown {
+          return caught(function readBroken() {
+            parseSettledTwoLaneArtifact({
+              value: artifactWith({
+                preparation: {
+                  ...preparation,
+                  archiveOriginalSpans,
+                },
+              },),
+            },);
+          },);
+        },);
+        expect(refusals[0],).toBeInstanceOf(ArtifactParseError,);
+        expect((refusals[0] as Error).message,).toContain('preparation.archiveOriginalSpans',);
+        expect(refusals[1],).toBeInstanceOf(ArtifactParseError,);
+        expect((refusals[1] as Error).message,).toContain('preparation.archiveOriginalSpans[0].endOffset',);
+      },
+    },),
+    it({
+      name: 'REFUSES A DIGEST THAT IS NOT ONE and a front matter authority other than the archive\'s, each by the '
+        + 'path of the field (ledger T8)',
+      fn: async () => {
+        /**
+         {@inheritDoc preparation}
+         */
+        const preparation = artifactWith()
+          .preparation as Record<string, unknown>;
+        /**
+         A digest naming no built output.
+         */
+        const digestRefusal = caught(function readDigest() {
+          parseSettledTwoLaneArtifact({ value: artifactWith({ pipelineDigest: 'whiskers', },), },);
+        },);
+        /**
+         A front matter authority no preparation records.
+         */
+        const authorityRefusal = caught(function readAuthority() {
+          parseSettledTwoLaneArtifact({
+            value: artifactWith({
+              preparation: {
+                ...preparation,
+                frontMatterAuthority: 'lanes',
+              },
+            },),
+          },);
+        },);
+        expect(digestRefusal,).toBeInstanceOf(ArtifactParseError,);
+        expect((digestRefusal as Error).message,).toContain('pipelineDigest',);
+        expect(authorityRefusal,).toBeInstanceOf(ArtifactParseError,);
+        expect((authorityRefusal as Error).message,).toContain('preparation.frontMatterAuthority',);
+      },
+    },),
+    it({
       name:
         'reads a whole artifact, RECOMPUTES its comparison, and hands back each raw lane result unread: '
         + 'a reader wanting a field this version does not check gets it from the artifact rather than '

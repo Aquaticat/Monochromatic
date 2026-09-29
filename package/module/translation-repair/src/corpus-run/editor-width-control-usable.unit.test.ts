@@ -20,8 +20,10 @@
  this into a test that passes for the wrong reason.
  
  NO NETWORK. The refusal happens before any judge is seated, and the client
- here refuses every exchange by name so a control that got past the filter
- would say so rather than quietly buying rounds.
+ there refuses every exchange by name so a control that got past the filter
+ would say so rather than quietly buying rounds. The one case that seats a
+ panel scripts its judges to back a passage by its text, wherever the seating
+ puts it (ledger T8).
  
  Fixtures are cat-themed invention. No corpus content appears here.
  
@@ -35,13 +37,20 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  messageText,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   StatedRefusalError,
   type BenchSlice,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
   type SyntheticClient,
   widthControlHolds,
   withoutASentence,
 } from '../../dist/final/node/index.mjs';
+
+import { candidateNumber, } from '../archive-selection.test-fixture.ts';
 
 /**
  Logger for the control under test.
@@ -101,6 +110,49 @@ const CLIENT: SyntheticClient = {
     throw new Error('quotas unused by the width control',);
   },
 };
+
+/**
+ A client whose one judge backs the candidate carrying a given text, wherever
+ the seating puts it, and answers nothing else.
+
+ @param wanted - passage the judge backs
+
+ @returns The client
+ */
+function judgeBacking({ wanted, }: { readonly wanted: string; },): SyntheticClient {
+  return {
+    ...CLIENT,
+    chatJson: async function chatJson<ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> {
+      /**
+       The ballot sheet the judge was sent.
+       */
+      const sheet = request.messages
+        .map(function content(message,): string {
+          return messageText({ message, },);
+        },)
+        .join('\n',);
+      /**
+       Ballot naming the backed passage.
+       */
+      const ballot: unknown = {
+        best: candidateNumber({
+          text: sheet,
+          wanted,
+        },),
+        reason: 'fixture',
+      };
+      if (!request.validate(ballot,))
+        throw new Error('scripted ballot failed the candidate guard',);
+      return {
+        kind: 'ok',
+        value: ballot,
+        rawText: JSON.stringify(ballot,),
+      };
+    },
+  };
+}
 
 /**
  Runs a call that must refuse and hands back what it threw.
@@ -167,6 +219,44 @@ await describe({
         // in a line and exits 6, and printed a bare one as a fault with frames.
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain('no drawn slice holds more than one sentence',);
+      },
+    },),
+
+    it({
+      name: 'HOLDS FOR A PANEL THAT PREFERS THE INTACT PASSAGE in both seatings, and fails one that prefers the '
+        + 'passage missing a sentence (ledger T8)',
+      fn: async () => {
+        /**
+         What the control concludes for a judge backing one passage wherever it sits.
+
+         @param backs - which passage the judge backs
+
+         @returns Whether the control held
+         */
+        async function holdsFor(backs: 'intact' | 'damaged',): Promise<boolean> {
+          return await widthControlHolds({
+            client: judgeBacking({
+              wanted: (backs === 'intact')
+                ? TWO_SENTENCES.incumbentText
+                : withoutASentence(TWO_SENTENCES.incumbentText,),
+            },),
+            slices: [
+              ONE_SENTENCE,
+              TWO_SENTENCES,
+            ],
+            // THREE JUDGES, since the selection stage keeps its fallback under a
+            // winning weight of two and one ballot carries one.
+            judgeModelIds: [
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              SEAT_HYPER_VISION,
+            ],
+            signal: AbortSignal.timeout(120_000,),
+            l,
+          },);
+        }
+        expect(await holdsFor('intact',),).toBe(true,);
+        expect(await holdsFor('damaged',),).toBe(false,);
       },
     },),
   ],

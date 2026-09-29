@@ -30,11 +30,6 @@ export type TypeofName = 'bigint' | 'boolean' | 'function' | 'number' | 'object'
  */
 export type DrawReconcileFault = {
   /**
-   Artifact file holds something other than an object.
-   */
-  readonly kind: 'not-an-object';
-} | {
-  /**
    Artifact records no number under `acceptedCount`.
    */
   readonly kind: 'no-numeric-count';
@@ -66,10 +61,6 @@ export type DrawReconcileFault = {
 const RECONCILE_SENTENCES: {
   readonly [K in DrawReconcileFault['kind']]: (fault: Extract<DrawReconcileFault, { kind: K; }>) => string;
 } = {
-  'not-an-object': function notAnObject(): string {
-    return 'artifact is not an object, so the accepted count it recorded cannot be read and the pool '
-      + 'would be built from an unverified entry';
-  },
   'no-numeric-count': function noNumericCount(fault,): string {
     return `artifact records no numeric acceptedCount (found ${
       fault.foundType
@@ -92,12 +83,10 @@ const RECONCILE_SENTENCES: {
  
  @example
  ```ts
- const sentence = reconcileSentence({ fault: { kind: 'not-an-object', }, },);
+ const sentence = reconcileSentence({ fault: { kind: 'no-numeric-count', foundType: 'string', }, },);
  ```
  */
 export function reconcileSentence({ fault, }: { readonly fault: DrawReconcileFault; },): string {
-  if (fault.kind === 'not-an-object')
-    return RECONCILE_SENTENCES['not-an-object'](fault,);
   if (fault.kind === 'no-numeric-count')
     return RECONCILE_SENTENCES['no-numeric-count'](fault,);
   return RECONCILE_SENTENCES['count-disagrees'](fault,);
@@ -112,7 +101,7 @@ export function reconcileSentence({ fault, }: { readonly fault: DrawReconcileFau
  
  @example
  ```ts
- throw new DrawReconcileError({ entryId: 'Toka_ls', fault: { kind: 'not-an-object', }, },);
+ throw new DrawReconcileError({ entryId: 'Toka_ls', fault: { kind: 'count-disagrees', declared: 4, parsed: 1, }, },);
  ```
  */
 export class DrawReconcileError extends Error {

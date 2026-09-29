@@ -14,11 +14,12 @@
  file that is not the entry the pool admitted has to be reported as the wrong
  file, not as a file with the wrong number of issues in it.
  
- THE HAPPY PATH IS NOT HERE, and deliberately. `loadEntry` bands an entry by
- reading its source at the pinned corpus commit, so a passing load needs the
- unlicensed clone on disk; a unit suite that required it would pass on one
- machine and fail everywhere else. Every guard this file tests runs BEFORE that read, so
- none of them needs it.
+ THE HAPPY PATH READS AN INVENTED SOURCE. `loadEntry` bands an entry by
+ reading its source at the pinned corpus commit, and a run reads the unlicensed
+ clone; a unit suite that required the clone would pass on one machine and
+ fail everywhere else, so the load cases hand `loadEntry` a reader returning a
+ fixture page (ledger T8). Every guard this file tests runs BEFORE that read,
+ so none of them needs one.
  
  FIXTURES ARE INVENTED AND CAT-THEMED, and every one is written into a
  throwaway directory that is removed when the case ends.
@@ -42,9 +43,11 @@ import {
 
 import {
   ArtifactProvenanceError,
+  classifyBand,
   DrawReconcileError,
   type EligibleEntries,
   loadEntry,
+  sourceBytesOf,
 } from '../../dist/final/node/index.mjs';
 
 //region Draw entry load tests
@@ -200,11 +203,14 @@ async function scratchDir(): Promise<{
  @param artifact - whole artifact value, valid or not
  
  @param eligible - pool to check the bytes against
- 
+
+ @param readSource - source reader for a load that gets past every refusal,
+ absent for the refusal cases, which never reach it
+
  @returns What `loadEntry` made of it
- 
+
  @throws Whatever `loadEntry` refuses with, which is the point of most cases
- 
+
  @example
  ```ts
  await loadingFrom({ artifact, eligible: pooled({ tip: POOL_TIP, },), },);
@@ -214,11 +220,13 @@ async function loadingFrom(
   {
     artifact,
     eligible,
+    readSource,
   }: {
     readonly artifact: unknown;
     readonly eligible: EligibleEntries;
+    readonly readSource?: Parameters<typeof loadEntry>[0]['readSource'];
   },
-): Promise<unknown> {
+): Promise<Awaited<ReturnType<typeof loadEntry>>> {
   await using scratch = await scratchDir();
 
   await writeFile(
@@ -233,8 +241,14 @@ async function loadingFrom(
     artifactsDir: scratch.path,
     name: ARTIFACT_NAME,
     eligible,
+    ...((readSource === undefined) ? {} : { readSource, }),
   },);
 }
+
+/**
+ Invented source standing in for the entry's zh page at the pin.
+ */
+const SOURCE_PAGE = '猫猫在窗台上睡觉。\n';
 
 await describe({
   name: loadEntry.name,
@@ -351,6 +365,72 @@ await describe({
           },
           eligible: pooled({ tip: POOL_TIP, },),
         },),).rejects.toThrow(ArtifactProvenanceError,);
+      },
+    },),
+    it({
+      name: 'BANDS THE ENTRY BY THE SOURCE IT READS and flattens every accepted issue into a candidate, carrying a '
+        + 'recorded repair and leaving an unrecorded one absent (ledger T8)',
+      fn: async () => {
+        /**
+         Corpus paths the reader was asked for.
+         */
+        const asked: string[] = [];
+        const loaded = await loadingFrom({
+          artifact: {
+            id: ENTRY_ID,
+            tip: POOL_TIP,
+            pipelineDigest: POOL_DIGEST,
+            corpusSha: 'sha/1',
+            status: 'repaired',
+            durationMs: 1,
+            acceptedCount: 2,
+            issues: [
+              acceptedRecord({ issueId: 'adjudicated/purr', },),
+              {
+                ...(acceptedRecord({ issueId: 'adjudicated/hiss', },) as Record<string, unknown>),
+                repairDisposition: 'shipped',
+                repairRegions: [],
+                refined: false,
+              },
+            ],
+          },
+          eligible: pooled({ tip: POOL_TIP, },),
+          readSource: async function readSource({ relPath, },): Promise<string> {
+            asked.push(relPath,);
+            return SOURCE_PAGE;
+          },
+        },);
+        expect(asked,).toStrictEqual([`people/${ENTRY_ID}/page.md`,],);
+        expect(loaded.id,).toBe(ENTRY_ID,);
+        expect(loaded.band,).toBe(classifyBand({ sourceBytes: sourceBytesOf({ text: SOURCE_PAGE, },), },),);
+        expect(loaded.candidates.map(function carriesRepair(candidate,): boolean {
+          return 'repair' in candidate;
+        },),).toStrictEqual([false, true,],);
+      },
+    },),
+    it({
+      name: 'READS AN ARTIFACT WITH NO TIP OR DIGEST as observing neither, which a pool that recorded neither admits '
+        + '(ledger T8)',
+      fn: async () => {
+        const loaded = await loadingFrom({
+          artifact: {
+            id: ENTRY_ID,
+            corpusSha: 'sha/1',
+            status: 'repaired',
+            durationMs: 1,
+            acceptedCount: 1,
+            issues: [acceptedRecord({ issueId: 'adjudicated/purr', },),],
+          },
+          eligible: {
+            ...pooled({ tip: POOL_TIP, },),
+            tipByEntry: new Map(),
+            digestByEntry: new Map(),
+          },
+          readSource: async function readSource(): Promise<string> {
+            return SOURCE_PAGE;
+          },
+        },);
+        expect(loaded.candidates,).toHaveLength(1,);
       },
     },),
   ],
