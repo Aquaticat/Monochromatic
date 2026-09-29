@@ -260,6 +260,34 @@ await describe({
         expect(flattenSpace({ text: '  The  cat\n\tnaps  ', },),).toBe('The cat naps',);
       },
     },),
+
+    it({
+      name: 'MATCHES A QUOTE WHOSE MARKS DIFFER FROM THE REGION\'S (ledger B24): a straight apostrophe or straight '
+        + 'quotes against the edit\'s curly ones, added or dropped, as it already matches across whitespace',
+      fn: async () => {
+        /** Region written with curly marks on both sides. */
+        const curly: RepairRegion = {
+          envelopeId: 'envelope/curly',
+          issueIds: [],
+          before: 'She didn’t wake at dusk.',
+          editorAfter: 'The cat’s “nap” ran long.',
+        };
+        expect(
+          screenEvidence({
+            evidence: 'The cat\'s "nap"',
+            omittedText: '',
+            region: curly,
+          },),
+        ).toBe('corroborated',);
+        expect(
+          screenEvidence({
+            evidence: '',
+            omittedText: 'She didn\'t wake',
+            region: curly,
+          },),
+        ).toBe('removal-corroborated',);
+      },
+    },),
   ],
 },);
 
@@ -436,6 +464,32 @@ await describe({
             },),],
           },
           issues: [catIssue({ quotedText: 'cat sleeps', },),],
+        },);
+
+        expect(tally?.corroborated,).toBe(0,);
+        expect(tally?.preExisting,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'READS A RESTATEMENT THROUGH THE EVIDENCE FOLD (ledger B24): a prober quoting with a straight apostrophe '
+        + 'what the accepted issue quoted with a curly one is restating it',
+      fn: async () => {
+        /** Region whose replacement writes a curly apostrophe. */
+        const curly: RepairRegion = {
+          envelopeId: 'envelope/curly',
+          issueIds: [],
+          before: 'She naps.',
+          editorAfter: 'The cat’s nap ran long.',
+        };
+        const [tally,] = screenIntroducedDefects({
+          regions: [curly,],
+          ballots: {
+            'hf:cat/one': [catCheck({
+              verdict: 'introduced-defect',
+              evidence: 'The cat\'s nap',
+            },),],
+          },
+          issues: [catIssue({ quotedText: 'cat’s nap', },),],
         },);
 
         expect(tally?.corroborated,).toBe(0,);
