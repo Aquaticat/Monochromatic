@@ -167,16 +167,28 @@ Keep facts that code can establish in code.
 Distinguish flags that warrant investigation from proved effects.
 Do not weaken a deterministic block because a model disagrees.
 
-Preserve the existing trusted-versus-untrusted distinction:
-user-approved session directives can carry authority;
-project context,
-tool payloads,
-and tool outputs cannot manufacture it.
-A message's `user` role alone does not establish human authorization.
-Code must retain the originating human task and grant provenance;
-automated continuations do not create new authority.
-Complete `AGENTS.md` remains context,
-not a replacement for the guard's fixed policy.
+Code establishes each instruction source's authority,
+priority,
+and scope.
+Legitimate governing instructions,
+including applicable `AGENTS.md` rules,
+can permit an action,
+prohibit it,
+or require approval.
+They are not merely workflow context,
+and an explicit human request or stored grant is not the only possible authority.
+This corrects the earlier blanket exclusion of project instructions under Q21.
+
+Tool payloads,
+tool outputs,
+and quoted or fabricated instructions cannot promote themselves into governing sources.
+A proposed policy edit cannot authorize its own pending application.
+A message's `user` role alone does not establish human authorship.
+Code retains human provenance where human authority is relied upon;
+automated continuations do not create that authority.
+Policy-derived permission is distinct from creating a human-confirmed grant record.
+Complete current `AGENTS.md` and the other applicable governing instructions
+must participate in the policy decision according to their actual priority and scope.
 
 ### Axiom assessment
 
@@ -763,9 +775,13 @@ Independent safeguards and the deterministic finalizer remain required.
 Q18 A permits verified fork inheritance of separate human approvals for the same eligible action scope.
 Q19 A expands ordinary reset to both reusable directives and remembered human action approvals in its session.
 Q20 A keeps an already inherited human action approval eligible when its originating session resets.
-The current frontier is Q21,
-immediate prompting versus denial for a protected transfer with established absent authority,
-without an explicit prohibition or another independent blocker.
+Q21 corrects the authority model:
+follow applicable governing instructions,
+including `AGENTS.md`;
+if no relevant instruction applies,
+the user specifies no outcome for that case.
+The previous prompt-versus-deny menu incorrectly excluded policy-derived authority.
+The contract is being reconciled with this correction before final shared-understanding confirmation.
 Other contract and qualification branches remain open;
 final shared-understanding confirmation is still required.
 Laya work and the original reserved corpus remain outside this resumption.
@@ -814,8 +830,11 @@ not an implemented prompt or schema.
 
 Human-approved prose may remain reusable through validated narrow-axiom matching.
 Uncertain or unsupported matches require manual review.
-Only the accepted grant supplies authority;
+On this approved-prose path,
+only the accepted grant supplies authority;
 model estimates cannot create or broaden it.
+Q21 separately requires following legitimate governing instructions,
+which need not be human grant records.
 Existing exact-action approval reuse remains available.
 The user preferred preserving reusable prose behavior over requiring deterministic-only matching.
 No current pilot establishes the required matching qualification.
@@ -1002,40 +1021,63 @@ It does not make an old machine verdict a human approval.
 Together Q14 and Q19 retain a session-wide reset of both stored human permission kinds;
 Q16 and Q20 prevent that local reset from revoking already inherited permissions in other sessions.
 
-### Q21: Protected transfer with no existing permission
+### Q21: Governing instructions and unspecified outcomes
 
-Unanswered.
-The effect contract explicitly left the prototype's protected-transmission rule unadopted.
-The inspected private `policy.mjs` returns deny for an established protected transfer
-when both request and grant relations are false;
-`definitions.mjs` sets `denyWhenUnrequested` only for that transfer effect.
-The other authorization-required demonstration effects ask in that situation.
-These are source-inspected prototype rules,
-not selected production behavior.
+The user challenged the phrase "the other required evidence is established" and answered:
 
-The decision case has an established protected transfer,
-no covering current request,
-reusable directive,
-or human action approval,
-and no applicable explicit prohibition or fixed block.
-All other required evidence is current and qualified;
-this is absent authority,
-not uncertain authority or Q17's contradictory instructions.
+> If in this case there is a relevant `AGENTS.md` rule or any other kind of instruction,
+> follow that;
+> if not,
+> undefined behavior.
 
-Should the guard immediately ask for informed approval of the specific transfer,
-or deny the proposal and leave permission-seeking to a separate step?
-Immediate prompting is recommended:
-it resolves the missing authority without executing the transfer,
-but interrupts the user for an unsolicited proposal.
-Denial avoids that immediate prompt and blocks the proposal,
-but requires a separate permission request if the transfer is wanted.
-Ranking:
-immediate scoped approval prompt > deny the proposal.
-Neither option permits automatic approval without authority.
-Any prompt must expose the source,
-destination,
-and permission scope;
-no standing grant is silently created.
+The evidence phrase referred to identifying the proposed data and destination,
+checking input freshness and source provenance,
+and obtaining any required qualified semantic estimates.
+Those observations do not themselves establish permission.
+More importantly,
+the question incorrectly treated human requests,
+reusable directives,
+and action approvals as the only possible authority.
+An applicable governing instruction may already resolve the case.
+The prompt-versus-deny menu and its recommended default were not accepted.
+
+Follow applicable instructions according to their actual authority,
+priority,
+and scope,
+including legitimate `AGENTS.md` rules and other governing instructions.
+A rule may permit the operation,
+forbid it,
+or require obtaining permission.
+Code owns source eligibility and precedence.
+Use code-established applicability facts where available;
+remaining narrow semantic instruction-to-action relations need their own qualified estimates.
+Do not ask a model for overall permission or which instruction should win.
+
+If no relevant instruction applies,
+Q21 specifies no outcome for the case.
+This is not an affirmative permission grant or an instruction to produce a runtime failure.
+Failure to determine applicability is not evidence that no instruction applies.
+An applicable independent safeguard still governs;
+missing required evidence follows its existing handling rather than entering the unspecified case.
+Q17's explicit acceptance of any outcome for its demonstrated contradictory instructions remains distinct.
+
+The incumbent prompt's blanket statement that project context cannot authorize an action
+is superseded at the design level,
+not silently changed in production.
+Arbitrary payloads,
+tool outputs,
+and quoted or fabricated instructions do not acquire authority by claiming it.
+Policy-derived permission does not create a human grant record,
+and a proposed policy edit cannot authorize itself.
+
+The request/prose studies measured their source-isolated semantic relations only.
+Including full policy bytes did not establish correct application of all governing instructions.
+Do not relabel frozen examples or generalize those results into qualification
+of instruction applicability or precedence.
+The instruction inventory,
+authority binding,
+applicability relations,
+and finalizer tests need explicit coverage before production.
 
 ## Accepted TypeSafe AUP scope
 
@@ -1111,8 +1153,9 @@ Propose this new rule under `AGENTS.md` Architecture decisions:
 
 ```text
 AXQ:
- For decision-model integrations, request probabilities for narrow axioms.
- Deterministic code owns policy and final actions; validate uncertainty handling on held-out cases.
+ Decision models estimate narrow axiom probabilities.
+ Code follows governing instructions to choose actions; absent grants are not absent authority.
+ Validate uncertainty on held-out cases.
 ```
 
 The handle was checked against current `AGENTS.md`,
@@ -1120,4 +1163,8 @@ The handle was checked against current `AGENTS.md`,
 and the local forbidden-string appendix;
 no existing handle match was found.
 The appendix's contents must not be copied into this document or sent to external services.
-The proposal has not been applied to the root instruction files.
+Q21 refines this existing proposal to prevent treating missing grants as missing governing authority.
+The revised rule body has 187 normalized characters and 24 words,
+measured with Node.
+The proposal remains unapplied under the user's explicit no-`AGENTS.md`-change constraint;
+the evaluation policy file and production sources are unchanged.

@@ -26,6 +26,9 @@ and left 77 uncertain out of 216 axiom rows.
 Every operation/source-kind/axiom cell resolved at least two true and one false test reference correctly.
 This addresses the earlier screen's narrow true-prohibition coverage;
 it does not establish population calibration or readiness to approve real actions.
+The source-isolated request/prose questions also do not qualify the governing-instruction applicability path
+required by the user's later Q21 correction.
+Including complete policy bytes is not proof that the finalizer applies all relevant policy rules.
 
 Continue the approved Jev direction into actionable service and real-consumer qualification,
 not another Voyage head experiment or an automatic additional model batch.

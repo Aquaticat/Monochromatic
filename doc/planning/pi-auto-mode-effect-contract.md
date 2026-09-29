@@ -47,6 +47,12 @@ No broad new tool coverage is included in the current migration scope.
 deny dangerous behavior,
 and ask on uncertainty or suspected circumvention.
 It does not enumerate a complete effect calculus.
+Its blanket exclusion of project context from action authorization is superseded by Q21 at the design level.
+Legitimate governing project instructions must be followed by authority,
+priority,
+and scope;
+arbitrary payload or output text still cannot promote itself into an instruction source.
+This is not a production edit to that incumbent prompt.
 Consequently,
 a new finite policy cannot claim semantic parity merely because it returns the same action labels on examples.
 Every retired behavior needs a new rule owner or an explicit manual-review disposition.
@@ -98,6 +104,11 @@ Its proposed fields are:
   with the intended execution stage.
 - Canonical working directory and resolved targets where code establishes them.
 - Complete freshly read policy bytes and digest.
+- The other active governing instructions,
+  with source identities,
+  code-established authority and priority,
+  scope,
+  and applicability evidence.
 - Loaded contextual evidence needed by the applicable rule.
 - Active session branch and originating human-request witness.
 - Active human-approved grants,
@@ -293,6 +304,33 @@ but cannot disable a fixed block by appearing inside the candidate patch or its 
 The canonical current policy remains external to the submitted action.
 
 ## Authorization matching
+
+### Governing instructions before permission-source shortcuts
+
+Q21 requires following applicable `AGENTS.md` rules and any other governing instructions.
+A direct human request or stored grant is not the only possible authority for an action.
+An instruction may permit the action,
+prohibit it,
+or require approval when its conditions hold.
+Apply actual instruction priority and scope in code;
+do not ask the model to pick a winning instruction or an overall action.
+
+Code establishes source authority and supplies applicability facts it can determine.
+Remaining narrow instruction-to-action relations require their own qualified semantic estimates.
+Human-grant provenance remains required on human-grant paths;
+a policy permission does not manufacture such a record.
+A source named `AGENTS.md`,
+a copied role label,
+a proposed patch,
+or an instruction quoted inside a payload does not establish authority by itself.
+
+A complete source inventory and applicability handling are required before treating a case as instruction-free.
+Unknown applicability is not established absence.
+If no relevant instruction applies,
+Q21 leaves the outcome unspecified rather than selecting the prototype's blanket transfer denial
+or the proposed immediate prompt.
+Other applicable safeguards still govern.
+The existing request/prose studies do not qualify this governing-instruction path.
 
 ### Deterministic authority, semantic scope
 
@@ -543,11 +581,18 @@ Current pure-policy vector tests and single-axiom model probes do not cover thes
 
 Q17 does not require the initial prototype's conflict-to-ask outcome for its demonstrated human conflict.
 The protected-transmission rule and threshold bands remain unadopted demonstration rules.
-[Q21](pi-auto-mode-axioms.md#q21-protected-transfer-with-no-existing-permission)
-asks whether an otherwise established protected transfer without covering authority
-should prompt immediately or be denied pending a separate permission request.
-The recommendation to prompt is not yet accepted.
-Neither option authorizes the transfer without human permission.
+[Q21](pi-auto-mode-axioms.md#q21-governing-instructions-and-unspecified-outcomes)
+requires applying governing instructions rather than imposing a transfer-specific default
+based only on missing human requests or grants.
+No outcome is specified when no relevant instruction applies;
+unknown applicability is not that case.
+Add source-authority,
+priority,
+policy-permission,
+policy-prohibition,
+required-approval,
+and applicability-omission controls.
+Frozen request/prose labels and their limited semantic results remain unchanged.
 Do not freeze the prototype rule or thresholds by documentation alone.
 The next work is to prototype provenance binding and its failure cases,
 make the first-deployment profile applicability explicit without reinstating the rejected code-proof prerequisite,

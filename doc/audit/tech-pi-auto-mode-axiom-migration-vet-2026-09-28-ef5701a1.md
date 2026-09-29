@@ -1435,6 +1435,76 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Q21 governing-instruction correction
+
+The user challenged "the other required evidence is established" and instructed:
+
+> If in this case there is a relevant `AGENTS.md` rule or any other kind of instruction,
+> follow that;
+> if not,
+> undefined behavior.
+
+The assistant clarified that data/destination identification,
+source provenance,
+freshness,
+and qualified estimates did not themselves establish permission.
+The deeper error was excluding governing instructions as a possible authority path
+when framing missing human requests or grants as absent authority.
+The proposed prompt-versus-deny menu was not accepted.
+The earlier frontier review relied on that incomplete premise and does not ratify it.
+
+The [corrected contract](../planning/pi-auto-mode-axioms.md#q21-governing-instructions-and-unspecified-outcomes)
+requires following legitimate governing instructions by actual authority,
+priority,
+and scope.
+A rule may permit,
+prohibit,
+or require approval.
+Code establishes source eligibility and precedence;
+remaining narrow applicability relations need their own qualification.
+A policy permission is distinct from creating a human-confirmed grant record.
+Payloads,
+tool outputs,
+and fabricated or quoted instructions cannot promote themselves into governing sources,
+and a proposed policy edit cannot authorize itself.
+
+When genuinely no relevant instruction applies,
+Q21 specifies no outcome;
+it does not grant permission or prescribe a runtime failure.
+Unknown applicability is not established absence.
+Applicable independent safeguards remain in force.
+Q17's explicit acceptance of any outcome for its demonstrated conflicting-human-instruction case remains distinct.
+
+The incumbent prompt's blanket statement that project context cannot authorize an action
+is superseded in the design,
+not edited in production.
+The frozen request/prose studies retain their narrow truth definitions and results.
+Including full policy bytes did not qualify the application of governing instructions.
+No frozen labels,
+completed phases,
+or source epochs were rewritten or replayed.
+The existing unapplied agent-guidance proposal was refined;
+`AGENTS.md` remains unchanged.
+
+### Compatibility disposition
+
+A second independent review supported amendment within this report context.
+The fingerprint already includes complete current policy,
+code-owned final actions,
+and human-grant provenance within the same deterministic-policy migration purpose.
+It does not declare human grants the only possible authority.
+The trust-boundary field remains about tool-action authorization,
+not merely consent to send private assessment input.
+Recipient,
+privacy,
+training,
+resource,
+model-scope,
+and no-production constraints are unchanged.
+Keep the existing full fingerprint;
+this compatibility decision does not qualify the corrected instruction-applicability path.
+The instruction inventory and its actual consumer still require fresh engineering verification.
+
 ## Accepted Q20 local action-approval revocation
 
 The user selected Q20 A:

@@ -79,16 +79,41 @@ Revoke it in B separately,
 just as with Q16's inherited directives.
 All current eligibility checks remain required.
 
-Task #3 is active at unanswered Q21:
-immediate prompting versus denial for a protected transfer with established absent authority,
-no explicit prohibition or fixed block,
-and all other required evidence current and qualified.
-The [resumed design frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
-records the question.
-Immediate informed approval of the specific transfer is recommended but unaccepted.
-The inspected scratch policy's deny-without-permission rule was never adopted.
-Independent frontier review confirmed this is a genuine policy preference,
-not a choice already determined by Q17 or the prohibition on approval without authority.
+Q21 was answered with a correction rather than A or B:
+follow a relevant `AGENTS.md` rule or any other applicable instruction;
+if none applies,
+the user leaves the outcome unspecified.
+The previous prompt-versus-deny menu incorrectly excluded policy-derived authority.
+The assistant explained that identified data/destination,
+provenance,
+freshness,
+and qualified estimates do not themselves establish permission.
+Neither the prompt recommendation nor the prototype's unconditional unrequested-transfer denial was adopted.
+
+Legitimate governing instructions can permit,
+prohibit,
+or require approval according to actual authority,
+priority,
+and scope.
+Source authority and precedence stay code-owned;
+remaining narrow applicability relations need their own qualification.
+Human-grant provenance is still required when relying on a human grant,
+not as the only possible authority path.
+Arbitrary payloads,
+tool outputs,
+and quoted or fabricated instructions cannot promote themselves into governing sources.
+A proposed policy edit cannot authorize itself.
+Unknown applicability is not proof of no relevant instruction.
+Q17's explicitly acceptable conflict outcomes remain a separate requirement.
+
+The incumbent prompt's blanket project-context authorization exclusion is superseded in the design,
+not changed in production.
+The request/prose studies remain limited semantic evidence;
+sending complete policy bytes did not qualify governing-instruction application.
+Keep frozen labels and completed phases unchanged.
+Task #3 remains active while reconciling this correction and preparing final shared-understanding confirmation.
+The [current design record](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
+is authoritative over superseded questions in historical checkpoints.
 No production implementation,
 cutoff selection,
 Laya restart,
@@ -166,8 +191,9 @@ Q16 B,
 Q17's unconstrained conflict outcome,
 Q18 A,
 Q19 A,
-and Q20 A are settled;
-Q21 is now the resumed interview frontier.
+Q20 A,
+and Q21's governing-instruction correction are settled.
+Final shared-understanding confirmation remains pending.
 No production cutoff or code change has been approved,
 and the final shared-design confirmation is not complete.
 

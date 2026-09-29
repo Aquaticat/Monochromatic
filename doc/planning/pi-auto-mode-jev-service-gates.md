@@ -268,6 +268,11 @@ The remaining consumer gates are:
 
 - A real human-origin witness and verified grant eligibility,
   rather than fixture authority or a message role alone.
+- Governing-instruction source authority,
+  priority,
+  and applicability under Q21,
+  including policy-derived permission from legitimate `AGENTS.md` rules.
+  Request/prose semantic results do not qualify this additional authority path.
 - The accepted reset/navigation/fork behavior,
   including Q16 B's independent eligibility after the originating session resets,
   and the remaining lifetime rules for separate human action approvals.
@@ -294,6 +299,9 @@ The user has explicitly resumed the integration interview and selected Q16 B:
 resetting the originating session leaves its already inherited directive valid in the fork.
 Q17 accepts any approve/deny/ask outcome for its demonstrated same-human instruction conflict,
 without relaxing independent safeguards or changing standing directives.
+Q21 requires following applicable governing instructions;
+only a case with no relevant instruction has no user-specified outcome.
+Unknown applicability is not established absence.
 The [current interview frontier](pi-auto-mode-axioms.md#resumed-integration-interview)
 tracks the remaining choices.
 Production implementation still requires the remaining design and qualification gates
