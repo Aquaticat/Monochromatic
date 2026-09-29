@@ -207,6 +207,28 @@ await describe({
     },),
 
     it({
+      name: 'LEAVES the attributes of a tag straight wherever the MDX compiler opens one (ledger B18): a name '
+        + 'outside ASCII, a name opening on an underscore, and a name after a no-break space',
+      fn: async () => {
+        /**
+         Replacements each holding one such tag.
+         */
+        const replacements = [
+          'She drew <猫 title="nap" /> twice.',
+          'She drew <_Paw title="nap" /> twice.',
+          'She drew <\u{00A0}Paw title="nap" /> twice.',
+        ];
+        expect(replacements.map(function restore(replacement,): string {
+          return restoreTypography({
+            replacement,
+            replaced: 'She drew.',
+            convention: `A neighbour said ${OPEN}hello${CLOSE}.`,
+          },);
+        },),).toEqual(replacements,);
+      },
+    },),
+
+    it({
       name: 'KEEPS a tag spanning blockquote lines as one tag, so the marker on each line does '
         + 'not end it early',
       fn: async () => {

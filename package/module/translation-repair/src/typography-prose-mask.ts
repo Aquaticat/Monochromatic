@@ -1,3 +1,5 @@
+import { opensMdxTag, } from './mdx-tag-start.ts';
+
 //region Prose mask
 // Which characters of a replacement are prose a typography rule may rewrite.
 //
@@ -8,6 +10,8 @@
 // after the typography restoration reached a blockquoted component line for
 // the first time; measured at pin a41fc607, 19 of the 92 sources carry a tag
 // with a double-quoted attribute, so the shape is common rather than rare.
+// A tag opens where the MDX compiler reads one (`mdx-tag-start.ts`), a name
+// in any script included, and an HTML comment stays prose here.
 //
 // The mask is computed once per replacement and read by every rule, so the
 // rules agree on what prose is instead of each carrying its own scanner.
@@ -16,37 +20,6 @@
  Spaces a blockquote marker may sit behind and still be a marker.
  */
 const BLOCKQUOTE_INDENT_MAX = 3;
-
-/**
- Whether the character after `<` makes it open a tag.
- 
- Letters open an element or component, `/` a closing tag. Anything else,
- a comment's `!`, a space, a digit, leaves `<` as prose.
- 
- @param next - character after the angle bracket, empty at a text boundary
- 
- @returns Whether a tag opens here
- 
- @example
- ```ts
- opensTag({ next: 'P', },);
- ```
- */
-function opensTag({ next, }: { readonly next: string; },): boolean {
-  /**
-   Whether it is an ASCII lower-case letter.
-   */
-  const lower = (next >= 'a') && (next <= 'z');
-
-  /**
-   Whether it is an ASCII upper-case letter.
-   */
-  const upper = (next >= 'A') && (next <= 'Z');
-
-  return lower
-    || upper
-    || (next === '/');
-}
 
 /**
  Whether a `>` is a blockquote marker rather than the end of a tag.
@@ -143,7 +116,10 @@ export function proseMask({ text, }: { readonly text: string; },): readonly bool
         inCode = true;
         continue;
       }
-      if ((character === '<') && opensTag({ next: text.charAt(index + 1,), },)) {
+      if ((character === '<') && opensMdxTag({
+        text,
+        at: index,
+      },)) {
         mask.push(false,);
         inTag = true;
         continue;

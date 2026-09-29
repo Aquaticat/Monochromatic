@@ -1,3 +1,5 @@
+import { opensMdxTag, } from './mdx-tag-start.ts';
+
 //region Markup atom scan
 // LEDGER L4, the owner's ruling of 2026-09-28 ("Markup atoms"): inside a quote
 // an edit is licensed to change, footnote references, link destinations, MDX
@@ -302,6 +304,18 @@ function matchingClose(
 }
 
 /**
+ Opener of an HTML comment, which the corpus's build rewrites into a JSX
+ comment before compiling, so it reads as a tag here; any other `<!` fails
+ the compile and is prose.
+ */
+const COMMENT_OPENER = '<!--';
+
+/**
+ Closer of an HTML comment.
+ */
+const COMMENT_CLOSER = '-->';
+
+/**
  Reads a tag: a comment from `<!--` to `-->`, or an element from `<` to the
  `>` that closes it, stepping over attribute expressions and quoted values.
 
@@ -324,17 +338,17 @@ function tagEnd({
   readonly at: number
 },): number {
   if (text.startsWith(
-    '<!--',
+    COMMENT_OPENER,
     at,
   )) {
     /**
      Where the comment's closer starts.
      */
     const closer = text.indexOf(
-      '-->',
-      at + '<!--'.length,
+      COMMENT_CLOSER,
+      at + COMMENT_OPENER.length,
     );
-    return (closer === (-1)) ? -1 : closer + '-->'.length;
+    return (closer === (-1)) ? -1 : closer + COMMENT_CLOSER.length;
   }
   /**
    Cursor and the quote character open at it, empty outside a value.
@@ -404,26 +418,6 @@ function isFootnoteLabel({ label, }: { readonly label: string; },): boolean {
       return false;
   }
   return true;
-}
-
-/**
- Whether the character after `<` opens a tag: a letter opens an element or
- component, `/` a closing tag, `!` a comment; anything else is prose.
-
- @param next - character after the angle bracket, empty at the edge
-
- @returns Whether a tag opens
-
- @example
- ```ts
- opensTag({ next: 'P', },);
- ```
- */
-function opensTag({ next, }: { readonly next: string; },): boolean {
-  return ((next >= 'a') && (next <= 'z'))
-    || ((next >= 'A') && (next <= 'Z'))
-    || (next === '/')
-    || (next === '!');
 }
 
 /**
@@ -559,7 +553,13 @@ function atomAt({
         stopAtNewline: false,
       },),
     },);
-  if ((character === '<') && opensTag({ next: text[at + 1] ?? '', },))
+  if ((character === '<') && (opensMdxTag({
+    text,
+    at,
+  },) || text.startsWith(
+    COMMENT_OPENER,
+    at,
+  )))
     return closeAs({
       kind: 'tag',
       valueStart: at,

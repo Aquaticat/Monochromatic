@@ -1,3 +1,5 @@
+import { opensMdxTag, } from '../mdx-tag-start.ts';
+
 //region Prose ranges
 // CLASS ONE HUNDRED THIRTY-FOUR (hulicaijia19, 2026-09-25): a pass that
 // rewrites the page's own English (dates, spellings) must leave everything
@@ -5,7 +7,8 @@
 // center` is CSS, not a word), a JSX expression, a link destination, a bare
 // URL, inline and fenced code, an HTML comment and the front matter. Each is
 // found by one index scan and returned as a half-open range the rewrite may
-// not touch.
+// not touch. A tag opens where the MDX compiler reads one
+// (`mdx-tag-start.ts`), a name in any script included.
 
 /**
  One half-open range of a text the rewrite leaves alone.
@@ -379,36 +382,6 @@ function pastConstruct(
 }
 
 /**
- Whether a `<` at one offset opens a tag rather than standing as a character.
-
- @param text - text under scan
-
- @param at - offset of the `<`
-
- @returns Whether a letter or `/` follows it
-
- @example
- ```ts
- opensTag({ text: 'a < b', at: 2, },); // false
- ```
- */
-function opensTag(
-  {
-    text,
-    at,
-  }: {
-    readonly text: string;
-    readonly at: number;
-  },
-): boolean {
-  /**
-   Character after the `<`.
-   */
-  const next = text.charAt(at + 1,);
-  return (next === '/') || (next.toLowerCase() !== next.toUpperCase());
-}
-
-/**
  Where the construct starting at one offset ends, or minus one where no
  protected construct starts there.
 
@@ -462,7 +435,7 @@ function constructEnd(
         at,
       },);
   }
-  if ((character === '<') && opensTag({
+  if ((character === '<') && opensMdxTag({
     text,
     at,
   },))

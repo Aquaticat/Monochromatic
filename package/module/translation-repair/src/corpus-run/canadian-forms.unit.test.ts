@@ -359,6 +359,22 @@ await describe({
       },
     },),
     it({
+      name: 'LEAVES the attributes of a tag wherever the MDX compiler opens one (ledger B18): a name outside ASCII '
+        + 'and a name opening on a dollar sign',
+      fn: async () => {
+        /**
+         Texts each holding one such tag.
+         */
+        const texts = [
+          'She drew <猫 title="color" /> today.',
+          'She drew <$Paw title="color" /> today.',
+        ];
+        expect(texts.map(function rewrite(text,): string {
+          return rewritten({ text, },);
+        },),).toEqual(texts,);
+      },
+    },),
+    it({
       name: 'REWRITES a slice no lane replaced, and leaves a slice inside the sealed English original',
       fn: async () => {
         /**

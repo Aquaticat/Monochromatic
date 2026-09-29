@@ -95,6 +95,16 @@ const CASES: readonly ScanCase[] = [
     ],
   },
   {
+    name: 'reads a tag where the MDX compiler opens one (ledger B18): a name outside ASCII and a fragment are '
+      + 'tags, and a `<!` opening no comment is prose, which the compiler refuses',
+    text: 'the <猫 /> and <>paw</> and <!x> nap',
+    atoms: [
+      { kind: 'tag', value: '<猫 />', },
+      { kind: 'tag', value: '<>', },
+      { kind: 'tag', value: '</>', },
+    ],
+  },
+  {
     name: 'steps over an attribute expression and a quoted value holding a closing bracket',
     text: '<Paw n={a > b} alt="x > y" /> naps',
     atoms: [{ kind: 'tag', value: '<Paw n={a > b} alt="x > y" />', },],
