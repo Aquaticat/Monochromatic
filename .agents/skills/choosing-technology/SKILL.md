@@ -785,6 +785,14 @@ When replacing an incumbent:
 
 A replacement is incomplete when it trades a known flaw for an unaudited flaw.
 
+RCO:
+ Removing an incumbent:
+ ledger every consumed responsibility with its owner,
+ selection status,
+ parity test,
+ and retired behavior;
+ recommend removal only when every entry has a viable owner.
+
 ## Human-auditability overlay
 
 Apply to code that runs inside another tool,

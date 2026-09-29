@@ -119,6 +119,14 @@ A settlement lock whose owner record proves nothing fails that command after abo
 leaving the lock in place.
 Malformed or unsafe recovery state fails closed and remains available for diagnosis.
 
+WXG:
+ Worktree-copy incidents:
+ first verify main worktrees bypass admin observation,
+ recovery,
+ settlement,
+ and copying;
+ then classify the effective source before lock analysis.
+
 ## Policy authoring API
 
 Importing the package root does not inspect process arguments,
@@ -826,6 +834,10 @@ before a segment-aware containment check,
 `/var/home` do not defeat the match.
  Add sibling tool caches there when a new
 tool needs the same exemption.
+
+GCW:
+ Worktree-guard reviews:
+ `DEFAULT_ALLOWED_WORKTREE_DIRS` (`src/allowed-worktree-dirs.ts`) lets git-dirs under allowed dirs bypass the guard.
 
 **Branch worktree only**:
  rejects branch creation in the current worktree and

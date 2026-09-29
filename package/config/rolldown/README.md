@@ -24,6 +24,12 @@ and `doc/philosophy/tool-choices.md` for the bundler decision.
   no declarations,
   output `dist/client/[name].js`.
 
+AP5:
+ Client-side bundling packages:
+ add `rolldown.client.config.ts` extending `@monochromatic-dev/config-rolldown/.client.ts`,
+ a `build:js:client` task,
+ and this package as a devDependency.
+
 ## Behavior notes
 
 - Externalization reads the consuming package's `package.json` at build time:

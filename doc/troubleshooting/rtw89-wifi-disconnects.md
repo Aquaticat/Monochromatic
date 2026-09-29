@@ -99,6 +99,14 @@ The diagnostic value is the ordering of scan,
  beacon loss,
  and local disconnection.
 
+JEV:
+ Wi-Fi drop debugging:
+ reproduce with live link,
+ supplicant,
+ kernel,
+ and reachability capture;
+ journal silence or later recovery isn't cause.
+
 ## Source-level explanation
 
 ### Driver and mac80211 path

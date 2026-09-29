@@ -26,10 +26,30 @@ Anyone writing their own rule package depends on exactly the same thing.
 
 Both `max-lines` and `require-rustdoc` declare themselves **non-suppressible**.
 A `rust-linter-disable` directive aimed at either is refused and reported,
- which is what keeps `AGENTS.md` MXL,
- MXR and RDC literally true.
+ which is what keeps `AGENTS.md` MXL
+ and the MXR and RDC rules under "Rules for `.rs` files" literally true.
 Pattern rules are suppressible,
  because they are written by whoever configured them.
+
+## Rules for `.rs` files
+
+MXR:
+ `.rs` files:
+ 300 code lines max;
+ split into sibling modules.
+`tests/`,
+ `*_tests.rs`,
+ `fuzz/`,
+ `build.rs` exempt;
+ never disable.
+
+RDC:
+ Rustdoc (`///`/`//!`;
+ plain `//` doesn't count) on every documentable `.rs` item,
+ public + private.
+cxx-qt files exempt `use` + trait impls;
+ tests/fuzz exempt;
+ never disable.
 
 ## The plugin name
 
