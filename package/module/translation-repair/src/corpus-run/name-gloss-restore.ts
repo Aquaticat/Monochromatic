@@ -1,5 +1,6 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
+import { wordStarts, } from '../word-bounds.ts';
 import {
   rowsChangedBy,
   slicesInOrder,
@@ -126,11 +127,15 @@ function nameGlosses(
     },)
     .filter(function usedElsewhere(gloss,): boolean {
       /**
-       Pieces the name cuts the archive text into, one more than its uses.
+       Where the name stands as a word, the gloss line's own quoted use among
+       them; one inside a longer word is no use of the name (ledger B23).
        */
-      const pieces = archiveText
-        .split(gloss.name,);
-      return pieces.length > 2;
+      const uses = wordStarts({
+        text: archiveText,
+        needle: gloss.name,
+        end: 'word',
+      },);
+      return uses.length >= 2;
     },);
 }
 
@@ -185,7 +190,7 @@ function lineEndAfter(
 
  @example
  ```ts
- glossed({ text, gloss, at: text.indexOf(gloss.name,), },);
+ glossed({ text, gloss, at: wordStarts({ text, needle: gloss.name, end: 'word', },)[0] ?? -1, },);
  ```
  */
 function glossed(
@@ -312,10 +317,15 @@ export function restoreNameGlossLines(
         gloss,
       ): SliceReplacement {
       /**
-       Where the name first stands in the shipped text.
+       Where the name first stands as a word in the shipped text, so a
+       longer word carrying its letters ("Pipit" for "Pip") neither draws
+       the gloss nor places it (ledger B23).
        */
-      const at = current.replacementText
-        .indexOf(gloss.name,);
+      const at = wordStarts({
+        text: current.replacementText,
+        needle: gloss.name,
+        end: 'word',
+      },)[0] ?? NOT_FOUND;
       if (at === NOT_FOUND)
         return current;
       if (glossed({
