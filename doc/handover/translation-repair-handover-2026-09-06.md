@@ -242,8 +242,9 @@ which the takeover session does not have.
   V4.1 judge admission on 2026-09-11"
   to "Repository state" are those sessions' own record,
   kept as written:
-  a bare number there ("task 38",
-  "35 remains blocked by 38") names an item of their tracker,
+  a number there,
+  after the word "task" or alone as in "35 remains blocked by 38",
+  names an item of their tracker,
   described in the planning record the section links,
   and is not a GitHub issue.
 - Not removed,

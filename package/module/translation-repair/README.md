@@ -8,8 +8,15 @@ and a repaired candidate translation.
 
 ## Standing redesign constraints
 
-These constraints govern task 41 replacement work and supersede historical architecture notes in this file.
-Current shipped pipeline and corpus runbook predate them and remain non-conforming until replacement lands.
+These constraints were written for the finite redesign that was to replace the slice pipeline,
+and they supersede historical architecture notes in this file.
+That redesign stopped after Candidate M on 2026-09-01 and stays closed under that day's direction decision
+(`doc/decision/translation-repair-post-redesign-direction.md` at the repository root),
+so no replacement is in progress.
+The shipped slice pipeline and the corpus runbook predate the constraints and were not rebuilt to them;
+the two bounded errors they name,
+`ProductionUnavailableError` and `PublicationUnavailableError`,
+exist nowhere in `src`.
 Every section after `Standing redesign constraints` describes current or historical implementation
 and is non-normative for replacement architecture.
 A normal run with working model and publication infrastructure must return one good complete document.

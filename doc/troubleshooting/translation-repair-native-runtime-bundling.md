@@ -193,7 +193,7 @@ it does not establish general operating-system compatibility.
 
 ## Podman launch controls before application import
 
-Task 47 probes the host launch contract before implementing the native input runner.
+This probe checks the host launch contract before the native input runner is implemented.
 Podman `5.8.4` uses source commit `5431df23c742e5edea35bef34eed696f4db0106b`.
 The independently selected base image ID is
 `4251fdebd86463aba655f5069e9890cd3c99cf12e18479840888a74f7f60bab8`.
