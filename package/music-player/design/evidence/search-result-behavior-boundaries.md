@@ -37,17 +37,21 @@ or sorting.
 
 `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/PlayerController.kt`
 has distinct boundaries:
-`selectPage(page)` changes the displayed folder/page and scope without
-moving playback,
-whereas `playIndex(index)` selects and starts a track.
+`selectPage(page)` changes the displayed page **and queue page scope**
+without moving the current track or immediately loading/playing another;
+that scope can affect future transport.
+`playIndex(index)` selects and starts a track.
 `MainActivity.kt` routes a tap on the already-current track row to
 `togglePlay()` and a tap on another track row to `playIndex(item.index)`.
 That is a **player-list** interaction,
 not an accepted Search-result tap rule.
 A Search track could reveal its row before a deliberate playback tap,
-or start playback directly;
-the effects must be named separately.
-A folder match can select the folder page without forcing a new track.
+start another track directly,
+or toggle the already-current track;
+those effects must be named separately.
+A folder match could close Search and select a page,
+or update the retained browser while Search remains open.
+Either may affect queue scope without immediately forcing a new track.
 
 The filesystem is the library:
 folder paths and filenames are the available names,
@@ -79,22 +83,29 @@ Neither source settles the local-file product behavior.
 
 ## Decisions to show rather than assume
 
-- Result match scope:
-  exact/prefix/contained filename matches versus parent-folder-only matches.
+- Searched fields:
+  folder names,
+  track filenames,
+  and optional parent-folder/path names on track results.
   Returning every child of a matching folder could dominate a large result
   list;
   this has not been measured in a real library fixture.
+- Matching rules:
+  exact,
+  prefix and substring matches are separate from which field matches.
 - Ordering:
-  folder-grouped,
-  filename-relevance interleaved,
-  or track-grouped results.
+  folder-versus-track grouping,
+  relevance across types,
+  and deterministic tie-breaking are separable policies.
   Type labels and parent context must remain readable in each rendering.
 - Folder action:
-  navigate to that folder page with playback unchanged,
-  unless a different visible effect is deliberately selected.
+  close Search and select its folder page,
+  or update the retained upper-left browser while Search remains open.
+  Selecting a page changes queue scope without immediately starting a track.
 - Track action:
-  reveal the target in its folder while preserving playback,
-  or directly start/toggle playback.
+  reveal the target in its folder without an immediate play command,
+  start another track,
+  or toggle an already-current track.
   These are alternative behaviors,
   not two descriptions of one tap.
 - Keyboard focus,
