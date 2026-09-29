@@ -56,6 +56,19 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS a handle written in letters beyond the first plane, a Han name with an ideograph '
+        + 'from Extension B or one in mathematical script, which a scan by UTF-16 unit read as two '
+        + 'characters or none and dropped as too short (ledger B21)',
+      fn: async () => {
+        expect(declaredNameForms({
+          identity: {
+            name: '\u{20BB7}\u{7965}\u{732B}',
+            alias: '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}',
+          },
+        },),).toEqual([ '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}', '\u{20BB7}\u{7965}\u{732B}', ],);
+      },
+    },),
+    it({
       name: 'NAMES one form once when two fields declare it',
       fn: async () => {
         expect(declaredNameForms({
@@ -188,6 +201,28 @@ await describe({
           baseText: 'Mitte\u0308ns naps.',
           candidateText: 'The cat naps in the sun.',
         },),).toEqual([ 'Mitt\u00EBns', ],);
+      },
+    },),
+    it({
+      name: 'REPORTS a handle in mathematical script as lost when it goes, which a scan by UTF-16 unit '
+        + 'projected to nothing and so found on every side (ledger B21)',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}', ],
+          baseText: '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8} naps.',
+          candidateText: 'The cat naps.',
+        },),).toEqual([ '\u{1D4DC}\u{1D4F2}\u{1D4F5}\u{1D4F8}', ],);
+      },
+    },),
+    it({
+      name: 'ACCEPTS a handle whose emoji the candidate leaves out, since an emoji is neither letter nor '
+        + 'digit and drops out of both sides alike',
+      fn: async () => {
+        expect(findDroppedDeclaredNames({
+          forms: [ 'Mittens\u{1F63A}', ],
+          baseText: 'Mittens\u{1F63A} naps.',
+          candidateText: 'Mittens naps in the sun.',
+        },),).toEqual([],);
       },
     },),
   ],
