@@ -224,6 +224,42 @@ What enforces it:
 habit,
 which failed twice in one hour on the issue numbers.
 
+## References in code and docs
+
+What happened:
+588 task-list numbers stood in the package's source,
+tests,
+docs and task descriptions as if they were references,
+seven of them in lines the commands print (D22).
+One number named different tasks in different sessions,
+and on GitHub each named an unrelated issue,
+so no reader could recover any of them.
+Several sat beside claims the work they named had since overtaken.
+
+The rule:
+a reference names something a later reader can open:
+a ledger entry,
+a doc heading or path,
+a file or symbol,
+a commit,
+a date,
+or the finding itself in words.
+A GitHub issue is cited only after `gh issue view` shows it is the one meant,
+and is added to the guard's list in the same commit.
+Before a citation is rewritten,
+the claim beside it is checked against the code,
+since the work it named may have changed that claim.
+
+What enforces it:
+`src/task-list-numbers.unit.test.ts`,
+which fails on a sign followed by one to four digits
+anywhere in the package's source,
+tests,
+docs,
+README or `mise.toml`
+unless it is a listed issue,
+and on a listed issue that is no longer cited.
+
 ## Cached decisions
 
 What happened:

@@ -5228,8 +5228,8 @@ A probe over every package Markdown file found none outside this ledger.
 ### D22: task-list numbers used as references across the package
 
 Status:
-open,
-found 2026-09-28 while recording M48.
+fixed 2026-09-28,
+found the same day while recording M48.
 The owner's rule forbids task-list numbers in commit messages and docs,
 because they resolve to unrelated GitHub issues.
 A census (`~/temp/agent/audit-glossary-fix/hash-number-census.mjs`) found 588 of them in 331 package files:
@@ -5258,6 +5258,78 @@ a doc heading,
 a commit,
 or the prose that already states the finding,
 with the number dropped.
+
+What was done:
+
+-   The 21 in Markdown (`3f75cd9e6`)
+    became a landing commit,
+    a date,
+    or nothing where the sentence already named the thing.
+-   Every one in source and tests went in three batches
+    (`7bab9b40e`,
+    `6cb3826e6`,
+    `f1c0b37d2`).
+    A script dropped the 71 pure-attribution asides,
+    a parenthesized number after a word,
+    and printed the 5 in other positions for a hand edit;
+    the rest were rewritten one by one from each sentence,
+    after reading the task record the number named
+    (stored task lists,
+    per session)
+    to find what it meant.
+    Where one work item was cited many times it became one name:
+    the relocation finding,
+    the window trial,
+    one-sided slicing,
+    the settled audit,
+    the timing work,
+    the judge-quality bench,
+    the directory-id shape.
+-   The 17 in `mise.toml` were task descriptions opening with a number;
+    each now opens with its verb.
+-   Seven printed lines carried one
+    (the settled-audit report and page heading,
+    the relocation candidates line,
+    the undecided-subject note,
+    the slice-cost report,
+    and the two run-timing notes),
+    found by parsing every string literal rather than by line shape;
+    only the package's own tests read them,
+    and those moved with them.
+-   Citations sitting beside a claim the work had since overtaken were corrected there:
+    the equal-count fast path was measured and kept
+    (a roster agreed with index order on all 56 equal-count entries);
+    the insertion producers landed on 2026-08-23,
+    so no comment says they are still to come;
+    the translate lane runs from the document driver,
+    so the per-slice selection field is not blocked;
+    the corpus pass keeps four slices in flight since 2026-09-06;
+    undecided subjects are the artifact's `pending-human-decision`;
+    `assertPlacementLayout` is what validates bounds and ordering at assembly;
+    and the degeneration bar says its revisit is due,
+    since aborted streams now keep what they delivered.
+-   One citation named a deferred fix with nowhere else to live:
+    `displacement-ratio.ts` records a baseline computed per adjacency with the pair excluded
+    as the honest fix for its endogenous estimator,
+    and now says the fix is recorded there.
+    It is measurement tooling,
+    and its conclusion survives all three baselines it states,
+    so it stays deferred.
+
+Guard:
+`src/task-list-numbers.unit.test.ts` (`1f11f17b8`)
+reads the package's source,
+tests,
+docs,
+README and `mise.toml`
+for the census's shape,
+allows only issues 576 and 577
+(each checked with `gh issue view`),
+and asserts both are still cited.
+Its fixtures come first.
+A citation planted at the end of the README failed the package case,
+naming that line,
+and the README was restored from the commit.
 
 ### D23: package docs never read by the repository's Markdown linter
 
