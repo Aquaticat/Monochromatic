@@ -186,6 +186,21 @@ await describe({
       },
     },),
     it({
+      name: 'OMITS the identity block for an empty one too, which licenses exactly as much as none',
+      fn: async () => {
+        expect(turn({
+          role: 'user',
+          subject: {
+            ...PLAIN_SUBJECT,
+            identityContext: '',
+          },
+        },),).toBe(turn({
+          role: 'user',
+          subject: PLAIN_SUBJECT,
+        },),);
+      },
+    },),
+    it({
       name: 'SHOWS licensed identity evidence when the run has some, marked as evidence rather than as a rule',
       fn: async () => {
         const asked = turn({
