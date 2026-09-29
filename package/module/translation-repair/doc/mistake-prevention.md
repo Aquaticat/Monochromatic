@@ -486,6 +486,17 @@ ledger C1),
 "as an ai" read as a refusal inside "as an aide",
 "load" read as an inability inside "download",
 and a refusal written with a typographic apostrophe matched no marker stored with a straight one (ledger B23).
+An address that only began with a source link's was read as that destination kept,
+and the neutral pronoun was counted only between listed marks,
+so a dash or a slash after han hid it (ledger B23).
+Two fixes in that pass nearly regressed:
+reading a rendering's destinations through the strict grammar alone went silent
+where the grammar refuses the rendering,
+which is the validator's no-grammar branch that answers unknown;
+and a plain word-boundary reading for the pronoun,
+chosen before its tests were read,
+would have counted the handles,
+paths and addresses those tests exclude.
 
 The rule:
 a word or phrase looked for in prose goes through `carriesWord` or `wordStarts` (`word-bounds.ts`),
@@ -497,6 +508,17 @@ never containment in a projection,
 which has lost the spaces between words;
 a handle or a source form inside a link text is matched at handle edges,
 where a hyphen and an underscore join.
+A word that is never a piece of an address,
+a path,
+a handle or a compound goes through `tokenStarts` (`word-bounds.ts`).
+A link destination is read as the grammar reads it,
+the skeleton's `link-url` atoms,
+never as a substring of the rendering,
+and a rendering the strict grammar refuses is read under plain markdown,
+never as carrying nothing.
+Before narrowing any reading,
+read the floor's own tests for the exclusions they pin,
+and read the caller's branch for a text the reading cannot parse.
 A raw `includes` on prose is kept only for containment,
 a quote or a span found whole inside a text,
 and a comment says so.
@@ -518,7 +540,13 @@ and each prefixed form listed on its own;
 `name-projection.unit.test.ts`,
 the survival guard and the link-name guard hold a key inside a longer word,
 a case change and a digit inside a handle,
-and a handle running on at either end.
+and a handle running on at either end;
+`word-bounds.unit.test.ts` pins the token reading's joiners,
+its trimmed ends and the mention mark,
+and the neutral pronoun guard holds the dashes,
+the slash after han and every exclusion;
+the unwrapped-link guard holds a longer address
+and an unwrap in a rendering whose original is refused too.
 
 ## Lint and edits
 

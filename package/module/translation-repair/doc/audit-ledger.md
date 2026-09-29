@@ -7513,7 +7513,7 @@ Status:
 open,
 recorded 2026-09-29 so the work outlives the session's task list;
 family one (text indexed by UTF-16 unit) is read and fixed as B22,
-family two (matches without word boundaries) is being read as B23,
+family two (matches without word boundaries) as B23,
 and the other families remain.
 B1 to B20 came from the duplicate-body and letter-predicate censuses.
 The class history names other families that recurred across stages,
@@ -7663,10 +7663,10 @@ Prevention:
 ### B23: fixed words and phrases found inside longer words (B21, family two)
 
 Status:
-open,
+fixed,
 2026-09-29;
-the refusal readers are fixed,
-and the sites under "Still to read" remain.
+every site the census classed as a finding now reads its word,
+name or address as one.
 Class one hundred sixty-three found a glossary term inside a longer word,
 and area one bounded the glossary's matcher (C1).
 This pass reads every other site that looks for a fixed word or phrase in text,
@@ -7838,21 +7838,187 @@ refine and repair versions carry rides-inside accounts
 the refine and repair accounts rest on the translate replay,
 since no stored rewrite or patch was replayed.
 
-#### Still to read
+#### The page-name note
 
-- `linked-title-declared-name.ts`,
-  `title-reference-scope.ts`,
-  `title-reference-unify.ts` (a rendering matched by `endsWith`),
-  `name-gloss-restore.ts` and `work-title-lookup.ts`.
-- `translate-unwrapped-link.ts`:
-  an address matched as the prefix of a longer address.
-- `translate-neutral-pronoun.ts`:
-  the marks allowed beside TA list 「」 but not 『』;
-  the neighbours of TA,
-  Ta and ta on settled pages and in artifacts are measured first.
+`declaredNameNote` (`linked-title-declared-name.ts`) matched the source form
+and the declared rendering as raw substrings,
+while the link-name floor reads the same link at handle edges and as a name.
+The note now reads it the floor's way,
+so a title rendered "Tomcat" draws a note for a declared "Tom",
+an archive writing the handle with an escaped underscore draws none,
+and a Latin source form inside a longer word names no one.
+The handle reading moved into `handle-token.ts`,
+which both read.
+Red `b571f4303`,
+fix `c60a2f4ff`;
+7 mutants are caught,
+and a comment control survives.
+Over the 92 entries the frozen and current builds write the same linked-title lines,
+and the page-name lines ride in the identity context every stage key hashes.
 
-The declared-pair sites in this list match nothing at the pin;
-each is latent.
+#### The title reference passes
+
+`referenceScope` (`title-reference-scope.ts`) took the first framed line holding the bare title,
+so a footnote naming the title without brackets,
+ahead of the footnote that brackets it,
+held the quote search to the wrong line.
+The scope and the unify pass's gate now read one `bracketsTitle`.
+`rewriteLocated` (`title-reference-unify.ts`) read any located span
+ending with the heading's rendering as the heading's,
+so a footnote quoting a longer rendering was never unified.
+A quoted,
+bracketed or linked span now has to equal the rendering,
+and a glossed run,
+whose lead-in words the locator cannot separate from the title,
+may end with it only at a word edge (`endsWithWords` over `wordStarts`).
+Red `10c60dae8` and `4bdb2f614`,
+fixes `089bd9388` and `89f4fcba3`.
+Restoring a bare gate in the unify pass survived the first mutation run;
+a case pinning that a slice naming the title without brackets is left alone now catches it,
+and all 6 mutants of the two passes are caught,
+with a comment control surviving in each run.
+At the pin,
+6 of 264 Han heading titles are referenced in brackets
+and none has an earlier bare framed line;
+on the 273 settled page files no quoted,
+bracketed or linked span ends with one of the page's 1,061 heading renderings without being it.
+
+#### The name-gloss restore
+
+`nameGlosses` (`name-gloss-restore.ts`) counted an archive's uses of a glossed name by splitting on it,
+and `restoreNameGlossLines` placed the gloss with `indexOf`,
+so a longer word carrying the name's letters ("Pipit" for "Pip") counted as a use
+and decided where the gloss went.
+Both read the name through `wordStarts`.
+Red `a6b8a6177` and `5cef56405`,
+fix `6ef70915a`;
+3 mutants are caught,
+and a comment control survives.
+At the pin the archives carry 1 gloss line,
+and neither its use count nor its place on the 14 settled pages of its entry moves.
+
+#### The work-title lookup
+
+`namesWork` (`work-title-lookup.ts`) tested the bare title with `includes`,
+so a result titled "Catcraftopia" read as naming 《Catcraft》,
+drew no neighbour warning and could sort first.
+It reads the title with `carriesWord`,
+and a Han title is found as before.
+Red `8c39cc87c`,
+fix `a49c3ac80`;
+2 mutants are caught,
+and a comment control survives.
+Over the 58 cached lookup records at hand
+(290 hits,
+11 titles carrying Latin letters or digits)
+no warning moves,
+and the lookup lines ride in the identity context every stage key hashes.
+
+#### The unwrapped-link floor
+
+`unwrappedLinkFindings` (`translate-unwrapped-link.ts`) asked
+whether the rendering still carries the href with `includes`,
+so a bare address that only begins with it (`windowsill-nap.html2`) counted as the destination kept,
+and the model was told its destination was intact when it had changed.
+It now reads the rendering's `link-url` atoms,
+the destination floor's own reading.
+That first fix read a rendering the strict grammar refuses as carrying no destination.
+Where the original is refused too,
+the validator runs only the floors that need no grammar and otherwise answers unknown,
+which translate-repair lets stand as written,
+so a genuine unwrap there went unrefused.
+Such a rendering is now read under plain markdown,
+the page side's downgrade,
+through the skeleton's own atom walk (`walkAtoms`).
+Plain markdown reads a bare destination inside a raw html block as html,
+so the floor is silent there,
+and its header says so.
+Red `49f64c4e3` and `fbe758d77`,
+fixes `fc3b3373e` and `28a4ceb63`;
+4 mutants are caught,
+with a comment control surviving in each run.
+
+Replayed against the frozen build over 1,264 archive slices and 3,975 would-ship slices
+(`~/temp/agent/audit-floor-replay/floor-replay.mjs`),
+the floor fires on none under either build.
+Its positive control (`unwrap-control.mjs`) shows the builds disagree on the longer address
+and agree on a genuine unwrap and on a kept link.
+`unparseable-link-census.mjs` finds 1 archive slice whose original the strict grammar refuses,
+with no link syntax,
+and no would-ship slice.
+That doubly refused branch runs no destination floor at all,
+by the design of F-5;
+the census bounds its reach at the pin,
+and it is left as it is.
+
+#### The neutral pronoun floor
+
+`neutralPronounFindings` (`translate-neutral-pronoun.ts`) counted TA,
+Ta or ta only between listed marks,
+whitespace or characters at or above U+2E80,
+compared by UTF-16 unit.
+The listed 「」 was redundant,
+not 『』 missing:
+both sit above U+2E80.
+What the list missed sat below it:
+a doubled Chinese dash or a slash after han in an original,
+so the floor never applied to that slice,
+and an em dash,
+an ellipsis,
+an arrow or emphasis in a rendering,
+so it passed a kept pronoun.
+`pronoun-disagreement-census.mjs` read every occurrence
+where the list and a word-boundary reading disagree,
+in the pinned originals and archives and every string of the stored artifacts,
+by the key holding it and a masked context.
+In originals and renderings each one was a pronoun the list missed
+(originals of XingZ60,
+Mizuki_Yuuki and qianyuanakg;
+renderings of XingZ60 and noname),
+and the rest sat in judges' reasons.
+A bare word-boundary reading would lose what the floor's tests pin:
+a handle,
+a path,
+an address and the interjection "ta-da" are not the pronoun.
+`tokenStarts` (`word-bounds.ts`) reads a word standing as a token of its own:
+the run of Latin word characters and address joiners around it,
+trimmed of joiners at its ends,
+is the word alone,
+and a word after a mention mark is a handle.
+The floor counts with it,
+which retires its UTF-16 comparison too.
+"he/TA" and "Well...Ta" read as one token each,
+as under the list,
+and the census found neither.
+Red `79d588b5e`,
+fix `2c0cc08d8`;
+7 mutants are caught,
+and a comment control survives.
+
+`pronoun-entry-census.mjs` reads TA in 2 of the 92 sources,
+Ta in 7 and ta in 8 under the token reading,
+the figures the floor's header gave on 2026-09-04;
+the list read Ta in 6.
+Replayed against the frozen build (`floor-replay.mjs`),
+4 slices fire under both,
+none clears and none is added:
+three archive slices of XingZ60,
+whose archive keeps a bare TA,
+and one would-ship slice of SS3B_0016,
+a settled wording the frozen build already refused.
+The frozen build predates the F-9 source gate,
+so the 4 were also read under the floor as it stood before this fix
+(`pronoun-previous-check.mjs`),
+which fires on all 4.
+The positive control (`pronoun-control.mjs`) shows the builds disagree on a dash in a rendering.
+
+#### Cache accounts
+
+No cache version moves for these sites.
+The unwrapped-link and neutral pronoun floors give the same verdict on every replayed slice,
+the page-name and lookup lines ride in the identity context,
+the gloss and title passes move nothing on the settled pages,
+and every per-entry cache is stamped with the build's digest.
 Prevention:
 `mistake-prevention.md`,
 "Words inside words".

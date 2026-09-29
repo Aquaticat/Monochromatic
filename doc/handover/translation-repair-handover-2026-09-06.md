@@ -82,9 +82,17 @@ this one says what changed after it.
   with `fixed-length-cuts.unit.test.ts` and the Latin-twin cases in `canadian-forms.unit.test.ts` among its guards.
   The second,
   words found inside longer words (class one hundred sixty-three),
-  is open as B23:
-  the refusal readers are fixed (`23974cfa8`),
-  and B23's "Still to read" names the sites left.
+  closed on 2026-09-29 as B23:
+  every site its census classed as a finding reads its word,
+  name or address as one,
+  the last being the unwrapped-link floor (`28a4ceb63`)
+  and the neutral pronoun floor on a new shared token reading (`2c0cc08d8`),
+  and no cache version moves.
+  The families left are straight against curly quotes,
+  trimmed text compared with raw text,
+  quorum denominators,
+  sheets missing blocks
+  and silent fallbacks.
   Two gaps found on the way are open too:
   `code-points.ts` and `cased-letters.ts` have no unit tests of their own,
   and the cache version accounts cite `cache-account-audit.ts`,
