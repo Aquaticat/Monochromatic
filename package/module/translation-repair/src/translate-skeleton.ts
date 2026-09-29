@@ -236,18 +236,24 @@ function atomsOfNode(
 }
 
 /**
+ @internal
+
  Walks a parsed slice into its ordered atoms.
- 
- @param root - parsed slice
- 
+
+ EXPORTED FOR THE UNWRAPPED-LINK FLOOR (ledger B23), which reads a rendering
+ the strict grammar refuses under plain markdown and needs the same reading
+ of a link destination this walk gives the strict tree.
+
+ @param root - parsed slice, under either grammar
+
  @returns Atoms in document order
- 
+
  @example
  ```ts
  const atoms = walkAtoms({ root, },);
  ```
  */
-function walkAtoms({ root, }: { readonly root: ReadonlyMdastRoot; },): readonly ProtectedAtom[] {
+export function walkAtoms({ root, }: { readonly root: ReadonlyMdastRoot; },): readonly ProtectedAtom[] {
   /**
    Nodes still to visit, held as a stack so the walk stays iterative over a
    tree of unknown depth; children push reversed to keep document order.

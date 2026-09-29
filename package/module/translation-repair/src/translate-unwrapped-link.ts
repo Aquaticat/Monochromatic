@@ -2,7 +2,12 @@ import {
   type Link,
   linksOf,
 } from './page-name-glossary.ts';
-import { readSliceSkeleton, } from './translate-skeleton.ts';
+import { parseMarkdownBody, } from './parse-mdx.ts';
+import type { ProtectedAtom, } from './protected-atom.ts';
+import {
+  readSliceSkeleton,
+  walkAtoms,
+} from './translate-skeleton.ts';
 
 //region Unwrapped link floor
 // THE ONE HUNDRED FIFTEENTH CLASS (yingying10, 2026-09-24). A translate
@@ -27,6 +32,16 @@ import { readSliceSkeleton, } from './translate-skeleton.ts';
 // parses them. A raw substring took an address that only begins with the
 // href (`windowsill-nap.html2`) for the href kept, and told the model its
 // destination was intact when it had changed.
+//
+// A RENDERING THE STRICT GRAMMAR REFUSES IS READ UNDER PLAIN MARKDOWN, the
+// downgrade the page side already takes (`translate-skeleton-page.ts`), and
+// never as carrying nothing. Where the original is readable the validator
+// refuses such a rendering at its parse anyway. Where the original is refused
+// too, the validator runs only the floors that need no grammar and otherwise
+// answers unknown, which translate-repair lets stand as written, so a floor
+// gone silent there would pass a genuine unwrap. Plain markdown reads no MDX:
+// a bare destination inside a raw html block is not a link there, and the
+// floor is silent on it, where the old substring reading refused.
 
 /**
  Whether a link carries words of its own rather than its destination.
@@ -86,11 +101,36 @@ function wordedCounts({ text, }: { readonly text: string; },): ReadonlyMap<strin
 }
 
 /**
+ Atoms of a rendering: the strict grammar's where it reads the text, plain
+ markdown's where it refuses.
+
+ A THROW FROM PLAIN MARKDOWN PROPAGATES. CommonMark reads every input, so a
+ throw is an unexpected state rather than a grammar disagreement, which is how
+ {@link readSliceSkeleton} treats any error but the grammar's own refusal.
+
+ @param text - rendering to read
+
+ @returns Atoms in document order under the grammar that read the text
+
+ @example
+ ```ts
+ const atoms = renderingAtoms({ text: candidateText, },);
+ ```
+ */
+function renderingAtoms({ text, }: { readonly text: string; },): readonly ProtectedAtom[] {
+  /**
+   Rendering's skeleton, or the strict grammar's refusal.
+   */
+  const read = readSliceSkeleton({ text, },);
+  if (read.kind === 'read')
+    return read.skeleton
+      .atoms;
+  return walkAtoms({ root: parseMarkdownBody({ body: text, },), },);
+}
+
+/**
  Destinations a text carries as links, worded or bare, as the destination
  floor reads them.
-
- EMPTY FOR A TEXT THE SLICE GRAMMAR REFUSES, which the skeleton floor refuses
- in its own words; this floor then says nothing about it.
 
  @param text - rendering to read
 
@@ -102,14 +142,7 @@ function wordedCounts({ text, }: { readonly text: string; },): ReadonlyMap<strin
  ```
  */
 function carriedDestinations({ text, }: { readonly text: string; },): ReadonlySet<string> {
-  /**
-   Rendering's skeleton, or the grammar's refusal.
-   */
-  const read = readSliceSkeleton({ text, },);
-  if (read.kind !== 'read')
-    return new Set();
-  return new Set(read.skeleton
-    .atoms
+  return new Set(renderingAtoms({ text, },)
     .filter(function isLinkDestination(atom,): boolean {
       return atom.kind === 'link-url';
     },)
