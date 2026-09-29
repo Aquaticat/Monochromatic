@@ -6,7 +6,9 @@
  Synthetic-only seats a minute after the dry-out and heard one voice, short
  of quorum, while five re-seat lines had already named a bench with two
  reachable seats. The checker stage now reads the seating again at the stage
- itself. Cat-themed invention throughout; no corpus content appears here.
+ itself. Also guards ledger B29: the bench a chunk starts with and the bench
+ read at the stage are both refused where a checker edits or refines.
+ Cat-themed invention throughout; no corpus content appears here.
 
  @module
  */
@@ -19,7 +21,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  assertCheckerBench,
   checkerBenchAtStage,
+  CheckerIndependenceError,
   CheckerQuorumError,
   standingSeating,
   SEAT_OPENROUTER_ONLY_CHECKER,
@@ -101,6 +105,104 @@ await describe({
           l,
         },),).rejects
           .toThrow(CheckerQuorumError,);
+      },
+    },),
+    // LEDGER B29: the re-seated bench was read for quorum alone, so a bench
+    // naming the model that edited this chunk would have graded its own
+    // rewrite. The chunk's editors wrote the text the stage checks, whatever
+    // the fresh roster names as its editors.
+    it({
+      name: 'REFUSES a re-seated bench naming the editor that wrote this chunk\'s text',
+      fn: async () => {
+        await expect(checkerBenchAtStage({
+          models: SEATED,
+          reseat: async (): Promise<RepairSliceSeating> => ({
+            repairModels: {
+              ...SEATED,
+              editorModelIds: [SEAT_OPENROUTER_ONLY_CHECKER,],
+              checkerModelIds: [
+                SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+              ],
+            },
+          }),
+          l,
+        },),).rejects
+          .toThrow(CheckerIndependenceError,);
+      },
+    },),
+    it({
+      name: 'REFUSES a re-seated bench naming the chunk\'s refiner',
+      fn: async () => {
+        await expect(checkerBenchAtStage({
+          models: { ...SEATED, refinerModelIds: [SEAT_OPENROUTER_ONLY_CHECKER,], },
+          reseat: async (): Promise<RepairSliceSeating> => ({
+            repairModels: { ...SEATED, checkerModelIds: FRESH_CHECKERS, },
+          }),
+          l,
+        },),).rejects
+          .toThrow(CheckerIndependenceError,);
+      },
+    },),
+    it({
+      name: 'ASKS a re-seated bench naming the chunk\'s editor where the chunk permits self-certification',
+      fn: async () => {
+        /**
+         Bench naming the chunk's editor.
+         */
+        const overlapping = [
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        ];
+        expect(await checkerBenchAtStage({
+          models: { ...SEATED, checkerSelfCertificationPermitted: true, },
+          reseat: async (): Promise<RepairSliceSeating> => ({
+            repairModels: { ...SEATED, checkerModelIds: overlapping, },
+          }),
+          l,
+        },),).toEqual(overlapping,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: assertCheckerBench.name,
+  children: [
+    it({
+      name: 'ACCEPTS a chunk roster whose checkers neither edit nor refine',
+      fn: async () => {
+        expect(() => {
+          assertCheckerBench({
+            models: { ...SEATED, refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,], },
+          },);
+        },).not
+          .toThrow();
+      },
+    },),
+    it({
+      name: 'REFUSES a chunk roster whose checker edits',
+      fn: async () => {
+        expect(() => {
+          assertCheckerBench({
+            models: { ...SEATED, editorModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },
+          },);
+        },).toThrow(CheckerIndependenceError,);
+      },
+    },),
+    // LEDGER B29: the chunk check left the refiners out while its own TSDoc
+    // said it refused a checker who refines, and every other caller of the
+    // independence check passes them.
+    it({
+      name: 'REFUSES a chunk roster whose checker refines',
+      fn: async () => {
+        expect(() => {
+          assertCheckerBench({
+            models: { ...SEATED, refinerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,], },
+          },);
+        },).toThrow(CheckerIndependenceError,);
       },
     },),
   ],
