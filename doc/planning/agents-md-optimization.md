@@ -2095,8 +2095,50 @@ EPR:
 
 ## Next action
 
-Walk complete (2026-09-29).
-Awaiting user confirmation of shared understanding before the apply phase.
+Applied 2026-09-29 after user confirmation;
+only the #423-gated JCH follow-up remains (issue comment posted on #423).
+
+### Apply log
+
+- d03ec673e:
+   `AGENTS.md` rewritten from approved text,
+   `CLAUDE.md` regenerated (12930 tokens,
+   31214 bytes).
+- 6deb6cc12:
+   `visual-design-review` skill (12 rules);
+   Claude Code lists it.
+- 37117e363:
+   JEV,
+   FLK,
+   GCW,
+   WXG,
+   MXR,
+   RDC,
+   AP5 into package docs;
+   RCO into `choosing-technology`.
+- 718e8663e:
+   retired-code references point at successors or enforcing lint rules;
+   living Rust comments cite MXL,
+   MXR,
+   RDC without a file.
+   Dated research snapshots citing old `AGENTS.md` line numbers stay as historical records.
+- Untracked `forbidden-strings.append.local.txt` entry `local-039` reserves the 53 retired codes;
+   verified by scanning a `PP9:` probe (flagged) and a `PP8:` probe (passed).
+- 5dadad6c7:
+   philosophy doc removal record,
+   magic-number section,
+   `handler/` path;
+   regression-suite Case 3 matches GCR and GCL.
+- 21dfa9bec:
+   `no-regex` constructor message prefers index scans,
+   parsers,
+   string APIs;
+   unit tests,
+   types,
+   and lint pass;
+   root oxlint shows the new message.
+- Not touched:
+   `package/music-player/design/HANDOFF.md` still says `AGENTS.md` rule `PFG` (another session's active file).
 
 ### Walk totals
 
