@@ -689,13 +689,14 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
                     // for (const hit of searchRankingHits(rankVariant, includeParentHits)) render(hit);
                     // ```
                     for (hit in searchRankingHits(rankVariant, includeParentHits)) {
-                        PersistentResultLine(title = hit.title, detail = hit.detail, kind = hit.kind)
+                        PersistentResultLine(title = hit.title, detail = hit.detail, kind = hit.kind,
+                            query = query)
                     }
                 } else if (overflowStudy) {
                     PersistentResultLine(title = overflowFolderTitle,
-                        detail = "Folder · opens this folder", kind = "Folder")
+                        detail = "Folder · opens this folder", kind = "Folder", query = query)
                     PersistentResultLine(title = overflowTrackTitle,
-                        detail = overflowTrackDetail, kind = "Track")
+                        detail = overflowTrackDetail, kind = "Track", query = query)
                     // What: `repeat` invokes this block for each synthetic row index.
                     // Why: Enough fixture rows must exist to exercise vertical result scrolling.
                     //
@@ -705,11 +706,13 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
                     // ```
                     repeat(18) { index ->
                         PersistentResultLine(title = "Camellia archive ${index + 1}",
-                            detail = "Folder · opens this folder", kind = "Folder")
+                            detail = "Folder · opens this folder", kind = "Folder", query = query)
                     }
                 } else {
-                    PersistentResultLine(title = "Camellia", detail = "Folder · opens this folder", kind = "Folder")
-                    PersistentResultLine(title = "Another Xronixle", detail = "Track · Camellia · reveals track", kind = "Track")
+                    PersistentResultLine(title = "Camellia", detail = "Folder · opens this folder",
+                        kind = "Folder", query = query)
+                    PersistentResultLine(title = "Another Xronixle",
+                        detail = "Track · Camellia · reveals track", kind = "Track", query = query)
                 }
             } else {
                 Text(if (unavailable) "Library unavailable" else if (query.isEmpty()) "Search your music"
@@ -763,7 +766,7 @@ private fun PersistentSearchHeader(query: String, onQueryChange: (String) -> Uni
 
 /** Pairs result title and supporting meaning in one pane without a detached type label. */
 @Composable
-private fun PersistentResultLine(title: String, detail: String, kind: String) {
+private fun PersistentResultLine(title: String, detail: String, kind: String, query: String) {
     Row(modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp).padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically) {
         // What: Center the result icon in the same 48dp leading slot as the header's Back icon.
@@ -779,8 +782,22 @@ private fun PersistentResultLine(title: String, detail: String, kind: String) {
                 tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Column {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(detail, style = MaterialTheme.typography.bodyMedium,
+            // What: An annotated title paints every literal query occurrence without moving its text anchor.
+            // Why: Selection is visible in place rather than repeated as a detached heading.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // <Text spans={highlightFixtureMatches(title, query, matchInk, matchBackground)} />
+            // ```
+            Text(text = highlightFixtureMatches(title, query,
+                MaterialTheme.colorScheme.onTertiaryContainer,
+                MaterialTheme.colorScheme.tertiaryContainer),
+                style = MaterialTheme.typography.bodyLarge)
+            // The supporting parent name may be the only source of a track match.
+            Text(text = highlightFixtureMatches(detail, query,
+                MaterialTheme.colorScheme.onTertiaryContainer,
+                MaterialTheme.colorScheme.tertiaryContainer),
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }

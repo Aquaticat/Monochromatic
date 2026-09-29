@@ -363,17 +363,19 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
             // Render identical synthetic hits on the cover without claiming a live search index.
             for (hit in searchRankingHits(rankVariant, includeParentHits)) {
                 SearchLayoutRow(title = hit.title, detail = hit.detail, kind = hit.kind,
-                    halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
+                    query = query, halfClearance = halfClearance, fullWidth = fullWidth,
+                    pageColor = pageColor)
             }
             return@Column
         }
         SearchLayoutRow(title = if (overflowStudy) overflowFolderTitle else "Camellia",
-            detail = "Folder · opens this folder", kind = "Folder",
+            detail = "Folder · opens this folder", kind = "Folder", query = query,
             halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
         if (fullWidth) Spacer(modifier = Modifier.height(8.dp))
         SearchLayoutRow(title = if (overflowStudy) overflowTrackTitle else "Another Xronixle",
             detail = if (overflowStudy) overflowTrackDetail else "Track · Camellia · reveals track",
-            kind = "Track", halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
+            kind = "Track", query = query, halfClearance = halfClearance,
+            fullWidth = fullWidth, pageColor = pageColor)
         if (overflowStudy) {
             // What: `repeat` invokes the following block for each synthetic row index.
             // Why: The existing cover result viewport must demonstrate scroll reachability.
@@ -384,7 +386,7 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
             // ```
             repeat(18) { index ->
                 SearchLayoutRow(title = "Camellia archive ${index + 1}",
-                    detail = "Folder · opens this folder", kind = "Folder",
+                    detail = "Folder · opens this folder", kind = "Folder", query = query,
                     halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
             }
         }
@@ -393,7 +395,7 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
 
 /** Puts result details in a safe leading region while the row surface may cross the dent. */
 @Composable
-private fun SearchLayoutRow(title: String, detail: String, kind: String,
+private fun SearchLayoutRow(title: String, detail: String, kind: String, query: String,
     halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean, pageColor: Color) {
     val rowColor = if (pageColor == Color.Black) Color(0xFF1A1A1F) else MaterialTheme.colorScheme.surfaceContainerLow
     val surface = if (fullWidth) Modifier.fillMaxWidth().background(rowColor) else Modifier.fillMaxWidth()
@@ -418,8 +420,22 @@ private fun SearchLayoutRow(title: String, detail: String, kind: String,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Column(modifier = Modifier.width(labelWidth.coerceAtLeast(160.dp))) {
-                Text(title, style = MaterialTheme.typography.bodyLarge)
-                Text(detail, style = MaterialTheme.typography.bodyMedium,
+                // What: Preserve the title's text node and start while painting literal `cam` in place.
+                // Why: Cover results must carry the same highlight as the unfolded result column.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // <Text spans={highlightFixtureMatches(title, query, matchInk, matchBackground)} />
+                // ```
+                Text(text = highlightFixtureMatches(title, query,
+                    MaterialTheme.colorScheme.onTertiaryContainer,
+                    MaterialTheme.colorScheme.tertiaryContainer),
+                    style = MaterialTheme.typography.bodyLarge)
+                // Supporting text may contain the only matching parent-name occurrence.
+                Text(text = highlightFixtureMatches(detail, query,
+                    MaterialTheme.colorScheme.onTertiaryContainer,
+                    MaterialTheme.colorScheme.tertiaryContainer),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (fullWidth) {
