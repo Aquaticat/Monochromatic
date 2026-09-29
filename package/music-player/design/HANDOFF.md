@@ -6857,7 +6857,20 @@ No production Search,
 result tap,
 IME experiment,
 original-AVD mutation or matcher-library choice occurred.
-The next independent design review is Search accessibility (internal task
-118),
-while internal task 130 still needs to correct misleading bare task-ID
-links in active design prose.
+The next independent design review is Search accessibility (internal
+review task 118).
+Internal review task 130 subsequently corrected bare 118/127/128/129
+references in scoped music-player design Markdown and HTML templates:
+GitHub had auto-linked those internal task IDs to unrelated repository
+Issues.
+The old rendered handover provided a positive control with a wrong Issue
+127 link;
+the corrected GitHub-rendered active Markdown has no such targeted
+Issue links.
+Historical templates were rebuilt through their package `mise` tasks,
+validated and loaded in the browser without console errors.
+The literal `#N` examples in the status-boundaries evidence remain inside
+code spans to explain the original problem,
+not live issue references.
+No GitHub issue was mutated,
+and no `AGENTS.md` rule was edited under the user's explicit constraint.
