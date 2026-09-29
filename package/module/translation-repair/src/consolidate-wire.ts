@@ -11,7 +11,10 @@ import type { LaneContestBallot, } from './lane-contest-wire.ts';
 import type { TranslateOrigin, } from './translate-candidates.ts';
 import type { TranslateDecision, } from './translate-stage-result.ts';
 import { selectFence, } from './prompt-fence.ts';
-import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
+import {
+  type BreakRendering,
+  renderedBreakPrompt,
+} from './rendered-break-prompt.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
 import {
@@ -393,6 +396,42 @@ export function buildConsolidateMessages(
     : `${subject.referenceContext}\n${CITED_REFERENCE_CANDIDATE_RULE}`;
 
   /**
+   The repair lane's candidate under the label its block carries.
+   */
+  const repairCandidate: BreakRendering = {
+    label: candidateLabel({
+      name: 'repair',
+      text: subject.repairText,
+      archiveText: subject.incumbentText,
+    },),
+    text: subject.repairText,
+  };
+
+  /**
+   The translate lane's candidate under the label its block carries.
+   */
+  const translateCandidate: BreakRendering = {
+    label: candidateLabel({
+      name: 'translate',
+      text: subject.translateText,
+      archiveText: subject.incumbentText,
+    },),
+    text: subject.translateText,
+  };
+
+  /**
+   Candidates the sheet shows a block for, which are the ones whose break
+   counts it states (ledger B29: the gates after this writer carried their
+   candidates' counts while this sheet carried none).
+   */
+  const displayedCandidates = [
+    repairCandidate,
+    translateCandidate,
+  ].filter(function isDisplayed(candidate,): boolean {
+    return candidate.text !== '';
+  },);
+
+  /**
    Judge findings as the producer will see them, empty when none were heard.
    */
   const brief = renderConsolidationBrief({ ballots: subject.ballots, },);
@@ -443,6 +482,7 @@ export function buildConsolidateMessages(
       sourceText: subject.sourceText,
       archiveText: subject.incumbentText,
       ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+      renderings: displayedCandidates,
     },),
     CONSOLIDATE_REPLY_RULE,
   ]
@@ -492,21 +532,11 @@ export function buildConsolidateMessages(
         },),
         ...renderBlock({
           fence,
-          label: candidateLabel({
-            name: 'repair',
-            text: subject.repairText,
-            archiveText: subject.incumbentText,
-          },),
-          text: subject.repairText,
+          ...repairCandidate,
         },),
         ...renderBlock({
           fence,
-          label: candidateLabel({
-            name: 'translate',
-            text: subject.translateText,
-            archiveText: subject.incumbentText,
-          },),
-          text: subject.translateText,
+          ...translateCandidate,
         },),
         ...renderBlock({
           fence,

@@ -6,7 +6,10 @@ import type { SliceSyntax, } from './chunk-document.ts';
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
-import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
+import {
+  type BreakRendering,
+  renderedBreakPrompt,
+} from './rendered-break-prompt.ts';
 import { sourceBreakDisplay, } from './source-break-display.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
@@ -320,6 +323,22 @@ export function buildTranslateMessages(
   },);
 
   /**
+   Candidates the judges declined, under the labels their blocks carry, none
+   on the initial round. Their break counts go to the sheet as well, since
+   the judges who declined them had those counts (ledger B29).
+   */
+  const rejectedRenderings: readonly BreakRendering[] = (followupEvidence?.candidateTexts ?? [])
+    .map(function rejectedRendering(
+      text,
+      index,
+    ): BreakRendering {
+      return {
+        label: `REJECTED CANDIDATE ${String(index + 1,)}`,
+        text,
+      };
+    },);
+
+  /**
    Translator sheet, with the line-structure fact inserted above the reply
    instruction when the enclosing chunk's original is verse.
    */
@@ -336,6 +355,7 @@ export function buildTranslateMessages(
       sourceText,
       archiveText: existingText,
       ...((syntax === undefined) ? {} : { syntax, }),
+      renderings: rejectedRenderings,
     },),
     TRANSLATE_REPLY_RULE,
   ]
@@ -347,17 +367,11 @@ export function buildTranslateMessages(
   /**
    Exact rejected candidates rendered as independently fenced blocks.
    */
-  const rejectedCandidates = followupEvidence === undefined
-    ? ''
-    : followupEvidence
-      .candidateTexts
-      .map(function rejectedCandidate(
-        text,
-        index,
-      ): string {
-        return `${fence} REJECTED CANDIDATE ${String(index + 1,)} ${fence}\n${text}`;
-      },)
-      .join('\n',);
+  const rejectedCandidates = rejectedRenderings
+    .map(function rejectedCandidate(rendering,): string {
+      return `${fence} ${rendering.label} ${fence}\n${rendering.text}`;
+    },)
+    .join('\n',);
   /**
    Latest structured findings as prompt text.
    */

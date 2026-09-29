@@ -225,6 +225,13 @@ import type { SliceReplacement, } from './splice-slices.ts';
  file was written after 04:27 UTC on 2026-09-27, where a control from
  midnight finds 494.
 
+ Rides inside 15 too: where the original has explicit breaks and no archive
+ wording, the follow-up writer's sheet states the break counts of the
+ candidates the judges declined, as the judges had them (ledger B29,
+ `translate-wire.ts`), which changes what such a writer is asked; checked on
+ 2026-09-29: no slice-cache file was written after 04:27 UTC on 2026-09-27,
+ where a control from midnight finds 494.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

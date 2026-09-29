@@ -215,18 +215,25 @@ import type { LaneText, } from './translate-candidates.ts';
  twin; checked on 2026-09-29: no slice-cache file was written after 04:27 UTC
  on 2026-09-27, where a control from midnight finds 494.
 
+ Rides inside 20 too: the final polish refuses a rewrite that is one of the
+ slice's disputed wordings, as the standing verdict, the lane offer and the
+ producers' floor already did (ledger B29, `consolidation-polish-apply.ts`);
+ the find over the three slice-cache roots, rerun for this change, finds no
+ file written after 04:27 UTC on 2026-09-27 against a control of 494.
+
+ Rides inside 20 too: where the original has explicit breaks and no archive
+ wording, the writer's sheet states the break counts of the lane candidates
+ it displays, as the gates after it state theirs (ledger B29,
+ `consolidate-wire.ts`), which changes what such a writer is asked; the same
+ find, rerun on 2026-09-29, again finds no file written after 04:27 UTC on
+ 2026-09-27 against a control of 494.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts above name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
-
- Rides inside 20 too: the final polish refuses a rewrite that is one of the
- slice's disputed wordings, as the standing verdict, the lane offer and the
- producers' floor already did (ledger B29, `consolidation-polish-apply.ts`);
- the find over the three slice-cache roots, rerun for this change, finds no
- file written after 04:27 UTC on 2026-09-27 against a control of 494.
  */
 export const CONSOLIDATE_CACHE_VERSION = 20;
 
