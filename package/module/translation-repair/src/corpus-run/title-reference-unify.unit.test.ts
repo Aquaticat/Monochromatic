@@ -288,6 +288,45 @@ await describe({
       },
     },),
     it({
+      name: 'REWRITES A GLOSSED RUN WHOSE WORD ONLY RUNS INTO THE HEADING\'S RENDERING: "WildCat Murmurs" does not end '
+        + 'in "Cat Murmurs" as words',
+      fn: async () => {
+        /**
+         Pass over a credit whose glossed run glues a word to the title.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            pair({
+              sliceIndex: 2,
+              source: '### 午后猫语',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 5,
+              source: '—— 云猫【梦】《午后猫语》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            {
+              sliceIndex: 2,
+              replacementText: '### Cat Murmurs',
+            },
+            {
+              sliceIndex: 5,
+              replacementText: '—— Yunmao, WildCat Murmurs (午后猫语)',
+            },
+          ],
+        },);
+        expect(unified.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).toEqual([
+          '### Cat Murmurs',
+          '—— Yunmao, Cat Murmurs (午后猫语)',
+        ],);
+      },
+    },),
+    it({
       name: 'LEAVES A SLICE THAT NAMES THE TITLE WITHOUT BRACKETS, whatever its page quotes: a bare mention is words, '
         + 'not a reference',
       fn: async () => {

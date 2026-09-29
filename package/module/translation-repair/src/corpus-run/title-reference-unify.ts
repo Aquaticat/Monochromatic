@@ -1,5 +1,6 @@
 import type { ChunkPair, } from '../chunk-document.ts';
 import { isHanOnly, } from '../han-only-text.ts';
+import { wordStarts, } from '../word-bounds.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { withoutComments, } from '../translate-address-drop.ts';
 import {
@@ -232,6 +233,46 @@ function wordCount({ text, }: { readonly text: string; },): number {
 }
 
 /**
+ Whether a text ends with a run of words, the run starting at a word edge.
+
+ @param text - text read
+
+ @param tail - words it may end with
+
+ @returns Whether the text ends with the tail and no word runs into it
+
+ @example
+ ```ts
+ endsWithWords({ text: 'from the Cat Murmurs', tail: 'Cat Murmurs', },); // true
+ endsWithWords({ text: 'Wildcat Murmurs', tail: 'cat Murmurs', },); // false
+ ```
+ */
+function endsWithWords(
+  {
+    text,
+    tail,
+  }: {
+    readonly text: string;
+    readonly tail: string;
+  },
+): boolean {
+  /**
+   Where the tail would start if the text ends with it.
+   */
+  const tailAt = text.length - tail.length;
+
+  /**
+   Offsets where the tail stands as words.
+   */
+  const starts = wordStarts({
+    text,
+    needle: tail,
+    end: 'word',
+  },);
+  return starts.includes(tailAt,);
+}
+
+/**
  Page text with the located rendering rewritten to the heading's, undefined
  where it already is the heading's or cannot be read as the title alone.
 
@@ -277,7 +318,21 @@ function rewriteLocated(
     0,
     current.length - trailing.length,
   );
-  if ((core === heading.rendering) || core.endsWith(heading.rendering,))
+  /**
+   Whether a glossed run ends with the heading's rendering as whole words.
+
+   ONLY A GLOSSED RUN (ledger B23). The run before a Han gloss cannot be told
+   from the words ahead of it ("from the Afternoon Cat Murmurs"), so it reads
+   as the heading's when it ends with it; a quoted, bracketed or linked span
+   is the title alone, and one that only ends with the heading's rendering
+   ("Evening Cat Murmurs") is another rendering. The end is read at a word
+   edge, so "Wildcat Murmurs" does not end in "cat Murmurs".
+   */
+  const glossEndsWithHeading = (located.kind === 'gloss') && endsWithWords({
+    text: core,
+    tail: heading.rendering,
+  },);
+  if ((core === heading.rendering) || glossEndsWithHeading)
     return { kind: 'same', };
   if ((located.kind === 'gloss') && (wordCount({ text: core, },) > (wordCount({ text: heading.rendering, },) + RUN_SLACK)))
     return { kind: 'ambiguous', };
