@@ -238,7 +238,7 @@ export function subdivideSealedChunkPair(
           sliceIndex: baseIndex + sliceOffset,
         },);
 
-        // `#100` landing 4: a run of originals nothing rendered gets a PLACE on
+        // Block-scale insertion: a run of originals nothing rendered gets a PLACE on
         // the translation side rather than blocks, so the lane can write there.
         // `runToChunk` would throw on the empty run this used to be handed,
         // which is why the fold this replaces existed at all.

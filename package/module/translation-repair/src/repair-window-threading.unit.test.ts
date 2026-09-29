@@ -1,11 +1,11 @@
 /**
- Tests that the repair DRIVER computes `#107`'s neighbouring window and hands
+ Tests that the repair DRIVER computes the neighbouring window and hands
  it to the stages, which no prompt-builder test can establish.
  
  WHY THIS IS SEPARATE FROM THE SHEET TEST. `nearby-window-reaches-the-models`
  asserts that `buildCriticMessages` renders a window it is HANDED. Whether
  `repairPreparedDocument` computes one and passes it over is a different
- question, and it is the one `#107` records going wrong before: the translate
+ question, and it is the one that went wrong before: the translate
  lane's window sat unused for weeks because the call site never passed what the
  builder already accepted, and nothing failed.
  

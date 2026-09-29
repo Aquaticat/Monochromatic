@@ -8,8 +8,8 @@ import { basename, } from 'node:path';
 // commit carry different stamps, including commits the runner never loads. That
 // makes the one question a band measurement has to answer unanswerable from the
 // recorded identity: two runs of byte-identical audit code report different
-// digests, and nothing distinguishes that from a real change. `#115` hit exactly
-// this and had to argue the point in prose instead of reading it off the file.
+// digests, and nothing distinguishes that from a real change. The settled audit hit
+// exactly this and had to argue the point in prose instead of reading it off the file.
 //
 // THE ANSWER IS ALREADY ON DISK AND FREE. Rolldown emits content-hashed chunks,
 // and the built entry names its own dependency closure in its import statements.
@@ -20,8 +20,8 @@ import { basename, } from 'node:path';
 // all", which is a real question about reproducibility. The closure answers "did
 // THIS run's code move", which is the one a comparison needs.
 //
-// READ AT RUN START, never at the end, for the reason `#115` learned the
-// expensive way: a rebuild mid-run otherwise stamps a build that never ran.
+// READ AT RUN START, never at the end, for the reason the settled audit learned
+// the expensive way: a rebuild mid-run otherwise stamps a build that never ran.
 
 /**
  Import specifiers a built entry can carry, in both the spaced form a reader

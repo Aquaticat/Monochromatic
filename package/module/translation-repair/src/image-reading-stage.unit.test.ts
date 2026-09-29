@@ -10,7 +10,7 @@
  willingness to read it, and a caller that has to distinguish "nobody could
  send this" from "nobody could read it" cannot do so from an empty string.
  
- THE CAPTURED REQUEST IS THE POINT of the first case. `#107`'s judging window
+ THE CAPTURED REQUEST IS THE POINT of the first case. The translate lane's judging window
  existed for weeks while production never passed it, and nothing failed,
  because no test asserted on what the call actually carried. A picture that
  never reaches the wire looks exactly like one the model ignored, so the parts

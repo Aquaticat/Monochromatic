@@ -79,7 +79,7 @@ const REFUSAL_CLAUSE = 'reads-as-refusal';
 /**
  How many times one model may be asked about one picture.
  
- FOUR, kept on the corpus-wide measurement of `#124` recorded in the module
+ FOUR, kept on the corpus-wide measurement recorded in the module
  note: over one pass the limit bought 20 extra calls against 119 first asks
  and recovered the one roll case, on the third ask. The bound is not fitted
  to that single observation, which is why it is not three; and the projection

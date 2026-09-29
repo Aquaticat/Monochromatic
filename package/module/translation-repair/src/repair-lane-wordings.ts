@@ -27,7 +27,7 @@ import {
 // wordings wherever the translate lane filled the passage. The repair lane had
 // no opinion there at all.
 //
-// THE OTHER SILENCE IS A LOST STAGE, and it looked identical until `#112`.
+// THE OTHER SILENCE IS A LOST STAGE, and it once looked identical.
 // Every producing voice can fail: with all six critics erroring and the
 // naturalness lane silent, the lane settles the archive's own wording and
 // reported that as a DECISION too. Nobody looked at that slice. It is

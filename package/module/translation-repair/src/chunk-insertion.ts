@@ -7,7 +7,7 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 //region Chunk insertion placement
-// `#100` landing 5: which untranslated sections get an anchor to be written at,
+// Section-scale insertion: which untranslated sections get an anchor to be written at,
 // and which are refused.
 //
 // TWO SIGNATURES, NEVER ONE, per

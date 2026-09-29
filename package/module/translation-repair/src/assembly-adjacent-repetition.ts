@@ -7,7 +7,7 @@
 // DOCUMENT scale, where any two distant sentences may share ordinary phrasing,
 // and removing it took a measured reading back to mostly noise.
 //
-// `#107`'s own example does not clear it. The duplication `lintong` shipped
+// Its motivating example does not clear it. The duplication `lintong` shipped
 // across slices 2 and 3 is six words of twenty-three characters whose word
 // lengths are 4,3,3,2,3,3, so it carries no content word at all and the shipped
 // check reports nothing on the defect it was written to catch.

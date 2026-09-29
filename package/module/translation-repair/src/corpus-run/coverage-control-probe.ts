@@ -20,7 +20,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Coverage control probe
-// `#106`: can the coverage roster vote absence at all.
+// Can the coverage roster vote absence at all?
 //
 // The block-scale reading it produced is ninety-six answers with not one vote
 // for absence. Read as a fact about the corpus, that says the translations

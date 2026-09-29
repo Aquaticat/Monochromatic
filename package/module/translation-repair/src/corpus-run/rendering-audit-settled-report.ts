@@ -23,7 +23,7 @@ import {
 import { resolveRunsDir, } from './run-config.ts';
 
 //region Settled audit report
-// Prints the readings `#115` owes, from a run already on disk.
+// Prints the readings the settled audit owes, from a run already on disk.
 //
 // SPENDS NOTHING. The rows were bought once; every question anyone asks of them
 // afterwards should be free, or it will not get asked twice.

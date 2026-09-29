@@ -227,7 +227,7 @@ export function refineRunShape(
  pass's own. `refine-phase.ts` collects link and footnote definitions from the
  WHOLE assembled document so a paragraph's references resolve while it is being
  gated, which means a neighbouring slice settling differently changes what this
- slice's rewriter is shown. That is the window lesson `#126` records: a
+ slice's rewriter is shown. That is the window lesson the repair slice key taught: a
  per-slice key omitting context the model saw resumes a stale rewrite after a
  neighbour moves.
  
@@ -342,7 +342,7 @@ export function refineSliceKey(
       // the parameter asked and should resume rather than be rebought to reach
       // the identical answer.
       //
-      // LABELLED for the reason `#126` records. Spread bare into a positional
+      // LABELLED for the reason the repair slice key learned. Spread bare into a positional
       // array, a source-only window and an incumbent-only window carrying the
       // same text hash identically, and one cached audit would then serve two
       // different questions. Asymmetric windows are real: a neighbour that is

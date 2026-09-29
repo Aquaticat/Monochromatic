@@ -104,7 +104,7 @@ export type {
  stage per call, silently.
  
  One id was REMOVED 2026-08-24, `zai-org/GLM-4.7-Flash` (again without the
- prefix), blocklisted by the owner. `#136` had measured that it should stay,
+ prefix), blocklisted by the owner. A measurement had found that it should stay,
  and the owner overruled that on a roster that later changed independently.
  It answers normally; nothing here calls it.
  

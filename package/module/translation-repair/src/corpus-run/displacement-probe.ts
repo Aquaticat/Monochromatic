@@ -22,7 +22,7 @@ import { sharesMedia, } from './transcription-suspect.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 
 //region Displacement probe
-// `#107`: where the corpus carries a passage the translator MOVED across a
+// Relocation: where the corpus carries a passage the translator MOVED across a
 // section boundary, which a per-slice judge cannot tell from a fabrication,
 // and what ELSE the same size reading turns up along the way.
 //
@@ -84,7 +84,7 @@ type EntryDisplacement = {
   /**
    Low slices whose ORIGINAL is markup rather than prose, so they sit below
    baseline for a reason unrelated to giving a passage up and cannot be a
-   relocation donor. `#107` named this class by hand; it is reported rather
+   relocation donor. This class was named by hand; it is reported rather
    than suppressed so a reader knows what to subtract.
    */
   readonly markupDonors: readonly number[];

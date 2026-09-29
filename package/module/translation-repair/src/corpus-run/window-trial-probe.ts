@@ -45,7 +45,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Window trial probe
-// `#108`, run end to end: does showing the judges the neighbouring original
+// The window trial, run end to end: does showing the judges the neighbouring original
 // change how often the archive's English is replaced?
 //
 // SPENDS QUOTA, roughly three judgings plus one slate per drawn slice. Point

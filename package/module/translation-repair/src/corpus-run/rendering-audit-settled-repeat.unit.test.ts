@@ -1,7 +1,7 @@
 /**
- Tests for the repeat pairings and the band `#115` reads off them.
+ Tests for the repeat pairings and the band the settled audit reads off them.
  
- The band exists because the headline of `#115` is a comparison, and a
+ The band exists because the headline of the settled audit is a comparison, and a
  comparison resolves nothing narrower than the spread the instrument moves
  through on unchanged input. The sharpest cases here are the REFUSALS, since
  a pairing that should not have happened reports a band narrower than the

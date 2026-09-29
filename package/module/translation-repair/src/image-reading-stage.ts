@@ -13,7 +13,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // ONE CALL THAT READS A PICTURE, screened before anybody is allowed to use what
 // it says.
 //
-// READING IS ITS OWN STAGE, which is what makes `#111` workable at all. The
+// READING IS ITS OWN STAGE, which is what makes sending pictures workable at all. The
 // cross-provider vision sub-roster is four models, selection needs a minimum weight of
 // two, and a producer's ballot for its own work counts half. Combining image
 // transcription with translation would entangle reading provenance with candidate

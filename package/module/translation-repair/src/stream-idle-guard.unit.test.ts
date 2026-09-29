@@ -97,7 +97,7 @@ await describe({
             // 347_099 is PASS 7 RUN 014's uncensored first-byte maximum
             // (doc/handover/translation-repair-history.md), a completed call within
             // 3.6 percent of the current deadline. 124_992 is the largest
-            // mid-stream gap `#121` found pooling
+            // mid-stream gap found pooling
             // doc/audit/stream-guards-first-production-traffic.md's three
             // logs (7079 streams); also a completed hf:zai-org/GLM-5.2 call
             // rather than a stall. A future re-arming attempt that lowers

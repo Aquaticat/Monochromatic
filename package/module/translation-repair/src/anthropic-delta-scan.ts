@@ -18,7 +18,7 @@ import { ssePayloadOf, } from './sse-data-line.ts';
 // repetition per channel, `stream-idle-guard.ts` watches the gap between
 // deltas, `stream-runaway-watch.ts` decides when a call has stopped making
 // progress, and `stream-overrun.ts` bounds volume. Every threshold in that set
-// came from measurement, and `#121` re-derived the straggler and idle windows
+// came from measurement, and the straggler and idle windows were re-derived
 // after finding the median premise wrong by a factor of eighty. A second
 // implementation of those guards would be unmeasured, and would drift from
 // this one invisibly. One scanner interface, two wire formats.

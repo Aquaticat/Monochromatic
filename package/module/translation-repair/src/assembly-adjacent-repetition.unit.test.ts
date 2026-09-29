@@ -3,7 +3,7 @@
  things it must NOT name.
  
  WHY IT EXISTS SEPARATELY from the document-scale check: that one requires two
- words of at least five letters before reporting anything, and `#107`'s own
+ words of at least five letters before reporting anything, and the `lintong`
  example carries none, so the check written for that defect cannot see it.
  Adjacency is specific enough to need no content gate, which
  `doc/audit/an-archive-rebuilt-from-the-ledger-is-not-the-archive.md`
@@ -26,7 +26,7 @@ import {
 
 /**
  Wording long enough to report, with NO word of five letters, mirroring the
- shape of the duplication `#107` recorded.
+ shape of the `lintong` duplication.
  */
 const SHORT_WORDED = 'and so we let it be';
 

@@ -541,9 +541,9 @@ async function runDriver(
    That preparation, with one source section the archive never translated
    appended as an anchor at the end of the document.
    
-   BUILT BY HAND because nothing produces an anchor yet: landings four and
-   five of `#100` are the producers, and this driver has to refuse the wrong
-   answers before they arrive.
+   BUILT BY HAND so the case does not depend on a producer: the section-scale
+   and block-scale insertion producers are tested on their own, and this
+   driver has to refuse a wrong answer whatever produced it.
    */
   const prepared = (anchorSource === undefined) ? sliced : {
     ...sliced,

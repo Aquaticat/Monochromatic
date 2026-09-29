@@ -2,7 +2,7 @@ import type { ScreenedFinding, } from '../rendering-audit-screen.ts';
 import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
 
 //region Settled audit reading
-// Turns persisted audit rows into the three readings `#115` owes, and nothing
+// Turns persisted audit rows into the three readings the settled audit owes, and nothing
 // else.
 //
 // WRITTEN BEFORE THE NUMBERS EXISTED, deliberately, while the full run was
@@ -120,7 +120,7 @@ export type VoiceRate = {
 
 /**
  An omission and an addition on neighbouring slices of one document, which
- `#107` says is one relocation rather than two defects.
+ the relocation rule says is one relocation rather than two defects.
  
  REPORTED AS A CANDIDATE rather than subtracted from the tally. Per-slice
  judging cannot tell a relocation from a fabrication, and neither can this; it

@@ -6,9 +6,9 @@ import {
 } from './rendering-audit-settled-row.ts';
 
 //region Relocation pairing
-// The `#107` reading rule, in code.
+// The relocation reading rule, in code.
 //
-// WHAT `#107` SAYS: per-slice judging cannot tell a RELOCATION from a
+// WHAT THE RULE SAYS: per-slice judging cannot tell a RELOCATION from a
 // fabrication. A passage the archive carried across a slice boundary is missing
 // from the slice it belonged to and present in a slice that does not account
 // for it, so one move is reported twice: as an omission on one slice and as an

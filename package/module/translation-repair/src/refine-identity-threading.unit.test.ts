@@ -12,7 +12,7 @@
  so the identity block is forwarded only when it is ABSENT failed no test in
  this package. The rewriters would then be asked to improve how a memorial
  page reads while being told nothing about which names and handles must
- survive exactly, which is the protection `#137` and `#143` put there.
+ survive exactly, which is the protection the declared-names guard puts there.
  
  THE FAILURE MODE IS INVISIBLE TO EVERY OTHER KIND OF TEST, for the reason
  already found once: the block is an optional property spread into an object

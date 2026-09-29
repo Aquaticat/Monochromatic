@@ -92,7 +92,7 @@ export type FidelityTrial = {
   /**
    Original of the SURROUNDING sections, empty by default.
    
-   WHY THIS EXISTS. `#107` measured that 6.4 percent of corpus slices sit in a
+   WHY THIS EXISTS. 6.4 percent of corpus slices were measured to sit in a
    pair where the translator carried a passage across a section boundary. A
    judge shown one slice pair sees the archive inventing content there and
    dropping it next door, and refuses both candidates; `Dethelly/0` is where

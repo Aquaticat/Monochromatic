@@ -1,5 +1,5 @@
 /**
- Tests that `#107`'s neighbouring window actually REACHES the three repair-lane
+ Tests that the neighbouring window actually REACHES the three repair-lane
  sheets, and that a slice with no neighbours is asked exactly what it was asked
  before the window existed.
  

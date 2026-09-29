@@ -271,7 +271,7 @@ export function assembleRepair(
         shippedText: guarded.assembledText,
       },),
       // ADJACENCY IS A SEPARATE CHECK because the document-scale one above
-      // cannot see `#107`'s own example: that duplication carries no word of
+      // cannot see the `lintong` example: that duplication carries no word of
       // five letters, so the content gate drops it. Two neighbouring slices
       // shipping the same wording is specific enough to need no such gate.
       ...adjacentRepetitionFindings({

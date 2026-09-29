@@ -198,8 +198,8 @@ function placeHeldRuns(
  exists and forwards otherwise, which keeps a leading run of skips attached to
  the first reviewable slice.
  
- A run of unplaced ORIGINALS is the opposite case and `#100` landing 4 stops
- folding it. Those blocks have something to write and nowhere yet to write it;
+ A run of unplaced ORIGINALS is the opposite case, and block-scale insertion
+ stops folding it. Those blocks have something to write and nowhere yet to write it;
  folding them into a neighbour puts them inside that slice's span, where no
  later stage can tell them apart from the passage they were folded into.
  

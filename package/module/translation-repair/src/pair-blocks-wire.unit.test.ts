@@ -350,7 +350,7 @@ await describe({
     },),
     it({
       name: 'REFUSES every CROSSING ownership, where one original owns translations either side of '
-        + 'another original’s, so grouping never has to resolve one. `#100` opened an item for a '
+        + 'another original’s, so grouping never has to resolve one. An item was once opened for a '
         + 'crossing refusal downstream; monotone on both sides already makes the shape unsayable, '
         + 'and this is where that is decided',
       fn: async () => {

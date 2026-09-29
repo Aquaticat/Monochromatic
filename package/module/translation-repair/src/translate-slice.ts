@@ -58,8 +58,8 @@ import {
  
  @param neighbouringSourceText - original of the sections either side, shown to
  the judges as context they are not asked to render. Absent by default, so the
- lane behaves exactly as it did; `#108` supplies it on the slices `#107`'s
- screen flags, to read whether the replacement rate falls when a judge can see
+ lane behaves exactly as it did; the window trial supplies it on the slices
+ the displacement screen flags, to read whether the replacement rate falls when a judge can see
  that the archive put this slice's content next door
  
  @param neighbouringIncumbentText - archive English of the sections either

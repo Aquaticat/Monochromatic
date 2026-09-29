@@ -6,7 +6,7 @@
  is the whole reason the stage was split. While producing and judging were one
  call, a caller asking the same question twice bought two slates, so the two
  answers differed in the candidates as well as in whatever the caller meant to
- vary. `#108` varies the judges' evidence; a position-bias probe would vary
+ vary. The window trial varies the judges' evidence; a position-bias probe would vary
  ballot position. Neither means anything if the texts move underneath.
  
  `translate-stage.unit.test.ts` still covers what the composed stage decides,
@@ -488,7 +488,7 @@ await describe({
     },),
     it({
       name: 'sends the WINDOW only on the arm that asked for it, so one slate judged twice differs '
-        + 'in exactly the evidence `#108` varies and in nothing else',
+        + 'in exactly the evidence the window trial varies and in nothing else',
       fn: async () => {
         const rig = driftingClient();
         const produced = await produceTranslateSlate({

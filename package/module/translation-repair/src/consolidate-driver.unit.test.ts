@@ -1648,7 +1648,7 @@ await describe({
 
     it({
       name: 'SHOWS THEM THE PASSAGES EITHER SIDE, which neither half of this stage has ever been given. '
-        + 'The translate lane\'s judges have had the window since `#107`, and a consolidation judge '
+        + 'The translate lane\'s judges have had the window since the relocation finding, and a consolidation judge '
         + 'without it cannot tell a passage the archive moved next door from one a candidate invented. '
         + 'Kept apart from the picture case above so a break in one is not read as a break in the other',
       fn: async () => {

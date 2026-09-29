@@ -1,7 +1,7 @@
 /**
  Tests for reading which images a passage shows.
  
- WHAT THESE PIN is the reader that lets `#111` hand a stage the picture rather
+ WHAT THESE PIN is the reader that lets the pipeline hand a stage the picture rather
  than the markup naming it. Validated against the pinned corpus before these
  were written: 380 references found, 380 present in the tree, none missing,
  matching an independent count of the same construct.

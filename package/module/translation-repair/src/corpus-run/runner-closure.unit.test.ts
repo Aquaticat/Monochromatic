@@ -4,7 +4,7 @@
  The case that matters is the MINIFIED import form. Built runners here are one
  long line whose imports read `from"./chunk.mjs"` with no space, and a scan
  expecting `from './` finds nothing and reports a clean closure for a file full
- of imports. That false null was hit while measuring `#115`, and it looks
+ of imports. That false null was hit while measuring the settled audit, and it looks
  exactly like a self-contained bundle, which is a legitimate state.
  
  Fixtures are cat-themed invention. No corpus content appears here.

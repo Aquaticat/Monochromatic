@@ -212,7 +212,7 @@ function drawRegions(
  
  NO CORPUS READ AND NO RE-SLICING, unlike the version 1 path. The delivery row
  already carries the original passage and the wording that was there before, as
- the judges saw them, and `#115` settled that re-sliced text is a different
+ the judges saw them, and the settled audit established that re-sliced text is a different
  input from the one that was judged. That also removes a failure mode rather
  than moving it: the old builder could draw a region and then fail to place it
  again, quietly shortening the sheet.

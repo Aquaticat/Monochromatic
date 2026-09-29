@@ -343,7 +343,7 @@ await describe({
          */
         const said = printed.lines.join('\n',);
 
-        expect(said.includes('RELOCATION CANDIDATES (#107): claim pairs=1 slice pairs=1',),).toBe(true,);
+        expect(said.includes('RELOCATION CANDIDATES: claim pairs=1 slice pairs=1',),).toBe(true,);
         expect(said.includes(`${RUN_SET}/whiskers`,),).toBe(true,);
         expect(said.includes('omission at 3 <-> addition at 7',),).toBe(true,);
       },
@@ -389,7 +389,7 @@ await describe({
         printRelocations({ pairs: [], },);
 
         expect(printed.lines.length,).toBe(1,);
-        expect((printed.lines[0] ?? '').includes('RELOCATION CANDIDATES (#107): claim pairs=0 slice pairs=0',),)
+        expect((printed.lines[0] ?? '').includes('RELOCATION CANDIDATES: claim pairs=0 slice pairs=0',),)
           .toBe(true,);
       },
     },),

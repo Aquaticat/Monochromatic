@@ -1591,8 +1591,8 @@ await describe({
 
         // THE WRITE is what fails here, not a model call, and that is
         // deliberate: both lanes tolerate a stage losing every voice, so a
-        // scripted provider failure settles the entry rather than failing it
-        // (`#112`). A directory that does not exist fails the one step every
+        // scripted provider failure settles the entry rather than failing it.
+        // A directory that does not exist fails the one step every
         // settled entry has to reach, whatever the lanes did.
         await settleEntry({
           client: entryClient({ served, },),

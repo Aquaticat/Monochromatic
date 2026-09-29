@@ -1,5 +1,5 @@
 /**
- Tests that the repair slice driver FORWARDS `#107`'s neighbouring window to
+ Tests that the repair slice driver FORWARDS the neighbouring window to
  the sheets its stages send.
  
  WHY A SEPARATE FILE FROM `nearby-window-reaches-the-models.unit.test.ts`.
@@ -13,7 +13,7 @@
  test in this package. Every builder case stayed green, because each is handed
  its window by hand. A driver that dropped it would leave the critic reasoning
  about a slice alone while the key that names its work claims a window: the
- exact shape `#126` had, where the slice key mislabelled its window sides.
+ exact shape of the defect where the slice key mislabelled its window sides.
  
  THE CRITIC IS ENOUGH TO PIN IT. All four stages spread ONE fragment, built
  once, which the module says is deliberate: a critic that can see next door

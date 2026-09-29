@@ -89,7 +89,7 @@ import { JUDGE_PICTURE_SCOPE_RULE, } from './translate-wire.ts';
  @param neighbouringSourceText - original of the sections either side, shown as
  CONTEXT the candidates are not expected to render. Absent by default, so a
  caller that does not ask for it gets the sheet production has always sent.
- `#107` is why it exists: where the archive carried a passage across a section
+ Relocation is why it exists: where the archive carried a passage across a section
  boundary, a judge shown one slice pair sees invention on one side and omission
  on the other, and the judge-quality bench's alteration arm went from 12 of 16 to 15 of 16 when
  the same trial was given exactly this
@@ -435,7 +435,7 @@ export async function judgeTranslateSlate(
           },
         ]),
       // THE OTHER HALF OF THE SAME WINDOW, and the half that names the failure
-      // `#107` is about. A judge shown only this slice cannot tell a passage
+      // relocation causes. A judge shown only this slice cannot tell a passage
       // the archive INVENTED from one it carried across a boundary, and it
       // condemns the archive for both. Measured over 92 entries and 1260
       // slices, every relocation pair is adjacent, so the passage it is looking

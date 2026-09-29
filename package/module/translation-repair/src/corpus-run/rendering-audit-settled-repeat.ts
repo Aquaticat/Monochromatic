@@ -12,7 +12,7 @@ import {
 // Pairs audits of ONE text so the instrument's own spread can be read off its
 // own output.
 //
-// WHY THIS EXISTS. The headline of `#115` is a comparison: the archive's own
+// WHY THIS EXISTS. The headline of the settled audit is a comparison: the archive's own
 // English against a fresh rendering. A comparison is unreadable below the band
 // the instrument moves through on unchanged input, and that band has already
 // been seen to be wide. One subject, `grace-remeasure/Aniloviraw#0`, read

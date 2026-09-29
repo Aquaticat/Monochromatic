@@ -6,7 +6,7 @@ import type { VisionMessage, } from './chat-contract.ts';
 // ONE MESSAGE, TRANSLATED INTO THE BLOCKS THE MESSAGES API TAKES.
 //
 // The pipeline speaks the OpenAI content-part shape everywhere above the client
-// seam, because that is what the first provider takes and `#111` widened it for
+// seam, because that is what the first provider takes, and it was widened for
 // pictures. Anthropic takes a different shape for the same three things: a run
 // of text, an inline image, an image behind a URL. This file is the whole of
 // that difference, so no stage learns which provider it is talking to.

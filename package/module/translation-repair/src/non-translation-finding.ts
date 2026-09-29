@@ -8,7 +8,7 @@
 // longer did. A reader comparing a log line against an artifact finding is
 // comparing two renderings of one fact, and they have to be one rendering.
 //
-// NOTHING BLOCKS ON IT ANY MORE. `#110` removed every critic early return,
+// NOTHING BLOCKS ON IT ANY MORE. Every critic early return was removed,
 // because a blocked document was discarding translated slices, so the log line
 // says "reported, not blocking" and the finding is all the decision produces.
 

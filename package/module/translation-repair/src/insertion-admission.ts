@@ -19,7 +19,7 @@ import { admitWithinShortfall, } from './coverage-corroboration.ts';
 // the same slices.
 //
 // A REFUSAL HERE IS NOT A FAILURE. The slice keeps the gap the archive already
-// had, which `#100` landing 3 already supports: the driver records an unfilled
+// had, which the lanes' insertion support already allows: the driver records an unfilled
 // passage per slice rather than losing the entry. What this prevents is writing
 // English into a page that has no room to be missing it, which usually means the
 // pairing found a merge rather than an omission.

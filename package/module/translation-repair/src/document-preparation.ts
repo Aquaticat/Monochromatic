@@ -293,7 +293,7 @@ export function prepareDocumentPair(
    `Zha_Ke` settled with this list EMPTY while two of its six English blocks,
    2943 characters of dense text between them, had been declined.
    Reconstructing that took the pairing cache and the parser. Recording it
-   here is what `#135` asks for, at the one place that already knows both the
+   here puts it at the one place that already knows both the
    pairing and the blocks.
    
    The finding itself counts OFFSET SPANS, which run wider than dense text
@@ -464,9 +464,9 @@ export function prepareDocumentPair(
      Those slices renamed by where they actually landed.
      
      Subdivision was handed a base index and added its own offset, which is
-     the same answer this produces today. It stops being the same answer the
+     the same answer this produces until an insertion precedes. It stops being the same answer the
      moment a section contributes a slice the base index did not count, which
-     is exactly what `#100`'s insertions do, so the preparation stamps the
+     is exactly what an insertion slice does, so the preparation stamps the
      final name itself rather than trusting arithmetic it handed out.
      */
     const stamped = carved.map(function toStamped(
@@ -501,9 +501,9 @@ export function prepareDocumentPair(
   // from a strange document.
   assertSliceIndexing({ slices, },);
 
-  // AND WHERE THEY POINT, which indexing says nothing about. Every span here
-  // comes from a disjoint run of nodes, so this holds by construction today and
-  // stops doing so the moment `#100` adds a slice that covers no nodes at all.
+  // AND WHERE THEY POINT, which indexing says nothing about. A content span comes
+  // from a disjoint run of nodes, so for it this holds by construction; an
+  // insertion anchor covers no nodes at all, so for it nothing does.
   assertPlacementLayout({
     slices,
     targetText,

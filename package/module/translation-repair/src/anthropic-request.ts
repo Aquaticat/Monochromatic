@@ -37,7 +37,7 @@ import {
 //   `anthropic-tool.ts` carries.
 //
 // STREAMING IS NOT A PARAMETER. The owner's instruction is that streaming is
-// always on, and every stream guard `#118` through `#158` reads a live stream,
+// always on, and every stream guard reads a live stream,
 // so a non-streaming body would be a call none of them cover.
 
 /**

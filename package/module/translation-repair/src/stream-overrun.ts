@@ -13,7 +13,7 @@ import type { StreamChannel, } from './stream-delta-scan.ts';
 // largest legitimate content emission anywhere at 4,278 characters, against
 // the two content-producing cuts at 25,482 and 28,026.
 //
-// WHY A SHARED PREDICATE LIVES HERE. `#120` was one defect repeated at several
+// WHY A SHARED PREDICATE LIVES HERE. It was one defect repeated at several
 // classification sites: the retry ladder re-bought a runaway because its check
 // named one error class and a second had been added beside it. Every site that
 // asks "did we end this call ourselves" now asks it through

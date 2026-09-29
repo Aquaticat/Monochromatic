@@ -45,11 +45,11 @@ import type { HeardVoice, } from './stage-quorum.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
 
 //region Consolidate settle
-// RUNS THE CONSOLIDATION'S DECIDING HALF, in the order `#138` specifies: floor
+// RUNS THE CONSOLIDATION'S DECIDING HALF, in the order it was specified: floor
 // the slate, judge it against the standing text, gate what wins, wrap what
 // ships.
 //
-// The producing half is deliberately NOT here. `#109` split producing from
+// The producing half is deliberately NOT here. Producing was split from
 // judging so one slate can be judged more than once, and every measurement of
 // this stage rests on that split: an arm that rebought its slate would compare
 // different candidates. This takes voices already gathered and repaired.

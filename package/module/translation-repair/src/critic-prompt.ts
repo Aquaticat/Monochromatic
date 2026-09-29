@@ -193,7 +193,7 @@ export function buildCriticMessages(
    evidence ABOUT the pair, and putting it first would invite a critic to
    treat the neighbours as part of what it was asked to judge.
    
-   WHY A CRITIC NEEDS IT AT ALL, from `#107`: where the archive carried a
+   WHY A CRITIC NEEDS IT AT ALL: where the archive carried a
    passage across a section boundary, the translation here holds English with
    no original to support it, and the original next door holds Chinese with no
    English. Shown this slice alone, the only available readings are invention

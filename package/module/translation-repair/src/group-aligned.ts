@@ -65,7 +65,7 @@ export type AlignedRun =
     /**
      Original blocks nothing rendered, and the place their rendering belongs.
      
-     `#100` landing 4. Before this these blocks were FOLDED into a
+     BLOCK-SCALE INSERTION, landed 2026-08-23. Before it these blocks were FOLDED into a
      neighbouring run, which put them inside that slice's span and left the
      lane no way to tell "this passage is missing" from "this passage is part
      of the one beside it". Folding also cannot be undone later: once the
@@ -287,7 +287,7 @@ function walkIntoRuns(
    Walk positions holding an original nothing rendered, mapped to where its
    rendering belongs, EMPTY when the scorer produced the walk.
    
-   `#100` landing 4. These positions each start and end a run of their own, so
+   BLOCK-SCALE INSERTION. These positions each start and end a run of their own, so
    the blocks nothing rendered become their own slice rather than riding
    inside a neighbour's span.
    

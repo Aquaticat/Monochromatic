@@ -142,7 +142,7 @@ export function holdsPhrase(
 /**
  Splits text into words, collapsing every run of whitespace.
  
- LINE STRUCTURE IS DELIBERATELY DISCARDED. `#122` wraps shipped text
+ LINE STRUCTURE IS DELIBERATELY DISCARDED. Shipped text is wrapped
  semantically, so the same sentence carries different newlines before and
  after the pipeline runs, and a comparison that kept them would report every
  rewrapped paragraph as a change.

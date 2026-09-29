@@ -85,7 +85,7 @@ export function translateRunShape(
  
  WHAT KEEPING IT COST. Any renumbering invalidated every slice after the
  change however untouched its text: inserting one slice at the top of a
- document discarded the whole document's settled work, and `#100` inserts
+ document discarded the whole document's settled work, and one-sided slicing inserts
  slices for every untranslated section. The corpus would have been rebought on
  that change and on every slicing change after it.
  

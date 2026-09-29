@@ -236,7 +236,7 @@ await describe({
     },),
     it({
       name: 'reports NEGATIVE when the window pushed the other way, so a result contradicting '
-        + '`#107` reads as one number rather than as an absence of the expected one',
+        + 'the relocation finding reads as one number rather than as an absence of the expected one',
       fn: async () => {
         const rows = [
           ...tripleFor({ sliceIndex: 0, narrowFirst: false, narrowSecond: false, wide: true, },),

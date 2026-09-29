@@ -12,8 +12,8 @@ import { isPlausibleSlice, } from './slice-implausible.ts';
 // conflated into one bucket called `movedPairs`.
 //
 // THE MISTAKE THAT PRODUCED THIS FILE. A screen built to find relocation
-// reported 44 pairs across the corpus, and the number went into `#107` and into
-// Question 5. Hand-checking entries whose expansion was anomalous showed the
+// reported 44 pairs across the corpus, and the number went into the relocation
+// finding and into Question 5. Hand-checking entries whose expansion was anomalous showed the
 // bucket held at least four different phenomena, three of which are not
 // relocation and one of which is not evidence at all. A single count over a
 // mixture cannot be a floor on any of its parts.
@@ -33,7 +33,7 @@ import { isPlausibleSlice, } from './slice-implausible.ts';
  */
 export type SliceClass =
   /**
-   Long original, negligible translation. `#106`'s subject: this is the
+   Long original, negligible translation. The absence verdict's subject: this is the
    positive verdict that a passage was never rendered, and a ratio of 0.01 is
    not an ambiguous one.
    
@@ -138,7 +138,7 @@ const MIN_RELOCATION_SURPLUS = 120;
  and the two verified relocations at 0.35 and 0.41, so the band just above this
  floor is where the false ones have so far been found. That is five data points
  and not grounds to retune; it is grounds to hand-check a near-floor candidate
- rather than count it, which is what `#108` is told to do.
+ rather than count it, which is what the window trial is told to do.
  */
 const MIN_CONSERVED_FRACTION = (1 / 2) * (1 / 2);
 
@@ -417,7 +417,7 @@ export function classifyDisplacement(
         if (beside === undefined)
           return [];
         // A NEIGHBOUR THAT IS ITSELF UNTRANSLATED IS NOT A DONOR. It is short
-        // because nobody rendered it, which is `#106`'s finding rather than
+        // because nobody rendered it, which is the absence verdict's finding rather than
         // this one, and pairing with it would report every untranslated section
         // as a relocation.
         if (beside.sliceClass !== 'translated')

@@ -63,7 +63,7 @@ export type JsonSchemaResponseFormat = {
 /**
  One message carrying parts rather than a plain string.
  
- FOR IMAGES, and only images so far. `#111` sends a picture so a transcribed
+ FOR IMAGES, and only images so far. A picture is sent so a transcribed
  passage has a source that can be CHECKED rather than only preserved, and the
  provider takes that as an OpenAI-compatible content-part array. The part type
  is the shared one from `@monochromatic-dev/module-llm-type`, so nothing here

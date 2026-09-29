@@ -23,7 +23,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // PROTOTYPE for question 28: can a roster tell a passage the translation merged
 // from one it never rendered.
 //
-// WHAT IT MEASURES AND WHY IT IS WORTH QUOTA. `#106` established that neither
+// WHAT IT MEASURES AND WHY IT IS WORTH QUOTA. It was established that neither
 // aligner produces evidence of absence, at either scale, and that the
 // deterministic substitutes are exhausted: heading Latin, section length and
 // distinctive body tokens were each measured and none of them separates a
@@ -37,8 +37,8 @@ import { reportingRefusals, } from './cli-refusal.ts';
 // IT DOES KEEP ITS ANSWERS, which it did not always. It used to print rows to
 // standard output and write nothing, on the reasoning that a caller would
 // redirect them wherever the measurement was being kept. Nobody did, and both
-// scales were probed on 2026-08-16 at real quota cost: `#106` records that
-// those numbers "survive only in session transcripts". Every run now lands in
+// scales were probed on 2026-08-16 at real quota cost, and those numbers
+// survived only in session transcripts. Every run now lands in
 // the runs directory under `coverage-probe/` as well, carrying the corpus pin,
 // the roster and the pipeline digest that produced it.
 //
@@ -259,7 +259,7 @@ async function main(): Promise<void> {
   /**
    Chunks this entry imports, read from the executing file at run START for
    the same reason the digest is: a rebuild mid-run would otherwise stamp a
-   build that never ran. `#116`.
+   build that never ran.
    */
   const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
 

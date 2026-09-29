@@ -28,7 +28,7 @@ import { contextRoot, } from './log-context.ts';
  never fires. The guard measures; the total deadline is what kills.
  
  THE MEDIAN THIS WAS ORIGINALLY SET FROM IS SUPERSEDED, by about eighty
- times, and `#121` re-derived it from first production traffic rather than
+ times, and it was re-derived from first production traffic rather than
  retiring the finding. A full sentinel probe once found 34 of 34 recorded
  stalls were `first-byte` and NOT ONE was `body`, and across 32 successful
  streams then, time to first byte ran p50 95.6 s, p75 123 s, p90 134 s, max
@@ -58,7 +58,7 @@ export const STREAM_FIRST_BYTE_MS = 600_000;
 /**
  Silence allowed between body bytes once flowing, also set above
  `RUN_PER_CALL_TIMEOUT_MS` so it never fires, for two independent reasons,
- both narrowed rather than reversed by the `#121` re-derivation.
+ both narrowed rather than reversed by that re-derivation.
  
  First, it still has almost nothing to catch. The original probe found 34
  of 34 recorded stalls were `first-byte` and none were `body`. Re-counted
@@ -75,7 +75,7 @@ export const STREAM_FIRST_BYTE_MS = 600_000;
  mistake, and the pattern repeated a third time on re-measurement. An
  earlier 30 s value here was justified by a six-stream sample whose largest
  gap was 733 ms, called forty times the worst observation; at 32 streams
- that read p50 86 ms, p90 3833 ms, max 24_673 ms; the `#121` re-count above
+ that read p50 86 ms, p90 3833 ms, max 24_673 ms; the re-count above
  puts the observed max at 124_992 ms. Each larger sample found a larger
  gap, 733 ms then 24_673 ms then 124_992 ms, so treating any one of them as
  a bound has been wrong every time it was tried. See

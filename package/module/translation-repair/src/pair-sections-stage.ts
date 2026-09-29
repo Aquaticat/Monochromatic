@@ -191,8 +191,8 @@ function readUsablePairings(
         throw error;
       // A REPLY THAT CANNOT BE USED IS A LOST VOICE, not a stage failure: the
       // rest of the roster may still agree on a pairing, and refusing the whole
-      // document because one model answered badly is the failure `#110`
-      // recorded.
+      // document because one model answered badly is the failure that once
+      // discarded translated slices.
       findings.push(`section-pairing unusable (${outcome.modelId}: ${error.message})`,);
       l.warn(`${outcome.modelId} returned an unusable section pairing: ${error.message}`,);
     }

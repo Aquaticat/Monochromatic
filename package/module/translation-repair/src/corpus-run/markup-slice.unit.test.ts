@@ -1,7 +1,7 @@
 /**
  Tests for the markup-only slice reading.
  
- `#107` named this class by hand: a slice that is entirely a photo component
+ This class was named by hand: a slice that is entirely a photo component
  sits near ratio 1.00 whatever the translator did, so it is below baseline for
  a reason unrelated to giving a passage up and pairs with any high neighbour.
  
@@ -84,7 +84,7 @@ await describe({
   name: isMarkupOnly.name,
   children: [
     it({
-      name: 'RECOGNISES A PHOTO COMPONENT, which is the class #107 identified by hand as a false '
+      name: 'RECOGNISES A PHOTO COMPONENT, which is the class identified by hand as a false '
         + 'donor: the same markup appears verbatim on both sides, so the slice sits near ratio '
         + 'one whatever the translator did',
       fn: async () => {

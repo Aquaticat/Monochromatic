@@ -99,7 +99,7 @@ function floorFindings({ verdict, }: { readonly verdict: SliceValidation; },): r
  @param neighbouringSourceText - original of the sections either side, shown as
  CONTEXT the candidates are not expected to render. Absent by default, so a
  caller that does not ask for it gets the sheet production has always sent.
- `#107` is why it exists: where the archive carried a passage across a section
+ Relocation is why it exists: where the archive carried a passage across a section
  boundary, a judge shown one slice pair sees invention on one side and omission
  on the other, and the judge-quality bench's alteration arm went from 12 of 16 to 15 of 16 when
  the same trial was given exactly this

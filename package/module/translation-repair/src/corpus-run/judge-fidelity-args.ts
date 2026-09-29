@@ -105,7 +105,7 @@ export function readFidelityArguments(): {
   if (damageKinds === undefined)
     throw new StatedRefusalError({ says: `--damage takes deletion, insertion or alteration, not ${damageText}`, },);
   return {
-    // `#107`: whether the sheet also carries the neighbouring sections' original,
+    // Whether the sheet also carries the neighbouring sections' original,
     // which is the one thing that differs between a narrow run and a wide one.
     withContext: args.includes('--context',),
     damageKinds,

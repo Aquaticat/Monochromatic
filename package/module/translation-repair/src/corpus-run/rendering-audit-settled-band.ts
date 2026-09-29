@@ -6,7 +6,7 @@ import type { AuditRepeatPair, } from './rendering-audit-settled-repeat.ts';
 //
 // THIS IS THE NUMBER EVERY OTHER NUMBER HAS TO CLEAR. `QNB` says a comparison
 // resolves nothing smaller than the run-to-run spread, and the headline of
-// `#115` is a comparison. A difference between archive text and fresh text that
+// the settled audit is a comparison. A difference between archive text and fresh text that
 // is narrower than the band is a difference this instrument cannot see, and
 // quoting it would credit noise to the thing under test.
 //

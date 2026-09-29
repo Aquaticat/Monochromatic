@@ -14,7 +14,7 @@ import type { RepairDocument, } from './parse-document.ts';
 //
 // ONE LIST FROM BOTH SCALES, because they are the same question. A source
 // section with no target section and a source block with no target block are
-// both "the aligner could not pair this", and `#106` measured that neither is
+// both "the aligner could not pair this", and it was measured that neither is
 // evidence the translation lacks the passage. What decides that is the coverage
 // stage, and this is what it has to ask about.
 //

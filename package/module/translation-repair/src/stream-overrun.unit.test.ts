@@ -316,7 +316,7 @@ await describe({
   name: isSelfEndedStream.name,
   children: [
     it({
-      name: 'NAMES BOTH GUARD ERRORS, which is the property `#120` was filed for: a retry ladder that '
+      name: 'NAMES BOTH GUARD ERRORS, which is the property the shared predicate exists for: a retry ladder that '
         + 'knew about one class re-bought the runaway once per remaining attempt, five transport calls '
         + 'over twelve seconds of backoff',
       fn: async () => {

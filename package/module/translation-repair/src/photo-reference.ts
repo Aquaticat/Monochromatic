@@ -2,7 +2,7 @@
 // WHICH IMAGES A PASSAGE SHOWS, so a stage can be handed the picture rather
 // than only the markup that names it.
 //
-// `#111` supplies the image to translators and judges, so a passage transcribed
+// The pipeline supplies the image to translators and judges, so a passage transcribed
 // from one has a source that can be CHECKED rather than only preserved. The
 // asset is already named in the markdown, so finding it is path work rather
 // than a new corpus reader.

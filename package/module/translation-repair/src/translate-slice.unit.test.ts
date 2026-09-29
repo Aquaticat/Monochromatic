@@ -2,7 +2,7 @@
  Tests for the hop between one settled slice and the stage that settles it.
  
  WHAT THIS EXISTS TO CATCH, and why a test rather than a check at run time.
- `#108` compares one slice judged twice, differing only in whether the judges
+ The window trial compares one slice judged twice, differing only in whether the judges
  were shown the neighbouring original. `translate-stage.unit.test.ts` proves
  the stage renders that window into its sheets, and
  `translate-slice-key.unit.test.ts` proves the cache separates the two arms.
@@ -315,7 +315,7 @@ await describe({
     it({
       name: 'FORWARDS the window to the judges, which is the hop nothing else tests: the stage '
         + 'renders it and the cache key separates it, but a parameter that stopped here would '
-        + 'make both arms of `#108` identical and report a null after fifteen hundred calls',
+        + 'make both arms of the window trial identical and report a null after fifteen hundred calls',
       fn: async () => {
         const arm = await settleWith({ neighbouringSourceText: WINDOW_SENTINEL, },);
         expect(arm.judge

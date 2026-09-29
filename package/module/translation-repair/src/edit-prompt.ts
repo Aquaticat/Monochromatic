@@ -32,7 +32,7 @@ import { flattenSpace, } from './sheet-line-text.ts';
  What the neighbouring blocks are for, stated inside the editor sheet.
  
  THE EDITOR IS WHERE THE WINDOW EITHER PAYS OR DOES HARM, so its rule is the
- strictest of the three. `#107`'s `lintong` damage is an editor outcome: handed
+ strictest of the three. The `lintong` damage is an editor outcome: handed
  a one-sentence original against a four-sentence incumbent, it repaired the
  sentence it could match and left the other three in place, and the neighbour's
  own new translation then said them a second time. Seeing next door is what

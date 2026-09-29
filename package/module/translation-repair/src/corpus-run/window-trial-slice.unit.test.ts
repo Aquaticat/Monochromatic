@@ -2,7 +2,7 @@
  Tests for one slice's three arms.
  
  WHAT THESE PIN is the property the whole trial rests on: the slate is bought
- ONCE and all three arms judge that same slate. Until `#109` split the stage,
+ ONCE and all three arms judge that same slate. Until the stage was split,
  asking a slice twice resampled the candidates, so two answers differed in the
  slate as well as the evidence and no reading could say which moved the
  verdict. A regression here would not fail loudly; it would produce a
@@ -400,7 +400,7 @@ await describe({
     },),
     it({
       name: 'BUYS NOTHING FOR A PARTLY BOUGHT SLICE, which is the resumption path that would '
-        + 'otherwise re-introduce the confound `#109` was split to remove: the slate cannot be '
+        + 'otherwise re-introduce the confound the stage was split to remove: the slate cannot be '
         + 'reproduced, so finishing the remaining arms here would judge different candidates from '
         + 'the arms already on disk while the ledger showed a complete triple',
       fn: async () => {

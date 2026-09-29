@@ -4,7 +4,8 @@
  content that exists only in the translation, or nothing at all.
  
  WHAT THESE ARE FOR. The screen's first version reported one bucket, and its
- count went into `#107` and Question 5 before anyone checked what was in it.
+ count went into the relocation finding and Question 5 before anyone checked
+ what was in it.
  These fixtures are the labelled cases that check came back with: the two
  relocations verified by reading both documents, the three anomalous entries
  that turned out to be other phenomena, and an ordinary document that must stay

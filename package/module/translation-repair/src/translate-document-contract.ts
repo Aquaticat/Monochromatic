@@ -30,7 +30,7 @@ import type { SliceReplacement, } from './splice-slices.ts';
  
  VERSION 2, on 2026-08-15, takes the SLICE INDEX out of the key. No record
  changed; what changed is which slices count as the same slice. Keeping the
- index meant any renumbering discarded every slice after it, and `#100`
+ index meant any renumbering discarded every slice after it, and one-sided slicing
  renumbers by design, since inserting a slice for an untranslated section
  shifts everything below it. The index is now stamped onto a resumed record by
  whoever asked for it, and `translateSliceKey` carries the measurement saying

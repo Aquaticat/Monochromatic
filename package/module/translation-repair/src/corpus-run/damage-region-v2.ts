@@ -34,7 +34,7 @@ import {
 // and the lane is recorded per row so a reader can still separate them.
 //
 // THE ARTIFACT'S OWN TEXT IS USED, never a fresh slicing of the corpus, for the
-// reason `#115` settled: re-sliced text is a different input from the one the
+// reason the settled audit established: re-sliced text is a different input from the one the
 // judges saw, so a sheet built from it would ask about something the pipeline
 // never produced. It also removes the old draw's unplaceable-region failure,
 // where a region survived the draw and then could not be located again.

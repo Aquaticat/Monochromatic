@@ -138,7 +138,8 @@ export function printVoices({ rates, }: { readonly rates: readonly VoiceRate[]; 
 }
 
 /**
- Prints the omission and addition pairs `#107` says are one relocation.
+ Prints the omission and addition pairs the relocation rule says are one
+ relocation.
  
  TWO COUNTS IN THE HEADING, because the pairs are per claim: three voices
  each filing one omission beside two each filing one addition are six claim
@@ -156,7 +157,7 @@ export function printRelocations(
   { pairs, }: { readonly pairs: readonly AuditRelocationPair[]; },
 ): void {
   console.log(
-    `\nRELOCATION CANDIDATES (#107): claim pairs=${String(pairs.length,)} slice pairs=${
+    `\nRELOCATION CANDIDATES: claim pairs=${String(pairs.length,)} slice pairs=${
       String(distinctSlicePairs({ pairs, },),)
     }`,
   );

@@ -31,8 +31,8 @@
  legible: it is the wiring `#150` landed and this fixture's governance is
  only a claim until something production decides agrees with it.
  
- READING THE RETURN VALUE WOULD PROVE NOTHING. `#107` built a judging window,
- keyed it, and never passed it to the call it was keyed for; nothing failed
+ READING THE RETURN VALUE WOULD PROVE NOTHING. A judging window was once built,
+ keyed, and never passed to the call it was keyed for; nothing failed
  for weeks because every test read what the driver returned, which the missing
  wiring never touched.
  

@@ -10,7 +10,7 @@ import { isJsonRecord, } from '../json-guard.ts';
 //region Window trial ledger
 // What a window trial has already bought, kept on disk as it is bought.
 //
-// WHY IT EXISTS. `#108` judges each flagged slice three times, roughly 1760 real
+// WHY IT EXISTS. The window trial judges each flagged slice three times, roughly 1760 real
 // exchanges. The slice cache does not help: it is keyed and read by the DOCUMENT
 // DRIVER, and this trial calls the stage directly, so nothing resumes. A run
 // that dies at hour three would otherwise restart from zero.

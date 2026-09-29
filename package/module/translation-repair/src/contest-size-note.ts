@@ -18,7 +18,7 @@ import {
 // carries is CORRECT. A candidate preserving a
 // long page-only region is far longer than the Chinese AND is the right
 // candidate, so a name there would instruct a judge to penalise exactly the
-// behaviour that rule protects. That is the shape of the criterion `#143`
+// behaviour that rule protects. That is the shape of a criterion once
 // removed: one that licenses the wrong outcome.
 //
 // MEASURED BEFORE IT WAS BUILT, over all 11 settled artifacts, 184 rows and 116

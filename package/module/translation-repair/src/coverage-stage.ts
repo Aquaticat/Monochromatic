@@ -24,7 +24,7 @@ import type { AnchorTarget, } from './validate-issue.ts';
 // what they proved rather than what they said.
 //
 // NOTHING CALLS THIS YET. It exists to answer question 28 with a measurement:
-// the four ways out of `#106` differ in expense rather than in correctness, and
+// the four ways out it offered differ in expense rather than in correctness, and
 // only one of them can be evaluated before it is chosen. `coverage-probe.ts`
 // runs it over the corpus candidates that the two aligners disagree about.
 

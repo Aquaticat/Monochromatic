@@ -57,7 +57,7 @@ import {
 // about the same thing; four runs of `audit-sensitivity` now show the strict
 // tier reporting a unanimous defect as nothing.
 //
-// THE RELOCATION RULE WAS FIXED BEFORE THE RUN. `#107`: per-slice judging
+// THE RELOCATION RULE WAS FIXED BEFORE THE RUN. Per-slice judging
 // cannot tell a relocation from a fabrication, so a passage the archive carried
 // across a slice boundary reads as an omission on one slice and an unsupported
 // addition on its neighbour. Paired omission and addition findings on ADJACENT
@@ -176,7 +176,7 @@ async function main(): Promise<void> {
   /**
    Chunks this entry imports, read from the executing file at run START for
    the same reason the digest is: a rebuild mid-run would otherwise stamp a
-   build that never ran. `#116`.
+   build that never ran.
    */
   const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
 

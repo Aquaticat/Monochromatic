@@ -883,7 +883,7 @@ await describe({
     it({
       name: 'renders the surrounding block AND its context-only caveat when a caller supplies '
         + 'one, which is what lets a flagged slice be judged twice differing in exactly one '
-        + 'thing, as `#107` needs',
+        + 'thing, as the window trial needs',
       fn: async () => {
         const { judgeSheets, } = await runLane({
           translations: {

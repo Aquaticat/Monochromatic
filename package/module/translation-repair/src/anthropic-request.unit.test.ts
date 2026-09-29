@@ -265,8 +265,8 @@ await describe({
   name: buildAnthropicBody.name,
   children: [
     it({
-      name: 'STREAMS ALWAYS, because the owner requires it and every runaway guard #118 through '
-        + '#158 reads a live stream',
+      name: 'STREAMS ALWAYS, because the owner requires it and every runaway guard '
+        + 'reads a live stream',
       fn: async () => {
         expect(buildAnthropicBody({
           modelId: 'kimi-k3',

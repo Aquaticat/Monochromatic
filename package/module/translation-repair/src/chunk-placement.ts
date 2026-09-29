@@ -21,9 +21,10 @@ import type { DocumentNode, } from './document-node.ts';
 // silently BECOMES an insertion. A field says what a value is rather than
 // letting its emptiness decide.
 //
-// NOTHING PRODUCES AN INSERTION YET. `#100` lands the producers last, after
-// assembly, the lanes and the caches can each consume one, so this file exists
-// before its callers deliberately.
+// WRITTEN BEFORE ANYTHING PRODUCED AN INSERTION, deliberately. The producers
+// landed last, on 2026-08-23 (`chunk-insertion.ts` at section scale,
+// `group-source-anchor.ts` at block scale), once assembly, the lanes and the
+// caches could each consume one.
 
 /**
  Where a chunk sits in its document, shared by both kinds.
@@ -73,8 +74,8 @@ type ChunkPosition = {
  which is what lets every existing construction site stay as it is while an
  insertion still cannot be passed where content is required: under
  `exactOptionalPropertyTypes` a `kind` of `'insertion'` satisfies neither
- `'content'` nor absence. Making it required is a later tightening, worth
- doing when `#100` touches the constructors anyway; no chunk is ever
+ `'content'` nor absence. Making it required is a later tightening; no
+ chunk is ever
  serialized, so an absent discriminant cannot reach a reader as data.
  
  @example
@@ -167,7 +168,7 @@ export type DocumentChunk = ContentChunk | InsertionChunk;
  ONE OFFSET, NOT TWO, which is what makes the empty range unfalsifiable: a
  caller cannot hand in a start and an end that disagree. What this cannot
  check is whether the offset lies inside the document it names, since the
- document is not here; `#101` validates bounds and ordering at assembly,
+ document is not here; `assertPlacementLayout` validates bounds and ordering at assembly,
  where the target text is in hand and every placement is visible at once.
  
  @param sliceIndex - position this anchor holds among the slices

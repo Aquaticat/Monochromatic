@@ -130,7 +130,7 @@ await describe({
   name: neighbouringSource.name,
   children: [
     it({
-      name: 'joins ONE section each way for a slice in the middle, which is the window `#107` '
+      name: 'joins ONE section each way for a slice in the middle, which is the window the relocation finding '
         + 'says would fix a passage carried across a single boundary',
       fn: async () => {
         expect(neighbouringSource({

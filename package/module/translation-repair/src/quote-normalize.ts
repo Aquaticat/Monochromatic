@@ -170,8 +170,8 @@ function isLineBreakAt(
  WHAT IT STILL DOES NOT PROTECT: boundaries a single line break represents,
  inside fenced code, between list items, and between table rows, plus a
  Markdown hard break, whose two trailing spaces plus a wrap read as three
- spaces. Those need the parse rather than the characters, and `#106` records
- it.
+ spaces. Those need the parse rather than the characters, and stay unprotected
+ here.
  
  Length-preserving like everything here, so offsets still index the input.
  

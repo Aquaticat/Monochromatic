@@ -12,7 +12,7 @@ import { NaturalnessCompletenessError, } from '../naturalness-completeness-error
 // answer why without re-running anything.
 //
 // EVERY ROUND THAT DID NOT RUN IS NAMED ABSENT rather than omitted, following
-// the pattern `#135` set for the pairing field. A missing key and a round that
+// the pattern the pairing field set. A missing key and a round that
 // was deliberately not bought look identical in JSON, and the difference is
 // exactly what a census of this stage is counting.
 

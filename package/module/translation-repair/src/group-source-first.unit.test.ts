@@ -484,8 +484,8 @@ await describe({
           return unit.kind === 'anchored';
         },);
         // ONE anchor, for a passage the translation already carries. Wiring
-        // this to a lane would render it a second time, so `#106` has to
-        // separate merging from omission before anything reads these units.
+        // this to a lane would render it a second time, so merging has to be
+        // told from omission before anything reads these units.
         expect(anchored.length,).toBe(1,);
       },
     },),

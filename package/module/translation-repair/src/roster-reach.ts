@@ -25,7 +25,7 @@ import { PROVIDER_ORDER, } from './provider-name.ts';
 // WHICH PROVIDERS CAN SERVE ONE ROSTER MODEL, and under what spelling, read off
 // every catalog rather than listed by hand.
 //
-// DERIVED, because a hand-written list goes stale silently. `#136`'s roster
+// DERIVED, because a hand-written list goes stale silently. The GLM-4.7-Flash roster
 // note makes the same argument about aliases: a roster fact that no build
 // checks is a roster fact that changes without anyone noticing.
 //

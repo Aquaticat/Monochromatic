@@ -118,8 +118,8 @@ export class SliceIndexingError extends Error {
  
  THE LAST WORD ON WHAT A SLICE IS CALLED. Subdivision is handed a base index
  and adds its own offset, which is right only while every earlier section
- contributed exactly the slices the base counted. That is true today and
- `#100` breaks it deliberately: an insertion slice for an untranslated section
+ contributed exactly the slices the base counted. One-sided slicing breaks
+ that deliberately: an insertion slice for an untranslated section
  is a slice the base index never saw coming. Restamping here means the
  preparation never has to trust the arithmetic it handed out, and both sides
  of a pair are stamped from one value rather than twice from the same

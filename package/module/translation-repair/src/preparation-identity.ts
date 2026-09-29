@@ -250,7 +250,7 @@ function sliceRow(
       ? []
       : [framed({ value: `syntax:${slice.syntax}`, },),]),
     // BOTH INDICES, though they are equal today. The pairing is what this row
-    // exists to record, and `#100`'s one-sided slicing touches exactly the
+    // exists to record, and one-sided slicing touches exactly the
     // assumption that one number names both sides. Adding it now costs nothing;
     // after the first artifact is written it would cost a scheme version.
     framedNumber({ value: slice.source

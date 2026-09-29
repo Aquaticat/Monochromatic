@@ -515,7 +515,7 @@ export function alignDocumentSections(
   // THE TWO REFUSALS ARE NOT THE SAME EVENT, and the detail says which. A
   // target-only section is English nobody will look at, so it passes through
   // unrepaired. A source-only section is Chinese with no English beside it,
-  // and `#100` landing 5 asks whether it can be given a place to be WRITTEN
+  // and section-scale insertion asks whether it can be given a place to be WRITTEN
   // at rather than only reported. It can when the aligner proves every optimal
   // alignment skips it at the same boundary AND the page is measurably too
   // short to hold it, per

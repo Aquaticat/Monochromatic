@@ -1,5 +1,6 @@
 /**
- Tests for the three readings `#115` owes over persisted audit rows.
+ Tests for the three readings the settled audit owes over persisted audit
+ rows.
  
  These rules were written while the full run was still buying its subjects,
  and the cases here pin them so a later reader can see they were not tuned to

@@ -2,7 +2,7 @@
  Guard that a picture's transcription, once corroborated, actually reaches
  the requests `translateDocument` sends, not merely its return value.
  
- WHY THIS FILE EXISTS: `#107`'s judging window was fully built, wired into
+ WHY THIS FILE EXISTS: the translate lane's judging window was fully built, wired into
  the cache key, and sat in production for weeks unused. Nothing failed and no
  test broke, because nothing asserted what the driver actually SENT to a
  model; every test that passed was reading `translateDocument`'s return
@@ -26,7 +26,7 @@
  
  Every assertion reads the RECORDED REQUEST the client double captured,
  never `translateDocument`'s return value: the return value is exactly what
- the `#107` gap left intact, and reading it again would prove nothing this
+ the judging-window gap left intact, and reading it again would prove nothing this
  file exists to prove.
  
  Fixtures are cat-themed invention. No corpus content appears here.
@@ -152,7 +152,7 @@ const CORROBORATED_READING: PairedReading = {
 
 /**
  Original: one section whose source names {@link CORROBORATED_ASSET_NAME},
- the way a `#111` corpus entry does.
+ the way a picture-bearing corpus entry does.
  */
 const SOURCE_TEXT = `## 第一节
 
@@ -479,7 +479,7 @@ await describe({
   children: [
     it({
       name: 'SENDS a corroborated reading\'s own transcription text to the TRANSLATOR when the slice\'s '
-        + 'source names the picture that reading covers: `#107`\'s judging window was fully wired into the '
+        + 'source names the picture that reading covers: the translate lane\'s judging window was fully wired into the '
         + 'cache key and never reached the call it was keyed for, and nothing failed for weeks because no '
         + 'test read the request a translator was actually sent. This asserts against the RECORDED '
         + 'REQUEST, never against `translateDocument`\'s return value',
@@ -512,7 +512,7 @@ await describe({
 
     it({
       name: 'SENDS the same corroborated reading\'s text to the JUDGE, which is the other half of the '
-        + '`#107` lesson: the cache key and one of the two calls can agree while the other call still '
+        + 'judging-window lesson: the cache key and one of the two calls can agree while the other call still '
         + 'never receives what the key claims it was asked about, and only reading each request '
         + 'separately catches a wiring gap on either side alone',
       fn: async () => {

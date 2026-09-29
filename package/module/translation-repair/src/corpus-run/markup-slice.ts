@@ -1,6 +1,6 @@
 //region Markup-only slice
-// A slice whose ORIGINAL is structure rather than prose, which `#107` names as
-// a known false donor.
+// A slice whose ORIGINAL is structure rather than prose, which the relocation
+// finding names as a known false donor.
 //
 // WHY IT MATTERS TO THE DISPLACEMENT SCREEN. That screen calls a slice a
 // relocation candidate when a high-ratio slice sits beside a below-baseline
@@ -22,7 +22,7 @@
  NOT 1.0. A photo block commonly carries one caption or attribution line, and
  a slice that is nine parts component to one part caption still cannot expand
  enough to be a donor. Measured against the corpus at the pinned commit, this
- threshold selects exactly the two pairs `#107` identified by hand and nothing
+ threshold selects exactly the two pairs identified by hand and nothing
  else, so it is not doing any work beyond the class it was written for.
  */
 const MARKUP_LINE_SHARE = 0.8;

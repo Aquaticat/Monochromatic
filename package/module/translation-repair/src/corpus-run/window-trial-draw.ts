@@ -68,7 +68,7 @@ export type TrialSlice = {
  
  A SLICE FLAGGED TWO WAYS TAKES THE FIRST LABEL IN THIS ORDER, and the order is
  deliberate rather than incidental. The high end of a relocation comes first
- because it is the case `#107` is about and the only one the window can reach:
+ because it is the relocation case itself and the only one the window can reach:
  the archive there carries English the original does not account for, and the
  neighbouring Chinese is where it could have come from. Its low end comes next,
  since a slice that is both ends of two candidates is more informative read as

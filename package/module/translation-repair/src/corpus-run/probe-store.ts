@@ -12,9 +12,8 @@ import type { RunnerClosure, } from './runner-closure.ts';
 // their results to standard output and wrote nothing, on the reasoning that a
 // caller would redirect them wherever the measurement was being kept. Nobody
 // did. Both coverage scales were probed on 2026-08-16 and both audit arms ran
-// three times on 2026-08-17, all of it at real quota cost, and `#106` records
-// the consequence in as many words: the numbers "survive only in session
-// transcripts". They cannot be re-read, re-scored, or checked by anyone, and
+// three times on 2026-08-17, all of it at real quota cost, and the
+// numbers survive only in session transcripts. They cannot be re-read, re-scored, or checked by anyone, and
 // the block-scale null that question 28 leans on is among them.
 //
 // WHY A PER-RUN FILENAME rather than the one `rows.json` that `bench-report.ts`
@@ -78,7 +77,7 @@ export type ProbeRun = {
    The digest moves whenever anything in the tree moves, including code this
    run never loaded, so two runs of byte-identical probe code carry different
    digests and nothing tells that apart from a real change. The closure moves
-   only when this runner's own code does. `#116`.
+   only when this runner's own code does.
    */
   readonly runnerClosure: RunnerClosure;
 

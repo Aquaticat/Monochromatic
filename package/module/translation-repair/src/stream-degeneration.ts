@@ -71,7 +71,7 @@ const TRAILING_WINDOWS = 4_096;
  which the ratio alone would condemn. No slice translation approaches this
  bar, so such a reply is never judged at all.
  
- REVISIT ONCE `#118` LANDS. The figure above is in characters of generated
+ DUE A REVISIT, since aborted streams now keep what they delivered. The figure above is in characters of generated
  text, while the only length telemetry in production counts raw server-sent
  event bytes, envelope included. The two are related by a per-token envelope
  cost that has been estimated and never measured, so this bar is set from the

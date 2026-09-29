@@ -10,8 +10,8 @@ import type { SectionPair, } from './pair-sections-wire.ts';
 // ALREADY READS, so nothing downstream of alignment learns that a model was
 // involved. `pair-blocks-steps.ts` does the same job one scale down.
 //
-// THE PAIRING IS WHAT PROVES AN INSERTION BOUNDARY. `#100` landing 5 can place
-// an untranslated section only where every optimal alignment agrees it belongs,
+// THE PAIRING IS WHAT PROVES AN INSERTION BOUNDARY. Section-scale insertion can
+// place an untranslated section only where every optimal alignment agrees it belongs,
 // and measured over the pinned corpus the deterministic aligner never agrees
 // with itself about anything: all 11 unpaired source sections come back
 // `ambiguous`, so `may-pair` refuses every one and the insertion path emits

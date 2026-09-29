@@ -11,7 +11,7 @@ import { UNATTRIBUTED_TEXT, } from './resolution-authorship.ts';
 // anchor, which names a boundary where a rendering belongs and none exists,
 // every one of those stages is asked about text that does not exist. What comes
 // back is not a repair: it is a critic inventing complaints about a blank, at
-// full roster cost, on every slice `#100` inserts.
+// full roster cost, on every inserted slice.
 //
 // SAID RATHER THAN SKIPPED. The outcome list is read BY POSITION against the
 // slice list, so an anchor cannot simply be passed over; and a lane that

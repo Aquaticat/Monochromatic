@@ -2,7 +2,7 @@
  Tests that assembly GIVES EACH SLICE ITS OWN REPAIR when it lists what the
  document carries.
  
- WHAT THAT LIST IS FOR. `#107`'s own example is two NEIGHBOURING slices
+ WHAT THAT LIST IS FOR. The `lintong` example is two NEIGHBOURING slices
  shipping the same wording, which the document-scale repetition check cannot
  see because the duplicated sentence carries no long word. The adjacent check
  exists for exactly that, and it reads a per-slice list assembly builds by

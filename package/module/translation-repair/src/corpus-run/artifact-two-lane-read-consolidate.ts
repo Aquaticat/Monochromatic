@@ -120,7 +120,7 @@ function assertConsolidationCoversContest(
  Reads what the consolidation settled over one document.
  
  A DUPLICATE SLICE IS REFUSED, following the contest reader for the reason
- `#113` gave: the driver writes one record per contested slice, so two records
+ it gives: the driver writes one record per contested slice, so two records
  naming one slice are two different answers to the same question, and a
  consumer keying by `sliceIndex` would silently keep whichever it read last.
  A settled stage is then held to exactly the contest's slices, in its order.

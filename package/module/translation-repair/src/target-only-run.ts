@@ -13,7 +13,7 @@ import { topLevelBlocks, } from './markdown-blocks.ts';
 // went from 1228 to 175, losing 1098. Both are memorial pages and the lost
 // blocks are the accessible reading of an image. Nothing recovers them.
 //
-// THIS IS THE `A` HALF OF `#111`, whose authorized answer is "B, but best
+// THIS IS THE `A` HALF OF THE PICTURE DECISION, whose authorized answer is "B, but best
 // effort, fallback to A whenever an image's OCR doesn't make sense". `B` sends
 // the image so the transcript has a source that can be CHECKED. `A` protects
 // the block structurally. `A` is built first because it is what makes the

@@ -49,8 +49,10 @@ export type {
 // passage the translation already carries, inserting it twice. Measured on
 // three source paragraphs whose translation merges the first two: the aligner
 // emits `source-only` for the merged one and the walk anchors it. Telling
-// omission from merging needs evidence the aligner does not produce, so `#106`
-// holds the wiring until there is some.
+// omission from merging needs evidence the aligner does not produce. The
+// production path (`group-aligned.ts`) takes it from the pairing roster and a
+// page-length budget (`insertion-admission.ts`), and this grouping stays
+// unwired.
 
 /**
  Thrown when alignment steps name a block their sequence does not hold.

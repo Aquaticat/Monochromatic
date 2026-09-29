@@ -69,7 +69,7 @@ export type ArmRate = {
 export type Transitions = {
   /**
    Slices the narrow arm replaced and the wide arm kept, which is the
-   direction `#107` predicts if displacement drives replacement.
+   direction the relocation finding predicts if displacement drives replacement.
    */
   readonly replaceToKeep: number;
 

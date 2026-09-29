@@ -20,7 +20,7 @@ import { refusalText, } from './refusal-text.ts';
 //   a call we ended ourselves had stopped saying anything new, and wants
 //   neither, because waiting longer buys more of the same.
 //
-// `#118` made the evidence available by keeping what the stream delivered.
+// Keeping what an aborted stream delivered made the evidence available.
 // This reads it. Without this the information exists on the error and nothing
 // looks at it, which is the failure the section aligner once had:
 // telemetry written and never read is worse than none, because it looks like the question is covered.

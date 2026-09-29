@@ -118,7 +118,7 @@ await describe({
       },
     },),
     it({
-      name: 'gives a slice flagged two ways a RELOCATION label, since that is the class `#107` is '
+      name: 'gives a slice flagged two ways a RELOCATION label, since that is the class the relocation finding is '
         + 'about and the one the window is expected to move; dropping multiply-flagged slices '
         + 'would discard exactly the ambiguous cases the trial exists to resolve',
       fn: async () => {

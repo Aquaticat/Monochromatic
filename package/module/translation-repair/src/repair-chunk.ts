@@ -83,7 +83,7 @@ import { settleShippedPatch, } from './repair-chunk-settle.ts';
  
  @param neighbouringSourceText - original of the passages either side, shown to
  the critic, panel and editor as CONTEXT they may neither quote against nor
- edit. `#107` is why it exists: shown one slice alone, a critic reads a passage
+ edit. Relocation is why it exists: shown one slice alone, a critic reads a passage
  the archive carried in from next door as an addition with no source, and the
  editor then removes wording that the document does need, just not here
  

@@ -145,7 +145,7 @@ await describe({
     },),
     it({
       name: 'SEPARATES a slice judged with the neighbouring original from the same slice judged '
-        + 'without it, which is what stops the two arms of `#108` sharing a cached answer and '
+        + 'without it, which is what stops the two arms of the window trial sharing a cached answer and '
         + 'reporting a window change as having made no difference',
       fn: async () => {
         expect(keyFor({ neighbouringSourceText: '她看着外面的鸟。\n', },),)

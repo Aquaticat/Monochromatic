@@ -1,7 +1,7 @@
 //region Image reading sense
 // WHETHER A MODEL'S READING OF A PICTURE IS ABOUT THE RIGHT PICTURE AT ALL.
 //
-// `#111` supplies the image so a transcribed passage has a source that can be
+// The pipeline supplies the image so a transcribed passage has a source that can be
 // checked, and falls back to protecting the block structurally "whenever an
 // image's OCR doesn't make sense". The rule is written out in
 // `doc/planning/when-an-image-reading-makes-no-sense.md`; this is that rule and

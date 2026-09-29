@@ -8,7 +8,7 @@ import { isInsertionChunk, } from './chunk-placement.ts';
 // SEPARATE FROM INDEXING, which `slice-indexing.ts` covers. That file proves a
 // slice is CALLED what its position says; this one proves the slice POINTS
 // somewhere sane. Both were the same statement while every span came from a
-// disjoint run of nodes, and `#100` separates them: an insertion anchor covers
+// disjoint run of nodes, and insertion separates them: an insertion anchor covers
 // no nodes at all, so nothing about its offsets follows from how it was carved.
 //
 // ONE ORDERING RULE COVERS THE WHOLE LIST the review asked for. Every span

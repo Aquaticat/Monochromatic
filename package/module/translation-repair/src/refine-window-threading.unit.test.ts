@@ -1,5 +1,5 @@
 /**
- Tests that the naturalness PHASE computes `#107`'s neighbouring window and
+ Tests that the naturalness PHASE computes the neighbouring window and
  hands it to the damage probe inside each slice's settlement.
  
  WHY THIS IS SEPARATE FROM THE SHEET TEST. `introduced-defect-wire` already

@@ -13,7 +13,7 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // and re-producing would change question.
 // Second judging challenges prior decline under distinct responsibility rather
 // than pretending identical prompt is independent evidence.
-// `#109` split stage into produce and judge halves so this is expressible.
+// The stage is split into produce and judge halves so this is expressible.
 //
 // EXCEPT A RUN-OFF AFTER A TIE WITH NOTHING TO FALL BACK ON (class
 // fifty-three, `translate-runoff.ts`): a tie has already ranked the

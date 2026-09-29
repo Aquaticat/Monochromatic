@@ -26,8 +26,8 @@ import type { AnchorTarget, } from './validate-issue.ts';
 // six voices claimed coverage and quoted a real sentence belonging to a
 // different passage of the same document. Locating a quote proves those words
 // occur; it does not prove they render the passage that was asked about. The
-// tallies here are therefore evidence, not proof, and `#106` records the second
-// field that would close the gap.
+// tallies here are therefore evidence, not proof, and a second
+// field would be needed to close the gap.
 //
 // AN UNANCHORABLE CLAIM IS DROPPED RATHER THAN BELIEVED, the same rule the
 // critic stage has used since quote anchoring landed, AND IT IS NOT A VOTE FOR

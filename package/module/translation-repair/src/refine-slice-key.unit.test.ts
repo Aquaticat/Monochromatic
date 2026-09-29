@@ -18,7 +18,7 @@
  collected from the whole assembled document rather than from this slice, so a
  neighbouring slice settling differently changes what this rewriter is shown.
  A key blind to that resumes a stale rewrite after its neighbour moves, which
- is the failure `#126` already recorded once at the accuracy window.
+ is the failure already recorded once at the accuracy window.
  
  Content fixtures are cat-themed invention. No corpus content appears here.
  Model identifiers come from the catalog, because `RosterModelId` is a
@@ -277,7 +277,7 @@ await describe({
 
     it({
       name: 'DISTINGUISHES THE TWO SIDES OF THE WINDOW carrying identical '
-        + 'text, which is `#126` exactly: spread bare into a positional array '
+        + 'text, which is the repair slice key defect exactly: spread bare into a positional array '
         + 'a source-only window and an incumbent-only window hash the same, '
         + 'and one cached audit then serves two different questions. '
         + 'Asymmetric windows are real, since a neighbour that is an insertion '

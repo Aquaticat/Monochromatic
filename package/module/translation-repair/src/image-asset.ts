@@ -79,7 +79,7 @@ export type EncodedAsset = {
    
    TRANSPORT RATHER THAN MODEL in the size reason, renamed 2026-08-22. The
    ceiling that produces it was derived from what a model would read until
-   `#123`, and is now measured against what the gateway will carry, which are
+   pictures were read by deterministic OCR first, and is now measured against what the gateway will carry, which are
    different authorities with different numbers. A reader who saw the old
    spelling would look for a model that refused, and no model ever did.
    */

@@ -13,7 +13,7 @@ import { decoyCut, } from './coverage-control-decoy.ts';
 // Whether the coverage roster can vote absence AT ALL, asked before its
 // unanimity is read as evidence of anything.
 //
-// `#106` records ninety-six block-scale answers carrying not one vote for
+// One entry's ninety-six block-scale answers carried not one vote for
 // absence. TWO DIFFERENT THINGS PRODUCE EXACTLY THAT READING: a translation
 // that genuinely carries every passage, and a wire whose evidence rule admits
 // any non-empty quote, so nothing can ever be found missing. Nothing recorded

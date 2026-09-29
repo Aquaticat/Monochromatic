@@ -26,7 +26,7 @@ import {
 
 //region Consolidate produce
 // THE PRODUCING HALF of the consolidation, kept apart from the deciding half
-// for the reason `#109` split the translate lane: a slate that exists can be
+// for the reason the translate lane was split: a slate that exists can be
 // judged more than once, and every measurement of this stage rests on comparing
 // arms over ONE slate. A stage that rebought its proposals per arm would be
 // comparing different candidates and reporting the difference as a decision.

@@ -25,8 +25,8 @@ import { TRIAL_ARMS, } from './window-trial-report.ts';
 // PRODUCING ONCE IS THE WHOLE POINT. `runTranslateStage` writes candidates and
 // judges them in one call, so asking the same slice twice used to resample the
 // candidates: the two answers then differed in the slate as well as in the
-// evidence, and no reading could say which moved the verdict. `#109` split the
-// stage so this can buy the slate once and put it to the judges three times.
+// evidence, and no reading could say which moved the verdict. The split
+// stage lets this buy the slate once and put it to the judges three times.
 //
 // THE THIRD ARM IS NOT A LUXURY. Judges are stochastic, so a narrow-to-wide
 // difference means nothing until it beats the difference between two narrow runs
@@ -138,7 +138,7 @@ export async function runSliceArms(
   // reproduced, so finishing the remaining arms here would judge different
   // candidates from the arms already on disk, and the ledger would then hold a
   // triple that looks complete while its arms disagree about the slate as well
-  // as the evidence. That is precisely the confound `#109` was split to remove,
+  // as the evidence. That is precisely the confound the stage was split to remove,
   // arriving through resumption instead of through the stage. Left as it is,
   // the slice stays incomplete, and the report already excludes it and says so.
   if (owed.length !== TRIAL_ARM_SET.length) {

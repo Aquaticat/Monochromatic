@@ -64,7 +64,7 @@ export type SettlementIdentity = {
  promising readings and carrying none reads as a picture nobody could make
  sense of.
  
- ONE VALUE FEEDS THE SHEET AND THE KEY, which is `#107`'s lesson stated in
+ ONE VALUE FEEDS THE SHEET AND THE KEY, which is the judging window's lesson stated in
  `translate-document.ts` as well: a key that did not name the evidence would
  let a narrow run's answer be resumed for a wide one, and nothing anywhere
  would report the two as different questions.

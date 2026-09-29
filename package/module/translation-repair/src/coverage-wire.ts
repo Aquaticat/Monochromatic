@@ -10,8 +10,8 @@ import { selectFence, } from './prompt-fence.ts';
 // translation.
 //
 // WHY IT EXISTS. Both halves of the one-sided slicing work insert text where an
-// aligner reports no counterpart, and `#106` measured what those reports are
-// made of. At paragraph scale, `alignBlocks` can pair one with one or skip a
+// aligner reports no counterpart, and what those reports are made of was
+// measured. At paragraph scale, `alignBlocks` can pair one with one or skip a
 // block, and nothing else, so a translation that renders two source paragraphs
 // as one reports the second as unpaired, identically to an omission: 95 unpaired
 // source blocks corpus-wide, whose strongest cases are merges and whose weakest

@@ -413,8 +413,8 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES TWO RECORDS NAMING ONE SLICE, following the contest reader for the reason #113 '
-        + 'gave: the driver writes one record per contested slice, so two are two answers to one '
+      name: 'REFUSES TWO RECORDS NAMING ONE SLICE, following the contest reader for the reason it '
+        + 'gives: the driver writes one record per contested slice, so two are two answers to one '
         + 'question, and a consumer keying by sliceIndex would keep whichever it read last',
       fn: async () => {
         const read = readingOf({

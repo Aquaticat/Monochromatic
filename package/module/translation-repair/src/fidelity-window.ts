@@ -2,10 +2,11 @@ import type { ChunkPair, } from './chunk-document.ts';
 import { fidelityWindowPositions, } from './fidelity-window-positions.ts';
 
 //region Fidelity window
-// How much of the ORIGINAL a judge is shown, which `#107` turned into a
-// measurable question rather than a design assumption.
+// How much of the ORIGINAL a judge is shown, which the relocation finding turned
+// into a measurable question rather than a design assumption.
 //
-// WHAT `#107` MEASURED, at the strength the screen actually supports. The screen
+// WHAT THE RELOCATION FINDING MEASURED, at the strength the screen actually
+// supports. The screen
 // names CANDIDATES rather than verdicts: 22 adjacent pairs whose sizes are
 // consistent with a passage having been carried across a section boundary, two
 // of which a transcription explains equally well. Hand verification has

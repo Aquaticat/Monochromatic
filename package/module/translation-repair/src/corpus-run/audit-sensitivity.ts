@@ -448,7 +448,7 @@ async function main(): Promise<void> {
   /**
    Chunks this entry imports, read from the executing file at run START for
    the same reason the digest is: a rebuild mid-run would otherwise stamp a
-   build that never ran. `#116`.
+   build that never ran.
    */
   const runnerClosure = await readRunnerClosure({ entryPath: process.argv[1] ?? '', },);
 
