@@ -1857,6 +1857,93 @@ empty/unavailable states,
 result activation and accessibility.
 No production Search implementation is authorized by this correction.
 
+### D63. Search entry requests query edit focus (2026-09-29)
+
+The user selected the recommended **E-fast** interaction under #127:
+opening the separate Search destination requests query edit focus and a
+keyboard so the user can begin typing without first selecting the field.
+This is an interaction intent,
+not proof that every native keyboard appears or fits the selected layout.
+Actual focus and keyboard behavior need implementation-boundary verification.
+Accessibility focus remains a separate #118 decision.
+
+### D64. The visible Back arrow exits Search directly (2026-09-29)
+
+The user selected **A-exit**:
+activating the page-level Back arrow returns to the player even when a
+keyboard is shown.
+The arrow does not first dismiss the keyboard while leaving Search open.
+D47 required a Back path from a separate destination;
+D64 now settles that visible control's first action while typing.
+System Back is distinct:
+Android SDK 37 documents default IME interception when the keyboard is
+shown and a conditional IME-owned bypass,
+so the logic walkthrough models keyboard-first system Back only as an
+illustrative baseline,
+not a cross-keyboard guarantee or a selected app override.
+Returning must not replace the retained left folder-browser location or
+playback deck with a Search fixture.
+No native return-focus target is selected here (#118).
+
+### D65. Clear preserves the current edit-focus state (2026-09-29)
+
+The user selected **C-keep**:
+Clear erases the query without leaving Search and does not itself force
+query refocus or reopen a dismissed keyboard.
+If edit focus and the keyboard are already active,
+they remain active;
+if the keyboard was dismissed or edit focus moved away,
+Clear preserves those states.
+The debug prototype's empty-query action was not evidence of this focus
+policy;
+this is the new design decision.
+
+### D66. A new Search visit starts with an empty query (2026-09-29)
+
+The user selected **Q-new**:
+after returning to the player,
+opening Search again begins with a fresh empty query rather than restoring
+the previous text.
+D63 requests edit focus on that new visit.
+This describes navigation within a running session;
+process restoration and posture changes were not compared here.
+
+### D67. A restored query would start results at the top (2026-09-29)
+
+The user also selected the recommended conditional **P-top** preference:
+**if** a future design restores a previous query on re-entry,
+it should begin at the first results instead of reviving the prior deep
+result position.
+Under D66's active Q-new behavior,
+there is no restored result set and P-top has no immediate effect.
+Do not treat P-top as permission to restore the previous query,
+nor as a result-activation rule.
+
+### D68. Same-query keyboard refocus preserves row visibility (2026-09-29)
+
+The user selected **S-visible** as the desired interaction:
+after scrolling to a result and hiding then refocusing the keyboard
+without changing the query,
+keep the intended row visible in the resized viewport.
+Preserving only a raw list offset is insufficient:
+the D56 cover observation required another swipe to recover the final
+row after keyboard refocus,
+and that extra swipe was not selected.
+The middle-row and final-row logic walkthrough illustrates this
+visibility distinction but cannot prove a native scroll correction.
+Verify it with a future implementation before claiming it works with
+arbitrary keyboard geometries;
+do not restart IME experiments in this design review without first
+making a compelling case to the user.
+D57's bounded floating-Gboard overlap and #129 result activation remain
+separate.
+
+The user accepted all #127 recommended behaviors and pointed out that
+asking for an additional preference answer was unnecessary.
+Treat these choices as selected,
+not as pending defaults in the review form.
+No production Search change or search-library choice is authorized.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
