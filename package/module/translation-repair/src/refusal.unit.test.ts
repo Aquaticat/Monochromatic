@@ -67,5 +67,22 @@ await describe({
         expect(detectRefusalShape({ text: buried, },).refusalShaped,).toBe(false,);
       },
     },),
+
+    it({
+      name: 'READS A MARKER AS WORDS, never as letters inside longer ones (ledger B23): a cat that served as an '
+        + 'aide is no reply written as an AI',
+      fn: async () => {
+        expect(detectRefusalShape({ text: 'The cat served as an aide to the shelter for years.', },).refusalShaped,)
+          .toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'FLAGS A REFUSAL WRITTEN WITH A TYPOGRAPHIC APOSTROPHE, as models often write one (ledger B23)',
+      fn: async () => {
+        expect(detectRefusalShape({ text: 'I\u{2019}m sorry, but I can\u{2019}t help with this.', },).refusalShaped,)
+          .toBe(true,);
+      },
+    },),
   ],
 },);

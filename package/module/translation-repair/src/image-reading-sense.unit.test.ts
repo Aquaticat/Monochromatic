@@ -134,5 +134,28 @@ await describe({
         },).kind,).toBe('usable',);
       },
     },),
+
+    it({
+      name: 'ACCEPTS A READING THAT HOLDS A REFUSAL PHRASE ONLY INSIDE LONGER WORDS (ledger B23): a sign saying '
+        + 'a taxi cannot park, and sorry, it is the parade route, is a transcription',
+      fn: async () => {
+        expect(readingMakesSense({
+          reading: 'Street sign on a lamp post: a taxi cannot park here between 8 and 10 on Saturdays; sorry, '
+            + 'it is the cat parade route. Signed by the Whisker Lane residents.',
+        },).kind,).toBe('usable',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A LONG APOLOGY WRITTEN WITH A TYPOGRAPHIC APOSTROPHE, as models often write one, past the '
+        + 'length the refusal shape reads, so only the phrase list can catch it (ledger B23)',
+      fn: async () => {
+        expect(readingMakesSense({
+          reading: 'I can\u{2019}t make out the text in this image. The photograph appears to show a card of some '
+            + 'kind, but it is far too blurred for me to transcribe it reliably. Its corner may hold a small '
+            + 'printed mark as well.',
+        },).kind,).toBe('refused',);
+      },
+    },),
   ],
 },);

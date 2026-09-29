@@ -262,6 +262,25 @@ await describe({
         }
       },
     },),
+    it({
+      name: 'READS AN INABILITY MARKER AS THE START OF A WORD (ledger B23): an absence report that mentions a '
+        + 'download icon or equality holds none, while a marker with an ending or an in- prefix still marks '
+        + 'inability',
+      fn: async () => {
+        expect(refusalReportsAbsence({
+          reading: 'There is no visible text in this image; it shows a cat beside a download icon.',
+        },),).toBe(true,);
+        expect(refusalReportsAbsence({
+          reading: 'There is no visible text here, only a poster about equality for cats.',
+        },),).toBe(true,);
+        for (const reading of [
+          'The text in this image could not be loaded; the file seems corrupted.',
+          'The text in this image is inaccessible to me.',
+        ]) {
+          expect(refusalReportsAbsence({ reading, },),).toBe(false,);
+        }
+      },
+    },),
   ],
 },);
 
