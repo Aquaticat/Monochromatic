@@ -2,8 +2,8 @@
 
 ## Status and scope
 
-This is a proposed contract inventory,
-not production policy or an adopted implementation.
+This is a contract inventory for the private qualification phase confirmed in Q22,
+not a qualified production policy or an adopted implementation.
 It extends the [axiom design](pi-auto-mode-axioms.md)
 beyond the private protected-read,
 protected-transfer,
@@ -12,6 +12,10 @@ The accepted interview choices in that design remain authoritative.
 Q13 B permits qualified semantic effect estimates to support approval for validated inspected script forms,
 without separate code-established effect analysis.
 The stricter code-admitted-operation-family alternative was not selected.
+Q22 confirms proceeding with private contract and real-consumer qualification.
+It does not select a production profile or cutoff,
+qualify the governing-instruction path,
+or authorize changing production.
 No production files are changed by this investigation.
 
 The migration replaces the existing reviewed-action path,

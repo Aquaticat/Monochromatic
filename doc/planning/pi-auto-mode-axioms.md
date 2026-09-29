@@ -12,8 +12,10 @@ The user corrected the design:
 This is the required architecture.
 The model assesses narrowly defined claims.
 Our code owns policy and the final approve/deny/ask result.
-Implementation in the production guard remains blocked until the design interview is confirmed.
-Private prototypes and evaluation are authorized.
+The user confirmed shared understanding in Q22 for the next private contract and real-consumer qualification work.
+Production remains unchanged under that confirmation;
+no production cutoff or cutover was selected.
+Private prototypes and evaluation remain subject to their existing scope and frozen-phase requirements.
 
 The earlier direct-verdict and candidate-verdict-reranking pilots asked the wrong question.
 Their approval-quality comparisons and model-selection implications are withdrawn.
@@ -782,9 +784,8 @@ if no relevant instruction applies,
 the user specifies no outcome for that case.
 The previous prompt-versus-deny menu incorrectly excluded policy-derived authority.
 The authority correction is recorded in the contract and independently reviewed.
-The remaining interview gate is final shared-understanding confirmation.
-After confirmation,
-continue the private contract and real-consumer qualification work:
+The user answered "Confirm" to Q22's shared-understanding summary.
+Proceed with the private contract and real-consumer qualification work:
 instruction applicability,
 human provenance,
 effects,
@@ -794,8 +795,7 @@ host-level deadline handling,
 and replacement parity.
 Production stays unchanged;
 no cutoff or completed qualification result is implied by that confirmation.
-Other contract and qualification branches remain open;
-final shared-understanding confirmation is still required.
+Further engineering qualification remains required.
 Laya work and the original reserved corpus remain outside this resumption.
 
 ## Confirmed interview answers
@@ -1091,6 +1091,30 @@ authority binding,
 applicability relations,
 and finalizer tests need explicit coverage before production.
 
+### Q22: Shared understanding confirmed
+
+The user answered "Confirm" to the consolidated design summary.
+It included governing-instruction authority under Q21,
+code-owned facts and final decisions,
+qualified semantic effects under Q13 B,
+explicit human permission scope and witnessed inheritance,
+session-local reset of both permission record kinds,
+Q17's unconstrained conflicting-instruction outcome,
+complete current policy,
+the preparation-inclusive five-second handback budget,
+the aggregate two-client-call cap,
+and zero coding-plan judge calls or fallback.
+Existing reviewed-action coverage and fixed blocks remain intact.
+
+The confirmed next step is private contract and actual-consumer qualification,
+not a production mutation or claim that those engineering gates have passed.
+No cutoff,
+training,
+`AGENTS.md` change,
+reserved-bank access,
+or paused-candidate restart follows.
+Keep completed phases and their frozen evidence unchanged.
+
 ## Accepted TypeSafe AUP scope
 
 The user explicitly stated that TypeSafe AUP section 1.5 is acceptable.
@@ -1116,9 +1140,11 @@ Measure and test deadline accounting across the entire assessment and permitted 
 Complete the qualified-form effect inventory and independent per-axiom evaluation,
 including semantic effect-detection errors and catalog omissions under Q13 B.
 Keep prototype thresholds unqualified and production migration blocked.
-Model selection,
-calibration cutoffs,
-and final shared-understanding confirmation remain open.
+Jev through LLM Gateway remains the approved qualification direction.
+Shared understanding is confirmed for the private qualification work.
+Production profile and cutoff selection,
+completed real-consumer qualification,
+and production cutover remain open.
 
 ## Primary-source cross-check
 

@@ -304,8 +304,9 @@ only a case with no relevant instruction has no user-specified outcome.
 Unknown applicability is not established absence.
 The [current interview frontier](pi-auto-mode-axioms.md#resumed-integration-interview)
 tracks the remaining choices.
-Production implementation still requires the remaining design and qualification gates
-and final shared-understanding confirmation.
+Q22 confirms shared understanding for the private contract and real-consumer qualification phase.
+Production remains unchanged;
+the remaining engineering gates and a separate cutover decision are still required.
 
 [typesafe-models]: https://docs.typesafe.ai/models
 [typesafe-api]: https://docs.typesafe.ai/api

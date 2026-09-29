@@ -1435,6 +1435,40 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Q22 shared understanding confirmed
+
+The user answered "Confirm" to the consolidated design summary.
+The summary retained Q21 governing-instruction authority,
+code-owned facts and final decisions,
+qualified semantic effects under Q13 B,
+explicit human grant scope and witnessed reuse,
+verified inheritance of both stored human permission kinds,
+session-local reset without cross-session revocation of already inherited permissions,
+Q17's unconstrained conflicting-instruction outcome,
+complete current policy,
+the preparation-inclusive five-second handback budget,
+the aggregate two-client-call cap,
+and zero coding-plan judge calls or fallback.
+
+The confirmed next work is the private contract and real-consumer qualification:
+instruction applicability,
+human provenance,
+effects,
+lifecycle,
+finalization,
+host deadline handling,
+and replacement parity.
+Production stays unchanged.
+No cutoff,
+training,
+`AGENTS.md` change,
+reserved-bank access,
+paused-candidate restart,
+or replay of completed phases follows.
+The confirmation meets the interview gate;
+it does not declare any remaining engineering gate qualified or select production cutover.
+The same technology-assessment fingerprint remains compatible with this private-only scope.
+
 ## Q21 governing-instruction correction
 
 The user challenged "the other required evidence is established" and instructed:

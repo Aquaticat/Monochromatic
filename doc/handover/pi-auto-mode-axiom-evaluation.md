@@ -116,10 +116,14 @@ rendered Markdown,
 scoped lint,
 a scoped stale-Q21-reference search,
 and unchanged-policy hashing passed at commit `14aef0b4a`.
-Task #3 remains active pending final shared-understanding confirmation.
-The next work after confirmation is the private contract and real-consumer qualification,
-including the newly explicit governing-instruction path,
-not production mutation or cutoff selection.
+The user answered "Confirm" to Q22's consolidated shared-understanding summary.
+The interview requirements are confirmed for private contract and real-consumer qualification,
+including the newly explicit governing-instruction path.
+Task #3 can close once this confirmation record is verified;
+continue task #16 rather than waiting for another instruction.
+Production stays unchanged,
+no cutoff is selected,
+and no engineering gate is declared passed by the confirmation.
 The [current design record](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
 is authoritative over superseded questions in historical checkpoints.
 No production implementation,
@@ -201,7 +205,8 @@ Q18 A,
 Q19 A,
 Q20 A,
 and Q21's governing-instruction correction are settled.
-Final shared-understanding confirmation remains pending.
+Q22 confirms shared understanding for the private qualification phase;
+production qualification and cutover remain unapproved.
 No production cutoff or code change has been approved,
 and the final shared-design confirmation is not complete.
 
