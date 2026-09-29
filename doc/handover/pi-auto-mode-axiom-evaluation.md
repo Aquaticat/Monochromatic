@@ -189,14 +189,35 @@ no synthetic keyboard input is allowed.
 Interrupted runs cannot publish approval;
 detached editor closure is not established by controller cancellation.
 
+The genuine outer controller `proc_d6b3` failed after consuming its launch:
+the child exited with code `13` and Node emitted `Detected unsettled top-level await`.
+The private pre-spawn witness exists;
+original-capture and finalized-confirmation receipts do not.
+Read-only process inspection found an owned Ghostty process and a remaining private answer workspace.
+No answer content was read or exported.
+Missing capture does not prove nobody typed into the document.
+Do not replay this attempt or infer approval from its inactive window.
+
+The standalone bootstrap lacked a referenced event-loop handle:
+the existing answer listener and default terminal child are both unreferenced.
+The no-desktop `proc_4663` controls passed:
+unreferenced await and lease omission exited `13`,
+while a private referenced lease allowed completion,
+caught cancellation,
+and caught failure to exit naturally with code zero.
+Those caught cases did not test an escaping rejection from the leased callback.
+The earlier source-review clearance is retracted in a separate corrective record;
+startup-only scripted return did not prove equivalence to detached/unreferenced children with ignored stdio.
+No Node/Pi defect or SDK-session failure is established.
+
 Next:
-exercise that one-shot genuine attempt and retain its actual outcome without replay.
-Approval,
-denial,
-cancellation,
-and failure are all valid observations.
-No genuine response has yet been claimed.
-The [human handoff](../runbook/pi-auto-mode-confirmation-fixture.md) explains the fixture and response steps.
+finish escaping-rejection,
+lease-integration,
+and bounded-stop checks,
+then request authorization for a new separately frozen genuine epoch.
+The original launch budget is consumed.
+No second window is authorized or opened by this correction.
+The [human handoff](../runbook/pi-auto-mode-confirmation-fixture.md) remains fixture-only and is not a replay instruction.
 Task #68 is not complete and downstream gates remain separate.
 
 ## Current interview state

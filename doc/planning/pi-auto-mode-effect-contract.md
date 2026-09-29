@@ -584,7 +584,12 @@ executable,
 arguments,
 and credential-free environment before spawn.
 Original response bytes stay private before any interpretation is published.
-This has not yet established a genuine response or production-writer admission.
+Its actual `proc_d6b3` invocation failed with Node exit `13` and an unsettled top-level await.
+The standalone bootstrap lacked a referenced event-loop handle while the existing detached workflow awaited input.
+The failed launch produced no retained original-response or final-confirmation witness.
+Private no-desktop liveness controls passed,
+but a new genuine epoch remains separately gated.
+This has not established a genuine response or production-writer admission.
 A successful narrow host confirmation would not qualify ordinary TUI/RPC writers,
 lifecycle,
 semantics,

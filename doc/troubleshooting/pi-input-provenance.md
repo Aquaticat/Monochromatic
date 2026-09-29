@@ -547,6 +547,105 @@ Its launch guard checks the concrete default-spawn inputs;
 original response and diagnostics stay under ignored private storage.
 No genuine response has yet been claimed.
 
+### Standalone genuine controller exits before response capture
+
+The separately frozen genuine controller `proc_d6b3` reached its default terminal spawn boundary,
+then its child exited with code `13`.
+Node emitted `Detected unsettled top-level await`.
+The outer controller emitted
+`AssertionError [ERR_ASSERTION]: Genuine confirmation did not finalize; private diagnostics retained; no replay`.
+Its private pre-spawn receipt exists;
+original-capture and final-confirmation receipts do not.
+Read-only owned-process inspection found a Ghostty process and the remaining private answer workspace.
+No raw editor document was read or exported.
+Missing capture does not establish that no human typed into the document.
+
+#### Root cause
+
+The existing owner intentionally unrefs its listener and detached terminal child:
+
+```typescript
+// package/pi-plugin/ask-user-question/src/answer-channel.ts:107
+server.unref();
+```
+
+```typescript
+// package/cli/terminal-exec/src/launch.ts:122
+child.unref();
+```
+
+The private standalone bootstrap awaited the confirmation without another referenced handle:
+
+```javascript
+// Private contract/human-origin/live-confirmation/live.mjs:84
+const observation = await captureConfirmation({ owner, presentation, cwd: privateRoot, editorCommand: inputs.editorCommand, beforePresent, afterCapture });
+```
+
+[Node's current ESM documentation](https://nodejs.org/api/esm.html#top-level-await)
+specifies exit status `13` for an unresolved top-level await.
+The private stderr matched that diagnostic.
+The no-desktop contrast controls support a missing standalone bootstrap liveness owner,
+not a Node/Pi defect or SDK-session failure.
+The prior source-review clearance is retracted in a separate corrective record:
+it checked publication ordering but missed process survival.
+A launcher returning after spawn may still retain a child or pipe;
+that is not equivalent to detached/unreferenced children with ignored stdio.
+
+#### Verification and bounded remedy
+
+`contract/human-origin/liveness-controls/result.json` records `proc_4663` on Node `v26.10.0`.
+Unreferenced completion and a separate reference-lease omission exited `13`.
+Referenced completion,
+caught cancellation,
+and caught failure exited naturally with code zero.
+No desktop window,
+model,
+session,
+or human response was created.
+The original genuine attempt was not replayed.
+The caught cases do not exercise a rejection escaping from the leased callback.
+
+The private bootstrap remedy owns one event-loop reference through the callback:
+
+```javascript
+// Private contract/human-origin/liveness-controls/lease.mjs:4
+export async function withReferencedLoopLease({ run }) {
+  const lease = setInterval(() => {}, 1000);
+  try { return await run(); }
+  finally { clearInterval(lease); }
+}
+```
+
+This timer supplies liveness only,
+not cancellation,
+a deadline,
+human authentication,
+or a production grant.
+Escaping-rejection,
+integration-placement,
+and bounded-stop checks remain before a new separately authorized genuine epoch.
+The consumed attempt and potentially sensitive workspace remain private evidence.
+Do not infer approval from its inactive window or reopen it as a replay.
+Detached terminal cleanup remains a separate unestablished result.
+
+#### Rejected approaches and upstream filing
+
+Do not reinterpret exit `13` as a denial,
+a human approval,
+or evidence of no physical input.
+Do not repeat the consumed controller or replace its original response with fabricated provenance.
+The source-level clearance is historical evidence,
+not present qualification.
+No upstream filing is justified:
+upstream fault is not established,
+the remedy belongs to the owned bootstrap,
+and no supported-API defect,
+maintainer position,
+or upstream patch target is asserted.
+A future external filing needs its own contribution,
+duplicate,
+and demonstrated-fix checks.
+
 ## Proposed containment and unverified remedies
 
 Treat conversational evidence without a verified witness as non-authorizing.

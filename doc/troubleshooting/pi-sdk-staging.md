@@ -397,6 +397,37 @@ Result SHA-256:
 The [SDK observations](pi-instruction-snapshots.md#actual-sdk-session-observations)
 record the measured instruction-view differences and remaining authority limits.
 
+## Owned documentation renderer dependency-path drift
+
+The `proc_2b5e` handoff renderer failed under Node `v26.10.0` with `ERR_MODULE_NOT_FOUND`:
+its absolute `micromark@4.0.2` import no longer existed.
+The failing owned import is retained:
+
+```javascript
+// Private contract/sdk/docs/render-confirmation-handoff.mjs:5
+import { micromark } from '/var/home/user/Monochromatic/node_modules/.pnpm/micromark@4.0.2_supports-color@10.2.2/node_modules/micromark/index.js';
+```
+
+An uncapped `find node_modules -type d -name micromark` found the existing `4.0.3` package.
+The installed declarations were read before invoking it.
+A separate `render-confirmation-handoff-current.mjs` changed only the consumer's import coordinate
+and passed the complete handoff render and heading/key/emphasis assertions through
+`mise --no-env --no-hooks run confirmation-handoff-current:render`.
+The old failed renderer and diagnostic are preserved.
+No installation,
+lockfile edit,
+production linter patch,
+SDK restaging,
+or frozen genuine-input change was made.
+
+This is an owned stale import coordinate,
+not an established micromark or package-manager defect.
+The concurrent lockfile change does not identify the actor or mechanism that removed the old package directory.
+The tradeoff is renderer version `4.0.3` for this separate documentation check;
+old renders and frozen runtime references are not silently refreshed.
+Do not use the obsolete absolute coordinate or claim the new render proves semantic equivalence.
+No upstream filing or upstream-fix prototype is justified by this consumer mistake.
+
 ## What does not work
 
 Treating every nominal dependency declaration as a mandatory installation

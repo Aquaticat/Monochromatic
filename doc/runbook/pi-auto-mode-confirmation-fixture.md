@@ -11,6 +11,25 @@ and scope-binding controls with scripted answers.
 That verified the mechanics but did not produce a genuine human confirmation.
 No synthetic keyboard input is used for this step.
 
+## Current attempt status
+
+The original one-shot controller stopped with Node exit `13`
+after reaching its default terminal launch boundary.
+No original-response capture or final-confirmation receipt was retained.
+The original attempt must not be replayed.
+Any remaining test window is inactive and cannot grant permission.
+A new window requires a separately corrected,
+frozen,
+and authorized epoch.
+The human response steps apply only when the agent explicitly announces that new epoch.
+
+If the inactive editor is still open,
+press **Ctrl+X**.
+If Nano asks whether to save changes,
+press **N**.
+The editor should close without a confirmation being recorded.
+Do not type a new approval into that inactive document.
+
 ## Setup
 
 Status:
