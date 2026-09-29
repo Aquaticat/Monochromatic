@@ -217,6 +217,17 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
     val cover = LocalConfiguration.current.screenWidthDp < 600
     // The stress marker changes only sample result data, never accepted Search geometry.
     val overflowStudy = candidate.contains("-overflow-")
+    // What: Select one named static rank order, or an empty marker for existing Search results.
+    // Why: Compare visual order without implying that a real search index exists.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const rankVariant = ['rankfolders', 'rankmixed', 'ranktracks'].find(v => candidate.includes(`-${v}-`)) ?? '';
+    // ```
+    val rankVariant = if (candidate.contains("-rankfolders-")) "rankfolders"
+        else if (candidate.contains("-rankmixed-")) "rankmixed"
+        else if (candidate.contains("-ranktracks-")) "ranktracks" else ""
+    val includeParentHits = candidate.contains("-parenthits-")
     if (cover) {
         val state = if (candidate.contains("-player")) "player" else if (candidate.contains("-results")) "results"
             else if (candidate.contains("-none")) "none" else if (candidate.contains("-unavailable")) "unavailable" else "empty"
@@ -229,7 +240,9 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
         // const viewportSuffix = candidate.includes("-imeviewport-") ? "-imeviewport" : "";
         // ```
         val viewportSuffix = if (candidate.contains("-imeviewport-")) "-imeviewport" else ""
-        SearchLayoutStudy(candidate = "search-layout-docked-$state$overflowSuffix$viewportSuffix${if (light) "-light" else ""}",
+        val rankSuffix = if (rankVariant.isNotEmpty()) "-$rankVariant" else ""
+        val parentSuffix = if (includeParentHits) "-parenthits" else ""
+        SearchLayoutStudy(candidate = "search-layout-docked-$state$overflowSuffix$viewportSuffix$rankSuffix$parentSuffix${if (light) "-light" else ""}",
             hidePositiveHeading = true)
         return
     }
@@ -304,7 +317,9 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
             layerProbe = candidate.contains("-layerprobe-"),
             keepClearProbe = candidate.contains("-keepclear-"),
             overflowStudy = overflowStudy,
-            e2FloorMillimeters = e2FloorMillimeters)
+            e2FloorMillimeters = e2FloorMillimeters,
+            rankVariant = rankVariant,
+            includeParentHits = includeParentHits)
     } else {
         SearchDeckWide(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, halfDent = halfDent, light = light, pageColor = pageColor)
@@ -413,7 +428,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
     liftWithIme: Boolean, bannerHeightStress: Boolean, autoFitStudy: Boolean,
     preclearStudy: Boolean, scaleReserveStudy: Boolean, earlyInlineStudy: Boolean,
     retainBrowser: Boolean, layerProbe: Boolean,
-    keepClearProbe: Boolean, overflowStudy: Boolean, e2FloorMillimeters: Float) {
+    keepClearProbe: Boolean, overflowStudy: Boolean, e2FloorMillimeters: Float,
+    rankVariant: String, includeParentHits: Boolean) {
     val density = LocalDensity.current
     // What: Convert the physical floor to pixels using the published active panel width.
     // Why: A chosen millimeter floor must not become a fixed dp gap across display scales.
@@ -573,6 +589,8 @@ private fun SearchDeckRight(query: String, onQueryChange: (String) -> Unit,
             startSafe = halfDent + 16.dp + extraInsetDp, endSafe = 16.dp,
             includeTopInset = true, pageColor = pageColor,
             overflowStudy = overflowStudy,
+            rankVariant = rankVariant,
+            includeParentHits = includeParentHits,
             onQueryFocusChange = { focused ->
                 if (anticipatoryLayout && focused && !queryFocused) initialFocusPending = true
                 if (anticipatoryLayout && !focused) {
@@ -650,7 +668,8 @@ private fun SearchDeckWide(query: String, onQueryChange: (String) -> Unit,
 private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, modifier: Modifier,
     startSafe: Dp, endSafe: Dp, includeTopInset: Boolean, pageColor: Color,
-    overflowStudy: Boolean = false, onQueryFocusChange: ((Boolean) -> Unit)? = null) {
+    overflowStudy: Boolean = false, rankVariant: String = "", includeParentHits: Boolean = false,
+    onQueryFocusChange: ((Boolean) -> Unit)? = null) {
     Column(modifier = modifier.fillMaxSize().background(pageColor)) {
         if (includeTopInset) Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         PersistentSearchHeader(query = query, onQueryChange = onQueryChange, onBack = onBack,
@@ -661,7 +680,18 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
             .windowInsetsPadding(WindowInsets.navigationBars)
             .padding(start = startSafe, end = endSafe)) {
             if (query == "cam" && !unavailable) {
-                if (overflowStudy) {
+                if (rankVariant.isNotEmpty()) {
+                    // What: Render each synthetic hit in the selected fixed order.
+                    // Why: Observe list density and type context without selecting a production ranker.
+                    //
+                    // In TS you'd write (pseudocode):
+                    // ```ts
+                    // for (const hit of searchRankingHits(rankVariant, includeParentHits)) render(hit);
+                    // ```
+                    for (hit in searchRankingHits(rankVariant, includeParentHits)) {
+                        PersistentResultLine(title = hit.title, detail = hit.detail, kind = hit.kind)
+                    }
+                } else if (overflowStudy) {
                     PersistentResultLine(title = overflowFolderTitle,
                         detail = "Folder · opens this folder", kind = "Folder")
                     PersistentResultLine(title = overflowTrackTitle,

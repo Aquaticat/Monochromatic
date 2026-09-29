@@ -148,6 +148,17 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
     // const imeViewportStudy = candidate.includes("-imeviewport-");
     // ```
     val imeViewportStudy = candidate.contains("-imeviewport-")
+    // What: Read the same debug order and parent-field switches as the unfolded Search host.
+    // Why: Folded cover and inner results must compare the same synthetic data.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const rankVariant = ['rankfolders', 'rankmixed', 'ranktracks'].find(v => candidate.includes(`-${v}`)) ?? '';
+    // ```
+    val rankVariant = if (candidate.contains("-rankfolders")) "rankfolders"
+        else if (candidate.contains("-rankmixed")) "rankmixed"
+        else if (candidate.contains("-ranktracks")) "ranktracks" else ""
+    val includeParentHits = candidate.contains("-parenthits")
     val variant = if (candidate.contains("-docked-")) "docked" else if (candidate.contains("-wide-list-")) "wide-list" else "wide-grid"
     val initiallyOpen = !candidate.contains("-player")
     val initialQuery = if (candidate.contains("-results")) "cam" else if (candidate.contains("-none")) "zzq" else ""
@@ -170,7 +181,8 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
     if (cover) {
         SearchLayoutCover(query = query, onQueryChange = { query = it }, onBack = onBack,
             unavailable = unavailable, pageColor = pageColor, hidePositiveHeading = hidePositiveHeading,
-            overflowStudy = overflowStudy, imeViewportStudy = imeViewportStudy)
+            overflowStudy = overflowStudy, imeViewportStudy = imeViewportStudy,
+            rankVariant = rankVariant, includeParentHits = includeParentHits)
         return
     }
     // What:     110px is this panel's approximation of the user's physical 7.5mm dent.
@@ -204,7 +216,8 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
 @Composable
 private fun SearchLayoutCover(query: String, onQueryChange: (String) -> Unit,
     onBack: () -> Unit, unavailable: Boolean, pageColor: Color, hidePositiveHeading: Boolean,
-    overflowStudy: Boolean, imeViewportStudy: Boolean) {
+    overflowStudy: Boolean, imeViewportStudy: Boolean,
+    rankVariant: String, includeParentHits: Boolean) {
     Column(modifier = Modifier.fillMaxSize().background(pageColor)) {
         Box(modifier = Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars))
         SearchLayoutHeader(query = query, onQueryChange = onQueryChange, onBack = onBack,
@@ -229,7 +242,8 @@ private fun SearchLayoutCover(query: String, onQueryChange: (String) -> Unit,
             modifier = Modifier.fillMaxWidth().weight(1f).then(resultInset)
                 .windowInsetsPadding(WindowInsets.navigationBars),
             halfClearance = null, fullWidth = false, pageColor = pageColor,
-            hidePositiveHeading = hidePositiveHeading, overflowStudy = overflowStudy)
+            hidePositiveHeading = hidePositiveHeading, overflowStudy = overflowStudy,
+            rankVariant = rankVariant, includeParentHits = includeParentHits)
     }
 }
 
@@ -333,7 +347,8 @@ private fun SearchLayoutInput(query: String, onQueryChange: (String) -> Unit, mo
 @Composable
 private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modifier,
     halfClearance: androidx.compose.ui.unit.Dp?, fullWidth: Boolean, pageColor: Color,
-    hidePositiveHeading: Boolean = false, overflowStudy: Boolean = false) {
+    hidePositiveHeading: Boolean = false, overflowStudy: Boolean = false,
+    rankVariant: String = "", includeParentHits: Boolean = false) {
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         if (query != "cam" || unavailable) {
             SearchLayoutEmpty(query = query, unavailable = unavailable,
@@ -343,6 +358,14 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
         if (!hidePositiveHeading) {
             Text("Results for “cam”", modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 8.dp),
                 style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        }
+        if (rankVariant.isNotEmpty()) {
+            // Render identical synthetic hits on the cover without claiming a live search index.
+            for (hit in searchRankingHits(rankVariant, includeParentHits)) {
+                SearchLayoutRow(title = hit.title, detail = hit.detail, kind = hit.kind,
+                    halfClearance = halfClearance, fullWidth = fullWidth, pageColor = pageColor)
+            }
+            return@Column
         }
         SearchLayoutRow(title = if (overflowStudy) overflowFolderTitle else "Camellia",
             detail = "Folder · opens this folder", kind = "Folder",
