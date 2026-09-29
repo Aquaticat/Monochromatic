@@ -290,7 +290,8 @@ and the current handover's open-work list was task numbers
 naming two pieces of work recorded nowhere else.
 Two cache-account paragraphs written for B24 said "same cache check as the paragraph before",
 which names nothing once a paragraph is added between them (M60),
-and six more references by position stand in the package (D33).
+and a census found hundreds more references by position in the package and the living docs (D33),
+five of them pointing the wrong way after the text around them moved.
 
 The rule:
 a reference names something a later reader can open:
@@ -331,6 +332,19 @@ and on a listed issue or quotation that no longer occurs;
 it fails too on a number written after the word "task" (D31)
 outside the listed takeover-era stretches,
 which keep that tracker's numbers under their notes.
+`src/position-references.unit.test.ts` (D33) reads the same texts
+and fails on "above" or "below" after any word that marks no comparison,
+bound or placement,
+unless what follows compares or names,
+on a reference verb or a parenthesis around one,
+on a sequence noun before "before this" or "after it",
+on "earlier in this file" and its kin,
+and on "the former" and "the latter",
+outside its listed exemptions,
+and on an exemption that no longer names a reference.
+Its first version read positions only after a listed noun
+and passed a couple of hundred after nouns the list lacked;
+a guard built on a word list is measured against a broader scan before it closes an entry.
 
 ## Dates and clock times
 

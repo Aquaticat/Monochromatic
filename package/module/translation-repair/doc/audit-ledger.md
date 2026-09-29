@@ -5936,29 +5936,136 @@ the new case among them).
 ### D33: references by position in comments and test names
 
 Status:
-open,
-recorded 2026-09-29.
+fixed,
+2026-09-29,
+guard `position-references.unit.test.ts`
+(red `38f1472aa`,
+widened red `8ecf892ba`,
+widened `9426d91be`,
+its last mutant closed in `228eafd01`,
+code spans read as CommonMark reads them in `0bc2e00f8`).
 The repository rule is to name the thing a text points at,
-never its position,
-and a search for "see above",
-"the one above",
-"as above",
-"the paragraph before" and "every case before this"
-finds six such references in the package
-(`sentinel-probe.ts`,
-`window-trial-report.ts`,
-`declared-name-survival.ts`,
-`translate-assemble-refusals.unit.test.ts`,
-`image-reading-past-refusal.ts`,
-`slice-pair.ts`),
-and B24's account paragraphs added two more (M60).
-A reference by position names nothing once a paragraph,
+never its position:
+a reference by position names nothing once a paragraph,
 a case or a line is added between the two.
-Fix:
-a census over the package's source,
-tests and docs with a wider set of positional words,
-each read in place and rewritten to name its target,
-and a guard if a scan can tell a positional reference from ordinary prose.
+The first search found six such references in the package,
+and B24's account paragraphs added two more (M60).
+The census found hundreds.
+
+The census read what the task-number guard reads:
+the package's source,
+tests,
+docs,
+README and task file,
+and the 59 living repository-level docs.
+Positional words matched 296 phrases in the package and 79 in the living docs,
+of which the first guard's shapes named 232 and 39 outside its exemptions
+(a reference verb or a listed structure noun before "above" or "below",
+a parenthesised position,
+a sequence noun before "before this" or "after it",
+"earlier in this file" and its kin,
+"the former" and "the latter").
+Each was read in place and rewritten to name its target
+(`dc111e3eb`,
+`d447225d3`,
+`c57ded55c`,
+`6254d0e9d`,
+`01fccf6eb`,
+`2787dbf2a`):
+a case by its leading phrase,
+code by its identifier,
+a doc section by its heading,
+and a file's own cases as "the cases in this file".
+
+The noun list missed most of the family.
+A scan for "above" or "below" ending a phrase,
+filtered to the guard's own files,
+led to 67 more edits (`217251b42`),
+and a prototype of a wider shape to 128 more (`fc53cda23`):
+"the estimate below",
+"the walk below",
+"the rethrows below",
+"the standing directive below",
+"the golden hash below".
+So the guard now reads any word before a position as pointing,
+unless that word marks a comparison,
+a bound or a placement (`POSITION_MARKERS`:
+"at or above",
+"unbounded below",
+"far above",
+"sits above",
+"stands above"),
+or what follows compares ("below which",
+"below quorum"),
+names ("above `limit`",
+"below {@link ...}",
+a quoted heading)
+or forms a compound ("a below-threshold vote",
+while "the above-mentioned" still points).
+A naming character counts only after a space,
+so the backtick closing a printed template (`` the credits above` ``) names nothing,
+and in Markdown a position inside a code span is left,
+read against the line as written
+and closed as CommonMark closes a span,
+on the next backtick run of the opening run's length.
+The first version counted backticks for parity,
+and this entry's own quote of a closing backtick,
+written as a double-backtick span,
+read as outside until `0bc2e00f8`.
+A physical position ending a phrase ("slept below" at a sentence's end) reads as a pointer by design;
+outside exempt page text,
+the texts the guard reads hold none.
+Exemptions carry their reasons in two fixtures:
+sheet text in `position-references-sheet-exemptions.test-fixture.ts`
+(model-facing and grader-facing sheets,
+and the task text tests hand a sheet builder),
+and in `position-references-exemptions.test-fixture.ts` page text,
+Unicode character names,
+comparisons and orders in time the shapes cannot tell apart,
+quoted log lines,
+and the guard's own lists and examples.
+Ten repository-level docs outside the guard's set are D27 archives and were left as written.
+
+Mutation check (`d33-shape-mutants.json`,
+ten mutants):
+nine caught on the first run.
+The survivor read a code span's offset from the joined line;
+a case whose span opens with the phrase catches it (2 assertions) in `228eafd01`.
+The span rule's own check (`d33-span-mutants.json`,
+five mutants) caught all five:
+parity reading by 3 assertions,
+closing on any run by 2,
+an unmatched run opening a span by 2,
+and the two earlier code-span mutants by 4 and 2.
+Full suite on `228eafd01`:
+1356 `[PASS]` lines,
+0 `[FAIL]`,
+exit 0.
+Full suite again on `0bc2e00f8`,
+with this entry's doc edits in the tree:
+1356 `[PASS]` lines,
+0 `[FAIL]`,
+exit 0.
+
+Found while rewriting,
+each fixed in the commit that met it:
+
+- Pointers that pointed the wrong way:
+  the round-three grading runbook's "the command below" (the `score-agreement` command stands before it),
+  `document-readings.ts`'s "the driver above" (`readDocumentPictures` stands after it),
+  `draw-sample.ts`'s "the reconcile below" (the check lives in `draw-entry-load.ts`),
+  a consolidation-driver test's "the resumption case below" (that case precedes it),
+  and the runaway-call decision's "this section" standing at the end of another section.
+- `translation-repair-unread-signals.md` credited "genuinely absent rather than discarded" to `256520df7`'s message,
+  which is about the stage-call sub-kind;
+  the words are `eab15a03c`'s.
+- M1's "the same form recorded above once already" meant a form that entry records twice.
+- The corpus-pass runbook's sample of the spend report's floor line kept "in no figure above"
+  after `d447225d3` changed the code,
+  and `d447225d3`'s message overstated which printed lines it changed
+  (a commit comment corrects it).
+- `translate-assemble-refusals.unit.test.ts`'s "every case before this" stood in the file's first case
+  and meant the cases written before it.
 
 ## Found while fixing
 
@@ -9313,6 +9420,13 @@ checking whether a commit type had precedent,
 checking that an escape landed as written,
 and `rg <references> <src> ; <type check>`,
 a leftover search chained to the type check.
+Three more during B29 and D33 on 2026-09-29:
+`find … ; wc …`,
+a listing chained to a count (its arguments were not kept),
+`git log <commit> ; git log <pickaxe>`,
+reading a commit's message beside a pickaxe search,
+and `rg --count <old wordings> <paths> ; echo "rg exit $?"`,
+a recount printing its exit.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -9829,6 +9943,15 @@ and happened to run after it.
 The edit and any command that reads its result,
 commit or lint,
 go in separate responses.
+Again on 2026-09-29 (D33),
+and this time a wrong commit landed:
+the red commit's message file took a name an earlier commit had used,
+its write was refused because the old file had not been read,
+and the commit in the same batch took the old message,
+so `8ecf892ba` carries the first guard commit's message.
+A commit comment gives the intended one.
+The name check the prevention asks for (`ls` the name first) was skipped;
+a message file for a commit now takes a name no earlier file has.
 
 ### M50: a mutation runner that read a crashed test run as a survivor
 

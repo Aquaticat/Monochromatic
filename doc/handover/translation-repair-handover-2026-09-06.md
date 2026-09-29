@@ -141,7 +141,9 @@ this one says what changed after it.
   B29 leaves one gap open:
   a Han character beyond the first plane that pinyin-pro cannot read passes through the handle reading as written,
   which no pinned original carries.
-  D33 (references by position) is open.
+  D33 (references by position) is closed:
+  every reference in the package and the living docs names its target,
+  and `position-references.unit.test.ts` guards both (`9426d91be`).
   Both gaps found on the way are closed:
   `code-points.ts` and `cased-letters.ts` have unit tests of their own,
   which found and fixed two lone-surrogate faults
