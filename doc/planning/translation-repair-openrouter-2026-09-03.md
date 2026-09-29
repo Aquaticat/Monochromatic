@@ -10253,7 +10253,7 @@ so glm-5.3 (602 asked) and Qwen3.8-27B (1,138 asked) threw every call.
 The page reads "——from “Gilded Cage” ([Bird in a Cage](https://www.bilibili.com/video/BV17Q4y1s7j1))[^9]".
 The original credits the song once,
 as the link's text:
-来自《[笼中之鸟](url)》.
+`来自《[笼中之鸟](url)》`.
 The consolidated candidate wrote "Gilded Cage",
 a title the web lookup offered for another work
 (minimax-m3 said so on the slate and the gate,
@@ -15153,7 +15153,7 @@ Class one hundred live:
 one `title-reference-unified` line (slice 101,
 the second song credit's pinyin "Ling Chong Qi Yuan" to the heading's "Zero-Layer Prayer",
 a form no floor names and the judges had endorsed),
-the linked credit "[Bird in a Cage](…)" and the heading "Bird in a Cage" one rendering,
+the linked credit `[Bird in a Cage](…)` and the heading "Bird in a Cage" one rendering,
 the first credit “Nonuple Reality” and its heading one rendering,
 footnote 6 "the piece “Zero-Layer Prayer”" and its heading one rendering.
 Class ninety-eight on the wire again (one refusal for a Han title).
@@ -15277,7 +15277,7 @@ the first credit shipped "—— Yuli (Rain Fox) 【妄想症Paranoia】《Nonup
 the second "—— Yuli,
 from “Paranoia,”
 Zero-Layer Prayer (零重祈愿)" with the Han in parentheses after the English as the policy bullet allows,
-and the Bird in a Cage credit links "[The Caged Bird](…)" in English;
+and the Bird in a Cage credit links `[The Caged Bird](…)` in English;
 the Han census over the page against the archive finds only the album's own name,
 that parenthetical gloss and the JSX ordinal 七 (class ninety-nine).
 The first credit now carries the album name `XingZ629` had dropped.
@@ -15334,7 +15334,7 @@ the repair lane's `n="七"` won slice 41;
 a tag's string attribute is apparatus no judge weighs and every slice is judged alone,
 so the numeral style moves slice to slice.
 Class one hundred.
-The original heads a section 笼中之鸟 and credits the song as 《[笼中之鸟](…)》,
+The original heads a section 笼中之鸟 and credits the song as `《[笼中之鸟](…)》`,
 heads another 零重祈愿,
 credits it as 《零重祈愿》 and points footnote 6 at 「零重祈愿」篇;
 the page headed "Bird in a Cage" over the linked credit "The Caged Bird" and "Zero-Layer Prayer" over the footnote's "Zero-Degree Prayer" (零重 read as a degree),
@@ -15487,7 +15487,7 @@ the translate lane won slice 101 and the slate endorsed it,
 one ballot calling the Han title "consistent with the presence of a series name" while another abstention on the footnote slice cited the web lookup's English for the same title.
 The house rule already says a work the ORIGINAL names is called by its official English title where one exists and by a translation where none does;
 no floor asked for it.
-`XingZ619` and `XingZ628` had shipped the Bird in a Cage link text the same way ("《[笼中之鸟](…)》"),
+`XingZ619` and `XingZ628` had shipped the Bird in a Cage link text the same way (`《[笼中之鸟](…)》`),
 the observation left open since 2026-09-19.
 A Han census over the seven latest read pages (`hulicaijia15`,
 `mikaela10`,
@@ -15515,7 +15515,7 @@ where the title carries a Han ideograph and no Latin letter (`han-only-text.ts`,
 the unified block as the name index reads it),
 the occurrence has no English gloss in parentheses after it and stands in none,
 and the page the candidate would replace never wrote it;
-a 《[title](url)》 bracket is read by its link text,
+a `《[title](url)》` bracket is read by its link text,
 so a Han link text is refused too;
 comments are cut on both sides.
 The marker,
@@ -16111,7 +16111,7 @@ minimax on CoreWeave 256 and Together 100;
 95 abstention lines with reasons.
 
 Classes seventy to seventy-seven holding:
-the closing excerpt line curled ("Excerpt from [𝓠𝓾𝓪𝓷](...)’s"),
+the closing excerpt line curled (`Excerpt from [𝓠𝓾𝓪𝓷](...)’s`),
 𝓠𝓾𝓪𝓷 six times as the archive and never "Quan",
 "Mika was outed.",
 the Epilogue one to one,
@@ -18355,8 +18355,7 @@ Meters 116.35 to 115.75 USD on Bedrock and 171.95 to 171.12 on OpenRouter,
 - 5 em-dashes,
   left per the owner's answer of 2026-09-21.
 - Classes seventy to seventy-seven holding:
-  the Epilogue's excerpt line curled ("[𝓠𝓾𝓪𝓷](...)'s Chronicle Issue No.33,
-  2023"),
+  the Epilogue's excerpt line curled (`[𝓠𝓾𝓪𝓷](...)'s Chronicle Issue No.33, 2023`),
   "Mika was outed" on the page,
   the Epilogue (slice 28) with its source lines one to one
   (the five quoted lines,
@@ -18473,7 +18472,7 @@ outvoted.
 
 ### Observations, not classes
 
-- The film link ships "[Josee, the Tiger and the Fish](...)" again
+- The film link ships `[Josee, the Tiger and the Fish](...)` again
   (two ballots citing the cited reference,
   one calling *The Truman Show* "a distractor in the surrounding metadata");
   "the trio's car shows";
@@ -18602,7 +18601,7 @@ full suite green (`suite-93b11aef9.log`).
 
 ### Observations, not classes
 
-- The film link back to "[movie](...)" where `shi_Yumiaoya11` had "Josee,
+- The film link back to `[movie](...)` where `shi_Yumiaoya11` had "Josee,
   the Tiger and the Fish" from the cited reference;
   the reference is on the sheet and the bench chose otherwise this run.
 - "little yao-niang" again,
@@ -18743,7 +18742,7 @@ full suite green (`suite-873104d8f.log`).
   the unendorsed standing of slice 1,
   where `shi_Yumiaoya9` and `shi_Yumiaoya10` re-rendered it;
   the `<Banner>` text is re-rendered again.
-- The film link ships "[Josee, the Tiger and the Fish](...)",
+- The film link ships `[Josee, the Tiger and the Fish](...)`,
   the title the cited Wikipedia reference establishes,
   where `shi_Yumiaoya10` had "[movie]" and `shi_Yumiaoya8` "[name of a film]";
   two ballots cite the web lookup,
@@ -19140,7 +19139,7 @@ the full suite's result is recorded under the next heading.
   the count is the original's,
   and the archive never carried this paragraph,
   so the judges own it under the replicability test.
-- "a [movie](...) that they both loved" for the film link where `shi_Yumiaoya8` had "[name of a film]";
+- `a [movie](...) that they both loved` for the film link where `shi_Yumiaoya8` had "[name of a film]";
   "let it rot" for 摆烂;
   the heading "Departure" again.
 - "little yao-niang" with the footnote where `shi_Yumiaoya7` glossed inline;
@@ -19288,7 +19287,7 @@ Han residue in the English:
 "贴贴 (cuddling) plans",
 "insulted as a 「逆子」";
 `shi_Yumiaoya7` rendered all three.
-The film link ships "[name of a film](...)" for the source's 一部电影 where `shi_Yumiaoya7` named the film;
+The film link ships `[name of a film](...)` for the source's 一部电影 where `shi_Yumiaoya7` named the film;
 the third heading ships "Departure" for 关于鱼喵的离世 where `shi_Yumiaoya7` wrote "About Yumiao's Departure".
 
 `shi_Yumiaoya9` (frozen `545bff7b9`,

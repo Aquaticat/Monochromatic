@@ -204,7 +204,7 @@ Consolidation reached slices 0 and 1 before the kill.
   "On the
   afternoon of October 9,
   2024,
-  Nonamev wrote this [farewell note](...).
+  Nonamev wrote this \[farewell note](...).
   At 4:00 p.m.,
   Nonamev passed
   away in Shanghai after emergency treatment for hemorrhagic shock failed,

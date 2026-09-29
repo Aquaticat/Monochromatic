@@ -7135,7 +7135,7 @@ each read off the pass log and the shipped page:
     CLASS NINETY-EIGHT FIXED:
     `hanTitleFindings` (`translate-han-title.ts`,
     `han-only-text.ts`) refuses before any judge a candidate that leaves a 《》-bracketed Han-only title standing bare (no English gloss in parentheses beside it) on a page that never wrote it,
-    reading a 《[title](url)》 bracket by its link text;
+    reading a `《[title](url)》` bracket by its link text;
     the marker,
     address and title floors fold into `sourceCarryFindings` (`translate-source-carry.ts`);
     the policy's work-title bullet says a title is never left in Han as the work's name;
