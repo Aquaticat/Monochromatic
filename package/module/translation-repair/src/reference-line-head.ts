@@ -80,6 +80,12 @@ export type NumberedReferenceLine = {
  */
 export class ReferenceLineHeadError extends Error {
   /**
+   Declares this message safe to forward: it names a line's position, the
+   block's line count and the mark this module writes, never the line.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    Builds the refusal naming where the line sits, never what it says, since
    a reference line carries a fetched page's text.
 
