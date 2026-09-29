@@ -213,6 +213,42 @@ await describe({
       },
     },),
     it({
+      name: 'LEAVES A SLICE THAT NAMES THE TITLE WITHOUT BRACKETS, whatever its page quotes: a bare mention is words, '
+        + 'not a reference',
+      fn: async () => {
+        /**
+         Pass over a slice that says the title's words without marking them.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            pair({
+              sliceIndex: 2,
+              source: '### 午后猫语',
+              target: '',
+            },),
+            pair({
+              sliceIndex: 8,
+              source: '她说午后猫语很好听。',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADINGS[1],
+            {
+              sliceIndex: 8,
+              replacementText: 'She said “Afternoon Cat Talk” sounds lovely.',
+            },
+          ],
+        },);
+        expect(unified.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).toEqual([
+          '### Afternoon Cat Murmurs',
+          'She said “Afternoon Cat Talk” sounds lovely.',
+        ],);
+      },
+    },),
+    it({
       name: 'LEAVES a reference already rendered as the heading, one the archive alone carries, and one it cannot place',
       fn: async () => {
         /**

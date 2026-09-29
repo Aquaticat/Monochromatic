@@ -5,11 +5,81 @@
 // the title on a footnote definition line, the search is held to the page's
 // line with the same label, and where it references it on a line opening
 // with a tag, to the page's line opening with the same tag in the same place.
+//
+// THE LINE THAT REFERENCES THE TITLE IS THE ONE THAT BRACKETS IT (ledger B23).
+// A footnote naming the title bare ahead of the footnote that brackets it
+// held the search to the wrong line, and the reference went unplaced; and a
+// Han title matched bare inside a longer one. The marks here are the ones the
+// unify pass reads a reference by, so the two cannot disagree.
 
 /**
  Newline, which no span crosses.
  */
 const LINE_END = '\n';
+
+/**
+ Marks the original may bracket a title in, opening then closing.
+ */
+const REFERENCE_MARKS: readonly (readonly [
+  string,
+  string,
+])[] = [
+  [
+    '《',
+    '》',
+  ],
+  [
+    '《[',
+    '](',
+  ],
+  [
+    '「',
+    '」',
+  ],
+  [
+    '『',
+    '』',
+  ],
+  [
+    '“',
+    '”',
+  ],
+  [
+    '"',
+    '"',
+  ],
+];
+
+/**
+ Whether a text references a title inside any bracketing marks.
+
+ @param text - original text or one line of it, comments cut
+
+ @param title - Han title
+
+ @returns True when the title stands bracketed
+
+ @example
+ ```ts
+ bracketsTitle({ text: '见「猫」篇', title: '猫', },); // true
+ ```
+ */
+export function bracketsTitle(
+  {
+    text,
+    title,
+  }: {
+    readonly text: string;
+    readonly title: string;
+  },
+): boolean {
+  return REFERENCE_MARKS.some(function wraps([
+    open,
+    close,
+  ],): boolean {
+    return text.includes(`${open}${title}${close}`,);
+  },);
+}
 
 /**
  Opening of a footnote definition's label.
@@ -340,7 +410,10 @@ export function referenceScope(
       offset,
       (lineEnd === (-1)) ? sourceText.length : lineEnd,
     );
-    if (!line.includes(title,))
+    if (!bracketsTitle({
+      text: line,
+      title,
+    },))
       continue;
     /**
      Offset of the page line rendering it, -1 for none.

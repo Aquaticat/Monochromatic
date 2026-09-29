@@ -12,6 +12,7 @@ import {
   type LocatedTitle,
   locateTitleRendering,
 } from './title-reference-locate.ts';
+import { bracketsTitle, } from './title-reference-scope.ts';
 
 //region Title reference unify
 // CLASS ONE HUNDRED (XingZ630, 2026-09-23). The original heads a section
@@ -26,39 +27,6 @@ import {
 // found in the referencing slice by the link's destination, by the Han
 // gloss after the English, by title brackets or by quotes; a slice that
 // offers two spans of one shape is reported, not guessed at.
-
-/**
- Marks the original may bracket a title in, opening then closing.
- */
-const REFERENCE_MARKS: readonly (readonly [
-  string,
-  string,
-])[] = [
-  [
-    '《',
-    '》',
-  ],
-  [
-    '《[',
-    '](',
-  ],
-  [
-    '「',
-    '」',
-  ],
-  [
-    '『',
-    '』',
-  ],
-  [
-    '“',
-    '”',
-  ],
-  [
-    '"',
-    '"',
-  ],
-];
 
 /**
  Punctuation a quoted span may end with, kept outside the rewrite.
@@ -241,37 +209,6 @@ function renderedHeadings(
 }
 
 /**
- Whether an original references a title inside any bracketing marks.
-
- @param sourceText - original text, comments cut
-
- @param title - Han title
-
- @returns True when the title stands bracketed
-
- @example
- ```ts
- referencesTitle({ sourceText: '见「猫」篇', title: '猫', },); // true
- ```
- */
-function referencesTitle(
-  {
-    sourceText,
-    title,
-  }: {
-    readonly sourceText: string;
-    readonly title: string;
-  },
-): boolean {
-  return REFERENCE_MARKS.some(function wraps([
-    open,
-    close,
-  ],): boolean {
-    return sourceText.includes(`${open}${title}${close}`,);
-  },);
-}
-
-/**
  Count of words in a run.
 
  @param text - run of words
@@ -436,8 +373,8 @@ export function unifyTitleReferences(
     for (const heading of headings.values()) {
       if (heading.sliceIndex === sliceIndex)
         continue;
-      if (!referencesTitle({
-        sourceText,
+      if (!bracketsTitle({
+        text: sourceText,
         title: heading.title,
       },))
         continue;
