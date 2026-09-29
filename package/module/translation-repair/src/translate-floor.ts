@@ -38,8 +38,9 @@ const REFUSED_FINDING = 'translate-candidate-refused';
 
  @param sourceText - original slice
 
- @param incumbentText - archive's rendering, which the rule reads as the page
- shape
+ @param incumbentText - incumbent the stage judges, which the rule reads as
+ the page shape: the archive's rendering, or on a disputed slice the repair
+ lane's text standing in its place where that may stand
 
  @param syntax - syntax role of the slice, when it has one
 

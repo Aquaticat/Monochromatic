@@ -233,6 +233,10 @@ export async function produceTranslateSlate(
     voices: gather.voices,
     sourceText,
     incumbentText,
+    // STATED, NOT DEFAULTED (ledger B29): a translator replaces the incumbent
+    // the stage judges, which is the page shape the floor after this turn
+    // reads too (`translate-floor.ts`).
+    pageText: incumbentText,
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     declared,
