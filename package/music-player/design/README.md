@@ -24,9 +24,31 @@ Read these files in order:
 7. [`device-metrics.md`](device-metrics.md)
 8. [`candidates.md`](candidates.md)
 
-## Design questionnaire
+## Current review and historical rounds
 
-The most recent design round applied the standing true-black dark requirement while
+The Fold Search design review is complete through D75 to D80.
+`questions/current.html` shows selected Search A and adopted accessibility
+goals with a correction/veto path,
+not an unanswered questionnaire.
+The [Search accessibility boundaries](evidence/search-accessibility-boundaries.md)
+and [inspected TalkBack baseline](evidence/search-talkback-native-baseline.md)
+separate desired behavior from the 200% keyboard-closed inner fixture.
+Cover traversal,
+native result activation,
+live announcements and return focus still need separately authorized
+implementation verification.
+No new IME experiment or production Search work is authorized.
+The disposable review emulator is stopped.
+
+Status vocabulary follows `open-questions.md` section 0:
+settled decisions are not shipped behavior,
+provisional choices have a revisit point,
+open entries need design,
+and developer-owned entries are feasibility or implementation work.
+Archived candidates and past round descriptions do not reopen settled
+questions.
+
+An earlier dark-color round applied the standing true-black dark requirement while
 following Android dynamic color.
  It preserved accepted option 3B,
  transport 1B,
@@ -193,7 +215,14 @@ and [archived Stay/Return logic comparison](questions/archive/search-result-acti
 explain the choice;
 `questions/current.html` shows only the selected action goals.
 No Search result tap handler has been tested or implemented.
-Search accessibility remains a separate review.
+D75 to D80 adopt query-first accessibility entry,
+contiguous Search reading order,
+single-action rows,
+non-stealing truthful announcements,
+outcome-aware return focus and identity continuity.
+These design recommendations have a chat correction/veto path;
+complete native accessibility acceptance is deferred,
+not demonstrated by the static screenshots.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.
@@ -202,9 +231,11 @@ D21's configurable global hotkey and extra Settings row belonged to the command 
 they do not silently move to Search.
  D25's Ctrl+F reservation remains pending the
 whole keyboard-map pass.
- Search result actions,
- tall-keyboard fit,
- and final empty/error behavior remain in this UI review.
+ Result actions and status truth conditions are settled design goals under
+D69 to D74.
+Exact cause-specific recovery needs a future source-status owner;
+arbitrary-keyboard fit remains unverified and does not authorize further
+IME studies.
  Matcher grammar and tie-break implementation are deferred;
  the canned captures do not constitute a running search index.
  The live backlog and developer-owned items are in
@@ -245,8 +276,10 @@ Each round embeds its visual evidence,
 controls in one file.
  Questionnaire HTML follows the viewer's light or dark system preference;
 never force a light review surface.
- The file is rendered and interaction-checked before it is opened in
-Helium.
+ Each review file is rendered and interaction-checked.
+Headless verification is sufficient unless the user explicitly asks for
+visible presentation;
+no KWin/window-management step is a completion gate.
  Android evidence comes from a non-functional Jetpack Compose prototype
 installed on the target emulator,
  not from CSS redraws.

@@ -12,6 +12,43 @@ This correction supersedes the generic opening and activation instructions in th
 and the former window-opening clause in `review-notes.md` standing standard 9.
 Historical window IDs and observations remain for traceability, not as instructions to reopen or activate them.
 
+## Current frontier (2026-09-29)
+
+The Fold Search **design review is complete** through D75 to D80.
+The selected `questions/current.html` is a correction/veto surface,
+not an unanswered questionnaire.
+`evidence/search-accessibility-boundaries.md` and
+`evidence/search-talkback-native-baseline.md` bound the inspected inner
+TalkBack evidence;
+they do not prove native activation,
+live announcements,
+return focus or cover traversal.
+The disposable emulator is stopped.
+The original AVD,
+production Search,
+matcher/library choice,
+further IME experiments,
+`AGENTS.md` edits and KWin automation remain out of scope.
+
+The current status legend is in `open-questions.md` section 0.
+D17's rejected prefix buckets and row/fast-scroll candidates are history.
+D34/D35 and D45 settle their named light treatments,
+not every undrawn light diagnostic surface.
+D46's cover picker P4 stays provisional with a before-1.x revisit.
+The whole revised keyboard map is still a design question;
+implementing it and MD3-on-Slint feasibility are developer-owned work.
+The old cover-active and build-next paragraphs in this chronological
+handoff are historical,
+not instructions to restart those rounds.
+
+Internal tasks 131 and 133 track future source-status binding and native
+Search accessibility acceptance,
+both gated on separate implementation authorization.
+Legacy documentation lint remains internal task 119.
+The status-document sweep updates `README.md`,
+`open-questions.md`,
+`candidates.md` and this frontier without adding a new design question.
+
 You are picking this project up with **no prior context**.
  Everything known about it
 is in this folder.

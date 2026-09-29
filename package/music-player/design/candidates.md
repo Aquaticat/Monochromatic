@@ -1,5 +1,31 @@
 # Candidate inventory
 
+## Current status and how to read this archive
+
+`questions/current.html` is the selected Fold Search review through
+D75 to D80,
+not a candidate-selection questionnaire.
+Native Search activation,
+announcements,
+focus transitions and complete cover traversal remain deferred
+implementation acceptance work.
+The inspected inner TalkBack fixture is 200% and keyboard-closed only.
+No production change or new IME experiment is authorized.
+
+Use `decisions.md` for settled choices and `open-questions.md` section 0b
+for open,
+provisional and developer-owned work.
+D46's P4 cover picker remains provisional;
+D17's rejected prefix buckets/one-folder-per-row fast-scroll variants do
+not become live options merely because their files still exist.
+Candidate descriptions are historical unless a named decision explicitly
+makes them the current baseline.
+MD3-on-Slint feasibility and implementing the keyboard map are
+developer-owned;
+the single revised keyboard-map design remains open.
+
+## Historical inventory
+
 66 files in **candidates/**.
  Every one is a standalone Design Component (.dc.html)
 that opens in a browser at its declared preview size.
@@ -1102,7 +1128,10 @@ flow was exercised,
 measures the target phone geometry.
 D21's global hotkey and Settings row are not inherited by the Search page.
 D25's Ctrl+F reservation remains open with the whole keyboard map.
- Search targets and result effects/ranking remain design questions;
+ At that retired round,
+ Search targets and result effects/ranking were still design questions;
+ D58 to D61 and D63 to D80 now settle the visible and interaction goals.
+ Engine selection and native implementation remain deferred.
 D49 makes the Fold the visual source for every platform,
  and D51 later
 selected A's unfolded pane placement.
@@ -1180,3 +1209,14 @@ Real-Gboard geometry is measured for the linked settled and overlay states;
 D53 to D55 accept the observed floating-deck,
 brief banner and cover floating-result overlaps.
 Other keyboard configurations and production implementation remain unverified.
+D58 to D61 refine alignment,
+match emphasis,
+direct-name membership and mixed relevance.
+D63 to D74 settle navigation,
+status truth and result-action goals;
+D75 to D80 adopt accessibility goals with a chat correction/veto path.
+The current selected-only review and
+`evidence/search-talkback-native-baseline.md` distinguish those goals from
+static captures and bounded observed speech.
+There is no native Search result handler,
+verified cover swipe sequence or live announcement/return-focus proof.

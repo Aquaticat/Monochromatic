@@ -25,7 +25,20 @@ rounds (2026-09-17):
  feasibility and porting studies,
  and implementation of settled designs.
 
-## 0b. Live design backlog (2026-09-23)
+## 0b. Live design backlog (updated 2026-09-29)
+
+The Fold Search design review is complete through D75 to D80.
+The selected review at `questions/current.html` remains a correction/veto
+surface,
+not a new questionnaire.
+Internal review task 133 tracks later native accessibility acceptance,
+and internal review task 131 tracks truthful source-status/recovery
+binding.
+Both need separate implementation authorization.
+Do not treat unverified behavior as a reopened visual decision or schedule
+an IME experiment.
+The stopped disposable emulator and bounded inner speech evidence are
+recorded in `evidence/search-talkback-native-baseline.md`.
 
 - **PROVISIONAL: folded-cover picker P4 (D46).**
   The app-bar folder title and caret
@@ -475,9 +488,13 @@ rounds (2026-09-17):
 
 ## 1. The unfolded layout — SETTLED structurally (D16, D17, D18); unf-h is the assembly
 
-Remaining inside it:
- cover-c still shows the connected button group and the old
-left-hugging transport — it needs D1/D18 applied before it is final.
+The assembly descriptions in this section are **historical fixtures**,
+not remaining implementation requests.
+D17 rejects prefix-bucket splitting and the one-folder-per-row directions;
+D31 supplies the wrapped plain-name treatment.
+D39/D40 settle ordinary-player traversal/state speech,
+and the later native Fold cover/player studies supersede the old
+`cover-c` transport-rebuild request.
 
 **Round 3 verdict.**
  unf-d and unf-e rejected:
@@ -485,8 +502,7 @@ left-hugging transport — it needs D1/D18 applied before it is final.
 "This is the third time I'm saying this."
  See review-notes.md 5b.
 
-**Now built:
- unf-f.**
+### Historical `unf-f` fixture, rejected by D17
  Left half = a picker that never scrolls far:
  a 27-letter rail
 (48dp targets) filters to one letter;
@@ -495,8 +511,7 @@ bucket chips (Ca / Ch–Co / Cr–Cy);
  names appear as wrapped content-width 48dp chips.
 Deck stays right (deck side still unanswered).
 
-*Earlier rounds,
- kept for history:*
+### Historical unfolded alternatives
 
 **Round 2 verdict.**
  unf-b/unf-c were not picked:
@@ -506,8 +521,7 @@ like a keyboard."
 (recommendation:
  deck-left starved the folder list to ~7 rows).
 
-**Now built.**
- unf-d:
+The rejected `unf-d` fixture used
  single-column folders with letter headers and a 48dp-wide
 fast-scroll rail along the list edge (tap or drag;
  a 56dp bubble shows the letter —
@@ -574,7 +588,24 @@ is void.
 
 ---
 
-## 2. The cover screen — SETTLED: cover-c, volume kept (decisions.md D14)
+## 2. The cover screen, settled structure with provisional picker (D41 to D46)
+
+The current cover uses D41/D42 dark treatments,
+D45 light seams and D46's provisional P4 picker.
+D43 removed the in-app volume control;
+the mode control remains part of the complete player deck.
+Measured AVD geometry is 1080 × 2424px at 390dpi,
+approximately 443 × 994dp.
+The former 411 × 923dp value was an unmeasured estimate,
+not the native target.
+`README.md` and `decisions.md` record the later native 100%/200% captures.
+Picker TalkBack return focus remains unverified;
+P4's before-1.x revisit is separate from the settled cover structure.
+
+### Historical cover experiments and superseded rebuild request
+
+The following diagnostic history does not reopen volume,
+mode inclusion or the old 411dp rebuild.
 
 **Background.**
  Folded,
@@ -610,8 +641,7 @@ margin has since been removed and the transport rows centred,
  but **the files have not
 been verified at 411dp** and should be treated as unbuilt.
 
-**What to build.**
- Both directions again,
+The superseded rebuild request was both directions again,
  at 411×923,
  verified.
  Open question inside
@@ -719,8 +749,9 @@ to be ported,
  the
 44px slider handle,
  the state-layer mechanism) are impractical in Slint.
- Worth a
-feasibility pass before more desktop surfaces are drawn.
+ This feasibility/porting work is **developer-owned** under the user's
+2026-09-17 assignment,
+not a prerequisite design questionnaire or permission to replace Slint.
 
 ---
 
@@ -981,7 +1012,8 @@ remains unmeasured.
  The command-bar recommendation led to rejected I/G/R prototypes;
  D47 replaces that
 surface with a Search button and page.
- The page design is now active in section 0b.
+ The Fold Search design review is now complete through D75 to D80;
+ section 0b separates adopted goals from deferred native acceptance.
  Reconsidering the picker
 remains a separate pre-1.x question, not a promise to replace it;
  the keyboard-map pass,
