@@ -3,8 +3,11 @@
 ## Status
 
 Decided 2026-09-01.
-The owner delegated the direction ("I don't really trust Sol at this point. You decide.")
-and chose the completion set themselves ("One small, one medium, one large, + Carena").
+The owner delegated the direction ("I don't really trust Sol at this point.
+You decide.")
+and chose the completion set themselves ("One small,
+one medium,
+one large, + Carena").
 This record supersedes the implementation stop in
 [`translation-repair-redesign-failure-2026-09-01.md`](../audit/translation-repair-redesign-failure-2026-09-01.md)
 for legacy-pipeline work only.
@@ -73,7 +76,8 @@ The models Hyper and Synthetic provide has become much more advanced than when t
 We shouldn't even need loops if we play it smart."
 
 A follow-up clarification the same day:
-"Discouraged, not a ban.
+"Discouraged,
+not a ban.
 You can overrule on this if you provide enough evidence and get an approval."
 
 Together these supersede item 2's bound-the-loops shape:
@@ -83,7 +87,9 @@ A loop may stay only where evidence shows it is needed and the owner approves th
 The model-advancement premise is measured against the live provider catalogs before the design is fixed.
 Item 1 (redesign stays closed),
 item 3 (the four-entry completion set),
-and item 4 (one pass, then the reading, then the readiness signal) stand.
+and item 4 (one pass,
+then the reading,
+then the readiness signal) stand.
 
 ## Why this direction
 

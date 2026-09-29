@@ -334,7 +334,8 @@ Mio26 was killed for it and Mio27 is the first pass on it.
 
 Mio27 (frozen `f7aa7c675`,
 2026-09-17 06:05 UTC) is the first Mio page since class thirty-five was found that carries
-"She has an older sister who is also trans." through every stage:
+"She has an older sister who is also trans."
+through every stage:
 four of five voices extracted the sister and the confirmation ratified it five of five,
 the repair lane kept the clause,
 the contest chose repair five of six with four ballots naming the attestation,

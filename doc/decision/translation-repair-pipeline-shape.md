@@ -6,7 +6,8 @@ Decision:
  the existing translation competes as one candidate,
  and judges select per slice.
 
-Provenance, stated exactly because it is a derivation rather than a quotation:
+Provenance,
+stated exactly because it is a derivation rather than a quotation:
  on 2026-08-15 the user REJECTED the recommended shape and gave two criteria for
  rejecting it,
  and those two criteria pick this shape out of the three that were on the table.
@@ -19,7 +20,8 @@ It closes the translate-first re-design proposal,
 
 ## What was proposed and what the user said
 
-Three shapes were put up, ranked A over C over B,
+Three shapes were put up,
+ranked A over C over B,
  with A the recommendation:
  route a section to a translate lane when its target-to-source character ratio
  falls below a line the corpus supplies.
@@ -45,8 +47,11 @@ Best-possible quality is a ceiling statement.
 Routing by ratio leaves 248 of 254 sections on the repair path,
  where the ceiling is the input translation plus whatever defects the critics
  happen to name.
-A slice whose translation is present, fluent and mediocre is invisible to a
- ratio, to a coverage check, and to a critic looking for nameable defects.
+A slice whose translation is present,
+fluent and mediocre is invisible to a
+ ratio,
+to a coverage check,
+and to a critic looking for nameable defects.
 
 ## What is decided
 
@@ -59,7 +64,9 @@ Good human translation survives by WINNING selection rather than by never being
  which makes preservation a measured outcome instead of an assumption.
 There is no threshold anywhere in the routing,
  because there is no routing:
- absent, partial, nonsensical and excellent input all take one path.
+ absent,
+partial,
+nonsensical and excellent input all take one path.
 
 Cost is not an objection to this and was not weighed as one.
 The user's standing on that is on record from 2026-08-14:
@@ -104,10 +111,13 @@ Critics exist to find defects for an editor to repair,
 Dropping them would remove 582 calls and add 105,
  making the new shape cheaper than the one it replaces;
  keeping them would inform the judges and give a stage that reasons about the
- source, which the transcribed-image class argues for.
+ source,
+which the transcribed-image class argues for.
 This is a genuine open question and belongs to the implementation.
 
-Roster, ordering, and how selection reports its reasons are implementation
+Roster,
+ordering,
+and how selection reports its reasons are implementation
  detail.
 
 ## What survives unchanged
@@ -122,17 +132,25 @@ This list also named the deterministic apply gate and the preservation check,
  and both claims were wrong.
 Every policy in that gate is anchored to an EDIT bounded by an envelope some
  accepted issue named:
- offsets, base-text hashes, no-op detection, and a preservation rule that lets
+ offsets,
+base-text hashes,
+no-op detection,
+and a preservation rule that lets
  quoted defect text disappear and nothing else.
-A whole-slice replacement has no envelope, and faking one that spans the slice
+A whole-slice replacement has no envelope,
+and faking one that spans the slice
  fails in both directions:
  with no licensed quotes the preservation rule rejects nearly every legitimate
- translation, while licensing the whole envelope makes it vacuous.
-What that gate enforced still has to be enforced, by a validator built for whole
- candidates rather than for edits, which is the invalid-candidate re-ask.
+ translation,
+while licensing the whole envelope makes it vacuous.
+What that gate enforced still has to be enforced,
+by a validator built for whole
+ candidates rather than for edits,
+which is the invalid-candidate re-ask.
 Semantic preservation does not survive in deterministic form at all:
  whether wording only the existing translation carries is a correct archival
- addition needs source-aware judging, and the incumbent standing as a candidate
+ addition needs source-aware judging,
+and the incumbent standing as a candidate
  is not an enforcement mechanism for it.
 
 The accumulation running under the repair-only shape keeps its value until the

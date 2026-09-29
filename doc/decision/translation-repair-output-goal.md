@@ -59,13 +59,18 @@ An input translation is EVIDENCE about what the original says
  never the standard the result is measured by.
 
 Decided:
- an input that is absent, partial, or nonsensical is ordinary input.
-It is not a reason to decline, skip, or file the shortfall as a defect for
+ an input that is absent,
+partial,
+or nonsensical is ordinary input.
+It is not a reason to decline,
+skip,
+or file the shortfall as a defect for
  someone else.
 
 NOT decided:
  what the re-design is.
-The user named a re-design as likely, not as chosen,
+The user named a re-design as likely,
+not as chosen,
  and its shape belongs in `doc/planning/` until they take it.
 
 ## What already points the same way
@@ -81,7 +86,8 @@ The same error at stage level is what this record decides against.
 
 A second user decision on the same day runs with it:
  accurate detail a translator ADDED,
- a citation's translator, publisher and ISBN where the original names only the
+ a citation's translator,
+publisher and ISBN where the original names only the
  work,
  is kept rather than stripped to match the original.
 Faithfulness to the original is what the output is judged by;

@@ -1502,31 +1502,43 @@ this section is the readiness reading of it.
   one hundred nineteen in all,
   and the rate has not fallen to zero:
   of the last fifteen reads (yingying8 at 00:31 UTC to CuspariaKLSY13 at 09:15 UTC 2026-09-24),
-  four found no class, ten found one each
+  four found no class,
+  ten found one each
   (one hundred eight to one hundred sixteen,
   with the chain arm of one hundred eleven found on its own read)
-  and CuspariaKLSY13 found two (one hundred seventeen, list spacing, and one hundred eighteen, GLM-5.3-Flash's latency on Synthetic).
+  and CuspariaKLSY13 found two (one hundred seventeen,
+  list spacing,
+  and one hundred eighteen,
+  GLM-5.3-Flash's latency on Synthetic).
   The eight reads before zheermao12 each found one,
   five of them on `mikaela_khara`,
   where the carried-insertion fold and the pairing met new shapes in a row,
   yingying10's on the translate slate rather than the page
-  and zheermao11's on the clock (a translate lane of 616 s against 77, the page itself clean).
+  and zheermao11's on the clock (a translate lane of 616 s against 77,
+  the page itself clean).
   zheermao12 found none,
   the class one hundred sixteen rule taking the translate lane to 62 s with the Hyper seats still asked.
-  CuspariaKLSY13's page was faithful in wording, the death paragraph complete for the first time;
-  its two classes are a spacing the archive keeps and a seat's latency, not a mistranslation.
+  CuspariaKLSY13's page was faithful in wording,
+  the death paragraph complete for the first time;
+  its two classes are a spacing the archive keeps and a seat's latency,
+  not a mistranslation.
   CuspariaKLSY14 and hulicaijia17 found no class.
   shi_Yumiaoya19 found one (one hundred nineteen):
-  小药娘 shipped in Han, a third rendering in three runs,
+  小药娘 shipped in Han,
+  a third rendering in three runs,
   settled by the owner's answer of 2026-09-24 as "trans girl" or "trans woman" and built as a glossary entry with a floor.
   shi_Yumiaoya22 found none:
-  both lines read "trans girl" on the page, with no Han and no pinyin outside the archive's comment.
+  both lines read "trans girl" on the page,
+  with no Han and no pinyin outside the archive's comment.
   XingZ6010 found one (one hundred twenty):
   a page-assembly pass wrote a song title into a heading's `align` attribute because the tag spaces its equals sign,
-  a broken page the bench did not cause; fixed and replayed over the run.
+  a broken page the bench did not cause;
+  fixed and replayed over the run.
   mikaela17 found one (one hundred twenty-one):
-  a judge preferred "Xiawafang" to the archive's XIAWAFANG, so the body and its footnote spelled the station two ways;
-  the archive's all-capitals form is now restored at page assembly, and a corpus census shows the rule firing only on acronyms and names.
+  a judge preferred "Xiawafang" to the archive's XIAWAFANG,
+  so the body and its footnote spelled the station two ways;
+  the archive's all-capitals form is now restored at page assembly,
+  and a corpus census shows the rule firing only on acronyms and names.
 - What "ready" would rest on now:
   a rotation over every entry in the read set
   (`XingZ60`,

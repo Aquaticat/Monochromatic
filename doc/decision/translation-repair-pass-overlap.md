@@ -10,7 +10,9 @@ before the reading was turned into a default.
 THIS MOVES A VALUE THE OWNER LEFT AT ONE.
 Question 11 of `doc/planning/translation-repair-open-decisions.md` was answered on 2026-08-26 with option A:
 the editor calibration goes to four,
-and, in the sheet's record of it, the pass keeps one slice in flight until the overlap dial is measured on the pass.
+and,
+in the sheet's record of it,
+the pass keeps one slice in flight until the overlap dial is measured on the pass.
 That deferral asked for evidence on the pass itself,
 not for a preference,
 and the evidence has existed since 2026-08-28.

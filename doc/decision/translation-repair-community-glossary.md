@@ -87,7 +87,8 @@ and its translator's note gives the registered English name "XYN (Tianjin) Techn
 The class one hundred nineteen floor refused the pinyin there too,
 so the archive and every mikaela run that wrote the name were refused.
 The owner answered:
-"Allow it, because it's the proper name of an org."
+"Allow it,
+because it's the proper name of an org."
 
 - An entry may list the source contexts in which its term stands inside an organization's proper name
     (`properNameContexts` on `CommunityTerm`);
@@ -114,5 +115,6 @@ found two statements here that later practice left behind.
     so an entry can bar a candidate.
     No listed rendering is ever required.
 - An entry may also list longer words that write its characters without being the term
-    (`enclosingWords`: 自切 inside 各自切),
+    (`enclosingWords`:
+  自切 inside 各自切),
     read as absent the way a proper name is.

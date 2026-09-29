@@ -41,14 +41,16 @@ so a reader does not have to walk eighty headings to find out.
   each recorded in the pass log under the read that found it,
   the decision addenda in
   [`translation-repair-absence-verdict.md`](../decision/translation-repair-absence-verdict.md)
-  (the admission of source-only passages: halves,
+  (the admission of source-only passages:
+  halves,
   definitions,
   the tail,
   the container deficit,
   and on 2026-09-24 the carried fold)
   and
   [`translation-repair-ineligible-standing.md`](../decision/translation-repair-ineligible-standing.md)
-  (nine addenda: what ships when the archive's rendering cannot),
+  (nine addenda:
+  what ships when the archive's rendering cannot),
   and the slice rules in
   [`slice-context.md`](../../package/module/translation-repair/doc/slice-context.md).
   The latest,
@@ -185,10 +187,12 @@ which the takeover session does not have.
   DTO readers) is abandoned.
   Its records stay in `doc/planning/` under an abandonment note;
   no step of it is next.
-  The sections from "Latest checkpoint: V4.1 judge admission on 2026-09-11"
+  The sections from "Latest checkpoint:
+  V4.1 judge admission on 2026-09-11"
   to "Repository state" are those sessions' own record,
   kept as written:
-  a bare number there ("task 38", "35 remains blocked by 38") names an item of their tracker,
+  a bare number there ("task 38",
+  "35 remains blocked by 38") names an item of their tracker,
   described in the planning record the section links,
   and is not a GitHub issue.
 - Not removed,
@@ -1077,7 +1081,9 @@ Build/types/Oxlint pass;
 `v41-bench-resolution-final-unit-20260911.out` ends `unit exit 0` at line 9169.
 The source trace is in
 [bench Git resolution](../troubleshooting/translation-repair-bench-git-resolution.md).
-The unstaged `mise.lock` change (tool-version downgrades only) was discarded on 2026-09-26 at the owner's word "Commit or discard mise.lock, it doesn't matter"; a copy stays in the session scratchpad.
+The unstaged `mise.lock` change (tool-version downgrades only) was discarded on 2026-09-26 at the owner's word "Commit or discard mise.lock,
+it doesn't matter";
+a copy stays in the session scratchpad.
 
 The exact frozen container sample and budget setup passed,
 but full sample reading exposed a different issue.
@@ -4542,19 +4548,29 @@ Built as `5bda732de`.
 -   The owner's rule of 2026-09-27:
     "Always fix and re-launch."
     Every rendering a read finds that can be translated better is fixed in the same turn
-    (guard red first, fix, suite),
+    (guard red first,
+    fix,
+    suite),
     then the running pass is killed and relaunched;
     a read never reports an "observation not built" or "not fixed" for a translation.
     The fix is general:
-    a sentence-level error (a moved subject, a calque, a grammar slip) takes a rule on every sheet
+    a sentence-level error (a moved subject,
+    a calque,
+    a grammar slip) takes a rule on every sheet
     (`english-usage-policy.ts` through `house-policy.ts`),
     and the glossaries hold dictionary terms only:
-    words, set phrases, names and the community's vocabulary,
+    words,
+    set phrases,
+    names and the community's vocabulary,
     never a fragment of one sentence
-    (owner, 2026-09-27: "'kigurumi的记忆结束' - this isn't really a dictionary keyword though?").
+    (owner,
+    2026-09-27:
+    "'kigurumi的记忆结束' - this isn't really a dictionary keyword though?").
     A glossary word refuses only forms that are wrong wherever the word stands;
     a form that is right for the same word in another context
-    (交往 of a romance, 喘不过气 after a run) goes in the why, not the refusals.
+    (交往 of a romance,
+    喘不过气 after a run) goes in the why,
+    not the refusals.
     The owner had to say this twice on 2026-09-26 and 2026-09-27
     (the TianqiChen66614 kigurumi quote was reported unbuilt).
     The rule is deliberately not in the root `AGENTS.md`.
@@ -4801,787 +4817,2807 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-1.  TIANQICHEN6663 READ (2026-09-26, `.frozen-dist-7b87c5a4e`): SETTLED in 39.2 min, classes one hundred sixty and
-    sixty-one live (headpiece, Arona and Atri, "someone she had comforted", "became a small box", "deserved a better
-    life"); class one hundred sixty-two ("type II diabetes" for II型糖尿病) built (guard `a9562aaba`, fix
-    `358a6bdcb`, full suite 1,162 PASS, 0 FAIL); recorded under "## TianqiChen6663 read".
-    TIANQICHEN6664 READ (`.frozen-dist-358a6bdcb`): TALLY ERROR after three attempts on chunk 9, no page;
+1.  TIANQICHEN6663 READ (2026-09-26,
+    `.frozen-dist-7b87c5a4e`):
+    SETTLED in 39.2 min,
+    classes one hundred sixty and
+    sixty-one live (headpiece,
+    Arona and Atri,
+    "someone she had comforted",
+    "became a small box",
+    "deserved a better
+    life");
+    class one hundred sixty-two ("type II diabetes" for II型糖尿病) built (guard `a9562aaba`,
+    fix
+    `358a6bdcb`,
+    full suite 1,162 PASS,
+    0 FAIL);
+    recorded under "## TianqiChen6663 read".
+    TIANQICHEN6664 READ (`.frozen-dist-358a6bdcb`):
+    TALLY ERROR after three attempts on chunk 9,
+    no page;
     class one hundred sixty-three (the refused form "inside her head" matched inside the accepted "inside her
-    headpiece") built (guard `bd12b556f`, fix `c75738ea1`, full suite 1,162 PASS, 0 FAIL); recorded under
+    headpiece") built (guard `bd12b556f`,
+    fix `c75738ea1`,
+    full suite 1,162 PASS,
+    0 FAIL);
+    recorded under
     "## TianqiChen6664 read".
-    TIANQICHEN6665 READ (`.frozen-dist-c75738ea1`): SETTLED in 17.8 min, 0.71 USD; classes one hundred
-    sixty-two ("type 2 diabetes") and sixty-three ("in her headpiece") live; class one hundred sixty-four (the
-    archive's "made her met with" for 遇到的却是 on an unendorsed standing) built (guard `32e4213cd`, fix
-    `c5f664396`, full suite 1,162 PASS, 0 FAIL); recorded under "## TianqiChen6665 read".
+    TIANQICHEN6665 READ (`.frozen-dist-c75738ea1`):
+    SETTLED in 17.8 min,
+    0.71 USD;
+    classes one hundred
+    sixty-two ("type 2 diabetes") and sixty-three ("in her headpiece") live;
+    class one hundred sixty-four (the
+    archive's "made her met with" for 遇到的却是 on an unendorsed standing) built (guard `32e4213cd`,
+    fix
+    `c5f664396`,
+    full suite 1,162 PASS,
+    0 FAIL);
+    recorded under "## TianqiChen6665 read".
     TIANQICHEN6666 (`.frozen-dist-c5f664396`) killed right after launch for classes one hundred sixty-five
-    (a closing quotation mark with no opening one, refused by `translate-quote-balance.ts`), sixty-six (在隙中
-    "through the gap") and sixty-seven (the UNO line's draw cards, `rendering-glossary-slang.ts`); guards
-    `a1c44e652`, fix `e146633e1`, full suite 1,164 PASS, 0 FAIL; recorded under "## TianqiChen6665 read".
-    TIANQICHEN6667 READ (`.frozen-dist-e146633e1`): SETTLED in 15.3 min, 0.78 USD; classes one hundred
-    sixty-four to sixty-seven live, sixty to sixty-three holding; class one hundred sixty-eight (two blockquote
-    paragraphs wrapped in quotes where the archive sets its blockquotes bare, `unwrapBlockquoteQuotes`; guard
-    `c530bbf58`, fix `39a4a06fd`) and sixty-nine ("this id" written ID by the Canadian forms pass; guard
-    `1e825e277`, fix `5f7fa6742`) built; recorded under "## TianqiChen6667 read".
-    TIANQICHEN6668 READ (`.frozen-dist-5f7fa6742`): SETTLED in 33.4 min, 0.97 USD; class one hundred
-    sixty-eight live, sixty-nine not exercised, sixty to sixty-seven holding; classes one hundred seventy to
-    seventy-two (three wording slips seeded in `GRAMMAR_GLOSSARY`; guard `91d3fd5d3`, fix `2151fbbc8`) and
-    seventy-three (a quoted title restored to the archive's italics, `restoreArchiveItalicTitles`; guard
-    `cdb756270`, fix `fce655de0`) built, suite 1,166 PASS, 0 FAIL; recorded under "## TianqiChen6668 read".
-    TIANQICHEN6669 READ (`.frozen-dist-fce655de0`): INCOMPLETE in 24.3 min at the consolidation of slice 4
-    (`slate-declined-standing`): the class one hundred seventy-two floor made the archive ineligible and two
-    valid renderings tied 1.5 to 1.5 in the slate and again in the run-off of two, which cannot narrow (class
-    one hundred seventy-four); built as `settleAbsentDecline` in `translate-runoff-tie.ts` (guard `8666d2480`,
-    fix `8db508b0a`, class fifty-three test updated `7390294ff`), shipping by repair lane, then translate lane,
-    then slate order; tenth ineligible-standing addendum; suite 1,166 PASS, 0 FAIL; recorded under
+    (a closing quotation mark with no opening one,
+    refused by `translate-quote-balance.ts`),
+    sixty-six (在隙中
+    "through the gap") and sixty-seven (the UNO line's draw cards,
+    `rendering-glossary-slang.ts`);
+    guards
+    `a1c44e652`,
+    fix `e146633e1`,
+    full suite 1,164 PASS,
+    0 FAIL;
+    recorded under "## TianqiChen6665 read".
+    TIANQICHEN6667 READ (`.frozen-dist-e146633e1`):
+    SETTLED in 15.3 min,
+    0.78 USD;
+    classes one hundred
+    sixty-four to sixty-seven live,
+    sixty to sixty-three holding;
+    class one hundred sixty-eight (two blockquote
+    paragraphs wrapped in quotes where the archive sets its blockquotes bare,
+    `unwrapBlockquoteQuotes`;
+    guard
+    `c530bbf58`,
+    fix `39a4a06fd`) and sixty-nine ("this id" written ID by the Canadian forms pass;
+    guard
+    `1e825e277`,
+    fix `5f7fa6742`) built;
+    recorded under "## TianqiChen6667 read".
+    TIANQICHEN6668 READ (`.frozen-dist-5f7fa6742`):
+    SETTLED in 33.4 min,
+    0.97 USD;
+    class one hundred
+    sixty-eight live,
+    sixty-nine not exercised,
+    sixty to sixty-seven holding;
+    classes one hundred seventy to
+    seventy-two (three wording slips seeded in `GRAMMAR_GLOSSARY`;
+    guard `91d3fd5d3`,
+    fix `2151fbbc8`) and
+    seventy-three (a quoted title restored to the archive's italics,
+    `restoreArchiveItalicTitles`;
+    guard
+    `cdb756270`,
+    fix `fce655de0`) built,
+    suite 1,166 PASS,
+    0 FAIL;
+    recorded under "## TianqiChen6668 read".
+    TIANQICHEN6669 READ (`.frozen-dist-fce655de0`):
+    INCOMPLETE in 24.3 min at the consolidation of slice 4
+    (`slate-declined-standing`):
+    the class one hundred seventy-two floor made the archive ineligible and two
+    valid renderings tied 1.5 to 1.5 in the slate and again in the run-off of two,
+    which cannot narrow (class
+    one hundred seventy-four);
+    built as `settleAbsentDecline` in `translate-runoff-tie.ts` (guard `8666d2480`,
+    fix `8db508b0a`,
+    class fifty-three test updated `7390294ff`),
+    shipping by repair lane,
+    then translate lane,
+    then slate order;
+    tenth ineligible-standing addendum;
+    suite 1,166 PASS,
+    0 FAIL;
+    recorded under
     "## TianqiChen6669 read".
-    TIANQICHEN66610 READ (`.frozen-dist-7390294ff`): SETTLED in 17.0 min; class one hundred seventy-five (a
-    straight stray closing quote on slice 16; guard `3f04e53cb`, fix `c3c96f289`); slice 13 shipped the
-    archive's "a cute character she cosplayed as" on a 2 to 2 gate. Owner's answers of 2026-09-27: "Major+
-    accuracy, also "high-performance robot" is referring to Atri (search)." and "Slate's choice
-    (Recommended)"; built as classes one hundred seventy-six (major accuracy claims dispute the archive,
-    `25b9eaec7`), seventy-seven (an undecided gate over a standing every contest ballot condemned ships the
-    slate's choice, `325c448ba`) and seventy-eight (高性能机器人 seeded as Atri's words, `55d6a72db`);
-    eleventh and twelfth ineligible-standing addenda; recorded under "## TianqiChen66610 read".
-    TIANQICHEN66611 READ (`.frozen-dist-c3c96f289`): SETTLED in 18.4 min; the second quote on the page twice,
+    TIANQICHEN66610 READ (`.frozen-dist-7390294ff`):
+    SETTLED in 17.0 min;
+    class one hundred seventy-five (a
+    straight stray closing quote on slice 16;
+    guard `3f04e53cb`,
+    fix `c3c96f289`);
+    slice 13 shipped the
+    archive's "a cute character she cosplayed as" on a 2 to 2 gate.
+    Owner's answers of 2026-09-27:
+    "Major+
+    accuracy,
+    also "high-performance robot" is referring to Atri (search)."
+    and "Slate's choice
+    (Recommended)";
+    built as classes one hundred seventy-six (major accuracy claims dispute the archive,
+    `25b9eaec7`),
+    seventy-seven (an undecided gate over a standing every contest ballot condemned ships the
+    slate's choice,
+    `325c448ba`) and seventy-eight (高性能机器人 seeded as Atri's words,
+    `55d6a72db`);
+    eleventh and twelfth ineligible-standing addenda;
+    recorded under "## TianqiChen66610 read".
+    TIANQICHEN66611 READ (`.frozen-dist-c3c96f289`):
+    SETTLED in 18.4 min;
+    the second quote on the page twice,
     the fold widening a carrier whose archive span rendered only the carried robot paragraph (class one
-    hundred seventy-nine; `insertion-carried-shift.ts`, guard `96652536f`, fix `ca5e56240`, replayed over
-    the real slices); recorded under "## TianqiChen66611 read".
+    hundred seventy-nine;
+    `insertion-carried-shift.ts`,
+    guard `96652536f`,
+    fix `ca5e56240`,
+    replayed over
+    the real slices);
+    recorded under "## TianqiChen66611 read".
     TIANQICHEN66612 (`.frozen-dist-325c448ba`) killed 10.5 min in for class one hundred seventy-nine.
-    TIANQICHEN66613 READ (`.frozen-dist-ca5e56240`): SETTLED in 15.8 min, 24 slices, every page slice
-    changed; the pairing placed 24 of 24 original and 21 of 21 archive blocks, so nothing was carried and
-    class one hundred seventy-nine not exercised; the second quote once, the robot line "her image as the
-    “high-performance robot”"; three slips built: 亲友 as the archive's "close friends" and 激素 as
-    "medication" (class one hundred eighty, glossary; guard `53c7f1f2f`, fix `768408d1d`), the period
-    outside the closing quote on a Canadian page (class one hundred eighty-one, `placeClosingPunctuation`
-    in the typography restoration and an en_CA policy sentence; the archive has it inside 224 times to 32);
+    TIANQICHEN66613 READ (`.frozen-dist-ca5e56240`):
+    SETTLED in 15.8 min,
+    24 slices,
+    every page slice
+    changed;
+    the pairing placed 24 of 24 original and 21 of 21 archive blocks,
+    so nothing was carried and
+    class one hundred seventy-nine not exercised;
+    the second quote once,
+    the robot line "her image as the
+    “high-performance robot”";
+    three slips built:
+    亲友 as the archive's "close friends" and 激素 as
+    "medication" (class one hundred eighty,
+    glossary;
+    guard `53c7f1f2f`,
+    fix `768408d1d`),
+    the period
+    outside the closing quote on a Canadian page (class one hundred eighty-one,
+    `placeClosingPunctuation`
+    in the typography restoration and an en_CA policy sentence;
+    the archive has it inside 224 times to 32);
     the suite at `768408d1d` was red on the class one hundred forty-two attribute guard's incidental
-    `“hi”.`, updated in `b75ec5c51`; full suite at `b75ec5c51` 1,168 PASS, 0 FAIL; recorded under
+    `“hi”.`,
+    updated in `b75ec5c51`;
+    full suite at `b75ec5c51` 1,168 PASS,
+    0 FAIL;
+    recorded under
     "## TianqiChen66613 read".
-    TIANQICHEN66614 READ (`.frozen-dist-768408d1d`): SETTLED in 11.9 min, 24 slices, 23 changed; classes one
+    TIANQICHEN66614 READ (`.frozen-dist-768408d1d`):
+    SETTLED in 11.9 min,
+    24 slices,
+    23 changed;
+    classes one
     hundred eighty and eighty-one live (the robot line "her friends and family never forgot her image as the
-    “high-performance robot.”", both hormone sentences "hormones", no `”.` or `”,` on the page, a trusted
-    “teacher,” inside); the second quote once; class one hundred eighty-two built: 因为柜门炸开屡屡受阻 as
-    "blocked again and again, each time the closet door blew open", the 炸柜 entry never matching the
-    spread-out spelling (`community-glossary.ts`, guard `cb8450ebb`, fix `2a0f947b5`, suite 1,169 PASS,
-    0 FAIL); class one hundred eighty-three built after the owner's "Always fix and re-launch": the
+    “high-performance robot.”",
+    both hormone sentences "hormones",
+    no `”.` or `”,` on the page,
+    a trusted
+    “teacher,”
+    inside);
+    the second quote once;
+    class one hundred eighty-two built:
+    因为柜门炸开屡屡受阻 as
+    "blocked again and again,
+    each time the closet door blew open",
+    the 炸柜 entry never matching the
+    spread-out spelling (`community-glossary.ts`,
+    guard `cb8450ebb`,
+    fix `2a0f947b5`,
+    suite 1,169 PASS,
+    0 FAIL);
+    class one hundred eighty-three built after the owner's "Always fix and re-launch":
+    the
     kigurumi quote's second clause "they will end with the memories of kigurumi" where the source's
-    subject is 我 (the archive also reads "they"), first seeded as a phrasing-glossary entry (guard
-    `42b937ce6`, fix `730d11579`); recorded under "## TianqiChen66614 read".
-    GLOSSARY AUDIT (owner 2026-09-27: "'kigurumi的记忆结束' - this isn't really a dictionary keyword
-    though?" and "Also check if other items in the glossary have the same problems and fix them too."):
+    subject is 我 (the archive also reads "they"),
+    first seeded as a phrasing-glossary entry (guard
+    `42b937ce6`,
+    fix `730d11579`);
+    recorded under "## TianqiChen66614 read".
+    GLOSSARY AUDIT (owner 2026-09-27:
+    "'kigurumi的记忆结束' - this isn't really a dictionary keyword
+    though?"
+    and "Also check if other items in the glossary have the same problems and fix them too."):
     twenty-three sentence-keyed entries removed and their lessons made five rules on every sheet
-    (`english-usage-policy.ts`: kept subject, idiomatic English, grammatical English, credit "by", game
-    jargon); 交往, 喘不过气, 密密麻麻, 营救 and 三剑客 refuse nothing, the context in the why; 抢救 seeded
-    (guard `1bd589eb2`, fix `5860bc0b1`); recorded in the planning doc under "Glossary audit and
+    (`english-usage-policy.ts`:
+    kept subject,
+    idiomatic English,
+    grammatical English,
+    credit "by",
+    game
+    jargon);
+    交往,
+    喘不过气,
+    密密麻麻,
+    营救 and 三剑客 refuse nothing,
+    the context in the why;
+    抢救 seeded
+    (guard `1bd589eb2`,
+    fix `5860bc0b1`);
+    recorded in the planning doc under "Glossary audit and
     TianqiChen66616 read".
     TIANQICHEN66615 (`.frozen-dist-2a0f947b5`) killed about 9 min in for class one hundred eighty-three.
-    TIANQICHEN66616 READ (`.frozen-dist-730d11579`): SETTLED in 17.1 min, 24 slices; classes one hundred
+    TIANQICHEN66616 READ (`.frozen-dist-730d11579`):
+    SETTLED in 17.1 min,
+    24 slices;
+    classes one hundred
     eighty-two ("repeatedly blocked because she was outed") and eighty-three ("I will end with my memories
-    of kigurumi when I leave") live; class one hundred eighty-four: 变娃娃 as "in this game of becoming a
-    doll" and 被她治愈 as "those she had healed", both seeded as fandom words in
-    `community-glossary-fandom.ts` (guard `644f23cf5`, fix `06a2c5c05`, seeds pin `6a6cd1a84`).
+    of kigurumi when I leave") live;
+    class one hundred eighty-four:
+    变娃娃 as "in this game of becoming a
+    doll" and 被她治愈 as "those she had healed",
+    both seeded as fandom words in
+    `community-glossary-fandom.ts` (guard `644f23cf5`,
+    fix `06a2c5c05`,
+    seeds pin `6a6cd1a84`).
     TIANQICHEN66617 (`.frozen-dist-5860bc0b1`) stopped a few minutes in for class one hundred eighty-four.
-    治愈 CORRECTION (owner 2026-09-27: "'被她治愈 should read "comforted", not "healed".' - I kinda
-    disagree here." then "Healed first (Recommended)"): the change's reasons, not the owner's, were that the
-    page writes 安慰 where it means comfort (a misquotation: it writes 安抚, never 安慰; corrected 2026-09-28,
-    ledger C6 and H3), "healing" is the fandom English for 治愈系 and the archive wrote "healed"; the entry
+    治愈 CORRECTION (owner 2026-09-27:
+    "'被她治愈 should read "comforted",
+    not "healed".' - I kinda
+    disagree here."
+    then "Healed first (Recommended)"):
+    the change's reasons,
+    not the owner's,
+    were that the
+    page writes 安慰 where it means comfort (a misquotation:
+    it writes 安抚,
+    never 安慰;
+    corrected 2026-09-28,
+    ledger C6 and H3),
+    "healing" is the fandom English for 治愈系 and the archive wrote "healed";
+    the entry
     leads with "healed"
-    (guard `2234f1a92`, fix `23f4e15d6`). TIANQICHEN66618 (`.frozen-dist-06a2c5c05`) stopped for it.
-    TIANQICHEN66619 READ (`.frozen-dist-23f4e15d6`): INCOMPLETE at slice 9 after 755,525 ms, class one
-    hundred eighty-five: the address floor counted the imperative 你看 as an address (guard `5cdeebb58`, fix
-    `e5b69c658`); a gate preferring an ineligible standing stopped the entry although the slate chose a
-    valid proposal, now the slate's choice ships with `gate-preferred-ineligible-standing` (guards
-    `e7e6f706a`, `44e27ca0e`, fix `419605ff4`); consolidation lines now carry `[slice N]` (fix `2f26f440d`).
-    Full suite at `2f26f440d`: 1169 PASS, 0 FAIL (`suite-class185.log`).
-    TIANQICHEN66620 STOPPED by this session at 17 min, before slice 9 (owner 2026-09-27: "You don't need to
+    (guard `2234f1a92`,
+    fix `23f4e15d6`).
+    TIANQICHEN66618 (`.frozen-dist-06a2c5c05`) stopped for it.
+    TIANQICHEN66619 READ (`.frozen-dist-23f4e15d6`):
+    INCOMPLETE at slice 9 after 755,525 ms,
+    class one
+    hundred eighty-five:
+    the address floor counted the imperative 你看 as an address (guard `5cdeebb58`,
+    fix
+    `e5b69c658`);
+    a gate preferring an ineligible standing stopped the entry although the slate chose a
+    valid proposal,
+    now the slate's choice ships with `gate-preferred-ineligible-standing` (guards
+    `e7e6f706a`,
+    `44e27ca0e`,
+    fix `419605ff4`);
+    consolidation lines now carry `[slice N]` (fix `2f26f440d`).
+    Full suite at `2f26f440d`:
+    1169 PASS,
+    0 FAIL (`suite-class185.log`).
+    TIANQICHEN66620 STOPPED by this session at 17 min,
+    before slice 9 (owner 2026-09-27:
+    "You don't need to
     immediately start/restart a costly run if you believe further fixes should be done before launching it.").
-    NO RUN UNTIL THE AUDIT FIXES LAND. Next run when launched: TianqiChen666, read slice 9 ("Look inside the
-    headpiece", no forced "for you"), 变娃娃 ("in kigurumi"), 被她治愈 ("healed", past tense).
-    STATE 2026-09-28 (the host crashed mid-suite and the session resumed; the worktree was clean at `bea8c8456`):
-    LANDED TODAY: ledger E10 to E12; the glossary entry content C3 to R16 (fix `357f534b7`, mutation checked
-    23 of 23 with a control); L7, the contest shown damage from a patch that lost (`3bed8241d`); L8, a ballot
-    with no usable verdict counted as heard (`abfc69393`); P2, the recovery round losing an early unreadable
-    seat (`005692e11`). Each rides inside the current cache versions with a written account, since no
-    slice-cache file under the agent runs is newer than 04:26 UTC on 2026-09-27; the M28 check reruns over every cache version before launch.
-    OWNER QUESTIONS, TO ASK IN ONE BATCH once the unblocked run-affecting items land (ledger L3, L4, L11, P9
-    hold the measurements): L3, edits the checkers did not confirm shipping inside a winning patch (18 of 51
-    TianqiChen666 patches); L11, the naturalness rewrite of the archive after a lost patch shipping with no
-    checker round (106 of 125 TianqiChen666 refinements, 75 with accepted issues); L4, what the editor's
-    preservation gate should protect inside a licensed quote; P9, the cross-provider re-ask against prompt
-    uniqueness. LANDED SINCE, 2026-09-28, each red-guarded first and mutation checked with a control: P8, a
-    complete JSON value followed by text read (`cac097368`); P13 closed (decision seats read as out of reach,
-    including a state the endpoint refuses with HTTP 400 `max_tokens_exceeded`, `a991ef1e1`; the retry
-    backoff ends on the caller's abort, `169b51e8a`; the Bedrock stream bound per attempt, `b1a4f4b9e`; the two
-    preferred-endpoint cards priced at the endpoint bought, `7ceffe055`; the payment-clear item refuted by the
-    logs, `de673c843`); P5, a quoted editorial-context review admitted (`8e994bc77`); X6, no translate refusal
-    keeps an archive the publication rule refuses (`6445a2e35`; reach on the lane-agreement path unmeasured, and
-    no TianqiChen666 run refused anything in that lane); H5's translate half, the translate lane re-seats under
-    a hold (`29a424b76`). H5's consolidation half is DEFERRED past the launch: no hold began inside a
-    consolidation phase in any TianqiChen666 run (983 did in 25 of 4,121 logs), and per-slice seating there must
-    fold the slice's bench into its key, since `consolidateRunShape` folds the roster once. A full suite at
-    `bc69e2336` is running; the one before it failed only on a test pinning the old DeepSeek price.
-    THE OWNER BATCH LANDED, 2026-09-28, each red-guarded and mutation checked with a control: L3, worse-voted
-    unconfirmed edits stripped and rechecked (`69c149471`); L11, a rewrite after a lost patch rechecked against
-    every accepted issue it leaves open (`462c514ee`); L4, markup atoms kept inside a licensed quote (`b5338610e`,
-    `c4a4fbb62`); P9, an unusable reply re-asked on another provider, nudged, through the uniqueness wrapper's
-    claims (`7011d72cc`). THE OWNER'S STANDING DIRECTIVE (`design-commitments.md`): "prefer quality of the end
-    result"; a choice made for quality that conflicts with no ruling is decided, recorded and built, not asked
-    (M30). Under it: L4 refined so authored markup may be re-marked and atoms may move between envelopes, which
-    replays 24 refusals down to the 7 pure removals (`b07f8ac48`, `ab84cbfd7`; M31 records the DottedNumber
-    misreading); L11's probe rolls back a rewrite it admits a claim against (`d41ad44c4`, 175 of 2,144 kept
-    rewrites flagged, a graded six of ten true); P9's nudge worded apart from the recovery round's. The M28 check found
+    NO RUN UNTIL THE AUDIT FIXES LAND.
+    Next run when launched:
+    TianqiChen666,
+    read slice 9 ("Look inside the
+    headpiece",
+    no forced "for you"),
+    变娃娃 ("in kigurumi"),
+    被她治愈 ("healed",
+    past tense).
+    STATE 2026-09-28 (the host crashed mid-suite and the session resumed;
+    the worktree was clean at `bea8c8456`):
+    LANDED TODAY:
+    ledger E10 to E12;
+    the glossary entry content C3 to R16 (fix `357f534b7`,
+    mutation checked
+    23 of 23 with a control);
+    L7,
+    the contest shown damage from a patch that lost (`3bed8241d`);
+    L8,
+    a ballot
+    with no usable verdict counted as heard (`abfc69393`);
+    P2,
+    the recovery round losing an early unreadable
+    seat (`005692e11`).
+    Each rides inside the current cache versions with a written account,
+    since no
+    slice-cache file under the agent runs is newer than 04:26 UTC on 2026-09-27;
+    the M28 check reruns over every cache version before launch.
+    OWNER QUESTIONS,
+    TO ASK IN ONE BATCH once the unblocked run-affecting items land (ledger L3,
+    L4,
+    L11,
+    P9
+    hold the measurements):
+    L3,
+    edits the checkers did not confirm shipping inside a winning patch (18 of 51
+    TianqiChen666 patches);
+    L11,
+    the naturalness rewrite of the archive after a lost patch shipping with no
+    checker round (106 of 125 TianqiChen666 refinements,
+    75 with accepted issues);
+    L4,
+    what the editor's
+    preservation gate should protect inside a licensed quote;
+    P9,
+    the cross-provider re-ask against prompt
+    uniqueness.
+    LANDED SINCE,
+    2026-09-28,
+    each red-guarded first and mutation checked with a control:
+    P8,
+    a
+    complete JSON value followed by text read (`cac097368`);
+    P13 closed (decision seats read as out of reach,
+    including a state the endpoint refuses with HTTP 400 `max_tokens_exceeded`,
+    `a991ef1e1`;
+    the retry
+    backoff ends on the caller's abort,
+    `169b51e8a`;
+    the Bedrock stream bound per attempt,
+    `b1a4f4b9e`;
+    the two
+    preferred-endpoint cards priced at the endpoint bought,
+    `7ceffe055`;
+    the payment-clear item refuted by the
+    logs,
+    `de673c843`);
+    P5,
+    a quoted editorial-context review admitted (`8e994bc77`);
+    X6,
+    no translate refusal
+    keeps an archive the publication rule refuses (`6445a2e35`;
+    reach on the lane-agreement path unmeasured,
+    and
+    no TianqiChen666 run refused anything in that lane);
+    H5's translate half,
+    the translate lane re-seats under
+    a hold (`29a424b76`).
+    H5's consolidation half is DEFERRED past the launch:
+    no hold began inside a
+    consolidation phase in any TianqiChen666 run (983 did in 25 of 4,121 logs),
+    and per-slice seating there must
+    fold the slice's bench into its key,
+    since `consolidateRunShape` folds the roster once.
+    A full suite at
+    `bc69e2336` is running;
+    the one before it failed only on a test pinning the old DeepSeek price.
+    THE OWNER BATCH LANDED,
+    2026-09-28,
+    each red-guarded and mutation checked with a control:
+    L3,
+    worse-voted
+    unconfirmed edits stripped and rechecked (`69c149471`);
+    L11,
+    a rewrite after a lost patch rechecked against
+    every accepted issue it leaves open (`462c514ee`);
+    L4,
+    markup atoms kept inside a licensed quote (`b5338610e`,
+    `c4a4fbb62`);
+    P9,
+    an unusable reply re-asked on another provider,
+    nudged,
+    through the uniqueness wrapper's
+    claims (`7011d72cc`).
+    THE OWNER'S STANDING DIRECTIVE (`design-commitments.md`):
+    "prefer quality of the end
+    result";
+    a choice made for quality that conflicts with no ruling is decided,
+    recorded and built,
+    not asked
+    (M30).
+    Under it:
+    L4 refined so authored markup may be re-marked and atoms may move between envelopes,
+    which
+    replays 24 refusals down to the 7 pure removals (`b07f8ac48`,
+    `ab84cbfd7`;
+    M31 records the DottedNumber
+    misreading);
+    L11's probe rolls back a rewrite it admits a claim against (`d41ad44c4`,
+    175 of 2,144 kept
+    rewrites flagged,
+    a graded six of ten true);
+    P9's nudge worded apart from the recovery round's.
+    The M28 check found
     every cache version set after the newest slice-cache file and none written since (`097e5ecde`,
-    `9a3f28b30`). A full suite at `9a3f28b30` passed, 1,228 cases. TIANQICHEN66621 LAUNCHED on
-    `.frozen-dist-9a3f28b30`, pid 431565, log `~/temp/agent/TianqiChen66621.log`, with a waiter.
-    L5 NEUTRAL ACCEPTANCES FIXED, 2026-09-28, decided for quality: the tally holds an acceptance settled at
-    neutral for a human (`e87e353ae`), both sheets define the severity scale after MQM and the panel lifts a
-    real defect filed neutral (`fb6c06cca`), guards `266a0891a`, `aa7f4e360`, `c53d5c717`, `925b85a8f`, all
-    mutants caught; `SLICE_CACHE_VERSION` 34 (`ef20e7978`), the first number spent while a run held the last
-    (TianqiChen66621 wrote 28 slice-cache files under 33); docs `dd9bd179c`. Full suite after `ef20e7978`:
-    1,230 passed, 0 failed. After the restart the waiter was relaunched; TIANQICHEN66621 SETTLED in 52.8 min:
-    24 slices, 148 repair issues, 91 accepted, 85 resolved, every slice changed, no DEFECTS line; its page is
-    `~/temp/agent/TianqiChen66621/fixed/people/TianqiChen666/page.en.md`, not yet read against the source.
-    L5 FOOTNOTE ITEM: PREMISE REFUTED. Seven commits threaded footnote definitions into every window on the
-    audit's claim that no sheet showed them; entry notes have carried every definition to every sheet since
-    `12ed82cee`, so the change was reverted (`80a18dd53`) and M32 records the mistake. The remedy in progress is
-    `DECLARED_IDENTITY_RULES`' framing, which calls note lines vocabulary for the terms they name "and nothing else".
-    NEXT: that rule fix with its cache accounts, the rest of L5, then read TianqiChen66621's page; then L10,
-    L14, L12, L13 and the D series. DEFERRED PAST THE LAUNCH: L6, H5's consolidation half.
-    Probe scripts, the single-file runner (`run-files.ts`) and the mutation harness (`mutants.ts`, JSON spec)
-    live in `~/temp/agent/audit-glossary-fix/`, which survives a reboot; the scratchpad did not.
-    AUDIT IN PROGRESS (owner 2026-09-27: "audit the whole translation-repair pkg for all the mistakes we've
-    made and fix all of them", "Mistakes made, ever, for this pkg"): every finding, fix and status is in
-    `package/module/translation-repair/doc/audit-ledger.md`; the planning doc section "Whole-package audit,
-    2026-09-27" lists the owner's answers and the commits. The owner was told the 治愈 安慰 misquotation.
+    `9a3f28b30`).
+    A full suite at `9a3f28b30` passed,
+    1,228 cases.
+    TIANQICHEN66621 LAUNCHED on
+    `.frozen-dist-9a3f28b30`,
+    pid 431565,
+    log `~/temp/agent/TianqiChen66621.log`,
+    with a waiter.
+    L5 NEUTRAL ACCEPTANCES FIXED,
+    2026-09-28,
+    decided for quality:
+    the tally holds an acceptance settled at
+    neutral for a human (`e87e353ae`),
+    both sheets define the severity scale after MQM and the panel lifts a
+    real defect filed neutral (`fb6c06cca`),
+    guards `266a0891a`,
+    `aa7f4e360`,
+    `c53d5c717`,
+    `925b85a8f`,
+    all
+    mutants caught;
+    `SLICE_CACHE_VERSION` 34 (`ef20e7978`),
+    the first number spent while a run held the last
+    (TianqiChen66621 wrote 28 slice-cache files under 33);
+    docs `dd9bd179c`.
+    Full suite after `ef20e7978`:
+    1,230 passed,
+    0 failed.
+    After the restart the waiter was relaunched;
+    TIANQICHEN66621 SETTLED in 52.8 min:
+    24 slices,
+    148 repair issues,
+    91 accepted,
+    85 resolved,
+    every slice changed,
+    no DEFECTS line;
+    its page is
+    `~/temp/agent/TianqiChen66621/fixed/people/TianqiChen666/page.en.md`,
+    not yet read against the source.
+    L5 FOOTNOTE ITEM:
+    PREMISE REFUTED.
+    Seven commits threaded footnote definitions into every window on the
+    audit's claim that no sheet showed them;
+    entry notes have carried every definition to every sheet since
+    `12ed82cee`,
+    so the change was reverted (`80a18dd53`) and M32 records the mistake.
+    The remedy in progress is
+    `DECLARED_IDENTITY_RULES`' framing,
+    which calls note lines vocabulary for the terms they name "and nothing else".
+    NEXT:
+    that rule fix with its cache accounts,
+    the rest of L5,
+    then read TianqiChen66621's page;
+    then L10,
+    L14,
+    L12,
+    L13 and the D series.
+    DEFERRED PAST THE LAUNCH:
+    L6,
+    H5's consolidation half.
+    Probe scripts,
+    the single-file runner (`run-files.ts`) and the mutation harness (`mutants.ts`,
+    JSON spec)
+    live in `~/temp/agent/audit-glossary-fix/`,
+    which survives a reboot;
+    the scratchpad did not.
+    AUDIT IN PROGRESS (owner 2026-09-27:
+    "audit the whole translation-repair pkg for all the mistakes we've
+    made and fix all of them",
+    "Mistakes made,
+    ever,
+    for this pkg"):
+    every finding,
+    fix and status is in
+    `package/module/translation-repair/doc/audit-ledger.md`;
+    the planning doc section "Whole-package audit,
+    2026-09-27" lists the owner's answers and the commits.
+    The owner was told the 治愈 安慰 misquotation.
     Open work is every ledger entry whose status reads open or recurring.
-    LANDED SINCE (2026-09-27): the dispute rule reads the panel severity (L9, guard `b15ba5464`, fix
-    `6a0f68cec`); a slate declined twice over wording that cannot ship ships by preference with its
-    reasons to the polish, on the translate lane too (fifteenth addendum, guard `37128bf6c`); the
-    corpus-derived fixtures of 58 test files replaced with invention; a disputed reading the repair did not
-    fix leaves no eligible standing (sixteenth addendum, guard `23cbbdaaa`), with both slice keys naming the
-    dispute. Cache versions: consolidate 19, translate slice 14. Owner's newest answers all implemented.
-    THEN (2026-09-27): the checker seats were measured (owner: "Why don't you measure?"; Mimo v2.6 Flash, Mimo
-    v2.6 Pro and Solar Mini 4 approved on OpenRouter). The checker bench is the first three of
-    `RUN_CHECKER_ORDER` (Qwen3.8-27B, Mimo v2.6 Flash, Kimi-K3, gemma-4-31b, Mercury 2.5) a wet provider serves;
-    gemma-4-26b and gemma-4-e2b left the checker role; one cast checker ballot resolves nothing (guard
-    `8c4fc28e1`; repair slice cache 32, refine 5); a refused seat hands its round place to the next pending
-    seat and windowed stages no longer re-ask it (guard `9466786dc`, fix `84a6caa02`). Ledger A5, P3, L1,
-    X7, X8 (open), M8, M9; benchmark scripts in `~/temp/agent/audit-repair/checker-bench*.mjs`.
-    TIANQICHEN6662 READ (2026-09-26, `.frozen-dist-141598127`): SETTLED in 19.7 min, 0.74 USD, every structural
-    check clean; classes one hundred sixty (头壳 "inside her head", "Alona and Atori" for Arona and Atri) and
-    sixty-one ("turned into in", "she has healed", "should have had a better life, didn't she?") built
-    (guard `069690562`, fix `7b87c5a4e`, SEEDS pin `52e1280a1`; full suite 1,161 PASS, 0 FAIL);
+    LANDED SINCE (2026-09-27):
+    the dispute rule reads the panel severity (L9,
+    guard `b15ba5464`,
+    fix
+    `6a0f68cec`);
+    a slate declined twice over wording that cannot ship ships by preference with its
+    reasons to the polish,
+    on the translate lane too (fifteenth addendum,
+    guard `37128bf6c`);
+    the
+    corpus-derived fixtures of 58 test files replaced with invention;
+    a disputed reading the repair did not
+    fix leaves no eligible standing (sixteenth addendum,
+    guard `23cbbdaaa`),
+    with both slice keys naming the
+    dispute.
+    Cache versions:
+    consolidate 19,
+    translate slice 14.
+    Owner's newest answers all implemented.
+    THEN (2026-09-27):
+    the checker seats were measured (owner:
+    "Why don't you measure?";
+    Mimo v2.6 Flash,
+    Mimo
+    v2.6 Pro and Solar Mini 4 approved on OpenRouter).
+    The checker bench is the first three of
+    `RUN_CHECKER_ORDER` (Qwen3.8-27B,
+    Mimo v2.6 Flash,
+    Kimi-K3,
+    gemma-4-31b,
+    Mercury 2.5) a wet provider serves;
+    gemma-4-26b and gemma-4-e2b left the checker role;
+    one cast checker ballot resolves nothing (guard
+    `8c4fc28e1`;
+    repair slice cache 32,
+    refine 5);
+    a refused seat hands its round place to the next pending
+    seat and windowed stages no longer re-ask it (guard `9466786dc`,
+    fix `84a6caa02`).
+    Ledger A5,
+    P3,
+    L1,
+    X7,
+    X8 (open),
+    M8,
+    M9;
+    benchmark scripts in `~/temp/agent/audit-repair/checker-bench*.mjs`.
+    TIANQICHEN6662 READ (2026-09-26,
+    `.frozen-dist-141598127`):
+    SETTLED in 19.7 min,
+    0.74 USD,
+    every structural
+    check clean;
+    classes one hundred sixty (头壳 "inside her head",
+    "Alona and Atori" for Arona and Atri) and
+    sixty-one ("turned into in",
+    "she has healed",
+    "should have had a better life,
+    didn't she?")
+    built
+    (guard `069690562`,
+    fix `7b87c5a4e`,
+    SEEDS pin `52e1280a1`;
+    full suite 1,161 PASS,
+    0 FAIL);
     recorded under "## TianqiChen6662 read".
-    XU_YUSHU1 READ (2026-09-26, `.frozen-dist-8f2b07c37`): INCOMPLETE in 3.3 min at the pictures phase;
+    XU_YUSHU1 READ (2026-09-26,
+    `.frozen-dist-8f2b07c37`):
+    INCOMPLETE in 3.3 min at the pictures phase;
     only GLM-5.3-Flash read the handwritten `composition.webp` and no second reader agreed
-    (Synthetic and Hyper dry, Qwen with no provider, Kimi withheld); rerun when Synthetic is wet.
-    The padded-reading log fixed (`141598127`, guard `a6ce93330`); recorded under "## Xu_Yushu1 read".
-    TIANQICHEN6662 RUNNING on `.frozen-dist-141598127` (entry TianqiChen666, scope `pass-TianqiChen6662`,
-    pid 2004144); TianqiChen6661 killed for the fix. Read it for calques and the structural checks.
-    AIYYSK4 READ (2026-09-26, `.frozen-dist-8f2b07c37`): SETTLED at 16:01 UTC in 44.9 min, 2.66 USD;
-    classes one hundred fifty-seven to fifty-nine live ("used her own life as leverage", "spent time with an MTF person",
-    "my surroundings", "prototype"), every aiyysk2 check held, no class; the extra time is Synthetic's latency and
-    Mercury's upstream rate limits; recorded under "## aiyysk4 read". Next: another never-run entry on the newest build.
+    (Synthetic and Hyper dry,
+    Qwen with no provider,
+    Kimi withheld);
+    rerun when Synthetic is wet.
+    The padded-reading log fixed (`141598127`,
+    guard `a6ce93330`);
+    recorded under "## Xu_Yushu1 read".
+    TIANQICHEN6662 RUNNING on `.frozen-dist-141598127` (entry TianqiChen666,
+    scope `pass-TianqiChen6662`,
+    pid 2004144);
+    TianqiChen6661 killed for the fix.
+    Read it for calques and the structural checks.
+    AIYYSK4 READ (2026-09-26,
+    `.frozen-dist-8f2b07c37`):
+    SETTLED at 16:01 UTC in 44.9 min,
+    2.66 USD;
+    classes one hundred fifty-seven to fifty-nine live ("used her own life as leverage",
+    "spent time with an MTF person",
+    "my surroundings",
+    "prototype"),
+    every aiyysk2 check held,
+    no class;
+    the extra time is Synthetic's latency and
+    Mercury's upstream rate limits;
+    recorded under "## aiyysk4 read".
+    Next:
+    another never-run entry on the newest build.
     CLASS ONE HUNDRED FIFTY-NINE BUILT (2026-09-26):
     环境的问题 shipped "the environment" (reads as nature) and 工程机 "engineering phone" on aiyysk2;
-    both join the phrasing glossary ("my surroundings", "prototype phone"; guard red first, fix `8f2b07c37`,
-    suite 1,158 PASS, 0 FAIL). aiyysk3 killed about four minutes in; aiyysk4 launched 15:17 UTC on
-    `.frozen-dist-8f2b07c37` (pid 923957, scope `pass-aiyysk4`); read the 交往, 环境 and 工程机 lines first.
+    both join the phrasing glossary ("my surroundings",
+    "prototype phone";
+    guard red first,
+    fix `8f2b07c37`,
+    suite 1,158 PASS,
+    0 FAIL).
+    aiyysk3 killed about four minutes in;
+    aiyysk4 launched 15:17 UTC on
+    `.frozen-dist-8f2b07c37` (pid 923957,
+    scope `pass-aiyysk4`);
+    read the 交往,
+    环境 and 工程机 lines first.
     CLASS ONE HUNDRED FIFTY-EIGHT BUILT (2026-09-26):
-    AIYYSK2 READ (`.frozen-dist-2f5875dcf`): SETTLED at 15:07 UTC in 26.7 min, 2.57 USD; every aiyysk1 check held;
-    class one hundred fifty-seven live ("Sakurana threatened to take her own life:"); recorded under "## aiyysk2 read".
+    AIYYSK2 READ (`.frozen-dist-2f5875dcf`):
+    SETTLED at 15:07 UTC in 26.7 min,
+    2.57 USD;
+    every aiyysk1 check held;
+    class one hundred fifty-seven live ("Sakurana threatened to take her own life:");
+    recorded under "## aiyysk2 read".
     交往 shipped "never dated a trans woman" on both runs where the original means never talked to one:
-    it joins the phrasing glossary ("talked to" first, multi-word refused forms since the floor matches substrings;
-    guard red first, fix `bc20adb69`, suite 1,157 PASS, 0 FAIL).
-    aiyysk3 launched 15:10 UTC on `.frozen-dist-bc20adb69` (pid 830253), killed for class one hundred fifty-nine.
+    it joins the phrasing glossary ("talked to" first,
+    multi-word refused forms since the floor matches substrings;
+    guard red first,
+    fix `bc20adb69`,
+    suite 1,157 PASS,
+    0 FAIL).
+    aiyysk3 launched 15:10 UTC on `.frozen-dist-bc20adb69` (pid 830253),
+    killed for class one hundred fifty-nine.
     CLASS ONE HUNDRED FIFTY-SEVEN BUILT (2026-09-26):
-    AIYYSK1 READ (first run of aiyysk, the `0899e69b1` tree): SETTLED at 14:37 UTC in 37.6 min, 2.70 USD;
-    every structural check as the archive, all three 初中 "junior high"; recorded under "## aiyysk1 read" in the pass log.
-    以生命相逼 shipped "Sakurana threatened her life" (she staked her own life): it joins the idiom glossary
-    ("threatened to take her own life" first, "threatened her life" refused; fix `2f5875dcf`, suite 1,156 PASS, 0 FAIL).
-    aiyysk2 launched 14:43 UTC on `.frozen-dist-2f5875dcf` (pid 257150, scope `pass-aiyysk2`); read the threat line first.
+    AIYYSK1 READ (first run of aiyysk,
+    the `0899e69b1` tree):
+    SETTLED at 14:37 UTC in 37.6 min,
+    2.70 USD;
+    every structural check as the archive,
+    all three 初中 "junior high";
+    recorded under "## aiyysk1 read" in the pass log.
+    以生命相逼 shipped "Sakurana threatened her life" (she staked her own life):
+    it joins the idiom glossary
+    ("threatened to take her own life" first,
+    "threatened her life" refused;
+    fix `2f5875dcf`,
+    suite 1,156 PASS,
+    0 FAIL).
+    aiyysk2 launched 14:43 UTC on `.frozen-dist-2f5875dcf` (pid 257150,
+    scope `pass-aiyysk2`);
+    read the threat line first.
     CLASS ONE HUNDRED FIFTY-SIX BUILT AND LIVE (2026-09-26):
-    SHIHAI4H1 READ (first run of shihai4h, `.frozen-dist-6cf583ca3`): SETTLED at 12:34 UTC in 27.5 min, 3.14 USD;
-    every structural check as the archive, class one hundred fifty-four held against an archive already right,
-    two archive errors corrected (2013, "older cousin"); recorded under "## shihai4h1 read" in the pass log.
-    初中 "junior middle school", 自考 "self-taught exams" and 压力话 "pressured remarks" join the wording glossary
-    (guard `6dea1d435`, fix `0899e69b1`, suite 1,155 PASS, 0 FAIL).
-    SHIHAI4H2 READ (`.frozen-dist-6cf583ca3-class156`, the `0899e69b1` tree): SETTLED at 13:12 UTC in 24.7 min;
-    "junior high school", "self-study examinations", "was frequently pressured" on the page; every shihai4h1 check held;
-    recorded under "## shihai4h2 read". Next: another entry on the newest build, still watching for calques.
+    SHIHAI4H1 READ (first run of shihai4h,
+    `.frozen-dist-6cf583ca3`):
+    SETTLED at 12:34 UTC in 27.5 min,
+    3.14 USD;
+    every structural check as the archive,
+    class one hundred fifty-four held against an archive already right,
+    two archive errors corrected (2013,
+    "older cousin");
+    recorded under "## shihai4h1 read" in the pass log.
+    初中 "junior middle school",
+    自考 "self-taught exams" and 压力话 "pressured remarks" join the wording glossary
+    (guard `6dea1d435`,
+    fix `0899e69b1`,
+    suite 1,155 PASS,
+    0 FAIL).
+    SHIHAI4H2 READ (`.frozen-dist-6cf583ca3-class156`,
+    the `0899e69b1` tree):
+    SETTLED at 13:12 UTC in 24.7 min;
+    "junior high school",
+    "self-study examinations",
+    "was frequently pressured" on the page;
+    every shihai4h1 check held;
+    recorded under "## shihai4h2 read".
+    Next:
+    another entry on the newest build,
+    still watching for calques.
     CLASSES ONE HUNDRED FIFTY-FOUR AND FIFTY-FIVE BUILT (2026-09-26):
-    SHI_YUMIAOYA38 READ: SETTLED at 11:49 UTC in 6.4 min on `.frozen-dist-12b581811`;
-    class one hundred fifty-one live ("unfilial son"); recorded under "## shi_Yumiaoya38 read" in the pass log.
-    One of four 跨圈 shipped "the crossdressing community": 跨圈 joins the community glossary
-    ("trans community" first, the crossdressing forms refused; guard `5c51bd440`, fix `42319ff3a`).
-    没本事 shipped "someone with no capability": it joins the wording glossary
-    ("good-for-nothing" first, "no capability" refused; guard `c160b2006`, fix `6cf583ca3`); suite 1,154 PASS, 0 FAIL.
-    shi_Yumiaoya39 launched 11:57 UTC on `.frozen-dist-6cf583ca3` (pid 2592631, scope `pass-shi_Yumiaoya39`).
-    SHI_YUMIAOYA39 READ: SETTLED at 12:05 UTC in 7.6 min; all four 跨圈 "the Trans Community",
-    the insult "unfilial son — a disgrace, good-for-nothing", 22 polish-gate ballots with none weighing line breaks;
-    every shi_Yumiaoya38 check held; recorded under "## shi_Yumiaoya39 read" in the pass log.
+    SHI_YUMIAOYA38 READ:
+    SETTLED at 11:49 UTC in 6.4 min on `.frozen-dist-12b581811`;
+    class one hundred fifty-one live ("unfilial son");
+    recorded under "## shi_Yumiaoya38 read" in the pass log.
+    One of four 跨圈 shipped "the crossdressing community":
+    跨圈 joins the community glossary
+    ("trans community" first,
+    the crossdressing forms refused;
+    guard `5c51bd440`,
+    fix `42319ff3a`).
+    没本事 shipped "someone with no capability":
+    it joins the wording glossary
+    ("good-for-nothing" first,
+    "no capability" refused;
+    guard `c160b2006`,
+    fix `6cf583ca3`);
+    suite 1,154 PASS,
+    0 FAIL.
+    shi_Yumiaoya39 launched 11:57 UTC on `.frozen-dist-6cf583ca3` (pid 2592631,
+    scope `pass-shi_Yumiaoya39`).
+    SHI_YUMIAOYA39 READ:
+    SETTLED at 12:05 UTC in 7.6 min;
+    all four 跨圈 "the Trans Community",
+    the insult "unfilial son — a disgrace,
+    good-for-nothing",
+    22 polish-gate ballots with none weighing line breaks;
+    every shi_Yumiaoya38 check held;
+    recorded under "## shi_Yumiaoya39 read" in the pass log.
     CLASS ONE HUNDRED FIFTY-THREE BUILT (2026-09-26):
-    on XingZ6014 slices 36, 61 and 64 the base stood as the archive's one-line paragraph beside a wrapped polish,
+    on XingZ6014 slices 36,
+    61 and 64 the base stood as the archive's one-line paragraph beside a wrapped polish,
     so class one hundred fifty-two's "both wrapped by one rule" was false there and three gate ballots weighed the added breaks.
     `foldSoftBreaks` (`soft-break-fold.ts`) folds each top-level paragraph's soft breaks for the gate sheet on prose slices;
-    hard breaks, blockquotes, lists and line-structured slices stay as written, and what ships is unchanged.
-    Guard `b2f5f373c`, fix `12b581811`, the wrap test's assertion moved to the rendered form in `f5e2c1a86`
+    hard breaks,
+    blockquotes,
+    lists and line-structured slices stay as written,
+    and what ships is unchanged.
+    Guard `b2f5f373c`,
+    fix `12b581811`,
+    the wrap test's assertion moved to the rendered form in `f5e2c1a86`
     (the suite was red at `12b581811` on it).
-    XINGZ6014 READ: SETTLED at 11:33 UTC in 54.9 min, about 8.41 USD by the meters; every XingZ6013 check held;
-    class one hundred fifty-two live on slice 30; recorded under "## XingZ6014 read" in the pass log.
+    XINGZ6014 READ:
+    SETTLED at 11:33 UTC in 54.9 min,
+    about 8.41 USD by the meters;
+    every XingZ6013 check held;
+    class one hundred fifty-two live on slice 30;
+    recorded under "## XingZ6014 read" in the pass log.
     shi_Yumiaoya38 ran on the class one hundred fifty-three build (the entry above).
-    CLASS ONE HUNDRED FIFTY-TWO BUILT (2026-09-26), RAN ON XINGZ6014:
+    CLASS ONE HUNDRED FIFTY-TWO BUILT (2026-09-26),
+    RAN ON XINGZ6014:
     yingying12's polish gate tied 2 to 2 and shipped the calque "It is a pity that all this stopped abruptly",
     both base ballots citing the polish's line breaks on a prose slice both candidates were wrapped by one rule.
     `comparativePolishPolicy` keeps line structure only where the line rule governs and otherwise tells the gate
-    line breaks inside a paragraph are the page's own wrap; the gate subject carries `lineStructured`.
-    Guard `7d5d3fe75`, fix `1dd8ebc52`; XingZ6014 launched 10:38 UTC on `.frozen-dist-1dd8ebc52`
-    (pid 1441286, scope `pass-XingZ6014`); full suite 1,152 PASS, 0 FAIL (`suite-class152.log`).
-    YINGYING12 READ: SETTLED at 10:35 UTC in 10.4 min on `.frozen-dist-0de47d546`, every yingying11 check held;
+    line breaks inside a paragraph are the page's own wrap;
+    the gate subject carries `lineStructured`.
+    Guard `7d5d3fe75`,
+    fix `1dd8ebc52`;
+    XingZ6014 launched 10:38 UTC on `.frozen-dist-1dd8ebc52`
+    (pid 1441286,
+    scope `pass-XingZ6014`);
+    full suite 1,152 PASS,
+    0 FAIL (`suite-class152.log`).
+    YINGYING12 READ:
+    SETTLED at 10:35 UTC in 10.4 min on `.frozen-dist-0de47d546`,
+    every yingying11 check held;
     recorded under "## yingying12 read" in the pass log.
     XingZ6014 read it live on slice 30 and found class one hundred fifty-three (the entry above).
-    CLASS ONE HUNDRED FIFTY-ONE BUILT (2026-09-26), RAN ON YINGYING12 (NOT EXERCISED; NO 逆子 ON THAT PAGE):
+    CLASS ONE HUNDRED FIFTY-ONE BUILT (2026-09-26),
+    RAN ON YINGYING12 (NOT EXERCISED;
+    NO 逆子 ON THAT PAGE):
     the father's insult 「逆子」 shipped "rebellious child" on shi_Yumiaoya36 and 37,
-    dropping the "son" that misgenders her; 逆子 joins the community glossary
-    ("unfilial son" first, Han refused, "child" named to the judges as evidence),
+    dropping the "son" that misgenders her;
+    逆子 joins the community glossary
+    ("unfilial son" first,
+    Han refused,
+    "child" named to the judges as evidence),
     and the sheets' departure line now ends "the community glossary renders it so".
-    Guard `aea5c3d91` red on the class one hundred fifty build, fix `0de47d546`, suite 1,152 PASS 0 FAIL; class 150 guard `c7168c1ec`, fix `fb41795ba`.
-    SHI_YUMIAOYA37 READ: SETTLED at 10:18 UTC in 15.8 min; "she attempted to end her life in the early hours of January 16";
-    the class one hundred fifty floor silent (the bench said it); 28 polish-gate ballot lines with reasons;
-    every shi_Yumiaoya36 check held; recorded under "## shi_Yumiaoya37 read" in the pass log.
-    Unit runner note: PASS lines are one per `describe`, FAIL lines one per test.
-    CLASS ONE HUNDRED FIFTY BUILT (2026-09-26), RAN ON SHI_YUMIAOYA37:
+    Guard `aea5c3d91` red on the class one hundred fifty build,
+    fix `0de47d546`,
+    suite 1,152 PASS 0 FAIL;
+    class 150 guard `c7168c1ec`,
+    fix `fb41795ba`.
+    SHI_YUMIAOYA37 READ:
+    SETTLED at 10:18 UTC in 15.8 min;
+    "she attempted to end her life in the early hours of January 16";
+    the class one hundred fifty floor silent (the bench said it);
+    28 polish-gate ballot lines with reasons;
+    every shi_Yumiaoya36 check held;
+    recorded under "## shi_Yumiaoya37 read" in the pass log.
+    Unit runner note:
+    PASS lines are one per `describe`,
+    FAIL lines one per test.
+    CLASS ONE HUNDRED FIFTY BUILT (2026-09-26),
+    RAN ON SHI_YUMIAOYA37:
     shi_Yumiaoya36 shipped "she overdosed in the early hours of January 16" for 吞下大量药物自杀,
     a survived attempt shi_Yumiaoya14 and 35 had rendered "attempted suicide";
     the polish round chose "attempted suicide by overdosing" 2.5 to 2 and the polish gate settled on neither.
-    `droppedSuicideFindings` (`translate-suicide-drop.ts`, in `sourceCarryFindings` after the address floor)
-    refuses a candidate or standing whose original names 自杀, 自尽 or 轻生 and which carries no wording for suicide;
+    `droppedSuicideFindings` (`translate-suicide-drop.ts`,
+    in `sourceCarryFindings` after the address floor)
+    refuses a candidate or standing whose original names 自杀,
+    自尽 or 轻生 and which carries no wording for suicide;
     the consolidation polish gate now logs every ballot with its reason.
-    Guard `suicide-drop.unit.test.ts` red on the old build, green on the new;
-    full suite 1,152 PASS, 0 FAIL (`suite-class150.log`, before the log line; the polish gate's own tests pass after it).
-    NOT YET COMMITTED when shi_Yumiaoya37 launched at 10:02 UTC (pid 1025286, scope `pass-shi_Yumiaoya37`)
-    from `.frozen-dist-class150-20260926`: another session's `worktree add` held git's worktree-copy lock.
+    Guard `suicide-drop.unit.test.ts` red on the old build,
+    green on the new;
+    full suite 1,152 PASS,
+    0 FAIL (`suite-class150.log`,
+    before the log line;
+    the polish gate's own tests pass after it).
+    NOT YET COMMITTED when shi_Yumiaoya37 launched at 10:02 UTC (pid 1025286,
+    scope `pass-shi_Yumiaoya37`)
+    from `.frozen-dist-class150-20260926`:
+    another session's `worktree add` held git's worktree-copy lock.
     Read shi_Yumiaoya37 for the January 16 sentence saying the attempt,
-    any `drops the suicide` refusal, and the polish gate's ballot lines;
+    any `drops the suicide` refusal,
+    and the polish gate's ballot lines;
     recorded under "## shi_Yumiaoya36 read" in the pass log with the observations not built.
-    Then yingying, then XingZ60.
-    CLASS ONE HUNDRED FORTY-NINE BUILT (2026-09-26), NOT YET EXERCISED LIVE:
+    Then yingying,
+    then XingZ60.
+    CLASS ONE HUNDRED FORTY-NINE BUILT (2026-09-26),
+    NOT YET EXERCISED LIVE:
     Hyper's request pacer reserves each start in arrival order and waits on its own abortable timer,
     and a provider whose window would make the call wait reads saturated,
     so the call overflows to OpenRouter and queues on Hyper only for a Hyper-only model
-    (`request-pace.ts`, `pace-saturation.ts`, `provider-router.ts`, `hyper-client.ts`, `corpus-run/run-config.ts`);
-    guards red first `02c064371`, fixed `eac0b67a8`, lint 0/0, types clean,
-    full suite green (`suite-class149.log`, 1151 PASS, 0 FAIL).
-    hulicaijia31 launched 09:25 UTC on `.frozen-dist-eac0b67a8` (pid 669977, scope `pass-hulicaijia31`):
-    read it for `request window is full` overflow lines, for no pacer wait longer than a few seconds
-    holding a translate slice, and for the translate lane back near hulicaijia29's 25.7 min.
-    HULICAIJIA31 READ (frozen `eac0b67a8`): SETTLED at 09:45 UTC 2026-09-26 in 19.3 min, about 2.81 USD;
-    Hyper dry from the first reading (balance 0), so class one hundred forty-nine was NOT exercised live:
+    (`request-pace.ts`,
+    `pace-saturation.ts`,
+    `provider-router.ts`,
+    `hyper-client.ts`,
+    `corpus-run/run-config.ts`);
+    guards red first `02c064371`,
+    fixed `eac0b67a8`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class149.log`,
+    1151 PASS,
+    0 FAIL).
+    hulicaijia31 launched 09:25 UTC on `.frozen-dist-eac0b67a8` (pid 669977,
+    scope `pass-hulicaijia31`):
+    read it for `request window is full` overflow lines,
+    for no pacer wait longer than a few seconds
+    holding a translate slice,
+    and for the translate lane back near hulicaijia29's 25.7 min.
+    HULICAIJIA31 READ (frozen `eac0b67a8`):
+    SETTLED at 09:45 UTC 2026-09-26 in 19.3 min,
+    about 2.81 USD;
+    Hyper dry from the first reading (balance 0),
+    so class one hundred forty-nine was NOT exercised live:
     the next run launched while Hyper reads wet is the one to read for `request window is full` lines;
-    every hulicaijia30 check held; the scratch en_CA scan's `center`, `realize`, `mom` were false positives
-    (a style attribute, "moment", Canadian -ize), corrected and proven by a positive control;
+    every hulicaijia30 check held;
+    the scratch en_CA scan's `center`,
+    `realize`,
+    `mom` were false positives
+    (a style attribute,
+    "moment",
+    Canadian -ize),
+    corrected and proven by a positive control;
     recorded under "## hulicaijia31 read" in the pass log.
-    HULICAIJIA30 READ (frozen `1f3d85c29`): SETTLED at 09:12 UTC 2026-09-26 in 100.6 min, about 2.38 USD plus Hyper's 208;
-    class one hundred forty-eight never fired (Bedrock Gemma healthy, e2b 1.5 s mean);
+    HULICAIJIA30 READ (frozen `1f3d85c29`):
+    SETTLED at 09:12 UTC 2026-09-26 in 100.6 min,
+    about 2.38 USD plus Hyper's 208;
+    class one hundred forty-eight never fired (Bedrock Gemma healthy,
+    e2b 1.5 s mean);
     class one hundred forty-four not exercised again;
     the translate lane took 43.6 min because Hyper's 1,000-an-hour window filled by 08:04 UTC
     and one 1,640,012 ms pacer sleep held every Hyper call (class one hundred forty-nine);
     recorded under "## hulicaijia30 read" in the pass log.
     CLASS ONE HUNDRED FORTY-EIGHT BUILT (2026-09-26):
     a Bedrock Gemma call is cut at its card's measured `streamBoundMs`
-    (60,000 ms on `google.gemma-4-e2b` and `google.gemma-4-26b-a4b`, `'unbounded'` elsewhere),
+    (60,000 ms on `google.gemma-4-e2b` and `google.gemma-4-26b-a4b`,
+    `'unbounded'` elsewhere),
     and the router holds that provider out for that model for the model hold
-    (`stream-bound.ts`, `stream-bound-hold.ts`, `provider-router.ts`, `bedrock-client.ts`);
-    guard red first `2691bdf56`, fixed `1f3d85c29`, inventory `18d410df4`
+    (`stream-bound.ts`,
+    `stream-bound-hold.ts`,
+    `provider-router.ts`,
+    `bedrock-client.ts`);
+    guard red first `2691bdf56`,
+    fixed `1f3d85c29`,
+    inventory `18d410df4`
     (the full suite was red at `1f3d85c29` on `message-names-only.unit.test.ts`;
-    green at `18d410df4`, 1149 PASS, 0 FAIL), lint 0/0, types clean.
-    hulicaijia30 launched 07:31 UTC on `.frozen-dist-1f3d85c29` (pid 3774525, scope `pass-hulicaijia30`):
+    green at `18d410df4`,
+    1149 PASS,
+    0 FAIL),
+    lint 0/0,
+    types clean.
+    hulicaijia30 launched 07:31 UTC on `.frozen-dist-1f3d85c29` (pid 3774525,
+    scope `pass-hulicaijia30`):
     read it for `ran past the card's stream bound` lines and for class one hundred forty-four,
     which still needs an accepted `accuracy/addition` claim on chunk 69 to be exercised.
-    HULICAIJIA29 READ (frozen `f31fd2ec5`): SETTLED at 07:09 UTC 2026-09-26 in 85.0 min, about 3.06 USD;
-    every hulicaijia28 check held, footnote 7's note on the page;
-    class one hundred forty-four NOT exercised (no issue filed on chunk 69; the slate kept the note 3 to 2);
+    HULICAIJIA29 READ (frozen `f31fd2ec5`):
+    SETTLED at 07:09 UTC 2026-09-26 in 85.0 min,
+    about 3.06 USD;
+    every hulicaijia28 check held,
+    footnote 7's note on the page;
+    class one hundred forty-four NOT exercised (no issue filed on chunk 69;
+    the slate kept the note 3 to 2);
     class one hundred forty-seven silent by design (the seven straight single quotes are the archive's JSX paths);
-    class one hundred forty-eight found: Bedrock `google.gemma-4-e2b` at 219 to 263 s a stream from 06:05 to 06:55 UTC,
-    24 deadline cuts at 360 s, rounds waiting on it for quorum with Synthetic and Hyper dry;
+    class one hundred forty-eight found:
+    Bedrock `google.gemma-4-e2b` at 219 to 263 s a stream from 06:05 to 06:55 UTC,
+    24 deadline cuts at 360 s,
+    rounds waiting on it for quorum with Synthetic and Hyper dry;
     recorded under "## hulicaijia29 read" in the pass log.
-    XINGZ6013 READ (frozen `e387be2cf`): SETTLED at 04:32 UTC 2026-09-26 in 56.3 min;
+    XINGZ6013 READ (frozen `e387be2cf`):
+    SETTLED at 04:32 UTC 2026-09-26 in 56.3 min;
     classes one hundred thirty-nine to forty-two live;
     class one hundred forty-five (a Han title as a link's whole text escaped the class ninety-eight floor,
-    then the title pass doubled it) fixed in 9157004d2, guard dd88fd5b6;
+    then the title pass doubled it) fixed in 9157004d2,
+    guard dd88fd5b6;
     class one hundred forty-six (title-reference-ambiguous on slice 101 over several quote spans)
     fixed in 9157004d2 and d8d86b531;
     class one hundred forty-seven (a nested quotation shipped in straight single marks on a curly page)
-    fixed in f4adc4c9f and f31fd2ec5, guard 09758edd6;
-    full suites 1145 and 1146 PASS; recorded under "## XingZ6013 read" in the pass log.
-    HULICAIJIA28 READ (frozen `e387be2cf`): SETTLED at 03:33 UTC 2026-09-26 in 24.4 min, about 2.83 USD;
-    every hulicaijia27 check held, en_CA and register clean, footnote 7's note on the page (pinyin 烷 corrected to wán);
-    class one hundred forty-four NOT exercised: gemma-4-26b-a4b-it filed the note as `accuracy/mistranslation`,
-    accepted 3 to 1 (minimax-m3, gemma-4-26b-a4b-it, google.gemma-4-e2b for; deepseek-v4.1-flash against), so no dispute;
-    the repair lane kept the note, the translate slate chose it 3 to 2, the lanes agreed, no contest;
-    contest ballots carry `modelId` (223 of 223); recorded under "## hulicaijia28 read" in the pass log.
-    HULICAIJIA27 READ (frozen `2472ec48e`): SETTLED at 03:02 UTC 2026-09-26 in 45.3 min, about 3.10 USD;
-    every hulicaijia26 check held; footnote 7's note lost again, class one hundred forty-three NOT live:
-    repair panel 3 to 2 (minimax-m3, gemma-4-26b-a4b-it, google.gemma-4-e2b for; deepseek-v4.1-flash, mercury-2.5 against),
-    then the translate slate 4 to 0 (gemma-4-e2b, mercury-2.5, jev-1.13, minimax-m3) under the class one hundred eight dispute block,
-    lanes agreed so no contest; recorded under "## Class one hundred forty-four" in the pass log.
-    CLASS ONE HUNDRED FORTY-FOUR (2026-09-26): `archiveDisputeNote` bounded to narrative detail
-    (`NARRATIVE_DETAIL_IS_NOT_APPARATUS`), a claimed gloss or `TRANSLATOR_NOTE_KIND` note sent back to the apparatus rule
-    (guard `7869828fb`, fix `e387be2cf`, suite 1144 PASS).
-    HULICAIJIA26 READ (frozen `0e0b05d0f`): SETTLED at 02:00 UTC 2026-09-26 in about 15 min, about 2.82 USD;
-    every check held, class one hundred thirty-five live ("douhua" seven times, "Jiefangbei" on both lines);
-    footnote 7's wordplay note lost (filed by deepseek-v4.1-flash, accepted by minimax-m3 and gemma-4-26b-a4b-it against Mercury 2.5,
-    archive disputed, four of five contest ballots against it); recorded under "## Class one hundred forty-three" in the pass log.
-    CLASS ONE HUNDRED FORTY-THREE (2026-09-26): `TRANSLATOR_NOTE_KIND` on the critic, panel, contest and apparatus wordings,
+    fixed in f4adc4c9f and f31fd2ec5,
+    guard 09758edd6;
+    full suites 1145 and 1146 PASS;
+    recorded under "## XingZ6013 read" in the pass log.
+    HULICAIJIA28 READ (frozen `e387be2cf`):
+    SETTLED at 03:33 UTC 2026-09-26 in 24.4 min,
+    about 2.83 USD;
+    every hulicaijia27 check held,
+    en_CA and register clean,
+    footnote 7's note on the page (pinyin 烷 corrected to wán);
+    class one hundred forty-four NOT exercised:
+    gemma-4-26b-a4b-it filed the note as `accuracy/mistranslation`,
+    accepted 3 to 1 (minimax-m3,
+    gemma-4-26b-a4b-it,
+    google.gemma-4-e2b for;
+    deepseek-v4.1-flash against),
+    so no dispute;
+    the repair lane kept the note,
+    the translate slate chose it 3 to 2,
+    the lanes agreed,
+    no contest;
+    contest ballots carry `modelId` (223 of 223);
+    recorded under "## hulicaijia28 read" in the pass log.
+    HULICAIJIA27 READ (frozen `2472ec48e`):
+    SETTLED at 03:02 UTC 2026-09-26 in 45.3 min,
+    about 3.10 USD;
+    every hulicaijia26 check held;
+    footnote 7's note lost again,
+    class one hundred forty-three NOT live:
+    repair panel 3 to 2 (minimax-m3,
+    gemma-4-26b-a4b-it,
+    google.gemma-4-e2b for;
+    deepseek-v4.1-flash,
+    mercury-2.5 against),
+    then the translate slate 4 to 0 (gemma-4-e2b,
+    mercury-2.5,
+    jev-1.13,
+    minimax-m3) under the class one hundred eight dispute block,
+    lanes agreed so no contest;
+    recorded under "## Class one hundred forty-four" in the pass log.
+    CLASS ONE HUNDRED FORTY-FOUR (2026-09-26):
+    `archiveDisputeNote` bounded to narrative detail
+    (`NARRATIVE_DETAIL_IS_NOT_APPARATUS`),
+    a claimed gloss or `TRANSLATOR_NOTE_KIND` note sent back to the apparatus rule
+    (guard `7869828fb`,
+    fix `e387be2cf`,
+    suite 1144 PASS).
+    HULICAIJIA26 READ (frozen `0e0b05d0f`):
+    SETTLED at 02:00 UTC 2026-09-26 in about 15 min,
+    about 2.82 USD;
+    every check held,
+    class one hundred thirty-five live ("douhua" seven times,
+    "Jiefangbei" on both lines);
+    footnote 7's wordplay note lost (filed by deepseek-v4.1-flash,
+    accepted by minimax-m3 and gemma-4-26b-a4b-it against Mercury 2.5,
+    archive disputed,
+    four of five contest ballots against it);
+    recorded under "## Class one hundred forty-three" in the pass log.
+    CLASS ONE HUNDRED FORTY-THREE (2026-09-26):
+    `TRANSLATOR_NOTE_KIND` on the critic,
+    panel,
+    contest and apparatus wordings,
     `NARRATIVE_DETAIL_IS_NOT_APPARATUS` in place of "only what the ORIGINAL contradicts is an addition"
-    (guard `4520367f0`, fix `2472ec48e`, suite 1144 PASS).
+    (guard `4520367f0`,
+    fix `2472ec48e`,
+    suite 1144 PASS).
     Then `XingZ60` (run XingZ6013) to see classes one hundred thirty-nine to forty-two live:
-    "—— Yuli [Paranoia]…" or the album kept on slice 98's credit, "by Jiecheng Tianzou Official" on the first credit,
-    “Zero-Layer Prayer” in quotation marks on the second, with no English title left in 《》 anywhere on the page,
-    and no straight prose quote on the page outside JSX and code ("take it slow", "doesn’t want to die").
-    CLASS ONE HUNDRED FORTY-TWO (2026-09-26): `unifyQuoteStyle` curls each prose quote mark on every slice where the page's curly form outnumbers the straight
-    (guard `c5a03ea2c`, fix `0e0b05d0f`, suite 1142 PASS plus the load-sensitive lane-contest grace case passing alone, replayed: XingZ6012 four blocks, lin10104 and shihai4h archives one apostrophe each).
-    CLASS ONE HUNDRED FORTY-ONE (2026-09-26): `latinTitleFindings` refuses an English-only title set in 《》
-    unless the replaced page writes it (guard `2999b2a45`, fix `8c8c7007b`, suite 1142 PASS, replayed over XingZ6012's credit line).
-    LAUNCH IN A SCOPE (2026-09-26): hulicaijia21 died silently five minutes in when systemd-oomd killed the `claude-code-bash` cgroup it shared with a build;
+    "—— Yuli [Paranoia]…" or the album kept on slice 98's credit,
+    "by Jiecheng Tianzou Official" on the first credit,
+    “Zero-Layer Prayer” in quotation marks on the second,
+    with no English title left in 《》 anywhere on the page,
+    and no straight prose quote on the page outside JSX and code ("take it slow",
+    "doesn’t want to die").
+    CLASS ONE HUNDRED FORTY-TWO (2026-09-26):
+    `unifyQuoteStyle` curls each prose quote mark on every slice where the page's curly form outnumbers the straight
+    (guard `c5a03ea2c`,
+    fix `0e0b05d0f`,
+    suite 1142 PASS plus the load-sensitive lane-contest grace case passing alone,
+    replayed:
+    XingZ6012 four blocks,
+    lin10104 and shihai4h archives one apostrophe each).
+    CLASS ONE HUNDRED FORTY-ONE (2026-09-26):
+    `latinTitleFindings` refuses an English-only title set in 《》
+    unless the replaced page writes it (guard `2999b2a45`,
+    fix `8c8c7007b`,
+    suite 1142 PASS,
+    replayed over XingZ6012's credit line).
+    LAUNCH IN A SCOPE (2026-09-26):
+    hulicaijia21 died silently five minutes in when systemd-oomd killed the `claude-code-bash` cgroup it shared with a build;
     launch as `cd -- <pkg> && TRANSLATION_REPAIR_SLICE_OVERLAP=8 systemd-run --user --scope --unit=pass-<run> --quiet mise exec -- node <launch-pass.mjs> <run> <entry> <frozen-dir>`
     and confirm `/proc/<pid>/cgroup` names `pass-<run>.scope`.
-    XINGZ6012 READ (frozen `c49ff687e`): SETTLED at 01:04 UTC 2026-09-26 in 32.0 min; class one hundred thirty-eight live (link and `[^9]` kept, no "Laizi");
-    class one hundred thirty-nine (a page's `[album]` after the signer read into the name and deleted by the restore; `7292556b7`, suite 1140 PASS, replayed over slice 98)
-    and class one hundred forty (「，作者」 rendered ", author"; the rendering glossary refuses it, guard `186ad797a`, fix `5cb874a36`).
-    XINGZ6011 READ (frozen `2d5113b7d`): INCOMPLETE at 00:26 UTC 2026-09-26 in 96.3 min, "would drop 1 source destination":
-    the restore read 来自 as a signer and replaced the song credit, link and [^9] included, with "Laizi" (class one hundred thirty-eight, `c49ff687e`, guard `bffae3bce`, suite 1140 PASS).
-    MAIN MERGED (owner, 2026-09-26, "#563 is fixed in main branch. Merge main branch to this worktree's branch."):
-    `7b34120a9` merges main `6c349a978`; the commit body names each conflict's resolution.
-    After a merge that moves dependencies, run `mise run prepare:pnpm:install` only once no pass is running,
-    then rebuild `oxlint-plugin/no-restricted-syntax`, `config/oxlint` and `dev-script/task-util`:
+    XINGZ6012 READ (frozen `c49ff687e`):
+    SETTLED at 01:04 UTC 2026-09-26 in 32.0 min;
+    class one hundred thirty-eight live (link and `[^9]` kept,
+    no "Laizi");
+    class one hundred thirty-nine (a page's `[album]` after the signer read into the name and deleted by the restore;
+    `7292556b7`,
+    suite 1140 PASS,
+    replayed over slice 98)
+    and class one hundred forty (「，作者」 rendered ",
+    author";
+    the rendering glossary refuses it,
+    guard `186ad797a`,
+    fix `5cb874a36`).
+    XINGZ6011 READ (frozen `2d5113b7d`):
+    INCOMPLETE at 00:26 UTC 2026-09-26 in 96.3 min,
+    "would drop 1 source destination":
+    the restore read 来自 as a signer and replaced the song credit,
+    link and [^9] included,
+    with "Laizi" (class one hundred thirty-eight,
+    `c49ff687e`,
+    guard `bffae3bce`,
+    suite 1140 PASS).
+    MAIN MERGED (owner,
+    2026-09-26,
+    "#563 is fixed in main branch.
+    Merge main branch to this worktree's branch."):
+    `7b34120a9` merges main `6c349a978`;
+    the commit body names each conflict's resolution.
+    After a merge that moves dependencies,
+    run `mise run prepare:pnpm:install` only once no pass is running,
+    then rebuild `oxlint-plugin/no-restricted-syntax`,
+    `config/oxlint` and `dev-script/task-util`:
     a config built before the install bundles `@monochromatic-dev/module-logger` as an unresolved import and every lint run fails with "Failed to load JS plugin".
-    Verified after both: the issue 563 repro keeps `[...text.slice(0, 3)]` through `--fix` (`unicorn/no-useless-spread` off, the typed project rule silent on a string),
-    translation-repair suite 1140 PASS, toml-edit 41 PASS, types clean.
-    HULICAIJIA20 READ (frozen `4641ff1d2`): SETTLED at 22:28 UTC 2026-09-25 in 81.9 min;
-    class one hundred thirty-four live ("April 29", "May 4", "licorice", no "pharmaceutical sales representative", en_CA clean);
+    Verified after both:
+    the issue 563 repro keeps `[...text.slice(0, 3)]` through `--fix` (`unicorn/no-useless-spread` off,
+    the typed project rule silent on a string),
+    translation-repair suite 1140 PASS,
+    toml-edit 41 PASS,
+    types clean.
+    HULICAIJIA20 READ (frozen `4641ff1d2`):
+    SETTLED at 22:28 UTC 2026-09-25 in 81.9 min;
+    class one hundred thirty-four live ("April 29",
+    "May 4",
+    "licorice",
+    no "pharmaceutical sales representative",
+    en_CA clean);
     classes one hundred thirty-five to thirty-seven found and built:
-    豆花 seeded as "douhua" (`46731b86e`), `restoreArchiveNameCasing` (`76341f8e4`),
-    `correctPinyinPage` (`2d5113b7d`, suite `suite-class137.log` 1139 PASS, no FAIL, replayed over the page: 烷 alone).
-    CLASS ONE HUNDRED THIRTY-FOUR (`4641ff1d2`, guards red first `acb5a9ccb`, suite `suite-class134.log` 1136 PASS, no FAIL):
+    豆花 seeded as "douhua" (`46731b86e`),
+    `restoreArchiveNameCasing` (`76341f8e4`),
+    `correctPinyinPage` (`2d5113b7d`,
+    suite `suite-class137.log` 1139 PASS,
+    no FAIL,
+    replayed over the page:
+    烷 alone).
+    CLASS ONE HUNDRED THIRTY-FOUR (`4641ff1d2`,
+    guards red first `acb5a9ccb`,
+    suite `suite-class134.log` 1136 PASS,
+    no FAIL):
     `canadianizePage` writes day-first dates month first and respells a closed list of lower-case words
-    on every slice after the casing pass; the house policy names the date order and licorice; 药代 seeded.
-    OWNER 2026-09-25: en_CA covers "Translated pages only", not the repository's own prose.
-    HULICAIJIA19 READ (frozen `6a24362ff`): SETTLED at about 10:03 UTC in 72.0 min;
-    "29th April", "On 4 May" and "liquorice" on untouched slices, 药代 as "pharmaceutical sales representative"
+    on every slice after the casing pass;
+    the house policy names the date order and licorice;
+    药代 seeded.
+    OWNER 2026-09-25:
+    en_CA covers "Translated pages only",
+    not the repository's own prose.
+    HULICAIJIA19 READ (frozen `6a24362ff`):
+    SETTLED at about 10:03 UTC in 72.0 min;
+    "29th April",
+    "On 4 May" and "liquorice" on untouched slices,
+    药代 as "pharmaceutical sales representative"
     (class one hundred thirty-four).
-    SHI_YUMIAOYA35 READ (frozen `6a24362ff`): SETTLED at 09:23 UTC in 33.5 min;
-    class one hundred thirty-three live ("her very first Progynova", "left her deeply traumatized"), en_CA scan clean.
-    CLASS ONE HUNDRED THIRTY-THREE (`6a24362ff`, guard red first `47fbf2253`, suite `suite-class133.log` 1134 PASS, no FAIL):
+    SHI_YUMIAOYA35 READ (frozen `6a24362ff`):
+    SETTLED at 09:23 UTC in 33.5 min;
+    class one hundred thirty-three live ("her very first Progynova",
+    "left her deeply traumatized"),
+    en_CA scan clean.
+    CLASS ONE HUNDRED THIRTY-THREE (`6a24362ff`,
+    guard red first `47fbf2253`,
+    suite `suite-class133.log` 1134 PASS,
+    no FAIL):
     人生中的第一颗 and 留下了巨大的创伤 seeded in `WORDING_GLOSSARY`.
-    SHI_YUMIAOYA34 READ (frozen `9bdeae9c6`): SETTLED at 08:45 UTC in 28.3 min, 948 calls, about 0.23 USD by the meters;
-    classes one hundred thirty-one and thirty-two live, the en_CA scan clean; two life-event calques found (class one hundred thirty-three).
-    CLASS ONE HUNDRED THIRTY-TWO (`9bdeae9c6`, guard red first `53ddd36de`, suite `suite-class132b.log` 1133 PASS, no FAIL):
-    the page is Canadian English, stated in `HOUSE_POLICY_BLOCK` and the package README ("English variety");
+    SHI_YUMIAOYA34 READ (frozen `9bdeae9c6`):
+    SETTLED at 08:45 UTC in 28.3 min,
+    948 calls,
+    about 0.23 USD by the meters;
+    classes one hundred thirty-one and thirty-two live,
+    the en_CA scan clean;
+    two life-event calques found (class one hundred thirty-three).
+    CLASS ONE HUNDRED THIRTY-TWO (`9bdeae9c6`,
+    guard red first `53ddd36de`,
+    suite `suite-class132b.log` 1133 PASS,
+    no FAIL):
+    the page is Canadian English,
+    stated in `HOUSE_POLICY_BLOCK` and the package README ("English variety");
     shi_Yumiaoya33 on `fe56bffed` killed at 08:09 UTC for it.
-    SHI_YUMIAOYA32 READ (frozen `6637865d6`): SETTLED at 08:02 UTC in 26.7 min, 965 calls, about 0.23 USD by the meters;
-    class one hundred thirty live (all nine renderings on the page, no refused form), every shi_Yumiaoya31 check clean;
-    seven wording calques refused as class one hundred thirty-one (`fe56bffed`, guard red first `74322469d`,
-    suite `suite-class131.log` 1132 PASS, no FAIL; the entries in `rendering-glossary-wording.ts`).
-    SHI_YUMIAOYA31 READ (frozen `a719b81f6`): SETTLED at about 07:29 UTC in 30.6 min, 981 calls, about 0.23 USD by the meters;
-    class one hundred twenty-nine live ("had many causes", "Yumiao, as an exception,", "stopped trying", "edge of madness", "this vast world"),
-    every shi_Yumiaoya30 check and the register check clean; glm-5.3 80 of 80 with Hyper wet;
-    nine idiom calques refused as class one hundred thirty (`6637865d6`, guard red first `3774ee79a`, suite `suite-class130.log` 1131 PASS, no FAIL;
+    SHI_YUMIAOYA32 READ (frozen `6637865d6`):
+    SETTLED at 08:02 UTC in 26.7 min,
+    965 calls,
+    about 0.23 USD by the meters;
+    class one hundred thirty live (all nine renderings on the page,
+    no refused form),
+    every shi_Yumiaoya31 check clean;
+    seven wording calques refused as class one hundred thirty-one (`fe56bffed`,
+    guard red first `74322469d`,
+    suite `suite-class131.log` 1132 PASS,
+    no FAIL;
+    the entries in `rendering-glossary-wording.ts`).
+    SHI_YUMIAOYA31 READ (frozen `a719b81f6`):
+    SETTLED at about 07:29 UTC in 30.6 min,
+    981 calls,
+    about 0.23 USD by the meters;
+    class one hundred twenty-nine live ("had many causes",
+    "Yumiao,
+    as an exception,",
+    "stopped trying",
+    "edge of madness",
+    "this vast world"),
+    every shi_Yumiaoya30 check and the register check clean;
+    glm-5.3 80 of 80 with Hyper wet;
+    nine idiom calques refused as class one hundred thirty (`6637865d6`,
+    guard red first `3774ee79a`,
+    suite `suite-class130.log` 1131 PASS,
+    no FAIL;
     class one hundred twenty-nine's entries moved to `rendering-glossary-phrasing.ts` for the line budget).
-    SHI_YUMIAOYA30 READ (frozen `c432737d5`): SETTLED at 06:54 UTC in 25.1 min, 881 calls, about 0.45 USD by the meters;
+    SHI_YUMIAOYA30 READ (frozen `c432737d5`):
+    SETTLED at 06:54 UTC in 25.1 min,
+    881 calls,
+    about 0.45 USD by the meters;
     classes one hundred twenty-six to twenty-eight live and the register check clean;
-    five phrasing calques refused as class one hundred twenty-nine (`a719b81f6`, guard red first `a5be55ae8`, suite `suite-class129.log` 1130 PASS, no FAIL).
-    glm-5.3 asked 82, usable 0: a Hyper-only seat with Hyper dry, refused at call time, not a class.
-    The shi_Yumiaoya30 checks, kept for the next read:
-    every shi_Yumiaoya27 check, then "head of year" or "grade director" (no "grade leader"),
-    "underage trans girl" (no "minor trans"), "psychologically" or "emotionally" before "bullied",
-    the ashes made into dice (no "ash dice"), "housemate" on both 同居者 lines (no "cohabitant"),
-    "overdosing" on both OD lines (no "OD" or "ODing"; owner 2026-09-25), "sailor uniform" (no "jk skirt")
+    five phrasing calques refused as class one hundred twenty-nine (`a719b81f6`,
+    guard red first `a5be55ae8`,
+    suite `suite-class129.log` 1130 PASS,
+    no FAIL).
+    glm-5.3 asked 82,
+    usable 0:
+    a Hyper-only seat with Hyper dry,
+    refused at call time,
+    not a class.
+    The shi_Yumiaoya30 checks,
+    kept for the next read:
+    every shi_Yumiaoya27 check,
+    then "head of year" or "grade director" (no "grade leader"),
+    "underage trans girl" (no "minor trans"),
+    "psychologically" or "emotionally" before "bullied",
+    the ashes made into dice (no "ash dice"),
+    "housemate" on both 同居者 lines (no "cohabitant"),
+    "overdosing" on both OD lines (no "OD" or "ODing";
+    owner 2026-09-25),
+    "sailor uniform" (no "jk skirt")
     and "National College Entrance Examination" or "college entrance examination" (no "Gaokao");
-    then the REGISTER CHECK (class one hundred twenty-eight): no chat shorthand or internet slang on the page
-    (no OD, ODing, jk, TGT, MtF, gearhead, slacked off), every abbreviation a general reader would not know
-    (SRS, GAHT, OST, POV, ACG) spelled out where it first appears, known abbreviations (HRT, ICU) and names in Latin letters kept.
-    CLASS ONE HUNDRED TWENTY-EIGHT (owner 2026-09-25: "I'm not sure why you allowed the very informal terms like OD to go through."):
-    built `c432737d5` (guard red first `194eca498`, suite `suite-class128.log` 1129 PASS, no FAIL). OD passed because the read treated the original's register as the authority
-    and the house policy's community bullet keeps "an abbreviation local to the person's world"; no rule named the register of the English.
-    The new house-policy bullet reaches every writer and judge sheet. The same commit makes the archive-block-review-stage retention case anchor the first seat asked,
+    then the REGISTER CHECK (class one hundred twenty-eight):
+    no chat shorthand or internet slang on the page
+    (no OD,
+    ODing,
+    jk,
+    TGT,
+    MtF,
+    gearhead,
+    slacked off),
+    every abbreviation a general reader would not know
+    (SRS,
+    GAHT,
+    OST,
+    POV,
+    ACG) spelled out where it first appears,
+    known abbreviations (HRT,
+    ICU) and names in Latin letters kept.
+    CLASS ONE HUNDRED TWENTY-EIGHT (owner 2026-09-25:
+    "I'm not sure why you allowed the very informal terms like OD to go through."):
+    built `c432737d5` (guard red first `194eca498`,
+    suite `suite-class128.log` 1129 PASS,
+    no FAIL).
+    OD passed because the read treated the original's register as the authority
+    and the house policy's community bullet keeps "an abbreviation local to the person's world";
+    no rule named the register of the English.
+    The new house-policy bullet reaches every writer and judge sheet.
+    The same commit makes the archive-block-review-stage retention case anchor the first seat asked,
     since `rotatedBench` orders seats by a hash of the prompt and the longer policy had moved its named seat out of the quorum.
-    SHI_YUMIAOYA29 KILLED (frozen `811d908a9`, pid 2915263) under always-kill-and-relaunch once class one hundred twenty-eight was underway.
-    SHI_YUMIAOYA27 READ (frozen `13b633bad`): SETTLED at 05:57 UTC in 26.3 min, 851 calls, about 0.41 USD by the meters;
-    classes one hundred twenty-two to twenty-five live ("suddenly became a top student", "attempted to end her life in the early hours of January 16",
-    "missed her chosen schools and ended up at a second-tier teachers' college", "this was her way of telling everyone");
-    five more renderings refused as class one hundred twenty-six (`0468bf5bc`, guard red first `a2db36962`, suite `suite-class126.log` 1127 PASS, no FAIL).
-    SHI_YUMIAOYA26 VOID: the freeze nested the build under `node/` inside a stale directory, so the pass ran an older build (see the handover's freeze paragraph and the pass log's shi_Yumiaoya26 heading);
-    its page still showed "using this method to tell" and "slipped to a second-tier university", both refused since `13b633bad` (guards red first `e569be075`, `889811657`; suite `suite-class125b.log` 1126 PASS, no FAIL).
-    SHI_YUMIAOYA25 READ (frozen `2fe4def37`): SETTLED at 03:26 UTC in 23.5 min, 905 calls, about 0.43 USD by the meters;
-    class one hundred twenty-four live ("she attempted suicide in the early hours of January 16."), classes one hundred twenty-two and twenty-three holding;
-    two calques (滑档二本 "slid down into a second-tier admission slot", 用这种方式 "using this way to tell"), class one hundred twenty-five built `67da525a2` (guard red first `052f6cffe`, suite `suite-class125.log` 1126 PASS, no FAIL).
-    OWNER ANSWER 2026-09-25 on medication overuse the original does not call an attempt: "Leave it".
-    SHI_YUMIAOYA24 READ (frozen `7e20bbee2`): SETTLED at 02:57 UTC 2026-09-25 in 24.5 min, 885 calls, about 0.44 USD by the meters;
-    classes one hundred twenty-two and twenty-three live ("she had taken medication before she died", no rooftop; "teachers' college", "suddenly became a top student");
-    but "she swallowed a large amount of medication ... and attempted to end her life" for the survived January 16 attempt (class one hundred twenty-four, built `2fe4def37`, guard red first `fe230891b`, suite `suite-class124.log` 1125 PASS, no FAIL: the reader-protection bullet opens on a death or an attempt).
-    "Magic Chewing Gum and interrgned" is both entries' English `name`, not a class.
-    OPEN FOR THE OWNER: 每日大量服用精神药物 ("took large amounts of psychiatric medication every day", then the ICU) is medication overuse the original does not call an attempt; the rule as written does not reach it.
+    SHI_YUMIAOYA29 KILLED (frozen `811d908a9`,
+    pid 2915263) under always-kill-and-relaunch once class one hundred twenty-eight was underway.
+    SHI_YUMIAOYA27 READ (frozen `13b633bad`):
+    SETTLED at 05:57 UTC in 26.3 min,
+    851 calls,
+    about 0.41 USD by the meters;
+    classes one hundred twenty-two to twenty-five live ("suddenly became a top student",
+    "attempted to end her life in the early hours of January 16",
+    "missed her chosen schools and ended up at a second-tier teachers' college",
+    "this was her way of telling everyone");
+    five more renderings refused as class one hundred twenty-six (`0468bf5bc`,
+    guard red first `a2db36962`,
+    suite `suite-class126.log` 1127 PASS,
+    no FAIL).
+    SHI_YUMIAOYA26 VOID:
+    the freeze nested the build under `node/` inside a stale directory,
+    so the pass ran an older build (see the handover's freeze paragraph and the pass log's shi_Yumiaoya26 heading);
+    its page still showed "using this method to tell" and "slipped to a second-tier university",
+    both refused since `13b633bad` (guards red first `e569be075`,
+    `889811657`;
+    suite `suite-class125b.log` 1126 PASS,
+    no FAIL).
+    SHI_YUMIAOYA25 READ (frozen `2fe4def37`):
+    SETTLED at 03:26 UTC in 23.5 min,
+    905 calls,
+    about 0.43 USD by the meters;
+    class one hundred twenty-four live ("she attempted suicide in the early hours of January 16."),
+    classes one hundred twenty-two and twenty-three holding;
+    two calques (滑档二本 "slid down into a second-tier admission slot",
+    用这种方式 "using this way to tell"),
+    class one hundred twenty-five built `67da525a2` (guard red first `052f6cffe`,
+    suite `suite-class125.log` 1126 PASS,
+    no FAIL).
+    OWNER ANSWER 2026-09-25 on medication overuse the original does not call an attempt:
+    "Leave it".
+    SHI_YUMIAOYA24 READ (frozen `7e20bbee2`):
+    SETTLED at 02:57 UTC 2026-09-25 in 24.5 min,
+    885 calls,
+    about 0.44 USD by the meters;
+    classes one hundred twenty-two and twenty-three live ("she had taken medication before she died",
+    no rooftop;
+    "teachers' college",
+    "suddenly became a top student");
+    but "she swallowed a large amount of medication ... and attempted to end her life" for the survived January 16 attempt (class one hundred twenty-four,
+    built `2fe4def37`,
+    guard red first `fe230891b`,
+    suite `suite-class124.log` 1125 PASS,
+    no FAIL:
+    the reader-protection bullet opens on a death or an attempt).
+    "Magic Chewing Gum and interrgned" is both entries' English `name`,
+    not a class.
+    OPEN FOR THE OWNER:
+    每日大量服用精神药物 ("took large amounts of psychiatric medication every day",
+    then the ICU) is medication overuse the original does not call an attempt;
+    the rule as written does not reach it.
     OWNER STANDING INSTRUCTIONS OF 2026-09-25:
-    "From now on whenever you see anything that can be translated better do it." A rendering that reads badly is a class to fix (rendering glossary entry, policy clause or floor), never an observation left in a note.
-    OWNER CORRECTION OF 2026-09-26, after the TianqiChen6665 read left three observations "not built": "Shouldn't you always immediately fix and restart?"
-    Every observation from a read is fixed in the same turn (guard red first, fix, suite), then the running pass is killed and relaunched on the new frozen build; a read never ends on an unbuilt observation.
-    "dropping "swallowing a large amount of medication" is fine. It's documented somewhere that not showing suicide methods therefore promoting replication is expected." Read every death and attempt passage against `src/house-policy.ts` reader protection; a method, substance, dose or place-as-means on the page is a class.
-    SHI_YUMIAOYA23 READ (frozen `e57a2589c`): SETTLED at 01:49 UTC 2026-09-25 in 20.9 min, one attempt, 917 seats, 841 calls, about 0.35 USD by the meters;
-    every shi_Yumiaoya22 check holds (4 headings, front matter equal, no TA, no error finish, no double blank line, the death paragraphs, the closing quote's two lines with the attribution once, "trans girl", Han only in the archive comments);
-    the sedative detail of the original now on the page; the January 16 sentence drops 吞下大量药物 as shi_Yumiaoya14 did (an observation); glm-5.3 dark (72 seats, Hyper dry); no class.
-    CUSPARIAKLSY15 READ (frozen `e57a2589c`): SETTLED at 01:27 UTC 2026-09-25 in 17.2 min, one attempt, 380 seats, 361 calls, about 0.09 USD by the meters;
-    every CuspariaKLSY14 check holds (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the gloss line put back by `name-gloss-restored`);
-    the death paragraph carries every clause of the original with no medication detail (又 dropped again, an observation);
-    the life list's mixed marker spacing is the archive's own; class one hundred seven live on slices 1 and 3; glm-5.3 dark (19 seats, Hyper dry); no class.
-    ZHEERMAO13 READ (frozen `e57a2589c`): SETTLED at 01:08 UTC 2026-09-25 in 21.0 min, one attempt, 877 seats, 829 calls, about 0.30 USD by the meters;
-    every zheermao12 check holds (2 headings, front matter equal, both labels one line, no TA, no error finish, no double blank line, 1 translate overrun against zheermao12's 1);
-    class one hundred seven live on slice 5 (three minor accuracy claims accepted, the repair text the stand-in); the casing pass silent (INFJ, the archive's one capital form, already in capitals); glm-5.3 dark all run (47 seats, Hyper-only, Hyper dry); no class.
-    YINGYING11 READ (frozen `e57a2589c`): SETTLED at 00:46 UTC 2026-09-25 in 15.4 min, 333 calls, about 0.09 USD by the meters;
-    every yingying10 check holds, the casing pass silent (BUAA already in capitals); no class;
-    observation: one abstention called the farewell's second person a house-rule breach, and the page reads "May you" as the original.
-    MIKAELA17 READ (frozen `9ec838a01`): SETTLED at 00:22 UTC 2026-09-25 in 40.8 min, 2,394 calls;
+    "From now on whenever you see anything that can be translated better do it."
+    A rendering that reads badly is a class to fix (rendering glossary entry,
+    policy clause or floor),
+    never an observation left in a note.
+    OWNER CORRECTION OF 2026-09-26,
+    after the TianqiChen6665 read left three observations "not built":
+    "Shouldn't you always immediately fix and restart?"
+    Every observation from a read is fixed in the same turn (guard red first,
+    fix,
+    suite),
+    then the running pass is killed and relaunched on the new frozen build;
+    a read never ends on an unbuilt observation.
+    "dropping "swallowing a large amount of medication" is fine.
+    It's documented somewhere that not showing suicide methods therefore promoting replication is expected."
+    Read every death and attempt passage against `src/house-policy.ts` reader protection;
+    a method,
+    substance,
+    dose or place-as-means on the page is a class.
+    SHI_YUMIAOYA23 READ (frozen `e57a2589c`):
+    SETTLED at 01:49 UTC 2026-09-25 in 20.9 min,
+    one attempt,
+    917 seats,
+    841 calls,
+    about 0.35 USD by the meters;
+    every shi_Yumiaoya22 check holds (4 headings,
+    front matter equal,
+    no TA,
+    no error finish,
+    no double blank line,
+    the death paragraphs,
+    the closing quote's two lines with the attribution once,
+    "trans girl",
+    Han only in the archive comments);
+    the sedative detail of the original now on the page;
+    the January 16 sentence drops 吞下大量药物 as shi_Yumiaoya14 did (an observation);
+    glm-5.3 dark (72 seats,
+    Hyper dry);
+    no class.
+    CUSPARIAKLSY15 READ (frozen `e57a2589c`):
+    SETTLED at 01:27 UTC 2026-09-25 in 17.2 min,
+    one attempt,
+    380 seats,
+    361 calls,
+    about 0.09 USD by the meters;
+    every CuspariaKLSY14 check holds (1 heading,
+    front matter equal,
+    no TA,
+    no error finish,
+    no double blank line,
+    the life in the past,
+    the gloss line put back by `name-gloss-restored`);
+    the death paragraph carries every clause of the original with no medication detail (又 dropped again,
+    an observation);
+    the life list's mixed marker spacing is the archive's own;
+    class one hundred seven live on slices 1 and 3;
+    glm-5.3 dark (19 seats,
+    Hyper dry);
+    no class.
+    ZHEERMAO13 READ (frozen `e57a2589c`):
+    SETTLED at 01:08 UTC 2026-09-25 in 21.0 min,
+    one attempt,
+    877 seats,
+    829 calls,
+    about 0.30 USD by the meters;
+    every zheermao12 check holds (2 headings,
+    front matter equal,
+    both labels one line,
+    no TA,
+    no error finish,
+    no double blank line,
+    1 translate overrun against zheermao12's 1);
+    class one hundred seven live on slice 5 (three minor accuracy claims accepted,
+    the repair text the stand-in);
+    the casing pass silent (INFJ,
+    the archive's one capital form,
+    already in capitals);
+    glm-5.3 dark all run (47 seats,
+    Hyper-only,
+    Hyper dry);
+    no class.
+    YINGYING11 READ (frozen `e57a2589c`):
+    SETTLED at 00:46 UTC 2026-09-25 in 15.4 min,
+    333 calls,
+    about 0.09 USD by the meters;
+    every yingying10 check holds,
+    the casing pass silent (BUAA already in capitals);
+    no class;
+    observation:
+    one abstention called the farewell's second person a house-rule breach,
+    and the page reads "May you" as the original.
+    MIKAELA17 READ (frozen `9ec838a01`):
+    SETTLED at 00:22 UTC 2026-09-25 in 40.8 min,
+    2,394 calls;
     every mikaela16 check holds;
     but slice 16 wrote "Xiawafang" where the archive writes XIAWAFANG in the body and its footnote (class one hundred twenty-one).
-    CLASS ONE HUNDRED TWENTY-ONE BUILT (d12aa2ed7 and e57a2589c, guards red first 196a4fd6c and 990f5f68f, full suite `suite-class121b.log` 1122 PASS lines, no FAIL, replayed over the mikaela17 artifact):
-    `corpus-run/archive-casing-restore.ts` restores an all-capitals word the archive writes that way at least twice and never otherwise, reading past heading lines, as the last page-assembly pass.
-    DEVPASS (owner, 2026-09-24): LLM Gateway DevPass is left out of the pipeline, the owner's choice after reading its terms (no apps, scripts or batch pipelines; translation named as excluded from 2026-10-15; no ZDR; no provider pinning);
-    `LLMGATEWAY_DEVPASS_API_KEY` sits in the sops file unused (addendum in `doc/decision/translation-repair-openrouter-fallback.md`, `aff37b34b`).
-    SYNTHETIC reset by the owner on 2026-09-24; the running XingZ6010 picked it up by its meters (151 Synthetic calls).
-    XINGZ6010 READ (frozen `d73cb46b9`): SETTLED at 23:35 UTC 2026-09-24 in 64.9 min, one attempt, 6,870 calls, 2.49 USD Bedrock and 3.78 OpenRouter by the meters;
-    every XingZ631 check holds (14 headings, 2 links, 9 definitions, 3 TextRing, 11 details, front matter equal, no TA, no error finish, no double blank line, DottedNumber II to VII, Jinxin glossed once);
-    but `<h3 align = "Nonuple Reality">` (class one hundred twenty): the title unify wrote slice 98's credit title into a heading attribute spaced around its equals sign.
-    CLASS ONE HUNDRED TWENTY BUILT (9ec838a01, guard red first c303b0287, full suite `suite-class120.log` 1121 PASS, no FAIL, replayed over the XingZ6010 artifact):
+    CLASS ONE HUNDRED TWENTY-ONE BUILT (d12aa2ed7 and e57a2589c,
+    guards red first 196a4fd6c and 990f5f68f,
+    full suite `suite-class121b.log` 1122 PASS lines,
+    no FAIL,
+    replayed over the mikaela17 artifact):
+    `corpus-run/archive-casing-restore.ts` restores an all-capitals word the archive writes that way at least twice and never otherwise,
+    reading past heading lines,
+    as the last page-assembly pass.
+    DEVPASS (owner,
+    2026-09-24):
+    LLM Gateway DevPass is left out of the pipeline,
+    the owner's choice after reading its terms (no apps,
+    scripts or batch pipelines;
+    translation named as excluded from 2026-10-15;
+    no ZDR;
+    no provider pinning);
+    `LLMGATEWAY_DEVPASS_API_KEY` sits in the sops file unused (addendum in `doc/decision/translation-repair-openrouter-fallback.md`,
+    `aff37b34b`).
+    SYNTHETIC reset by the owner on 2026-09-24;
+    the running XingZ6010 picked it up by its meters (151 Synthetic calls).
+    XINGZ6010 READ (frozen `d73cb46b9`):
+    SETTLED at 23:35 UTC 2026-09-24 in 64.9 min,
+    one attempt,
+    6,870 calls,
+    2.49 USD Bedrock and 3.78 OpenRouter by the meters;
+    every XingZ631 check holds (14 headings,
+    2 links,
+    9 definitions,
+    3 TextRing,
+    11 details,
+    front matter equal,
+    no TA,
+    no error finish,
+    no double blank line,
+    DottedNumber II to VII,
+    Jinxin glossed once);
+    but `<h3 align = "Nonuple Reality">` (class one hundred twenty):
+    the title unify wrote slice 98's credit title into a heading attribute spaced around its equals sign.
+    CLASS ONE HUNDRED TWENTY BUILT (9ec838a01,
+    guard red first c303b0287,
+    full suite `suite-class120.log` 1121 PASS,
+    no FAIL,
+    replayed over the XingZ6010 artifact):
     `title-reference-marks.ts` reads back past blanks to an attribute's equals sign before taking a quoted span as prose.
-    SHI_YUMIAOYA22 READ (frozen `d73cb46b9`): SETTLED at 22:29 UTC 2026-09-24 in 31.9 min, one attempt, 1,011 seats, 5 retry rounds, 938 calls, 0.13 USD Bedrock and 0.28 OpenRouter by the meters;
-    class one hundred nineteen live on the page ("Yumiao was a very ordinary trans girl[^1]", "mentally bullied by an underage trans girl", no Han or pinyin outside the archive's comment);
-    the floor did not fire (no candidate kept the Han), the glossary line did the work;
-    every shi_Yumiaoya19 check holds; observation: one gate ballot misread the listed rendering "trans women" as forbidden, the gate chose right anyway; no class.
-    shi_Yumiaoya21 on `5fd7d3dea` was killed at 21:57 UTC, 2 min in, once `d73cb46b9` put the owner's reason into the glossary's why;
-    shi_Yumiaoya20 on `79972da3d` was killed at 21:55 UTC, 17 min in, under always-kill-and-relaunch once `5fd7d3dea` landed.
-    CLASS ONE HUNDRED NINETEEN BUILT (79972da3d, guard red first 2f7dd5190, full suite `suite-class119.log` 1121 PASS, no FAIL):
-    owner answer 2026-09-24 on 小药娘 and 药娘: "This term is pretty disrespectful though currently being used by some people in the community in a neutral way. We shouldn't assume that neutralness carries over to English. The best thing we can do here is just to say "trans woman" or "trans girl"."
-    `COMMUNITY_GLOSSARY` seeds 药娘 with the renderings "trans girl", "trans woman", "trans women" and the refused forms yaoniang, yao-niang, yao niang (entries gain `refusedForms`);
-    `communityTermFindings` (`translate-community-term.ts`), a source-carry floor after the title floor, refuses before any judge a candidate that keeps a glossary term the original carries in Han or writes a refused form in any casing, comments cut on both sides.
-    OWNER CORRECTION 2026-09-24: "even when existing English translation itself keeps the term it shouldn't be kept." The owner's reason, same day: "because 小药娘 the term itself could be read as degratory, which is absolutely not what we want." The glossary's why says so (`d73cb46b9`). The page-kept exception is gone (`5fd7d3dea`, guard red first `2ba810b2f`, lint 0/0, types clean, full suite `suite-class119b.log` 1121 PASS, no FAIL).
-    HULICAIJIA17 READ (frozen `0d8e463ef`): SETTLED at about 11:00 UTC 2026-09-24 in 28.4 min, one attempt, 4,326 seats, 154 retry rounds, 3,477 calls, 1.03 USD Bedrock and 1.63 OpenRouter by the meters;
-    every hulicaijia16 check holds (13 headings, markers and 9 definitions as the archive, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line), 75 abstention lines, Jev 127 of 127;
-    class one hundred eighteen holding (GLM-5.3-Flash 231 of 231 off Synthetic), the class ninety-seven floor excluded the archive's third-person incumbent once;
-    Qwen3.8-27B 0 usable of 578 and glm-5.3 7 of 277 are router refusals with Synthetic and Hyper spent, not model failures; no class.
-    SHI_YUMIAOYA19 READ (frozen `0d8e463ef`): SETTLED 10:29 UTC 2026-09-24 in 20.9 min, 812 seats, 811 calls, 0.19 USD by the meters; every shi_Yumiaoya18 check holds;
-    OWNER ANSWERED the 小药娘 question on 2026-09-24; built as class one hundred nineteen.
-    CUSPARIAKLSY14 READ (frozen `0d8e463ef`): SETTLED 10:05 UTC 2026-09-24 in 21.6 min, 401 seats, 400 calls, 0 retry rounds, 0.07 USD by the meters;
-    class one hundred eighteen live (no GLM-5.3-Flash stream on Synthetic, its first streams on Hyper while Synthetic read wet, longest gap 89 s against 179), class one hundred seventeen not exercised (the bench wrote the list loose), every CuspariaKLSY13 check holds; observation: 又 dropped before the argument with her father; no class.
-    CUSPARIAKLSY13 READ (frozen `3bb47c918`): SETTLED 09:15 UTC 2026-09-24 in 31.9 min, 367 seats, 363 calls, 0.06 USD by the meters;
-    every CuspariaKLSY12 check holds and the death paragraph carries 双方情绪爆发, 又, 抢救 and 再次得到消息 with no medication detail;
+    SHI_YUMIAOYA22 READ (frozen `d73cb46b9`):
+    SETTLED at 22:29 UTC 2026-09-24 in 31.9 min,
+    one attempt,
+    1,011 seats,
+    5 retry rounds,
+    938 calls,
+    0.13 USD Bedrock and 0.28 OpenRouter by the meters;
+    class one hundred nineteen live on the page ("Yumiao was a very ordinary trans girl[^1]",
+    "mentally bullied by an underage trans girl",
+    no Han or pinyin outside the archive's comment);
+    the floor did not fire (no candidate kept the Han),
+    the glossary line did the work;
+    every shi_Yumiaoya19 check holds;
+    observation:
+    one gate ballot misread the listed rendering "trans women" as forbidden,
+    the gate chose right anyway;
+    no class.
+    shi_Yumiaoya21 on `5fd7d3dea` was killed at 21:57 UTC,
+    2 min in,
+    once `d73cb46b9` put the owner's reason into the glossary's why;
+    shi_Yumiaoya20 on `79972da3d` was killed at 21:55 UTC,
+    17 min in,
+    under always-kill-and-relaunch once `5fd7d3dea` landed.
+    CLASS ONE HUNDRED NINETEEN BUILT (79972da3d,
+    guard red first 2f7dd5190,
+    full suite `suite-class119.log` 1121 PASS,
+    no FAIL):
+    owner answer 2026-09-24 on 小药娘 and 药娘:
+    "This term is pretty disrespectful though currently being used by some people in the community in a neutral way.
+    We shouldn't assume that neutralness carries over to English.
+    The best thing we can do here is just to say "trans woman" or "trans girl"."
+    `COMMUNITY_GLOSSARY` seeds 药娘 with the renderings "trans girl",
+    "trans woman",
+    "trans women" and the refused forms yaoniang,
+    yao-niang,
+    yao niang (entries gain `refusedForms`);
+    `communityTermFindings` (`translate-community-term.ts`),
+    a source-carry floor after the title floor,
+    refuses before any judge a candidate that keeps a glossary term the original carries in Han or writes a refused form in any casing,
+    comments cut on both sides.
+    OWNER CORRECTION 2026-09-24:
+    "even when existing English translation itself keeps the term it shouldn't be kept."
+    The owner's reason,
+    same day:
+    "because 小药娘 the term itself could be read as degratory,
+    which is absolutely not what we want."
+    The glossary's why says so (`d73cb46b9`).
+    The page-kept exception is gone (`5fd7d3dea`,
+    guard red first `2ba810b2f`,
+    lint 0/0,
+    types clean,
+    full suite `suite-class119b.log` 1121 PASS,
+    no FAIL).
+    HULICAIJIA17 READ (frozen `0d8e463ef`):
+    SETTLED at about 11:00 UTC 2026-09-24 in 28.4 min,
+    one attempt,
+    4,326 seats,
+    154 retry rounds,
+    3,477 calls,
+    1.03 USD Bedrock and 1.63 OpenRouter by the meters;
+    every hulicaijia16 check holds (13 headings,
+    markers and 9 definitions as the archive,
+    2 links,
+    3 Sakura,
+    front matter equal,
+    no TA,
+    no error finish,
+    no double blank line),
+    75 abstention lines,
+    Jev 127 of 127;
+    class one hundred eighteen holding (GLM-5.3-Flash 231 of 231 off Synthetic),
+    the class ninety-seven floor excluded the archive's third-person incumbent once;
+    Qwen3.8-27B 0 usable of 578 and glm-5.3 7 of 277 are router refusals with Synthetic and Hyper spent,
+    not model failures;
+    no class.
+    SHI_YUMIAOYA19 READ (frozen `0d8e463ef`):
+    SETTLED 10:29 UTC 2026-09-24 in 20.9 min,
+    812 seats,
+    811 calls,
+    0.19 USD by the meters;
+    every shi_Yumiaoya18 check holds;
+    OWNER ANSWERED the 小药娘 question on 2026-09-24;
+    built as class one hundred nineteen.
+    CUSPARIAKLSY14 READ (frozen `0d8e463ef`):
+    SETTLED 10:05 UTC 2026-09-24 in 21.6 min,
+    401 seats,
+    400 calls,
+    0 retry rounds,
+    0.07 USD by the meters;
+    class one hundred eighteen live (no GLM-5.3-Flash stream on Synthetic,
+    its first streams on Hyper while Synthetic read wet,
+    longest gap 89 s against 179),
+    class one hundred seventeen not exercised (the bench wrote the list loose),
+    every CuspariaKLSY13 check holds;
+    observation:
+    又 dropped before the argument with her father;
+    no class.
+    CUSPARIAKLSY13 READ (frozen `3bb47c918`):
+    SETTLED 09:15 UTC 2026-09-24 in 31.9 min,
+    367 seats,
+    363 calls,
+    0.06 USD by the meters;
+    every CuspariaKLSY12 check holds and the death paragraph carries 双方情绪爆发,
+    又,
+    抢救 and 再次得到消息 with no medication detail;
     but the archive's loose life list shipped tight (class one hundred seventeen),
     and one editor round plus its recovery round waited 355 s on GLM-5.3-Flash's cap-cut runaway on Synthetic (class one hundred eighteen).
-    CLASS ONE HUNDRED SEVENTEEN BUILT (c796c5085, guard red first f0fe179c7, replayed over the real slice):
-    `restoreListSpread` (`corpus-run/list-spread-restore.ts`), a page-assembly pass after the gloss lines, respaces a replaced slice's list to the archive's spacing when ordering and item count match, never tightening a list with spread items; finding `list-spread-restored`.
-    CLASS ONE HUNDRED EIGHTEEN BUILT (0d8e463ef, guard red first 7cf6ec12b, full suite `suite-class118b.log` 1119 PASS with the load-sensitive lane-contest grace case failing under the parallel run and passing alone):
-    GLM-5.3-Flash withheld from Synthetic on measured latency (74.5 s mean over 892 streams there against 8.6 s over 305 on Hyper) through the `synthetic-withheld` card hold and `SYNTHETIC_WITHHELD` in `reachOf`; Qwen3.8-27B and Kimi-K3 stay on Synthetic, faster there; the recovery round stays (67 percent of recoveries heard someone).
-    ZHEERMAO12 READ (frozen `3bb47c918`): SETTLED 08:42 UTC 2026-09-24 in 21.6 min, 917 seats, 916 calls, 0.24 USD by the meters;
-    class one hundred sixteen live (1 translate overrun against 22, the translate lane 62 s against 616 with Kimi-K3 and glm-5.3 still asked), every zheermao11 check holds; no class.
-    ZHEERMAO11 READ (frozen `c958640fb`): SETTLED 08:10 UTC 2026-09-24 in 30 min, 857 seats, 834 calls, 7 retry rounds, 0.19 USD by the meters;
-    every zheermao9 check holds, the labels reworded by the archive block review to name the letter and the email thread, classes one hundred nine, fourteen and fifteen silent by design;
-    but the translate lane took 616 s against 77: 22 translate streams wrote a neighbouring picture's transcript into a picture-only passage and were cut by the produced volume bound, the Hyper reasoning seats (Kimi-K3 55.1 s mean, 171 s longest) thinking 60 to 170 s first (class one hundred sixteen).
-    CLASS ONE HUNDRED SIXTEEN BUILT (3bb47c918, guard red first 40721851c, full suite `suite-class116.log` 1119 PASS, no FAIL):
-    `TRANSLATE_PICTURE_SCOPE_RULE` (`translate-wire.ts`) on the translator sheet whenever WHAT THE PICTURES HERE SAY is shown: the block is context, a picture's words belong only where the passage or its existing translation already carries them, a picture component renders as the ORIGINAL has it.
-    YINGYING10 READ (frozen `f4d554838`): SETTLED 07:26 UTC 2026-09-24 in 682 s (Hyper wet, its latency), 307 seats, 307 calls, 0 retry rounds, about 0.06 USD by the meters;
-    class one hundred fourteen live (the [^2] title "Yingying", the archive's "Sakura" excluded from the slate by the floor, confirmed by replay), every yingying9 check holds;
-    class one hundred fifteen found on the slate: gemma-4-e2b's candidate unwrapped the title link into words and a bare URL and passed every floor.
-    CLASS ONE HUNDRED FIFTEEN BUILT (a7b7f3934, guard red first 5db1cc723, full suite `suite-class115.log` 1118 PASS, no FAIL, replayed over the real slice 3):
-    `unwrappedLinkFindings` (`translate-unwrapped-link.ts`) joins the source-carry floors; the corpus census found no archive unwrapping a worded source link (119 of 141 kept, 22 dropped).
-    EXCLUSION LOGGED (c958640fb, suite `suite-log115.log`): the translate stage logs the findings that keep the archive off the slate.
+    CLASS ONE HUNDRED SEVENTEEN BUILT (c796c5085,
+    guard red first f0fe179c7,
+    replayed over the real slice):
+    `restoreListSpread` (`corpus-run/list-spread-restore.ts`),
+    a page-assembly pass after the gloss lines,
+    respaces a replaced slice's list to the archive's spacing when ordering and item count match,
+    never tightening a list with spread items;
+    finding `list-spread-restored`.
+    CLASS ONE HUNDRED EIGHTEEN BUILT (0d8e463ef,
+    guard red first 7cf6ec12b,
+    full suite `suite-class118b.log` 1119 PASS with the load-sensitive lane-contest grace case failing under the parallel run and passing alone):
+    GLM-5.3-Flash withheld from Synthetic on measured latency (74.5 s mean over 892 streams there against 8.6 s over 305 on Hyper) through the `synthetic-withheld` card hold and `SYNTHETIC_WITHHELD` in `reachOf`;
+    Qwen3.8-27B and Kimi-K3 stay on Synthetic,
+    faster there;
+    the recovery round stays (67 percent of recoveries heard someone).
+    ZHEERMAO12 READ (frozen `3bb47c918`):
+    SETTLED 08:42 UTC 2026-09-24 in 21.6 min,
+    917 seats,
+    916 calls,
+    0.24 USD by the meters;
+    class one hundred sixteen live (1 translate overrun against 22,
+    the translate lane 62 s against 616 with Kimi-K3 and glm-5.3 still asked),
+    every zheermao11 check holds;
+    no class.
+    ZHEERMAO11 READ (frozen `c958640fb`):
+    SETTLED 08:10 UTC 2026-09-24 in 30 min,
+    857 seats,
+    834 calls,
+    7 retry rounds,
+    0.19 USD by the meters;
+    every zheermao9 check holds,
+    the labels reworded by the archive block review to name the letter and the email thread,
+    classes one hundred nine,
+    fourteen and fifteen silent by design;
+    but the translate lane took 616 s against 77:
+    22 translate streams wrote a neighbouring picture's transcript into a picture-only passage and were cut by the produced volume bound,
+    the Hyper reasoning seats (Kimi-K3 55.1 s mean,
+    171 s longest) thinking 60 to 170 s first (class one hundred sixteen).
+    CLASS ONE HUNDRED SIXTEEN BUILT (3bb47c918,
+    guard red first 40721851c,
+    full suite `suite-class116.log` 1119 PASS,
+    no FAIL):
+    `TRANSLATE_PICTURE_SCOPE_RULE` (`translate-wire.ts`) on the translator sheet whenever WHAT THE PICTURES HERE SAY is shown:
+    the block is context,
+    a picture's words belong only where the passage or its existing translation already carries them,
+    a picture component renders as the ORIGINAL has it.
+    YINGYING10 READ (frozen `f4d554838`):
+    SETTLED 07:26 UTC 2026-09-24 in 682 s (Hyper wet,
+    its latency),
+    307 seats,
+    307 calls,
+    0 retry rounds,
+    about 0.06 USD by the meters;
+    class one hundred fourteen live (the [^2] title "Yingying",
+    the archive's "Sakura" excluded from the slate by the floor,
+    confirmed by replay),
+    every yingying9 check holds;
+    class one hundred fifteen found on the slate:
+    gemma-4-e2b's candidate unwrapped the title link into words and a bare URL and passed every floor.
+    CLASS ONE HUNDRED FIFTEEN BUILT (a7b7f3934,
+    guard red first 5db1cc723,
+    full suite `suite-class115.log` 1118 PASS,
+    no FAIL,
+    replayed over the real slice 3):
+    `unwrappedLinkFindings` (`translate-unwrapped-link.ts`) joins the source-carry floors;
+    the corpus census found no archive unwrapping a worded source link (119 of 141 kept,
+    22 dropped).
+    EXCLUSION LOGGED (c958640fb,
+    suite `suite-log115.log`):
+    the translate stage logs the findings that keep the archive off the slate.
     zheermao10 (a7b7f3934) killed 28 calls in under always-kill-and-relaunch.
-    YINGYING9 READ (frozen `6dec56b0b`): SETTLED 06:52 UTC 2026-09-24 in 185 s, 304 seats, 241 calls, 10 retry rounds, about 0.05 USD by the meters;
-    class one hundred thirteen not exercised (all four checker rounds 2 of 3), every yingying8 check holds and "Geek Lab" now carries the hardcore video;
-    but the [^2] title shipped the archive's "Sakura" for the declared "Yingying": two of three translate slate judges chose the archive's own text as "the archive's established rendering", and the repair lane's rewrite was reverted by the introduced-defect probe (class one hundred fourteen).
-    CLASS ONE HUNDRED FOURTEEN BUILT (645ed9d62 and f4d554838, guard red first 98f24d35b, full suite `suite-class114b.log` 1117 PASS, no FAIL, replayed over the real slice 3):
-    `declaredLinkNameFindings` (`translate-declared-link-name.ts`) joins the source-carry floors: where the original's link text carries a declared source name, the rendering's link text under the same href must carry the declared form (name projection);
-    the pairs ride on the prepared document as `declaredNamePairs` into every validator call (translate incumbent, slate floor, repair turn, contest winner, standing verdict, lane offer, producers, polish).
-    Open, not built: the repair lane's introduced-defect probe still reads a declared-name correction as a defect; the floor refuses its reverted text downstream.
-    MIKAELA16 READ (frozen `a43c5d88d`): SETTLED 05:58 UTC 2026-09-24 in 20.6 min, 2,483 seats, 2,051 calls, 0.74 USD by the meters;
-    class one hundred twelve not exercised (the roster placed every block, section 2 merging sources 2 and 3 into target 2), the HRT passage on the page once, "That night, Spring, Mika, and I" as the archive;
+    YINGYING9 READ (frozen `6dec56b0b`):
+    SETTLED 06:52 UTC 2026-09-24 in 185 s,
+    304 seats,
+    241 calls,
+    10 retry rounds,
+    about 0.05 USD by the meters;
+    class one hundred thirteen not exercised (all four checker rounds 2 of 3),
+    every yingying8 check holds and "Geek Lab" now carries the hardcore video;
+    but the [^2] title shipped the archive's "Sakura" for the declared "Yingying":
+    two of three translate slate judges chose the archive's own text as "the archive's established rendering",
+    and the repair lane's rewrite was reverted by the introduced-defect probe (class one hundred fourteen).
+    CLASS ONE HUNDRED FOURTEEN BUILT (645ed9d62 and f4d554838,
+    guard red first 98f24d35b,
+    full suite `suite-class114b.log` 1117 PASS,
+    no FAIL,
+    replayed over the real slice 3):
+    `declaredLinkNameFindings` (`translate-declared-link-name.ts`) joins the source-carry floors:
+    where the original's link text carries a declared source name,
+    the rendering's link text under the same href must carry the declared form (name projection);
+    the pairs ride on the prepared document as `declaredNamePairs` into every validator call (translate incumbent,
+    slate floor,
+    repair turn,
+    contest winner,
+    standing verdict,
+    lane offer,
+    producers,
+    polish).
+    Open,
+    not built:
+    the repair lane's introduced-defect probe still reads a declared-name correction as a defect;
+    the floor refuses its reverted text downstream.
+    MIKAELA16 READ (frozen `a43c5d88d`):
+    SETTLED 05:58 UTC 2026-09-24 in 20.6 min,
+    2,483 seats,
+    2,051 calls,
+    0.74 USD by the meters;
+    class one hundred twelve not exercised (the roster placed every block,
+    section 2 merging sources 2 and 3 into target 2),
+    the HRT passage on the page once,
+    "That night,
+    Spring,
+    Mika,
+    and I" as the archive;
     every mikaela11 check holds (the classmate line reads "a classmate of mine" so no possessive to curl);
-    class one hundred nine live (eight re-seated proof rounds at 2 of 3 after Synthetic dried out at 05:47:59 UTC), class one hundred seven on slices 11, 13, 17, 23, contest 26 of 33 differ, one unendorsed (9), 60 abstention lines, Jev 78 of 78.
-    CLASS ONE HUNDRED THIRTEEN BUILT (375a9b3e8 over 6dec56b0b; phase guards red first 24b9ab623, which withdrew the settle guard e003d4c1d; full suite `suite-class113b.log` 1116 PASS):
+    class one hundred nine live (eight re-seated proof rounds at 2 of 3 after Synthetic dried out at 05:47:59 UTC),
+    class one hundred seven on slices 11,
+    13,
+    17,
+    23,
+    contest 26 of 33 differ,
+    one unendorsed (9),
+    60 abstention lines,
+    Jev 78 of 78.
+    CLASS ONE HUNDRED THIRTEEN BUILT (375a9b3e8 over 6dec56b0b;
+    phase guards red first 24b9ab623,
+    which withdrew the settle guard e003d4c1d;
+    full suite `suite-class113b.log` 1116 PASS):
     ten refine rechecks from 05:51:51 UTC heard 1 of 3 on the chunk's bench because the refine stage never read the re-seat hook;
-    `settleRefinedSlice` now reads the bench through `checkerBenchAtStage` right before the recheck (after the unchanged exit, so a slice whose rewrite changed nothing asks no hook) and runs the recheck and the rewrite probe on it, the hook threaded from the lane driver through `refineSettledSlices`, `runRefinePhase` and `settleRefinePhaseSlice`.
+    `settleRefinedSlice` now reads the bench through `checkerBenchAtStage` right before the recheck (after the unchanged exit,
+    so a slice whose rewrite changed nothing asks no hook) and runs the recheck and the rewrite probe on it,
+    the hook threaded from the lane driver through `refineSettledSlices`,
+    `runRefinePhase` and `settleRefinePhaseSlice`.
     Not exercised live yet.
-    MIKAELA15 READ (frozen `caac222a6`): SETTLED 05:19 UTC 2026-09-24 in 10.5 min, 2,116 seats, 1,687 calls, 0.75 USD by the meters;
-    class one hundred eleven live end to end (`insertion-carried-folded (slice 11 into slice 10)`, no carried-evidence-lost stop, every mikaela11 check holds),
-    but the HRT passage shipped twice: slice 10's stand-in through the fold and slice 13's span keeping the archive's "That was originally just a typical thing." (class one hundred twelve);
-    class one hundred seven live on slices 13 and 24, contest 25 of 34 differ, all 15 checker rounds 2 of 3, slices 5 and 14 unendorsed, 51 abstention lines, Jev 68 of 69.
-    CLASS ONE HUNDRED TWELVE BUILT (a43c5d88d, guard red first 0c5ee4b6c, full suite `suite-class112.log` (1115 PASS; the one red case was the census decline fixture, itself the class one hundred twelve shape, re-paired in 14336a1c2), replayed over mikaela15's section 2 pairing: `P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+`):
-    the roster had paired sources 0 to 2 and 8 onward and left sources 3 to 7 and targets 3 to 6 unplaced on both sides, which slicing read as insertions plus an undeclined target-only run riding into slice 13 (mikaela12 and 13 lost the passage the same way);
-    `pairUnpartneredGaps` (`unpartnered-gap-steps.ts`) reads such an interior gap as one merge (first pair, the rest `continuesPairing` on both sides), applied by `blockPairingToSteps`; leading, trailing and one-sided gaps unchanged.
+    MIKAELA15 READ (frozen `caac222a6`):
+    SETTLED 05:19 UTC 2026-09-24 in 10.5 min,
+    2,116 seats,
+    1,687 calls,
+    0.75 USD by the meters;
+    class one hundred eleven live end to end (`insertion-carried-folded (slice 11 into slice 10)`,
+    no carried-evidence-lost stop,
+    every mikaela11 check holds),
+    but the HRT passage shipped twice:
+    slice 10's stand-in through the fold and slice 13's span keeping the archive's "That was originally just a typical thing."
+    (class one hundred twelve);
+    class one hundred seven live on slices 13 and 24,
+    contest 25 of 34 differ,
+    all 15 checker rounds 2 of 3,
+    slices 5 and 14 unendorsed,
+    51 abstention lines,
+    Jev 68 of 69.
+    CLASS ONE HUNDRED TWELVE BUILT (a43c5d88d,
+    guard red first 0c5ee4b6c,
+    full suite `suite-class112.log` (1115 PASS;
+    the one red case was the census decline fixture,
+    itself the class one hundred twelve shape,
+    re-paired in 14336a1c2),
+    replayed over mikaela15's section 2 pairing:
+    `P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+`):
+    the roster had paired sources 0 to 2 and 8 onward and left sources 3 to 7 and targets 3 to 6 unplaced on both sides,
+    which slicing read as insertions plus an undeclined target-only run riding into slice 13 (mikaela12 and 13 lost the passage the same way);
+    `pairUnpartneredGaps` (`unpartnered-gap-steps.ts`) reads such an interior gap as one merge (first pair,
+    the rest `continuesPairing` on both sides),
+    applied by `blockPairingToSteps`;
+    leading,
+    trailing and one-sided gaps unchanged.
     Not exercised live yet.
-    MIKAELA14 READ (frozen `0ab0abdd8`): launched 04:53 UTC, killed 05:05 UTC 2026-09-24 12 min in at consolidation chunk 26 under always-kill-and-relaunch, no tally, 1,471 calls, 0.57 USD by the meters;
-    class one hundred eleven live at the admission (`insertion-carried-folded (slice 12 into slice 13)`, the warn line `slice 11 stays carried: evidence sits in slice at position 13, not a neighbour`, the `carried on 3 region(s)` line),
-    which showed the chain arm: two carried slices in a row, the neighbour rule counting positions instead of paired slices, slice 11 doomed to the same publish stop;
-    class one hundred seven live on slices 13, 14, 18 and 24, contest 25 of 34 differ, all 15 checker rounds 2 of 3, 48 abstention lines.
-    CHAIN ARM BUILT (caac222a6, guard red first 9bb99bf9f, full suite `suite-class111b.log` 1115 PASS, replayed over the real corpus slices 10 to 13: `slice 12 into slice 13`, `slice 11 into slice 10`):
+    MIKAELA14 READ (frozen `0ab0abdd8`):
+    launched 04:53 UTC,
+    killed 05:05 UTC 2026-09-24 12 min in at consolidation chunk 26 under always-kill-and-relaunch,
+    no tally,
+    1,471 calls,
+    0.57 USD by the meters;
+    class one hundred eleven live at the admission (`insertion-carried-folded (slice 12 into slice 13)`,
+    the warn line `slice 11 stays carried: evidence sits in slice at position 13, not a neighbour`,
+    the `carried on 3 region(s)` line),
+    which showed the chain arm:
+    two carried slices in a row,
+    the neighbour rule counting positions instead of paired slices,
+    slice 11 doomed to the same publish stop;
+    class one hundred seven live on slices 13,
+    14,
+    18 and 24,
+    contest 25 of 34 differ,
+    all 15 checker rounds 2 of 3,
+    48 abstention lines.
+    CHAIN ARM BUILT (caac222a6,
+    guard red first 9bb99bf9f,
+    full suite `suite-class111b.log` 1115 PASS,
+    replayed over the real corpus slices 10 to 13:
+    `slice 12 into slice 13`,
+    `slice 11 into slice 10`):
     `pairedNeighbours` (`corpus-run/insertion-carried-decide.ts`) looks past insertions to the nearest paired slice on each side,
     the abutting check still refuses a fold across a source the carrier has not absorbed,
     and `foldPass` (`corpus-run/insertion-carried-fold.ts`) repeats at most once per carried passage until nothing more folds.
     Not exercised live yet.
-    MIKAELA13 READ (frozen `457765221`): INCOMPLETE at 04:33 UTC 2026-09-24 in 15 min, one attempt, 2,093 seats, 1,678 calls, 0.75 USD by the meters, no page or artifact;
-    stopped at publish on `carried-insertion-evidence-lost slice 11` again: this pairing carried slice 11 alone (class one hundred ten not exercised in mikaela12's shape),
-    the archive renders slices 10 to 12 as two paragraphs, the second ("That was originally just a typical thing.") rendering slice 11's opening clause and slice 12's line together,
-    the one coverage ballot quoted both spans, the fold wanted one holder and stood aside silently, class one hundred seven disputed both neighbours and their stand-ins dropped the passage (class one hundred eleven);
-    class one hundred nine not exercised (all 16 checker rounds heard 2 of 3), class one hundred seven live on slices 2, 10, 12, 22 and 24, contest 24 of 34 differ, 56 abstention lines, Jev 68 of 68.
-    CLASS ONE HUNDRED ELEVEN BUILT (0ab0abdd8, guard red first 2925802e1, full suite `suite-class111.log` 1115 PASS, replayed over the real corpus texts of slices 10 to 12: `insertion-carried-folded (slice 11 into slice 10)`):
-    the fold places each evidence region block by block (`corpus-run/insertion-carried-anchor.ts`, `anchorRegion`, one holder per block with its code-point share);
-    every block must sit in a paired slice next to the carried one, the carrier is the neighbour holding the larger share (the earlier on a tie), the sources must abut (`corpus-run/insertion-carried-decide.ts`);
+    MIKAELA13 READ (frozen `457765221`):
+    INCOMPLETE at 04:33 UTC 2026-09-24 in 15 min,
+    one attempt,
+    2,093 seats,
+    1,678 calls,
+    0.75 USD by the meters,
+    no page or artifact;
+    stopped at publish on `carried-insertion-evidence-lost slice 11` again:
+    this pairing carried slice 11 alone (class one hundred ten not exercised in mikaela12's shape),
+    the archive renders slices 10 to 12 as two paragraphs,
+    the second ("That was originally just a typical thing.")
+    rendering slice 11's opening clause and slice 12's line together,
+    the one coverage ballot quoted both spans,
+    the fold wanted one holder and stood aside silently,
+    class one hundred seven disputed both neighbours and their stand-ins dropped the passage (class one hundred eleven);
+    class one hundred nine not exercised (all 16 checker rounds heard 2 of 3),
+    class one hundred seven live on slices 2,
+    10,
+    12,
+    22 and 24,
+    contest 24 of 34 differ,
+    56 abstention lines,
+    Jev 68 of 68.
+    CLASS ONE HUNDRED ELEVEN BUILT (0ab0abdd8,
+    guard red first 2925802e1,
+    full suite `suite-class111.log` 1115 PASS,
+    replayed over the real corpus texts of slices 10 to 12:
+    `insertion-carried-folded (slice 11 into slice 10)`):
+    the fold places each evidence region block by block (`corpus-run/insertion-carried-anchor.ts`,
+    `anchorRegion`,
+    one holder per block with its code-point share);
+    every block must sit in a paired slice next to the carried one,
+    the carrier is the neighbour holding the larger share (the earlier on a tie),
+    the sources must abut (`corpus-run/insertion-carried-decide.ts`);
     every stand-aside names its reason and `pass-entry.ts` logs it at warn beside one `carried on N region(s)` line per still-carried passage.
     Not exercised live yet.
-    MIKAELA12 READ (frozen `21ea25993`): INCOMPLETE at 03:54 UTC 2026-09-24 in 15 min, one attempt, 2,196 seats, 1,744 calls, 0.71 USD by the meters, no page or artifact;
-    stopped at publish on `carried-insertion-evidence-lost slice 14`: the September sentence the roster anchored sits inside slice 15's archive span (the archive merged two source paragraphs into one rendering),
-    the translate lane wrote slice 15 from its own source alone, the slate chose the candidate without the passage, the contest and gate kept it (class one hundred ten);
-    class one hundred nine not exercised (no hold inside the lane; all 16 checker rounds heard 2 of 3), class one hundred seven live on slices 2, 15, 19, 20 and 26, 49 abstention lines, Jev 78 of 78.
-    CLASS ONE HUNDRED TEN BUILT (457765221, guard red first 750e87978, full suite `suite-class110.log` 1114 PASS with the load-sensitive `lane-contest-stage` grace-window case failing under the parallel run and passing alone):
+    MIKAELA12 READ (frozen `21ea25993`):
+    INCOMPLETE at 03:54 UTC 2026-09-24 in 15 min,
+    one attempt,
+    2,196 seats,
+    1,744 calls,
+    0.71 USD by the meters,
+    no page or artifact;
+    stopped at publish on `carried-insertion-evidence-lost slice 14`:
+    the September sentence the roster anchored sits inside slice 15's archive span (the archive merged two source paragraphs into one rendering),
+    the translate lane wrote slice 15 from its own source alone,
+    the slate chose the candidate without the passage,
+    the contest and gate kept it (class one hundred ten);
+    class one hundred nine not exercised (no hold inside the lane;
+    all 16 checker rounds heard 2 of 3),
+    class one hundred seven live on slices 2,
+    15,
+    19,
+    20 and 26,
+    49 abstention lines,
+    Jev 78 of 78.
+    CLASS ONE HUNDRED TEN BUILT (457765221,
+    guard red first 750e87978,
+    full suite `suite-class110.log` 1114 PASS with the load-sensitive `lane-contest-stage` grace-window case failing under the parallel run and passing alone):
     `foldCarriedInsertions` (`corpus-run/insertion-carried-fold.ts`) runs after the coverage admission in `pass-entry.ts`;
-    where every evidence region of a carried insertion sits inside exactly one adjacent paired slice's target span and the two sources abut, the carrier's source widens over both, the carried slice moves to `admission.folded`, the lanes skip it, and the finding `insertion-carried-folded` prints;
+    where every evidence region of a carried insertion sits inside exactly one adjacent paired slice's target span and the two sources abut,
+    the carrier's source widens over both,
+    the carried slice moves to `admission.folded`,
+    the lanes skip it,
+    and the finding `insertion-carried-folded` prints;
     every other shape stands aside and stays carried.
     Not exercised live yet.
-    SHI_YUMIAOYA18 READ (frozen `21ea25993`): SETTLED at 03:35 UTC 2026-09-24 in 7 min, one attempt, 865 seats, 686 calls, 0.38 USD by the meters;
-    class one hundred nine not exercised (no hold began inside the lane, no "checker stage re-seated" line; both checker rounds heard 2 of 3 on gemma-26b and gemma-4-e2b),
-    class one hundred seven silent (no accepted addition claim against the archive), the filers log live (34 lines),
-    the lanes agreed on six slices including the closing quote, which shipped as the archive's two lines (classes eighty and one hundred two fine),
-    classes seventy-eight, seventy-nine, ninety-two, ninety-five, ninety-six and one hundred one holding, every check as `shi_Yumiaoya17` (4 headings, front matter equal, no TA, no error finish, no double blank line),
-    the two page-assembly passes silent, slice 12 slate-declined, slice 13 gate-kept, 9 abstention lines, Jev 24 of 24; no class.
-    CLASS ONE HUNDRED NINE BUILT (21ea25993, guards red first 1ab453219, full suite green `suite-class109.log` 1114 PASS):
-    the checker stage re-reads the seating at the stage itself (`repair-checker-reseat.ts` `checkerBenchAtStage`, threaded as `reseat` from `repairPreparedDocument` to `proveRepairedChunk` in `repair-chunk-proof.ts`),
+    SHI_YUMIAOYA18 READ (frozen `21ea25993`):
+    SETTLED at 03:35 UTC 2026-09-24 in 7 min,
+    one attempt,
+    865 seats,
+    686 calls,
+    0.38 USD by the meters;
+    class one hundred nine not exercised (no hold began inside the lane,
+    no "checker stage re-seated" line;
+    both checker rounds heard 2 of 3 on gemma-26b and gemma-4-e2b),
+    class one hundred seven silent (no accepted addition claim against the archive),
+    the filers log live (34 lines),
+    the lanes agreed on six slices including the closing quote,
+    which shipped as the archive's two lines (classes eighty and one hundred two fine),
+    classes seventy-eight,
+    seventy-nine,
+    ninety-two,
+    ninety-five,
+    ninety-six and one hundred one holding,
+    every check as `shi_Yumiaoya17` (4 headings,
+    front matter equal,
+    no TA,
+    no error finish,
+    no double blank line),
+    the two page-assembly passes silent,
+    slice 12 slate-declined,
+    slice 13 gate-kept,
+    9 abstention lines,
+    Jev 24 of 24;
+    no class.
+    CLASS ONE HUNDRED NINE BUILT (21ea25993,
+    guards red first 1ab453219,
+    full suite green `suite-class109.log` 1114 PASS):
+    the checker stage re-reads the seating at the stage itself (`repair-checker-reseat.ts` `checkerBenchAtStage`,
+    threaded as `reseat` from `repairPreparedDocument` to `proveRepairedChunk` in `repair-chunk-proof.ts`),
     since the class one hundred three re-seat lands only at a chunk's start and with overlap 8 the chunks in flight kept a stale bench through their checker stage;
     not exercised live yet (needs a provider drying out inside the repair lane).
-    ZHEERMAO9 READ (entry `zheermao101`, frozen `85ed2881f`): SETTLED at 03:04 UTC 2026-09-24 in 20 min, one attempt, 988 seats, 759 calls, 0.37 USD by the meters;
-    class one hundred three live (Synthetic's weekly allowance ran out at 02:56 UTC inside the repair lane, five chunks re-seated under the hold to Qwen, gemma-26b and gemma-4-e2b),
-    class one hundred six not exercised (slice 9's contest chose the repair lane 5 of 5; the reply label reads "One Among Us members sent her a reply that very night:"),
-    class one hundred seven live on slice 0 (two accepted addition claims, the contest chose translate 3 of 4), classes seventy-seven, ninety-six, one hundred one, two and four holding, every check as `zheermao8`, 10 abstention lines, Jev 29 of 29;
-    but seven of eight checker rounds after the dry-out heard 1 of 3 on the stale static bench (class one hundred nine, built as read).
-    CUSPARIAKLSY12 READ (frozen `85ed2881f`): SETTLED at 02:42 UTC 2026-09-24 in 25 min (Synthetic's latency), one attempt, 437 seats, 420 calls, 0.13 USD by the meters;
-    class one hundred eight live on slice 3 (the repair lane softened the accepted addition into "She fell asleep"; with the ARCHIVE RENDERING DISPUTED block on the sheets the translate slate ran off and chose the candidate without it, the contest chose translate 4 of 5 with every ballot calling the archive flawed, the gate kept the contest winner with a ballot writing "both omit the rejected medication detail"; the page reads "She then attempted suicide and was sent to the hospital for emergency treatment" with no medication detail),
-    class one hundred seven live on slice 3 (three accepted claims; slice 1 undisputed this run), classes one hundred four and five holding, every check as `CuspariaKLSY11`, slice 1 gate-kept, slice 2 slate-declined, 10 abstention lines, Jev 12 of 12, glm-5.3 dark on Hyper dry; no class.
-    CUSPARIAKLSY11 READ (frozen `a40c28cad`): SETTLED at 01:55 UTC 2026-09-24 in 5 min, one attempt, 327 seats, 13 retry rounds, 256 calls, 0.10 USD by the meters;
-    class one hundred seven live (`translate-archive-disputed` on slices 1 and 3 in the lanes and the consolidation, the stand-in the incumbent, slice 3 shipped as `{kind: incumbent}` gate-kept, the archive's "swallowed lots of her meds" never on the page),
-    classes one hundred four and five holding, every check as `CuspariaKLSY10`, 5 abstention lines, Jev 11 of 11;
-    but the death paragraph still reads "She took medication that night" (服药 nowhere in the original): the repair lane softened the accepted addition, the contest split 2 to 2, the consolidated proposal dropped it, the gate split 2 to 2 and kept the stand-in on "dropped page content ... which the Chinese does not contradict": class one hundred eight, built (the line below).
-    CLASS ONE HUNDRED EIGHT BUILT: `archiveDisputeNote` (`archive-dispute.ts`) writes the ARCHIVE RENDERING DISPUTED block naming the accepted claims and saying a detail they name is neither page content nor apparatus, in the archive's wording or any softer one; carried on the consolidation writer, slate judge and gate sheets, the translate writer and slate judge sheets, and the lane contest sheet and key; the repair lane's own sheets unchanged;
-    guards red first `65d159d2a`, built `85ed2881f`, lint 0/0, types clean, full suite green (`suite-class108.log`, 1113 PASS), replayed over the `CuspariaKLSY11` artifact, ninth ineligible-standing addendum; running on `CuspariaKLSY12`.
-    CLASS ONE HUNDRED SEVEN BUILT (owner Q2: "Not eligible; fall back to the repair text"): `archiveDisputesOf` (`archive-dispute.ts`) off the repair chunks, the repair text standing in for a disputed archive rendering as the translate slate's and the consolidation's incumbent (`consolidate-archive-stand-in.ts`), finding `translate-archive-disputed`; guards red first `fba338dc1`, built `a452db225`, full suite green (`suite-class107.log`, 1109 PASS), eighth addendum `a40c28cad`; live on `CuspariaKLSY11`.
-    YINGYING8 READ (frozen `d2e39e095`): SETTLED at 00:31 UTC 2026-09-24 in 5 min, one attempt, 310 seats, 13 retry rounds, 266 calls, 0.07 USD by the meters;
-    class one hundred four on the wire (one polish gate run, 4 of 7 usable, settled on neither, base shipped), class one hundred five silent by design,
-    classes eighty-six, ninety-seven, one hundred one and one hundred two holding, every check as `yingying7` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, "[Farewell. I miss you, Yingying.]", "May you still have", no TA, no error finish, no double blank line), 8 abstention lines, Jev 12 of 12;
-    observation, not a class: slice 1's repair text dropped 硬核视频 ("hardcore video") before "Geek Lab", unendorsed.
-    GPT-OSS-120B CULLED from every role (owner, 2026-09-24, on the `CuspariaKLSY10` slice 1 claim inverting cause and effect: "That particular model got cause and effect wrong. Cull it." then "cull it from every role"): off `RUN_ROSTER` and the static checker bench, blocklisted with the owner's words, seating-decision addendum, through `bc10e3b70`, full suite green (`suite-cull2.log`, 1106 PASS).
-    CLAIM FILERS LOGGED (owner: "we're not logging enough then. Refine how we log."): `claim-filers.ts` logs every resolved claim with its filers at the critic stage and every adjudicated issue with each claim's filers, and the artifact's adjudicated issues carry `filedBy`; `SLICE_CACHE_VERSION` 31; guard red first `f049298ac`, built `9a6327de5`, full suite green (`suite-filers2.log`, 1107 PASS).
-    CLASS ONE HUNDRED SIX BUILT (owner Q1: "Run-off only when every contest ballot called the archive flawed"): `archiveFlawedByAll` (`consolidate-archive-flawed.ts`) on the contest ballots, `runoffOverStanding` through `consolidate-driver.ts`, `consolidate-slice-buy.ts` and `consolidate-settle.ts` into `judgeSlateWithRetry`; `translate-judge.ts` names `runoffFinalists` on a decline over an incumbent and `translate-retry.ts` narrows and reruns; an undecided run-off still ships the standing;
-    guards red first `200bf7a53`, built `2a872bbed`, lint 0/0, types clean, full suite green (`suite-class106.log`, 1108 PASS), seventh ineligible-standing addendum `7c729d339`; not exercised live yet.
-    ZHEERMAO8 READ (frozen `d2e39e095`): SETTLED at 00:23 UTC 2026-09-24 in 14 min, one attempt, 859 seats, 33 retry rounds, 0.25 USD by the meters;
-    class one hundred four on the wire (the polish gate on seven slices, ballots reading the house rules, no tense called a change of meaning), class one hundred five silent by design,
-    classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao7`, 15 abstention lines, Jev 25 of 25;
-    the reply label kept the archive's "one member ... immediately" for 那些秋叶的成员…连夜 on a 2 to 2 contest (every ballot calling the archive flawed) and a 1/1/1 slate with both lane texts on offer through the class forty path, the eligible standing keeping its single round: class one hundred six, built (see the line above).
-    CUSPARIAKLSY10 READ (frozen `d2e39e095`): SETTLED at 00:06 UTC 2026-09-24 in 7 min, one attempt, 375 seats, 12 retry rounds, 0.18 USD by the meters;
-    class one hundred four live (the life in the past, the slice 0 polish gate citing the house tense rule and no ballot calling the tense a change of meaning),
-    class one hundred five live (the bench dropped the gloss line again, `name-gloss-restored` printed, the gloss on the page after the nickname line),
-    classes seventy-five, seventy-six, eighty-five and ninety-six holding, every check as `CuspariaKLSY8`, 13 abstention lines, Jev 13 of 13;
-    observation, not built: the death paragraph shipped the repair lane's minimal edit (the fabricated method removed, brain-dead restored) with the archive's own omissions (双方情绪爆发, 抢救, 又, 再次得到消息, "by" for 于), unendorsed;
-    the translate slate backed no candidate so the archive stood by the eligible-standing single round, the contest chose repair 3 of 4, the consolidation slate tied 1/1/0.5 and kept the standing;
-    open question for the owner: whether an archive rendering the adjudicators found to fabricate a suicide method stays an eligible standing for the translate slate's single round.
-    CUSPARIAKLSY9 READ (frozen `334c02f23`): SETTLED at 23:41 UTC 2026-09-23 in 4 min, one attempt, 357 seats, 11 retry rounds, 0.16 USD by the meters;
-    no hold ran, so class one hundred three not exercised (checkers 2 of 3 on the substitute and gpt-oss by the dry reading at the lanes boundary);
-    1 heading, front matter equal, no TA, no error finish, no double blank line, 7 abstention lines, Jev 14 of 14;
-    but slice 0 shipped the archive's present tense because the polish gate refused GLM-5.3-Flash's past-tense polish 4 of 4 as "an unsupported change of meaning" with no house rule on its sheet (class one hundred four; the slate before it split 1.5/1/1 with an eligible standing keeping its single round by the owner's addenda),
-    and slice 1 lost the archive's gloss line a third time on the judges' call, the contest 4 to 1 for the gloss-less translate text and the slate endorsing it 4 of 5 (class one hundred five).
-    CLASSES ONE HUNDRED FOUR AND FIVE FIXED in d2e39e095: `POLISH_GATE_HOUSE_RULES` (`polish-gate-house-rules.ts`, "a tense the house rules set is not a change of meaning" plus `JUDGE_POLICY_BLOCK`) on the polish gate's sheet in both modes;
-    `restoreNameGlossLines` (`corpus-run/name-gloss-restore.ts`, after the titles pass in `page-assembly-guard.ts`) restores the archive's “name” means … line after the name's first appearance in a replaced slice that carries the name unglossed, finding `name-gloss-restored`;
-    guards red first 487cb2681, lint 0/0, types clean, full suite green (`suite-class104-105.log`, 1105 PASS), replayed over the real `CuspariaKLSY9` slice 1.
-    ZHEERMAO7 READ (frozen `6361d74d0`): SETTLED at 23:20 UTC 2026-09-23 in 17 min, one attempt, 972 seats, 32 retry rounds, 0.52 USD by the meters;
-    classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao6`, five slate-declined, one gate-kept, 32 abstention lines, Jev 28 of 28;
-    but Synthetic's window ran out at 23:15:27 UTC two minutes into the repair lane and the checker bench read once at the lanes boundary (two Synthetic-only seats) ran ten of twelve checker rounds and probes on gpt-oss alone, short of quorum, while the substitute a dry reading seats sat idle (class one hundred three);
-    fixed in 334c02f23 (the repair lane's per-chunk hook re-reads the seats under a hold and hands the driver a `RepairSliceSeating`, kept once read; `pass-reseat.ts`, `repair-contract.ts`, `document-lanes.ts`, `repair-translation.ts`), guards red first c036471c3, lint 0/0, types clean, full suite `suite-class103.log`.
-    YINGYING7 READ (frozen `6361d74d0`): SETTLED at 23:01 UTC 2026-09-23 in 19 min against yingying6's 4, one attempt, 365 seats, 1 retry round, 0.08 USD by the meters;
-    classes eighty-six and ninety-seven holding, classes one hundred one and one hundred two fine, every check as `yingying6`, one gate-kept (2), 3 abstention lines, Jev 8 of 8; no class;
-    the time is Synthetic's (wet again from 22:42 UTC, GLM-5.3-Flash 19 streams at 50 s mean there, 1,270 s of grace across 80 rounds against 91 s), the standing latency observation.
-    SHI_YUMIAOYA17 READ (frozen `6361d74d0`): SETTLED at 22:42 UTC 2026-09-23 in 6 min, one attempt, 879 seats, 33 retry rounds, 0.49 USD by the meters;
-    the closing quote as the archive's two lines (class one hundred two not exercised live: no lane text refused on slice 16 this run, the eligible standing shipped unjudged), class one hundred one holding (the `[^1]` definition the page's last line, the source's one marker), the two page-assembly passes silent,
-    classes seventy-eight, seventy-nine, ninety-two, ninety-five and ninety-six holding, every check as `shi_Yumiaoya14`, five slate-declined, three gate-kept, 16 abstention lines, Jev 22 of 22; no class.
-    SHI_YUMIAOYA16 READ (frozen `314ca4b8c`): SETTLED at 22:29 UTC 2026-09-23 in 6 min, one attempt, 880 seats, 32 retry rounds, 0.60 USD by the meters;
-    class one hundred one live (the `[^1]` definition the page's last line, both source markers on the page), the two page-assembly passes silent, classes seventy-eight, seventy-nine, ninety-two, ninety-five and ninety-six holding, every check as `shi_Yumiaoya14`, one unendorsed (0), 13 abstention lines, Jev 20 of 20;
-    but the closing quote shipped its Chinese line beside the English (three lines against the archive's two): the repair lane text was refused as the standing on the class eighty pair bound and re-entered through the class forty lane offer, whose rule ran without `lineStructured` (class one hundred two);
-    fixed in 6361d74d0 (`consolidate-lane-offer.ts` takes the flag, `consolidate-driver.ts` passes it), guard red first 404b5dada, lint 0/0, types clean, full suite green (`suite-class102.log`, 1103 PASS), replayed over the run's real slice 16 data;
-    open, not built: the repair lane's own floor let the three-line text into the contest.
-    SHI_YUMIAOYA15 READ (frozen `0f685f551`): TALLY ERROR at 22:14 UTC 2026-09-23 in 7 min, two attempts, 1,020 seats, 39 retry rounds, 0.53 USD by the meters, no page or artifact;
-    "1 wording(s) the artifact says would ship are not in the page in slice order, at slices 17 (237 characters)": the source's `[^1]` definition, inserted, whose winning candidate ended in two spaces the insertion composer cuts while the wording check searched the raw text (class one hundred one);
-    fixed in 314ca4b8c (`published-page-check.ts`: the scan searches the fragment body both splice paths leave on the page), guard red first 4c36039b0, lint 0/0, types clean, full suite green (`suite-class101.log`, 1103 PASS), replayed over the run's real wording through `composeInsertion`;
-    the two page-assembly passes silent, one unendorsed (16), 24 abstention lines, Jev 25 of 25.
-    MIKAELA11 READ (frozen `0f685f551`): SETTLED at 22:07 UTC 2026-09-23 in 11 min, one attempt, 2,124 seats, 60 retry rounds, 1.07 USD by the meters;
-    the two page-assembly passes silent, classes seventy to seventy-seven and ninety-six holding, every check as `mikaela10`, four unendorsed (0, 7, 12, 29), 67 abstention lines; no class.
-    HULICAIJIA16 READ (frozen `0f685f551`): SETTLED at 21:55 UTC 2026-09-23 in 27 min, one attempt, 4,482 seats, 144 retry rounds, 3.81 USD by the meters;
-    the two page-assembly passes silent by design (the archive renders every heading, no rewritten tag attribute), classes eighty-four, ninety-two, ninety-five and ninety-six holding,
-    every check as `hulicaijia15` (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line), one unendorsed (35), 130 abstention lines; no class.
-    XINGZ631 READ (frozen `5e21134ee`): SETTLED at 21:22 UTC 2026-09-23 in 43 min, one attempt, 8,077 seats, 244 retry rounds, 8.59 USD by the meters;
-    classes ninety-nine and one hundred live (one marker restored to `II`, the six markers `II` to `VII`; the pinyin credit "Ling Chong Qi Yuan" unified to "Zero-Layer Prayer"; the link, the first credit and footnote 6 already carrying their headings' renderings),
-    classes eighty-eight to ninety-eight holding, class ninety-four not exercised (the placeholder kept, the fifth treatment in six runs; the placeholder question stays open for the owner),
-    every structural check as `XingZ630`, five unendorsed (18, 27, 54, 57, 65), 196 abstention lines;
+    ZHEERMAO9 READ (entry `zheermao101`,
+    frozen `85ed2881f`):
+    SETTLED at 03:04 UTC 2026-09-24 in 20 min,
+    one attempt,
+    988 seats,
+    759 calls,
+    0.37 USD by the meters;
+    class one hundred three live (Synthetic's weekly allowance ran out at 02:56 UTC inside the repair lane,
+    five chunks re-seated under the hold to Qwen,
+    gemma-26b and gemma-4-e2b),
+    class one hundred six not exercised (slice 9's contest chose the repair lane 5 of 5;
+    the reply label reads "One Among Us members sent her a reply that very night:"),
+    class one hundred seven live on slice 0 (two accepted addition claims,
+    the contest chose translate 3 of 4),
+    classes seventy-seven,
+    ninety-six,
+    one hundred one,
+    two and four holding,
+    every check as `zheermao8`,
+    10 abstention lines,
+    Jev 29 of 29;
+    but seven of eight checker rounds after the dry-out heard 1 of 3 on the stale static bench (class one hundred nine,
+    built as read).
+    CUSPARIAKLSY12 READ (frozen `85ed2881f`):
+    SETTLED at 02:42 UTC 2026-09-24 in 25 min (Synthetic's latency),
+    one attempt,
+    437 seats,
+    420 calls,
+    0.13 USD by the meters;
+    class one hundred eight live on slice 3 (the repair lane softened the accepted addition into "She fell asleep";
+    with the ARCHIVE RENDERING DISPUTED block on the sheets the translate slate ran off and chose the candidate without it,
+    the contest chose translate 4 of 5 with every ballot calling the archive flawed,
+    the gate kept the contest winner with a ballot writing "both omit the rejected medication detail";
+    the page reads "She then attempted suicide and was sent to the hospital for emergency treatment" with no medication detail),
+    class one hundred seven live on slice 3 (three accepted claims;
+    slice 1 undisputed this run),
+    classes one hundred four and five holding,
+    every check as `CuspariaKLSY11`,
+    slice 1 gate-kept,
+    slice 2 slate-declined,
+    10 abstention lines,
+    Jev 12 of 12,
+    glm-5.3 dark on Hyper dry;
+    no class.
+    CUSPARIAKLSY11 READ (frozen `a40c28cad`):
+    SETTLED at 01:55 UTC 2026-09-24 in 5 min,
+    one attempt,
+    327 seats,
+    13 retry rounds,
+    256 calls,
+    0.10 USD by the meters;
+    class one hundred seven live (`translate-archive-disputed` on slices 1 and 3 in the lanes and the consolidation,
+    the stand-in the incumbent,
+    slice 3 shipped as `{kind: incumbent}` gate-kept,
+    the archive's "swallowed lots of her meds" never on the page),
+    classes one hundred four and five holding,
+    every check as `CuspariaKLSY10`,
+    5 abstention lines,
+    Jev 11 of 11;
+    but the death paragraph still reads "She took medication that night" (服药 nowhere in the original):
+    the repair lane softened the accepted addition,
+    the contest split 2 to 2,
+    the consolidated proposal dropped it,
+    the gate split 2 to 2 and kept the stand-in on "dropped page content ... which the Chinese does not contradict":
+    class one hundred eight,
+    built (the line below).
+    CLASS ONE HUNDRED EIGHT BUILT:
+    `archiveDisputeNote` (`archive-dispute.ts`) writes the ARCHIVE RENDERING DISPUTED block naming the accepted claims and saying a detail they name is neither page content nor apparatus,
+    in the archive's wording or any softer one;
+    carried on the consolidation writer,
+    slate judge and gate sheets,
+    the translate writer and slate judge sheets,
+    and the lane contest sheet and key;
+    the repair lane's own sheets unchanged;
+    guards red first `65d159d2a`,
+    built `85ed2881f`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class108.log`,
+    1113 PASS),
+    replayed over the `CuspariaKLSY11` artifact,
+    ninth ineligible-standing addendum;
+    running on `CuspariaKLSY12`.
+    CLASS ONE HUNDRED SEVEN BUILT (owner Q2:
+    "Not eligible;
+    fall back to the repair text"):
+    `archiveDisputesOf` (`archive-dispute.ts`) off the repair chunks,
+    the repair text standing in for a disputed archive rendering as the translate slate's and the consolidation's incumbent (`consolidate-archive-stand-in.ts`),
+    finding `translate-archive-disputed`;
+    guards red first `fba338dc1`,
+    built `a452db225`,
+    full suite green (`suite-class107.log`,
+    1109 PASS),
+    eighth addendum `a40c28cad`;
+    live on `CuspariaKLSY11`.
+    YINGYING8 READ (frozen `d2e39e095`):
+    SETTLED at 00:31 UTC 2026-09-24 in 5 min,
+    one attempt,
+    310 seats,
+    13 retry rounds,
+    266 calls,
+    0.07 USD by the meters;
+    class one hundred four on the wire (one polish gate run,
+    4 of 7 usable,
+    settled on neither,
+    base shipped),
+    class one hundred five silent by design,
+    classes eighty-six,
+    ninety-seven,
+    one hundred one and one hundred two holding,
+    every check as `yingying7` (1 heading,
+    4 markers,
+    2 definitions,
+    front matter equal,
+    References line kept,
+    "[Farewell.
+    I miss you,
+    Yingying.]",
+    "May you still have",
+    no TA,
+    no error finish,
+    no double blank line),
+    8 abstention lines,
+    Jev 12 of 12;
+    observation,
+    not a class:
+    slice 1's repair text dropped 硬核视频 ("hardcore video") before "Geek Lab",
+    unendorsed.
+    GPT-OSS-120B CULLED from every role (owner,
+    2026-09-24,
+    on the `CuspariaKLSY10` slice 1 claim inverting cause and effect:
+    "That particular model got cause and effect wrong.
+    Cull it."
+    then "cull it from every role"):
+    off `RUN_ROSTER` and the static checker bench,
+    blocklisted with the owner's words,
+    seating-decision addendum,
+    through `bc10e3b70`,
+    full suite green (`suite-cull2.log`,
+    1106 PASS).
+    CLAIM FILERS LOGGED (owner:
+    "we're not logging enough then.
+    Refine how we log."):
+    `claim-filers.ts` logs every resolved claim with its filers at the critic stage and every adjudicated issue with each claim's filers,
+    and the artifact's adjudicated issues carry `filedBy`;
+    `SLICE_CACHE_VERSION` 31;
+    guard red first `f049298ac`,
+    built `9a6327de5`,
+    full suite green (`suite-filers2.log`,
+    1107 PASS).
+    CLASS ONE HUNDRED SIX BUILT (owner Q1:
+    "Run-off only when every contest ballot called the archive flawed"):
+    `archiveFlawedByAll` (`consolidate-archive-flawed.ts`) on the contest ballots,
+    `runoffOverStanding` through `consolidate-driver.ts`,
+    `consolidate-slice-buy.ts` and `consolidate-settle.ts` into `judgeSlateWithRetry`;
+    `translate-judge.ts` names `runoffFinalists` on a decline over an incumbent and `translate-retry.ts` narrows and reruns;
+    an undecided run-off still ships the standing;
+    guards red first `200bf7a53`,
+    built `2a872bbed`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class106.log`,
+    1108 PASS),
+    seventh ineligible-standing addendum `7c729d339`;
+    not exercised live yet.
+    ZHEERMAO8 READ (frozen `d2e39e095`):
+    SETTLED at 00:23 UTC 2026-09-24 in 14 min,
+    one attempt,
+    859 seats,
+    33 retry rounds,
+    0.25 USD by the meters;
+    class one hundred four on the wire (the polish gate on seven slices,
+    ballots reading the house rules,
+    no tense called a change of meaning),
+    class one hundred five silent by design,
+    classes seventy-seven,
+    ninety-six,
+    one hundred one and one hundred two holding,
+    every check as `zheermao7`,
+    15 abstention lines,
+    Jev 25 of 25;
+    the reply label kept the archive's "one member ... immediately" for 那些秋叶的成员…连夜 on a 2 to 2 contest (every ballot calling the archive flawed) and a 1/1/1 slate with both lane texts on offer through the class forty path,
+    the eligible standing keeping its single round:
+    class one hundred six,
+    built (see the line above).
+    CUSPARIAKLSY10 READ (frozen `d2e39e095`):
+    SETTLED at 00:06 UTC 2026-09-24 in 7 min,
+    one attempt,
+    375 seats,
+    12 retry rounds,
+    0.18 USD by the meters;
+    class one hundred four live (the life in the past,
+    the slice 0 polish gate citing the house tense rule and no ballot calling the tense a change of meaning),
+    class one hundred five live (the bench dropped the gloss line again,
+    `name-gloss-restored` printed,
+    the gloss on the page after the nickname line),
+    classes seventy-five,
+    seventy-six,
+    eighty-five and ninety-six holding,
+    every check as `CuspariaKLSY8`,
+    13 abstention lines,
+    Jev 13 of 13;
+    observation,
+    not built:
+    the death paragraph shipped the repair lane's minimal edit (the fabricated method removed,
+    brain-dead restored) with the archive's own omissions (双方情绪爆发,
+    抢救,
+    又,
+    再次得到消息,
+    "by" for 于),
+    unendorsed;
+    the translate slate backed no candidate so the archive stood by the eligible-standing single round,
+    the contest chose repair 3 of 4,
+    the consolidation slate tied 1/1/0.5 and kept the standing;
+    open question for the owner:
+    whether an archive rendering the adjudicators found to fabricate a suicide method stays an eligible standing for the translate slate's single round.
+    CUSPARIAKLSY9 READ (frozen `334c02f23`):
+    SETTLED at 23:41 UTC 2026-09-23 in 4 min,
+    one attempt,
+    357 seats,
+    11 retry rounds,
+    0.16 USD by the meters;
+    no hold ran,
+    so class one hundred three not exercised (checkers 2 of 3 on the substitute and gpt-oss by the dry reading at the lanes boundary);
+    1 heading,
+    front matter equal,
+    no TA,
+    no error finish,
+    no double blank line,
+    7 abstention lines,
+    Jev 14 of 14;
+    but slice 0 shipped the archive's present tense because the polish gate refused GLM-5.3-Flash's past-tense polish 4 of 4 as "an unsupported change of meaning" with no house rule on its sheet (class one hundred four;
+    the slate before it split 1.5/1/1 with an eligible standing keeping its single round by the owner's addenda),
+    and slice 1 lost the archive's gloss line a third time on the judges' call,
+    the contest 4 to 1 for the gloss-less translate text and the slate endorsing it 4 of 5 (class one hundred five).
+    CLASSES ONE HUNDRED FOUR AND FIVE FIXED in d2e39e095:
+    `POLISH_GATE_HOUSE_RULES` (`polish-gate-house-rules.ts`,
+    "a tense the house rules set is not a change of meaning" plus `JUDGE_POLICY_BLOCK`) on the polish gate's sheet in both modes;
+    `restoreNameGlossLines` (`corpus-run/name-gloss-restore.ts`,
+    after the titles pass in `page-assembly-guard.ts`) restores the archive's “name” means … line after the name's first appearance in a replaced slice that carries the name unglossed,
+    finding `name-gloss-restored`;
+    guards red first 487cb2681,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class104-105.log`,
+    1105 PASS),
+    replayed over the real `CuspariaKLSY9` slice 1.
+    ZHEERMAO7 READ (frozen `6361d74d0`):
+    SETTLED at 23:20 UTC 2026-09-23 in 17 min,
+    one attempt,
+    972 seats,
+    32 retry rounds,
+    0.52 USD by the meters;
+    classes seventy-seven,
+    ninety-six,
+    one hundred one and one hundred two holding,
+    every check as `zheermao6`,
+    five slate-declined,
+    one gate-kept,
+    32 abstention lines,
+    Jev 28 of 28;
+    but Synthetic's window ran out at 23:15:27 UTC two minutes into the repair lane and the checker bench read once at the lanes boundary (two Synthetic-only seats) ran ten of twelve checker rounds and probes on gpt-oss alone,
+    short of quorum,
+    while the substitute a dry reading seats sat idle (class one hundred three);
+    fixed in 334c02f23 (the repair lane's per-chunk hook re-reads the seats under a hold and hands the driver a `RepairSliceSeating`,
+    kept once read;
+    `pass-reseat.ts`,
+    `repair-contract.ts`,
+    `document-lanes.ts`,
+    `repair-translation.ts`),
+    guards red first c036471c3,
+    lint 0/0,
+    types clean,
+    full suite `suite-class103.log`.
+    YINGYING7 READ (frozen `6361d74d0`):
+    SETTLED at 23:01 UTC 2026-09-23 in 19 min against yingying6's 4,
+    one attempt,
+    365 seats,
+    1 retry round,
+    0.08 USD by the meters;
+    classes eighty-six and ninety-seven holding,
+    classes one hundred one and one hundred two fine,
+    every check as `yingying6`,
+    one gate-kept (2),
+    3 abstention lines,
+    Jev 8 of 8;
+    no class;
+    the time is Synthetic's (wet again from 22:42 UTC,
+    GLM-5.3-Flash 19 streams at 50 s mean there,
+    1,270 s of grace across 80 rounds against 91 s),
+    the standing latency observation.
+    SHI_YUMIAOYA17 READ (frozen `6361d74d0`):
+    SETTLED at 22:42 UTC 2026-09-23 in 6 min,
+    one attempt,
+    879 seats,
+    33 retry rounds,
+    0.49 USD by the meters;
+    the closing quote as the archive's two lines (class one hundred two not exercised live:
+    no lane text refused on slice 16 this run,
+    the eligible standing shipped unjudged),
+    class one hundred one holding (the `[^1]` definition the page's last line,
+    the source's one marker),
+    the two page-assembly passes silent,
+    classes seventy-eight,
+    seventy-nine,
+    ninety-two,
+    ninety-five and ninety-six holding,
+    every check as `shi_Yumiaoya14`,
+    five slate-declined,
+    three gate-kept,
+    16 abstention lines,
+    Jev 22 of 22;
+    no class.
+    SHI_YUMIAOYA16 READ (frozen `314ca4b8c`):
+    SETTLED at 22:29 UTC 2026-09-23 in 6 min,
+    one attempt,
+    880 seats,
+    32 retry rounds,
+    0.60 USD by the meters;
+    class one hundred one live (the `[^1]` definition the page's last line,
+    both source markers on the page),
+    the two page-assembly passes silent,
+    classes seventy-eight,
+    seventy-nine,
+    ninety-two,
+    ninety-five and ninety-six holding,
+    every check as `shi_Yumiaoya14`,
+    one unendorsed (0),
+    13 abstention lines,
+    Jev 20 of 20;
+    but the closing quote shipped its Chinese line beside the English (three lines against the archive's two):
+    the repair lane text was refused as the standing on the class eighty pair bound and re-entered through the class forty lane offer,
+    whose rule ran without `lineStructured` (class one hundred two);
+    fixed in 6361d74d0 (`consolidate-lane-offer.ts` takes the flag,
+    `consolidate-driver.ts` passes it),
+    guard red first 404b5dada,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class102.log`,
+    1103 PASS),
+    replayed over the run's real slice 16 data;
+    open,
+    not built:
+    the repair lane's own floor let the three-line text into the contest.
+    SHI_YUMIAOYA15 READ (frozen `0f685f551`):
+    TALLY ERROR at 22:14 UTC 2026-09-23 in 7 min,
+    two attempts,
+    1,020 seats,
+    39 retry rounds,
+    0.53 USD by the meters,
+    no page or artifact;
+    "1 wording(s) the artifact says would ship are not in the page in slice order,
+    at slices 17 (237 characters)":
+    the source's `[^1]` definition,
+    inserted,
+    whose winning candidate ended in two spaces the insertion composer cuts while the wording check searched the raw text (class one hundred one);
+    fixed in 314ca4b8c (`published-page-check.ts`:
+    the scan searches the fragment body both splice paths leave on the page),
+    guard red first 4c36039b0,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class101.log`,
+    1103 PASS),
+    replayed over the run's real wording through `composeInsertion`;
+    the two page-assembly passes silent,
+    one unendorsed (16),
+    24 abstention lines,
+    Jev 25 of 25.
+    MIKAELA11 READ (frozen `0f685f551`):
+    SETTLED at 22:07 UTC 2026-09-23 in 11 min,
+    one attempt,
+    2,124 seats,
+    60 retry rounds,
+    1.07 USD by the meters;
+    the two page-assembly passes silent,
+    classes seventy to seventy-seven and ninety-six holding,
+    every check as `mikaela10`,
+    four unendorsed (0,
+    7,
+    12,
+    29),
+    67 abstention lines;
+    no class.
+    HULICAIJIA16 READ (frozen `0f685f551`):
+    SETTLED at 21:55 UTC 2026-09-23 in 27 min,
+    one attempt,
+    4,482 seats,
+    144 retry rounds,
+    3.81 USD by the meters;
+    the two page-assembly passes silent by design (the archive renders every heading,
+    no rewritten tag attribute),
+    classes eighty-four,
+    ninety-two,
+    ninety-five and ninety-six holding,
+    every check as `hulicaijia15` (13 headings,
+    18 markers,
+    9 definitions,
+    2 links,
+    3 Sakura,
+    front matter equal,
+    no TA,
+    no error finish,
+    no double blank line),
+    one unendorsed (35),
+    130 abstention lines;
+    no class.
+    XINGZ631 READ (frozen `5e21134ee`):
+    SETTLED at 21:22 UTC 2026-09-23 in 43 min,
+    one attempt,
+    8,077 seats,
+    244 retry rounds,
+    8.59 USD by the meters;
+    classes ninety-nine and one hundred live (one marker restored to `II`,
+    the six markers `II` to `VII`;
+    the pinyin credit "Ling Chong Qi Yuan" unified to "Zero-Layer Prayer";
+    the link,
+    the first credit and footnote 6 already carrying their headings' renderings),
+    classes eighty-eight to ninety-eight holding,
+    class ninety-four not exercised (the placeholder kept,
+    the fifth treatment in six runs;
+    the placeholder question stays open for the owner),
+    every structural check as `XingZ630`,
+    five unendorsed (18,
+    27,
+    54,
+    57,
+    65),
+    196 abstention lines;
     but the quote search read a TextRing tag's two quoted attributes as spans on slice 98 and stood aside without comparing (the page was right by the bench's own choice);
-    fixed in 0f685f551 (`title-reference-marks.ts`: a quote span after an attribute's equals sign is skipped, and among several spans the one already carrying the heading settles the reading), guard red first 1c67cb139, lint 0/0, types clean, full suite green (`suite-class100b.log`, 1103 PASS), replayed over the `XingZ631` artifact;
-    observations beside it, not built: the coined 螐 in two treatments on one page ("A little wun[^7]" and "螐儿", three runs, three treatments), the album 【妄想症Paranoia】 as "【Paranoia】" on the first credit and in full on the second.
-    XINGZ630 READ (frozen `2c3a80370`): SETTLED at 20:15 UTC 2026-09-23 in 76 min, one attempt, 8,436 seats, 326 retry rounds, 8.98 USD by the meters;
-    class ninety-eight live (one gemma-4-e2b candidate refused for 《九重现实》 in Han; both credits and the linked title in English, the second credit's Han in parentheses after the English),
-    class ninety-seven on the wire again (thirteen refusals, the page in the second person),
-    classes eighty-eight to ninety-three holding, class ninety-four not exercised (the review kept the placeholder this run, the fourth treatment in five runs; the placeholder question stays open for the owner),
-    every structural check as `XingZ629`, five unendorsed (17, 18, 27, 31, 40), 207 abstention lines;
-    but the marker series shipped `n="II"`, `n="5"` and `n="七"` where the archive writes Roman numerals (class ninety-nine) and 笼中之鸟 and 零重祈愿 reached the page in two English renderings each, the heading against the linked credit and the heading against footnote 6 (class one hundred; `XingZ629` had the same split on the Bird in a Cage link);
-    an observation beside them: the coined 螐 shipped as "A wu[^7] bird" where `XingZ629` kept the character (one run, not built).
-    CLASSES NINETY-NINE AND ONE HUNDRED FIXED: two page-assembly passes after the heading series pass;
-    `restoreJsxAttributes` (`corpus-run/jsx-attribute-restore.ts`, `tag-attributes.ts`) takes the archive's value of every quoted attribute where the page carries the archive slice's tags in order;
-    `unifyTitleReferences` (`corpus-run/title-reference-unify.ts`, `heading-title-lines.ts`, `title-reference-locate.ts`, `title-reference-scope.ts`) pairs every Han heading with its page rendering and rewrites each bracketed reference in a replaced slice to it, located by link destination, Han gloss, title brackets or quotes, the search held to the footnote's own line where the reference stands in a definition, reporting an ambiguous slice rather than guessing;
-    guards red first a86a3757e and a1ce2c580, fixed 2f8bcfe93 and 5e21134ee, lint 0/0, types clean, full suite green twice (`suite-class99-100b.log`, 1103 PASS), replayed over the real `XingZ629` and `XingZ630` artifacts (the markers to `V` and `VII`, the link, the Han credit and the footnote to their headings).
-    XINGZ629 READ (frozen `e78515f56`): SETTLED at 18:39 UTC 2026-09-23 in 50 min, one attempt, 8,350 seats, 286 retry rounds, 8.70 USD by the meters;
-    class ninety-seven on the wire (two minimax-m3 translate candidates refused on the meteor address, slices 111 and 115, the page addressing her in the second person),
-    classes eighty-eight to ninety-three holding, class ninety-four not exercised (the review revised the placeholder into an under-construction warning instead of removing it, the third treatment in four runs; the placeholder question stays open for the owner),
-    every structural check as `XingZ628`, eight unendorsed (three gate-kept, five slate-declined), 183 abstention lines;
-    but the second song credit shipped its title in Han, "《零重祈愿》", where `XingZ627` and `XingZ628` wrote "《Zero-Layer Prayer》" (class ninety-eight), the same flip as the Bird in a Cage link text on `XingZ619` and `XingZ628`;
-    an observation beside it: the first credit dropped the album name 【妄想症Paranoia】 the original carries (one run, not built).
-    CLASS NINETY-EIGHT FIXED: `hanTitleFindings` (`translate-han-title.ts`, `han-only-text.ts`) refuses before any judge a candidate that leaves a 《》-bracketed Han-only title standing bare (no English gloss in parentheses beside it) on a page that never wrote it, reading a 《[title](url)》 bracket by its link text;
-    the marker, address and title floors fold into `sourceCarryFindings` (`translate-source-carry.ts`); the policy's work-title bullet says a title is never left in Han as the work's name;
-    guards red first 5d58ca85c and 051e7b060, fixed 012cec9a1 and 2c3a80370, lint 0/0, types clean, full suite green (`suite-class98b.log`, 1101 PASS), replayed over the real `XingZ629` slice 101 and `XingZ628` slice 95 shipped texts (both refused) and the translated credits (accepted).
-    YINGYING6 READ (frozen `e78515f56`): SETTLED at 17:49 UTC 2026-09-23 in 4 min, one attempt, 327 seats, 9 retry rounds, 0.13 USD by the meters;
-    class ninety-seven live (the repair lane's "May she" won the contest and was refused by the floor, the standing withheld, the translate lane's "May you" shipped through the class forty offer, gate 3 to 1), class eighty-six holding, every check as `yingying4`; no class.
-    CUSPARIAKLSY8 READ (frozen `e78515f56`): SETTLED at 17:44 UTC 2026-09-23 in 10 min, one attempt, 383 seats, 11 retry rounds, 0.17 USD by the meters;
-    class ninety-seven silent by design (no 你 in the original), classes seventy-five, seventy-six, eighty-five and ninety-six holding (the gloss in the parenthetical form this run), every check as `CuspariaKLSY7`; no class.
-    ZHEERMAO6 READ (frozen `e78515f56`): SETTLED at 17:33 UTC 2026-09-23 in 12 min, one attempt, 958 seats, 34 retry rounds, 0.31 USD by the meters;
-    class ninety-seven not exercised (the bench kept "Thank you ... I'll treat you" itself, no refusal), classes seventy-seven and ninety-six holding, every check as `zheermao4`, the email conversation as the archive this run; no class.
-    YINGYING5 READ (frozen `c62ce70b3`): SETTLED at 17:11 UTC 2026-09-23 in 6 min, one attempt, 298 seats, 11 retry rounds, 0.21 USD by the meters;
-    classes eighty-six, ninety-two, ninety-five and ninety-six holding, every check as `yingying4`;
-    but the farewell shipped in the archive's third person ("May she still have...") where the original writes 你 and `yingying1` to `4` wrote "May you": the contest tied 2 to 2, the consolidation proposed "you", the gate kept the standing 2 to 1 on a ballot reading 你 as "she" (class ninety-seven).
-    CLASS NINETY-SEVEN FIXED: `translate-address-drop.ts` refuses, before any judge, a candidate carrying no second-person pronoun and a third-person one where the original writes 你 or 您 outside a greeting (comments cut; a pronoun-free rendering stays with the judges);
-    wired into `validateTranslatedSlice` after the marker floor; guard red first `8598cfaeb`, fix `e78515f56`, lint 0/0, types clean, full suite green (`suite-class97.log`, 1100 PASS).
-    SHI_YUMIAOYA14 READ (frozen `c62ce70b3`): SETTLED at 17:05 UTC 2026-09-23 in 9 min, one attempt, 880 seats, 38 retry rounds, 0.54 USD by the meters;
-    classes seventy-eight to eighty holding, every check as `shi_Yumiaoya13`, no unendorsed standing; no class.
-    MIKAELA10 READ (frozen `c62ce70b3`): SETTLED at 16:55 UTC 2026-09-23 in 15 min, one attempt, 2,336 seats, 65 retry rounds, 1.21 USD by the meters;
-    class ninety-six live ("𝓠𝓾𝓪𝓷’s classmate" curled, only the archive's four JSX path literals straight), classes seventy to seventy-seven holding, every check as `mikaela9`, two unendorsed (12, 19); no class.
-    MIKAELA9 READ (frozen `b26ea1990`): SETTLED at 16:35 UTC 2026-09-23 in 18 min, one attempt, 2,673 seats, 135 retry rounds, 1.23 USD by the meters;
-    classes seventy to seventy-seven holding, every check as `mikaela7`, one unendorsed (17);
-    but "𝓠𝓾𝓪𝓷's classmate" shipped with a straight apostrophe where the archive curls it: the restoration read the neighbour of a quote by UTF-16 unit and saw a lone surrogate (class ninety-six).
-    CLASS NINETY-SIX FIXED: `restore-typography.ts` reads the neighbours of a quote as whole code points (`codePointBefore`, `codePointAt`) and tests letters by general category;
-    guard red first `d8b284bf9`, fix `c62ce70b3`, lint 0/0, types clean, full suite green (`suite-class96.log`, 1099 PASS).
-    HULICAIJIA15 READ (frozen `b26ea1990`): SETTLED at 16:15 UTC 2026-09-23 in 37 min, one attempt, 4,697 seats, 125 retry rounds, 4.06 USD by the meters;
-    the roster paired 15 of 15 so the relabel closed on the definitions alone (class ninety-five not exercised live; its unit guards stand), no trim or revert, no marker-drop refusal;
-    every check as `hulicaijia13` (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no double blank), four unendorsed (1, 8, 29, 47), one gate-kept; no class.
-    HULICAIJIA14 READ (frozen `7295b33ab`): INCOMPLETE at 15:36 UTC 2026-09-23 in 22 min, one attempt, 4,111 seats, 135 retry rounds, 3.70 USD by the meters, no page;
-    stopped at slice 41 (the amantadine paragraph) slate-declined-standing: the roster's definition round paired 14 of 15 blocks, the map read off the definitions alone stayed open, the archive's labels stood while every lane wrote the original's,
+    fixed in 0f685f551 (`title-reference-marks.ts`:
+    a quote span after an attribute's equals sign is skipped,
+    and among several spans the one already carrying the heading settles the reading),
+    guard red first 1c67cb139,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class100b.log`,
+    1103 PASS),
+    replayed over the `XingZ631` artifact;
+    observations beside it,
+    not built:
+    the coined 螐 in two treatments on one page ("A little wun[^7]" and "螐儿",
+    three runs,
+    three treatments),
+    the album 【妄想症Paranoia】 as "【Paranoia】" on the first credit and in full on the second.
+    XINGZ630 READ (frozen `2c3a80370`):
+    SETTLED at 20:15 UTC 2026-09-23 in 76 min,
+    one attempt,
+    8,436 seats,
+    326 retry rounds,
+    8.98 USD by the meters;
+    class ninety-eight live (one gemma-4-e2b candidate refused for 《九重现实》 in Han;
+    both credits and the linked title in English,
+    the second credit's Han in parentheses after the English),
+    class ninety-seven on the wire again (thirteen refusals,
+    the page in the second person),
+    classes eighty-eight to ninety-three holding,
+    class ninety-four not exercised (the review kept the placeholder this run,
+    the fourth treatment in five runs;
+    the placeholder question stays open for the owner),
+    every structural check as `XingZ629`,
+    five unendorsed (17,
+    18,
+    27,
+    31,
+    40),
+    207 abstention lines;
+    but the marker series shipped `n="II"`,
+    `n="5"` and `n="七"` where the archive writes Roman numerals (class ninety-nine) and 笼中之鸟 and 零重祈愿 reached the page in two English renderings each,
+    the heading against the linked credit and the heading against footnote 6 (class one hundred;
+    `XingZ629` had the same split on the Bird in a Cage link);
+    an observation beside them:
+    the coined 螐 shipped as "A wu[^7] bird" where `XingZ629` kept the character (one run,
+    not built).
+    CLASSES NINETY-NINE AND ONE HUNDRED FIXED:
+    two page-assembly passes after the heading series pass;
+    `restoreJsxAttributes` (`corpus-run/jsx-attribute-restore.ts`,
+    `tag-attributes.ts`) takes the archive's value of every quoted attribute where the page carries the archive slice's tags in order;
+    `unifyTitleReferences` (`corpus-run/title-reference-unify.ts`,
+    `heading-title-lines.ts`,
+    `title-reference-locate.ts`,
+    `title-reference-scope.ts`) pairs every Han heading with its page rendering and rewrites each bracketed reference in a replaced slice to it,
+    located by link destination,
+    Han gloss,
+    title brackets or quotes,
+    the search held to the footnote's own line where the reference stands in a definition,
+    reporting an ambiguous slice rather than guessing;
+    guards red first a86a3757e and a1ce2c580,
+    fixed 2f8bcfe93 and 5e21134ee,
+    lint 0/0,
+    types clean,
+    full suite green twice (`suite-class99-100b.log`,
+    1103 PASS),
+    replayed over the real `XingZ629` and `XingZ630` artifacts (the markers to `V` and `VII`,
+    the link,
+    the Han credit and the footnote to their headings).
+    XINGZ629 READ (frozen `e78515f56`):
+    SETTLED at 18:39 UTC 2026-09-23 in 50 min,
+    one attempt,
+    8,350 seats,
+    286 retry rounds,
+    8.70 USD by the meters;
+    class ninety-seven on the wire (two minimax-m3 translate candidates refused on the meteor address,
+    slices 111 and 115,
+    the page addressing her in the second person),
+    classes eighty-eight to ninety-three holding,
+    class ninety-four not exercised (the review revised the placeholder into an under-construction warning instead of removing it,
+    the third treatment in four runs;
+    the placeholder question stays open for the owner),
+    every structural check as `XingZ628`,
+    eight unendorsed (three gate-kept,
+    five slate-declined),
+    183 abstention lines;
+    but the second song credit shipped its title in Han,
+    "《零重祈愿》",
+    where `XingZ627` and `XingZ628` wrote "《Zero-Layer Prayer》" (class ninety-eight),
+    the same flip as the Bird in a Cage link text on `XingZ619` and `XingZ628`;
+    an observation beside it:
+    the first credit dropped the album name 【妄想症Paranoia】 the original carries (one run,
+    not built).
+    CLASS NINETY-EIGHT FIXED:
+    `hanTitleFindings` (`translate-han-title.ts`,
+    `han-only-text.ts`) refuses before any judge a candidate that leaves a 《》-bracketed Han-only title standing bare (no English gloss in parentheses beside it) on a page that never wrote it,
+    reading a 《[title](url)》 bracket by its link text;
+    the marker,
+    address and title floors fold into `sourceCarryFindings` (`translate-source-carry.ts`);
+    the policy's work-title bullet says a title is never left in Han as the work's name;
+    guards red first 5d58ca85c and 051e7b060,
+    fixed 012cec9a1 and 2c3a80370,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class98b.log`,
+    1101 PASS),
+    replayed over the real `XingZ629` slice 101 and `XingZ628` slice 95 shipped texts (both refused) and the translated credits (accepted).
+    YINGYING6 READ (frozen `e78515f56`):
+    SETTLED at 17:49 UTC 2026-09-23 in 4 min,
+    one attempt,
+    327 seats,
+    9 retry rounds,
+    0.13 USD by the meters;
+    class ninety-seven live (the repair lane's "May she" won the contest and was refused by the floor,
+    the standing withheld,
+    the translate lane's "May you" shipped through the class forty offer,
+    gate 3 to 1),
+    class eighty-six holding,
+    every check as `yingying4`;
+    no class.
+    CUSPARIAKLSY8 READ (frozen `e78515f56`):
+    SETTLED at 17:44 UTC 2026-09-23 in 10 min,
+    one attempt,
+    383 seats,
+    11 retry rounds,
+    0.17 USD by the meters;
+    class ninety-seven silent by design (no 你 in the original),
+    classes seventy-five,
+    seventy-six,
+    eighty-five and ninety-six holding (the gloss in the parenthetical form this run),
+    every check as `CuspariaKLSY7`;
+    no class.
+    ZHEERMAO6 READ (frozen `e78515f56`):
+    SETTLED at 17:33 UTC 2026-09-23 in 12 min,
+    one attempt,
+    958 seats,
+    34 retry rounds,
+    0.31 USD by the meters;
+    class ninety-seven not exercised (the bench kept "Thank you ... I'll treat you" itself,
+    no refusal),
+    classes seventy-seven and ninety-six holding,
+    every check as `zheermao4`,
+    the email conversation as the archive this run;
+    no class.
+    YINGYING5 READ (frozen `c62ce70b3`):
+    SETTLED at 17:11 UTC 2026-09-23 in 6 min,
+    one attempt,
+    298 seats,
+    11 retry rounds,
+    0.21 USD by the meters;
+    classes eighty-six,
+    ninety-two,
+    ninety-five and ninety-six holding,
+    every check as `yingying4`;
+    but the farewell shipped in the archive's third person ("May she still have...") where the original writes 你 and `yingying1` to `4` wrote "May you":
+    the contest tied 2 to 2,
+    the consolidation proposed "you",
+    the gate kept the standing 2 to 1 on a ballot reading 你 as "she" (class ninety-seven).
+    CLASS NINETY-SEVEN FIXED:
+    `translate-address-drop.ts` refuses,
+    before any judge,
+    a candidate carrying no second-person pronoun and a third-person one where the original writes 你 or 您 outside a greeting (comments cut;
+    a pronoun-free rendering stays with the judges);
+    wired into `validateTranslatedSlice` after the marker floor;
+    guard red first `8598cfaeb`,
+    fix `e78515f56`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class97.log`,
+    1100 PASS).
+    SHI_YUMIAOYA14 READ (frozen `c62ce70b3`):
+    SETTLED at 17:05 UTC 2026-09-23 in 9 min,
+    one attempt,
+    880 seats,
+    38 retry rounds,
+    0.54 USD by the meters;
+    classes seventy-eight to eighty holding,
+    every check as `shi_Yumiaoya13`,
+    no unendorsed standing;
+    no class.
+    MIKAELA10 READ (frozen `c62ce70b3`):
+    SETTLED at 16:55 UTC 2026-09-23 in 15 min,
+    one attempt,
+    2,336 seats,
+    65 retry rounds,
+    1.21 USD by the meters;
+    class ninety-six live ("𝓠𝓾𝓪𝓷’s classmate" curled,
+    only the archive's four JSX path literals straight),
+    classes seventy to seventy-seven holding,
+    every check as `mikaela9`,
+    two unendorsed (12,
+    19);
+    no class.
+    MIKAELA9 READ (frozen `b26ea1990`):
+    SETTLED at 16:35 UTC 2026-09-23 in 18 min,
+    one attempt,
+    2,673 seats,
+    135 retry rounds,
+    1.23 USD by the meters;
+    classes seventy to seventy-seven holding,
+    every check as `mikaela7`,
+    one unendorsed (17);
+    but "𝓠𝓾𝓪𝓷's classmate" shipped with a straight apostrophe where the archive curls it:
+    the restoration read the neighbour of a quote by UTF-16 unit and saw a lone surrogate (class ninety-six).
+    CLASS NINETY-SIX FIXED:
+    `restore-typography.ts` reads the neighbours of a quote as whole code points (`codePointBefore`,
+    `codePointAt`) and tests letters by general category;
+    guard red first `d8b284bf9`,
+    fix `c62ce70b3`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class96.log`,
+    1099 PASS).
+    HULICAIJIA15 READ (frozen `b26ea1990`):
+    SETTLED at 16:15 UTC 2026-09-23 in 37 min,
+    one attempt,
+    4,697 seats,
+    125 retry rounds,
+    4.06 USD by the meters;
+    the roster paired 15 of 15 so the relabel closed on the definitions alone (class ninety-five not exercised live;
+    its unit guards stand),
+    no trim or revert,
+    no marker-drop refusal;
+    every check as `hulicaijia13` (13 headings,
+    18 markers,
+    9 definitions,
+    2 links,
+    3 Sakura,
+    front matter equal,
+    no TA,
+    no double blank),
+    four unendorsed (1,
+    8,
+    29,
+    47),
+    one gate-kept;
+    no class.
+    HULICAIJIA14 READ (frozen `7295b33ab`):
+    INCOMPLETE at 15:36 UTC 2026-09-23 in 22 min,
+    one attempt,
+    4,111 seats,
+    135 retry rounds,
+    3.70 USD by the meters,
+    no page;
+    stopped at slice 41 (the amantadine paragraph) slate-declined-standing:
+    the roster's definition round paired 14 of 15 blocks,
+    the map read off the definitions alone stayed open,
+    the archive's labels stood while every lane wrote the original's,
     the assemblies trimmed and reverted `[^7]` to `[^9]` as orphans and the class ninety-two floor refused the archive's own `[^8]` paragraph as a drop of the original's `[^7]` (class ninety-five).
-    CLASS NINETY-FIVE FIXED: `readClosedRelabel` (`corpus-run/pass-footnote-relabel-read.ts`) closes the definitions' map and, where it stays open, reads the paired slices beside them through `widenFootnoteRelabel` (`archive-footnote-relabel-widen.ts`), every relation through the one consistency check;
-    guard red first `9de98e427`, fix `b26ea1990`, lint 0/0, types clean, full suite green (`suite-class95.log`, 1099 PASS).
-    XINGZ628 READ (frozen `7295b33ab`): SETTLED at 15:10 UTC 2026-09-23 in 51 min, one attempt, 8,487 seats, 256 retry rounds, 9.06 USD by the meters;
-    class ninety-four live (the placeholder removed again, one blank line after the front matter), classes ninety-two and ninety-three again, class eighty-two exercised live (a translate run-off narrowed 3 to 2, no stop);
-    every structural check as `XingZ627`, three unendorsed (7, 19, 26), no gate-kept; no class.
-    OPEN QUESTION FOR THE OWNER: the archive block review removed the archive's placeholder line "**Come back later!**" 5 of 6 on `XingZ627` (kept on `XingZ626`) while keeping the two alert lines beside it;
-    the review's sheet lets reviewers class translation-side apparatus as "editorial-context" and keep it, so whether the maintainers' placeholder counts as apparatus is the owner's call.
-    XINGZ627 READ (frozen `9c83fb5f7`): SETTLED at 14:09 UTC 2026-09-23 in 56 min, one attempt, 8,948 seats, 447 retry rounds, 9.08 USD by the meters;
-    class ninety-two live (nine definitions, "Transcend Lights[^3]" on the page, two marker-less candidates refused, the repair text lost the contest 4 of 4 for the omitted note),
-    class ninety-three on the wire (deepseek on Morph 1,276 streams at 5.0 s, GLM-5.3-Flash on Wafer 385 at 8.5 s, refiner rounds 9.5 s against 101, the entry 56 min against 3h30m);
-    classes eighty-eight to ninety-one again; every structural check as `XingZ626` but a double blank line after the front matter where the review removed the placeholder line (class ninety-four).
-    CLASS NINETY-FOUR FIXED: `repairArchiveBlocks` cuts a removed block with the line endings that follow it (or precede it at the document's end);
-    guard red first `64cda7e31`, fix `7295b33ab`, lint 0/0, types clean, full suite green (`suite-class94.log`, 1097 PASS).
-    XINGZ626 READ (frozen `5fd39cdcc`): SETTLED at 12:53 UTC 2026-09-23 in 3h30m, one attempt, 9,277 seats, 507 retry rounds, 12.30 USD by the meters;
-    classes ninety and ninety-one live (ten headings by name whatever leader the bench wrote; deepseek on Morph 847 streams at 6.2 s, 2 cap cuts against 450);
-    classes eighty-eight and eighty-nine again; every structural check as `XingZ625` but eight definitions:
-    the song line's `[^3]` dropped by the repair lane's text, chosen at the contest and kept by the gate, the tail-translated note trimmed as an orphan (class ninety-two);
-    the price sort on DekaLLM and Sail Research for deepseek and on Together for GLM-5.3-Flash, endpoints that reason at length by default (class ninety-three).
-    CLASSES NINETY-TWO AND NINETY-THREE FIXED: `translate-marker-drop.ts` refuses a candidate citing fewer notes than the ORIGINAL passage (wired into `validateTranslatedSlice`);
-    OpenRouter cards carry `preferredEndpoints` sent as `provider.order` with fallbacks (deepseek-v4.1-flash names Morph, `dekallm` and `sail-research` ignored too; GLM-5.3-Flash names Wafer);
-    guards red first `78e67b8c5`, fix `9c83fb5f7`, fixture `feee49cb9`, lint 0/0, types clean, full suite green (`suite-class92-93b.log`).
-    XINGZ625 READ (frozen `d8f847e3c`): SETTLED at 09:12 UTC 2026-09-23 in 6h54m, one attempt, 8,812 seats, 521 retry rounds, 10.08 USD by the meters;
-    class eighty-eight live (Jinxin glossed in the Part Ten heading, bare on the signature; Yuli never glossed by the bench so left alone),
-    class eighty-nine live (nine headings unified to the archive's bare style), class eighty-seven not exercised (the TextRing tag endorsed, sole candidate, shipped unchanged);
-    every structural check as `XingZ624`, four unendorsed standings (2, 31, 42, 75), 264 abstention lines;
-    class ninety (the tenth heading kept "Poem Ten:" because the ordinal reader's leader table lacked "Poem")
-    and class ninety-one (deepseek-v4.1-flash on OpenInference at 116 s a stream, 738 of 761 streams, 450 cap-cut replies, 87 of 164 editor rounds hearing nobody; `XingZ624` had 324 streams there at 137 s).
-    CLASSES NINETY AND NINETY-ONE FIXED in 5fd39cdcc: `readOrdinalStyle` reads any words before a number word as the leader (no table), `renderOrdinal` capitalises every leader word;
+    CLASS NINETY-FIVE FIXED:
+    `readClosedRelabel` (`corpus-run/pass-footnote-relabel-read.ts`) closes the definitions' map and,
+    where it stays open,
+    reads the paired slices beside them through `widenFootnoteRelabel` (`archive-footnote-relabel-widen.ts`),
+    every relation through the one consistency check;
+    guard red first `9de98e427`,
+    fix `b26ea1990`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class95.log`,
+    1099 PASS).
+    XINGZ628 READ (frozen `7295b33ab`):
+    SETTLED at 15:10 UTC 2026-09-23 in 51 min,
+    one attempt,
+    8,487 seats,
+    256 retry rounds,
+    9.06 USD by the meters;
+    class ninety-four live (the placeholder removed again,
+    one blank line after the front matter),
+    classes ninety-two and ninety-three again,
+    class eighty-two exercised live (a translate run-off narrowed 3 to 2,
+    no stop);
+    every structural check as `XingZ627`,
+    three unendorsed (7,
+    19,
+    26),
+    no gate-kept;
+    no class.
+    OPEN QUESTION FOR THE OWNER:
+    the archive block review removed the archive's placeholder line "**Come back later!**" 5 of 6 on `XingZ627` (kept on `XingZ626`) while keeping the two alert lines beside it;
+    the review's sheet lets reviewers class translation-side apparatus as "editorial-context" and keep it,
+    so whether the maintainers' placeholder counts as apparatus is the owner's call.
+    XINGZ627 READ (frozen `9c83fb5f7`):
+    SETTLED at 14:09 UTC 2026-09-23 in 56 min,
+    one attempt,
+    8,948 seats,
+    447 retry rounds,
+    9.08 USD by the meters;
+    class ninety-two live (nine definitions,
+    "Transcend Lights[^3]" on the page,
+    two marker-less candidates refused,
+    the repair text lost the contest 4 of 4 for the omitted note),
+    class ninety-three on the wire (deepseek on Morph 1,276 streams at 5.0 s,
+    GLM-5.3-Flash on Wafer 385 at 8.5 s,
+    refiner rounds 9.5 s against 101,
+    the entry 56 min against 3h30m);
+    classes eighty-eight to ninety-one again;
+    every structural check as `XingZ626` but a double blank line after the front matter where the review removed the placeholder line (class ninety-four).
+    CLASS NINETY-FOUR FIXED:
+    `repairArchiveBlocks` cuts a removed block with the line endings that follow it (or precede it at the document's end);
+    guard red first `64cda7e31`,
+    fix `7295b33ab`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class94.log`,
+    1097 PASS).
+    XINGZ626 READ (frozen `5fd39cdcc`):
+    SETTLED at 12:53 UTC 2026-09-23 in 3h30m,
+    one attempt,
+    9,277 seats,
+    507 retry rounds,
+    12.30 USD by the meters;
+    classes ninety and ninety-one live (ten headings by name whatever leader the bench wrote;
+    deepseek on Morph 847 streams at 6.2 s,
+    2 cap cuts against 450);
+    classes eighty-eight and eighty-nine again;
+    every structural check as `XingZ625` but eight definitions:
+    the song line's `[^3]` dropped by the repair lane's text,
+    chosen at the contest and kept by the gate,
+    the tail-translated note trimmed as an orphan (class ninety-two);
+    the price sort on DekaLLM and Sail Research for deepseek and on Together for GLM-5.3-Flash,
+    endpoints that reason at length by default (class ninety-three).
+    CLASSES NINETY-TWO AND NINETY-THREE FIXED:
+    `translate-marker-drop.ts` refuses a candidate citing fewer notes than the ORIGINAL passage (wired into `validateTranslatedSlice`);
+    OpenRouter cards carry `preferredEndpoints` sent as `provider.order` with fallbacks (deepseek-v4.1-flash names Morph,
+    `dekallm` and `sail-research` ignored too;
+    GLM-5.3-Flash names Wafer);
+    guards red first `78e67b8c5`,
+    fix `9c83fb5f7`,
+    fixture `feee49cb9`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class92-93b.log`).
+    XINGZ625 READ (frozen `d8f847e3c`):
+    SETTLED at 09:12 UTC 2026-09-23 in 6h54m,
+    one attempt,
+    8,812 seats,
+    521 retry rounds,
+    10.08 USD by the meters;
+    class eighty-eight live (Jinxin glossed in the Part Ten heading,
+    bare on the signature;
+    Yuli never glossed by the bench so left alone),
+    class eighty-nine live (nine headings unified to the archive's bare style),
+    class eighty-seven not exercised (the TextRing tag endorsed,
+    sole candidate,
+    shipped unchanged);
+    every structural check as `XingZ624`,
+    four unendorsed standings (2,
+    31,
+    42,
+    75),
+    264 abstention lines;
+    class ninety (the tenth heading kept "Poem Ten:"
+    because the ordinal reader's leader table lacked "Poem")
+    and class ninety-one (deepseek-v4.1-flash on OpenInference at 116 s a stream,
+    738 of 761 streams,
+    450 cap-cut replies,
+    87 of 164 editor rounds hearing nobody;
+    `XingZ624` had 324 streams there at 137 s).
+    CLASSES NINETY AND NINETY-ONE FIXED in 5fd39cdcc:
+    `readOrdinalStyle` reads any words before a number word as the leader (no table),
+    `renderOrdinal` capitalises every leader word;
     `open-inference` on deepseek-v4.1-flash's `ignoredEndpoints` with the two-run measurement beside it;
-    guards red first 488f50a49, assertions pinned 9a011f9d8, lint 0/0, types clean, full suite green (`suite-class90-91b.log`).
-    XINGZ624 READ (frozen `da02857b1`): SETTLED at 02:06 UTC 2026-09-23 in 4h23m, one attempt, 8,302 seats, 331 retry rounds, 11.12 USD by the meters;
-    class eighty-seven live (the bare TextRing slice 88: "the lane texts alone go to the slate judges", the translate text chosen and gated, terminal consolidated, the tag on the page, no stop);
-    every structural check as `XingZ622`, six unendorsed standings all slate-declined, none gate-kept, 301 abstention lines;
-    class eighty-three live (Jinxin, Yuli, Jiecheng Tianzou one reading each, no Han) but the gloss on the second appearance of Jinxin and of Yuli (class eighty-eight),
+    guards red first 488f50a49,
+    assertions pinned 9a011f9d8,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class90-91b.log`).
+    XINGZ624 READ (frozen `da02857b1`):
+    SETTLED at 02:06 UTC 2026-09-23 in 4h23m,
+    one attempt,
+    8,302 seats,
+    331 retry rounds,
+    11.12 USD by the meters;
+    class eighty-seven live (the bare TextRing slice 88:
+    "the lane texts alone go to the slate judges",
+    the translate text chosen and gated,
+    terminal consolidated,
+    the tag on the page,
+    no stop);
+    every structural check as `XingZ622`,
+    six unendorsed standings all slate-declined,
+    none gate-kept,
+    301 abstention lines;
+    class eighty-three live (Jinxin,
+    Yuli,
+    Jiecheng Tianzou one reading each,
+    no Han) but the gloss on the second appearance of Jinxin and of Yuli (class eighty-eight),
     and every ordinal dropped from the ten headings on a three-of-ten plurality where `XingZ622` had written Part One to Part Ten over the same archive (class eighty-nine).
-    CLASSES EIGHTY-EIGHT AND EIGHTY-NINE FIXED: `placeHandleGlosses` (`corpus-run/handle-gloss-place.ts`, after the name restore, before the heading unifier) moves the gloss the bench wrote to a handle's first appearance among the replaced slices and strips it after;
-    `unifyHeadingSeries` takes the archive's style where the archive heads two or more of the series in one style, the plurality deciding only where the archive never headed it;
-    guards red first `b90c29132`, fix `d8f847e3c`, lint 0/0, types clean, full suite green (`suite-class88-89.log`, 1096 PASS).
-    XINGZ623 READ (frozen `40679244d`): INCOMPLETE at 21:32 UTC after 3h01m, 8,163 seats, 257 retry rounds, 10.41 USD by the meters, no page and no artifact;
-    `slice 89 did not meet absolute naturalness floor` at publish: the bare `<TextRing/>` slice (an admitted tail slice, no archive text) had its translate rendering accepted 4.5 of 5,
-    the contest declined both lanes 4 of 4 as non-linguistic markup, the declined contest left the empty string standing, and both empty-standing exits ran ahead of the class forty lane-text offer (class eighty-seven).
-    CLASS EIGHTY-SEVEN FIXED: the exits in `consolidate-slice-buy.ts` and `consolidate-settle.ts` apply only with no lane text to offer; with one, the lane texts alone go to the slate judges through the ineligible-standing path;
-    guard red first `daf73f3dc`, fix `da02857b1`, lint 0/0, types clean, full suite green (`suite-class87.log`, 1095 PASS).
-    Class eighty-three live in `XingZ623`'s lane texts ("### No. 10: Jinxin (Brocade Heart)", "——Jinxin, February 10, 2025", "— Yuli (Rain Raccoon)", "by Jiecheng Tianzou Official"); the page never assembled, so its one-way rendering is `XingZ624`'s read.
-    YINGYING4 READ (frozen `40679244d`): SETTLED at 18:30 UTC in 23 min, 326 seats, 15 retry rounds, 0.23 USD by the meters;
-    class eighty-six live (the second definition "[Farewell. I miss you, Yingying.]", both lanes agreed, a slate ballot citing the glossary line's "declared form inside the title");
-    every check as `yingying3`, no unendorsed or gate-kept standing, 3 abstention lines; the `[^2]` marker on its own line renders as the archive's "world! [^2]".
-    YINGYING3 READ (frozen `7ad1b8ec7`): SETTLED at 17:56 UTC in 14 min, 268 seats, 8 retry rounds, 0.16 USD by the meters;
-    every check as `yingying2` and the farewell in the second person, but the blog title definition shipped the archive's "Sakura" for the declared "Yingying" (class eighty-six).
-    CLASS EIGHTY-SIX FIXED: `linked-title-declared-name.ts` pairs the front matter's declared forms and the page-name glossary line for a linked title that names a declared person says which form the title takes;
-    guards red first `751504ac8`, fix `40679244d`, lint 0/0, types clean, full suite green (`suite-class86.log`).
-    ZHEERMAO4 READ (frozen `7ad1b8ec7`, entry `zheermao101`): SETTLED at 17:40 UTC in 32 min, 902 seats, 31 retry rounds, 0.70 USD by the meters;
-    no class; the Arts letter kept as the archive and the reply revised from the transcript (the other way round from `zheermao3`, both the review's call on a picture block);
-    every check as the archive, one gate-kept unendorsed standing (slice 12, a 2 to 2 gate tie over "still"), 11 abstention lines.
-    CUSPARIAKLSY7 READ (frozen `7ad1b8ec7`): SETTLED at 17:08 UTC in 22 min, 405 seats, 5 retry rounds, 0.12 USD by the meters;
-    class eighty-five live: the gloss on the page beside the nickname line and every line of the life in the past, no gate-kept or unendorsed standing on any slice;
-    every check as `CuspariaKLSY5`, 16 abstention lines.
-    CUSPARIAKLSY6 READ (frozen `59fe52b51`): SETTLED at 16:33 UTC in 16 min, 413 seats, 14 retry rounds, 0.22 USD by the meters;
-    every check as `CuspariaKLSY5` and the gloss line back, but slice 1 gate-kept and unendorsed in the archive's present tense:
-    every consolidation dropped the gloss as "nothing added", the slate chose one 4.5 of 6, the gate refused it 3 to 2 for dropping page content (class eighty-five).
-    CLASS EIGHTY-FIVE FIXED: `page-apparatus-clause.ts` (one wording: what the page carries and the original is silent about is kept, carrying it adds nothing, leaving it out drops page content)
-    on the slate faithfulness criterion, the consolidation and translate writers and `CONTEST_POLICY`;
+    CLASSES EIGHTY-EIGHT AND EIGHTY-NINE FIXED:
+    `placeHandleGlosses` (`corpus-run/handle-gloss-place.ts`,
+    after the name restore,
+    before the heading unifier) moves the gloss the bench wrote to a handle's first appearance among the replaced slices and strips it after;
+    `unifyHeadingSeries` takes the archive's style where the archive heads two or more of the series in one style,
+    the plurality deciding only where the archive never headed it;
+    guards red first `b90c29132`,
+    fix `d8f847e3c`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class88-89.log`,
+    1096 PASS).
+    XINGZ623 READ (frozen `40679244d`):
+    INCOMPLETE at 21:32 UTC after 3h01m,
+    8,163 seats,
+    257 retry rounds,
+    10.41 USD by the meters,
+    no page and no artifact;
+    `slice 89 did not meet absolute naturalness floor` at publish:
+    the bare `<TextRing/>` slice (an admitted tail slice,
+    no archive text) had its translate rendering accepted 4.5 of 5,
+    the contest declined both lanes 4 of 4 as non-linguistic markup,
+    the declined contest left the empty string standing,
+    and both empty-standing exits ran ahead of the class forty lane-text offer (class eighty-seven).
+    CLASS EIGHTY-SEVEN FIXED:
+    the exits in `consolidate-slice-buy.ts` and `consolidate-settle.ts` apply only with no lane text to offer;
+    with one,
+    the lane texts alone go to the slate judges through the ineligible-standing path;
+    guard red first `daf73f3dc`,
+    fix `da02857b1`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class87.log`,
+    1095 PASS).
+    Class eighty-three live in `XingZ623`'s lane texts ("### No. 10:
+    Jinxin (Brocade Heart)",
+    "——Jinxin,
+    February 10,
+    2025",
+    "— Yuli (Rain Raccoon)",
+    "by Jiecheng Tianzou Official");
+    the page never assembled,
+    so its one-way rendering is `XingZ624`'s read.
+    YINGYING4 READ (frozen `40679244d`):
+    SETTLED at 18:30 UTC in 23 min,
+    326 seats,
+    15 retry rounds,
+    0.23 USD by the meters;
+    class eighty-six live (the second definition "[Farewell.
+    I miss you,
+    Yingying.]",
+    both lanes agreed,
+    a slate ballot citing the glossary line's "declared form inside the title");
+    every check as `yingying3`,
+    no unendorsed or gate-kept standing,
+    3 abstention lines;
+    the `[^2]` marker on its own line renders as the archive's "world!
+    [^2]".
+    YINGYING3 READ (frozen `7ad1b8ec7`):
+    SETTLED at 17:56 UTC in 14 min,
+    268 seats,
+    8 retry rounds,
+    0.16 USD by the meters;
+    every check as `yingying2` and the farewell in the second person,
+    but the blog title definition shipped the archive's "Sakura" for the declared "Yingying" (class eighty-six).
+    CLASS EIGHTY-SIX FIXED:
+    `linked-title-declared-name.ts` pairs the front matter's declared forms and the page-name glossary line for a linked title that names a declared person says which form the title takes;
+    guards red first `751504ac8`,
+    fix `40679244d`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class86.log`).
+    ZHEERMAO4 READ (frozen `7ad1b8ec7`,
+    entry `zheermao101`):
+    SETTLED at 17:40 UTC in 32 min,
+    902 seats,
+    31 retry rounds,
+    0.70 USD by the meters;
+    no class;
+    the Arts letter kept as the archive and the reply revised from the transcript (the other way round from `zheermao3`,
+    both the review's call on a picture block);
+    every check as the archive,
+    one gate-kept unendorsed standing (slice 12,
+    a 2 to 2 gate tie over "still"),
+    11 abstention lines.
+    CUSPARIAKLSY7 READ (frozen `7ad1b8ec7`):
+    SETTLED at 17:08 UTC in 22 min,
+    405 seats,
+    5 retry rounds,
+    0.12 USD by the meters;
+    class eighty-five live:
+    the gloss on the page beside the nickname line and every line of the life in the past,
+    no gate-kept or unendorsed standing on any slice;
+    every check as `CuspariaKLSY5`,
+    16 abstention lines.
+    CUSPARIAKLSY6 READ (frozen `59fe52b51`):
+    SETTLED at 16:33 UTC in 16 min,
+    413 seats,
+    14 retry rounds,
+    0.22 USD by the meters;
+    every check as `CuspariaKLSY5` and the gloss line back,
+    but slice 1 gate-kept and unendorsed in the archive's present tense:
+    every consolidation dropped the gloss as "nothing added",
+    the slate chose one 4.5 of 6,
+    the gate refused it 3 to 2 for dropping page content (class eighty-five).
+    CLASS EIGHTY-FIVE FIXED:
+    `page-apparatus-clause.ts` (one wording:
+    what the page carries and the original is silent about is kept,
+    carrying it adds nothing,
+    leaving it out drops page content)
+    on the slate faithfulness criterion,
+    the consolidation and translate writers and `CONTEST_POLICY`;
     the consolidation writer's tense rule names the house rule's past first;
-    guards red first `7e433ff86`, fix `7ad1b8ec7`, lint 0/0, types clean, full suite green (`suite-class85.log`, 1095 PASS).
-    OBSERVATION: the repair lane's editors left a three-newline run where they deleted the gloss line; the lane lost, no floor reads an internal blank run; recorded in the pass log, not fixed.
-    HULICAIJIA13 READ (frozen `59fe52b51`): SETTLED at 16:16 UTC in 68 min, 4,497 seats, 147 retry rounds, 4.90 USD by the meters;
-    class eighty-four live: two removals of the `[^10]` Nayuki note withheld with `unresolved-reference gfm 10`,
-    the one admissible revision ("renamed Naixue", the body's spelling) chosen, the note on the page with its marker;
-    every check as `hulicaijia9` (18 markers, 9 definitions), two unendorsed (3, 58) both gate-kept, 129 abstention lines.
-    HULICAIJIA12 READ (frozen `4e5cf65e0`): SETTLED at 14:57 UTC in 79 min, 4,577 seats, 149 retry rounds, 4.96 USD by the meters;
+    guards red first `7e433ff86`,
+    fix `7ad1b8ec7`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class85.log`,
+    1095 PASS).
+    OBSERVATION:
+    the repair lane's editors left a three-newline run where they deleted the gloss line;
+    the lane lost,
+    no floor reads an internal blank run;
+    recorded in the pass log,
+    not fixed.
+    HULICAIJIA13 READ (frozen `59fe52b51`):
+    SETTLED at 16:16 UTC in 68 min,
+    4,497 seats,
+    147 retry rounds,
+    4.90 USD by the meters;
+    class eighty-four live:
+    two removals of the `[^10]` Nayuki note withheld with `unresolved-reference gfm 10`,
+    the one admissible revision ("renamed Naixue",
+    the body's spelling) chosen,
+    the note on the page with its marker;
+    every check as `hulicaijia9` (18 markers,
+    9 definitions),
+    two unendorsed (3, 58) both gate-kept,
+    129 abstention lines.
+    HULICAIJIA12 READ (frozen `4e5cf65e0`):
+    SETTLED at 14:57 UTC in 79 min,
+    4,577 seats,
+    149 retry rounds,
+    4.96 USD by the meters;
     every check as `hulicaijia9` except 17 markers and 8 definitions:
     the archive block review removed the translator's `[^10]` note (5 of 5 "unsupported by the original") and its marker stayed in the body,
     the page footnote guard reading against the revised archive (class eighty-four);
-    six unendorsed (3, 12, 18, 34, 50, 55), four gate-kept, two slate-declined, 129 abstention lines, no restore line.
-    CLASS EIGHTY-FOUR FIXED: `archive-revision-footnotes.ts` judges each revision against the whole page it would leave
+    six unendorsed (3,
+    12,
+    18,
+    34,
+    50,
+    55),
+    four gate-kept,
+    two slate-declined,
+    129 abstention lines,
+    no restore line.
+    CLASS EIGHTY-FOUR FIXED:
+    `archive-revision-footnotes.ts` judges each revision against the whole page it would leave
     (`introducedFootnoteFindings` against the unrevised archive) and withholds one that introduces a footnote defect;
-    guard red first `27845568a`, fix `59fe52b51`, lint 0/0, types clean, full suite green (`suite-class84.log`).
-    CLASS EIGHTY-THREE AMENDED (owner 2026-09-22 13:35 UTC: syllable groups, "Jiechengtianzou is not fine"):
-    the reading pairs the syllables, capitalised, a lone trailing syllable by itself (Jiecheng Tianzou);
-    guards `790719ea3`, fix `4e5cf65e0`, lint 0/0, types clean, guard suites green, full suite `suite-class83c.log`.
-    HULICAIJIA11 KILLED at 13:38 UTC ten minutes in (preparation, 0.04 USD) under always-kill-and-relaunch.
-    THE EARLIER HULICAIJIA11 LAUNCH NOTE: HULICAIJIA11 RAN (frozen `fa014fc55`,
+    guard red first `27845568a`,
+    fix `59fe52b51`,
+    lint 0/0,
+    types clean,
+    full suite green (`suite-class84.log`).
+    CLASS EIGHTY-THREE AMENDED (owner 2026-09-22 13:35 UTC:
+    syllable groups,
+    "Jiechengtianzou is not fine"):
+    the reading pairs the syllables,
+    capitalised,
+    a lone trailing syllable by itself (Jiecheng Tianzou);
+    guards `790719ea3`,
+    fix `4e5cf65e0`,
+    lint 0/0,
+    types clean,
+    guard suites green,
+    full suite `suite-class83c.log`.
+    HULICAIJIA11 KILLED at 13:38 UTC ten minutes in (preparation,
+    0.04 USD) under always-kill-and-relaunch.
+    THE EARLIER HULICAIJIA11 LAUNCH NOTE:
+    HULICAIJIA11 RAN (frozen `fa014fc55`,
     pid 2057750,
     launched 13:28 UTC 2026-09-22,
     waiter `bfokdo0kk`,
     meters 107.57 USD Bedrock and 157.58 OpenRouter at launch):
     read by the seven steps and three checks against `hulicaijia9`
-    (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, "Conflict" for 左右, front matter equal, no TA, no error finish),
+    (13 headings,
+    17 tag markers,
+    18 footnote markers,
+    9 definitions,
+    2 links,
+    3 Sakura,
+    "Conflict" for 左右,
+    front matter equal,
+    no TA,
+    no error finish),
     plus any `contributor-name-restored` line naming the pinyin reading (class eighty-three);
-    record under a new heading above "## Class eighty-three built, 2026-09-22, 13:30 UTC" in the pass log.
-    Then `CuspariaKLSY`, `zheermao`, `yingying`, one at a time,
+    record under a new heading above "## Class eighty-three built,
+    2026-09-22,
+    13:30 UTC" in the pass log.
+    Then `CuspariaKLSY`,
+    `zheermao`,
+    `yingying`,
+    one at a time,
     then `XingZ60` again to read class eighty-three live
-    (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiechengtianzou Official" on the Caged Bird attribution, the gloss at the first appearance).
-    CLASS EIGHTY-THREE BUILT (owner 2026-09-22 13:25 UTC: "A, and put the literal translation in parens"):
-    a handle with no declared, archive or corpus rendering is pinyin as one capitalised word with its literal meaning in parentheses at its first appearance, never left in Han, one way across the page;
-    the house-policy bullet, `handle-reading.ts` (pinyin-pro), `contributor-name-authorities.ts` (every signer takes an authority: archive, else the page's non-Han signature, else the pinyin reading), the restore tolerating a gloss, `attribution-line.ts` ending a name at 【 or 《;
-    guards red first `3474e062f`, fix `fa014fc55`, lint 0/0, types clean, full suite green;
+    (Part Ten heading and signature "Jinxin",
+    the song credits "Yuli" one way,
+    "by Jiechengtianzou Official" on the Caged Bird attribution,
+    the gloss at the first appearance).
+    CLASS EIGHTY-THREE BUILT (owner 2026-09-22 13:25 UTC:
+    "A,
+    and put the literal translation in parens"):
+    a handle with no declared,
+    archive or corpus rendering is pinyin as one capitalised word with its literal meaning in parentheses at its first appearance,
+    never left in Han,
+    one way across the page;
+    the house-policy bullet,
+    `handle-reading.ts` (pinyin-pro),
+    `contributor-name-authorities.ts` (every signer takes an authority:
+    archive,
+    else the page's non-Han signature,
+    else the pinyin reading),
+    the restore tolerating a gloss,
+    `attribution-line.ts` ending a name at 【 or 《;
+    guards red first `3474e062f`,
+    fix `fa014fc55`,
+    lint 0/0,
+    types clean,
+    full suite green;
     the owner may veto the one-word joining of a multi-character handle (the option's example had written "Jiecheng Tianzou").
-    HULICAIJIA10 KILLED at 13:28 UTC 14 minutes in (repair lane chunk 28 of 50, 0.28 USD) under always-kill-and-relaunch.
-    THE EARLIER HULICAIJIA10 LAUNCH NOTE: HULICAIJIA10 RAN (frozen `6c701485d`,
+    HULICAIJIA10 KILLED at 13:28 UTC 14 minutes in (repair lane chunk 28 of 50,
+    0.28 USD) under always-kill-and-relaunch.
+    THE EARLIER HULICAIJIA10 LAUNCH NOTE:
+    HULICAIJIA10 RAN (frozen `6c701485d`,
     pid 2018636,
     launched 13:14 UTC 2026-09-22,
     waiter `bo0aplgcp`,
     meters 107.68 USD Bedrock and 157.75 OpenRouter at launch):
     read by the seven steps and three checks against `hulicaijia9`
-    (13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, "Conflict" for 左右, front matter equal, no TA, no error finish);
-    record under a new heading above "## XingZ622 read, 2026-09-22, 13:40 UTC" in the pass log.
-    Then `CuspariaKLSY`, `zheermao`, `yingying`, one at a time.
+    (13 headings,
+    17 tag markers,
+    18 footnote markers,
+    9 definitions,
+    2 links,
+    3 Sakura,
+    "Conflict" for 左右,
+    front matter equal,
+    no TA,
+    no error finish);
+    record under a new heading above "## XingZ622 read,
+    2026-09-22,
+    13:40 UTC" in the pass log.
+    Then `CuspariaKLSY`,
+    `zheermao`,
+    `yingying`,
+    one at a time.
     OPEN QUESTION TO THE OWNER (asked 2026-09-22 13:40 UTC):
     the form of a handle with no declared or archive rendering
     (锦心 shipped in Han on XingZ622 where XingZ619 wrote "Jinxin" and XingZ620 "Jin Xin";
@@ -5589,72 +7625,131 @@ each read off the pass log and the shipped page:
     雨狸 as "Yu Li" and "雨狸");
     pinyin recommended;
     build the rule and a page-wide one-form restore once answered
-    (the pass log's "Open: an undeclared handle has no rule" section has the evidence).
-    XINGZ622 READ (SETTLED 13:09 UTC, 3h39m, one attempt, 8,504 seats, 297 retry rounds, 12.54 USD by the meters):
+    (the pass log's "Open:
+    an undeclared handle has no rule" section has the evidence).
+    XINGZ622 READ (SETTLED 13:09 UTC,
+    3h39m,
+    one attempt,
+    8,504 seats,
+    297 retry rounds,
+    12.54 USD by the meters):
     class eighty-one live on the page
-    ("They once said" on slice 14 at weight 2.5 on its first slate round, gate 3 of 4;
+    ("They once said" on slice 14 at weight 2.5 on its first slate round,
+    gate 3 of 4;
     she/her 150 to 99 and they 74 to 111 against XingZ620;
     the identity line's three forms quoted in a ballot),
     class eighty-two not exercised (no tie this run),
-    every structural check as XingZ620 (fourteen headings, both links, nine definitions, 3 TextRing, eleven details, front matter equal, no TA, no error finish),
-    three unendorsed standings (6, 42, 68), no gate-kept, 208 abstention lines;
+    every structural check as XingZ620 (fourteen headings,
+    both links,
+    nine definitions,
+    3 TextRing,
+    eleven details,
+    front matter equal,
+    no TA,
+    no error finish),
+    three unendorsed standings (6,
+    42,
+    68),
+    no gate-kept,
+    208 abstention lines;
     the consolidation ran 92 minutes against XingZ620's 69 because deepseek-v4.1-flash (48.8 s a stream against 31.9) and GLM-5.3-Flash (96.7 against 88.2) had only OpenRouter to run on with Synthetic and Hyper dry;
-    recorded under "## XingZ622 read, 2026-09-22, 13:40 UTC" in the pass log.
-    XINGZ621 READ, CLASSES EIGHTY-ONE AND EIGHTY-TWO:
+    recorded under "## XingZ622 read,
+    2026-09-22,
+    13:40 UTC" in the pass log.
+    XINGZ621 READ,
+    CLASSES EIGHTY-ONE AND EIGHTY-TWO:
     INCOMPLETE at 09:14 UTC in 3h02m,
     one attempt,
     8.82 USD by the meters,
-    stopped at the consolidation of slice 14 (the tombstone paragraph, TA 曾说):
-    the contest settled on neither, the archive's TA text stood and was withheld,
+    stopped at the consolidation of slice 14 (the tombstone paragraph,
+    TA 曾说):
+    the contest settled on neither,
+    the archive's TA text stood and was withheld,
     eight valid candidates split one ballot each four ways between "she" and three "they" renderings,
-    the run-off over the four leaders split 1, 1 and 0.5 with gpt-oss declining all,
+    the run-off over the four leaders split 1,
+    1 and 0.5 with gpt-oss declining all,
     `slate-declined-standing`.
-    Class eighty-one: the house rule's "only where the whole ORIGINAL uses a neutral pronoun" and the identity line's "她 (51 times)"
+    Class eighty-one:
+    the house rule's "only where the whole ORIGINAL uses a neutral pronoun" and the identity line's "她 (51 times)"
     against "never correct a neutral pronoun into a gendered one" and the TA floor,
     on a ten-part page whose Part One writes TA forty times;
     fixed in `6c701485d` (a pronoun the ORIGINAL writes is rendered as written where it stands,
     the identity line names every form the original writes with the as-written sentence,
     the judge tail says a written TA is not an unstated subject).
-    Class eighty-two: a run-off that tied again among valid finalists settled the decline although it had narrowed the finalists 4 to 2;
-    fixed in `6c701485d` (`judgeSlateWithRetry` asks again while each run-off strictly narrows, bounded by the slate's width).
+    Class eighty-two:
+    a run-off that tied again among valid finalists settled the decline although it had narrowed the finalists 4 to 2;
+    fixed in `6c701485d` (`judgeSlateWithRetry` asks again while each run-off strictly narrows,
+    bounded by the slate's width).
     Guards red first at `4cf95e4e6`;
-    lint 0 and 0, types clean, full suite green;
+    lint 0 and 0,
+    types clean,
+    full suite green;
     details under the pass log heading of 09:35 UTC.
-    THE EARLIER XINGZ621 LAUNCH NOTE: XINGZ621 RAN (frozen `93b11aef9`,
+    THE EARLIER XINGZ621 LAUNCH NOTE:
+    XINGZ621 RAN (frozen `93b11aef9`,
     pid 1949843,
     launched 06:11 UTC 2026-09-22)
     as the second entry of the resumed queue:
-    the verse chunks and the closing poem (slice 91) first (attribution inside the quote, no pair finding in `artifacts/XingZ60.json`),
+    the verse chunks and the closing poem (slice 91) first (attribution inside the quote,
+    no pair finding in `artifacts/XingZ60.json`),
     classes sixty-five to sixty-nine and seventy-six,
     then the seven steps and three checks against `XingZ620` and the archive,
     the seven-hour deadline and XingZ620's 3h59m as the timing marks;
-    record under a new heading above "## mikaela7 read, 2026-09-22, 06:15 UTC" in the pass log.
-    Then `hulicaijia`, `CuspariaKLSY`, `zheermao`, `yingying`, one at a time.
-    MIKAELA7 READ, NO CLASS:
+    record under a new heading above "## mikaela7 read,
+    2026-09-22,
+    06:15 UTC" in the pass log.
+    Then `hulicaijia`,
+    `CuspariaKLSY`,
+    `zheermao`,
+    `yingying`,
+    one at a time.
+    MIKAELA7 READ,
+    NO CLASS:
     SETTLED at 06:10 UTC in 47 minutes,
     one attempt,
     1.43 USD by the meters;
-    classes seventy to seventy-seven holding (excerpt line curled, 𝓠𝓾𝓪𝓷 seven times, "Mika was outed", the Epilogue one to one, no double blank line, the life in the past),
+    classes seventy to seventy-seven holding (excerpt line curled,
+    𝓠𝓾𝓪𝓷 seven times,
+    "Mika was outed",
+    the Epilogue one to one,
+    no double blank line,
+    the life in the past),
     the pair bound silent on an original with no pair,
     front matter equal,
-    4 headings, 4 comments, 4 markers,
-    two unendorsed standings (2, 30),
+    4 headings,
+    4 comments,
+    4 markers,
+    two unendorsed standings (2,
+    30),
     67 abstention lines;
     details under the pass log heading of 06:15 UTC.
-    THE EARLIER MIKAELA7 LAUNCH NOTE: MIKAELA7 RAN (frozen `93b11aef9`,
+    THE EARLIER MIKAELA7 LAUNCH NOTE:
+    MIKAELA7 RAN (frozen `93b11aef9`,
     pid 1944780,
     launched 05:24 UTC 2026-09-22)
     as the first entry of the resumed queue on the newest build:
-    the Epilogue (slice 28, nine lines) as regression for the pair bound and the line-rule clause on a slice with no pair,
+    the Epilogue (slice 28,
+    nine lines) as regression for the pair bound and the line-rule clause on a slice with no pair,
     classes seventy to seventy-seven and the survived-attempt clause,
     then the seven steps and three checks against `mikaela6` and the archive;
-    record under a new heading above "## shi_Yumiaoya13 read, 2026-09-22, 05:30 UTC" in the pass log.
-    Then `XingZ60` (verse chunks, the closing poem), `hulicaijia`, `CuspariaKLSY`, `zheermao`, `yingying`, one at a time.
-    SHI_YUMIAOYA13 READ, CLASS EIGHTY LIVE:
+    record under a new heading above "## shi_Yumiaoya13 read,
+    2026-09-22,
+    05:30 UTC" in the pass log.
+    Then `XingZ60` (verse chunks,
+    the closing poem),
+    `hulicaijia`,
+    `CuspariaKLSY`,
+    `zheermao`,
+    `yingying`,
+    one at a time.
+    SHI_YUMIAOYA13 READ,
+    CLASS EIGHTY LIVE:
     SETTLED at 05:22 UTC in 20 minutes,
     one attempt,
     0.78 USD by the meters;
-    the block bound refused ten candidates (the finding in `artifacts/shi_Yumiaoya.json`, ten times; the log carries no line for a floor refusal),
+    the block bound refused ten candidates (the finding in `artifacts/shi_Yumiaoya.json`,
+    ten times;
+    the log carries no line for a floor refusal),
     the slate chose a two-line quote with ballots citing the clause,
     the closing line freshly written so the win is the bench's and not an unendorsed standing;
     classes seventy-eight and seventy-nine holding,
@@ -5662,17 +7757,23 @@ each read off the pass log and the shipped page:
     no unendorsed or gate-kept standing,
     9 abstention lines;
     details under the pass log heading of 05:30 UTC.
-    THE EARLIER SHI_YUMIAOYA13 LAUNCH NOTE: SHI_YUMIAOYA13 RAN (frozen `93b11aef9`,
+    THE EARLIER SHI_YUMIAOYA13 LAUNCH NOTE:
+    SHI_YUMIAOYA13 RAN (frozen `93b11aef9`,
     pid 1928249,
     launched 05:01 UTC 2026-09-22)
     to read the block-level pair bound live:
-    the log must carry a `LINE-STRUCTURED` finding quoting "once in Chinese and once in English directly beside it; that pair is ONE line"
+    the log must carry a `LINE-STRUCTURED` finding quoting "once in Chinese and once in English directly beside it;
+    that pair is ONE line"
     and `translate-candidate-refused` on the candidates carrying the Chinese line raw or rendered again;
     the closing quote two lines on the page;
     then classes seventy-nine and seventy-eight,
     then the seven steps and three checks against `shi_Yumiaoya12` and the archive;
-    record under a new heading above "## shi_Yumiaoya12 read, 2026-09-22, 05:05 UTC" in the pass log.
-    SHI_YUMIAOYA12 READ, THE QUOTE RIGHT BY LUCK, THE BOUND REBUILT BLOCK BY BLOCK:
+    record under a new heading above "## shi_Yumiaoya12 read,
+    2026-09-22,
+    05:05 UTC" in the pass log.
+    SHI_YUMIAOYA12 READ,
+    THE QUOTE RIGHT BY LUCK,
+    THE BOUND REBUILT BLOCK BY BLOCK:
     SETTLED at 04:53 UTC in 29 minutes,
     one attempt,
     0.76 USD by the meters;
@@ -5685,13 +7786,15 @@ each read off the pass log and the shipped page:
     and the whole-slice bound of `873104d8f` never fired,
     since the archive writes the closing line as two lines and the page never carried exactly the lines owed;
     rebuilt in `93b11aef9`:
-    `bilingualPairs` returns the pairs, `pairBoundFindings` finds each pair's English line in the page and the rendering and compares the block holding it,
+    `bilingualPairs` returns the pairs,
+    `pairBoundFindings` finds each pair's English line in the page and the rendering and compares the block holding it,
     guard red first at `e06ac2945`,
     lint 0/0,
     types clean,
     full suite green;
     details under the pass log heading of 05:05 UTC.
-    THE EARLIER SHI_YUMIAOYA12 LAUNCH NOTE: SHI_YUMIAOYA12 RAN (frozen `873104d8f`,
+    THE EARLIER SHI_YUMIAOYA12 LAUNCH NOTE:
+    SHI_YUMIAOYA12 RAN (frozen `873104d8f`,
     pid 1903793,
     launched 04:24 UTC 2026-09-22)
     to read class eighty's second arm live:
@@ -5702,20 +7805,28 @@ each read off the pass log and the shipped page:
     then class seventy-nine,
     class seventy-eight,
     then the seven steps and three checks against `shi_Yumiaoya11` and the archive;
-    record under a new heading above "## shi_Yumiaoya11 read, 2026-09-22, 04:30 UTC" in the pass log.
-    SHI_YUMIAOYA11 READ, THE CLAUSE OVERRULED, THE PAGE-BOUNDED PAIR BUILT:
+    record under a new heading above "## shi_Yumiaoya11 read,
+    2026-09-22,
+    04:30 UTC" in the pass log.
+    SHI_YUMIAOYA11 READ,
+    THE CLAUSE OVERRULED,
+    THE PAGE-BOUNDED PAIR BUILT:
     SETTLED at 04:17 UTC in 30 minutes,
     one attempt,
     0.82 USD by the meters;
     classes seventy-eight and seventy-nine holding,
     every check as the archive,
-    one unendorsed standing (slice 1, the caution blockquote),
+    one unendorsed standing (slice 1,
+    the caution blockquote),
     14 abstention lines;
     the closing blockquote shipped three lines again with the clause on every sheet
-    (deepseek: the English-alone candidate "drops a line ... ineligible";
-    gemma-26b: the Chinese line "is distinct from the actual English quote"),
+    (deepseek:
+    the English-alone candidate "drops a line ... ineligible";
+    gemma-26b:
+    the Chinese line "is distinct from the actual English quote"),
     so the existing translation's own line count now bounds the pair:
-    `bilingual-pair-bound.ts`, called from `compareLineCounts` with the page text threaded from `translate-validate.ts`,
+    `bilingual-pair-bound.ts`,
+    called from `compareLineCounts` with the page text threaded from `translate-validate.ts`,
     refuses a rendering carrying more lines than owed where the original carries a Han line with its English beside it and the page carries the pair once;
     fixed in `873104d8f`,
     guard red first at `c630bfb7d` (five tests),
@@ -5723,7 +7834,8 @@ each read off the pass log and the shipped page:
     types clean,
     full suite green;
     details under the pass log heading of 04:30 UTC.
-    THE EARLIER SHI_YUMIAOYA11 LAUNCH NOTE: SHI_YUMIAOYA11 RAN (frozen `8f5e28ad4`,
+    THE EARLIER SHI_YUMIAOYA11 LAUNCH NOTE:
+    SHI_YUMIAOYA11 RAN (frozen `8f5e28ad4`,
     pid 1878666,
     launched 03:47 UTC 2026-09-22)
     to read class eighty live:
@@ -5732,7 +7844,9 @@ each read off the pass log and the shipped page:
     then class seventy-nine (the January 16 sentence an attempt),
     then class seventy-eight,
     then the seven steps and three checks against `shi_Yumiaoya10` and the archive;
-    record under a new heading above "## shi_Yumiaoya10 read, 2026-09-22, 03:50 UTC" in the pass log.
+    record under a new heading above "## shi_Yumiaoya10 read,
+    2026-09-22,
+    03:50 UTC" in the pass log.
     SHI_YUMIAOYA10 READ WITH CLASS SEVENTY-NINE LIVE AND CLASS EIGHTY FOUND AND FIXED:
     SETTLED at 03:33 UTC in 45 minutes,
     one attempt,
@@ -5742,17 +7856,23 @@ each read off the pass log and the shipped page:
     every check as the archive,
     no unendorsed or gate-kept standing,
     23 abstention lines;
-    class eighty: the bilingual film quote's Chinese line rendered a second time in English beside the film's own line
+    class eighty:
+    the bilingual film quote's Chinese line rendered a second time in English beside the film's own line
     (shi_Yumiaoya4 to 9 had kept it in Chinese),
     because every line-structure wording said never drop a line while the floor counts the pair once and the archive carries the English alone;
-    fixed in `8f5e28ad4` (`bilingual-line-clause.ts`, one clause interpolated into the translators' rule, the judges' criterion and the editors' addendum;
-    stated for the models, not a surplus bound, since ten other entries carry a Chinese line followed by an English line of different content),
+    fixed in `8f5e28ad4` (`bilingual-line-clause.ts`,
+    one clause interpolated into the translators' rule,
+    the judges' criterion and the editors' addendum;
+    stated for the models,
+    not a surplus bound,
+    since ten other entries carry a Chinese line followed by an English line of different content),
     guard red first at `49327e735`,
     lint 0/0,
     types clean,
     full suite green;
     details under the pass log heading of 03:50 UTC.
-    THE EARLIER SHI_YUMIAOYA10 LAUNCH NOTE: SHI_YUMIAOYA10 RAN (frozen `d29feecd5`,
+    THE EARLIER SHI_YUMIAOYA10 LAUNCH NOTE:
+    SHI_YUMIAOYA10 RAN (frozen `d29feecd5`,
     pid 1846495,
     launched 02:51 UTC 2026-09-22)
     to read class seventy-nine live:
@@ -5778,8 +7898,10 @@ each read off the pass log and the shipped page:
     every candidate and every ballot,
     because the reader-protection rule's own sample sentence read "the page says that she ended her life".
     Fixed in `d29feecd5` (`house-policy.ts`:
-    自杀 names the act, not its outcome;
-    a rescue, a waking or a continuing life means an attempt),
+    自杀 names the act,
+    not its outcome;
+    a rescue,
+    a waking or a continuing life means an attempt),
     guard red first at `a478ad64f` (`survived-attempt-policy.unit.test.ts`),
     lint 0 and 0,
     types clean,

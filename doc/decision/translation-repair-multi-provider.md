@@ -17,19 +17,26 @@ The owner's assessment:
 > I'm surprised and disappointed you didn't build the machinery to gracefully detect and deal with quota.
 > The info is available via api on both providers.
 
-That is correct, and the situation is worse than it sounds.
-`src/synthetic-quota.ts` already types `GET /v2/quotas`, shape-verified against a live call on 2026-07-16,
+That is correct,
+and the situation is worse than it sounds.
+`src/synthetic-quota.ts` already types `GET /v2/quotas`,
+shape-verified against a live call on 2026-07-16,
 modelling exactly the two limits that matter.
 It sits on the `chat-contract.ts` interface and is implemented in `synthetic-client.ts`.
 Nothing calls it except a test stub named `unusedQuotas`.
-The field that predicts this failure, `weekly.percentRemaining`, has been parsed and discarded for five weeks.
+The field that predicts this failure,
+`weekly.percentRemaining`,
+has been parsed and discarded for five weeks.
 
 ## Providers
 
 Synthetic stays the primary.
-Charm Hyper joins as the second, at `https://hyper.charm.land/v1`,
+Charm Hyper joins as the second,
+at `https://hyper.charm.land/v1`,
 keyed by `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
-Hyper is zero data retention, which the owner confirmed, so corpus passages may cross it.
+Hyper is zero data retention,
+which the owner confirmed,
+so corpus passages may cross it.
 
 ### Transport
 
@@ -39,20 +46,27 @@ an unknown top-level field returns 200,
 and every mode returns markdown-fenced JSON with invented keys.
 
 Hyper's Anthropic Messages endpoint with forced tool-use IS viable.
-Measured over 20 streaming attempts per model on 2026-08-24, all 8 allowlisted models conform.
+Measured over 20 streaming attempts per model on 2026-08-24,
+all 8 allowlisted models conform.
 Seven return 20 of 20 under `tool_choice: {type: "tool"}`.
 `qwen3.8-max` REFUSES that shape with `HTTP 400 invalid_request_error` regardless of streaming,
-system prompt, or `max_tokens`, and returns 20 of 20 under `tool_choice: {type: "auto"}` instead.
+system prompt,
+or `max_tokens`,
+and returns 20 of 20 under `tool_choice: {type: "auto"}` instead.
 An earlier reading that `kimi-k3` honoured the forced tool on only 1 of 3 attempts is RETRACTED:
 it measures 20 of 20.
 
 Anthropic SSE events are NORMALIZED into the event shape the existing guards already consume,
 rather than reimplemented natively.
-The guards in question are partial-text retention, runaway detection,
-the straggler and idle windows, the answer-volume bound, and the thinking-channel scanner.
+The guards in question are partial-text retention,
+runaway detection,
+the straggler and idle windows,
+the answer-volume bound,
+and the thinking-channel scanner.
 Every one of their thresholds came from measurement,
 and the straggler and idle windows were re-derived after finding the median premise wrong by a factor of eighty.
-A second copy would be unmeasured guesswork, and drift between the two would stay invisible until it cost a run.
+A second copy would be unmeasured guesswork,
+and drift between the two would stay invisible until it cost a run.
 
 Streaming stays ON.
 
@@ -70,12 +84,15 @@ The owner's reasoning:
 
 ## Routing
 
-Owner's policy, to be driven by the quota readers:
+Owner's policy,
+to be driven by the quota readers:
 
 - Send everything to Synthetic until its per-model concurrent-request limit is reached.
-- Overflow to Hyper, which has no per-model concurrency limit.
+- Overflow to Hyper,
+  which has no per-model concurrency limit.
 - Synthetic out of quota on EITHER the 5-hour limit or the weekly limit sends work to Hyper.
-- Both providers dry throws an error saying so, ending the run.
+- Both providers dry throws an error saying so,
+  ending the run.
 
 Synthetic production concurrency is 5 per active model.
 `SYNTHETIC_PER_MODEL_CONCURRENCY` is shared by direct client and router defaults,
@@ -108,8 +125,10 @@ The live body also carries fields the typed model does not expose:
 and a `subscription {limit, requests, renewsAt}` block.
 Actual dollars remaining is a better pacing signal than a percentage and should be modelled.
 
-Hyper `GET /v1/credits` gives `{"balance": N}`, measured at 249 on 2026-08-24.
-The balance refreshes every 24 hours at 02:53 (the zone it was observed in was never established), so it is a daily budget and needs no spend cap.
+Hyper `GET /v1/credits` gives `{"balance": N}`,
+measured at 249 on 2026-08-24.
+The balance refreshes every 24 hours at 02:53 (the zone it was observed in was never established),
+so it is a daily budget and needs no spend cap.
 
 ### Non-conformant answers
 
@@ -120,104 +139,148 @@ which already sends an unusable slice back to its author.
 ## Roster
 
 `hf:zai-org/GLM-4.7-Flash` is BLOCKLISTED on Synthetic by owner instruction.
-It has no Hyper counterpart, so it leaves the pipeline entirely.
-This reverses the GLM-4.7-Flash seat measurement, which found that it earned its seat.
-It currently sits in `editorModelIds` and `refinerModelIds`, both of which lose a member.
+It has no Hyper counterpart,
+so it leaves the pipeline entirely.
+This reverses the GLM-4.7-Flash seat measurement,
+which found that it earned its seat.
+It currently sits in `editorModelIds` and `refinerModelIds`,
+both of which lose a member.
 
-Allowlisted on Hyper by owner instruction, all 8 confirmed present in the catalog:
-`qwen3.8-max`, `minimax-m3`, `kimi-k3`, `gpt-oss-120b`, `gemma-4-26b-a4b-it`,
-`deepseek-v4-pro-0813`, `deepseek-v4-flash-0731`, `glm-5.2`.
+Allowlisted on Hyper by owner instruction,
+all 8 confirmed present in the catalog:
+`qwen3.8-max`,
+`minimax-m3`,
+`kimi-k3`,
+`gpt-oss-120b`,
+`gemma-4-26b-a4b-it`,
+`deepseek-v4-pro-0813`,
+`deepseek-v4-flash-0731`,
+`glm-5.2`.
 
 The resulting 10 distinct model identities:
 
-- served by both: `GLM-5.2`, `Kimi-K3`, `gpt-oss-120b`
-- Synthetic only: `Qwen3.8-27B`, `NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4`
-- Hyper only: `qwen3.8-max`, `minimax-m3`, `gemma-4-26b-a4b-it`, `deepseek-v4-pro-0813`, `deepseek-v4-flash-0731`
+- served by both:
+  `GLM-5.2`,
+  `Kimi-K3`,
+  `gpt-oss-120b`
+- Synthetic only:
+  `Qwen3.8-27B`,
+  `NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4`
+- Hyper only:
+  `qwen3.8-max`,
+  `minimax-m3`,
+  `gemma-4-26b-a4b-it`,
+  `deepseek-v4-pro-0813`,
+  `deepseek-v4-flash-0731`
 
 Provider is NOT part of panelist identity.
 `glm-5.2` reached through Hyper is the same panelist as `hf:zai-org/GLM-5.2` reached through Synthetic,
 for the self-certification weighting and for the cache key.
-Provider IS recorded per call, for diagnosis.
+Provider IS recorded per call,
+for diagnosis.
 
 ### An allowlisted model that cannot conform
 
 Every one of the 8 gets its forced-tool-use conformance measured before it is seated.
 One that measures badly is DROPPED and reported to the owner with its rate,
 rather than seated to produce lost voices at full call cost.
-As measured, NONE are dropped: all 8 seat.
+As measured,
+NONE are dropped:
+all 8 seat.
 
-The system prompt must carry the FULL TOOL SCHEMA, by owner instruction:
+The system prompt must carry the FULL TOOL SCHEMA,
+by owner instruction:
 
 > Some model/provider pairs can behave badly w/o a detailed system prompt,
 > including but not limited to giving wrong tool call formats.
 > Please make sure to put even the full tool schema into system prompts.
 
-So the schema is sent twice, once through the native tool definition and once in prose,
+So the schema is sent twice,
+once through the native tool definition and once in prose,
 and a model that mishandles the protocol can still read what it was asked for.
 
 ### Slot widths
 
 New seats join the wide slots fed by `RUN_ROSTER`:
-critics, adjudication panel, repair judges, translators, and translate-judges.
+critics,
+adjudication panel,
+repair judges,
+translators,
+and translate-judges.
 
 Writers stay NARROW and are chosen by measurement rather than by taking all 10.
 This honours "producers stay at three" from `doc/planning/translation-repair-open-decisions.md`,
 keeps per-slice cost flat while the roster nearly doubles,
 and leaves the widened panel doing what a panel is for.
-Until that calibration pass runs, the writer set is whatever survives the GLM-4.7-Flash removal.
+Until that calibration pass runs,
+the writer set is whatever survives the GLM-4.7-Flash removal.
 
 New seats carry FULL WEIGHT immediately.
-The owner's reason: nothing is shipping artifacts yet, so an uncalibrated vote cannot reach a reader.
+The owner's reason:
+nothing is shipping artifacts yet,
+so an uncalibrated vote cannot reach a reader.
 
 ### Self-certification
 
 `checkerSelfCertificationPermitted` is ENABLED.
 Checkers and writers are no longer disjoint sets,
 so the half-weight discount once found unreachable in production goes live.
-The checker-width finding, that width changed no verdict across 231 rounds,
+The checker-width finding,
+that width changed no verdict across 231 rounds,
 was measured on a disjoint panel and no longer describes the pipeline it was measured on.
 
 ### Picture readers
 
 `RUN_READER_MODELS` stays catalog-derived and widens from 2 to 6,
 because 4 of the 8 Hyper models report `capabilities.vision: true`:
-`qwen3.8-max`, `minimax-m3`, `kimi-k3`, `glm-5.2`.
+`qwen3.8-max`,
+`minimax-m3`,
+`kimi-k3`,
+`glm-5.2`.
 
-The old invariant, that readers never judge so a disinterested judge always remains on a picture slice,
+The old invariant,
+that readers never judge so a disinterested judge always remains on a picture slice,
 is replaced by the half-weight discount.
 That is a weaker guarantee than disjointness and needs its own check:
 no slice may end up judged only by models that read its pictures.
 
 ### Answer volume
 
-The answer-volume bound is 32000 tokens, set by measurement.
-Two Hyper models cap lower: `gpt-oss-120b` at 13107 output tokens and `kimi-k3` at 16000.
-The bound becomes PER MODEL, the lower of that bound and the model's own cap,
+The answer-volume bound is 32000 tokens,
+set by measurement.
+Two Hyper models cap lower:
+`gpt-oss-120b` at 13107 output tokens and `kimi-k3` at 16000.
+The bound becomes PER MODEL,
+the lower of that bound and the model's own cap,
 so a truncation is a named refusal rather than a silently short answer a judge scores as complete.
 
 ## Still to measure
 
-- Which stages dominate call volume, since "widen to balance load" is a claim about volume.
+- Which stages dominate call volume,
+  since "widen to balance load" is a claim about volume.
 - The calibration pass that picks the narrow writer set from the 10.
 - That no picture-carrying slice is judged only by its own readers.
 - Whether the measured concurrency holds for corpus-sized bodies as it does for a two-line prompt.
 
 ## What has landed
 
-As of 2026-08-24, in commit order:
+As of 2026-08-24,
+in commit order:
 
 -   `anthropic-delta-scan.ts` implements the existing `DeltaScanner` interface over Anthropic SSE,
     so every stream guard covers the second transport with no second copy of a measured threshold.
     GFP-proven with two mutations.
 -   `hyper-catalog.ts` records the eight allowlisted models with their measured tool-choice shape,
-    vision flag and output ceiling, plus `answerCeilingFor` reconciling each model against the answer-volume bound.
+    vision flag and output ceiling,
+    plus `answerCeilingFor` reconciling each model against the answer-volume bound.
     GFP-proven with one mutation.
 -   `anthropic-completion.ts` reassembles a drained Anthropic body into `ExtractedCompletion`,
     reading tool-call arguments as the answer and requiring `message_stop`.
     GFP-proven with one mutation.
 -   `RosterModelId` replaces `SyntheticModelId` across 111 files,
     since the type is about to name five models Synthetic does not serve.
--   `provider-barrel.ts` splits the provider exports out of `index.ts`, which had reached its line budget.
+-   `provider-barrel.ts` splits the provider exports out of `index.ts`,
+    which had reached its line budget.
 -   `anthropic-tool.ts` renders one schema into both places the model sees it:
     the `tools` entry the server validates against,
     and the system prompt a weak model actually reads.
@@ -235,21 +298,29 @@ As of 2026-08-24, in commit order:
     GFP-proven with two mutations.
 -   `hyper-credits.ts` reads `GET /v1/credits`,
     refusing a non-finite balance because that one value would read as an unlimited budget.
--   `budget-routing.ts` decides which provider serves a call, and is the first thing ever to consume a quota reading.
+-   `budget-routing.ts` decides which provider serves a call,
+    and is the first thing ever to consume a quota reading.
     GFP-proven with two mutations.
 
 -   `roster-id.ts` and `roster-reach.ts` widen the roster to ten models across two providers,
-    remove the blocklisted model, and derive reach and picture-reading from both catalogs.
--   `RUN_ROSTER` is now derived rather than listed, and `checkerSelfCertificationPermitted` is on.
+    remove the blocklisted model,
+    and derive reach and picture-reading from both catalogs.
+-   `RUN_ROSTER` is now derived rather than listed,
+    and `checkerSelfCertificationPermitted` is on.
 
-State: types clean, zero lint findings, 596 tests passing, none failing.
+State:
+types clean,
+zero lint findings,
+596 tests passing,
+none failing.
 
 ### The system prompt the owner asked for
 
 The owner's instruction was that a detailed system prompt carrying the full tool schema is required,
 because some model and provider pairs emit the wrong tool-call format without one.
 
-`renderToolSystemPrompt` states the caller's instruction first, then the whole schema as JSON,
+`renderToolSystemPrompt` states the caller's instruction first,
+then the whole schema as JSON,
 then a list of format rules.
 The rules are not filler.
 Each line names a shape a model has been seen to emit instead of a tool call:
@@ -266,10 +337,16 @@ and a drift teaches a model to call a tool that is not the one being offered.
 
 ### Correction: the reader sub-roster is five, not six
 
-The option the owner accepted was worded "All 6 read, and re-derive self-certification",
-and the six in that wording was mine, not a measurement.
+The option the owner accepted was worded "All 6 read,
+and re-derive self-certification",
+and the six in that wording was mine,
+not a measurement.
 Deriving the set from both catalogs gives FIVE:
-`hf:zai-org/GLM-5.2`, `hf:Qwen/Qwen3.8-27B`, `hf:moonshotai/Kimi-K3`, `qwen3.8-max`, `minimax-m3`.
+`hf:zai-org/GLM-5.2`,
+`hf:Qwen/Qwen3.8-27B`,
+`hf:moonshotai/Kimi-K3`,
+`qwen3.8-max`,
+`minimax-m3`.
 The substance of the instruction is unchanged and is what landed:
 readers are derived from what the catalogs report rather than listed by hand,
 and self-certification is re-derived.
@@ -278,7 +355,9 @@ The lane still goes from two readers to five.
 ### Reading is narrower than talking
 
 `hf:zai-org/GLM-5.2` reads pictures on Charm Hyper and does NOT on Synthetic.
-The same model, the same weights, a different serving stack,
+The same model,
+the same weights,
+a different serving stack,
 and each catalog reports its own side correctly.
 
 So a call carrying a picture reaches fewer providers than the same model's text call does,
@@ -288,16 +367,22 @@ or refuse one that can.
 
 ### The transport, confirmed live on 2026-08-24
 
-These were measured but never written down, which is how the second session came to need re-measuring:
+These were measured but never written down,
+which is how the second session came to need re-measuring:
 
--   `POST https://hyper.charm.land/v1/messages`, with `Authorization: Bearer <key>`,
+-   `POST https://hyper.charm.land/v1/messages`,
+    with `Authorization: Bearer <key>`,
     `content-type: application/json` and `anthropic-version: 2023-06-01`.
-    An `x-api-key` header, which is what Anthropic's own API takes, answers `401 missing authorization`.
+    An `x-api-key` header,
+    which is what Anthropic's own API takes,
+    answers `401 missing authorization`.
 -   `GET https://hyper.charm.land/v1/credits` with the same auth returns `{"balance": N}`;
-    read 243 on 2026-08-24, down from 249 earlier the same day.
+    read 243 on 2026-08-24,
+    down from 249 earlier the same day.
 -   The stream carries `{"type":"ping"}` keep-alive frames between real events.
     Both readers already ignore them and count zero unreadable frames over twenty of them,
-    but that was accidental rather than intended, so both now pin it with a case taken off the wire.
+    but that was accidental rather than intended,
+    so both now pin it with a case taken off the wire.
 -   A forced tool call arrives as one `input_json_delta` whose `partial_json` is the whole answer object,
     with `stop_reason: "tool_use"` on `message_delta` and usage there rather than on `message_start`.
 
@@ -309,7 +394,9 @@ These were measured but never written down, which is how the second session came
 `wireFormat: 'anthropic'` on the exchange so the guards read the stream,
 and the endpoint facts confirmed live.
 
-It raises `SyntheticHttpError`, named after the other provider, DELIBERATELY.
+It raises `SyntheticHttpError`,
+named after the other provider,
+DELIBERATELY.
 `benchmark.ts` branches on `error instanceof SyntheticHttpError` to read a status off a failed call,
 and a fresh class here would make that site blind
 to exactly the provider added to survive the other one's exhaustion.
@@ -319,12 +406,15 @@ renaming it is held with the `SyntheticClient` rename.
 The JSON ladder moved to `chat-json-outcome.ts` rather than being copied.
 None of it is provider-specific:
 it reads text a model wrote and decides whether that text is an answer,
-a refusal, or a mismatch.
+a refusal,
+or a mismatch.
 Every step in it stands for a defect found live,
 and a copy would have taken none of the next ones.
 
 `provider-budget.ts` is the first thing that has ever consumed the quota reader built on 2026-07-16.
-It reads both meters, caches the view, and lets a refusal correct it.
+It reads both meters,
+caches the view,
+and lets a refusal correct it.
 AN UNREADABLE METER READS AS SPENDABLE:
 a budget endpoint that times out is a monitoring failure,
 and treating it as exhaustion converts that into an outage.
@@ -333,7 +423,8 @@ because a meter can lag a 429 by its own refresh interval;
 the cooldown is one-directional and can only hold a provider out.
 
 `provider-router.ts` is the client seam `routeProviderFor` now threads through.
-A budget refusal marks that provider and asks the other one, exactly once.
+A budget refusal marks that provider and asks the other one,
+exactly once.
 A failure that is NOT about budget is re-raised untouched,
 because spending the second provider's money on someone else's fault
 hides the fault and pays for it twice.
@@ -348,14 +439,24 @@ which is what the "reading is narrower than talking" finding demands.
 The second provider DOES NOT SERIALISE PER MODEL.
 Measured live on 2026-08-24 against `minimax-m3`:
 
--    4 concurrent calls: all ok, burst 1512 ms.
--    8 concurrent calls: all ok, burst 2128 ms.
--   16 concurrent calls: all ok, burst 1589 ms.
--   32 concurrent calls: all ok, burst 2482 ms.
+-    4 concurrent calls:
+     all ok,
+     burst 1512 ms.
+-    8 concurrent calls:
+     all ok,
+     burst 2128 ms.
+-   16 concurrent calls:
+    all ok,
+    burst 1589 ms.
+-   32 concurrent calls:
+    all ok,
+    burst 2482 ms.
 
-Single-call band over five runs: 994 to 1641 ms.
+Single-call band over five runs:
+994 to 1641 ms.
 Every burst finished in about the time ONE call takes;
-serialised, the 32 would have taken some 40 seconds.
+serialised,
+the 32 would have taken some 40 seconds.
 Zero refusals at any width.
 
 The default moves from the other provider's 1 to 8.
@@ -379,22 +480,29 @@ so a later early return cannot skip it.
 
 ### Verified live at the production seam, 2026-08-24
 
-`createRunClient()` with both keys, driven from a consuming script.
+`createRunClient()` with both keys,
+driven from a consuming script.
 The wire label each call carried names the provider that served it,
 because the two providers spell a shared model differently:
 
--   `hf:moonshotai/Kimi-K3` -> Synthetic, the roster spelling.
+-   `hf:moonshotai/Kimi-K3` -> Synthetic,
+    the roster spelling.
     A shared model with budget goes to the preferred provider.
--   `deepseek-v4-flash-0731` -> Charm Hyper, its own spelling.
+-   `deepseek-v4-flash-0731` -> Charm Hyper,
+    its own spelling.
     The only provider that serves it.
--   `hf:zai-org/GLM-5.2` -> Synthetic, the roster spelling.
-    Shared, and this was a TEXT call;
+-   `hf:zai-org/GLM-5.2` -> Synthetic,
+    the roster spelling.
+    Shared,
+    and this was a TEXT call;
     the same model carrying a picture routes to Hyper instead.
 -   `hf:nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-NVFP4` -> Synthetic.
-    The only provider that serves it, and the router did not try Hyper.
+    The only provider that serves it,
+    and the router did not try Hyper.
 
 All four returned schema-valid answers.
-The `quotas` passthrough answered five-hour 2735/2750, weekly 99.797%.
+The `quotas` passthrough answered five-hour 2735/2750,
+weekly 99.797%.
 
 The budget layer read each meter ONCE across the four calls,
 one `quotas` and one `credits`,
@@ -425,7 +533,8 @@ both are logged.
 
 `createRunClient` is the one factory every corpus-run entrypoint calls,
 so the routing client reaches all of them at once.
-The returned surface is unchanged, `quotas` included,
+The returned surface is unchanged,
+`quotas` included,
 so no caller and not the bench recorder needed touching.
 
 The routing client deliberately does NOT offer `quotas`:
@@ -459,17 +568,22 @@ Finished in 3637 seconds.
     hf:zai-org/GLM-5.2           2.7%    2 of 74    z -2.29   CI [-1.0,  6.4]
     deepseek-v4-flash-0731       2.4%    2 of 84    z -2.54   CI [-0.9,  5.6]
 
-The null is the POOLED share, 11.1 percent, 96 wins over 867 ballots:
+The null is the POOLED share,
+11.1 percent,
+96 wins over 867 ballots:
 what a producer drawing ballots at its fair rate would take.
 Ten models are compared at once,
 so the threshold that survives the multiplicity is Bonferroni's,
 `|z| >= 2.81` rather than 1.96.
 
-WHAT IS SETTLED: `hf:Qwen/Qwen3.8-27B`, at `z = 5.65`,
+WHAT IS SETTLED:
+`hf:Qwen/Qwen3.8-27B`,
+at `z = 5.65`,
 with a confidence interval that does not come near the null.
 It clears the corrected threshold twice over and is the first writer's seat.
 
-WHAT IS NOT SETTLED, and this is the part the ranking's ordering hides.
+WHAT IS NOT SETTLED,
+and this is the part the ranking's ordering hides.
 `gemma-4-26b-a4b-it` and `qwen3.8-max` sit at 17.9 and 17.6 percent,
 which reads like a second and a third place.
 Neither clears the corrected threshold,
@@ -484,7 +598,8 @@ and not one of them clears the corrected threshold either.
 Four independent models all landing below by a similar margin is suggestive,
 but no single one of them is individually established as worse.
 
-WHAT IT WOULD TAKE. For a producer at 17.9 percent to clear the null by three standard deviations
+WHAT IT WOULD TAKE.
+For a producer at 17.9 percent to clear the null by three standard deviations
 needs about 284 disinterested ballots,
 against the 84 it has.
 At the observed 7.6 ballots per producer per round that is about 37 rounds.
@@ -500,12 +615,18 @@ A forty-round pass is therefore running rather than three seats being filled fro
 
 ### Which seats the forty-round pass actually decides
 
-`RUN_ROSTER` is `ROSTER_MODEL_IDS`, all TEN, so the wide roles already fan out
+`RUN_ROSTER` is `ROSTER_MODEL_IDS`,
+all TEN,
+so the wide roles already fan out
 across both providers:
-critics, panel, judges, and both stages of the translate lane.
+critics,
+panel,
+judges,
+and both stages of the translate lane.
 The calibration's roster is therefore production's roster rather than a superset of it.
 
-Only three roles are narrow, and this is how they stand against the twelve-round table:
+Only three roles are narrow,
+and this is how they stand against the twelve-round table:
 
     editors    Kimi-K3 10.6% (at chance)   GLM-5.2 2.7% (z -2.29)   Qwen3.8-27B 29.7% (established)
     refiners   the same three
@@ -515,7 +636,8 @@ THE SEAT IN QUESTION IS GLM-5.2's.
 It holds an editor seat AND a refiner seat while scoring third from bottom as a writer,
 and it is also the second worst model measured on reliability,
 losing 2 voices of 21.
-Those two facts point the same way, which is rare enough to be worth saying;
+Those two facts point the same way,
+which is rare enough to be worth saying;
 the reliability finding and the quality finding are independent measurements
 and they agree.
 
@@ -526,8 +648,10 @@ The seat's own comment already calls the third writer provisional
 and names this calibration as what settles it.
 
 CHECKER SEATS ARE A DIFFERENT QUESTION and this table does not answer them.
-The standing measures who WRITES well, and a checker does not write;
-Checker width was settled separately, across 231 rounds.
+The standing measures who WRITES well,
+and a checker does not write;
+Checker width was settled separately,
+across 231 rounds.
 Nothing here argues Nemotron should leave the checker roster
 merely because it writes below the null.
 
@@ -539,8 +663,12 @@ over 46.5 minutes and 216 model streams.
 
 Streams that completed against streams cut off after quorum:
 
--   `qwen3.8-max`, 17 completed and 3 cut, the worst at about 15 percent.
--   `hf:zai-org/GLM-5.2`, 19 completed and 2 cut, about 9.5 percent.
+-   `qwen3.8-max`,
+    17 completed and 3 cut,
+    the worst at about 15 percent.
+-   `hf:zai-org/GLM-5.2`,
+    19 completed and 2 cut,
+    about 9.5 percent.
 -   Every other model lost nothing at all:
     `deepseek-v4-flash-0731` 21,
     `deepseek-v4-pro-0813` 22,
@@ -586,7 +714,8 @@ Every call arriving while a reading was in flight saw the old stamp and started 
 Fixed in `88a092d32` by collapsing "fresh" and "in flight" into one idea:
 a reading STARTED inside the window is the reading every caller uses,
 so the stamp goes on before the await.
-GFP-proven by restoring the late stamp, which fails the new case.
+GFP-proven by restoring the late stamp,
+which fails the new case.
 
 ONE CONSEQUENCE IS NAMED RATHER THAN HIDDEN:
 the first caller's signal governs the shared reading,
@@ -599,11 +728,13 @@ which is a live run of the fixed build rather than a test double:
 0.50 quota reads and 0.50 credit reads per minute over a twelve-minute window,
 against 3.40 of each before the fix
 and a ceiling of 1.00 that the sixty-second window permits.
-A 6.8-fold reduction, and under the ceiling rather than merely nearer it.
+A 6.8-fold reduction,
+and under the ceiling rather than merely nearer it.
 
 ### The worktree's secrets file is stale
 
-`.env.local.json` is gitignored, so the feature worktree holds its own copy,
+`.env.local.json` is gitignored,
+so the feature worktree holds its own copy,
 and that copy predates `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
 Live probes against the second provider must run with the main repo as the mise config root;
 the built bundle can still be imported from the worktree by absolute path.
@@ -618,13 +749,15 @@ Use `grep -a` when a search over this package must be exhaustive.
 
 ### The forty-round pass seats the writers, 2026-08-24
 
-40 rounds, ten models writing a candidate for the same slices
+40 rounds,
+ten models writing a candidate for the same slices
 and every other model judging them:
 2492 disinterested ballots against a pooled null of 13.48 percent.
 That is past the ~284 ballots the twelve-round pass computed as the requirement
 to separate the contenders it left tied.
 
-The raw standing, each rate over the rounds that model produced a candidate in:
+The raw standing,
+each rate over the rounds that model produced a candidate in:
 
     qwen3.8-max              27.0%   47 of 174 ballots, over 28 candidates
     hf:Qwen/Qwen3.8-27B      24.1%   61 of 253, over 37
@@ -663,7 +796,8 @@ and the OTHER models' median answer length taken as a proxy for slice size.
 Rounds `qwen3.8-max` missed ran a median of 588 characters.
 Rounds it answered ran 366.
 The ratio is 1.61,
-Mann-Whitney `z = +3.51`, `p ≈ 0.0004`,
+Mann-Whitney `z = +3.51`,
+`p ≈ 0.0004`,
 and the quartiles barely overlap:
 512 to 687 against 259 to 462.
 
@@ -672,16 +806,27 @@ It found 12 missed rounds and 28 answered,
 and 28 is exactly the candidate count the standing reports independently.
 
 So the model that tops the raw table is the model that skips the large slices,
-and it also took 29 cuts, more than any other model on the roster.
+and it also took 29 cuts,
+more than any other model on the roster.
 It is a good writer of easy passages and absent on hard ones.
 
 #### What was seated
 
 `editorModelIds` and `refinerModelIds` both become:
 
--   `hf:moonshotai/Kimi-K3`, kept: 40 of 40 candidates, at the null.
--   `hf:Qwen/Qwen3.8-27B`, kept: established in both passes, the only model clearing Bonferroni.
--   `gemma-4-26b-a4b-it`, seated: 40 of 40 candidates, zero cuts, 18.3 percent.
+-   `hf:moonshotai/Kimi-K3`,
+    kept:
+    40 of 40 candidates,
+    at the null.
+-   `hf:Qwen/Qwen3.8-27B`,
+    kept:
+    established in both passes,
+    the only model clearing Bonferroni.
+-   `gemma-4-26b-a4b-it`,
+    seated:
+    40 of 40 candidates,
+    zero cuts,
+    18.3 percent.
 
 `hf:zai-org/GLM-5.2` leaves both seats.
 It is below the pooled null in both passes,
@@ -692,7 +837,8 @@ A wide role loses one ballot when a voice is lost;
 a three-seat stage facing quorum of two loses the stage.
 Those are different bargains and the survivorship finding decides between them.
 
-THE WRITER SEATS NOW CROSS PROVIDERS, which none of them did before.
+THE WRITER SEATS NOW CROSS PROVIDERS,
+which none of them did before.
 The argument runs BOTH WAYS and only one direction was written down at first.
 Every previous writer seat was Synthetic-served,
 so a Synthetic outage emptied the editor and refiner stages entirely
@@ -702,29 +848,39 @@ Charm Hyper serves `gemma-4-26b-a4b-it`.
 THE SYMMETRIC COST IS REAL AND WAS OBSERVED THE SAME DAY.
 A run started 2026-08-24 15:36 UTC found Charm Hyper out of budget from its first second,
 and the five models it refused were exactly the five Hyper-only ones:
-`qwen3.8-max`, `minimax-m3`, `gemma-4-26b-a4b-it`,
+`qwen3.8-max`,
+`minimax-m3`,
+`gemma-4-26b-a4b-it`,
 `deepseek-v4-pro-0813` and `deepseek-v4-flash-0731`.
 The five Synthetic-served models kept streaming and both meter endpoints kept reading.
 
 So the seat that protects the editor stage from a Synthetic outage
-also exposes it to a Hyper one, which it was not exposed to before.
+also exposes it to a Hyper one,
+which it was not exposed to before.
 Under either outage the stage keeps two of three seats and clears quorum,
 which is the property that matters and is why the swap still stands;
-what changed is WHICH outage costs the seat, not whether one can.
-Before the swap, all three writer seats fell together on a single Synthetic outage,
+what changed is WHICH outage costs the seat,
+not whether one can.
+Before the swap,
+all three writer seats fell together on a single Synthetic outage,
 so the stage went from three-of-three exposure on one provider
-to two-of-three on each. That is the trade, stated in full.
+to two-of-three on each.
+That is the trade,
+stated in full.
 
 The wide roles were unaffected on the observed day:
-they carry all ten, so five going dark costs ballots rather than the stage.
+they carry all ten,
+so five going dark costs ballots rather than the stage.
 
 #### Neither provider can be restored on demand, and that settles the seat
 
-Stated by the owner on 2026-08-24, correcting an assumption made when the
+Stated by the owner on 2026-08-24,
+correcting an assumption made when the
 outage was found:
 
 >   I cannot reset charm hyper on demand.
->   I can only reset synthetic, and only sometimes.
+>   I can only reset synthetic,
+>   and only sometimes.
 
 So Charm Hyper capacity returns on its own schedule and cannot be bought back,
 and Synthetic capacity can be restored only sometimes.
@@ -744,14 +900,18 @@ and buying is not resetting.
 On 2026-08-25 the owner bought 10,000 hypercredits
 and `GET /v1/credits` read `10000` within the minute.
 The balance had read `0` continuously through the whole of 2026-08-24,
-before, during and after a pass,
+before,
+during and after a pass,
 so there is no evidence it returns on its own schedule
 and direct evidence it can be bought back.
 
-Charm Hyper is a prepaid balance priced per token, not a rate limit.
+Charm Hyper is a prepaid balance priced per token,
+not a rate limit.
 `package/module/translation-repair/README.md` now says so.
 
-WHAT THIS DOES TO THE DECISION: nothing, and it strengthens the reasoning.
+WHAT THIS DOES TO THE DECISION:
+nothing,
+and it strengthens the reasoning.
 The outage-exposure table below does not rest on recoverability at all;
 it rests on how many editors survive each provider going dry,
 and those counts are unchanged.
@@ -766,7 +926,8 @@ The claim that neither is reliably recoverable does not:
 Synthetic recovers on its own schedule and resets only sometimes,
 while Hyper recovers on purchase.
 
-That is the fact the seating should be judged against, and it argues FOR the
+That is the fact the seating should be judged against,
+and it argues FOR the
 swap more strongly than the quality table did.
 Count what each arrangement does when a provider goes dry:
 
@@ -783,13 +944,16 @@ a thin stage still produces a candidate to judge,
 and the old shape's whole exposure sat on the provider the owner
 can restore only sometimes.
 
-THE COUNTER-ARGUMENT, weighed and rejected.
-A model that is dark contributes nothing, whatever it scores when awake,
+THE COUNTER-ARGUMENT,
+weighed and rejected.
+A model that is dark contributes nothing,
+whatever it scores when awake,
 so the honest comparison is quality times availability.
 The best Synthetic-served alternative for the third seat is
 `hf:openai/gpt-oss-120b` at 13.9 percent against `gemma-4-26b-a4b-it` at 18.3,
 which breaks even when Charm Hyper is up 76 percent of the time.
-Hyper's duty cycle has not been measured, so that ratio cannot be evaluated yet.
+Hyper's duty cycle has not been measured,
+so that ratio cannot be evaluated yet.
 It does not decide the seat either way,
 because it prices only the THIRD seat's marginal quality
 while the arrangement above prices the whole stage's survival,
@@ -798,7 +962,8 @@ and survival is the larger term.
 THE OUTAGE TABLE STOPPED BEING AN ARGUMENT THE SAME AFTERNOON.
 The 15:36 UTC pass reached the naturalness lane with Charm Hyper still dry
 and logged both halves of the prediction within ten milliseconds
-(log times, UTC):
+(log times,
+UTC):
 
 ```text
 17:01:28.240  chunk 2: nothing to edit, unchanged
@@ -809,10 +974,12 @@ and logged both halves of the prediction within ten milliseconds
 The newly seated Hyper model went dark in the seat it had just been given,
 the stage ran on its two remaining seats,
 and a refinement still won and shipped.
-That is the two-of-three row of the table, observed rather than reasoned about,
+That is the two-of-three row of the table,
+observed rather than reasoned about,
 and it is the case the swap was defended on.
 
-WHAT WOULD CHANGE THIS: a measured Hyper duty cycle well under 76 percent,
+WHAT WOULD CHANGE THIS:
+a measured Hyper duty cycle well under 76 percent,
 at which point `hf:openai/gpt-oss-120b` takes the seat on quality as well.
 Recording provider-dry intervals across runs is how that gets measured.
 
@@ -820,32 +987,50 @@ Recording provider-dry intervals across runs is how that gets measured.
 
 Every log already timestamps `NoProviderForModelError`,
 so a first estimate needed no instrumentation and no quota.
-759 agent logs were scanned, and THE DENOMINATOR WAS VALIDATED BEFORE THE RATE:
+759 agent logs were scanned,
+and THE DENOMINATOR WAS VALIDATED BEFORE THE RATE:
 a log written before the second provider existed cannot show a refusal,
 so only the 26 that name a Hyper-only model can count as evidence either way.
-Of those, 24 are wet and 2 are dry, and they fall in one clean block each.
+Of those,
+24 are wet and 2 are dry,
+and they fall in one clean block each.
 
     wet   2026-08-24T09:41:17Z .. 14:58:53Z   24 logs, no refusal in any
     ????  14:58:53Z .. 15:04:28Z              nothing ran, 5m35s wide
     dry   2026-08-24T15:04:28Z .. 17:53:00Z   2 logs plus a model-health probe
 
-Read as fractions of the 8h11m43s observed: wet 64.6 percent, dry 34.3,
-unknown 1.1. That is BELOW the 76 percent break-even.
+Read as fractions of the 8h11m43s observed:
+wet 64.6 percent,
+dry 34.3,
+unknown 1.1.
+That is BELOW the 76 percent break-even.
 
-IT STILL DOES NOT MOVE THE SEAT, for three reasons, and the third is decisive:
+IT STILL DOES NOT MOVE THE SEAT,
+for three reasons,
+and the third is decisive:
 
--   ONE TRANSITION IS NOT A DUTY CYCLE. There is a single wet-to-dry edge in the
-    whole record. A rate over one event is the mistake this document already
-    caught once today, in `qwen3.8-max`'s standing.
+-   ONE TRANSITION IS NOT A DUTY CYCLE.
+    There is a single wet-to-dry edge in the
+    whole record.
+    A rate over one event is the mistake this document already
+    caught once today,
+    in `qwen3.8-max`'s standing.
 
--   THE DRY INTERVAL IS RIGHT-CENSORED. It was still dry at the last observation,
+-   THE DRY INTERVAL IS RIGHT-CENSORED.
+    It was still dry at the last observation,
     so 2h48m is a floor and the fraction could move either way once it lifts.
 
--   THE DRYNESS IS PROBABLY SELF-INFLICTED. A 40-round calibration ran 11:22 to
-    14:32 UTC and spent 937 streams, and a corpus pass ran to 14:58 UTC. Hyper was dry by
-    15:04 UTC. So this measures how fast heavy verification exhausts a budget and how
-    long it takes to refill, which is a fact about the day's usage rather than
-    about the provider. Production traffic has a different shape entirely.
+-   THE DRYNESS IS PROBABLY SELF-INFLICTED.
+    A 40-round calibration ran 11:22 to
+    14:32 UTC and spent 937 streams,
+    and a corpus pass ran to 14:58 UTC.
+    Hyper was dry by
+    15:04 UTC.
+    So this measures how fast heavy verification exhausts a budget and how
+    long it takes to refill,
+    which is a fact about the day's usage rather than
+    about the provider.
+    Production traffic has a different shape entirely.
 
 WHAT WOULD SETTLE IT is the same measurement over days rather than one afternoon,
 which is why the availability recorder persists transitions rather than sampling.
@@ -897,15 +1082,18 @@ Acting on this table would be reading the wrong instrument.
 
 The availability recorder was built because three writer seats sit on Charm Hyper only,
 and the case for them rested on the forty-round quality pass
-plus an availability adjustment that was reasoned about, never measured.
+plus an availability adjustment that was reasoned about,
+never measured.
 Two things were missing:
-a record, and a way to read it.
+a record,
+and a way to read it.
 
 #### The record already existed and was invisible
 
 `provider-budget.ts` reads both meters on a sixty-second cache
 and already decides dry from wet for routing.
-It was saying so at `debug`, which a corpus run does not record.
+It was saying so at `debug`,
+which a corpus run does not record.
 Promoting that one line to `info` turns every future run
 into an availability record at no extra cost,
 bounded by the freshness window rather than by call volume,
@@ -920,7 +1108,8 @@ could find only 26 that could have shown a refusal at all.
 
 #### An unreadable meter was reading back as an available provider
 
-Found while building the reader, before it produced any number.
+Found while building the reader,
+before it produced any number.
 `drynessOf` returned `false` both when a meter reported budget
 and when the meter could not be read at all.
 For routing that is deliberate and stays:
@@ -929,7 +1118,8 @@ For the record it is backwards,
 because a duty cycle counting an unreachable endpoint as a working provider
 reports an outage as uptime.
 
-The meter now answers with `wet`, `dry` or `unreadable`,
+The meter now answers with `wet`,
+`dry` or `unreadable`,
 and `routesAsDry` maps that back to the bit the router wants.
 Routing behaviour is unchanged;
 the existing test that an unreadable meter stays spendable passes untouched.
@@ -959,7 +1149,8 @@ so a recovery gets observed rather than inferred.
 Nothing here re-opens the seating.
 It replaces an argument with an instrument,
 and the instrument has one reading in it:
-2026-08-24T18:17:35Z, `synthetic=wet hyper=dry`,
+2026-08-24T18:17:35Z,
+`synthetic=wet hyper=dry`,
 which is the same outage the roster probe found earlier that day.
 
 ### The editor seats get their own instrument, 2026-08-24
@@ -983,14 +1174,17 @@ and the choice looked like extending the artifact schema
 or inventing claims as fixtures.
 
 Reading the contracts settles it differently.
-`ChunkRepairOutcome.rounds` already carries, per round,
+`ChunkRepairOutcome.rounds` already carries,
+per round,
 the slate judges saw with each candidate's producer attached,
 and every ballot cast over it.
 That is `SelectionRound` one re-shape away,
 and both sides name the same `CandidateProducer` and `SelectionBallot`.
 
 So the calibration drives the lane live and reads the rounds it records.
-Nothing is replayed, nothing is stored, and no artifact field changes.
+Nothing is replayed,
+nothing is stored,
+and no artifact field changes.
 The claims an editor works from are claims models really raised about that passage.
 
 #### What the shape commits to
@@ -1008,7 +1202,8 @@ The refiner standing is reported off the same spend,
 because the refine rounds are recorded beside the editor's
 and belong to a different seat.
 
-Checkers self-certify, here and nowhere else.
+Checkers self-certify,
+here and nowhere else.
 Production forbids a checker proving its own repair,
 and a full editor roster leaves nobody independent when the roster is ten.
 Rotating editors out would reintroduce the survivorship the shape exists to avoid.
@@ -1019,7 +1214,8 @@ not who won the ones that did.
 
 #### What it does not yet decide
 
-Nothing, until it runs on a full roster.
+Nothing,
+until it runs on a full roster.
 Charm Hyper has been dry all day,
 so a run now would seat five of ten
 and produce exactly the survivorship the shape was built to prevent.
@@ -1029,7 +1225,9 @@ which `budget-sample` now makes observable.
 
 #### What the first run of it showed
 
-Zero rounds, on one slice, in 7m18s.
+Zero rounds,
+on one slice,
+in 7m18s.
 That is the lane working rather than the instrument failing:
 critics raised two claims,
 the panel adjudicated two issues,
@@ -1055,22 +1253,32 @@ asserting a standing with its counts.
 The owner authorized removing `qwen3.8-max` from the pipeline because its metered cost is disproportionate
 and exceptionally expensive.
 This supersedes the 2026-08-24 decision that kept it in wide roles.
-No replacement was requested or selected; the operational roster narrows from ten models to nine.
+No replacement was requested or selected;
+the operational roster narrows from ten models to nine.
 
 The removal reaches every active path:
 
 -   `RosterModelId` no longer admits it.
 -   Charm Hyper catalog no longer allowlists it.
--   Corpus critics, translators, judges, pairing, coverage, picture reading, repair panels, and consolidation no longer
+-   Corpus critics,
+    translators,
+    judges,
+    pairing,
+    coverage,
+    picture reading,
+    repair panels,
+    and consolidation no longer
     seat it because they derive from the roster.
--   The request builder no longer carries its automatic-tool exception; every remaining Hyper model uses forced tool
+-   The request builder no longer carries its automatic-tool exception;
+    every remaining Hyper model uses forced tool
     choice.
 
 Dated pricing and spend parsing keep the old label so historical run artifacts can still be accounted.
 Historical measurements remain evidence about their recorded ten-model roster and are not rewritten as current runs.
 
 Rollback requires an explicit owner decision plus new cost evidence.
-Restoring it would require adding the model to roster identity and Hyper catalog together, then rebuilding and validating
+Restoring it would require adding the model to roster identity and Hyper catalog together,
+then rebuilding and validating
 consumer-boundary routing before any live corpus run.
 
 ### Synthetic GLM-5.2 is replaced, 2026-08-29

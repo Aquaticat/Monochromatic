@@ -8087,44 +8087,74 @@ then the seven steps and the three checks.
 
 TianqiChen66621 ran on `.frozen-dist-9a3f28b30` and settled in 3,169,499 ms
 (`TALLY TianqiChen666 status=SETTLED slices=24`):
-148 repair issues, 91 accepted, 85 resolved, every slice changed, no DEFECTS line.
-`verify-published` read the page back: 24 of 24 wordings present, at the length the artifact implies.
-The page (`fixed/people/TianqiChen666/page.en.md`) was read against the original, line by line.
+148 repair issues,
+91 accepted,
+85 resolved,
+every slice changed,
+no DEFECTS line.
+`verify-published` read the page back:
+24 of 24 wordings present,
+at the length the artifact implies.
+The page (`fixed/people/TianqiChen666/page.en.md`) was read against the original,
+line by line.
 
 ### What held
 
-- 治愈 leads with "healed" (page line 134), per the owner's rule.
-- 头壳 is "headpiece" at every occurrence (lines 120, 130, 147, 163); the bare "her head" gap did not recur.
-- The "high-performance robot" carries the Atri gloss (line 152), accurate apparatus.
-- 柜门炸开 is "she was outed" (line 88); 小药娘 does not occur; 跨性别女孩 is "transgender girl".
-- Speech the original sets in 「」 is rendered as blockquotes, the archive's own convention.
+- 治愈 leads with "healed" (page line 134),
+  per the owner's rule.
+- 头壳 is "headpiece" at every occurrence (lines 120,
+  130,
+  147,
+  163);
+  the bare "her head" gap did not recur.
+- The "high-performance robot" carries the Atri gloss (line 152),
+  accurate apparatus.
+- 柜门炸开 is "she was outed" (line 88);
+  小药娘 does not occur;
+  跨性别女孩 is "transgender girl".
+- Speech the original sets in 「」 is rendered as blockquotes,
+  the archive's own convention.
 
 ### Class one hundred eighty-seven: a patch nested a quote
 
 Page line 182 is a quote inside a quote (`> >`) that neither the original (two separate 「」 lines) nor the archive
 (one quote of two paragraphs) has.
 Slice 16's accuracy patch resolved six accepted issues and left its last quoted line at depth two;
-the consolidation declined its slate for the standing, so the nesting shipped.
-Over every artifact, ten repair-lane slices nested a quote two levels deep where neither side nests,
-every one shipped, and the translate lane did it none (`nested-quote-census.mjs`).
-Fixed in `58287ebe3` and `05a18ed02` (guard `d661bb51f`, widened in `9e4d7dafb`):
+the consolidation declined its slate for the standing,
+so the nesting shipped.
+Over every artifact,
+ten repair-lane slices nested a quote two levels deep where neither side nests,
+every one shipped,
+and the translate lane did it none (`nested-quote-census.mjs`).
+Fixed in `58287ebe3` and `05a18ed02` (guard `d661bb51f`,
+widened in `9e4d7dafb`):
 patch application clamps each replacement line to the deepest quote its context allows,
-one level always and deeper only where a whole line the region touches, or the original, nests,
-before any gate reads it, on the editor and naturalness paths alike.
+one level always and deeper only where a whole line the region touches,
+or the original,
+nests,
+before any gate reads it,
+on the editor and naturalness paths alike.
 The mutation check found the first cut reading the replaced text as if its first line started a line,
-so a region starting mid-line at an emoticon like `>>_<<` allowed two levels itself; `05a18ed02` reads whole lines.
+so a region starting mid-line at an emoticon like `>>_<<` allowed two levels itself;
+`05a18ed02` reads whole lines.
 A replay over the ten sites clamps every one to one level with its words unchanged (`nested-quote-replay.mjs`).
 
 ### Seen and not a code class
 
-- Line 54, "sweeping over her face": the archive dropped 扑面而来 altogether;
+- Line 54,
+  "sweeping over her face":
+  the archive dropped 扑面而来 altogether;
     the pipeline restored it but aimed it at her,
     where the original has the glow coming at everyone she knew.
-    A model's reading, left to the judges.
+    A model's reading,
+  left to the judges.
 - The four refrains 所以她是个……女孩吧 render 吧 three ways across slices
-    ("I suppose" twice, "wasn't she?", "must have been"),
+    ("I suppose" twice,
+  "wasn't she?",
+  "must have been"),
     where the archive rendered all four without it.
-    Each slice is decided alone, and no stage sees a refrain repeated across slices;
+    Each slice is decided alone,
+  and no stage sees a refrain repeated across slices;
     recorded as an open quality question rather than fixed on one page.
 
 ## Whole-package audit, 2026-09-27: class one hundred eighty-six onward
@@ -8132,7 +8162,10 @@ A replay over the ten sites clamps every one to one level with its words unchang
 The owner asked:
 "audit the whole translation-repair pkg for all the mistakes we've made and fix all of them",
 "try to prevent recurrence by recording them and what to do in pkg-local docs",
-and "Mistakes made, ever, for this pkg, not just today."
+and "Mistakes made,
+ever,
+for this pkg,
+not just today."
 Then:
 "You don't need to immediately start/restart a costly run if you believe further fixes should be done before
 launching it."
@@ -8147,16 +8180,20 @@ guard and status lives in `package/module/translation-repair/doc/audit-ledger.md
 ### The owner's answers
 
 - The 治愈 correction:
-    one of the three reasons given was a misquotation (the page writes 安抚, not 安慰);
-    the owner was told, and "healed first" stands on the other two.
+    one of the three reasons given was a misquotation (the page writes 安抚,
+  not 安慰);
+    the owner was told,
+  and "healed first" stands on the other two.
 - "Objections to polish":
     over an ineligible standing the gate's objections become required corrections for the polish
     (fourteenth addendum of `doc/decision/translation-repair-ineligible-standing.md`).
-- "Allow it, because it's the proper name of an org.":
+- "Allow it,
+  because it's the proper name of an org.":
     小药娘 inside mikaela_khara's registered company name is not the term
     (`doc/decision/translation-repair-community-glossary.md`).
 - "Italics for works" (`doc/decision/translation-repair-title-style.md`).
-- ""took medication" is fine, because it's not replicable.":
+- ""took medication" is fine,
+  because it's not replicable.":
     `doc/decision/translation-repair-reader-protection-cause-of-death.md`.
 - "Preference + polish":
     a slate rejected twice over an ineligible standing ships by the class one hundred seventy-four order,
@@ -8164,26 +8201,38 @@ guard and status lives in `package/module/translation-repair/doc/audit-ledger.md
 
 ### Landed so far
 
-- `0b8788dae`: the gate sheet no longer says an ineligible standing stops the entry.
-- `cc96eca77` (class one hundred eighty-six): glossary terms,
+- `0b8788dae`:
+  the gate sheet no longer says an ineligible standing stops the entry.
+- `cc96eca77` (class one hundred eighty-six):
+  glossary terms,
     renderings and refused forms match at word boundaries with tone marks,
     case,
     hyphens and CJK spacing folded;
     a lowercase or line-start OD is held (14 XingZ60 runs had shipped it).
-- `9eba04abb`: medication with nothing to copy may stay;
+- `9eba04abb`:
+  medication with nothing to copy may stay;
     titles of works stand in italics.
-- `f3cd0ef83`: an organization's proper name is not the 药娘 term.
-- `00eed316e`: the translate writer gets the ordered tense rule,
+- `f3cd0ef83`:
+  an organization's proper name is not the 药娘 term.
+- `00eed316e`:
+  the translate writer gets the ordered tense rule,
     and its no-addition rule no longer excuses the existing translation's narrative.
-- `9858a7acb`: production translators receive the archive dispute note.
-- `b45000747`: every rendered sheet is in Canadian spelling,
+- `9858a7acb`:
+  production translators receive the archive dispute note.
+- `b45000747`:
+  every rendered sheet is in Canadian spelling,
     guarded through a shared rendered-sheets fixture.
-- `e8f0b0369`: nine house-policy wordings,
+- `e8f0b0369`:
+  nine house-policy wordings,
     among them the house rules outranking any other rule on the same sheet.
     One reading was adopted without an owner answer:
-    a term with no English equivalent is "kept in English letters (translated literally, or romanized where it is a
-    name), never left in Han", which the owner confirmed on 2026-09-27 ("English letters").
-- `ce824d933`: the typed decision seat reads the house rules and the community block.
+    a term with no English equivalent is "kept in English letters (translated literally,
+  or romanized where it is a
+    name),
+  never left in Han",
+  which the owner confirmed on 2026-09-27 ("English letters").
+- `ce824d933`:
+  the typed decision seat reads the house rules and the community block.
 
 The full suite passed 1174 at `b45000747`.
 
@@ -8228,7 +8277,8 @@ each fixed with its guard shown failing first:
     hulicaijia and XingZ60,
     and 你看 as a verb with an object on zhangyubaka (被你看到) and Rentable_A (替你看管).
     A clause-opening 你看 or 你瞧 with no complement is no longer counted
-    (guard `5cdeebb58`, fix `e5b69c658`).
+    (guard `5cdeebb58`,
+  fix `e5b69c658`).
 - A gate that preferred an ineligible standing stopped the entry although the slate had chosen a valid
     proposal.
     The class fifty-four note had kept that stop,
@@ -8236,14 +8286,17 @@ each fixed with its guard shown failing first:
     the rule fails the slice only where no valid proposal exists.
     `shipPastForfeitStanding` (renamed from `shipPastUndecidedGate`) now ships the slate's choice with
     `gate-preferred-ineligible-standing` recorded
-    (guards `e7e6f706a` and `44e27ca0e`, fix `419605ff4`).
+    (guards `e7e6f706a` and `44e27ca0e`,
+  fix `419605ff4`).
 - Every consolidation purchase is now tagged `[slice N]`,
     as the lane contest already was
-    (guard `44e27ca0e`, fix `2f26f440d`).
+    (guard `44e27ca0e`,
+  fix `2f26f440d`).
 
 Lint 0/0 and types clean at `2f26f440d`;
 the full suite passes 1169 with none failing (`suite-class185.log`).
-TianqiChen66620 launched on `.frozen-dist-2f26f440d` (scope `pass-TianqiChen66620`, pid 1459739).
+TianqiChen66620 launched on `.frozen-dist-2f26f440d` (scope `pass-TianqiChen66620`,
+pid 1459739).
 
 ## Glossary audit and TianqiChen66616 read, 2026-09-27: class one hundred eighty-four
 
@@ -8253,31 +8306,61 @@ The owner answered the class one hundred eighty-three entry:
 "'kigurumi的记忆结束' - this isn't really a dictionary keyword though?"
 and "Also check if other items in the glossary have the same problems and fix them too."
 A glossary holds dictionary terms only:
-words, set phrases, names and community vocabulary.
+words,
+set phrases,
+names and community vocabulary.
 A lesson learned from one sentence becomes a general rule on every sheet,
 since a rule reaches the next page's sentence
 and an entry keyed on one sentence's words never fires again.
 
 ### What the audit changed
 
-Guard `1bd589eb2` (`glossary-dictionary-terms.unit.test.ts`), red first;
+Guard `1bd589eb2` (`glossary-dictionary-terms.unit.test.ts`),
+red first;
 fix `5860bc0b1`.
 
 Twenty-three rendering-glossary entries were keyed on one sentence and are removed:
-用这种方式, 原因是多方面的, 特例, 陷入癫狂, 环境的问题, 相关医院, 巨大的影响,
-主动提出, ICU 抢救, 代替, 性格非常好, 人生中的第一颗, 留下了巨大的创伤, ，作者,
-被她治愈, 应该会有更好的生活, 遇到的却是, 在隙中, 一切都会有机会, 离开我们的时候,
-所以她是个, the UNO line and kigurumi的记忆结束.
-`rendering-glossary-slang.ts` and the credit, life-event and slang tests went with them.
+用这种方式,
+原因是多方面的,
+特例,
+陷入癫狂,
+环境的问题,
+相关医院,
+巨大的影响,
+主动提出,
+ICU 抢救,
+代替,
+性格非常好,
+人生中的第一颗,
+留下了巨大的创伤,
+，作者,
+被她治愈,
+应该会有更好的生活,
+遇到的却是,
+在隙中,
+一切都会有机会,
+离开我们的时候,
+所以她是个,
+the UNO line and kigurumi的记忆结束.
+`rendering-glossary-slang.ts` and the credit,
+life-event and slang tests went with them.
 
 Their lessons are five rules in `english-usage-policy.ts`,
 which `house-policy.ts` splices into `HOUSE_POLICY_BLOCK` on every sheet:
 
-- `KEPT_SUBJECT_RULE`: a clause keeps the subject the original writes.
-- `IDIOMATIC_ENGLISH_RULE`: the English an English writer would use, never the Chinese construction.
-- `GRAMMATICAL_ENGLISH_RULE`: covers the bare verb after make or let, matching tag questions and point of view.
-- `CREDIT_BY_RULE`: "by", "lyrics by" or "music by" before a maker's name.
-- `GAME_JARGON_RULE`: a game's word takes that game's English term.
+- `KEPT_SUBJECT_RULE`:
+  a clause keeps the subject the original writes.
+- `IDIOMATIC_ENGLISH_RULE`:
+  the English an English writer would use,
+  never the Chinese construction.
+- `GRAMMATICAL_ENGLISH_RULE`:
+  covers the bare verb after make or let,
+  matching tag questions and point of view.
+- `CREDIT_BY_RULE`:
+  "by",
+  "lyrics by" or "music by" before a maker's name.
+- `GAME_JARGON_RULE`:
+  a game's word takes that game's English term.
 
 Some words refused a form that is right in other contexts.
 Each now refuses nothing and names the condition in its why:
@@ -8290,16 +8373,20 @@ and 三剑客 ("the Three Musketeers").
 The guard asserts the rules on the translate and select sheets,
 the removed keys absent,
 and the context-right forms valid.
-Lint 0/0, types clean.
+Lint 0/0,
+types clean.
 The full suite read 1,167 PASS with one FAIL,
 the load-sensitive `lane-contest-stage` grace-window case,
 which passed when run alone (as on `suite-class110.log`).
 
 ### TianqiChen66616 read
 
-TianqiChen66616 ran on `.frozen-dist-730d11579`, the class one hundred eighty-three build before the audit.
+TianqiChen66616 ran on `.frozen-dist-730d11579`,
+the class one hundred eighty-three build before the audit.
 It SETTLED in 1,028 s (17.1 min):
-24 slices, 22 differing from the archive, 93 repair issues with 40 accepted.
+24 slices,
+22 differing from the archive,
+93 repair issues with 40 accepted.
 
 Classes one hundred eighty-two and eighty-three are live on the page:
 
@@ -8316,7 +8403,8 @@ and the second quote once all hold.
 Two fandom words shipped in their everyday sense:
 
 - 这次的变娃娃，真的要融为一体了 shipped as
-  "in this game of becoming a doll, you really will become one with it".
+  "in this game of becoming a doll,
+  you really will become one with it".
   Kigurumi players call putting on the costume 变娃;
   a Chinese report on the hobby says 偶装玩家会将穿上偶装称作"变娃".
   English "doll up" means dressing smartly.
@@ -8327,40 +8415,60 @@ Two fandom words shipped in their everyday sense:
 Both are dictionary words,
 seeded in `community-glossary-fandom.ts`:
 
-- 变娃 renders as "put on the kigurumi", "in kigurumi" or "became the doll".
+- 变娃 renders as "put on the kigurumi",
+  "in kigurumi" or "became the doll".
   It refuses "dolled up" and "dolling up".
-- 治愈 renders as "healed", "soothed" or "cured".
+- 治愈 renders as "healed",
+  "soothed" or "cured".
   It refuses nothing.
 
 ### The 治愈 correction
 
 The first build (`06a2c5c05`) led 治愈 with "comforted",
 and its why said "healed" reads as curing a wound.
-The owner answered "'被她治愈 should read "comforted", not "healed".' - I kinda disagree here."
+The owner answered "'被她治愈 should read "comforted",
+not "healed".' - I kinda disagree here."
 The reading was wrong on three counts:
 
 - ~~The page writes 安慰 where it means comfort,
   so "comforted" for 治愈 collapses the writer's two words into the weaker one.~~
-  Corrected 2026-09-28 (ledger C6 and H3): a misquotation.
+  Corrected 2026-09-28 (ledger C6 and H3):
+  a misquotation.
   The page writes 安抚 (`page.md` line 89) and never 安慰,
   so there were no two words to collapse;
-  and these three counts were the change's reasons, not the owner's, who wrote only "I kinda disagree here".
-- 治愈系 is "healing" in the fandom's own English (iyashikei, "healing anime"),
+  and these three counts were the change's reasons,
+  not the owner's,
+  who wrote only "I kinda disagree here".
+- 治愈系 is "healing" in the fandom's own English (iyashikei,
+  "healing anime"),
   and a kigurumi doll beside it makes the emotional sense plain.
 - The archive's translator wrote "those she has healed";
-  only the tense was wrong, and the past-tense rule covers that.
+  only the tense was wrong,
+  and the past-tense rule covers that.
 
 The owner chose "Healed first (Recommended)" over removing the entry.
-Guard `2234f1a92` red first, fix `23f4e15d6`:
+Guard `2234f1a92` red first,
+fix `23f4e15d6`:
 the entry leads with "healed" and its why says never to flatten 治愈 into "comforted" where the page keeps 安慰 apart
-(corrected 2026-09-28 in `357f534b7`: the why no longer names 安慰, ledger C6).
-Lint 0/0; the full suite at `23f4e15d6` read 1,169 PASS, 0 FAIL.
-TianqiChen66618 was stopped a few minutes in, and TianqiChen66619 launched on `.frozen-dist-23f4e15d6`.
+(corrected 2026-09-28 in `357f534b7`:
+the why no longer names 安慰,
+ledger C6).
+Lint 0/0;
+the full suite at `23f4e15d6` read 1,169 PASS,
+0 FAIL.
+TianqiChen66618 was stopped a few minutes in,
+and TianqiChen66619 launched on `.frozen-dist-23f4e15d6`.
 
-Guard `644f23cf5` (`community-glossary-kigurumi.unit.test.ts`), red first (three of four),
-fix `06a2c5c05`, lint 0/0, types clean.
-The full suite at `06a2c5c05` was red on the community seeds pin, which lists every seeded term;
-the two terms joined it in `6a6cd1a84`, and the suite there read 1,169 PASS, 0 FAIL.
+Guard `644f23cf5` (`community-glossary-kigurumi.unit.test.ts`),
+red first (three of four),
+fix `06a2c5c05`,
+lint 0/0,
+types clean.
+The full suite at `06a2c5c05` was red on the community seeds pin,
+which lists every seeded term;
+the two terms joined it in `6a6cd1a84`,
+and the suite there read 1,169 PASS,
+0 FAIL.
 TianqiChen66617 (`.frozen-dist-5860bc0b1`) was stopped a few minutes in when the fix landed.
 TianqiChen66618 launched on `.frozen-dist-06a2c5c05`.
 
@@ -8368,34 +8476,45 @@ TianqiChen66618 launched on `.frozen-dist-06a2c5c05`.
 
 TianqiChen66614 ran on `.frozen-dist-768408d1d` and SETTLED at 02:58 UTC in 716 s (11.9 min),
 the fastest run on this entry,
-24 slices published, 23 changed.
-The full suite at `b75ec5c51` read 1,168 PASS, 0 FAIL.
+24 slices published,
+23 changed.
+The full suite at `b75ec5c51` read 1,168 PASS,
+0 FAIL.
 
 Classes one hundred eighty and eighty-one are live.
 The robot line reads "her friends and family never forgot her image as the “high-performance robot.”";
 both hormone sentences say "hormones";
 no `”.` or `”,` is left on the page,
-and "a trusted “teacher,”" carries its comma inside.
+and "a trusted “teacher,”"
+carries its comma inside.
 The second quote appears once.
 The seats glm-5.3 and Qwen3.8-27B threw on every call (no provider on Synthetic or Hyper),
 as on the runs before it.
 
 Class one hundred eighty-two:
 the source's 暗藏心底的梦想因为柜门炸开屡屡受阻 shipped as
-"The dreams she kept locked in her heart were blocked again and again, each time the closet door blew open."
+"The dreams she kept locked in her heart were blocked again and again,
+each time the closet door blew open."
 The figure stayed literal,
 and "each time" turned the source's cause (因为) into a repeated event.
 柜门炸开 is 炸柜 written out,
 and the community glossary's 炸柜 entry (class seventy-two) never matched it.
 The census found it on this page alone in the pin.
-Built as a community-glossary entry beside 炸柜 with the same renderings ("outed", "blown out of the closet")
+Built as a community-glossary entry beside 炸柜 with the same renderings ("outed",
+"blown out of the closet")
 and a why naming the cause;
-guard `cb8450ebb` (`community-glossary-closet.unit.test.ts`), red first,
-fix `2a0f947b5`, lint 0/0, types clean, full suite 1,169 PASS, 0 FAIL.
+guard `cb8450ebb` (`community-glossary-closet.unit.test.ts`),
+red first,
+fix `2a0f947b5`,
+lint 0/0,
+types clean,
+full suite 1,169 PASS,
+0 FAIL.
 
 Class one hundred eighty-three:
 the kigurumi quote 我会在离开我们的时候以kigurumi的记忆结束 shipped as
-"when I leave you all, they will end with the memories of kigurumi",
+"when I leave you all,
+they will end with the memories of kigurumi",
 a memory ending with memories,
 where the source's subject is 我.
 The archive reads "they" too ("and they will end with it when I leave"),
@@ -8406,8 +8525,11 @@ Built as a phrasing-glossary entry keyed on kigurumi的记忆结束
 (one page in the pin),
 "I will end with memories of kigurumi" first and "they will end with" refused,
 which makes the archive's rendering ineligible for the slice;
-guard `42b937ce6` (`rendering-glossary-subject.unit.test.ts`), red first,
-fix `730d11579`, lint 0/0, types clean.
+guard `42b937ce6` (`rendering-glossary-subject.unit.test.ts`),
+red first,
+fix `730d11579`,
+lint 0/0,
+types clean.
 TianqiChen66615 was killed about 9 min in and TianqiChen66616 launched on `.frozen-dist-730d11579`.
 The rule now stands in the handover:
 a read never reports a translation as "not built".
@@ -8419,15 +8541,20 @@ so the lesson became `KEPT_SUBJECT_RULE` on every sheet
 ## TianqiChen66613 read, 2026-09-27: SETTLED, classes one hundred eighty and eighty-one
 
 TianqiChen66613 ran on `.frozen-dist-ca5e56240` and SETTLED at 02:40 UTC in 947 s (15.8 min),
-24 slices, every page slice changed, 115 repair issues with 67 accepted.
+24 slices,
+every page slice changed,
+115 repair issues with 67 accepted.
 The pairing placed 24 of 24 original and 21 of 21 archive blocks,
 so no passage was carried and class one hundred seventy-nine had nothing to act on.
-The second quote stands once on the page, in its own blockquote as the source's second 「」 paragraph.
+The second quote stands once on the page,
+in its own blockquote as the source's second 「」 paragraph.
 The robot line reads "her close friends never forgot her image as the “high-performance robot”."
 
-Three slips, built as two classes under the standing instruction of 2026-09-25:
+Three slips,
+built as two classes under the standing instruction of 2026-09-25:
 
-- 亲友 ("relatives and friends") shipped as the archive's "close friends", dropping the family.
+- 亲友 ("relatives and friends") shipped as the archive's "close friends",
+  dropping the family.
   The pin carries 亲友 in two paragraphs on two entries (TianqiChen666 and MTF_0615),
   neither with another word for friends beside it,
   so the phrasing glossary refuses "close friends" and seeds "friends and family" (class one hundred eighty).
@@ -8435,44 +8562,66 @@ Three slips, built as two classes under the standing instruction of 2026-09-25:
   where TianqiChen66611 had "hormones".
   The pin carries 激素 in seven paragraphs on five entries,
   one of them (shi_Yumiaoya) also writing 药物 where "medication" renders that word
-  (corrected 2026-09-28, ledger R16: this line once counted two, the second a 药 inside 药娘),
+  (corrected 2026-09-28,
+  ledger R16:
+  this line once counted two,
+  the second a 药 inside 药娘),
   so the medical glossary seeds "hormones" without a refused form (class one hundred eighty).
 - The period sat outside the closing quote (`“high-performance robot”.`) on a page that also wrote `“Old Man Chen,”`.
-  Canadian Press style sets a period or comma inside, and the archive does so 224 times to 32 across the pin.
+  Canadian Press style sets a period or comma inside,
+  and the archive does so 224 times to 32 across the pin.
   `placeClosingPunctuation` in `closing-punctuation.ts` moves the mark inside
   a curly closing double quote in prose during the typography restoration,
-  leaving an ellipsis, a question or exclamation mark, a quotation already ending in its own mark,
-  and code or markup alone; the en_CA policy bullet says the same (class one hundred eighty-one).
+  leaving an ellipsis,
+  a question or exclamation mark,
+  a quotation already ending in its own mark,
+  and code or markup alone;
+  the en_CA policy bullet says the same (class one hundred eighty-one).
   Archive text that no candidate replaces keeps its own placement.
 
-Guards red first at `53c7f1f2f`, fix `768408d1d`, lint 0/0, types clean.
-The first suite at `768408d1d` failed one case, the class one hundred forty-two attribute guard,
-which had asserted `said “hi”.` incidentally; its point (attribute and code span straight) holds,
+Guards red first at `53c7f1f2f`,
+fix `768408d1d`,
+lint 0/0,
+types clean.
+The first suite at `768408d1d` failed one case,
+the class one hundred forty-two attribute guard,
+which had asserted `said “hi”.` incidentally;
+its point (attribute and code span straight) holds,
 and `b75ec5c51` expects `said “hi.”`.
-TianqiChen66614 launched at 02:46 UTC on `.frozen-dist-768408d1d` (scope `pass-TianqiChen66614`, pid 1092114).
+TianqiChen66614 launched at 02:46 UTC on `.frozen-dist-768408d1d` (scope `pass-TianqiChen66614`,
+pid 1092114).
 
 ## TianqiChen66612 killed and TianqiChen66613 launched on class one hundred seventy-nine, 2026-09-27
 
 TianqiChen66612 ran on `.frozen-dist-325c448ba` (classes one hundred seventy-six to seventy-eight)
-and was killed by pid at 02:23 UTC, 10.5 minutes into the repair lane,
+and was killed by pid at 02:23 UTC,
+10.5 minutes into the repair lane,
 under ALWAYS KILL AND RELAUNCH once `ca5e56240` landed.
-Its admission printed no fold line: the pairing did not leave the robot paragraph carried this time,
+Its admission printed no fold line:
+the pairing did not leave the robot paragraph carried this time,
 so class one hundred seventy-nine had nothing to act on there.
 Its waiter first watched the pid of TianqiChen66611
 (the script had been derived by `sed` from the 66611 waiter and kept the old pid);
 fixed and rerun.
 
 TianqiChen66613 launched at 02:26 UTC on `.frozen-dist-ca5e56240`
-(scope `pass-TianqiChen66613`, pid 1066103, overlap 8).
+(scope `pass-TianqiChen66613`,
+pid 1066103,
+overlap 8).
 Read first the admission's `carried on` lines and any `insertion-carried-shifted` finding,
-then slice 13: the Atri line, any `translate-archive-disputed` finding, and the gate
+then slice 13:
+the Atri line,
+any `translate-archive-disputed` finding,
+and the gate
 (`undecided-gate-ships-proposal (standing flawed by every contest ballot)` if it tied),
-then quote 2 once on the page, then the stray closing quote (class one hundred seventy-five).
+then quote 2 once on the page,
+then the stray closing quote (class one hundred seventy-five).
 
 ## TianqiChen66611 read, 2026-09-27: SETTLED, quote 2 twice, class one hundred seventy-nine
 
 TianqiChen66611 ran on `.frozen-dist-c3c96f289` and SETTLED in 1,103 s (18.4 min),
-25 slices, 22 changed on the page.
+25 slices,
+22 changed on the page.
 Slice 13's robot paragraph shipped as
 "her friends and family never forgot her “high-performance robot” image",
 the fandom glossary line not yet built on that build.
@@ -8491,28 +8640,38 @@ the carrier then takes the carried source under its own index,
 and its own source joins the paired slice on its far side
 where the two sources abut across blank space alone
 (finding `insertion-carried-shifted (slice N's own source joins slice M: ...)`).
-Anywhere else the plain fold stands, so no source is ever dropped.
+Anywhere else the plain fold stands,
+so no source is ever dropped.
 The neighbour helpers moved to `insertion-carried-neighbours.ts`,
 `AnchorHolder` carries the block id,
-and the admission now logs every carried passage's evidence, folded or not
+and the admission now logs every carried passage's evidence,
+folded or not
 (the 66611 log carried no evidence line for the folded slice 14).
 Replayed over the real slices 11 to 15 with the robot paragraph as the evidence
-(`replay-179.mjs`): slice 12 took both quotes against its quote block,
+(`replay-179.mjs`):
+slice 12 took both quotes against its quote block,
 slice 13 took the robot paragraph alone.
-Lint 0/0, types clean, full suite 1,165 PASS with the load-sensitive `lane-contest-stage` grace-window case failing under
-the parallel run and passing alone (`suite-class179.log`), as on the class one hundred ten suite.
+Lint 0/0,
+types clean,
+full suite 1,165 PASS with the load-sensitive `lane-contest-stage` grace-window case failing under
+the parallel run and passing alone (`suite-class179.log`),
+as on the class one hundred ten suite.
 
-Observation, not a class:
+Observation,
+not a class:
 the repair lane's text for slice 13 carried a doubled full stop ("image.. Right up to");
-it never reached the page, and no published page under `~/temp/agent` carries one.
+it never reached the page,
+and no published page under `~/temp/agent` carries one.
 
 ## TianqiChen66610 read, 2026-09-26: SETTLED, classes one hundred seventy-five to seventy-eight
 
 TianqiChen66610 ran on `.frozen-dist-7390294ff` and SETTLED in 17.0 min.
 Class one hundred seventy-four was not exercised (no tie).
 
-- Class one hundred seventy-five: slice 16 shipped a straight stray closing quote the curly stray-quote floor missed;
-    fixed in `c3c96f289` (guard `3f04e53cb`), the floor reading a straight double quote by its shape.
+- Class one hundred seventy-five:
+  slice 16 shipped a straight stray closing quote the curly stray-quote floor missed;
+    fixed in `c3c96f289` (guard `3f04e53cb`),
+  the floor reading a straight double quote by its shape.
 - Slice 13 shipped the archive's gloss of the "high-performance robot" image
     as "a cute character she cosplayed as":
     the repair lane's adjudicators accepted major mistranslation claims against it,
@@ -8521,200 +8680,353 @@ Class one hundred seventy-four was not exercised (no tie).
     which kept the standing (class one hundred seventy-seven),
     and nothing named the character (class one hundred seventy-eight).
 - Owner's answers of 2026-09-26:
-    "Major+ accuracy, also "high-performance robot" is referring to Atri (search)."
+    "Major+ accuracy,
+  also "high-performance robot" is referring to Atri (search)."
     and "Slate's choice (Recommended)".
-    Atri is the robot heroine of ATRI -My Dear Moments-, whose catchphrase is "Because I'm high-performance!".
-- Class one hundred seventy-six: `25b9eaec7` (guard `bd6ad35e8`), the eleventh addendum of
+    Atri is the robot heroine of ATRI -My Dear Moments-,
+  whose catchphrase is "Because I'm high-performance!".
+- Class one hundred seventy-six:
+  `25b9eaec7` (guard `bd6ad35e8`),
+  the eleventh addendum of
     `doc/decision/translation-repair-ineligible-standing.md`.
-- Class one hundred seventy-seven: `325c448ba` (guard `6243c68d0`), the twelfth addendum.
-- Class one hundred seventy-eight: 高性能机器人 seeded in `community-glossary-fandom.ts`
-    with Atri named in its note (`55d6a72db`, guard `754c8211f`, glossary pin `842ffe399`).
-- Observation, not built: slice 1's critics missed the omission of 更多人.
-- Full suite after class one hundred seventy-seven: 1,166 PASS, 0 FAIL.
+- Class one hundred seventy-seven:
+  `325c448ba` (guard `6243c68d0`),
+  the twelfth addendum.
+- Class one hundred seventy-eight:
+  高性能机器人 seeded in `community-glossary-fandom.ts`
+    with Atri named in its note (`55d6a72db`,
+  guard `754c8211f`,
+  glossary pin `842ffe399`).
+- Observation,
+  not built:
+  slice 1's critics missed the omission of 更多人.
+- Full suite after class one hundred seventy-seven:
+  1,166 PASS,
+  0 FAIL.
 
 ## TianqiChen6669 read, 2026-09-26: INCOMPLETE on a run-off tie, class one hundred seventy-four
 
 TianqiChen6669 ran on `.frozen-dist-fce655de0` and stopped INCOMPLETE after 1,458 s (24.3 min),
 Bedrock and OpenRouter alone with Synthetic and Hyper dry,
-at the consolidation of slice 4 (`slate-declined-standing`); no page and no artifact.
+at the consolidation of slice 4 (`slate-declined-standing`);
+no page and no artifact.
 
-The glossary refusals of classes one hundred sixty-one, sixty-two, sixty-four, sixty-seven and seventy-two fired live
-("she has healed", "type ii diabetes", "made her met with", "added a lot", and "she’s a" three times);
-classes one hundred seventy, seventy-one and seventy-three were not reached on a page.
+The glossary refusals of classes one hundred sixty-one,
+sixty-two,
+sixty-four,
+sixty-seven and seventy-two fired live
+("she has healed",
+"type ii diabetes",
+"made her met with",
+"added a lot",
+and "she’s a" three times);
+classes one hundred seventy,
+seventy-one and seventy-three were not reached on a page.
 
 Class one hundred seventy-four:
-the class one hundred seventy-two floor refused the archive's "So, she’s a girl of incredible perseverance",
+the class one hundred seventy-two floor refused the archive's "So,
+she’s a girl of incredible perseverance",
 so the consolidation standing on slice 4 was ineligible;
 the contest had split 2 repair to 2 translate over "on" against "with" for 在最虚弱的身体上;
 the slate of three valid renderings tied 1.5 to 1.5
 ("bore the greatest pressure on her frailest body" against "with the frailest body"),
 the run-off over those two tied 1.5 to 1.5 again,
-and a run-off of two has nothing left to narrow, so the entry stopped over two valid sentences.
+and a run-off of two has nothing left to narrow,
+so the entry stopped over two valid sentences.
 Fixed in `8db508b0a` (guard red first `8666d2480`):
-`settleAbsentDecline` in `translate-runoff-tie.ts`, called from `judgeTranslateSlate` wherever the slice has no incumbent,
+`settleAbsentDecline` in `translate-runoff-tie.ts`,
+called from `judgeTranslateSlate` wherever the slice has no incumbent,
 ships one candidate when a challenge round ties across every candidate it asked about,
-the repair lane's text first, then the translate lane's, then slate order,
+the repair lane's text first,
+then the translate lane's,
+then slate order,
 with the finding `translate-runoff-tie-broken (<basis>)`;
-a partial tie still narrows, and a slice with an incumbent keeps it.
+a partial tie still narrows,
+and a slice with an incumbent keeps it.
 Recorded as the tenth addendum of `doc/decision/translation-repair-ineligible-standing.md`.
 
 The class fifty-three guard that expected a repeated tie to raise now expects the slate-order ship (`7390294ff`).
-Lint 0/0, types clean, full suite 1,166 PASS, 0 FAIL (`suite-class174b.log`).
-TianqiChen66610 launched on `.frozen-dist-7390294ff` (scope `pass-TianqiChen66610`, pid 877799).
+Lint 0/0,
+types clean,
+full suite 1,166 PASS,
+0 FAIL (`suite-class174b.log`).
+TianqiChen66610 launched on `.frozen-dist-7390294ff` (scope `pass-TianqiChen66610`,
+pid 877799).
 
 ## TianqiChen6668 read, 2026-09-26: class one hundred sixty-eight live, classes one hundred seventy to seventy-three
 
-TianqiChen6668 ran on `.frozen-dist-5f7fa6742` and SETTLED in 2,005 s (33.4 min), one attempt,
-1,861 calls, 0.97 USD by the spend lines, 12 abandoned streams (0.05 USD),
+TianqiChen6668 ran on `.frozen-dist-5f7fa6742` and SETTLED in 2,005 s (33.4 min),
+one attempt,
+1,861 calls,
+0.97 USD by the spend lines,
+12 abandoned streams (0.05 USD),
 Bedrock and OpenRouter alone with Synthetic and Hyper dry
-(glm-5.3 threw 117 of 117 on Hyper dry; Qwen threw 231 and Kimi 99 with no reachable provider).
-Front matter equal, three headings, six em-dashes left as the owner said, no TA,
-one unendorsed standing, 38 abstention lines.
+(glm-5.3 threw 117 of 117 on Hyper dry;
+Qwen threw 231 and Kimi 99 with no reachable provider).
+Front matter equal,
+three headings,
+six em-dashes left as the owner said,
+no TA,
+one unendorsed standing,
+38 abstention lines.
 
 Class one hundred sixty-eight is live:
 the log carries `page assembly: blockquote-quotes-unwrapped (slice 16: “My... wish? / … unwrapped …`
 and no quoted blockquote paragraph is on the page.
-Class one hundred sixty-nine was not exercised: the bench wrote "She used this handle" and no prose `id` reached the page.
+Class one hundred sixty-nine was not exercised:
+the bench wrote "She used this handle" and no prose `id` reached the page.
 Classes one hundred sixty to sixty-seven hold:
-type 2 diabetes, the headpiece, Arona and Atri, "deserved a better life",
-"met with family misunderstandings", "the draw cards really piled up", "a small box"
+type 2 diabetes,
+the headpiece,
+Arona and Atri,
+"deserved a better life",
+"met with family misunderstandings",
+"the draw cards really piled up",
+"a small box"
 and "through that narrow opening".
 
-Classes one hundred seventy to seventy-two, three wording slips on terms the census finds on TianqiChen666 alone:
-"Then everything will have a chance." for 这样一切都会有机会的 (source line 67, class 170);
-"and when I leave us, it will end with my memories of Kigurumi" for 我会在离开我们的时候 (source line 49, class 171);
-and "So, she’s a girl of incredible perseverance…" and "So, she’s a girl who can be trusted…",
-the archive's present tense kept on two of the four parallel 所以她是个…女孩吧 lines (source lines 17, 25, 33 and 37)
-beside "So she was a girl…" on the others, against the house rule's past tense (class 172).
-Fixed in `2151fbbc8` (guard red first `91d3fd5d3`): three `GRAMMAR_GLOSSARY` entries in `rendering-glossary-grammar.ts`
-seed 一切都会有机会 ("there will be hope", "everything will still be possible"; refused "everything will have a chance"),
-离开我们的时候 ("when I leave", "when I leave you all"; refused "when I leave us")
-and 所以她是个 ("so she was"; refused "she’s a", "she's a" and "she is a"),
+Classes one hundred seventy to seventy-two,
+three wording slips on terms the census finds on TianqiChen666 alone:
+"Then everything will have a chance."
+for 这样一切都会有机会的 (source line 67,
+class 170);
+"and when I leave us,
+it will end with my memories of Kigurumi" for 我会在离开我们的时候 (source line 49,
+class 171);
+and "So,
+she’s a girl of incredible perseverance…" and "So,
+she’s a girl who can be trusted…",
+the archive's present tense kept on two of the four parallel 所以她是个…女孩吧 lines (source lines 17,
+25,
+33 and 37)
+beside "So she was a girl…" on the others,
+against the house rule's past tense (class 172).
+Fixed in `2151fbbc8` (guard red first `91d3fd5d3`):
+three `GRAMMAR_GLOSSARY` entries in `rendering-glossary-grammar.ts`
+seed 一切都会有机会 ("there will be hope",
+"everything will still be possible";
+refused "everything will have a chance"),
+离开我们的时候 ("when I leave",
+"when I leave you all";
+refused "when I leave us")
+and 所以她是个 ("so she was";
+refused "she’s a",
+"she's a" and "she is a"),
 so a candidate writing a refused form is refused before any judge.
 
 Class one hundred seventy-three:
-the page wrote the anime's title as “Anohana:\nThe Flower We Saw That Day”, in curly quotes broken after the colon,
-where the archive sets *Anohana: The Flower We Saw That Day* in italics.
+the page wrote the anime's title as “Anohana:\nThe Flower We Saw That Day”,
+in curly quotes broken after the colon,
+where the archive sets *Anohana:
+The Flower We Saw That Day* in italics.
 Fixed in `fce655de0` (guard red first `cdb756270`):
-`restoreArchiveItalicTitles` in `corpus-run/archive-italic-title-restore.ts`, with the span reading in
-`corpus-run/archive-italic-spans.ts`, runs after `unwrapBlockquoteQuotes` in the page assembly.
+`restoreArchiveItalicTitles` in `corpus-run/archive-italic-title-restore.ts`,
+with the span reading in
+`corpus-run/archive-italic-spans.ts`,
+runs after `unwrapBlockquoteQuotes` in the page assembly.
 It reads the archive's single-star italic spans that open with a capital letter
-(a bold span's words fall outside the reading) and, where a page slice quotes the same words in prose
-with whitespace runs read as one space, writes the archive's italic span back,
-moving a period or comma the quotes held outside; finding `archive-italic-title-restored`.
-Any other quotation stands, since it may be speech.
-Replayed over the real TianqiChen6668 page: the one span restored,
-"from *Anohana: The Flower We Saw That Day*." on one line.
+(a bold span's words fall outside the reading) and,
+where a page slice quotes the same words in prose
+with whitespace runs read as one space,
+writes the archive's italic span back,
+moving a period or comma the quotes held outside;
+finding `archive-italic-title-restored`.
+Any other quotation stands,
+since it may be speech.
+Replayed over the real TianqiChen6668 page:
+the one span restored,
+"from *Anohana:
+The Flower We Saw That Day*."
+on one line.
 
-Not a class: "That glow is like" in the present stays, a timeless simile rather than the life's narration.
+Not a class:
+"That glow is like" in the present stays,
+a timeless simile rather than the life's narration.
 
-Lint 0/0, types clean, full suite after classes 170 to 172 1,165 PASS, 0 FAIL (`suite-class170.log`),
-after class 173 1,166 PASS, 0 FAIL (`suite-class173.log`).
-TianqiChen6669 launched on `.frozen-dist-fce655de0` (scope `pass-TianqiChen6669`, pid 704034).
+Lint 0/0,
+types clean,
+full suite after classes 170 to 172 1,165 PASS,
+0 FAIL (`suite-class170.log`),
+after class 173 1,166 PASS,
+0 FAIL (`suite-class173.log`).
+TianqiChen6669 launched on `.frozen-dist-fce655de0` (scope `pass-TianqiChen6669`,
+pid 704034).
 
 ## TianqiChen6667 read, 2026-09-26: classes one hundred sixty-four to sixty-seven live, sixty-eight and sixty-nine
 
-TianqiChen6667 ran on `.frozen-dist-e146633e1` and SETTLED in 918 s (15.3 min), 0.78 USD by the meters,
+TianqiChen6667 ran on `.frozen-dist-e146633e1` and SETTLED in 918 s (15.3 min),
+0.78 USD by the meters,
 Bedrock and OpenRouter alone with Synthetic and Hyper dry.
-Front matter equal, three headings, six em-dashes left as the owner said, no TA.
+Front matter equal,
+three headings,
+six em-dashes left as the owner said,
+no TA.
 
 Classes one hundred sixty-four to sixty-seven are live on the page:
 "she was met with family misunderstanding and mounting pressure" (164),
 the final message's blockquote with no stray closing mark (165),
-"whenever she glimpsed, / through the gap, / those she had comforted" (166)
+"whenever she glimpsed,
+/ through the gap,
+/ those she had comforted" (166)
 and "the draw cards really piled up" (167).
 Classes one hundred sixty to sixty-three hold:
-type 2 diabetes, the headpiece, Arona and Atri, "deserved a better life" and "a small box".
+type 2 diabetes,
+the headpiece,
+Arona and Atri,
+"deserved a better life" and "a small box".
 
 Class one hundred sixty-eight:
 the original quotes each of her messages with 「」 and the archive sets all nine blockquote paragraphs bare,
-yet the page wrapped two paragraphs of one blockquote in curly quotes ("My... wish? … rely on." and
+yet the page wrapped two paragraphs of one blockquote in curly quotes ("My... wish?
+… rely on."
+and
 "Please don't distance yourself from me …") and left the other nine bare,
 so one page quoted her messages two ways.
 Fixed in `39a4a06fd` (guard red first `c530bbf58`):
-`unwrapBlockquoteQuotes` in `corpus-run/blockquote-quote-unify.ts`, with the line reading in
-`corpus-run/blockquote-paragraphs.ts`, runs after `unifyQuoteStyle` in the page assembly.
+`unwrapBlockquoteQuotes` in `corpus-run/blockquote-quote-unify.ts`,
+with the line reading in
+`corpus-run/blockquote-paragraphs.ts`,
+runs after `unifyQuoteStyle` in the page assembly.
 Where the archive's bare blockquote paragraphs outnumber its quoted ones,
 it unwraps each page blockquote paragraph that is one quotation from its first mark to its last,
 finding `blockquote-quotes-unwrapped`.
-A paragraph holding any other mark of the pair (a quotation inside it, or two quotations) stays as written,
-and the pass never adds marks, since that would need to know which blockquotes are speech.
-Replayed over the real TianqiChen6667 page: exactly those two paragraphs unwrapped, no quoted blockquote line left.
+A paragraph holding any other mark of the pair (a quotation inside it,
+or two quotations) stays as written,
+and the pass never adds marks,
+since that would need to know which blockquotes are speech.
+Replayed over the real TianqiChen6667 page:
+exactly those two paragraphs unwrapped,
+no quoted blockquote line left.
 
 Class one hundred sixty-nine:
 "she used this id on basically all of her social media platforms" for 这个id.
 The pinned archive writes ID on three pages and lowercase id on none,
 and the psychoanalytic id appears nowhere in the corpus.
-Fixed in `5f7fa6742` (guard red first `1e825e277`): the Canadian forms pass writes a prose `id` as `ID`;
+Fixed in `5f7fa6742` (guard red first `1e825e277`):
+the Canadian forms pass writes a prose `id` as `ID`;
 an `id=` attribute and longer words such as "idle" stay as written.
 
-Not a class: "She loved Menma (めんま)" keeps the kana because the original itself writes 面码（即めんま）
-and names めんま as the ID she used everywhere, so the kana is the handle the sentence is about.
+Not a class:
+"She loved Menma (めんま)" keeps the kana because the original itself writes 面码（即めんま）
+and names めんま as the ID she used everywhere,
+so the kana is the handle the sentence is about.
 
-Lint 0/0, types clean, full suite 1,165 PASS, 0 FAIL after each (`suite-class168.log`, `suite-class169.log`).
-TianqiChen6668 launched on `.frozen-dist-5f7fa6742` (scope `pass-TianqiChen6668`, pid 4003551).
+Lint 0/0,
+types clean,
+full suite 1,165 PASS,
+0 FAIL after each (`suite-class168.log`,
+`suite-class169.log`).
+TianqiChen6668 launched on `.frozen-dist-5f7fa6742` (scope `pass-TianqiChen6668`,
+pid 4003551).
 
 ## TianqiChen6665 read, 2026-09-26: classes one hundred sixty-two to sixty-seven
 
-TianqiChen6665 ran on `.frozen-dist-c75738ea1` and SETTLED in 17.8 min, one attempt, 24 slices,
-1,428 calls, 1,649 seats, 56 retry rounds, 0.71 USD of OpenRouter cost, 1 abandoned stream (0.004 USD).
-Front matter equal, 3 headings, no TA, no error finish, no triple blank line,
-4 unendorsed standings (slices 6, 8, 15, 23), 21 abstention lines, 5 em-dashes against the archive's 6.
-Synthetic and Hyper stayed dry: Qwen3.8-27B threw 252 of 252 and glm-5.3 106 of 106.
+TianqiChen6665 ran on `.frozen-dist-c75738ea1` and SETTLED in 17.8 min,
+one attempt,
+24 slices,
+1,428 calls,
+1,649 seats,
+56 retry rounds,
+0.71 USD of OpenRouter cost,
+1 abandoned stream (0.004 USD).
+Front matter equal,
+3 headings,
+no TA,
+no error finish,
+no triple blank line,
+4 unendorsed standings (slices 6,
+8,
+15,
+23),
+21 abstention lines,
+5 em-dashes against the archive's 6.
+Synthetic and Hyper stayed dry:
+Qwen3.8-27B threw 252 of 252 and glm-5.3 106 of 106.
 
-Class one hundred sixty-two is live: the page reads "Living with type 2 diabetes".
-Class one hundred sixty-three is live: the kigurumi slice shipped "in her headpiece"
+Class one hundred sixty-two is live:
+the page reads "Living with type 2 diabetes".
+Class one hundred sixty-three is live:
+the kigurumi slice shipped "in her headpiece"
 and "Wearing this headpiece" with no refusal of the correct rendering.
-Classes one hundred sixty and sixty-one hold (Arona and Atri, "those she had comforted",
-"turned into a small box", "deserved a better life, didn't she?").
+Classes one hundred sixty and sixty-one hold (Arona and Atri,
+"those she had comforted",
+"turned into a small box",
+"deserved a better life,
+didn't she?").
 
 Class one hundred sixty-four:
-slice 6 shipped the archive's "God, in His sense of 'fairness,' made her met with family misunderstandings"
+slice 6 shipped the archive's "God,
+in His sense of 'fairness,'
+made her met with family misunderstandings"
 for 积极上进遇到的却是家人的不理解.
-The contest split 2 to 2 (minimax and gemma-4-e2b for the repair text, deepseek and Mercury for translate;
+The contest split 2 to 2 (minimax and gemma-4-e2b for the repair text,
+deepseek and Mercury for translate;
 deepseek named "made her meet with" as carried over from the archive),
 so the archive stood unendorsed with its slip.
 Fixed in `c5f664396` (guard red first `32e4213cd`):
-the grammar glossary seeds 遇到的却是 with "met with", "was met with" and "faced"
+the grammar glossary seeds 遇到的却是 with "met with",
+"was met with" and "faced"
 and refuses "made her met with",
 so that standing reads ineligible and a lane text replaces it.
-Lint 0/0, types clean, full suite 1,162 PASS, 0 FAIL (`suite-class164.log`).
-TianqiChen6666 launched on `.frozen-dist-c5f664396` (scope `pass-TianqiChen6666`, pid 3048898)
+Lint 0/0,
+types clean,
+full suite 1,162 PASS,
+0 FAIL (`suite-class164.log`).
+TianqiChen6666 launched on `.frozen-dist-c5f664396` (scope `pass-TianqiChen6666`,
+pid 3048898)
 and was killed right after launch under always-kill-and-relaunch,
 since three more renderings on this page could be better and the owner's standing instruction of 2026-09-25
-("whenever you see anything that can be translated better do it") makes each one a fix, not an observation.
+("whenever you see anything that can be translated better do it") makes each one a fix,
+not an observation.
 
 Class one hundred sixty-five:
 the archive's final-message blockquote carries one closing quotation mark and no opening one
 (the source quotes each line with 「」),
 shipped as the archive on an unendorsed standing.
 Fixed in `e146633e1` (guard red first `a1c44e652`):
-`translate-quote-balance.ts` refuses, before any judge,
-a candidate carrying a closing ”, 」 or 』 with nothing of its kind open,
-wired into `sourceCarryFindings` after the marker floor, so such an archive rendering is an ineligible standing.
+`translate-quote-balance.ts` refuses,
+before any judge,
+a candidate carrying a closing ”,
+」 or 』 with nothing of its kind open,
+wired into `sourceCarryFindings` after the marker floor,
+so such an archive rendering is an ineligible standing.
 It stands aside where the original itself closes a quotation it never opened (a slice boundary inside a quotation),
-and an opener with no closer is no fault, since a quotation over several paragraphs opens each and closes the last.
+and an opener with no closer is no fault,
+since a quotation over several paragraphs opens each and closes the last.
 
 Class one hundred sixty-six:
 "whenever she caught a glimpse through the gaps of those she had comforted" for 在隙中得以窥见有被她治愈的人
 reads the gaps as belonging to the people seen through them.
-Fixed in `e146633e1`: the grammar glossary seeds 在隙中 with "through the gap" and "through the narrow gap"
+Fixed in `e146633e1`:
+the grammar glossary seeds 在隙中 with "through the gap" and "through the narrow gap"
 and refuses "gaps of those" and "gap of those".
 
 Class one hundred sixty-seven:
-the farewell's 这次的 uno，真的加了很多呢 stayed the archive's "the game of Uno, truly, we've added a lot",
-which says nothing in English; in UNO, 加 is stacking the +2 and +4 draw cards.
-Fixed in `e146633e1`: `rendering-glossary-slang.ts` (spread into `RENDERING_GLOSSARY`) seeds
-`uno，真的加了很多` with "draw cards", "piled up" and "+2 and +4 cards" and refuses "added a lot".
+the farewell's 这次的 uno，真的加了很多呢 stayed the archive's "the game of Uno,
+truly,
+we've added a lot",
+which says nothing in English;
+in UNO,
+加 is stacking the +2 and +4 draw cards.
+Fixed in `e146633e1`:
+`rendering-glossary-slang.ts` (spread into `RENDERING_GLOSSARY`) seeds
+`uno，真的加了很多` with "draw cards",
+"piled up" and "+2 and +4 cards" and refuses "added a lot".
 
-Lint 0/0, types clean, full suite 1,164 PASS, 0 FAIL (`suite-class165-167.log`).
-TianqiChen6667 launched on `.frozen-dist-e146633e1` (scope `pass-TianqiChen6667`, pid 3464291);
+Lint 0/0,
+types clean,
+full suite 1,164 PASS,
+0 FAIL (`suite-class165-167.log`).
+TianqiChen6667 launched on `.frozen-dist-e146633e1` (scope `pass-TianqiChen6667`,
+pid 3464291);
 Synthetic and Hyper still dry at launch.
 
 ## TianqiChen6664 read, 2026-09-26: TALLY ERROR, class one hundred sixty-three
 
 TianqiChen6664 ran on `.frozen-dist-358a6bdcb` and ended TALLY ERROR after three attempts
-(about 20 min, 2 min and 2.5 s), with no page.
+(about 20 min,
+2 min and 2.5 s),
+with no page.
 Every attempt stopped on chunk 9 (the kigurumi slice) because the absent slice had no candidate:
 the floor refused every rendering the bench wrote for it.
 
@@ -8724,7 +9036,8 @@ the class one hundred sixty refused form `inside her head` is the opening of the
 and `refusedFormIn` in `translate-community-term.ts` matched the form with `includes`,
 so a candidate carrying the correct rendering was refused as the misreading.
 Class one hundred sixty-two was working in the lanes before the stop
-(critics flagged "type II", writers wrote "type 2 diabetes"),
+(critics flagged "type II",
+writers wrote "type 2 diabetes"),
 but no page shipped to read it on.
 
 Fixed in `c75738ea1` (guard red first `bd12b556f`):
@@ -8732,187 +9045,381 @@ Fixed in `c75738ea1` (guard red first `bd12b556f`):
 and excuses an occurrence where an accepted rendering of the same entry starts inside it and runs past its end.
 A rendering that ends inside the occurrence excuses nothing,
 so "a minor trans girl" stays refused on `minor trans` although "a minor" is a rendering,
-and the prefix refusals that rely on matching inside a longer word (`spiritual bull`, `cohabitant`) still refuse.
+and the prefix refusals that rely on matching inside a longer word (`spiritual bull`,
+`cohabitant`) still refuse.
 A standalone "inside her head" beside "inside her headpiece" in the same candidate stays refused.
-Lint 0/0, types clean, full suite 1,162 PASS, 0 FAIL (`suite-class163.log`).
-TianqiChen6665 launched on `.frozen-dist-c75738ea1` (scope `pass-TianqiChen6665`, pid 2520043).
+Lint 0/0,
+types clean,
+full suite 1,162 PASS,
+0 FAIL (`suite-class163.log`).
+TianqiChen6665 launched on `.frozen-dist-c75738ea1` (scope `pass-TianqiChen6665`,
+pid 2520043).
 
 ## TianqiChen6663 read, 2026-09-26: classes one hundred sixty and sixty-one live, class one hundred sixty-two
 
-TianqiChen6663 ran on `.frozen-dist-7b87c5a4e` and SETTLED in 39.2 min, one attempt, 24 slices, 1,565 calls,
-1,822 seats, 67 retry rounds, 0.84 USD of OpenRouter cost, 10 abandoned streams (0.05 USD).
-Front matter equal, 3 headings, no TA, no error finish, no triple blank line, 1 unendorsed standing,
-31 abstention lines; 7 em-dashes against the archive's 6, left as the owner said.
-Synthetic and Hyper stayed dry: Qwen3.8-27B threw 284 of 284 and glm-5.3 112 of 112.
+TianqiChen6663 ran on `.frozen-dist-7b87c5a4e` and SETTLED in 39.2 min,
+one attempt,
+24 slices,
+1,565 calls,
+1,822 seats,
+67 retry rounds,
+0.84 USD of OpenRouter cost,
+10 abandoned streams (0.05 USD).
+Front matter equal,
+3 headings,
+no TA,
+no error finish,
+no triple blank line,
+1 unendorsed standing,
+31 abstention lines;
+7 em-dashes against the archive's 6,
+left as the owner said.
+Synthetic and Hyper stayed dry:
+Qwen3.8-27B threw 284 of 284 and glm-5.3 112 of 112.
 
-Classes one hundred sixty and sixty-one are live on the page: "within her headpiece" and "Her kigurumi headpiece",
-"her portrayals of Arona and Atri", "someone she had comforted", "Her memory and imprint became a small box" and
-"deserved a better life, didn't she?". None of the six refused forms is on the page.
+Classes one hundred sixty and sixty-one are live on the page:
+"within her headpiece" and "Her kigurumi headpiece",
+"her portrayals of Arona and Atri",
+"someone she had comforted",
+"Her memory and imprint became a small box" and
+"deserved a better life,
+didn't she?".
+None of the six refused forms is on the page.
 
 ### Class one hundred sixty-two: type 2 diabetes
 
 身患II型糖尿病 shipped as the archive's "type II diabetes".
-Current English, Diabetes Canada's among it, writes the type with an Arabic numeral.
+Current English,
+Diabetes Canada's among it,
+writes the type with an Arabic numeral.
 The pinned corpus carries the term on this entry alone (and its zh_hant page).
-II型糖尿病 joins the rendering glossary through `rendering-glossary-medical.ts`, spread into `RENDERING_GLOSSARY`,
-refusing "type ii diabetes" and "type-ii diabetes" (guard red first `a9562aaba`, fix `358a6bdcb`;
-full suite 1,162 PASS, 0 FAIL).
+II型糖尿病 joins the rendering glossary through `rendering-glossary-medical.ts`,
+spread into `RENDERING_GLOSSARY`,
+refusing "type ii diabetes" and "type-ii diabetes" (guard red first `a9562aaba`,
+fix `358a6bdcb`;
+full suite 1,162 PASS,
+0 FAIL).
 TianqiChen6664 runs on `.frozen-dist-358a6bdcb` to read it live.
 
 ## TianqiChen6662 read, 2026-09-26: classes one hundred sixty and sixty-one
 
-TianqiChen6662 (entry TianqiChen666, Menma) ran on `.frozen-dist-141598127` and SETTLED in 19.7 min, one attempt,
-24 slices, 1,512 calls, 1,754 seats, 61 retry rounds, 0.74 USD of OpenRouter cost, 4 abandoned streams (0.02 USD).
-Front matter equal, 3 headings, no TA, no error finish, no triple blank line, 4 unendorsed standings,
-17 abstention lines; 7 em-dashes, left as the owner said.
-Synthetic and Hyper stayed dry: Qwen3.8-27B threw 266 of 266 and glm-5.3 109 of 109 with no provider.
+TianqiChen6662 (entry TianqiChen666,
+Menma) ran on `.frozen-dist-141598127` and SETTLED in 19.7 min,
+one attempt,
+24 slices,
+1,512 calls,
+1,754 seats,
+61 retry rounds,
+0.74 USD of OpenRouter cost,
+4 abandoned streams (0.02 USD).
+Front matter equal,
+3 headings,
+no TA,
+no error finish,
+no triple blank line,
+4 unendorsed standings,
+17 abstention lines;
+7 em-dashes,
+left as the owner said.
+Synthetic and Hyper stayed dry:
+Qwen3.8-27B threw 266 of 266 and glm-5.3 109 of 109 with no provider.
 
 ### Class one hundred sixty: fandom words
 
 头壳 (a kigurumi performer's head mask) shipped "within the smallest space inside her head",
-reading it as the wearer's own head; the archive renders 头壳 "headpiece" three times on the same page.
-阿洛娜 and 亚托莉 shipped as the archive's "Alona and Atori"; they are Arona of Blue Archive and Atri of
-ATRI -My Dear Moments-, and no candidate on the run wrote either name (the artifact carries neither).
-The first full suite on `7b87c5a4e` ran 1,160 PASS and 1 FAIL: the community glossary's SEEDS test pins the
-term list, extended to the nine terms in `52e1280a1`.
-All three join the community glossary through `community-glossary-fandom.ts`, spread into `COMMUNITY_GLOSSARY`,
-refusing "inside her head", "alona" and "atori" where the source carries the term
-(guard red first `069690562`, fix `7b87c5a4e`).
+reading it as the wearer's own head;
+the archive renders 头壳 "headpiece" three times on the same page.
+阿洛娜 and 亚托莉 shipped as the archive's "Alona and Atori";
+they are Arona of Blue Archive and Atri of
+ATRI -My Dear Moments-,
+and no candidate on the run wrote either name (the artifact carries neither).
+The first full suite on `7b87c5a4e` ran 1,160 PASS and 1 FAIL:
+the community glossary's SEEDS test pins the
+term list,
+extended to the nine terms in `52e1280a1`.
+All three join the community glossary through `community-glossary-fandom.ts`,
+spread into `COMMUNITY_GLOSSARY`,
+refusing "inside her head",
+"alona" and "atori" where the source carries the term
+(guard red first `069690562`,
+fix `7b87c5a4e`).
 
 ### Class one hundred sixty-one: grammar slips
 
 Three ungrammatical lines reached the page.
-"turned into in a small box" (化作) and "those she has healed" (被她治愈, present perfect in a life told in the past)
+"turned into in a small box" (化作) and "those she has healed" (被她治愈,
+present perfect in a life told in the past)
 were the archive's own and no lane repaired them.
-"should have had a better life, didn't she?" (应该会有更好的生活，不是吗) was the bench's regression:
-the archive had written "deserved a better life, didn't she?", and the tag does not match the clause.
-All three join the rendering glossary through `rendering-glossary-grammar.ts`, spread into `RENDERING_GLOSSARY`
+"should have had a better life,
+didn't she?"
+(应该会有更好的生活，不是吗) was the bench's regression:
+the archive had written "deserved a better life,
+didn't she?",
+and the tag does not match the clause.
+All three join the rendering glossary through `rendering-glossary-grammar.ts`,
+spread into `RENDERING_GLOSSARY`
 (same guard and fix commits).
 TianqiChen6663 runs on `.frozen-dist-7b87c5a4e` to read them live.
 
 ### Observations not built
 
-The UNO line 这次的 uno，真的加了很多呢 shipped "we've added a lot", which loses the draw-card stacking the line
-jokes about; blockquotes carry curly quotes on some quoted lines and none on others where the original quotes
+The UNO line 这次的 uno，真的加了很多呢 shipped "we've added a lot",
+which loses the draw-card stacking the line
+jokes about;
+blockquotes carry curly quotes on some quoted lines and none on others where the original quotes
 every line with 「」.
 
 ## Xu_Yushu1 read, 2026-09-26: INCOMPLETE at the pictures phase, the padded-reading log fixed
 
 Xu_Yushu1 ran on `.frozen-dist-8f2b07c37` and stopped INCOMPLETE in 3.3 min (199,440 ms),
-"visual evidence incomplete for 1 referenced assets": `composition.webp`, a handwritten essay.
-The seat line read Synthetic and Hyper dry, `readers=5`, Kimi-K3 withheld
-(OpenRouter withholding of 2026-09-03), and Qwen3.8-27B failed outright with no provider,
+"visual evidence incomplete for 1 referenced assets":
+`composition.webp`,
+a handwritten essay.
+The seat line read Synthetic and Hyper dry,
+`readers=5`,
+Kimi-K3 withheld
+(OpenRouter withholding of 2026-09-03),
+and Qwen3.8-27B failed outright with no provider,
 since the owner's no-bleed directive of 2026-09-09 keeps it off OpenRouter.
 GLM-5.3-Flash read the essay (1,216 characters).
-minimax-m3 (1,149 characters), gemma-4-26b (370, after one refusal) and google.gemma-4-31b returned garbage;
-no two of four readings agreed, the closest GLM-5.3-Flash and minimax-m3 at overlap 0.206.
-The stop is the bench's reach while Synthetic is dry, not a code defect,
-and corroboration stays as it is: one model's reading is not evidence.
+minimax-m3 (1,149 characters),
+gemma-4-26b (370,
+after one refusal) and google.gemma-4-31b returned garbage;
+no two of four readings agreed,
+the closest GLM-5.3-Flash and minimax-m3 at overlap 0.206.
+The stop is the bench's reach while Synthetic is dry,
+not a code defect,
+and corroboration stays as it is:
+one model's reading is not evidence.
 
-One logging defect: gemma-4-31b's reply was 27 characters followed by about 2,700 ideographic spaces.
-The sense verdict judged the trimmed 28 characters, but the stage logged "2753 characters"
+One logging defect:
+gemma-4-31b's reply was 27 characters followed by about 2,700 ideographic spaces.
+The sense verdict judged the trimmed 28 characters,
+but the stage logged "2753 characters"
 and handed the padded text on.
-The usable branch of `readImageAsset` now logs and returns the trimmed reading, as the short branch did
-(guard red first `a6ce93330`, fix `141598127`).
-TianqiChen6661, launched on `.frozen-dist-8f2b07c37`, was killed a few minutes in under always-kill-and-relaunch;
+The usable branch of `readImageAsset` now logs and returns the trimmed reading,
+as the short branch did
+(guard red first `a6ce93330`,
+fix `141598127`).
+TianqiChen6661,
+launched on `.frozen-dist-8f2b07c37`,
+was killed a few minutes in under always-kill-and-relaunch;
 TianqiChen6662 runs on `.frozen-dist-141598127`.
 
 ## aiyysk4 read, 2026-09-26: classes one hundred fifty-eight and fifty-nine live
 
-aiyysk4 ran on `.frozen-dist-8f2b07c37` and SETTLED at 16:01 UTC in 44.9 min, one attempt, 79 slices,
-4,110 calls, 4,967 seats, 257 retry rounds, 2.66 USD of OpenRouter cost, 2 abandoned streams (0.01 USD).
+aiyysk4 ran on `.frozen-dist-8f2b07c37` and SETTLED at 16:01 UTC in 44.9 min,
+one attempt,
+79 slices,
+4,110 calls,
+4,967 seats,
+257 retry rounds,
+2.66 USD of OpenRouter cost,
+2 abandoned streams (0.01 USD).
 All three new glossary terms reached the page as the glossary seeds them:
-"I'd never actually spent time with an MTF person before" (交往, class one hundred fifty-eight),
+"I'd never actually spent time with an MTF person before" (交往,
+class one hundred fifty-eight),
 "I don't really care about my surroundings" (环境的问题) and "prototype" on all three 工程机 lines
 (class one hundred fifty-nine).
-Class one hundred fifty-seven held in its third seeded form, "Sakurana used her own life as leverage:".
-Front matter equal, 13 headings, 3 footnotes, no TA, no error finish, no double blank line,
-no unendorsed standing, 100 abstention lines, one run-off; 11 em-dashes, left as the owner said.
-The two "doubles" log hits are judge prose ("Candidate 2 doubles …"), not findings.
-The time over aiyysk2's 26.7 min is the providers': Synthetic read wet on 12 meter readings,
-so Qwen (70 usable) and Kimi-K3 (35 usable) ran there at its latency, and Mercury drew 156 upstream rate-limit lines
-against aiyysk2's 24 (94 of its 582 seats threw). No class.
+Class one hundred fifty-seven held in its third seeded form,
+"Sakurana used her own life as leverage:".
+Front matter equal,
+13 headings,
+3 footnotes,
+no TA,
+no error finish,
+no double blank line,
+no unendorsed standing,
+100 abstention lines,
+one run-off;
+11 em-dashes,
+left as the owner said.
+The two "doubles" log hits are judge prose ("Candidate 2 doubles …"),
+not findings.
+The time over aiyysk2's 26.7 min is the providers':
+Synthetic read wet on 12 meter readings,
+so Qwen (70 usable) and Kimi-K3 (35 usable) ran there at its latency,
+and Mercury drew 156 upstream rate-limit lines
+against aiyysk2's 24 (94 of its 582 seats threw).
+No class.
 
 ## aiyysk2 read, 2026-09-26: class one hundred fifty-seven live, class one hundred fifty-eight
 
 ### What the run did
 
-aiyysk2 ran on `.frozen-dist-2f5875dcf` and SETTLED at 15:07 UTC in 26.7 min, one attempt, 79 slices,
-4,103 calls, 2.57 USD of OpenRouter cost.
-Front matter equal, 13 headings, 3 footnotes, no TA, no double blank line, no error finish;
-110 abstention lines, three unendorsed standings; 13 em-dashes, left as the owner said.
-Class one hundred fifty-seven is live: the threat line reads "Sakurana threatened to take her own life:".
+aiyysk2 ran on `.frozen-dist-2f5875dcf` and SETTLED at 15:07 UTC in 26.7 min,
+one attempt,
+79 slices,
+4,103 calls,
+2.57 USD of OpenRouter cost.
+Front matter equal,
+13 headings,
+3 footnotes,
+no TA,
+no double blank line,
+no error finish;
+110 abstention lines,
+three unendorsed standings;
+13 em-dashes,
+left as the owner said.
+Class one hundred fifty-seven is live:
+the threat line reads "Sakurana threatened to take her own life:".
 
 ### Class one hundred fifty-eight: 交往 as dating
 
 我之前也没和 MTF 交往过…然后我也不敢去交往 shipped "I'd never dated a trans woman before either" on aiyysk2
-and "I'd never actually dated a trans woman before" on aiyysk1, a romance the original never states.
-The narrator had simply never spent time with trans women; the next paragraph says
-"It was my first time ever talking with a trans woman", and the archive wrote "I'd never actually talked to an MTF person before".
-The pinned corpus carries 交往 four times, all on aiyysk (lines 157, 159 twice and 185), all ordinary social contact
-(corrected 2026-09-28, ledger R16: this line once said three times).
+and "I'd never actually dated a trans woman before" on aiyysk1,
+a romance the original never states.
+The narrator had simply never spent time with trans women;
+the next paragraph says
+"It was my first time ever talking with a trans woman",
+and the archive wrote "I'd never actually talked to an MTF person before".
+The pinned corpus carries 交往 four times,
+all on aiyysk (lines 157,
+159 twice and 185),
+all ordinary social contact
+(corrected 2026-09-28,
+ledger R16:
+this line once said three times).
 交往 joins the phrasing glossary with "talked to" first.
-The floor matches refused forms as lower-cased substrings (`refusedFormIn`, `translate-community-term.ts`),
-so the refused forms are multi-word ("never dated", "dated a trans", "dating them" and the like)
-and never bare "dated" or "dating", which "updated" and "validating" hold; the guard carries an "updated" case.
-Guard `rendering-glossary-contact.unit.test.ts`, red first; fix `bc20adb69`; suite 1,157 PASS, 0 FAIL (`suite-class158.log`).
-aiyysk3 launched 15:10 UTC on `.frozen-dist-bc20adb69` (pid 830253, scope `pass-aiyysk3`)
+The floor matches refused forms as lower-cased substrings (`refusedFormIn`,
+`translate-community-term.ts`),
+so the refused forms are multi-word ("never dated",
+"dated a trans",
+"dating them" and the like)
+and never bare "dated" or "dating",
+which "updated" and "validating" hold;
+the guard carries an "updated" case.
+Guard `rendering-glossary-contact.unit.test.ts`,
+red first;
+fix `bc20adb69`;
+suite 1,157 PASS,
+0 FAIL (`suite-class158.log`).
+aiyysk3 launched 15:10 UTC on `.frozen-dist-bc20adb69` (pid 830253,
+scope `pass-aiyysk3`)
 and was killed about four minutes in under always-kill-and-relaunch once class one hundred fifty-nine landed.
 
 ### Class one hundred fifty-nine: 环境的问题 and 工程机
 
-Reading the rest of aiyysk2 turned up two more calques, both carried only by aiyysk in the pinned corpus.
+Reading the rest of aiyysk2 turned up two more calques,
+both carried only by aiyysk in the pinned corpus.
 她对我说：「我没有怎么在乎环境的问题…」 shipped "It's not that I cared all that much about the environment",
-which an English reader takes for nature and pollution; she meant the crowded place she lived.
+which an English reader takes for nature and pollution;
+she meant the crowded place she lived.
 The archive wrote "the environment itself" too.
-工程机 (three times, the Qualcomm Reference Design unit she spent two months reviving) shipped "engineering phone",
-as the archive had it; the phone world calls such a unit a "prototype" or "engineering sample".
-Both join the phrasing glossary: 环境的问题 with "my surroundings" first
-and "about the environment", "the environment itself" and the "environmental" forms refused;
-工程机 with "prototype phone" first and "engineering phone", "engineering machine" and "engineering device" refused.
-Other readings stayed as the bench wrote them: 「忧」 as "Worried." is the original's own one-character reply,
+工程机 (three times,
+the Qualcomm Reference Design unit she spent two months reviving) shipped "engineering phone",
+as the archive had it;
+the phone world calls such a unit a "prototype" or "engineering sample".
+Both join the phrasing glossary:
+环境的问题 with "my surroundings" first
+and "about the environment",
+"the environment itself" and the "environmental" forms refused;
+工程机 with "prototype phone" first and "engineering phone",
+"engineering machine" and "engineering device" refused.
+Other readings stayed as the bench wrote them:
+「忧」 as "Worried."
+is the original's own one-character reply,
 and 刷机 as "flashing" is the phone world's word.
-Guard `rendering-glossary-circumstance.unit.test.ts`, red first; fix `8f2b07c37`; suite 1,158 PASS, 0 FAIL
+Guard `rendering-glossary-circumstance.unit.test.ts`,
+red first;
+fix `8f2b07c37`;
+suite 1,158 PASS,
+0 FAIL
 (`suite-class159.log`).
-aiyysk4 launched 15:17 UTC on `.frozen-dist-8f2b07c37` (pid 923957, scope `pass-aiyysk4`).
+aiyysk4 launched 15:17 UTC on `.frozen-dist-8f2b07c37` (pid 923957,
+scope `pass-aiyysk4`).
 
 ## aiyysk1 read, 2026-09-26: class one hundred fifty-six against a correct archive, class one hundred fifty-seven
 
 ### What the run did
 
-aiyysk1, the first run of aiyysk, ran on `.frozen-dist-6cf583ca3-class156` (the `0899e69b1` tree)
-and SETTLED at 14:37 UTC in 37.6 min, one attempt, 78 slices, 3,913 calls, 4,620 seats, 184 retry rounds,
-2.70 USD of OpenRouter cost, 5 abandoned streams (0.03 USD); Synthetic and Hyper dry.
-Front matter equal, 13 headings, 3 footnotes, no TA, no double blank line, no error finish;
-145 abstention lines, one run-off, four unendorsed standings.
-All three 初中 read "junior high" ("a junior high school in Yunfu", "Her junior high chemistry teacher",
-"After finishing junior high school"), the archive's own rendering, so class one hundred fifty-six held against an archive already right.
-The page reads as fluent English throughout, in Canadian spelling ("mould", "meagre").
+aiyysk1,
+the first run of aiyysk,
+ran on `.frozen-dist-6cf583ca3-class156` (the `0899e69b1` tree)
+and SETTLED at 14:37 UTC in 37.6 min,
+one attempt,
+78 slices,
+3,913 calls,
+4,620 seats,
+184 retry rounds,
+2.70 USD of OpenRouter cost,
+5 abandoned streams (0.03 USD);
+Synthetic and Hyper dry.
+Front matter equal,
+13 headings,
+3 footnotes,
+no TA,
+no double blank line,
+no error finish;
+145 abstention lines,
+one run-off,
+four unendorsed standings.
+All three 初中 read "junior high" ("a junior high school in Yunfu",
+"Her junior high chemistry teacher",
+"After finishing junior high school"),
+the archive's own rendering,
+so class one hundred fifty-six held against an archive already right.
+The page reads as fluent English throughout,
+in Canadian spelling ("mould",
+"meagre").
 
 ### Class one hundred fifty-seven: 以生命相逼 reversed
 
 樱奈以生命相逼：「要是被我发现（你伤害自己），我就自杀。」 shipped "Sakurana threatened her life:",
-which tells an English reader Sakurana threatened Shikai; she staked her own life.
-The archive had "threatened her in return". The pinned corpus carries the idiom once, here.
-Under the owner's standing instruction to translate better wherever possible, 以生命相逼 joins the idiom glossary
+which tells an English reader Sakurana threatened Shikai;
+she staked her own life.
+The archive had "threatened her in return".
+The pinned corpus carries the idiom once,
+here.
+Under the owner's standing instruction to translate better wherever possible,
+以生命相逼 joins the idiom glossary
 with "threatened to take her own life" first and "threatened her life" and its variants refused
 by the source-carry floor before any judge reads the candidate.
-Guard `rendering-glossary-leverage.unit.test.ts`, red first; fix `2f5875dcf`; suite 1,156 PASS, 0 FAIL (`suite-class157.log`).
-aiyysk2 launched 14:43 UTC on `.frozen-dist-2f5875dcf` (pid 257150, scope `pass-aiyysk2`).
+Guard `rendering-glossary-leverage.unit.test.ts`,
+red first;
+fix `2f5875dcf`;
+suite 1,156 PASS,
+0 FAIL (`suite-class157.log`).
+aiyysk2 launched 14:43 UTC on `.frozen-dist-2f5875dcf` (pid 257150,
+scope `pass-aiyysk2`).
 
 ## shihai4h2 read, 2026-09-26: class one hundred fifty-six live
 
-shihai4h2 ran on `.frozen-dist-6cf583ca3-class156`, built from the tree later committed as `0899e69b1`;
+shihai4h2 ran on `.frozen-dist-6cf583ca3-class156`,
+built from the tree later committed as `0899e69b1`;
 it was frozen and launched before the commit because every cli-git call failed on another session's abandoned worktree-copy journal.
-It SETTLED at 13:12 UTC in 24.7 min, one attempt, 3,122 calls, 3,647 seats, 119 retry rounds,
-3.19 USD of OpenRouter cost, 2 abandoned streams (0.0016 USD); Synthetic and Hyper dry,
+It SETTLED at 13:12 UTC in 24.7 min,
+one attempt,
+3,122 calls,
+3,647 seats,
+119 retry rounds,
+3.19 USD of OpenRouter cost,
+2 abandoned streams (0.0016 USD);
+Synthetic and Hyper dry,
 so Qwen3.8-27B threw all 525 calls and glm-5.3 all 234.
-Every shihai4h1 check held: front matter equal, 5 headings, 10 footnotes, 2 PhotoScroll, no TA, no double blank line,
-no error finish; 40 abstention lines, one run-off, five archive-revision-refused lines, two unendorsed standings (17, 33).
+Every shihai4h1 check held:
+front matter equal,
+5 headings,
+10 footnotes,
+2 PhotoScroll,
+no TA,
+no double blank line,
+no error finish;
+40 abstention lines,
+one run-off,
+five archive-revision-refused lines,
+two unendorsed standings (17,
+33).
 
-- Class one hundred fifty-six live: "junior high school" on both of the page's 初中 lines (73, 169),
-  "to take self-study examinations" (76), "was frequently pressured" (78).
-- Class one hundred fifty-four held: "She and the Trans Community", both body occurrences "the trans community".
+- Class one hundred fifty-six live:
+  "junior high school" on both of the page's 初中 lines (73,
+  169),
+  "to take self-study examinations" (76),
+  "was frequently pressured" (78).
+- Class one hundred fifty-four held:
+  "She and the Trans Community",
+  both body occurrences "the trans community".
 - Both calques shihai4h1 left as observations are gone by the bench's own choice:
   "was never able to meet her parents’ expectations afterward" (73)
   and "the deepest core of a person’s spirit and will is always alone" (342).
@@ -8922,20 +9429,40 @@ no error finish; 40 abstention lines, one run-off, five archive-revision-refused
 
 ### What the run did
 
-shihai4h1 (frozen `6cf583ca3`, overlap 8), the first run of shihai4h,
-SETTLED at 12:34 UTC in 27.5 min, one attempt, 54 slices, 41 changed, 3,175 calls,
-3.14 USD of OpenRouter cost; the meters read Bedrock about 16.09 and OpenRouter 39.56 at the end.
-Synthetic and Hyper dry: Qwen3.8-27B threw 461 of 514 calls and glm-5.3 all 240.
-Front matter equal, 5 headings, 10 footnotes, 2 PhotoScroll, no TA, no double blank line,
-as the archive; 211 blockquote lines against the archive's 168 because the page is semantically wrapped
+shihai4h1 (frozen `6cf583ca3`,
+overlap 8),
+the first run of shihai4h,
+SETTLED at 12:34 UTC in 27.5 min,
+one attempt,
+54 slices,
+41 changed,
+3,175 calls,
+3.14 USD of OpenRouter cost;
+the meters read Bedrock about 16.09 and OpenRouter 39.56 at the end.
+Synthetic and Hyper dry:
+Qwen3.8-27B threw 461 of 514 calls and glm-5.3 all 240.
+Front matter equal,
+5 headings,
+10 footnotes,
+2 PhotoScroll,
+no TA,
+no double blank line,
+as the archive;
+211 blockquote lines against the archive's 168 because the page is semantically wrapped
 (676 lines against 458).
-The log carries 37 abstention lines, one translate run-off ("the finalists were valid, so the ballots decide"),
+The log carries 37 abstention lines,
+one translate run-off ("the finalists were valid,
+so the ballots decide"),
 two archive-revision-refused lines and five archive review lines.
 
 - Class one hundred fifty-four held against an archive that was already right:
-  all three 跨圈 read "the trans community", the heading "She and the Trans Community" as the archive.
-  "crossdressing hobby" on line 139 renders 异装癖, another word, and is right.
-- The page corrected two archive errors: the year 2013 where the archive wrote 2023,
+  all three 跨圈 read "the trans community",
+  the heading "She and the Trans Community" as the archive.
+  "crossdressing hobby" on line 139 renders 异装癖,
+  another word,
+  and is right.
+- The page corrected two archive errors:
+  the year 2013 where the archive wrote 2023,
   and "her older cousin" where the archive wrote "her sister".
 - The translator's doubt comment was dropped because the sentence it doubted was retranslated correctly.
 - Canadian spelling and vocabulary clean.
@@ -8943,149 +9470,269 @@ two archive-revision-refused lines and five archive review lines.
 ### Class one hundred fifty-six: three schooling calques
 
 Under the owner's standing instruction to translate better wherever possible:
-初中 shipped "junior middle school" (line 76), 自考 "self-taught exams" (line 79)
+初中 shipped "junior middle school" (line 76),
+自考 "self-taught exams" (line 79)
 and 压力话 "frequently subjected to pressured remarks" (line 82).
-初中 stands nine times in five pinned entries; the archives write "junior high school" (Jennife80677612 once,
-aiyysk twice), "middle school" (yulianNyanner twice) and "junior middle school" (shihai4h alone),
+初中 stands nine times in five pinned entries;
+the archives write "junior high school" (Jennife80677612 once,
+aiyysk twice),
+"middle school" (yulianNyanner twice) and "junior middle school" (shihai4h alone),
 and XIEPT2's archive renders it nowhere
-(corrected 2026-09-28, ledger R16: this line once counted a 初中 in a Xu_Yushu reader comment as an archive passage).
-自考 (高等教育自学考试, the self-study examinations) and 压力话 stand on shihai4h alone, with no archive English.
-The three join the wording glossary with "junior high school", "self-study examinations" and "pressured" first,
-and "junior middle school", "self-taught exam" and "pressured remarks" with their variants refused
+(corrected 2026-09-28,
+ledger R16:
+this line once counted a 初中 in a Xu_Yushu reader comment as an archive passage).
+自考 (高等教育自学考试,
+the self-study examinations) and 压力话 stand on shihai4h alone,
+with no archive English.
+The three join the wording glossary with "junior high school",
+"self-study examinations" and "pressured" first,
+and "junior middle school",
+"self-taught exam" and "pressured remarks" with their variants refused
 by the source-carry floor before any judge reads the candidate.
-Guard `rendering-glossary-study.unit.test.ts` (`6dea1d435`), red first on the `6cf583ca3` build; fix `0899e69b1`.
-Suite 1,155 PASS, 0 FAIL (`suite-class156.log`).
-Both commits waited about an hour: another session's `worktree add` died partway through its ignored-state copy,
+Guard `rendering-glossary-study.unit.test.ts` (`6dea1d435`),
+red first on the `6cf583ca3` build;
+fix `0899e69b1`.
+Suite 1,155 PASS,
+0 FAIL (`suite-class156.log`).
+Both commits waited about an hour:
+another session's `worktree add` died partway through its ignored-state copy,
 and every cli-git call failed on the abandoned copy journal until that session recovered it.
 
 ### Observations not built
 
 - "continued to fail to meet her parents’ satisfaction" (line 76) and
   "a person’s most core spiritual will is always alone" (line 360) read as calques,
-  but neither is a term a glossary entry can hold; watched.
+  but neither is a term a glossary entry can hold;
+  watched.
 
 ## shi_Yumiaoya39 read, 2026-09-26: classes one hundred fifty-four and fifty-five live
 
-shi_Yumiaoya39 (frozen `6cf583ca3`, overlap 8) SETTLED at 12:05 UTC in 7.6 min, one attempt,
-746 calls, 874 seats, 44 retry rounds, 0.58 USD of OpenRouter cost, Bedrock 17.45 to 17.24 by the meters;
-Synthetic and Hyper dry, so Qwen3.8-27B and glm-5.3 threw every call.
-Every shi_Yumiaoya38 check held: front matter equal, 4 headings, 1 footnote, no TA, no double blank line,
-no unendorsed standing, no error finish, 11 abstention lines.
+shi_Yumiaoya39 (frozen `6cf583ca3`,
+overlap 8) SETTLED at 12:05 UTC in 7.6 min,
+one attempt,
+746 calls,
+874 seats,
+44 retry rounds,
+0.58 USD of OpenRouter cost,
+Bedrock 17.45 to 17.24 by the meters;
+Synthetic and Hyper dry,
+so Qwen3.8-27B and glm-5.3 threw every call.
+Every shi_Yumiaoya38 check held:
+front matter equal,
+4 headings,
+1 footnote,
+no TA,
+no double blank line,
+no unendorsed standing,
+no error finish,
+11 abstention lines.
 
-- Class one hundred fifty-four live: all four 跨圈 read "the Trans Community" (lines 33, 36, 159, 177);
+- Class one hundred fifty-four live:
+  all four 跨圈 read "the Trans Community" (lines 33,
+  36,
+  159,
+  177);
   no crossdressing form on the page.
-- Class one hundred fifty-five live: the insult reads "insulted as an “unfilial son” — a disgrace, good-for-nothing."
-- Class one hundred fifty-three held on a prose page: 22 polish-gate ballots, none naming line breaks or wrapping.
-- 同类 on source line 83 now reads "a housemate from the local trans community", no gender added (the shi_Yumiaoya38 watch closed).
-- The caution callout's label 提示 reads "Tips", as the archive writes it (runs 30 to 37 wrote Note, Notice or Tips);
-  the archive's rendering stands, so nothing is built.
-- One Mercury select ballot rejected a candidate repeating "And you can finally get a good sleep." twice; the page carries it once.
+- Class one hundred fifty-five live:
+  the insult reads "insulted as an “unfilial son” — a disgrace,
+  good-for-nothing."
+- Class one hundred fifty-three held on a prose page:
+  22 polish-gate ballots,
+  none naming line breaks or wrapping.
+- 同类 on source line 83 now reads "a housemate from the local trans community",
+  no gender added (the shi_Yumiaoya38 watch closed).
+- The caution callout's label 提示 reads "Tips",
+  as the archive writes it (runs 30 to 37 wrote Note,
+  Notice or Tips);
+  the archive's rendering stands,
+  so nothing is built.
+- One Mercury select ballot rejected a candidate repeating "And you can finally get a good sleep."
+  twice;
+  the page carries it once.
 
 ## shi_Yumiaoya38 read, 2026-09-26: class one hundred fifty-one live, classes one hundred fifty-four and fifty-five
 
 ### What the run did
 
-shi_Yumiaoya38 (frozen `12b581811`, overlap 8) SETTLED at 11:49 UTC in 6.4 min,
-Bedrock 17.64 to 17.45 and OpenRouter 42.24 to 41.91 by the meters, 727 calls.
-Front matter equal, 4 headings, 1 footnote, no TA, no double blank line, no unendorsed standing, 7 abstention lines.
-Class one hundred fifty-one live: the father's insult reads "insulted as an 'unfilial son'—a disgrace, someone with no capability"
+shi_Yumiaoya38 (frozen `12b581811`,
+overlap 8) SETTLED at 11:49 UTC in 6.4 min,
+Bedrock 17.64 to 17.45 and OpenRouter 42.24 to 41.91 by the meters,
+727 calls.
+Front matter equal,
+4 headings,
+1 footnote,
+no TA,
+no double blank line,
+no unendorsed standing,
+7 abstention lines.
+Class one hundred fifty-one live:
+the father's insult reads "insulted as an 'unfilial son'—a disgrace,
+someone with no capability"
 where shi_Yumiaoya37 wrote "rebellious child".
 初三 now reads "In Grade 9".
 
 ### Class one hundred fifty-four: 跨圈 read as the crossdressing community
 
 跨圈 (short for 跨性别圈子) appears four times on the page.
-Three shipped "the trans community"; source line 77, 在跨圈内结识了很多朋友, shipped
-"made many friends in the crossdressing community", where shi_Yumiaoya37 had "across different communities".
+Three shipped "the trans community";
+source line 77,
+在跨圈内结识了很多朋友,
+shipped
+"made many friends in the crossdressing community",
+where shi_Yumiaoya37 had "across different communities".
 Crossdressing is another word (女装) for another thing.
-The corpus carries 跨圈 on shihai4h (3), XingZ60 (1) and shi_Yumiaoya (4);
+The corpus carries 跨圈 on shihai4h (3),
+XingZ60 (1) and shi_Yumiaoya (4);
 shihai4h's archive renders it "the Trans Community" (its heading "She and the Trans Community").
-Fixed in `42319ff3a` (guard red first `5c51bd440`): 跨圈 joins the community glossary
-with "trans community" first and "crossdressing community", "cross-dressing community" and the "circle" forms refused
+Fixed in `42319ff3a` (guard red first `5c51bd440`):
+跨圈 joins the community glossary
+with "trans community" first and "crossdressing community",
+"cross-dressing community" and the "circle" forms refused
 by the source-carry floor before any judge reads the candidate.
-Suite 1,153 PASS, 0 FAIL (`suite-class154.log`).
+Suite 1,153 PASS,
+0 FAIL (`suite-class154.log`).
 
 ### Class one hundred fifty-five: 没本事 word for word
 
-The same insult rendered 没本事 as "someone with no capability"; shi_Yumiaoya37 had "a failure".
-The pinned corpus carries 没本事 once, in that insult, with no archive English.
+The same insult rendered 没本事 as "someone with no capability";
+shi_Yumiaoya37 had "a failure".
+The pinned corpus carries 没本事 once,
+in that insult,
+with no archive English.
 Under the owner's standing instruction to translate better wherever possible,
-fixed in `6cf583ca3` (guard red first `c160b2006`): 没本事 joins the wording glossary
+fixed in `6cf583ca3` (guard red first `c160b2006`):
+没本事 joins the wording glossary
 with "good-for-nothing" first and "no capability" and its variants refused.
-Suite 1,154 PASS, 0 FAIL (`suite-class155.log`).
-shi_Yumiaoya39 launched 11:57 UTC on `.frozen-dist-6cf583ca3` (pid 2592631, scope `pass-shi_Yumiaoya39`).
+Suite 1,154 PASS,
+0 FAIL (`suite-class155.log`).
+shi_Yumiaoya39 launched 11:57 UTC on `.frozen-dist-6cf583ca3` (pid 2592631,
+scope `pass-shi_Yumiaoya39`).
 
 ### Observation not built
 
-同类 shipped "a trans woman from a local community", narrowing a gender the original leaves open; watched.
+同类 shipped "a trans woman from a local community",
+narrowing a gender the original leaves open;
+watched.
 
 ## XingZ6014 read, 2026-09-26: class one hundred fifty-two live, class one hundred fifty-three
 
 ### What the run did
 
-XingZ6014 (frozen `1dd8ebc52`, overlap 8) SETTLED at 11:33 UTC in 54.9 min,
+XingZ6014 (frozen `1dd8ebc52`,
+overlap 8) SETTLED at 11:33 UTC in 54.9 min,
 Bedrock 20.39 to 17.65 and OpenRouter 47.98 to 42.31 by the meters (about 8.41 USD),
-Synthetic and Hyper dry, so glm-5.3 and Qwen3.8-27B threw every call.
-121 slices, 207 repair issues, 139 accepted, 114 slices where the lanes differed, 99 slices changed on the page.
-Every XingZ6013 check held: 14 headings, 2 links, 9 definitions, 3 TextRing, 11 details blocks,
-front matter equal, no TA, no double blank line, no error finish, the placeholder kept.
-The heading and footnote 6 read "Layer-Zero Prayer" (XingZ6013 wrote "Zero-Layer Prayer"), one rendering on the page;
+Synthetic and Hyper dry,
+so glm-5.3 and Qwen3.8-27B threw every call.
+121 slices,
+207 repair issues,
+139 accepted,
+114 slices where the lanes differed,
+99 slices changed on the page.
+Every XingZ6013 check held:
+14 headings,
+2 links,
+9 definitions,
+3 TextRing,
+11 details blocks,
+front matter equal,
+no TA,
+no double blank line,
+no error finish,
+the placeholder kept.
+The heading and footnote 6 read "Layer-Zero Prayer" (XingZ6013 wrote "Zero-Layer Prayer"),
+one rendering on the page;
 the second credit carries the album as "[Paranoia]".
-Two unendorsed standings (2, 9), 31 gate-kept, 25 slate-declined, 143 abstention lines.
+Two unendorsed standings (2,
+9),
+31 gate-kept,
+25 slate-declined,
+143 abstention lines.
 
 ### Class one hundred fifty-two live
 
 The polish gate ran 59 times with 264 ballots and shipped 17 polishes (XingZ6013 shipped 9).
-On slice 30, where the polish differs from the wrapped base by one comma and the line break after it,
+On slice 30,
+where the polish differs from the wrapped base by one comma and the line break after it,
 three ballots set the breaks aside as the sheet told them
-("the only difference is line-break wrapping, which the rules say not to weigh").
+("the only difference is line-break wrapping,
+which the rules say not to weigh").
 
 ### Class one hundred fifty-three: the base the page's own one-line paragraph
 
 The class one hundred fifty-two sentence said both candidates were wrapped by one rule.
 That is false where the base stands as the archive's own wording:
-on slices 36, 61 and 64 the base was one line a paragraph and the polish was wrapped,
+on slices 36,
+61 and 64 the base was one line a paragraph and the polish was wrapped,
 and three ballots weighed the polish's added breaks
-(minimax-m3 "adds line breaks inside a paragraph", gemma-4-26b-a4b-it "introduces unnecessary line breaks"
+(minimax-m3 "adds line breaks inside a paragraph",
+gemma-4-26b-a4b-it "introduces unnecessary line breaks"
 and "its line breaks are not requested by the source").
 Slice 36 settled on base after a 2 to 2 tie with the one line-break ballot abstaining;
 slice 61 lost its polish ("I did what I'd planned from the start ... She was sad too that she never got to meet you") 3 to 1.
 Fixed in `12b581811` (guard red first `b2f5f373c`):
 `foldSoftBreaks` in `soft-break-fold.ts` folds each top-level paragraph's soft breaks into spaces,
 and the gate sheet shows both candidates folded on a prose slice,
-keeping hard breaks, blockquotes, lists and a line-structured slice as written; what ships is unchanged.
+keeping hard breaks,
+blockquotes,
+lists and a line-structured slice as written;
+what ships is unchanged.
 The policy sentence now says the paragraphs are shown one line each.
-Replayed over the run's real slices 16, 23, 30, 36, 61 and 64: every candidate reaches the sheet one line a paragraph.
+Replayed over the run's real slices 16,
+23,
+30,
+36,
+61 and 64:
+every candidate reaches the sheet one line a paragraph.
 
 ### Observations not built
 
 - The absolute naturalness review still names soft breaks on prose although its sheet says they render as spaces:
-  slice 23 "excessive line breaks", slice 50 "poem-like line breaks ... choppy verse formatting"
-  and a capitalisation "error" at a wrapped line's start, slice 84 "the line break creates an unnaturally abrupt fragment".
-  Slice 50's polish shipped anyway on its other findings; no outcome turned on these, so it is watched, not built.
-- gemma-4-e2b cast 59 gate ballots; one reason is garbled ("changes 'it seems' to 'it seems'"),
-  the rest name the wording they weigh. Not enough to drop it.
-- Slice 50 shipped a bench-written em-dash ("yourself — but that chance is truly gone now"), left per the owner.
+  slice 23 "excessive line breaks",
+  slice 50 "poem-like line breaks ... choppy verse formatting"
+  and a capitalisation "error" at a wrapped line's start,
+  slice 84 "the line break creates an unnaturally abrupt fragment".
+  Slice 50's polish shipped anyway on its other findings;
+  no outcome turned on these,
+  so it is watched,
+  not built.
+- gemma-4-e2b cast 59 gate ballots;
+  one reason is garbled ("changes 'it seems' to 'it seems'"),
+  the rest name the wording they weigh.
+  Not enough to drop it.
+- Slice 50 shipped a bench-written em-dash ("yourself — but that chance is truly gone now"),
+  left per the owner.
 
 ## yingying12 read, 2026-09-26: class one hundred fifty-two
 
 ### What the run did
 
-yingying12 (frozen `.frozen-dist-0de47d546`, classes one hundred fifty and fifty-one)
-SETTLED at 10:35 UTC in 10.4 min, one attempt,
+yingying12 (frozen `.frozen-dist-0de47d546`,
+classes one hundred fifty and fifty-one)
+SETTLED at 10:35 UTC in 10.4 min,
+one attempt,
 Bedrock 20.43 to 20.39 and OpenRouter 48.17 to 48.01 by the meters.
 Synthetic and Hyper read dry throughout.
 
 Every yingying11 check held:
-front matter equal, 1 heading, 2 markers and 2 definitions as the archive,
-the References line kept, "Yingying" in [^2] where the archive has "Sakura",
-"May you" in the second person, no TA, no Han, no double blank line,
-no unendorsed or gate-kept standing, 2 abstention lines.
+front matter equal,
+1 heading,
+2 markers and 2 definitions as the archive,
+the References line kept,
+"Yingying" in [^2] where the archive has "Sakura",
+"May you" in the second person,
+no TA,
+no Han,
+no double blank line,
+no unendorsed or gate-kept standing,
+2 abstention lines.
 Neither the class one hundred fifty nor the class one hundred fifty-one floor applies to this page.
 
-The polish gate's ballot lines (class one hundred fifty's logging) ran three times, 12 ballots:
+The polish gate's ballot lines (class one hundred fifty's logging) ran three times,
+12 ballots:
 the first slice shipped the polish 3 to 1
-("riding her bike", "a toothpaste box marked with the Intel logo; she said it made everyone who went into her washroom burst out laughing").
+("riding her bike",
+"a toothpaste box marked with the Intel logo;
+she said it made everyone who went into her washroom burst out laughing").
 
 ### Class one hundred fifty-two: the polish gate weighed a prose slice's wrap
 
@@ -9097,19 +9744,25 @@ inception/mercury-2.5 kept the base because the polish "changes line structure",
 and on the second gate run gemma-4-26b and Mercury both cited the polish's line breaks.
 The comparative policy named "line structure" among what the polish may not change,
 yet on a prose slice both candidates are wrapped at their semantic boundaries by one rule before the gate
-(`consolidation-polish-round.ts`), so where either breaks a line follows from its wording and is nobody's choice.
+(`consolidation-polish-round.ts`),
+so where either breaks a line follows from its wording and is nobody's choice.
 
 `comparativePolishPolicy` (`consolidation-polish-gate-wire.ts`) now keeps "line structure" only where the line rule governs the slice
-and otherwise tells the gate that line breaks inside a paragraph are the page's own wrap, never to be weighed;
-`ConsolidationPolishGateSubject` carries the slice's `lineStructured`, threaded from the polish round.
+and otherwise tells the gate that line breaks inside a paragraph are the page's own wrap,
+never to be weighed;
+`ConsolidationPolishGateSubject` carries the slice's `lineStructured`,
+threaded from the polish round.
 The required-correction policy never named line structure and is unchanged.
 Guard `7d5d3fe75` (the gate test's prose and line-structured sheets) red on the class one hundred fifty-one build,
-fix `1dd8ebc52`, lint 0/0, types clean.
+fix `1dd8ebc52`,
+lint 0/0,
+types clean.
 
 ### Observations not built
 
 - google.gemma-4-e2b's first-gate ballot reason is incoherent ("changing 'riding her bike' to 'riding her bike'");
-  one ballot is not the evidence a cull needs, so its gate ballots are watched on the next runs.
+  one ballot is not the evidence a cull needs,
+  so its gate ballots are watched on the next runs.
 - "hardcore video Bilibili account" and "items related to electronic devices" stay close to the Chinese;
   the gate judged them faithful and the polish that would change them lost only on the wrap.
 
@@ -9117,54 +9770,89 @@ fix `1dd8ebc52`, lint 0/0, types clean.
 
 ### What the run did
 
-shi_Yumiaoya37 (the uncommitted class one hundred fifty build, frozen as `.frozen-dist-class150-20260926`)
-SETTLED at 10:18 UTC in 15.8 min, one attempt,
-901 seats, 51 retry rounds, 771 calls,
+shi_Yumiaoya37 (the uncommitted class one hundred fifty build,
+frozen as `.frozen-dist-class150-20260926`)
+SETTLED at 10:18 UTC in 15.8 min,
+one attempt,
+901 seats,
+51 retry rounds,
+771 calls,
 about 1.03 USD by the OpenRouter spend lines plus Bedrock 20.65 to 20.43.
 Synthetic and Hyper read dry throughout.
 
 The January 16 sentence reads "she attempted to end her life in the early hours of January 16."
 The bench wrote the attempt itself:
 no candidate drew the class one hundred fifty refusal (`drops the suicide` appears nowhere in the log),
-so the floor was silent, not exercised.
-The polish gate's ballot lines are live: 28 ballots over 7 gate runs, each with model, choice and reason.
+so the floor was silent,
+not exercised.
+The polish gate's ballot lines are live:
+28 ballots over 7 gate runs,
+each with model,
+choice and reason.
 
 Every shi_Yumiaoya36 check held:
-front matter equal, 4 headings, no TA, no error finish, no double blank line,
-no unendorsed standing, no repeat or run-off finding, 11 abstention lines.
-The film link reads "Josee, the Tiger and the Fish" again, where shi_Yumiaoya36 had "film".
+front matter equal,
+4 headings,
+no TA,
+no error finish,
+no double blank line,
+no unendorsed standing,
+no repeat or run-off finding,
+11 abstention lines.
+The film link reads "Josee,
+the Tiger and the Fish" again,
+where shi_Yumiaoya36 had "film".
 
 ### Class one hundred fifty-one: the father's insult lost its "son"
 
-The original reports that her father insulted her as 「逆子」, "unfilial son".
-On a trans woman's memorial, the insult is her father calling her his son.
-shi_Yumiaoya36 and 37 both shipped "rebellious child", which takes the misgendering out of the insult the page reports,
+The original reports that her father insulted her as 「逆子」,
+"unfilial son".
+On a trans woman's memorial,
+the insult is her father calling her his son.
+shi_Yumiaoya36 and 37 both shipped "rebellious child",
+which takes the misgendering out of the insult the page reports,
 and shi_Yumiaoya8 left it in Han.
-No archive English covers the passage (the archive is partial), so nothing on any sheet said which.
+No archive English covers the passage (the archive is partial),
+so nothing on any sheet said which.
 
 `逆子` joins the community glossary (`community-glossary.ts`)
-with the renderings "unfilial son", "undutiful son", "disobedient son", "ungrateful son" and "rebellious son",
+with the renderings "unfilial son",
+"undutiful son",
+"disobedient son",
+"ungrateful son" and "rebellious son",
 and a why naming the misgendering.
 So the identity context carries the term,
 the judges' sheets name any candidate lacking every rendering,
 and the source-carry floor refuses the term left in Han.
-It refuses no English form; "child" is named as evidence, not barred.
+It refuses no English form;
+"child" is named as evidence,
+not barred.
 The corpus carries 逆子 only on shi_Yumiaoya (the Simplified and Traditional originals).
 
 The departure line on the judges' sheets ended "the archive renders it so",
-which was already untrue for 药娘 (the archive keeps it in Han, and the owner's ruling overrides it)
+which was already untrue for 药娘 (the archive keeps it in Han,
+and the owner's ruling overrides it)
 and would be untrue for 逆子.
 It now ends "the community glossary renders it so".
 The glossary's header says which entries have no archive rendering.
 
-Guard: `community-glossary.unit.test.ts` seeds five terms and names a "rebellious child" candidate while leaving "unfilial son" unnamed.
-It was red against the class one hundred fifty build (2 FAIL; `aea5c3d91`) and passes on the fix (`0de47d546`); types clean, full suite 1,152 PASS, 0 FAIL (scratch `suite-class151.log`).
+Guard:
+`community-glossary.unit.test.ts` seeds five terms and names a "rebellious child" candidate while leaving "unfilial son" unnamed.
+It was red against the class one hundred fifty build (2 FAIL;
+`aea5c3d91`) and passes on the fix (`0de47d546`);
+types clean,
+full suite 1,152 PASS,
+0 FAIL (scratch `suite-class151.log`).
 
 ### A note on the unit runner's output
 
-A throwaway probe with pass, fail, pass in one `describe` showed the runner prints one PASS line per `describe`
-naming every passing test in it, and one FAIL line per failing test.
-Suite PASS counts are therefore counts of `describe` blocks, not tests;
+A throwaway probe with pass,
+fail,
+pass in one `describe` showed the runner prints one PASS line per `describe`
+naming every passing test in it,
+and one FAIL line per failing test.
+Suite PASS counts are therefore counts of `describe` blocks,
+not tests;
 FAIL counts are per test and complete.
 
 ### Not built
@@ -9176,16 +9864,27 @@ FAIL counts are per test and complete.
 
 ### What the run did
 
-shi_Yumiaoya36 (frozen `eac0b67a8`) SETTLED at 09:53 UTC in 5.5 min, one attempt,
-848 seats, 51 retry rounds, 729 calls,
-about 0.50 USD by the meters (Bedrock 20.83 to 20.65, OpenRouter 49.36 to 49.04).
+shi_Yumiaoya36 (frozen `eac0b67a8`) SETTLED at 09:53 UTC in 5.5 min,
+one attempt,
+848 seats,
+51 retry rounds,
+729 calls,
+about 0.50 USD by the meters (Bedrock 20.83 to 20.65,
+OpenRouter 49.36 to 49.04).
 Synthetic and Hyper read dry throughout,
-so the two seats only they serve threw every call (Qwen3.8-27B 117, glm-5.3 81)
+so the two seats only they serve threw every call (Qwen3.8-27B 117,
+glm-5.3 81)
 and class one hundred forty-nine was not exercised again.
 
 Every shi_Yumiaoya35 check held:
-front matter equal, 4 headings, no TA, no error finish, no double blank line,
-no unendorsed standing, no repeat or run-off finding, 18 abstention lines.
+front matter equal,
+4 headings,
+no TA,
+no error finish,
+no double blank line,
+no unendorsed standing,
+no repeat or run-off finding,
+18 abstention lines.
 
 ### Class one hundred fifty: the page dropped a suicide attempt the original names
 
@@ -9193,39 +9892,53 @@ The original's 于 1 月 16 日凌晨吞下大量药物自杀 is an attempt she 
 the paragraph goes on to six days in intensive care and her waking.
 The page shipped "she overdosed in the early hours of January 16."
 The attempt the original states was gone,
-and the means, which the house rule keeps vague, stood in its place.
+and the means,
+which the house rule keeps vague,
+stood in its place.
 shi_Yumiaoya14 and 35 had shipped "attempted suicide" for the same sentence.
 
 The bench had the right text in hand.
 The consolidation polish proposed "attempted suicide by overdosing" and won the polish round 2.5 to 2,
 with two ballots citing the survived-attempt rule of class seventy-nine.
-The polish gate then settled on neither, and the base shipped.
-The log carried only the gate's tally, not its ballots' reasons,
+The polish gate then settled on neither,
+and the base shipped.
+The log carried only the gate's tally,
+not its ballots' reasons,
 so why the gate refused cannot be read from this run.
 
 Fixed in two parts:
 
-- `droppedSuicideFindings` in `translate-suicide-drop.ts` refuses, before any judge reads it,
-  a candidate whose original names a suicide (自杀, 自尽, 轻生, outside comments)
+- `droppedSuicideFindings` in `translate-suicide-drop.ts` refuses,
+  before any judge reads it,
+  a candidate whose original names a suicide (自杀,
+  自尽,
+  轻生,
+  outside comments)
   and which carries no wording for suicide at all.
-  A word on the stem `suicid`, a kill verb with a reflexive ("killed herself"),
-  or an end or take verb closing on a life ("tried to end her life", "took her own life") all count.
-  The floor asks only that the suicide be said, never how;
+  A word on the stem `suicid`,
+  a kill verb with a reflexive ("killed herself"),
+  or an end or take verb closing on a life ("tried to end her life",
+  "took her own life") all count.
+  The floor asks only that the suicide be said,
+  never how;
   whether the means are too specific stays with the judges.
   It runs in `sourceCarryFindings` after the address floor,
-  so it covers translate candidates, consolidation proposals and standings alike.
+  so it covers translate candidates,
+  consolidation proposals and standings alike.
 - The consolidation polish gate now logs every ballot with its model and reason,
   as the consolidate gate has since class fifty-six.
 
 The corpus census of 2026-09-26 (scratch `suicide-census.mjs`) found 44 entries whose original names a suicide.
 The archive English of 40 says it.
-Two (shi_Yumiaoya, XIEPT2) are partial archives without those passages.
+Two (shi_Yumiaoya,
+XIEPT2) are partial archives without those passages.
 Two render a quoted line without the word:
 自杀痛苦 as "the pain of dying" and 别自杀 as "please don't follow her".
 The floor now refuses those two lines as standings,
 so those slices go to the lanes instead of shipping as the archive has them.
 
-The guard `suicide-drop.unit.test.ts` was red against the old build (two FAIL, one PASS)
+The guard `suicide-drop.unit.test.ts` was red against the old build (two FAIL,
+one PASS)
 and passes on the new one.
 The full suite passed 1,152 with no FAIL (scratch `suite-class150.log`).
 That suite ran before the polish gate's log line was added;
@@ -9237,19 +9950,24 @@ and accepts shi_Yumiaoya35's "attempted suicide" paragraph.
 
 - 逆子 as "rebellious child" loses the gendered "son" in the father's insult.
 - The handles 雪秋 and 由之 shipped without the literal gloss class eighty-three asks for.
-  No candidate glossed them, so there was nothing for a deterministic pass to restore.
+  No candidate glossed them,
+  so there was nothing for a deterministic pass to restore.
 - The caution callout's 提示 as "Tips".
 - 初三 as "third year of junior high".
 - The italics on *Girls' Last Tour* lost.
 - The film link's text is just "film".
-- The sedative detail stays on the page, as on shi_Yumiaoya23.
+- The sedative detail stays on the page,
+  as on shi_Yumiaoya23.
 
 ### Next
 
 shi_Yumiaoya37 was launched at 10:02 UTC.
-It runs from a freeze of the class one hundred fifty build, `node_modules/.frozen-dist-class150-20260926`.
+It runs from a freeze of the class one hundred fifty build,
+`node_modules/.frozen-dist-class150-20260926`.
 The freeze was taken before the commit because another session's `worktree add` held git's worktree-copy settlement lock.
-The lock cleared at about 10:20 UTC; the guard landed as `c7168c1ec` and the fix as `fb41795ba`, the same source as the freeze.
+The lock cleared at about 10:20 UTC;
+the guard landed as `c7168c1ec` and the fix as `fb41795ba`,
+the same source as the freeze.
 Read first whether the January 16 sentence says the attempt.
 Then check any `drops the suicide` refusal and the polish gate's ballot lines,
 then the standing checks.
@@ -9257,31 +9975,64 @@ then the standing checks.
 ## hulicaijia31 read, 2026-09-26: class one hundred forty-nine not exercised, and the en_CA scan corrected
 
 hulicaijia31 (frozen `eac0b67a8`) SETTLED at 09:45 UTC in 19.3 min,
-about 2.81 USD by the meters (Bedrock 21.98 to 20.86, OpenRouter 51.16 to 49.47).
-Hyper read dry from the first reading (balance 0, spent by hulicaijia30) and Synthetic dry throughout,
-so no call reached Hyper, its window never filled,
+about 2.81 USD by the meters (Bedrock 21.98 to 20.86,
+OpenRouter 51.16 to 49.47).
+Hyper read dry from the first reading (balance 0,
+spent by hulicaijia30) and Synthetic dry throughout,
+so no call reached Hyper,
+its window never filled,
 and the log carries no `window full` or `request window is full` line:
-class one hundred forty-nine was NOT exercised live; its unit guards stand.
-The two Synthetic- and Hyper-only seats threw every call (Qwen3.8-27B 610, glm-5.3 274),
+class one hundred forty-nine was NOT exercised live;
+its unit guards stand.
+The two Synthetic- and Hyper-only seats threw every call (Qwen3.8-27B 610,
+glm-5.3 274),
 as on every run with both dry.
-Lanes: repair 3.3 min, translate 3.3 min, consolidation 6.9 min.
-The 19.3 minutes is the run on Bedrock and OpenRouter alone, not a measurement of the fix.
+Lanes:
+repair 3.3 min,
+translate 3.3 min,
+consolidation 6.9 min.
+The 19.3 minutes is the run on Bedrock and OpenRouter alone,
+not a measurement of the fix.
 
 Every hulicaijia30 check held:
-13 headings, 9 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish,
-no double blank line, no straight double quote outside tags, "douhua" seven times, "licorice" twice, register clean,
+13 headings,
+9 markers,
+9 definitions,
+2 links,
+3 Sakura,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+no straight double quote outside tags,
+"douhua" seven times,
+"licorice" twice,
+register clean,
 no Han on the page (hulicaijia30 had two characters).
 "Jiefangbei" five times against six:
-the walking passage now reads "through the streets of Jiefangbei, along the pedestrian street around eight or nine in the evening",
+the walking passage now reads "through the streets of Jiefangbei,
+along the pedestrian street around eight or nine in the evening",
 which renders every clause of 在晚上八九点钟左右的解放碑步行街上走着 without repeating the name.
 
-The en_CA scan in the scratch `check-hulicaijia.mjs` had reported `center`, `realize` and `mom` on hulicaijia29, 30 and 31.
+The en_CA scan in the scratch `check-hulicaijia.mjs` had reported `center`,
+`realize` and `mom` on hulicaijia29,
+30 and 31.
 All three were false positives:
 `center` stood only in `text-align: center` style attributes,
 `mom` matched the start of "moment",
-and `realize` is Canadian spelling, which takes -ize.
-The scan now strips tags, matches at a word start, and lists only spellings Canadian usage writes otherwise
-(`color`, `favorite`, `center`, `gray`, `behavior`, `neighbor`, `honor`, `labor`);
+and `realize` is Canadian spelling,
+which takes -ize.
+The scan now strips tags,
+matches at a word start,
+and lists only spellings Canadian usage writes otherwise
+(`color`,
+`favorite`,
+`center`,
+`gray`,
+`behavior`,
+`neighbor`,
+`honor`,
+`labor`);
 a positive control on "the color of the neighborhood" beside a styled `center` reports `color` and `neighbor` only,
 and all three pages read clean.
 
@@ -9290,37 +10041,46 @@ and all three pages read clean.
 ### What the run did
 
 hulicaijia30 (frozen `1f3d85c29`) SETTLED at 09:12 UTC in 100.6 min against hulicaijia29's 85.0,
-about 2.38 USD by the meters (Bedrock 23.14 to 21.98, OpenRouter 52.40 to 51.18)
+about 2.38 USD by the meters (Bedrock 23.14 to 21.98,
+OpenRouter 52.40 to 51.18)
 plus Hyper's whole balance (208 to 0).
 Synthetic read dry throughout;
 Hyper read wet from the launch at 07:31 UTC and dry by 09:07 UTC.
 
-The lanes, by the `SLICE-START` and `SLICE-COST` lines (scratch `lane-times.mjs`):
+The lanes,
+by the `SLICE-START` and `SLICE-COST` lines (scratch `lane-times.mjs`):
 repair 15.7 min (hulicaijia29 13.7),
 translate 43.6 min (25.7),
 consolidation 22.1 min (34.7).
-The translate lane's p50 slice was 68 s, but eight slices took 1,590 to 2,067 s.
+The translate lane's p50 slice was 68 s,
+but eight slices took 1,590 to 2,067 s.
 
 ### The checks
 
 Class one hundred forty-eight never fired:
 no `ran past the card's stream bound` line,
 and Bedrock's Gemma streams stayed healthy
-(`google.gemma-4-e2b` 704 streams at 1.5 s mean, 4 s max;
-`google.gemma-4-26b-a4b` 670 at 1.6 s mean, 5 s max).
+(`google.gemma-4-e2b` 704 streams at 1.5 s mean,
+4 s max;
+`google.gemma-4-26b-a4b` 670 at 1.6 s mean,
+5 s max).
 Class one hundred forty-four was NOT exercised again:
 no accepted `accuracy/addition` claim on chunk 69.
-The en_CA scan reads the same three US spellings as hulicaijia29 (`center`, `realize`, `mom`).
+The en_CA scan reads the same three US spellings as hulicaijia29 (`center`,
+`realize`,
+`mom`).
 
 ### Class one hundred forty-nine: a full Hyper request window stalled every Hyper call behind one sleep
 
-Hyper allows 1,000 request starts in a rolling hour (`HYPER_REQUESTS_PER_HOUR`, `request-pace.ts`).
+Hyper allows 1,000 request starts in a rolling hour (`HYPER_REQUESTS_PER_HOUR`,
+`request-pace.ts`).
 The pass spent them in its first 33 minutes:
 919 Hyper completions plus refusals and retries by 08:04:20 UTC,
 when the pacer logged `window full (1000 starts in 3600000ms); waiting 1640012ms`.
 That sleep was one chained promise every later Hyper caller queued behind,
 and the deadline signal could not cut it,
-so the log carries eleven `CallTimeoutError` warnings, all at 08:31:40.8 UTC,
+so the log carries eleven `CallTimeoutError` warnings,
+all at 08:31:40.8 UTC,
 0.1 s after the 1,640,012 ms ran out,
 and the pacer then logged waits of 1 ms to 36 s as the window's oldest starts aged out.
 
@@ -9331,10 +10091,12 @@ minimax-m3 averaged 21.6 s a stream on Hyper against 6.0 s on OpenRouter,
 and DeepSeek V4.1 Flash 15.1 s against 13.9 s.
 The eight translate slices that stalled 27 to 34 minutes are the calls parked behind the window.
 
-Fixed in `eac0b67a8`, guards red first `02c064371`:
+Fixed in `eac0b67a8`,
+guards red first `02c064371`:
 
 - `request-pace.ts`:
-  `take` reserves each start at once, in arrival order,
+  `take` reserves each start at once,
+  in arrival order,
   and waits on its own abortable timer (`setTimeout` from `node:timers/promises` with the caller's signal),
   so an abandoned caller releases its place at once and no caller waits behind another's sleep.
   `waitMs()` says how long a take would wait now.
@@ -9353,126 +10115,208 @@ Fixed in `eac0b67a8`, guards red first `02c064371`:
 
 Guards:
 `request-pace.unit.test.ts` (a caller that gives up while another take waits is released at once with its own reason;
-`waitMs` reads zero, the remaining window, then zero),
+`waitMs` reads zero,
+the remaining window,
+then zero),
 `provider-router-pace.unit.test.ts` (minimax-m3 goes to OpenRouter while Hyper's window is full,
 stays on Hyper while it has room,
 and glm-5.3 queues on Hyper either way).
-Lint 0/0, types clean, full suite green (`suite-class149.log`, 1151 PASS, 0 FAIL).
-hulicaijia31 launched 09:25 UTC on `.frozen-dist-eac0b67a8` (pid 669977, scope `pass-hulicaijia31`).
+Lint 0/0,
+types clean,
+full suite green (`suite-class149.log`,
+1151 PASS,
+0 FAIL).
+hulicaijia31 launched 09:25 UTC on `.frozen-dist-eac0b67a8` (pid 669977,
+scope `pass-hulicaijia31`).
 
 ## hulicaijia29 read, 2026-09-26: class one hundred forty-four not exercised, and class one hundred forty-eight
 
 ### What the run did
 
 hulicaijia29 (frozen `f31fd2ec5`) SETTLED at 07:09 UTC in 85.0 min against hulicaijia28's 24.4,
-about 3.06 USD by the meters (Bedrock 24.39 to 23.14, OpenRouter 54.22 to 52.41).
+about 3.06 USD by the meters (Bedrock 24.39 to 23.14,
+OpenRouter 54.22 to 52.41).
 Synthetic ran dry at 05:56 UTC and Hyper read dry until 06:55 UTC,
 so glm-5.3 threw 284 of 337 calls and Qwen3.8-27B 465 of 601 as unreachable.
-72 slices, 115 repair issues, 29 accepted, 56 slices where the lanes differed, 41 slices changed on the page.
+72 slices,
+115 repair issues,
+29 accepted,
+56 slices where the lanes differed,
+41 slices changed on the page.
 
 ### The checks
 
 Every hulicaijia28 check held:
-13 headings, 9 footnote markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA,
-no error finish, no double blank line, "douhua" seven times, "Jiefangbei" six times, "licorice" twice.
-The only straight single quotes on the page are the seven JSX photo paths, as the archive has them,
+13 headings,
+9 footnote markers,
+9 definitions,
+2 links,
+3 Sakura,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+"douhua" seven times,
+"Jiefangbei" six times,
+"licorice" twice.
+The only straight single quotes on the page are the seven JSX photo paths,
+as the archive has them,
 so class one hundred forty-seven has nothing to curl here.
 Footnote 7's wordplay note is on the page with 烷 corrected to wán.
 
-Class one hundred forty-four was NOT exercised: no issue was filed on chunk 69 this run,
+Class one hundred forty-four was NOT exercised:
+no issue was filed on chunk 69 this run,
 so nothing disputed the archive and no dispute block reached the slice 69 slate.
 The slate kept the archive's note 3 to 2
-(minimax-m3, google.gemma-4-e2b and Mercury 2.5 citing the page's apparatus;
+(minimax-m3,
+google.gemma-4-e2b and Mercury 2.5 citing the page's apparatus;
 deepseek-v4.1-flash and gemma-4-26b-a4b-it calling it an import from the ARCHIVE note).
 
 ### Class one hundred forty-eight: a Bedrock Gemma stream held in the provider's queue holds its round
 
-Between 06:05 and 06:55 UTC Bedrock's `google.gemma-4-e2b` went from a 1 s mean stream to 235, 263 and 219 s
-in three of the five ten-minute windows, while `google.gemma-4-26b-a4b` on the same provider stayed at 1 s
+Between 06:05 and 06:55 UTC Bedrock's `google.gemma-4-e2b` went from a 1 s mean stream to 235,
+263 and 219 s
+in three of the five ten-minute windows,
+while `google.gemma-4-26b-a4b` on the same provider stayed at 1 s
 and every other model kept its own pace.
-The streams carry the same signature every time: a first frame at about 15 s and a frame every 15 s after it,
-then content trickling in (70 to 590 content characters over 70 to 305 s), or nothing at all.
+The streams carry the same signature every time:
+a first frame at about 15 s and a frame every 15 s after it,
+then content trickling in (70 to 590 content characters over 70 to 305 s),
+or nothing at all.
 24 calls ran to the 360 s deadline.
 
-With Synthetic and Hyper dry, every bench leaned on the reachable seats,
+With Synthetic and Hyper dry,
+every bench leaned on the reachable seats,
 and a round of five seats with two unreachable needed Gemma E2B's ballot for its quorum of three:
-the slowest rounds read "3/5 heard, 363791ms to quorum".
+the slowest rounds read "3/5 heard,
+363791ms to quorum".
 Across the whole pipeline the ten-minute stream count fell from 220 a model to 7 to 21 while it lasted.
-Hyper read wet at 06:55 UTC, the same minute the episode ends in this log, and quorum stopped needing the seat.
+Hyper read wet at 06:55 UTC,
+the same minute the episode ends in this log,
+and quorum stopped needing the seat.
 
-The same signature appears in other runs, rarely:
+The same signature appears in other runs,
+rarely:
 24 of 68,235 Bedrock Gemma streams across the 200 newest pass logs,
 against 79 in hulicaijia29 alone.
-Without it, no Bedrock Gemma completion in those logs took longer than 27,340 ms
-(over every completion, signature or not: p50 1.4 to 1.5 s, p99 4.2 to 4.5 s);
-with it, completions ran 25 to 304 s.
-No other model separates this way: DeepSeek V4.1 Flash, GLM-5.3-Flash, Kimi-K3 and Qwen3.8-27B complete
-healthy streams at 200 to 350 s, so a bound of this kind is per model, set from the model's own measurement.
+Without it,
+no Bedrock Gemma completion in those logs took longer than 27,340 ms
+(over every completion,
+signature or not:
+p50 1.4 to 1.5 s,
+p99 4.2 to 4.5 s);
+with it,
+completions ran 25 to 304 s.
+No other model separates this way:
+DeepSeek V4.1 Flash,
+GLM-5.3-Flash,
+Kimi-K3 and Qwen3.8-27B complete
+healthy streams at 200 to 350 s,
+so a bound of this kind is per model,
+set from the model's own measurement.
 
 ## XingZ6013 read, 2026-09-26: classes 139 to 142 live, and classes 145 to 147
 
 ### What the run did
 
 XingZ6013 (frozen `e387be2cf`) SETTLED at 04:32 UTC in 56.3 min,
-Bedrock and OpenRouter wet, Synthetic and Hyper dry, so glm-5.3 (602 asked) and Qwen3.8-27B (1,138 asked) threw every call.
-120 slices, 245 repair issues, 149 accepted, 110 slices where the lanes differed, 111 lane contest verdicts, 100 slices changed on the page.
+Bedrock and OpenRouter wet,
+Synthetic and Hyper dry,
+so glm-5.3 (602 asked) and Qwen3.8-27B (1,138 asked) threw every call.
+120 slices,
+245 repair issues,
+149 accepted,
+110 slices where the lanes differed,
+111 lane contest verdicts,
+100 slices changed on the page.
 
 ### The four checks the run was launched for
 
-- Class one hundred thirty-nine: both song credits keep the album,
+- Class one hundred thirty-nine:
+  both song credits keep the album,
   "— Yuli 【妄想症Paranoia】“Nonuple Reality”" and "—— Yuli 【Paranoia】 “Ling Chong Qi Yuan”".
-- Class one hundred forty: the first credit reads "by Jiecheng Tianzou Official", no ", author".
-- Class one hundred forty-one: no English title stands in 《》 anywhere on the page.
-- Class one hundred forty-two: every straight double quote on the page is inside a tag or the JSX photo path,
-  and "take it slow" is curled; the four `quote-style-unified` lines curled slices 20, 39, 42 and 65.
+- Class one hundred forty:
+  the first credit reads "by Jiecheng Tianzou Official",
+  no ",
+  author".
+- Class one hundred forty-one:
+  no English title stands in 《》 anywhere on the page.
+- Class one hundred forty-two:
+  every straight double quote on the page is inside a tag or the JSX photo path,
+  and "take it slow" is curled;
+  the four `quote-style-unified` lines curled slices 20,
+  39,
+  42 and 65.
 
 ### Class one hundred forty-five: the first credit's title in two English renderings
 
 The page reads "——from “Gilded Cage” ([Bird in a Cage](https://www.bilibili.com/video/BV17Q4y1s7j1))[^9]".
-The original credits the song once, as the link's text: 来自《[笼中之鸟](url)》.
-The consolidated candidate wrote "Gilded Cage", a title the web lookup offered for another work
-(minimax-m3 said so on the slate and the gate, inception/mercury-2.5 on the gate), and kept 笼中之鸟 as the link's text in parentheses.
+The original credits the song once,
+as the link's text:
+来自《[笼中之鸟](url)》.
+The consolidated candidate wrote "Gilded Cage",
+a title the web lookup offered for another work
+(minimax-m3 said so on the slate and the gate,
+inception/mercury-2.5 on the gate),
+and kept 笼中之鸟 as the link's text in parentheses.
 The class ninety-eight floor read the Han in parentheses as a gloss beside its English and let the candidate through;
-the slate chose it 2.5 to 0.5, and the gate confirmed it with 2 of 4 ballots, one for the standing and one for neither.
+the slate chose it 2.5 to 0.5,
+and the gate confirmed it with 2 of 4 ballots,
+one for the standing and one for neither.
 The class one hundred title pass then rewrote the Han link text into the heading's "Bird in a Cage",
 so one song reached the page under two titles.
-Fixed in `9157004d2` (guard red first `dd88fd5b6`): a Han title standing as a link's whole text is never a gloss,
+Fixed in `9157004d2` (guard red first `dd88fd5b6`):
+a Han title standing as a link's whole text is never a gloss,
 since the link's text is what the reader sees as the work's name.
-Replayed over the run's shipped slice 95: the floor now refuses it.
+Replayed over the run's shipped slice 95:
+the floor now refuses it.
 
 ### Class one hundred forty-six: the second credit left in pinyin
 
 The page reads "—— Yuli 【Paranoia】 “Ling Chong Qi Yuan”" under the heading "Zero-Layer Prayer".
 The title pass logged `title-reference-ambiguous (slice 101 ... the slice offers more than one span to read)`:
-the slice carries the summary's quoted poem title, the quoted closing line and the quoted credit.
+the slice carries the summary's quoted poem title,
+the quoted closing line and the quoted credit.
 Fixed in `9157004d2` with `d8d86b531` (same guard commit):
 where the original writes the title on a line opening with a tag,
 the search is held to the page line opening with the same tag in the same place among such lines,
 as it already was for a footnote definition's label.
-Replayed over the run's artifact: slice 101's credit unifies to “Zero-Layer Prayer”.
+Replayed over the run's artifact:
+slice 101's credit unifies to “Zero-Layer Prayer”.
 
 ### Class one hundred forty-seven: a nested quotation left straight
 
-The butterfly speech quotes a law inside its own quotation, 「醒着就要活下去」 inside 「…」,
-and the page shipped "the law that says 'to be awake is to keep living.' They can fly" straight inside curly doubles.
+The butterfly speech quotes a law inside its own quotation,
+「醒着就要活下去」 inside 「…」,
+and the page shipped "the law that says 'to be awake is to keep living.'
+They can fly" straight inside curly doubles.
 `restoreTypography` curled a straight single quote only as an apostrophe.
 The archive pages write nested quotations curly (13 ‘ marks over 6 pages) and never straight.
 Fixed in `f4adc4c9f` and `f31fd2ec5` (guard red first `09758edd6`):
 `nestedSinglePairs` in `nested-single-quotes.ts` pairs an opening-shaped straight single quote with the next closing-shaped one on its line,
 and on a page whose convention is the curly apostrophe the pair is written ‘…’;
 the neighbour helpers moved to `quote-neighbours.ts`.
-Two older assertions that left a quoted phrase straight, so it was never half-curled, now expect the whole pair curled.
-Replayed over the whole XingZ6013 page: that one line is the only line the restoration changes.
+Two older assertions that left a quoted phrase straight,
+so it was never half-curled,
+now expect the whole pair curled.
+Replayed over the whole XingZ6013 page:
+that one line is the only line the restoration changes.
 
 ### Observations not built
 
-- The two credits write the album two ways, 【妄想症Paranoia】 and 【Paranoia】, and the dash two ways, "—" and "——" (em-dashes left per the owner).
-- "Yuli" carries no literal gloss at its first appearance; the bench wrote none, so `placeHandleGlosses` had nothing to move.
+- The two credits write the album two ways,
+  【妄想症Paranoia】 and 【Paranoia】,
+  and the dash two ways,
+  "—" and "——" (em-dashes left per the owner).
+- "Yuli" carries no literal gloss at its first appearance;
+  the bench wrote none,
+  so `placeHandleGlosses` had nothing to move.
 
 ### Next
 
 hulicaijia29 on the frozen build carrying classes one hundred forty-four to forty-seven,
-read first for the chunk 69 claim's category: only an accepted `accuracy/addition` claim disputes the archive.
+read first for the chunk 69 claim's category:
+only an accepted `accuracy/addition` claim disputes the archive.
 
 ## hulicaijia28 read, 2026-09-26: the note kept, class one hundred forty-four not exercised
 
@@ -9481,46 +10325,82 @@ read first for the chunk 69 claim's category: only an accepted `accuracy/additio
 hulicaijia28 (frozen `e387be2cf`) SETTLED at 03:33 UTC in 24.4 min,
 Bedrock 28.23 to 27.12 and OpenRouter 60.07 to 58.35 by the meters (about 2.83 USD),
 Qwen3.8-27B and glm-5.3 dark with Synthetic and Hyper dry.
-Every hulicaijia27 check held: 13 headings, 9 markers, 9 definitions, 2 links, 3 Sakura,
-front matter equal, "douhua" eight times, "Jiefangbei" six times, "April 29", "May 4", "licorice" twice,
-no "pharmaceutical sales representative", no TA, no double blank line, no error finish,
-the fourteen straight double quotes the JSX photo paths, the "center" hits the captions' `text-align` values,
-no register hit (OD, jk, Gaokao).
-The page's only Han is inside footnote 7, the note's own 晚安 and 金刚烷胺.
+Every hulicaijia27 check held:
+13 headings,
+9 markers,
+9 definitions,
+2 links,
+3 Sakura,
+front matter equal,
+"douhua" eight times,
+"Jiefangbei" six times,
+"April 29",
+"May 4",
+"licorice" twice,
+no "pharmaceutical sales representative",
+no TA,
+no double blank line,
+no error finish,
+the fourteen straight double quotes the JSX photo paths,
+the "center" hits the captions' `text-align` values,
+no register hit (OD,
+jk,
+Gaokao).
+The page's only Han is inside footnote 7,
+the note's own 晚安 and 金刚烷胺.
 
 ### Footnote 7
 
 The page ships the archive's note:
-"In Chinese, “goodnight” (晚安, wǎn’ān) is a near-homophone of amantadine (金刚烷胺, jīn gāng wán’àn), the drug mentioned earlier.
+"In Chinese,
+“goodnight” (晚安,
+wǎn’ān) is a near-homophone of amantadine (金刚烷胺,
+jīn gāng wán’àn),
+the drug mentioned earlier.
 The word here carries both meanings."
-The pinyin of 烷 reads wán where the archive and both lane texts read wǎn, so `correctPinyinPage` (class one hundred thirty-seven) acted on it.
+The pinyin of 烷 reads wán where the archive and both lane texts read wǎn,
+so `correctPinyinPage` (class one hundred thirty-seven) acted on it.
 
 ### Why this does not show class one hundred forty-four live
 
 gemma-4-26b-a4b-it filed the note as `accuracy/mistranslation major`,
 "The translation provides an expansion regarding homophones and linguistic meanings that is not present in the original text."
-The panel accepted it 3 to 1: minimax-m3, gemma-4-26b-a4b-it and google.gemma-4-e2b supported, deepseek-v4.1-flash did not.
+The panel accepted it 3 to 1:
+minimax-m3,
+gemma-4-26b-a4b-it and google.gemma-4-e2b supported,
+deepseek-v4.1-flash did not.
 `archiveDisputesOf` disputes the archive only on an accepted `accuracy/addition` claim,
 so no dispute was logged for slice 69 and no sheet carried the dispute block the class one hundred forty-four fix bounds.
 The repair lane kept the note unchanged despite the accepted claim,
 the translate slate chose the archive's note 3 to 2 without the dispute block
-(deepseek-v4.1-flash, google.gemma-4-e2b and inception/mercury-2.5 for it, two ballots citing the apparatus rule;
-gemma-4-26b-a4b-it for its own short note, calling the archive's "a restatement of the 'ARCHIVE note'";
+(deepseek-v4.1-flash,
+google.gemma-4-e2b and inception/mercury-2.5 for it,
+two ballots citing the apparatus rule;
+gemma-4-26b-a4b-it for its own short note,
+calling the archive's "a restatement of the 'ARCHIVE note'";
 typesafe/jev-1.13 for the short note at 0.79),
-and the lanes agreed, so slice 69 had no contest.
-The page is right, but the dispute path is untested live; the unit guard `7869828fb` still stands for it.
+and the lanes agreed,
+so slice 69 had no contest.
+The page is right,
+but the dispute path is untested live;
+the unit guard `7869828fb` still stands for it.
 
 ### The panel on the note, three runs
 
 The same three panelists have accepted a claim against the note on each run where it was filed:
-minimax-m3 and gemma-4-26b-a4b-it on hulicaijia26, 27 and 28, google.gemma-4-e2b on 27 and 28,
+minimax-m3 and gemma-4-26b-a4b-it on hulicaijia26,
+27 and 28,
+google.gemma-4-e2b on 27 and 28,
 with the critic and panel sheets naming `TRANSLATOR_NOTE_KIND` as apparatus since class one hundred forty-three.
-It is one item asked three times with the same sheet, not three items, so no model is reseated on it;
+It is one item asked three times with the same sheet,
+not three items,
+so no model is reseated on it;
 it is the evidence to weigh if a panel measurement across items ever shows the same seats below the standard.
 
 ### Lane contest attribution
 
-The artifact's `laneSelection` carries 223 `modelId` keys, one per "lane contest ballot by" line in the log (223),
+The artifact's `laneSelection` carries 223 `modelId` keys,
+one per "lane contest ballot by" line in the log (223),
 so every contest ballot now names the model that cast it.
 
 ## Class one hundred forty-four, 2026-09-26: one panel's acceptance made final on every later sheet
@@ -9528,32 +10408,55 @@ so every contest ballot now names the model that cast it.
 ### What hulicaijia27 showed
 
 hulicaijia27 (frozen `2472ec48e`) SETTLED at 03:02 UTC in 45.3 min,
-Bedrock 29.49 to 28.26 and OpenRouter 62.01 to 60.14 by the meters (about 3.10 USD), glm-5.3 dark.
-Every hulicaijia26 check held: 13 headings, 9 markers, 9 definitions, 2 links, 3 Sakura,
-"douhua" eight times and no "tofu pudding", "Jiefangbei" six times, no TA, no double blank line, no Han,
+Bedrock 29.49 to 28.26 and OpenRouter 62.01 to 60.14 by the meters (about 3.10 USD),
+glm-5.3 dark.
+Every hulicaijia26 check held:
+13 headings,
+9 markers,
+9 definitions,
+2 links,
+3 Sakura,
+"douhua" eight times and no "tofu pudding",
+"Jiefangbei" six times,
+no TA,
+no double blank line,
+no Han,
 the six "center" hits the photo captions' `text-align` values,
 the fourteen straight double quotes the seven JSX photo paths.
-Class one hundred forty-three was NOT live: footnote 7 again reads "That is, the amantadine mentioned earlier."
-The archive's note ("In Chinese, “goodnight” (晚安, wǎn’ān) is a near-homophone of amantadine …") is lost a second time.
+Class one hundred forty-three was NOT live:
+footnote 7 again reads "That is,
+the amantadine mentioned earlier."
+The archive's note ("In Chinese,
+“goodnight” (晚安,
+wǎn’ān) is a near-homophone of amantadine …") is lost a second time.
 
 ### Who judged it, by name
 
 The ballot attribution built for class one hundred forty-three answered the owner's question on this run.
-There was no lane contest on slice 69: both lanes shipped the short note, so the lanes agreed and no ballot was cast.
-The note fell twice, once per lane.
+There was no lane contest on slice 69:
+both lanes shipped the short note,
+so the lanes agreed and no ballot was cast.
+The note fell twice,
+once per lane.
 
 The repair lane's panel on chunk 69 accepted the addition claim 3 to 2.
 deepseek-v4.1-flash filed "The translation of footnote 7 adds the full homophone explanation from the ARCHIVE note",
-and gemma-4-26b-a4b-it filed, in the same issue, "The translation replaces a simple reference to amantadine
+and gemma-4-26b-a4b-it filed,
+in the same issue,
+"The translation replaces a simple reference to amantadine
 with an explanation of a homophone that does not exist in the source text" (accuracy/mistranslation).
-minimax-m3, gemma-4-26b-a4b-it and google.gemma-4-e2b voted supported;
+minimax-m3,
+gemma-4-26b-a4b-it and google.gemma-4-e2b voted supported;
 deepseek-v4.1-flash (against its own claim) and inception/mercury-2.5 voted unsupported.
 Every one of the three had the class one hundred forty-three wording on its sheet.
 
 The translate lane's slate on slice 69 chose the short note 4 to 0:
-google.gemma-4-e2b (self-vote), inception/mercury-2.5, typesafe/jev-1.13 and minimax-m3 (self-vote).
+google.gemma-4-e2b (self-vote),
+inception/mercury-2.5,
+typesafe/jev-1.13 and minimax-m3 (self-vote).
 minimax-m3's reason cites the repair panel:
-"the full homophone explanation from the ARCHIVE note, which the repair lane's adjudicators accepted as an addition";
+"the full homophone explanation from the ARCHIVE note,
+which the repair lane's adjudicators accepted as an addition";
 mercury-2.5 wrote "an addition not supported by the ORIGINAL footnote alone".
 The class one hundred eight ARCHIVE RENDERING DISPUTED block had told them exactly that:
 "A detail those claims name is not page content and not the page's apparatus … Judge such a detail against the ORIGINAL alone."
@@ -9566,19 +10469,28 @@ One wrong vote on one note is not the evidence the owner's authorization asks fo
 
 ### What was built
 
-The fault is structural: the dispute block made one panel's verdict final on every later sheet,
-whatever the claim named, so a 3 to 2 vote on a pun note decided both lanes.
+The fault is structural:
+the dispute block made one panel's verdict final on every later sheet,
+whatever the claim named,
+so a 3 to 2 vote on a pun note decided both lanes.
 Class one hundred eight built that block for an invented medication event,
-which is narrative detail, and class one hundred forty-three has since stated that bound on its own
+which is narrative detail,
+and class one hundred forty-three has since stated that bound on its own
 (`NARRATIVE_DETAIL_IS_NOT_APPARATUS`).
 `archiveDisputeNote` in `archive-dispute.ts` now states the narrative bound,
 keeps its any-wording rule for a detail that says what happened,
 and sends a claim naming only a gloss or a translator's note (`TRANSLATOR_NOTE_KIND`) back to the page-apparatus rule,
 "as if no claim named it".
-The dispute itself stands (the owner's "Not eligible; fall back to the repair text"),
-so the stand-in is still the repair text; what changes is that every later judge may keep the note.
-Guard red first `7869828fb` (`translator-note-apparatus.unit.test.ts`), fix `e387be2cf`,
-lint 0/0, types clean, full suite `suite-class144.log` 1144 PASS, no FAIL.
+The dispute itself stands (the owner's "Not eligible;
+fall back to the repair text"),
+so the stand-in is still the repair text;
+what changes is that every later judge may keep the note.
+Guard red first `7869828fb` (`translator-note-apparatus.unit.test.ts`),
+fix `e387be2cf`,
+lint 0/0,
+types clean,
+full suite `suite-class144.log` 1144 PASS,
+no FAIL.
 
 ## Class one hundred forty-three, 2026-09-26: a translator note on wordplay voted out as an addition, and who voted
 
@@ -9586,14 +10498,26 @@ lint 0/0, types clean, full suite `suite-class144.log` 1144 PASS, no FAIL.
 
 hulicaijia26 (frozen `0e0b05d0f`) SETTLED at 02:00 UTC in about 15 min,
 Bedrock 30.63 to 29.51 and OpenRouter 63.86 to 62.16 by the meters (about 2.82 USD),
-Synthetic and Hyper dry, Qwen3.8-27B and glm-5.3 dark for want of a provider.
-Every hulicaijia20 check held: front matter equal, 13 headings, 9 markers, 9 definitions, 2 links, 3 Sakura,
-no TA, no double blank line, "douhua" seven times and no "tofu pudding" (class one hundred thirty-five),
-"Jiefangbei" on both lines, register and en_CA clean
+Synthetic and Hyper dry,
+Qwen3.8-27B and glm-5.3 dark for want of a provider.
+Every hulicaijia20 check held:
+front matter equal,
+13 headings,
+9 markers,
+9 definitions,
+2 links,
+3 Sakura,
+no TA,
+no double blank line,
+"douhua" seven times and no "tofu pudding" (class one hundred thirty-five),
+"Jiefangbei" on both lines,
+register and en_CA clean
 (the six "center" hits are CSS `text-align` values in the photo captions),
-no English title left in 《》, no Han outside markup,
+no English title left in 《》,
+no Han outside markup,
 the only straight quotes the seven JSX photo paths.
-The one loss: footnote 7 shipped as "the amantadine mentioned earlier" alone.
+The one loss:
+footnote 7 shipped as "the amantadine mentioned earlier" alone.
 The archive's note had explained the wordplay between 晚安 (goodnight) and 金刚烷胺 (amantadine),
 which the English reader cannot see.
 
@@ -9602,35 +10526,61 @@ which the English reader cannot see.
 The owner asked who the judges were.
 The artifact's repair chunk 69 records the panel:
 deepseek-v4.1-flash filed the note as accuracy/addition,
-minimax-m3 and gemma-4-26b-a4b-it voted supported, Mercury 2.5 unsupported, so it was accepted.
+minimax-m3 and gemma-4-26b-a4b-it voted supported,
+Mercury 2.5 unsupported,
+so it was accepted.
 That acceptance disputed the archive under class one hundred seven,
 and the class one hundred eight ARCHIVE RENDERING DISPUTED block told the contest the note was an accepted addition;
 four of five contest ballots then called it "an addition the ORIGINAL never states".
-The contest ballots carried no model id, so those four judges cannot be named for this run.
+The contest ballots carried no model id,
+so those four judges cannot be named for this run.
 
 ### What was built
 
-The ballots now name their judges (owner: "that's an our problem").
+The ballots now name their judges (owner:
+"that's an our problem").
 `LaneContestBallot.modelId` is recorded by the stage from each round outcome,
-read back by the artifact reader and the contest cache (optional, so older artifacts still read),
-and the stage logs one line per ballot, "lane contest ballot by <model>: chose …, archive …, unsupported […], dropped […]: <reason>",
+read back by the artifact reader and the contest cache (optional,
+so older artifacts still read),
+and the stage logs one line per ballot,
+"lane contest ballot by <model>:
+chose …,
+archive …,
+unsupported […],
+dropped […]: <reason>",
 under a logger tagged with the slice.
-Guards red first `ef0c6befd`, fix `3fe12ce50`.
+Guards red first `ef0c6befd`,
+fix `3fe12ce50`.
 The adjudicated-issue log line names the panel beside the filers,
-"<claim> filed by X, panel A supported, B unsupported", or "panel not on record" (`claim-panel-voters.ts`);
-guard red first `d994a7377`, fix `e46f8ca70`, full suite 1143 PASS.
+"<claim> filed by X,
+panel A supported,
+B unsupported",
+or "panel not on record" (`claim-panel-voters.ts`);
+guard red first `d994a7377`,
+fix `e46f8ca70`,
+full suite 1143 PASS.
 
 Class one hundred forty-three (`page-apparatus-clause.ts`):
-`TRANSLATOR_NOTE_KIND`, a translator's note explaining a pun, wordplay, an allusion or a term the English cannot carry by itself,
+`TRANSLATOR_NOTE_KIND`,
+a translator's note explaining a pun,
+wordplay,
+an allusion or a term the English cannot carry by itself,
 now sits on the critic sheet's and the panel's lists of accurate translator detail,
 in `CONTEST_POLICY`'s exemption and in `PAGE_APPARATUS_IS_KEPT`.
-The four sheets had carried four lists, and none named such a note.
+The four sheets had carried four lists,
+and none named such a note.
 `NARRATIVE_DETAIL_IS_NOT_APPARATUS` ("WHAT HAPPENED IS NEVER APPARATUS") replaces the apparatus clause's
 "Only what the ORIGINAL contradicts is an addition" and follows the contest exemption,
 since that wording is what a class one hundred eight gate ballot used to keep an invented overdose detail.
-Guard red first `4520367f0` (`translator-note-apparatus.unit.test.ts`), fix `2472ec48e`,
-lint 0/0, types clean, full suite `suite-class143.log` 1144 PASS, no FAIL.
-A corpus census found this note on one entry, so no deterministic floor was built; the wording carries it.
+Guard red first `4520367f0` (`translator-note-apparatus.unit.test.ts`),
+fix `2472ec48e`,
+lint 0/0,
+types clean,
+full suite `suite-class143.log` 1144 PASS,
+no FAIL.
+A corpus census found this note on one entry,
+so no deterministic floor was built;
+the wording carries it.
 
 ## Class one hundred forty-two, 2026-09-26: straight quotes on archive paragraphs of a page written curly
 
@@ -9638,7 +10588,8 @@ A corpus census found this note on one entry, so no deterministic floor was buil
 
 XingZ6012 wrote its quotes curly (134 curly double marks and 108 curly apostrophes),
 yet two lines kept straight double quotes and two kept straight apostrophes:
-`"When a person dies, it is like water disappearing into water."`, `"take it slow"`,
+`"When a person dies, it is like water disappearing into water."`,
+`"take it slow"`,
 `it's the standard narrative` and `my body doesn't want to die.`
 They stood on archive paragraphs no lane rewrote,
 and the typography restoration reads only the text a lane replaced.
@@ -9650,24 +10601,40 @@ shi_Yumiaoya's straight quotes are JSX string literals and must stay straight.
 `corpus-run/quote-style-unify.ts` `unifyQuoteStyle` is a page-assembly pass after the pinyin pass
 and before the footnote guard.
 It counts the prose quote marks on every slice outside the front matter,
-through the same `proseMask` the restoration uses (tags and code spans masked, read by UTF-16 unit),
+through the same `proseMask` the restoration uses (tags and code spans masked,
+read by UTF-16 unit),
 and where the curly form of a mark outnumbers its straight form it curls that mark on every slice
-through `restoreTypography`, so tags, code, unbalanced doubles and the ellipsis stay as they are.
+through `restoreTypography`,
+so tags,
+code,
+unbalanced doubles and the ellipsis stay as they are.
 Doubles and apostrophes are decided apart.
-Sealed English-original spans and the front matter stand aside, as for every whole-page pass;
+Sealed English-original spans and the front matter stand aside,
+as for every whole-page pass;
 each slice changed prints a `quote-style-unified` finding with the count of marks curled.
-Guard red first `c5a03ea2c` (`quote-style-unify.unit.test.ts`: curls an archive slice on a curly page,
-leaves a straight-majority page, leaves tag attributes and code spans straight), fix `0e0b05d0f`,
-lint 0/0, types clean, full suite `suite-class142.log` 1142 PASS with one FAIL, the load-sensitive grace-window case of `lane-contest-stage.unit.test.ts` (seen before under class one hundred ten), which passes alone.
+Guard red first `c5a03ea2c` (`quote-style-unify.unit.test.ts`:
+curls an archive slice on a curly page,
+leaves a straight-majority page,
+leaves tag attributes and code spans straight),
+fix `0e0b05d0f`,
+lint 0/0,
+types clean,
+full suite `suite-class142.log` 1142 PASS with one FAIL,
+the load-sensitive grace-window case of `lane-contest-stage.unit.test.ts` (seen before under class one hundred ten),
+which passes alone.
 Replayed over seven read pages and every archive page:
 XingZ6012 curled on four blocks (the four lines above),
-the lin10104 and shihai4h archives one apostrophe each ("it’s", "doesn’t"), nothing else changed,
+the lin10104 and shihai4h archives one apostrophe each ("it’s",
+"doesn’t"),
+nothing else changed,
 no JSX or code touched.
 
 ### The pass the build killed
 
-hulicaijia25 (frozen `8c8c7007b`, pid 369265) was killed under always-kill-and-relaunch.
-hulicaijia26 runs on `.frozen-dist-0e0b05d0f` (pid 524784, scope `pass-hulicaijia26`).
+hulicaijia25 (frozen `8c8c7007b`,
+pid 369265) was killed under always-kill-and-relaunch.
+hulicaijia26 runs on `.frozen-dist-0e0b05d0f` (pid 524784,
+scope `pass-hulicaijia26`).
 
 ## Class one hundred forty-one, 2026-09-26: an English title left in the Chinese title marks 《》
 
@@ -9675,47 +10642,65 @@ hulicaijia26 runs on `.frozen-dist-0e0b05d0f` (pid 524784, scope `pass-hulicaiji
 
 XingZ6012's second song credit shipped
 `<p style="text-align: end;">— Yuli【妄想症Paranoia】《Zero-Layer Prayer》</p>`:
-the title rendered, the Chinese title marks kept around it.
+the title rendered,
+the Chinese title marks kept around it.
 《》 mean nothing in English prose,
 where a work's title stands in quotation marks,
 the way the page's other credit reads (——from “Bird in a Cage”).
 A census of the read pages found 《Maybe All Transgender People Are Really Vampires》 twenty times,
-《Nonuple Reality》 four times, 《Zero-Layer Prayer》 three times and 《Ling Chong Qi Yuan》 once.
-Of the pinned archive pages, only XingZ60 sets an English-only title in 《》 in English prose
-(the Vampires line, as the original writes it);
-the other two hits (AmbeR_the_anpa, shihai4h) are untranslated Chinese lines whose title carries Han.
+《Nonuple Reality》 four times,
+《Zero-Layer Prayer》 three times and 《Ling Chong Qi Yuan》 once.
+Of the pinned archive pages,
+only XingZ60 sets an English-only title in 《》 in English prose
+(the Vampires line,
+as the original writes it);
+the other two hits (AmbeR_the_anpa,
+shihai4h) are untranslated Chinese lines whose title carries Han.
 
 ### What was built
 
 `translate-latin-title.ts` `latinTitleFindings` refuses before any judge a candidate that sets a title
-carrying Latin letters and no Han in 《》, the link text read where the marks hold a link,
+carrying Latin letters and no Han in 《》,
+the link text read where the marks hold a link,
 unless the page the candidate would replace writes the same bracketed title.
 It runs in `sourceCarryFindings` right after the Han title floor of class ninety-eight.
 A title that keeps Han (《舞萌DX》) is left to that floor and the judges;
 the bilingual album 【妄想症Paranoia】 stays with the judges as class ninety-eight decided.
 The title bullet of the house policy now says a title stands in quotation marks in English prose,
 never in 《》.
-Guard red first `2999b2a45` (`translate-latin-title.unit.test.ts`, five cases), fix `8c8c7007b`,
-lint 0/0, types clean, full suite `suite-class141b.log` 1142 PASS with no FAIL.
-Replayed over the real credit line: the shipped line is refused with the finding,
+Guard red first `2999b2a45` (`translate-latin-title.unit.test.ts`,
+five cases),
+fix `8c8c7007b`,
+lint 0/0,
+types clean,
+full suite `suite-class141b.log` 1142 PASS with no FAIL.
+Replayed over the real credit line:
+the shipped line is refused with the finding,
 the same line with “Zero-Layer Prayer” passes every floor.
 
 ### The pass the build killed
 
-hulicaijia24 (frozen `5cb874a36`, pid 232490) was killed about ten minutes in under always-kill-and-relaunch,
+hulicaijia24 (frozen `5cb874a36`,
+pid 232490) was killed about ten minutes in under always-kill-and-relaunch,
 since the policy text reaches every sheet.
-hulicaijia25 runs on `.frozen-dist-8c8c7007b` (pid 369265, scope `pass-hulicaijia25`).
+hulicaijia25 runs on `.frozen-dist-8c8c7007b` (pid 369265,
+scope `pass-hulicaijia25`).
 
 ## XingZ6012 read, 2026-09-26: a bracketed album read into the signer's name, and a credit's 作者 as "author" (classes one hundred thirty-nine and one hundred forty)
 
 ### What ran
 
 XingZ6012 on frozen `c49ff687e`:
-SETTLED at 01:04 UTC in 32.0 min, one attempt, 120 slices, 93 changed on the page.
+SETTLED at 01:04 UTC in 32.0 min,
+one attempt,
+120 slices,
+93 changed on the page.
 Qwen3.8-27B (1,166 asked) and glm-5.3 (567 asked) sat dark all run,
 every call refused by the router before it went out
 ("every provider serving this model is out of budget"):
-both seats are served only by Synthetic or Hyper, and both were dry, which is the seating's design.
+both seats are served only by Synthetic or Hyper,
+and both were dry,
+which is the seating's design.
 
 ### What the page shows
 
@@ -9723,58 +10708,87 @@ Class one hundred thirty-eight is live:
 the second song credit keeps its bilibili link and `[^9]`,
 no `contributor-name-restored` line names "Laizi",
 and the page carries both inline links and nine definitions.
-The en_CA pass rewrote "center" and "behavior" three times (`canadian-form-rewritten` on slices 13, 20 and 21).
-Five `contributor-name-restored` lines, eight `heading-series-unified`, one `title-reference-unified`; 165 abstention lines.
+The en_CA pass rewrote "center" and "behavior" three times (`canadian-form-rewritten` on slices 13,
+20 and 21).
+Five `contributor-name-restored` lines,
+eight `heading-series-unified`,
+one `title-reference-unified`;
+165 abstention lines.
 
-Two things read wrong, each now a class.
+Two things read wrong,
+each now a class.
 
--   Slice 98's credit shipped as "—— Yuli, “Nonuple Reality”".
-    The bench had written "—— Yuli [妄想症Paranoia], “Nonuple Reality”" for 「—— 雨狸【妄想症Paranoia】《九重现实》」,
+-   Slice 98's credit shipped as "—— Yuli,
+    “Nonuple Reality”".
+    The bench had written "—— Yuli [妄想症Paranoia],
+    “Nonuple Reality”" for 「—— 雨狸【妄想症Paranoia】《九重现实》」,
     the album in ASCII brackets.
     `readSignature` ended the page-side name at the comma,
     so the name read "Yuli [妄想症Paranoia]",
-    and the contributor-name restore replaced name and album with the bare reading, deleting the album (class one hundred thirty-nine).
--   The first song credit shipped as "——from “Bird in a Cage” (…)[^9], author Jiecheng Tianzou Official":
+    and the contributor-name restore replaced name and album with the bare reading,
+    deleting the album (class one hundred thirty-nine).
+-   The first song credit shipped as "——from “Bird in a Cage” (…)[^9],
+    author Jiecheng Tianzou Official":
     the 作者 of 「，作者 洁澄天奏Official」 rendered word for word,
     where XingZ6011 and XingZ623 wrote "by" (class one hundred forty).
     The lowercase "from" after the dash is an ordinary English attribution style and was left.
 
 ### What was built
 
-Class one hundred thirty-nine (`7292556b7`, guard red first in the class one hundred thirty-eight test file):
+Class one hundred thirty-nine (`7292556b7`,
+guard red first in the class one hundred thirty-eight test file):
 `attribution-line.ts` ends a name at an ASCII `[` found past the name's first character
 (at the first character the bracket opens a linked name).
-Types clean, suite `suite-class139.log` 1140 PASS, no FAIL
-(the new case joins an existing describe block, so the count holds);
-replayed over the real slice 98 line: no finding, the line unchanged.
+Types clean,
+suite `suite-class139.log` 1140 PASS,
+no FAIL
+(the new case joins an existing describe block,
+so the count holds);
+replayed over the real slice 98 line:
+no finding,
+the line unchanged.
 
-Class one hundred forty (`rendering-glossary-credit.unit.test.ts` red first, fix in `rendering-glossary-wording.ts`):
-the rendering glossary seeds the credit form `，作者` with "by" and refuses ", author ".
+Class one hundred forty (`rendering-glossary-credit.unit.test.ts` red first,
+fix in `rendering-glossary-wording.ts`):
+the rendering glossary seeds the credit form `，作者` with "by" and refuses ",
+author ".
 A census of the pinned originals found 作者 on three pages:
-this credit, the poem credit 「作者：Chrysanthemum Tran」 on the same page (no comma, not read),
-the LCG_Akiball footnote 「原文如此，作者可能想指…」 (subject "the author", which never renders ", author "),
-and 社会工作者 on GLaDOSister, which the comma keeps out.
+this credit,
+the poem credit 「作者：Chrysanthemum Tran」 on the same page (no comma,
+not read),
+the LCG_Akiball footnote 「原文如此，作者可能想指…」 (subject "the author",
+which never renders ",
+author "),
+and 社会工作者 on GLaDOSister,
+which the comma keeps out.
 
 ### The pass the build killed
 
-hulicaijia21 (frozen `7292556b7`) died silently at 01:19 UTC, five minutes in, with no line in its log.
+hulicaijia21 (frozen `7292556b7`) died silently at 01:19 UTC,
+five minutes in,
+with no line in its log.
 systemd-oomd killed the whole `app.slice/claude-code-bash` cgroup at 21:19:47 local time
 ("memory pressure for …/app.slice being 86.54% > 80.00% for > 20s"),
-the cgroup every Bash command runs in, while `mise run build` ran beside the pass
+the cgroup every Bash command runs in,
+while `mise run build` ran beside the pass
 and 33 GiB of swap was already in use.
 A pass launched from a Bash command lives in that cgroup and dies with it.
 hulicaijia23 was launched through `systemd-run --user --scope --unit=pass-<run>`,
 which puts the pass in its own scope (`/proc/<pid>/cgroup` reads `app.slice/pass-hulicaijia23.scope`);
 launch every pass that way.
 hulicaijia23 was killed a few minutes in under always-kill-and-relaunch once class one hundred forty landed,
-and hulicaijia24 runs on `.frozen-dist-5cb874a36` (pid 232490, `pass-hulicaijia24.scope`).
+and hulicaijia24 runs on `.frozen-dist-5cb874a36` (pid 232490,
+`pass-hulicaijia24.scope`).
 
 ## XingZ6011 read, 2026-09-26: a source credit read as a signature (class one hundred thirty-eight)
 
 ### What ran
 
-XingZ6011 on frozen `2d5113b7d` (pid 3762102, launched 22:50 UTC 2026-09-25):
-INCOMPLETE at 00:26 UTC in 96.3 min, one attempt, no page or artifact:
+XingZ6011 on frozen `2d5113b7d` (pid 3762102,
+launched 22:50 UTC 2026-09-25):
+INCOMPLETE at 00:26 UTC in 96.3 min,
+one attempt,
+no page or artifact:
 "entry XingZ60 would drop 1 source destination(s)".
 
 ### What went wrong
@@ -9783,7 +10797,8 @@ The original credits the second song as
 「——来自《[笼中之鸟](https://www.bilibili.com/video/BV17Q4y1s7j1)》[^9]，作者 洁澄天奏Official」.
 `readSignature` in `corpus-run/attribution-line.ts` ends a signer's name at 《 (class eighty-three),
 so it read 来自 ("from") as the signer.
-With no archive rendering for the line, the pinyin reading "Laizi" stood as the authority,
+With no archive rendering for the line,
+the pinyin reading "Laizi" stood as the authority,
 and the contributor-name restore rewrote the page's whole credit:
 
 `——From “A Bird in a Cage” ([笼中之鸟](…))[^9], by Jiecheng Tianzou Official` to `——Laizi, by Jiecheng Tianzou Official`.
@@ -9795,72 +10810,128 @@ The bench's own credit was right.
 
 ### What was built
 
-Class one hundred thirty-eight (`c49ff687e`, guard red first `bffae3bce`):
-`readSignature` refuses a name that is a source-credit lead (来自, and 摘自, 出自, 选自, 引自, 转自, 节选自, which say the same).
-A census of the originals found one em-dash line naming a work after something other than a signer's name: this one.
-Lint 0/0, types clean, suite `suite-class138.log` 1140 PASS, no FAIL;
-replayed over the real slice 95 credit: no rewrite.
-A second guard, a name carrying link or marker syntax, could not be made to fail on the current build
-(a page signature with no Han takes itself as the authority), so it was not built.
+Class one hundred thirty-eight (`c49ff687e`,
+guard red first `bffae3bce`):
+`readSignature` refuses a name that is a source-credit lead (来自,
+and 摘自,
+出自,
+选自,
+引自,
+转自,
+节选自,
+which say the same).
+A census of the originals found one em-dash line naming a work after something other than a signer's name:
+this one.
+Lint 0/0,
+types clean,
+suite `suite-class138.log` 1140 PASS,
+no FAIL;
+replayed over the real slice 95 credit:
+no rewrite.
+A second guard,
+a name carrying link or marker syntax,
+could not be made to fail on the current build
+(a page signature with no Han takes itself as the authority),
+so it was not built.
 
 ## hulicaijia20 read, 2026-09-25: class one hundred thirty-four live; douhua, a name's casing and a pinyin tone (classes one hundred thirty-five to one hundred thirty-seven)
 
 ### What ran
 
 hulicaijia20 on frozen `4641ff1d2` (pid 3632174):
-SETTLED at 22:28 UTC in 81.9 min, one attempt, 72 slices, 41 changed on the page.
-glm-5.3 sat dark all run: its seat is Hyper-only and Hyper was dry, which is the seating's design.
+SETTLED at 22:28 UTC in 81.9 min,
+one attempt,
+72 slices,
+41 changed on the page.
+glm-5.3 sat dark all run:
+its seat is Hyper-only and Hyper was dry,
+which is the seating's design.
 
 ### What the page shows
 
 Class one hundred thirty-four is live.
 The log carries `canadian-form-rewritten (slice 62: "liquorice" to "licorice", ...)`,
 the page reads "April 29" and "May 4" with no "29th April" or "4 May",
-"compound licorice tablets" twice, no "pharmaceutical sales representative",
-and the en_CA scan is clean ("favourite", "city centre"; the only "center" is the archive's CSS `text-align`).
+"compound licorice tablets" twice,
+no "pharmaceutical sales representative",
+and the en_CA scan is clean ("favourite",
+"city centre";
+the only "center" is the archive's CSS `text-align`).
 
-Three things read wrong, each now a class.
+Three things read wrong,
+each now a class.
 
 -   The closing quote wrote "she was something like tofu pudding."
-    where the front matter, the archive and every other slice write "douhua" for 豆花 (class one hundred thirty-five).
+    where the front matter,
+    the archive and every other slice write "douhua" for 豆花 (class one hundred thirty-five).
 -   One line wrote "the Jiefangbei pedestrian street"
     where the archive writes "Jiefangbei Pedestrian Street" mid-sentence in the body and a caption and never otherwise
     (class one hundred thirty-six).
 -   The archive's translator note glossed 金刚烷胺 as "jīn gāng wǎn’àn" to show the pun on 晚安 (wǎn’ān),
-    and the page carried it; 烷 has one reading, wán (class one hundred thirty-seven).
+    and the page carried it;
+    烷 has one reading,
+    wán (class one hundred thirty-seven).
 
 ### What was built
 
--   Class one hundred thirty-five (`46731b86e`, guard red first `c18e78a6e`):
+-   Class one hundred thirty-five (`46731b86e`,
+    guard red first `c18e78a6e`):
     豆花 seeded in the wording glossary as "douhua",
-    refusing "tofu pudding", "tofu flower", "bean curd pudding", "soybean pudding" and "tofu custard".
--   Class one hundred thirty-six (`76341f8e4`, guard red first `3d71c35a0`):
-    `restoreArchiveNameCasing` in `corpus-run/archive-name-casing.ts`, after the class one hundred twenty-one casing pass.
-    A run of two or more title-case words the archive writes mid-sentence at least twice, outside headings,
+    refusing "tofu pudding",
+    "tofu flower",
+    "bean curd pudding",
+    "soybean pudding" and "tofu custard".
+-   Class one hundred thirty-six (`76341f8e4`,
+    guard red first `3d71c35a0`):
+    `restoreArchiveNameCasing` in `corpus-run/archive-name-casing.ts`,
+    after the class one hundred twenty-one casing pass.
+    A run of two or more title-case words the archive writes mid-sentence at least twice,
+    outside headings,
     and never in another casing is restored where a shipped slice keeps the first word and lowers a later one.
-    Replayed over 36 shipped pages: the Jiefangbei line on hulicaijia19's page and nothing else.
--   Class one hundred thirty-seven (`2d5113b7d`, guard red first `db88480e5`):
-    `correctPinyinPage` in `corpus-run/pinyin-tone.ts`, after the Canadian forms pass, on every slice the page carries.
-    Where a parenthesis pairs a Han run with tone-marked pinyin, one syllable to a character,
+    Replayed over 36 shipped pages:
+    the Jiefangbei line on hulicaijia19's page and nothing else.
+-   Class one hundred thirty-seven (`2d5113b7d`,
+    guard red first `db88480e5`):
+    `correctPinyinPage` in `corpus-run/pinyin-tone.ts`,
+    after the Canadian forms pass,
+    on every slice the page carries.
+    Where a parenthesis pairs a Han run with tone-marked pinyin,
+    one syllable to a character,
     a syllable whose single-reading character differs from it in tone alone takes the character's tone (pinyin-pro).
-    A polyphonic character, a count mismatch, another syllable and toneless pinyin stand aside.
+    A polyphonic character,
+    a count mismatch,
+    another syllable and toneless pinyin stand aside.
     The slice loop it shares with `canadianizePage` moved to `rewriteEverySlice` in `corpus-run/page-slice-rewrite.ts`.
-    Replayed over hulicaijia20's page: "wǎn" to "wán" for 烷 and nothing else, 晚安's "wǎn’ān" untouched;
-    over 36 shipped pages: no other rewrite.
-    Lint 0/0, types clean, suite `suite-class137.log` 1139 PASS, no FAIL.
+    Replayed over hulicaijia20's page:
+    "wǎn" to "wán" for 烷 and nothing else,
+    晚安's "wǎn’ān" untouched;
+    over 36 shipped pages:
+    no other rewrite.
+    Lint 0/0,
+    types clean,
+    suite `suite-class137.log` 1139 PASS,
+    no FAIL.
 
 A `--fix` lint pass rewrote the new file's code-point spreads of `String.prototype.slice` into plain strings
 (`unicorn/no-useless-spread` reads `.slice` as an array method);
-the file now uses index scans, and the autofix is filed as issue 563.
+the file now uses index scans,
+and the autofix is filed as issue 563.
 
 ## shi_Yumiaoya35 and hulicaijia19 read, 2026-09-25: class one hundred thirty-three live, Canadian dates and spellings on untouched slices (class one hundred thirty-four)
 
 ### What ran
 
-shi_Yumiaoya35 on frozen `6a24362ff` (pid 3272330, launched 08:48 UTC):
-SETTLED at 09:23 UTC in 33.5 min, one attempt, 18 slices, 14 changed.
+shi_Yumiaoya35 on frozen `6a24362ff` (pid 3272330,
+launched 08:48 UTC):
+SETTLED at 09:23 UTC in 33.5 min,
+one attempt,
+18 slices,
+14 changed.
 hulicaijia19 on frozen `6a24362ff`:
-SETTLED at about 10:03 UTC in 72.0 min, one attempt, 72 slices, 39 changed.
+SETTLED at about 10:03 UTC in 72.0 min,
+one attempt,
+72 slices,
+39 changed.
 
 ### What the pages show
 
@@ -9871,7 +10942,9 @@ The en_CA scan of shi_Yumiaoya35 is clean.
 
 hulicaijia19 carried three forms no lane had rewritten,
 each on a slice whose archive text stood:
-"29th April was my birthday", "On 4 May," and "compound liquorice tablets" (twice),
+"29th April was my birthday",
+"On 4 May,"
+and "compound liquorice tablets" (twice),
 beside the bench's own "March 13".
 And 药代 shipped as "In her role as a pharmaceutical sales representative,"
 where the page means she resold medication to others.
@@ -9883,64 +10956,134 @@ the house reader-protection rule covers drugs tied to a death.
 The en_CA rule of class one hundred thirty-two reaches only the sheets,
 so it reaches only slices a lane rewrites.
 A slice whose archive rendering stands untouched ships the archive's own date order and spelling.
-The policy also named no date order, and 药代 had no glossary entry.
+The policy also named no date order,
+and 药代 had no glossary entry.
 
 ### What changed
 
 `canadianizePage` (`src/corpus-run/canadian-forms.ts`) runs in `guardPageAssembly` after the casing pass,
-over every slice as the page will carry it, the untouched ones included:
+over every slice as the page will carry it,
+the untouched ones included:
 
--   `monthFirstDates` (`canadian-date.ts`) rewrites a day number (1 to 31, ordinal suffix or not)
+-   `monthFirstDates` (`canadian-date.ts`) rewrites a day number (1 to 31,
+    ordinal suffix or not)
     before a full month name month first,
-    a four-digit year after it taking a comma ("13 March 2024" to "March 13, 2024");
+    a four-digit year after it taking a comma ("13 March 2024" to "March 13,
+    2024");
     a day that closes a range ("1st to 3rd June") stands aside.
 -   `canadianSpellings` (`canadian-spelling.ts`) respells a closed list of lower-case words
-    (colour, centre, grey, licorice, travelled, catalogue, defence, realize, analyze and their forms);
+    (colour,
+    centre,
+    grey,
+    licorice,
+    travelled,
+    catalogue,
+    defence,
+    realize,
+    analyze and their forms);
     a capitalised word is a name or a title and stands,
-    and words with a second sense (meter, check, tire, mum) are left to the judges.
--   `protectedRanges` (`prose-ranges.ts`) keeps both out of front matter, tags and their attributes,
-    JSX expressions, link destinations, bare URLs, inline and fenced code and HTML comments;
+    and words with a second sense (meter,
+    check,
+    tire,
+    mum) are left to the judges.
+-   `protectedRanges` (`prose-ranges.ts`) keeps both out of front matter,
+    tags and their attributes,
+    JSX expressions,
+    link destinations,
+    bare URLs,
+    inline and fenced code and HTML comments;
     a dot counts as a path neighbour only with a letter or digit on its far side.
 -   Front-matter slices and slices overlapping a span sealed as the English original stand aside.
     A changed slice no lane replaced gets a restored row,
     and each change prints `canadian-form-rewritten (slice N: …)`.
 
-`HOUSE_POLICY_BLOCK` now says dates are written month first (April 29, May 4, March 13, 2024), never day first,
+`HOUSE_POLICY_BLOCK` now says dates are written month first (April 29,
+May 4,
+March 13,
+2024),
+never day first,
 and lists licorice among the spellings.
-`WORDING_GLOSSARY` seeds 药代 ("sold medication", "selling medication", "medication seller";
+`WORDING_GLOSSARY` seeds 药代 ("sold medication",
+"selling medication",
+"medication seller";
 refusing "pharmaceutical sales representative" and its shorter forms).
 
-Guards red first `acb5a9ccb` (`canadian-forms.unit.test.ts`, `canadian-forms-policy.unit.test.ts`), fixed `4641ff1d2`;
-lint 0/0, types clean, suite `suite-class134.log` 1136 PASS, no FAIL.
+Guards red first `acb5a9ccb` (`canadian-forms.unit.test.ts`,
+`canadian-forms-policy.unit.test.ts`),
+fixed `4641ff1d2`;
+lint 0/0,
+types clean,
+suite `suite-class134.log` 1136 PASS,
+no FAIL.
 Replayed over shipped pages with `canadianizeText`:
-hulicaijia19 four rewrites (the two dates, "liquorice" twice);
-XingZ6010 nine ("center of the mourning hall", "behavior" five times, "gray portraits", "recognise", "honored"),
+hulicaijia19 four rewrites (the two dates,
+"liquorice" twice);
+XingZ6010 nine ("center of the mourning hall",
+"behavior" five times,
+"gray portraits",
+"recognise",
+"honored"),
 the four `align="center"` and `text-align: center` attributes untouched;
-mikaela17 "humor"; zheermao13 "favorite flavor"; shi_Yumiaoya35, CuspariaKLSY15 and yingying11 none.
-Frozen `.frozen-dist-4641ff1d2`; hulicaijia20 launched (pid 3632174).
+mikaela17 "humor";
+zheermao13 "favorite flavor";
+shi_Yumiaoya35,
+CuspariaKLSY15 and yingying11 none.
+Frozen `.frozen-dist-4641ff1d2`;
+hulicaijia20 launched (pid 3632174).
 
 ### What the owner said
 
-Asked whether the en_CA convention should also cover the repo's own docs, comments and prose through `AGENTS.md`:
+Asked whether the en_CA convention should also cover the repo's own docs,
+comments and prose through `AGENTS.md`:
 "Translated pages only".
-The rule stays in the package (the house policy, the glossaries, this pass and the README) and is not an `AGENTS.md` rule.
+The rule stays in the package (the house policy,
+the glossaries,
+this pass and the README) and is not an `AGENTS.md` rule.
 
 ## shi_Yumiaoya34 read, 2026-09-25, 08:50 UTC: classes one hundred thirty-one and thirty-two live, two life-event calques (class one hundred thirty-three)
 
 ### What ran
 
-Frozen `9bdeae9c6`, corpus-pass pid 3235678, launched 08:16 UTC.
-SETTLED at 08:45 UTC in 28.3 min, one attempt, 948 calls, 2 retry rounds, 10 abstention lines,
-about 0.23 USD by the meters (Bedrock 40.13 to 39.97, OpenRouter 82.77 to 82.70).
-glm-5.3 answered 77 of 77; gemma-4-e2b 117 of 118, deepseek 126 of 129, Qwen 119 of 120.
+Frozen `9bdeae9c6`,
+corpus-pass pid 3235678,
+launched 08:16 UTC.
+SETTLED at 08:45 UTC in 28.3 min,
+one attempt,
+948 calls,
+2 retry rounds,
+10 abstention lines,
+about 0.23 USD by the meters (Bedrock 40.13 to 39.97,
+OpenRouter 82.77 to 82.70).
+glm-5.3 answered 77 of 77;
+gemma-4-e2b 117 of 118,
+deepseek 126 of 129,
+Qwen 119 of 120.
 
 ### What the page shows
 
 Every shi_Yumiaoya32 structural check holds.
-Class one hundred thirty-one on the page: no "counselor", "correctional facility", "took the initiative to propose",
-"rescue plan", "days of resuscitation", "replace Yumiao's perspective" or "of such a good nature".
-Class one hundred thirty-two on the page: a whole-word scan of `page.en.md` finds no OD, jk, Gaokao,
-color, center, behavior, favorite, counselor, adviser, petrol, maths, mum, realise, recognise or romanised.
+Class one hundred thirty-one on the page:
+no "counselor",
+"correctional facility",
+"took the initiative to propose",
+"rescue plan",
+"days of resuscitation",
+"replace Yumiao's perspective" or "of such a good nature".
+Class one hundred thirty-two on the page:
+a whole-word scan of `page.en.md` finds no OD,
+jk,
+Gaokao,
+color,
+center,
+behavior,
+favorite,
+counselor,
+adviser,
+petrol,
+maths,
+mum,
+realise,
+recognise or romanised.
 
 ### What was wrong (class one hundred thirty-three)
 
@@ -9948,42 +11091,76 @@ Under the owner's standing instruction of 2026-09-25 ("whenever you see anything
 two sentences read word for word:
 人生中的第一颗补佳乐 shipped as "the first Progynova of her life",
 and 精神已留下了巨大的创伤 as "her mind had already been left with great trauma".
-Each term stands in one pinned entry (this one), so the refused forms reach only its paragraphs.
+Each term stands in one pinned entry (this one),
+so the refused forms reach only its paragraphs.
 
 ### What changed
 
-`WORDING_GLOSSARY` gains 人生中的第一颗 ("her very first", "her first-ever";
-refusing "of her life", "of his life", "of its life")
-and 留下了巨大的创伤 ("left her deeply traumatized", "deeply traumatized", "left deep scars";
-refusing "left with great trauma", "left with a huge trauma", "great trauma", "huge trauma").
-Guard red first `47fbf2253` (`rendering-glossary-life-event.unit.test.ts`), fixed `6a24362ff`;
-lint 0/0, types clean, suite `suite-class133.log` 1134 PASS, no FAIL.
-Frozen `.frozen-dist-6a24362ff`; shi_Yumiaoya35 launched 08:48 UTC (pid 3272330).
+`WORDING_GLOSSARY` gains 人生中的第一颗 ("her very first",
+"her first-ever";
+refusing "of her life",
+"of his life",
+"of its life")
+and 留下了巨大的创伤 ("left her deeply traumatized",
+"deeply traumatized",
+"left deep scars";
+refusing "left with great trauma",
+"left with a huge trauma",
+"great trauma",
+"huge trauma").
+Guard red first `47fbf2253` (`rendering-glossary-life-event.unit.test.ts`),
+fixed `6a24362ff`;
+lint 0/0,
+types clean,
+suite `suite-class133.log` 1134 PASS,
+no FAIL.
+Frozen `.frozen-dist-6a24362ff`;
+shi_Yumiaoya35 launched 08:48 UTC (pid 3272330).
 
 ## Canadian English, 2026-09-25, 08:17 UTC: class one hundred thirty-two
 
 ### What the owner said
 
-Asked "adviser - is this en_CA?" about the class one hundred thirty-one rendering for 辅导员,
-then: "The convention is and should be en_CA. It should have been documented and in the prompts."
+Asked "adviser - is this en_CA?"
+about the class one hundred thirty-one rendering for 辅导员,
+then:
+"The convention is and should be en_CA.
+It should have been documented and in the prompts."
 
 ### What was wrong
 
 No sheet named the English the page is written in.
-The package said nothing about it; the corpus archive is mixed
-(across `page.en.md`: center 22 against centre 5, behavior 10 against behaviour 1, realize 8 against realise 0,
-favourite 14 against favorite 4, travelled 3 against traveled 0).
-So the bench mixed varieties: shi_Yumiaoya32 shipped "Her counselor", "the head of year" and "Like a petrol car",
+The package said nothing about it;
+the corpus archive is mixed
+(across `page.en.md`:
+center 22 against centre 5,
+behavior 10 against behaviour 1,
+realize 8 against realise 0,
+favourite 14 against favorite 4,
+travelled 3 against traveled 0).
+So the bench mixed varieties:
+shi_Yumiaoya32 shipped "Her counselor",
+"the head of year" and "Like a petrol car",
 and the glossaries seeded British and American forms as the renderings to use
-("head of year", "year head", "flatmate", "petrol car", "behavior-correction center", "student adviser").
-The house policy itself wrote "romanised", "neutralise" and "localisation".
+("head of year",
+"year head",
+"flatmate",
+"petrol car",
+"behavior-correction center",
+"student adviser").
+The house policy itself wrote "romanised",
+"neutralise" and "localisation".
 
 ### Which forms
 
-McGill's style guide, which takes the Canadian Press Stylebook and the Canadian Oxford as its references,
-writes -our, -re and -ize and says "advisor, not adviser",
+McGill's style guide,
+which takes the Canadian Press Stylebook and the Canadian Oxford as its references,
+writes -our,
+-re and -ize and says "advisor,
+not adviser",
 so 辅导员 is "student advisor".
-Canadian schools say Grade 12, not Year 12 (the breathinglanguage.com Canadian school vocabulary notes),
+Canadian schools say Grade 12,
+not Year 12 (the breathinglanguage.com Canadian school vocabulary notes),
 so 年级组长 is "grade coordinator" and "head of year" is refused.
 燃油车 is "a gas-powered car" and "petrol car" is refused.
 
@@ -9991,94 +11168,174 @@ so 年级组长 is "grade coordinator" and "head of year" is refused.
 
 `HOUSE_POLICY_BLOCK` gains a bullet naming Canadian English (en_CA) with its spelling and vocabulary,
 and says English already on the page in another variety's spelling is respelled as a correction of form,
-never a change of meaning, while names, titles and quoted English keep their own spelling.
+never a change of meaning,
+while names,
+titles and quoted English keep their own spelling.
 The policy's own -ise forms are respelled -ize.
-The glossaries seed Canadian renderings only; `flatmate` is dropped from 同居者.
+The glossaries seed Canadian renderings only;
+`flatmate` is dropped from 同居者.
 The package README gains an "English variety" section.
-Guard red first `53ddd36de` (`canadian-english-policy.unit.test.ts`: the rule on the house policy and on the translate and select sheets,
-no British -ise form in the policy, no British or American rendering in either glossary,
-"petrol car" and "head of year" refused, the Canadian words accepted),
-fixed `9bdeae9c6`; the class one hundred twenty-six, thirty and thirty-one tests and the house-policy test
-updated to the Canadian forms; lint 0/0, types clean, suite `suite-class132b.log` 1133 PASS, no FAIL.
+Guard red first `53ddd36de` (`canadian-english-policy.unit.test.ts`:
+the rule on the house policy and on the translate and select sheets,
+no British -ise form in the policy,
+no British or American rendering in either glossary,
+"petrol car" and "head of year" refused,
+the Canadian words accepted),
+fixed `9bdeae9c6`;
+the class one hundred twenty-six,
+thirty and thirty-one tests and the house-policy test
+updated to the Canadian forms;
+lint 0/0,
+types clean,
+suite `suite-class132b.log` 1133 PASS,
+no FAIL.
 
-shi_Yumiaoya33 (frozen `fe56bffed`, launched 08:07 UTC) was killed at 08:09 UTC under always-kill-and-relaunch
+shi_Yumiaoya33 (frozen `fe56bffed`,
+launched 08:07 UTC) was killed at 08:09 UTC under always-kill-and-relaunch
 before it reached the lanes.
-Frozen `.frozen-dist-9bdeae9c6`; shi_Yumiaoya34 launched 08:16 UTC (pid 3235678).
+Frozen `.frozen-dist-9bdeae9c6`;
+shi_Yumiaoya34 launched 08:16 UTC (pid 3235678).
 
 ## shi_Yumiaoya32 read, 2026-09-25, 08:05 UTC: class one hundred thirty live, seven wording calques (class one hundred thirty-one)
 
 ### What ran
 
-Frozen `6637865d6`, corpus-pass pid 3135802, launched 07:36 UTC.
-SETTLED at 08:02 UTC in 26.7 min, one attempt,
-965 seats, 965 calls, one retry round, 6 abstentions,
+Frozen `6637865d6`,
+corpus-pass pid 3135802,
+launched 07:36 UTC.
+SETTLED at 08:02 UTC in 26.7 min,
+one attempt,
+965 seats,
+965 calls,
+one retry round,
+6 abstentions,
 about 0.16 USD on Bedrock and 0.07 USD on OpenRouter by the meters
-(40.31 to 40.15, 82.86 to 82.79).
-Every provider wet; every seat answered every call it was asked (glm-5.3 68 of 68).
+(40.31 to 40.15,
+82.86 to 82.79).
+Every provider wet;
+every seat answered every call it was asked (glm-5.3 68 of 68).
 
 ### Checks
 
 Every shi_Yumiaoya31 check holds:
-front matter equal, 4 headings as the archive, no TA, no double blank line, no error finish,
-the register check clean, classes one hundred twenty-six to twenty-nine on the page.
-Class one hundred thirty on the page, none of its refused forms present
-(the count read zero; the same count over "top gear trio", "petrol car" and "wheels of fate" read 3):
-"the Top Gear trio's car shows", "Like a petrol car",
-"the crushing academic pressure left her barely able to breathe", "both of her arms were covered in scars",
-"a huge mistake on her university applications", "the wheels of fate began to turn",
-"she also tried hard to get hospital treatment", "Yumiao's parents also played a large part in her death",
+front matter equal,
+4 headings as the archive,
+no TA,
+no double blank line,
+no error finish,
+the register check clean,
+classes one hundred twenty-six to twenty-nine on the page.
+Class one hundred thirty on the page,
+none of its refused forms present
+(the count read zero;
+the same count over "top gear trio",
+"petrol car" and "wheels of fate" read 3):
+"the Top Gear trio's car shows",
+"Like a petrol car",
+"the crushing academic pressure left her barely able to breathe",
+"both of her arms were covered in scars",
+"a huge mistake on her university applications",
+"the wheels of fate began to turn",
+"she also tried hard to get hospital treatment",
+"Yumiao's parents also played a large part in her death",
 "at her cuddle meetups".
 
 ### Seven wording calques (class one hundred thirty-one)
 
-Under the owner's standing instruction of 2026-09-25, seven more renderings join the rendering glossary:
+Under the owner's standing instruction of 2026-09-25,
+seven more renderings join the rendering glossary:
 
-- 辅导员 shipped "Her counselor", which tells an English reader she was seeing a therapist;
-  the page says "student adviser", a university's student affairs officer.
-- 矫正机构 shipped "a correctional facility", which in English is a prison;
+- 辅导员 shipped "Her counselor",
+  which tells an English reader she was seeing a therapist;
+  the page says "student adviser",
+  a university's student affairs officer.
+- 矫正机构 shipped "a correctional facility",
+  which in English is a prison;
   the page says "behaviour-correction centre".
 - 主动提出了与他分手 shipped "took the initiative to propose breaking up with him";
   the page says she "was the one who suggested" it.
-- 营救计划 shipped "a rescue plan" for work to free an arrested housemate; the page says "efforts to free" her.
+- 营救计划 shipped "a rescue plan" for work to free an arrested housemate;
+  the page says "efforts to free" her.
 - ICU 抢救了六天 shipped "after six days of resuscitation in the ICU";
-  resuscitation takes minutes, so the page says six days in intensive care.
+  resuscitation takes minutes,
+  so the page says six days in intensive care.
 - 代替鱼喵的视角 shipped "will replace Yumiao's perspective";
   the page says the camera looks on the world "in her place".
-- 性格非常好的人 shipped "a person of such a good nature"; the page says she "was very good-natured".
+- 性格非常好的人 shipped "a person of such a good nature";
+  the page says she "was very good-natured".
 
 抢救 alone stands in thirteen pinned entries (xixi_yuexi's "我还能抢救一下" means "salvage"),
-so only `ICU 抢救` is seeded; 代替 stands in two (hakureico's "in place of a cold obituary" is right),
+so only `ICU 抢救` is seeded;
+代替 stands in two (hakureico's "in place of a cold obituary" is right),
 so only the perspective calques are refused.
-The other five terms stand in this entry alone, and no entry carries both 辅导员 and a counsellor (心理咨询).
-The entries sit in `rendering-glossary-wording.ts`, spread into `RENDERING_GLOSSARY`.
-Guard red first `74322469d` (`rendering-glossary-wording.unit.test.ts`: seeds, refuses the seven calques, accepts the English),
-fixed `fe56bffed`, lint 0/0, types clean, suite `suite-class131.log` 1132 PASS, no FAIL.
-Frozen `.frozen-dist-fe56bffed`; shi_Yumiaoya33 launched 08:07 UTC (pid 3186607).
+The other five terms stand in this entry alone,
+and no entry carries both 辅导员 and a counsellor (心理咨询).
+The entries sit in `rendering-glossary-wording.ts`,
+spread into `RENDERING_GLOSSARY`.
+Guard red first `74322469d` (`rendering-glossary-wording.unit.test.ts`:
+seeds,
+refuses the seven calques,
+accepts the English),
+fixed `fe56bffed`,
+lint 0/0,
+types clean,
+suite `suite-class131.log` 1132 PASS,
+no FAIL.
+Frozen `.frozen-dist-fe56bffed`;
+shi_Yumiaoya33 launched 08:07 UTC (pid 3186607).
 
 ## shi_Yumiaoya31 read, 2026-09-25, 07:35 UTC: class one hundred twenty-nine live, nine idiom calques (class one hundred thirty)
 
 ### What ran
 
-Frozen `a719b81f6`, corpus-pass pid 3059542, launched 06:58 UTC.
-SETTLED at about 07:29 UTC in 30.6 min, one attempt,
-983 seats, 981 calls, no retry rounds, 10 abstentions,
+Frozen `a719b81f6`,
+corpus-pass pid 3059542,
+launched 06:58 UTC.
+SETTLED at about 07:29 UTC in 30.6 min,
+one attempt,
+983 seats,
+981 calls,
+no retry rounds,
+10 abstentions,
 about 0.16 USD on Bedrock and 0.07 USD on OpenRouter by the meters
-(40.47 to 40.31, 82.93 to 82.86).
-Every provider wet; glm-5.3 answered 80 of 80 with Hyper back.
+(40.47 to 40.31,
+82.93 to 82.86).
+Every provider wet;
+glm-5.3 answered 80 of 80 with Hyper back.
 
 ### Checks
 
 Every shi_Yumiaoya30 check holds:
-front matter equal, 4 headings as the archive, no TA, no double blank line, no error finish,
-"year head", "psychologically bullied by an underage trans girl", "memorial dice", "housemate",
-"overdosing" and "Don't overdose", "sailor uniform", "National College Entrance Examination",
-"teachers' college", "became a top student".
-Register check clean: none of OD, ODing, jk, TGT, MtF, gearhead or slacked off;
+front matter equal,
+4 headings as the archive,
+no TA,
+no double blank line,
+no error finish,
+"year head",
+"psychologically bullied by an underage trans girl",
+"memorial dice",
+"housemate",
+"overdosing" and "Don't overdose",
+"sailor uniform",
+"National College Entrance Examination",
+"teachers' college",
+"became a top student".
+Register check clean:
+none of OD,
+ODing,
+jk,
+TGT,
+MtF,
+gearhead or slacked off;
 MtX spelled out where it first appears.
 Class one hundred twenty-nine on the page:
-"Yumiao's death had many causes", "so Yumiao, as an exception, received no punishment",
+"Yumiao's death had many causes",
+"so Yumiao,
+as an exception,
+received no punishment",
 "she stopped trying in her studies" and "she stopped trying completely",
-"This drove Yumiao to the edge of madness", "go on observing this vast world".
+"This drove Yumiao to the edge of madness",
+"go on observing this vast world".
 
 ### Nine idiom calques (class one hundred thirty)
 
@@ -10086,57 +11343,103 @@ Under the owner's standing instruction of 2026-09-25,
 nine more renderings that read badly join the rendering glossary,
 each term carried by this entry alone in the pinned corpus:
 
-- 三剑客汽车节目 shipped "the Three Musketeers car show"; English viewers say "the Top Gear trio".
-- 燃油车 shipped "like a fuel-powered car"; the page says "a petrol car".
+- 三剑客汽车节目 shipped "the Three Musketeers car show";
+  English viewers say "the Top Gear trio".
+- 燃油车 shipped "like a fuel-powered car";
+  the page says "a petrol car".
 - 喘不过气 shipped "the intense academic pressure left her breathless";
-  "breathless" reads as excited or winded, so the page says the pressure was crushing or that she could barely breathe.
-- 密密麻麻的伤痕 shipped "covered in densely packed scars"; the page says her arms were covered in scars.
-- 志愿填写 shipped "a major mistake in filling out her application preferences"; the page says her university applications.
-- 命运的齿轮 shipped "the gears of fate began to turn"; the English idiom is "the wheels of fate".
-- 相关医院 shipped "sought treatment at the relevant hospitals"; the page says she sought hospital treatment.
+  "breathless" reads as excited or winded,
+  so the page says the pressure was crushing or that she could barely breathe.
+- 密密麻麻的伤痕 shipped "covered in densely packed scars";
+  the page says her arms were covered in scars.
+- 志愿填写 shipped "a major mistake in filling out her application preferences";
+  the page says her university applications.
+- 命运的齿轮 shipped "the gears of fate began to turn";
+  the English idiom is "the wheels of fate".
+- 相关医院 shipped "sought treatment at the relevant hospitals";
+  the page says she sought hospital treatment.
 - 巨大的影响 shipped "Yumiao's parents also had an enormous influence on her death";
   the page says they played a large part in her death.
-- 贴贴计划 shipped "through her cuddling plan she met many companions"; the page names the cuddle meetups.
+- 贴贴计划 shipped "through her cuddling plan she met many companions";
+  the page names the cuddle meetups.
 
-Left as written, each read against its source line:
-"She seriously hurt herself" is 其进行了较为严重自伤行为, right;
+Left as written,
+each read against its source line:
+"She seriously hurt herself" is 其进行了较为严重自伤行为,
+right;
 "bipolar disorder with other psychotic features" keeps the original's 其他;
 "negative energy" for 负能量 is ordinary English;
 "did not want to disturb him" for 不想打扰他 reads as English.
 
 `rendering-glossary.ts` crossed the 300-line budget with the new entries,
 so class one hundred twenty-nine's entries moved to `rendering-glossary-phrasing.ts`
-and class one hundred thirty's sit in `rendering-glossary-idiom.ts`, both spread into `RENDERING_GLOSSARY`.
-Guard red first `3774ee79a` (`rendering-glossary-idiom.unit.test.ts`: seeds, refuses the nine calques, accepts the English),
-fixed `6637865d6`, lint 0/0, types clean, suite `suite-class130.log` 1131 PASS, no FAIL.
-Frozen `.frozen-dist-6637865d6`; shi_Yumiaoya32 launched 07:36 UTC (pid 3135802).
+and class one hundred thirty's sit in `rendering-glossary-idiom.ts`,
+both spread into `RENDERING_GLOSSARY`.
+Guard red first `3774ee79a` (`rendering-glossary-idiom.unit.test.ts`:
+seeds,
+refuses the nine calques,
+accepts the English),
+fixed `6637865d6`,
+lint 0/0,
+types clean,
+suite `suite-class130.log` 1131 PASS,
+no FAIL.
+Frozen `.frozen-dist-6637865d6`;
+shi_Yumiaoya32 launched 07:36 UTC (pid 3135802).
 
 ## shi_Yumiaoya30 read, 2026-09-25, 06:55 UTC: classes one hundred twenty-six to twenty-eight live, five phrasing calques (class one hundred twenty-nine)
 
 ### What ran
 
-Frozen `c432737d5`, corpus-pass pid 2972665, launched 06:29 UTC.
-SETTLED at 06:54 UTC in 25.1 min, one attempt,
-965 seats, 881 calls, 6 retry rounds, 7 abstention lines,
+Frozen `c432737d5`,
+corpus-pass pid 2972665,
+launched 06:29 UTC.
+SETTLED at 06:54 UTC in 25.1 min,
+one attempt,
+965 seats,
+881 calls,
+6 retry rounds,
+7 abstention lines,
 about 0.13 USD on Bedrock and 0.32 USD on OpenRouter by the meters
-(40.61 to 40.48, 83.25 to 82.93).
-Hyper dry all run: glm-5.3, a Hyper-only seat, was asked 82 times and refused at call time each time
-(`NoProviderForModelError`, out of budget), which costs nothing and leaves quorum unaffected (class twenty-six).
+(40.61 to 40.48,
+83.25 to 82.93).
+Hyper dry all run:
+glm-5.3,
+a Hyper-only seat,
+was asked 82 times and refused at call time each time
+(`NoProviderForModelError`,
+out of budget),
+which costs nothing and leaves quorum unaffected (class twenty-six).
 
 ### Checks
 
-Front matter equal, 4 headings as the archive,
-no TA, no double blank line, no error finish.
+Front matter equal,
+4 headings as the archive,
+no TA,
+no double blank line,
+no error finish.
 Class one hundred twenty-six on the page:
-"The head of year", "psychologically bullied by an underage trans girl",
-"ashes will be made into memorial dice", "housemate" on both 同居者 lines.
+"The head of year",
+"psychologically bullied by an underage trans girl",
+"ashes will be made into memorial dice",
+"housemate" on both 同居者 lines.
 Class one hundred twenty-seven:
 "overdosing day and night" and "Don't overdose ... not to overdose or misuse medication" for both OD lines,
-"sailor uniform", "college entrance examination" (an entry rendering; no "Gaokao").
+"sailor uniform",
+"college entrance examination" (an entry rendering;
+no "Gaokao").
 Register check (class one hundred twenty-eight) clean:
-no OD, ODing, jk, TGT, MtF, gearhead or slacked off on the page;
-"The Grand Tour" for TGT; HRT and ICU kept; "trans girl" for 小药娘.
-The rooftop in the departure paragraph is not on the page, as the reader-protection rule asks.
+no OD,
+ODing,
+jk,
+TGT,
+MtF,
+gearhead or slacked off on the page;
+"The Grand Tour" for TGT;
+HRT and ICU kept;
+"trans girl" for 小药娘.
+The rooftop in the departure paragraph is not on the page,
+as the reader-protection rule asks.
 
 ### Five phrasing calques (class one hundred twenty-nine)
 
@@ -10145,28 +11448,44 @@ five renderings that read badly join the rendering glossary:
 
 - 原因是多方面的 shipped "There were many sides to the cause of Yumiao's death";
   the page says the death "had many causes".
-- 鱼喵这个特例 shipped "so this exception, Yumiao, received no punishment";
-  the page says "Yumiao, as an exception,".
+- 鱼喵这个特例 shipped "so this exception,
+  Yumiao,
+  received no punishment";
+  the page says "Yumiao,
+  as an exception,".
 - 摆烂 shipped "Yumiao's attitude toward studying turned to one of giving up";
-  the page writes the plain verb ("stopped trying"), and "slacked off" is refused as slang (class one hundred twenty-eight).
-  lxy writes 偶尔摆烂 for taking it easy now and then, so "took it easy" is an entry rendering.
+  the page writes the plain verb ("stopped trying"),
+  and "slacked off" is refused as slang (class one hundred twenty-eight).
+  lxy writes 偶尔摆烂 for taking it easy now and then,
+  so "took it easy" is an entry rendering.
 - 陷入癫狂 shipped "This pushed her mental state into madness";
   the page says it drove her to the edge of madness.
   The entry keys on the verb because XingZ60 writes 癫狂 alone for an outlook others call mad.
 - 万千世界 shipped "continue to observe this myriad world";
   the page says "this vast world".
 
-Guard red first `a5be55ae8` (`rendering-glossary-phrasing.unit.test.ts`: seeds, refuses the five calques and "slacked off", accepts the English),
-fixed `a719b81f6`, lint 0/0, types clean, suite `suite-class129.log` 1130 PASS, no FAIL.
-Frozen `.frozen-dist-a719b81f6`; shi_Yumiaoya31 launched 06:58 UTC (pid 3059542).
+Guard red first `a5be55ae8` (`rendering-glossary-phrasing.unit.test.ts`:
+seeds,
+refuses the five calques and "slacked off",
+accepts the English),
+fixed `a719b81f6`,
+lint 0/0,
+types clean,
+suite `suite-class129.log` 1130 PASS,
+no FAIL.
+Frozen `.frozen-dist-a719b81f6`;
+shi_Yumiaoya31 launched 06:58 UTC (pid 3059542).
 
 "Her mathematics grades looked very interesting" for 数学成绩看上去十分有趣 stays:
-the original is wry, and the English keeps the wryness in plain words.
+the original is wry,
+and the English keeps the wryness in plain words.
 
 ## The page's register, 2026-09-25, 06:30 UTC: plain written English on every sheet (class one hundred twenty-eight)
 
 The owner answered the three renderings left as the original wrote them
-("overdosing", "sailor uniform", "National College Entrance Examination";
+("overdosing",
+"sailor uniform",
+"National College Entrance Examination";
 class one hundred twenty-seven),
 then wrote:
 "I'm not sure why you allowed the very informal terms like OD to go through."
@@ -10177,19 +11496,31 @@ The reads treated the original's register as the authority:
 a page that writes OD was read as faithful when the English wrote OD or ODing.
 Nothing on any sheet said otherwise.
 The house policy's community-vocabulary bullet keeps
-"an abbreviation local to the person's world, such as 大证 or WER"
+"an abbreviation local to the person's world,
+such as 大证 or WER"
 and glosses it,
-which a judge could read as licence for OD, jk and TGT,
+which a judge could read as licence for OD,
+jk and TGT,
 and no bullet named the register of the English itself.
-So shi_Yumiaoya27 shipped "ODing", "jk skirt" and "the TGT series",
+So shi_Yumiaoya27 shipped "ODing",
+"jk skirt" and "the TGT series",
 and no ballot held them against a candidate.
 
 ### What the corpus writes
 
 A sweep of the pinned originals found the shorthand the rule has to reach:
-MtF, MTF and mtf
+MtF,
+MTF and mtf
 (also inside links such as `mtf.wiki` and handles such as `siyan_MTF`),
-SRS, GAHT, POV, OST, ACG, RPG, DID, OD, jk and MtX.
+SRS,
+GAHT,
+POV,
+OST,
+ACG,
+RPG,
+DID,
+OD,
+jk and MtX.
 No archive writes "gaokao" or a bare OD.
 Mechanical floors for each were rejected:
 a substring floor on MtF would refuse links and handles,
@@ -10202,16 +11533,30 @@ that a floor cannot tell from carried shorthand.
 so it reaches every writer and judge sheet through `HOUSE_POLICY_BLOCK`:
 the page is plain written English for a general reader whatever the ORIGINAL's register;
 chat shorthand and internet slang are rendered by the plain words
-(OD is overdose, jk 裙 a sailor uniform, MtF trans woman, TGT The Grand Tour);
-the English adds no slang of its own (gearhead, slacked off);
+(OD is overdose,
+jk 裙 a sailor uniform,
+MtF trans woman,
+TGT The Grand Tour);
+the English adds no slang of its own (gearhead,
+slacked off);
 an abbreviation a general reader would not know is spelled out where it first appears;
-known abbreviations (HRT, ICU) and names in Latin letters (QQ, a handle, a link) stay;
+known abbreviations (HRT,
+ICU) and names in Latin letters (QQ,
+a handle,
+a link) stay;
 an identity label with no everyday English equivalent (MtX) is kept and glossed;
 quoted speech keeps its warmth but not its shorthand;
-and carried shorthand is a defect, never faithfulness to the ORIGINAL's tone.
-Guard `src/register-policy.unit.test.ts`, red first at `194eca498`,
-asserts the rule on the house policy, the translate sheet and the select sheet.
-Built in `c432737d5`; lint 0/0, types clean, suite `suite-class128.log` 1129 PASS, no FAIL.
+and carried shorthand is a defect,
+never faithfulness to the ORIGINAL's tone.
+Guard `src/register-policy.unit.test.ts`,
+red first at `194eca498`,
+asserts the rule on the house policy,
+the translate sheet and the select sheet.
+Built in `c432737d5`;
+lint 0/0,
+types clean,
+suite `suite-class128.log` 1129 PASS,
+no FAIL.
 
 ### The test the rule broke
 
@@ -10222,13 +11567,17 @@ but `gatherStageVoices` asks seats in the order `rotatedBench` gives,
 a rotation keyed on the prompt,
 and the quorum of three on a four-seat roster closes without the last seat asked.
 The longer policy changed the rotation and put `ROSTER[0]` fourth.
-The run with the policy of `HEAD` passed and five runs with the new policy all failed, so the cause was deterministic, not load.
+The run with the policy of `HEAD` passed and five runs with the new policy all failed,
+so the cause was deterministic,
+not load.
 The case now anchors the first seat asked,
-which keeps its intent (one heard reply anchors, the rest do not) under any sheet wording.
+which keeps its intent (one heard reply anchors,
+the rest do not) under any sheet wording.
 
 ### Runs
 
-shi_Yumiaoya29 (frozen `811d908a9`, pid 2915263) was killed under always-kill-and-relaunch.
+shi_Yumiaoya29 (frozen `811d908a9`,
+pid 2915263) was killed under always-kill-and-relaunch.
 shi_Yumiaoya30 launched at 06:29 UTC on `.frozen-dist-c432737d5` (pid 2972665),
 to be read by every shi_Yumiaoya27 check,
 the class one hundred twenty-six and twenty-seven renderings,
@@ -10239,63 +11588,123 @@ and the register check the handover's step 1 lists.
 shi_Yumiaoya27 ran on frozen `13b633bad`,
 launched 05:40 UTC,
 SETTLED at 05:57:50 UTC in 26.3 min (`ms=1577313`),
-one attempt, 851 calls, 928 seats, 5 retry rounds,
-about 0.41 USD by the meters (Bedrock 40.84 to 40.70, OpenRouter 83.69 to 83.42).
-Front matter equal, 4 headings, no TA, no error finish, no double blank line,
+one attempt,
+851 calls,
+928 seats,
+5 retry rounds,
+about 0.41 USD by the meters (Bedrock 40.84 to 40.70,
+OpenRouter 83.69 to 83.42).
+Front matter equal,
+4 headings,
+no TA,
+no error finish,
+no double blank line,
 19 abstention lines;
-glm-5.3 asked 77 times and usable 0 (Hyper-only, Hyper dry).
+glm-5.3 asked 77 times and usable 0 (Hyper-only,
+Hyper dry).
 
 Every targeted sentence reads right on the correct build:
 "In the ninth grade she suddenly became a top student" (class one hundred twenty-three),
-"she attempted to end her life in the early hours of January 16." with no means (class one hundred twenty-four),
+"she attempted to end her life in the early hours of January 16."
+with no means (class one hundred twenty-four),
 "She missed her chosen schools and ended up at a second-tier teachers' college" (classes one hundred twenty-three and twenty-five),
-"this was her way of telling everyone not to overdose or misuse drugs." (class one hundred twenty-five).
+"this was her way of telling everyone not to overdose or misuse drugs."
+(class one hundred twenty-five).
 "trans girl" on both 小药娘 lines,
 "Magic Chewing Gum and Danpian" (the name entry `a2581911655` declares),
 the closing attribution once.
 
-CLASS ONE HUNDRED TWENTY-SIX, under the owner's standing instruction of 2026-09-25.
+CLASS ONE HUNDRED TWENTY-SIX,
+under the owner's standing instruction of 2026-09-25.
 A read of the whole page found five more renderings an English reader stumbles on:
 年级组长 as "the grade leader",
 未成年药娘 as "a minor trans girl" (which reads as "an unimportant trans girl"),
 骨灰骰子 as "ash dice",
-同居者 as "her cohabitants" (a romantic partner, and plural for the one housemate the page names two paragraphs before),
+同居者 as "her cohabitants" (a romantic partner,
+and plural for the one housemate the page names two paragraphs before),
 and 精神霸凌 as plain "bullied" (the adjective dropped).
-The rendering glossary now seeds 年级组长 ("head of year", "grade director"; refused "grade leader"),
-未成年 ("underage", "a minor"; refused "minor trans", "minor girl", "minor boy"),
-骨灰骰子 ("dice made from the ashes"; refused "ash dice", "ashes dice"),
-同居者 ("housemate", "roommate"; refused "cohabitant", "cohabiter")
-and 精神霸凌 ("psychologically bullied", "emotionally bullied"; refused "spiritual bull", "spiritually bull").
+The rendering glossary now seeds 年级组长 ("head of year",
+"grade director";
+refused "grade leader"),
+未成年 ("underage",
+"a minor";
+refused "minor trans",
+"minor girl",
+"minor boy"),
+骨灰骰子 ("dice made from the ashes";
+refused "ash dice",
+"ashes dice"),
+同居者 ("housemate",
+"roommate";
+refused "cohabitant",
+"cohabiter")
+and 精神霸凌 ("psychologically bullied",
+"emotionally bullied";
+refused "spiritual bull",
+"spiritually bull").
 No archive English page carries a refused form;
-saurikissa's "cohabitation" is not refused, since its original carries no 同居者.
-Fixed in `0468bf5bc`, guard red first `a2db36962` (`rendering-glossary-school-life.unit.test.ts`),
-lint 0/0, types clean, full suite `suite-class126.log` 1127 PASS, no FAIL.
-The read left three renderings as written: "ODing", "jk skirt" and "Gaokao".
+saurikissa's "cohabitation" is not refused,
+since its original carries no 同居者.
+Fixed in `0468bf5bc`,
+guard red first `a2db36962` (`rendering-glossary-school-life.unit.test.ts`),
+lint 0/0,
+types clean,
+full suite `suite-class126.log` 1127 PASS,
+no FAIL.
+The read left three renderings as written:
+"ODing",
+"jk skirt" and "Gaokao".
 shi_Yumiaoya28 launched 06:03 UTC on `.frozen-dist-0468bf5bc` (pid 2861379).
 
-OWNER ANSWER, 2026-09-25, on those three:
-"overdosing", "sailor uniform", "National College Entrance Examination".
+OWNER ANSWER,
+2026-09-25,
+on those three:
+"overdosing",
+"sailor uniform",
+"National College Entrance Examination".
 CLASS ONE HUNDRED TWENTY-SEVEN builds it.
-The rendering glossary seeds " OD" ("overdosing", "overdose", "overdosed"),
-"jk 裙" ("sailor uniform", "sailor-uniform skirt"; refused "jk skirt", "jk-skirt", "jk uniform", "jk-style", "jk dress")
-and 高考 ("National College Entrance Examination", "college entrance examination"; refused "gaokao").
+The rendering glossary seeds " OD" ("overdosing",
+"overdose",
+"overdosed"),
+"jk 裙" ("sailor uniform",
+"sailor-uniform skirt";
+refused "jk skirt",
+"jk-skirt",
+"jk uniform",
+"jk-style",
+"jk dress")
+and 高考 ("National College Entrance Examination",
+"college entrance examination";
+refused "gaokao").
 The OD term carries its leading space:
-every OD in the pinned corpus stands after one (aiyysk, Susiethegamer, interrgned, hulicaijia, shi_Yumiaoya),
+every OD in the pinned corpus stands after one (aiyysk,
+Susiethegamer,
+interrgned,
+hulicaijia,
+shi_Yumiaoya),
 and a bare OD would match the "MOD" s5ehfr9 writes.
 A candidate keeping the term is refused by the floor's untranslated-term check,
 whose finding now says "untranslated" instead of "in Han" and names the term trimmed.
 No archive English page writes "gaokao" or a bare OD;
-spike0qy's archive "JK skirts" is now a refused form there too, by the owner's answer.
-Guard red first `352062144` (`rendering-glossary-owner-forms.unit.test.ts`, which also holds that MOD passes),
-fixed in `811d908a9`, lint 0/0, types clean, full suite `suite-class127b.log` 1128 PASS, no FAIL.
+spike0qy's archive "JK skirts" is now a refused form there too,
+by the owner's answer.
+Guard red first `352062144` (`rendering-glossary-owner-forms.unit.test.ts`,
+which also holds that MOD passes),
+fixed in `811d908a9`,
+lint 0/0,
+types clean,
+full suite `suite-class127b.log` 1128 PASS,
+no FAIL.
 The commit message of `811d908a9` names the guard wrongly as `0e0bd1a8c`;
 a commit comment on GitHub corrects it.
 shi_Yumiaoya28 was killed at 06:14 UTC eleven minutes in under always-kill-and-relaunch;
-shi_Yumiaoya29 launched 06:17 UTC on `.frozen-dist-811d908a9` (pid 2915263, waiter wait-s29).
+shi_Yumiaoya29 launched 06:17 UTC on `.frozen-dist-811d908a9` (pid 2915263,
+waiter wait-s29).
 
 ## shi_Yumiaoya26 void, 2026-09-25, 05:30 UTC: the freeze nested the build, so the pass ran a stale one
 
-shi_Yumiaoya26 SETTLED at 05:27 UTC in 24.7 min (894 calls, about 0.42 USD by the meters),
+shi_Yumiaoya26 SETTLED at 05:27 UTC in 24.7 min (894 calls,
+about 0.42 USD by the meters),
 but not on the class one hundred twenty-five build.
 Its page carried "awakened her top-student trait" (class one hundred twenty-three),
 "attempted to end her life ... by taking a large amount of medication" (class one hundred twenty-four)
@@ -10305,7 +11714,8 @@ and the frozen top level carried no "normal college" at all:
 the freeze was first written to a misnamed `.frozen-dist-` that already held an older build,
 `cp -r` nested the new build inside it as `node/`,
 and the rename to `.frozen-dist-67da525a2` kept the stale top level the launcher runs.
-The mistake was in the freeze, not in the code:
+The mistake was in the freeze,
+not in the code:
 the correct freeze of the same commit refuses slices 6 and 7 when replayed.
 The handover's freeze paragraph now says to test that the directory is absent before the copy
 and to grep the frozen top level for the newest fix afterwards.
@@ -10313,10 +11723,13 @@ and to grep the frozen top level for the newest fix afterwards.
 The run still showed two things worth using.
 Slice 10's "using this method to tell" is the refused calque with another noun,
 and slice 7's "slipped to a second-tier university" does not say that she missed her chosen schools.
-Both forms are now refused (`13b633bad`; guards red first `e569be075` and `889811657`).
+Both forms are now refused (`13b633bad`;
+guards red first `e569be075` and `889811657`).
 The consolidation polish on slice 4 had three review seats calling "awakened her top-student trait" a calque,
 yet the refiner's proposal only reordered a clause and the polish gate kept the base.
-The glossary floor, which the stale build lacked, is what closes that path.
+The glossary floor,
+which the stale build lacked,
+is what closes that path.
 
 shi_Yumiaoya27 was launched at 05:40 UTC on `.frozen-dist-13b633bad`
 after a fresh copy and a grep for "using this method to".
@@ -10326,11 +11739,20 @@ after a fresh copy and a grep for "using this method to".
 shi_Yumiaoya25 ran on frozen `2fe4def37` (class one hundred twenty-four),
 launched 03:03 UTC,
 SETTLED at 03:26:59 UTC in 23.5 min (`ms=1411317`),
-one attempt, 905 calls, 978 seats, 1 retry round,
-about 0.43 USD by the meters (Bedrock 41.12 to 40.98, OpenRouter 84.32 to 84.03).
-Front matter equal, 4 headings, no TA, no error finish, no double blank line,
+one attempt,
+905 calls,
+978 seats,
+1 retry round,
+about 0.43 USD by the meters (Bedrock 41.12 to 40.98,
+OpenRouter 84.32 to 84.03).
+Front matter equal,
+4 headings,
+no TA,
+no error finish,
+no double blank line,
 20 abstention lines;
-glm-5.3 asked 73 times and usable 0 (Hyper-only, Hyper dry).
+glm-5.3 asked 73 times and usable 0 (Hyper-only,
+Hyper dry).
 
 Class one hundred twenty-four is live:
 the January 16 sentence reads "she attempted suicide in the early hours of January 16.",
@@ -10344,67 +11766,112 @@ Classes one hundred twenty-two and twenty-three hold:
 "Chewing Gum and Danpian" this run,
 the closing attribution once.
 
-OWNER ANSWER, 2026-09-25, on the question from the shi_Yumiaoya24 read:
+OWNER ANSWER,
+2026-09-25,
+on the question from the shi_Yumiaoya24 read:
 "Leave it".
-每日大量服用精神药物 ("took large amounts of psychiatric medication every day", then the ICU)
+每日大量服用精神药物 ("took large amounts of psychiatric medication every day",
+then the ICU)
 stays as the original writes it;
 the reader-protection rule reaches a death and an attempt only.
-Read under the same answer (my reading, not the owner's words):
+Read under the same answer (my reading,
+not the owner's words):
 the last weeks' "began abusing medication heavily" and "take medication and rest",
 which the original does not call an attempt either.
 
-CLASS ONE HUNDRED TWENTY-FIVE, under the owner's standing instruction of 2026-09-25.
+CLASS ONE HUNDRED TWENTY-FIVE,
+under the owner's standing instruction of 2026-09-25.
 Two passages the archive never translated shipped as calques:
 滑档二本 as "slid down into a second-tier admission slot"
 (the English is that she missed her chosen schools and ended up at a second-tier university),
 and 用这种方式告诉大家 as "she was only using this way to tell everyone"
 ("use this way to" is not English).
-Each form appears once in the pinned corpus, on this page.
+Each form appears once in the pinned corpus,
+on this page.
 Fixed in `67da525a2`:
-`RENDERING_GLOSSARY` seeds 二本 ("second-tier university"; refused "admission slot", "second batch", "erben"),
-滑档 ("missed her chosen schools", "ended up at"; refused "slid down", "slid into", "slipped a file", "sliding file", "huadang")
-and 用这种方式 ("this was her way of", "in this way"; refused "using this way to", "use this way to", "used this way to").
+`RENDERING_GLOSSARY` seeds 二本 ("second-tier university";
+refused "admission slot",
+"second batch",
+"erben"),
+滑档 ("missed her chosen schools",
+"ended up at";
+refused "slid down",
+"slid into",
+"slipped a file",
+"sliding file",
+"huadang")
+and 用这种方式 ("this was her way of",
+"in this way";
+refused "using this way to",
+"use this way to",
+"used this way to").
 Guard red first `052f6cffe` (`rendering-glossary-calques.unit.test.ts`),
-lint 0/0, types clean, full suite `suite-class125.log` 1126 PASS lines, no FAIL.
-shi_Yumiaoya26 launched 05:02 UTC on `.frozen-dist-67da525a2` (pid 2731796, waiter wait-s26).
+lint 0/0,
+types clean,
+full suite `suite-class125.log` 1126 PASS lines,
+no FAIL.
+shi_Yumiaoya26 launched 05:02 UTC on `.frozen-dist-67da525a2` (pid 2731796,
+waiter wait-s26).
 
 ## shi_Yumiaoya24 read, 2026-09-25, 03:05 UTC: classes one hundred twenty-two and twenty-three live, a survived attempt's method on the page (class one hundred twenty-four)
 
 shi_Yumiaoya24 ran on frozen `7e20bbee2` (classes one hundred twenty-two and twenty-three),
 launched 02:37 UTC,
 SETTLED at 02:57:47 UTC in 24.5 min (`ms=1472366`),
-one attempt, 885 calls,
-about 0.44 USD by the meters (Bedrock 41.25 to 41.12, OpenRouter 84.63 to 84.32).
+one attempt,
+885 calls,
+about 0.44 USD by the meters (Bedrock 41.25 to 41.12,
+OpenRouter 84.63 to 84.32).
 Every shi_Yumiaoya23 check holds:
-4 headings, front matter equal, no TA, no error finish, no double blank line,
+4 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
 the closing quote's two lines with the attribution once,
 "trans girl" and "trans woman" on the two 小药娘 lines,
 Han only inside the archive's comments;
-16 abstention lines, 2 retry rounds.
+16 abstention lines,
+2 retry rounds.
 
 Class one hundred twenty-two is live:
 the death paragraph reads "Although she had taken medication before she died"
 and "ended her brief and tragic life",
-with no drug class, no count and no rooftop.
+with no drug class,
+no count and no rooftop.
 Class one hundred twenty-three is live:
 "teachers' college" and "she suddenly became a top student".
 
 CLASS ONE HUNDRED TWENTY-FOUR.
-The January 16 sentence, two sentences before the ICU waking, reads
+The January 16 sentence,
+two sentences before the ICU waking,
+reads
 "she swallowed a large amount of medication in the early hours of January 16 and attempted to end her life".
 The method (吞下大量药物) is on the page for a survived attempt.
 The winning ballots show why:
 one wrote that the candidate "adheres to the 'Reader protection' rule ... appropriate way to handle the specific method",
-another "(survived the attempt, so no method named)".
-The bullet opened "When a death was by suicide, the specific method is deliberately kept vague",
+another "(survived the attempt,
+so no method named)".
+The bullet opened "When a death was by suicide,
+the specific method is deliberately kept vague",
 so the judges read an attempt as outside it.
 Fixed in `2fe4def37`:
-the bullet opens "When a death or an attempt was by suicide, the specific method is deliberately kept vague, whether she died or survived",
+the bullet opens "When a death or an attempt was by suicide,
+the specific method is deliberately kept vague,
+whether she died or survived",
 and after the 自杀 sentence it states
-"A survived attempt is no exception: the page says that she attempted suicide or tried to end her life, never by what means".
-Guard red first `fe230891b` (`attempt-method-policy.unit.test.ts`: the house policy and the select sheet carry both clauses, the old opening gone),
-lint 0/0, types clean, full suite `suite-class124.log` 1125 PASS lines, no FAIL.
-shi_Yumiaoya25 launched 03:03 UTC on `.frozen-dist-2fe4def37` (pid 2596683, waiter wait-s25).
+"A survived attempt is no exception:
+the page says that she attempted suicide or tried to end her life,
+never by what means".
+Guard red first `fe230891b` (`attempt-method-policy.unit.test.ts`:
+the house policy and the select sheet carry both clauses,
+the old opening gone),
+lint 0/0,
+types clean,
+full suite `suite-class124.log` 1125 PASS lines,
+no FAIL.
+shi_Yumiaoya25 launched 03:03 UTC on `.frozen-dist-2fe4def37` (pid 2596683,
+waiter wait-s25).
 
 Not a class:
 the ICU paragraph reads "Magic Chewing Gum and interrgned"
@@ -10413,8 +11880,10 @@ Both are the entries' own renderings:
 interrgned's original declares 单片 as name and alias,
 its English page declares `name: interrgned` (the handle on every site in its `info.yml`) and `alias: Danpian`,
 the same shape as a2581911655's `name: Magic Chewing Gum` and `alias: Chewing Gum`;
-the page names both people by their entries' English names, once each.
-Line 237 ("she took large amounts of psychiatric medication every day", before the second ICU stay)
+the page names both people by their entries' English names,
+once each.
+Line 237 ("she took large amounts of psychiatric medication every day",
+before the second ICU stay)
 renders 每日大量服用精神药物 as the original writes it:
 daily overuse whose harm to her body led to the ICU,
 which the original does not call an attempt.
@@ -10430,13 +11899,16 @@ and
 "dropping "swallowing a large amount of medication" is fine.
 It's documented somewhere that not showing suicide methods therefore promoting replication is expected."
 Both are standing instructions:
-a rendering that reads badly is a class to fix, not an observation to record,
+a rendering that reads badly is a class to fix,
+not an observation to record,
 and the reader-protection rule (`src/house-policy.ts`) is the authority on method detail.
 
 CORRECTION of the shi_Yumiaoya23 read below:
 it called "Although before her passing she took three bottles of some kind of sedative-hypnotic" closer to the original.
 Under the reader-protection rule it is a violation:
-the rule keeps "a method, a substance, a dose" vague,
+the rule keeps "a method,
+a substance,
+a dose" vague,
 and a drug class with a count is both.
 Every shi_Yumiaoya run from 14 to 23 except 22 shipped the class and the count
 (shi_Yumiaoya14 "three bottles of a certain sedative",
@@ -10455,12 +11927,21 @@ that it reaches medication beside the means,
 or that a place can itself be the means.
 
 CLASS ONE HUNDRED TWENTY-TWO:
-the house policy now says that a class of drug is a substance and a count is a dose, named or not;
-that this holds for any medication the page ties to a death or an attempt, not only the means,
+the house policy now says that a class of drug is a substance and a count is a dose,
+named or not;
+that this holds for any medication the page ties to a death or an attempt,
+not only the means,
 the page saying at most that she had taken medication;
-and that a place which is itself the means (a rooftop, a high floor, a bridge, a railway line, deep water) is a method,
-the page keeping a place only where it tells a reader nothing to copy (a city, a hotel, a hospital).
-The place clause is my reading of the rule's own replicability test against its "the date, the place and the age" stay;
+and that a place which is itself the means (a rooftop,
+a high floor,
+a bridge,
+a railway line,
+deep water) is a method,
+the page keeping a place only where it tells a reader nothing to copy (a city,
+a hotel,
+a hospital).
+The place clause is my reading of the rule's own replicability test against its "the date,
+the place and the age" stay;
 the owner's words ("not showing suicide methods") settle it the same way.
 
 CLASS ONE HUNDRED TWENTY-THREE:
@@ -10469,17 +11950,26 @@ sharing its machinery:
 the ordinary words an entry's source carries reach every sheet's identity context under a RENDERINGS heading,
 and the source-carry floor refuses a candidate that keeps one in Han or writes a refused calque before any judge reads it.
 Seeded from the corpus census (`rg` over every `page.md` at the pin):
-师范学院 (shi_Yumiaoya) as "teachers' college", refusing "normal college";
-师范学校 (Xu_Yushu) as "teacher-training school", refusing "normal school";
-学霸 (shi_Yumiaoya, mikaela_khara) as "top student", refusing "top-student trait", "academic tyrant", "study tyrant" and "xueba".
+师范学院 (shi_Yumiaoya) as "teachers' college",
+refusing "normal college";
+师范学校 (Xu_Yushu) as "teacher-training school",
+refusing "normal school";
+学霸 (shi_Yumiaoya,
+mikaela_khara) as "top student",
+refusing "top-student trait",
+"academic tyrant",
+"study tyrant" and "xueba".
 The official names 北京师范大学 and 辽宁师范大学 keep "Normal University" and are not entered.
 Each future rendering that can be better is a new entry.
 
-Guards red first `87a50966f` (`protected-substance-policy.unit.test.ts`, `rendering-glossary.unit.test.ts`),
+Guards red first `87a50966f` (`protected-substance-policy.unit.test.ts`,
+`rendering-glossary.unit.test.ts`),
 built `7e20bbee2`,
 lint 0/0 on the touched files,
 types clean,
-full suite green (`suite-class122-123.log`, 1124 PASS, no FAIL).
+full suite green (`suite-class122-123.log`,
+1124 PASS,
+no FAIL).
 `document-preparation.ts` went one line over its budget with two glossary calls,
 so `glossaryTermLines` in `rendering-glossary.ts` carries both.
 `hulicaijia18` (frozen `e57a2589c`) was killed at 02:36 UTC under always kill and relaunch,
@@ -10494,17 +11984,22 @@ one attempt,
 917 seats,
 841 calls,
 5 retry rounds,
-about 0.35 USD by the meters (Bedrock 41.94 to 41.82, OpenRouter 85.85 to 85.62).
+about 0.35 USD by the meters (Bedrock 41.94 to 41.82,
+OpenRouter 85.85 to 85.62).
 Synthetic wet,
 Hyper dry;
-glm-5.3 dark (72 seats, Hyper-only by design).
+glm-5.3 dark (72 seats,
+Hyper-only by design).
 Jev 29 of 29;
 9 abstention lines;
 no disputed slice;
 longest gap 33 s.
 
 Every shi_Yumiaoya22 check holds:
-4 of 4 headings (Description, Experience, Departure, Memorial),
+4 of 4 headings (Description,
+Experience,
+Departure,
+Memorial),
 front matter equal,
 no TA,
 no error finish,
@@ -10517,8 +12012,10 @@ with Han only inside the archive's own comments.
 The death paragraph names a drug class and a count
 (虽然在离世前她吃了三瓶某种镇静催眠药 as "Although before her passing she took three bottles of some kind of sedative-hypnotic"),
 where shi_Yumiaoya22 wrote "She had taken medication before she died";
-this note first called that closer to the original, which the reader-protection rule contradicts
-(corrected under "Classes one hundred twenty-two and one hundred twenty-three, 2026-09-25").
+this note first called that closer to the original,
+which the reader-protection rule contradicts
+(corrected under "Classes one hundred twenty-two and one hundred twenty-three,
+2026-09-25").
 The ICU paragraph reads "Chewing Gum and Danpian" for 口香糖和单片,
 the original's short form,
 where shi_Yumiaoya22 wrote the declared long form (class seventy-eight holds either way).
@@ -10526,7 +12023,8 @@ Observation,
 not a class:
 the January 16 sentence drops 吞下大量药物 ("she attempted suicide in the early hours of January 16"),
 the same rendering shi_Yumiaoya14 shipped;
-class seventy-nine holds (an attempt, not a death).
+class seventy-nine holds (an attempt,
+not a death).
 Other observations:
 师范学院 as "a normal college",
 觉醒了学霸属性 as "awakened her top-student trait",
@@ -10535,7 +12033,10 @@ The Banner's title and text differ from the archive's in both runs;
 the Banner is a JSX component in the body,
 not front matter,
 so the rule publishing the archive's front matter does not reach it.
-: SETTLED in 17.2 min, the death paragraph whole; no class
+:
+SETTLED in 17.2 min,
+the death paragraph whole;
+no class
 
 `CuspariaKLSY15` ran on frozen `e57a2589c` (class one hundred twenty-one),
 launched 01:10 UTC,
@@ -10545,9 +12046,14 @@ one attempt,
 361 calls,
 one retry round,
 about 0.09 USD by the meters
-(Bedrock 41.97 to 41.94, OpenRouter 85.91 to 85.85).
-Synthetic wet, Hyper dry, so glm-5.3 dark all run (19 seats refused at call time, no wait).
-Jev 15 of 15; 9 abstention lines.
+(Bedrock 41.97 to 41.94,
+OpenRouter 85.91 to 85.85).
+Synthetic wet,
+Hyper dry,
+so glm-5.3 dark all run (19 seats refused at call time,
+no wait).
+Jev 15 of 15;
+9 abstention lines.
 The longest log gap is 51 s.
 
 Every CuspariaKLSY14 check holds:
@@ -10558,20 +12064,32 @@ no error finish,
 no double blank line,
 the life in the past on every line.
 The gloss line “Ling Shui Yu Yu Zi” means fish in clear water stands after the nickname line,
-put back by the class one hundred five restore (`name-gloss-restored`, one line) after the bench dropped it again.
-Class one hundred seven live on slices 1 and 3 (`translate-archive-disputed`, 2 and 4 accepted claims).
+put back by the class one hundred five restore (`name-gloss-restored`,
+one line) after the bench dropped it again.
+Class one hundred seven live on slices 1 and 3 (`translate-archive-disputed`,
+2 and 4 accepted claims).
 The death paragraph carries every clause of the original with no medication detail:
 双方情绪爆发 ("their emotions boiled over"),
 抢救 ("where doctors tried to revive her"),
 再次得到消息 ("When word came again"),
-脑死亡 and 于 ("confirmed brain dead ... cremated on August 1st, 2023");
-又 before 和其父亲发生争吵 is dropped again ("After waking up, she argued with her father"), the CuspariaKLSY14 observation, not a class.
-The life list carries `1.  `, `3.  ` and `4.  ` with two spaces and `2. ` with one:
-that is the archive's own spacing, kept where the bench kept the archive's words;
-it renders the same, so no class.
-The casing pass stayed silent by design (the archive's one capital word, ACG, has three letters).
+脑死亡 and 于 ("confirmed brain dead ... cremated on August 1st,
+2023");
+又 before 和其父亲发生争吵 is dropped again ("After waking up,
+she argued with her father"),
+the CuspariaKLSY14 observation,
+not a class.
+The life list carries `1.  `,
+`3.  ` and `4.  ` with two spaces and `2. ` with one:
+that is the archive's own spacing,
+kept where the bench kept the archive's words;
+it renders the same,
+so no class.
+The casing pass stayed silent by design (the archive's one capital word,
+ACG,
+has three letters).
 No class.
-`shi_Yumiaoya23` launched at 01:28 UTC on `.frozen-dist-e57a2589c` (pid 2246652), waiter wait-s23.
+`shi_Yumiaoya23` launched at 01:28 UTC on `.frozen-dist-e57a2589c` (pid 2246652),
+waiter wait-s23.
 
 ## zheermao13 read, 2026-09-25, 01:08 UTC: SETTLED in 21.0 min; no class
 
@@ -10583,8 +12101,13 @@ one attempt,
 829 calls,
 0.11 USD Bedrock (42.09 to 41.98) and 0.19 OpenRouter (86.11 to 85.92) by the meters.
 Synthetic was wet (weekly 86 percent at the end) and Hyper dry,
-so glm-5.3, a Hyper-only seat, was dark all run (47 seats refused at call time by `NoProviderForModelError`, no wait).
-Jev 23 of 23; 13 abstention lines; one retry round.
+so glm-5.3,
+a Hyper-only seat,
+was dark all run (47 seats refused at call time by `NoProviderForModelError`,
+no wait).
+Jev 23 of 23;
+13 abstention lines;
+one retry round.
 
 Every zheermao12 check holds:
 front matter equal,
@@ -10594,19 +12117,29 @@ no error finish,
 no double blank line
 (the one `>   > ` line with a trailing space is the archive's own).
 Both labels one line each:
-"English translation of Arts’s letter:" and "English translation of the email conversation with One Among Us:" (class seventy-seven holding).
-The reply label reads "One Among Us members sent her a reply that very night:", plural and 连夜 carried, as zheermao12.
-One `StreamOverrunError` in the log, minimax-m3 on `produceTranslateSlate`, 1,035 characters against 1,024:
+"English translation of Arts’s letter:"
+and "English translation of the email conversation with One Among Us:"
+(class seventy-seven holding).
+The reply label reads "One Among Us members sent her a reply that very night:",
+plural and 连夜 carried,
+as zheermao12.
+One `StreamOverrunError` in the log,
+minimax-m3 on `produceTranslateSlate`,
+1,035 characters against 1,024:
 the translate lane's picture transcripts stay within the volume bound (class one hundred sixteen holding).
 Class one hundred seven live on slice 5:
-the repair lane's adjudicators accepted three minor accuracy claims against the archive ("always" added; 身边的人 narrowed to "friends"),
+the repair lane's adjudicators accepted three minor accuracy claims against the archive ("always" added;
+身边的人 narrowed to "friends"),
 so the repair text stood in (`translate-archive-disputed (slice 5)`),
 and the page reads "She leaned on the people around her and often needed their company."
 The casing pass stayed silent:
-the archive's one capital form is INFJ (twice, in "INFJ-A/INFJ-T"), and the page writes it in capitals.
+the archive's one capital form is INFJ (twice,
+in "INFJ-A/INFJ-T"),
+and the page writes it in capitals.
 No Han on the page.
 No class.
-`CuspariaKLSY15` launched at 01:10 UTC on `.frozen-dist-e57a2589c` (pid 2217593), waiter wait-c15.
+`CuspariaKLSY15` launched at 01:10 UTC on `.frozen-dist-e57a2589c` (pid 2217593),
+waiter wait-c15.
 
 ## yingying11 read, 2026-09-25, 00:46 UTC: SETTLED in 15.4 min; no class
 
@@ -10630,11 +12163,15 @@ no Han,
 no TA,
 no error finish,
 no double blank line.
-The casing pass stayed silent, as expected:
-the archive's only all-capitals word is BUAA, and it already reads that way in the contributor line.
-Slice 0 shipped gate-kept (`gate-kept-standing`), with 8 abstention lines.
+The casing pass stayed silent,
+as expected:
+the archive's only all-capitals word is BUAA,
+and it already reads that way in the contributor line.
+Slice 0 shipped gate-kept (`gate-kept-standing`),
+with 8 abstention lines.
 
-Observation, not a class:
+Observation,
+not a class:
 one translate-slate abstention on the farewell says both candidates "violate the corpus house rule by using second person instead of third person".
 No house rule says that.
 The class ninety-seven floor refused the Kimi and minimax candidates that dropped the second person,
@@ -10643,14 +12180,20 @@ and the page reads "May you" as the original does.
 ## mikaela17 read, 2026-09-25, 00:22 UTC: SETTLED in 40.8 min; class one hundred twenty-one
 
 mikaela17 ran on frozen `9ec838a01`
-(launched 23:41 UTC 2026-09-24, `TALLY mikaela_khara status=SETTLED slices=32`, 2,445,213 ms),
-one attempt, 2,394 calls
-(Bedrock 641, OpenRouter 1,086, Synthetic 667),
+(launched 23:41 UTC 2026-09-24,
+`TALLY mikaela_khara status=SETTLED slices=32`,
+2,445,213 ms),
+one attempt,
+2,394 calls
+(Bedrock 641,
+OpenRouter 1,086,
+Synthetic 667),
 Bedrock 42.43 to 42.12 and OpenRouter 86.64 to 86.18 USD by the meters;
 Hyper read dry.
 The time against mikaela16's 20.6 min is Synthetic's,
 wet again after the owner's reset and serving 667 of the calls:
-the standing latency observation, not a class.
+the standing latency observation,
+not a class.
 
 Every mikaela16 check holds:
 front matter byte-equal,
@@ -10659,18 +12202,25 @@ front matter byte-equal,
 2 markers and 2 definitions as the archive,
 𝓠𝓾𝓪𝓷 six times with no straight apostrophe after it,
 "outed" once,
-the HRT passage once ("It should have been an ordinary matter: a family conflict, her parents not wanting her to undergo hormone replacement therapy (HRT).")
+the HRT passage once ("It should have been an ordinary matter:
+a family conflict,
+her parents not wanting her to undergo hormone replacement therapy (HRT).")
 where the archive has the "tried coming out" reading,
 no TA,
 no error finish,
 the one double blank line the archive's own.
-71 abstention lines, one unendorsed standing (slice 2).
-Observations, not classes:
+71 abstention lines,
+one unendorsed standing (slice 2).
+Observations,
+not classes:
 the Huai An parenthetical "(𝓠𝓾𝓪𝓷’s classmate in high school)" dropped again
-(a Qwen3.8-27B ballot: "does not add an unsupported relationship for Huai An";
+(a Qwen3.8-27B ballot:
+"does not add an unsupported relationship for Huai An";
 mikaela6 recorded the same);
 the excerpt line now renders the magazine's full title
-"Tea Dwelling · Star-Lingering Pavilion · Star-Trace Chronicle, 2023, Issue No. 33"
+"Tea Dwelling · Star-Lingering Pavilion · Star-Trace Chronicle,
+2023,
+Issue No. 33"
 where the archive writes "Chronicle Issue No.33".
 
 Class one hundred twenty-one:
@@ -10678,31 +12228,57 @@ the body shipped "Huai An and I decided to get off at Xiawafang Station[^2]"
 beside the footnote's "XIAWAFANG Station is an interchange station",
 where mikaela11 to 16 all wrote the archive's capitals.
 The archive's translator comment gives the reason:
-"下瓦房站：XIAWAFANG Station（备注这个是因为天津用大写拼音…）", Tianjin writes its station names in capitals.
+"下瓦房站：XIAWAFANG Station（备注这个是因为天津用大写拼音…）",
+Tianjin writes its station names in capitals.
 Mercury 2.5 chose the candidate "using standard capitalization for the station name ('Xiawafang') instead of all-caps",
 and no sheet saw the body and the footnote together.
 Built as a page-assembly pass after the list spread
-(`restoreArchiveCasing`, `corpus-run/archive-casing-restore.ts`):
+(`restoreArchiveCasing`,
+`corpus-run/archive-casing-restore.ts`):
 a Latin word of four or more letters the archive writes in capitals at least twice in prose and never in another casing there
 takes that form wherever a shipped slice's prose writes it title case;
 headings are read past on both sides,
 since the archive's own "## From Xiawafang to Tianjin Eye" writes the name title case by the heading's style;
-a lower-case spelling, a link destination and a word after `/`, `.`, `#`, `=`, `_` or `-` stand;
+a lower-case spelling,
+a link destination and a word after `/`,
+`.`,
+`#`,
+`=`,
+`_` or `-` stand;
 finding `archive-casing-restored`.
-Guard red first `196a4fd6c` then `990f5f68f` (the heading case, red against the first fix),
+Guard red first `196a4fd6c` then `990f5f68f` (the heading case,
+red against the first fix),
 fixed in `d12aa2ed7` and `e57a2589c`,
-lint 0/0, types clean,
-replayed over the mikaela17 artifact: `archive-casing-restored (slice 16: "Xiawafang" to "XIAWAFANG")`, no other row.
+lint 0/0,
+types clean,
+replayed over the mikaela17 artifact:
+`archive-casing-restored (slice 16: "Xiawafang" to "XIAWAFANG")`,
+no other row.
 A census of every archive in the corpus finds the rule fires on eleven more capital forms across thirteen entries
-(BUAA on four, COOH, LGBT, USTC, COHAE, GAHT, COVID, ISBN, HANLIANYI, TODO, INFJ),
+(BUAA on four,
+COOH,
+LGBT,
+USTC,
+COHAE,
+GAHT,
+COVID,
+ISBN,
+HANLIANYI,
+TODO,
+INFJ),
 all acronyms or names the archive writes in capitals only.
 
 ## XingZ6010 read, 2026-09-24, 23:35 UTC: SETTLED in 64.9 min; class one hundred twenty
 
 XingZ6010 ran on frozen `d73cb46b9`
-(launched 22:30 UTC, `TALLY XingZ60 status=SETTLED slices=120`, 3,895,578 ms),
-one attempt, 6,870 calls
-(Bedrock 2,633, OpenRouter 4,086, Synthetic 151 once the owner's weekly reset reached the running pass),
+(launched 22:30 UTC,
+`TALLY XingZ60 status=SETTLED slices=120`,
+3,895,578 ms),
+one attempt,
+6,870 calls
+(Bedrock 2,633,
+OpenRouter 4,086,
+Synthetic 151 once the owner's weekly reset reached the running pass),
 Bedrock 44.92 to 42.43 and OpenRouter 90.45 to 86.67 USD by the meters;
 Hyper read dry throughout.
 
@@ -10718,10 +12294,17 @@ no error finish,
 no double blank line,
 the DottedNumber series II to VII in Roman numerals
 (`jsx-attribute-restored` turned slice 34's n="五" into V),
-Jinxin glossed once ("### Jinxin (Brocade Heart)", bare on the signature),
+Jinxin glossed once ("### Jinxin (Brocade Heart)",
+bare on the signature),
 footnote 6 carrying "Zero-Layer Prayer".
-Terminals: 22 slate-endorsed, 30 slate-declined, 33 gate-kept, 22 consolidated, 6 unjudged;
-two unendorsed (56, 73);
+Terminals:
+22 slate-endorsed,
+30 slate-declined,
+33 gate-kept,
+22 consolidated,
+6 unjudged;
+two unendorsed (56,
+73);
 162 abstention lines.
 The placeholder "**Come back later!**" kept.
 
@@ -10737,23 +12320,34 @@ The class one hundred skip for attribute values (`0f685f551`) read only the char
 and this tag writes a blank on each side of its equals sign,
 so the value read as prose and took the title.
 Guard red first `c303b0287`
-(`title-reference-unify.unit.test.ts`, "LEAVES a tag attribute spaced around its equals sign where the credit renders the title bare"),
+(`title-reference-unify.unit.test.ts`,
+"LEAVES a tag attribute spaced around its equals sign where the credit renders the title bare"),
 fixed in `9ec838a01`
-(`title-reference-marks.ts`: `offsetPastBlanks` and `opensAttributeValue` read back past spaces and tabs to the equals sign),
-lint 0/0, types clean,
+(`title-reference-marks.ts`:
+`offsetPastBlanks` and `opensAttributeValue` read back past spaces and tabs to the equals sign),
+lint 0/0,
+types clean,
 replayed over the XingZ6010 artifact:
 slice 98 now reads `title-reference-unplaced` and the attribute stands.
 
-Observations, not classes:
+Observations,
+not classes:
 the second credit keeps the source's bilingual album label 【妄想症Paranoia】 with its Han
-(XingZ631 had it too; the source writes the label that way);
-the ninth section's summary line opens with the handle 空白 in Han, as the source's summary does.
+(XingZ631 had it too;
+the source writes the label that way);
+the ninth section's summary line opens with the handle 空白 in Han,
+as the source's summary does.
 
 ## shi_Yumiaoya22 read, 2026-09-24, 22:29 UTC: SETTLED in 31.9 min, class one hundred nineteen live on the page; no class
 
 shi_Yumiaoya22 ran on frozen `d73cb46b9`
-(launched 21:57 UTC, `TALLY shi_Yumiaoya status=SETTLED slices=18`, 1,911,021 ms),
-one attempt, 1,011 seats, 5 retry rounds, 938 calls,
+(launched 21:57 UTC,
+`TALLY shi_Yumiaoya status=SETTLED slices=18`,
+1,911,021 ms),
+one attempt,
+1,011 seats,
+5 retry rounds,
+938 calls,
 Bedrock 45.05 to 44.92 and OpenRouter 90.74 to 90.46 USD by the meters.
 shi_Yumiaoya20 (`79972da3d`) and shi_Yumiaoya21 (`5fd7d3dea`) were killed under always-kill-and-relaunch
 as the owner's two same-day refinements of class one hundred nineteen landed.
@@ -10767,46 +12361,82 @@ as the owner's two same-day refinements of class one hundred nineteen landed.
   no candidate kept the Han or wrote a refused form,
   so the glossary line on the sheets did the work and the floor stood by;
   the unit guards in `community-term-floor.unit.test.ts` stand for it.
-- Observation, not built:
+- Observation,
+  not built:
   one consolidate gate ballot (minimax-m3) called the standing's "trans women" forbidden by the community term rule,
-  a misreading, since "trans women" is one of the entry's renderings;
+  a misreading,
+  since "trans women" is one of the entry's renderings;
   the gate chose the consolidated text anyway and the page is right.
-  The glossary's `why` names only "trans girl" and "trans woman", the plural an inflection the sheet's rendering list carries.
+  The glossary's `why` names only "trans girl" and "trans woman",
+  the plural an inflection the sheet's rendering list carries.
 - The source's footnote ships as the source writes it:
-  "[^1]: This is the narrow sense of the term here, referring to transgender people who undergo feminizing hormone replacement therapy;
-  it is common usage within the community and carries no derogatory meaning here, and the same applies throughout."
+  "[^1]:
+  This is the narrow sense of the term here,
+  referring to transgender people who undergo feminizing hormone replacement therapy;
+  it is common usage within the community and carries no derogatory meaning here,
+  and the same applies throughout."
   It glosses the word the page now renders "trans girl".
 - Every shi_Yumiaoya19 check holds:
-  4 headings of 4 (Description, Experience, Departure, Memorial),
-  front matter equal, no TA, no error finish, no double blank line,
-  the death paragraphs on the page, the attribution "From *The Truman Show*" once,
+  4 headings of 4 (Description,
+  Experience,
+  Departure,
+  Memorial),
+  front matter equal,
+  no TA,
+  no error finish,
+  no double blank line,
+  the death paragraphs on the page,
+  the attribution "From *The Truman Show*" once,
   the closing quote as the archive's two lines,
-  "Magic Chewing Gum and Danpian", "she attempted suicide by taking medication in the early hours of January 16";
+  "Magic Chewing Gum and Danpian",
+  "she attempted suicide by taking medication in the early hours of January 16";
   em-dashes left as the owner said.
-- Two gate-kept, 24 slate-declined lines, 17 abstention lines, Jev 30 of 30.
-- glm-5.3 threw on all 71 calls with Hyper dry, its only provider (by design, not a class).
+- Two gate-kept,
+  24 slate-declined lines,
+  17 abstention lines,
+  Jev 30 of 30.
+- glm-5.3 threw on all 71 calls with Hyper dry,
+  its only provider (by design,
+  not a class).
 
 ## hulicaijia17 read, 2026-09-24, 11:00 UTC: SETTLED in 28.4 min, every hulicaijia16 check holding; no class; class one hundred nineteen built on the owner's answer about 小药娘
 
 hulicaijia17 ran on frozen `0d8e463ef`
-(launched 10:32 UTC, `TALLY hulicaijia status=SETTLED slices=72`, 1,702,727 ms),
-one attempt, 4,326 seats, 154 retry rounds, 3,477 calls,
+(launched 10:32 UTC,
+`TALLY hulicaijia status=SETTLED slices=72`,
+1,702,727 ms),
+one attempt,
+4,326 seats,
+154 retry rounds,
+3,477 calls,
 Bedrock 46.20 to 45.17 and OpenRouter 92.61 to 90.98 USD by the meters.
 
 - The page against the archive:
   13 headings of 13 by the archive's words,
   footnote markers and 9 definitions as the archive,
-  2 links, 3 Sakura, front matter equal,
-  no TA, no error finish, no double blank line.
+  2 links,
+  3 Sakura,
+  front matter equal,
+  no TA,
+  no error finish,
+  no double blank line.
 - Class one hundred eighteen held:
-  GLM-5.3-Flash asked 231 times, 231 usable, none on Synthetic.
+  GLM-5.3-Flash asked 231 times,
+  231 usable,
+  none on Synthetic.
 - The class ninety-seven floor excluded the archive's translate incumbent once
-  (the ORIGINAL writes 你 twice, the archive "she" and "her").
-- Qwen3.8-27B asked 578, usable 0, and glm-5.3 asked 277, usable 7:
+  (the ORIGINAL writes 你 twice,
+  the archive "she" and "her").
+- Qwen3.8-27B asked 578,
+  usable 0,
+  and glm-5.3 asked 277,
+  usable 7:
   every one a `NoProviderForModelError` with Synthetic's weekly allowance and Hyper's daily allowance spent,
   refused at call time at no cost and left out of each stage's quorum by the class twenty-six rule;
   not a model failure.
-- 75 abstention lines with reasons, Jev 127 of 127, longest gap between log lines 39 s.
+- 75 abstention lines with reasons,
+  Jev 127 of 127,
+  longest gap between log lines 39 s.
 
 ### Class one hundred nineteen: 药娘 renders as "trans girl" or "trans woman"
 
@@ -10819,10 +12449,14 @@ The best thing we can do here is just to say "trans woman" or "trans girl"."
 
 Built in `79972da3d` (guard red first `2f7dd5190`):
 
-- `COMMUNITY_GLOSSARY` seeds 药娘 with the renderings "trans girl", "trans woman" and "trans women";
-  every entry gains `refusedForms`, and this one refuses yaoniang, yao-niang and yao niang.
+- `COMMUNITY_GLOSSARY` seeds 药娘 with the renderings "trans girl",
+  "trans woman" and "trans women";
+  every entry gains `refusedForms`,
+  and this one refuses yaoniang,
+  yao-niang and yao niang.
 - `communityTermFindings` (`translate-community-term.ts`) runs among the source-carry floors after the title floor.
-  It refuses, before any judge reads it,
+  It refuses,
+  before any judge reads it,
   a candidate that keeps a glossary term the original carries in Han
   or writes one of the entry's refused forms in any casing.
   Comments are cut on both sides.
@@ -10830,19 +12464,28 @@ Built in `79972da3d` (guard red first `2f7dd5190`):
   the owner corrected that the same day:
   "even when existing English translation itself keeps the term it shouldn't be kept."
   The exception is gone in `5fd7d3dea` (guard red first `2ba810b2f`).
-  The owner gave the reason: "because 小药娘 the term itself could be read as degratory, which is absolutely not what we want."
-  The entry's why, which the sheets and the refusal finding quote, says so since `d73cb46b9`.
+  The owner gave the reason:
+  "because 小药娘 the term itself could be read as degratory,
+  which is absolutely not what we want."
+  The entry's why,
+  which the sheets and the refusal finding quote,
+  says so since `d73cb46b9`.
   The renderings are listed but not required,
   since a rendering inflects and the judges still choose among renderings.
-- Lint 0/0, types clean, full suite `suite-class119.log` and `suite-class119b.log` 1121 PASS each, no FAIL.
+- Lint 0/0,
+  types clean,
+  full suite `suite-class119.log` and `suite-class119b.log` 1121 PASS each,
+  no FAIL.
 - shi_Yumiaoya20 launched 21:38 UTC on `.frozen-dist-79972da3d` and was killed at 21:55 UTC under always-kill-and-relaunch;
   shi_Yumiaoya21 launched 21:55 UTC on `.frozen-dist-5fd7d3dea` and was killed at 21:57 UTC for the why text;
   shi_Yumiaoya22 launched 21:57 UTC on `.frozen-dist-d73cb46b9` to read it live.
-  The shi_Yumiaoya archive carries 小药娘 only inside a translator comment, so the exception had not reached this entry.
+  The shi_Yumiaoya archive carries 小药娘 only inside a translator comment,
+  so the exception had not reached this entry.
 
 ## shi_Yumiaoya19 read, 2026-09-24, 10:32 UTC: SETTLED in 20.9 min, every shi_Yumiaoya18 check holding; 小药娘 and 药娘 shipped in Han, the third rendering of the term in three runs (open question for the owner)
 
-`shi_Yumiaoya19` (frozen `0d8e463ef`, corpus-pass pid 3826911) was launched at 10:08 UTC 2026-09-24
+`shi_Yumiaoya19` (frozen `0d8e463ef`,
+corpus-pass pid 3826911) was launched at 10:08 UTC 2026-09-24
 and SETTLED at 10:29 UTC,
 20.9 min (TALLY `ms=1253218`),
 one attempt,
@@ -10850,9 +12493,11 @@ one attempt,
 811 calls,
 1 retry round,
 0.19 USD by the meters
-(Bedrock 46.33 to 46.21, OpenRouter 92.68 to 92.61),
+(Bedrock 46.33 to 46.21,
+OpenRouter 92.68 to 92.61),
 Synthetic dry.
-Jev 27 of 27; 3 abstention lines.
+Jev 27 of 27;
+3 abstention lines.
 No GLM-5.3-Flash stream on Synthetic (class one hundred eighteen holding).
 
 Every shi_Yumiaoya18 check holds:
@@ -10870,18 +12515,27 @@ The finding:
 the source's community term 小药娘 (with its [^1] definition) shipped in Han on the Description line ("Yumiao was a very ordinary 小药娘[^1].")
 and 药娘 in Han in the Departure section ("psychologically bullied by a minor 药娘").
 shi_Yumiaoya17 wrote "little HRT girl" and shi_Yumiaoya18 "little yaoniang" on the first line and "yao-niang (a trans person undergoing female-oriented hormone replacement therapy)" on the second:
-three renderings in three runs, two on one page.
+three renderings in three runs,
+two on one page.
 The judges who kept the Han cited the archive translator's comment above the Description
-(注释：我觉得"小药娘"就可以不用翻译了，英文环境里好像没有对应的东西，注释应该也可以不需要。, "I think 小药娘 needn't be translated; English seems to have no equivalent; a note shouldn't be needed either").
-The corpus census: 药娘 in 3 source pages; no archive English renders it (shi_Yumiaoya's archive body is empty under its headings, mikaela_khara's writes the studio name XiaoYaoNiang);
+(注释：我觉得"小药娘"就可以不用翻译了，英文环境里好像没有对应的东西，注释应该也可以不需要。,
+"I think 小药娘 needn't be translated;
+English seems to have no equivalent;
+a note shouldn't be needed either").
+The corpus census:
+药娘 in 3 source pages;
+no archive English renders it (shi_Yumiaoya's archive body is empty under its headings,
+mikaela_khara's writes the studio name XiaoYaoNiang);
 the community glossary carries no entry for it.
 The fix is a glossary entry (the class seventy-two mechanism) once the rendering is chosen;
-which rendering is the owner's call, asked 2026-09-24.
+which rendering is the owner's call,
+asked 2026-09-24.
 `hulicaijia17` launched at 10:32 UTC on `.frozen-dist-0d8e463ef` (corpus-pass pid 3979105).
 
 ## CuspariaKLSY14 read, 2026-09-24, 10:08 UTC: SETTLED in 21.6 min, GLM-5.3-Flash on Hyper with Synthetic wet (class one hundred eighteen live), the life list loose as the archive; no class
 
-`CuspariaKLSY14` (frozen `0d8e463ef`, corpus-pass pid 3557762) was launched at 09:44 UTC 2026-09-24
+`CuspariaKLSY14` (frozen `0d8e463ef`,
+corpus-pass pid 3557762) was launched at 09:44 UTC 2026-09-24
 and SETTLED at 10:05 UTC,
 21.6 min (TALLY `ms=1298653`) against CuspariaKLSY13's 31.9,
 one attempt,
@@ -10889,17 +12543,22 @@ one attempt,
 400 calls,
 0 retry rounds,
 0.07 USD by the meters
-(Bedrock 46.37 to 46.33, OpenRouter 92.71 to 92.68).
+(Bedrock 46.37 to 46.33,
+OpenRouter 92.71 to 92.68).
 Synthetic read wet at launch and dry by the end.
-Jev 10 of 10; no abstention line.
+Jev 10 of 10;
+no abstention line.
 
 Class one hundred eighteen live:
 no `SPEND provider=synthetic model=hf:zai-org/GLM-5.3-Flash` line;
-its first streams went to Hyper at 09:44 while Synthetic still read wet, and 15 of 15 GLM-5.3-Flash seats were usable.
+its first streams went to Hyper at 09:44 while Synthetic still read wet,
+and 15 of 15 GLM-5.3-Flash seats were usable.
 The longest log gap is 89 s against CuspariaKLSY13's 179 s and 175 s.
 Class one hundred seventeen not exercised:
-the bench wrote the life list loose this time (items 1 and 2 reworded, 3 and 4 the archive's words),
-so no `list-spread-restored` finding; the four blank-line gaps are on the page.
+the bench wrote the life list loose this time (items 1 and 2 reworded,
+3 and 4 the archive's words),
+so no `list-spread-restored` finding;
+the four blank-line gaps are on the page.
 
 Every CuspariaKLSY13 check holds:
 front matter equal,
@@ -10909,15 +12568,19 @@ no error finish,
 no double blank line,
 the life in the past,
 the gloss line “Ling Shui Yu Yu Zi” means fish in clear water after the nickname.
-The death paragraph carries 双方情绪爆发 ("tempers flared on both sides"), 抢救 and 再次得到消息 with no medication detail;
-又 before 和其父亲发生争吵 is dropped ("She later woke up and argued with her father"), an observation, not a class.
+The death paragraph carries 双方情绪爆发 ("tempers flared on both sides"),
+抢救 and 再次得到消息 with no medication detail;
+又 before 和其父亲发生争吵 is dropped ("She later woke up and argued with her father"),
+an observation,
+not a class.
 One `translate-archive-disputed` line.
 No class.
 `shi_Yumiaoya19` launched at 10:08 UTC on `.frozen-dist-0d8e463ef` (corpus-pass pid 3826911).
 
 ## CuspariaKLSY13 read, 2026-09-24, 09:45 UTC: SETTLED in 31.9 min with the death paragraph faithful; the archive's loose list shipped tight (class one hundred seventeen, built in c796c5085) and GLM-5.3-Flash on Synthetic cost two grace windows (class one hundred eighteen, built in 0d8e463ef)
 
-`CuspariaKLSY13` (frozen `3bb47c918`, pid 3051768) was launched at 08:43 UTC 2026-09-24
+`CuspariaKLSY13` (frozen `3bb47c918`,
+pid 3051768) was launched at 08:43 UTC 2026-09-24
 and SETTLED at 09:15 UTC,
 31.9 min (TALLY `ms=1913593`),
 one attempt,
@@ -10925,9 +12588,11 @@ one attempt,
 363 calls,
 2 retry rounds,
 0.06 USD by the meters
-(Bedrock 46.41 to 46.37, OpenRouter 92.73 to 92.71),
+(Bedrock 46.41 to 46.37,
+OpenRouter 92.73 to 92.71),
 Synthetic wet again at launch.
-Jev 17 of 17; 3 abstention lines with reasons.
+Jev 17 of 17;
+3 abstention lines with reasons.
 
 The page is faithful on every check:
 front matter equal,
@@ -10936,16 +12601,31 @@ no TA,
 no error finish,
 no double blank line.
 The death paragraph reads
-"While trying to console her friend, a conflict ensued and emotions erupted on both sides. She argued with her father again after waking up, and later, having attempted suicide, she was sent to the hospital for emergency treatment; when word came again, she was confirmed to be brain dead"
+"While trying to console her friend,
+a conflict ensued and emotions erupted on both sides.
+She argued with her father again after waking up,
+and later,
+having attempted suicide,
+she was sent to the hospital for emergency treatment;
+when word came again,
+she was confirmed to be brain dead"
 for 在劝慰朋友时发生矛盾，双方情绪爆发，醒来后又和其父亲发生争吵，后因尝试自杀送往医院抢救，再次得到消息时已确认脑死亡:
-no medication detail, and 双方情绪爆发, 又, 抢救 and 再次得到消息 all carried, the omissions CuspariaKLSY10 left.
+no medication detail,
+and 双方情绪爆发,
+又,
+抢救 and 再次得到消息 all carried,
+the omissions CuspariaKLSY10 left.
 Two `translate-archive-disputed` lines (class one hundred seven) and no `checker stage re-seated` line.
 
 Class one hundred seventeen:
 the archive writes the four-item life list loose (a blank line between items) and the page shipped it tight.
 Every rendering of the list slice wrote the items on consecutive lines and no sheet or floor reads list spacing.
-The corpus census (92 entries) finds 4 source lists, all loose, and 9 archive lists, 4 loose;
-on the 2 entries whose source and archive carry the same lists, the spacing agrees,
+The corpus census (92 entries) finds 4 source lists,
+all loose,
+and 9 archive lists,
+4 loose;
+on the 2 entries whose source and archive carry the same lists,
+the spacing agrees,
 so the archive's spacing is the page's convention and follows the source where both have the list.
 Built in `c796c5085` (guard red first `f0fe179c7`):
 `restoreListSpread` in `corpus-run/list-spread-restore.ts` runs as a page-assembly pass after the gloss lines,
@@ -10953,43 +12633,64 @@ respaces a replaced slice's top-level list to the archive's loose or tight spaci
 when the archive's list in that span has the same ordering and item count,
 never tightens a list whose items are themselves spread,
 and prints `list-spread-restored`.
-Replayed over this run's slice: the page's list loosened to the archive's four blank-line gaps.
+Replayed over this run's slice:
+the page's list loosened to the archive's four blank-line gaps.
 
 Class one hundred eighteen:
-the two longest gaps in the log (179 s and 175 s, 08:49 and 08:52) are one editor round
+the two longest gaps in the log (179 s and 175 s,
+08:49 and 08:52) are one editor round
 that waited 175 s in grace for GLM-5.3-Flash's 230 s cap-cut runaway on Synthetic,
-then a recovery round that waited 180 s more for nothing, with no other chunk in flight.
-Over every log since 2026-09-21, GLM-5.3-Flash streamed 74.5 s mean on Synthetic across 892 streams (p50 51.9 s, 43 empty)
-against 8.6 s on Hyper across 305 (p50 6.5 s, none empty).
+then a recovery round that waited 180 s more for nothing,
+with no other chunk in flight.
+Over every log since 2026-09-21,
+GLM-5.3-Flash streamed 74.5 s mean on Synthetic across 892 streams (p50 51.9 s,
+43 empty)
+against 8.6 s on Hyper across 305 (p50 6.5 s,
+none empty).
 Qwen3.8-27B and Kimi-K3 are faster on Synthetic than on Hyper and stay.
-The recovery round stays: re-asking length-cut voices heard someone on 67 percent of recoveries in the same census.
+The recovery round stays:
+re-asking length-cut voices heard someone on 67 percent of recoveries in the same census.
 Built in `0d8e463ef` (guard red first `7cf6ec12b`):
 a `synthetic-withheld` card hold feeds `SYNTHETIC_WITHHELD`,
-which `reachOf` and the picture reach honour, so GLM-5.3-Flash routes to Hyper and OpenRouter;
+which `reachOf` and the picture reach honour,
+so GLM-5.3-Flash routes to Hyper and OpenRouter;
 the roster fixture's `SEAT_SYNTHETIC_VISION_EDITOR` became `SEAT_HYPER_OPENROUTER_VISION_EDITOR`.
-Full suite 1119 PASS with the load-sensitive lane-contest grace case failing under the parallel run and passing alone, as on `suite-class110.log`.
+Full suite 1119 PASS with the load-sensitive lane-contest grace case failing under the parallel run and passing alone,
+as on `suite-class110.log`.
 `CuspariaKLSY14` launched at 09:44 UTC on `.frozen-dist-0d8e463ef` (pid 3557762).
 
 ## zheermao12 read, 2026-09-24, 08:45 UTC: SETTLED in 21.6 min, class one hundred sixteen live (1 translate overrun against 22, the translate lane 62 s against 616), every zheermao11 check holding; no class
 
-`zheermao12` (entry `zheermao101`, frozen `3bb47c918`, pid 2782250) was launched at 08:21 UTC 2026-09-24
+`zheermao12` (entry `zheermao101`,
+frozen `3bb47c918`,
+pid 2782250) was launched at 08:21 UTC 2026-09-24
 and SETTLED at 08:42 UTC,
 21.6 min (TALLY `ms=1298089`) against zheermao11's 30,
 one attempt,
 917 seats,
 916 calls,
 0.24 USD by the meters
-(Bedrock 46.57 to 46.41, OpenRouter 92.81 to 92.73),
-Synthetic dry, Hyper wet as on zheermao11.
-Jev 32 of 32; 12 abstention lines with reasons.
+(Bedrock 46.57 to 46.41,
+OpenRouter 92.81 to 92.73),
+Synthetic dry,
+Hyper wet as on zheermao11.
+Jev 32 of 32;
+12 abstention lines with reasons.
 
 Class one hundred sixteen live.
-The stages ran archive block review 08:25 to 08:31, repair 08:31 to 08:36, translate 08:36:35 to 08:37:37 and consolidation 08:38 to 08:42:
+The stages ran archive block review 08:25 to 08:31,
+repair 08:31 to 08:36,
+translate 08:36:35 to 08:37:37 and consolidation 08:38 to 08:42:
 the translate lane took 62 s against zheermao11's 616 and zheermao9's 77 with Hyper dry.
 One `StreamOverrunError` in the whole log against 22:
-gemma-4-26b-a4b-it on `produceTranslateSlate`, 1,362 characters against a bound of 1,344, 18 over.
-Kimi-K3 (95 seats) and glm-5.3 (72) were asked throughout, so the saving is the rule's and not a dry Hyper.
-The longest gaps between log lines (74 s, 69 s) fall in the archive block review, none in the translate lane.
+gemma-4-26b-a4b-it on `produceTranslateSlate`,
+1,362 characters against a bound of 1,344,
+18 over.
+Kimi-K3 (95 seats) and glm-5.3 (72) were asked throughout,
+so the saving is the rule's and not a dry Hyper.
+The longest gaps between log lines (74 s,
+69 s) fall in the archive block review,
+none in the translate lane.
 
 Every zheermao11 check holds:
 front matter equal,
@@ -10998,25 +12699,48 @@ no TA,
 no error finish,
 no double blank line.
 Both labels one line each and accurate:
-"English translation of Arts’s letter:" and "English translation of the email conversation:" (class seventy-seven holding).
-The reply label reads "One Among Us members sent her a reply that very night:" for 那些秋叶的成员在看到后连夜给她发送了一份回信, plural and 连夜 carried,
+"English translation of Arts’s letter:"
+and "English translation of the email conversation:"
+(class seventy-seven holding).
+The reply label reads "One Among Us members sent her a reply that very night:"
+for 那些秋叶的成员在看到后连夜给她发送了一份回信,
+plural and 连夜 carried,
 and the Telegram paragraph after the thread now reads "One Among Us members contacted her" for 那些秋叶的成员 where the archive wrote "that member".
-The archive's "we’ll" sentence was reworded by the bench ("Please don’t worry; we will do our best to record the stories we can remember."), curly throughout.
+The archive's "we’ll" sentence was reworded by the bench ("Please don’t worry;
+we will do our best to record the stories we can remember."),
+curly throughout.
 The archive's untranslated JSX translator comment in the reply (可以避开黑暗的锋芒…这句不知道如何翻译) is now rendered as the line it annotates.
-"If I succeed in dying" is the photo's own 成功死去了, read in the transcripts and cited by the slate ballots.
+"If I succeed in dying" is the photo's own 成功死去了,
+read in the transcripts and cited by the slate ballots.
 No `translate incumbent excluded by deterministic source floor:` line,
 no unwrapped-link refusal,
 no `checker stage re-seated` line,
 no `translate-archive-disputed` line:
-classes one hundred seven, nine, fourteen and fifteen silent by design.
-Terminals: consolidated on 4, 5, 6 and 9, slate-endorsed on 0, 3, 8 and 13, slate-declined on 2, 11 and 12, slate-unjudged on 1;
-the contest won a lane on eight slices and settled on neither on 6, 8, 12 and 13.
+classes one hundred seven,
+nine,
+fourteen and fifteen silent by design.
+Terminals:
+consolidated on 4,
+5,
+6 and 9,
+slate-endorsed on 0,
+3,
+8 and 13,
+slate-declined on 2,
+11 and 12,
+slate-unjudged on 1;
+the contest won a lane on eight slices and settled on neither on 6,
+8,
+12 and 13.
 No class.
-`CuspariaKLSY13` launched at 08:43 UTC on `.frozen-dist-3bb47c918` (pid 3051768), waiter wait-c13.
+`CuspariaKLSY13` launched at 08:43 UTC on `.frozen-dist-3bb47c918` (pid 3051768),
+waiter wait-c13.
 
 ## zheermao11 read, 2026-09-24, 08:30 UTC: SETTLED in 30 min, every zheermao9 check holding, classes one hundred fourteen and fifteen silent by design; the translate lane 616 s against 77 on picture transcripts cut by the volume bound (class one hundred sixteen, built in 3bb47c918)
 
-`zheermao11` (entry `zheermao101`, frozen `c958640fb`, pid 2456306) was launched at 07:40 UTC 2026-09-24
+`zheermao11` (entry `zheermao101`,
+frozen `c958640fb`,
+pid 2456306) was launched at 07:40 UTC 2026-09-24
 and SETTLED at 08:10 UTC,
 30 min (TALLY `ms=1820557`),
 one attempt,
@@ -11024,9 +12748,12 @@ one attempt,
 834 calls,
 7 retry rounds,
 0.19 USD by the meters
-(Bedrock 46.70 to 46.57, OpenRouter 92.87 to 92.81),
-Synthetic dry, Hyper wet.
-Jev 18 of 18; 5 abstention lines with reasons.
+(Bedrock 46.70 to 46.57,
+OpenRouter 92.87 to 92.81),
+Synthetic dry,
+Hyper wet.
+Jev 18 of 18;
+5 abstention lines with reasons.
 
 Every zheermao9 check holds:
 front matter equal,
@@ -11035,44 +12762,93 @@ no TA,
 no error finish,
 no double blank line,
 curly "we’ll" (class ninety-six).
-Both labels are one line each (class seventy-seven holding), reworded by the archive block review to name what they label:
-"English translation of Arts’s letter:" (the archive's "the preceding letter")
-and "English translation of Zheermao’s email to One Among Us and the members’ reply:" (the archive's "the preceding email conversation"),
+Both labels are one line each (class seventy-seven holding),
+reworded by the archive block review to name what they label:
+"English translation of Arts’s letter:"
+(the archive's "the preceding letter")
+and "English translation of Zheermao’s email to One Among Us and the members’ reply:"
+(the archive's "the preceding email conversation"),
 both accurate to the pictures they follow and free of the positional reference.
-The reply label reads "When the members of One Among Us saw it, they stayed up through the night to send her a reply:" for 那些秋叶的成员在看到后连夜给她发送了一份回信, the plural members and 连夜 both carried.
+The reply label reads "When the members of One Among Us saw it,
+they stayed up through the night to send her a reply:"
+for 那些秋叶的成员在看到后连夜给她发送了一份回信,
+the plural members and 连夜 both carried.
 No `translate incumbent excluded by deterministic source floor:` line,
 no unwrapped-link refusal ("links words to"),
 no `checker stage re-seated` line:
-the page carries no linked title naming a declared person and no worded link, and no hold began inside the lane,
-so classes one hundred nine, fourteen and fifteen stood silent by design.
+the page carries no linked title naming a declared person and no worded link,
+and no hold began inside the lane,
+so classes one hundred nine,
+fourteen and fifteen stood silent by design.
 No `translate-archive-disputed` line (class one hundred seven silent).
-Terminals: consolidated on 0, 5 and 12, gate-kept on 1, 4, 11 and 13, slate-endorsed on 2, 3 and 9, slate-declined on 6;
+Terminals:
+consolidated on 0,
+5 and 12,
+gate-kept on 1,
+4,
+11 and 13,
+slate-endorsed on 2,
+3 and 9,
+slate-declined on 6;
 the contest won a lane on nine slices and settled on neither on 12 and 13.
 
-Class one hundred sixteen, found on the clock.
-The stages ran archive block review 07:43 to 07:49, repair 07:50 to 07:55, translate 07:55 to 08:05 and consolidation 08:06 to 08:10,
+Class one hundred sixteen,
+found on the clock.
+The stages ran archive block review 07:43 to 07:49,
+repair 07:50 to 07:55,
+translate 07:55 to 08:05 and consolidation 08:06 to 08:10,
 against zheermao9's translate lane of 77 s (03:00:38 to 03:01:55) with Hyper dry.
-Twenty-two translate streams ended on the produced volume bound (`StreamOverrunError`, 1,024 or 1,536 characters for a picture component or the sentence introducing it),
-every one rendering a neighbouring picture's transcript into the passage: openings `{"translation": "<PhotoScroll photos={[ ... ]} />` with the letter or the email thread after it, or "A few days before her departure, she sent an email ..." followed by the thread;
-the reasoning seats said so in their own words ("The ORIGINAL is a PhotoScroll component plus OCR transcription", "The passage is a WHAT THE PICTURES HERE SAY section").
-On Bedrock the Gemma seats were cut in 3 to 6 s, but Kimi-K3 (7 of 17 translate streams, 55.1 s mean, 171 s longest), glm-5.3 (2 of 11) and minimax-m3 (1 of 25) thought 60 to 170 s before writing the transcript and being cut,
-and five translate rounds waited 129 to 172 s to hear 0 or 1 of their voices, one recovery round 73 s more hearing none.
-The overruns are not new (38, 39, 43 and 31 on zheermao6 to 9); the Hyper seats being reachable made them cost minutes.
+Twenty-two translate streams ended on the produced volume bound (`StreamOverrunError`,
+1,024 or 1,536 characters for a picture component or the sentence introducing it),
+every one rendering a neighbouring picture's transcript into the passage:
+openings `{"translation": "<PhotoScroll photos={[ ... ]} />` with the letter or the email thread after it,
+or "A few days before her departure,
+she sent an email ..." followed by the thread;
+the reasoning seats said so in their own words ("The ORIGINAL is a PhotoScroll component plus OCR transcription",
+"The passage is a WHAT THE PICTURES HERE SAY section").
+On Bedrock the Gemma seats were cut in 3 to 6 s,
+but Kimi-K3 (7 of 17 translate streams,
+55.1 s mean,
+171 s longest),
+glm-5.3 (2 of 11) and minimax-m3 (1 of 25) thought 60 to 170 s before writing the transcript and being cut,
+and five translate rounds waited 129 to 172 s to hear 0 or 1 of their voices,
+one recovery round 73 s more hearing none.
+The overruns are not new (38,
+39,
+43 and 31 on zheermao6 to 9);
+the Hyper seats being reachable made them cost minutes.
 The translator sheet showed WHAT THE PICTURES HERE SAY for the pictures one slice each way and never said what the block was for,
 while its rules said "Translate everything the ORIGINAL says" and "Do not add content the ORIGINAL does not support and the existing translation does not already carry."
-Built in 3bb47c918 (guard red first 40721851c, `picture-transcript-scope.unit.test.ts`):
-`TRANSLATE_PICTURE_SCOPE_RULE` (`translate-wire.ts`), added to the translator sheet whenever the block is shown, says the block is context and not part of the ORIGINAL,
+Built in 3bb47c918 (guard red first 40721851c,
+`picture-transcript-scope.unit.test.ts`):
+`TRANSLATE_PICTURE_SCOPE_RULE` (`translate-wire.ts`),
+added to the translator sheet whenever the block is shown,
+says the block is context and not part of the ORIGINAL,
 that a picture's words belong only where the passage writes them out or its existing translation already carries them,
-and that a picture component renders exactly as the ORIGINAL has it, since a transcript there is an addition and, where the page translates the picture in its own block, a second copy.
-Lint 0 and 0, types clean, full suite `suite-class116.log` 1119 PASS, no FAIL.
-The rule is words on a sheet, so only a live read can say whether it moves the writers:
-`zheermao12` (frozen `3bb47c918`, pid 2782250) launched at 08:21 UTC with Hyper wet again
-(meters 46.57 USD Bedrock and 92.81 OpenRouter, Synthetic dry), waiter wait-z12;
-read it for the `StreamOverrunError` count on `produceTranslateSlate` (22 here) and the translate lane's span (616 s here, 77 on zheermao9 with Hyper dry), beside every check of this read.
+and that a picture component renders exactly as the ORIGINAL has it,
+since a transcript there is an addition and,
+where the page translates the picture in its own block,
+a second copy.
+Lint 0 and 0,
+types clean,
+full suite `suite-class116.log` 1119 PASS,
+no FAIL.
+The rule is words on a sheet,
+so only a live read can say whether it moves the writers:
+`zheermao12` (frozen `3bb47c918`,
+pid 2782250) launched at 08:21 UTC with Hyper wet again
+(meters 46.57 USD Bedrock and 92.81 OpenRouter,
+Synthetic dry),
+waiter wait-z12;
+read it for the `StreamOverrunError` count on `produceTranslateSlate` (22 here) and the translate lane's span (616 s here,
+77 on zheermao9 with Hyper dry),
+beside every check of this read.
 
 ## yingying10 read, 2026-09-24, 07:40 UTC: SETTLED with "Yingying" in the [^2] title, class one hundred fourteen live, class one hundred fifteen found and built in a7b7f3934
 
-`yingying10` (entry `yingying`, frozen `f4d554838`, pid 2023934) was launched at 07:15 UTC 2026-09-24
+`yingying10` (entry `yingying`,
+frozen `f4d554838`,
+pid 2023934) was launched at 07:15 UTC 2026-09-24
 and SETTLED at 07:26 UTC,
 682 s,
 one attempt,
@@ -11080,10 +12856,14 @@ one attempt,
 307 calls,
 0 retry rounds,
 about 0.06 USD by the meters
-(Bedrock 46.74 to 46.70, OpenRouter 92.89 to 92.87),
-Synthetic dry, Hyper wet.
+(Bedrock 46.74 to 46.70,
+OpenRouter 92.89 to 92.87),
+Synthetic dry,
+Hyper wet.
 The time against yingying9's 185 s is Hyper's:
-Kimi-K3, minimax-m3, glm-5.3 and deepseek-v4.1-flash streamed there at 15 to 49 s each,
+Kimi-K3,
+minimax-m3,
+glm-5.3 and deepseek-v4.1-flash streamed there at 15 to 49 s each,
 where yingying9 ran with Hyper dry;
 no log gap exceeds 22 s.
 
@@ -11092,13 +12872,14 @@ the [^2] definition reads "[Farewell. I miss you, Yingying.](https://leohearts.c
 The translate stage excluded the archive's "Sakura" title from slice 3's slate
 (`translate incumbent excluded by deterministic source floor`);
 a replay of the frozen build's validator over the artifact's texts names the finding,
-"The link text for https://leohearts.com/archives/farewell-yingying.html names 樱樱",
+"The link text for <https://leohearts.com/archives/farewell-yingying.html> names 樱樱",
 so the class one hundred fourteen floor did the refusing.
 The log did not say which floor it was,
 and the read could not tell without the replay;
 c958640fb now logs the refusing findings on that line at warn.
 In the repair lane three critics filed the declared-name claim
-(Kimi-K3 and gemma-4-26b as wrong-term, minimax-m3 as inconsistent rendering),
+(Kimi-K3 and gemma-4-26b as wrong-term,
+minimax-m3 as inconsistent rendering),
 the editor wrote "Yingying",
 and the introduced-defect probe heard 3 of 3 and found nothing this time,
 so both lanes carried the declared form and the floor refused nothing downstream.
@@ -11118,12 +12899,20 @@ no double blank line,
 1 abstention line,
 Jev 7 of 7.
 
-Class one hundred fifteen, found on the slate rather than the page:
-gemma-4-e2b's candidate for slice 3, after its repair turn, was
-"[^2]: Farewell. I miss you, Yingying. (https://leohearts.com/archives/farewell-yingying.html)",
+Class one hundred fifteen,
+found on the slate rather than the page:
+gemma-4-e2b's candidate for slice 3,
+after its repair turn,
+was
+"[^2]:
+Farewell.
+I miss you,
+Yingying.
+(<https://leohearts.com/archives/farewell-yingying.html>)",
 the title as plain words and the destination bare after it,
 and every floor passed it:
-the destination floor reads a bare URL as an autolink, so `link-url` survived,
+the destination floor reads a bare URL as an autolink,
+so `link-url` survived,
 and the class one hundred fourteen floor is silent where the rendering carries no link under the href.
 It drew gemma-4-e2b's own ballot twice at 0.5,
 the first round declined on indecision (1 against 0.5),
@@ -11132,7 +12921,8 @@ A census over the corpus at the pin found 141 worded source links:
 119 kept under the same href by the archive,
 none unwrapped,
 22 dropped outright (the destination floor's case).
-Built in a7b7f3934 (guard red first 5db1cc723, `unwrapped-link.unit.test.ts`):
+Built in a7b7f3934 (guard red first 5db1cc723,
+`unwrapped-link.unit.test.ts`):
 `unwrappedLinkFindings` (`translate-unwrapped-link.ts`) joins the source-carry floors before the declared-link-name floor.
 Where the original carries more worded links under an href than the rendering does
 while the rendering still carries the href,
@@ -11140,7 +12930,8 @@ the link was unwrapped;
 a worded link is `[words](href)` whose words are neither empty nor the href itself.
 Lint 0/0,
 types clean,
-full suite `suite-class115.log` 1118 PASS, no FAIL.
+full suite `suite-class115.log` 1118 PASS,
+no FAIL.
 Replayed over the real slice 3:
 the unwrapped candidate refused,
 every other text keeping its verdict.
@@ -11151,11 +12942,14 @@ the meters unmoved.
 
 `zheermao11` launched at 07:40 UTC on `.frozen-dist-c958640fb` (pid 2456306),
 meters 46.70 USD Bedrock and 92.87 OpenRouter,
-Synthetic dry, Hyper wet.
+Synthetic dry,
+Hyper wet.
 
 ## yingying9 read, 2026-09-24, 07:15 UTC: SETTLED with the [^2] title in the archive's "Sakura", class one hundred fourteen found and built in 645ed9d62
 
-`yingying9` (entry `yingying`, frozen `6dec56b0b`, pid 1811157) was launched at 06:48 UTC 2026-09-24
+`yingying9` (entry `yingying`,
+frozen `6dec56b0b`,
+pid 1811157) was launched at 06:48 UTC 2026-09-24
 and SETTLED at 06:52 UTC,
 185 s,
 one attempt,
@@ -11163,7 +12957,8 @@ one attempt,
 241 calls,
 10 retry rounds,
 about 0.05 USD by the meters
-(Bedrock 46.77 to 46.75, OpenRouter 92.96 to 92.93),
+(Bedrock 46.77 to 46.75,
+OpenRouter 92.96 to 92.93),
 Synthetic and Hyper dry.
 
 Class one hundred thirteen not exercised:
@@ -11180,18 +12975,24 @@ the References line kept,
 no TA,
 no error finish,
 no double blank line,
-the farewell in the second person ("may you still have", class ninety-seven holding),
+the farewell in the second person ("may you still have",
+class ninety-seven holding),
 1 abstention line,
 Jev 6 of 6.
 The yingying8 observation is gone:
 the Bilibili sentence carries "the hardcore video Bilibili account “Geek Lab”".
 
-Regression, class one hundred fourteen:
+Regression,
+class one hundred fourteen:
 the [^2] definition shipped "[Farewell. I miss you, Sakura.](https://leohearts.com/archives/farewell-yingying.html)"
 where yingying4 to 8 wrote "Yingying",
 the front matter's declared name.
 The class eighty-six glossary line was on every sheet
-("; names 樱樱, declared "Yingying": the declared form inside the title, the archive's words for the rest"),
+(";
+names 樱樱,
+declared "Yingying":
+the declared form inside the title,
+the archive's words for the rest"),
 and the bench overruled it twice:
 
 - In the translate lane the archive's own text sat on the slate as candidate 1.
@@ -11200,7 +13001,8 @@ and the bench overruled it twice:
 - In the repair lane the claims of gemma-4-26b and deepseek-v4.1-flash were accepted (major),
   the editor rewrote the title to "Yingying",
   and the introduced-defect probe reverted the rewrite as
-  "The AFTER text changes the name from 'Sakura' to 'Yingying', while the ORIGINAL explicitly uses '樱樱'";
+  "The AFTER text changes the name from 'Sakura' to 'Yingying',
+  while the ORIGINAL explicitly uses '樱樱'";
   the log reads `chunk 3: unchanged, 0/1 served accepted issues resolved`.
 
 Both lanes then carried the archive's title,
@@ -11208,7 +13010,8 @@ so slice 3 was never contested and shipped uncontested.
 
 A rule the judges read and overrule is a floor,
 the step classes eighty and ninety-seven took.
-Built in 645ed9d62 (guard red first 98f24d35b, `declared-link-name.unit.test.ts`):
+Built in 645ed9d62 (guard red first 98f24d35b,
+`declared-link-name.unit.test.ts`):
 `declaredLinkNameFindings` (`translate-declared-link-name.ts`) joins the source-carry floors after the Han-title floor.
 Where the original's link text carries a name the front matter declares,
 the rendering's link text under the same href must carry the declared form,
@@ -11216,7 +13019,8 @@ compared on the declared-name survival guard's letters-and-digits projection;
 silent without declared pairs,
 where the link names nobody declared,
 and where the rendering carries no link under that href.
-The pairs (`declaredNamePairs`, class eighty-six) now ride on the prepared document as `declaredNamePairs`
+The pairs (`declaredNamePairs`,
+class eighty-six) now ride on the prepared document as `declaredNamePairs`
 and reach every validator call:
 the translate stage's incumbent check,
 the slate floor and the writers' repair turn,
@@ -11228,52 +13032,79 @@ and the polish.
 `consolidate-driver-records.ts` was split out of `consolidate-driver.ts` for the line budget.
 Lint 0/0,
 types clean,
-full suite `suite-class114b.log` 1117 PASS, no FAIL (`suite-class114.log` had two red cases in `translate-slice-input.unit.test.ts`, which expected the stage input to omit `declared` when the page declares nothing, and f4d554838 omits it rather than sending an empty list).
+full suite `suite-class114b.log` 1117 PASS,
+no FAIL (`suite-class114.log` had two red cases in `translate-slice-input.unit.test.ts`,
+which expected the stage input to omit `declared` when the page declares nothing,
+and f4d554838 omits it rather than sending an empty list).
 Replayed over the real slice 3:
 the archive,
 the repair text,
 the translate text
 and slate candidate 1 refused,
-slate candidate 2 ("Farewell. I miss you, Yingying.") valid.
+slate candidate 2 ("Farewell.
+I miss you,
+Yingying.")
+valid.
 
-Open, not built:
+Open,
+not built:
 the repair lane's introduced-defect probe still reads a declared-name correction as an introduced defect;
 the floor now refuses the probe's reverted text at the contest,
 so the probe's call no longer reaches the page.
 
 `yingying10` launched at 07:15 UTC on `.frozen-dist-f4d554838` (pid 2023934),
 meters 46.74 USD Bedrock and 92.89 OpenRouter,
-Synthetic dry, Hyper wet.
+Synthetic dry,
+Hyper wet.
 
 ## mikaela16 read, 2026-09-24, 06:50 UTC: SETTLED with the HRT passage once, class one hundred twelve not exercised, class one hundred thirteen found and built in 375a9b3e8; yingying9 launched
 
-`mikaela16` (entry `mikaela_khara`, frozen `a43c5d88d`, pid 1173176) was launched at 05:37 UTC 2026-09-24
+`mikaela16` (entry `mikaela_khara`,
+frozen `a43c5d88d`,
+pid 1173176) was launched at 05:37 UTC 2026-09-24
 and SETTLED at 05:58 UTC,
 20.6 min,
 one attempt,
 2,483 seats,
 2,051 calls,
 91 retry rounds,
-0.74 USD by the meters (Bedrock 47.09 to 46.78, OpenRouter 93.40 to 92.97);
-Synthetic wet at launch and dry from 05:47:59 UTC, Hyper dry.
+0.74 USD by the meters (Bedrock 47.09 to 46.78,
+OpenRouter 93.40 to 92.97);
+Synthetic wet at launch and dry from 05:47:59 UTC,
+Hyper dry.
 The lanes disagreed on 26 of 33 slices;
-the consolidation endorsed 8 standings, consolidated 5, kept 5 at the gate, declined 7 at the slate and left 1 unjudged,
+the consolidation endorsed 8 standings,
+consolidated 5,
+kept 5 at the gate,
+declined 7 at the slate and left 1 unjudged,
 with one unendorsed standing (slice 9);
-class one hundred seven live on slices 11, 13, 17 and 23;
+class one hundred seven live on slices 11,
+13,
+17 and 23;
 60 abstention lines;
 Jev 78 of 78.
 
 Class one hundred twelve not exercised:
-this run's roster placed every block in every section (12 of 12, 8 of 8, 18 of 18, 30 of 30),
+this run's roster placed every block in every section (12 of 12,
+8 of 8,
+18 of 18,
+30 of 30),
 section 2 merging sources 2 and 3 into target 2,
-so there was no interior gap, no insertion and no fold.
+so there was no interior gap,
+no insertion and no fold.
 The HRT passage is on the page once,
-as "It was originally just a very normal occurrence:" and the four lines after it, one per source line.
+as "It was originally just a very normal occurrence:"
+and the four lines after it,
+one per source line.
 The unit guard (0c5ee4b6c) and the replay over mikaela15's real section 2 pairing remain the evidence for the gap pass.
 
 The mikaela15 observation did not repeat:
-the page reads "That night, / Spring, / Mika, / and I" with Spring as the archive.
-It is read as that run's rendering, not a class.
+the page reads "That night,
+/ Spring,
+/ Mika,
+/ and I" with Spring as the archive.
+It is read as that run's rendering,
+not a class.
 
 Every check of `mikaela11` holds:
 front matter equal,
@@ -11292,7 +13123,8 @@ so the curled-possessive check had nothing to bind this run.
 
 Class one hundred nine live:
 eight `checker stage re-seated` lines from 05:48:15 to 05:51:31 UTC after Synthetic dried out,
-each proof round then hearing 2 of 3 on Qwen, gemma-26b and gemma-4-e2b.
+each proof round then hearing 2 of 3 on Qwen,
+gemma-26b and gemma-4-e2b.
 
 Class one hundred thirteen:
 ten refine rechecks from 05:51:51 to 05:52:08 UTC heard 1 of 3
@@ -11304,181 +13136,337 @@ and never read the re-seat hook the proof stage reads.
 First built in 6dec56b0b (settle-level guard red first e003d4c1d):
 `settleRefinedSlice` (`refine-slice-settle.ts`) read the bench through `checkerBenchAtStage` before the refine stage,
 the recheck (`retainsResolvedIssues` now takes the checker ids) and the rewrite probe ran on it,
-and the lane driver passes the same `beforeSlice` hook through `refineSettledSlices`, `runRefinePhase` and `settleRefinePhaseSlice`.
+and the lane driver passes the same `beforeSlice` hook through `refineSettledSlices`,
+`runRefinePhase` and `settleRefinePhaseSlice`.
 Without a hook the standing seating keeps the chunk's bench.
 The full suite (`suite-class113.log`) then turned the document-lanes case "ASKS BEFORE EVERY SLICE" red:
-the eager read asked the hook once more per refined slice, including slices whose rewrite never changed the text.
-375a9b3e8 moves the read to right after the `if (!refined.changed) return` exit, immediately before the recheck,
+the eager read asked the hook once more per refined slice,
+including slices whose rewrite never changed the text.
+375a9b3e8 moves the read to right after the `if (!refined.changed) return` exit,
+immediately before the recheck,
 which also narrows the gap a hold can open between the read and the checkers.
 The settle-level guard went vacuous under the lazy read and was withdrawn in 24b9ab623,
 replaced by phase-level guards in `refine-phase.unit.test.ts` (region "Checker bench at the refine stage"):
-the re-seated bench is asked by both the probe and the recheck, an empty re-seat keeps the chunk bench (control), and a re-seat below the checker floor throws `CheckerQuorumError`;
-proven red on `.frozen-dist-a43c5d88d` (the two guards red, the control green).
-Lint 0/0, types clean, full suite `suite-class113b.log` 1116 PASS, 0 FAIL.
-`yingying9` ran on the eager `.frozen-dist-6dec56b0b`, whose checker seating matches 375a9b3e8; only the hook's call count differs.
-Not exercised live yet: it needs a provider hold that begins inside the repair lane.
+the re-seated bench is asked by both the probe and the recheck,
+an empty re-seat keeps the chunk bench (control),
+and a re-seat below the checker floor throws `CheckerQuorumError`;
+proven red on `.frozen-dist-a43c5d88d` (the two guards red,
+the control green).
+Lint 0/0,
+types clean,
+full suite `suite-class113b.log` 1116 PASS,
+0 FAIL.
+`yingying9` ran on the eager `.frozen-dist-6dec56b0b`,
+whose checker seating matches 375a9b3e8;
+only the hook's call count differs.
+Not exercised live yet:
+it needs a provider hold that begins inside the repair lane.
 
 `yingying9` launched on it.
 
 ## mikaela15 read, 2026-09-24, 05:45 UTC: SETTLED with the fold live, the HRT passage shipped twice, class one hundred twelve found and built in a43c5d88d; mikaela16 launched
 
-`mikaela15` (entry `mikaela_khara`, frozen `caac222a6`, pid 876937) was launched at 05:09 UTC 2026-09-24
+`mikaela15` (entry `mikaela_khara`,
+frozen `caac222a6`,
+pid 876937) was launched at 05:09 UTC 2026-09-24
 and SETTLED at 05:19 UTC,
 10.5 min,
 one attempt,
 2,116 seats,
 1,687 calls,
 75 retry rounds,
-0.75 USD by the meters (Bedrock 47.37 to 47.09, OpenRouter 93.85 to 93.42),
+0.75 USD by the meters (Bedrock 47.37 to 47.09,
+OpenRouter 93.85 to 93.42),
 on Bedrock and OpenRouter alone;
-the lanes disagreed on 25 of 34 slices, class one hundred seven live on slices 13 and 24, all 15 checker rounds heard 2 of 3, slices 5 and 14 unendorsed, 51 abstention lines, Jev 68 of 69.
+the lanes disagreed on 25 of 34 slices,
+class one hundred seven live on slices 13 and 24,
+all 15 checker rounds heard 2 of 3,
+slices 5 and 14 unendorsed,
+51 abstention lines,
+Jev 68 of 69.
 
 Class one hundred eleven live end to end:
 this pairing carried slice 11 alone and the log reads `insertion-carried-folded (slice 11 into slice 10)`,
 slice 10's stand-in renders the HRT sentences and 原本只是 together,
 and there is no carried-evidence-lost stop.
 Every check of `mikaela11` holds:
-𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish.
+𝓠𝓾𝓪𝓷 as the archive,
+"𝓠𝓾𝓪𝓷’s" curled,
+"Mika was outed",
+the Epilogue one to one,
+the life in the past,
+front matter equal,
+4 headings,
+4 comments,
+4 markers,
+2 definitions,
+no TA,
+no error finish.
 
 The page ships the HRT passage twice (class one hundred twelve).
 Slice 10's stand-in renders it through the fold,
-and slice 13 ("That night…") kept the archive paragraph "That was originally just a typical thing." in its own span beside it.
-The cause is in the slicing, not the fold.
+and slice 13 ("That night…") kept the archive paragraph "That was originally just a typical thing."
+in its own span beside it.
+The cause is in the slicing,
+not the fold.
 In section 2 the roster paired sources 0 to 2 and 8 onward and left sources 3 to 7 and targets 3 to 6 unplaced on both sides,
 which `blockPairingToSteps` read as bare source-only steps followed by bare target-only steps:
 the originals became insertions (the coverage round then called them carried),
-and the target-only run, undeclined because the pairing placed no original, rode into the next paired slice's span (`group-merge.ts mergeOneSidedRuns`).
-`mikaela12` and `mikaela13` lost the passage through the same shape; `mikaela15` rendered it twice because the fold now works.
+and the target-only run,
+undeclined because the pairing placed no original,
+rode into the next paired slice's span (`group-merge.ts mergeOneSidedRuns`).
+`mikaela12` and `mikaela13` lost the passage through the same shape;
+`mikaela15` rendered it twice because the fold now works.
 
-Class one hundred twelve built (a43c5d88d, guard red first 0c5ee4b6c, lint 0/0, types clean, full suite `suite-class112.log` (1115 PASS; the one red case was the census decline fixture, itself the class one hundred twelve shape, re-paired in 14336a1c2), replayed over mikaela15's section 2 pairing: `P2:2 P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+ P8:7`):
+Class one hundred twelve built (a43c5d88d,
+guard red first 0c5ee4b6c,
+lint 0/0,
+types clean,
+full suite `suite-class112.log` (1115 PASS;
+the one red case was the census decline fixture,
+itself the class one hundred twelve shape,
+re-paired in 14336a1c2),
+replayed over mikaela15's section 2 pairing:
+`P2:2 P3:3 S4+ S5+ S6+ S7+ T4+ T5+ T6+ P8:7`):
 `pairUnpartneredGaps` (`unpartnered-gap-steps.ts`) reads an interior gap unplaced on both sides as one merge,
 the first source and target paired and the rest continuing on both sides,
-so the grouper keeps it as one run, the anchor reader gives it no insertion, and the decline reader declines none of it;
+so the grouper keeps it as one run,
+the anchor reader gives it no insertion,
+and the decline reader declines none of it;
 `blockPairingToSteps` wraps the bare builder with it.
 Leading and trailing gaps and one-sided gaps are unchanged.
 Frozen `.frozen-dist-a43c5d88d`.
 
-Observation, not yet read: the mikaela15 carrier wrote "That night, 𝓠𝓾𝓪𝓷, Spring, and Mika…" where the archive has Spring for 泉;
+Observation,
+not yet read:
+the mikaela15 carrier wrote "That night,
+𝓠𝓾𝓪𝓷,
+Spring,
+and Mika…" where the archive has Spring for 泉;
 read it on `mikaela16` before calling it a class.
 
 `mikaela16` launched on it.
 
 ## mikaela14 read, 2026-09-24, 05:15 UTC: class one hundred eleven live at the admission, its chain arm found and built in caac222a6; killed at 05:05 UTC; mikaela15 launched
 
-`mikaela14` (entry `mikaela_khara`, frozen `0ab0abdd8`, pid 691210) was launched at 04:53 UTC 2026-09-24 and killed at 05:05 UTC
+`mikaela14` (entry `mikaela_khara`,
+frozen `0ab0abdd8`,
+pid 691210) was launched at 04:53 UTC 2026-09-24 and killed at 05:05 UTC
 under always-kill-and-relaunch once the chain arm below landed,
-12 min in, in the consolidation at chunk 26 of 34,
+12 min in,
+in the consolidation at chunk 26 of 34,
 no tally,
 1,471 calls,
 50 retry rounds,
-0.57 USD by the meters (Bedrock 47.60 to 47.37, OpenRouter 94.19 to 93.85),
+0.57 USD by the meters (Bedrock 47.60 to 47.37,
+OpenRouter 94.19 to 93.85),
 on Bedrock and OpenRouter alone;
-the lanes disagreed on 25 of 34 slices, class one hundred seven live on slices 13, 14, 18 and 24, all 15 checker rounds heard 2 of 3, 48 abstention lines.
+the lanes disagreed on 25 of 34 slices,
+class one hundred seven live on slices 13,
+14,
+18 and 24,
+all 15 checker rounds heard 2 of 3,
+48 abstention lines.
 
-Class one hundred eleven live at the admission, and its second arm.
-This run's pairing carried two slices in a row, 11 (原本只是…) and 12 (很正常的一件事情),
-and paired slice 13 (当晚…) with the archive's "That was originally just a typical thing." and "That night…" paragraphs together.
+Class one hundred eleven live at the admission,
+and its second arm.
+This run's pairing carried two slices in a row,
+11 (原本只是…) and 12 (很正常的一件事情),
+and paired slice 13 (当晚…) with the archive's "That was originally just a typical thing."
+and "That night…" paragraphs together.
 The log now reads:
 `insertion-carried-folded (slice 12 into slice 13)` (the fold on the first arm),
 `slice 11 stays carried: evidence sits in slice at position 13, not a neighbour` (the new warn line),
-and `slice 11 carried on 3 region(s): …` (the new evidence line, the ballots' regions running from the HRT sentences through "That night…").
+and `slice 11 carried on 3 region(s): …` (the new evidence line,
+the ballots' regions running from the HRT sentences through "That night…").
 Slice 11's evidence sat in slice 10's paragraph and in slice 13's span,
 and slice 13 was two positions away because the carried slice 12 stood between:
-the fold's neighbour rule counted positions, not paired slices.
-The run was doomed to the same publish stop (slice 13's stand-in, written from 很正常 and 当晚, carries nothing of slice 11), so it was killed.
+the fold's neighbour rule counted positions,
+not paired slices.
+The run was doomed to the same publish stop (slice 13's stand-in,
+written from 很正常 and 当晚,
+carries nothing of slice 11),
+so it was killed.
 
-Chain arm (caac222a6, guard red first 9bb99bf9f with the chained fixture, replayed over the real corpus texts of slices 10 to 13 with the ballots' regions: `slice 12 into slice 13`, `slice 11 into slice 10`, no aside):
-a carried passage's neighbours are the nearest paired slices on each side, looking past insertions (`pairedNeighbours` in `corpus-run/insertion-carried-decide.ts`);
+Chain arm (caac222a6,
+guard red first 9bb99bf9f with the chained fixture,
+replayed over the real corpus texts of slices 10 to 13 with the ballots' regions:
+`slice 12 into slice 13`,
+`slice 11 into slice 10`,
+no aside):
+a carried passage's neighbours are the nearest paired slices on each side,
+looking past insertions (`pairedNeighbours` in `corpus-run/insertion-carried-decide.ts`);
 the abutting check still refuses a fold across a source the carrier has not absorbed;
-and the passes repeat, at most one per carried passage, so a passage refused for a carried neighbour in the way folds once that neighbour has folded (`foldPass` in `corpus-run/insertion-carried-fold.ts`).
-Lint 0/0, types clean, the fold suite green, full suite `suite-class111b.log`.
+and the passes repeat,
+at most one per carried passage,
+so a passage refused for a carried neighbour in the way folds once that neighbour has folded (`foldPass` in `corpus-run/insertion-carried-fold.ts`).
+Lint 0/0,
+types clean,
+the fold suite green,
+full suite `suite-class111b.log`.
 Frozen `.frozen-dist-caac222a6`.
 
 `mikaela15` launched on it.
 
 ## mikaela13 read, 2026-09-24, 04:50 UTC: INCOMPLETE carried-evidence-lost in 15 min again, class one hundred eleven (the carried passage rendered across both neighbours), fixed in 0ab0abdd8; mikaela14 launched
 
-`mikaela13` (entry `mikaela_khara`, frozen `457765221`, pid 344865) stopped INCOMPLETE at 04:33 UTC 2026-09-24,
-15 min after its 04:18 start (TALLY `ms=903894`, `error=translation repair interrupted: carried-evidence-lost`),
+`mikaela13` (entry `mikaela_khara`,
+frozen `457765221`,
+pid 344865) stopped INCOMPLETE at 04:33 UTC 2026-09-24,
+15 min after its 04:18 start (TALLY `ms=903894`,
+`error=translation repair interrupted: carried-evidence-lost`),
 one attempt,
 2,093 seats,
 63 retry rounds,
 1,678 calls,
-0.75 USD by the meters (Bedrock 47.86 to 47.60, OpenRouter 94.68 to 94.19),
-on Bedrock and OpenRouter alone (Synthetic dry for the week, Hyper dry),
+0.75 USD by the meters (Bedrock 47.86 to 47.60,
+OpenRouter 94.68 to 94.19),
+on Bedrock and OpenRouter alone (Synthetic dry for the week,
+Hyper dry),
 roster 8 (`wide=6 select=7 late=7 slate=7 checkers=3 translators=7 readers=5 writers=8`).
-Stages: admission at 04:19:34, repair lane from 04:19:34, translate lane to 04:25, contest 24 of 34 slices differ, consolidation from 04:28 to 04:33; Jev 68 of 68; 56 abstention lines with reasons; all 16 checker rounds heard 2 of 3, no hold inside the lane (class one hundred nine not exercised).
-Class one hundred seven live on five slices (2, 10, 12, 22, 24).
-No page, no artifact: the entry stopped at the publish guard,
+Stages:
+admission at 04:19:34,
+repair lane from 04:19:34,
+translate lane to 04:25,
+contest 24 of 34 slices differ,
+consolidation from 04:28 to 04:33;
+Jev 68 of 68;
+56 abstention lines with reasons;
+all 16 checker rounds heard 2 of 3,
+no hold inside the lane (class one hundred nine not exercised).
+Class one hundred seven live on five slices (2,
+10,
+12,
+22,
+24).
+No page,
+no artifact:
+the entry stopped at the publish guard,
 `INTERRUPTED mikaela_khara: carried-insertion-evidence-lost slice 11`.
 
 Class one hundred ten was not exercised in mikaela12's shape.
-This run's pairing (12 of 12 original and 9 of 9 translation blocks in the section, against mikaela12's) carried slice 11 alone,
+This run's pairing (12 of 12 original and 9 of 9 translation blocks in the section,
+against mikaela12's) carried slice 11 alone,
 the fold printed nothing,
 and the same guard stopped the entry on a different passage.
 
-Class one hundred eleven, the stop.
+Class one hundred eleven,
+the stop.
 The original writes three paragraphs:
-"8 月下旬的某天，Mika 炸柜了。" (slice 10, 18 code points),
+"8 月下旬的某天，Mika 炸柜了。" (slice 10,
+18 code points),
 "原本只是非常正常的一件事情：家庭矛盾，家长不想让孩子 HRT，然后 Mika 离家出走结果被报警抓回来，最后在派出所协商调解矛盾。" (slice 11),
 "很正常的一件事情。" (slice 12).
 The archive renders them as two:
-"In late August, she tried coming out but ended up facing serious opposition.
-What started as a typical situation—family conflict, her parents not wanting her to undergo hormone replacement therapy (HRT).
+"In late August,
+she tried coming out but ended up facing serious opposition.
+What started as a typical situation—family conflict,
+her parents not wanting her to undergo hormone replacement therapy (HRT).
 So Mika ran away from home only to be brought back by the police—ended in conflict resolution at the local police station."
 and "That was originally just a typical thing."
 The pairing gave the first paragraph to slice 10 and the second to slice 12,
 so slice 11 was source-only and the coverage round found it carried:
 its one ballot quoted the HRT sentences out of slice 10's span and the "originally just a typical thing" line out of slice 12's,
 one region across both neighbours (the archive's second paragraph renders 原本只是 from slice 11 and 很正常的一件事情 from slice 12 in one line).
-The class one hundred ten fold asked for a single holder of the whole region, found two, and stood aside without a word in the log.
+The class one hundred ten fold asked for a single holder of the whole region,
+found two,
+and stood aside without a word in the log.
 Then class one hundred seven disputed both neighbours:
-slice 10's archive paragraph against its 18-code-point source ("keeping the archive text, 326 code points against a source of 18" on the translate lane; the repair lane's text stood in),
-slice 12's line for adding "originally" and "just" (two critics, "importing the nearby context's 原本只是非常正常的一件事情 framing"),
-and the stand-ins, written from each slice's own source, carried nothing of slice 11.
+slice 10's archive paragraph against its 18-code-point source ("keeping the archive text,
+326 code points against a source of 18" on the translate lane;
+the repair lane's text stood in),
+slice 12's line for adding "originally" and "just" (two critics,
+"importing the nearby context's 原本只是非常正常的一件事情 framing"),
+and the stand-ins,
+written from each slice's own source,
+carried nothing of slice 11.
 The guard at publish was right again.
 
-Fix (0ab0abdd8, guard red first 2925802e1 with the flanked fixture, replayed over the real corpus texts of slices 10 to 12 with the ballot's region: `insertion-carried-folded (slice 11 into slice 10)`, the carrier's source both paragraphs, slice 12's source untouched):
-the fold places the evidence block by block (`corpus-run/insertion-carried-anchor.ts`, `anchorRegion`: one holder per block the quote touches, with its share in code points);
+Fix (0ab0abdd8,
+guard red first 2925802e1 with the flanked fixture,
+replayed over the real corpus texts of slices 10 to 12 with the ballot's region:
+`insertion-carried-folded (slice 11 into slice 10)`,
+the carrier's source both paragraphs,
+slice 12's source untouched):
+the fold places the evidence block by block (`corpus-run/insertion-carried-anchor.ts`,
+`anchorRegion`:
+one holder per block the quote touches,
+with its share in code points);
 every block must sit in a paired slice next to the carried one,
 the carrier is the neighbour holding the larger share (the earlier on a tie),
-and the sources must abut across blank space alone (`corpus-run/insertion-carried-decide.ts`, `decideFold`, split out for the line budget).
-The other neighbour keeps its own source: the words of the passage it rendered are the carrier's to write now, and its class one hundred seven dispute over "originally" is answered by the carrier rendering 原本只是.
-Every stand-aside names its reason (`foldCarriedInsertions` returns `asides`), and `pass-entry.ts` logs them at warn beside one line per still-carried passage with its evidence regions,
+and the sources must abut across blank space alone (`corpus-run/insertion-carried-decide.ts`,
+`decideFold`,
+split out for the line budget).
+The other neighbour keeps its own source:
+the words of the passage it rendered are the carrier's to write now,
+and its class one hundred seven dispute over "originally" is answered by the carrier rendering 原本只是.
+Every stand-aside names its reason (`foldCarriedInsertions` returns `asides`),
+and `pass-entry.ts` logs them at warn beside one line per still-carried passage with its evidence regions,
 so the next carried-evidence-lost stop can be read against the admission without the artifact.
-Lint 0/0, types clean, the fold suite green, full suite `suite-class111.log`.
+Lint 0/0,
+types clean,
+the fold suite green,
+full suite `suite-class111.log`.
 Frozen `.frozen-dist-0ab0abdd8`.
 
 `mikaela14` launched on it (the rest of the read set follows).
 
 ## mikaela12 read, 2026-09-24, 04:20 UTC: INCOMPLETE carried-evidence-lost in 15 min, class one hundred ten (a carried passage inside the neighbour's archive span), fixed in 457765221; mikaela13 launched
 
-`mikaela12` (entry `mikaela_khara`, frozen `21ea25993`, pid 125750) stopped INCOMPLETE at 03:54 UTC 2026-09-24,
-15 min after its 03:38 start (TALLY `ms=905150`, `error=translation repair interrupted: carried-evidence-lost`),
+`mikaela12` (entry `mikaela_khara`,
+frozen `21ea25993`,
+pid 125750) stopped INCOMPLETE at 03:54 UTC 2026-09-24,
+15 min after its 03:38 start (TALLY `ms=905150`,
+`error=translation repair interrupted: carried-evidence-lost`),
 one attempt,
 2,196 seats,
 78 retry rounds,
 1,744 calls,
-0.71 USD by the meters (Bedrock 48.13 to 47.86, OpenRouter 95.13 to 94.69),
-on Bedrock and OpenRouter alone (Synthetic dry for the week, Hyper dry).
-Stages: repair lane from 03:39:31, translate lane from 03:42:38, contest from 03:44:28 (27 of 36 slices differ), consolidation 03:45:17 to 03:54; Jev 78 of 78; 49 abstention lines with reasons.
-No page, no artifact: the entry stopped at the publish guard.
+0.71 USD by the meters (Bedrock 48.13 to 47.86,
+OpenRouter 95.13 to 94.69),
+on Bedrock and OpenRouter alone (Synthetic dry for the week,
+Hyper dry).
+Stages:
+repair lane from 03:39:31,
+translate lane from 03:42:38,
+contest from 03:44:28 (27 of 36 slices differ),
+consolidation 03:45:17 to 03:54;
+Jev 78 of 78;
+49 abstention lines with reasons.
+No page,
+no artifact:
+the entry stopped at the publish guard.
 
-Class one hundred nine not exercised, as expected:
+Class one hundred nine not exercised,
+as expected:
 no hold began inside the repair lane (every JUDGE SEATS line reads `synthetic=dry bedrock=wet hyper=dry openrouter=wet`),
 no "checker stage re-seated" line;
 all 16 checker rounds heard 2 of 3 (gemma-26b and the dry reading's gemma-4-e2b for the withheld Kimi) with no grace.
-Class one hundred seven live on five slices (2, 15, 19, 20, 26: `translate-archive-disputed`, the repair lane's text standing in for the archive in the lanes and the consolidation).
+Class one hundred seven live on five slices (2,
+15,
+19,
+20,
+26:
+`translate-archive-disputed`,
+the repair lane's text standing in for the archive in the lanes and the consolidation).
 The filers log live.
 
-Class one hundred ten, the stop.
+Class one hundred ten,
+the stop.
 The coverage admission found slices 12 and 14 `coverage=carried, missingDestinations=0`:
 source-only paragraphs the roster said the page already renders.
-Slice 14's evidence, quoted by every voice, was the September sentence
-("By September, I started noticing cracks in their relationship due to their financial strain and Mika’s dependency on Spring."),
+Slice 14's evidence,
+quoted by every voice,
+was the September sentence
+("By September,
+I started noticing cracks in their relationship due to their financial strain and Mika’s dependency on Spring."),
 which sits inside slice 15's archive span:
-the archive merged two source paragraphs (the September paragraph and its neighbour) into one rendering, and the pairing paired that rendering with the neighbour's source alone, leaving slice 14 source-only.
-The translate lane, writing slice 15 from its own source alone, wrote the neighbour without the September sentence;
+the archive merged two source paragraphs (the September paragraph and its neighbour) into one rendering,
+and the pairing paired that rendering with the neighbour's source alone,
+leaving slice 14 source-only.
+The translate lane,
+writing slice 15 from its own source alone,
+wrote the neighbour without the September sentence;
 the translate slate chose the candidate without "the surrounding passage" (the judges' words);
 the contest chose translate;
 the consolidation gate kept it;
@@ -11487,164 +13475,438 @@ and at publish `assertCarriedInsertionsRemain` (class twenty) found the carried 
 The guard was right and the lanes were blind:
 nothing told the writer of slice 15 that its archive span also renders slice 14's source.
 
-Fix (457765221, guard red first 750e87978 with "does not provide an export named 'CARRIED_FOLDED_FINDING'"):
+Fix (457765221,
+guard red first 750e87978 with "does not provide an export named 'CARRIED_FOLDED_FINDING'"):
 `foldCarriedInsertions` (`corpus-run/insertion-carried-fold.ts`) runs right after `decidePassInsertionAdmission` in `pass-entry.ts`.
 Where every evidence region of a carried insertion locates (through `locateQuote`) inside exactly one paired slice's target span,
 that slice stands one position away,
 the carried slice is the insertion the admission names,
 and the two sources abut with nothing but whitespace between them,
-the carrier's source widens over both sources (`widenCarrier`), the carried slice leaves the carried list as `folded` (`FoldedInsertion` on `InsertionAdmission`),
+the carrier's source widens over both sources (`widenCarrier`),
+the carried slice leaves the carried list as `folded` (`FoldedInsertion` on `InsertionAdmission`),
 and the finding `insertion-carried-folded (slice 14 into slice 15)` prints.
-Both lanes then write the carrier from the widened source, so the September sentence is owed by the rule, not remembered by the guard;
+Both lanes then write the carrier from the widened source,
+so the September sentence is owed by the rule,
+not remembered by the guard;
 `translateDocument` skips folded positions as it skips carried ones;
 the publish guard reads only what stays carried.
-Only the unambiguous case folds: evidence in a non-adjacent slice, evidence the page never carried, evidence straddling two slices, or a source gap that is not blank all stand aside and the insertion stays carried as before.
-Two unit cases (`insertion-carried-fold.unit.test.ts`, cat-themed): FOLDS and STANDS ASIDE.
-Lint 0/0 on the touched files, types clean, `mise run build`, the guard PASS, full suite `suite-class110.log` 1114 PASS
-with one load-sensitive failure (`lane-contest-stage` "RECORDS RAW HALF-QUORUM BALLOTS", a grace-window timing case: expected 2 usable, saw 4 under the parallel run; PASS alone; `suite-class109.log` had no failure).
-Not replayed over the real mikaela12 texts (the run left no artifact; the fixture reproduces the shape).
+Only the unambiguous case folds:
+evidence in a non-adjacent slice,
+evidence the page never carried,
+evidence straddling two slices,
+or a source gap that is not blank all stand aside and the insertion stays carried as before.
+Two unit cases (`insertion-carried-fold.unit.test.ts`,
+cat-themed):
+FOLDS and STANDS ASIDE.
+Lint 0/0 on the touched files,
+types clean,
+`mise run build`,
+the guard PASS,
+full suite `suite-class110.log` 1114 PASS
+with one load-sensitive failure (`lane-contest-stage` "RECORDS RAW HALF-QUORUM BALLOTS",
+a grace-window timing case:
+expected 2 usable,
+saw 4 under the parallel run;
+PASS alone;
+`suite-class109.log` had no failure).
+Not replayed over the real mikaela12 texts (the run left no artifact;
+the fixture reproduces the shape).
 Frozen `.frozen-dist-457765221`.
 
-Reading the rest was moot: no page shipped.
+Reading the rest was moot:
+no page shipped.
 
-`mikaela13` (entry `mikaela_khara`, frozen `457765221`, pid 344865, overlap 8)
+`mikaela13` (entry `mikaela_khara`,
+frozen `457765221`,
+pid 344865,
+overlap 8)
 launched 04:18 UTC on Bedrock and OpenRouter
-(meters 47.86 USD Bedrock, 94.68 OpenRouter at launch; Synthetic dry for the week, Hyper dry),
+(meters 47.86 USD Bedrock,
+94.68 OpenRouter at launch;
+Synthetic dry for the week,
+Hyper dry),
 waiter bvhf624bc.
 Read for the `insertion-carried-folded (slice 14 into slice 15)` line and the carrier's widened source rendered on the page (the September sentence inside the neighbour's paragraph),
 no carried-evidence-lost stop,
-then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
-(𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish).
+then classes seventy to seventy-seven,
+ninety-six,
+one hundred one and one hundred two beside every check of `mikaela11`
+(𝓠𝓾𝓪𝓷 as the archive,
+"𝓠𝓾𝓪𝓷’s" curled,
+"Mika was outed",
+the Epilogue one to one,
+the life in the past,
+front matter equal,
+4 headings,
+4 comments,
+4 markers,
+2 definitions,
+no TA,
+no error finish).
 Then `yingying` or `zheermao101`.
 
 ## shi_Yumiaoya18 read, 2026-09-24, 03:45 UTC: SETTLED in 7 min, the first page on class one hundred nine (not exercised: no hold began inside the lane), every check as shi_Yumiaoya17, no class; mikaela12 launched
 
-`shi_Yumiaoya18` (frozen `21ea25993`, pid 91959) SETTLED at 03:35 UTC 2026-09-24,
-7 min after the pass's 03:28 start (TALLY `ms=423317`; the launch command ran at 03:23),
+`shi_Yumiaoya18` (frozen `21ea25993`,
+pid 91959) SETTLED at 03:35 UTC 2026-09-24,
+7 min after the pass's 03:28 start (TALLY `ms=423317`;
+the launch command ran at 03:23),
 one attempt,
 865 seats,
 38 retry rounds,
 686 calls,
 no abandoned stream,
-0.38 USD by the meters (Bedrock 48.27 to 48.14, OpenRouter 95.44 to 95.19),
-on Bedrock and OpenRouter alone (Synthetic dry for the week, Hyper dry; Qwen3.8-27B 99 asked 99 threw and glm-5.3 79 asked 79 threw, both dark by design).
-Stages: repair from 03:28:50, translate lane from 03:30:08, contest from 03:32:38, consolidation 03:32:55 to 03:35:28; Jev 24 of 24; 9 abstention lines with reasons.
+0.38 USD by the meters (Bedrock 48.27 to 48.14,
+OpenRouter 95.44 to 95.19),
+on Bedrock and OpenRouter alone (Synthetic dry for the week,
+Hyper dry;
+Qwen3.8-27B 99 asked 99 threw and glm-5.3 79 asked 79 threw,
+both dark by design).
+Stages:
+repair from 03:28:50,
+translate lane from 03:30:08,
+contest from 03:32:38,
+consolidation 03:32:55 to 03:35:28;
+Jev 24 of 24;
+9 abstention lines with reasons.
 
-Class one hundred nine not exercised live, as expected:
-no hold began inside the repair lane (every JUDGE SEATS line reads `synthetic=dry bedrock=wet hyper=dry openrouter=wet`, `waited=0ms`),
+Class one hundred nine not exercised live,
+as expected:
+no hold began inside the repair lane (every JUDGE SEATS line reads `synthetic=dry bedrock=wet hyper=dry openrouter=wet`,
+`waited=0ms`),
 so no "checker stage re-seated" line printed;
 the only `re-seated` line is the translate lane's usual "re-seated before starting".
 Both checker rounds of the run heard 2 of 3 (gemma-26b and the dry reading's gemma-4-e2b for the withheld Kimi) in 819 ms and 909 ms with no grace;
-the run wrote one repaired chunk (`repairChanged=1`), so the checker stage ran twice.
+the run wrote one repaired chunk (`repairChanged=1`),
+so the checker stage ran twice.
 The class one hundred filers log is live (34 "filed by" lines).
-Class one hundred seven silent this run: no accepted addition claim against the archive, no `translate-archive-disputed` line.
+Class one hundred seven silent this run:
+no accepted addition claim against the archive,
+no `translate-archive-disputed` line.
 
-The lanes agreed on six slices (0, 2, 5, 9, 14, 16), so the closing quote (slice 16) never reached the contest or the consolidation and shipped as the archive's two lines
-("And in case I don't see you……good afternoon, good evening, and good night." then "From *The Truman Show*", no Chinese line above them): classes eighty and one hundred two fine.
-Class one hundred one holding (the `[^1]` definition the page's last line, "below." then the file's line ending; one marker, one definition).
+The lanes agreed on six slices (0,
+2,
+5,
+9,
+14,
+16),
+so the closing quote (slice 16) never reached the contest or the consolidation and shipped as the archive's two lines
+("And in case I don't see you……good afternoon,
+good evening,
+and good night."
+then "From *The Truman Show*",
+no Chinese line above them):
+classes eighty and one hundred two fine.
+Class one hundred one holding (the `[^1]` definition the page's last line,
+"below."
+then the file's line ending;
+one marker,
+one definition).
 The contest chose the translate lane on all twelve differing slices;
-terminals: consolidated 1, 4, 8, 10, 17; slate-endorsed 3, 6, 7, 11, 15; slate-declined 12; gate-kept 13.
-The two page-assembly passes silent (nothing trimmed, nothing withdrawn, no finding).
+terminals:
+consolidated 1,
+4,
+8,
+10,
+17;
+slate-endorsed 3,
+6,
+7,
+11,
+15;
+slate-declined 12;
+gate-kept 13.
+The two page-assembly passes silent (nothing trimmed,
+nothing withdrawn,
+no finding).
 Class seventy-eight holding ("Chewing Gum and Danpian had each passed away as well").
-Class seventy-nine holding ("she attempted to end her life in the early hours of January 16", an attempt, not a death;
-the bench dropped the 吞下大量药物 clause this run as `shi_Yumiaoya14` did, where `shi_Yumiaoya17` had "swallowed a large amount of medication").
-The final-tweet paragraph reads "three bottles of a certain sedative-hypnotic" for 三瓶某种镇静催眠药, the count the original's and the substance unnamed, as `shi_Yumiaoya9` shipped and the reading of that run accepted;
-minimax-m3 abstained on every slate carrying it under the reader-protection rule, and the other judges chose against the abstention.
-Classes ninety-two, ninety-five and ninety-six fine (the six straight double quotes the archive's own JSX path literals; the marker and definition on the page).
-Every structural check as `shi_Yumiaoya17`: 4 headings, front matter equal to the archive, no TA, no error finish, no double blank line, 5 em-dashes (as `shi_Yumiaoya17`, left per owner).
-Han residue as `shi_Yumiaoya17` except the father sentence, which reads 「逆子」—a disgrace (the source's own corner brackets, the gloss appended) where `shi_Yumiaoya17` wrote “逆子”; the archive's own 尼康 D200 caption and comments as before.
-The nickname line reads "little yaoniang[^1]" where `shi_Yumiaoya17` wrote "little HRT girl[^1]"; the footnote explains the term either way, the archive's comment says it needs no translation.
+Class seventy-nine holding ("she attempted to end her life in the early hours of January 16",
+an attempt,
+not a death;
+the bench dropped the 吞下大量药物 clause this run as `shi_Yumiaoya14` did,
+where `shi_Yumiaoya17` had "swallowed a large amount of medication").
+The final-tweet paragraph reads "three bottles of a certain sedative-hypnotic" for 三瓶某种镇静催眠药,
+the count the original's and the substance unnamed,
+as `shi_Yumiaoya9` shipped and the reading of that run accepted;
+minimax-m3 abstained on every slate carrying it under the reader-protection rule,
+and the other judges chose against the abstention.
+Classes ninety-two,
+ninety-five and ninety-six fine (the six straight double quotes the archive's own JSX path literals;
+the marker and definition on the page).
+Every structural check as `shi_Yumiaoya17`:
+4 headings,
+front matter equal to the archive,
+no TA,
+no error finish,
+no double blank line,
+5 em-dashes (as `shi_Yumiaoya17`,
+left per owner).
+Han residue as `shi_Yumiaoya17` except the father sentence,
+which reads 「逆子」—a disgrace (the source's own corner brackets,
+the gloss appended) where `shi_Yumiaoya17` wrote “逆子”;
+the archive's own 尼康 D200 caption and comments as before.
+The nickname line reads "little yaoniang[^1]" where `shi_Yumiaoya17` wrote "little HRT girl[^1]";
+the footnote explains the term either way,
+the archive's comment says it needs no translation.
 No class.
 
-`mikaela12` (entry `mikaela_khara`, frozen `21ea25993`, pid 125750, overlap 8)
+`mikaela12` (entry `mikaela_khara`,
+frozen `21ea25993`,
+pid 125750,
+overlap 8)
 launched 03:38 UTC on Bedrock and OpenRouter
-(meters 48.14 USD Bedrock, 95.19 OpenRouter at launch; Synthetic dry for the week, Hyper dry),
+(meters 48.14 USD Bedrock,
+95.19 OpenRouter at launch;
+Synthetic dry for the week,
+Hyper dry),
 waiter byun3a1z8.
 Read for any "checker stage re-seated" line (none expected without a hold beginning inside the lane),
 the checker rounds hearing 2 of 3 on the dry reading,
-then classes seventy to seventy-seven, ninety-six, one hundred one and one hundred two beside every check of `mikaela11`
-(𝓠𝓾𝓪𝓷 as the archive, "𝓠𝓾𝓪𝓷’s" curled, "Mika was outed", the Epilogue one to one, the life in the past, front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish).
+then classes seventy to seventy-seven,
+ninety-six,
+one hundred one and one hundred two beside every check of `mikaela11`
+(𝓠𝓾𝓪𝓷 as the archive,
+"𝓠𝓾𝓪𝓷’s" curled,
+"Mika was outed",
+the Epilogue one to one,
+the life in the past,
+front matter equal,
+4 headings,
+4 comments,
+4 markers,
+2 definitions,
+no TA,
+no error finish).
 Then `yingying` or `zheermao101`.
 
 ## zheermao9 read, 2026-09-24, 03:20 UTC: SETTLED in 20 min, class one hundred three live under Synthetic's weekly dry-out, class one hundred six not exercised (the contest chose the repair lane 5 of 5), class one hundred seven live on slice 0; but the chunks in flight kept the bench read at their start, so seven of eight checker rounds after the dry-out heard 1 of 3 (class one hundred nine, fixed in 21ea25993); shi_Yumiaoya18 launched
 
-`zheermao9` (entry `zheermao101`, frozen `85ed2881f`, pid 4089371) SETTLED at 03:04 UTC 2026-09-24,
+`zheermao9` (entry `zheermao101`,
+frozen `85ed2881f`,
+pid 4089371) SETTLED at 03:04 UTC 2026-09-24,
 20 min after its 02:44 launch (TALLY `ms=1191927`),
 one attempt,
 988 seats asked,
 759 calls,
-0.37 USD by the meters (Bedrock 48.41 to 48.28, OpenRouter 95.71 to 95.47),
-Synthetic wet at the launch and dry from 02:56:03 UTC (`syntheticWeekly=0%`, the weekly allowance, not the five-hour window, which read 2734 of 2750), Bedrock and OpenRouter wet, Hyper dry.
-glm-5.3 dark (59 asked, 59 threw; the Hyper-only seat, by design).
-Jev 29 of 29; 10 abstention lines with reasons.
+0.37 USD by the meters (Bedrock 48.41 to 48.28,
+OpenRouter 95.71 to 95.47),
+Synthetic wet at the launch and dry from 02:56:03 UTC (`syntheticWeekly=0%`,
+the weekly allowance,
+not the five-hour window,
+which read 2734 of 2750),
+Bedrock and OpenRouter wet,
+Hyper dry.
+glm-5.3 dark (59 asked,
+59 threw;
+the Hyper-only seat,
+by design).
+Jev 29 of 29;
+10 abstention lines with reasons.
 
-Class one hundred six not exercised: slice 9's contest chose the repair lane 5 of 5 with every ballot calling the archive flawed (`lane-won`, not `settled-neither`, so the run-off predicate stood aside by design),
-and the page's reply label reads "One Among Us members sent her a reply that very night:" for 那些秋叶的成员…连夜, the `zheermao8` observation resolved by the contest itself.
-Class one hundred seven live on slice 0 (`translate-archive-disputed`, two accepted `accuracy/addition` claims; the contest chose translate 3 of 4; the page's opening quote comes from the translate lane).
-Consolidation terminals: slate-declined-standing on slices 0 and 9, slate-unjudged on 1, slate-endorsed on 3, 6, 13 and 14, gate-kept on 4 and 5, consolidated on 11; no unendorsed-standing line.
-Every check as `zheermao8`: 2 headings, front matter equal, no TA, no error finish, no double blank line;
-the email label "English translation of the email conversation:" one line (class seventy-seven holding; the archive writes "English translation of the preceding email conversation:" and "English translation of the preceding letter:"), curly "we'll" (class ninety-six holding), classes one hundred one, two and four holding.
-The page differs from `zheermao8`'s by 75 diff lines, the reply label and the opening quote among them.
+Class one hundred six not exercised:
+slice 9's contest chose the repair lane 5 of 5 with every ballot calling the archive flawed (`lane-won`,
+not `settled-neither`,
+so the run-off predicate stood aside by design),
+and the page's reply label reads "One Among Us members sent her a reply that very night:"
+for 那些秋叶的成员…连夜,
+the `zheermao8` observation resolved by the contest itself.
+Class one hundred seven live on slice 0 (`translate-archive-disputed`,
+two accepted `accuracy/addition` claims;
+the contest chose translate 3 of 4;
+the page's opening quote comes from the translate lane).
+Consolidation terminals:
+slate-declined-standing on slices 0 and 9,
+slate-unjudged on 1,
+slate-endorsed on 3,
+6,
+13 and 14,
+gate-kept on 4 and 5,
+consolidated on 11;
+no unendorsed-standing line.
+Every check as `zheermao8`:
+2 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line;
+the email label "English translation of the email conversation:"
+one line (class seventy-seven holding;
+the archive writes "English translation of the preceding email conversation:"
+and "English translation of the preceding letter:"),
+curly "we'll" (class ninety-six holding),
+classes one hundred one,
+two and four holding.
+The page differs from `zheermao8`'s by 75 diff lines,
+the reply label and the opening quote among them.
 
-Class one hundred three live for the first time: Synthetic dried at 02:56:03 UTC eleven minutes into the repair lane,
-and five chunks starting after it logged "chunk re-seated under a hold: checkers=hf:Qwen/Qwen3.8-27B,gemma-4-26b-a4b-it,google.gemma-4-e2b" (02:56:16 to 02:56:34), the dry reading keeping the unreachable Qwen seat and substituting the withheld Kimi with `google.gemma-4-e2b`.
+Class one hundred three live for the first time:
+Synthetic dried at 02:56:03 UTC eleven minutes into the repair lane,
+and five chunks starting after it logged "chunk re-seated under a hold:
+checkers=hf:Qwen/Qwen3.8-27B,gemma-4-26b-a4b-it,google.gemma-4-e2b" (02:56:16 to 02:56:34),
+the dry reading keeping the unreachable Qwen seat and substituting the withheld Kimi with `google.gemma-4-e2b`.
 
-Class one hundred nine: seven of the eight checker rounds after the dry-out still heard 1 of 3 (chunks 5, 9, 4, 3 and 0 "stage-quorum-unmet (checker 1/3)", the introduced-defect probe the same, "checker: bench short of quorum, reachable 1 of 3; closing on 2 voices"),
-asking the static bench Qwen3.8-27B and Kimi-K3 (both `NoProviderForModelError`; SEAT Qwen 133 asked 116 threw, Kimi 51 asked 34 threw) beside gemma-26b.
-The class one hundred three re-seat lands only at a chunk's start; with overlap 8 the chunks already in flight kept the bench read at their start while their checker stage ran a minute or more later, after the dry-out.
-Fixed in 21ea25993: the checker stage re-reads the seating at the stage itself
-(`repair-checker-reseat.ts`: `checkerBenchAtStage` asks the lane's `beforeSlice` hook again, keeps the chunk's bench when the hook names no checkers or the same ones, and asserts quorum on a fresh bench before logging "checker stage re-seated: <fresh> (the chunk was seated with <old>)";
-`standingSeating` is the default for callers without a hook; `assertCheckerBench` holds the two bench assertions);
-threaded as `reseat` from `repairPreparedDocument` through `settleRepairSlice`, `buyRepairSlice` and `repairChunk` to `proveRepairedChunk` (`repair-chunk-proof.ts`, the checker stage, the region collection and the introduced-defect probe on the stage's bench; `repair-chunk-evidence.ts` holds the parse and the neighbour window, both split out of `repair-chunk.ts` for the line budget).
-Guards red first at 1ab453219 (`repair-checker-reseat.unit.test.ts`: keeps the chunk's bench, asks the bench read at the stage, refuses a bench below the floor; `repair-translation.unit.test.ts`: the hook answering `{}` at the chunk's start and the substitute roster at the stage seats the substitute on the checker round),
-lint 0 and 0, types clean, full suite green (`suite-class109.log`, 1114 PASS);
-the class thirteen "asks before every slice" guard now reads at least once per slice, since the checker stage asks again.
-Not exercised live yet: it needs a provider to dry out inside the repair lane; Synthetic is dry for the week, so the next runs verify no regression only.
+Class one hundred nine:
+seven of the eight checker rounds after the dry-out still heard 1 of 3 (chunks 5,
+9,
+4,
+3 and 0 "stage-quorum-unmet (checker 1/3)",
+the introduced-defect probe the same,
+"checker:
+bench short of quorum,
+reachable 1 of 3;
+closing on 2 voices"),
+asking the static bench Qwen3.8-27B and Kimi-K3 (both `NoProviderForModelError`;
+SEAT Qwen 133 asked 116 threw,
+Kimi 51 asked 34 threw) beside gemma-26b.
+The class one hundred three re-seat lands only at a chunk's start;
+with overlap 8 the chunks already in flight kept the bench read at their start while their checker stage ran a minute or more later,
+after the dry-out.
+Fixed in 21ea25993:
+the checker stage re-reads the seating at the stage itself
+(`repair-checker-reseat.ts`:
+`checkerBenchAtStage` asks the lane's `beforeSlice` hook again,
+keeps the chunk's bench when the hook names no checkers or the same ones,
+and asserts quorum on a fresh bench before logging "checker stage re-seated: <fresh> (the chunk was seated with <old>)";
+`standingSeating` is the default for callers without a hook;
+`assertCheckerBench` holds the two bench assertions);
+threaded as `reseat` from `repairPreparedDocument` through `settleRepairSlice`,
+`buyRepairSlice` and `repairChunk` to `proveRepairedChunk` (`repair-chunk-proof.ts`,
+the checker stage,
+the region collection and the introduced-defect probe on the stage's bench;
+`repair-chunk-evidence.ts` holds the parse and the neighbour window,
+both split out of `repair-chunk.ts` for the line budget).
+Guards red first at 1ab453219 (`repair-checker-reseat.unit.test.ts`:
+keeps the chunk's bench,
+asks the bench read at the stage,
+refuses a bench below the floor;
+`repair-translation.unit.test.ts`:
+the hook answering `{}` at the chunk's start and the substitute roster at the stage seats the substitute on the checker round),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class109.log`,
+1114 PASS);
+the class thirteen "asks before every slice" guard now reads at least once per slice,
+since the checker stage asks again.
+Not exercised live yet:
+it needs a provider to dry out inside the repair lane;
+Synthetic is dry for the week,
+so the next runs verify no regression only.
 
-`shi_Yumiaoya18` (frozen `21ea25993`, pid 91959, overlap 8)
+`shi_Yumiaoya18` (frozen `21ea25993`,
+pid 91959,
+overlap 8)
 launched 03:23 UTC on Bedrock and OpenRouter
-(meters 48.28 USD Bedrock, 95.47 OpenRouter at launch; Synthetic dry for the week, Hyper dry),
+(meters 48.28 USD Bedrock,
+95.47 OpenRouter at launch;
+Synthetic dry for the week,
+Hyper dry),
 waiter wait-s18.
-Read for any "checker stage re-seated" line (none expected without a hold beginning inside the lane), the checker rounds hearing 2 of 3 on the dry reading (gemma-26b and gemma-4-e2b),
-then classes seventy-eight, seventy-nine, ninety-two, ninety-five, ninety-six, one hundred one and one hundred two beside every check of `shi_Yumiaoya17` (4 headings, front matter equal, the death paragraphs on the page, the closing quote as the archive's two lines, no TA, no error finish, no double blank line).
+Read for any "checker stage re-seated" line (none expected without a hold beginning inside the lane),
+the checker rounds hearing 2 of 3 on the dry reading (gemma-26b and gemma-4-e2b),
+then classes seventy-eight,
+seventy-nine,
+ninety-two,
+ninety-five,
+ninety-six,
+one hundred one and one hundred two beside every check of `shi_Yumiaoya17` (4 headings,
+front matter equal,
+the death paragraphs on the page,
+the closing quote as the archive's two lines,
+no TA,
+no error finish,
+no double blank line).
 Then `mikaela_khara`.
 
 ## CuspariaKLSY12 read, 2026-09-24, 02:50 UTC: SETTLED in 25 min, class one hundred eight live on slice 3 (the softened detail refused on the translate slate, the contest and the gate), no class; zheermao9 launched
 
-`CuspariaKLSY12` (frozen `85ed2881f`, pid 3947732) SETTLED at 02:42 UTC 2026-09-24,
+`CuspariaKLSY12` (frozen `85ed2881f`,
+pid 3947732) SETTLED at 02:42 UTC 2026-09-24,
 25 min after its 02:17 launch (TALLY `ms=1478275`),
 one attempt,
 437 seats asked,
 420 calls,
-0.13 USD by the meters (Bedrock 48.46 to 48.41, OpenRouter 95.79 to 95.71),
-Synthetic wet again from the launch (five-hour window 2750 of 2750 at 02:17 UTC, so the handover's "spent since 23:15:27 UTC" line was stale by then), Hyper dry;
-the time is Synthetic's again (Qwen3.8-27B streams there at 39 s, the naturalness reviews 26 s in grace), against `CuspariaKLSY11`'s 5 min on Bedrock and OpenRouter alone.
-glm-5.3 dark (17 asked, 17 threw; the Hyper-only seat with Hyper dry, by design).
-Jev 12 of 12; 10 abstention lines with reasons.
+0.13 USD by the meters (Bedrock 48.46 to 48.41,
+OpenRouter 95.79 to 95.71),
+Synthetic wet again from the launch (five-hour window 2750 of 2750 at 02:17 UTC,
+so the handover's "spent since 23:15:27 UTC" line was stale by then),
+Hyper dry;
+the time is Synthetic's again (Qwen3.8-27B streams there at 39 s,
+the naturalness reviews 26 s in grace),
+against `CuspariaKLSY11`'s 5 min on Bedrock and OpenRouter alone.
+glm-5.3 dark (17 asked,
+17 threw;
+the Hyper-only seat with Hyper dry,
+by design).
+Jev 12 of 12;
+10 abstention lines with reasons.
 
-Class one hundred eight live on slice 3, the death paragraph.
-The repair lane softened the accepted addition again, this run into "She fell asleep" (the repair lane's own sheets are unchanged, as the ninth addendum says),
+Class one hundred eight live on slice 3,
+the death paragraph.
+The repair lane softened the accepted addition again,
+this run into "She fell asleep" (the repair lane's own sheets are unchanged,
+as the ninth addendum says),
 and the stand-in carried it into every later sheet with the ARCHIVE RENDERING DISPUTED block beside it:
-the translate slate declined its first round, ran off 2 of 6 (class eighty-two) and chose the candidate without it, one ballot writing "Candidate 2 also adds 'She fell asleep'";
-the contest chose translate 4 of 5 with every ballot calling the archive flawed, two ballots naming the repair lane's "inference" and one "avoiding unsupported claims found in the archive rendering";
-the gate heard 4 of 5 (standing 2, consolidated 1, neither 1) and kept the contest winner as the standing over a proposal differing only in "her friend" against "a friend", one standing ballot writing "both omit the rejected medication detail".
-The page reads "A conflict broke out while she was trying to console her friend, and emotions boiled over on both sides. After waking up, she argued with her father again. She then attempted suicide and was sent to the hospital for emergency treatment."
+the translate slate declined its first round,
+ran off 2 of 6 (class eighty-two) and chose the candidate without it,
+one ballot writing "Candidate 2 also adds 'She fell asleep'";
+the contest chose translate 4 of 5 with every ballot calling the archive flawed,
+two ballots naming the repair lane's "inference" and one "avoiding unsupported claims found in the archive rendering";
+the gate heard 4 of 5 (standing 2,
+consolidated 1,
+neither 1) and kept the contest winner as the standing over a proposal differing only in "her friend" against "a friend",
+one standing ballot writing "both omit the rejected medication detail".
+The page reads "A conflict broke out while she was trying to console her friend,
+and emotions boiled over on both sides.
+After waking up,
+she argued with her father again.
+She then attempted suicide and was sent to the hospital for emergency treatment."
 where `CuspariaKLSY11` shipped "She took medication that night";
-双方情绪爆发, 又 and 抢救 all rendered, the archive's "swallowed lots of her meds" and every softening of it gone.
-Class one hundred seven live on slice 3 (`translate-archive-disputed`, three accepted `accuracy/addition` claims, in the lanes and the consolidation); slice 1 undisputed this run (no accepted addition claim against it).
-Classes one hundred four and five holding (the life in the past; the gloss inline as "(Cold Water Fishy)" on the nickname line, the restore standing aside by design).
-Every check as `CuspariaKLSY11`: 1 heading, front matter equal, no TA, no error finish, no double blank line.
-Terminals: slice 1 gate-kept (2 to 2, the standing carrying the gloss), slice 2 slate-declined and unendorsed, slice 3 gate-kept as read.
-The archive's gloss line ("Ling Shui Yu Yu Zi" means fish in clear water) is on the page in the parenthetical form only, as on `CuspariaKLSY8` to `11`.
+双方情绪爆发,
+又 and 抢救 all rendered,
+the archive's "swallowed lots of her meds" and every softening of it gone.
+Class one hundred seven live on slice 3 (`translate-archive-disputed`,
+three accepted `accuracy/addition` claims,
+in the lanes and the consolidation);
+slice 1 undisputed this run (no accepted addition claim against it).
+Classes one hundred four and five holding (the life in the past;
+the gloss inline as "(Cold Water Fishy)" on the nickname line,
+the restore standing aside by design).
+Every check as `CuspariaKLSY11`:
+1 heading,
+front matter equal,
+no TA,
+no error finish,
+no double blank line.
+Terminals:
+slice 1 gate-kept (2 to 2,
+the standing carrying the gloss),
+slice 2 slate-declined and unendorsed,
+slice 3 gate-kept as read.
+The archive's gloss line ("Ling Shui Yu Yu Zi" means fish in clear water) is on the page in the parenthetical form only,
+as on `CuspariaKLSY8` to `11`.
 No class.
 
-`zheermao9` (entry `zheermao101`, frozen `85ed2881f`, pid 4089371, overlap 8)
-launched 02:44 UTC on Synthetic, Bedrock and OpenRouter
-(meters 48.41 USD Bedrock, 95.71 OpenRouter at launch),
+`zheermao9` (entry `zheermao101`,
+frozen `85ed2881f`,
+pid 4089371,
+overlap 8)
+launched 02:44 UTC on Synthetic,
+Bedrock and OpenRouter
+(meters 48.41 USD Bedrock,
+95.71 OpenRouter at launch),
 waiter bhdypi1ya.
-Read slice 9 first for class one hundred six (a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot; the reply label rendering plural members that same night),
+Read slice 9 first for class one hundred six (a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot;
+the reply label rendering plural members that same night),
 any `translate-archive-disputed` line and its ARCHIVE RENDERING DISPUTED block,
-then classes seventy-seven, ninety-six, one hundred one, one hundred two and one hundred four beside every check of `zheermao8` (2 headings, front matter equal, both labels as the archive, no TA, no error finish, no double blank line).
+then classes seventy-seven,
+ninety-six,
+one hundred one,
+one hundred two and one hundred four beside every check of `zheermao8` (2 headings,
+front matter equal,
+both labels as the archive,
+no TA,
+no error finish,
+no double blank line).
 Then `shi_Yumiaoya` or `mikaela_khara`.
 
 ## CuspariaKLSY11 read, 2026-09-24, 02:20 UTC: SETTLED in 5 min, class one hundred seven live on slices 1 and 3, the stand-in still carrying "took medication that night"; class one hundred eight built (the dispute note on every sheet), CuspariaKLSY12 launched
@@ -11655,608 +13917,1568 @@ one attempt,
 327 seats,
 13 retry rounds,
 256 calls,
-0.10 USD by the meters (Bedrock 48.50 to 48.46, OpenRouter 95.88 to 95.80),
-on Bedrock and OpenRouter alone (Synthetic's window spent, Hyper dry),
+0.10 USD by the meters (Bedrock 48.50 to 48.46,
+OpenRouter 95.88 to 95.80),
+on Bedrock and OpenRouter alone (Synthetic's window spent,
+Hyper dry),
 the roster 8 after the gpt-oss-120b cull.
-Jev 11 of 11; 5 abstention lines with reasons.
+Jev 11 of 11;
+5 abstention lines with reasons.
 
 Class one hundred seven live:
 `translate-archive-disputed` on slices 1 and 3 in the lanes and again in the consolidation (two accepted `accuracy/addition` claims each),
 the repair text the incumbent on both,
 slice 3 (the death paragraph) shipped as `{kind: incumbent}` gate-kept,
 and the archive's "swallowed lots of her meds" nowhere on the page.
-Classes one hundred four and five holding (the life in the past; the gloss inline as "(Cold Water Fishy)" on the name's first appearance, so the restore stood aside by design).
-Every check as `CuspariaKLSY10`: 1 heading, front matter equal, no TA, no error finish, no double blank line.
+Classes one hundred four and five holding (the life in the past;
+the gloss inline as "(Cold Water Fishy)" on the name's first appearance,
+so the restore stood aside by design).
+Every check as `CuspariaKLSY10`:
+1 heading,
+front matter equal,
+no TA,
+no error finish,
+no double blank line.
 
-Class one hundred eight, found on slice 3: the stand-in still reads "She took medication that night" where 服药 is nowhere in the original
+Class one hundred eight,
+found on slice 3:
+the stand-in still reads "She took medication that night" where 服药 is nowhere in the original
 (在劝慰朋友时发生矛盾，双方情绪爆发，醒来后又和其父亲发生争吵，后因尝试自杀送往医院抢救).
 The repair lane softened the accepted critical addition instead of removing it;
 the contest split 2 repair to 2 translate with one ballot calling the detail "from the original";
 the consolidated proposal dropped it;
-the gate heard 4 of 5 and split 2 to 2 (standing, consolidated, standing, consolidated) and kept the standing,
+the gate heard 4 of 5 and split 2 to 2 (standing,
+consolidated,
+standing,
+consolidated) and kept the standing,
 the first standing ballot citing "dropped page content ... which the Chinese does not contradict",
 the class eighty-five apparatus clause read over a text that stands in precisely because that detail was an accepted addition.
 Nothing on any sheet said the slice was disputed or which claims had been accepted.
 
-Built as class one hundred eight (guards red first `65d159d2a`, built `85ed2881f`):
+Built as class one hundred eight (guards red first `65d159d2a`,
+built `85ed2881f`):
 `archiveDisputeNote` (`archive-dispute.ts`) writes one block per disputed slice,
-"ARCHIVE RENDERING DISPUTED: the repair lane's adjudicators accepted N accuracy/addition claim(s) that the archive rendering says what the ORIGINAL never states; the claims: (1) ...; (2) .... A detail those claims name is not page content and not the page's apparatus, in the archive's wording or any softer one: a candidate leaving it out has dropped nothing, and a candidate keeping it carries an accepted addition. Judge such a detail against the ORIGINAL alone.",
+"ARCHIVE RENDERING DISPUTED:
+the repair lane's adjudicators accepted N accuracy/addition claim(s) that the archive rendering says what the ORIGINAL never states;
+the claims:
+(1) ...;
+(2) .... A detail those claims name is not page content and not the page's apparatus,
+in the archive's wording or any softer one:
+a candidate leaving it out has dropped nothing,
+and a candidate keeping it carries an accepted addition.
+Judge such a detail against the ORIGINAL alone.",
 and every sheet that judges or writes against the stand-in carries it:
-the consolidation writer, slate judge and gate sheets (`consolidate-wire.ts`, `consolidate-settle-context.ts`, `consolidate-gate-wire.ts`),
-the translate writer and slate judge sheets (`translate-wire.ts`, `translate-judge.ts`, threaded through `translate-slice-input.ts`, `translate-stage.ts` and `translate-stage-repair.ts`),
-and the lane contest sheet (`lane-contest-wire.ts`, in the slice key through `lane-contest-key.ts`, the notes read off the repair chunks in `corpus-run/pass-contest.ts` through `archiveDisputeNotesOf`).
+the consolidation writer,
+slate judge and gate sheets (`consolidate-wire.ts`,
+`consolidate-settle-context.ts`,
+`consolidate-gate-wire.ts`),
+the translate writer and slate judge sheets (`translate-wire.ts`,
+`translate-judge.ts`,
+threaded through `translate-slice-input.ts`,
+`translate-stage.ts` and `translate-stage-repair.ts`),
+and the lane contest sheet (`lane-contest-wire.ts`,
+in the slice key through `lane-contest-key.ts`,
+the notes read off the repair chunks in `corpus-run/pass-contest.ts` through `archiveDisputeNotesOf`).
 `ArchiveDispute` now carries `acceptedClaims`.
 The wording names no sheet's own incumbent because the lane contest shows the real archive while the consolidation and translate sheets show the stand-in.
-Not built: the repair lane's own sheets are unchanged, so the lane may still soften an accepted addition rather than remove it; the note reaches the contest and everything after it.
-Lint 0 and 0, types clean, twelve touched suites green, full suite green (`suite-class108.log`, 1113 PASS);
-replayed offline over the real `CuspariaKLSY11` artifact: slices 1 and 3 disputed, the slice 3 note naming both accepted claims, the gate sheet carrying it after CANDIDATE "standing".
+Not built:
+the repair lane's own sheets are unchanged,
+so the lane may still soften an accepted addition rather than remove it;
+the note reaches the contest and everything after it.
+Lint 0 and 0,
+types clean,
+twelve touched suites green,
+full suite green (`suite-class108.log`,
+1113 PASS);
+replayed offline over the real `CuspariaKLSY11` artifact:
+slices 1 and 3 disputed,
+the slice 3 note naming both accepted claims,
+the gate sheet carrying it after CANDIDATE "standing".
 Ninth ineligible-standing addendum in the docs commit.
 Not exercised live yet.
 
-`CuspariaKLSY12` (frozen `85ed2881f`, pid 3947732, overlap 8)
+`CuspariaKLSY12` (frozen `85ed2881f`,
+pid 3947732,
+overlap 8)
 launched 02:17 UTC on Bedrock and OpenRouter
-(meters 48.46 USD Bedrock, 95.80 OpenRouter at launch),
+(meters 48.46 USD Bedrock,
+95.80 OpenRouter at launch),
 waiter buax5c511,
 the first pass on class one hundred eight.
-Read slice 3 first: the ARCHIVE RENDERING DISPUTED block on the contest, slate and gate sheets in the artifact, the death paragraph without "took medication", `translate-archive-disputed` on slices 1 and 3 again;
-then classes one hundred four, five and seven, beside every check of `CuspariaKLSY11`.
-Then `zheermao101` (slice 9 for class one hundred six), then `shi_Yumiaoya` or `mikaela_khara`.
+Read slice 3 first:
+the ARCHIVE RENDERING DISPUTED block on the contest,
+slate and gate sheets in the artifact,
+the death paragraph without "took medication",
+`translate-archive-disputed` on slices 1 and 3 again;
+then classes one hundred four,
+five and seven,
+beside every check of `CuspariaKLSY11`.
+Then `zheermao101` (slice 9 for class one hundred six),
+then `shi_Yumiaoya` or `mikaela_khara`.
 
 ## yingying8 read, 2026-09-24, 01:30 UTC: SETTLED in 5 min, every check as yingying7; then gpt-oss-120b culled from every role, every critic claim logged with its filers, class one hundred six built on the owner's answer, class one hundred seven next; no pass running
 
-`yingying8` (frozen `d2e39e095`, pid 3077650) SETTLED at 00:31 UTC 2026-09-24,
+`yingying8` (frozen `d2e39e095`,
+pid 3077650) SETTLED at 00:31 UTC 2026-09-24,
 5 min after its 00:26 launch,
 one attempt,
 310 seats,
 13 retry rounds,
 266 calls,
-0.07 USD by the meters (Bedrock 48.57 to 48.50, OpenRouter 95.93 to 95.88),
-on Bedrock and OpenRouter alone (Synthetic's window spent, Hyper dry); no hold, so class one hundred three not exercised.
-Jev 12 of 12; 8 abstention lines with reasons.
+0.07 USD by the meters (Bedrock 48.57 to 48.50,
+OpenRouter 95.93 to 95.88),
+on Bedrock and OpenRouter alone (Synthetic's window spent,
+Hyper dry);
+no hold,
+so class one hundred three not exercised.
+Jev 12 of 12;
+8 abstention lines with reasons.
 
-Class one hundred four on the wire: the polish gate ran once (4 of 7 usable ballots, settled on neither, the base shipped), its ballots reading the house rules.
+Class one hundred four on the wire:
+the polish gate ran once (4 of 7 usable ballots,
+settled on neither,
+the base shipped),
+its ballots reading the house rules.
 Class one hundred five silent by design (the archive carries no gloss line).
-Classes eighty-six, ninety-seven, one hundred one and one hundred two holding, every check as `yingying7`:
-1 heading, 4 markers, 2 definitions, front matter equal, References line kept, the [^2] definition "[Farewell. I miss you, Yingying.]", the farewell "May you still have", no TA, no error finish, no double blank line;
-terminals slate-endorsed 0, slate-declined 1, gate-kept 2.
-Observation, not a class: slice 1's repair text dropped 硬核视频 ("hardcore video") before "Geek Lab" and shipped unendorsed.
+Classes eighty-six,
+ninety-seven,
+one hundred one and one hundred two holding,
+every check as `yingying7`:
+1 heading,
+4 markers,
+2 definitions,
+front matter equal,
+References line kept,
+the [^2] definition "[Farewell.
+I miss you,
+Yingying.]",
+the farewell "May you still have",
+no TA,
+no error finish,
+no double blank line;
+terminals slate-endorsed 0,
+slate-declined 1,
+gate-kept 2.
+Observation,
+not a class:
+slice 1's repair text dropped 硬核视频 ("hardcore video") before "Geek Lab" and shipped unendorsed.
 
-No pass is running: the source changed four times after `yingying8` (the cull, the claim-filer record, class one hundred six), and class one hundred seven is next before a freeze.
+No pass is running:
+the source changed four times after `yingying8` (the cull,
+the claim-filer record,
+class one hundred six),
+and class one hundred seven is next before a freeze.
 
-The owner's answers of 2026-09-24, in order:
+The owner's answers of 2026-09-24,
+in order:
 
-- On the `CuspariaKLSY10` slice 1 claim "omits 服用激素 (taking hormones) as the reason for transitioning" (the original writes 服用激素，成为跨性别的原因, hormones as the cause): "who is the model that said this? That particular model got cause and effect wrong. Cull it." then "cull it from every role".
-    The sole proposer was `hf:openai/gpt-oss-120b`, the same seat that declined every candidate on `zheermao8` slice 9 for "quoted lines in present tense" on a slice with no quoted line.
-    Off `RUN_ROSTER` and the static checker bench by the roster-change runbook, blocklisted with the owner's words, the checker seat passed on the recorded evidence, seating-decision addendum; commits through `bc10e3b70`, full suite green (`suite-cull2.log`, 1106 PASS).
-- "we're not logging enough then. Refine how we log." (the reader had to join `sliceCritics[].claimAttributions` by claim id to learn who filed the claim):
-    `claim-filers.ts` logs every resolved claim at the critic stage with its filers, category, severity and summary (`chunk N: claim <id> filed by <models>: ...`), every adjudicated issue with its status and each member claim's filers, and attaches `filedBy` to the artifact's adjudicated issues beside the claims;
+- On the `CuspariaKLSY10` slice 1 claim "omits 服用激素 (taking hormones) as the reason for transitioning" (the original writes 服用激素，成为跨性别的原因,
+  hormones as the cause):
+  "who is the model that said this?
+  That particular model got cause and effect wrong.
+  Cull it."
+  then "cull it from every role".
+    The sole proposer was `hf:openai/gpt-oss-120b`,
+  the same seat that declined every candidate on `zheermao8` slice 9 for "quoted lines in present tense" on a slice with no quoted line.
+    Off `RUN_ROSTER` and the static checker bench by the roster-change runbook,
+  blocklisted with the owner's words,
+  the checker seat passed on the recorded evidence,
+  seating-decision addendum;
+  commits through `bc10e3b70`,
+  full suite green (`suite-cull2.log`,
+  1106 PASS).
+- "we're not logging enough then.
+  Refine how we log."
+  (the reader had to join `sliceCritics[].claimAttributions` by claim id to learn who filed the claim):
+    `claim-filers.ts` logs every resolved claim at the critic stage with its filers,
+  category,
+  severity and summary (`chunk N: claim <id> filed by <models>: ...`),
+  every adjudicated issue with its status and each member claim's filers,
+  and attaches `filedBy` to the artifact's adjudicated issues beside the claims;
     `SLICE_CACHE_VERSION` 31 (telemetry only);
-    guard red first `f049298ac`, built `9a6327de5`, pins `aa39dcf1c` and `8e2c52ef5`, full suite green (`suite-filers2.log`, 1107 PASS).
-- Q1, a tied slate over an eligible standing: "Run-off only when every contest ballot called the archive flawed."
-    Class one hundred six: `archiveFlawedByAll` (`consolidate-archive-flawed.ts`) reads a contest settled on neither with every ballot's `archive` set to `flawed`;
-    `consolidate-driver.ts` raises `runoffOverStanding` from it, `settleConsolidation` then routes the slate through `judgeSlateWithRetry` (the same panel, narrowing finalists) as over an ineligible standing;
+    guard red first `f049298ac`,
+  built `9a6327de5`,
+  pins `aa39dcf1c` and `8e2c52ef5`,
+  full suite green (`suite-filers2.log`,
+  1107 PASS).
+- Q1,
+  a tied slate over an eligible standing:
+  "Run-off only when every contest ballot called the archive flawed."
+    Class one hundred six:
+  `archiveFlawedByAll` (`consolidate-archive-flawed.ts`) reads a contest settled on neither with every ballot's `archive` set to `flawed`;
+    `consolidate-driver.ts` raises `runoffOverStanding` from it,
+  `settleConsolidation` then routes the slate through `judgeSlateWithRetry` (the same panel,
+  narrowing finalists) as over an ineligible standing;
     the judge stage names the run-off finalists on a declined round even over an incumbent (`runoffFinalists` on `TranslateStageResult`) and the retry loop narrows and reruns on such a decline;
-    an undecided run-off still ships the standing (`slate-declined-standing`, never a stop).
-    Guards red first `200bf7a53` (`consolidate-archive-flawed.unit.test.ts`; `consolidate-settle.unit.test.ts`: the run-off chooses over an eligible standing, a run-off tied throughout ships the standing), built `2a872bbed`, lint 0 and 0, types clean, full suite green (`suite-class106.log`, 1108 PASS);
+    an undecided run-off still ships the standing (`slate-declined-standing`,
+  never a stop).
+    Guards red first `200bf7a53` (`consolidate-archive-flawed.unit.test.ts`;
+  `consolidate-settle.unit.test.ts`:
+  the run-off chooses over an eligible standing,
+  a run-off tied throughout ships the standing),
+  built `2a872bbed`,
+  lint 0 and 0,
+  types clean,
+  full suite green (`suite-class106.log`,
+  1108 PASS);
     seventh ineligible-standing addendum `7c729d339`.
-    Not exercised live yet: read the next `zheermao101` for a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot.
-- Q2, an archive rendering carrying an accepted fabrication claim: "Not eligible; fall back to the repair text."
-    Class one hundred seven, next: a slice whose repair `ChunkRepairOutcome.issues` carry an accepted `accuracy/addition` claim makes the archive rendering ineligible for the translate slate (a candidate and the fallback no longer), the slate runs the run-off path, and where nobody wins the repair lane's text for that slice (which removed the addition) stands instead of the archive (`CuspariaKLSY10` slice 3: four accepted claims that the overdose detail was invented, the translate slate backed nobody, the archive stood).
-    Guards red first, then an addendum; then freeze, launch `CuspariaKLSY` to read it live, then `zheermao101` for class one hundred six.
+    Not exercised live yet:
+  read the next `zheermao101` for a `translate-declined-retried` finding on a consolidation slice after a contest with the archive flawed on every ballot.
+- Q2,
+  an archive rendering carrying an accepted fabrication claim:
+  "Not eligible;
+  fall back to the repair text."
+    Class one hundred seven,
+  next:
+  a slice whose repair `ChunkRepairOutcome.issues` carry an accepted `accuracy/addition` claim makes the archive rendering ineligible for the translate slate (a candidate and the fallback no longer),
+  the slate runs the run-off path,
+  and where nobody wins the repair lane's text for that slice (which removed the addition) stands instead of the archive (`CuspariaKLSY10` slice 3:
+  four accepted claims that the overdose detail was invented,
+  the translate slate backed nobody,
+  the archive stood).
+    Guards red first,
+  then an addendum;
+  then freeze,
+  launch `CuspariaKLSY` to read it live,
+  then `zheermao101` for class one hundred six.
 
 ## zheermao8 read, 2026-09-24, 00:30 UTC: SETTLED in 14 min, the polish gate reading the house rules on seven slices (class one hundred four), every check as zheermao7; the reply label kept the archive's "one member" on a tied contest and a tied slate with both lane texts on offer; yingying8 launched
 
-`zheermao8` (frozen `d2e39e095`, pid 3041616, entry `zheermao101`) SETTLED at 00:23 UTC 2026-09-24,
+`zheermao8` (frozen `d2e39e095`,
+pid 3041616,
+entry `zheermao101`) SETTLED at 00:23 UTC 2026-09-24,
 14 min after its 00:09 launch (TALLY `ms=831400`),
 one attempt,
 859 seats,
 33 retry rounds,
 716 calls,
-19 abandoned streams (0.05 USD; 12 minimax-m3, 7 deepseek-v4.1-flash),
-0.25 USD by the meters (Bedrock 48.84 to 48.59, OpenRouter 96.19 to 95.95),
-on Bedrock and OpenRouter alone (Synthetic's window spent, Hyper dry); no hold, so class one hundred three not exercised.
-Grace 0.9 s mean over 210 rounds; Jev 25 of 25; 15 abstention lines with reasons.
+19 abandoned streams (0.05 USD;
+12 minimax-m3,
+7 deepseek-v4.1-flash),
+0.25 USD by the meters (Bedrock 48.84 to 48.59,
+OpenRouter 96.19 to 95.95),
+on Bedrock and OpenRouter alone (Synthetic's window spent,
+Hyper dry);
+no hold,
+so class one hundred three not exercised.
+Grace 0.9 s mean over 210 rounds;
+Jev 25 of 25;
+15 abstention lines with reasons.
 
-Class one hundred four on the wire: the polish gate ran on seven slices (base 1, polished 4, neither 2), its ballots reading the house rules ("hold the same tense", "without changing the meaning or violating any house rules"); no ballot called a tense a change of meaning.
+Class one hundred four on the wire:
+the polish gate ran on seven slices (base 1,
+polished 4,
+neither 2),
+its ballots reading the house rules ("hold the same tense",
+"without changing the meaning or violating any house rules");
+no ballot called a tense a change of meaning.
 Class one hundred five silent by design (the archive carries no gloss line).
-Classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as `zheermao7`:
-2 headings, front matter equal, no TA, no error finish, no double blank line, both labels one line as the archive ("English translation of the preceding letter:", "English translation of the preceding email conversation:"), the email conversation as the archive,
-26 curly apostrophes and 6 curly double quotes against the archive's 27 and 6, six three-dot ellipses against seven (the bench's line);
-terminals consolidated (1, 4, 12), gate-kept (3, 11), slate-declined (0, 5, 6, 9), 14 slices, 9 contested.
-The read script's one "refusal" hit is the archive's own letter line "Although I cannot comprehend what you've been through", not a model refusal.
-The One Among Us reply's untranslated JSX comment (可以避开黑暗的锋芒…) rendered into the reply this run ("You can avoid the sharpest edges of the darkness and find refuge where there is light.") where `zheermao7` kept the comment; the archive block review's call on a picture block, as on `zheermao3` and `4`.
+Classes seventy-seven,
+ninety-six,
+one hundred one and one hundred two holding,
+every check as `zheermao7`:
+2 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+both labels one line as the archive ("English translation of the preceding letter:",
+"English translation of the preceding email conversation:"),
+the email conversation as the archive,
+26 curly apostrophes and 6 curly double quotes against the archive's 27 and 6,
+six three-dot ellipses against seven (the bench's line);
+terminals consolidated (1,
+4,
+12),
+gate-kept (3,
+11),
+slate-declined (0,
+5,
+6,
+9),
+14 slices,
+9 contested.
+The read script's one "refusal" hit is the archive's own letter line "Although I cannot comprehend what you've been through",
+not a model refusal.
+The One Among Us reply's untranslated JSX comment (可以避开黑暗的锋芒…) rendered into the reply this run ("You can avoid the sharpest edges of the darkness and find refuge where there is light.")
+where `zheermao7` kept the comment;
+the archive block review's call on a picture block,
+as on `zheermao3` and `4`.
 
-Observation, not a class: slice 9 (the reply label) shipped the archive's "Upon seeing it, one member sent her a reply immediately:" for 那些秋叶的成员在看到后连夜给她发送了一份回信 (plural members, that same night), which `zheermao7` rendered "When the members saw it, they stayed up that night to send her a reply:".
-Both lanes corrected it (repair "When the members saw it, they stayed up through the night", translate "the members of One Among Us sent her a reply that same night"), the contest tied 2 to 2 with every ballot calling the archive flawed, so the archive stood;
-the class forty offer put both lane texts on the consolidation slate ("lane texts offered on the slate beside the proposals: repair, translate"), the slate split 1/1/1 with gpt-oss declining all on a misread ("the quoted lines in present tense" on a slice with no quoted line), and the eligible standing kept its single round.
-This is the second slice tonight (with `CuspariaKLSY10`'s death paragraph) where an archive defect every judge named shipped because the slate over an eligible standing tied at its single round; the census over the last six read runs finds tied contests with the archive flawed on every ballot on 5 slices (`XingZ631` 3, `XingZ628` 1, `zheermao8` 1), one of them shipped unendorsed here.
-Open question for the owner, beside the `CuspariaKLSY10` one: whether the class eighty-two run-off (the same panel again while the finalists narrow) should also run over an eligible standing when the slate ties or falls short, so a tie among texts that all correct the archive is decided rather than defaulted; that changes the "an eligible standing keeps its single round" addendum, so it is not built.
+Observation,
+not a class:
+slice 9 (the reply label) shipped the archive's "Upon seeing it,
+one member sent her a reply immediately:"
+for 那些秋叶的成员在看到后连夜给她发送了一份回信 (plural members,
+that same night),
+which `zheermao7` rendered "When the members saw it,
+they stayed up that night to send her a reply:".
+Both lanes corrected it (repair "When the members saw it,
+they stayed up through the night",
+translate "the members of One Among Us sent her a reply that same night"),
+the contest tied 2 to 2 with every ballot calling the archive flawed,
+so the archive stood;
+the class forty offer put both lane texts on the consolidation slate ("lane texts offered on the slate beside the proposals:
+repair,
+translate"),
+the slate split 1/1/1 with gpt-oss declining all on a misread ("the quoted lines in present tense" on a slice with no quoted line),
+and the eligible standing kept its single round.
+This is the second slice tonight (with `CuspariaKLSY10`'s death paragraph) where an archive defect every judge named shipped because the slate over an eligible standing tied at its single round;
+the census over the last six read runs finds tied contests with the archive flawed on every ballot on 5 slices (`XingZ631` 3,
+`XingZ628` 1,
+`zheermao8` 1),
+one of them shipped unendorsed here.
+Open question for the owner,
+beside the `CuspariaKLSY10` one:
+whether the class eighty-two run-off (the same panel again while the finalists narrow) should also run over an eligible standing when the slate ties or falls short,
+so a tie among texts that all correct the archive is decided rather than defaulted;
+that changes the "an eligible standing keeps its single round" addendum,
+so it is not built.
 
-`yingying8` (frozen `d2e39e095`, pid 3077650, overlap 8)
+`yingying8` (frozen `d2e39e095`,
+pid 3077650,
+overlap 8)
 launched 00:26 UTC on Bedrock and OpenRouter
-(meters 48.57 USD Bedrock, 95.93 OpenRouter at launch),
+(meters 48.57 USD Bedrock,
+95.93 OpenRouter at launch),
 waiter bm2t3byvd.
-Read for the polish gate under the house rules, class one hundred five silent by design, classes eighty-six, ninety-seven, one hundred one and one hundred two holding,
-beside every check of `yingying7` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, "Farewell. I miss you, Yingying.", "May you still have", no TA, no error finish, no double blank line).
+Read for the polish gate under the house rules,
+class one hundred five silent by design,
+classes eighty-six,
+ninety-seven,
+one hundred one and one hundred two holding,
+beside every check of `yingying7` (1 heading,
+4 markers,
+2 definitions,
+front matter equal,
+References line kept,
+"Farewell.
+I miss you,
+Yingying.",
+"May you still have",
+no TA,
+no error finish,
+no double blank line).
 
 ## CuspariaKLSY10 read, 2026-09-24, 00:15 UTC: SETTLED in 7 min, classes one hundred four and five live (the life in the past past the polish gate, the gloss line restored at page assembly); the death paragraph shipped the repair lane's minimal edit with the archive's own omissions, unendorsed; zheermao8 launched
 
-`CuspariaKLSY10` (frozen `d2e39e095`, pid 3035347) SETTLED at 00:06 UTC 2026-09-24,
+`CuspariaKLSY10` (frozen `d2e39e095`,
+pid 3035347) SETTLED at 00:06 UTC 2026-09-24,
 7 min after its 23:59 launch (TALLY `ms=425863`),
 one attempt,
 375 seats,
 12 retry rounds,
 320 calls,
-0.18 USD by the meters (Bedrock 48.96 to 48.85, OpenRouter 96.27 to 96.20),
-on Bedrock and OpenRouter alone (Synthetic's window spent, Hyper dry); no hold, so class one hundred three not exercised again.
-Grace 1.4 s mean over 92 rounds; Jev 13 of 13; 13 abstention lines with reasons.
+0.18 USD by the meters (Bedrock 48.96 to 48.85,
+OpenRouter 96.27 to 96.20),
+on Bedrock and OpenRouter alone (Synthetic's window spent,
+Hyper dry);
+no hold,
+so class one hundred three not exercised again.
+Grace 1.4 s mean over 92 rounds;
+Jev 13 of 13;
+13 abstention lines with reasons.
 
 Class one hundred four live.
-Slice 0 (the life) ships every line in the past tense; the consolidation polish gate on slice 0 settled on base 4 of 5 with a ballot citing "the past tense house rule for the life of the deceased" and no ballot calling the tense a change of meaning (the polished candidate lost on wording, "deeply devoted" for 执着, not on tense);
-the slice 1 gate chose the polished text 5 of 7 with "without altering meaning, tense, pronouns, or structure".
+Slice 0 (the life) ships every line in the past tense;
+the consolidation polish gate on slice 0 settled on base 4 of 5 with a ballot citing "the past tense house rule for the life of the deceased" and no ballot calling the tense a change of meaning (the polished candidate lost on wording,
+"deeply devoted" for 执着,
+not on tense);
+the slice 1 gate chose the polished text 5 of 7 with "without altering meaning,
+tense,
+pronouns,
+or structure".
 Class one hundred five live.
-The bench dropped the gloss line again (the shipped slice 1 read "She coined her nickname “Ling Shui Yu Yu Zi” while feeding fish." alone),
+The bench dropped the gloss line again (the shipped slice 1 read "She coined her nickname “Ling Shui Yu Yu Zi” while feeding fish."
+alone),
 the page assembly printed `name-gloss-restored (slice 1: "“Ling Shui Yu Yu Zi” means fish in clear water.")`,
 and the page carries the archive's gloss line after the nickname line.
-Classes seventy-five, seventy-six, eighty-five and ninety-six holding: 1 heading, front matter equal, no TA, no error finish, no double blank line, three curly apostrophes and six curly double quotes as the archive, the one full-width colon the archive's own contributor comment;
-terminals consolidated (0, 1), slate-endorsed (2), slate-declined (3); the absolute naturalness review 3 of 8 usable on its first round (quorum-not-met) and 4 of 8 on the second.
+Classes seventy-five,
+seventy-six,
+eighty-five and ninety-six holding:
+1 heading,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+three curly apostrophes and six curly double quotes as the archive,
+the one full-width colon the archive's own contributor comment;
+terminals consolidated (0,
+1),
+slate-endorsed (2),
+slate-declined (3);
+the absolute naturalness review 3 of 8 usable on its first round (quorum-not-met) and 4 of 8 on the second.
 
-Observation, not a class: the death paragraph (slice 3) shipped as the repair lane's minimal edit of the archive:
+Observation,
+not a class:
+the death paragraph (slice 3) shipped as the repair lane's minimal edit of the archive:
 the fabricated "She swallowed lots of her meds that night" removed (four accepted claims) and "dead" corrected to "brain-dead" (two accepted claims),
-but the archive's own omissions kept (双方情绪爆发, 抢救, 又, 再次得到消息, and 于 rendered "by August 1st" for "on"), which `CuspariaKLSY8` and `9` had rendered from fresh translate candidates.
-No critic filed the emotions clause as an omission; the "rescue" claim went needs-human and the "two events collapsed" claim was rejected.
-The translate lane's slate over six candidates (four ballots, one abstention, one self-vote) backed none at the minimum, so the archive stood as the translate text by the eligible-standing single round;
+but the archive's own omissions kept (双方情绪爆发,
+抢救,
+又,
+再次得到消息,
+and 于 rendered "by August 1st" for "on"),
+which `CuspariaKLSY8` and `9` had rendered from fresh translate candidates.
+No critic filed the emotions clause as an omission;
+the "rescue" claim went needs-human and the "two events collapsed" claim was rejected.
+The translate lane's slate over six candidates (four ballots,
+one abstention,
+one self-vote) backed none at the minimum,
+so the archive stood as the translate text by the eligible-standing single round;
 the contest chose repair 3 of 4 ("omits several phrases but avoids inventing methods");
-the consolidation slate tied 1/1/0.5 across three proposals and kept the standing (eligible, single round).
-An open question for the owner, not built: whether an archive rendering the repair lane's adjudicators found to fabricate a suicide method is still an eligible standing for the translate slate's single round, or whether an accepted fabrication should send the slate to the class eighty-two run-off.
-Smaller observations: "Taking hormones, the reason she became transgender:" for 服用激素，成为跨性别的原因： (a literal rendering where `CuspariaKLSY8` wrote "Reasons for taking hormones and transitioning:"), the bench's call.
+the consolidation slate tied 1/1/0.5 across three proposals and kept the standing (eligible,
+single round).
+An open question for the owner,
+not built:
+whether an archive rendering the repair lane's adjudicators found to fabricate a suicide method is still an eligible standing for the translate slate's single round,
+or whether an accepted fabrication should send the slate to the class eighty-two run-off.
+Smaller observations:
+"Taking hormones,
+the reason she became transgender:"
+for 服用激素，成为跨性别的原因： (a literal rendering where `CuspariaKLSY8` wrote "Reasons for taking hormones and transitioning:"),
+the bench's call.
 
-`zheermao8` (frozen `d2e39e095`, pid 3041616, entry `zheermao101`, overlap 8)
+`zheermao8` (frozen `d2e39e095`,
+pid 3041616,
+entry `zheermao101`,
+overlap 8)
 launched 00:09 UTC on Bedrock and OpenRouter
-(meters 48.84 USD Bedrock, 96.19 OpenRouter at launch),
+(meters 48.84 USD Bedrock,
+96.19 OpenRouter at launch),
 waiter binlnnzie.
-Read for the polish gate ballots under the house rules (class one hundred four on an entry with gate-kept slices), class one hundred five silent by design (no gloss line in the archive), classes seventy-seven, ninety-six, one hundred one and one hundred two holding,
-beside every check of `zheermao7` (2 headings, front matter equal, no TA, no error finish, no double blank line, both labels one line, the email conversation as the archive).
+Read for the polish gate ballots under the house rules (class one hundred four on an entry with gate-kept slices),
+class one hundred five silent by design (no gloss line in the archive),
+classes seventy-seven,
+ninety-six,
+one hundred one and one hundred two holding,
+beside every check of `zheermao7` (2 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+both labels one line,
+the email conversation as the archive).
 
 ## CuspariaKLSY9 read, 2026-09-23, 23:55 UTC: SETTLED in 4 min, no hold so class one hundred three not exercised, but the polish gate refused the house tense on slice 0 (class one hundred four) and the gloss line lost a third time on slice 1 (class one hundred five); both fixed in d2e39e095, CuspariaKLSY10 launched
 
-`CuspariaKLSY9` (frozen `334c02f23`, pid 2992337) SETTLED at 23:41 UTC,
+`CuspariaKLSY9` (frozen `334c02f23`,
+pid 2992337) SETTLED at 23:41 UTC,
 4 min after its 23:37 launch,
 one attempt,
 357 seats,
 11 retry rounds,
 315 calls,
-0.16 USD by the meters (Bedrock 49.06 to 48.96, OpenRouter 96.34 to 96.28),
-on Bedrock and OpenRouter alone (Synthetic's five-hour window spent since 23:15 UTC, Hyper dry).
-No hold ran and no "chunk re-seated under a hold" line printed, so class one hundred three was not exercised live (its guards stand);
-the checker rounds ran 2 of 3 on gemma-4-26b (the substitute) and gpt-oss, as a dry reading at the lanes boundary seats them.
-Classes seventy-five, seventy-six, eighty-five and ninety-six holding at the page level: 1 heading, front matter equal, no TA, no error finish, no double blank line;
-terminals slate-declined (0), slate-endorsed (1, 2), gate-kept (3); 7 abstention lines with reasons; Jev 14 of 14.
+0.16 USD by the meters (Bedrock 49.06 to 48.96,
+OpenRouter 96.34 to 96.28),
+on Bedrock and OpenRouter alone (Synthetic's five-hour window spent since 23:15 UTC,
+Hyper dry).
+No hold ran and no "chunk re-seated under a hold" line printed,
+so class one hundred three was not exercised live (its guards stand);
+the checker rounds ran 2 of 3 on gemma-4-26b (the substitute) and gpt-oss,
+as a dry reading at the lanes boundary seats them.
+Classes seventy-five,
+seventy-six,
+eighty-five and ninety-six holding at the page level:
+1 heading,
+front matter equal,
+no TA,
+no error finish,
+no double blank line;
+terminals slate-declined (0),
+slate-endorsed (1,
+2),
+gate-kept (3);
+7 abstention lines with reasons;
+Jev 14 of 14.
 
-Class one hundred four (slice 0, the life).
-The repair lane and the contest left the archive's present tense standing; the consolidation slate split 1.5/1/1 among three past-tense proposals against the minimum of 2 with an eligible standing, which keeps its single round by the owner's addenda (no run-off);
+Class one hundred four (slice 0,
+the life).
+The repair lane and the contest left the archive's present tense standing;
+the consolidation slate split 1.5/1/1 among three past-tense proposals against the minimum of 2 with an eligible standing,
+which keeps its single round by the owner's addenda (no run-off);
 the comparative polish then chose GLM-5.3-Flash's past-tense rewrite 3 of 5 and the polish gate refused it 4 of 4 for "base":
-"shifts all present-tense statements about a living person into the past tense, an unsupported change of meaning".
-The gate's sheet (`consolidation-polish-gate-wire.ts`) carried the polish policy alone and no house rule, so a polish applying the house tense rule read as a change of meaning.
-Fixed in d2e39e095: `POLISH_GATE_HOUSE_RULES` (`polish-gate-house-rules.ts`) states that a tense the house rules set is not a change of meaning and appends `JUDGE_POLICY_BLOCK`; the gate's system sheet carries it in both modes.
+"shifts all present-tense statements about a living person into the past tense,
+an unsupported change of meaning".
+The gate's sheet (`consolidation-polish-gate-wire.ts`) carried the polish policy alone and no house rule,
+so a polish applying the house tense rule read as a change of meaning.
+Fixed in d2e39e095:
+`POLISH_GATE_HOUSE_RULES` (`polish-gate-house-rules.ts`) states that a tense the house rules set is not a change of meaning and appends `JUDGE_POLICY_BLOCK`;
+the gate's system sheet carries it in both modes.
 Guard red first at 487cb2681 (`consolidation-polish-gate.unit.test.ts`).
 
-Class one hundred five (slice 1, the nickname).
+Class one hundred five (slice 1,
+the nickname).
 The archive's gloss line “Ling Shui Yu Yu Zi” means fish in clear water dropped a third time (after `CuspariaKLSY5` and `6`) with the class eighty-five clause on every sheet:
-the contest chose the gloss-less translate text 4 to 1, one ballot calling the gloss unsupported against `CONTEST_POLICY`, and the slate endorsed that standing 4 of 5.
-Fixed in d2e39e095 mechanically at page assembly: `restoreNameGlossLines` (`corpus-run/name-gloss-restore.ts`, after the titles pass in `page-assembly-guard.ts`) reads every archive line of the form “name” means … whose name the archive text carries twice or more,
-and where a replaced slice carries the name with no gloss (no archive line, no "means" on the name's line, no parenthetical after it) inserts the archive's line after the line carrying the name's first appearance, finding `name-gloss-restored`.
-Guard red first at 487cb2681 (`page-assembly-guard.unit.test.ts`, `name-gloss-restore.unit.test.ts`), lint 0 and 0, types clean, full suite green (`suite-class104-105.log`, 1105 PASS);
-replayed over the real slice 1: `name-gloss-restored (slice 1: "“Ling Shui Yu Yu Zi” means fish in clear water.")`, the line restored after "Her handle “Ling Shui Yu Yu Zi” was coined while she was feeding fish.".
-Observation beside them: Synthetic's grace while it served (4.0 s mean on `zheermao7` against 1.5 s), the standing latency note.
+the contest chose the gloss-less translate text 4 to 1,
+one ballot calling the gloss unsupported against `CONTEST_POLICY`,
+and the slate endorsed that standing 4 of 5.
+Fixed in d2e39e095 mechanically at page assembly:
+`restoreNameGlossLines` (`corpus-run/name-gloss-restore.ts`,
+after the titles pass in `page-assembly-guard.ts`) reads every archive line of the form “name” means … whose name the archive text carries twice or more,
+and where a replaced slice carries the name with no gloss (no archive line,
+no "means" on the name's line,
+no parenthetical after it) inserts the archive's line after the line carrying the name's first appearance,
+finding `name-gloss-restored`.
+Guard red first at 487cb2681 (`page-assembly-guard.unit.test.ts`,
+`name-gloss-restore.unit.test.ts`),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class104-105.log`,
+1105 PASS);
+replayed over the real slice 1:
+`name-gloss-restored (slice 1: "“Ling Shui Yu Yu Zi” means fish in clear water.")`,
+the line restored after "Her handle “Ling Shui Yu Yu Zi” was coined while she was feeding fish.".
+Observation beside them:
+Synthetic's grace while it served (4.0 s mean on `zheermao7` against 1.5 s),
+the standing latency note.
 
-`CuspariaKLSY10` (frozen `d2e39e095`, pid 3035347, overlap 8)
+`CuspariaKLSY10` (frozen `d2e39e095`,
+pid 3035347,
+overlap 8)
 launched 23:59 UTC on Bedrock and OpenRouter
-(meters 48.96 USD Bedrock, 96.27 OpenRouter at launch),
+(meters 48.96 USD Bedrock,
+96.27 OpenRouter at launch),
 waiter b553g3h0x.
-Read for class one hundred four (the life in the past on slice 0, polish gate ballots citing the house rule) and class one hundred five (a `name-gloss-restored` line and the gloss on the page),
-classes seventy-five, seventy-six, eighty-five and ninety-six holding,
-beside every check of `CuspariaKLSY8` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the nickname gloss).
+Read for class one hundred four (the life in the past on slice 0,
+polish gate ballots citing the house rule) and class one hundred five (a `name-gloss-restored` line and the gloss on the page),
+classes seventy-five,
+seventy-six,
+eighty-five and ninety-six holding,
+beside every check of `CuspariaKLSY8` (1 heading,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+the life in the past,
+the nickname gloss).
 
 ## zheermao7 read, 2026-09-23, 23:40 UTC: SETTLED in 17 min, classes seventy-seven, ninety-six, one hundred one and one hundred two holding, every check as zheermao6; but Synthetic ran dry two minutes into the repair lane and the checker bench ran ten of twelve rounds on one voice (class one hundred three); fixed in 334c02f23, CuspariaKLSY9 launched
 
-`zheermao7` (frozen `6361d74d0`, pid 2972518, entry `zheermao101`) SETTLED at 23:20 UTC,
+`zheermao7` (frozen `6361d74d0`,
+pid 2972518,
+entry `zheermao101`) SETTLED at 23:20 UTC,
 17 min after its 23:05 launch (TALLY `ms=1019223`),
 one attempt,
 972 seats,
 32 retry rounds,
 852 calls,
 18 abandoned streams (0.05 USD),
-0.52 USD by the meters (Bedrock 49.30 to 49.07, OpenRouter 96.63 to 96.37),
-on Synthetic, Bedrock and OpenRouter until 23:15:27 UTC and on Bedrock and OpenRouter after (Synthetic's five-hour window read 2,747 of 2,750 at launch and 2,750 of 2,750 from 23:15; Hyper dry; glm-5.3 dark by design).
-Stages: archive block review from 23:08, lanes from 23:13, contest 23:18, consolidation 23:18 to 23:20.
-Endpoints: minimax on CoreWeave 126 streams at 3.4 s, deepseek on Morph 122 at 3.4 s, Mercury on Inception 91 at 6.9 s, GLM-5.3-Flash on Wafer 41 at 5.6 s;
-on Synthetic before the dry-out Qwen3.8-27B 41 at 22.0 s, Kimi-K3 41 at 9.0 s, gpt-oss 39 at 4.8 s, GLM-5.3-Flash 14 at 30.8 s;
+0.52 USD by the meters (Bedrock 49.30 to 49.07,
+OpenRouter 96.63 to 96.37),
+on Synthetic,
+Bedrock and OpenRouter until 23:15:27 UTC and on Bedrock and OpenRouter after (Synthetic's five-hour window read 2,747 of 2,750 at launch and 2,750 of 2,750 from 23:15;
+Hyper dry;
+glm-5.3 dark by design).
+Stages:
+archive block review from 23:08,
+lanes from 23:13,
+contest 23:18,
+consolidation 23:18 to 23:20.
+Endpoints:
+minimax on CoreWeave 126 streams at 3.4 s,
+deepseek on Morph 122 at 3.4 s,
+Mercury on Inception 91 at 6.9 s,
+GLM-5.3-Flash on Wafer 41 at 5.6 s;
+on Synthetic before the dry-out Qwen3.8-27B 41 at 22.0 s,
+Kimi-K3 41 at 9.0 s,
+gpt-oss 39 at 4.8 s,
+GLM-5.3-Flash 14 at 30.8 s;
 Jev 28 of 28.
-Grace: 236 rounds at 4.0 s mean against `zheermao6`'s 234 at 1.5 s, three rounds over 60 s, the Synthetic latency observation again while Synthetic served.
+Grace:
+236 rounds at 4.0 s mean against `zheermao6`'s 234 at 1.5 s,
+three rounds over 60 s,
+the Synthetic latency observation again while Synthetic served.
 
-Classes seventy-seven, ninety-six, one hundred one and one hundred two holding:
-both labels a single line ("English translation of Arts’s letter:" revised by the review this run, "English translation of the preceding email conversation:" as the archive),
+Classes seventy-seven,
+ninety-six,
+one hundred one and one hundred two holding:
+both labels a single line ("English translation of Arts’s letter:"
+revised by the review this run,
+"English translation of the preceding email conversation:"
+as the archive),
 the three JSX path literals the only straight apostrophes,
-no wording check, no lane text carrying a Chinese line (the original carries no bilingual pair),
-the two page-assembly passes silent (no `jsx-attribute-restored` or `title-reference-unified` line, the page carrying no rewritten tag attribute or Han-headed section).
-Every check as `zheermao6`: 2 headings, front matter equal, no TA, no error finish, no double blank line, two em-dashes left per the owner,
+no wording check,
+no lane text carrying a Chinese line (the original carries no bilingual pair),
+the two page-assembly passes silent (no `jsx-attribute-restored` or `title-reference-unified` line,
+the page carrying no rewritten tag attribute or Han-headed section).
+Every check as `zheermao6`:
+2 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+two em-dashes left per the owner,
 the Han census over the page against the archive finding only the archive's own JSX translator comment;
-the email conversation as the archive's own text this run (the reply block with the translator comment kept), the body rewritten by the lanes in the ordinary way.
-Terminals: 2 consolidated (0, 1), 2 slate-endorsed (3, 8), 5 slate-declined (4, 5, 9, 11, 12), 1 gate-kept (6), four slices uncontested; 32 abstention lines with reasons.
+the email conversation as the archive's own text this run (the reply block with the translator comment kept),
+the body rewritten by the lanes in the ordinary way.
+Terminals:
+2 consolidated (0,
+1),
+2 slate-endorsed (3,
+8),
+5 slate-declined (4,
+5,
+9,
+11,
+12),
+1 gate-kept (6),
+four slices uncontested;
+32 abstention lines with reasons.
 
 Class one hundred three.
-Synthetic refused a call at 23:15:27 UTC with its meter reading dry ("refused us while its meter reads dry and bedrock wet, hyper dry, openrouter wet; held out for 300000ms"), two minutes into the repair lane.
-The repair lane's benches had been read once at the lanes boundary (23:13:36, Synthetic wet: checkers Qwen3.8-27B, Kimi-K3 and gpt-oss),
-and the benches the lanes phase waits on (`BENCHES_BY_PHASE.lanes`: wide, editors, refiners, translators) never named the checkers,
+Synthetic refused a call at 23:15:27 UTC with its meter reading dry ("refused us while its meter reads dry and bedrock wet,
+hyper dry,
+openrouter wet;
+held out for 300000ms"),
+two minutes into the repair lane.
+The repair lane's benches had been read once at the lanes boundary (23:13:36,
+Synthetic wet:
+checkers Qwen3.8-27B,
+Kimi-K3 and gpt-oss),
+and the benches the lanes phase waits on (`BENCHES_BY_PHASE.lanes`:
+wide,
+editors,
+refiners,
+translators) never named the checkers,
 so from chunk 11 on both Synthetic-only checker seats answered `NoProviderForModelError` and the checker and introduced-defect-probe stages closed on gpt-oss alone:
-21 "bench short of quorum, reachable 1 of 3; closing on 2 voices" warn lines, ten of twelve checker rounds at 1 of 3 heard.
-`zheermao6`, with Synthetic dry from the start, had seated the substitute (gemma-4-26b beside gpt-oss, `OPENROUTER_CHECKER_SUBSTITUTE`) and heard 2 of 3 on every checker round with no shortfall line.
-The class-thirteen per-chunk hook (`awaitBenchQuorum`) only waits out a named hold for the benches the phase lists; it never re-derives the roster, and the translate lane's re-seat runs once, before that lane starts.
+21 "bench short of quorum,
+reachable 1 of 3;
+closing on 2 voices" warn lines,
+ten of twelve checker rounds at 1 of 3 heard.
+`zheermao6`,
+with Synthetic dry from the start,
+had seated the substitute (gemma-4-26b beside gpt-oss,
+`OPENROUTER_CHECKER_SUBSTITUTE`) and heard 2 of 3 on every checker round with no shortfall line.
+The class-thirteen per-chunk hook (`awaitBenchQuorum`) only waits out a named hold for the benches the phase lists;
+it never re-derives the roster,
+and the translate lane's re-seat runs once,
+before that lane starts.
 
-Fixed in 334c02f23 (`corpus-run/pass-reseat.ts`, `repair-contract.ts`, `document-lanes.ts`, `repair-translation.ts`):
-the repair lane's per-chunk hook reads the seats again through `readJudgeSeats` (phase `lanes`) while a hold is running, which is the signal a dry-out leaves, and hands the driver a `RepairSliceSeating` whose `repairModels` the next chunk runs on, kept once read so the chunks after the hold never fall back to the roster read before it;
-a "JUDGE SEATS phase=lanes chunk re-seated under a hold: checkers=…" line names the bench each time; it still costs nothing while nothing is held (one synchronous read of the holds).
-Guards red first at c036471c3 (`pass-reseat.unit.test.ts` four cases, the driver seating the returned roster in `repair-translation.unit.test.ts`, the lanes driver handing it on in `document-lanes.unit.test.ts`; `lanesHooksFor` exported through the sheet barrel, its client narrowed to `SeatReadingClient`),
-lint 0 and 0 (the first shape, `RepairModels | undefined`, refused by `no-nullish-union`; the seating object took its place), types clean, full suite green (`suite-class103.log`, 1104 PASS, exit 0).
-Not exercised live yet: a dry-out inside a lane cannot be scheduled; the next pass on which Synthetic's window runs out mid-lane is read for the re-seat line and checker rounds at 2 of 3.
+Fixed in 334c02f23 (`corpus-run/pass-reseat.ts`,
+`repair-contract.ts`,
+`document-lanes.ts`,
+`repair-translation.ts`):
+the repair lane's per-chunk hook reads the seats again through `readJudgeSeats` (phase `lanes`) while a hold is running,
+which is the signal a dry-out leaves,
+and hands the driver a `RepairSliceSeating` whose `repairModels` the next chunk runs on,
+kept once read so the chunks after the hold never fall back to the roster read before it;
+a "JUDGE SEATS phase=lanes chunk re-seated under a hold:
+checkers=…" line names the bench each time;
+it still costs nothing while nothing is held (one synchronous read of the holds).
+Guards red first at c036471c3 (`pass-reseat.unit.test.ts` four cases,
+the driver seating the returned roster in `repair-translation.unit.test.ts`,
+the lanes driver handing it on in `document-lanes.unit.test.ts`;
+`lanesHooksFor` exported through the sheet barrel,
+its client narrowed to `SeatReadingClient`),
+lint 0 and 0 (the first shape,
+`RepairModels | undefined`,
+refused by `no-nullish-union`;
+the seating object took its place),
+types clean,
+full suite green (`suite-class103.log`,
+1104 PASS,
+exit 0).
+Not exercised live yet:
+a dry-out inside a lane cannot be scheduled;
+the next pass on which Synthetic's window runs out mid-lane is read for the re-seat line and checker rounds at 2 of 3.
 
-`CuspariaKLSY9` (frozen `334c02f23`, pid 2992337, overlap 8)
+`CuspariaKLSY9` (frozen `334c02f23`,
+pid 2992337,
+overlap 8)
 launched 23:37 UTC on Bedrock and OpenRouter
-(meters 49.06 USD Bedrock, 96.34 OpenRouter at launch; Synthetic's window spent, 2,750 of 2,750; Hyper dry),
+(meters 49.06 USD Bedrock,
+96.34 OpenRouter at launch;
+Synthetic's window spent,
+2,750 of 2,750;
+Hyper dry),
 waiter boykpqz98.
-Read for class one hundred three's re-seat line if any hold runs (none expected with Synthetic dry from the start: the checkers seat the substitute at the boundary),
-classes seventy-five, seventy-six, eighty-five and ninety-six holding,
-beside every check of `CuspariaKLSY8` (1 heading, front matter equal, no TA, no error finish, no double blank line, the life in the past, the nickname gloss).
+Read for class one hundred three's re-seat line if any hold runs (none expected with Synthetic dry from the start:
+the checkers seat the substitute at the boundary),
+classes seventy-five,
+seventy-six,
+eighty-five and ninety-six holding,
+beside every check of `CuspariaKLSY8` (1 heading,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+the life in the past,
+the nickname gloss).
 
 ## yingying7 read, 2026-09-23, 23:03 UTC: SETTLED in 19 min, every check as yingying6, classes eighty-six and ninety-seven holding, no class; Synthetic wet again with GLM-5.3-Flash at 50 s a stream; zheermao7 launched
 
-`yingying7` (frozen `6361d74d0`, pid 2969122) SETTLED at 23:01 UTC,
+`yingying7` (frozen `6361d74d0`,
+pid 2969122) SETTLED at 23:01 UTC,
 19 min after its 22:42 launch (TALLY `ms=1142400`) against `yingying6`'s 4,
 one attempt,
 365 seats,
 1 retry round,
 368 calls,
 no abandoned stream,
-0.08 USD by the meters (Bedrock 49.32 to 49.30, OpenRouter 96.69 to 96.63),
-on Bedrock, OpenRouter and Synthetic (Synthetic read wet again from the launch, `syntheticFiveHour=2713`; Hyper dry).
-Stages: repair 22:43 to 22:54, contest from 22:54, consolidation 22:55 to 23:01; Jev 8 of 8; 3 abstention lines with reasons;
-terminals: consolidated 0, 1; gate-kept 2; slices 3 and 4 as the archive.
+0.08 USD by the meters (Bedrock 49.32 to 49.30,
+OpenRouter 96.69 to 96.63),
+on Bedrock,
+OpenRouter and Synthetic (Synthetic read wet again from the launch,
+`syntheticFiveHour=2713`;
+Hyper dry).
+Stages:
+repair 22:43 to 22:54,
+contest from 22:54,
+consolidation 22:55 to 23:01;
+Jev 8 of 8;
+3 abstention lines with reasons;
+terminals:
+consolidated 0,
+1;
+gate-kept 2;
+slices 3 and 4 as the archive.
 
-Classes eighty-six and ninety-seven holding (the `[^2]` definition "[Farewell. I miss you, Yingying.]", "May you still have the same cheerfulness and passion" in the second person),
-classes one hundred one and one hundred two fine (both definitions on the page, no lane text offered, no `page assembly:` line),
-every check as `yingying6` (1 heading, 2 markers and 2 definitions by the scan that counts a marker outside a definition line, front matter equal, References line kept, no TA, no error finish, no double blank line).
+Classes eighty-six and ninety-seven holding (the `[^2]` definition "[Farewell.
+I miss you,
+Yingying.]",
+"May you still have the same cheerfulness and passion" in the second person),
+classes one hundred one and one hundred two fine (both definitions on the page,
+no lane text offered,
+no `page assembly:` line),
+every check as `yingying6` (1 heading,
+2 markers and 2 definitions by the scan that counts a marker outside a definition line,
+front matter equal,
+References line kept,
+no TA,
+no error finish,
+no double blank line).
 No class.
 
-The 19 minutes are Synthetic's: with its window open again the GLM-5.3-Flash seat ran there (19 streams at 50.0 s mean, 112 s max, no OpenRouter endpoint named)
-and the rounds waited in grace for it, 1,270 s of grace across 80 rounds against `yingying6`'s 91 s across 81 (the six longest rounds 61 to 106 s in grace, a select, three refiner and a translate round);
+The 19 minutes are Synthetic's:
+with its window open again the GLM-5.3-Flash seat ran there (19 streams at 50.0 s mean,
+112 s max,
+no OpenRouter endpoint named)
+and the rounds waited in grace for it,
+1,270 s of grace across 80 rounds against `yingying6`'s 91 s across 81 (the six longest rounds 61 to 106 s in grace,
+a select,
+three refiner and a translate round);
 the OpenRouter and Bedrock seats ran at 1.6 to 6.3 s a stream.
-The standing Synthetic-latency observation (`shi_Yumiaoya6`, `XingZ620`), not a class; glm-5.3 still refused as no provider (17 lines) with Synthetic wet.
+The standing Synthetic-latency observation (`shi_Yumiaoya6`,
+`XingZ620`),
+not a class;
+glm-5.3 still refused as no provider (17 lines) with Synthetic wet.
 
-`zheermao7` (frozen `6361d74d0`, pid 2972518, entry id `zheermao101`, overlap 8)
-launched 23:05 UTC on Bedrock, OpenRouter and Synthetic
-(meters 49.30 USD Bedrock, 96.63 OpenRouter at launch),
+`zheermao7` (frozen `6361d74d0`,
+pid 2972518,
+entry id `zheermao101`,
+overlap 8)
+launched 23:05 UTC on Bedrock,
+OpenRouter and Synthetic
+(meters 49.30 USD Bedrock,
+96.63 OpenRouter at launch),
 waiter b0uacp5b5.
-Read for classes seventy-seven, ninety-six, one hundred one and one hundred two holding (the email label as the archive, no lane text carrying a Chinese line, the archive's Arts and reply blocks kept or revised from the transcript),
-beside every check of `zheermao6` (2 headings, front matter equal, no TA, no error finish, no double blank line),
+Read for classes seventy-seven,
+ninety-six,
+one hundred one and one hundred two holding (the email label as the archive,
+no lane text carrying a Chinese line,
+the archive's Arts and reply blocks kept or revised from the transcript),
+beside every check of `zheermao6` (2 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line),
 and for the Synthetic latency again (grace per round against `zheermao6`'s).
 
 ## shi_Yumiaoya17 read, 2026-09-23, 22:43 UTC: SETTLED in 6 min, the closing quote as the archive's two lines, class one hundred one holding, no class; yingying7 launched
 
-`shi_Yumiaoya17` (frozen `6361d74d0`, pid 2953486) SETTLED at 22:42 UTC,
+`shi_Yumiaoya17` (frozen `6361d74d0`,
+pid 2953486) SETTLED at 22:42 UTC,
 6 min after its 22:36 launch (TALLY `ms=360484`),
 one attempt,
 879 seats,
 33 retry rounds,
 799 calls,
 no abandoned stream,
-0.49 USD by the meters (Bedrock 49.64 to 49.35, OpenRouter 96.97 to 96.77),
-on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
-Stages: repair from 22:36, contest from 22:39, consolidation 22:39 to 22:42; Jev 22 of 22; 16 abstention lines with reasons;
-terminals: slate-endorsed 6, 12, 15; consolidated 7, 8, 17; slate-declined 0, 4, 10, 11, 13; gate-kept 1, 3, 9; slice 16 slate-unjudged (the contest winner eligible on the rule this run, no lane text offered, the standing shipped).
+0.49 USD by the meters (Bedrock 49.64 to 49.35,
+OpenRouter 96.97 to 96.77),
+on Bedrock and OpenRouter alone (Synthetic spent,
+Hyper dry;
+glm-5.3 and Qwen3.8-27B dark by design).
+Stages:
+repair from 22:36,
+contest from 22:39,
+consolidation 22:39 to 22:42;
+Jev 22 of 22;
+16 abstention lines with reasons;
+terminals:
+slate-endorsed 6,
+12,
+15;
+consolidated 7,
+8,
+17;
+slate-declined 0,
+4,
+10,
+11,
+13;
+gate-kept 1,
+3,
+9;
+slice 16 slate-unjudged (the contest winner eligible on the rule this run,
+no lane text offered,
+the standing shipped).
 
-The closing quote as the archive's two lines (the film's English and the attribution, no Chinese line above them): class one hundred two not exercised live (no lane text was refused on slice 16 this run; the unit guard stands), the page right.
-Class one hundred one holding (the `[^1]` definition the page's last line, "below." then the file's line ending; the source's one marker on the page where `shi_Yumiaoya16` had carried a second the source lacks).
+The closing quote as the archive's two lines (the film's English and the attribution,
+no Chinese line above them):
+class one hundred two not exercised live (no lane text was refused on slice 16 this run;
+the unit guard stands),
+the page right.
+Class one hundred one holding (the `[^1]` definition the page's last line,
+"below."
+then the file's line ending;
+the source's one marker on the page where `shi_Yumiaoya16` had carried a second the source lacks).
 The two page-assembly passes silent.
-Classes seventy-eight and seventy-nine holding ("Chewing Gum and Danpian had both", "she swallowed a large amount of medication in an attempt to end her life" on January 16),
-classes ninety-two, ninety-five and ninety-six fine (the six straight double quotes the archive's own JSX path literals),
-every structural check as `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
-Han residue as `shi_Yumiaoya14`: “逆子” on the father sentence, the archive's own 尼康 D200 caption and comments.
+Classes seventy-eight and seventy-nine holding ("Chewing Gum and Danpian had both",
+"she swallowed a large amount of medication in an attempt to end her life" on January 16),
+classes ninety-two,
+ninety-five and ninety-six fine (the six straight double quotes the archive's own JSX path literals),
+every structural check as `shi_Yumiaoya14` (4 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line).
+Han residue as `shi_Yumiaoya14`:
+“逆子” on the father sentence,
+the archive's own 尼康 D200 caption and comments.
 No class.
 
-`yingying7` (frozen `6361d74d0`, pid 2969122, overlap 8)
+`yingying7` (frozen `6361d74d0`,
+pid 2969122,
+overlap 8)
 launched 22:47 UTC on Bedrock and OpenRouter
-(meters 49.32 USD Bedrock, 96.69 OpenRouter at launch),
+(meters 49.32 USD Bedrock,
+96.69 OpenRouter at launch),
 waiter bnvb061ax.
-Read for classes eighty-six, ninety-seven, one hundred one and one hundred two holding (the `[^2]` definition naming Yingying, the farewell in the second person, both definitions on the page, no lane text carrying a Chinese line),
-beside every check of `yingying6` (1 heading, 4 markers, 2 definitions, front matter equal, References line kept, no TA, no error finish, no double blank line).
+Read for classes eighty-six,
+ninety-seven,
+one hundred one and one hundred two holding (the `[^2]` definition naming Yingying,
+the farewell in the second person,
+both definitions on the page,
+no lane text carrying a Chinese line),
+beside every check of `yingying6` (1 heading,
+4 markers,
+2 definitions,
+front matter equal,
+References line kept,
+no TA,
+no error finish,
+no double blank line).
 
 ## shi_Yumiaoya16 read, 2026-09-23, 22:45 UTC: SETTLED in 6 min, class one hundred one live, but the closing quote shipped its Chinese line beside the English because the lane offer's floor ran without the line-structured flag (class one hundred two); fixed in 6361d74d0, shi_Yumiaoya17 launched
 
-`shi_Yumiaoya16` (frozen `314ca4b8c`, pid 2942500) SETTLED at 22:29 UTC,
+`shi_Yumiaoya16` (frozen `314ca4b8c`,
+pid 2942500) SETTLED at 22:29 UTC,
 6 min after its 22:26 launch (TALLY `ms=368514`),
 one attempt,
 880 seats,
 32 retry rounds,
 799 calls,
 no abandoned stream,
-0.60 USD by the meters (Bedrock 49.98 to 49.67, OpenRouter 97.30 to 97.01),
-on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
-Stages: repair from 22:24, contest from 22:26, consolidation 22:26 to 22:29; Jev 20 of 20; 13 abstention lines with reasons;
-terminals: slate-endorsed 0, 1, 10, 17; consolidated 3, 4, 16; slate-declined 6, 7, 8, 11, 13; gate-kept 9, 12, 15; one unendorsed standing (0).
+0.60 USD by the meters (Bedrock 49.98 to 49.67,
+OpenRouter 97.30 to 97.01),
+on Bedrock and OpenRouter alone (Synthetic spent,
+Hyper dry;
+glm-5.3 and Qwen3.8-27B dark by design).
+Stages:
+repair from 22:24,
+contest from 22:26,
+consolidation 22:26 to 22:29;
+Jev 20 of 20;
+13 abstention lines with reasons;
+terminals:
+slate-endorsed 0,
+1,
+10,
+17;
+consolidated 3,
+4,
+16;
+slate-declined 6,
+7,
+8,
+11,
+13;
+gate-kept 9,
+12,
+15;
+one unendorsed standing (0).
 
-Class one hundred one live: the page written past the wording check with the source's `[^1]` definition as its last line, ending "below." with no trailing space (the composer's body), and both `[^1]` markers the source carries on the page (line 29 and the bullying sentence; `shi_Yumiaoya14` had carried one).
+Class one hundred one live:
+the page written past the wording check with the source's `[^1]` definition as its last line,
+ending "below."
+with no trailing space (the composer's body),
+and both `[^1]` markers the source carries on the page (line 29 and the bullying sentence;
+`shi_Yumiaoya14` had carried one).
 The two page-assembly passes silent (no `page assembly:` line).
-Classes seventy-eight and seventy-nine holding ("Chewing Gum and Danpian had both", "she attempted to end her life by swallowing a large amount of medication" before the ICU waking),
-classes ninety-two, ninety-five and ninety-six fine (marker and definition on the page, the six straight double quotes the archive's own JSX path literals),
-every structural check as `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
-Han residue as `shi_Yumiaoya14`: "an underage 药娘[^1]" on the bullying sentence (the same line in Han on 14), the archive's own 尼康 D200 caption and comments.
+Classes seventy-eight and seventy-nine holding ("Chewing Gum and Danpian had both",
+"she attempted to end her life by swallowing a large amount of medication" before the ICU waking),
+classes ninety-two,
+ninety-five and ninety-six fine (marker and definition on the page,
+the six straight double quotes the archive's own JSX path literals),
+every structural check as `shi_Yumiaoya14` (4 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line).
+Han residue as `shi_Yumiaoya14`:
+"an underage 药娘[^1]" on the bullying sentence (the same line in Han on 14),
+the archive's own 尼康 D200 caption and comments.
 
 Class one hundred two.
-The closing quote shipped three lines, the source's Chinese line 如果再也不能见到你 above the film's English and the attribution, where the archive carries the English and the attribution alone and `shi_Yumiaoya13` and `14` had shipped the archive's two lines.
-The repair lane won the contest with that three-line text; at the consolidation the standing failed the deterministic rule on the class eighty pair bound
-("the EXISTING TRANSLATION carries the block holding it as 2 lines. Yours carries 3"), the incumbent stood in,
-and the class forty lane offer (`consolidate-lane-offer.ts`) put the same repair text on the slate: its `validateTranslatedSlice` call carried no `lineStructured`, so the line floor and the pair bound inside it never ran, the text read valid, the judges chose it, the gate confirmed it 3 of 4 ("preserves the Chinese greeting"), the polish validated against its own base, and the page carried what the standing check had refused.
-Replayed off the built dist: the shipped text invalid under `lineStructured: true` and valid without it; the offer over the run's real slice 16 data returns `repair` without the flag and nothing with it.
-Fixed in 6361d74d0: `laneTextsForSlate` takes `lineStructured` and passes it to the rule; `consolidate-driver.ts` passes the slice's flag it already holds for the proposals;
-guard red first at 404b5dada (`consolidate-lane-offer.unit.test.ts`: a line-structured slice whose repair text carries the Chinese line of a bilingual pair is left out and the two-line translate text offered; positive control run through the floor first),
-lint 0 and 0, types clean, full suite green (`suite-class102.log`, 1103 PASS, exit 0).
-Open beside it, not built: the repair lane itself shipped the three-line text into the contest, so the lane's own floor does not read the pair bound either; the consolidation refuses it now at both doors.
+The closing quote shipped three lines,
+the source's Chinese line 如果再也不能见到你 above the film's English and the attribution,
+where the archive carries the English and the attribution alone and `shi_Yumiaoya13` and `14` had shipped the archive's two lines.
+The repair lane won the contest with that three-line text;
+at the consolidation the standing failed the deterministic rule on the class eighty pair bound
+("the EXISTING TRANSLATION carries the block holding it as 2 lines.
+Yours carries 3"),
+the incumbent stood in,
+and the class forty lane offer (`consolidate-lane-offer.ts`) put the same repair text on the slate:
+its `validateTranslatedSlice` call carried no `lineStructured`,
+so the line floor and the pair bound inside it never ran,
+the text read valid,
+the judges chose it,
+the gate confirmed it 3 of 4 ("preserves the Chinese greeting"),
+the polish validated against its own base,
+and the page carried what the standing check had refused.
+Replayed off the built dist:
+the shipped text invalid under `lineStructured: true` and valid without it;
+the offer over the run's real slice 16 data returns `repair` without the flag and nothing with it.
+Fixed in 6361d74d0:
+`laneTextsForSlate` takes `lineStructured` and passes it to the rule;
+`consolidate-driver.ts` passes the slice's flag it already holds for the proposals;
+guard red first at 404b5dada (`consolidate-lane-offer.unit.test.ts`:
+a line-structured slice whose repair text carries the Chinese line of a bilingual pair is left out and the two-line translate text offered;
+positive control run through the floor first),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class102.log`,
+1103 PASS,
+exit 0).
+Open beside it,
+not built:
+the repair lane itself shipped the three-line text into the contest,
+so the lane's own floor does not read the pair bound either;
+the consolidation refuses it now at both doors.
 
-`shi_Yumiaoya17` (frozen `6361d74d0`, pid 2953486, overlap 8)
+`shi_Yumiaoya17` (frozen `6361d74d0`,
+pid 2953486,
+overlap 8)
 launched 22:36 UTC on Bedrock and OpenRouter
-(meters 49.64 USD Bedrock, 96.97 OpenRouter at launch),
+(meters 49.64 USD Bedrock,
+96.97 OpenRouter at launch),
 waiter bpts8jr04.
-Read for class one hundred two live (the closing quote as the archive's two lines, no lane text carrying the Chinese line on the slate; the `lane texts offered` line on slice 16 naming no lane, or the slice settled another way),
+Read for class one hundred two live (the closing quote as the archive's two lines,
+no lane text carrying the Chinese line on the slate;
+the `lane texts offered` line on slice 16 naming no lane,
+or the slice settled another way),
 class one hundred one holding (the `[^1]` definition on the page whatever whitespace its candidate ends in),
-classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding,
-beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
+classes seventy-eight to eighty,
+ninety-two,
+ninety-five and ninety-six holding,
+beside every check of `shi_Yumiaoya14` (4 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line).
 
 ## shi_Yumiaoya15 read, 2026-09-23, 22:30 UTC: TALLY ERROR twice at publish, the footnote definition's wording "not in the page" because the insertion composer cuts the two spaces its lane text ended in while the wording check searched them (class one hundred one); fixed in 314ca4b8c, shi_Yumiaoya16 launched
 
-`shi_Yumiaoya15` (frozen `0f685f551`, pid 2923082) stopped ERROR at 22:14 UTC,
-7 min after its 22:07 launch (first attempt TALLY `ms=415307`, the second resumed from the caches and stopped again in `ms=1521`),
+`shi_Yumiaoya15` (frozen `0f685f551`,
+pid 2923082) stopped ERROR at 22:14 UTC,
+7 min after its 22:07 launch (first attempt TALLY `ms=415307`,
+the second resumed from the caches and stopped again in `ms=1521`),
 two attempts,
 1,020 seats,
 39 retry rounds,
 794 calls,
 no abandoned stream,
-0.53 USD by the meters (Bedrock 50.29 to 49.98, OpenRouter 97.52 to 97.30),
-on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
-Stages: repair from 22:08, translate from 22:10, contest from 22:11, consolidation 22:12 to 22:14; Jev 25 of 25; 24 abstention lines with reasons; one unendorsed standing (16, the closing quote, slate-declined).
-No page and no artifact were written: `refusePageThatDisagrees` refused the composed page before the write with
-"1 wording(s) the artifact says would ship are not in the page in slice order, at slices 17 (237 characters)".
+0.53 USD by the meters (Bedrock 50.29 to 49.98,
+OpenRouter 97.52 to 97.30),
+on Bedrock and OpenRouter alone (Synthetic spent,
+Hyper dry;
+glm-5.3 and Qwen3.8-27B dark by design).
+Stages:
+repair from 22:08,
+translate from 22:10,
+contest from 22:11,
+consolidation 22:12 to 22:14;
+Jev 25 of 25;
+24 abstention lines with reasons;
+one unendorsed standing (16,
+the closing quote,
+slate-declined).
+No page and no artifact were written:
+`refusePageThatDisagrees` refused the composed page before the write with
+"1 wording(s) the artifact says would ship are not in the page in slice order,
+at slices 17 (237 characters)".
 
 Class one hundred one.
-Slice 17 is the source's own `[^1]` footnote definition (the 小药娘 note), admitted as an insertion (`coverage=absent`) since the archive glosses the term inline and carries no definition;
-the translate lane's winning candidate (GLM-5.3-Flash, chosen at weight 3 of 5 ballots) ended in two spaces after its full stop, 237 characters with them,
+Slice 17 is the source's own `[^1]` footnote definition (the 小药娘 note),
+admitted as an insertion (`coverage=absent`) since the archive glosses the term inline and carries no definition;
+the translate lane's winning candidate (GLM-5.3-Flash,
+chosen at weight 3 of 5 ballots) ended in two spaces after its full stop,
+237 characters with them,
 and the consolidation shipped it as the standing.
-The splice writes an inserted slice through `composeInsertion`, whose `fragmentBody` cuts the blank lines around a fragment and the spaces at its end (documented there since e2c624fa9: safe because fragments are joined by a blank line),
+The splice writes an inserted slice through `composeInsertion`,
+whose `fragmentBody` cuts the blank lines around a fragment and the spaces at its end (documented there since e2c624fa9:
+safe because fragments are joined by a blank line),
 so the page carried every word of the definition and ended "below.\n";
-`pageCarriesEveryWording` (`corpus-run/published-page-check.ts`) searched the raw would-ship wording, "below.  ", found no such stretch, and the entry stopped ERROR.
-The two page-assembly passes of classes ninety-nine and one hundred were silent (no `page assembly:` line), so the class is the check's, not theirs;
+`pageCarriesEveryWording` (`corpus-run/published-page-check.ts`) searched the raw would-ship wording,
+"below.
+ ",
+found no such stretch,
+and the entry stopped ERROR.
+The two page-assembly passes of classes ninety-nine and one hundred were silent (no `page assembly:` line),
+so the class is the check's,
+not theirs;
 class seventy-five had taught the weight check to read through `matchSpanEdges` (c5470163d) and left the wording check reading the stage's text.
-`shi_Yumiaoya1` to `14` never met it because no chosen candidate on an inserted slice had ended in spaces; the check has been one-sided in the wrong direction since the publish fix of 2026-08-24 for silent anchors whenever one does.
+`shi_Yumiaoya1` to `14` never met it because no chosen candidate on an inserted slice had ended in spaces;
+the check has been one-sided in the wrong direction since the publish fix of 2026-08-24 for silent anchors whenever one does.
 
-Fixed in 314ca4b8c: the wording scan searches `fragmentBody({ fragment: reading.text })`, the body both splice paths leave on the page
-(an inserted slice writes exactly that body; a content span keeps its interior with the archive span's line-ending edges, and the body is inside it), so the check stays one-sided and can still refuse a lost or reordered passage;
-guard red first at 4c36039b0 (`published-page-check.unit.test.ts`: an inserted wording ending in the two spaces the composer cuts, reported missing on the old dist with 39 characters),
-lint 0 and 0, types clean, full suite green (`suite-class101.log`, 1103 PASS, exit 0),
-replayed off the built dist over the real 237-character wording of the run's translate cache through `composeInsertion` and `pageCarriesEveryWording`: nothing missing.
+Fixed in 314ca4b8c:
+the wording scan searches `fragmentBody({ fragment: reading.text })`,
+the body both splice paths leave on the page
+(an inserted slice writes exactly that body;
+a content span keeps its interior with the archive span's line-ending edges,
+and the body is inside it),
+so the check stays one-sided and can still refuse a lost or reordered passage;
+guard red first at 4c36039b0 (`published-page-check.unit.test.ts`:
+an inserted wording ending in the two spaces the composer cuts,
+reported missing on the old dist with 39 characters),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class101.log`,
+1103 PASS,
+exit 0),
+replayed off the built dist over the real 237-character wording of the run's translate cache through `composeInsertion` and `pageCarriesEveryWording`:
+nothing missing.
 
-`shi_Yumiaoya16` (frozen `314ca4b8c`, pid 2942500, overlap 8)
+`shi_Yumiaoya16` (frozen `314ca4b8c`,
+pid 2942500,
+overlap 8)
 launched 22:26 UTC on Bedrock and OpenRouter
-(meters 49.98 USD Bedrock, 97.30 OpenRouter at launch),
+(meters 49.98 USD Bedrock,
+97.30 OpenRouter at launch),
 waiter bxei53tuc.
-Read for class one hundred one live (the page written past the wording check with the `[^1]` definition on it, whatever whitespace its candidate ends in),
+Read for class one hundred one live (the page written past the wording check with the `[^1]` definition on it,
+whatever whitespace its candidate ends in),
 the two page-assembly passes (none expected),
-classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding,
-beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
+classes seventy-eight to eighty,
+ninety-two,
+ninety-five and ninety-six holding,
+beside every check of `shi_Yumiaoya14` (4 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line).
 
 ## mikaela11 read, 2026-09-23, 22:10 UTC: SETTLED in 11 min, the two page-assembly passes silent, classes seventy to seventy-seven and ninety-six holding, no class; shi_Yumiaoya15 launched
 
-`mikaela11` (frozen `0f685f551`, pid 2920908, entry id `mikaela_khara`) SETTLED at 22:07 UTC,
+`mikaela11` (frozen `0f685f551`,
+pid 2920908,
+entry id `mikaela_khara`) SETTLED at 22:07 UTC,
 11 min after its 21:56 launch (TALLY `ms=644898`),
 one attempt,
 2,124 seats,
 60 retry rounds,
 1,848 calls,
 1 abandoned stream (0.002 USD),
-1.07 USD by the meters (Bedrock 50.95 to 50.30, OpenRouter 97.95 to 97.53),
-on Bedrock and OpenRouter alone; Jev 75 of 75.
+1.07 USD by the meters (Bedrock 50.95 to 50.30,
+OpenRouter 97.95 to 97.53),
+on Bedrock and OpenRouter alone;
+Jev 75 of 75.
 No `jsx-attribute-restored` and no `title-reference-` line (the archive renders every heading).
 Classes seventy to seventy-seven and ninety-six holding:
-𝓠𝓾𝓪𝓷 eight times as the archive with the possessive "𝓠𝓾𝓪𝓷’s" curled, no straight apostrophe in a word, "Mika was outed", the Epilogue section as `mikaela10` line for line, the life in the past.
-Every check as `mikaela10`: front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish, the page's one double blank line the archive's own before the details block;
-four unendorsed standings (0, 7, 12, 29), 67 abstention lines with reasons.
+𝓠𝓾𝓪𝓷 eight times as the archive with the possessive "𝓠𝓾𝓪𝓷’s" curled,
+no straight apostrophe in a word,
+"Mika was outed",
+the Epilogue section as `mikaela10` line for line,
+the life in the past.
+Every check as `mikaela10`:
+front matter equal,
+4 headings,
+4 comments,
+4 markers,
+2 definitions,
+no TA,
+no error finish,
+the page's one double blank line the archive's own before the details block;
+four unendorsed standings (0,
+7,
+12,
+29),
+67 abstention lines with reasons.
 No class.
 
-`shi_Yumiaoya15` (frozen `0f685f551`, pid 2923082, overlap 8)
+`shi_Yumiaoya15` (frozen `0f685f551`,
+pid 2923082,
+overlap 8)
 launched 22:07 UTC on Bedrock and OpenRouter
-(meters 50.29 USD Bedrock, 97.52 OpenRouter at launch),
+(meters 50.29 USD Bedrock,
+97.52 OpenRouter at launch),
 waiter bx91ra6hw.
 Read for the two page-assembly passes (none expected),
-classes seventy-eight to eighty, ninety-two, ninety-five and ninety-six holding ("Chewing Gum" and "Danpian", the attempt survived on January 16, the closing quote as the archive's two lines, the marker and definition on the page),
-beside every check of `shi_Yumiaoya14` (4 headings, front matter equal, no TA, no error finish, no double blank line).
+classes seventy-eight to eighty,
+ninety-two,
+ninety-five and ninety-six holding ("Chewing Gum" and "Danpian",
+the attempt survived on January 16,
+the closing quote as the archive's two lines,
+the marker and definition on the page),
+beside every check of `shi_Yumiaoya14` (4 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line).
 
 ## hulicaijia16 read, 2026-09-23, 22:00 UTC: SETTLED in 27 min, the two page-assembly passes silent on a page whose archive renders every heading, no class; mikaela11 launched
 
-`hulicaijia16` (frozen `0f685f551`, pid 2917545) SETTLED at 21:55 UTC,
+`hulicaijia16` (frozen `0f685f551`,
+pid 2917545) SETTLED at 21:55 UTC,
 27 min after its 21:29 launch (TALLY `ms=1596637`),
 one attempt,
 4,482 seats,
 144 retry rounds,
 3,722 calls,
 no abandoned stream,
-3.81 USD by the meters (Bedrock 52.98 to 50.95, OpenRouter 99.75 to 97.97),
-on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry).
-Stages: repair from 21:32, translate from 21:45, contest from 21:47, consolidation 21:49 to 21:55, the fastest hulicaijia run to date (37 min on `hulicaijia15`, 68 on `hulicaijia13`).
-Endpoints: deepseek on Morph 646 streams at 3.4 s (1 CoreWeave fallback), GLM-5.3-Flash on Wafer 220 at 4.4 s, minimax-m3 on CoreWeave 600 at 1.8 s, Mercury on Inception 444 at 6.5 s; Jev 132 of 132.
+3.81 USD by the meters (Bedrock 52.98 to 50.95,
+OpenRouter 99.75 to 97.97),
+on Bedrock and OpenRouter alone (Synthetic spent,
+Hyper dry).
+Stages:
+repair from 21:32,
+translate from 21:45,
+contest from 21:47,
+consolidation 21:49 to 21:55,
+the fastest hulicaijia run to date (37 min on `hulicaijia15`,
+68 on `hulicaijia13`).
+Endpoints:
+deepseek on Morph 646 streams at 3.4 s (1 CoreWeave fallback),
+GLM-5.3-Flash on Wafer 220 at 4.4 s,
+minimax-m3 on CoreWeave 600 at 1.8 s,
+Mercury on Inception 444 at 6.5 s;
+Jev 132 of 132.
 
 Classes ninety-nine and one hundred silent by design:
-no `jsx-attribute-restored` and no `title-reference-` line, the archive rendering every heading of this page and carrying no tag attribute the bench rewrote;
-the passes ran over the page (the guard logs every finding) and found nothing to change, the first entry other than XingZ60 through them.
-Classes eighty-four, ninety-two, ninety-five and ninety-six holding: 18 markers and 9 definitions with no trim, revert or marker-drop refusal, no straight apostrophe in a word.
+no `jsx-attribute-restored` and no `title-reference-` line,
+the archive rendering every heading of this page and carrying no tag attribute the bench rewrote;
+the passes ran over the page (the guard logs every finding) and found nothing to change,
+the first entry other than XingZ60 through them.
+Classes eighty-four,
+ninety-two,
+ninety-five and ninety-six holding:
+18 markers and 9 definitions with no trim,
+revert or marker-drop refusal,
+no straight apostrophe in a word.
 Every check as `hulicaijia15`:
-13 headings (the archive's "Conflict" for 左右), 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish, no double blank line;
-one unendorsed standing (35), 15 gate-kept, 19 slate-declined, 130 abstention lines with reasons.
+13 headings (the archive's "Conflict" for 左右),
+18 markers,
+9 definitions,
+2 links,
+3 Sakura,
+front matter equal,
+no TA,
+no error finish,
+no double blank line;
+one unendorsed standing (35),
+15 gate-kept,
+19 slate-declined,
+130 abstention lines with reasons.
 No class.
 
-`mikaela11` (frozen `0f685f551`, pid 2920908, overlap 8, entry id `mikaela_khara`)
+`mikaela11` (frozen `0f685f551`,
+pid 2920908,
+overlap 8,
+entry id `mikaela_khara`)
 launched 21:56 UTC on Bedrock and OpenRouter
-(meters 50.95 USD Bedrock, 97.95 OpenRouter at launch),
+(meters 50.95 USD Bedrock,
+97.95 OpenRouter at launch),
 waiter boq6zxv1i.
-Read for the two page-assembly passes (none expected; any line read against the archive),
-classes seventy to seventy-seven and ninety-six holding (the excerpt line curled, 𝓠𝓾𝓪𝓷 as the archive, "Mika was outed", the Epilogue one to one, the life in the past, "𝓠𝓾𝓪𝓷’s" curled),
-beside every check of `mikaela10` (front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish).
+Read for the two page-assembly passes (none expected;
+any line read against the archive),
+classes seventy to seventy-seven and ninety-six holding (the excerpt line curled,
+𝓠𝓾𝓪𝓷 as the archive,
+"Mika was outed",
+the Epilogue one to one,
+the life in the past,
+"𝓠𝓾𝓪𝓷’s" curled),
+beside every check of `mikaela10` (front matter equal,
+4 headings,
+4 comments,
+4 markers,
+2 definitions,
+no TA,
+no error finish).
 
 ## XingZ631 read, 2026-09-23, 21:50 UTC: SETTLED in 43 min, classes ninety-nine and one hundred live on the markers, the linked credit and both song credits; the quote search read a tag attribute's quotes and stood aside once, fixed in 0f685f551, hulicaijia16 launched
 
-`XingZ631` (frozen `5e21134ee`, pid 2893880) SETTLED at 21:22 UTC,
+`XingZ631` (frozen `5e21134ee`,
+pid 2893880) SETTLED at 21:22 UTC,
 43 min after its 20:39 launch (TALLY `ms=2607181`),
 one attempt,
 8,077 seats,
 244 retry rounds,
 7,246 calls,
 1 abandoned stream (0.004 USD),
-8.59 USD by the meters (Bedrock 57.75 to 52.99, OpenRouter 103.65 to 99.82),
-on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
-Stages: repair from 20:44, translate from 20:57, contest from 21:05, consolidation 21:08 to 21:22, the fastest XingZ60 run to date.
-Endpoints: deepseek on Morph 1,194 streams at 5.1 s (4 CoreWeave fallbacks), GLM-5.3-Flash on Wafer 426 at 5.9 s, minimax-m3 on CoreWeave 865 at 5.8 s and Together 281 at 3.5 s, Mercury on Inception 847 at 7.1 s; 2 cap cuts; Jev 248 of 248.
+8.59 USD by the meters (Bedrock 57.75 to 52.99,
+OpenRouter 103.65 to 99.82),
+on Bedrock and OpenRouter alone (Synthetic spent,
+Hyper dry;
+glm-5.3 and Qwen3.8-27B dark by design).
+Stages:
+repair from 20:44,
+translate from 20:57,
+contest from 21:05,
+consolidation 21:08 to 21:22,
+the fastest XingZ60 run to date.
+Endpoints:
+deepseek on Morph 1,194 streams at 5.1 s (4 CoreWeave fallbacks),
+GLM-5.3-Flash on Wafer 426 at 5.9 s,
+minimax-m3 on CoreWeave 865 at 5.8 s and Together 281 at 3.5 s,
+Mercury on Inception 847 at 7.1 s;
+2 cap cuts;
+Jev 248 of 248.
 
-Class ninety-nine live: one `jsx-attribute-restored` line (slice 12, `<DottedNumber n="二"/>` to `<DottedNumber n="II"/>`, the bench having left the Han this run) and the six markers on the page read `II` to `VII` as the archive writes them.
-Class one hundred live: one `title-reference-unified` line (slice 101, the second song credit's pinyin "Ling Chong Qi Yuan" to the heading's "Zero-Layer Prayer", a form no floor names and the judges had endorsed),
-the linked credit "[Bird in a Cage](…)" and the heading "Bird in a Cage" one rendering, the first credit “Nonuple Reality” and its heading one rendering, footnote 6 "the piece “Zero-Layer Prayer”" and its heading one rendering.
+Class ninety-nine live:
+one `jsx-attribute-restored` line (slice 12,
+`<DottedNumber n="二"/>` to `<DottedNumber n="II"/>`,
+the bench having left the Han this run) and the six markers on the page read `II` to `VII` as the archive writes them.
+Class one hundred live:
+one `title-reference-unified` line (slice 101,
+the second song credit's pinyin "Ling Chong Qi Yuan" to the heading's "Zero-Layer Prayer",
+a form no floor names and the judges had endorsed),
+the linked credit "[Bird in a Cage](…)" and the heading "Bird in a Cage" one rendering,
+the first credit “Nonuple Reality” and its heading one rendering,
+footnote 6 "the piece “Zero-Layer Prayer”" and its heading one rendering.
 Class ninety-eight on the wire again (one refusal for a Han title).
-Class ninety-seven on the wire (seventeen refusals, the page in the second person).
-Classes eighty-eight to ninety-three holding (two `handle-gloss-placed`, eight `heading-series-unified`, four contributor-name restores, nine definitions and no trim, Morph and Wafer serving);
-class ninety-four not exercised (the placeholder kept again, the fifth treatment in six runs).
+Class ninety-seven on the wire (seventeen refusals,
+the page in the second person).
+Classes eighty-eight to ninety-three holding (two `handle-gloss-placed`,
+eight `heading-series-unified`,
+four contributor-name restores,
+nine definitions and no trim,
+Morph and Wafer serving);
+class ninety-four not exercised (the placeholder kept again,
+the fifth treatment in six runs).
 Every structural check as `XingZ630`:
-fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line, the ten section headings by name alone;
-five unendorsed standings (18, 27, 54, 57, 65), 30 gate-kept, 36 slate-declined, 196 abstention lines with reasons.
+fourteen headings,
+both links,
+nine definitions,
+3 TextRing,
+eleven details blocks,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+the ten section headings by name alone;
+five unendorsed standings (18,
+27,
+54,
+57,
+65),
+30 gate-kept,
+36 slate-declined,
+196 abstention lines with reasons.
 The Han census over the page against the archive finds only 妄想症 in the album's own name and 螐儿.
 
-One `title-reference-ambiguous` line on slice 98, the first credit:
-the credit already quoted the heading, "—— Yuli 【Paranoia】 "Nonuple Reality"", but the slice also carries the `<TextRing text="☿☿☿☿☿☿" fontSize="1.25rem"/>` tag whose two quoted attribute values the quote search read as spans,
-so the search stood aside without comparing; the page was right by the bench's own choice, not by the pass.
-Fixed in 0f685f551 (`corpus-run/title-reference-marks.ts`, the mark search split out of the locator): a quote span that follows an attribute's equals sign is skipped,
+One `title-reference-ambiguous` line on slice 98,
+the first credit:
+the credit already quoted the heading,
+"—— Yuli 【Paranoia】 "Nonuple Reality"",
+but the slice also carries the `<TextRing text="☿☿☿☿☿☿" fontSize="1.25rem"/>` tag whose two quoted attribute values the quote search read as spans,
+so the search stood aside without comparing;
+the page was right by the bench's own choice,
+not by the pass.
+Fixed in 0f685f551 (`corpus-run/title-reference-marks.ts`,
+the mark search split out of the locator):
+a quote span that follows an attribute's equals sign is skipped,
 and among several spans the one that already carries the heading's rendering settles the reading;
-guard red first at 1c67cb139, lint 0 and 0, types clean, full suite green (`suite-class100b.log`), replayed over the `XingZ631` artifact with slice 98 read as consistent and the two rewrites unchanged.
-Observations, not built:
-the coined 螐 shipped as "A little wun[^7]" on the cage line and "螐儿's last words" two lines later, two treatments of one coined character on one page where `XingZ630` wrote "A wu[^7] bird" and `XingZ629` kept the character (three runs, three treatments; the footnote explains a character the page no longer shows on the first line);
-the album 【妄想症Paranoia】 shipped as "【Paranoia】" on the first credit and in full on the second, a Latin-bearing title the judges own.
+guard red first at 1c67cb139,
+lint 0 and 0,
+types clean,
+full suite green (`suite-class100b.log`),
+replayed over the `XingZ631` artifact with slice 98 read as consistent and the two rewrites unchanged.
+Observations,
+not built:
+the coined 螐 shipped as "A little wun[^7]" on the cage line and "螐儿's last words" two lines later,
+two treatments of one coined character on one page where `XingZ630` wrote "A wu[^7] bird" and `XingZ629` kept the character (three runs,
+three treatments;
+the footnote explains a character the page no longer shows on the first line);
+the album 【妄想症Paranoia】 shipped as "【Paranoia】" on the first credit and in full on the second,
+a Latin-bearing title the judges own.
 
-`hulicaijia16` (frozen `0f685f551`, pid 2917545, overlap 8)
+`hulicaijia16` (frozen `0f685f551`,
+pid 2917545,
+overlap 8)
 launched 21:29 UTC on Bedrock and OpenRouter
-(meters 52.98 USD Bedrock, 99.75 OpenRouter at launch),
+(meters 52.98 USD Bedrock,
+99.75 OpenRouter at launch),
 waiter bz8xt9q42,
 the first entry other than XingZ60 on the two page-assembly passes.
-Read for `jsx-attribute-restored` and `title-reference-unified` lines (none expected on a page whose archive renders every heading; any line is read against the archive),
-classes eighty-four, ninety-two, ninety-five and ninety-six holding,
-beside every check of `hulicaijia15` (13 headings, 18 markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no double blank line).
+Read for `jsx-attribute-restored` and `title-reference-unified` lines (none expected on a page whose archive renders every heading;
+any line is read against the archive),
+classes eighty-four,
+ninety-two,
+ninety-five and ninety-six holding,
+beside every check of `hulicaijia15` (13 headings,
+18 markers,
+9 definitions,
+2 links,
+3 Sakura,
+front matter equal,
+no TA,
+no double blank line).
 
 ## XingZ630 read, 2026-09-23, 20:45 UTC: SETTLED in 76 min, class ninety-eight live on both song credits and the linked title, but the marker series shipped in three numeral styles (class ninety-nine) and two section titles in two renderings each (class one hundred); fixed in 5e21134ee, XingZ631 launched
 
-`XingZ630` (frozen `2c3a80370`, pid 2844294) SETTLED at 20:15 UTC,
+`XingZ630` (frozen `2c3a80370`,
+pid 2844294) SETTLED at 20:15 UTC,
 76 min after its 18:59 launch (TALLY `ms=4572808`),
 one attempt,
 8,436 seats,
 326 retry rounds,
 7,560 calls,
 7 abandoned streams (0.04 USD),
-8.98 USD by the meters (Bedrock 62.51 to 57.78, OpenRouter 107.96 to 103.71),
-on Bedrock and OpenRouter alone (Synthetic read wet on one meter reading at 19:20 UTC, `syntheticWeekly=2%`, and served no completed stream; Hyper dry; glm-5.3 and Qwen3.8-27B dark by design).
-Stages: repair from 19:06, translate from 19:38, contest from 19:51, consolidation 19:54 to 20:15;
+8.98 USD by the meters (Bedrock 62.51 to 57.78,
+OpenRouter 107.96 to 103.71),
+on Bedrock and OpenRouter alone (Synthetic read wet on one meter reading at 19:20 UTC,
+`syntheticWeekly=2%`,
+and served no completed stream;
+Hyper dry;
+glm-5.3 and Qwen3.8-27B dark by design).
+Stages:
+repair from 19:06,
+translate from 19:38,
+contest from 19:51,
+consolidation 19:54 to 20:15;
 the repair lane took 32 min against `XingZ629`'s 16 and the translate lane 13 against 6.
-Endpoints: deepseek on Morph 1,221 streams at 9.2 s (3 CoreWeave fallbacks at 35.6 s), GLM-5.3-Flash on Wafer 384 at 8.5 s (5 InferenceNet fallbacks at 77.6 s, 2 Morph at 25.4 s), minimax-m3 on CoreWeave 782 at 7.2 s and Together 368 at 2.3 s, Mercury on Inception 879 at 6.8 s; no cap cut; Jev 235 of 244 usable, 9 threw.
-The slower run is the endpoints' own latency (Morph 9.2 s against 7.2, Wafer 8.5 against 5.3), the preferred endpoints holding (class ninety-three).
+Endpoints:
+deepseek on Morph 1,221 streams at 9.2 s (3 CoreWeave fallbacks at 35.6 s),
+GLM-5.3-Flash on Wafer 384 at 8.5 s (5 InferenceNet fallbacks at 77.6 s,
+2 Morph at 25.4 s),
+minimax-m3 on CoreWeave 782 at 7.2 s and Together 368 at 2.3 s,
+Mercury on Inception 879 at 6.8 s;
+no cap cut;
+Jev 235 of 244 usable,
+9 threw.
+The slower run is the endpoints' own latency (Morph 9.2 s against 7.2,
+Wafer 8.5 against 5.3),
+the preferred endpoints holding (class ninety-three).
 
 Class ninety-eight live.
 The floor refused one gemma-4-e2b translate candidate on slice 94 for leaving 《九重现实》 in Han (three `translate-invalid` and `translate-candidate-refused` pairs in `artifacts/XingZ60.json`);
-the first credit shipped "—— Yuli (Rain Fox) 【妄想症Paranoia】《Nonuple Reality》", the second "—— Yuli, from “Paranoia,” Zero-Layer Prayer (零重祈愿)" with the Han in parentheses after the English as the policy bullet allows,
+the first credit shipped "—— Yuli (Rain Fox) 【妄想症Paranoia】《Nonuple Reality》",
+the second "—— Yuli,
+from “Paranoia,”
+Zero-Layer Prayer (零重祈愿)" with the Han in parentheses after the English as the policy bullet allows,
 and the Bird in a Cage credit links "[The Caged Bird](…)" in English;
-the Han census over the page against the archive finds only the album's own name, that parenthetical gloss and the JSX ordinal 七 (class ninety-nine).
+the Han census over the page against the archive finds only the album's own name,
+that parenthetical gloss and the JSX ordinal 七 (class ninety-nine).
 The first credit now carries the album name `XingZ629` had dropped.
-Class ninety-seven on the wire again: thirteen `carries no "you"` refusals across the artifact, the page addressing her ("You tried to delve deep into virtual worlds.", "You thought of becoming a boy,").
+Class ninety-seven on the wire again:
+thirteen `carries no "you"` refusals across the artifact,
+the page addressing her ("You tried to delve deep into virtual worlds.",
+"You thought of becoming a boy,").
 Classes eighty-eight to ninety-three holding:
-three `handle-gloss-placed` lines (Jinxin glossed in the Part Ten heading and bare on the signature; Yuli glossed on the first credit, bare on the second),
+three `handle-gloss-placed` lines (Jinxin glossed in the Part Ten heading and bare on the signature;
+Yuli glossed on the first credit,
+bare on the second),
 ten `heading-series-unified` lines and the ten section headings by name alone,
 five contributor-name restores,
 nine definitions with no trim line,
 Morph and Wafer serving.
-Class ninety-four not exercised: the archive block review kept "**Come back later!**" this run (the fourth treatment in five runs: kept, removed, removed, revised, kept), no double blank line.
+Class ninety-four not exercised:
+the archive block review kept "**Come back later!**" this run (the fourth treatment in five runs:
+kept,
+removed,
+removed,
+revised,
+kept),
+no double blank line.
 Every structural check as `XingZ629`:
-fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line;
-five unendorsed standings (17, 18, 27, 31, 40), 29 gate-kept, 34 slate-declined, one incumbent-only (87, the memorial attribution line with its rule and details close), 207 abstention lines with reasons.
+fourteen headings,
+both links,
+nine definitions,
+3 TextRing,
+eleven details blocks,
+front matter equal,
+no TA,
+no error finish,
+no double blank line;
+five unendorsed standings (17,
+18,
+27,
+31,
+40),
+29 gate-kept,
+34 slate-declined,
+one incumbent-only (87,
+the memorial attribution line with its rule and details close),
+207 abstention lines with reasons.
 
 Class ninety-nine.
-The original's dotted section markers `<DottedNumber n="二"/>` to `<DottedNumber n="七"/>` shipped as `n="II"`, `n="III"`, `n="IV"`, `n="5"`, `n="VI"` and `n="七"` where the archive writes Roman numerals throughout (`II` to `VII`);
+The original's dotted section markers `<DottedNumber n="二"/>` to `<DottedNumber n="七"/>` shipped as `n="II"`,
+`n="III"`,
+`n="IV"`,
+`n="5"`,
+`n="VI"` and `n="七"` where the archive writes Roman numerals throughout (`II` to `VII`);
 `XingZ629` had shipped `n="五"` in the same series.
-The translate lane wrote `n="5"` on slice 34 and `n="VII"` on slice 41, the repair lane's `n="七"` won slice 41;
-a tag's string attribute is apparatus no judge weighs and every slice is judged alone, so the numeral style moves slice to slice.
+The translate lane wrote `n="5"` on slice 34 and `n="VII"` on slice 41,
+the repair lane's `n="七"` won slice 41;
+a tag's string attribute is apparatus no judge weighs and every slice is judged alone,
+so the numeral style moves slice to slice.
 Class one hundred.
-The original heads a section 笼中之鸟 and credits the song as 《[笼中之鸟](…)》, heads another 零重祈愿, credits it as 《零重祈愿》 and points footnote 6 at 「零重祈愿」篇;
+The original heads a section 笼中之鸟 and credits the song as 《[笼中之鸟](…)》,
+heads another 零重祈愿,
+credits it as 《零重祈愿》 and points footnote 6 at 「零重祈愿」篇;
 the page headed "Bird in a Cage" over the linked credit "The Caged Bird" and "Zero-Layer Prayer" over the footnote's "Zero-Degree Prayer" (零重 read as a degree),
 and `XingZ629` had headed "The Bird in the Cage" over the link "Bird in a Cage".
-The archive renders none of these three headings, so the heading's rendering is the bench's each run and no judge sees the heading beside the reference.
-An observation beside them, not built: the coined 螐 with its footnote shipped as "A wu[^7] bird" where `XingZ629` kept the character; the note "It can be read either as an insect or as a bird" now explains a syllable.
+The archive renders none of these three headings,
+so the heading's rendering is the bench's each run and no judge sees the heading beside the reference.
+An observation beside them,
+not built:
+the coined 螐 with its footnote shipped as "A wu[^7] bird" where `XingZ629` kept the character;
+the note "It can be read either as an insect or as a bird" now explains a syllable.
 
-Classes ninety-nine and one hundred fixed in 5e21134ee (2f8bcfe93 and 5e21134ee), two page-assembly passes after the heading series pass:
-`restoreJsxAttributes` (`corpus-run/jsx-attribute-restore.ts`, tags read by index scan in `tag-attributes.ts`) takes the archive's value of every quoted attribute where the page carries the archive slice's tags in order, leaving a slice whose tag sequence differs and a slice the archive never carried;
-`unifyTitleReferences` (`corpus-run/title-reference-unify.ts`) pairs every Han heading, ATX or `<hN>` (`heading-title-lines.ts`), with its page rendering by position and rewrites each bracketed reference in a replaced slice to the heading's rendering,
-located by the link's destination, by the Han gloss after the English, by title brackets or by quotes (`title-reference-locate.ts`), the bracket and quote searches held to the page's definition line where the original references the title on a footnote line (`title-reference-scope.ts`),
+Classes ninety-nine and one hundred fixed in 5e21134ee (2f8bcfe93 and 5e21134ee),
+two page-assembly passes after the heading series pass:
+`restoreJsxAttributes` (`corpus-run/jsx-attribute-restore.ts`,
+tags read by index scan in `tag-attributes.ts`) takes the archive's value of every quoted attribute where the page carries the archive slice's tags in order,
+leaving a slice whose tag sequence differs and a slice the archive never carried;
+`unifyTitleReferences` (`corpus-run/title-reference-unify.ts`) pairs every Han heading,
+ATX or `<hN>` (`heading-title-lines.ts`),
+with its page rendering by position and rewrites each bracketed reference in a replaced slice to the heading's rendering,
+located by the link's destination,
+by the Han gloss after the English,
+by title brackets or by quotes (`title-reference-locate.ts`),
+the bracket and quote searches held to the page's definition line where the original references the title on a footnote line (`title-reference-scope.ts`),
 reporting `title-reference-ambiguous` where a slice offers two spans of one shape rather than guessing;
-findings `jsx-attribute-restored` and `title-reference-unified`, both passes exported through the readiness barrel.
-Guards red first at a86a3757e and a1ce2c580 (`jsx-attribute-restore.unit.test.ts`, `title-reference-unify.unit.test.ts`), lint 0 and 0, types clean, full suite green twice (`suite-class99-100.log` 1103 PASS, `suite-class99-100b.log`).
-Replayed off the built dist over the real artifacts: `XingZ630` slice 34 `n="5"` to `n="V"` and slice 41 `n="七"` to `n="VII"`, slice 94 "The Caged Bird" to "Bird in a Cage", slice 117 "Zero-Degree Prayer" to "Zero-Layer Prayer";
+findings `jsx-attribute-restored` and `title-reference-unified`,
+both passes exported through the readiness barrel.
+Guards red first at a86a3757e and a1ce2c580 (`jsx-attribute-restore.unit.test.ts`,
+`title-reference-unify.unit.test.ts`),
+lint 0 and 0,
+types clean,
+full suite green twice (`suite-class99-100.log` 1103 PASS,
+`suite-class99-100b.log`).
+Replayed off the built dist over the real artifacts:
+`XingZ630` slice 34 `n="5"` to `n="V"` and slice 41 `n="七"` to `n="VII"`,
+slice 94 "The Caged Bird" to "Bird in a Cage",
+slice 117 "Zero-Degree Prayer" to "Zero-Layer Prayer";
 `XingZ629` slice 95 "Bird in a Cage" to its heading's "The Bird in the Cage" and slice 101's Han credit to "Zero-Layer Prayer".
 
-`XingZ631` (frozen `5e21134ee`, pid 2893880, overlap 8)
+`XingZ631` (frozen `5e21134ee`,
+pid 2893880,
+overlap 8)
 launched 20:39 UTC on Bedrock and OpenRouter
-(meters 57.75 USD Bedrock, 103.65 OpenRouter at launch),
+(meters 57.75 USD Bedrock,
+103.65 OpenRouter at launch),
 waiter b9ywlheib.
-Read for classes ninety-nine and one hundred live (`jsx-attribute-restored` and `title-reference-unified` lines in the log; the six markers `II` to `VII`; the linked credit, the two song credits and footnote 6 carrying the headings' own renderings),
+Read for classes ninety-nine and one hundred live (`jsx-attribute-restored` and `title-reference-unified` lines in the log;
+the six markers `II` to `VII`;
+the linked credit,
+the two song credits and footnote 6 carrying the headings' own renderings),
 class ninety-eight again on the credits,
 classes eighty-eight to ninety-seven holding,
 beside every check of `XingZ630`.
 
 ## XingZ629 read, 2026-09-23, 19:03 UTC: SETTLED in 50 min, class ninety-seven live on the meteor address, classes eighty-eight to ninety-three holding, but the second song credit shipped its title in Han (class ninety-eight); fixed in 2c3a80370, XingZ630 launched
 
-`XingZ629` (frozen `e78515f56`, pid 2793259) SETTLED at 18:39 UTC,
+`XingZ629` (frozen `e78515f56`,
+pid 2793259) SETTLED at 18:39 UTC,
 50 min after its 17:49 launch (TALLY `ms=3007748`),
 one attempt,
 8,350 seats,
 286 retry rounds,
 7,377 calls,
 1 abandoned stream (0.004 USD),
-8.70 USD by the meters (Bedrock 67.38 to 62.52, OpenRouter 111.86 to 108.02),
-on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry; glm-5.3 asked 577 and threw 577, Qwen3.8-27B asked 1,164 and threw 1,164, both Hyper-only seats dark by design).
-Stages: repair from 17:55, translate from 18:11, contest from 18:17, consolidation 18:20 to 18:39.
-Endpoints: deepseek on Morph 1,203 streams at 7.2 s (2 CoreWeave fallbacks, 1 Fireworks), GLM-5.3-Flash on Wafer 424 at 5.3 s, minimax-m3 on CoreWeave 1,041 at 6.5 s and Together 110 at 4.5 s, Mercury on Inception 881 at 7.8 s; no cap cut; Jev 273 of 273.
+8.70 USD by the meters (Bedrock 67.38 to 62.52,
+OpenRouter 111.86 to 108.02),
+on Bedrock and OpenRouter alone (Synthetic spent,
+Hyper dry;
+glm-5.3 asked 577 and threw 577,
+Qwen3.8-27B asked 1,164 and threw 1,164,
+both Hyper-only seats dark by design).
+Stages:
+repair from 17:55,
+translate from 18:11,
+contest from 18:17,
+consolidation 18:20 to 18:39.
+Endpoints:
+deepseek on Morph 1,203 streams at 7.2 s (2 CoreWeave fallbacks,
+1 Fireworks),
+GLM-5.3-Flash on Wafer 424 at 5.3 s,
+minimax-m3 on CoreWeave 1,041 at 6.5 s and Together 110 at 4.5 s,
+Mercury on Inception 881 at 7.8 s;
+no cap cut;
+Jev 273 of 273.
 
 Class ninety-seven on the wire.
-Two minimax-m3 translate candidates were refused on slices 111 and 115, the closing address to the meteor
-("the ORIGINAL passage writes 你 or 您 6 times, and your translation carries no "you" but "she", "her", "they" in its place");
+Two minimax-m3 translate candidates were refused on slices 111 and 115,
+the closing address to the meteor
+("the ORIGINAL passage writes 你 or 您 6 times,
+and your translation carries no "you" but "she",
+"her",
+"they" in its place");
 both slices were lane-won by the translate lane
-(111 stood slate-declined, 115 consolidated with two ballots for the consolidation and three for neither),
-and the page addresses her: "You tried going deep into virtual worlds." and "You thought of becoming a boy," where the original writes 你.
-No contest winner failed the floor this run, so the withheld-standing path of yingying6 was not exercised.
+(111 stood slate-declined,
+115 consolidated with two ballots for the consolidation and three for neither),
+and the page addresses her:
+"You tried going deep into virtual worlds."
+and "You thought of becoming a boy,"
+where the original writes 你.
+No contest winner failed the floor this run,
+so the withheld-standing path of yingying6 was not exercised.
 
 Classes eighty-eight to ninety-three holding:
-one `handle-gloss-placed` line (slice 108: "### Jinxin (Brocade Heart)" in the heading, "——Jinxin, February 10, 2025" bare on the signature; Yuli never glossed by the bench),
+one `handle-gloss-placed` line (slice 108:
+"### Jinxin (Brocade Heart)" in the heading,
+"——Jinxin,
+February 10,
+2025" bare on the signature;
+Yuli never glossed by the bench),
 seven `heading-series-unified` lines and the ten section headings by name alone (Irako to Jinxin),
 six contributor-name restores,
 nine definitions with no trim line (class ninety-two),
 Morph and Wafer serving (class ninety-three).
-Class ninety-four not exercised: the archive block review did not remove the placeholder this run but revised it,
-"**Come back later!**" to "[!Warning] This page is still under construction. Please check back later." (minimax's revision 3.5 of 5, gemma-4-e2b alone keeping the archive's line),
-the third treatment of that block in four runs (kept on `XingZ626`, removed on `XingZ627` and `XingZ628`);
+Class ninety-four not exercised:
+the archive block review did not remove the placeholder this run but revised it,
+"**Come back later!**" to "[!Warning] This page is still under construction.
+Please check back later."
+(minimax's revision 3.5 of 5,
+gemma-4-e2b alone keeping the archive's line),
+the third treatment of that block in four runs (kept on `XingZ626`,
+removed on `XingZ627` and `XingZ628`);
 the placeholder's status as apparatus stays the open question for the owner.
 Every structural check as `XingZ628`:
-fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line;
-eight unendorsed standings (9, 18, 49, 59, 73, 78, 82, 83), three of them gate-kept (49, 59, 82) and five slate-declined;
+fourteen headings,
+both links,
+nine definitions,
+3 TextRing,
+eleven details blocks,
+front matter equal,
+no TA,
+no error finish,
+no double blank line;
+eight unendorsed standings (9,
+18,
+49,
+59,
+73,
+78,
+82,
+83),
+three of them gate-kept (49,
+59, 82) and five slate-declined;
 183 abstention lines with reasons.
-The opening quote now wraps at semantic boundaries where `XingZ628` shipped it on one line (the owner's 2026-09-19 answer: line breaks are fine).
+The opening quote now wraps at semantic boundaries where `XingZ628` shipped it on one line (the owner's 2026-09-19 answer:
+line breaks are fine).
 
 Class ninety-eight.
 The second song credit shipped "— Yuli 【妄想症Paranoia】《零重祈愿》" with the song's title in Han,
@@ -12265,174 +15487,367 @@ the translate lane won slice 101 and the slate endorsed it,
 one ballot calling the Han title "consistent with the presence of a series name" while another abstention on the footnote slice cited the web lookup's English for the same title.
 The house rule already says a work the ORIGINAL names is called by its official English title where one exists and by a translation where none does;
 no floor asked for it.
-`XingZ619` and `XingZ628` had shipped the Bird in a Cage link text the same way ("《[笼中之鸟](…)》"), the observation left open since 2026-09-19.
-A Han census over the seven latest read pages (`hulicaijia15`, `mikaela10`, `shi_Yumiaoya14`, `yingying6`, `zheermao6`, `CuspariaKLSY8`, `XingZ629`) found the rest of this page's Han legitimate:
-a JSX attribute (`<DottedNumber n="五"/>`), the Japanese lyric line, the coined 螐 with its footnote, "Werewolf (狼人杀)" glossed, the album's own bilingual name 【妄想症Paranoia】;
+`XingZ619` and `XingZ628` had shipped the Bird in a Cage link text the same way ("《[笼中之鸟](…)》"),
+the observation left open since 2026-09-19.
+A Han census over the seven latest read pages (`hulicaijia15`,
+`mikaela10`,
+`shi_Yumiaoya14`,
+`yingying6`,
+`zheermao6`,
+`CuspariaKLSY8`,
+`XingZ629`) found the rest of this page's Han legitimate:
+a JSX attribute (`<DottedNumber n="五"/>`),
+the Japanese lyric line,
+the coined 螐 with its footnote,
+"Werewolf (狼人杀)" glossed,
+the album's own bilingual name 【妄想症Paranoia】;
 `shi_Yumiaoya14` carries 「逆子」 with a dash gloss and the other five carry no Han the archive lacks.
-An observation beside it: the first credit dropped the album name the original carries ("—— Yuli《Nonuple Reality》" for "—— 雨狸【妄想症Paranoia】《九重现实》"), an omission the judges did not see; one run, recorded, not built.
+An observation beside it:
+the first credit dropped the album name the original carries ("—— Yuli《Nonuple Reality》" for "—— 雨狸【妄想症Paranoia】《九重现实》"),
+an omission the judges did not see;
+one run,
+recorded,
+not built.
 
 Class ninety-eight fixed in 2c3a80370 (012cec9a1 and 2c3a80370):
 `hanTitleFindings` (`translate-han-title.ts`) refuses before any judge a candidate that leaves a title the ORIGINAL brackets in 《》 standing in Han,
-where the title carries a Han ideograph and no Latin letter (`han-only-text.ts`, the unified block as the name index reads it),
+where the title carries a Han ideograph and no Latin letter (`han-only-text.ts`,
+the unified block as the name index reads it),
 the occurrence has no English gloss in parentheses after it and stands in none,
 and the page the candidate would replace never wrote it;
-a 《[title](url)》 bracket is read by its link text, so a Han link text is refused too;
+a 《[title](url)》 bracket is read by its link text,
+so a Han link text is refused too;
 comments are cut on both sides.
-The marker, address and title floors fold into `sourceCarryFindings` (`translate-source-carry.ts`) so `translate-validate.ts` keeps its line budget;
-the policy's work-title bullet now ends "A title is never left in Han as the work's name: the Han may follow the English title in parentheses the first time it appears, and never stands alone."
-Guards red first at 5d58ca85c and 051e7b060 (`han-title.unit.test.ts`: the Han title refused, the translated, glossed, Latin-bearing, page-kept and comment-only forms accepted, the link text refused and its translation accepted),
-lint 0 and 0, types clean, full suite green twice (`suite-class98.log` and `suite-class98b.log`, 1101 PASS).
-Replayed off the built dist over the real slices: `XingZ629` slice 101's shipped text refused ("leaves the title 《零重祈愿》 in Han"), `XingZ628` slice 95's shipped text refused ("leaves the title 《笼中之鸟》 in Han"), `XingZ629` slice 95 (English link text) and both runs' slice 98 (the translated first credit) accepted.
+The marker,
+address and title floors fold into `sourceCarryFindings` (`translate-source-carry.ts`) so `translate-validate.ts` keeps its line budget;
+the policy's work-title bullet now ends "A title is never left in Han as the work's name:
+the Han may follow the English title in parentheses the first time it appears,
+and never stands alone."
+Guards red first at 5d58ca85c and 051e7b060 (`han-title.unit.test.ts`:
+the Han title refused,
+the translated,
+glossed,
+Latin-bearing,
+page-kept and comment-only forms accepted,
+the link text refused and its translation accepted),
+lint 0 and 0,
+types clean,
+full suite green twice (`suite-class98.log` and `suite-class98b.log`,
+1101 PASS).
+Replayed off the built dist over the real slices:
+`XingZ629` slice 101's shipped text refused ("leaves the title 《零重祈愿》 in Han"),
+`XingZ628` slice 95's shipped text refused ("leaves the title 《笼中之鸟》 in Han"),
+`XingZ629` slice 95 (English link text) and both runs' slice 98 (the translated first credit) accepted.
 
-`XingZ630` (frozen `2c3a80370`, pid 2844294, overlap 8)
+`XingZ630` (frozen `2c3a80370`,
+pid 2844294,
+overlap 8)
 launched 18:59 UTC on Bedrock and OpenRouter
-(meters 62.51 USD Bedrock, 107.96 OpenRouter at launch),
+(meters 62.51 USD Bedrock,
+107.96 OpenRouter at launch),
 waiter boqkmvcsw.
-Read for class ninety-eight live (the "leaves the title" refusal lines in `artifacts/XingZ60.json`; both song credits and the Bird in a Cage link in English on the page, no Han title outside the album name),
+Read for class ninety-eight live (the "leaves the title" refusal lines in `artifacts/XingZ60.json`;
+both song credits and the Bird in a Cage link in English on the page,
+no Han title outside the album name),
 class ninety-seven again on the meteor address,
 classes eighty-eight to ninety-four holding,
 beside every check of `XingZ629`.
 
 ## yingying6 read, 2026-09-23, 17:52 UTC: SETTLED in 4 min, class ninety-seven live (the third-person contest winner refused by the floor, the second-person translate text shipped through the ineligible-standing path), every check as yingying4; no class, XingZ629 launched
 
-`yingying6` (frozen `e78515f56`, pid 2791373) SETTLED at 17:49 UTC,
+`yingying6` (frozen `e78515f56`,
+pid 2791373) SETTLED at 17:49 UTC,
 4 min after its 17:45 launch (TALLY `ms=239557`),
 one attempt,
 327 seats,
 9 retry rounds,
 290 calls,
 no abandoned stream,
-0.13 USD by the meters (Bedrock 67.47 to 67.39, OpenRouter 111.94 to 111.89),
-on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
-Endpoints: deepseek on Morph 47, minimax on CoreWeave 38 and Together 10, Mercury on Inception 33, GLM-5.3-Flash on Wafer 18.
+0.13 USD by the meters (Bedrock 67.47 to 67.39,
+OpenRouter 111.94 to 111.89),
+on Bedrock and OpenRouter (Synthetic spent,
+Hyper dry).
+Endpoints:
+deepseek on Morph 47,
+minimax on CoreWeave 38 and Together 10,
+Mercury on Inception 33,
+GLM-5.3-Flash on Wafer 18.
 
-Class ninety-seven live, on slice 2 (the accident sentence and the closing wish):
-the repair lane wrote "May she still have the same cheerfulness and passion to do what she wanted to do in her next world!" (the archive's third person),
-the translate lane wrote "May you still have the same cheerfulness and passion to do what you want to do in your next world!" after the floor refused three of its candidates (minimax-m3 among them) with
-"Your translation drops the address in the second person the ORIGINAL carries: the ORIGINAL passage writes 你 or 您 3 times, and your translation carries no "you" but ...";
+Class ninety-seven live,
+on slice 2 (the accident sentence and the closing wish):
+the repair lane wrote "May she still have the same cheerfulness and passion to do what she wanted to do in her next world!"
+(the archive's third person),
+the translate lane wrote "May you still have the same cheerfulness and passion to do what you want to do in your next world!"
+after the floor refused three of its candidates (minimax-m3 among them) with
+"Your translation drops the address in the second person the ORIGINAL carries:
+the ORIGINAL passage writes 你 or 您 3 times,
+and your translation carries no "you" but ...";
 the contest chose the repair lane (the judges again preferring the third person),
 the floor refused the contest winner ("contest winner fails publication invariants and remains retryable"),
 the consolidation standing was withheld from the slate ("ineligible-standing-withheld ... only valid proposals"),
 the translate lane text was offered beside five valid proposals (class forty),
 and the gate confirmed the consolidated text 3 to 1
-(ballots: "The standing version replaces the original second-person address with a third-person one", "The ORIGINAL addresses the person in the second person (你)", "Candidate 'standing' drops the second-person address present in the original";
+(ballots:
+"The standing version replaces the original second-person address with a third-person one",
+"The ORIGINAL addresses the person in the second person (你)",
+"Candidate 'standing' drops the second-person address present in the original";
 the one dissent "'standing' correctly preserves..." read 你 the other way).
-Terminal `consolidated`; the page reads "May you still have the same cheerfulness and passion to do what you want to do in your next world!" with the `[^2]` marker,
+Terminal `consolidated`;
+the page reads "May you still have the same cheerfulness and passion to do what you want to do in your next world!"
+with the `[^2]` marker,
 where `yingying5` shipped "May she".
-Nine refusal findings in the artifact, all on the translate lane's slice 2 and the consolidation standing.
+Nine refusal findings in the artifact,
+all on the translate lane's slice 2 and the consolidation standing.
 
 Every check as `yingying4`:
-1 heading, 4 markers, 2 definitions (the `[^2]` definition "[Farewell. I miss you, Yingying.]", class eighty-six holding),
-front matter equal, References line kept, no TA, no error finish, no double blank line, no straight apostrophe (class ninety-six holding).
-Terminals: 2 consolidated (0, 2), 1 slate-endorsed (1), 1 slate-unjudged (3); no gate-kept or slate-declined standing;
+1 heading,
+4 markers,
+2 definitions (the `[^2]` definition "[Farewell.
+I miss you,
+Yingying.]",
+class eighty-six holding),
+front matter equal,
+References line kept,
+no TA,
+no error finish,
+no double blank line,
+no straight apostrophe (class ninety-six holding).
+Terminals:
+2 consolidated (0,
+2),
+1 slate-endorsed (1),
+1 slate-unjudged (3);
+no gate-kept or slate-declined standing;
 5 abstention lines with reasons.
 No class.
 
-`XingZ629` (frozen `e78515f56`, pid 2793259, overlap 8)
+`XingZ629` (frozen `e78515f56`,
+pid 2793259,
+overlap 8)
 launched 17:49 UTC on Bedrock and OpenRouter
-(meters 67.38 USD Bedrock, 111.86 OpenRouter at launch),
+(meters 67.38 USD Bedrock,
+111.86 OpenRouter at launch),
 waiter bx0plxmpk.
-Read for class ninety-seven on the wire (the refusal lines in the artifact; the original's 你 passages, the letters to the deceased among them, in the second person on the page),
+Read for class ninety-seven on the wire (the refusal lines in the artifact;
+the original's 你 passages,
+the letters to the deceased among them,
+in the second person on the page),
 classes eighty-eight to ninety-four holding,
 beside every check of `XingZ628`
-(14 headings, 2 links, 9 definitions, 3 TextRing, 11 details, front matter equal, no TA, no error finish, no double blank line, the ten section headings in the archive's bare style, Jinxin glossed once).
+(14 headings,
+2 links,
+9 definitions,
+3 TextRing,
+11 details,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+the ten section headings in the archive's bare style,
+Jinxin glossed once).
 
 ## CuspariaKLSY8 read, 2026-09-23, 17:46 UTC: SETTLED in 10 min on the class ninety-seven build, classes seventy-five, seventy-six, eighty-five and ninety-six holding; no class, yingying6 launched
 
-`CuspariaKLSY8` (frozen `e78515f56`, pid 2788469) SETTLED at 17:44 UTC,
+`CuspariaKLSY8` (frozen `e78515f56`,
+pid 2788469) SETTLED at 17:44 UTC,
 10 min after its 17:34 launch (TALLY `ms=593557`),
 one attempt,
 383 seats,
 11 retry rounds,
 345 calls,
 no abandoned stream,
-0.17 USD by the meters (Bedrock 67.57 to 67.47, OpenRouter 112.01 to 111.94),
-on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
-Endpoints: minimax on CoreWeave 60, deepseek on Morph 51, Mercury on Inception 38, GLM-5.3-Flash on Wafer 18.
+0.17 USD by the meters (Bedrock 67.57 to 67.47,
+OpenRouter 112.01 to 111.94),
+on Bedrock and OpenRouter (Synthetic spent,
+Hyper dry).
+Endpoints:
+minimax on CoreWeave 60,
+deepseek on Morph 51,
+Mercury on Inception 38,
+GLM-5.3-Flash on Wafer 18.
 
-Class ninety-seven silent by design: the original carries no 你 or 您, so the floor had nothing to read; no refusal in the artifact.
+Class ninety-seven silent by design:
+the original carries no 你 or 您,
+so the floor had nothing to read;
+no refusal in the artifact.
 
 Every check as `CuspariaKLSY7`:
-1 heading, no footnote marker (as the archive), front matter equal, no TA, no error finish, no double blank line, no straight apostrophe (class ninety-six holding), publish weight check silent (class seventy-five holding),
+1 heading,
+no footnote marker (as the archive),
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+no straight apostrophe (class ninety-six holding),
+publish weight check silent (class seventy-five holding),
 every line of the life in the past (class seventy-six holding),
-the nickname's gloss on the page (class eighty-five holding), this run in the house rule's parenthetical form,
-"Her circle name, Ling Shui Yu Yu Zi (Fish in Clear Water), was given while she was feeding fish."
-where `CuspariaKLSY7` kept the archive's two sentences; the meaning is on the page either way.
-Terminals: 2 consolidated (0, 3), 2 slate-declined standings (1, 2), no gate-kept;
+the nickname's gloss on the page (class eighty-five holding),
+this run in the house rule's parenthetical form,
+"Her circle name,
+Ling Shui Yu Yu Zi (Fish in Clear Water),
+was given while she was feeding fish."
+where `CuspariaKLSY7` kept the archive's two sentences;
+the meaning is on the page either way.
+Terminals:
+2 consolidated (0,
+3),
+2 slate-declined standings (1,
+2),
+no gate-kept;
 12 abstention lines with reasons.
 No class.
 
-`yingying6` (frozen `e78515f56`, pid 2791373, overlap 8)
+`yingying6` (frozen `e78515f56`,
+pid 2791373,
+overlap 8)
 launched 17:45 UTC on Bedrock and OpenRouter
-(meters 67.47 USD Bedrock, 111.94 OpenRouter at launch),
+(meters 67.47 USD Bedrock,
+111.94 OpenRouter at launch),
 waiter (see the task list).
 Read for class ninety-seven live on the farewell slice
-(the "drops the address in the second person" refusal on any third-person candidate in the artifact; "May you still have..." on the page where `yingying5` shipped "May she"),
-class eighty-six holding (the `[^2]` definition "[Farewell. I miss you, Yingying.]"),
+(the "drops the address in the second person" refusal on any third-person candidate in the artifact;
+"May you still have..." on the page where `yingying5` shipped "May she"),
+class eighty-six holding (the `[^2]` definition "[Farewell.
+I miss you,
+Yingying.]"),
 beside every check of `yingying4`
-(1 heading, 4 markers, 2 definitions, front matter equal, References line kept, no TA, no error finish, no double blank line).
+(1 heading,
+4 markers,
+2 definitions,
+front matter equal,
+References line kept,
+no TA,
+no error finish,
+no double blank line).
 
 ## zheermao6 read, 2026-09-23, 17:35 UTC: SETTLED in 12 min on the class ninety-seven build, class ninety-seven not exercised (the bench kept the address itself), every check as zheermao4; no class, CuspariaKLSY8 launched
 
-`zheermao6` (frozen `e78515f56`, pid 2784441, entry `zheermao101`) SETTLED at 17:33 UTC,
+`zheermao6` (frozen `e78515f56`,
+pid 2784441,
+entry `zheermao101`) SETTLED at 17:33 UTC,
 12 min after its 17:21 launch (TALLY `ms=726839`),
 one attempt,
 958 seats,
 34 retry rounds,
 827 calls,
 16 abandoned streams (0.04 USD),
-0.31 USD by the meters (Bedrock 67.88 to 67.58, OpenRouter 112.34 to 112.03),
-on Bedrock and OpenRouter (Synthetic spent, Hyper dry; Qwen3.8-27B and glm-5.3 dark, 186 throws, by design).
-Endpoints: minimax on CoreWeave 142, deepseek on Morph 131, Mercury on Inception 91, GLM-5.3-Flash on Wafer 59, Together 1.
+0.31 USD by the meters (Bedrock 67.88 to 67.58,
+OpenRouter 112.34 to 112.03),
+on Bedrock and OpenRouter (Synthetic spent,
+Hyper dry;
+Qwen3.8-27B and glm-5.3 dark,
+186 throws,
+by design).
+Endpoints:
+minimax on CoreWeave 142,
+deepseek on Morph 131,
+Mercury on Inception 91,
+GLM-5.3-Flash on Wafer 59,
+Together 1.
 
 Class ninety-seven not exercised live:
 no "drops the address in the second person" refusal in the artifact.
 The original addresses the deceased twice (the front matter description and the opening quote 谢谢你和我聊了这么多……请你喝奶茶),
-the page carries "Thank you for talking with me so much. ... I'll treat you to some milk tea." in the second person,
-so the floor had nothing to refuse; the unit guards (`address-drop.unit.test.ts`) stand for the yingying shape.
+the page carries "Thank you for talking with me so much.
+... I'll treat you to some milk tea."
+in the second person,
+so the floor had nothing to refuse;
+the unit guards (`address-drop.unit.test.ts`) stand for the yingying shape.
 
 Every check as `zheermao4`:
-2 headings, front matter equal, no TA, no error finish, no double blank line,
+2 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
 the four JSX path literals the only straight apostrophes (class ninety-six holding),
 two em-dashes left per the owner,
-both labels as the archive ("English translation of the letter from Arts:", "English translation of the preceding email conversation:"; class seventy-seven holding),
-the email conversation as the archive's own text this run (the review's 3-of-4-candidate split reached no revision; the Arts letter reviewed on one admissible revision and kept),
-the body rewritten by the lanes in the ordinary way (the wish line split as the original's two lines, "deeply starved of love", the galgame title completed to *Mystery Lover 2: Forgotten Truth*).
-Terminals: 2 consolidated, 3 slate-endorsed, 3 slate-declined (0, 9, 12), 1 slate-unjudged (1), 1 gate-kept (5, gate 2 to 2 consolidated against standing);
+both labels as the archive ("English translation of the letter from Arts:",
+"English translation of the preceding email conversation:";
+class seventy-seven holding),
+the email conversation as the archive's own text this run (the review's 3-of-4-candidate split reached no revision;
+the Arts letter reviewed on one admissible revision and kept),
+the body rewritten by the lanes in the ordinary way (the wish line split as the original's two lines,
+"deeply starved of love",
+the galgame title completed to *Mystery Lover 2:
+Forgotten Truth*).
+Terminals:
+2 consolidated,
+3 slate-endorsed,
+3 slate-declined (0,
+9,
+12),
+1 slate-unjudged (1),
+1 gate-kept (5,
+gate 2 to 2 consolidated against standing);
 19 abstention lines with reasons.
 No class.
 
-`CuspariaKLSY8` (frozen `e78515f56`, pid 2788469, overlap 8)
+`CuspariaKLSY8` (frozen `e78515f56`,
+pid 2788469,
+overlap 8)
 launched 17:34 UTC on Bedrock and OpenRouter
-(meters 67.57 USD Bedrock, 112.01 OpenRouter at launch),
+(meters 67.57 USD Bedrock,
+112.01 OpenRouter at launch),
 waiter bjkt19eib.
-Read for class ninety-seven on the wire (the original's 你 lines, if any, in the second person; any refusal line in the artifact),
-classes seventy-five, seventy-six, eighty-five and ninety-six holding,
+Read for class ninety-seven on the wire (the original's 你 lines,
+if any,
+in the second person;
+any refusal line in the artifact),
+classes seventy-five,
+seventy-six,
+eighty-five and ninety-six holding,
 beside every check of `CuspariaKLSY7`
-(1 heading, 1 marker, the gloss "Ling Shui Yu Yu Zi means fish in clear water" beside the nickname line, every line of the life in the past, front matter equal, no TA, no error finish, no double blank line).
+(1 heading,
+1 marker,
+the gloss "Ling Shui Yu Yu Zi means fish in clear water" beside the nickname line,
+every line of the life in the past,
+front matter equal,
+no TA,
+no error finish,
+no double blank line).
 
 ## yingying5 read, 2026-09-23, 17:22 UTC: SETTLED in 6 min, classes eighty-six, ninety-two, ninety-five and ninety-six holding, but the farewell in the third person (class ninety-seven); fixed in e78515f56, zheermao5 killed, zheermao6 launched
 
-`yingying5` (frozen `c62ce70b3`, pid 2760848) SETTLED at 17:11 UTC,
+`yingying5` (frozen `c62ce70b3`,
+pid 2760848) SETTLED at 17:11 UTC,
 6 min after its 17:05 launch (TALLY `ms=336854`),
 one attempt,
 298 seats,
 11 retry rounds,
 258 calls,
 no abandoned stream,
-0.21 USD by the meters (Bedrock 68.16 to 68.06, OpenRouter 112.60 to 112.49),
-on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
-Endpoints: deepseek on Morph 42, Mercury 29, minimax on CoreWeave 26 and Together 16, GLM-5.3-Flash on Wafer 16.
+0.21 USD by the meters (Bedrock 68.16 to 68.06,
+OpenRouter 112.60 to 112.49),
+on Bedrock and OpenRouter (Synthetic spent,
+Hyper dry).
+Endpoints:
+deepseek on Morph 42,
+Mercury 29,
+minimax on CoreWeave 26 and Together 16,
+GLM-5.3-Flash on Wafer 16.
 
 Every check as `yingying4`:
-1 heading, 4 markers, 2 definitions (the `[^2]` definition "[Farewell. I miss you, Yingying.]", class eighty-six holding),
-front matter equal, References line kept, no TA, no error finish, no double blank line,
-no straight apostrophe (classes ninety-two, ninety-five and ninety-six fine on a two-footnote page),
-two unendorsed standings (0 slate-declined, 2 gate-kept),
+1 heading,
+4 markers,
+2 definitions (the `[^2]` definition "[Farewell.
+I miss you,
+Yingying.]",
+class eighty-six holding),
+front matter equal,
+References line kept,
+no TA,
+no error finish,
+no double blank line,
+no straight apostrophe (classes ninety-two,
+ninety-five and ninety-six fine on a two-footnote page),
+two unendorsed standings (0 slate-declined,
+2 gate-kept),
 7 abstention lines with reasons.
 
 But the closing wish shipped in the third person.
-The original writes 愿在你的下一个世界，你还有同样的开朗去追你想追的蝴蝶吧, addressing the deceased;
+The original writes 愿在你的下一个世界，你还有同样的开朗去追你想追的蝴蝶吧,
+addressing the deceased;
 `yingying1` to `yingying4` shipped "May you still have...";
 `yingying5` shipped the archive's "May she still have the same cheer to chase the butterflies she wanted to chase in her next world!".
 Slice 2's repair lane wrote "May you ... what you want to do in your next world!",
@@ -12440,627 +15855,1359 @@ the translate lane copied the archive's "she" text,
 the contest tied 2 to 2 and settled on neither with the archive declined,
 the consolidation proposed "you",
 and the gate kept the standing 2 to 1
-(one ballot: "Consolidated adds an unsupported 'you' (愿…你) where the Chinese reads 'she'", a misreading of 你;
+(one ballot:
+"Consolidated adds an unsupported 'you' (愿…你) where the Chinese reads 'she'",
+a misreading of 你;
 another called the person switch a fault and lost).
 Class eighty-one's rule ("a pronoun the ORIGINAL writes is rendered as written where it stands") was on every sheet and a judge still read 你 as "she";
 no deterministic floor asked for the address (class ninety-seven).
 
-Corpus census (`census-you.mjs`, 2026-09-23) backing the floor's narrow shape:
+Corpus census (`census-you.mjs`,
+2026-09-23) backing the floor's narrow shape:
 67 of 92 archive pages carry 你;
-3 pages have no "you" at all (Mizuki_Yuuki "I hope they have found...", Rentable_A, XIEPT2);
+3 pages have no "you" at all (Mizuki_Yuuki "I hope they have found...",
+Rentable_A,
+XIEPT2);
 of 31 aligned 你-blocks 6 lack "you":
-two 你好 greetings rendered "Hello" (LCG_Akiball), 干干你的 as "wanna play?" (BI4PBV, no pronoun), Mizuki's person switch, one misaligned block, one front matter.
+two 你好 greetings rendered "Hello" (LCG_Akiball),
+干干你的 as "wanna play?"
+(BI4PBV,
+no pronoun),
+Mizuki's person switch,
+one misaligned block,
+one front matter.
 So the floor refuses only a rendering that carries no second-person pronoun and a third-person one in its place;
-a greeting (你好, 您好) is exempt, HTML comments are cut, and a rendering with no pronoun at all stays with the judges.
+a greeting (你好,
+您好) is exempt,
+HTML comments are cut,
+and a rendering with no pronoun at all stays with the judges.
 
-Class ninety-seven, fixed in e78515f56:
+Class ninety-seven,
+fixed in e78515f56:
 `translate-address-drop.ts` (`droppedAddressFindings`) counts 你 and 您 outside a greeting in the original with its comments cut,
 scans the candidate's Latin words linearly,
-and refuses it where no word is you, your, yours, yourself or yourselves and one is she, he, her, him, his, hers, they, them, their, theirs, herself, himself or themselves,
+and refuses it where no word is you,
+your,
+yours,
+yourself or yourselves and one is she,
+he,
+her,
+him,
+his,
+hers,
+they,
+them,
+their,
+theirs,
+herself,
+himself or themselves,
 with a finding naming the count and the pronouns found;
-wired into `validateTranslatedSlice` after the class ninety-two marker floor, so it runs before any judge on every lane, contest, consolidation and gate candidate.
-Guard red first at 8598cfaeb (`address-drop.unit.test.ts`: the refusal, and acceptance of the address kept, a greeting rendered as a greeting, a pronoun-free rendering and a comment-only 你),
+wired into `validateTranslatedSlice` after the class ninety-two marker floor,
+so it runs before any judge on every lane,
+contest,
+consolidation and gate candidate.
+Guard red first at 8598cfaeb (`address-drop.unit.test.ts`:
+the refusal,
+and acceptance of the address kept,
+a greeting rendered as a greeting,
+a pronoun-free rendering and a comment-only 你),
 lint 0 and 0,
 types clean,
-full suite green (`suite-class97.log`, 1100 PASS).
+full suite green (`suite-class97.log`,
+1100 PASS).
 
-`zheermao5` (frozen `c62ce70b3`, pid 2762969, launched 17:11 UTC) killed at 17:21 UTC under ALWAYS KILL AND RELAUNCH once e78515f56 landed,
+`zheermao5` (frozen `c62ce70b3`,
+pid 2762969,
+launched 17:11 UTC) killed at 17:21 UTC under ALWAYS KILL AND RELAUNCH once e78515f56 landed,
 9 min in at the translate lane,
-566 seats, 17 retry rounds, 463 calls, 11 abandoned streams (0.03 USD),
-about 0.25 USD by the meters (Bedrock 68.05 to 67.90, OpenRouter 112.47 to 112.38).
+566 seats,
+17 retry rounds,
+463 calls,
+11 abandoned streams (0.03 USD),
+about 0.25 USD by the meters (Bedrock 68.05 to 67.90,
+OpenRouter 112.47 to 112.38).
 
-`zheermao6` (frozen `e78515f56`, pid 2784441, overlap 8)
+`zheermao6` (frozen `e78515f56`,
+pid 2784441,
+overlap 8)
 launched 17:21 UTC on Bedrock and OpenRouter
-(meters 67.88 USD Bedrock, 112.34 OpenRouter at launch),
+(meters 67.88 USD Bedrock,
+112.34 OpenRouter at launch),
 waiter bx3eo9p1o.
-Read for class ninety-seven on the wire (any "drops the address in the second person" refusal in the artifact; the reply's 你 lines, if any, in the second person),
+Read for class ninety-seven on the wire (any "drops the address in the second person" refusal in the artifact;
+the reply's 你 lines,
+if any,
+in the second person),
 classes seventy-seven and ninety-six holding,
 beside every check of `zheermao4`
-(2 headings, front matter equal, no TA, no error finish, no double blank line, the email label as the archive).
+(2 headings,
+front matter equal,
+no TA,
+no error finish,
+no double blank line,
+the email label as the archive).
 
 ## shi_Yumiaoya14 read, 2026-09-23, 17:06 UTC: SETTLED in 9 min, classes seventy-eight to eighty holding on the class ninety-six build; no class, yingying5 launched
 
-`shi_Yumiaoya14` (frozen `c62ce70b3`, pid 2758225) SETTLED at 17:05 UTC,
+`shi_Yumiaoya14` (frozen `c62ce70b3`,
+pid 2758225) SETTLED at 17:05 UTC,
 9 min after its 16:56 launch,
 one attempt,
 880 seats,
 38 retry rounds,
 786 calls,
 no abandoned stream,
-0.54 USD by the meters (Bedrock 68.45 to 68.16, OpenRouter 112.85 to 112.60),
-on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
-Endpoints: deepseek on Morph 134, GLM-5.3-Flash on Wafer 54, Mercury 102, minimax on Together 77 and CoreWeave 42;
+0.54 USD by the meters (Bedrock 68.45 to 68.16,
+OpenRouter 112.85 to 112.60),
+on Bedrock and OpenRouter (Synthetic spent,
+Hyper dry).
+Endpoints:
+deepseek on Morph 134,
+GLM-5.3-Flash on Wafer 54,
+Mercury 102,
+minimax on Together 77 and CoreWeave 42;
 17 abstention lines with reasons.
 
 Classes seventy-eight to eighty holding:
-the ICU paragraph reads "Chewing Gum’s and Danpian’s successive deaths" (both declared forms; `shi_Yumiaoya13` wrote "Magic Chewing Gum and Danpian"),
-January 16 reads "she attempted suicide in the early hours of January 16 by taking a large amount of medication" (an attempt, as the rule says),
-and the closing quote ships as the archive's two lines (the English line and "From *The Truman Show*"), the slate ballots naming the bilingual clause as they weighed it.
-Classes ninety-two, ninety-five and ninety-six on a page with one footnote and curly quotes: the marker and its definition on the page, the relabel with nothing to move,
+the ICU paragraph reads "Chewing Gum’s and Danpian’s successive deaths" (both declared forms;
+`shi_Yumiaoya13` wrote "Magic Chewing Gum and Danpian"),
+January 16 reads "she attempted suicide in the early hours of January 16 by taking a large amount of medication" (an attempt,
+as the rule says),
+and the closing quote ships as the archive's two lines (the English line and "From *The Truman Show*"),
+the slate ballots naming the bilingual clause as they weighed it.
+Classes ninety-two,
+ninety-five and ninety-six on a page with one footnote and curly quotes:
+the marker and its definition on the page,
+the relabel with nothing to move,
 the page's only straight single quotes the archive's own four JSX path literals.
-Every check as `shi_Yumiaoya13`: 4 headings, 2 markers, 1 definition, the death paragraphs on the page, the attribution once, front matter equal, no TA, no error finish, no double blank line;
-no unendorsed, gate-kept or slate-declined standing.
+Every check as `shi_Yumiaoya13`:
+4 headings,
+2 markers,
+1 definition,
+the death paragraphs on the page,
+the attribution once,
+front matter equal,
+no TA,
+no error finish,
+no double blank line;
+no unendorsed,
+gate-kept or slate-declined standing.
 No class.
 
-`yingying5` (frozen `c62ce70b3`, pid 2760848, overlap 8)
+`yingying5` (frozen `c62ce70b3`,
+pid 2760848,
+overlap 8)
 launched 17:05 UTC on Bedrock and OpenRouter
-(meters 68.16 USD Bedrock, 112.60 OpenRouter at launch),
+(meters 68.16 USD Bedrock,
+112.60 OpenRouter at launch),
 the oldest read left (`yingying4` ran on `40679244d`).
-Read for class eighty-six holding (the `[^2]` definition "[Farewell. I miss you, Yingying.]"),
-classes ninety-two, ninety-five and ninety-six on a page with two footnotes,
+Read for class eighty-six holding (the `[^2]` definition "[Farewell.
+I miss you,
+Yingying.]"),
+classes ninety-two,
+ninety-five and ninety-six on a page with two footnotes,
 beside every check of `yingying4`
-(1 heading, 4 markers, 2 definitions, front matter equal, References line kept, the second-person farewell, no TA, no error finish, no double blank line).
+(1 heading,
+4 markers,
+2 definitions,
+front matter equal,
+References line kept,
+the second-person farewell,
+no TA,
+no error finish,
+no double blank line).
 
 ## mikaela10 read, 2026-09-23, 16:57 UTC: SETTLED in 15 min, class ninety-six live, classes seventy to seventy-seven holding; no class, shi_Yumiaoya14 launched
 
-`mikaela10` (frozen `c62ce70b3`, pid 2742636, entry id `mikaela_khara`) SETTLED at 16:55 UTC,
+`mikaela10` (frozen `c62ce70b3`,
+pid 2742636,
+entry id `mikaela_khara`) SETTLED at 16:55 UTC,
 15 min after its 16:40 launch,
 one attempt,
 2,336 seats,
 65 retry rounds,
 2,036 calls,
 1 abandoned stream (0.002 USD),
-1.21 USD by the meters (Bedrock 69.14 to 68.45, OpenRouter 113.37 to 112.85),
-on Bedrock and OpenRouter (Synthetic spent, Hyper dry).
-Endpoints: deepseek on Morph 335, GLM-5.3-Flash on Wafer 105, Mercury 254, minimax on CoreWeave 172 and Together 158;
+1.21 USD by the meters (Bedrock 69.14 to 68.45,
+OpenRouter 113.37 to 112.85),
+on Bedrock and OpenRouter (Synthetic spent,
+Hyper dry).
+Endpoints:
+deepseek on Morph 335,
+GLM-5.3-Flash on Wafer 105,
+Mercury 254,
+minimax on CoreWeave 172 and Together 158;
 72 abstention lines with reasons.
 
 Class ninety-six live:
 "Huai An (𝓠𝓾𝓪𝓷’s classmate in high school)" curled as the archive,
 and the page's only straight single quotes are the archive's own four JSX path literals.
 Classes seventy to seventy-seven holding:
-the closing excerpt line curled, 𝓠𝓾𝓪𝓷 six times as the archive and never "Quan", "Mika was outed.", the Epilogue one to one, the life in the past.
-Every check as `mikaela9`: front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish;
-two unendorsed standings (12, 19), both slate-declined.
+the closing excerpt line curled,
+𝓠𝓾𝓪𝓷 six times as the archive and never "Quan",
+"Mika was outed.",
+the Epilogue one to one,
+the life in the past.
+Every check as `mikaela9`:
+front matter equal,
+4 headings,
+4 comments,
+4 markers,
+2 definitions,
+no TA,
+no error finish;
+two unendorsed standings (12,
+19),
+both slate-declined.
 No class.
 
-`shi_Yumiaoya14` (frozen `c62ce70b3`, pid 2758225, overlap 8)
+`shi_Yumiaoya14` (frozen `c62ce70b3`,
+pid 2758225,
+overlap 8)
 launched 16:56 UTC on Bedrock and OpenRouter
-(meters 68.45 USD Bedrock, 112.85 OpenRouter at launch),
+(meters 68.45 USD Bedrock,
+112.85 OpenRouter at launch),
 the oldest read of the seven entries (`shi_Yumiaoya13` ran on `93b11aef9`).
 Read for classes seventy-eight to eighty holding
-("Magic Chewing Gum and Danpian" on the ICU paragraph, "she tried to end her life" on January 16, the film quote as two lines with the block bound's refusals in the artifact),
-classes ninety-two, ninety-five and ninety-six on a page with one footnote and curly quotes,
+("Magic Chewing Gum and Danpian" on the ICU paragraph,
+"she tried to end her life" on January 16,
+the film quote as two lines with the block bound's refusals in the artifact),
+classes ninety-two,
+ninety-five and ninety-six on a page with one footnote and curly quotes,
 beside every check of `shi_Yumiaoya13`
-(4 headings, the death paragraphs on the page, the attribution once, front matter equal, no TA, no error finish, no double blank line).
+(4 headings,
+the death paragraphs on the page,
+the attribution once,
+front matter equal,
+no TA,
+no error finish,
+no double blank line).
 
 ## mikaela9 read, 2026-09-23, 16:40 UTC: SETTLED in 18 min, classes seventy to seventy-seven holding, but the mathematical-script handle's possessive shipped straight (class ninety-six, fixed in c62ce70b3); mikaela10 launched
 
-`mikaela9` (frozen `b26ea1990`, pid 2731285, entry id `mikaela_khara`) SETTLED at 16:35 UTC,
+`mikaela9` (frozen `b26ea1990`,
+pid 2731285,
+entry id `mikaela_khara`) SETTLED at 16:35 UTC,
 18.5 min after its 16:17 launch (TALLY `ms=1113750`),
 one attempt,
 2,673 seats,
 135 retry rounds,
 2,271 calls,
 no abandoned stream,
-1.23 USD by the meters (Bedrock 69.84 to 69.14, OpenRouter 113.90 to 113.37);
-Synthetic read wet at launch (0.7 percent of the weekly allowance) and dry by the end, Hyper dry.
-`mikaela8`, launched 16:16 UTC with the entry id `mikaela`, exited at once with `pending=0` and spent nothing: the entry id is `mikaela_khara`, as `zheermao101` is for `zheermao`.
-Endpoints: deepseek on Morph 399, GLM-5.3-Flash on Wafer 110, Mercury 270, minimax on CoreWeave 256 and Together 100;
+1.23 USD by the meters (Bedrock 69.84 to 69.14,
+OpenRouter 113.90 to 113.37);
+Synthetic read wet at launch (0.7 percent of the weekly allowance) and dry by the end,
+Hyper dry.
+`mikaela8`,
+launched 16:16 UTC with the entry id `mikaela`,
+exited at once with `pending=0` and spent nothing:
+the entry id is `mikaela_khara`,
+as `zheermao101` is for `zheermao`.
+Endpoints:
+deepseek on Morph 399,
+GLM-5.3-Flash on Wafer 110,
+Mercury 270,
+minimax on CoreWeave 256 and Together 100;
 95 abstention lines with reasons.
 
 Classes seventy to seventy-seven holding:
-the closing excerpt line curled ("Excerpt from [𝓠𝓾𝓪𝓷](...)’s"), 𝓠𝓾𝓪𝓷 six times as the archive and never "Quan",
-"Mika was outed.", the Epilogue one to one, the life in the past, no archive-only block to review.
-Every check as `mikaela7`: front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions as the archive, no TA, no error finish;
-one unendorsed standing (17), slate-declined.
-The one double blank line on the page stands before the `<details>` block and is the archive's own (the archive carries it at the same place), so class seventy-five is not in play.
+the closing excerpt line curled ("Excerpt from [𝓠𝓾𝓪𝓷](...)’s"),
+𝓠𝓾𝓪𝓷 six times as the archive and never "Quan",
+"Mika was outed.",
+the Epilogue one to one,
+the life in the past,
+no archive-only block to review.
+Every check as `mikaela7`:
+front matter equal,
+4 headings,
+4 comments,
+4 markers,
+2 definitions as the archive,
+no TA,
+no error finish;
+one unendorsed standing (17),
+slate-declined.
+The one double blank line on the page stands before the `<details>` block and is the archive's own (the archive carries it at the same place),
+so class seventy-five is not in play.
 
 But one straight apostrophe the archive curls:
 line 153 reads "Huai An (𝓠𝓾𝓪𝓷's classmate in high school)" where the archive and `mikaela7` read "𝓠𝓾𝓪𝓷’s".
 The bench wrote the possessive straight and the typography restoration left it:
-`restore-typography.ts` read the character before a quote with `charAt(index - 1)`, one UTF-16 unit,
-and the handle's last letter (𝓷, U+1D4F7) is a surrogate pair, so the unit before the apostrophe was a lone low surrogate, which binds nothing,
+`restore-typography.ts` read the character before a quote with `charAt(index - 1)`,
+one UTF-16 unit,
+and the handle's last letter (𝓷,
+U+1D4F7) is a surrogate pair,
+so the unit before the apostrophe was a lone low surrogate,
+which binds nothing,
 and the quote was read as an opening quote with a space before it (class ninety-six).
 The same reading would have missed the handle after a quote and the span closer test alike;
-`bindsWord` also tested letters by case mapping (`toLowerCase() !== toUpperCase()`), and the mathematical script letters have none.
+`bindsWord` also tested letters by case mapping (`toLowerCase() !== toUpperCase()`),
+and the mathematical script letters have none.
 
-Class ninety-six, fixed in c62ce70b3:
+Class ninety-six,
+fixed in c62ce70b3:
 `codePointBefore` and `codePointAt` read the neighbours of a quote as whole code points (a pair where `codePointAt` two units back exceeds the Basic Multilingual Plane),
 every neighbour read in the convention scan and the rebuild goes through them,
-and `bindsWord` tests a cased letter by general category (`\p{Lu}`, `\p{Ll}`, `\p{Lt}`) or an ASCII digit, so the script letters bind and Han still does not.
-Guard red first at d8b284bf9 (`restore-typography.unit.test.ts`: the possessive after a script handle curls, the handle on both sides of an apostrophe curls, a quoted handle stays a quote),
+and `bindsWord` tests a cased letter by general category (`\p{Lu}`,
+`\p{Ll}`,
+`\p{Lt}`) or an ASCII digit,
+so the script letters bind and Han still does not.
+Guard red first at d8b284bf9 (`restore-typography.unit.test.ts`:
+the possessive after a script handle curls,
+the handle on both sides of an apostrophe curls,
+a quoted handle stays a quote),
 lint 0 and 0,
 types clean,
-full suite green (`suite-class96.log`, 1099 PASS).
+full suite green (`suite-class96.log`,
+1099 PASS).
 
-`mikaela10` (frozen `c62ce70b3`, pid 2742636, overlap 8)
+`mikaela10` (frozen `c62ce70b3`,
+pid 2742636,
+overlap 8)
 launched 16:40 UTC on Bedrock and OpenRouter
-(meters 69.14 USD Bedrock, 113.37 OpenRouter at launch).
-Read for class ninety-six live (no straight apostrophe on the page beyond the archive's own four JSX path literals; "𝓠𝓾𝓪𝓷’s" wherever the bench writes the possessive),
-classes seventy to seventy-seven, ninety-two and ninety-five holding,
+(meters 69.14 USD Bedrock,
+113.37 OpenRouter at launch).
+Read for class ninety-six live (no straight apostrophe on the page beyond the archive's own four JSX path literals;
+"𝓠𝓾𝓪𝓷’s" wherever the bench writes the possessive),
+classes seventy to seventy-seven,
+ninety-two and ninety-five holding,
 beside every check of `mikaela9`
-(front matter equal, 4 headings, 4 comments, 4 markers, 2 definitions, no TA, no error finish).
+(front matter equal,
+4 headings,
+4 comments,
+4 markers,
+2 definitions,
+no TA,
+no error finish).
 
 ## hulicaijia15 read, 2026-09-23, 16:17 UTC: SETTLED in 37 min, the relabel closed on the definitions alone, no trim or revert, every check as hulicaijia13; no class, mikaela9 launched
 
-`hulicaijia15` (frozen `b26ea1990`, pid 2723733) SETTLED at 16:15 UTC,
+`hulicaijia15` (frozen `b26ea1990`,
+pid 2723733) SETTLED at 16:15 UTC,
 37 min after its 15:38 launch,
 one attempt,
 4,697 seats,
 125 retry rounds,
 3,983 calls,
 no abandoned stream,
-4.06 USD by the meters (Bedrock 71.82 to 69.84, OpenRouter 115.98 to 113.90),
-on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry);
-the fastest `hulicaijia` yet (`hulicaijia13` 68 min, `hulicaijia9` 82).
-Endpoints: deepseek on Morph 662, GLM-5.3-Flash on Wafer 200, Mercury 472, minimax on Together 321 and CoreWeave 318.
+4.06 USD by the meters (Bedrock 71.82 to 69.84,
+OpenRouter 115.98 to 113.90),
+on Bedrock and OpenRouter alone (Synthetic spent,
+Hyper dry);
+the fastest `hulicaijia` yet (`hulicaijia13` 68 min,
+`hulicaijia9` 82).
+Endpoints:
+deepseek on Morph 662,
+GLM-5.3-Flash on Wafer 200,
+Mercury 472,
+minimax on Together 321 and CoreWeave 318.
 
 Class ninety-five not exercised live:
 the roster's definition round paired 15 of 15 this run (14 of 15 on `hulicaijia14`),
 so the relabel closed on the definitions alone as on `hulicaijia13`
-(`relabelled [^8]->[^7], [^9]->[^8]`, `[^7]` retained as `[^10]`, definitions moved into the original's order);
-the widening line never printed, and its unit guards stand for it.
-No `assembly-footnote-trimmed` or `assembly-footnote-reverted` line, no marker-drop refusal, no slice 41 stop.
+(`relabelled [^8]->[^7], [^9]->[^8]`,
+`[^7]` retained as `[^10]`,
+definitions moved into the original's order);
+the widening line never printed,
+and its unit guards stand for it.
+No `assembly-footnote-trimmed` or `assembly-footnote-reverted` line,
+no marker-drop refusal,
+no slice 41 stop.
 
 Every check as `hulicaijia13`:
-13 headings, 18 footnote markers, 9 definitions (`[^1]` to `[^8]` and the `[^10]` Nayuki note under class eighty-four), 2 links, 3 Sakura,
-front matter equal, no TA, no error finish, no double blank line.
-The review removed no archive block, so class ninety-four had nothing to do here.
-Four unendorsed standings (1, 8, 29, 47), one gate-kept (29), three slate-declined;
+13 headings,
+18 footnote markers,
+9 definitions (`[^1]` to `[^8]` and the `[^10]` Nayuki note under class eighty-four),
+2 links,
+3 Sakura,
+front matter equal,
+no TA,
+no error finish,
+no double blank line.
+The review removed no archive block,
+so class ninety-four had nothing to do here.
+Four unendorsed standings (1,
+8,
+29,
+47),
+one gate-kept (29),
+three slate-declined;
 155 abstention lines with reasons.
-The `[^3]` definition is reworded against `hulicaijia13`'s ("Now part of the Liangjiang New Area commercial district" for "Now one of the commercial districts of Chongqing's Liangjiang"), the bench's choice on the same note.
+The `[^3]` definition is reworded against `hulicaijia13`'s ("Now part of the Liangjiang New Area commercial district" for "Now one of the commercial districts of Chongqing's Liangjiang"),
+the bench's choice on the same note.
 
-`mikaela9` (frozen `b26ea1990`, pid 2731285, overlap 8)
+`mikaela9` (frozen `b26ea1990`,
+pid 2731285,
+overlap 8)
 launched 16:17 UTC on Bedrock and OpenRouter
-(`mikaela8`, launched 16:16 UTC with the entry id `mikaela`, exited at once with `pending=0` and spent nothing: the entry id is `mikaela_khara`, as `zheermao101` is for `zheermao`)
-(meters 69.84 USD Bedrock, 113.90 OpenRouter at launch),
+(`mikaela8`,
+launched 16:16 UTC with the entry id `mikaela`,
+exited at once with `pending=0` and spent nothing:
+the entry id is `mikaela_khara`,
+as `zheermao101` is for `zheermao`)
+(meters 69.84 USD Bedrock,
+113.90 OpenRouter at launch),
 the oldest read of the seven entries (`mikaela7` ran on `93b11aef9`).
-Read for classes seventy to seventy-seven, ninety-two and ninety-five holding
-(the excerpt line curled, 𝓠𝓾𝓪𝓷 on every appearance, "Mika was outed", the Epilogue one to one, no double blank line, the life in the past, 4 markers with their definitions, the relabel line),
+Read for classes seventy to seventy-seven,
+ninety-two and ninety-five holding
+(the excerpt line curled,
+𝓠𝓾𝓪𝓷 on every appearance,
+"Mika was outed",
+the Epilogue one to one,
+no double blank line,
+the life in the past,
+4 markers with their definitions,
+the relabel line),
 beside every check of `mikaela7`
-(front matter equal, 4 headings, 4 comments, 4 markers, no TA, no error finish).
+(front matter equal,
+4 headings,
+4 comments,
+4 markers,
+no TA,
+no error finish).
 
 ## hulicaijia14 read, 2026-09-23, 15:45 UTC: INCOMPLETE at 22 min on slice 41 after the footnote relabel stayed open (class ninety-five, fixed in b26ea1990), hulicaijia15 launched
 
-`hulicaijia14` (frozen `7295b33ab`, pid 2695022) INCOMPLETE at 15:36 UTC,
+`hulicaijia14` (frozen `7295b33ab`,
+pid 2695022) INCOMPLETE at 15:36 UTC,
 22.5 min after its 15:13 launch (TALLY `ms=1352891`),
 one attempt,
 4,111 seats,
 135 retry rounds,
 3,510 calls,
 no abandoned stream,
-3.70 USD by the meters (Bedrock 73.73 to 71.82, OpenRouter 117.77 to 115.98),
-on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry);
+3.70 USD by the meters (Bedrock 73.73 to 71.82,
+OpenRouter 117.77 to 115.98),
+on Bedrock and OpenRouter alone (Synthetic spent,
+Hyper dry);
 no page and no artifact.
-Endpoints as `XingZ628`: deepseek on Morph 611 with two CoreWeave fallbacks, GLM-5.3-Flash on Wafer 209, Mercury 411, minimax on CoreWeave 408 and Together 153;
+Endpoints as `XingZ628`:
+deepseek on Morph 611 with two CoreWeave fallbacks,
+GLM-5.3-Flash on Wafer 209,
+Mercury 411,
+minimax on CoreWeave 408 and Together 153;
 95 abstention lines with reasons.
 
 The stop:
-"slice 41: the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship (slate-declined-standing)".
-Slice 41 is the amantadine paragraph, whose original cites `[^7]` and whose archive cites `[^8]`.
-The archive's own paragraph stood at the consolidation, the class ninety-two floor refused it
-("Your translation drops footnote 7: the ORIGINAL passage carries the marker [^7] and your translation does not"),
-the withheld standing left the slate to the proposals and the translate lane text, and the judges declined them all.
-Upstream, at 15:11 UTC, the relabel had logged
-"FOOTNOTES entry=hulicaijia archive labels stand, since the map read off the definitions the roster paired does not close: the map lands on [^8] while original correspondence remains incomplete (1 original labels unaccounted for)":
-the roster's definition round paired 14 of 15 original blocks (15 of 15 on `hulicaijia13`), leaving the original's `[^7]` definition unpaired,
+"slice 41:
+the standing text failed the deterministic publication rule and the consolidation left nothing valid to ship (slate-declined-standing)".
+Slice 41 is the amantadine paragraph,
+whose original cites `[^7]` and whose archive cites `[^8]`.
+The archive's own paragraph stood at the consolidation,
+the class ninety-two floor refused it
+("Your translation drops footnote 7:
+the ORIGINAL passage carries the marker [^7] and your translation does not"),
+the withheld standing left the slate to the proposals and the translate lane text,
+and the judges declined them all.
+Upstream,
+at 15:11 UTC,
+the relabel had logged
+"FOOTNOTES entry=hulicaijia archive labels stand,
+since the map read off the definitions the roster paired does not close:
+the map lands on [^8] while original correspondence remains incomplete (1 original labels unaccounted for)":
+the roster's definition round paired 14 of 15 original blocks (15 of 15 on `hulicaijia13`),
+leaving the original's `[^7]` definition unpaired,
 so the map read off the definitions alone carried `[^9]->[^8]` and the identities but not `[^8]->[^7]`;
-with archive `[^7]` (the translator's Nayuki note) and `[^8]` both unplaced against one unaccounted original label, elimination could not close it.
-The archive's labels stood while every lane rendered the original's, so the translate assembly trimmed `[^9]` as an orphan (15:23 UTC),
-the repair assembly reverted `[^9]`, `[^8]` and `[^7]` as orphans over three rounds (15:19 UTC),
+with archive `[^7]` (the translator's Nayuki note) and `[^8]` both unplaced against one unaccounted original label,
+elimination could not close it.
+The archive's labels stood while every lane rendered the original's,
+so the translate assembly trimmed `[^9]` as an orphan (15:23 UTC),
+the repair assembly reverted `[^9]`,
+`[^8]` and `[^7]` as orphans over three rounds (15:19 UTC),
 and the archive's `[^8]` paragraph read as a marker drop against the original's `[^7]` (class ninety-five).
-On `hulicaijia12` and `13` the same roster closed the map (`[^8]->[^7]`, `[^9]->[^8]`, `[^7]` retained as `[^10]`); the difference is one model vote on one definition pair.
+On `hulicaijia12` and `13` the same roster closed the map (`[^8]->[^7]`,
+`[^9]->[^8]`,
+`[^7]` retained as `[^10]`);
+the difference is one model vote on one definition pair.
 
-Class ninety-five, fixed in b26ea1990:
+Class ninety-five,
+fixed in b26ea1990:
 `readClosedRelabel` (`corpus-run/pass-footnote-relabel-read.ts`) reads the definitions the roster paired and closes them as before;
-where the closure is open it logs "the map read off the definitions the roster paired does not close (...); reading the paired slices beside them"
+where the closure is open it logs "the map read off the definitions the roster paired does not close (...);
+reading the paired slices beside them"
 and reads the paired slices beside the definitions through `widenFootnoteRelabel` (`archive-footnote-relabel-widen.ts`),
-every relation through the one consistency check (`mapLabels`, now exported), the definitions' claims first;
-a slice contradicting a definition pair still leaves the archive standing, and a reading that stays open after both still stands.
-The pass reads through the helper (basis "the definitions the roster paired and the paired slices" on the relabelled line); `readRelabel` is gone.
-Guard red first at 9de98e427 (`corpus-run/pass-footnote-relabel-widen.unit.test.ts`: a cat-themed pair whose roster paired one definition short closes to `[^3]->[^2], [^2]->[^1]` with the translator's note retained as `[^4]`; a pair no slice can place stays standing),
-`archive-footnote-relabel-widen.unit.test.ts` (the merged reading, the contradiction, the ambiguous pass-through),
+every relation through the one consistency check (`mapLabels`,
+now exported),
+the definitions' claims first;
+a slice contradicting a definition pair still leaves the archive standing,
+and a reading that stays open after both still stands.
+The pass reads through the helper (basis "the definitions the roster paired and the paired slices" on the relabelled line);
+`readRelabel` is gone.
+Guard red first at 9de98e427 (`corpus-run/pass-footnote-relabel-widen.unit.test.ts`:
+a cat-themed pair whose roster paired one definition short closes to `[^3]->[^2], [^2]->[^1]` with the translator's note retained as `[^4]`;
+a pair no slice can place stays standing),
+`archive-footnote-relabel-widen.unit.test.ts` (the merged reading,
+the contradiction,
+the ambiguous pass-through),
 lint 0 and 0,
 types clean,
-full suite green (`suite-class95.log`, 1099 PASS).
+full suite green (`suite-class95.log`,
+1099 PASS).
 
-`hulicaijia15` (frozen `b26ea1990`, pid 2723733, overlap 8)
+`hulicaijia15` (frozen `b26ea1990`,
+pid 2723733,
+overlap 8)
 launched 15:38 UTC on Bedrock and OpenRouter
-(meters 71.82 USD Bedrock, 115.98 OpenRouter at launch),
+(meters 71.82 USD Bedrock,
+115.98 OpenRouter at launch),
 waiter bqga8hys0.
 Read for class ninety-five live
-(the "reading the paired slices beside them" line if the roster pairs short again, else the closed relabel as `hulicaijia13`; either way `relabelled [^8]->[^7], [^9]->[^8]`, `[^7]->[^10]` retained, no `assembly-footnote-trimmed` or `assembly-footnote-reverted` line, no slice 41 stop),
+(the "reading the paired slices beside them" line if the roster pairs short again,
+else the closed relabel as `hulicaijia13`;
+either way `relabelled [^8]->[^7], [^9]->[^8]`,
+`[^7]->[^10]` retained,
+no `assembly-footnote-trimmed` or `assembly-footnote-reverted` line,
+no slice 41 stop),
 class ninety-two on a page whose archive carries the markers,
 class ninety-four where the review removes an archive-only block,
 class ninety-three on the clock (`hulicaijia13` ran 68 min),
 beside every check of `hulicaijia13`
-(13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, front matter equal, no TA, no error finish).
+(13 headings,
+17 tag markers,
+18 footnote markers,
+9 definitions,
+2 links,
+3 Sakura,
+front matter equal,
+no TA,
+no error finish).
 
 ## XingZ628 read, 2026-09-23, 15:15 UTC: SETTLED in 51 min, class ninety-four live, classes ninety-two and ninety-three again, class eighty-two exercised live; no class, hulicaijia14 launched
 
-`XingZ628` (frozen `7295b33ab`, pid 2675240) SETTLED at 15:10 UTC,
+`XingZ628` (frozen `7295b33ab`,
+pid 2675240) SETTLED at 15:10 UTC,
 51 min after its 14:19 launch (TALLY `ms=3032284`),
 one attempt,
 8,487 seats,
 256 retry rounds,
 7,493 calls,
 2 abandoned streams (0.01 USD),
-9.06 USD by the meters (Bedrock 78.77 to 73.76, OpenRouter 121.90 to 117.85),
-on Bedrock and OpenRouter alone (Synthetic spent, Hyper dry).
-Stages: repair from 14:21, translate from 14:37, contest from 14:45, consolidation 14:48 to 15:10.
+9.06 USD by the meters (Bedrock 78.77 to 73.76,
+OpenRouter 121.90 to 117.85),
+on Bedrock and OpenRouter alone (Synthetic spent,
+Hyper dry).
+Stages:
+repair from 14:21,
+translate from 14:37,
+contest from 14:45,
+consolidation 14:48 to 15:10.
 
-Class ninety-four live: the archive block review removed the placeholder line again (the two alert lines kept, as on `XingZ627`) and the page carries one blank line between the front matter and "[!Warning]", no double blank line anywhere.
-Class ninety-two again: nine definitions, the song line "It's called something like Trans-something Lights[^3]." with its marker, no trim line.
-Class ninety-three on the wire: deepseek on Morph 1,212 streams at 5.7 s (13 CoreWeave fallbacks at 11.8 s), GLM-5.3-Flash on Wafer 418 at 10.7 s (7 InferenceNet fallbacks at 47.8 s).
-Class eighty-two exercised live for the first time: a translate run-off tied again over three finalists and narrowed to two, the same panel asked again, no stop.
-Classes eighty-eight to ninety-one again (the gloss at the heading, eight headings unified to the archive's bare style, eight restores: Huidu and Impermanence to HiYku and Ann, Dongyun to Shinonome, Baimao suki to Baimao Suki, and the signatures).
+Class ninety-four live:
+the archive block review removed the placeholder line again (the two alert lines kept,
+as on `XingZ627`) and the page carries one blank line between the front matter and "[!Warning]",
+no double blank line anywhere.
+Class ninety-two again:
+nine definitions,
+the song line "It's called something like Trans-something Lights[^3]."
+with its marker,
+no trim line.
+Class ninety-three on the wire:
+deepseek on Morph 1,212 streams at 5.7 s (13 CoreWeave fallbacks at 11.8 s),
+GLM-5.3-Flash on Wafer 418 at 10.7 s (7 InferenceNet fallbacks at 47.8 s).
+Class eighty-two exercised live for the first time:
+a translate run-off tied again over three finalists and narrowed to two,
+the same panel asked again,
+no stop.
+Classes eighty-eight to ninety-one again (the gloss at the heading,
+eight headings unified to the archive's bare style,
+eight restores:
+Huidu and Impermanence to HiYku and Ann,
+Dongyun to Shinonome,
+Baimao suki to Baimao Suki,
+and the signatures).
 Every structural check as `XingZ627`:
-fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish;
-three unendorsed standings (7, 19, 26), no gate-kept, two slate-declined;
+fourteen headings,
+both links,
+nine definitions,
+3 TextRing,
+eleven details blocks,
+front matter equal,
+no TA,
+no error finish;
+three unendorsed standings (7,
+19,
+26),
+no gate-kept,
+two slate-declined;
 219 abstention lines with reasons.
 No class.
 
-`hulicaijia14` (frozen `7295b33ab`, pid 2695022, overlap 8)
+`hulicaijia14` (frozen `7295b33ab`,
+pid 2695022,
+overlap 8)
 launched 15:13 UTC on Bedrock and OpenRouter
-(meters 73.73 USD Bedrock, 117.77 OpenRouter at launch),
+(meters 73.73 USD Bedrock,
+117.77 OpenRouter at launch),
 the first footnote carrier on the class ninety-two floor.
-Read for class ninety-two on a page whose archive carries the markers (18 markers, 9 definitions as `hulicaijia13`; no `assembly-footnote-trimmed` line; the [^10] Nayuki note on the page under class eighty-four),
+Read for class ninety-two on a page whose archive carries the markers (18 markers,
+9 definitions as `hulicaijia13`;
+no `assembly-footnote-trimmed` line;
+the [^10] Nayuki note on the page under class eighty-four),
 class ninety-four where the review removes an archive-only block,
 class ninety-three on the clock (`hulicaijia13` ran 68 min),
 beside every check of `hulicaijia13`.
 
 ## XingZ627 read, 2026-09-23, 14:30 UTC: SETTLED in 56 min, classes ninety-two and ninety-three live, but the archive block review's removal of the placeholder line left three blank lines after the front matter (class ninety-four); fixed in 7295b33ab, XingZ628 launched
 
-`XingZ627` (frozen `9c83fb5f7`, pid 2629556) SETTLED at 14:09 UTC,
+`XingZ627` (frozen `9c83fb5f7`,
+pid 2629556) SETTLED at 14:09 UTC,
 56 min after its 13:13 launch (TALLY `ms=3314899`),
 one attempt,
 8,948 seats,
 447 retry rounds,
 7,552 calls,
 4 abandoned streams (0.03 USD),
-9.08 USD by the meters (Bedrock 83.69 to 78.81, OpenRouter 126.15 to 121.95).
-Synthetic wet at launch (weekly 1.25 percent) and spent to 0 by the end, Hyper dry, glm-5.3 dark as on `XingZ626`.
-Stages: repair from 13:22, translate from 13:43, contest from 13:51, consolidation 13:53 to 14:09.
+9.08 USD by the meters (Bedrock 83.69 to 78.81,
+OpenRouter 126.15 to 121.95).
+Synthetic wet at launch (weekly 1.25 percent) and spent to 0 by the end,
+Hyper dry,
+glm-5.3 dark as on `XingZ626`.
+Stages:
+repair from 13:22,
+translate from 13:43,
+contest from 13:51,
+consolidation 13:53 to 14:09.
 
 Class ninety-three on the wire.
-Every deepseek-v4.1-flash stream but four served by Morph (1,276 at 5.0 s a stream; the four fell back to CoreWeave at 23.5 s),
-every GLM-5.3-Flash stream but two by Wafer (385 at 8.5 s; two on Morph),
+Every deepseek-v4.1-flash stream but four served by Morph (1,276 at 5.0 s a stream;
+the four fell back to CoreWeave at 23.5 s),
+every GLM-5.3-Flash stream but two by Wafer (385 at 8.5 s;
+two on Morph),
 3 cap-cut replies,
-and every round under 27 s mean: refiner 9.5 s against 101 s, editor 8.4 against 63, translate 5.4 against 63, select 10.2 against 34, lane contest 8.0 against 43.
+and every round under 27 s mean:
+refiner 9.5 s against 101 s,
+editor 8.4 against 63,
+translate 5.4 against 63,
+select 10.2 against 34,
+lane contest 8.0 against 43.
 The entry took 56 min against `XingZ626`'s 3h30m and `XingZ625`'s 6h54m on the same page.
 
 Class ninety-two live.
-Nine definitions on the page and the song line carries its marker ("Transcend Lights[^3]." on its own quote line, the definition "[^3]: That is, Transcend Lights");
-the translate lane refused two marker-less candidates (slices 44 and 92, findings "drops footnote 3");
-the repair lane's slice 44 text, written from the archive without the marker, lost the contest 4 of 4 with every ballot naming the omitted note ("dropped: repair");
+Nine definitions on the page and the song line carries its marker ("Transcend Lights[^3]."
+on its own quote line,
+the definition "[^3]:
+That is,
+Transcend Lights");
+the translate lane refused two marker-less candidates (slices 44 and 92,
+findings "drops footnote 3");
+the repair lane's slice 44 text,
+written from the archive without the marker,
+lost the contest 4 of 4 with every ballot naming the omitted note ("dropped:
+repair");
 no `assembly-footnote-trimmed` line.
-Classes eighty-eight to ninety-one again (the gloss at the Part Ten heading, eight headings unified to the archive's bare style, three restores).
+Classes eighty-eight to ninety-one again (the gloss at the Part Ten heading,
+eight headings unified to the archive's bare style,
+three restores).
 Every structural check as `XingZ626` but one:
-fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish;
-seven unendorsed standings (2, 48, 61, 62, 66, 82, 83), two gate-kept, four slate-declined;
+fourteen headings,
+both links,
+nine definitions,
+3 TextRing,
+eleven details blocks,
+front matter equal,
+no TA,
+no error finish;
+seven unendorsed standings (2,
+48,
+61,
+62,
+66,
+82,
+83),
+two gate-kept,
+four slate-declined;
 228 abstention lines with reasons.
-But a double blank line, at line 8 to 10.
+But a double blank line,
+at line 8 to 10.
 
 Class ninety-four.
-The archive opens, after its front matter, with the maintainers' placeholder "**Come back later!**" and then two alert lines ("[!Warning] This version is NOT the formal version...", "[!Caution] This is an unfinished version...").
-All three are archive-only blocks (the original has nothing where they stand), so the archive block review reads them; on `XingZ627` it removed the placeholder 5 of 6 (gpt-oss: "a translation-side placeholder not present in the Chinese source"; minimax declined every candidate) and kept the two alert lines, where `XingZ626` had kept all three.
-The removal itself is the review's call under its own sheet, which names "editorial-context" as the disposition for translation-side apparatus; the placeholder's status is a question for the owner (recorded in the handover), not a class.
-The class is mechanical: `repairArchiveBlocks` spliced the removal as an empty replacement between the block's own offsets, so the blank line before the block, the block's line and the blank line after it collapsed into three blank lines, and the page shipped that way (`preparation.archiveText` already carries "---\n\n\n\n[!Warning]").
-Fixed in 7295b33ab: a removal takes the line endings that follow the block (or, for a block that ends the document, the line endings before it), so one separator stands between the neighbours and nothing trails.
-Guard red first at 64cda7e31 (the existing removal case's expectation and a new case with a removal after the front matter and one between two blocks), lint 0 and 0, types clean, full suite green (`suite-class94.log`, 1097 PASS).
+The archive opens,
+after its front matter,
+with the maintainers' placeholder "**Come back later!**" and then two alert lines ("[!Warning] This version is NOT the formal version...",
+"[!Caution] This is an unfinished version...").
+All three are archive-only blocks (the original has nothing where they stand),
+so the archive block review reads them;
+on `XingZ627` it removed the placeholder 5 of 6 (gpt-oss:
+"a translation-side placeholder not present in the Chinese source";
+minimax declined every candidate) and kept the two alert lines,
+where `XingZ626` had kept all three.
+The removal itself is the review's call under its own sheet,
+which names "editorial-context" as the disposition for translation-side apparatus;
+the placeholder's status is a question for the owner (recorded in the handover),
+not a class.
+The class is mechanical:
+`repairArchiveBlocks` spliced the removal as an empty replacement between the block's own offsets,
+so the blank line before the block,
+the block's line and the blank line after it collapsed into three blank lines,
+and the page shipped that way (`preparation.archiveText` already carries "---\n\n\n\n[!Warning]").
+Fixed in 7295b33ab:
+a removal takes the line endings that follow the block (or,
+for a block that ends the document,
+the line endings before it),
+so one separator stands between the neighbours and nothing trails.
+Guard red first at 64cda7e31 (the existing removal case's expectation and a new case with a removal after the front matter and one between two blocks),
+lint 0 and 0,
+types clean,
+full suite green (`suite-class94.log`,
+1097 PASS).
 
-`XingZ628` (frozen `7295b33ab`, pid 2675240, overlap 8)
-launched 14:19 UTC on Bedrock and OpenRouter (Synthetic spent, Hyper dry),
+`XingZ628` (frozen `7295b33ab`,
+pid 2675240,
+overlap 8)
+launched 14:19 UTC on Bedrock and OpenRouter (Synthetic spent,
+Hyper dry),
 waiter set.
-Read for class ninety-four live (no double blank line; whatever the review does with the placeholder, one blank line between the front matter and what follows),
+Read for class ninety-four live (no double blank line;
+whatever the review does with the placeholder,
+one blank line between the front matter and what follows),
 classes ninety-two and ninety-three again,
 beside every check of `XingZ627`.
 
 ## XingZ626 read, 2026-09-23, 13:20 UTC: SETTLED in 3h30m, classes ninety and ninety-one live, but the song line lost its footnote marker and the note was trimmed (class ninety-two) and the price sort fell to two more endpoints that reason at length (class ninety-three); both fixed in 9c83fb5f7, XingZ627 launched
 
-`XingZ626` (frozen `5fd39cdcc`, pid 2574294) SETTLED at 12:53 UTC,
+`XingZ626` (frozen `5fd39cdcc`,
+pid 2574294) SETTLED at 12:53 UTC,
 3h30m after its 09:23 launch (TALLY `ms=12600158`),
 one attempt,
 9,277 seats,
 507 retry rounds,
 7,945 calls,
 105 abandoned streams (0.60 USD),
-12.30 USD by the meters (Bedrock 88.71 to 83.69, OpenRouter 133.44 to 126.16).
-Synthetic wet (weekly 2 percent to 1.28), Hyper dry, glm-5.3 dark (asked 585, threw 585: the seat is Hyper-only since 2026-09-09, so a Hyper-dry day leaves it nothing, by design).
-Stages: repair from 09:32, translate from 10:33, contest from 11:19, consolidation 11:33 to 12:53.
+12.30 USD by the meters (Bedrock 88.71 to 83.69,
+OpenRouter 133.44 to 126.16).
+Synthetic wet (weekly 2 percent to 1.28),
+Hyper dry,
+glm-5.3 dark (asked 585,
+threw 585:
+the seat is Hyper-only since 2026-09-09,
+so a Hyper-dry day leaves it nothing,
+by design).
+Stages:
+repair from 09:32,
+translate from 10:33,
+contest from 11:19,
+consolidation 11:33 to 12:53.
 
-Class ninety live: the bench wrote "### The Ninth: Blank" and "### The Tenth: Jinxin (Brocade Heart)" and both unified to the archive's bare style ("the archive's own style", nine `heading-series-unified` lines), ten headings by name alone.
-Class ninety-one on the clock: deepseek-v4.1-flash's OpenRouter seat served by Morph for 847 streams at 6.2 s, 2 cap-cut replies against 450, 74 of 85 editor rounds heard two of three, the entry 3h30m against 6h54m.
-Classes eighty-eight and eighty-nine live again (the gloss on the heading, stripped from the signature at slice 108; nine headings to the archive's style); three `contributor-name-restored` lines as before.
+Class ninety live:
+the bench wrote "### The Ninth:
+Blank" and "### The Tenth:
+Jinxin (Brocade Heart)" and both unified to the archive's bare style ("the archive's own style",
+nine `heading-series-unified` lines),
+ten headings by name alone.
+Class ninety-one on the clock:
+deepseek-v4.1-flash's OpenRouter seat served by Morph for 847 streams at 6.2 s,
+2 cap-cut replies against 450,
+74 of 85 editor rounds heard two of three,
+the entry 3h30m against 6h54m.
+Classes eighty-eight and eighty-nine live again (the gloss on the heading,
+stripped from the signature at slice 108;
+nine headings to the archive's style);
+three `contributor-name-restored` lines as before.
 Every structural check as `XingZ625` but one:
-fourteen headings, both links, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish, no double blank line;
-eight unendorsed standings (0, 2, 17, 34, 48, 61, 65, 69), all slate-declined, none gate-kept;
+fourteen headings,
+both links,
+3 TextRing,
+eleven details blocks,
+front matter equal,
+no TA,
+no error finish,
+no double blank line;
+eight unendorsed standings (0,
+2,
+17,
+34,
+48,
+61,
+65,
+69),
+all slate-declined,
+none gate-kept;
 246 abstention lines with reasons;
-no repeat, run-off or archive-revision-refused line.
+no repeat,
+run-off or archive-revision-refused line.
 But eight definitions where `XingZ625` had nine.
 
 Class ninety-two.
-The original's line about the rhythm-game song carries `[^3]` ("叫什么 Trans 什么之光[^3]") and the archive never rendered that note ("It's called something like Trans or something."), as it rendered none of the page's nine.
-The repair lane wrote slice 44 from the archive's text ("It's called something like Trans... Light.") without the marker;
-the contest chose repair (`XingZ625` had chosen translate, whose text is written from the original and carried "Transcend Lights[^3]");
-on the consolidation slate gpt-oss's proposal was refused for defining the note inline (class forty-nine) and the gate kept the standing 2 to 1 over a consolidated text that carried the marker, one keeping ballot noting the standing "drops it".
-The definition, translated in the admitted tail (slice 118), was then trimmed as an orphan at both assemblies (`assembly-footnote-trimmed orphan-definition gfm 3`) and the note left the page.
-No floor asked for the marker: replayed through the frozen dist, the repair text is valid with and without the page text, and so is a plain "猫在窗台上打盹[^3]。" rendered without its marker; the atom floor's footnote kind never protected a bare reference.
+The original's line about the rhythm-game song carries `[^3]` ("叫什么 Trans 什么之光[^3]") and the archive never rendered that note ("It's called something like Trans or something."),
+as it rendered none of the page's nine.
+The repair lane wrote slice 44 from the archive's text ("It's called something like Trans... Light.")
+without the marker;
+the contest chose repair (`XingZ625` had chosen translate,
+whose text is written from the original and carried "Transcend Lights[^3]");
+on the consolidation slate gpt-oss's proposal was refused for defining the note inline (class forty-nine) and the gate kept the standing 2 to 1 over a consolidated text that carried the marker,
+one keeping ballot noting the standing "drops it".
+The definition,
+translated in the admitted tail (slice 118),
+was then trimmed as an orphan at both assemblies (`assembly-footnote-trimmed orphan-definition gfm 3`) and the note left the page.
+No floor asked for the marker:
+replayed through the frozen dist,
+the repair text is valid with and without the page text,
+and so is a plain "猫在窗台上打盹[^3]。" rendered without its marker;
+the atom floor's footnote kind never protected a bare reference.
 Fixed in 9c83fb5f7:
-`translate-marker-drop.ts` refuses a candidate that cites fewer notes than the ORIGINAL passage cites (identifiers folded across both conventions), wired into `validateTranslatedSlice` after the definition-leak floor, so the contest's lane eligibility, the translate slate, the consolidation standing, proposals and polish all read it;
-a marker the candidate carries beyond the original's is left alone (the page's own apparatus, class eighty-five).
+`translate-marker-drop.ts` refuses a candidate that cites fewer notes than the ORIGINAL passage cites (identifiers folded across both conventions),
+wired into `validateTranslatedSlice` after the definition-leak floor,
+so the contest's lane eligibility,
+the translate slate,
+the consolidation standing,
+proposals and polish all read it;
+a marker the candidate carries beyond the original's is left alone (the page's own apparatus,
+class eighty-five).
 The escape-leak helper moved to `translate-escape-leak.ts` for the line budget.
-The withdrawal fixture in `translate-document.unit.test.ts` keeps its marker on the page side alone, where the slice floor cannot see it.
-Consequence to watch: on shi_Yumiaoya the consolidate gate once rendered the source's 小药娘 note as an inline gloss (shi_Yumiaoya7); that rendering is now ineligible and the note stays a footnote as the source has it, which is what shi_Yumiaoya6 and 8 to 13 shipped.
+The withdrawal fixture in `translate-document.unit.test.ts` keeps its marker on the page side alone,
+where the slice floor cannot see it.
+Consequence to watch:
+on shi_Yumiaoya the consolidate gate once rendered the source's 小药娘 note as an inline gloss (shi_Yumiaoya7);
+that rendering is now ineligible and the note stays a footnote as the source has it,
+which is what shi_Yumiaoya6 and 8 to 13 shipped.
 
 Class ninety-three.
-With OpenInference ignored, the price sort fell to DekaLLM (432 streams at 54.0 s a stream) and Sail Research (58 at 40.1 s) beside Morph's 847 at 6.2 s;
-GLM-5.3-Flash's seat ran on Together (187 at 91 s), InferenceNet (52 at 114 s) and Parasail (38 at 99 s) beside Wafer's 40 at 14.5 s and Morph's 14 at 15 s.
-Measured off the stream lines, none of these endpoints is slow at generating (DekaLLM 186 characters a second after the first byte, Sail Research 219, Morph 168; Together 329):
-they write 8,813, 8,355 and 23,666 characters a reply against Morph's 514 and Wafer's 651, that is, they reason at length by default, and the pipeline sends no reasoning parameter by the owner's rule.
-Refiner rounds averaged 101 s with 83 s in grace, translate rounds 63 s, editor rounds 63 s.
+With OpenInference ignored,
+the price sort fell to DekaLLM (432 streams at 54.0 s a stream) and Sail Research (58 at 40.1 s) beside Morph's 847 at 6.2 s;
+GLM-5.3-Flash's seat ran on Together (187 at 91 s),
+InferenceNet (52 at 114 s) and Parasail (38 at 99 s) beside Wafer's 40 at 14.5 s and Morph's 14 at 15 s.
+Measured off the stream lines,
+none of these endpoints is slow at generating (DekaLLM 186 characters a second after the first byte,
+Sail Research 219,
+Morph 168;
+Together 329):
+they write 8,813,
+8,355 and 23,666 characters a reply against Morph's 514 and Wafer's 651,
+that is,
+they reason at length by default,
+and the pipeline sends no reasoning parameter by the owner's rule.
+Refiner rounds averaged 101 s with 83 s in grace,
+translate rounds 63 s,
+editor rounds 63 s.
 DekaLLM also answered 22 in-stream 502s and lists at status -2.
-Ignoring the next cheapest endpoint each run chases the listing (DeepInfra, Wafer, OpenInference, now these two, Relace next and unmeasured), so the fix names the measured endpoint instead:
-the OpenRouter card gains `preferredEndpoints`, sent as `provider.order` (the routing page, read 2026-09-23: the router tries the listed providers in order and proceeds to the others if none is operational; `sort` or `order` disables load balancing), left off the wire where a row names none;
-deepseek-v4.1-flash names Morph (11.1 s, 11.5 s, 3.4 s and 6.2 s a stream over XingZ608, 624, 625 and 626) with `dekallm` and `sail-research` ignored too;
-GLM-5.3-Flash names Wafer (6.4 s, 9.0 s and 14.5 s over the three runs).
-Slugs from the providers listing of 2026-09-23 (`dekallm`, `sail-research`, `morph`), added to the catalog test's snapshot, which now checks named slugs as well as ignored ones.
-Guards red first at 78e67b8c5 (six suites), fixed 9c83fb5f7, fixture feee49cb9, lint 0 and 0, types clean, full suite green (`suite-class92-93b.log`).
+Ignoring the next cheapest endpoint each run chases the listing (DeepInfra,
+Wafer,
+OpenInference,
+now these two,
+Relace next and unmeasured),
+so the fix names the measured endpoint instead:
+the OpenRouter card gains `preferredEndpoints`,
+sent as `provider.order` (the routing page,
+read 2026-09-23:
+the router tries the listed providers in order and proceeds to the others if none is operational;
+`sort` or `order` disables load balancing),
+left off the wire where a row names none;
+deepseek-v4.1-flash names Morph (11.1 s,
+11.5 s,
+3.4 s and 6.2 s a stream over XingZ608,
+624,
+625 and 626) with `dekallm` and `sail-research` ignored too;
+GLM-5.3-Flash names Wafer (6.4 s,
+9.0 s and 14.5 s over the three runs).
+Slugs from the providers listing of 2026-09-23 (`dekallm`,
+`sail-research`,
+`morph`),
+added to the catalog test's snapshot,
+which now checks named slugs as well as ignored ones.
+Guards red first at 78e67b8c5 (six suites),
+fixed 9c83fb5f7,
+fixture feee49cb9,
+lint 0 and 0,
+types clean,
+full suite green (`suite-class92-93b.log`).
 
-`XingZ627` (frozen `9c83fb5f7`, pid 2629556, overlap 8)
-launched 13:13 UTC on Bedrock, OpenRouter and Synthetic
-(meters 83.69 USD Bedrock, 126.15 OpenRouter at launch, Synthetic weekly 1.25 percent, Hyper dry),
-waiter bpkc5sv3j; its first seven deepseek streams served by Morph at 1.6 to 2.6 s.
-Read for class ninety-two live (nine definitions, the song line carrying `[^3]`, no `assembly-footnote-trimmed` line, the repair lane's slice 44 text refused at the contest or carrying the marker),
-class ninety-three on the wire (deepseek served by Morph alone, GLM-5.3-Flash by Wafer, refiner rounds well under 101 s, the entry under 3h30m),
+`XingZ627` (frozen `9c83fb5f7`,
+pid 2629556,
+overlap 8)
+launched 13:13 UTC on Bedrock,
+OpenRouter and Synthetic
+(meters 83.69 USD Bedrock,
+126.15 OpenRouter at launch,
+Synthetic weekly 1.25 percent,
+Hyper dry),
+waiter bpkc5sv3j;
+its first seven deepseek streams served by Morph at 1.6 to 2.6 s.
+Read for class ninety-two live (nine definitions,
+the song line carrying `[^3]`,
+no `assembly-footnote-trimmed` line,
+the repair lane's slice 44 text refused at the contest or carrying the marker),
+class ninety-three on the wire (deepseek served by Morph alone,
+GLM-5.3-Flash by Wafer,
+refiner rounds well under 101 s,
+the entry under 3h30m),
 classes eighty-eight to ninety-one again,
 beside every check of `XingZ626`.
 
 ## XingZ625 read, 2026-09-23, 09:40 UTC: SETTLED in 6h54m, classes eighty-eight and eighty-nine live, the tenth heading kept "Poem Ten:" past the leader table (class ninety) and deepseek's OpenRouter seat ran on OpenInference at 116 s a stream (class ninety-one); both fixed in 5fd39cdcc, XingZ626 launched
 
-`XingZ625` (frozen `d8f847e3c`, pid 2506867) SETTLED at 09:12 UTC,
+`XingZ625` (frozen `d8f847e3c`,
+pid 2506867) SETTLED at 09:12 UTC,
 6h54m after its 02:21 launch (TALLY `ms=24873175`),
 one attempt,
 8,812 seats,
 521 retry rounds,
 8,073 calls,
 206 abandoned streams (0.92 USD),
-10.08 USD by the meters (Bedrock 93.28 to 88.71, OpenRouter 138.96 to 133.45).
-Hyper read wet from 02:36 to 08:12 UTC (its daily allowance 250 at the first wet reading, 3 at the last; 1,331 Hyper calls),
-Synthetic dry, glm-5.3 asked 586 and threw 310, Kimi-K3 asked 814 and threw 578, Jev 231 of 234.
+10.08 USD by the meters (Bedrock 93.28 to 88.71,
+OpenRouter 138.96 to 133.45).
+Hyper read wet from 02:36 to 08:12 UTC (its daily allowance 250 at the first wet reading,
+3 at the last;
+1,331 Hyper calls),
+Synthetic dry,
+glm-5.3 asked 586 and threw 310,
+Kimi-K3 asked 814 and threw 578,
+Jev 231 of 234.
 Every stage slower than `XingZ624`:
-admission 03:06 (45 min after launch against 17), repair lane to 05:46 (2h34m against 57 min), translate to 07:02 (76 min against 64), contest to 07:10 (9 min against 34), consolidation 07:10 to 09:12 (2h02m against 1h25m).
+admission 03:06 (45 min after launch against 17),
+repair lane to 05:46 (2h34m against 57 min),
+translate to 07:02 (76 min against 64),
+contest to 07:10 (9 min against 34),
+consolidation 07:10 to 09:12 (2h02m against 1h25m).
 
 Class eighty-eight live.
 Two `handle-gloss-placed` lines at page assembly:
-slice 103 "Jinxin" to "Jinxin (Brocade Heart)" (the literal meaning at the handle's first appearance, the Part Ten heading)
-and slice 107 "Jinxin (Brocade Heart)" to "Jinxin" (the romanisation alone after it, the signature).
-The bench never glossed Yuli this run ("—— Yuli【妄想症Paranoia】"Nonuple Reality"", "— Yuli 【Paranoia】 "Ling Chong Qi Yuan""),
-so the pass left the handle as it was, by design;
-the source itself writes 【妄想症Paranoia】, so the Han beside the English on the first credit is the source's own form, not residue.
-Jiecheng Tianzou one reading on all three appearances, no handle left in Han.
+slice 103 "Jinxin" to "Jinxin (Brocade Heart)" (the literal meaning at the handle's first appearance,
+the Part Ten heading)
+and slice 107 "Jinxin (Brocade Heart)" to "Jinxin" (the romanisation alone after it,
+the signature).
+The bench never glossed Yuli this run ("—— Yuli【妄想症Paranoia】"Nonuple Reality"",
+"— Yuli 【Paranoia】 "Ling Chong Qi Yuan""),
+so the pass left the handle as it was,
+by design;
+the source itself writes 【妄想症Paranoia】,
+so the Han beside the English on the first credit is the source's own form,
+not residue.
+Jiecheng Tianzou one reading on all three appearances,
+no handle left in Han.
 
 Class eighty-nine live.
-Nine `heading-series-unified` lines ending "the archive's own style", every one to the bare name
-("### One: Irako", "### Part Two: Lingyu", "### Part Three: HiYku", "### Part Four: Ann", "### The Fifth: Shinonome", "### Part Six: Mikä", "### Seven: wing", "### Part Eight: Baimao Suki", "### IX: Blank"),
+Nine `heading-series-unified` lines ending "the archive's own style",
+every one to the bare name
+("### One:
+Irako",
+"### Part Two:
+Lingyu",
+"### Part Three:
+HiYku",
+"### Part Four:
+Ann",
+"### The Fifth:
+Shinonome",
+"### Part Six:
+Mikä",
+"### Seven:
+wing",
+"### Part Eight:
+Baimao Suki",
+"### IX:
+Blank"),
 where the renderings' plurality would have been "part cardinal".
-Five `contributor-name-restored` lines (Huidu to HiYku in the Part Three heading and signature, Impermanence to Ann, Dongyun (East Cloud) to Shinonome, Baimao suki to Baimao Suki).
+Five `contributor-name-restored` lines (Huidu to HiYku in the Part Three heading and signature,
+Impermanence to Ann,
+Dongyun (East Cloud) to Shinonome,
+Baimao suki to Baimao Suki).
 
 Class eighty-seven not exercised:
 the bare TextRing slice (88 again) had its tag endorsed this run,
-terminal `slate-unjudged-standing` on a sole candidate, shipped unchanged, the polish settled on the tag,
+terminal `slate-unjudged-standing` on a sole candidate,
+shipped unchanged,
+the polish settled on the tag,
 no `no-standing-text` line and no naturalness-floor error;
 3 TextRing lines on the page.
 
 Every structural check as `XingZ624`:
-fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks,
-the closing poem's attribution inside the quote, "They once said" on the tombstone paragraph,
-front matter equal (md5 equal to `XingZ624`'s), no TA, no error finish, no double blank line.
-Four unendorsed standings (2, 31, 42, 75): two gate-kept (2, 42), two slate-declined (31, 75);
+fourteen headings,
+both links,
+nine definitions,
+3 TextRing,
+eleven details blocks,
+the closing poem's attribution inside the quote,
+"They once said" on the tombstone paragraph,
+front matter equal (md5 equal to `XingZ624`'s),
+no TA,
+no error finish,
+no double blank line.
+Four unendorsed standings (2,
+31,
+42,
+75):
+two gate-kept (2,
+42),
+two slate-declined (31,
+75);
 264 abstention lines with reasons;
-one translate run-off ("tied again over 4 finalists and narrowed to 2", class eighty-two live in the translate stage);
+one translate run-off ("tied again over 4 finalists and narrowed to 2",
+class eighty-two live in the translate stage);
 no repeat or archive-revision-refused line.
 
-Class ninety, on the page.
-The tenth heading shipped "### Poem Ten: Jinxin (Brocade Heart)" beside nine bare headings:
-`readOrdinalStyle` knew a table of leader words (part, chapter, section, the, no.), "Poem" was not in it,
-so the prefix read as no number, the heading as unnumbered, and the archive's bare style had nothing to strip.
-`XingZ624`'s tenth had been "Ten:" and was stripped;
+Class ninety,
+on the page.
+The tenth heading shipped "### Poem Ten:
+Jinxin (Brocade Heart)" beside nine bare headings:
+`readOrdinalStyle` knew a table of leader words (part,
+chapter,
+section,
+the,
+no.),
+"Poem" was not in it,
+so the prefix read as no number,
+the heading as unnumbered,
+and the archive's bare style had nothing to strip.
+`XingZ624`'s tenth had been "Ten:"
+and was stripped;
 the bench's choice of leader word decided whether the series unified.
-Fixed in 5fd39cdcc: the table is gone;
-a prefix whose last word is a number word (cardinal, ordinal, arabic, roman) is that number,
-whatever words precede it are its leader, lowered, and `renderOrdinal` capitalises every leader word ("No." keeps its stop).
-Guard red first at 488f50a49 (`heading-series-unify.unit.test.ts`: "Poem One: Ginger (Orange Cat)" over the bare archive drops to "Ginger (Orange Cat)"; a plurality of "Song" writes "Song One" to "Song Three" where the archive never headed the series).
+Fixed in 5fd39cdcc:
+the table is gone;
+a prefix whose last word is a number word (cardinal,
+ordinal,
+arabic,
+roman) is that number,
+whatever words precede it are its leader,
+lowered,
+and `renderOrdinal` capitalises every leader word ("No." keeps its stop).
+Guard red first at 488f50a49 (`heading-series-unify.unit.test.ts`:
+"Poem One:
+Ginger (Orange Cat)" over the bare archive drops to "Ginger (Orange Cat)";
+a plurality of "Song" writes "Song One" to "Song Three" where the archive never headed the series).
 
-Class ninety-one, on the clock.
+Class ninety-one,
+on the clock.
 With DeepInfra and Wafer off the wire since XingZ607 the price sort fell to OpenInference for deepseek-v4.1-flash:
 `XingZ624` served 324 streams there at 137 s mean beside Morph's 579 at 11.5 s,
 `XingZ625` 738 at 115.6 s beside Morph's 23 at 3.4 s (23.7 h of stream time on one seat).
 OpenInference also reasons past the completion cap:
-450 cap-cut deepseek replies on `XingZ625` (93 in the editor seat, 87 translate, 84 critic, 51 select, 50 refiner) against about 150 on `XingZ624`,
-each cut reply "0 content chars" after 12,000 to 16,500 reasoning chars, so 87 of 164 editor rounds heard nobody and the repair lane ran 2h34m.
-Fixed in 5fd39cdcc: `open-inference` joins the seat's `ignoredEndpoints` in `model-cards.ts` with the measurement beside it;
+450 cap-cut deepseek replies on `XingZ625` (93 in the editor seat,
+87 translate,
+84 critic,
+51 select,
+50 refiner) against about 150 on `XingZ624`,
+each cut reply "0 content chars" after 12,000 to 16,500 reasoning chars,
+so 87 of 164 editor rounds heard nobody and the repair lane ran 2h34m.
+Fixed in 5fd39cdcc:
+`open-inference` joins the seat's `ignoredEndpoints` in `model-cards.ts` with the measurement beside it;
 guard red first at 488f50a49 (`openrouter-client.unit.test.ts` asserts the wire body's ignore list),
 the admission and catalog assertions pinned in 9a011f9d8.
-Lint 0 and 0, types clean, full suite green after the assertion update (`suite-class90-91b.log`).
+Lint 0 and 0,
+types clean,
+full suite green after the assertion update (`suite-class90-91b.log`).
 Hyper's wet window is not the cause and not touched:
-its seats ran minimax-m3 at 32 s, kimi-k3 at 31 s, glm-5.3 at 21 s, 9.6 h of stream time on free daily allowance;
-the provider order (Bedrock, Hyper, OpenRouter) stands on the owner's bleed instruction.
+its seats ran minimax-m3 at 32 s,
+kimi-k3 at 31 s,
+glm-5.3 at 21 s,
+9.6 h of stream time on free daily allowance;
+the provider order (Bedrock,
+Hyper,
+OpenRouter) stands on the owner's bleed instruction.
 
-`XingZ626` (frozen `5fd39cdcc`, pid 2574294, overlap 8)
-launched 09:23 UTC on Synthetic (wet again, weekly 2 percent), Bedrock and OpenRouter
-(meters 88.71 USD Bedrock, 133.44 OpenRouter at launch, Hyper dry),
+`XingZ626` (frozen `5fd39cdcc`,
+pid 2574294,
+overlap 8)
+launched 09:23 UTC on Synthetic (wet again,
+weekly 2 percent),
+Bedrock and OpenRouter
+(meters 88.71 USD Bedrock,
+133.44 OpenRouter at launch,
+Hyper dry),
 waiter btbg6r2uz.
 Its first three deepseek streams were served by Morph at 2.4 to 4.1 s (class ninety-one live on the wire).
-Read for class ninety live (ten headings by name alone, the tenth "### Jinxin (Brocade Heart)" or the gloss wherever Jinxin first appears, whatever leader the bench writes),
-class ninety-one on the clock (deepseek served by Morph, Krea or Makora alone, cap cuts near `XingZ624`'s 150, editor rounds hearing two or three, the entry well under `XingZ625`'s 6h54m),
+Read for class ninety live (ten headings by name alone,
+the tenth "### Jinxin (Brocade Heart)" or the gloss wherever Jinxin first appears,
+whatever leader the bench writes),
+class ninety-one on the clock (deepseek served by Morph,
+Krea or Makora alone,
+cap cuts near `XingZ624`'s 150,
+editor rounds hearing two or three,
+the entry well under `XingZ625`'s 6h54m),
 classes eighty-eight and eighty-nine again,
 beside every check of `XingZ625`.
 
 ## XingZ624 read, 2026-09-23, 02:25 UTC: SETTLED in 4h23m, class eighty-seven live on the bare TextRing slice, class eighty-three live but the gloss on the second appearance (class eighty-eight) and every ordinal dropped from the ten headings (class eighty-nine); both fixed in d8f847e3c, XingZ625 launched
 
-`XingZ624` (frozen `da02857b1`, pid 2237613) SETTLED at 02:06 UTC,
+`XingZ624` (frozen `da02857b1`,
+pid 2237613) SETTLED at 02:06 UTC,
 4h23m after its 21:43 launch (TALLY `ms=15774160`),
 one attempt,
 8,302 seats,
 331 retry rounds,
 7,465 calls,
 140 abandoned streams (0.66 USD),
-11.12 USD by the meters (Bedrock 98.03 to 93.29, OpenRouter 145.35 to 138.97).
-Synthetic dry throughout, glm-5.3 dark (asked 554, threw 554), Jev 249 of 249.
+11.12 USD by the meters (Bedrock 98.03 to 93.29,
+OpenRouter 145.35 to 138.97).
+Synthetic dry throughout,
+glm-5.3 dark (asked 554,
+threw 554),
+Jev 249 of 249.
 Slower than `XingZ623` at every stage on the same two providers:
-admission to 22:00, repair lane to 22:57 (57 min against 32), translate to 00:01 (64 against 52), contest to 00:35 (34 against 22), consolidation 00:41 to 02:06 (85 against 56).
+admission to 22:00,
+repair lane to 22:57 (57 min against 32),
+translate to 00:01 (64 against 52),
+contest to 00:35 (34 against 22),
+consolidation 00:41 to 02:06 (85 against 56).
 
 Class eighty-seven live.
 The bare `<TextRing text="⊕⊕⊕⊕" fontSize="1.25rem"/>` line sliced alone again (slice 88 this run);
-the repair lane had nothing to repair, the translate lane wrote the tag verbatim,
-the contest declined it, the empty standing was withheld,
-and at 01:39 UTC the buy logged "slice 88: no standing text to consolidate against; the lane texts alone go to the slate judges",
-the settlement "lane texts offered on the slate beside the proposals: translate",
-the slate chose the translate text, the gate confirmed it ("reproduces the original TextRing element exactly", the standing dropped),
-terminal `consolidated`, the tag on the page (3 TextRing lines), no `no-standing-text` stop and no naturalness-floor error at publish.
+the repair lane had nothing to repair,
+the translate lane wrote the tag verbatim,
+the contest declined it,
+the empty standing was withheld,
+and at 01:39 UTC the buy logged "slice 88:
+no standing text to consolidate against;
+the lane texts alone go to the slate judges",
+the settlement "lane texts offered on the slate beside the proposals:
+translate",
+the slate chose the translate text,
+the gate confirmed it ("reproduces the original TextRing element exactly",
+the standing dropped),
+terminal `consolidated`,
+the tag on the page (3 TextRing lines),
+no `no-standing-text` stop and no naturalness-floor error at publish.
 
 Every structural check as `XingZ622`:
-fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks,
-the closing poem's attribution inside the quote, "They once said" on the tombstone paragraph,
-front matter equal, no TA, no error finish, no double blank line.
-Six unendorsed standings (10, 31, 38, 48, 68, 81), all slate-declined, none gate-kept;
+fourteen headings,
+both links,
+nine definitions,
+3 TextRing,
+eleven details blocks,
+the closing poem's attribution inside the quote,
+"They once said" on the tombstone paragraph,
+front matter equal,
+no TA,
+no error finish,
+no double blank line.
+Six unendorsed standings (10,
+31,
+38,
+48,
+68,
+81),
+all slate-declined,
+none gate-kept;
 301 abstention lines with reasons;
-no repeat, run-off or archive-revision-refused line.
-Four restore lines: Ann into the Part Four heading and signature (the archive's rendering), Shinonome into the Part Five signature ("Dongyun" written by the bench), Baimao Suki into the Part Eight heading.
+no repeat,
+run-off or archive-revision-refused line.
+Four restore lines:
+Ann into the Part Four heading and signature (the archive's rendering),
+Shinonome into the Part Five signature ("Dongyun" written by the bench),
+Baimao Suki into the Part Eight heading.
 
-Class eighty-three live on the page, with two page-level faults the slices could not see.
+Class eighty-three live on the page,
+with two page-level faults the slices could not see.
 锦心 is "Jinxin" in the Part Ten heading and signature,
 雨狸 is "Yuli" on both song credits,
-洁澄天奏 is "Jiecheng Tianzou" on the epigraph, "Jiecheng Tianzou Official" on the Bird in a Cage attribution and "Jiecheng Tianzou" in the note (three appearances, one reading; `XingZ622` had "Jiecheng Tianzou" beside "洁澄天奏Official");
+洁澄天奏 is "Jiecheng Tianzou" on the epigraph,
+"Jiecheng Tianzou Official" on the Bird in a Cage attribution and "Jiecheng Tianzou" in the note (three appearances,
+one reading;
+`XingZ622` had "Jiecheng Tianzou" beside "洁澄天奏Official");
 no handle left in Han.
-But the gloss stands on the second appearance, not the first:
-"### Jinxin" bare and "—— Jinxin (Brocade Heart), February 10, 2025" below it,
+But the gloss stands on the second appearance,
+not the first:
+"### Jinxin" bare and "—— Jinxin (Brocade Heart),
+February 10,
+2025" below it,
 "—— Yuli [Paranoia] “Nonuple Reality”" bare and "— Yuli (Rain Fox) [Paranoia] “Zero-Layer Prayer”" on the next credit.
-The house rule puts the literal meaning at the first appearance on the page, and every slice is written on its own with no writer seeing the page (class eighty-eight).
+The house rule puts the literal meaning at the first appearance on the page,
+and every slice is written on its own with no writer seeing the page (class eighty-eight).
 And the ten section headings shipped by name alone ("### Irako" to "### Jinxin"):
-the class sixty-eight unifier counted the renderings' styles (three bare, "The Fourth:", "Part Five:", "Six:", "No. 7:", "VIII:", "Nine:", "Ten:"), the plurality was none, and it dropped every ordinal,
-where `XingZ622` had written "Part One:" to "Part Ten:" on a plurality of the other kind;
-both runs over the same archive, which heads the sections by name alone.
+the class sixty-eight unifier counted the renderings' styles (three bare,
+"The Fourth:",
+"Part Five:",
+"Six:",
+"No. 7:",
+"VIII:",
+"Nine:",
+"Ten:"),
+the plurality was none,
+and it dropped every ordinal,
+where `XingZ622` had written "Part One:"
+to "Part Ten:"
+on a plurality of the other kind;
+both runs over the same archive,
+which heads the sections by name alone.
 The page's heading style moved run to run on a three-of-ten plurality while the archive's own convention was on hand every run (class eighty-nine).
 
-Classes eighty-eight and eighty-nine, fixed in d8f847e3c:
+Classes eighty-eight and eighty-nine,
+fixed in d8f847e3c:
 `placeHandleGlosses` (`corpus-run/handle-gloss-place.ts`) runs after the contributor-name restore and before the heading unifier;
 for each signer the archive never rendered it finds every whole-word appearance of the rendering among the replaced slices,
 puts the gloss the bench wrote first at the first appearance and strips it from the later ones (finding `handle-gloss-placed`);
-a handle the bench never glossed is left as it is, the archive's own text is never rewritten.
-`unifyHeadingSeries` takes the archive's style where the archive heads two or more of the series in one style (finding suffix "the archive's own style"), the renderings' plurality deciding only where the archive never headed it.
-Guards red first at b90c29132 (`handle-gloss-place.unit.test.ts`; `heading-series-unify.unit.test.ts` fixtures given an archive with no heading for the plurality cases, a new case for the archive's style both ways),
+a handle the bench never glossed is left as it is,
+the archive's own text is never rewritten.
+`unifyHeadingSeries` takes the archive's style where the archive heads two or more of the series in one style (finding suffix "the archive's own style"),
+the renderings' plurality deciding only where the archive never headed it.
+Guards red first at b90c29132 (`handle-gloss-place.unit.test.ts`;
+`heading-series-unify.unit.test.ts` fixtures given an archive with no heading for the plurality cases,
+a new case for the archive's style both ways),
 lint 0 and 0,
 types clean,
-full suite green (`suite-class88-89.log`, 1096 PASS).
-Replayed in the guards, not over the page: the next `XingZ60` read carries the live check.
+full suite green (`suite-class88-89.log`,
+1096 PASS).
+Replayed in the guards,
+not over the page:
+the next `XingZ60` read carries the live check.
 
-`XingZ625` (frozen `d8f847e3c`, pid 2506867, overlap 8)
+`XingZ625` (frozen `d8f847e3c`,
+pid 2506867,
+overlap 8)
 launched 02:21 UTC on Bedrock and OpenRouter
-(meters 93.28 USD Bedrock, 138.96 OpenRouter at launch),
+(meters 93.28 USD Bedrock,
+138.96 OpenRouter at launch),
 waiter bq59587sx.
-Read for class eighty-eight live (the `handle-gloss-placed` lines; "### Jinxin (Brocade Heart)" or the gloss wherever Jinxin first appears and bare after; Yuli glossed on the first credit alone)
-and class eighty-nine live (the `heading-series-unified` lines ending "the archive's own style"; ten headings by name alone whatever the renderings wrote),
+Read for class eighty-eight live (the `handle-gloss-placed` lines;
+"### Jinxin (Brocade Heart)" or the gloss wherever Jinxin first appears and bare after;
+Yuli glossed on the first credit alone)
+and class eighty-nine live (the `heading-series-unified` lines ending "the archive's own style";
+ten headings by name alone whatever the renderings wrote),
 class eighty-seven again on the bare TextRing slice,
 beside every check of `XingZ624`.
 
 ## XingZ623 read, 2026-09-22, 21:55 UTC: INCOMPLETE at publish after 3h01m on the bare TextRing slice, nothing standing behind a declined contest at an absent archive (class eighty-seven); fixed in da02857b1, XingZ624 launched
 
-`XingZ623` (frozen `40679244d`, pid 2184330) ended INCOMPLETE at 21:32 UTC,
+`XingZ623` (frozen `40679244d`,
+pid 2184330) ended INCOMPLETE at 21:32 UTC,
 3h01m after its 18:31 launch (TALLY `ms=10862998`),
 one attempt,
 8,163 seats,
 257 retry rounds,
 7,378 calls,
 69 abandoned streams (0.32 USD),
-10.41 USD by the meters (Bedrock 102.73 to 98.04, OpenRouter 151.09 to 145.37).
-Synthetic dry throughout, glm-5.3 dark (asked 585, threw 585).
+10.41 USD by the meters (Bedrock 102.73 to 98.04,
+OpenRouter 151.09 to 145.37).
+Synthetic dry throughout,
+glm-5.3 dark (asked 585,
+threw 585).
 No page and no artifact were written;
 the reading below comes from the run log and the slice cache.
 
-The stop: `TALLY ... error=slice 89 did not meet absolute naturalness floor`,
+The stop:
+`TALLY ... error=slice 89 did not meet absolute naturalness floor`,
 thrown by `assertFinalNaturalnessComplete` at publish,
-after the page assembly had already run (its contributor-name-restored lines are timestamped 21:32:46, the TALLY 21:32:46).
+after the page assembly had already run (its contributor-name-restored lines are timestamped 21:32:46,
+the TALLY 21:32:46).
 Slice 89 this run is the bare `<TextRing text="⊕⊕⊕⊕" fontSize="1.25rem"/>` line alone
-(one mdxJsxFlowElement; `XingZ622` had sliced it together with the `<h3>` heading above it),
+(one mdxJsxFlowElement;
+`XingZ622` had sliced it together with the `<h3>` heading above it),
 an admitted tail slice with no archive text.
 The repair lane had nothing to repair (`repair-not-applicable chunk 89`);
 the translate lane wrote the tag verbatim and its judges accepted it at weight 4.5 of 5
-("a JSX/HTML component line rather than source-language prose, so preserving it unchanged is faithful");
+("a JSX/HTML component line rather than source-language prose,
+so preserving it unchanged is faithful");
 the lane contest then declined both lanes 4 of 4
-("both candidates are empty placeholders", "non-linguistic markup ... translation or repair impossible",
-"the candidates are identical (one is blank, the other reproduces the tag verbatim), so neither is more faithful").
-`standingTextFor` turns a declined contest into the incumbent, which is the empty string at an absent archive;
+("both candidates are empty placeholders",
+"non-linguistic markup ... translation or repair impossible",
+"the candidates are identical (one is blank,
+the other reproduces the tag verbatim),
+so neither is more faithful").
+`standingTextFor` turns a declined contest into the incumbent,
+which is the empty string at an absent archive;
 `readStandingVerdict` refused it (0 blocks against 1) and `laneTextsForSlate` offered the translate text (class forty);
 but `buyConsolidationAttempt` and `settleConsolidation` both exit on `standingText === ''` before the offer is read
-("no standing text to consolidate against, so no slate is bought"; terminal `no-standing-text`),
-so the one valid rendering was never put to a judge, the slice shipped nothing, and the final naturalness check refused the record.
+("no standing text to consolidate against,
+so no slate is bought";
+terminal `no-standing-text`),
+so the one valid rendering was never put to a judge,
+the slice shipped nothing,
+and the final naturalness check refused the record.
 The 3h01m and 10.41 USD bought no page.
 
-Class eighty-seven, fixed in da02857b1:
+Class eighty-seven,
+fixed in da02857b1:
 the empty-standing exits in `consolidate-slice-buy.ts` and `consolidate-settle.ts` apply only when no lane text is on offer;
-with one, the producers are still not asked (they write from the standing, and there is none)
+with one,
+the producers are still not asked (they write from the standing,
+and there is none)
 and the settlement runs the class forty path over the lane texts alone:
-the empty standing withheld as an ineligible one is, the slate judged through `judgeSlateWithRetry`, the winner gated and polished,
+the empty standing withheld as an ineligible one is,
+the slate judged through `judgeSlateWithRetry`,
+the winner gated and polished,
 a decline failing the slice at once under the owner's rule of 2026-09-04.
-The buy logs "no standing text to consolidate against; the lane texts alone go to the slate judges" on that path.
-Guard red first at daf73f3dc (`consolidate-settle.unit.test.ts`: an empty standing with one lane text is judged and gated, and stays `no-standing-text` without one),
+The buy logs "no standing text to consolidate against;
+the lane texts alone go to the slate judges" on that path.
+Guard red first at daf73f3dc (`consolidate-settle.unit.test.ts`:
+an empty standing with one lane text is judged and gated,
+and stays `no-standing-text` without one),
 lint 0 and 0,
 types clean,
 full suite green (`suite-class87.log`).
-Open on the same path: an empty standing with no valid lane text still ends `no-standing-text` and fails the entry at publish rather than at once;
-no run has reached it (a declined contest at an absent archive always has a lane text, and the only way both fail the rule is both being refused).
+Open on the same path:
+an empty standing with no valid lane text still ends `no-standing-text` and fails the entry at publish rather than at once;
+no run has reached it (a declined contest at an absent archive always has a lane text,
+and the only way both fail the rule is both being refused).
 
-Class eighty-three live in the lane texts, though no page carried them:
-the Part Ten heading rendered "### No. 10: Jinxin (Brocade Heart)" and its signature "——Jinxin, February 10, 2025" (both lanes' cached texts),
+Class eighty-three live in the lane texts,
+though no page carried them:
+the Part Ten heading rendered "### No. 10:
+Jinxin (Brocade Heart)" and its signature "——Jinxin,
+February 10,
+2025" (both lanes' cached texts),
 the song credit "— Yuli (Rain Raccoon) [Paranoia]",
 the Bird in the Cage attribution "by Jiecheng Tianzou Official (...)";
-the assembly's restore lines this run were HiYku (heading and signature, slice 48), Ann (slice 49), Baimao Suki (slice 79) and the memorial ceremony line (slice 88).
+the assembly's restore lines this run were HiYku (heading and signature,
+slice 48),
+Ann (slice 49),
+Baimao Suki (slice 79) and the memorial ceremony line (slice 88).
 Whether the page carries them one way each is `XingZ624`'s read.
 
-Before the stop, the log carried
+Before the stop,
+the log carried
 181 abstention lines,
-eight unendorsed standings (5, 11, 15, 38, 52, 54, 63, 82),
-two gate-kept (11, 52),
-five slate-declined (15, 38, 54, 63, 82),
-no repeat, run-off, archive-revision-refused or error-finish line.
-Timing as `XingZ622`: admission 18:50, repair lane 18:50 to 19:22, translate to 20:14, contest to 20:36, consolidation 20:36 to 21:32.
+eight unendorsed standings (5,
+11,
+15,
+38,
+52,
+54,
+63,
+82),
+two gate-kept (11,
+52),
+five slate-declined (15,
+38,
+54,
+63,
+82),
+no repeat,
+run-off,
+archive-revision-refused or error-finish line.
+Timing as `XingZ622`:
+admission 18:50,
+repair lane 18:50 to 19:22,
+translate to 20:14,
+contest to 20:36,
+consolidation 20:36 to 21:32.
 
-`XingZ624` (frozen `da02857b1`, pid 2237613, overlap 8)
+`XingZ624` (frozen `da02857b1`,
+pid 2237613,
+overlap 8)
 launched 21:43 UTC on Bedrock and OpenRouter
-(meters 98.03 USD Bedrock, 145.35 OpenRouter at launch),
+(meters 98.03 USD Bedrock,
+145.35 OpenRouter at launch),
 waiter bmu8s7wec.
-Read for class eighty-seven live (slice 89 or wherever the bare TextRing slices this run: the "lane texts alone go to the slate judges" line, the tag on the page, no `no-standing-text` stop)
-and class eighty-three live on the page (Part Ten heading and signature "Jinxin", the song credits "Yuli" one way, "by Jiecheng Tianzou Official", the parenthesised gloss at first appearance),
+Read for class eighty-seven live (slice 89 or wherever the bare TextRing slices this run:
+the "lane texts alone go to the slate judges" line,
+the tag on the page,
+no `no-standing-text` stop)
+and class eighty-three live on the page (Part Ten heading and signature "Jinxin",
+the song credits "Yuli" one way,
+"by Jiecheng Tianzou Official",
+the parenthesised gloss at first appearance),
 beside every check of `XingZ622`.
 
 ## yingying4 read, 2026-09-22, 18:40 UTC: SETTLED in 23 min, class eighty-six live, the blog title names "Yingying"; XingZ623 launched for class eighty-three
 
-`yingying4` (frozen `40679244d`, pid 2180429) SETTLED at 18:30 UTC,
+`yingying4` (frozen `40679244d`,
+pid 2180429) SETTLED at 18:30 UTC,
 23 minutes after its 18:07 launch (TALLY `ms=1384777`),
 one attempt,
 326 seats,
 15 retry rounds,
 279 calls,
 2 abandoned streams (0.01 USD),
-0.23 USD by the meters (Bedrock 102.81 to 102.73, OpenRouter 151.24 to 151.09).
-Synthetic dry, Qwen3.8-27B and glm-5.3 dark.
+0.23 USD by the meters (Bedrock 102.81 to 102.73,
+OpenRouter 151.24 to 151.09).
+Synthetic dry,
+Qwen3.8-27B and glm-5.3 dark.
 
 Class eighty-six live:
-the second definition reads "[^2]: [Farewell. I miss you, Yingying.](https://leohearts.com/archives/farewell-yingying.html)".
-Both lanes wrote "Yingying" into the title this time (slice 3, repair and translate agreed, no contest),
+the second definition reads "[^2]:
+[Farewell. I miss you, Yingying.](https://leohearts.com/archives/farewell-yingying.html)".
+Both lanes wrote "Yingying" into the title this time (slice 3,
+repair and translate agreed,
+no contest),
 and a translate slate ballot cites the glossary line by its words:
 "the names glossary states that 樱樱 is declared 'Yingying' and that the declared form is used inside the title,
 so Candidate 2 is the faithful rendering and Candidate 1 alters the name form".
@@ -13074,7 +17221,8 @@ the References line kept,
 no TA,
 no error finish,
 no double blank line,
-no unendorsed, gate-kept or slate-declined standing,
+no unendorsed,
+gate-kept or slate-declined standing,
 3 abstention lines (gpt-oss declining every candidate for changing the archive's wording),
 no repeat or run-off finding;
 the farewell in the second person as the original.
@@ -13083,17 +17231,23 @@ Wording moved where the bench chose:
 "played with digital gadgets and chemistry",
 "burst out laughing",
 the Bilibili sentence reordered into the past perfect,
-"motorcycle riding" again (as `yingying2`; `yingying3` had "bicycle"; the source's 骑车 settles neither),
+"motorcycle riding" again (as `yingying2`;
+`yingying3` had "bicycle";
+the source's 骑车 settles neither),
 the accident sentence joined into one,
 "what you wanted to do" as the archive's tense.
 The `[^2]` marker stands on its own line after "next world!":
-the archive writes "world! [^2]" with a space,
+the archive writes "world!
+[^2]" with a space,
 so the rendered page shows the same space before the superscript;
 `yingying3` had attached it.
 
-`XingZ623` (frozen `40679244d`, pid 2184330, overlap 8)
+`XingZ623` (frozen `40679244d`,
+pid 2184330,
+overlap 8)
 launched 18:31 UTC on Bedrock and OpenRouter
-(meters 102.73 USD Bedrock, 151.09 OpenRouter at launch),
+(meters 102.73 USD Bedrock,
+151.09 OpenRouter at launch),
 waiter bpl8gb3gq.
 Read for class eighty-three live
 (Part Ten heading and signature "Jinxin",
@@ -13101,20 +17255,31 @@ the song credits "Yuli" one way,
 "by Jiecheng Tianzou Official" on the Caged Bird attribution,
 the literal gloss in parentheses at each handle's first appearance)
 beside every check of `XingZ622`
-(fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, the closing poem's attribution inside the quote,
-"They once said" on the tombstone paragraph, front matter equal, no TA, no error finish).
+(fourteen headings,
+both links,
+nine definitions,
+3 TextRing,
+eleven details blocks,
+the closing poem's attribution inside the quote,
+"They once said" on the tombstone paragraph,
+front matter equal,
+no TA,
+no error finish).
 
 ## yingying3 read, 2026-09-22, 18:15 UTC: SETTLED in 14 min, but the blog title names the person "Sakura" against the declared "Yingying" (class eighty-six); fixed in 40679244d, yingying4 launched
 
-`yingying3` (frozen `7ad1b8ec7`, pid 2155878) SETTLED at 17:56 UTC,
+`yingying3` (frozen `7ad1b8ec7`,
+pid 2155878) SETTLED at 17:56 UTC,
 14 minutes after its 17:42 launch (TALLY `ms=854118`),
 one attempt,
 268 seats,
 8 retry rounds,
 234 calls,
 2 abandoned streams (0.00 USD),
-0.16 USD by the meters (Bedrock 102.89 to 102.81, OpenRouter 151.32 to 151.24).
-Synthetic dry, Qwen3.8-27B and glm-5.3 dark.
+0.16 USD by the meters (Bedrock 102.89 to 102.81,
+OpenRouter 151.32 to 151.24).
+Synthetic dry,
+Qwen3.8-27B and glm-5.3 dark.
 
 The page against `yingying2`:
 1 of 1 heading,
@@ -13125,17 +17290,21 @@ the References line kept,
 no TA,
 no error finish,
 no double blank line,
-no unendorsed, gate-kept or slate-declined standing,
+no unendorsed,
+gate-kept or slate-declined standing,
 2 abstention lines,
 no repeat or run-off finding;
 the farewell in the second person as the original ("May you still have the same cheerfulness") where `yingying2` had "May she";
 "riding her bicycle" as the archive where `yingying2` inferred "motorcycle" from the next paragraph's 摩托骑行 (the sentence itself says 骑车).
 
-But the second definition reads "[^2]: [Farewell. I miss you, Sakura.](https://leohearts.com/archives/farewell-yingying.html)",
+But the second definition reads "[^2]:
+[Farewell. I miss you, Sakura.](https://leohearts.com/archives/farewell-yingying.html)",
 the archive's rendering of the blog title 永别了。我想你了，樱樱。,
 on a page that names the person "Yingying" twice and whose front matter declares 樱樱 as Yingying;
 `yingying1` and `yingying2` had written "Yingying" into the title.
-Both lanes copied the archive's title this run, the slice was never contested, and the definition shipped as the archive wrote it.
+Both lanes copied the archive's title this run,
+the slice was never contested,
+and the definition shipped as the archive wrote it.
 A slice 0 select ballot on the same run shows the judges know the declared form
 ("Candidate 5 uses the name 'Sakura' instead of the declared name '樱樱' (Yingying)"),
 so the title was not a judgement but an instruction:
@@ -13143,41 +17312,59 @@ the page-name glossary (class seventy-one) offers every same-href link title as 
 under a heading that says to render the same person or title the same way everywhere,
 and a title that names the entry's person carries the archive's other rendering of that name into the instruction.
 
-Class eighty-six, fixed in `40679244d`:
+Class eighty-six,
+fixed in `40679244d`:
 `linked-title-declared-name.ts` (new) pairs the front matter's declared forms
-(name and aliases, source to target by position, a count mismatch pairing nothing)
-and, for a link pair whose source title carries a declared Han name the archive's title renders otherwise,
+(name and aliases,
+source to target by position,
+a count mismatch pairing nothing)
+and,
+for a link pair whose source title carries a declared Han name the archive's title renders otherwise,
 appends to the glossary line
 `; names 樱樱, declared "Yingying": the declared form inside the title, the archive's words for the rest`;
 the heading says "a declared name inside a title takes its declared form";
 `document-preparation.ts` passes the declared pairs.
-Probed off the built dist on the real `yingying` pair: the line carries the note.
+Probed off the built dist on the real `yingying` pair:
+the line carries the note.
 Guards red first at `751504ac8`
-(`page-name-glossary.unit.test.ts`: the note on a title the archive renders otherwise, none where the archive already carries the declared form or the title names nobody declared),
+(`page-name-glossary.unit.test.ts`:
+the note on a title the archive renders otherwise,
+none where the archive already carries the declared form or the title names nobody declared),
 lint 0 and 0,
 types clean,
 full suite green (`suite-class86.log`).
-Mechanically the fix is a sheet instruction at the exact line, not a floor:
+Mechanically the fix is a sheet instruction at the exact line,
+not a floor:
 the page's link text cannot be corrected by rule since "Sakura" is not derivable from 樱樱 by anything the pipeline holds.
 
-`yingying4` (frozen `40679244d`, pid 2180429, overlap 8)
+`yingying4` (frozen `40679244d`,
+pid 2180429,
+overlap 8)
 launched 18:07 UTC on Bedrock and OpenRouter
-(meters 102.81 USD Bedrock, 151.24 OpenRouter at launch),
+(meters 102.81 USD Bedrock,
+151.24 OpenRouter at launch),
 waiter binj7npur.
-Read for the definition "[Farewell. I miss you, Yingying.]" (class eighty-six live) beside every check of `yingying3`;
+Read for the definition "[Farewell.
+I miss you,
+Yingying.]"
+(class eighty-six live) beside every check of `yingying3`;
 then `XingZ60` again for the handles.
 
 ## zheermao4 read, 2026-09-22, 17:50 UTC: SETTLED in 32 min, no class; the reply email revised from the transcript, the Arts letter kept as the archive; yingying3 launched
 
-`zheermao4` (frozen `7ad1b8ec7`, pid 2151756, entry `zheermao101`) SETTLED at 17:40 UTC,
+`zheermao4` (frozen `7ad1b8ec7`,
+pid 2151756,
+entry `zheermao101`) SETTLED at 17:40 UTC,
 32 minutes after its 17:08 launch (TALLY `ms=1898177`),
 one attempt,
 902 seats,
 31 retry rounds,
 786 calls,
 16 abandoned streams (0.04 USD),
-0.70 USD by the meters (Bedrock 103.17 to 102.89, OpenRouter 151.74 to 151.32).
-Synthetic dry throughout, Qwen3.8-27B and glm-5.3 dark.
+0.70 USD by the meters (Bedrock 103.17 to 102.89,
+OpenRouter 151.74 to 151.32).
+Synthetic dry throughout,
+Qwen3.8-27B and glm-5.3 dark.
 
 The page against `zheermao3`:
 15 slices,
@@ -13187,56 +17374,93 @@ no TA,
 no error finish,
 no double blank line,
 publish check silent,
-one em-dash (bench-written this time, in the revised reply: "Please don’t worry—we will"; the archive's own em-dash on the Arts letter is gone with the block the review replaced on `zheermao3`),
-one unendorsed standing, gate-kept (slice 12),
+one em-dash (bench-written this time,
+in the revised reply:
+"Please don’t worry—we will";
+the archive's own em-dash on the Arts letter is gone with the block the review replaced on `zheermao3`),
+one unendorsed standing,
+gate-kept (slice 12),
 no slate-declined,
 11 abstention lines,
 no repeat or run-off finding.
 
 The two picture blocks went the other way from `zheermao3`.
-The Arts letter stands as the archive wrote it ("Actually, Arts is also a cat-like person." and the twelve lines that follow, the "Good night, ArtsEpiphany" close)
+The Arts letter stands as the archive wrote it ("Actually,
+Arts is also a cat-like person."
+and the twelve lines that follow,
+the "Good night,
+ArtsEpiphany" close)
 where `zheermao3` had revised it from the transcript;
 the One Among Us reply is revised from the transcript
-(six longer lines and a "Sincerely, wishing you a happy spring." close where the archive has fifteen short lines,
+(six longer lines and a "Sincerely,
+wishing you a happy spring."
+close where the archive has fifteen short lines,
 the archive's untranslated line and its JSX translator comment "这句不知道如何翻译" rendered as "you can avoid the edge of the darkness and hide for a while somewhere with light")
 where `zheermao3` had kept it.
-Both are the archive block review's call on a picture block, one transcript per picture (the owner's 2026-09-16 decision), and each run's bench drew the line differently.
-The email label reads "English translation of this email conversation:" (class seventy-seven holding).
+Both are the archive block review's call on a picture block,
+one transcript per picture (the owner's 2026-09-16 decision),
+and each run's bench drew the line differently.
+The email label reads "English translation of this email conversation:"
+(class seventy-seven holding).
 
-Slice 12 ("Despite this, she insisted on her decision... and ultimately chose to leave."):
-the contest settled on neither (two ballots naming the dropped 仍然, one each way);
+Slice 12 ("Despite this,
+she insisted on her decision... and ultimately chose to leave."):
+the contest settled on neither (two ballots naming the dropped 仍然,
+one each way);
 the consolidation carried "still" and "own" and the gate tied 2 to 2
-(two ballots calling "still" and "own" embellishments the Chinese lacks, against 仍然 and 自己的 in the ORIGINAL),
+(two ballots calling "still" and "own" embellishments the Chinese lacks,
+against 仍然 and 自己的 in the ORIGINAL),
 so the standing shipped by the tie rule.
-A wrong ballot, not a class: the gate's rule is stated, the tie rule is the owner's, and the standing is a faithful sentence short of one adverb.
+A wrong ballot,
+not a class:
+the gate's rule is stated,
+the tie rule is the owner's,
+and the standing is a faithful sentence short of one adverb.
 
-`yingying3` (frozen `7ad1b8ec7`, pid 2155878, overlap 8)
+`yingying3` (frozen `7ad1b8ec7`,
+pid 2155878,
+overlap 8)
 launched 17:42 UTC on Bedrock and OpenRouter
-(meters 102.89 USD Bedrock, 151.32 OpenRouter at launch),
+(meters 102.89 USD Bedrock,
+151.32 OpenRouter at launch),
 waiter `b07ha4fr0`.
-Read against `yingying2` (1 heading, 4 markers, 2 definitions, front matter equal, the References line kept, "Yingying" for the archive's "Sakura");
+Read against `yingying2` (1 heading,
+4 markers,
+2 definitions,
+front matter equal,
+the References line kept,
+"Yingying" for the archive's "Sakura");
 then `XingZ60` again for the handles.
 
 ## CuspariaKLSY7 read, 2026-09-22, 17:15 UTC: SETTLED in 22 min, class eighty-five live (the gloss on the page and every line of the life in the past); zheermao4 launched
 
-`CuspariaKLSY7` (frozen `7ad1b8ec7`, pid 2147965) SETTLED at 17:08 UTC,
+`CuspariaKLSY7` (frozen `7ad1b8ec7`,
+pid 2147965) SETTLED at 17:08 UTC,
 22 minutes after its 16:46 launch (TALLY `ms=1303584`),
 one attempt,
 405 seats,
 5 retry rounds,
 419 calls,
 no abandoned stream,
-0.12 USD by the meters (Bedrock 103.20 to 103.17, OpenRouter 151.83 to 151.74).
-Synthetic wet at launch and dry again by 17:06 UTC, glm-5.3 dark.
+0.12 USD by the meters (Bedrock 103.20 to 103.17,
+OpenRouter 151.83 to 151.74).
+Synthetic wet at launch and dry again by 17:06 UTC,
+glm-5.3 dark.
 
 Class eighty-five live.
 Slice 1 settled with no gate-kept and no unendorsed standing on the page (no finding line of either kind on any slice),
 the three lines `CuspariaKLSY6` shipped in the present now read
-"She really valued her friends.", "She was an Eastern Orthodox Christian.", "She didn’t believe in God all that much.",
+"She really valued her friends.",
+"She was an Eastern Orthodox Christian.",
+"She didn’t believe in God all that much.",
 and the archive's gloss stands beside the nickname line:
-"She coined her nickname “Ling Shui Yu Yu Zi” while feeding fish. “Ling Shui Yu Yu Zi” means fish in clear water."
-(the archive breaks the gloss onto its own line inside the paragraph; the candidate ran it on;
-a single newline inside a paragraph is a soft break, so the rendered page is the same, per the owner's 2026-09-21 answer on line breaks).
+"She coined her nickname “Ling Shui Yu Yu Zi” while feeding fish.
+“Ling Shui Yu Yu Zi” means fish in clear water."
+(the archive breaks the gloss onto its own line inside the paragraph;
+the candidate ran it on;
+a single newline inside a paragraph is a soft break,
+so the rendered page is the same,
+per the owner's 2026-09-21 answer on line breaks).
 The first settled CuspariaKLSY page carrying both the gloss and the past tense.
 
 The page against `CuspariaKLSY5`:
@@ -13246,32 +17470,47 @@ no TA,
 no error finish,
 no double blank line,
 publish check silent,
-no unendorsed, gate-kept or slate-declined standing,
+no unendorsed,
+gate-kept or slate-declined standing,
 16 abstention lines,
 no repeat or run-off finding;
-wording differs on most lines (a fresh bench each run), every line of the life in the past.
+wording differs on most lines (a fresh bench each run),
+every line of the life in the past.
 
-`zheermao4` (frozen `7ad1b8ec7`, pid 2151756, overlap 8, entry `zheermao101`)
+`zheermao4` (frozen `7ad1b8ec7`,
+pid 2151756,
+overlap 8,
+entry `zheermao101`)
 launched 17:08 UTC on Bedrock and OpenRouter
-(meters 103.17 USD Bedrock, 151.74 OpenRouter at launch),
+(meters 103.17 USD Bedrock,
+151.74 OpenRouter at launch),
 waiter `bktsyyo1o`.
 A first launch under the run name `zheermao4` at 17:08 UTC named the entry `zheermao` and exited at once with `pending=0` (the corpus directory is `zheermao101`);
 its empty run directory and log were removed before the relaunch.
-Read against `zheermao3` (14 slices, the email label kept, the Arts letter, past tense, one em-dash left per owner, no double blank line, no unendorsed);
+Read against `zheermao3` (14 slices,
+the email label kept,
+the Arts letter,
+past tense,
+one em-dash left per owner,
+no double blank line,
+no unendorsed);
 then `yingying`,
 then `XingZ60` again for the handles.
 
 ## CuspariaKLSY6 read, 2026-09-22, 16:50 UTC: SETTLED in 16 min, but slice 1 flipped back to the archive's present tense to keep a translator's gloss line (class eighty-five); fixed in 7ad1b8ec7, CuspariaKLSY7 launched
 
-`CuspariaKLSY6` (frozen `59fe52b51`, pid 2121546) SETTLED at 16:33 UTC,
+`CuspariaKLSY6` (frozen `59fe52b51`,
+pid 2121546) SETTLED at 16:33 UTC,
 16 minutes after its 16:22 launch (TALLY `ms=934677`),
 one attempt,
 413 seats,
 14 retry rounds,
 361 calls,
 no abandoned stream,
-0.22 USD by the meters (Bedrock 103.31 to 103.20, OpenRouter 151.94 to 151.83).
-Synthetic wet again from 16:27 UTC (five-hour window reset), glm-5.3 dark.
+0.22 USD by the meters (Bedrock 103.31 to 103.20,
+OpenRouter 151.94 to 151.83).
+Synthetic wet again from 16:27 UTC (five-hour window reset),
+glm-5.3 dark.
 
 The page against `CuspariaKLSY5`:
 1 of 1 heading,
@@ -13282,72 +17521,122 @@ no double blank line,
 publish check silent,
 7 abstention lines,
 no repeat or run-off finding,
-the archive's translator gloss line "“Ling Shui Yu Yu Zi” means fish in clear water." back on the page (dropped on `CuspariaKLSY5`).
+the archive's translator gloss line "“Ling Shui Yu Yu Zi” means fish in clear water."
+back on the page (dropped on `CuspariaKLSY5`).
 
 But three lines of the life in the present tense
-("She cares about her friends a lot.", "She’s an Eastern Orthodox Christian.", "She doesn’t trust God 100%, though."):
-slice 1 shipped gate-kept and unendorsed, the archive's own text.
+("She cares about her friends a lot.",
+"She’s an Eastern Orthodox Christian.",
+"She doesn’t trust God 100%,
+though."):
+slice 1 shipped gate-kept and unendorsed,
+the archive's own text.
 The lane contest settled on neither (5 of 8 usable;
-the translate lane text carried the gloss AND the past tense, and one ballot called the gloss "unsupported explanations",
-another called the past tense "inconsistent with the present-tense life narrative the house rule holds", which no sheet says);
-the consolidation slate chose gpt-oss's seven-line candidate 4.5 of 6, every ballot praising "nothing added or dropped" and the past tense;
-the consolidate gate refused it 3 to 2 (Kimi, deepseek, gemma-e2b for the standing: "consolidated omits the archive line glossing the nickname, which the Chinese is silent about and which the page therefore keeps").
-`CuspariaKLSY5` had gone the other way on the same slice (the gate accepted the consolidation 4 of 5, the gloss lost, recorded then as an observation).
+the translate lane text carried the gloss AND the past tense,
+and one ballot called the gloss "unsupported explanations",
+another called the past tense "inconsistent with the present-tense life narrative the house rule holds",
+which no sheet says);
+the consolidation slate chose gpt-oss's seven-line candidate 4.5 of 6,
+every ballot praising "nothing added or dropped" and the past tense;
+the consolidate gate refused it 3 to 2 (Kimi,
+deepseek,
+gemma-e2b for the standing:
+"consolidated omits the archive line glossing the nickname,
+which the Chinese is silent about and which the page therefore keeps").
+`CuspariaKLSY5` had gone the other way on the same slice (the gate accepted the consolidation 4 of 5,
+the gloss lost,
+recorded then as an observation).
 Neither page carried both.
 
 Class eighty-five:
 what the page carries and the Chinese is silent about had four rules on four sheets.
-`CONTEST_POLICY` (the lane contest and the gate): "DROPPED ALSO COVERS WHAT THE ARCHIVE CARRIES AND THE CHINESE DOES NOT SAY ... keeping it is correct";
-the slate criteria (`translate-selection-sheet.ts`): "Faithfulness: nothing added" with only the declared-name carve-out;
-the consolidation writer (`consolidate-wire.ts`): accurate detail the archive adds is kept, listing a name, a referent, a credit and a citation's translator, not a gloss;
-the translate writer (`translate-wire.ts`): its own list, which did include "a gloss identifying someone".
+`CONTEST_POLICY` (the lane contest and the gate):
+"DROPPED ALSO COVERS WHAT THE ARCHIVE CARRIES AND THE CHINESE DOES NOT SAY ... keeping it is correct";
+the slate criteria (`translate-selection-sheet.ts`):
+"Faithfulness:
+nothing added" with only the declared-name carve-out;
+the consolidation writer (`consolidate-wire.ts`):
+accurate detail the archive adds is kept,
+listing a name,
+a referent,
+a credit and a citation's translator,
+not a gloss;
+the translate writer (`translate-wire.ts`):
+its own list,
+which did include "a gloss identifying someone".
 A writer told to strip and a judge told to reward the stripping produce a candidate the gate must refuse,
 and the refusal keeps the archive with whatever else the house rules would have changed.
 The consolidation writer's tense rule also still named the archive as the authority
-("KEEP THE TENSE OF THE PAGE ... the ARCHIVE RENDERING is what settles"), class seventy-six's wording on a sheet that fix did not reach.
-Corpus census: the same shape stands on `Futajuhuacha` ("Huacha means flower-scented tea.", archive-only, inside the first paragraph)
+("KEEP THE TENSE OF THE PAGE ... the ARCHIVE RENDERING is what settles"),
+class seventy-six's wording on a sheet that fix did not reach.
+Corpus census:
+the same shape stands on `Futajuhuacha` ("Huacha means flower-scented tea.",
+archive-only,
+inside the first paragraph)
 and `Kotori` (the Latin motto's gloss).
 
 Fix (`7ad1b8ec7`):
 `page-apparatus-clause.ts` (new) carries one wording,
-"WHAT THE EXISTING TRANSLATION CARRIES AND THE ORIGINAL IS SILENT ABOUT IS KEPT IN PLACE: a gloss of a name or a term ..., a candidate carrying it has added nothing, and a candidate leaving it out has dropped page content",
+"WHAT THE EXISTING TRANSLATION CARRIES AND THE ORIGINAL IS SILENT ABOUT IS KEPT IN PLACE:
+a gloss of a name or a term ...,
+a candidate carrying it has added nothing,
+and a candidate leaving it out has dropped page content",
 interpolated into the slate's faithfulness criterion beside the declared-name carve-out,
 into the consolidation writer's rules in place of its list,
 into the translate writer's rules in place of its list,
 and a gloss named among `CONTEST_POLICY`'s examples of what is not unsupported;
-the consolidation writer's tense rule now reads "ONE TENSE, IN THIS ORDER: first the past tense the house rule sets for the life of a person who has died ..., then the tense the page holds for what is still true".
+the consolidation writer's tense rule now reads "ONE TENSE,
+IN THIS ORDER:
+first the past tense the house rule sets for the life of a person who has died ...,
+then the tense the page holds for what is still true".
 Guards red first at `7e433ff86`
-(`translate-selection-sheet.unit.test.ts`: the clause inside the criterion that says "nothing added";
-`consolidate-wire.unit.test.ts`: the gloss kept and the house rule's past named, the archive no longer the tense authority),
+(`translate-selection-sheet.unit.test.ts`:
+the clause inside the criterion that says "nothing added";
+`consolidate-wire.unit.test.ts`:
+the gloss kept and the house rule's past named,
+the archive no longer the tense authority),
 `tense-authority-reaches-every-sheet.unit.test.ts` moved to the new wording in the fix,
 lint 0 and 0,
 types clean,
 full suite green (`suite-class85.log`).
 
-Observation, not shipped: the repair lane's editors deleted the gloss line and left its blank behind,
-so the repair text carried a run of three newlines inside the slice (`\n\n\n` between "while feeding fish." and "She began ...");
-the repair lane lost the contest, and no floor reads a blank run inside a candidate.
+Observation,
+not shipped:
+the repair lane's editors deleted the gloss line and left its blank behind,
+so the repair text carried a run of three newlines inside the slice (`\n\n\n` between "while feeding fish."
+and "She began ...");
+the repair lane lost the contest,
+and no floor reads a blank run inside a candidate.
 A candidate's internal blank run collapses to one blank line in the rendered page,
-so this is recorded, not fixed.
+so this is recorded,
+not fixed.
 
-`CuspariaKLSY7` (frozen `7ad1b8ec7`, pid 2147965, overlap 8)
-launched 16:46 UTC on Bedrock, OpenRouter and Synthetic
-(meters 103.20 USD Bedrock, 151.83 OpenRouter at launch),
+`CuspariaKLSY7` (frozen `7ad1b8ec7`,
+pid 2147965,
+overlap 8)
+launched 16:46 UTC on Bedrock,
+OpenRouter and Synthetic
+(meters 103.20 USD Bedrock,
+151.83 OpenRouter at launch),
 waiter `br3cmmd0a`;
-read for the gloss line on the page AND every line of the life in the past (slice 1 first), no gate-kept standing on slice 1,
-then `zheermao`, `yingying` one at a time,
+read for the gloss line on the page AND every line of the life in the past (slice 1 first),
+no gate-kept standing on slice 1,
+then `zheermao`,
+`yingying` one at a time,
 then `XingZ60` again for the handles.
 
 ## hulicaijia13 read, 2026-09-22, 16:25 UTC: SETTLED in 68 min, class eighty-four live (two removals of the Nayuki note withheld, the note on the page with its marker); CuspariaKLSY6 launched
 
-`hulicaijia13` (frozen `59fe52b51`, pid 2112448) SETTLED at 16:16 UTC,
+`hulicaijia13` (frozen `59fe52b51`,
+pid 2112448) SETTLED at 16:16 UTC,
 68 minutes after its 15:08 launch (TALLY `ms=4068612`),
 one attempt,
 4,497 seats,
 147 retry rounds,
 3,775 calls,
 10 abandoned streams (0.01 USD),
-4.90 USD by the meters (Bedrock 105.39 to 103.31, OpenRouter 154.76 to 151.94).
+4.90 USD by the meters (Bedrock 105.39 to 103.31,
+OpenRouter 154.76 to 151.94).
 glm-5.3 and Qwen3.8-27B dark (Synthetic dry).
 
 Class eighty-four live.
@@ -13355,14 +17644,18 @@ The archive block review put the relabeled `[^10]` note to its reviewers again;
 deepseek-v4.1-flash and gpt-oss-120b proposed the removal,
 and both were withheld at 15:19:36 UTC with the new finding
 (`archive-revision-refused (...): the revision leaves the page with a footnote defect the archive did not carry (unresolved-reference gfm 10)`).
-The one admissible revision, "Formerly Nayuki, renamed Naixue in 2025." (the archive's "Naìsnow" spelled as the body spells the café),
+The one admissible revision,
+"Formerly Nayuki,
+renamed Naixue in 2025."
+(the archive's "Naìsnow" spelled as the body spells the café),
 was chosen over the incumbent by the selection round
 (gemma-4-e2b and Mercury citing page-wide consistency with the body's "Naixue"),
 so the page carries `Naixue[^10]` on the order line and the definition among the notes.
 Two reviewer voices on that block were lost to the schema guard as the guard intends
 (gemma-4-e2b answered `editorial-context` quoting the English archive,
 minimax-m3 answered `source-supported` with no source quote);
-23 schema-mismatch lines on the run, the same count as `hulicaijia12` and fewer than `hulicaijia9`'s 30.
+23 schema-mismatch lines on the run,
+the same count as `hulicaijia12` and fewer than `hulicaijia9`'s 30.
 
 The page against `hulicaijia9`:
 13 of 13 headings,
@@ -13376,30 +17669,43 @@ front matter equal,
 no TA,
 no error finish,
 no `contributor-name-restored` line,
-two unendorsed standings (3, 58), both gate-kept,
+two unendorsed standings (3,
+58),
+both gate-kept,
 no slate-declined,
 129 abstention lines,
 no repeat or run-off finding.
 
-`CuspariaKLSY6` (frozen `59fe52b51`, pid 2121546, overlap 8)
+`CuspariaKLSY6` (frozen `59fe52b51`,
+pid 2121546,
+overlap 8)
 launched 16:22 UTC on Bedrock and OpenRouter
-(meters 103.31 USD Bedrock, 151.94 OpenRouter at launch),
+(meters 103.31 USD Bedrock,
+151.94 OpenRouter at launch),
 waiter `btbbvt2r4`.
 Read by the seven steps and three checks against `CuspariaKLSY5`
-(the life in the past tense, 1 heading, 1 marker, front matter equal, no double blank line, publish check silent);
-then `zheermao`, `yingying` one at a time,
+(the life in the past tense,
+1 heading,
+1 marker,
+front matter equal,
+no double blank line,
+publish check silent);
+then `zheermao`,
+`yingying` one at a time,
 then `XingZ60` again for the handles.
 
 ## hulicaijia12 read, 2026-09-22, 15:10 UTC: SETTLED in 79 min, but a translator's note removed and its marker left dangling (class eighty-four); fixed in 59fe52b51, hulicaijia13 launched
 
-`hulicaijia12` (frozen `4e5cf65e0`, pid 2066905) SETTLED at 14:57 UTC,
+`hulicaijia12` (frozen `4e5cf65e0`,
+pid 2066905) SETTLED at 14:57 UTC,
 79 minutes after its 13:38 launch (TALLY `ms=4721721`),
 one attempt,
 4,577 seats,
 149 retry rounds,
 3,869 calls,
 15 abandoned streams (0.02 USD),
-4.96 USD by the meters (Bedrock 107.56 to 105.39, OpenRouter 157.55 to 154.76).
+4.96 USD by the meters (Bedrock 107.56 to 105.39,
+OpenRouter 157.55 to 154.76).
 glm-5.3 and Qwen3.8-27B dark (Synthetic dry).
 
 The page against `hulicaijia9`:
@@ -13411,17 +17717,28 @@ The page against `hulicaijia9`:
 front matter equal,
 no TA,
 no error finish,
-no `contributor-name-restored` line (the page's signers are archive-rendered, so class eighty-three had nothing to restore here),
-six unendorsed standings (3, 12, 18, 34, 50, 55),
-four gate-kept (3, 18, 50, 55),
-two slate-declined (12, 34),
+no `contributor-name-restored` line (the page's signers are archive-rendered,
+so class eighty-three had nothing to restore here),
+six unendorsed standings (3,
+12,
+18,
+34,
+50,
+55),
+four gate-kept (3,
+18,
+50,
+55),
+two slate-declined (12,
+34),
 129 abstention lines,
 no repeat or run-off finding,
 no `archive-revision-refused` line.
 
 But 17 footnote markers and 8 definitions against `hulicaijia9`'s 18 and 9:
 the archive's translator note `[^7]: Formerly Nayuki, renamed Naìsnow in 2025.`,
-relabeled `[^10]` by the class nineteen relabel (the original carries 8 notes, this one is the translator's),
+relabeled `[^10]` by the class nineteen relabel (the original carries 8 notes,
+this one is the translator's),
 went to the archive block review as an archive-only block;
 five of five reviewers called the rename a factual claim the original does not carry
 ("criterion 1 requires such claims to be removed"),
@@ -13442,90 +17759,133 @@ a defect the review itself introduces is therefore inherited and blamed on nobod
 A footnote is a relation between blocks and a revision of one block is judged against the whole page it would leave:
 `archive-revision-footnotes.ts` (new) replaces the block in the archive text,
 runs `introducedFootnoteFindings` against the unrevised archive,
-and withholds a revision that introduces an unresolved reference, an orphan definition or a duplicate,
+and withholds a revision that introduces an unresolved reference,
+an orphan definition or a duplicate,
 under the `archive-revision-refused` prefix with the defect spelled the way the page guard spells it;
 `archive-replacement-candidates.ts` applies it after the shape floor (class seventy-seven),
 so a removal of a referenced definition empties the slate and the note ships as the archive wrote it.
 Guard red first at `27845568a`
-(`archive-block-review-stage.unit.test.ts`: a definition block removed while its marker stands, retained with the finding, no selection round bought),
+(`archive-block-review-stage.unit.test.ts`:
+a definition block removed while its marker stands,
+retained with the finding,
+no selection round bought),
 fixed in `59fe52b51`,
 lint 0 and 0,
 types clean,
 stage suite green,
-full suite green (`suite-class84.log`, 1095 PASS, exit 0).
+full suite green (`suite-class84.log`,
+1095 PASS,
+exit 0).
 
-`hulicaijia13` (frozen `59fe52b51`, pid 2112448, overlap 8)
+`hulicaijia13` (frozen `59fe52b51`,
+pid 2112448,
+overlap 8)
 launched 15:08 UTC on Bedrock and OpenRouter
-(meters 105.39 USD Bedrock, 154.76 OpenRouter at launch),
+(meters 105.39 USD Bedrock,
+154.76 OpenRouter at launch),
 waiter `b6vsy9ha7`.
 Read by the seven steps and three checks against `hulicaijia9`
-(18 markers and 9 definitions again, the `[^10]` note on the page),
+(18 markers and 9 definitions again,
+the `[^10]` note on the page),
 plus the `archive-revision-refused` line naming `unresolved-reference` for the removal;
-then `CuspariaKLSY`, `zheermao`, `yingying` one at a time,
+then `CuspariaKLSY`,
+`zheermao`,
+`yingying` one at a time,
 then `XingZ60` again for the handles.
 
 ## Class eighty-three amended, 2026-09-22, 13:40 UTC: syllable groups, never one joined word (owner's veto); hulicaijia11 killed, hulicaijia12 launched on 4e5cf65e0
 
 The owner vetoed the one-word joining at 13:35 UTC:
-"I want syllable groups. Jie Cheng Tian Zou is fine. Jiecheng Tianzou is fine. Jiechengtianzou is not fine."
+"I want syllable groups.
+Jie Cheng Tian Zou is fine.
+Jiecheng Tianzou is fine.
+Jiechengtianzou is not fine."
 The reading now pairs the syllables,
 each pair capitalised,
 a space between pairs,
 a lone trailing syllable standing by itself
-(锦心 Jinxin, 雨狸 Yuli, 洁澄天奏 Jiecheng Tianzou, 洁澄天奏Official "Jiecheng Tianzou Official"),
+(锦心 Jinxin,
+雨狸 Yuli,
+洁澄天奏 Jiecheng Tianzou,
+洁澄天奏Official "Jiecheng Tianzou Official"),
 pairs because the corpus's own romanisations pair them ("Baimao suki");
-the house-policy bullet says "in capitalised groups of two syllables ..., never one joined word" with the same examples.
+the house-policy bullet says "in capitalised groups of two syllables ...,
+never one joined word" with the same examples.
 Guards red first at `790719ea3`
-(`handle-reading.unit.test.ts`, new: two syllables one group, four syllables two groups, a lone trailing syllable, Latin letters kept a space apart, the gloss tolerance;
+(`handle-reading.unit.test.ts`,
+new:
+two syllables one group,
+four syllables two groups,
+a lone trailing syllable,
+Latin letters kept a space apart,
+the gloss tolerance;
 the house-policy guard's phrase;
-`handleReading`, `withoutGloss` and `carriesRendering` exported through the readiness barrel for the guard),
+`handleReading`,
+`withoutGloss` and `carriesRendering` exported through the readiness barrel for the guard),
 fixed in `4e5cf65e0`,
 lint 0 and 0,
 types clean,
 the three guard suites green,
 full suite in `suite-class83c.log`.
 
-`hulicaijia11` (frozen `fa014fc55`, pid 2057750) was killed at 13:38 UTC,
+`hulicaijia11` (frozen `fa014fc55`,
+pid 2057750) was killed at 13:38 UTC,
 ten minutes in,
 still in preparation,
 under always-kill-and-relaunch
-(meters 107.57 to 107.56 USD Bedrock and 157.58 to 157.55 OpenRouter, 0.04 USD).
-`hulicaijia12` (frozen `4e5cf65e0`, pid 2066905, overlap 8)
+(meters 107.57 to 107.56 USD Bedrock and 157.58 to 157.55 OpenRouter,
+0.04 USD).
+`hulicaijia12` (frozen `4e5cf65e0`,
+pid 2066905,
+overlap 8)
 launched 13:38 UTC on Bedrock and OpenRouter
-(meters 107.56 USD Bedrock, 157.55 OpenRouter at launch),
+(meters 107.56 USD Bedrock,
+157.55 OpenRouter at launch),
 waiter `brc9j43qv`.
 Read by the seven steps and three checks against `hulicaijia9`,
 plus any `contributor-name-restored` line naming the pinyin reading;
-then `CuspariaKLSY`, `zheermao`, `yingying` one at a time,
+then `CuspariaKLSY`,
+`zheermao`,
+`yingying` one at a time,
 then `XingZ60` again for the handles.
 
 ## Class eighty-three built, 2026-09-22, 13:30 UTC: an undeclared handle is pinyin one way across the page, with its literal meaning in parentheses (owner's answer); hulicaijia10 killed, hulicaijia11 launched on fa014fc55
 
 The owner answered the undeclared-handle question of the XingZ622 read at 13:25 UTC:
-"A, and put the literal translation in parens".
-Option A as put to the owner was pinyin as one word, capitalised;
+"A,
+and put the literal translation in parens".
+Option A as put to the owner was pinyin as one word,
+capitalised;
 its example line wrote 洁澄天奏 as "Jiecheng Tianzou",
 which contradicts the label,
 and the rule follows the label
-(one word: Jiechengtianzou),
+(one word:
+Jiechengtianzou),
 since the mechanical restore needs one deterministic form;
 the owner can veto the joining.
 
 ### The rule
 
 `house-policy.ts` gained a bullet after the community-vocabulary bullet:
-a person's handle with no declared, archive or corpus rendering
-(a signer, a cited author, an account name the ORIGINAL writes in Han)
+a person's handle with no declared,
+archive or corpus rendering
+(a signer,
+a cited author,
+an account name the ORIGINAL writes in Han)
 is romanised as the handle is read,
 pinyin for a Chinese handle,
-as one capitalised word (锦心 is Jinxin, 雨狸 is Yuli, 洁澄天奏 is Jiechengtianzou),
+as one capitalised word (锦心 is Jinxin,
+雨狸 is Yuli,
+洁澄天奏 is Jiechengtianzou),
 with its literal meaning in parentheses the first time it appears on the page
 (Jinxin (Brocade Heart))
 and the romanisation alone after that;
 never left in Han,
 never rendered by its meaning alone,
 the same way everywhere on the page;
-a handle the person writes in Latin letters keeps their spelling (HiYku, wing, Mikä),
+a handle the person writes in Latin letters keeps their spelling (HiYku,
+wing,
+Mikä),
 and Latin letters the ORIGINAL writes against a Han handle stay after the romanisation
 (洁澄天奏Official is Jiechengtianzou Official).
 The bullet reaches every producing and judging sheet through `HOUSE_POLICY_BLOCK`.
@@ -13533,14 +17893,22 @@ The bullet reaches every producing and judging sheet through `HOUSE_POLICY_BLOCK
 ### The mechanical half
 
 - `handle-reading.ts` (new):
-  `handleReading` reads a handle through `pinyin-pro` (already a dependency, used by the directory-id check),
+  `handleReading` reads a handle through `pinyin-pro` (already a dependency,
+  used by the directory-id check),
   every run of Han as one capitalised toneless word,
   everything else as written,
   a space between a romanised run and Latin letters or digits against it;
-  probed: 锦心 Jinxin, 雨狸 Yuli, 洁澄天奏Official "Jiechengtianzou Official", 白毛 suki "Baimao suki", 空白/引号 "Kongbai/Yinhao", Mikä unchanged.
+  probed:
+  锦心 Jinxin,
+  雨狸 Yuli,
+  洁澄天奏Official "Jiechengtianzou Official",
+  白毛 suki "Baimao suki",
+  空白/引号 "Kongbai/Yinhao",
+  Mikä unchanged.
   `withoutGloss` strips a trailing parenthetical;
   `carriesRendering` accepts a written name equal to the rendering or the rendering with its gloss.
-- `contributor-name-authorities.ts` (new, `nameAuthorities` moved out of the restore for the line budget):
+- `contributor-name-authorities.ts` (new,
+  `nameAuthorities` moved out of the restore for the line budget):
   every signer takes an authority,
   not only the headed ones (class sixty-seven's restriction):
   the archive's aligned signature,
@@ -13557,36 +17925,49 @@ The bullet reaches every producing and judging sheet through `HOUSE_POLICY_BLOCK
   `nameEndAt` replaces `commaAt`.
 
 Guards red first at `3474e062f`
-(`contributor-name-restore.unit.test.ts`: a Han signature romanised in heading and signature with the pinyin finding,
+(`contributor-name-restore.unit.test.ts`:
+a Han signature romanised in heading and signature with the pinyin finding,
 a glossed heading left alone,
 a twice-signed unheaded name rendered one way;
-`house-policy-reaches-the-judges.unit.test.ts`: the rule's phrases),
+`house-policy-reaches-the-judges.unit.test.ts`:
+the rule's phrases),
 fixed in `fa014fc55`,
 lint 0 and 0,
 types clean,
-full suite green twice (`suite-class83.log` before the split, `suite-class83b.log` after, 1094 PASS lines, exit 0).
+full suite green twice (`suite-class83.log` before the split,
+`suite-class83b.log` after,
+1094 PASS lines,
+exit 0).
 
 ### What this does not cover
 
-A handle in running prose or in a link's text ("by 洁澄天奏Official" on the Caged Bird attribution, which is no signature line)
+A handle in running prose or in a link's text ("by 洁澄天奏Official" on the Caged Bird attribution,
+which is no signature line)
 is covered by the rule on the sheets alone;
 the mechanical restore reaches headings and signature lines.
 The next XingZ60 read checks "by Jiechengtianzou Official" and the song credits.
 
 ### hulicaijia10 killed, hulicaijia11 launched
 
-`hulicaijia10` (frozen `6c701485d`, pid 2018636) was killed at 13:28 UTC,
+`hulicaijia10` (frozen `6c701485d`,
+pid 2018636) was killed at 13:28 UTC,
 14 minutes in,
 at chunk 28 of 50 of the repair lane,
 under always-kill-and-relaunch once `fa014fc55` landed
-(meters 107.68 to 107.57 USD Bedrock and 157.75 to 157.58 OpenRouter, 0.28 USD).
-`hulicaijia11` (frozen `fa014fc55`, pid 2057750, overlap 8)
+(meters 107.68 to 107.57 USD Bedrock and 157.75 to 157.58 OpenRouter,
+0.28 USD).
+`hulicaijia11` (frozen `fa014fc55`,
+pid 2057750,
+overlap 8)
 launched 13:28 UTC on Bedrock and OpenRouter
-(meters 107.57 USD Bedrock, 157.58 OpenRouter at launch),
+(meters 107.57 USD Bedrock,
+157.58 OpenRouter at launch),
 waiter `bfokdo0kk`.
 Read by the seven steps and three checks against `hulicaijia9`,
 plus any `contributor-name-restored` line naming the pinyin reading;
-then `CuspariaKLSY`, `zheermao`, `yingying` one at a time,
+then `CuspariaKLSY`,
+`zheermao`,
+`yingying` one at a time,
 then `XingZ60` again for the handles.
 
 ## XingZ622 read, 2026-09-22, 13:40 UTC: SETTLED in 3h39m, class eighty-one live on the page ("They once said"), class eighty-two not exercised; the undeclared-handle question open; hulicaijia10 launched
@@ -13604,7 +17985,8 @@ Seats asked 8,504,
 7,778 calls,
 88 abandoned streams (0.36 USD),
 Jev 249 of 249,
-glm-5.3 dark (582 asked, 582 thrown),
+glm-5.3 dark (582 asked,
+582 thrown),
 Qwen3.8-27B unusable on the naturalness bench.
 Meters 112.15 to 107.68 USD on Bedrock and 165.84 to 157.77 on OpenRouter,
 12.54 USD together against `XingZ620`'s 10.24.
@@ -13612,16 +17994,21 @@ Phases:
 repair lane 09:44 to 10:22 (38 min against `XingZ620`'s 78),
 translate lane 10:40 to 11:28 (48 against 41),
 contest to 11:34,
-consolidation 11:34 to 13:06 (92 against 69, 110 contested slices at a median of 6.4 minutes a chunk against 4.0),
+consolidation 11:34 to 13:06 (92 against 69,
+110 contested slices at a median of 6.4 minutes a chunk against 4.0),
 page written 13:09.
 
 ### Why the consolidation ran slower than XingZ620's
 
 The consolidation is bound by the two slow write-path streams and this run had no Synthetic or Hyper to spread them onto.
 `deepseek-v4.1-flash` streams took 48.8 s mean in the consolidation window against 31.9 on `XingZ620`
-(458 streams, 372 stream-minutes; all 1,270 of its calls through OpenRouter where `XingZ620` sent 177 to Hyper),
+(458 streams,
+372 stream-minutes;
+all 1,270 of its calls through OpenRouter where `XingZ620` sent 177 to Hyper),
 `GLM-5.3-Flash` 96.7 s against 88.2
-(133 streams, 214 stream-minutes; 414 calls through OpenRouter and 33 through Synthetic where `XingZ620` sent 132 to Synthetic).
+(133 streams,
+214 stream-minutes;
+414 calls through OpenRouter and 33 through Synthetic where `XingZ620` sent 132 to Synthetic).
 Rounds waited on them:
 produce rounds 108 s mean against 70,
 naturalness review 53 s against 27 (grace 9.9 s against 3.5),
@@ -13632,19 +18019,24 @@ with the fast providers dry.
 
 ### Class eighty-one on the page
 
-Slice 14 (the tombstone paragraph, TA 曾说) settled at 11:39 UTC on its first slate round:
+Slice 14 (the tombstone paragraph,
+TA 曾说) settled at 11:39 UTC on its first slate round:
 the contest settled on neither,
 the archive's TA text stood and was withheld (`ineligible-standing-withheld`),
 the translate lane text was offered beside five valid proposals,
-and the slate chose deepseek's "They once said that when a person dies, all their right and wrong..." at weight 2.5
-(gpt-oss, gemma-26b and deepseek on it, deepseek's ballot "correctly renders the written TA as singular they";
+and the slate chose deepseek's "They once said that when a person dies,
+all their right and wrong..." at weight 2.5
+(gpt-oss,
+gemma-26b and deepseek on it,
+deepseek's ballot "correctly renders the written TA as singular they";
 minimax abstained reading the identity line's three forms as a fault of the candidate),
 the gate 3 of 4 for the consolidated text over the standing
 ("Standing is disqualified by the house rule against leaving 'TA' untranslated").
 The identity line reached the sheets as
 `ORIGINAL refers to this person as 她 (51 times), and also writes 他 (19 times) and TA (35 times)`,
 quoted in a judge's ballot on the inheritance paragraph.
-On the page: she/her 150 to 99 and they/them/their 74 to 111 against `XingZ620`,
+On the page:
+she/her 150 to 99 and they/them/their 74 to 111 against `XingZ620`,
 65 lines newly carrying they,
 among them "They once said that when a person dies",
 "They said they had at least three personalities",
@@ -13657,10 +18049,37 @@ so class eighty-two stays unit-covered only.
 
 ### The seven steps and three checks
 
-- Fourteen headings (Introduction, Engagement in Trans Aid, Memories by Friends, Part One to Part Ten, the closing section), both links, nine definitions with nine markers, three TextRing, all eleven details blocks, front matter equal to the archive, no TA, no error finish, `attempts.json` reads 1.
-- The closing section "To the Shooting Star That Once Streaked Across the Night Sky" in the second person as the original; the poem quotes with their attributions inside the details blocks; the Caged Bird attribution with its link ("—From *Caged Bird*, by 洁澄天奏Official").
-- Classes sixty-seven to sixty-nine and seventy-six holding: Ann, HiYku, Baimao Suki restored; ten headings unified as Part One to Part Ten; the memorial's four paragraphs on the page; the life in the past tense.
-- Three standings shipped without contest endorsement (slices 6, 42, 68), no gate-kept, 208 abstention lines with reasons, no repeat finding, one `archive-revision-refused` (minimax's paragraph-for-paragraph revision refused on shape at the block review).
+- Fourteen headings (Introduction,
+  Engagement in Trans Aid,
+  Memories by Friends,
+  Part One to Part Ten,
+  the closing section),
+  both links,
+  nine definitions with nine markers,
+  three TextRing,
+  all eleven details blocks,
+  front matter equal to the archive,
+  no TA,
+  no error finish,
+  `attempts.json` reads 1.
+- The closing section "To the Shooting Star That Once Streaked Across the Night Sky" in the second person as the original;
+  the poem quotes with their attributions inside the details blocks;
+  the Caged Bird attribution with its link ("—From *Caged Bird*,
+  by 洁澄天奏Official").
+- Classes sixty-seven to sixty-nine and seventy-six holding:
+  Ann,
+  HiYku,
+  Baimao Suki restored;
+  ten headings unified as Part One to Part Ten;
+  the memorial's four paragraphs on the page;
+  the life in the past tense.
+- Three standings shipped without contest endorsement (slices 6,
+  42,
+  68),
+  no gate-kept,
+  208 abstention lines with reasons,
+  no repeat finding,
+  one `archive-revision-refused` (minimax's paragraph-for-paragraph revision refused on shape at the block review).
 
 ### Open: an undeclared handle has no rule and the bench renders it three ways on one page
 
@@ -13670,17 +18089,23 @@ The page carries handles the archive never rendered
 (the consolidation slate 2.5 to 1 for "keeps '锦心' as written ... there is no declared English form",
 over the translate lane's "Jinxin";
 the contributor restore then rewrote the heading's "Brocade Heart" to the signature's 锦心),
-where `XingZ619` wrote "Jinxin", `XingZ620` "Jin Xin" and `XingZ616` "Brocade Heart";
+where `XingZ619` wrote "Jinxin",
+`XingZ620` "Jin Xin" and `XingZ616` "Brocade Heart";
 洁澄天奏 ships as "Jiecheng Tianzou" on its signature and "洁澄天奏Official" on the Caged Bird attribution;
 雨狸 ships as "Yu Li" on one song attribution and "雨狸" on the next;
 《零重祈愿》 as "Ling Chong Qi Yuan" where `XingZ620` kept the Han.
-`XingZ620` had the same shape (螐, 洁澄天奏, 妄想症, 零重祈愿 in Han; "Yu Li" beside "Yuli").
+`XingZ620` had the same shape (螐,
+洁澄天奏,
+妄想症,
+零重祈愿 in Han;
+"Yu Li" beside "Yuli").
 The house policy has no sentence on a handle with no declared or archive form,
 and the judges fill the gap with "keep the original form".
 The archive's own practice is split:
 it romanises 白毛 suki as "Baimao suki" on this page,
 and keeps 方方 and 铃木真依 in Han as Twitter link text on `Anilovr`
-(11 of 92 English pages carry Han outside comments, mostly forms under discussion and quoted verse).
+(11 of 92 English pages carry Han outside comments,
+mostly forms under discussion and quoted verse).
 One-way rendering per page is settled (class sixty-seven);
 which form an undeclared handle takes is the owner's call,
 asked 2026-09-22 with pinyin recommended.
@@ -13691,11 +18116,23 @@ asked 2026-09-22 with pinyin recommended.
 pid 2018636,
 overlap 8)
 launched 13:14 UTC on Bedrock and OpenRouter
-(meters 107.68 USD Bedrock, 157.75 OpenRouter at launch),
+(meters 107.68 USD Bedrock,
+157.75 OpenRouter at launch),
 waiter `bo0aplgcp`.
 Read by the seven steps and three checks against `hulicaijia9`
-(13 headings, 17 tag markers, 18 footnote markers, 9 definitions, 2 links, 3 Sakura, "Conflict" for 左右, front matter equal, no TA, no error finish),
-then `CuspariaKLSY`, `zheermao`, `yingying` one at a time.
+(13 headings,
+17 tag markers,
+18 footnote markers,
+9 definitions,
+2 links,
+3 Sakura,
+"Conflict" for 左右,
+front matter equal,
+no TA,
+no error finish),
+then `CuspariaKLSY`,
+`zheermao`,
+`yingying` one at a time.
 
 ## XingZ621 read, 2026-09-22, 09:35 UTC: INCOMPLETE at slice 14 on a pronoun rule that contradicts itself (class eighty-one) and a run-off that tied again after narrowing (class eighty-two), both fixed in 6c701485d; XingZ622 launched
 
@@ -13735,13 +18172,20 @@ and split one ballot each four ways:
 Mercury on candidate 2 ("respects the house rule on pronouns where the original uses the neutral form TA"),
 gpt-oss on candidate 3 ("the correct pronoun (she) as required by the declared gender"),
 minimax on candidate 6 ("singular they ... the correct rendering of TA per the house rules"),
-gemma-26b on candidate 5 ("Candidates 3, 4, 7, and 8 use she/her, which violates the rule").
+gemma-26b on candidate 5 ("Candidates 3,
+4,
+7,
+and 8 use she/her,
+which violates the rule").
 The run-off over the four leaders (class sixty-three) split again:
 gemma-26b at 0.5 on the first,
 gemma-e2b on the fourth,
-Mercury on the third ("correctly resolves the passage's neutral pronoun to 'she', consistent with the declared identity"),
+Mercury on the third ("correctly resolves the passage's neutral pronoun to 'she',
+consistent with the declared identity"),
 gpt-oss declining all
-("Candidates 1, 2, and 4 use the plural pronoun 'They' instead of the declared feminine pronoun 'she'").
+("Candidates 1,
+2,
+and 4 use the plural pronoun 'They' instead of the declared feminine pronoun 'she'").
 Tied at weight 1,
 `no-candidate-backed`,
 `slate-declined-standing`,
@@ -13759,8 +18203,12 @@ and the other parts write 她.
 A judge reading the count and the "whole ORIGINAL" clause resolved TA to she;
 a judge reading the TA sentence rendered it they;
 the bench never agreed and the same split ran through every pronoun slice of Part One
-(the judges' reasons at 08:57, 08:58, 09:01, 09:03 and 09:05 all name one rule or the other).
-`XingZ616`, `619` and `620` shipped "She once said" for this paragraph,
+(the judges' reasons at 08:57,
+08:58,
+09:01,
+09:03 and 09:05 all name one rule or the other).
+`XingZ616`,
+`619` and `620` shipped "She once said" for this paragraph,
 the same wrong choice by the settled rule,
 unnoticed because the "no TA" check looks for the untranslated word only.
 
@@ -13768,14 +18216,18 @@ Fixed in 6c701485d:
 
 - `house-policy.ts`:
   a pronoun the ORIGINAL writes is rendered as written where it stands
-  (她 is she, 他 is he, TA is singular they),
+  (她 is she,
+  他 is he,
+  TA is singular they),
   on every page including one whose other passages write 她,
   "since these pages are written by several hands and a writer who chose TA beside a page of 她 chose it";
   the declared-identity line settles unstated subjects only,
   never a pronoun the ORIGINAL wrote;
   the "whole ORIGINAL" clause now governs the neutral rendering of an UNSTATED subject alone.
 - `JUDGE_POLICY_TAIL`:
-  "A TA THE ORIGINAL WRITES IS NOT AN UNSTATED SUBJECT: it is rendered singular they where it stands, whatever pronoun the identity line counts for the rest of the page",
+  "A TA THE ORIGINAL WRITES IS NOT AN UNSTATED SUBJECT:
+  it is rendered singular they where it stands,
+  whatever pronoun the identity line counts for the rest of the page",
   a candidate resolving a written TA to she or he has made the WRONG choice,
   as has one writing they where the ORIGINAL wrote 她 or 他.
 - `sourcePronounLines` (`identity-context.ts`):
@@ -13792,12 +18244,16 @@ Guards red first at `4cf95e4e6`
 The class sixty-three run-off offers the tied leaders once;
 a second tie settles the decline.
 Here the first tie ranked four of eight,
-the run-off ranked two of those four (weight 1 each, one at 0.5, one abstention),
+the run-off ranked two of those four (weight 1 each,
+one at 0.5,
+one abstention),
 and the stage settled `no-candidate-backed` over a question it had just narrowed to two valid renderings.
 Fixed in 6c701485d:
 `judgeSlateWithRetry` (`translate-retry.ts`) asks the same panel again while each run-off strictly narrows the finalists,
 and settles only on a round that decides or a tie that narrows nothing
-(the whole slate backed, fewer than two backed, or a rejection);
+(the whole slate backed,
+fewer than two backed,
+or a rejection);
 each round shrinks the finalists and a narrowed run-off keeps at least two,
 so the slate's width bounds the rounds.
 Every round's findings are carried with `translate-declined-retried` and `translate-runoff (finalists N of M)` between them.
@@ -13808,7 +18264,8 @@ three disinterested judges,
 a tie of three of four,
 then two of three,
 then a decision at weight 2 on the third round;
-the rig now takes its translators, judges and renderings as parameters).
+the rig now takes its translators,
+judges and renderings as parameters).
 Lint 0 and 0,
 types clean,
 full suite green (`suite-class81-82.log`).
@@ -13821,10 +18278,12 @@ full suite green (`suite-class81-82.log`).
 - 10 standings shipped without contest endorsement,
   1 gate-kept,
   155 `declined every candidate` lines with reasons,
-  no `translate-runoff` finding in the log (the run-off is named in the artifact, which was never written).
+  no `translate-runoff` finding in the log (the run-off is named in the artifact,
+  which was never written).
 - The `CORPUS NAMES` line named nobody,
   as the census predicted.
-- The admission: slice 70 admitted inside the details of slices 67 to 71 on the container deficit (class sixty-one holding),
+- The admission:
+  slice 70 admitted inside the details of slices 67 to 71 on the container deficit (class sixty-one holding),
   no placement unresolved.
 
 ### XingZ622 launched
@@ -13833,7 +18292,8 @@ full suite green (`suite-class81-82.log`).
 pid 1996041,
 overlap 8)
 launched 09:30 UTC on Bedrock and OpenRouter
-(meters 112.15 USD Bedrock, 165.84 OpenRouter at launch),
+(meters 112.15 USD Bedrock,
+165.84 OpenRouter at launch),
 the `CORPUS NAMES` line naming nobody.
 Read slice 14 and the other Part One pronoun slices first
 (the identity line's mixed-form sentence in the prompt payloads,
@@ -13843,7 +18303,14 @@ any `run-off tied again` line and the `translate-runoff` findings),
 then the closing poem (slice 91),
 classes sixty-five to sixty-nine and seventy-six,
 then the seven steps and three checks against `XingZ620` and the archive
-(fourteen headings, both links, nine definitions, 3 TextRing, eleven details blocks, front matter equal, no TA, no error finish);
+(fourteen headings,
+both links,
+nine definitions,
+3 TextRing,
+eleven details blocks,
+front matter equal,
+no TA,
+no error finish);
 `XingZ620`'s 3h59m and the seven-hour deadline are the timing marks.
 
 ## mikaela7 read, 2026-09-22, 06:15 UTC: SETTLED, classes seventy to seventy-seven holding on the newest build, the pair bound silent on a slice with no pair; XingZ621 launched
@@ -13870,7 +18337,8 @@ Meters 116.35 to 115.75 USD on Bedrock and 171.95 to 171.12 on OpenRouter,
 - 4 of 4 headings,
   4 of 4 HTML comments,
   4 of 4 footnote markers,
-  𝓠𝓾𝓪𝓷 seven times as the archive (six on `mikaela6`, none as "Quan"),
+  𝓠𝓾𝓪𝓷 seven times as the archive (six on `mikaela6`,
+  none as "Quan"),
   304 lines against the previous page's 293;
   no `TA`,
   no `finish_reason=error`,
@@ -13887,7 +18355,8 @@ Meters 116.35 to 115.75 USD on Bedrock and 171.95 to 171.12 on OpenRouter,
 - 5 em-dashes,
   left per the owner's answer of 2026-09-21.
 - Classes seventy to seventy-seven holding:
-  the Epilogue's excerpt line curled ("[𝓠𝓾𝓪𝓷](...)'s Chronicle Issue No.33, 2023"),
+  the Epilogue's excerpt line curled ("[𝓠𝓾𝓪𝓷](...)'s Chronicle Issue No.33,
+  2023"),
   "Mika was outed" on the page,
   the Epilogue (slice 28) with its source lines one to one
   (the five quoted lines,
@@ -13970,14 +18439,23 @@ Meters 116.65 to 116.35 USD on Bedrock and 172.45 to 171.97 on OpenRouter,
 ### Class eighty live
 
 The closing blockquote ships two lines,
-"And in case I don't see you……good afternoon, good evening, and good night." and "From *The Truman Show*",
+"And in case I don't see you……good afternoon,
+good evening,
+and good night."
+and "From *The Truman Show*",
 and this time by the bench's choice,
 not by an unendorsed standing:
 the closing line is freshly written
-("Well, Yumiao, *Girls' Last Tour* is over now, and you can finally get a good night's sleep."),
+("Well,
+Yumiao,
+*Girls' Last Tour* is over now,
+and you can finally get a good night's sleep."),
 so the slate's winner carried the quote.
 The run artifact (`artifacts/shi_Yumiaoya.json`) carries the block finding ten times,
-"gives the line `And in case I don't see you……good afternoon, good evening, and good night.` twice, once in Chinese and once in English directly beside it; that pair is ONE line whose English is already its rendering, and the EXISTING TRANSLATION carries the block holding it as 2 lines",
+"gives the line `And in case I don't see you……good afternoon, good evening, and good night.` twice,
+once in Chinese and once in English directly beside it;
+that pair is ONE line whose English is already its rendering,
+and the EXISTING TRANSLATION carries the block holding it as 2 lines",
 one per candidate that kept the Chinese line raw or rendered it again,
 each withheld from the slate at the floor
 (the log carries no line for a floor refusal;
@@ -13985,7 +18463,8 @@ the artifact does).
 The slate then read two candidates,
 both with the quote as two lines,
 and its ballots cite the clause:
-deepseek-v4.1-flash "the quote block (Chinese line correctly dropped as it is paired with its English rendering, per line-structure rule)",
+deepseek-v4.1-flash "the quote block (Chinese line correctly dropped as it is paired with its English rendering,
+per line-structure rule)",
 minimax-m3 "dropping the explicit Chinese quotation of the Truman Show line (already present in English on the same page as a bilingual quote)",
 the consolidation's deepseek ballot "each pair being one line whose English is already its rendering";
 gpt-oss-120b abstained on "Both candidates omit the first Chinese line",
@@ -14077,14 +18556,19 @@ Meters 116.96 to 116.65 USD on Bedrock and 172.92 to 172.47 on OpenRouter,
 The page carries the quote as two lines,
 the film's English and "From *The Truman Show*",
 and the closing line in the archive's two-line form
-("Well, Yumiao, girl's last tour ended. / And you can finally get a good sleep.").
+("Well,
+Yumiao,
+girl's last tour ended.
+/ And you can finally get a good sleep.").
 That is slice 16 standing unendorsed:
 the translate slate split between candidate 1,
 which kept both Chinese lines raw
-(gpt-oss-120b and minimax-m3: "preserves every original line (including the Chinese quote and citation)"),
+(gpt-oss-120b and minimax-m3:
+"preserves every original line (including the Chinese quote and citation)"),
 and candidate 3,
 which rendered the Chinese line again in English
-(deepseek-v4.1-flash and gemma-4-26b: "the only one that provides a translation for the first line");
+(deepseek-v4.1-flash and gemma-4-26b:
+"the only one that provides a translation for the first line");
 the repair lane's editors kept the archive
 (three ballots against candidates that "awkwardly retain" the Chinese lines or "duplicate the final line");
 the consolidation slate split again with minimax abstaining on "all candidates fail the line-structure criterion",
@@ -14118,7 +18602,8 @@ full suite green (`suite-93b11aef9.log`).
 
 ### Observations, not classes
 
-- The film link back to "[movie](...)" where `shi_Yumiaoya11` had "Josee, the Tiger and the Fish" from the cited reference;
+- The film link back to "[movie](...)" where `shi_Yumiaoya11` had "Josee,
+  the Tiger and the Fish" from the cited reference;
   the reference is on the sheet and the bench chose otherwise this run.
 - "little yao-niang" again,
   "Three Musketeers" in quotation marks for 三剑客,
@@ -14136,7 +18621,8 @@ launched 05:01 UTC on Bedrock and OpenRouter
 Synthetic and Hyper dry),
 the `CORPUS NAMES` line naming the same five.
 Read the log for the block finding first
-(a `LINE-STRUCTURED` finding quoting "once in Chinese and once in English directly beside it; that pair is ONE line" on the translate floor,
+(a `LINE-STRUCTURED` finding quoting "once in Chinese and once in English directly beside it;
+that pair is ONE line" on the translate floor,
 and `translate-candidate-refused` on the four-line and three-line candidates),
 then the closing quote on the page,
 then classes seventy-nine and seventy-eight,
@@ -14192,7 +18678,10 @@ Meters 117.28 to 116.97 USD on Bedrock and 173.44 to 172.93 on OpenRouter,
 ### Class eighty, second arm: the clause reached the judges and they overruled it
 
 The closing blockquote shipped three lines again:
-"If I should never see you again, I wish you good morning, good afternoon, and good night."
+"If I should never see you again,
+I wish you good morning,
+good afternoon,
+and good night."
 above the film's own line,
 then "From *The Truman Show*".
 The frozen build carries the clause
@@ -14201,11 +18690,14 @@ so every translator,
 judge and editor on that slice read that the pair is one line whose English is already its rendering.
 The translate slate's ballots on the slice:
 deepseek-v4.1-flash chose the three-line candidate at weight 1,
-"Candidate 2 drops the original Chinese line of the bilingual Truman Show quotation ... leaving only the English line; under criterion 4 this is a dropped line and makes it ineligible";
+"Candidate 2 drops the original Chinese line of the bilingual Truman Show quotation ... leaving only the English line;
+under criterion 4 this is a dropped line and makes it ineligible";
 gemma-4-26b at weight 0.5,
-"The Chinese line ... is a literal translation of the sentiment, which is distinct from the actual English quote provided in the next line";
+"The Chinese line ... is a literal translation of the sentiment,
+which is distinct from the actual English quote provided in the next line";
 minimax-m3 abstained on both grounds at once,
-"Candidate 1 adds an English line ... that does not correspond to any line in the ORIGINAL ... This invents a line. Candidate 2 drops the Chinese quotation line entirely".
+"Candidate 1 adds an English line ... that does not correspond to any line in the ORIGINAL ... This invents a line.
+Candidate 2 drops the Chinese quotation line entirely".
 In the repair lane the editors' candidate that added the line lost 4 to 1
 ("Candidate 2 adds an English translation of the preceding Truman Show quote",
 "incorrectly duplicates the Truman Show quote that already appears in the surrounding text"),
@@ -14221,7 +18713,8 @@ carried the pair as one line.
 Fixed in `873104d8f`
 (guard red first at `c630bfb7d`,
 `bilingual-pair-bound.unit.test.ts`,
-five tests: refused where the page carries the pair once,
+five tests:
+refused where the page carries the pair once,
 accepted where the rendering does too,
 silent without page text,
 silent where the page keeps the adjacent lines apart,
@@ -14245,7 +18738,8 @@ full suite green (`suite-873104d8f.log`).
 
 - The caution blockquote ships the archive's own wording this run
   ("Tips",
-  "doesn't correspond to fact, while other parts still may require fact check"),
+  "doesn't correspond to fact,
+  while other parts still may require fact check"),
   the unendorsed standing of slice 1,
   where `shi_Yumiaoya9` and `shi_Yumiaoya10` re-rendered it;
   the `<Banner>` text is re-rendered again.
@@ -14293,7 +18787,8 @@ Seats asked 964,
 39 retry rounds,
 888 calls,
 no abandoned stream,
-glm-5.3 dark (75 asked, 75 threw),
+glm-5.3 dark (75 asked,
+75 threw),
 Qwen3.8-27B 56 of 124 and Kimi-K3 42 of 61 through Synthetic until its five-hour window read 2750 of 2750 at 03:30 UTC,
 after which the 19 Kimi and 68 Qwen refusals are `NoProviderForModelError` seat holds inside the consolidation,
 not provider errors.
@@ -14325,9 +18820,12 @@ Meters 117.48 to 117.28 USD on Bedrock and 173.89 to 173.46 on OpenRouter,
 ### Class seventy-nine live
 
 The January 16 sentence ships
-"After celebrating her current partner's birthday with them, in the early hours of January 16, she tried to end her life."
+"After celebrating her current partner's birthday with them,
+in the early hours of January 16,
+she tried to end her life."
 followed by
-"after six days of rescue efforts in the ICU, Yumiao — her body gravely damaged — finally woke up".
+"after six days of rescue efforts in the ICU,
+Yumiao — her body gravely damaged — finally woke up".
 The log carries "tried to end her life" on three ballots
 ("as in the original and house rules";
 one abstention faulting a candidate for "tried to end her life" without the temporal detail,
@@ -14345,13 +18843,19 @@ where `shi_Yumiaoya9` had the alias "Chewing Gum";
 
 The closing blockquote's original is four lines:
 如果再也不能见到你，祝你早安，午安，晚安。 then
-"And in case I don't see you……good afternoon, good evening, and good night." then
+"And in case I don't see you……good afternoon,
+good evening,
+and good night."
+then
 出自《楚门的世界》 then
 "From *The Truman Show*".
 The archive carries two lines,
 the film's English line and "From *The Truman Show*".
 `shi_Yumiaoya10` shipped three:
-"If I can never see you again, I wish you good morning, good afternoon, and good night."
+"If I can never see you again,
+I wish you good morning,
+good afternoon,
+and good night."
 above the film's own line,
 then the attribution once.
 `shi_Yumiaoya4` to `shi_Yumiaoya9` shipped four,
@@ -14363,7 +18867,8 @@ and that note is corrected here).
 
 The bench had no rule for the pair.
 The line floor counts a Han line beside its own English as one line owed
-(class forty-seven, `bilingualPairCount`),
+(class forty-seven,
+`bilingualPairCount`),
 and the class seventy-four guard catches a wording carried twice,
 but every wording of the line rule on the sheets said the opposite:
 `TRANSLATE_LINE_STRUCTURE_RULE` to the translators and consolidation producers
@@ -14371,9 +18876,14 @@ but every wording of the line rule on the sheets said the opposite:
 `TRANSLATE_LINE_STRUCTURE_CRITERION` to the slate judges
 ("a candidate that ... drops or invents a line is FAULTY"),
 `LINE_STRUCTURE_RULE` to the editors
-("never invent a line, drop a line").
+("never invent a line,
+drop a line").
 So every translate candidate rendered the Chinese line
-(deepseek-v4.1-flash: "original has a 4-line blockquote (Chinese quote, English quote, Chinese attribution, English attribution) but the Chinese quote line is absent from every candidate"),
+(deepseek-v4.1-flash:
+"original has a 4-line blockquote (Chinese quote,
+English quote,
+Chinese attribution,
+English attribution) but the Chinese quote line is absent from every candidate"),
 and the judges split on the ground the rule left open:
 gpt-oss-120b abstained on "All candidates omit the original line 出自《楚门的世界》",
 Qwen3.8-27B on "Candidates 1 and 2 omit the first quoted line",
@@ -14382,18 +18892,36 @@ gpt-oss-120b in the repair lane on "Both candidates keep the original English li
 Fixed in `8f5e28ad4`
 (guard red first at `49327e735`,
 `bilingual-line-policy.unit.test.ts`,
-four tests: the translators' rule,
+four tests:
+the translators' rule,
 the judges' criterion and the editors' addendum carry the clause,
 an ungoverned addendum carries none).
 `bilingual-line-clause.ts` holds one wording,
 interpolated into all three:
-"A line the ORIGINAL gives twice, once in Chinese and once in English directly beside it (a quotation in both languages, and its attribution the same way), is ONE line whose English is already its rendering: carry that English line once, as the ORIGINAL has it; a rendering carrying the English line alone for such a pair has dropped nothing, and one carrying the Chinese line, or a second English wording of it, beside the English has invented a line."
+"A line the ORIGINAL gives twice,
+once in Chinese and once in English directly beside it (a quotation in both languages,
+and its attribution the same way),
+is ONE line whose English is already its rendering:
+carry that English line once,
+as the ORIGINAL has it;
+a rendering carrying the English line alone for such a pair has dropped nothing,
+and one carrying the Chinese line,
+or a second English wording of it,
+beside the English has invented a line."
 Stated for the models rather than enforced as a surplus bound:
 measured over the pinned corpus
 (`scratchpad/bilingual-census.mjs`,
 every Han line followed by a Latin-only line in the 92 originals),
 `shi_Yumiaoya`'s two pairs are the only Chinese lines with their English beside them,
-while Arita, NIGHT81473140, gqt, zhangyubaka, Y1Ran, luxuanwen3, cheonwoomaeng, hakureico, Susiethegamer and XIEPT2 carry a Chinese line followed by an English line of different content
+while Arita,
+NIGHT81473140,
+gqt,
+zhangyubaka,
+Y1Ran,
+luxuanwen3,
+cheonwoomaeng,
+hakureico,
+Susiethegamer and XIEPT2 carry a Chinese line followed by an English line of different content
 (an introduction then a quoted poem,
 a letter then its signature),
 which `bilingualPairCount` cannot tell apart,
@@ -14492,18 +19020,37 @@ Meters 117.81 to 117.50 USD on Bedrock and 174.39 to 173.93 on OpenRouter,
 ### Class seventy-eight live
 
 The `CORPUS NAMES` line named five people
-(贴贴 for `CutOceanHeyFis1` as "Cuddly", "Affectionate";
-盐田 for `SS3B_0016` as "Yantian", "Metro Line 8";
-紫壑 for `Weideriche_` as "Weideriche_", "Zihe";
-口香糖 for `a2581911655` as "Magic Chewing Gum", "Chewing Gum", "jjlin1219";
-单片 for `interrgned` as "interrgned", "Danpian").
+(贴贴 for `CutOceanHeyFis1` as "Cuddly",
+"Affectionate";
+盐田 for `SS3B_0016` as "Yantian",
+"Metro Line 8";
+紫壑 for `Weideriche_` as "Weideriche_",
+"Zihe";
+口香糖 for `a2581911655` as "Magic Chewing Gum",
+"Chewing Gum",
+"jjlin1219";
+单片 for `interrgned` as "interrgned",
+"Danpian").
 The ICU paragraph ships
-"Yumiao heard the devastating news that Chewing Gum and Danpian had also passed away, one after the other"
+"Yumiao heard the devastating news that Chewing Gum and Danpian had also passed away,
+one after the other"
 where `shi_Yumiaoya8` had "Xiaoguantang and Danpian".
 Three of the five translate-slate ballots on that slice name the declared names in their reasons
-(gpt-oss-120b: "uses the declared names (Yumiao, Yantian, Chewing Gum, Danpian)";
-deepseek-v4.1-flash: "All three candidates ... use the declared names (Yumiao, Yantian, Chewing Gum, Danpian)";
-minimax-m3: "all three use the declared spellings Yumiao, Yantian, Chewing Gum, Danpian correctly").
+(gpt-oss-120b:
+"uses the declared names (Yumiao,
+Yantian,
+Chewing Gum,
+Danpian)";
+deepseek-v4.1-flash:
+"All three candidates ... use the declared names (Yumiao,
+Yantian,
+Chewing Gum,
+Danpian)";
+minimax-m3:
+"all three use the declared spellings Yumiao,
+Yantian,
+Chewing Gum,
+Danpian correctly").
 The hedge held:
 贴贴计划 ships "her cuddling plans",
 the ordinary word,
@@ -14519,7 +19066,10 @@ which is what that entry's own page carries.
 The January 16 sentence shipped
 "in the early hours of January 16 she ended her life by taking a large amount of medication",
 followed two sentences later by
-"after six days of emergency treatment in the ICU, Yumiao, whose body had been severely damaged, finally woke up".
+"after six days of emergency treatment in the ICU,
+Yumiao,
+whose body had been severely damaged,
+finally woke up".
 The original reads 吞下大量药物自杀。幸运的是，在 ICU 抢救了六天后……终于醒来了:
 an attempt she survived.
 "Ended her life" asserts a death;
@@ -14530,23 +19080,41 @@ where `shi_Yumiaoya7` had "tried to end her life".
 The log carries "ended her life" 12 times and no candidate wrote "attempted" or "tried".
 
 Every ballot approved it as reader protection.
-minimax-m3: "It handles reader protection correctly for the suicide method: 'ended her life by taking a large amount of medication' keeps the general method vague while preserving the act of suicide".
-deepseek-v4.1-flash: "All three candidates ... use the vague method wording required by reader protection. Candidate 1 renders 自杀 with the explicit phrase 'ended her life' ... which is compliant".
-gemma-4-e2b: "'took medication and ended her life' which is too specific per the house rules".
+minimax-m3:
+"It handles reader protection correctly for the suicide method:
+'ended her life by taking a large amount of medication' keeps the general method vague while preserving the act of suicide".
+deepseek-v4.1-flash:
+"All three candidates ... use the vague method wording required by reader protection.
+Candidate 1 renders 自杀 with the explicit phrase 'ended her life' ... which is compliant".
+gemma-4-e2b:
+"'took medication and ended her life' which is too specific per the house rules".
 The rule prescribed the words:
 the reader-protection line in `house-policy.ts` opened "When a death was by suicide"
-and closed its method paragraph with "the page says that she ended her life, and keeps the night, the room and the dress, not the means",
+and closed its method paragraph with "the page says that she ended her life,
+and keeps the night,
+the room and the dress,
+not the means",
 so 自杀 was written as a death whatever the original went on to say.
 
 Fixed in `d29feecd5`
 (guard red first at `a478ad64f`,
 `survived-attempt-policy.unit.test.ts`,
-three tests: the house policy carries the clause,
+three tests:
+the house policy carries the clause,
 the translate sheet carries it,
 the select sheet carries it;
 `HOUSE_POLICY_BLOCK` exported through the translate barrel for the built-artifact test).
 The rule now continues:
-"自杀 names the act, not its outcome: where the ORIGINAL goes on to a rescue, a waking or a life that continues (抢救, 醒来, 幸存), the person survived the attempt and the page says that she tried to end her life or attempted suicide; 'ended her life' and 'took her own life' assert a death, and on an attempt survived they are a factual error, not vagueness."
+"自杀 names the act,
+not its outcome:
+where the ORIGINAL goes on to a rescue,
+a waking or a life that continues (抢救,
+醒来,
+幸存),
+the person survived the attempt and the page says that she tried to end her life or attempted suicide;
+'ended her life' and 'took her own life' assert a death,
+and on an attempt survived they are a factual error,
+not vagueness."
 Lint 0 and 0,
 types clean;
 the full suite's result is recorded under the next heading.
@@ -14563,7 +19131,8 @@ the full suite's result is recorded under the next heading.
   The Han that remains is the source's own
   (the Truman Show quote's Chinese line in the bilingual blockquote,
   which the archive does NOT carry (the archive has the English line and its attribution alone;
-  corrected under the shi_Yumiaoya10 heading of 03:50 UTC, class eighty),
+  corrected under the shi_Yumiaoya10 heading of 03:50 UTC,
+  class eighty),
   and the camera list inside the source's HTML comment).
 - "three bottles of a certain sedative-hypnotic medication" for 三瓶某种镇静催眠药 in the final-tweet paragraph,
   where `shi_Yumiaoya8` had "a large amount of a sedative-hypnotic";

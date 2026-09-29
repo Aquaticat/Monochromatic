@@ -1139,8 +1139,11 @@ and this one does not.
 
 ## Addendum 2026-09-24: `hf:openai/gpt-oss-120b` leaves every role at the owner's instruction
 
-The owner, 2026-09-24, on reading the CuspariaKLSY10 artifact:
-"That particular model got cause and effect wrong. Cull it."
+The owner,
+2026-09-24,
+on reading the CuspariaKLSY10 artifact:
+"That particular model got cause and effect wrong.
+Cull it."
 and then "cull it from every role".
 
 The evidence.
@@ -1158,20 +1161,29 @@ What changed.
 The card gains the hold `owner-culled`
 ("out of every seat by the owner's decision"),
 `RUN_ROSTER` and `RUN_READER_MODELS` filter it,
-so every derived bench (wide, late, select, slate, translators, writers, readers) loses the seat,
+so every derived bench (wide,
+late,
+select,
+slate,
+translators,
+writers,
+readers) loses the seat,
 and the static checker bench passes its third seat to `gemma-4-26b-a4b-it`,
 the substitute checker since 2026-09-03 and the third checker on every Synthetic-dry reading since;
 `google.gemma-4-e2b` becomes the substitute on the same ground
-(no editor or refiner seat; a judge by the Bedrock fidelity probe of 2026-09-07;
+(no editor or refiner seat;
+a judge by the Bedrock fidelity probe of 2026-09-07;
 a writer by the producer calibration of 2026-09-08;
-Bedrock alone serves it, the provider the withheld Synthetic checkers never sit on).
+Bedrock alone serves it,
+the provider the withheld Synthetic checkers never sit on).
 Both checker seatings stay PROVISIONAL:
 no checker-side measurement exists for any model.
 
 Why the card stays.
 `hf:openai/gpt-oss-120b` is the one identity every provider serves,
 and the unit fixture seats it as `SEAT_SYNTHETIC_TEXT_EVERYWHERE` in that role;
-deleting the card would re-point or delete that seat across the reach, router and catalog suites for no gain in production,
+deleting the card would re-point or delete that seat across the reach,
+router and catalog suites for no gain in production,
 where the hold already empties every bench
 (`src/corpus-run/owner-cull.unit.test.ts`).
 The blocklist is not touched:

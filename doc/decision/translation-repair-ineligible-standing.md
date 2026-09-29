@@ -195,24 +195,29 @@ and the decline named `slate-declined-standing`.
 Decided for quality under the owner's standing directive of 2026-09-28
 ("prefer quality of the end result"),
 by the whole-package audit
-(`package/module/translation-repair/doc/audit-ledger.md`, L5).
+(`package/module/translation-repair/doc/audit-ledger.md`,
+L5).
 
 - Neutral is the severity that asserts no defect.
     The tally now holds an acceptance the panel settled at neutral as needs-human,
     so it disputes no archive.
 - The seventeenth addendum's "an accepted `accuracy/addition` claim still disputes at any severity" stands as worded;
-    since no accepted claim settles at neutral any more, in effect an addition disputes from minor up.
+    since no accepted claim settles at neutral any more,
+  in effect an addition disputes from minor up.
     Five accepted neutral additions over every run could dispute an archive before.
 - The critic and panel sheets now define the severity scale
-    (minor, major and critical after MQM),
+    (minor,
+  major and critical after MQM),
     which the eleventh addendum's major-or-worse rule reads;
     the effect on how many slices it disputes is measured on the next run.
 
 ## Addendum 2026-09-27, eighteenth: a slice with no valid wording keeps the archive, and the page ships
 
-Owner's answer of 2026-09-27 ("Keep archive, ship"),
+Owner's answer of 2026-09-27 ("Keep archive,
+ship"),
 asked by the whole-package audit
-(`package/module/translation-repair/doc/audit-ledger.md`, E4)
+(`package/module/translation-repair/doc/audit-ledger.md`,
+E4)
 after the ruling that a run always ships.
 It replaces the "else fail the slice at once" half of the rule of 2026-09-04;
 the first half stands,
@@ -228,7 +233,9 @@ so a valid proposal is still preferred wherever one exists.
     most on terminals later addenda had already turned into shipping the slate's choice;
     on the build of the answer,
     one real stop was of the kind still reachable
-    (yulianNyanner, `incumbent-only`, 0.48 hours).
+    (yulianNyanner,
+  `incumbent-only`,
+  0.48 hours).
 - Every exit that stopped the entry now keeps the archive:
     the empty floor,
     the missing standing text with no lane text (ledger E4),
@@ -251,14 +258,17 @@ so a valid proposal is still preferred wherever one exists.
     fixed in `7f79ada48` (settlement),
     `002f21f43` (artifact and reading)
     and `e7d409fdd` (report).
-- Checked at the user boundary the same day, spending nothing:
+- Checked at the user boundary the same day,
+  spending nothing:
     a real `corpus-pass --only mikaela_khara` over a scratch copy of its artifact,
     with slices 11 and 13 set to the archive-kept record,
     republished the page with the archive's wording at both
     (the unedited page carries it at neither),
     and `verify-published` agreed 1 of 1 at the expected length.
     The agreement census over the 214 stored pages reads identically before and after the change
-    (137 agree, 77 disagree, none refused).
+    (137 agree,
+  77 disagree,
+  none refused).
     The `DEFECTS` line itself is unit-verified only;
     the first live `no-valid-wording` line is to be read when a run prints one.
 
@@ -266,12 +276,14 @@ so a valid proposal is still preferred wherever one exists.
 
 Owner's answer of 2026-09-27 ("Adjudicated"),
 asked by the whole-package audit
-(`package/module/translation-repair/doc/audit-ledger.md`, L9)
+(`package/module/translation-repair/doc/audit-ledger.md`,
+L9)
 on the eleventh addendum's rule.
 
 - `disputesArchive` in `archive-dispute.ts` read each member claim's severity as its critic filed it.
     The panel settles an issue's severity
-    (`AdjudicatedIssue.severity`: the upper median of the member claims and the supported ballots' re-grades),
+    (`AdjudicatedIssue.severity`:
+  the upper median of the member claims and the supported ballots' re-grades),
     and that is the severity the rule reads now.
 - Measured on XingZ6014:
     slice 66 was disputed on a claim filed major that the panel settled minor,
@@ -279,7 +291,8 @@ on the eleventh addendum's rule.
 - An accepted `accuracy/addition` claim still disputes at any severity.
 - The ARCHIVE RENDERING DISPUTED note names each claim with the panel's severity,
     so the severity printed beside a claim is the one the rule read.
-- Guard shown to fail first (`b15ba5464`, `archive-dispute-severity.unit.test.ts`),
+- Guard shown to fail first (`b15ba5464`,
+  `archive-dispute-severity.unit.test.ts`),
     fixed in `6a0f68cec`.
 
 ## Addendum 2026-09-27, sixteenth: a disputed reading the repair did not fix leaves the slice no eligible standing
@@ -295,7 +308,11 @@ the translate lane then kept it as its incumbent,
 both lanes agreed on it,
 and no contest ran.
 
-- Measured over TianqiChen66616, TianqiChen66620, XingZ6014, shihai4h2, CuspariaKLSY11 and hulicaijia31
+- Measured over TianqiChen66616,
+  TianqiChen66620,
+  XingZ6014,
+  shihai4h2,
+  CuspariaKLSY11 and hulicaijia31
     (probe `~/temp/agent/audit-repair/dispute-buckets.mjs`):
     87 disputed slices.
     The stand-in was the archive's own wording on 59,
@@ -317,13 +334,16 @@ and no contest ran.
     never as a candidate or a fallback,
     the path an archive the deterministic floor refuses already takes.
     The refusals that keep the archive over a replacement
-    (alignment, quote loss, declared names)
+    (alignment,
+  quote loss,
+  declared names)
     have nothing to keep on such a slice,
     so the stage's text is the lane's text and the consolidation's floors judge it.
     A proposal identical to the disputed wording is withheld from the slate.
 - Consolidation:
     a standing that is the disputed wording
-    (the archive's own, or the repair lane's text)
+    (the archive's own,
+  or the repair lane's text)
     is refused with a refusal naming the dispute;
     the incumbent stand-in of 2026-09-09 does not apply,
     since the incumbent is that wording;
@@ -334,19 +354,25 @@ and no contest ran.
     Before this change a content slice whose archive could not stand stopped the entry on such a rejection;
     extending the fifteenth addendum to the translate lane was confirmed by the owner on 2026-09-27
     ("Ship by preference").
-- Cost: more slices reach the consolidation.
+- Cost:
+  more slices reach the consolidation.
 - Landed:
     `archiveDisputesOf` reads `resolvedIssueIds` and the withdrawn slices into `ArchiveDispute.standInEligible`;
     `disputedWordingsOf` names the refused wordings
-    (the archive's own always, the repair lane's text where it may not stand);
+    (the archive's own always,
+  the repair lane's text where it may not stand);
     `validateTranslatedSlice` refuses a text that is one of them in all but whitespace
     (`disputed-wording.ts`),
     so every existing floor path applies:
     the translate stage excludes the archive as incumbent,
     the repair turn sends a copy back instead of collapsing it into the incumbent,
     the translate floor withholds it,
-    and the consolidation refuses it as standing, incumbent stand-in, lane offer and proposal.
-    The translate lane's "keep the archive" refusals (alignment, quote loss, declared names)
+    and the consolidation refuses it as standing,
+  incumbent stand-in,
+  lane offer and proposal.
+    The translate lane's "keep the archive" refusals (alignment,
+  quote loss,
+  declared names)
     do not apply where the archive is refused.
 - Both slice keys carry the dispute note,
     which neither did:
@@ -355,7 +381,8 @@ and no contest ran.
 - Found on the way:
     the consolidation producers' repair turn re-checked a revision without the declared names its first check read;
     it now reads both.
-- Guard shown to fail first (`23cbbdaaa`, `archive-dispute-standing.unit.test.ts`;
+- Guard shown to fail first (`23cbbdaaa`,
+  `archive-dispute-standing.unit.test.ts`;
     the translate stage shipped the disputed wording the judges preferred).
 
 ## Addendum 2026-09-27, fifteenth: a slate rejected twice over an ineligible standing ships by preference, its reasons to the polish
@@ -388,12 +415,15 @@ stopping the entry with valid proposals on the slate
     and `shippedPastDecline`,
     which carries the reasons of every ballot that did not back the shipped candidate.
 - `judgeTranslateSlate` takes `withheldStanding`
-    (the judges are told `SHIPS_BY_PREFERENCE`, `select-decline-consequence.ts`,
+    (the judges are told `SHIPS_BY_PREFERENCE`,
+  `select-decline-consequence.ts`,
     in place of a sentence saying the passage has no translation)
-    and `shipPastDecline`, which defaults to it.
+    and `shipPastDecline`,
+  which defaults to it.
     The consolidation passes `withheldStanding` wherever the standing is ineligible.
 - The polish's objection correction carries groups
-    (`ObjectionGroup`, `refine-selection-context.ts`),
+    (`ObjectionGroup`,
+  `refine-selection-context.ts`),
     each under its own heading:
     the slate's reasons and the gate's objections reach the same polish,
     and the finding counts each
@@ -407,7 +437,8 @@ stopping the entry with valid proposals on the slate
     such a content slice rethrew the absence and stopped the entry.
 - `CONSOLIDATE_CACHE_VERSION` 18 and `TRANSLATE_SLICE_CACHE_VERSION` 13,
     key literals repinned in the same commit.
-- Guard shown to fail first (`37128bf6c`, `slate-decline-ships-by-preference.unit.test.ts`);
+- Guard shown to fail first (`37128bf6c`,
+  `slate-decline-ships-by-preference.unit.test.ts`);
     `consolidate-settle.unit.test.ts` pinned the stop and now pins the ship.
 
 ## Addendum 2026-09-27, fourteenth: the gate's objections over an ineligible standing go to the polish
@@ -453,7 +484,8 @@ and the gate went 2 standing,
     The gate sheet said choosing the standing stops the entry;
     it now says the consolidation ships whichever the judge chooses
     and the ballot records what the judge holds against it.
-- Unchanged: over an eligible standing a gate that prefers it keeps it.
+- Unchanged:
+  over an eligible standing a gate that prefers it keeps it.
 - Open for the owner:
     whether the gate should still run over an ineligible standing,
     whose ballots now change nothing that ships,
@@ -466,7 +498,8 @@ and the gate went 2 standing,
 
 ## Addendum 2026-09-27, twelfth: an undecided gate over a standing every contest ballot condemned ships the slate's choice
 
-Owner's answer of 2026-09-27: "Slate's choice (Recommended)".
+Owner's answer of 2026-09-27:
+"Slate's choice (Recommended)".
 TianqiChen66610 slice 13 shipped the archive's gloss of the performer's "high-performance robot" image
 as "a cute character she cosplayed as":
 every contest ballot called the archive flawed,
@@ -478,18 +511,22 @@ which settles on neither and so kept the standing.
 - `shipPastUndecidedGate` in `consolidate-ineligible-standing.ts` takes `standingFlawedByAll`,
     passed from `settleConsolidation` as `runoffOverStanding` through `gateAndShip`.
     A gate settled on neither ships the slate's valid choice
-    where the standing is ineligible (class fifty-four, unchanged)
+    where the standing is ineligible (class fifty-four,
+  unchanged)
     or where every contest ballot called it flawed (new),
     with the finding `undecided-gate-ships-proposal (standing flawed by every contest ballot)`
     (`FLAWED_STANDING_GATE_SHIPS_PROPOSAL_FINDING`).
-- Unchanged: a gate that chose the standing keeps it (`gate-kept-standing`);
+- Unchanged:
+  a gate that chose the standing keeps it (`gate-kept-standing`);
     a gate over an eligible standing that no contest condemned keeps it on neither.
-- Guard shown to fail first (`6243c68d0`, `consolidate-settle.unit.test.ts`),
+- Guard shown to fail first (`6243c68d0`,
+  `consolidate-settle.unit.test.ts`),
     fixed in `325c448ba`.
 
 ## Addendum 2026-09-27, eleventh: an accepted accuracy claim at major severity disputes the archive
 
-Owner's answer of 2026-09-27: "Major+ accuracy".
+Owner's answer of 2026-09-27:
+"Major+ accuracy".
 On TianqiChen66610 slice 13 the repair lane's adjudicators accepted major mistranslation claims
 against the archive's gloss,
 but only `accuracy/addition` made a class one hundred seven dispute,
@@ -509,16 +546,21 @@ so the archive stayed an eligible standing and shipped on the tied gate.
     and a candidate keeping it carries an accepted error.
 - The finding names the rule:
     `accuracy/addition at any severity, any other accuracy claim at major or worse`
-    (since the seventeenth addendum, "any other accuracy claim the panel settled at major or worse").
-- Guard shown to fail first (`bd6ad35e8`, `archive-dispute.unit.test.ts`),
+    (since the seventeenth addendum,
+  "any other accuracy claim the panel settled at major or worse").
+- Guard shown to fail first (`bd6ad35e8`,
+  `archive-dispute.unit.test.ts`),
     fixed in `25b9eaec7`.
 
 ## Addendum 2026-09-26, tenth: a challenge round tied across every valid candidate ships one by preference
 
-Taken under the rule of 2026-09-04 ("prefer the best valid proposal, else fail the slice at once")
-and the owner's answer of 2026-09-24 ("Not eligible; fall back to the repair text"),
+Taken under the rule of 2026-09-04 ("prefer the best valid proposal,
+else fail the slice at once")
+and the owner's answer of 2026-09-24 ("Not eligible;
+fall back to the repair text"),
 after TianqiChen6669 stopped INCOMPLETE at 24 min on slice 4:
-the class one hundred seventy-two floor refused the archive's "So, she’s a girl of incredible perseverance",
+the class one hundred seventy-two floor refused the archive's "So,
+she’s a girl of incredible perseverance",
 the contest split 2 repair to 2 translate,
 the slate of three valid renderings tied 1.5 to 1.5 between "bore the greatest pressure on her frailest body"
 and "with the frailest body",
@@ -533,19 +575,25 @@ and a run-off of two has nothing left to narrow.
     called from `judgeTranslateSlate` wherever the slice has no incumbent,
     ships one candidate when a challenge round (`decline-challenge`) ties across every candidate it asked about:
     the repair lane's text first
-    (the owner's fallback where the archive cannot stand, the minimal edit of the human translation),
+    (the owner's fallback where the archive cannot stand,
+  the minimal edit of the human translation),
     then the translate lane's text,
     then slate order.
     The record is `judged` with the tie's weight and the finding `translate-runoff-tie-broken (<basis>)`,
     and the gate still reads it as a fresh consolidation.
-- Unchanged: a tie among some of the candidates narrows through the class eighty-two loop;
+- Unchanged:
+  a tie among some of the candidates narrows through the class eighty-two loop;
     a first round is still challenged;
     a rejection,
     a leader one judge alone named,
     or a round with no ballot still raises;
     a slice with an incumbent keeps it as before.
-- Guard shown to fail first (`8666d2480`, `translate-retry.unit.test.ts`: repair lane, translate lane,
-    slate order, and the incumbent kept),
+- Guard shown to fail first (`8666d2480`,
+  `translate-retry.unit.test.ts`:
+  repair lane,
+  translate lane,
+    slate order,
+  and the incumbent kept),
     fixed in `8db508b0a`.
 
 ## Addendum 2026-09-24, ninth: the dispute note travels with the stand-in
@@ -565,7 +613,8 @@ the apparatus clause of 2026-09-22 (class eighty-five) read over a text that sta
     Nothing on any sheet said the slice was disputed or which claims had been accepted.
 - `archiveDisputeNote` (`archive-dispute.ts`) writes one block per disputed slice,
     headed ARCHIVE RENDERING DISPUTED,
-    naming how many `accuracy/addition` claims the repair lane's adjudicators accepted and each claim's category, severity and summary,
+    naming how many `accuracy/addition` claims the repair lane's adjudicators accepted and each claim's category,
+  severity and summary,
     and saying that a detail those claims name is not page content and not the page's apparatus,
     in the archive's wording or any softer one:
     a candidate leaving it out has dropped nothing,
@@ -573,12 +622,19 @@ the apparatus clause of 2026-09-22 (class eighty-five) read over a text that sta
     and such a detail is judged against the ORIGINAL alone.
     `ArchiveDispute` carries the accepted claims (`acceptedClaims`) for it.
 - The block is carried wherever the stand-in or the archive is judged or written against:
-    the consolidation writer, slate judge and gate sheets (`consolidate-wire.ts`, `consolidate-settle-context.ts`, `consolidate-gate-wire.ts`),
-    the translate writer and slate judge sheets (`translate-wire.ts`, `translate-judge.ts`),
-    and the lane contest sheet (`lane-contest-wire.ts`, in the slice key too, the notes read off the repair chunks in `corpus-run/pass-contest.ts`).
+    the consolidation writer,
+  slate judge and gate sheets (`consolidate-wire.ts`,
+  `consolidate-settle-context.ts`,
+  `consolidate-gate-wire.ts`),
+    the translate writer and slate judge sheets (`translate-wire.ts`,
+  `translate-judge.ts`),
+    and the lane contest sheet (`lane-contest-wire.ts`,
+  in the slice key too,
+  the notes read off the repair chunks in `corpus-run/pass-contest.ts`).
     The wording names no sheet's own incumbent,
     because the lane contest shows the real archive while the consolidation and translate sheets show the stand-in.
-- Not built: the repair lane's own sheets are unchanged,
+- Not built:
+  the repair lane's own sheets are unchanged,
     so the lane may still soften an accepted addition rather than remove it;
     the note reaches the contest and everything after it,
     where the softened detail is weighed as an addition rather than as page content.
@@ -595,7 +651,8 @@ the apparatus clause of 2026-09-22 (class eighty-five) read over a text that sta
 ## Addendum 2026-09-24, eighth: a disputed archive rendering stands aside for the repair text
 
 Taken on the owner's second answer of 2026-09-24
-("Not eligible; fall back to the repair text")
+("Not eligible;
+fall back to the repair text")
 after CuspariaKLSY10 shipped its slice 3,
 the death paragraph,
 as the repair lane's minimal edit only because the contest chose that lane:
@@ -632,7 +689,8 @@ and the archive stood as the translate lane's text because an eligible standing 
     `consolidate-archive-stand-in.ts`) the same reading makes the stand-in the incumbent of every sheet and key,
     and where the contest chose neither lane the stand-in is the standing;
     a kept standing there ships as the `incumbent` record so the page is written with it rather than left as the contest found it.
-- Not built: a repair chunk the assembly withdrew still supplies its stand-in,
+- Not built:
+  a repair chunk the assembly withdrew still supplies its stand-in,
     and the repair lane's own floor is unchanged;
     the second answer's run-off runs through the first answer's path (seventh addendum) where the contest ballots call the archive flawed,
     and through the single round elsewhere.
