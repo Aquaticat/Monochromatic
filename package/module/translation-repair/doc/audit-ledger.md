@@ -2561,9 +2561,17 @@ and the spans in `src/repair-chunk.ts` read as whole branches
 (ternary arms,
 early returns with their log lines),
 though a span can start a line late where the minifier folds a log call and a return into one statement.
+Neither control could show a span that crosses from one module into the next,
+since each reads within one function,
+and such spans were recorded under their first source alone (M67),
+so the counts of spans,
+lines and files in this entry until the M67 rerun leave out every source after the first;
+counts of functions never called are unaffected,
+a function being mapped by its own first character.
 
 What no unit test ran on that build,
-by class.
+by class,
+read through the mapping M67 corrected.
 In library source,
 1,223 spans over 3,229 lines in 449 files,
 holding 72 functions no test calls.
@@ -2594,25 +2602,36 @@ the census is now the package task `mise run coverage-census`
 It builds with a source map beside every chunk (`coverage-census:build`),
 runs the unit suite or the test files named after `--` with `NODE_V8_COVERAGE` set,
 refuses a failing suite,
-tallies and maps the cold code as the scratch census did,
+tallies and maps the cold code as the scratch census did
+(until M67),
 prints the report,
 writes `census.json` under `~/.cache/translation-repair/coverage`,
 deletes the raw coverage,
 and runs the normal build again.
 Given the same coverage and build as the scratch census,
 its functions reproduced every total of it
-(`t8-port-control.mjs` in the audit's scratch folder).
-A batch proves its reach with `--baseline <census.json>` and `--source <file>` for each source it claims,
+(`t8-port-control.mjs` in the audit's scratch folder),
+which proved the two agreed and not that either was right:
+both recorded a stretch under its first character's source (M67).
+Since `25dc7e9f6` the census splits each stretch where its source changes,
+writes census format 2,
+refuses a baseline of an earlier format,
+and refuses to report where an uncalled function's first line sits in no stretch of its own source.
+A batch proves its reach with `--baseline <census.json>` (format 2) and `--source <file>` for each source it claims,
 or,
 where the batch edits a source it claims,
-by a census of its own test files in which each claimed source is loaded and holds no stretch.
+by a format 2 census of its own test files in which each claimed stretch is gone:
+a claimed source loaded with no stretch left,
+or,
+where the batch claims only some of a source's stretches,
+each claimed line outside every stretch left.
 
 The census's first whole-suite run refused,
 the suite failing on the census's own commits (M59 again,
 M63),
 and a later one showed stretches in the census's own modules (M66).
-The whole-suite census at `e22373347` (1,381 passes) is the baseline the batches are read against
-(`census-7rB6TM`):
+The whole-suite census at `e22373347` (1,381 passes,
+`census-7rB6TM`) was the baseline the batches were read against until M67:
 library source holds 1,232 stretches over 3,239 lines in 453 files,
 with 72 functions never called;
 the six runner entry files tests load hold 27 stretches over 798 lines,
@@ -2620,12 +2639,29 @@ with 14 never called;
 the 36 bundles no test loads carry 13,389 physical lines in 39 sources,
 three of them library source only those bundles carry;
 other workspace packages hold 228 stretches over 3,898 lines in 59 files.
+Its stretch,
+line and file counts leave out the sources after the first in every stretch crossing modules,
+and a format 2 baseline replaces it;
+its lists of functions never called and bundles never loaded stand.
 The first batch,
 `7253426c8`,
-closed the census's own stretches;
-a census of its three test files shows `coverage-tally.ts`,
+closed the census's own stretches,
+read through a census of its three test files that showed `coverage-tally.ts`,
 `coverage-lines.ts`,
-`coverage-file.ts` and `build-entries.ts` loaded with no stretch left.
+`coverage-file.ts` and `build-entries.ts` loaded with no stretch left;
+that reading went through the M67 mapping,
+so it proves nothing until a format 2 census repeats it.
+The second batch,
+`f2c96d7dd`,
+gave cases to the refusals of `decisionsCardOf`,
+`flattenContainers`,
+`footnoteIdentifiers` and `clusterReadings`,
+and removed two throws no input reaches (`AtomFloorError`,
+`AnchorRegionError`) and one v8-ignored guard;
+its reach is read from the same format 2 census.
+The census reports raw truth and honours no v8 ignore hint:
+a guard a hint hid is restructured in its file's batch,
+as `flattenContainers`' was.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
@@ -9795,6 +9831,49 @@ and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
 
+### M67: a cold stretch recorded under the source of its first character alone
+
+Status:
+happened 2026-09-29 in `f09ec0eb3`,
+which mapped a cold stretch through its first and last characters,
+caught the same day by a census of one batch's test files,
+fixed in `25dc7e9f6`,
+with baselines read before the suite in `740dd721e`.
+A bundle chunk concatenates modules,
+and V8's cold runs merge across them,
+so a stretch recorded under its first character's source put every later source out of the census.
+The census of eight test files recorded bundle offsets 19,599 to 29,168 of the repair-chunk bundle as line 172 of `src/select-candidate.ts`
+while listing `repairChunk` as never called,
+and gave `src/repair-chunk.ts` no stretch at all;
+read against a baseline,
+that source's stretches then counted as ran.
+The same mapping wrote the baseline at `e22373347`,
+the scratch census before it
+(`t8-cold-map.mjs` in the audit's scratch folder maps a stretch's two ends the same way),
+and the first batch's proof,
+so the port control that reproduced every total of the scratch census proved the two agreed,
+not that either was right,
+and neither mapping control could see it:
+both read single functions,
+which never cross a module.
+The fix maps every character of a stretch and records one stretch per run of one source;
+rerun on the same eight test files,
+the offsets once put at one line are four records,
+the last `src/repair-chunk.ts` lines 110 to 497,
+which holds `repairChunk`'s first line.
+A second defect sat in the same reader:
+Node returns a map segment naming no source as an entry whose source is undefined,
+and the census called a string method on it;
+no census is known to have met one
+(the coverage build's maps held none when counted).
+Prevention:
+a measurement is checked against an invariant any correct output satisfies,
+not only against an earlier tool's totals:
+the census now refuses to write a report in which an uncalled function's first line sits in no stretch of its own source,
+and refuses a baseline written before the fix
+(its format lacks the split).
+A census read that "holds no stretch" or "ran" is evidence only from a census of format 2 or later.
+
 ### M66: a commit message claiming every branch covered before any coverage run
 
 Status:
@@ -9815,7 +9894,8 @@ the very reading T8 exists to replace.
 Prevention:
 a claim that tests cover a module's branches is written only from a census of the claimed sources
 (`mise run coverage-census -- <test files>`),
-each loaded and holding no stretch.
+each loaded and holding no stretch,
+in a census of format 2 or later (M67).
 
 ### M65: a stand-in command whose text carried the marker the census counts
 

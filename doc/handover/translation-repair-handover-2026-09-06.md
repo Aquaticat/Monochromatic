@@ -156,10 +156,13 @@ this one says what changed after it.
   an order taken under the owner's standing directive to prefer the quality of the end result,
   which the owner may veto to launch first.
   The package task `mise run coverage-census` measures it
-  by block coverage mapped to source lines;
-  its whole-suite census at `e22373347` leaves 1,232 stretches over 3,239 lines of library source in 453 files unrun,
-  72 functions among them never called,
-  and is the baseline each batch of tests is read against;
+  by block coverage mapped to source lines.
+  Its whole-suite census at `e22373347` found 72 functions of library source never called,
+  but recorded each cold stretch under the source of its first character alone,
+  leaving out every module a stretch ran on into (ledger M67,
+  fixed in `25dc7e9f6`),
+  so its stretch and line counts are superseded,
+  and a whole-suite census of the new format is the baseline each batch of tests is read against;
   the ledger entry has the method,
   the classes and what closes it.
   Every source commit also runs `mise run source-scans`,

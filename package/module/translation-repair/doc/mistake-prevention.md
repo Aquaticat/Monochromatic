@@ -166,7 +166,10 @@ raw NUL bytes made a source file binary to every line search (M40);
 a lint and a probe ran over an empty or self-matching list (M45);
 a census of a letter test searched the names of functions holding it and missed every inline copy,
 and the search by shape then missed the same test written negated (M48);
-a search for an entry id printed corpus text (M36).
+a search for an entry id printed corpus text (M36);
+the coverage census recorded each cold stretch under its first character's source,
+dropping every module a stretch ran on into,
+and a port control reproducing an earlier census's totals passed because that census had the same flaw (M67).
 
 The rule:
 a search whose result licenses a change runs uncapped over all of `src` (or `--count` first),
@@ -180,6 +183,10 @@ case-fold comparisons,
 and regex classes and properties,
 each shape in its asserted and its negated spelling.
 A null result counts only after a positive control shows the search can match.
+A measurement that aggregates is checked against an invariant any correct output meets,
+not only against an earlier tool's totals,
+since two tools sharing a flaw agree:
+the coverage census refuses a report in which an uncalled function's first line sits in no stretch of its own source.
 A generated list's line count is printed before anything consumes it.
 A probe's output goes outside the tree it searches.
 Corpus text is never printed:
@@ -190,7 +197,9 @@ code points and markup.
 
 What enforces it:
 habit,
-and the control-byte scan in the checklist.
+the control-byte scan in the checklist,
+and the coverage census's placement refusal and baseline format check (`requirePlacedFunctions`,
+`CENSUS_FORMAT`).
 
 ## Claims without their evidence
 
@@ -214,7 +223,7 @@ cause and quoted rule is read from its source in the same step it is written,
 and the source is named beside it.
 A claim that tests cover a module's branches comes from a census of the claimed sources
 (`mise run coverage-census -- <test files>`),
-each loaded and holding no stretch,
+each loaded and holding no stretch in a census of format 2 or later (M67),
 never from reading the tests.
 A fix that gives a model context starts by rendering the sheet and searching it for that context.
 An inference is labelled as one,
