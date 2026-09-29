@@ -248,6 +248,10 @@ function mostGiven(
 
  @param spans - titles the page repeats and the archive leaves unpaired
 
+ @param identityContext - the page's declared identity without the lexicon's
+ own lines, so a work's official English title a web lookup or a note
+ establishes is on the sheet (ledger B28)
+
  @param signal - the entry's abort
 
  @param exchangeTimeoutMs - per-call timeout
@@ -270,6 +274,7 @@ export async function settlePageTitles(
     modelIds,
     sourceText,
     spans,
+    identityContext,
     signal,
     exchangeTimeoutMs,
     l,
@@ -279,6 +284,7 @@ export async function settlePageTitles(
     readonly modelIds: readonly RosterModelId[];
     readonly sourceText: string;
     readonly spans: readonly RepeatedTitleSpan[];
+    readonly identityContext?: string;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
@@ -311,6 +317,7 @@ export async function settlePageTitles(
       titles: spans.map(function sourceOf(span,): string {
         return span.source;
       },),
+      ...((identityContext === undefined) ? {} : { identityContext, }),
     },),
     signal,
     exchangeTimeoutMs,

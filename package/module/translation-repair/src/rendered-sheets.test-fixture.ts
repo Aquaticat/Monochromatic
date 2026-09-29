@@ -267,6 +267,7 @@ export function renderedSheets(): readonly RenderedSheet[] {
         messages: buildPageTitleLexiconMessages({
           sourceText: SOURCE,
           titles: ['猫之歌',],
+          identityContext: IDENTITY,
         },),
       },),
     },

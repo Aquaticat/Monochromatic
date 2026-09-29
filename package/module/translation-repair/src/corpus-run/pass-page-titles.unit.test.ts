@@ -202,6 +202,7 @@ async function lexiconRun(
     },
     sourceText,
     targetText: ARCHIVE,
+    identityContext: '',
     cache: memoryCache({ resumed, persisted, },),
     signal: new AbortController().signal,
     exchangeTimeoutMs: 5_000,
@@ -283,6 +284,7 @@ await describe({
           storedUnderAnswering: moved.persisted.has(pageTitleKey({
             sourceText: REPEATING,
             spans: [{ source: '猫之歌', occurrences: 2, },],
+            identityContext: '',
             modelIds: RESEATED,
           },),),
         },).toEqual({
@@ -347,7 +349,8 @@ await describe({
   name: `${pageTitleKey.name} (ledger H16)`,
   children: [
     it({
-      name: 'NAMES THE QUESTION BY THE ORIGINAL, THE TITLES AND THE ROSTER, and by nothing else',
+      name: 'NAMES THE QUESTION BY THE ORIGINAL, THE TITLES, THE DECLARED IDENTITY AND THE ROSTER, and by nothing else '
+        + '(ledger B28)',
       fn: async () => {
         /**
          The titles asked.
@@ -356,17 +359,30 @@ await describe({
         /**
          Key of the fixture question.
          */
-        const key = pageTitleKey({ sourceText: REPEATING, spans, modelIds: ROSTER, },);
+        const key = pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: ROSTER, },);
         expect({
-          same: pageTitleKey({ sourceText: REPEATING, spans: [...spans,], modelIds: [...ROSTER,], },) === key,
-          roster: pageTitleKey({ sourceText: REPEATING, spans, modelIds: RESEATED, },) === key,
-          titles: pageTitleKey({ sourceText: REPEATING, spans: [{ source: '猫之歌', occurrences: 3, },], modelIds: ROSTER, },) === key,
-          original: pageTitleKey({ sourceText: `${REPEATING}喵。\n`, spans, modelIds: ROSTER, },) === key,
+          same: pageTitleKey({ sourceText: REPEATING, spans: [...spans,], identityContext: '', modelIds: [...ROSTER,], },)
+            === key,
+          roster: pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: RESEATED, },) === key,
+          titles: pageTitleKey({
+            sourceText: REPEATING,
+            spans: [{ source: '猫之歌', occurrences: 3, },],
+            identityContext: '',
+            modelIds: ROSTER,
+          },) === key,
+          original: pageTitleKey({ sourceText: `${REPEATING}喵。\n`, spans, identityContext: '', modelIds: ROSTER, },) === key,
+          identity: pageTitleKey({
+            sourceText: REPEATING,
+            spans,
+            identityContext: '- 猫之歌 (web lookup): "Song of the Cat"',
+            modelIds: ROSTER,
+          },) === key,
         },).toEqual({
           same: true,
           roster: false,
           titles: false,
           original: false,
+          identity: false,
         },);
       },
     },),
@@ -378,13 +394,14 @@ await describe({
          The titles asked.
          */
         const spans = [{ source: '猫之歌', occurrences: 2, },];
-        expect(pageTitleKey({ sourceText: REPEATING, spans, modelIds: ROSTER, },),).toBe(
+        expect(pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: ROSTER, },),).toBe(
           createHash('sha256',)
             .update(
               JSON.stringify({
                 version: PAGE_TITLE_CACHE_VERSION,
                 source: hashContent({ content: REPEATING, },),
                 titles: spans,
+                identity: hashContent({ content: '', },),
                 roster: ROSTER,
               },),
               'utf8',

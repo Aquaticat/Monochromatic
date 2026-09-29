@@ -12,6 +12,8 @@ import {
 } from '../bench-seating.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import { corpusNameLines, } from '../corpus-name-index.ts';
+import { pageIdentityLines, } from '../page-identity-lines.ts';
+import { parseDocument, } from '../parse-document.ts';
 import type { PassOutsideReads, } from './pass-outside-reads.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
 import {
@@ -188,6 +190,24 @@ export async function preparePassEntry(
     }`,
   );
   /**
+   The page's declared identity without the lexicon's own lines, assembled
+   as preparation assembles it (ledger B28): the lexicon asks for a work's
+   official English title, which a web lookup or a note establishes.
+   */
+  const lexiconIdentityLines = pageIdentityLines({
+    sourceDocument: parseDocument({ text: sourceText, },),
+    targetDocument: parseDocument({ text: archiveText, },),
+    sourceText,
+    targetText: archiveText,
+    contextLines: [
+      ...workTitleLines,
+      ...corpusNameContext,
+    ],
+  },);
+  l.debug(
+    `${preparePassEntry.name}: the title lexicon reads ${String(lexiconIdentityLines.length,)} identity lines`,
+  );
+  /**
    One rendering of each title the original repeats that the archive leaves
    unpaired (ledger H16), settled once by the bench on the roster the hook
    hands over and cached durably, the same lines for every preparation so a
@@ -199,6 +219,7 @@ export async function preparePassEntry(
     beforeItem: beforeItem ?? keepBench,
     sourceText,
     targetText: archiveText,
+    identityContext: lexiconIdentityLines.join('\n',),
     cache: await openPageTitleCache({
       dir: entryCacheDir,
       generation: pipelineDigest,

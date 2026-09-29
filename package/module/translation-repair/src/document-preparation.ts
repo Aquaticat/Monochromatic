@@ -5,15 +5,9 @@ import {
 } from './chunk-document.ts';
 import { archiveContributorNameForms, } from './contributor-name-authority.ts';
 import { declaredNameForms, } from './declared-name-survival.ts';
-import { pageNameLines, } from './page-name-glossary.ts';
-import { glossaryTermLines, } from './rendering-glossary.ts';
 import { declaredNamePairs, } from './linked-title-declared-name.ts';
-import { entryNoteLines, } from './entry-notes.ts';
-import {
-  collectIdentityLines,
-  extractDeclaredIdentity,
-  sourcePronounLines,
-} from './identity-context.ts';
+import { extractDeclaredIdentity, } from './identity-context.ts';
+import { pageIdentityLines, } from './page-identity-lines.ts';
 import {
   type ChunkGovernance,
   type ChunkSlice,
@@ -188,10 +182,6 @@ export function prepareDocumentPair(
       ?.data,
   };
   /**
-   Declared correspondences as sheet lines.
-   */
-  const identityLines = collectIdentityLines(frontMatterData,);
-  /**
    Declared name pairs, source form beside declared rendering, for the
    glossary note (class eighty-six) and the publication rule's floor (class
    one hundred fourteen).
@@ -204,41 +194,17 @@ export function prepareDocumentPair(
   const contributorNames = archiveContributorNameForms({ text: targetText, });
 
   /**
-   Prompt lines adding target-authoritative contributor spellings beside
-   front matter correspondence.
+   Prompt lines for every sheet: declared names, pronoun, contributors, notes,
+   community words, the page's own names and the caller's context lines,
+   assembled where the page title lexicon reads them too (ledger B28).
    */
-  const identityContextLines = [
-    ...identityLines,
-    // THE PRONOUN THE ORIGINAL USES FOR ITS SUBJECT, read off the whole
-    // document, so a sheet judging one subjectless sentence knows who it is
-    // about (the Toka_ls "they" of 2026-09-02).
-    ...sourcePronounLines({ text: sourceText, },),
-    ...contributorNames.map(function contributorLine(name,): string {
-      return `target contributor: ${name}`;
-    },),
-    // THE NOTES BOTH DOCUMENTS CARRY, footnote definitions and editors'
-    // comments, which establish vocabulary for the terms they name (the owner's
-    // rule of 2026-09-02) and sit where no slice would show them.
-    ...entryNoteLines({
-      sourceDocument,
-      targetDocument,
-    },),
-    // THE COMMUNITY'S WORDS AND THE ORDINARY WORDS WHOSE CALQUE READS BADLY
-    // (the owner's decisions of 2026-09-09 and 2026-09-25,
-    // `rendering-glossary.ts`), so every sheet knows the English the page uses.
-    ...glossaryTermLines({ text: sourceText, },),
-    // HOW THIS PAGE RENDERS ITS PEOPLE AND LINKED TITLES (class seventy-one,
-    // `page-name-glossary.ts`): the archive's link text under a shared href
-    // and its signature spellings, so a name inside a paragraph is written
-    // as the page writes it everywhere else.
-    ...pageNameLines({
-      sourceText,
-      targetText,
-      // A linked title that names the declared person says so (class eighty-six).
-      declared: declaredPairs,
-    },),
-    ...contextLines,
-  ];
+  const identityContextLines = pageIdentityLines({
+    sourceDocument,
+    targetDocument,
+    sourceText,
+    targetText,
+    contextLines,
+  },);
 
   /**
    Target-authoritative identity forms guards preserve wherever archive body

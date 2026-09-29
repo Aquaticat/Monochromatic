@@ -23,9 +23,16 @@
  since 2026-09-28T19:38Z, when this value was set, finds none, and one from
  2026-09-27T00:00Z finds 494.
 
+ The sheet changed once since (ledger B28, 2026-09-29): it shows the page's
+ declared identity, web lookups and notes among it, with the rules for
+ reading it. That rides inside too, on two grounds: the key now hashes the
+ identity the sheet showed, so every key an earlier build wrote has moved;
+ and the same find, rerun for this change, finds none since 2026-09-28T19:38Z
+ against a control of 494.
+
  @example
  ```ts
- const material = JSON.stringify({ version: PAGE_TITLE_CACHE_VERSION, source, titles, roster, },);
+ const material = JSON.stringify({ version: PAGE_TITLE_CACHE_VERSION, source, titles, identity, roster, },);
  ```
  */
 export const PAGE_TITLE_CACHE_VERSION = 1;

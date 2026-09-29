@@ -150,13 +150,16 @@ export async function openPageTitleCache(
 }
 
 /**
- Names one lexicon question: the original it was asked over, the titles and
- the roster that answers, as one JSON value so no two questions share a key
- (the X15 lesson).
+ Names one lexicon question: the original it was asked over, the titles, the
+ declared identity the sheet showed and the roster that answers, as one JSON
+ value so no two questions share a key (the X15 lesson).
 
  @param sourceText - the original document
 
  @param spans - titles asked about
+
+ @param identityContext - declared identity the sheet showed, empty for none,
+ so a page whose lookups or notes changed is asked again (ledger B28)
 
  @param modelIds - roster that answers
 
@@ -164,17 +167,19 @@ export async function openPageTitleCache(
 
  @example
  ```ts
- const key = pageTitleKey({ sourceText, spans, modelIds, },);
+ const key = pageTitleKey({ sourceText, spans, identityContext: '', modelIds, },);
  ```
  */
 export function pageTitleKey(
   {
     sourceText,
     spans,
+    identityContext,
     modelIds,
   }: {
     readonly sourceText: string;
     readonly spans: readonly RepeatedTitleSpan[];
+    readonly identityContext: string;
     readonly modelIds: readonly RosterModelId[];
   },
 ): string {
@@ -184,6 +189,7 @@ export function pageTitleKey(
         version: PAGE_TITLE_CACHE_VERSION,
         source: hashContent({ content: sourceText, },),
         titles: spans,
+        identity: hashContent({ content: identityContext, },),
         roster: modelIds,
       },),
       'utf8',
@@ -208,6 +214,10 @@ export function pageTitleKey(
 
  @param targetText - archive as the preparation reads it
 
+ @param identityContext - the page's declared identity without the lexicon's
+ own lines, empty for none: the sheet asks for a work's official English
+ title, which a web lookup or a note establishes (ledger B28)
+
  @param cache - store a settled round is republished from
 
  @param signal - entry deadline and caller abort
@@ -220,7 +230,7 @@ export function pageTitleKey(
 
  @example
  ```ts
- const { lines, findings, } = await passPageTitles({ client, modelIds, beforeItem, sourceText, targetText, cache, signal, exchangeTimeoutMs, l, },);
+ const { lines, findings, } = await passPageTitles({ client, modelIds, beforeItem, sourceText, targetText, identityContext: '', cache, signal, exchangeTimeoutMs, l, },);
  ```
  */
 export async function passPageTitles(
@@ -230,6 +240,7 @@ export async function passPageTitles(
     beforeItem,
     sourceText,
     targetText,
+    identityContext,
     cache,
     signal,
     exchangeTimeoutMs,
@@ -240,6 +251,7 @@ export async function passPageTitles(
     readonly beforeItem: () => Promise<BenchSeating>;
     readonly sourceText: string;
     readonly targetText: string;
+    readonly identityContext: string;
     readonly cache: SliceCache<PageTitleLexiconRecord>;
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
@@ -275,6 +287,7 @@ export async function passPageTitles(
   const key = pageTitleKey({
     sourceText,
     spans,
+    identityContext,
     modelIds: roster,
   },);
   /**
@@ -298,6 +311,7 @@ export async function passPageTitles(
     modelIds: roster,
     sourceText,
     spans,
+    ...((identityContext === '') ? {} : { identityContext, }),
     signal,
     exchangeTimeoutMs,
     l,
