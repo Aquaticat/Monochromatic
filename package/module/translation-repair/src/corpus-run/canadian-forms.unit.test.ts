@@ -340,6 +340,34 @@ await describe({
       },
     },),
     it({
+      name: 'READS a cased letter beyond the first plane whole, as a Latin letter is read (ledger B21): a date or a '
+        + 'listed word it touches is part of a longer token, while an emoji before a date still opens it',
+      fn: async () => {
+        /**
+         Dates and a listed word glued to a Deseret capital, which has case.
+         */
+        const glued = [
+          'We napped on 4 May\u{10414}.',
+          'We napped \u{10414}4 May.',
+          'The cat ate \u{10414}liquorice.',
+          'The cat ate liquorice\u{10414}.',
+        ];
+        /**
+         The same texts with a Latin letter in its place.
+         */
+        const latin = glued.map(function asLatin(text,): string {
+          return text.replaceAll('\u{10414}', 'x',);
+        },);
+        expect(latin.map(function rewrite(text,): string {
+          return rewritten({ text, },);
+        },),).toEqual(latin,);
+        expect(glued.map(function rewrite(text,): string {
+          return rewritten({ text, },);
+        },),).toEqual(glued,);
+        expect(rewritten({ text: 'We napped \u{1F431}4 May.', },),).toBe('We napped \u{1F431}May 4.',);
+      },
+    },),
+    it({
       name: 'LEAVES tag attributes, a link destination, code, a comment and a capitalised title in emphasis '
         + 'untouched, and rewrites the prose between them',
       fn: async () => {

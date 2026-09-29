@@ -55,5 +55,15 @@ await describe({
         },);
       },
     },),
+    it({
+      name: 'CORRECTS a syllable whose character lies beyond the first plane, which pinyin-pro reads and a scan by '
+        + 'UTF-16 unit never took for Han (ledger B21), and matches the syllables to characters, not to units',
+      fn: async () => {
+        expect(correctPinyinTones({ text: 'A cat toy (\u{20CD0}\u{732B}, b\u{00E0}ng m\u{0101}o).', },),).toEqual({
+          text: 'A cat toy (\u{20CD0}\u{732B}, b\u{0101}ng m\u{0101}o).',
+          changed: ['"b\u{00E0}ng" to "b\u{0101}ng" for \u{20CD0}',],
+        },);
+      },
+    },),
   ],
 },);
