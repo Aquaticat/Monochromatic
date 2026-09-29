@@ -18,6 +18,9 @@ import {
 import {
   isArchiveSourceQuoteAnchored,
   isVerifiableEditorialArchiveBlock,
+  NoProviderForModelError,
+  reachableQuorum,
+  rosterQuorumSize,
   runArchiveBlockReviewStage,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -25,6 +28,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 
@@ -35,6 +39,33 @@ const ROSTER = [
   SEAT_SYNTHETIC_VISION_WITHHELD,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
+
+/**
+ Bench most of whose seats the router refuses, so the share of it a wet
+ provider serves is short of the whole bench's quorum; the case built on it
+ asserts that before relying on it.
+ */
+const SHORT_BENCH = [
+  'hf:cat/Cat-A',
+  'hf:cat/Cat-B',
+  'hf:cat/Cat-C',
+  'hf:cat/Cat-D',
+  'hf:cat/Cat-E',
+  'hf:cat/Cat-F',
+  'hf:cat/Cat-G',
+  'hf:cat/Cat-H',
+].map(function toModelId(id,): RosterModelId {
+  return id as unknown as RosterModelId;
+},);
+
+/** Seats of that bench no provider serves. */
+const REFUSED_SEATS: ReadonlySet<string> = new Set([
+  'hf:cat/Cat-D',
+  'hf:cat/Cat-E',
+  'hf:cat/Cat-F',
+  'hf:cat/Cat-G',
+  'hf:cat/Cat-H',
+],);
 
 /** Logger for archive-block stage tests. */
 const l = tagged({ tag: 'archive-block-review-stage-test', },);
@@ -63,6 +94,7 @@ function scriptedClient(
     prompts,
     payloads,
     unreadableFor = () => false,
+    refusedFor = () => false,
   }: {
     readonly replyFor: ReplyFor;
     readonly prompts: string[];
@@ -72,6 +104,11 @@ function scriptedClient(
      shape `chat-json-outcome.ts` reads off `finish_reason=length`.
      */
     readonly unreadableFor?: (modelId: string) => boolean;
+    /**
+     Seats the router refuses because no provider serving them is wet, the
+     refusal `stage-call.ts` counts out of reach.
+     */
+    readonly refusedFor?: (modelId: string) => boolean;
   },
 ): SyntheticClient {
   return {
@@ -87,6 +124,12 @@ function scriptedClient(
       const prompt = JSON.stringify(request.messages,);
       prompts.push(prompt,);
       payloads?.push(`${request.modelId}\u0000${prompt}`,);
+      if (refusedFor(request.modelId,)) {
+        throw new NoProviderForModelError({
+          modelId: request.modelId,
+          reason: 'every provider serving this model is out of budget',
+        },);
+      }
       if (unreadableFor(request.modelId,)) {
         return {
           kind: 'schema-mismatch',
@@ -297,6 +340,55 @@ await describe({
         expect(outcome.text,).toBe('The cat sleeps quietly by the window.',);
         expect(outcome.findings.join('\n',),).toContain('stage-quorum-unmet (archive-block-review 1/',);
         expect(outcome.findings.join('\n',),).toContain('archive review left the block unresolved: 1 of 1',);
+      },
+    },),
+    it({
+      name: 'REVIEWS the block on the seats the router could serve (ledger B27): with most of the bench refused, '
+        + 'every reachable seat anchoring its quote meets the reachable share, so the block buys its '
+        + 'naturalness read instead of standing unresolved below the quorum the whole bench would need',
+      fn: async () => {
+        const prompts: string[] = [];
+        /** Share the gather closes on once the refusals are known. */
+        const { needed, reachable, } = reachableQuorum({
+          benchSize: SHORT_BENCH.length,
+          unreachable: REFUSED_SEATS.size,
+        },);
+        // The case tests the threshold only while every reachable seat
+        // anchoring still falls short of the whole bench's quorum.
+        expect(reachable,).toBeLessThan(rosterQuorumSize({ rosterSize: SHORT_BENCH.length, },),);
+        expect(reachable,).toBeGreaterThanOrEqual(needed,);
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts,
+            refusedFor: (modelId,) => REFUSED_SEATS.has(modelId,),
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'source-supported',
+                sourceQuote: '窗边安静地睡觉',
+                replacementText: '',
+                finding: 'Expected section supports this sentence.',
+              }
+              : ACCEPTABLE_NATURALNESS,
+          },),
+          modelIds: SHORT_BENCH,
+          sourceText: '猫在窗边安静地睡觉。',
+          targetText: 'The cat sleeps quietly by the window.',
+          blockText: 'The cat sleeps quietly by the window.',
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+        // The review gather itself counted every refusal.
+        expect(outcome.findings,).toContain(
+          `stage-short-bench (archive-block-review reachable ${String(reachable,)} of ${
+            String(SHORT_BENCH.length,)
+          }, quorum ${String(needed,)})`,
+        );
+        expect(outcome.kind,).toBe('retained',);
+        expect(outcome.text,).toBe('The cat sleeps quietly by the window.',);
+        expect(outcome.findings.join('\n',),).not.toContain('archive review left the block unresolved',);
+        expect(outcome.findings,).toContain('archive block absolute naturalness accepted and challenged',);
       },
     },),
     it({
