@@ -6936,9 +6936,39 @@ then left browser navigation.
 It reaches the Search header early but separates the query from its hits
 with left-pane stops.
 The input method stayed hidden in read-only state checks on each swipe.
-A further private bounded segment is inspecting where result speech
-starts;
-its script stops rather than testing an IME if one appears.
+The further bounded inner segment completed without showing an input
+method.
+After the alphabet rail,
+TalkBack spoke `Cam` at recorded swipe `23` and its supporting
+`Track · Cult of Luna · exact filename` at swipe `24` as a separate focus
+stop;
+`Camellia` and its folder detail likewise occupied separate stops.
+The left folder grid followed the Search result text,
+then the deck.
+The private OCR transcript contains occasional repeated/transition
+frames;
+these indices are scripted swipes,
+not exact unique-node counts.
+`evidence/search-talkback-native-baseline.md` records the bounded
+sequence and the cover limitation.
+
+The folded cover presented the same debug result texts and initial
+TalkBack focus on `Back to player. Button` with input method hidden,
+but the existing emulator-gRPC helper did not establish a positive
+cover-focus traversal control.
+Adding `TouchEvent.display = 1` did not move focus in the observed
+probe,
+while the controller still reported a 2076 × 2152 main-display
+configuration and Android exposed the active 1080 × 2424 cover as logical
+display `0`.
+A guest `input touchscreen -d 0 swipe` also left focus unchanged.
+These are unvalidated null results,
+not proof of cover behavior or impossibility;
+no cover TalkBack sequence is claimed.
+TalkBack usage hints were disabled on this disposable guest to separate
+spoken item names from later hints.
+Raw screenshots remain private.
+No IME was opened or tested.
 Raw status-bearing screenshots and speech-overlay crops remain private.
 Do not touch the original AVD or infer stale-lock causation beyond this
 bounded failing/passing boot pair;

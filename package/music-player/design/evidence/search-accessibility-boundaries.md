@@ -38,26 +38,36 @@ make the just-opened destination hard to reach by sequential exploration.
 The disposable debug Search A `cam` fixture was then launched with TalkBack
 17.0.0.889642762 and speech overlay enabled.
 Its **initial** spoken focus was “Folders”; one physical emulator-gRPC
-right swipe spoke “Open. Button” and the next spoke “Back to player.
-Button”.
+right swipe spoke “Open. Button” and the next spoke
+“Back to player. Button”.
 The subsequent physical-swipe segment spoke
 `cam. Edit box. Search music` at recorded step `3` and
 `Clear search. Button` at step `4`.
-Steps `5` through `20` then moved into the **left alphabet rail**,
+Steps `5` through `21` then moved into the **left alphabet rail**,
 not the Search result list.
-That verifies an interleaved current-debug order:
+After leaving that list,
+TalkBack spoke `Cam` at recorded step `23` and its supporting
+`Track · Cult of Luna · exact filename` text at step `24` as a
+**separate** stop;
+the `Camellia` folder title and supporting text also occupied distinct
+stops.
+The left folder grid followed the Search results,
+then the playback deck.
+This verifies an interleaved current-debug order:
 left browser header,
 right Search header,
-then left browser navigation.
-It does **not** literally reuse D39's whole player-first traversal,
-nor does it keep Search results adjacent to their query for sequential
-TalkBack exploration.
+left alphabet rail,
+right result title/detail text,
+left folder grid and deck.
+It does **not** reuse D39's whole player-first order or keep Search's
+query and hits contiguous for sequential TalkBack exploration.
 Read-only input-method state stayed at `mInputShown=false` and
-`mImeWindowVis=0` through the captured segment.
+`mImeWindowVis=0` through the scripted inner swipes.
+The exact captured limits and a cover-input positive-control gap are in
+`search-talkback-native-baseline.md`.
 These private speech-overlay observations do not prove activation,
 return focus,
-D63 edit-focus request or a final Search accessibility design;
-a longer bounded sequence is being collected without typing or tapping.
+D63 edit-focus request or a final Search accessibility design.
 
 ## Primary guidance and its limits
 
