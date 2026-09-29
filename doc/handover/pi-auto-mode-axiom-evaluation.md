@@ -152,15 +152,51 @@ The corrected execution freeze is
 `fd7663a91ecc399586814705b4da95b78ff5aeed9cdad15ece4f3b9d7592381b`.
 The RPC correlation draft remains deferred.
 
-Next work is the scope-binding writer at this existing owner,
-followed by one genuine human confirmation for a disposable fixture.
-Scripted channel checks cannot replace that capture.
-The synthetic launcher waited for helper exit;
-the real `cli-terminal-exec/src/launch.ts` returns after detached process startup.
-Do not generalize the synthetic raw-byte capture timing to live launch.
-The configured editor is `nano`,
-with executable `/usr/bin/nano` observed;
-no genuine confirmation window has been opened by this phase.
+The separate private `observed-owner/verification-result.json` passed scope-binding and raw-response mechanics:
+ten cases,
+nine actual helper/scripted-editor launches,
+startup-only launcher return,
+and cleanup after every case.
+Changed scope,
+replayed form,
+spoofed roles,
+and observer errors produced no approval publication.
+Untouched and erased forms cancelled.
+Owned-handle,
+size,
+encoded-delimiter,
+and separate scope-guard omission controls passed.
+Every scripted outcome remained `humanOrigin: "not-established"`.
+No sessions,
+fetches,
+models,
+human approvals,
+or production changes occurred.
+The observer freeze is
+`8cacba0c2bd55e9b0b87224de35be319f51b3b83a3d5695ee302babd743318a5`.
+Do not rerun that successful phase.
+
+The real `cli-terminal-exec/src/launch.ts` returns after detached process startup.
+The observer captures raw text at the existing requester before normalization and workspace deletion,
+not by assuming terminal launch waits for editor exit.
+Desktop intake resolved Ghostty and Nano without opening a window.
+The separate genuine controller has now frozen one disposable scope,
+private original-response storage,
+exact opt-in,
+and concrete descriptor/executable/environment/argument checks at the unchanged default spawn boundary.
+Original editor documents stay in ignored mode-0600 private files;
+no synthetic keyboard input is allowed.
+Interrupted runs cannot publish approval;
+detached editor closure is not established by controller cancellation.
+
+Next:
+exercise that one-shot genuine attempt and retain its actual outcome without replay.
+Approval,
+denial,
+cancellation,
+and failure are all valid observations.
+No genuine response has yet been claimed.
+The [human handoff](../runbook/pi-auto-mode-confirmation-fixture.md) explains the fixture and response steps.
 Task #68 is not complete and downstream gates remain separate.
 
 ## Current interview state

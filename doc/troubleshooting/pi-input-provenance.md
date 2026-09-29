@@ -499,7 +499,53 @@ rejected unauthenticated answer helper connection
 
 No bare shutdown error or logger-internal error was accepted.
 No human approval was created.
-A genuine confirmation capture and the writer's scope binding remain unqualified.
+A genuine confirmation capture and production-writer admission remained unqualified by that helper check.
+
+### Private observed-owner scope and capture mechanics
+
+The separate `contract/human-origin/observed-owner/verification-result.json` passed ten predeclared cases
+with nine actual helper/scripted-editor launches.
+Its injected launcher returned after child spawn,
+not after helper exit.
+A private requester copy presents a code-authored scope before launch
+and captures the original decoded document before normalization and workspace deletion.
+The source and production bundle are unchanged;
+reversing its observer edits restores the retained deployed bytes.
+Callback shape does not authenticate a human.
+
+Untouched and erased forms cancelled;
+fixture approval and denial tokens retained only mechanical status.
+Changed scope,
+replayed forms,
+spoofed roles,
+and capture/presentation failures published no approval.
+Editor cancellation manufactured no raw response.
+All workspaces were removed.
+Owned-handle,
+input/size,
+encoded-delimiter,
+changed-prefix,
+and separate scope-guard omission controls passed.
+Every scripted outcome retained `humanOrigin: "not-established"`.
+Child stderr was empty;
+no session,
+fetch,
+external model call,
+human approval,
+or production change occurred.
+The freeze is
+`8cacba0c2bd55e9b0b87224de35be319f51b3b83a3d5695ee302babd743318a5`.
+Do not replay this completed phase.
+
+The real default terminal launcher remains nonblocking.
+This observer test qualifies capture mechanics across startup-only ordering,
+not desktop detachment,
+physical-human origin,
+or production writer coverage.
+The separately frozen genuine host test uses actual Ghostty and Nano with a disposable scope.
+Its launch guard checks the concrete default-spawn inputs;
+original response and diagnostics stay under ignored private storage.
+No genuine response has yet been claimed.
 
 ## Proposed containment and unverified remedies
 

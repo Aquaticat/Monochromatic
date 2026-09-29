@@ -568,8 +568,29 @@ This is not a human confirmation:
 the returned answer/status fields still lack the original question,
 tool-call identity,
 and accepted approval scope.
-A writer-produced scope binding and genuine disposable-scope confirmation remain required.
-See the [actual-helper evidence](../troubleshooting/pi-input-provenance.md).
+The separate private observed-owner check subsequently passed code-authored scope presentation,
+raw capture before normalization and cleanup,
+and startup-only launch ordering across ten scripted cases.
+Changed scope,
+replayed forms,
+spoofed roles,
+and observer errors produced no approval publication.
+The nine helper/editor launches and pure scope/handle/omission controls created no human authority.
+Every result retained `humanOrigin: "not-established"`.
+
+A separate one-shot genuine host controller is frozen for a disposable fixture only.
+It binds the actual default launch descriptor,
+executable,
+arguments,
+and credential-free environment before spawn.
+Original response bytes stay private before any interpretation is published.
+This has not yet established a genuine response or production-writer admission.
+A successful narrow host confirmation would not qualify ordinary TUI/RPC writers,
+lifecycle,
+semantics,
+deadline handback,
+or replacement parity.
+See the [actual-helper and observer evidence](../troubleshooting/pi-input-provenance.md).
 
 ### Grant lifetime decisions and current frontier
 
