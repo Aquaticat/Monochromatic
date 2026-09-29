@@ -70,5 +70,47 @@ await describe({
         expect(JSON.stringify(lane,),).toContain('CANDIDATE',);
       },
     },),
+    // LEDGER B29: the consolidation writer is shown both lanes' candidates,
+    // and its sheet left their counts out while the gates after it carry
+    // theirs, so a candidate that flattened the original's lines looked no
+    // different to the writer building on it.
+    it({
+      name: 'SHOWS the consolidation writer the counts of the candidates its sheet displays',
+      fn: async () => {
+        /** Both lanes answered, neither with the archive's wording. */
+        const [system,] = buildConsolidateMessages({
+          subject: { sourceText: SOURCE, incumbentText: '', repairText: FLAT, translateText: KEPT, ballots: [], lineStructured: false, },
+        },);
+        expect(system?.content,).toContain(`${JSON.stringify('CANDIDATE "repair"',)} explicit breaks by top-level block: [0]`,);
+        expect(system?.content,).toContain(`${JSON.stringify('CANDIDATE "translate"',)} explicit breaks by top-level block: [1]`,);
+      },
+    },),
+    it({
+      name: 'COUNTS no candidate the consolidation sheet leaves undisplayed',
+      fn: async () => {
+        /** The repair lane has no wording here, so the sheet shows no block for it. */
+        const [system,] = buildConsolidateMessages({
+          subject: { sourceText: SOURCE, incumbentText: '', repairText: '', translateText: KEPT, ballots: [], lineStructured: false, },
+        },);
+        expect(system?.content,).toContain(`${JSON.stringify('CANDIDATE "translate"',)} explicit breaks by top-level block: [1]`,);
+        expect(system?.content,).not
+          .toContain(`${JSON.stringify('CANDIDATE "repair"',)} explicit breaks`,);
+      },
+    },),
+    // LEDGER B29: the follow-up writer is shown the candidates the judges
+    // declined, and its sheet left their counts out while the judges had them.
+    it({
+      name: 'SHOWS the follow-up writer the counts of the rejected candidates its sheet displays',
+      fn: async () => {
+        /** One flattened and one kept rendering, both declined. */
+        const [system,] = buildTranslateMessages({
+          sourceText: SOURCE,
+          existingText: '',
+          followupEvidence: { reason: 'declined-rejection', candidateTexts: [FLAT, KEPT,], findings: [], },
+        },).messages;
+        expect(system?.content,).toContain(`${JSON.stringify('REJECTED CANDIDATE 1',)} explicit breaks by top-level block: [0]`,);
+        expect(system?.content,).toContain(`${JSON.stringify('REJECTED CANDIDATE 2',)} explicit breaks by top-level block: [1]`,);
+      },
+    },),
   ],
 },);
