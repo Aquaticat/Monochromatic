@@ -150,8 +150,7 @@ not Android TalkBack.
   not the measured Search fixture sequence that reached Back after two
   swipes.
 
-**Ranking:
- query-first > Back-first > unchanged player order.**
+The ranking is **query-first > Back-first > unchanged player order**.
 Query-first prioritizes the action just invoked over one additional
 escape gesture;
 Back-first preserves escape discoverability without burying the field;
@@ -220,7 +219,7 @@ D78 defines non-stealing current-query announcements,
 and D80 defines identity continuity and fallback when a row or Clear
 control disappears.
 These are adopted recommendations,
-not six independent implementation claims.
+not native implementation claims.
 The design choices for internal review task 118 are closed;
 native entry,
 activation,

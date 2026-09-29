@@ -7033,6 +7033,52 @@ implementation acceptance gates.
 No production code,
 matcher/library choice,
 new IME experiment or `AGENTS.md` change is authorized.
-The next work is scoped review-artifact verification and recording its
-results,
-not implementation of these goals.
+The scoped review artifact has now passed
+`mise run //package/music-player/design:lint`.
+Browser verification exercised every disclosure,
+all Search state/scheme combinations,
+all E2 scenes,
+each device preview,
+fit/reset/zoom,
+Close and Escape restoration,
+at 1440 × 1000 and 390 × 844 in light and dark.
+Axe WCAG A/AA reported zero violations and no incomplete checks in those
+runs;
+the browser recorded no console errors and was closed.
+This verifies the HTML review,
+not Android accessibility.
+
+All published witnesses matched the retained raw crop's exact RGB bytes
+and their manifest SHA-256 values.
+A one-pixel altered fixture proved the byte comparison detects a change.
+PNG inspection found only `IHDR`,
+`IDAT` and `IEND` chunks,
+with no text,
+time or EXIF metadata.
+The first ImageMagick-metric positive control did not reliably reject
+through process exit status,
+so exit status was replaced by actual RGB-byte comparison before trusting
+the equality claim.
+
+Scoped accessibility/troubleshooting Markdown lint passed.
+GitHub Markdown renderer output was inspected for headings,
+emphasis,
+LFS object image URLs and internal-review-ID links.
+The canonical `HANDOFF.md`,
+`decisions.md` and `open-questions.md` still have 191
+`semantic-line-breaks` findings outside this task's modified blocks;
+none intersects the added/changed blocks,
+and legacy internal task 119 remains open.
+The browser initially reset to `about:blank` after inconsistent launch
+flags;
+reopening the isolated session with consistent options passed verification.
+That version-0.38.1 symptom is recorded in
+`doc/troubleshooting/agent-browser-launch-option-reset.md`,
+without attributing the old release's source cause to the current binary.
+
+Search accessibility's design review is complete.
+Production implementation and source-status binding remain unauthorized;
+native acceptance gates are not waived.
+No further IME experiment is scheduled.
+The next authorized design-only work is the outstanding status-doc sweep,
+keeping already settled Search decisions out of new questionnaires.
