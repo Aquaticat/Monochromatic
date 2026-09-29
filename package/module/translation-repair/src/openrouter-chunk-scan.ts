@@ -1,4 +1,5 @@
 import { isJsonRecord, } from './json-guard.ts';
+import { parseModelJson, } from './model-content.ts';
 
 import { ssePayloadOf, } from './sse-data-line.ts';
 
@@ -44,18 +45,18 @@ export function openRouterChunksOf(
       if (!payload.startsWith('{',))
         return [];
       /**
-       Parsed chunk, or nothing when the payload does not parse.
+       Parse attempt, whose failure is data rather than a caught error this
+       scan would have to drop (ledger B29): a chunk that does not parse was
+       already refused or accepted by the completion reader, which reports
+       it, and this scan only wants the envelope.
        */
-      const chunk: unknown = (function parseChunk(): unknown {
-        try {
-          return JSON.parse(payload,);
-        } catch (error) {
-          // A chunk the completion reader already refused or accepted; this
-          // scan only wants the envelope and reports nothing about the rest.
-          void error;
-          return undefined;
-        }
-      })();
+      const attempt = parseModelJson({ text: payload, },);
+      if (!attempt.parsed)
+        return [];
+      /**
+       Parsed chunk.
+       */
+      const { value: chunk, } = attempt;
       if (!isJsonRecord(chunk,))
         return [];
       return [chunk,];
