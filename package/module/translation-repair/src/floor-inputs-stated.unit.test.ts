@@ -2,8 +2,8 @@
  Guards against a default standing in for a floor input its caller holds
  (ledger B29): a production call to a package function whose first parameter
  defaults, or types as optional, one of the inputs that decide what a floor
- refuses or what a sheet shows must state it, or be named here with the
- reason it may leave it out. The final polish dropped the slice's disputed
+ refuses, what a sheet shows or whether a text may ship must state it, or be
+ named here with the reason it may leave it out. The final polish dropped the slice's disputed
  wordings this way and shipped one; the chunk's checker check dropped the
  refiners; the consolidation writer's sheet dropped its candidates' break
  counts.
@@ -44,23 +44,37 @@ import {
 //region Floor inputs
 
 /**
- Parameter names that carry what a floor refuses or what a sheet shows.
+ Parameter names that carry what a floor refuses or what a sheet shows, and
+ the gate flags that decide whether a text may ship: most of those default
+ to the permissive answer (`eligible = true`, `standingMayShip = true`), so a
+ caller leaving one out lets a text through that its own evidence refused.
  */
 const FLOOR_KEYS: ReadonlySet<string> = new Set([
   'archiveDispute',
   'archiveDisputeNote',
   'attestedDetails',
   'attestedLines',
+  'choiceMayShip',
   'declared',
   'declaredNamePairs',
   'disputedWordings',
+  'eligible',
   'identityContext',
+  'incumbentEligible',
+  'incumbentWithheld',
+  'insertionCarried',
   'lineStructured',
   'pageText',
   'pictureContext',
   'referenceContext',
   'refinerModelIds',
   'renderings',
+  'runoffOverStanding',
+  'selfCertificationPermitted',
+  'standingEligible',
+  'standingFlawedByAll',
+  'standingMayShip',
+  'standingValid',
   'withdrawnSliceIndices',
 ],);
 
