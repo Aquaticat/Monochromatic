@@ -74,6 +74,13 @@ this one says what changed after it.
   then the prevention doc's "Before a run launches",
   then `TianqiChen666` again on the audit build,
   so that class one hundred eighty-seven and every fix since `9a3f28b30` are read live.
+  Of the open entries,
+  B21 is the code-reading pass over the recurring families:
+  its first family,
+  text read by UTF-16 unit,
+  closed on 2026-09-29 as B22,
+  with `fixed-length-cuts.unit.test.ts` and the Latin-twin cases in `canadian-forms.unit.test.ts` among its guards;
+  word-boundary matches (class one hundred sixty-three) come next.
 
 ### 2026-09-24, 04:30 UTC: one hundred ten classes, eight seats, two wet providers
 
