@@ -2028,6 +2028,67 @@ No production Search change,
 fuzzy-library work,
 new IME experiment or original-AVD modification is authorized.
 
+### D72. A folder Search result opens its folder without autoplay (2026-09-29)
+
+Carry the existing `selectPage(page)` action into Search:
+a folder result returns to the ordinary player folder view with that
+folder selected and its queue page scope updated.
+It does **not** load another track or stop the already-playing stream.
+Changing only the visible left picker while leaving the right Search
+pane open would not expose the selected folder's track view on the
+unfolded panel,
+and would hide the outcome entirely on the folded cover.
+This is a coherence decision from the existing player behavior,
+not evidence that a Search row is currently clickable.
+The new Search visit after this return starts with an empty query (D66).
+
+### D73. Track Search results carry existing play/pause row semantics (2026-09-29)
+
+A directly named result for a different track starts that track,
+using the existing non-current player-row meaning.
+`PlayerController.playIndex(index)` calls `playCurrent()`;
+its source path selects the track's owning page in player state.
+A result for the already-current track uses the existing current-row
+`togglePlay()` meaning:
+pause while playing,
+resume when its URI is already loaded,
+or load it if necessary.
+Do **not** call `playIndex(current)` and describe that as an equivalent
+toggle.
+The historical parent-only `cam` result for the deck's Another
+Xronixle is excluded by D60;
+a current-track test needs a direct own-name query such as `Another`.
+No result handler,
+file-error path,
+scroll-to-row or accessibility focus has been implemented or verified
+by this design decision.
+
+### D74. Successful track result activation returns to player (2026-09-29)
+
+After the source-backed track-action defaults were presented,
+the user chose **Return** over **Stay** for the track-navigation
+consequence.
+A successful other-track start leaves Search and presents the ordinary
+player view with the selected owning page;
+a successful current-track play/pause action likewise returns to player,
+without inventing a playhead restart or changing the selected page solely
+for that toggle.
+The separate Search query ends on return;
+a later Search opening is fresh under D66.
+Do not claim that the new track's row is scrolled into view or that its
+accessibility focus was restored:
+`refresh(followCurrent = true)` selects the page,
+not a proven row position.
+A stale or failed result activation must not claim playback succeeded or
+substitute a different target;
+it stays in Search for truthful error handling,
+with D9's missing-item bar as the incumbent presentation precedent to
+verify during future implementation.
+The [historical Stay/Return logic comparison](questions/archive/search-result-activation-before-return.html)
+was not an Android tap test.
+No production Search implementation,
+fuzzy matcher selection or new IME experiment is authorized.
+
 ---
 
 ## Pending after the theme picks (2026-09-04)
