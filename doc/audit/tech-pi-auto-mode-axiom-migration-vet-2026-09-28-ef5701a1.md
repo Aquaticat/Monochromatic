@@ -1435,6 +1435,28 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Accepted Q19 reset record kinds
+
+The user selected Q19 A:
+ordinary reset clears both reusable directives and remembered human action approvals in the resetting session.
+This expands the inspected directive-only behavior;
+no production code has changed.
+Derived cached decisions cannot retain authority from a human approval that reset revoked.
+The choice concerns stored permission record kinds within the resetting session,
+not propagation to other sessions.
+
+The [live interview frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
+now asks Q20 whether A's reset also revokes a human action approval already inherited by verified fork B.
+Keeping B's inherited approval is recommended but unaccepted,
+for consistency with Q16's settled directive behavior.
+All other scope,
+policy,
+provenance,
+and freshness checks remain required.
+No new model assessment,
+cutoff selection,
+or implementation was authorized.
+
 ## Accepted Q18 human action-approval inheritance
 
 The user selected Q18 A:

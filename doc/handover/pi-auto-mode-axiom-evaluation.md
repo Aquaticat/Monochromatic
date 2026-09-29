@@ -67,12 +67,18 @@ policy,
 and freshness checks remain required.
 Old machine verdicts are excluded from this human-approval route.
 
-Task #3 is active at unanswered Q19:
-whether ordinary reset also clears remembered human action approvals within its session.
+The user selected Q19 A:
+ordinary reset clears both reusable directives and remembered human action approvals in the resetting session.
+A derived cached decision cannot preserve an approval whose authority was reset.
+This is an accepted expansion of the inspected directive-only implementation,
+not a production change.
+
+Task #3 is active at unanswered Q20:
+whether A's reset revokes a human action approval already inherited by verified fork B.
 The [resumed design frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
 records the question.
-Clearing both directives and human action approvals is recommended but unaccepted.
-Later cross-session revocation is separate.
+Keeping B's inherited approval eligible is recommended but unaccepted,
+for consistency with Q16's directive behavior.
 No production implementation,
 cutoff selection,
 Laya restart,
@@ -148,8 +154,9 @@ Complete current policy is still mandatory despite generic vendor filtering advi
 Real human-authority/lifecycle/finalizer qualification remains separate.
 Q16 B,
 Q17's unconstrained conflict outcome,
-and Q18 A are settled;
-Q19 is now the resumed interview frontier.
+Q18 A,
+and Q19 A are settled;
+Q20 is now the resumed interview frontier.
 No production cutoff or code change has been approved,
 and the final shared-design confirmation is not complete.
 

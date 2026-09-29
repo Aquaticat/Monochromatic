@@ -761,8 +761,9 @@ Q17's conflicting same-human instructions impose no required approve/deny/ask ou
 The user classified that scenario as user error and accepts any system response to that conflict.
 Independent safeguards and the deterministic finalizer remain required.
 Q18 A permits verified fork inheritance of separate human approvals for the same eligible action scope.
-The current frontier is Q19,
-whether ordinary reset also clears remembered human action approvals within its session.
+Q19 A expands ordinary reset to both reusable directives and remembered human action approvals in its session.
+The current frontier is Q20,
+whether an originating reset also revokes an action approval already inherited by a verified fork.
 Other contract and qualification branches remain open;
 final shared-understanding confirmation is still required.
 Laya work and the original reserved corpus remain outside this resumption.
@@ -898,8 +899,9 @@ The current fixture-only prototype and its test results do not establish the qua
 
 Reset revokes preceding reusable trust directives across branches sharing the same session ID.
 Navigating to an older history position cannot revive those reset directives.
-This does not expand reset to separate exact-action approval records
+Q14 itself did not expand reset to separate human action approvals
 or settle revocation in already-forked sessions.
+Q19 later expanded the resetting session's affected record kinds.
 
 ### Q15: Verified fork inheritance
 
@@ -976,22 +978,34 @@ It does not select later cross-session revocation behavior or change what `/guar
 
 ### Q19: Reset scope for remembered human action approvals
 
-Unanswered.
-The inspected reset clears reusable directives,
-not separate remembered human action approvals.
-Q14 through Q18 did not expand it to those records.
+The user selected A:
+ordinary reset clears both reusable directives and remembered human action approvals in the resetting session.
+This deliberately expands the inspected directive-only implementation.
+Do not retain a remembered human approval through a derived cached decision after its authority is reset.
+The existing same-session reset boundary remains;
+this does not authorize changing the current task or executing previously blocked actions.
+Propagation to already-created forks is separate.
 
-Should ordinary reset also clear remembered human action approvals within its session,
-or remain directive-only with action approvals revoked separately?
-Clearing both is recommended:
-reset then clears both stored permission kinds,
-but subsequent matching actions can need fresh approval.
-A directive-only reset preserves the narrower operation and action-approval reuse,
-but needs a separate revocation path for human action approvals.
+### Q20: Origin reset after human action-approval inheritance
+
+Unanswered.
+Verified fork B has inherited A's explicit human approval for a particular action scope under Q18.
+A then resets both permission record kinds under Q19.
+Should B keep its inherited action approval,
+or should A's reset revoke it in B too?
+
+Keeping B's inherited approval is recommended:
+it matches Q16's independent inherited-directive eligibility and keeps reset local to the originating session,
+but the approval must be revoked in B separately.
+Propagating revocation removes that inherited approval in both sessions,
+but interrupts B and creates different reset linkage for human action approvals and reusable directives.
 Ranking:
-clear both > directive-only reset.
-This asks about record kinds within the resetting session,
-not whether revocation propagates to an already-created fork.
+keep B's inherited approval > propagate A's reset.
+Both options retain current scope,
+policy,
+provenance,
+and freshness requirements;
+neither applies to unqualified old machine verdicts.
 
 ## Accepted TypeSafe AUP scope
 

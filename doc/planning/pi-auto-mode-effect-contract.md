@@ -393,13 +393,14 @@ No production revocation or inheritance policy was selected by this observation.
 
 ### Grant lifetime decisions and current frontier
 
-These decisions concern reusable trust directives from `/guard` and `propose_trust`,
-not separate exact-action approval records.
-Every inherited directive requires verifiable original human confirmation;
+Q14 through Q16 addressed reusable trust directives from `/guard` and `propose_trust`.
+Q18 and Q19 separately extend the design to explicit human action-approval records.
+Every inherited permission requires verifiable original human confirmation;
 lineage alone cannot supply that witness.
 The inspected `/guard reset` appends a null trust entry,
-while exact-action approvals are read separately by `getReusableApproval()`.
-Do not silently expand reset to those approval records.
+while action approvals are read separately by `getReusableApproval()`.
+Q19 explicitly authorizes expanding reset to both record kinds within its session;
+that change is not implemented.
 
 The user selected Q14 A:
 reset revokes prior directives across branches sharing the same session ID.
@@ -462,9 +463,12 @@ policy,
 and freshness checks.
 Old machine verdicts are not eligible through this human-approval route.
 This does not settle subsequent cross-session revocation.
-[Q19](pi-auto-mode-axioms.md#q19-reset-scope-for-remembered-human-action-approvals)
-now asks whether reset should also clear remembered human action approvals within its session.
-Clearing both record kinds is recommended but unaccepted.
+The user selected [Q19 A](pi-auto-mode-axioms.md#q19-reset-scope-for-remembered-human-action-approvals):
+reset clears both directives and remembered human action approvals within its session.
+Derived cached decisions cannot preserve an approval whose authority was reset.
+[Q20](pi-auto-mode-axioms.md#q20-origin-reset-after-human-action-approval-inheritance)
+now asks whether an originating reset also revokes an action approval already inherited by a verified fork.
+Keeping the fork's approval eligible is recommended but unaccepted.
 
 ## Decision and finalization interface
 
