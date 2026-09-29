@@ -122,9 +122,10 @@ const ROMAN: readonly {
 ];
 
 /**
- Letters a roman numeral may carry.
+ Largest number a series heading carries: its Han numeral reads up to
+ ninety-nine.
  */
-const ROMAN_LETTERS = 'IVXLCDM';
+const SERIES_MAX = 99;
 
 /**
  Han digits one to nine, in order.
@@ -221,11 +222,63 @@ function capitalised({ word, }: { readonly word: string; },): string {
 }
 
 /**
- Whether a word is a roman numeral.
+ Renders a number as a roman numeral.
+
+ @param value - positive number
+
+ @returns Roman letters
+
+ @example
+ ```ts
+ roman({ value: 9, },); // 'IX'
+ ```
+ */
+function roman({ value, }: { readonly value: number; },): string {
+  /**
+   What is left to render.
+   */
+  let left = value;
+  /**
+   Letters so far.
+   */
+  let out = '';
+  for (const step of ROMAN) {
+    while (left >= step.value) {
+      out += step.letters;
+      left -= step.value;
+    }
+  }
+  return out;
+}
+
+/**
+ Every roman numeral a series heading can carry, as this module writes them.
+ */
+const SERIES_NUMERALS: ReadonlySet<string> = new Set(
+  Array.from(
+    { length: SERIES_MAX, },
+    function numeralOf(
+      _unused,
+      index,
+    ): string {
+      return roman({ value: index + 1, },);
+    },
+  ),
+);
+
+/**
+ Whether a word is a roman numeral a series heading can carry.
+
+ THE NUMERAL ITSELF, NOT ITS LETTERS, since 2026-09-29 (ledger T8): any word
+ of roman letters counted, so a capitalised "DID" or a malformed "IIII" before
+ a colon read as a roman number, and a series re-rendered in another style
+ would have replaced the word with a number. No stored page carries either
+ (`t8-roman-headings.mjs` in the audit's scratch folder).
 
  @param word - word as written
 
- @returns True when every letter is a roman letter
+ @returns True when the word is the numeral of a number from one to
+ ninety-nine as `roman` writes it
 
  @example
  ```ts
@@ -233,13 +286,7 @@ function capitalised({ word, }: { readonly word: string; },): string {
  ```
  */
 function isRoman({ word, }: { readonly word: string; },): boolean {
-  if (word === '')
-    return false;
-  for (const letter of word) {
-    if (!ROMAN_LETTERS.includes(letter,))
-      return false;
-  }
-  return true;
+  return SERIES_NUMERALS.has(word,);
 }
 
 /**
@@ -321,36 +368,6 @@ export function readOrdinalStyle({ prefix, }: { readonly prefix: string; },): Or
     leader: (leader === NUMBER_SIGN_STOPPED) ? NUMBER_SIGN : leader,
     form,
   };
-}
-
-/**
- Renders a number as a roman numeral.
-
- @param value - positive number
-
- @returns Roman letters
-
- @example
- ```ts
- roman({ value: 9, },); // 'IX'
- ```
- */
-function roman({ value, }: { readonly value: number; },): string {
-  /**
-   What is left to render.
-   */
-  let left = value;
-  /**
-   Letters so far.
-   */
-  let out = '';
-  for (const step of ROMAN) {
-    while (left >= step.value) {
-      out += step.letters;
-      left -= step.value;
-    }
-  }
-  return out;
 }
 
 /**

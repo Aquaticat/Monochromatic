@@ -14,6 +14,14 @@ export {
   withoutGloss,
 } from './corpus-run/handle-reading.ts';
 export { unifyHeadingSeries, } from './corpus-run/heading-series-unify.ts';
+export {
+  NO_NUMBER,
+  type OrdinalStyle,
+  readHanNumeral,
+  readOrdinalStyle,
+  renderOrdinal,
+  styleKey,
+} from './corpus-run/ordinal-style.ts';
 export { restoreJsxAttributes, } from './corpus-run/jsx-attribute-restore.ts';
 export { restoreArchiveCasing, } from './corpus-run/archive-casing-restore.ts';
 export { restoreArchiveNameCasing, } from './corpus-run/archive-name-casing.ts';

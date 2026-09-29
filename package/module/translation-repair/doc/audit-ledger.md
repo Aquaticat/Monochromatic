@@ -2822,6 +2822,28 @@ A fresh format 2 census of `run-config.unit.test.ts` and `provider-router.unit.t
 left to the batch of anonymous callbacks and library stretches,
 beside lines the router's other test files run.
 
+The eighth batch closed `ordinal-style.ts`,
+whose fifteen baseline stretches the series pass's fixtures had left:
+the arabic and roman forms read and rendered,
+a prefix with no number word,
+the "No." leader,
+digits past the word tables,
+the no-number style rendering nothing,
+and the Han numeral's refusals of a second ten,
+a second digit in one place and a character that is no numeral.
+It had no test file of its own;
+`ordinal-style.unit.test.ts` drives each directly,
+and reads back every style it renders for every number a series carries.
+Writing it showed the roman reading took any word of roman letters as a numeral,
+so a capitalised "DID" or a malformed "IIII" before a colon read as a number
+that a series re-rendered in another style would have replaced;
+it now takes only the numeral `roman` writes for a number from one to ninety-nine.
+No stored page carries either
+(`t8-roman-headings.mjs` in the audit's scratch folder read 894 headings on 23 published pages and 251 on 92 archive pages,
+and its positive control file found one of each kind).
+A fresh format 2 census of the new test file (`census-c3xfXm`) loads the edited `ordinal-style.ts` with no stretch left.
+With it the corpus-run named functions no test called are done.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
