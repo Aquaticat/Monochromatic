@@ -1,11 +1,11 @@
-import {
-  isJsonArray,
-  isJsonRecord,
-} from '../json-guard.ts';
+import type {
+  BundleScript,
+  CoverageRange,
+} from './coverage-file.ts';
 
 //region Coverage tally
-// LEDGER T8: WHICH BUNDLE CODE NO TEST PROCESS RAN, read from the files
-// `NODE_V8_COVERAGE` writes. V8 reports, per process and per script, each
+// LEDGER T8: WHICH BUNDLE CODE NO TEST PROCESS RAN, over every file
+// `NODE_V8_COVERAGE` wrote. V8 reports, per process and per script, each
 // function as a tree of ranges whose innermost count is the count of the code
 // under it, and it DROPS A NESTED RANGE WHOSE COUNT EQUALS ITS PARENT'S
 // (`MergeNestedRanges` in V8's `src/debug/debug-coverage.cc`). A range one
@@ -19,9 +19,11 @@ import {
 // counted, so the coverage files are read twice: once through
 // `noteBoundaries`, then once through `paint`.
 //
-// MUTABLE BY DESIGN. A full unit suite writes about 8 GB of coverage over some
-// 860 processes; the tally folds each process into per-bundle typed arrays as
-// it is read, rather than holding every process's ranges at once.
+// MUTABLE INSIDE, BY DESIGN. A full unit suite writes about 8 GB of coverage
+// over some 860 processes; the tally folds each process into per-bundle typed
+// arrays as it is read, rather than holding every process's ranges at once.
+// The state lives in the factory's closure, and callers see only the frozen
+// methods.
 //
 // FUNCTIONS ARE KEYED BY BOTH ENDS. A function that opens its chunk starts at
 // offset 0, as the chunk's own top-level script function does, and keying by
@@ -29,123 +31,18 @@ import {
 // and the script's count (all five "unmatched" exports of 2026-09-28).
 
 /**
- One counted range of a function, as V8 reports it.
+ A tally asked to note a boundary after painting began, or handed a bundle or
+ a range the first reading never reported.
 
  @example
  ```ts
- const range: CoverageRange = { startOffset: 0, endOffset: 40, count: 2, };
- ```
- */
-export type CoverageRange = {
-  /**
-   Offset of the range's first character in the script.
-   */
-  readonly startOffset: number;
-
-  /**
-   Offset one past its last character.
-   */
-  readonly endOffset: number;
-
-  /**
-   How often the code under it ran in this process.
-   */
-  readonly count: number;
-};
-
-/**
- One function of a script, as V8 reports it: its whole extent first, then the
- blocks whose counts differ from their parent's.
-
- @example
- ```ts
- const napping: FunctionCoverage = { functionName: 'nap', ranges: [{ startOffset: 0, endOffset: 40, count: 1, },], };
- ```
- */
-export type FunctionCoverage = {
-  /**
-   Name V8 gave the function, empty for a script's top level and for anonymous ones.
-   */
-  readonly functionName: string;
-
-  /**
-   Its ranges, the whole function first.
-   */
-  readonly ranges: readonly CoverageRange[];
-};
-
-/**
- One bundle's coverage from one process.
-
- @example
- ```ts
- const script: BundleScript = { bundle: 'index.mjs', functions: [], };
- ```
- */
-export type BundleScript = {
-  /**
-   Bundle file name inside the build directory.
-   */
-  readonly bundle: string;
-
-  /**
-   Every function V8 reported for it.
-   */
-  readonly functions: readonly FunctionCoverage[];
-};
-
-/**
- A coverage file that does not read as V8 writes one.
-
- @example
- ```ts
- throw new CoverageFileError({ path: '/tmp/coverage-1.json', says: 'its result is not a list', },);
- ```
- */
-export class CoverageFileError extends Error {
-  /**
-   Declares this message safe to forward: it names a file this process
-   listed and a shape this module describes.
-   */
-  readonly messageNamesOnly: true = true;
-
-  /**
-   Builds the refusal naming the file and what did not read.
-
-   @param path - coverage file read
-
-   @param says - what in it did not read
-
-   @example
-   ```ts
-   new CoverageFileError({ path: '/tmp/coverage-1.json', says: 'its result is not a list', },);
-   ```
-   */
-  constructor({
-    path,
-    says,
-  }: {
-    readonly path: string;
-    readonly says: string;
-  },) {
-    super(`coverage file ${path} does not read as V8 writes one: ${says}`,);
-    this.name = 'CoverageFileError';
-  }
-}
-
-/**
- A tally asked to paint before its boundaries were all noted, or handed a
- range the first reading never reported.
-
- @example
- ```ts
- throw new CoverageTallyError({ says: 'boundaries noted after painting began', },);
+ throw new CoverageTallyError({ says: 'a boundary was noted after painting began', },);
  ```
  */
 export class CoverageTallyError extends Error {
   /**
    Declares this message safe to forward: it names bundles and offsets this
-   process computed.
+   process read out of its own build.
    */
   readonly messageNamesOnly: true = true;
 
@@ -156,111 +53,18 @@ export class CoverageTallyError extends Error {
 
    @example
    ```ts
-   new CoverageTallyError({ says: 'boundaries noted after painting began', },);
+   new CoverageTallyError({ says: 'a boundary was noted after painting began', },);
    ```
    */
   constructor({ says, }: { readonly says: string; },) {
-    super(`the coverage tally cannot count: ${says}; the two readings of the coverage directory must see the same files`,);
+    super(`the coverage tally cannot count: ${says}; both readings of the coverage directory must see the same files, in order`,);
     this.name = 'CoverageTallyError';
   }
 }
 
 /**
- Narrows one parsed range.
-
- @param value - candidate from parsed JSON
-
- @returns Whether it carries three finite numbers
- */
-function isCoverageRange(value: unknown,): value is CoverageRange {
-  return isJsonRecord(value,)
-    && Number.isFinite(value['startOffset'],)
-    && Number.isFinite(value['endOffset'],)
-    && Number.isFinite(value['count'],);
-}
-
-/**
- Narrows one parsed function.
-
- @param value - candidate from parsed JSON
-
- @returns Whether it carries a name and at least its whole extent
- */
-function isFunctionCoverage(value: unknown,): value is FunctionCoverage {
-  return isJsonRecord(value,)
-    && ((typeof value['functionName']) === 'string')
-    && isJsonArray(value['ranges'],)
-    && (value['ranges'].length > 0)
-    && value['ranges'].every(isCoverageRange,);
-}
-
-/**
- Reads the bundle scripts out of one coverage file, leaving every other script
- (Node's own, the test runner's) unread.
-
- @param path - file read, for the refusal
-
- @param text - its contents
-
- @param bundleUrlPrefix - `file://` URL of the build directory with a trailing slash
-
- @returns Each bundle script the process loaded
-
- @throws CoverageFileError where the file or a bundle script in it does not
- read as V8 writes one
-
- @example
- ```ts
- const scripts = bundleScriptsOf({ path, text, bundleUrlPrefix: 'file:///pkg/dist/final/node/', },);
- ```
- */
-export function bundleScriptsOf(
-  {
-    path,
-    text,
-    bundleUrlPrefix,
-  }: {
-    readonly path: string;
-    readonly text: string;
-    readonly bundleUrlPrefix: string;
-  },
-): readonly BundleScript[] {
-  /**
-   The file as JSON.
-   */
-  const parsed: unknown = JSON.parse(text,);
-  if (!isJsonRecord(parsed,) || !isJsonArray(parsed['result'],))
-    throw new CoverageFileError({
-      path,
-      says: 'it has no result list',
-    },);
-  return parsed['result'].flatMap(function bundleScript(script,): readonly BundleScript[] {
-    if (!isJsonRecord(script,) || ((typeof script['url']) !== 'string'))
-      throw new CoverageFileError({
-        path,
-        says: 'a script carries no url',
-      },);
-    /**
-     Where the script was loaded from.
-     */
-    const url = String(script['url'],);
-    if (!url.startsWith(bundleUrlPrefix,))
-      return [];
-    if (!isJsonArray(script['functions'],) || !script['functions'].every(isFunctionCoverage,))
-      throw new CoverageFileError({
-        path,
-        says: `${url} carries a function that is not a name with ranges`,
-      },);
-    return [{
-      bundle: url.slice(bundleUrlPrefix.length,),
-      functions: script['functions'],
-    },];
-  },);
-}
-
-/**
  One bundle cut at every boundary any process reported, with each piece's
- count summed over processes so far.
+ count summed over the processes painted so far.
  */
 type BundlePieces = {
   /**
@@ -286,8 +90,13 @@ type BundlePieces = {
 
 /**
  Where a function sits and what V8 called it.
+
+ @example
+ ```ts
+ const site: FunctionSite = { bundle: 'index.mjs', start: 10, end: 20, name: 'nap', };
+ ```
  */
-type FunctionSite = {
+export type FunctionSite = {
   /**
    Bundle holding it.
    */
@@ -304,14 +113,14 @@ type FunctionSite = {
   readonly end: number;
 
   /**
-   Name V8 gave it.
+   Name V8 gave it, empty for an anonymous function.
    */
   readonly name: string;
 };
 
 /**
- A stretch of bundle code no process ran, either a whole function or the
- blocks inside one that ran.
+ A stretch of bundle code no process ran: a whole function no process called,
+ or code inside a function that ran.
 
  @example
  ```ts
@@ -335,7 +144,7 @@ export type ColdStretch = {
   readonly end: number;
 
   /**
-   A whole function no process called, with its name, or code inside one.
+   A whole uncalled function with its name, or code inside a function.
    */
   readonly shape: { readonly kind: 'block'; } | {
     readonly kind: 'function';
@@ -353,10 +162,46 @@ export type ColdStretch = {
  */
 export type UncalledFunction = FunctionSite & {
   /**
-   Whether it sits inside another function no process called, so fixing the
-   outer one reaches it.
+   Whether it sits inside another function no process called, so a test
+   reaching the outer one is where the work starts.
    */
   readonly nested: boolean;
+};
+
+/**
+ Counts which bundle code the unit suite ran, over every process's coverage
+ file, read twice.
+
+ @example
+ ```ts
+ const tally = createCoverageTally();
+ ```
+ */
+export type CoverageTally = {
+  /**
+   Notes every boundary one process reported; the first reading.
+   */
+  readonly noteBoundaries: (input: { readonly scripts: readonly BundleScript[]; },) => void;
+
+  /**
+   Adds one process's counts; the second reading.
+   */
+  readonly paint: (input: { readonly scripts: readonly BundleScript[]; },) => void;
+
+  /**
+   Every stretch of loaded bundle code no process ran.
+   */
+  readonly coldStretches: () => readonly ColdStretch[];
+
+  /**
+   Every function no process called.
+   */
+  readonly uncalledFunctions: () => readonly UncalledFunction[];
+
+  /**
+   Bundles some process loaded, sorted.
+   */
+  readonly loadedBundles: () => readonly string[];
 };
 
 /**
@@ -365,22 +210,118 @@ export type UncalledFunction = FunctionSite & {
  @param site - function's place
 
  @returns Key unique within the tally
+
+ @example
+ ```ts
+ functionKey({ bundle: 'index.mjs', start: 0, end: 40, },); // 'index.mjs|0|40'
+ ```
  */
 function functionKey(site: Pick<FunctionSite, 'bundle' | 'end' | 'start'>,): string {
   return `${site.bundle}|${String(site.start,)}|${String(site.end,)}`;
 }
 
 /**
- Orders ranges so an enclosing range paints before anything inside it.
+ Whether one piece is code some process loaded and none ran.
 
- @param left - one range
+ @param pieces - bundle's pieces after every process painted
 
- @param right - another
+ @param index - piece asked about
 
- @returns Negative when `left` paints first
+ @returns True for a cold piece
+
+ @example
+ ```ts
+ isColdPiece({ pieces, index: 3, },);
+ ```
  */
-function outerFirst(left: CoverageRange, right: CoverageRange,): number {
-  return (left.startOffset - right.startOffset) || (right.endOffset - left.endOffset);
+function isColdPiece(
+  {
+    pieces,
+    index,
+  }: {
+    readonly pieces: BundlePieces;
+    readonly index: number;
+  },
+): boolean {
+  return (pieces.covered[index] === 1) && (pieces.total[index] === 0);
+}
+
+/**
+ Position of a boundary among a bundle's pieces.
+
+ @param bundle - bundle name, for the refusal
+
+ @param pieces - its pieces
+
+ @param offset - boundary a process reported
+
+ @returns Index of that boundary
+
+ @throws CoverageTallyError where the first reading never noted the boundary
+
+ @example
+ ```ts
+ boundaryIndex({ bundle: 'index.mjs', pieces, offset: 40, },);
+ ```
+ */
+function boundaryIndex(
+  {
+    bundle,
+    pieces,
+    offset,
+  }: {
+    readonly bundle: string;
+    readonly pieces: BundlePieces;
+    readonly offset: number;
+  },
+): number {
+  /**
+   Its position.
+   */
+  const index = pieces.indexOf
+    .get(offset,);
+  if (index === undefined)
+    throw new CoverageTallyError({ says: `${bundle} offset ${String(offset,)} was not in the first reading`, },);
+  return index;
+}
+
+/**
+ Last piece of the cold run that starts at `from`.
+
+ @param pieces - bundle's pieces after every process painted
+
+ @param from - first piece of the run, itself cold
+
+ @returns Index of the run's last piece
+
+ @example
+ ```ts
+ lastColdPiece({ pieces, from: 3, },);
+ ```
+ */
+function lastColdPiece(
+  {
+    pieces,
+    from,
+  }: {
+    readonly pieces: BundlePieces;
+    readonly from: number;
+  },
+): number {
+  /**
+   Pieces there are: `offsets` holds one more boundary than that.
+   */
+  const count = pieces.offsets
+    .length
+    - 1;
+  for (let piece = from; (piece + 1) < count; piece += 1) {
+    if (!isColdPiece({
+      pieces,
+      index: piece + 1,
+    },))
+      return piece;
+  }
+  return count - 1;
 }
 
 /**
@@ -395,6 +336,11 @@ function outerFirst(left: CoverageRange, right: CoverageRange,): number {
  @param sites - function per key
 
  @returns Its cold stretches in bundle order
+
+ @example
+ ```ts
+ const stretches = stretchesOf({ bundle, pieces, calls, sites, },);
+ ```
  */
 function stretchesOf(
   {
@@ -410,36 +356,48 @@ function stretchesOf(
   },
 ): readonly ColdStretch[] {
   /**
-   Stretches found so far.
+   First piece of each cold run: a cold piece with no cold piece before it.
+   The last boundary opens no piece, so it is left out.
    */
-  const stretches: ColdStretch[] = [];
-  /**
-   Whether piece `index` is code some process loaded and none ran.
-   */
-  const cold = (index: number,): boolean => (pieces.covered[index] === 1) && (pieces.total[index] === 0);
-  /**
-   Last piece: `offsets` holds one more boundary than there are pieces.
-   */
-  const pieceCount = pieces.offsets.length - 1;
-  for (let piece = 0; piece < pieceCount; piece += 1) {
-    if (!cold(piece,))
-      continue;
+  const firsts = pieces.offsets
+    .slice(
+      0,
+      -1,
+    )
+    .flatMap(function runStart(
+      _offset,
+      index,
+    ): readonly number[] {
+      /**
+       Whether this piece is cold.
+       */
+      const cold = isColdPiece({
+        pieces,
+        index,
+      },);
+      /**
+       Whether the piece before it is, where there is one.
+       */
+      const afterCold = (index > 0) && isColdPiece({
+        pieces,
+        index: index - 1,
+      },);
+      return (cold && (!afterCold)) ? [index,] : [];
+    },);
+  return firsts.map(function stretchFrom(first,): ColdStretch {
     /**
-     Last cold piece of this stretch.
+     Its first offset.
      */
-    let last = piece;
-    while (((last + 1) < pieceCount) && cold(last + 1,))
-      last += 1;
-    /**
-     The stretch's offsets.
-     */
-    const start = pieces.offsets[piece] ?? 0;
+    const start = pieces.offsets[first] ?? 0;
     /**
      One past its last character.
      */
-    const end = pieces.offsets[last + 1] ?? start;
+    const end = pieces.offsets[lastColdPiece({
+      pieces,
+      from: first,
+    },) + 1] ?? start;
     /**
-     The function with exactly these ends, if any.
+     The function with exactly these ends, when it is one no process called.
      */
     const key = functionKey({
       bundle,
@@ -447,10 +405,10 @@ function stretchesOf(
       end,
     },);
     /**
-     That function, when it is one no process called.
+     That function.
      */
     const whole = (calls.get(key,) === 0) ? sites.get(key,) : undefined;
-    stretches.push({
+    return {
       bundle,
       start,
       end,
@@ -458,249 +416,271 @@ function stretchesOf(
         kind: 'function',
         name: whole.name,
       },
-    },);
-    piece = last;
-  }
-  return stretches;
+    };
+  },);
 }
 
 /**
- Counts which bundle code the unit suite ran, over every process's coverage
- file, read twice.
+ Marks each uncalled function sitting inside another.
+
+ @param sites - uncalled functions sorted by bundle, then start, enclosing ones first
+
+ @returns The same, each marked
 
  @example
  ```ts
- const tally = new CoverageTally();
+ const marked = markNested({ sites, },);
+ ```
+ */
+function markNested({ sites, }: { readonly sites: readonly FunctionSite[]; },): readonly UncalledFunction[] {
+  /**
+   Outermost uncalled functions met so far; the last one is open.
+   */
+  const outers: FunctionSite[] = [];
+  return sites.map(function marked(site,): UncalledFunction {
+    /**
+     The open outer function.
+     */
+    const outer = outers.at(-1,);
+    /**
+     Whether it holds this one.
+     */
+    const nested = (outer !== undefined) && (outer.bundle === site.bundle)
+      && (site.end <= outer.end);
+    if (!nested)
+      outers.push(site,);
+    return {
+      ...site,
+      nested,
+    };
+  },);
+}
+
+/**
+ Makes an empty tally.
+
+ @returns Its methods, frozen; the counts live in their closure
+
+ @throws CoverageTallyError from `noteBoundaries` once painting has begun, and
+ from `paint` where a bundle or boundary was missing from the first reading
+
+ @example
+ ```ts
+ const tally = createCoverageTally();
  for (const scripts of readings) tally.noteBoundaries({ scripts, },);
  for (const scripts of readings) tally.paint({ scripts, },);
  const cold = tally.coldStretches();
  ```
  */
-export class CoverageTally {
+export function createCoverageTally(): CoverageTally {
   /**
    Every boundary noted per bundle during the first reading.
    */
-  readonly #boundaries = new Map<string, Set<number>>();
-
+  const boundaries = new Map<string, Set<number>>();
   /**
    Pieces per bundle, cut when painting begins.
    */
-  readonly #pieces = new Map<string, BundlePieces>();
-
+  const pieces = new Map<string, BundlePieces>();
   /**
    Summed call count per function key.
    */
-  readonly #calls = new Map<string, number>();
-
+  const calls = new Map<string, number>();
   /**
    Each function by key.
    */
-  readonly #sites = new Map<string, FunctionSite>();
-
-  /**
-   Notes every boundary one process reported.
-
-   @param scripts - bundle scripts of one coverage file
-
-   @throws CoverageTallyError once painting has begun, since pieces cut
-   before a boundary was noted would count across it
-
-   @example
-   ```ts
-   tally.noteBoundaries({ scripts, },);
-   ```
-   */
-  noteBoundaries({ scripts, }: { readonly scripts: readonly BundleScript[]; },): void {
-    if (this.#pieces.size > 0)
-      throw new CoverageTallyError({ says: 'a boundary was noted after painting began', },);
-    for (const script of scripts) {
-      /**
-       Boundaries of this bundle so far.
-       */
-      const held = this.#boundaries.get(script.bundle,) ?? new Set<number>();
-      for (const fn of script.functions) {
-        for (const range of fn.ranges) {
-          held.add(range.startOffset,);
-          held.add(range.endOffset,);
-        }
-      }
-      this.#boundaries.set(script.bundle, held,);
-    }
-  }
+  const sites = new Map<string, FunctionSite>();
 
   /**
    Cuts every bundle at its noted boundaries, once.
    */
-  #cut(): void {
-    if (this.#pieces.size > 0)
+  function cut(): void {
+    if (pieces.size > 0)
       return;
-    for (const [bundle, held,] of this.#boundaries) {
+    for (const [bundle, held,] of boundaries) {
       /**
        Its boundaries ascending.
        */
-      const offsets = [...held,].toSorted((left, right,) => left - right);
-      this.#pieces.set(bundle, {
+      const offsets = [...held,].toSorted(function ascending(
+        left,
+        right,
+      ): number {
+        return left - right;
+      },);
+      pieces.set(
+        bundle,
+        {
         offsets,
-        indexOf: new Map(offsets.map((offset, index,) => [offset, index,] as const),),
+        indexOf: new Map(offsets.map(function located(
+          offset,
+          index,
+        ) {
+          return [
+            offset,
+            index,
+          ] as const;
+        },),),
         total: new Float64Array(offsets.length,),
         covered: new Uint8Array(offsets.length,),
-      },);
+      },
+      );
     }
   }
 
-  /**
-   Adds one process's counts: each piece takes the count of its innermost
-   enclosing range, then joins the sum.
-
-   @param scripts - bundle scripts of one coverage file, as the first reading saw them
-
-   @throws CoverageTallyError where a bundle or a boundary was not noted in
-   the first reading
-
-   @example
-   ```ts
-   tally.paint({ scripts, },);
-   ```
-   */
-  paint({ scripts, }: { readonly scripts: readonly BundleScript[]; },): void {
-    this.#cut();
-    for (const script of scripts) {
-      /**
-       The bundle's pieces.
-       */
-      const pieces = this.#pieces.get(script.bundle,);
-      if (pieces === undefined)
-        throw new CoverageTallyError({ says: `${script.bundle} was not in the first reading`, },);
-      /**
-       This process's count per piece.
-       */
-      const painted = new Float64Array(pieces.offsets.length,);
-      /**
-       Position of a boundary the first reading noted.
-       */
-      const indexOf = (offset: number,): number => {
+  return Object.freeze({
+    noteBoundaries: function noteBoundaries({ scripts, }: { readonly scripts: readonly BundleScript[]; },): void {
+      if (pieces.size > 0)
+        throw new CoverageTallyError({ says: 'a boundary was noted after painting began', },);
+      for (const script of scripts) {
         /**
-         Its position.
+         Boundaries of this bundle so far.
          */
-        const index = pieces.indexOf.get(offset,);
-        if (index === undefined)
-          throw new CoverageTallyError({ says: `${script.bundle} offset ${String(offset,)} was not in the first reading`, },);
-        return index;
-      };
-      for (const range of script.functions.flatMap((fn,) => fn.ranges).toSorted(outerFirst,)) {
-        painted.fill(range.count, indexOf(range.startOffset,), indexOf(range.endOffset,),);
-        pieces.covered.fill(1, indexOf(range.startOffset,), indexOf(range.endOffset,),);
+        const held = boundaries.get(script.bundle,) ?? new Set<number>();
+        for (const fn of script.functions) {
+          for (const range of fn.ranges) {
+            held.add(range.startOffset,);
+            held.add(range.endOffset,);
+          }
+        }
+        boundaries.set(
+          script.bundle,
+          held,
+        );
       }
-      for (let piece = 0; piece < painted.length; piece += 1)
-        pieces.total[piece] = (pieces.total[piece] ?? 0) + (painted[piece] ?? 0);
-      for (const fn of script.functions) {
+    },
+
+    paint: function paint({ scripts, }: { readonly scripts: readonly BundleScript[]; },): void {
+      cut();
+      for (const script of scripts) {
         /**
-         Its whole extent; a function V8 reports always has one.
+         The bundle's pieces.
          */
-        const [whole,] = fn.ranges;
-        if (whole === undefined)
-          continue;
+        const bundlePieces = pieces.get(script.bundle,);
+        if (bundlePieces === undefined)
+          throw new CoverageTallyError({ says: `${script.bundle} was not in the first reading`, },);
         /**
-         Where it sits.
+         This process's count per piece.
          */
-        const site: FunctionSite = {
-          bundle: script.bundle,
-          start: whole.startOffset,
-          end: whole.endOffset,
-          name: fn.functionName,
-        };
+        const painted = new Float64Array(bundlePieces.offsets
+          .length,);
         /**
-         Its key.
+         Its ranges, each enclosing range before anything inside it.
          */
-        const key = functionKey(site,);
-        this.#sites.set(key, site,);
-        this.#calls.set(key, (this.#calls.get(key,) ?? 0) + whole.count,);
+        const ranges = script.functions
+          .flatMap(function rangesOf(fn,): readonly CoverageRange[] {
+            return fn.ranges;
+          },)
+          .toSorted(function outerFirst(
+            left,
+            right,
+          ): number {
+            return (left.startOffset - right.startOffset) || (right.endOffset - left.endOffset);
+          },);
+        for (const range of ranges) {
+          /**
+           First piece under the range.
+           */
+          const from = boundaryIndex({
+            bundle: script.bundle,
+            pieces: bundlePieces,
+            offset: range.startOffset,
+          },);
+          /**
+           Piece just past it.
+           */
+          const to = boundaryIndex({
+            bundle: script.bundle,
+            pieces: bundlePieces,
+            offset: range.endOffset,
+          },);
+          painted.fill(
+            range.count,
+            from,
+            to,
+          );
+          bundlePieces.covered
+            .fill(
+              1,
+              from,
+              to,
+            );
+        }
+        for (const [piece, count,] of painted.entries())
+          bundlePieces.total[piece] = (bundlePieces.total[piece] ?? 0) + count;
+        for (const fn of script.functions) {
+          /**
+           Its whole extent; `bundleScriptsOf` admits no function without one.
+           */
+          const [whole,] = fn.ranges;
+          if (whole === undefined)
+            throw new CoverageTallyError({ says: `${script.bundle} reports a function with no extent`, },);
+          /**
+           Where it sits.
+           */
+          const site: FunctionSite = {
+            bundle: script.bundle,
+            start: whole.startOffset,
+            end: whole.endOffset,
+            name: fn.functionName,
+          };
+          /**
+           Its key.
+           */
+          const key = functionKey(site,);
+          sites.set(
+            key,
+            site,
+          );
+          calls.set(
+            key,
+            (calls.get(key,) ?? 0) + whole.count,
+          );
+        }
       }
-    }
-  }
+    },
 
-  /**
-   Every stretch of loaded bundle code no process ran, adjacent cold pieces
-   merged, so a block inside a cold block reads as the outer one.
-
-   @returns Stretches by bundle name, then offset
-
-   @example
-   ```ts
-   const cold = tally.coldStretches();
-   ```
-   */
-  coldStretches(): readonly ColdStretch[] {
-    return [...this.#pieces,]
-      .toSorted(([left,], [right,],) => left.localeCompare(right,))
-      .flatMap(([bundle, pieces,],) =>
-        stretchesOf({
-          bundle,
-          pieces,
-          calls: this.#calls,
-          sites: this.#sites,
+    coldStretches: function coldStretches(): readonly ColdStretch[] {
+      return [...pieces,]
+        .toSorted(function byBundle(
+          [left,],
+          [right,],
+        ): number {
+          return left.localeCompare(right,);
         },)
-      );
-  }
+        .flatMap(function stretchesOfBundle([bundle, bundlePieces,],): readonly ColdStretch[] {
+          return stretchesOf({
+            bundle,
+            pieces: bundlePieces,
+            calls,
+            sites,
+          },);
+        },);
+    },
 
-  /**
-   Every function no process called, each marked when it sits inside another
-   such function.
+    uncalledFunctions: function uncalledFunctions(): readonly UncalledFunction[] {
+      return markNested({
+        sites: [...sites,]
+          .filter(function uncalled([key,],): boolean {
+            return calls.get(key,) === 0;
+          },)
+          .map(function siteOf([, site,],): FunctionSite {
+            return site;
+          },)
+          .toSorted(function enclosingFirst(
+            left,
+            right,
+          ): number {
+            return left.bundle
+              .localeCompare(right.bundle,)
+              || (left.start - right.start)
+              || (right.end - left.end);
+          },),
+      },);
+    },
 
-   @returns Functions by bundle name, then offset
-
-   @example
-   ```ts
-   const uncalled = tally.uncalledFunctions();
-   ```
-   */
-  uncalledFunctions(): readonly UncalledFunction[] {
-    /**
-     Uncalled functions, enclosing ones first.
-     */
-    const uncalled = [...this.#sites,]
-      .filter(([key,],) => this.#calls.get(key,) === 0)
-      .map(([, site,],) => site)
-      .toSorted((left, right,) =>
-        left.bundle.localeCompare(right.bundle,) || (left.start - right.start) || (right.end - left.end)
-      );
-    /**
-     End of the outermost uncalled function open in the current bundle.
-     */
-    let outer = {
-      bundle: '',
-      end: -1,
-    };
-    return uncalled.map((site,) => {
-      /**
-       Whether the open outer function holds this one.
-       */
-      const nested = (site.bundle === outer.bundle) && (site.end <= outer.end);
-      if (!nested)
-        outer = {
-          bundle: site.bundle,
-          end: site.end,
-        };
-      return {
-        ...site,
-        nested,
-      };
-    },);
-  }
-
-  /**
-   Bundles some process loaded.
-
-   @returns Their names, sorted
-
-   @example
-   ```ts
-   const loaded = tally.loadedBundles();
-   ```
-   */
-  loadedBundles(): readonly string[] {
-    return [...this.#boundaries.keys(),].toSorted();
-  }
+    loadedBundles: function loadedBundles(): readonly string[] {
+      return [...boundaries.keys(),].toSorted();
+    },
+  },);
 }
 
 //endregion Coverage tally
