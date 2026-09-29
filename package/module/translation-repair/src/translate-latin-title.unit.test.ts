@@ -73,6 +73,26 @@ await describe({
       },
     },),
     it({
+      name: 'ACCEPTS a bracketed English title the page writes with the other apostrophe (ledger B24): the '
+        + 'typography restoration makes the two one title',
+      fn: async () => {
+        /**
+         Original naming a poem whose English title carries an apostrophe.
+         */
+        const sourceText = '她最爱的诗是《Don\'t Wake the Cat》。';
+        expect(validateTranslatedSlice({
+          sourceText,
+          candidateText: 'Her favourite poem was 《Don\'t Wake the Cat》.',
+          pageText: 'Her favourite poem is 《Don’t Wake the Cat》.',
+        },).kind,).toBe('valid',);
+        expect(validateTranslatedSlice({
+          sourceText,
+          candidateText: 'Her favourite poem was 《Don’t Wake the Cat》.',
+          pageText: 'Her favourite poem is 《Don\'t Wake the Cat》.',
+        },).kind,).toBe('valid',);
+      },
+    },),
+    it({
       name: 'ACCEPTS a bracketed title that keeps Han beside its Latin letters when its English stands beside it '
         + '(bare, the Han residue floor refuses it: ledger F-3)',
       fn: async () => {
