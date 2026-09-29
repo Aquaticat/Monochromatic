@@ -402,8 +402,8 @@ await describe({
         expect(pageWeightRefutes({ weight, },),).toBe(true,);
 
         // THE OTHER CHECK PASSES THIS PAGE, stated as an assertion rather than a
-        // remark: if the wording scan ever grew strong enough to catch this, the
-        // case above would stop measuring what it was written to measure.
+        // remark: if the wording scan ever grew strong enough to catch this,
+        // this case would stop measuring what it was written to measure.
         expect(pageCarriesEveryWording({
           artifact: artifactOver(ONE_SWAP,),
           pageText: cut,
@@ -619,8 +619,8 @@ await describe({
           },);
         },).toThrow(PublishedPageDisagreesError,);
 
-        // AND THE CORRECT PAGE STILL PASSES, so the case above is about order
-        // rather than about this fixture being unpublishable.
+        // AND THE CORRECT PAGE STILL PASSES, so the refusal this case asserts is
+        // about order rather than about this fixture being unpublishable.
         expect(() => {
           refusePageThatDisagrees({
             artifact: artifactOver(TWO_SWAPS,),
@@ -695,7 +695,7 @@ await describe({
         })();
 
         /**
-         What the refusal said, read once for the three claims below.
+         What the refusal said, read once for the three `said.includes` claims.
          */
         const said = (refusal as Error).message;
 

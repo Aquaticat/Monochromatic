@@ -7,8 +7,8 @@
  sheet numbers its items and the manifest numbers its rows, and a scorer reads
  a grade off position N of one and attributes it to position N of the other.
  If the orders ever diverged, every grade would land on the wrong item and the
- result would still look like a clean measurement. The agreement case below is
- the one that matters most in this file.
+ result would still look like a clean measurement. The case asserting the two
+ orders agree is the one that matters most in this file.
  
  THE BLINDNESS IS THE OTHER HALF. `kind` says which partition an item came
  from, and a grader who can see it is answering a different question. It rides
@@ -280,7 +280,9 @@ await describe({
     it({
       name: 'MOVES an item when its identity changes, since identity is the key',
       fn: async () => {
-        // A positive control for the three cases above: they all assert that
+        // A positive control for the "ORDERS the same items the same way every
+        // time", "IGNORES the order the caller built them in" and "IGNORES the
+        // partition itself" cases: they all assert that
         // something does NOT move the order, and a sort that ignored its input
         // entirely would pass every one of them.
         /**

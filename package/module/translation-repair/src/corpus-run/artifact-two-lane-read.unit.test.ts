@@ -766,7 +766,8 @@ await describe({
     },),
     it({
       name:
-        'REFUSES A THIRD LANE on the lanes record itself, which the envelope case above cannot reach: '
+        'REFUSES A THIRD LANE on the lanes record itself, which the "REFUSES a key on a lane ENVELOPE" case '
+        + 'cannot reach: '
         + 'that one pins the keys INSIDE a lane, and this shape names exactly two lanes, so a file '
         + 'recording a third lane`s deliveries would otherwise be read as an ordinary two-lane '
         + 'artifact with one lane`s work silently dropped',
@@ -1690,7 +1691,8 @@ await describe({
     },),
     it({
       name:
-        'POSITIVE CONTROL for the generation 3 case below: re-spelling the body actually moves the '
+        'POSITIVE CONTROL for the "READS A GENERATION 3 BODY TO EXACTLY WHAT GENERATION 4 READS TO" case: '
+        + 're-spelling the body actually moves the '
         + 'index everywhere it appears, so a re-speller that changed nothing would make the equality '
         + 'that follows say nothing at all',
       fn: async () => {

@@ -195,7 +195,7 @@ export async function reportingRefusals(
     // report to collect.
     console.error(`${what}: ${refusalText({ error, },)}`,);
 
-    // NOTHING FURTHER TO SAY. The line above is the whole report: the command
+    // NOTHING FURTHER TO SAY. The `console.error` line is the whole report: the command
     // stated why it declined, and no frames are worth printing because there is
     // no bug to locate.
     if (error instanceof StatedRefusalError) {

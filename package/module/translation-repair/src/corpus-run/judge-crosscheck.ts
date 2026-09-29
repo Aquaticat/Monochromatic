@@ -231,7 +231,7 @@ export function buildCrosscheckCensus(
         },)
         .map(function toItem(claimId,): CrosscheckItem {
           /**
-           Authors of this claim, known present by the filter above.
+           Authors of this claim, known present by `isAttributed`.
            */
           const proposers = proposersOf.get(claimId,) ?? [];
 

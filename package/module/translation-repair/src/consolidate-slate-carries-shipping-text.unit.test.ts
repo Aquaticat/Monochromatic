@@ -432,7 +432,8 @@ await describe({
 
     it({
       name: 'BUYS BOTH ROUNDS FOR THAT SAME PROPOSAL WHEN THE VERSE RULE GOVERNS THE SLICE, which is '
-        + 'what makes the case above evidence of the wrap rather than of the dedup. The proposal '
+        + 'what makes the "BUYS NO SLATE ROUND AND NO GATE ROUND WHEN EVERY PROPOSAL IS ONLY A RE-WRAPPING" '
+        + 'case evidence of the wrap rather than of the dedup. The proposal '
         + 'reaches the judges as one line against a standing text of two, so nothing collapses',
       fn: async () => {
         const { served, judgeSheets, } = await settleWith({
@@ -514,8 +515,8 @@ await describe({
         const { settled, served, } = await settleWith({
           proposals: [STANDING,],
           standingText: REWRAPPING,
-          // No judge is asked, which the served count below pins, so the
-          // ballot a judge would cast is never read.
+          // No judge is asked, which `served.judge` pins, so the ballot a
+          // judge would cast is never read.
           judgeReply: judgeBallot({ best: 1, },),
           gateReply: gateBallot({ choice: 'consolidated', },),
         },);

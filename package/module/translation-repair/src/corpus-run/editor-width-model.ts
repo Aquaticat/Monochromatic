@@ -217,8 +217,8 @@ export function readHeadToHead(
   if (firstOrderWinner === 'narrow')
     return 'narrow-wins';
 
-  // Both orders agree and neither is `none`, which the check above already
-  // handled, so the pair is `wide` or `narrow` and both returned. Reaching here
+  // Both orders agree and neither is `none`, which the both-`none` check
+  // already handled, so the pair is `wide` or `narrow` and both returned. Reaching here
   // means an arm was added without a reading, and answering `tied` would report
   // that omission as a measurement.
   throw new Error(`unreachable: both orders named ${firstOrderWinner}, which is not an arm`,);

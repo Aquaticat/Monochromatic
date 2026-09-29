@@ -339,8 +339,8 @@ export function buildSettledTwoLaneArtifact(
     // not counting a field's absence as a stage that found nothing.
     consolidation,
 
-    // WHAT THE PAGE-LEVEL GUARD DID to the page the three sections above
-    // compose, applied first by every reader composing that page.
+    // WHAT THE PAGE-LEVEL GUARD DID to the page `lanes`, `laneSelection` and
+    // `consolidation` compose, applied first by every reader composing that page.
     pageAssembly,
   };
 }

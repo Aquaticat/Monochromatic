@@ -13,7 +13,7 @@ import type { WindowTrialRow, } from './window-trial-ledger.ts';
 //
 // ONLY COMPLETE TRIPLES ARE ANALYSED. A slice is read only when all three arms
 // exist for it: the two narrow runs and the wide one. A slice missing an arm is
-// counted and excluded, never partially credited, because every number below is
+// counted and excluded, never partially credited, because every number this report prints is
 // a PAIRED comparison on one slice and a half-populated pair is not a smaller
 // sample, it is a different one.
 
@@ -116,7 +116,7 @@ export type ClassReport = {
   /**
    How the SECOND NARROW ARM moved against the first.
    
-   THIS IS THE BAND, and it is the number the one above must beat. Both narrow
+   THIS IS THE BAND, and it is the number `transitions` must beat. Both narrow
    arms were shown the same evidence over the same slate, so every transition
    here is noise by construction. A wide arm that moves no more than this has
    moved nothing.
@@ -416,8 +416,8 @@ export function reportWindowTrial(
   },
 ): readonly ClassReport[] {
   /**
-   Rows this protocol bought, which are the only ones any number below rests
-   on.
+   Rows this protocol bought, which are the only ones any number of this
+   report rests on.
    */
   const mine = rows.filter(function underThisProtocol(row,): boolean {
     return row.protocol === protocol;

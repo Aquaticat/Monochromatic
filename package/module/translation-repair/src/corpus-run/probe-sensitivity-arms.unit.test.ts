@@ -3,7 +3,7 @@
  
  The instrument's `prior=shown` arm was once found sending the same prompt as
  its `prior=absent` arm, because it relied on a default that had flipped. The
- cases below hold every arm's printed label to the disclosure it sends, so a
+ cases in this file hold every arm's printed label to the disclosure it sends, so a
  run's lines cannot describe a prompt effect that is a screen effect again,
  and they pin the run plan: every accuracy region under all three lists,
  every labelling region under both lists that carry an issue, and the

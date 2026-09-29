@@ -159,7 +159,8 @@ await describe({
         },);
 
         // Every case was damageable, so all three reached the after round and
-        // the count below is taken over three rows rather than over none.
+        // the length of `control.rows` is taken over three rows rather than
+        // over none.
         expect(control.rows,).toHaveLength(3,);
         expect(control.refusals,).toStrictEqual([],);
 

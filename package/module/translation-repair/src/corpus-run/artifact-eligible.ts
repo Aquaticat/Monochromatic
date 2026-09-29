@@ -348,7 +348,7 @@ export async function selectEligible(
     .length;
 
   /**
-   Built pipeline recorded per entry, the same for every branch below.
+   Built pipeline recorded per entry, the same whichever branch reads it.
    */
   const digestByEntry = mapDigests({ census, },);
 

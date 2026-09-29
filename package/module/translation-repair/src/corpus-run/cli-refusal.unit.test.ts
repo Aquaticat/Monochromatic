@@ -9,7 +9,7 @@
  Re-throwing was shown not to be neutral: it hands the decision to whatever
  prints next, and Node's reporter renders a cause chain, which is how a YAML
  refusal published a page's front matter. So everything is caught now, and the
- cases below hold both halves at once: the message must NOT be repeated, and
+ cases in this file hold both halves at once: the message must NOT be repeated, and
  the frames MUST still be there.
  
  THREE EXIT CODES NOW, AND EACH IS DEFINED AGAINST THE OTHER TWO. One change
@@ -17,7 +17,7 @@
  and a later rule decided which of our own may speak. So what a reader gets depends
  on the class thrown: a stated refusal says its sentence and stops at 6, a
  marked class that is not one says its sentence AND keeps its frames at 5, and
- everything else is named without being quoted. The cases below hold one of
+ everything else is named without being quoted. The cases in this file hold one of
  each, so a later change that collapses the three into one report fails here
  rather than in an operator's terminal.
  

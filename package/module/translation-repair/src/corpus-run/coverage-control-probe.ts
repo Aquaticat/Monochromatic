@@ -121,7 +121,7 @@ async function gatherCases(
     /**
      Translation at the pin.
      */
-    // oxlint-disable-next-line eslint/no-await-in-loop -- paired with the read above; the two sides of one entry are read together or not at all
+    // oxlint-disable-next-line eslint/no-await-in-loop -- paired with the original's read; the two sides of one entry are read together or not at all
     const targetText = await readCorpusFile({
       pin: RUN_CORPUS_PIN,
       relPath: `people/${entryId}/page.en.md`,

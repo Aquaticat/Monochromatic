@@ -9,7 +9,7 @@
  
  THE CASE WORTH THE FILE IS THE FAILED POSITIVE CONTROL. Before a width reading
  means anything, the panel has to be shown able to prefer intact text over the
- same text with a sentence removed. When it cannot, every count below is
+ same text with a sentence removed. When it cannot, every count in the report is
  unreadable, and a report that printed them in the same voice either way would
  launder a broken instrument into a result. That is the exact failure this
  package keeps finding, so the report has to SAY the numbers are unreadable
@@ -343,14 +343,14 @@ await describe({
         },);
 
         expect(written.text.includes('THE PANEL DID NOT PREFER INTACT TEXT',),).toBe(true,);
-        expect(written.text.includes('Everything below is unreadable',),).toBe(true,);
+        expect(written.text.includes('Every number in this report is unreadable',),).toBe(true,);
       },
     },),
     it({
       name: 'REPORTS a held control as held, so the warning discriminates instead of always firing',
       fn: async () => {
-        // The positive control for the case above: a report that always warned
-        // would pass that one and fail this.
+        // The positive control for the "SAYS THE COUNTS ARE UNREADABLE" case: a
+        // report that always warned would pass that one and fail this.
         /**
          Report written after the control held.
          */
@@ -360,7 +360,7 @@ await describe({
         },);
 
         expect(written.text.includes('THE PANEL DID NOT PREFER INTACT TEXT',),).toBe(false,);
-        expect(written.text.includes('the numbers below are worth reading',),).toBe(true,);
+        expect(written.text.includes('the numbers in this report are worth reading',),).toBe(true,);
       },
     },),
     it({

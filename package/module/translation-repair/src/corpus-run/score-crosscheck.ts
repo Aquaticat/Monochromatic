@@ -222,7 +222,7 @@ async function main(): Promise<void> {
 
   // NAMES THE RUN IT READ, first line, always. `resolveRunsDir` falls back to a
   // default when TRANSLATION_REPAIR_RUNS_DIR is unset, so a report can describe
-  // a different run than the reader has in mind and every count below will look
+  // a different run than the reader has in mind and every count it prints will look
   // like an answer about theirs. Pointing this at the wrong directory produced a
   // clean set of zeros that read as "nothing to report" rather than as "wrong
   // run", which is the failure this whole project keeps rediscovering.

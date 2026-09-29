@@ -501,8 +501,10 @@ await describe({
       name: 'REPORTS the narrow repeat as DISAGREEING when the lane changed its own mind, '
         + 'which is the band every width reading is measured against',
       fn: async () => {
-        // The positive control for the two cases above: a runner that ran the
-        // narrow arm once and reported agreement would pass those and fail this.
+        // The positive control for the "READS two arms that shipped nothing"
+        // and "EARNS no head-to-head where the arms did not differ" cases: a
+        // runner that ran the narrow arm once and reported agreement would pass
+        // those and fail this.
         /**
          Row a churning lane contributed.
          */

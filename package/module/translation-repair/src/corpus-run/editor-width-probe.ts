@@ -261,7 +261,7 @@ async function main(): Promise<void> {
     /**
      That slice run at both widths, with the null band beside it.
      */
-    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential for the same reason the gather above is
+    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential for the same reason the draw's gather is
     const row = await runWidthSlice({
       client,
       input: outcome.input,
@@ -278,7 +278,7 @@ async function main(): Promise<void> {
         row.narrowRepeatAgreed ? 'agreed' : 'FLIPPED'
       }, ${row.verdict}`,
     );
-    // oxlint-disable-next-line eslint/no-await-in-loop -- see the republish above: a run killed mid-draw must still leave every slice it paid for
+    // oxlint-disable-next-line eslint/no-await-in-loop -- the same durability as the per-slice republish: a run killed mid-draw must still leave every slice it paid for
     await publish();
   }
 

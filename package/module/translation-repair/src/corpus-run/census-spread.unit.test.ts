@@ -5,7 +5,7 @@
  `floor(p / 100 * n)` and clamps it to the last index, which is one of several
  defensible definitions and the only one the census lines mean. A later change
  to the more common `ceil(p / 100 * n) - 1` would move every published p50 by
- one rank on even-length samples without moving any test, so the cases below
+ one rank on even-length samples without moving any test, so the cases in this file
  pin the rank itself rather than only the shape of the line.
  
  THE CLAMP IS NOT DECORATION EITHER. Without it, p99 on a ten-value sample

@@ -277,7 +277,8 @@ await describe({
          
          A CLASS FROM OUTSIDE THIS PACKAGE writes whatever it likes into its
          message, and a run directory is full of text nobody here chose. The
-         two cases above pass a message through BECAUSE those two classes
+         "FORWARDS a RunJsonUnreadableError message" and "FORWARDS a
+         LedgerShapeError message" cases pass a message through BECAUSE those two classes
          promise not to quote; this one proves the promise is what earns it.
          */
         const { says, } = refusalOf({

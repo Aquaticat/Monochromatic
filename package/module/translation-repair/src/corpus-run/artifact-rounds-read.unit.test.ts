@@ -650,7 +650,8 @@ await describe({
       name: 'ACCEPTS a FRACTIONAL SUMMED WEIGHT for a candidate, which no count guard would, '
         + 'and which the ballot-side case beside this one does not reach',
       fn: async () => {
-        // The ballot case above pins the weight ONE judge carries. This pins
+        // The "ACCEPTS a half weight and a declining ballot" case pins the
+        // weight ONE judge carries. This pins
         // what a candidate DREW from all of them, read by a different guard on
         // a different field. Every other fixture here draws a whole 1, so
         // swapping `requireFinite` for `requireCount` on `perCandidate.weight`

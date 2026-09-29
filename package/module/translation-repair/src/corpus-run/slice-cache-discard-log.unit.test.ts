@@ -306,8 +306,8 @@ await describe({
     },),
 
     it({
-      name: 'STAYS QUIET when this lane owned nothing here, which is what keeps the line above worth '
-        + 'reading rather than printed on every run',
+      name: 'STAYS QUIET when this lane owned nothing here, which is what keeps the line the "COUNTS what '
+        + 'it removed" case reads worth reading rather than printed on every run',
       fn: async () => {
         /**
          A cache holding only another lane's slice.

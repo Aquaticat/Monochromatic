@@ -111,8 +111,8 @@ async function main(): Promise<void> {
       against,
     },);
 
-  // Said every time, because the numbers above are the ones most likely to be
-  // quoted without it.
+  // Said every time, because the numbers this report prints are the ones most
+  // likely to be quoted without it.
   console.log(
     `\nTWO ENTRIES. Nothing here settles anything about a particular entry, and nothing here may`
       + ` gate what ships: the instrument's own error rate is unmeasured.`

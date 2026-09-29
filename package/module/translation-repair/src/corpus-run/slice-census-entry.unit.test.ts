@@ -7,13 +7,13 @@
  those are absent from `alignment.pairs` entirely rather than present with an
  empty side. An earlier counter walked the pairs, so it could only ever report
  zero, and zero read as "nothing went unpaired" instead of "this cannot see
- them". The case below gives the census a page whose sections genuinely do not
- pair and requires a number greater than zero.
+ them". The "SEES the sections the aligner refused" case gives the census a page
+ whose sections genuinely do not pair and requires a number greater than zero.
  
  THE PIN IS INJECTED, which is why any of this can be tested. `censusEntry`
  read `RUN_CORPUS_PIN` directly, so exercising it meant having the unlicensed
  corpus clone on disk and a suite that passed on one machine only. It now takes
- the pin the way `readAuditArguments` takes `argv`, and the cases below point
+ the pin the way `readAuditArguments` takes `argv`, and the cases in this file point
  it at a throwaway git repository built in a temp directory.
  
  FIXTURE CONTENT IS CAT-THEMED INVENTION mirroring corpus structure only:
@@ -304,7 +304,7 @@ async function throwawayCorpus(
   },);
 
   /**
-   Commit every read below pins to.
+   Commit every read of this fixture's corpus pins to.
    */
   const commitSha = (await fixtureGit({
     cloneDir,
@@ -397,8 +397,9 @@ await describe({
     it({
       name: 'REPORTS no unpaired sections when the translation carries them all',
       fn: async () => {
-        // The positive control for the case above: a column that always
-        // reported a positive number would pass that one and fail this.
+        // The positive control for the "SEES the sections the aligner refused"
+        // case: a column that always reported a positive number would pass that
+        // one and fail this.
         await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);
 
         expect((await censusEntry({

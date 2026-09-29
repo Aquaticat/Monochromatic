@@ -191,7 +191,7 @@ async function main(): Promise<void> {
   } = sparsest.target;
 
   /**
-   Block and character counts for the line below.
+   Block and character counts for the `TRANSLATE` line.
    */
   const sourceBlocks = sourceNodes.length;
 

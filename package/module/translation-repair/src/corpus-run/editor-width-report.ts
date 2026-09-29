@@ -153,9 +153,9 @@ export async function writeWidthReport(
       '',
       controlHeld
         ? 'The panel preferred intact text over the same text with a sentence removed, '
-          + 'so it can tell damage from repair and the numbers below are worth reading.'
+          + 'so it can tell damage from repair and the numbers in this report are worth reading.'
         : 'THE PANEL DID NOT PREFER INTACT TEXT over the same text with a sentence '
-          + 'removed. Everything below is unreadable: an instrument that cannot see a '
+          + 'removed. Every number in this report is unreadable: an instrument that cannot see a '
           + 'deleted sentence cannot see the finer difference this draw is asking about.',
       '',
       '## Counts',
@@ -196,9 +196,9 @@ export async function writeWidthReport(
       'denominator and can be compared directly.',
       'A move is not by itself an improvement: the wide arm fields twice the candidates',
       'against the same selection minimum, so it can split its own vote and keep the',
-      'incumbent where the narrow arm shipped a repair. The two suppression counts above',
+      'incumbent where the narrow arm shipped a repair. The two "only the ... arm shipped" counts',
       'separate that from a genuinely different rewrite.',
-      'The trivial count above is broken out to be seen, not to be subtracted.',
+      'The "neither arm shipped anything" count is broken out to be seen, not to be subtracted.',
       '',
       '## Slices that carried no work',
       '',

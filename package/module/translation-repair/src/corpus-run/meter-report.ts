@@ -480,7 +480,7 @@ async function reportMeters(): Promise<void> {
   );
   console.log(
     '  READINGS HAPPEN WHEN A RUN ASKS FOR ONE, so this window is dense while work ran and '
-      + 'empty otherwise. Every figure below is availability WHEN WE WERE ASKING.',
+      + 'empty otherwise. Every figure in this report is availability WHEN WE WERE ASKING.',
   );
 
   // EVERY PROVIDER, in the order the record names them; one absent from a

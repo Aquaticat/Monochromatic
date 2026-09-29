@@ -148,7 +148,7 @@ export function reportProbeTelemetry(
     console.log(
       'NOTE repairShippedRecords=0 means no artifact read here carries a '
         + 'repair-lane record that lane applied, so every PROBE and CLAIMS '
-        + 'figure above is zero by construction rather than by measurement. '
+        + 'figure is zero by construction rather than by measurement. '
         + 'majorityIntroduced=0 is NOT evidence the probe cleared anything: it '
         + 'had nothing to look at. Read editorOffered on the ROSTER line to '
         + 'tell the two cases apart, since it counts slices the editor was '

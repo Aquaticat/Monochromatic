@@ -4,7 +4,7 @@
  THESE NUMBERS EXIST TO BE QUOTED INTO A DOCUMENT, which is what makes their
  wording load-bearing rather than cosmetic. The module says so itself: a count
  with no denominator is the single most quotable wrong number a telemetry probe
- can emit. Every case below therefore asserts the denominator beside the count,
+ can emit. Every case in this file therefore asserts the denominator beside the count,
  not just that a number reached the page.
  
  `printBand` CARRIES THE ONE REAL DECISION IN THE FILE. A band of zero over
@@ -424,7 +424,8 @@ await describe({
       fn: async () => {
         // The other half of the same decision, and the half that would break
         // silently: a printer that added the numbers back below the refusal
-        // would still pass the case above while publishing the row of zeroes
+        // would still pass the "REFUSES to print a band over nothing" case while
+        // publishing the row of zeroes
         // that the refusal exists to prevent.
         using printed = collectingLines({ lines: [], },);
 

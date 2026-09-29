@@ -285,7 +285,7 @@ const HYPER_CREDIT_RATES: Readonly<Record<string, CreditRates>> = {
 /**
  Rates keyed for lookup by a model id that came off a log line.
  
- A `Map` RATHER THAN THE LITERAL ABOVE, for the reason `spend-read.ts` gives
+ A `Map` RATHER THAN `HYPER_CREDIT_RATES` ITSELF, for the reason `spend-read.ts` gives
  about its own field table: the key arrives from a run log, and an object
  lookup would answer `__proto__` and `constructor` with something that is not
  a rate. The literal stays an object because it is written here and reads

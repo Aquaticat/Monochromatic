@@ -1176,7 +1176,7 @@ await describe({
 
         // THE STAMP AND THE SPELLING, checked together on the bytes. A writer
         // that stamped generation 7 and wrote an earlier generation's keys
-        // would satisfy the assertion above and produce a file its own reader
+        // would satisfy the `artifactSchemaVersion` assertion and produce a file its own reader
         // refuses, and every fixture in this package would still pass: they are
         // built by hand from the same names the writer uses.
         /**
@@ -1634,7 +1634,8 @@ await describe({
          */
         const served: string[] = [];
 
-        // The SAME failure the case above uses, for the opposite assertion: a
+        // The SAME failure the "REFUSES to write anything for an entry that
+        // raised" case uses, for the opposite assertion: a
         // directory that does not exist fails the artifact write and nothing
         // before it.
         await settleEntry({

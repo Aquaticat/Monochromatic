@@ -17,8 +17,8 @@
  site put 80 characters of the replaced TRANSLATION into that path, so a probe
  that could not find its slice printed a memorial page's wording to a terminal
  and into the run's log. Sweeping the package found it was the only one of 47
- interpolating paths that quoted text rather than a structural position. One
- case below is that guard, and it is the reason this file is worth its length.
+ interpolating paths that quoted text rather than a structural position. The
+ "REFUSES to quote the text it could not find" case is that guard, and it is the reason this file is worth its length.
  
  FIXTURES ARE INVENTED AND CAT-THEMED, in Simplified Chinese against English,
  because the real inputs are unlicensed corpus pages.
@@ -114,8 +114,9 @@ await describe({
     it({
       name: 'CHOOSES the slice by its text, so a later section is found as readily',
       fn: async () => {
-        // The positive control for the case above: a lookup that always
-        // returned the first slice would pass that one and fail this.
+        // The positive control for the "RETURNS the slice carrying the replaced
+        // text" case: a lookup that always returned the first slice would pass
+        // that one and fail this.
         expect(locateSlice({
           sourceText: SOURCE_TEXT,
           targetText: TARGET_TEXT,

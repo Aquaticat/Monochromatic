@@ -26,8 +26,8 @@ import {
 // it here; this then answers the question the reader had to leave open, which
 // is whether the artifact describes THAT slicing rather than some slicing.
 //
-// EVERY REFUSAL COMES BACK AS A PARSE ERROR, translated from the writer-side
-// mismatch error the checks below raise. A caller reading artifacts should meet
+// EVERY REFUSAL COMES BACK AS A PARSE ERROR, translated by `translating` from
+// the writer-side mismatch error its checks raise. A caller reading artifacts should meet
 // one error type from this layer rather than one named for the writer's
 // internals.
 

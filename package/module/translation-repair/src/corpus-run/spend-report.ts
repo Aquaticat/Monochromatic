@@ -277,7 +277,7 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
   if (cost.unreportedCalls > 0) {
     console.log(
       `FLOOR, NOT A TOTAL: ${String(cost.unreportedCalls,)} calls reported no usage block, so their `
-        + 'tokens are in no figure above',
+        + 'tokens are in no figure of this report',
     );
   }
 }
@@ -371,7 +371,7 @@ async function reportSpendCost(): Promise<void> {
     console.log(
       `RECKONED, NOT REPORTED: ${String(reckonedCalls,)} calls were written as reckonings, an attempt `
         + 'abandoned before it finished or a Bedrock attempt at its bound, so their tokens and cost in the '
-        + 'figures above are estimates or bounds rather than what the wire said (ledger P14)',
+        + 'figures of this report are estimates or bounds rather than what the wire said (ledger P14)',
     );
   }
 }

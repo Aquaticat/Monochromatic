@@ -98,7 +98,7 @@ async function writeArtifacts(
      name one.
      
      Every settled artifact carries `tip` and `pipelineDigest`, and the
-     readers now refuse a pool they cannot partition by the latter. These
+     readers now refuse a pool they cannot partition by `pipelineDigest`. These
      cases are about PARSING rather than about generations, so they get one
      shared pair and stay a single-generation pool; a case that wants to
      exercise the generation guard sets its own. Deliberately not defaulted
@@ -458,7 +458,7 @@ await describe({
          
          BOTH HALVES, because a path alone is a prefix of the path the next
          check down would name: with the record checks removed, reading a
-         field off a string yields `undefined`, the check below refuses that
+         field off a string yields `undefined`, the field's own check refuses that
          instead, and `proposers[0]` is satisfied by a refusal naming
          `proposers[0].modelId`. Three of these passed against three missing
          guards before the reason was pinned beside the path.

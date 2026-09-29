@@ -12,7 +12,7 @@ import {
 //region Probe telemetry report tests
 // What the PROBE report says when its denominator is empty.
 //
-// The report prints COUNTS, never wording, so every figure below is a small
+// The report prints COUNTS, never wording, so every figure it prints is a small
 // integer and no fixture here carries text a document could contain.
 
 /**

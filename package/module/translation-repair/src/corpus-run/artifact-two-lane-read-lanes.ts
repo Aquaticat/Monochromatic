@@ -257,7 +257,8 @@ export function parseLanes(
   },);
   // BEFORE ANYTHING COMPARES ROWS, because every comparison here joins by
   // POSITION and a permuted ledger agrees with its own permuted evidence, with
-  // the other lane under the same permutation, and with the count check above.
+  // the other lane under the same permutation, and with
+  // `assertLedgerCoversPreparation`.
   // This is the only check that anchors a row to the slice it claims.
   assertSlicesOrdered({
     ledger: repairEnvelope.delivery,

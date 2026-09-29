@@ -24,7 +24,7 @@
  what comes back.
  
  EACH CASE CHECKS ITS OWN FIXTURE FIRST. A run as root opens a mode-`000` file
- regardless, which would leave every assertion below testing the happy path
+ regardless, which would leave every assertion of the case testing the happy path
  while reporting a pass, so the helper reads the file back and refuses if it
  succeeded.
  
@@ -108,7 +108,7 @@ function streamsOf(
   );
 
   // A SPAWN FAULT IS NOT AN EMPTY REPORT. Reading past it would leave every
-  // assertion below searching two empty strings and passing on a build that is
+  // assertion on this helper's output searching two empty strings and passing on a build that is
   // not there.
   if (finished.error !== undefined)
     throw new Error(
@@ -307,7 +307,7 @@ async function unopenable(
   } catch (refused) {
     // THE REFUSAL IS THE PROOF, so it is read rather than discarded. A file
     // that declined for some other reason would send a different class to the
-    // sink, and every assertion below would be about a case nobody chose.
+    // sink, and every assertion on the sink's report would be about a case nobody chose.
     if (Error.isError(refused,)
       && ('code' in refused)
       && (refused.code === 'EACCES'))

@@ -587,7 +587,7 @@ export function describeConsolidateSlice(
 ): ArtifactConsolidateSlice {
   /**
    What the gate settled, absent where no consolidation reached it. Read off
-   the settlement so the branch below is one member step rather than two.
+   the settlement so the `gate` branch is one member step rather than two.
    */
   const { gate, } = settlement;
   return {

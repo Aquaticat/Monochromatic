@@ -466,7 +466,7 @@ const CHECKER_BENCH_WIDTH = 3;
  coming. Quorum on a roster of three is two, so the ensemble property survives
  the removal.
  
- WHAT FOLLOWS IS THE HISTORY OF THESE SEATS, kept because each rule below was
+ WHAT FOLLOWS IS THE HISTORY OF THESE SEATS, kept because each rule in it was
  argued from it. The seats themselves are the measured ones in the constant:
  the roster spans two providers since 2026-08-24 (ten then, nine now), the three editors
  and three refiners were chosen by the 40-round writer calibration of that day
@@ -714,7 +714,7 @@ export const RUN_MODELS: RepairModels = {
   // seating that overlaps needs no rule change.
   //
   // WHAT MAKES OVERLAP SAFE is measured rather than assumed, and it is the
-  // paragraph above: a checker judging text it helped write counts half, so
+  // discount the DISJOINT AGAIN paragraph names: a checker judging text it helped write counts half, so
   // three writers bring 1.5 against 3.0 and cannot overturn a unanimous three.
   // Between 2026-08-24 and 2026-09-01 two checker ids were also producer ids,
   // and only actual authorship of text under review received half weight: had
@@ -922,7 +922,7 @@ export type RunCallConfig = {
      existed. Their absence identifies them exactly.
  -   Five entries stamped `perCallTimeoutMs: 240_000`, from run 013. The
      stream idle guard existed during this run but fired ZERO times, so these
-     five ran under the same effective timing as the ten above. Treat the
+     five ran under the same effective timing as the ten with no `callConfig`. Treat the
      fifteen as ONE cohort.
  -   Entries stamped `perCallTimeoutMs: 360_000` and later, which are the
      first to run without the deadline clipping roughly 4.5 percent of calls.

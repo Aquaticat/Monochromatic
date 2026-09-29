@@ -398,7 +398,7 @@ export type SettledPreparation = {
 
   /**
    Original document length, in UTF-16 code units, for eyeballing an entry's
-   size. NOT the band input, which is the byte count below.
+   size. NOT the band input, which is `sourceBytes`.
    */
   readonly sourceChars: number;
 

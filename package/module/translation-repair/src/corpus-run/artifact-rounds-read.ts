@@ -214,7 +214,7 @@ function requireJudgedRound(
   /**
    Everything both outcomes record, read once.
    
-   SPLIT FROM THE BRANCH BELOW because the two outcomes agree on six fields
+   SPLIT FROM THE PER-OUTCOME BRANCHES because the two outcomes agree on six fields
    and differ on two, and reading the six twice is how one of the copies
    drifts.
    */

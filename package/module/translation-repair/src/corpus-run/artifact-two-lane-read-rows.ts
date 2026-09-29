@@ -165,8 +165,8 @@ export function parseComparisonRow(
    artifacts settled under the old name readable, since artifacts outlive
    the pipelines that wrote them.
    
-   A ROW CARRYING BOTH IS REFUSED rather than resolved, because the exact-key
-   guard below is handed only the spelling chosen here. Two spellings in one
+   A ROW CARRYING BOTH IS REFUSED rather than resolved, because
+   `requireExactKeys` is handed only the spelling chosen here. Two spellings in one
    row means two pipelines wrote it, and picking one would hide that.
    */
   const relationKey = ('laneRelation' in record) ? 'laneRelation' : 'verdict';

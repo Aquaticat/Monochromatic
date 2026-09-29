@@ -4,7 +4,7 @@
  longest stretch it could not.
  
  THE CASES THAT MATTER ARE THE BOUNDS. Sampling is irregular, so an outage is
- only ever known to lie between two readings. Every test below checks both
+ only ever known to lie between two readings. Every test in this file checks both
  ends of that range, and the open-ended cases check that a stretch running off
  either end of the record is reported as open rather than as a number.
  

@@ -196,7 +196,8 @@ export type CriticTally = {
  */
 export type AttributionReport = {
   /**
-   Entries carrying attribution, which every count below is restricted to.
+   Entries carrying attribution, which every other count in this report is
+   restricted to.
    */
   readonly eligibleEntries: number;
 
@@ -487,7 +488,7 @@ export function buildAttributionReport(
   /**
    Accepted issues whose join is PARTIAL: some claims attributed, some not.
    
-   Held out of every count below rather than counted anywhere. An issue like
+   Held out of every other count in this report rather than counted anywhere. An issue like
    this is a defect in the join, not a datum about critics, and averaging it
    in would let a broken join read as a confident calibration.
    */

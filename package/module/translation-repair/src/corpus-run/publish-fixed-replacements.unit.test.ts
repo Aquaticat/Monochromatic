@@ -260,8 +260,8 @@ await describe({
 
     it({
       name:
-        'CARRIES THE DECIDED WORDING for a slice that settled on some, which is what makes the case '
-        + 'above evidence: a builder that emitted the empty string for everything would satisfy it '
+        'CARRIES THE DECIDED WORDING for a slice that settled on some, which is what makes the "STILL HANDS A '
+        + 'SILENT CONTENT SPAN THE EMPTY STRING" case evidence: a builder that emitted the empty string for everything would satisfy it '
         + 'just as well and would publish an empty page',
       fn: async () => {
         expect(shippableReplacements({

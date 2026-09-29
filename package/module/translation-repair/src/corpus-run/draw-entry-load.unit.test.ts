@@ -17,7 +17,7 @@
  THE HAPPY PATH IS NOT HERE, and deliberately. `loadEntry` bands an entry by
  reading its source at the pinned corpus commit, so a passing load needs the
  unlicensed clone on disk; a unit suite that required it would pass on one
- machine and fail everywhere else. Every guard below runs BEFORE that read, so
+ machine and fail everywhere else. Every guard this file tests runs BEFORE that read, so
  none of them needs it.
  
  FIXTURES ARE INVENTED AND CAT-THEMED, and every one is written into a

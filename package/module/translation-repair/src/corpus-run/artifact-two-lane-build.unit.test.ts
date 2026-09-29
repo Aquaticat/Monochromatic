@@ -673,8 +673,8 @@ await describe({
           expect(written.includes(invented,),).toBe(false,);
         }
 
-        // And the rows are still there, so the check above is not passing by
-        // writing nothing at all.
+        // And the rows are still there, so the `invented` checks are not
+        // passing by writing nothing at all.
         expect(written.includes('replacement-shipped',),).toBe(true,);
       },
     },),

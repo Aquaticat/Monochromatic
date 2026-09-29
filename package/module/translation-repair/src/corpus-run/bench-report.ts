@@ -336,7 +336,7 @@ function describeRows(
    What those self-votes are worth once paired against the judges who held no
    stake in the same candidates.
    
-   THE COUNT ABOVE IS NOT THE ANSWER, which is why both are printed. A roster
+   `selfVotes` IS NOT THE ANSWER, which is why both are printed. A roster
    whose producers write the best candidates would cast many self-votes and
    show no excess at all; one that favours its own work shows the same count
    and a positive excess. Only the second is what the half-weight discount

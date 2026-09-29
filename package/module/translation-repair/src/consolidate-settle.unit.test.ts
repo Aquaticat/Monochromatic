@@ -701,7 +701,8 @@ await describe({
 
     it({
       name: 'REPORTS EACH FINDING ONCE ON A PATH THAT REACHED BOTH ROUNDS, which is the trap in '
-        + 'fixing the two above. The judged round is already handed what the produce half '
+        + 'fixing the "KEEPS WHAT THE PRODUCE HALF RECORDED ON AN INCUMBENT-ONLY SLICE" and "KEEPS THEM ON '
+        + 'A SLICE WITH NO STANDING TEXT TOO" cases. The judged round is already handed what the produce half '
         + 'recorded, so a settlement appending that list beside the judged round would report one '
         + 'lost voice twice and double every count taken over it',
       fn: async () => {
@@ -1480,8 +1481,8 @@ await describe({
         const { settled, served, } = await settleWith({
           voices: [voiceOf({ modelId: ROSTER[0], translation: unwrapped, },),],
           validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
-          // No judge is asked, which the served count below pins, so the
-          // ballot a judge would cast is never read.
+          // No judge is asked, which `served.judge` pins, so the ballot a
+          // judge would cast is never read.
           judgeReply: judgeBallot({ best: 1, },),
           gateReply: gateBallot({ choice: 'consolidated', },),
         },);
@@ -1517,7 +1518,8 @@ await describe({
     },),
 
     it({
-      name: 'LEAVES IT OUT OF A ROUND IT DOES NOT GOVERN, which is what makes the case above evidence. A '
+      name: 'LEAVES IT OUT OF A ROUND IT DOES NOT GOVERN, which is what makes the "SHOWS A GOVERNED ROUND\'S '
+        + 'JUDGES THE RULE AGAINST MERGING LINES" case evidence. A '
         + 'sheet carrying the criterion unconditionally would satisfy that one just as well and would mean '
         + 'the flag this function has always received was still reaching nobody',
       fn: async () => {

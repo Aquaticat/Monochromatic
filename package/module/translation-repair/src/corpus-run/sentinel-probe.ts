@@ -83,7 +83,7 @@ async function probeCorpusEntries(): Promise<void> {
       /**
        Translated en page text for this entry.
        */
-      /* oxlint-disable-next-line no-await-in-loop -- pairs with its source read above */
+      /* oxlint-disable-next-line no-await-in-loop -- pairs with the read of its source page */
       const targetText = await readCorpusFile({
         pin: RUN_CORPUS_PIN,
         relPath: `people/${id}/page.en.md`,
@@ -97,7 +97,7 @@ async function probeCorpusEntries(): Promise<void> {
       /**
        Repair result for this probed entry.
        */
-      /* oxlint-disable-next-line no-await-in-loop -- sequential by design, see above */
+      /* oxlint-disable-next-line no-await-in-loop -- sequential by design, for the reason the source read gives */
       const result = await repairTranslation({
         client,
         sourceText,

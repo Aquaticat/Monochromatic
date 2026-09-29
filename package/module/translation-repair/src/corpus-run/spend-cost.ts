@@ -87,7 +87,7 @@ export type SpendCost = {
    first, each carrying the USD its lines reported.
    
    A FOURTH BUCKET AND A SECOND CURRENCY. Hypercredits and USD are never
-   summed: the credit figure below stays a credit figure, and this bucket's
+   summed: `totalCredits` stays a credit figure, and this bucket's
    total is `totalUsd`.
    */
   readonly openRouter: readonly SeatSpend[];

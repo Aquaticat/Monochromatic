@@ -134,7 +134,7 @@ const ARCHIVE_LINKED = `${OPENING}${ARCHIVE_MIDDLE}${CLOSING_LINKED}`;
  
  THE SOURCE SIDE ALWAYS SAYS SOMETHING, deliberately: `spliceSlices` reads the
  original to decide whether writing nothing into a place is a deletion or a
- passage lost, so a silent source would make the refusal case below
+ passage lost, so a silent source would leave that passage-lost refusal
  untestable. Its offsets are the Chinese document's and nothing here reads
  them, since only the translation side is written into.
  

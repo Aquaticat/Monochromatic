@@ -617,7 +617,7 @@ export type PublishedPairing = {
    Entries carrying a page whose artifact is absent.
 
    The other half of the same ordering, and the expected one: a crash between
-   the two writes leaves this rather than the list above. The page ships as it
+   the two writes leaves this rather than `unpublished`. The page ships as it
    stands, since a run always ships (the owner, 2026-09-27), with nothing to
    check it against until a pass settles the entry again; it is reported so
    the two cases are never counted together.

@@ -526,7 +526,7 @@ export function tallySpend(
   { lines, }: { readonly lines: readonly string[]; },
 ): SpendTally {
   /**
-   What every line turned out to be, read once so the counts below cannot
+   What every line turned out to be, read once so the tally's counts cannot
    disagree about which lines were records.
    */
   const readings = lines.map(function readOne(line,): SpendLineReading {
