@@ -6481,6 +6481,59 @@ each with the same admitted characters as before unless stated:
   The full suite after it:
   0 FAIL,
   1,303 PASS.
+- `16bd8c142`:
+  the apostrophe and nested quotation readings read the combining character sequence before a straight quote
+  (`sequenceBefore` in `quote-neighbours.ts`),
+  and `bindsWord` tests its base,
+  so `café's` written with a combining acute curls as its composed spelling does,
+  and no longer counts as an opening quote that kept a later trailing apostrophe straight.
+  The whole sequence is kept for the other tests,
+  so a mark on a space (a standalone accent) is still no space a quotation opens after;
+  a first version that read the base alone curled that case,
+  and the build before the change leaves it straight.
+  No straight quote follows a mark in the sources or the archive's English;
+  in 372,489 distinct artifact strings 5 do,
+  each a variation selector on a heart in judge prose,
+  where both readings agree.
+  Page assembly replayed over 222 settled artifacts changes nothing;
+  a control tree whose `bindsWord` never binds makes 62 differ.
+  `restoreTypography` also runs inside the repair and refine stages,
+  so the pre-launch cache check (M28) reads this commit.
+- `a7b08bbfc`:
+  the Canadian date and spelling passes read a word written with a combining accent whole.
+  `isWordCharacter` (a cased letter or a combining mark) moved to `canadian-date-parts.ts`;
+  `continuesWord` and every word run read it,
+  the initial test counts letters with marks left out,
+  and an underscore's or dot's far side reads a mark as the word it ends before the word,
+  and as no word after it.
+  Before the fix,
+  `4 May` with a combining acute after it became `May 4` with the accent on the digit,
+  and an initial,
+  a heading's small word,
+  a May compound and an identifier each read differently from their composed spellings.
+  No combining mark occurs in the sources or the archive's English,
+  and in run artifacts only 3,
+  all in judge ballot reasons the passes never read
+  (control:
+  the same census over composed Latin letters finds 2,972),
+  so no page changes.
+  Mutants:
+  8 of 9 caught;
+  the month-run and range-word switches are equivalent
+  (a mark at a month's end is refused by `continuesWord`,
+  and a range word needs a space after it)
+  and are kept so every word run reads whole words.
+
+The package now tests for a combining mark in two ways,
+on purpose:
+`isCombiningMark` (`latin-letters.ts`) takes the Combining Diacritical Marks block,
+U+0300 to U+036F,
+the marks NFD splits off Latin letters,
+for scanners that read Latin words;
+`MARK_CODE_POINT` (`quote-neighbours.ts`) takes general category M,
+variation selectors included,
+because a quote's neighbour can be any character a mark sits on,
+an emoji among them.
 
 The census bounds every switch:
 the characters an ASCII test and a Latin letter-or-mark test disagree on
@@ -6488,11 +6541,7 @@ occur in 2 of 92 sources (7 characters),
 9 of 92 archive pages (20) and 2 of 40 settled pages (4).
 
 Still to do:
-the Canadian date and spelling passes read words with `isCasedLetter`,
-which takes no combining mark,
-so a month or a word written with a combining accent ends at the accent where its composed spelling does not;
-the apostrophe reading (`quote-neighbours.ts`) reads a combining mark before a straight quote as no word;
-and the three `opensTag` copies move to what the MDX compiler reads after `<`
+the three `opensTag` copies move to what the MDX compiler reads after `<`
 (`micromark-extension-mdx-jsx`:
 a space,
 tab or line end leaves it text;
@@ -6589,6 +6638,13 @@ and reads of the MDX parser's source while the full suite went,
 against the rule that the wait for a background task is to end the turn.
 None touched a file the running task read,
 which the rule does not make an exception for.
+Three more later in B18:
+`rg --count <literal mark> <files> ; rg --count <escape> <file>`,
+`<lint> && <test> > log ; rg --count FAIL log`,
+and `sed <range> | rg <heading> ; sed <range>` reading this entry.
+Also in B18,
+`git diff --stat` ran from the package directory,
+and cli-git refused it for not running at the repository root.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
