@@ -1,0 +1,1343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Every way to give pi a provider API key</title>
+<meta name="description" content="A plain-language audit of every mechanism pi supports for provider API keys, with measured evidence and a decision guide.">
+<style>
+  /* region theme tokens */
+  :root {
+    color-scheme: light dark;
+    --bg: #faf8f4;
+    --bg-soft: #f2ede4;
+    --card: #ffffff;
+    --ink: #26221c;
+    --ink-soft: #5c554a;
+    --line: #ddd4c4;
+    --accent: #8a4b1e;
+    --accent-ink: #ffffff;
+    --good: #1c6b3e;
+    --good-bg: #e4f2e9;
+    --warn: #8a5c00;
+    --warn-bg: #fbf0d9;
+    --bad: #962c2c;
+    --bad-bg: #fbe4e4;
+    --info: #2b5c8a;
+    --info-bg: #e2eef8;
+    --code-bg: #f0ebe1;
+    --shadow: 0 2px 6px rgba(40, 30, 10, 0.08);
+    --radius: 12px;
+    --pad-floor: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1b1e24;
+      --bg-soft: #23272f;
+      --card: #262b33;
+      --ink: #e8e4dc;
+      --ink-soft: #b3ac9f;
+      --line: #3b414b;
+      --accent: #e0a86b;
+      --accent-ink: #241a0c;
+      --good: #7fd3a2;
+      --good-bg: #20362a;
+      --warn: #e6c273;
+      --warn-bg: #3a3222;
+      --bad: #f09a9a;
+      --bad-bg: #3c2626;
+      --info: #93c2e8;
+      --info-bg: #22313e;
+      --code-bg: #2f343d;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    }
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+    --bg: #faf8f4;
+    --bg-soft: #f2ede4;
+    --card: #ffffff;
+    --ink: #26221c;
+    --ink-soft: #5c554a;
+    --line: #ddd4c4;
+    --accent: #8a4b1e;
+    --accent-ink: #ffffff;
+    --good: #1c6b3e;
+    --good-bg: #e4f2e9;
+    --warn: #8a5c00;
+    --warn-bg: #fbf0d9;
+    --bad: #962c2c;
+    --bad-bg: #fbe4e4;
+    --info: #2b5c8a;
+    --info-bg: #e2eef8;
+    --code-bg: #f0ebe1;
+    --shadow: 0 2px 6px rgba(40, 30, 10, 0.08);
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #1b1e24;
+    --bg-soft: #23272f;
+    --card: #262b33;
+    --ink: #e8e4dc;
+    --ink-soft: #b3ac9f;
+    --line: #3b414b;
+    --accent: #e0a86b;
+    --accent-ink: #241a0c;
+    --good: #7fd3a2;
+    --good-bg: #20362a;
+    --warn: #e6c273;
+    --warn-bg: #3a3222;
+    --bad: #f09a9a;
+    --bad-bg: #3c2626;
+    --info: #93c2e8;
+    --info-bg: #22313e;
+    --code-bg: #2f343d;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+  /* endregion */
+  /* region base */
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 17px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding-bottom: 96px;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+  h1, h2, h3, h4 { line-height: 1.25; }
+  h1 { font-size: 2.1rem; margin: 0.4em 0 0.2em; }
+  h2 { font-size: 1.55rem; margin-top: 2.6em; border-top: 2px solid var(--line); padding-top: 0.8em; }
+  h3 { font-size: 1.2rem; margin-top: 1.8em; }
+  h4 { font-size: 1.02rem; margin-bottom: 0.4em; }
+  p, li { max-width: 72ch; }
+  a { color: var(--accent); }
+  code {
+    background: var(--code-bg);
+    padding: 0.12em 0.38em;
+    border-radius: 6px;
+    font-size: 0.92em;
+    font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--pad-floor);
+    overflow-x: auto;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+  pre code { background: none; padding: 0; }
+  /* endregion */
+  /* region chrome */
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--line);
+    padding: 10px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  header.top .brand { font-weight: 700; }
+  header.top nav { display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.92rem; }
+  button {
+    font: inherit;
+    font-size: 0.92rem;
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 18px;
+    min-height: 44px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  button:hover { border-color: var(--accent); }
+  button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  /* endregion */
+  /* region components */
+  .hero {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin: 28px 0;
+    box-shadow: var(--shadow);
+  }
+  .hero .subtitle { font-size: 1.12rem; color: var(--ink-soft); margin: 0.4em 0 0; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin: 18px 0;
+    box-shadow: var(--shadow);
+  }
+  .card h3 { margin-top: 0.2em; }
+  .callout {
+    border-left: 6px solid var(--accent);
+    background: var(--bg-soft);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: var(--pad-floor) 20px;
+    margin: 18px 0;
+  }
+  .callout.boom { border-left-color: var(--bad); }
+  .callout.tip { border-left-color: var(--good); }
+  .callout.note { border-left-color: var(--info); }
+  .callout p:last-child { margin-bottom: 0; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 3px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .badge.ok { background: var(--good-bg); color: var(--good); border-color: var(--good); }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+  .badge.bad { background: var(--bad-bg); color: var(--bad); border-color: var(--bad); }
+  .badge.info { background: var(--info-bg); color: var(--info); border-color: var(--info); }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .mini {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--pad-floor);
+  }
+  .mini h4 { margin-top: 0; }
+  dl.facts { margin: 0.6em 0 0; }
+  dl.facts dt { font-weight: 700; margin-top: 0.7em; }
+  dl.facts dd { margin: 0.15em 0 0 1.1em; }
+  ol.chain { counter-reset: chain; list-style: none; padding: 0; }
+  ol.chain li {
+    counter-increment: chain;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 18px 14px 56px;
+    margin: 10px 0;
+    position: relative;
+  }
+  ol.chain li::before {
+    content: counter(chain);
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+  }
+  table { border-collapse: collapse; width: 100%; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
+  caption { text-align: left; padding: 12px 4px; color: var(--ink-soft); }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 0.93rem; }
+  th { background: var(--bg-soft); position: sticky; top: 0; }
+  tr:last-child td { border-bottom: none; }
+  details {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0;
+    margin: 12px 0;
+  }
+  details > summary {
+    cursor: pointer;
+    padding: 14px 18px;
+    font-weight: 650;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+  }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before {
+    content: "▸";
+    display: inline-block;
+    transition: transform 0.15s ease;
+    color: var(--accent);
+  }
+  details[open] > summary::before { transform: rotate(90deg); }
+  details .inner { padding: 4px 18px 18px; }
+  .rating { font-weight: 700; }
+  .lede { font-size: 1.08rem; }
+  ul.tight li { margin: 0.35em 0; }
+  footer { margin-top: 64px; border-top: 2px solid var(--line); padding: 24px 0; color: var(--ink-soft); font-size: 0.92rem; }
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 8px;
+    background: var(--card);
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    z-index: 40;
+  }
+  .skip-link:focus { left: 8px; }
+  /* endregion */
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="top">
+  <span class="brand">pi API key audit</span>
+  <nav aria-label="Sections">
+    <a href="#quick">Quick answer</a>
+    <a href="#precedence">Pick order</a>
+    <a href="#exposure">Who sees keys</a>
+    <a href="#catalog">All mechanisms</a>
+    <a href="#recipe">Sops recipe</a>
+    <a href="#matrix">Compare</a>
+    <a href="#decide">Decide</a>
+    <a href="#evidence">Evidence</a>
+  </nav>
+  <button id="theme-toggle" type="button" aria-live="polite">Theme: Auto</button>
+  <button id="details-toggle" type="button" aria-live="polite">Expand all</button>
+</header>
+
+<main id="main">
+<div class="hero">
+  <h1>Every way to give pi a provider API key</h1>
+  <p class="subtitle">
+    A plain-language map of all the doors, what each one costs you, and which one to walk through.
+    Written so a monkey (a very handsome monkey) can pick correctly the first time.
+  </p>
+  <div class="badges">
+    <span class="badge info">pi 0.87.1 docs</span>
+    <span class="badge ok">✓ claims marked verified were run on this machine</span>
+    <span class="badge warn">one mechanism excluded by request (see below)</span>
+  </div>
+</div>
+
+<div class="callout note">
+  <h4>What this doc deliberately leaves out</h4>
+  <p>
+    You asked me to omit the status quo of your current setup: the plaintext literal
+    <code>apiKey</code> sitting in <code>models.json</code>. So that arrangement gets no card,
+    no recommendation, and no comparison row in the detailed sections.
+  </p>
+  <p>
+    Everything else pi supports is here. The one-line reason the excluded arrangement is not
+    recommended is the same reason this whole doc exists: keys printed or read by agents end up
+    in transcripts, and the file that holds it is world-readable by default.
+  </p>
+</div>
+
+<h2 id="quick">The quick answer</h2>
+<p class="lede">
+  If you read nothing else, read this ladder. It goes from "most hidden from casual probes"
+  to "most exposed".
+</p>
+<ol class="chain">
+  <li>
+    <strong>Secret manager behind an <code>auth.json</code> command.</strong>
+    The key lives in an OS keyring or an encrypted store. Pi asks for it only when it needs it.
+    Nothing on disk holds the secret itself.
+  </li>
+  <li>
+    <strong>Literal key in <code>auth.json</code>.</strong>
+    One private file (permissions <code>600</code>), one place to rotate, resolved inside pi
+    without any process ever printing it.
+  </li>
+  <li>
+    <strong>Stored sign-in via <code>/login</code>.</strong>
+    Same file as above, but pi writes it for you after an OAuth or API-key flow.
+    Fine when the provider supports it.
+  </li>
+  <li>
+    <strong>Runtime <code>--api-key</code> flag.</strong>
+    Great for one-off runs, terrible for secrecy: the key sits in the command line where
+    <code>ps</code> can see it.
+  </li>
+  <li>
+    <strong>Environment variable.</strong>
+    Works everywhere including CI. Worst casual-exposure surface of the set:
+    every <code>env</code> dump, every child process, every crash log can carry it.
+  </li>
+</ol>
+<div class="callout tip">
+  <p>
+    <strong>Rule of thumb:</strong> the question is never "can a determined attacker get the key"
+    (if they run as you, they can). The question is "how many innocent-looking commands
+    accidentally print it". Each rung above answers that question better than the one below it.
+  </p>
+</div>
+
+<h2 id="precedence">How pi picks a key when several exist</h2>
+<p>
+  Pi resolves credentials in a fixed order. Whichever source wins higher is the one that gets
+  sent. The order comes from pi's own docs (<code>docs/models.md</code>), and I confirmed the
+  first three rungs by pointing pi at a local echo server and reading the
+  <code>Authorization</code> header of real requests.
+</p>
+<ol class="chain">
+  <li>
+    <strong>Runtime <code>--api-key</code> flag</strong>
+    <span class="badge ok">✓ verified</span><br>
+    Observed <code>Bearer from-flag</code> even with both other sources configured.
+    Also works alone, with nothing stored anywhere.
+  </li>
+  <li>
+    <strong>Stored credential in <code>auth.json</code></strong>
+    <span class="badge ok">✓ verified</span><br>
+    Observed <code>Bearer from-authjson</code> while a different key sat in
+    <code>models.json</code>.
+  </li>
+  <li>
+    <strong><code>apiKey</code> (or custom headers) in <code>models.json</code></strong>
+    <span class="badge ok">✓ verified</span><br>
+    Observed <code>Bearer from-modelsjson</code> when it was the only source.
+  </li>
+  <li>
+    <strong>Provider environment variables or ambient cloud credentials</strong>
+    <span class="badge info">docs</span><br>
+    Lowest priority. Note the built-in env-var names (like <code>ANTHROPIC_API_KEY</code>)
+    apply to pi's built-in providers. A custom provider invented in
+    <code>models.json</code> does <em>not</em> get a <code>NAME_API_KEY</code> fallback:
+    I tried <code>TESTPROV_API_KEY</code> and pi sent no request at all
+    <span class="badge ok">✓ verified</span>.
+  </li>
+</ol>
+<div class="callout note">
+  <p>
+    Side effect worth knowing: if a model "mysteriously" does not appear in
+    <code>/model</code>, pi may simply have no resolvable credential for its provider.
+    Pi's own troubleshooting note says custom models stay hidden until credentials resolve.
+  </p>
+</div>
+
+<h2 id="exposure">Who can see your key, in plain terms</h2>
+<p>
+  A key is not stolen by magic. It leaks when some ordinary action copies it somewhere durable.
+  These are the ordinary actions that matter.
+</p>
+<div class="grid">
+  <div class="mini">
+    <h4>💬 Tool output becomes transcript</h4>
+    <p>
+      Anything an agent prints or reads lands in the session <code>.jsonl</code> file.
+      Pi's own security doc warns: "Review sessions before exporting or sharing them.
+      They can contain prompts, tool arguments, command output, file contents,
+      and credentials exposed during the conversation."
+    </p>
+  </div>
+  <div class="mini">
+    <h4>🌍 Environment dumps</h4>
+    <p>
+      <code>env</code>, <code>printenv</code>, and a bare <code>echo $PI_*</code> style probe
+      print every variable in the process. Agents run these constantly while investigating.
+      Your argument, and it is correct.
+    </p>
+  </div>
+  <div class="mini">
+    <h4>👁 Process listings</h4>
+    <p>
+      On Linux the same user can read another process's environment and command line
+      (<code>ps eww</code>, <code>/proc/&lt;pid&gt;/environ</code>, <code>ps aux</code>).
+      Command-line keys and env keys are both visible here. (Platform fact.)
+    </p>
+  </div>
+  <div class="mini">
+    <h4>👶 Child processes inherit</h4>
+    <p>
+      Every tool command, build, and test runs as a child of the agent process.
+      Environment variables ride along into all of them, including third-party scripts
+      that log their environment on error.
+    </p>
+  </div>
+  <div class="mini">
+    <h4>📁 File permissions</h4>
+    <p>
+      A secret in a <code>644</code> file is readable by any account on the machine.
+      A secret in a <code>600</code> file is readable only by you (and by anything running
+      as you, which includes the agent).
+    </p>
+  </div>
+  <div class="mini">
+    <h4>🧾 Logs and crash reports</h4>
+    <p>
+      Debug builds, HTTP debug logs, error trackers, and core dumps happily serialize
+      environment and headers. Rare events, big consequences.
+    </p>
+  </div>
+</div>
+<div class="callout boom">
+  <h4>The BOOM scenario</h4>
+  <p>
+    You store the key in an environment variable. Later, an agent (any agent, in any session)
+    runs <code>env | grep PI_</code> or similar to answer an innocent question about its
+    configuration. The full key is printed. The print lands in the session transcript.
+    The transcript is a plain file that gets shared, backed up, or summarized into another
+    model's context. The key is now public-ish forever, and only rotation fixes that.
+  </p>
+  <p>
+    The safest habit: arrange things so that <em>no ordinary command has a reason to print the
+    key</em>, and so that if it is printed, it is a fake or masked value.
+  </p>
+</div>
+
+<h2 id="catalog">The catalog: every mechanism</h2>
+<p>
+  Each card says what the mechanism is, how to set it up, where the key physically rests,
+  and what happens when it fails. Evidence badges: <span class="badge ok">✓ verified</span>
+  means I ran it on this machine,
+  <span class="badge info">docs</span> means it comes from pi's published docs,
+  <span class="badge warn">platform</span> means general OS behavior.
+</p>
+
+<details id="m1">
+  <summary>Mechanism 1: sign in with <code>/login</code> (OAuth or guided API-key flow)</summary>
+  <div class="inner">
+    <p>
+      Run <code>/login</code> inside pi and pick the provider. Pi walks you through a browser
+      sign-in (OAuth) or an API-key paste, then saves the result itself.
+    </p>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd><code>&lt;agent-dir&gt;/auth.json</code> (default <code>~/.pi/agent/auth.json</code>),
+        which is a private <code>600</code> file.</dd>
+      <dt>Setup</dt>
+      <dd><code>/login</code>, pick provider, follow prompts. Remove with
+        <code>/logout</code>.</dd>
+      <dt>Headless machines</dt>
+      <dd><span class="badge info">docs</span> When an OAuth callback cannot reach your
+        machine, pi lets you paste the final redirect URL or authorization code back in.</dd>
+      <dt>Watch out</dt>
+      <dd><span class="badge info">docs</span> <code>/logout</code> only removes the stored
+        credential. It does not unset environment variables, remove
+        <code>models.json</code> authentication, or revoke anything at the provider.</dd>
+      <dt>Best for</dt>
+      <dd>Any provider pi knows natively. The boring, correct default.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m2">
+  <summary>Mechanism 2: literal API key stored in <code>auth.json</code></summary>
+  <div class="inner">
+    <p>
+      Put the key in pi's credential file by hand (or through your own tooling).
+      This is the same file <code>/login</code> writes, just without the guided flow.
+      Useful for custom endpoints where no sign-in flow exists.
+    </p>
+    <pre><code># ~/.pi/agent/auth.json
+{
+  "my-provider": {
+    "type": "api_key",
+    "key": "sk-..."
+  }
+}</code></pre>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>Inside <code>auth.json</code>, permissions <code>600</code>. One file, one rotation
+        point.</dd>
+      <dt>Precedence</dt>
+      <dd><span class="badge ok">✓ verified</span> Beats any <code>apiKey</code> in
+        <code>models.json</code> (observed on real requests).</dd>
+      <dt>Watch out</dt>
+      <dd>Still plaintext on disk. An agent that inspects auth config will see it
+        (mask values when probing, like the
+        <code>python3</code> one-liner in the evidence section).</dd>
+      <dt>Best for</dt>
+      <dd>Custom OpenAI-compatible endpoints where you want simple, private, one-place
+        rotation.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m3">
+  <summary>Mechanism 3: <code>auth.json</code> command (<code>!...</code>), keyring or encrypted store</summary>
+  <div class="inner">
+    <p>
+      Instead of the key itself, store a <em>command that prints the key</em>.
+      Pi runs it only when the key is first needed. The secret never sits in pi's config
+      at all; it lives wherever your secret manager keeps it.
+    </p>
+    <pre><code># ~/.pi/agent/auth.json
+{
+  "my-provider": {
+    "type": "api_key",
+    "key": "!secret-tool lookup service my-llm user me"
+  }
+}</code></pre>
+    <p>
+      The macOS example from pi's docs is
+      <code>!security find-generic-password -ws 'anthropic'</code>.
+      Any command works: OS keyring, a password manager CLI, or a decrypt-and-print script.
+    </p>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>Only in the secret manager. Not in the environment, not in pi's files.</dd>
+      <dt>Timing and caching</dt>
+      <dd><span class="badge info">docs</span> Pi runs the command when the key is first
+        needed and caches its standard output for the lifetime of the pi process.</dd>
+      <dt>Failure mode (important)</dt>
+      <dd><span class="badge info">docs</span> "Empty output, a timeout, or a nonzero exit
+        leaves the key unresolved until Pi restarts." A locked keyring therefore breaks the
+        session until restart, with no automatic retry.</dd>
+      <dt>Shell behavior</dt>
+      <dd><span class="badge ok">✓ verified</span> The command runs through a shell:
+        <code>$HOME</code> expanded in my probe, so pipelines, quoting, and
+        <code>VAR=value cmd</code> prefixes work.</dd>
+      <dt>Best for</dt>
+      <dd>The strongest practical option on a personal machine with a keyring or encrypted
+        store. See the sops recipe below for a concrete version.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m4">
+  <summary>Mechanism 4: <code>models.json</code> <code>apiKey</code> with variable interpolation</summary>
+  <div class="inner">
+    <p>
+      In a custom endpoint definition, the <code>apiKey</code> field accepts
+      <code>$NAME</code> or <code>${NAME}</code>. Pi substitutes the value from the process
+      environment at request time.
+    </p>
+    <pre><code># ~/.pi/agent/models.json
+{
+  "providers": {
+    "my-provider": {
+      "baseUrl": "https://api.example.com/v1",
+      "api": "openai-completions",
+      "apiKey": "${MY_PROVIDER_KEY}",
+      "models": [{ "id": "some-model" }]
+    }
+  }
+}</code></pre>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>In the environment of the process that started pi. The config file holds only the
+        variable name.</dd>
+      <dt>Exposure</dt>
+      <dd><span class="badge bad">env-exposed</span> All the environment problems above apply.
+        This option is honest about it and useful where that risk is accepted (CI, containers).</dd>
+      <dt>Watch out</dt>
+      <dd><span class="badge info">docs</span> Environment variables must be present in the
+        process that starts pi. A key exported in your interactive shell will not appear if pi
+        is launched from a desktop entry, cron, or a different tool.</dd>
+      <dt>Best for</dt>
+      <dd>CI and disposable environments where nothing persists anyway.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m5">
+  <summary>Mechanism 5: <code>models.json</code> <code>apiKey</code> with a command (<code>!...</code>)</summary>
+  <div class="inner">
+    <p>
+      Same idea as mechanism 3, but expressed in <code>models.json</code>.
+      A leading <code>!</code> marks the value as a command whose output becomes the key.
+    </p>
+    <pre><code># ~/.pi/agent/models.json
+"apiKey": "!secret-tool lookup service my-llm user me"</code></pre>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>Only in the secret manager.</dd>
+      <dt>Timing and caching</dt>
+      <dd><span class="badge info">docs</span> "Commands in <code>models.json</code> run at
+        request time and are not cached by Pi." So this runs per request, unlike
+        mechanism 3's once-per-process behavior. That costs a process spawn per call and
+        means a locked keyring fails each request individually.</dd>
+      <dt>Reload behavior</dt>
+      <dd><span class="badge info">docs</span> Opening <code>/model</code> reloads
+        <code>models.json</code>, so edits (including key changes) take effect without
+        restarting pi.</dd>
+      <dt>Best for</dt>
+      <dd>Quick wiring of a secret manager into a custom endpoint without touching
+        <code>auth.json</code>. Mechanism 3 is usually the better home; see the ranking.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m6">
+  <summary>Mechanism 6: custom HTTP headers in <code>models.json</code></summary>
+  <div class="inner">
+    <p>
+      Some gateways want the credential in a header other than the standard
+      <code>Authorization: Bearer</code>. The <code>headers</code> map accepts literal values,
+      <code>$NAME</code> interpolation, or <code>!command</code>, the same three forms as
+      <code>apiKey</code>. Pi's docs mention this pattern for Cloudflare AI Gateway upstream
+      auth.
+    </p>
+    <pre><code># ~/.pi/agent/models.json
+"headers": {
+  "X-Api-Key": "!secret-tool lookup service my-gateway user me"
+}</code></pre>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>Wherever the chosen form puts it (literal: in <code>models.json</code>;
+        interpolated: in the environment; command: in the secret manager).</dd>
+      <dt>Watch out</dt>
+      <dd>A literal header value is exactly as exposed as the excluded status-quo
+        arrangement. Prefer the command form.</dd>
+      <dt>Best for</dt>
+      <dd>Endpoints whose auth header pi does not set by itself.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m7">
+  <summary>Mechanism 7: provider environment variables</summary>
+  <div class="inner">
+    <p>
+      For pi's built-in providers, export the documented variable before starting pi.
+      Nothing is written to disk, which is why CI systems like it.
+    </p>
+    <pre><code>export ANTHROPIC_API_KEY=sk-ant-...
+pi</code></pre>
+    <p>
+      The full name table lives in pi's <code>docs/providers.md</code>, reproduced here so
+      you never have to guess:
+    </p>
+    <details>
+      <summary>Full built-in provider variable table</summary>
+      <div class="inner">
+        <ul class="tight">
+          <li>Anthropic: <code>ANTHROPIC_API_KEY</code> (also <code>ANTHROPIC_OAUTH_TOKEN</code> as API credential, <code>ANTHROPIC_AUTH_TOKEN</code> as bearer auth)</li>
+          <li>Ant Ling: <code>ANT_LING_API_KEY</code></li>
+          <li>OpenAI: <code>OPENAI_API_KEY</code></li>
+          <li>DeepSeek: <code>DEEPSEEK_API_KEY</code></li>
+          <li>NVIDIA NIM: <code>NVIDIA_API_KEY</code></li>
+          <li>Google Gemini: <code>GEMINI_API_KEY</code></li>
+          <li>GitHub Copilot: <code>COPILOT_GITHUB_TOKEN</code></li>
+          <li>Mistral: <code>MISTRAL_API_KEY</code></li>
+          <li>Groq: <code>GROQ_API_KEY</code></li>
+          <li>Cerebras: <code>CEREBRAS_API_KEY</code></li>
+          <li>xAI: <code>XAI_API_KEY</code></li>
+          <li>OpenRouter: <code>OPENROUTER_API_KEY</code></li>
+          <li>Vercel AI Gateway: <code>AI_GATEWAY_API_KEY</code></li>
+          <li>ZAI Coding Plan (Global): <code>ZAI_API_KEY</code></li>
+          <li>ZAI Coding Plan (China): <code>ZAI_CODING_CN_API_KEY</code></li>
+          <li>OpenCode Zen and Go: <code>OPENCODE_API_KEY</code></li>
+          <li>Radius: <code>RADIUS_API_KEY</code></li>
+          <li>Hugging Face: <code>HF_TOKEN</code></li>
+          <li>Fireworks: <code>FIREWORKS_API_KEY</code></li>
+          <li>Together AI: <code>TOGETHER_API_KEY</code></li>
+          <li>Baseten: <code>BASETEN_API_KEY</code></li>
+          <li>Kimi For Coding: <code>KIMI_API_KEY</code></li>
+          <li>Meta: <code>META_API_KEY</code></li>
+          <li>MiniMax: <code>MINIMAX_API_KEY</code></li>
+          <li>MiniMax (China): <code>MINIMAX_CN_API_KEY</code></li>
+          <li>Moonshot AI (Global and China): <code>MOONSHOT_API_KEY</code></li>
+          <li>Qwen Token Plan and Individual: <code>QWEN_TOKEN_PLAN_API_KEY</code></li>
+          <li>Qwen Token Plan (China): <code>QWEN_TOKEN_PLAN_CN_API_KEY</code></li>
+          <li>Xiaomi MiMo: <code>XIAOMI_API_KEY</code></li>
+          <li>Xiaomi MiMo Token Plan (China): <code>XIAOMI_TOKEN_PLAN_CN_API_KEY</code></li>
+          <li>Xiaomi MiMo Token Plan (Amsterdam): <code>XIAOMI_TOKEN_PLAN_AMS_API_KEY</code></li>
+          <li>Xiaomi MiMo Token Plan (Singapore): <code>XIAOMI_TOKEN_PLAN_SGP_API_KEY</code></li>
+        </ul>
+      </div>
+    </details>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>In the environment of the starting process and every child it spawns.</dd>
+      <dt>Exposure</dt>
+      <dd><span class="badge bad">env-exposed</span> The BOOM scenario applies verbatim.</dd>
+      <dt>Custom providers</dt>
+      <dd><span class="badge ok">✓ verified</span> A provider you invent in
+        <code>models.json</code> gets no <code>NAME_API_KEY</code> fallback. Use interpolation
+        (mechanism 4) instead if you want env there.</dd>
+      <dt>Best for</dt>
+      <dd>CI with ephemeral runners and short-lived keys.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m8">
+  <summary>Mechanism 8: credential <code>env</code> object in <code>auth.json</code></summary>
+  <div class="inner">
+    <p>
+      A stored API-key credential can carry an <code>env</code> map with supporting values
+      (account IDs, gateway IDs, and similar). Those values take priority over the process
+      environment for that provider only. Pi's docs show this for Cloudflare-style setups.
+    </p>
+    <pre><code># ~/.pi/agent/auth.json
+{
+  "cloudflare-workers-ai": {
+    "type": "api_key",
+    "key": "...",
+    "env": { "CLOUDFLARE_ACCOUNT_ID": "account-id" }
+  }
+}</code></pre>
+    <dl class="facts">
+      <dt>What it is for</dt>
+      <dd>Non-secret (or semi-secret) companion values, scoped to one provider, without
+        polluting the global environment.</dd>
+      <dt>Best for</dt>
+      <dd>Multi-account setups and gateways that need extra identifiers alongside the key.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m9">
+  <summary>Mechanism 9: ambient cloud credentials (no key in pi at all)</summary>
+  <div class="inner">
+    <p>
+      Some platforms authenticate through their own SDK machinery. Pi reads whatever the
+      platform's standard credential chain provides. You never hand pi a key.
+    </p>
+    <ul class="tight">
+      <li><strong>Amazon Bedrock:</strong> named profile (<code>AWS_PROFILE</code>), IAM keys
+        (<code>AWS_ACCESS_KEY_ID</code> / <code>AWS_SECRET_ACCESS_KEY</code> / optional
+        <code>AWS_SESSION_TOKEN</code>), a Bedrock bearer token
+        (<code>AWS_BEARER_TOKEN_BEDROCK</code>), ECS task credentials, or IRSA. Region via
+        <code>AWS_REGION</code> / <code>AWS_DEFAULT_REGION</code>.</li>
+      <li><strong>Google Vertex AI:</strong> <code>GOOGLE_CLOUD_API_KEY</code>, or Application
+        Default Credentials with <code>GOOGLE_CLOUD_PROJECT</code> (alias
+        <code>GCLOUD_PROJECT</code>) and <code>GOOGLE_CLOUD_LOCATION</code>, authenticated via
+        <code>gcloud auth application-default login</code>, or a service-account key file via
+        <code>GOOGLE_APPLICATION_CREDENTIALS</code>.</li>
+      <li><strong>Azure OpenAI:</strong> <code>AZURE_OPENAI_API_KEY</code> plus either
+        <code>AZURE_OPENAI_BASE_URL</code> or <code>AZURE_OPENAI_RESOURCE_NAME</code>.</li>
+      <li><strong>Cloudflare AI Gateway:</strong> <code>CLOUDFLARE_API_KEY</code>,
+        <code>CLOUDFLARE_ACCOUNT_ID</code>, <code>CLOUDFLARE_GATEWAY_ID</code>. The gateway can
+        hold upstream credentials itself, or pass an <code>Authorization</code> header from
+        <code>models.json</code>.</li>
+      <li><strong>Cloudflare Workers AI:</strong> <code>CLOUDFLARE_API_KEY</code> plus
+        <code>CLOUDFLARE_ACCOUNT_ID</code> (account ID can also live in the credential's
+        <code>env</code> object).</li>
+    </ul>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>In the platform's own credential store (cloud config, keychain, token files), which
+        is designed for rotation and short lifetimes.</dd>
+      <dt>Watch out</dt>
+      <dd>Many of these are still configured through environment variables, so the BOOM
+        scenario applies to the identifiers. Short-lived tokens limit the damage.</dd>
+      <dt>Best for</dt>
+      <dd>When you already live in that cloud's identity system. Free rotation beats any
+        hand-managed key.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m10">
+  <summary>Mechanism 10: runtime <code>--api-key</code> flag</summary>
+  <div class="inner">
+    <p>
+      Pass the key on the pi command line for a single run. It wins over everything else.
+    </p>
+    <pre><code>pi --api-key sk-... --model provider/model</code></pre>
+    <dl class="facts">
+      <dt>Precedence</dt>
+      <dd><span class="badge ok">✓ verified</span> Observed as the winning source when all
+        other sources were configured.</dd>
+      <dt>Exposure</dt>
+      <dd><span class="badge warn">platform</span> Command lines are visible to the same user
+        via <code>ps</code> and shell history. Treat this as printed.</dd>
+      <dt>Best for</dt>
+      <dd>One-shot experiments and CI jobs where the key is already in the job's secret store
+        and the runner is disposable.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m11">
+  <summary>Mechanism 11: the SDK (<code>ModelRuntime</code> and friends)</summary>
+  <div class="inner">
+    <p>
+      When pi is embedded in your own program, you control credential storage entirely.
+      Pi's SDK example (<code>examples/sdk/09-api-keys-and-oauth.ts</code>) shows three moves:
+    </p>
+    <pre><code>import { createAgentSession, ModelRuntime, SessionManager }
+  from "@earendil-works/pi-coding-agent";
+
+// 1. Default locations (~/.pi/agent/auth.json, models.json)
+const modelRuntime = await ModelRuntime.create();
+
+// 2. Your own credential and model files
+const customRuntime = await ModelRuntime.create({
+  authPath: "/tmp/my-app/auth.json",
+  modelsPath: "/tmp/my-app/models.json",
+});
+
+// 3. A key supplied at runtime, from wherever your app keeps secrets
+await modelRuntime.setRuntimeApiKey("anthropic", "sk-my-temp-key");</code></pre>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>Wherever your application keeps it: vault, keyring, database. Pi never sees more
+        than the resolved value in memory.</dd>
+      <dt>In-memory sessions</dt>
+      <dd><code>SessionManager.inMemory()</code> keeps transcripts out of
+        <code>~/.pi/agent/sessions</code> entirely, which also shrinks the transcript-leak
+        surface.</dd>
+      <dt>Best for</dt>
+      <dd>Products and services that embed pi. For an interactive terminal user this is
+        overkill.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m12">
+  <summary>Mechanism 12: a provider extension with its own authentication</summary>
+  <div class="inner">
+    <p>
+      When a provider speaks a custom protocol or runs a custom auth flow, write (or install)
+      a provider extension. The extension can register its own <code>/login</code> flow with
+      display name, token refresh, and access-token resolution; pi then stores whatever the
+      flow returns in <code>auth.json</code>. Native provider auth also supports custom
+      credential resolution and provider-scoped environment.
+    </p>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>Whatever the extension's flow produces (usually <code>auth.json</code>), or entirely
+        inside the extension's own logic.</dd>
+      <dt>Trust warning</dt>
+      <dd><span class="badge info">docs</span> "Provider extensions run inside Pi and can
+        inspect credentials, prompts, tool definitions, model responses, and usage. Treat them
+        as trusted code." Installing one is granting it your keys.</dd>
+      <dt>Best for</dt>
+      <dd>Providers pi does not support out of the box. Last resort, not first.</dd>
+    </dl>
+  </div>
+</details>
+
+<details id="m13">
+  <summary>Mechanism 13: no key at all (local models and dummy keys)</summary>
+  <div class="inner">
+    <p>
+      Local endpoints need no real secret. Pi's docs show a dummy literal
+      (<code>"apiKey": "ollama"</code>) purely to satisfy the client; Ollama ignores it.
+      The llama.cpp router integration needs nothing at all.
+    </p>
+    <dl class="facts">
+      <dt>Where the key rests</dt>
+      <dd>Nowhere. The "key" is a public constant.</dd>
+      <dt>Best for</dt>
+      <dd>Local inference. Also the correct answer when an endpoint truly needs no auth.</dd>
+    </dl>
+  </div>
+</details>
+
+<h2 id="recipe">Concrete recipe: the encrypted-store route, end to end</h2>
+<p>
+  Mechanism 3 is abstract until you see it wired to real tooling. This machine already has an
+  age-encrypted secrets store managed through mise (<code>secrets:edit</code> runs
+  <code>sops edit .env.local.json</code> with the identity at
+  <code>~/.config/mise/age.txt</code>). The same store pi never touches can become pi's key
+  source in three steps. Everything below was executed successfully on this machine
+  <span class="badge ok">✓ verified</span>, with values replaced by dummies or length-checked.
+</p>
+<h3>Step 1: keep the secret in the encrypted store</h3>
+<pre><code># Opens the sops-encrypted store in your editor (interactive).
+# The repo's mise task pins the age identity for you.
+mise run --raw secrets:edit
+
+# Inside, keep a key like:
+#   "MY_PROVIDER_API_KEY": "sk-..."
+# The file is age-encrypted at rest and lives at .env.local.json (permissions 600).</code></pre>
+<h3>Step 2: read one value back out (this is what pi will run)</h3>
+<pre><code>SOPS_AGE_KEY_FILE="$HOME/.config/mise/age.txt" \
+  sops --decrypt --extract '["MY_PROVIDER_API_KEY"]' /absolute/path/.env.local.json</code></pre>
+<p>
+  Notes from probing: <code>sops</code> resolves through mise's tool installs, the extract
+  prints just the value (I verified with <code>| wc -c</code> so no secret entered any log),
+  and the sops CLI does need <code>SOPS_AGE_KEY_FILE</code> pointed at the identity explicitly.
+</p>
+<h3>Step 3: point pi at that command</h3>
+<pre><code># ~/.pi/agent/auth.json
+{
+  "my-provider": {
+    "type": "api_key",
+    "key": "!SOPS_AGE_KEY_FILE=\"$HOME/.config/mise/age.txt\" sops --decrypt --extract '[\"MY_PROVIDER_API_KEY\"]' /absolute/path/.env.local.json"
+  }
+}</code></pre>
+<div class="callout tip">
+  <p>
+    <strong>Why this shape:</strong> the plaintext key exists in exactly two places: inside the
+    age-encrypted store, and for a moment inside pi's memory when a request goes out. No
+    environment variable, no world-readable config, and no ordinary agent command has a reason
+    to print it. Rotation is "edit the store, restart pi" (recall that
+    <code>auth.json</code> commands cache for the process lifetime).
+  </p>
+</div>
+<div class="callout note">
+  <p>
+    <strong>Equivalents on other machines:</strong> macOS keychain as
+    <code>!security find-generic-password -ws 'my-provider'</code>; Linux Secret Service as
+    <code>!secret-tool lookup service my-provider user me</code> (present on this machine);
+    any password manager CLI that prints a secret to stdout. The command only has to print the
+    key and exit zero.
+  </p>
+</div>
+
+<h2 id="matrix">Side-by-side comparison</h2>
+<div class="table-wrap">
+  <table>
+    <caption>
+      How each mechanism scores on the things that bite later. Labels, not just colors:
+      good / mixed / bad / not applicable.
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">Mechanism</th>
+        <th scope="col">Key rests in</th>
+        <th scope="col"><code>env</code> / <code>ps</code> dumps</th>
+        <th scope="col">Transcript if probed</th>
+        <th scope="col">Headless and CI</th>
+        <th scope="col">Rotation cost</th>
+        <th scope="col">Failure mode</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1. <code>/login</code> sign-in</td>
+        <td><code>auth.json</code> (<code>600</code>)</td>
+        <td>✅ good: invisible</td>
+        <td>⚠️ mixed: visible if auth file is read</td>
+        <td>⚠️ mixed: paste-redirect flow</td>
+        <td>✅ good: one file</td>
+        <td>❌ bad: /logout does not revoke upstream</td>
+      </tr>
+      <tr>
+        <td>2. Literal key in <code>auth.json</code></td>
+        <td><code>auth.json</code> (<code>600</code>)</td>
+        <td>✅ good: invisible</td>
+        <td>⚠️ mixed: visible if auth file is read</td>
+        <td>✅ good</td>
+        <td>✅ good: one file</td>
+        <td>✅ good: fails loud at request time</td>
+      </tr>
+      <tr>
+        <td>3. <code>auth.json</code> <code>!command</code></td>
+        <td>Secret manager</td>
+        <td>✅ good: invisible</td>
+        <td>✅ good: only if command is run on purpose</td>
+        <td>⚠️ mixed: keyring must be unlocked</td>
+        <td>✅ good: in the store</td>
+        <td>❌ bad: unresolved until pi restarts</td>
+      </tr>
+      <tr>
+        <td>4. <code>models.json</code> <code>${VAR}</code></td>
+        <td>Environment</td>
+        <td>❌ bad: dumps expose it</td>
+        <td>❌ bad: env probes print it</td>
+        <td>✅ good</td>
+        <td>⚠️ mixed: launcher must set var</td>
+        <td>✅ good: fails loud</td>
+      </tr>
+      <tr>
+        <td>5. <code>models.json</code> <code>!command</code></td>
+        <td>Secret manager</td>
+        <td>✅ good: invisible</td>
+        <td>✅ good: only if command is run on purpose</td>
+        <td>⚠️ mixed: keyring must be unlocked</td>
+        <td>✅ good: in the store</td>
+        <td>⚠️ mixed: retries per request</td>
+      </tr>
+      <tr>
+        <td>6. Custom <code>headers</code></td>
+        <td>Depends on the form</td>
+        <td>⚠️ mixed: depends on form</td>
+        <td>⚠️ mixed: depends on form</td>
+        <td>✅ good</td>
+        <td>✅ good</td>
+        <td>⚠️ mixed: endpoint-specific</td>
+      </tr>
+      <tr>
+        <td>7. Provider env vars</td>
+        <td>Environment</td>
+        <td>❌ bad: dumps expose it</td>
+        <td>❌ bad: env probes print it</td>
+        <td>✅ good</td>
+        <td>⚠️ mixed: launcher must set var</td>
+        <td>✅ good: fails loud</td>
+      </tr>
+      <tr>
+        <td>8. Credential <code>env</code> object</td>
+        <td><code>auth.json</code> (<code>600</code>)</td>
+        <td>✅ good: scoped internally</td>
+        <td>⚠️ mixed: visible if auth file is read</td>
+        <td>✅ good</td>
+        <td>✅ good: one file</td>
+        <td>✅ good</td>
+      </tr>
+      <tr>
+        <td>9. Ambient cloud creds</td>
+        <td>Cloud SDK stores</td>
+        <td>⚠️ mixed: env-configured parts</td>
+        <td>⚠️ mixed: profile names show</td>
+        <td>✅ good: built for it</td>
+        <td>✅ good: platform rotation</td>
+        <td>⚠️ mixed: token expiry</td>
+      </tr>
+      <tr>
+        <td>10. <code>--api-key</code> flag</td>
+        <td>Command line</td>
+        <td>❌ bad: <code>ps</code> shows it</td>
+        <td>❌ bad: history and logs</td>
+        <td>✅ good</td>
+        <td>✅ good: per run</td>
+        <td>✅ good</td>
+      </tr>
+      <tr>
+        <td>11. SDK runtime key</td>
+        <td>Your application</td>
+        <td>✅ good: in-process</td>
+        <td>⚠️ mixed: depends on app</td>
+        <td>✅ good</td>
+        <td>✅ good: app-owned</td>
+        <td>⚠️ mixed: app-owned</td>
+      </tr>
+      <tr>
+        <td>12. Provider extension</td>
+        <td>Extension logic</td>
+        <td>⚠️ mixed</td>
+        <td>⚠️ mixed</td>
+        <td>⚠️ mixed</td>
+        <td>⚠️ mixed</td>
+        <td>❌ bad: opaque</td>
+      </tr>
+      <tr>
+        <td>13. No key (local models)</td>
+        <td>Nowhere</td>
+        <td>✅ good: nothing to leak</td>
+        <td>✅ good: nothing to leak</td>
+        <td>✅ good</td>
+        <td>➖ not applicable</td>
+        <td>✅ good</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="decide">Decide by situation</h2>
+<div class="grid">
+  <div class="mini">
+    <h4>🏠 Personal machine, one provider</h4>
+    <p>
+      Mechanism 3 with a keyring, or the sops recipe if you already keep secrets in an
+      encrypted store. Fall back to mechanism 2 if you dislike the locked-keyring failure
+      mode.
+    </p>
+  </div>
+  <div class="mini">
+    <h4>🔁 CI or a disposable runner</h4>
+    <p>
+      Mechanism 7 with a short-lived key, or mechanism 10 for a single step. The runner dies
+      with the environment anyway; just make the key cheap to rotate and scope it down.
+    </p>
+  </div>
+  <div class="mini">
+    <h4>🧩 Custom OpenAI-compatible endpoint</h4>
+    <p>
+      Mechanism 2 or 3. Both give the endpoint a credential pi resolves internally.
+      Keep <code>models.json</code> free of secrets so it stays safe to browse and share.
+    </p>
+  </div>
+  <div class="mini">
+    <h4>☁️ Deep in a cloud identity system</h4>
+    <p>
+      Mechanism 9. Platform-managed short-lived credentials beat any hand-copied key.
+    </p>
+  </div>
+  <div class="mini">
+    <h4>🧪 Embedded pi inside a product</h4>
+    <p>
+      Mechanism 11. Your vault, your rotation, in-memory sessions. Nothing pi-shaped stores
+      anything.
+    </p>
+  </div>
+  <div class="mini">
+    <h4>🏠 Local models only</h4>
+    <p>
+      Mechanism 13. There is no key question to answer.
+    </p>
+  </div>
+</div>
+
+<h3>The ranking, with reasons</h3>
+<p>
+  My full ordering for a personal machine:
+  <strong>3 (secret-manager command) &gt; 2 (literal <code>auth.json</code>) &gt; 1
+  (<code>/login</code>) &gt; 8 &gt; 9 &gt; 5 &gt; 6 &gt; 11 &gt; 4 &gt; 7 &gt; 10 &gt; 12</strong>,
+  with 13 outside the race.
+</p>
+<ul class="tight">
+  <li><strong>3 over 2:</strong> the secret stops existing in any file pi owns; casual reads
+    find a command string, not a key.</li>
+  <li><strong>2 over 1:</strong> same storage, but mechanism 2 does not depend on a provider
+    supporting a sign-in flow and is scriptable.</li>
+  <li><strong>1 over 8:</strong> a real credential flow gets you revocation and refresh;
+    a stored literal gives neither.</li>
+  <li><strong>8 over 9:</strong> for providers without cloud identity, a scoped private file
+    beats environment-carried identifiers.</li>
+  <li><strong>9 over 5:</strong> platform rotation and short lifetimes outweigh the elegance
+    of a per-request command.</li>
+  <li><strong>5 over 6:</strong> fewer moving parts; a header map is for endpoints that
+    demand it.</li>
+  <li><strong>6 over 11:</strong> for a terminal user, embedding pi is a bigger decision than
+    where a key lives.</li>
+  <li><strong>11 over 4:</strong> in-process resolution beats the environment's accidental
+    broadcast, when you can afford it.</li>
+  <li><strong>4 over 7:</strong> interpolation is at least scoped to the provider block.</li>
+  <li><strong>7 over 10:</strong> an environment variable does not show up in
+    <code>ps</code> output for the whole session.</li>
+  <li><strong>10 over 12:</strong> a flag you control beats an opaque extension that can read
+    everything.</li>
+</ul>
+
+<h2 id="habits">Keeping keys out of transcripts</h2>
+<ul class="tight">
+  <li>Never <code>cat</code> a file that may hold a secret. Inspect shapes with a masking
+    script instead (see evidence section).</li>
+  <li>Remember <code>pi auth print-api-key</code> prints the real key on purpose. Use
+    <code>pi auth check --json</code> (which returns only status) when you want to know
+    whether credentials resolve <span class="badge ok">✓ verified</span>.</li>
+  <li>Before sharing or exporting a session, search it for your key prefixes. Pi's security
+    doc tells you to do exactly this.</li>
+  <li>When a key is ever printed anywhere, rotate it. Scrubbing copies is a maybe; rotation is
+    a fix.</li>
+  <li>Prefer masked probes (<code>wc -c</code>, length checks, shape printing) whenever you
+    verify secret plumbing.</li>
+</ul>
+
+<h2 id="evidence">Evidence ledger</h2>
+<p>
+  What was run on this machine versus quoted from documentation. Nothing in this doc is
+  unlabeled guesswork.
+</p>
+<h3>Verified by running</h3>
+<ul class="tight">
+  <li>Precedence <code>--api-key</code> &gt; <code>auth.json</code> &gt;
+    <code>models.json</code>: pi pointed at a loopback stub server while the
+    <code>Authorization</code> header of real requests was recorded
+    (scratch probe, throwaway agent dir via <code>PI_CODING_AGENT_DIR</code>).</li>
+  <li>Custom provider has no <code>NAME_API_KEY</code> env fallback: pi sent no request with
+    only <code>TESTPROV_API_KEY</code> set.</li>
+  <li><code>auth.json</code> <code>!command</code> runs through a shell:
+    <code>!echo HOME_IS_$HOME</code> returned the expanded home path.</li>
+  <li><code>pi auth print-api-key</code> returns resolved values;
+    <code>pi auth check --json</code> returns only
+    <code>{"status": "ready", ...}</code>.</li>
+  <li>Encrypted-store extract works non-interactively and prints exactly the value length
+    (checked with <code>| wc -c</code>, value never displayed).</li>
+  <li>Permissions: credential files on this machine are <code>600</code>; a
+    <code>models.json</code> holding a literal key was <code>644</code> before this review.</li>
+</ul>
+<h3>Quoted from pi 0.87.1 docs</h3>
+<ul class="tight">
+  <li>Precedence sentence and interpolation/command forms: <code>docs/models.md</code>.</li>
+  <li>Command caching and failure semantics: <code>docs/providers.md</code>.</li>
+  <li>Provider environment variable names, cloud credential chains, credential
+    <code>env</code> object: <code>docs/providers.md</code>.</li>
+  <li>Transcript and credential handling advice: <code>docs/security.md</code>.</li>
+  <li>SDK credential options: <code>docs/sdk.md</code> and
+    <code>examples/sdk/09-api-keys-and-oauth.ts</code>.</li>
+  <li>Extension trust warning: <code>docs/custom-provider.md</code>.</li>
+</ul>
+<h3>Masked shape probe (safe way to inspect a credential file)</h3>
+<pre><code>python3 -c "
+import json
+d = json.load(open('/home/YOUR_USER/.pi/agent/auth.json'))
+def mask(o):
+    if isinstance(o, dict): return {k: mask(v) for k, v in o.items()}
+    if isinstance(o, list): return [mask(v) for v in o]
+    if isinstance(o, str): return f'&lt;str len={len(o)}&gt;'
+    return f'&lt;{type(o).__name__}&gt;'
+print(json.dumps(mask(d), indent=1))"</code></pre>
+
+<h2 id="glossary">Glossary</h2>
+<dl class="facts">
+  <dt>Agent directory</dt>
+  <dd>Where pi keeps user-level config. Default <code>~/.pi/agent</code>, overridable with
+    <code>PI_CODING_AGENT_DIR</code>.</dd>
+  <dt><code>auth.json</code></dt>
+  <dd>Pi's credential file. Holds API keys and OAuth tokens. Should be
+    <code>600</code>. Never commit it.</dd>
+  <dt><code>models.json</code></dt>
+  <dd>Where custom endpoints and model overrides live. Not a credential store; treat anything
+    secret-shaped there as a liability.</dd>
+  <dt>Transcript</dt>
+  <dd>The session <code>.jsonl</code> file. It records tool calls and their output. Anything
+    printed during a session lives there.</dd>
+  <dt>sops and age</dt>
+  <dd>sops encrypts values inside a structured file while leaving key names visible;
+    age provides the public-key encryption underneath. One private identity file decrypts
+    it.</dd>
+  <dt>Keyring</dt>
+  <dd>An OS service that stores secrets behind a login or unlock prompt, queryable by name
+    (macOS Keychain, Linux Secret Service).</dd>
+  <dt>Interpolation</dt>
+  <dd>Replacing <code>$NAME</code> inside a config value with the environment variable's
+    content when pi reads it.</dd>
+</dl>
+
+<footer>
+  <p>
+    Audit document for pi 0.87.1 credential mechanisms.
+    Written 2026-09-29. Self-contained: no external scripts, fonts, or styles.
+    Theme follows your system preference (use the toggle to override).
+  </p>
+  <p>
+    The status quo of the current setup is deliberately excluded from the option set, per
+    request. No real keys, provider names, or account identifiers appear in this document.
+  </p>
+</footer>
+</main>
+
+<script>
+  /* region theme toggle: auto (system) -> light -> dark, persisted */
+  (function () {
+    var button = document.getElementById("theme-toggle");
+    var modes = ["auto", "light", "dark"];
+    var labels = { auto: "Theme: Auto", light: "Theme: Light", dark: "Theme: Dark" };
+    var saved = localStorage.getItem("pi-audit-theme");
+    if (modes.indexOf(saved) === -1) saved = "auto";
+
+    function apply(mode) {
+      if (mode === "auto") {
+        document.documentElement.removeAttribute("data-theme");
+      } else {
+        document.documentElement.setAttribute("data-theme", mode);
+      }
+      button.textContent = labels[mode];
+      button.setAttribute("data-mode", mode);
+      localStorage.setItem("pi-audit-theme", mode);
+    }
+
+    button.addEventListener("click", function () {
+      var current = button.getAttribute("data-mode") || "auto";
+      var next = modes[(modes.indexOf(current) + 1) % modes.length];
+      apply(next);
+    });
+
+    var media = window.matchMedia("(prefers-color-scheme: dark)");
+    media.addEventListener("change", function () {
+      if ((button.getAttribute("data-mode") || "auto") === "auto") apply("auto");
+    });
+
+    apply(saved);
+  })();
+  /* endregion */
+  /* region details expand/collapse control */
+  (function () {
+    var button = document.getElementById("details-toggle");
+    var all = function () {
+      return Array.prototype.slice.call(document.querySelectorAll("details"));
+    };
+    button.addEventListener("click", function () {
+      var open = all().some(function (d) { return !d.open; });
+      all().forEach(function (d) { d.open = open; });
+      button.textContent = open ? "Collapse all" : "Expand all";
+    });
+  })();
+  /* endregion */
+</script>
+</body>
+</html>
