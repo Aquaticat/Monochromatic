@@ -400,8 +400,34 @@ local logger artifacts,
 and the shim's build cache/configuration are excluded.
 Artifact manifest SHA-256:
 `d9df0286368eecc8a54f826c80b2524f5eb22344085ed5cd9cdd84d2ec86e1e3`.
-File copying,
-staged resolution,
+The create-new copy `proc_09d2` passed:
+all selected bytes and file modes matched,
+and all 68 staged dependency links resolved to their recorded targets.
+Runtime manifest SHA-256:
+`7c4abb626e5a065d984c1c6922bd1a05e76c34c60cca516921f6b343e7044d8b`.
+The ignored private build context is `contract/sdk/staging/context`;
+only controllers and receipts are committed,
+not bulk dependency bytes.
+
+Task #16 has resumed.
+Runtime-byte inspection `proc_fe34` completed in a 2 GiB/2 CPU offline read-only container.
+It reported Node `v26.10.0` on Linux x64,
+without running the donor's old application entrypoint.
+Node binary SHA-256:
+`ab9c8eecf9f82d6693cdc3accced17034065c8d96213b0aa76a7e803d20ae1da`.
+`libatomic` SHA-256:
+`b08060687ffb5768003b0c283cac5bddaa84ea5526d4d7bcb5994af98af5a130`.
+The separate image build `proc_8d60` completed:
+`a4651064cf04adb211306ef98fe56bc55aba3279e9af98f459085a10aa55e186`.
+Its configured user is `65534:65534`,
+entrypoint `/usr/local/bin/node`,
+and default command `--version`.
+Its Containerfile copies only the measured runtime files,
+staged SDK artifacts,
+and new complete-policy input.
+It has no `RUN` instruction and defaults to Node's version command.
+No SDK package code or session has been executed yet.
+In-container resolution,
 native/Wasm compatibility,
 and actual import/startup still need verification.
 See the [SDK staging diagnosis](../troubleshooting/pi-sdk-staging.md).
