@@ -760,8 +760,9 @@ Q14 and Q15 remain settled.
 Q17's conflicting same-human instructions impose no required approve/deny/ask outcome.
 The user classified that scenario as user error and accepts any system response to that conflict.
 Independent safeguards and the deterministic finalizer remain required.
-The current frontier is Q18,
-fork inheritance of separate human approvals for a particular action scope.
+Q18 A permits verified fork inheritance of separate human approvals for the same eligible action scope.
+The current frontier is Q19,
+whether ordinary reset also clears remembered human action approvals within its session.
 Other contract and qualification branches remain open;
 final shared-understanding confirmation is still required.
 Laya work and the original reserved corpus remain outside this resumption.
@@ -959,28 +960,38 @@ No persistent edit to the standing directive is authorized by this answer.
 
 ### Q18: Fork inheritance of human action approvals
 
-Unanswered.
-Q15 and Q16 concern reusable directives,
-not the separate record created when the human allows a particular flagged action.
-Q9b retains action-approval reuse but does not settle its cross-session lifetime.
-
-At fork creation,
-should B be able to reuse A's explicit human approval for the same verified action scope,
-or require its own confirmation before reusing that scope?
-Both choices require an original human witness and all current scope,
+The user selected A:
+a verified fork may inherit an explicit human approval for the same eligible action scope.
+Verified lineage,
+the original human-confirmation witness,
+and all current scope,
 policy,
-and freshness checks.
-Machine-generated approvals are not human approvals.
+and freshness checks are required.
+A copied entry or an approval label alone is not authority.
+Old machine-generated verdicts are not human approvals.
 
-Verified inheritance is recommended:
-it preserves continuity for the already approved action,
-but carries that approval into another session without a new confirmation.
-Requiring confirmation in B makes that new session boundary explicit,
-but repeats approval even when the action scope is unchanged.
+This settles eligibility at fork creation for the separate action-approval record,
+in addition to Q15's reusable-directive inheritance.
+It does not select later cross-session revocation behavior or change what `/guard reset` clears.
+
+### Q19: Reset scope for remembered human action approvals
+
+Unanswered.
+The inspected reset clears reusable directives,
+not separate remembered human action approvals.
+Q14 through Q18 did not expand it to those records.
+
+Should ordinary reset also clear remembered human action approvals within its session,
+or remain directive-only with action approvals revoked separately?
+Clearing both is recommended:
+reset then clears both stored permission kinds,
+but subsequent matching actions can need fresh approval.
+A directive-only reset preserves the narrower operation and action-approval reuse,
+but needs a separate revocation path for human action approvals.
 Ranking:
-verified inheritance > new confirmation in B.
-This question concerns eligibility at fork creation only;
-it does not select later revocation behavior or change what `/guard reset` clears.
+clear both > directive-only reset.
+This asks about record kinds within the resetting session,
+not whether revocation propagates to an already-created fork.
 
 ## Accepted TypeSafe AUP scope
 

@@ -58,13 +58,21 @@ semantic qualification,
 and deterministic finalization remain required.
 This does not authorize changing the standing directive or treating uncertain model estimates as a human conflict.
 
-Task #3 is active at unanswered Q18:
-fork inheritance of separate explicit human approvals for a particular action scope.
+The user selected Q18 A:
+verified forks may inherit separate explicit human approvals for the same eligible action scope.
+Verified lineage,
+the original human-confirmation witness,
+and current scope,
+policy,
+and freshness checks remain required.
+Old machine verdicts are excluded from this human-approval route.
+
+Task #3 is active at unanswered Q19:
+whether ordinary reset also clears remembered human action approvals within its session.
 The [resumed design frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
 records the question.
-Verified inheritance is recommended but unaccepted;
-the alternative requires confirmation in the new fork.
-Later revocation and reset scope are outside that question.
+Clearing both directives and human action approvals is recommended but unaccepted.
+Later cross-session revocation is separate.
 No production implementation,
 cutoff selection,
 Laya restart,
@@ -138,8 +146,10 @@ Vendor-documented adversarial-state sensitivity and the recurring read-scope pat
 Complete current policy is still mandatory despite generic vendor filtering advice.
 
 Real human-authority/lifecycle/finalizer qualification remains separate.
-Q16 B and Q17's unconstrained conflict outcome are settled;
-Q18 is now the resumed interview frontier.
+Q16 B,
+Q17's unconstrained conflict outcome,
+and Q18 A are settled;
+Q19 is now the resumed interview frontier.
 No production cutoff or code change has been approved,
 and the final shared-design confirmation is not complete.
 

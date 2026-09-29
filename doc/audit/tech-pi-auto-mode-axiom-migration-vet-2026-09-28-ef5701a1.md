@@ -1435,6 +1435,28 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Accepted Q18 human action-approval inheritance
+
+The user selected Q18 A:
+a verified fork may inherit a separate explicit human action approval for the same eligible scope.
+Verified lineage,
+the original human-confirmation witness,
+and current scope,
+policy,
+and freshness checks remain required.
+Copied approval labels alone are insufficient,
+and old machine verdicts cannot enter through this human-approval route.
+Q18 settles eligibility at fork creation,
+not later cross-session revocation or reset scope.
+
+The [live interview frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
+now asks Q19:
+should ordinary reset also clear remembered human action approvals within its session,
+or remain directive-only?
+Clearing both stored permission kinds is recommended but unaccepted.
+This is distinct from propagation to an already-created fork.
+No production change or new model assessment was made.
+
 ## Accepted Q17 conflict outcome
 
 The user answered Q17:

@@ -455,11 +455,16 @@ policy,
 branch,
 and provenance still match.
 Any new qualification-dependent cache must also identify the definitions and profile that justified it.
-[Q18](pi-auto-mode-axioms.md#q18-fork-inheritance-of-human-action-approvals)
-now asks whether a verified fork may inherit separate explicit human action approvals.
-Verified inheritance is recommended but unaccepted.
-Q15 and Q16 did not settle this separate record's lifetime.
-The current question does not alter reset scope or decide later cross-session revocation.
+The user selected [Q18 A](pi-auto-mode-axioms.md#q18-fork-inheritance-of-human-action-approvals):
+a verified fork may inherit separate explicit human action approvals for the same eligible scope,
+with the original human witness and current scope,
+policy,
+and freshness checks.
+Old machine verdicts are not eligible through this human-approval route.
+This does not settle subsequent cross-session revocation.
+[Q19](pi-auto-mode-axioms.md#q19-reset-scope-for-remembered-human-action-approvals)
+now asks whether reset should also clear remembered human action approvals within its session.
+Clearing both record kinds is recommended but unaccepted.
 
 ## Decision and finalization interface
 
