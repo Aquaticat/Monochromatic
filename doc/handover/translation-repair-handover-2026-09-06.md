@@ -88,8 +88,19 @@ this one says what changed after it.
   the last being the unwrapped-link floor (`28a4ceb63`)
   and the neutral pronoun floor on a new shared token reading (`2c0cc08d8`),
   and no cache version moves.
-  The families left are straight against curly quotes,
-  trimmed text compared with raw text,
+  The third,
+  straight against curly quotes,
+  closed on 2026-09-29 as B24:
+  a model's quote against its document now reads through the evidence fold,
+  two renderings through the typography fold
+  (the slate collapse,
+  the page-title lexicon,
+  the Latin title floor,
+  the title-reference pass),
+  guillemets are refused by a floor,
+  and each change rides inside its cache version;
+  the attestation also reads each reference quote in one reference line (B25).
+  The families left are trimmed text compared with raw text,
   quorum denominators,
   sheets missing blocks
   and silent fallbacks.

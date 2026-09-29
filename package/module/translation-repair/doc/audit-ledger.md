@@ -8041,6 +8041,174 @@ Prevention:
 `mistake-prevention.md`,
 "Words inside words".
 
+### B24: straight against curly quotes (B21, family three)
+
+Status:
+fixed,
+2026-09-29,
+site by site with each site's exposure measured;
+the sites the pinned corpus cannot reach are recorded as unexposed and left as written.
+A comparison of text that one side writes with curly quotation marks
+and the other with straight ones,
+or with corner brackets where the other writes English quotes,
+failed wherever it compared bytes.
+
+#### Two folds, for two questions
+
+`quote-normalize.ts` names both (`7c3b7f6e3`).
+The evidence fold (`normalizePunctuation`) asks whether a model's quote is the document's words,
+and maps ‘’“”,
+「」 and 『』,
+and the no-break space.
+The typography fold (`straightenQuotes`) asks whether two renderings are one wording
+up to what the typography restoration would change,
+and maps ‘’“” only,
+since a rendering that kept 「」 and one that wrote English quotes are two renderings.
+`straightenProseQuotes` reads the typography fold only where the restoration reads,
+in prose,
+since a quote inside a code span or a tag is content.
+
+#### Evidence sites
+
+The archive block review's source-quote anchor (`isArchiveSourceQuoteAnchored`) found a reviewer's quote with a raw `includes`
+and counted its minimum in UTF-16 units.
+Of the 13 stored source-supported replies,
+8 anchor verbatim,
+none anchors only after the fold,
+and 5 anchor neither way.
+Red `b457f1c6a`,
+fix `4b9e1519d`.
+
+The reference attestation's `compacted` removed whitespace but not quote style,
+so a voice quoting the archive's curly apostrophe straight lost its vote.
+The run logs hold 195 extraction summaries with 126 items answered and 109 verified,
+and the drops were not logged item by item until B25 made them so.
+Red `0103559d0`,
+fix `a57e6c4c9`;
+the sheet now states the check it gets (`f2ddc237c`).
+
+The introduced-defect screen (`screenEvidence`,
+`restatesPriorIssue`) anchored a prober's quote,
+and compared it with an accepted issue's,
+after folding whitespace only.
+Of the 650 stored claims,
+562 recompute to their stored verdict,
+and one (four-entry-pin-20260901) turns from unanchored to corroborated under the fold.
+Red `c8d3f480e`,
+fix `74a55e92b`;
+the red commit's restatement case named no issue on its region (M58).
+
+#### Typography sites
+
+The Latin title floor exempted a bracketed English title the page writes with a raw `includes`.
+Replayed frozen against current over every archive slice and would-ship slice,
+15 rows fire under both,
+none clears and none is added;
+the positive control shows the builds disagree on the cat fixture.
+Red `2ebde5da3`,
+fix `8af5ec09a`.
+
+The page-title lexicon's comparison key folded case and ASCII spaces only,
+so "The Cat's Song" and "The Cat’s Song" split their votes,
+and its wrapper set lacked 「」,
+『』 and underscores.
+Nothing is cached under the page-title version:
+a find for slice-cache files since 2026-09-28T19:38Z finds none,
+and one from 2026-09-27T00:00Z finds 494.
+Red `7cc0b1f7f`,
+fix `84e647be5`.
+
+The slate's `collapseKey` kept apart renderings that differ only in prose quote style,
+which the restoration makes one after the ballot,
+so a copy of the incumbent with straightened quotes stood as a second candidate and split its stake.
+Of the 2,905 stored translate and consolidation slates,
+305 carry such a twin
+(327 pairs,
+the same under the prose-only and the every-quote reading),
+246 of the pairs with the incumbent;
+in 30 the chosen candidate was the incumbent's quote-only twin,
+and in 7 the twins' summed weight reaches the chosen candidate's.
+The repair lane's copy check reads the same key.
+Red `d31aad464`,
+fix `b3b4e59db`.
+
+The title-reference pass settled several quoted spans by the one whose raw text starts with the heading's rendering,
+and called a reference the heading's only on raw equality.
+Reading both through the typography fold also exposed a B23 leftover:
+the start had no word edge,
+so beside a second quoted title "Catnip Days" was taken as the heading "Cat"'s reference
+and rewritten to "Cat".
+Replayed frozen against current over the 254 settled artifacts,
+28 findings stand under both and no replacement differs;
+the control shows the builds disagree on both fixtures.
+Red `cbee994be` and `0dad08334`,
+fix `7a18a1d1d`.
+
+#### Guillemets and the editor sheet's marker
+
+The TianqiChen66611 run shipped slice 16 with «» around a quotation,
+though one judge's reason on its ballot named the marks.
+Across the 266 stored artifacts it is the only comparison row of 6,285
+whose lane text carries a guillemet its incumbent lacks,
+and no pinned original or archive carries one.
+`translate-guillemets.ts` refuses prose guillemets before any judge reads a candidate,
+unless the original or the page carries one.
+The same characters make the editor sheet's «REGION n» marker,
+which the sheet-leak floor now lists with the editor sheet's unfenced `CURRENT TEXT:` and `CONTEXT: ...` heads,
+none of which the 184 pinned files carry.
+Red `89ab2ce96`,
+fix `db9d83146`.
+
+#### Measured and left as written
+
+The Han title floor's page exemption compares a title from the original with the page:
+none of the 133 bracketed titles in the pinned originals and archives carries a quote mark
+(the same scan finds a middle dot in 4).
+No heading title stands in ‘’ in the 92 originals
+(1 stands in “”,
+5 in 「」 or 《》),
+and no heading rendering stands in single quotes on a settled page
+(16 in “”);
+adding single-quote pairs to the title-reference marks would cut a span at an apostrophe for no effect here.
+The corpus holds one name-gloss line,
+in double curly quotes.
+None of the 67 cited links in the originals carries a curly quote,
+a CJK bracket or CJK punctuation,
+and the archives hold one bare-URL range,
+which carries none;
+a wider URL-stop set could cut a real IRI.
+The sensitivity audit compares document text on both sides,
+deduplication keys on located offsets,
+and the quote-balance floor's header already says why single marks are left alone.
+
+#### Mutants and caches
+
+The mutation batch (`b24-mutants.json`,
+one or more mutants for each fold,
+wrapper,
+floor exemption,
+line-head check and verdict branch)
+caught 27 of 29,
+and its comment control survived.
+Reading a reference line without checking its mark survived,
+since no refused line carried a number and a space where the head's number stands,
+and so did leaving a restated claim's quote unfolded,
+since the restatement case quoted straight against a curly issue only.
+A list item as long as the mark and the mirrored restatement case (`ccf100940`) now catch both,
+with the control surviving again.
+
+Every change rides inside its cache version:
+translate 15,
+consolidation 20,
+lane contest 6,
+page title 1,
+refine 5 and slice 34 were all set after the newest slice-cache file,
+the one of 04:26 UTC on 2026-09-27,
+and each account now names the change.
+Prevention:
+`mistake-prevention.md`,
+"Which fold for which question".
+
 ### B25: the attestation checked a reference quote against every reference at once
 
 Status:
@@ -8497,6 +8665,27 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M58: a red case whose fixture could not reach the check it was said to pin
+
+Status:
+happened 2026-09-29 in B24's introduced-defect screen red guards (`c8d3f480e`),
+caught when the fix left the case red,
+corrected in `74a55e92b`,
+and the red commit carries a correcting comment.
+The restatement case gave its region no issue ids,
+and the screen collects prior quotes only from the issues a region names,
+so the case could never reach the accepted issue's quote:
+it was red before the fix and stayed red after it.
+The red commit's message nonetheless said the case "pins the second fold once the first holds",
+a claim no mutant had tested.
+This is M29's and M56's class again,
+now in a commit message as well as a test.
+Prevention:
+a message says a case pins a branch only after the mutant that removes the branch has been caught;
+before that it says what the case fails on today,
+and a case that must pass a precondition to reach its branch
+is read against that precondition in the code before it is committed.
 
 ### M57: a cache-file check whose time this host's `find` refused, with its error discarded
 

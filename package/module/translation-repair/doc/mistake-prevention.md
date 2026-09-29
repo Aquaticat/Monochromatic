@@ -114,7 +114,9 @@ and mutation runs could not report a catch,
 or left out the test pinning the mutated token (M27,
 M41),
 or read a test run that crashed before any verdict as a survivor (M50);
-and a positive control addressed by line number changed nothing and read as a null (M52).
+a positive control addressed by line number changed nothing and read as a null (M52);
+and a red commit said a case pins a check its fixture could not reach,
+before any mutant had tested it (M58).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -135,6 +137,10 @@ never a pass,
 and a harness carries one control for each outcome it reports.
 A control edit is addressed by the text it changes,
 and its change is counted before the measurement runs.
+A message says a case pins a branch only once the mutant removing that branch is caught;
+until then it says what the case fails on today,
+and a case that must pass a precondition to reach its branch
+is read against that precondition in the code first.
 
 What enforces it:
 the mutation harness in each fix's record,
@@ -557,6 +563,66 @@ and the neutral pronoun guard holds the dashes,
 the slash after han and every exclusion;
 the unwrapped-link guard holds a longer address
 and an unwrap in a rendering whose original is refused too.
+
+## Which fold for which question
+
+What happened:
+text written with curly quotation marks on one side
+and straight ones,
+or English quotes for corner brackets,
+on the other was compared byte for byte (ledger B24).
+A model's quote of the archive failed to anchor or to verify,
+and lost its vote;
+a copy of the incumbent with straightened quotes stood on the slate as a second candidate
+and split the stake of one wording;
+two voices giving one title with different apostrophes split their lexicon votes;
+and a title reference apart from its heading only in apostrophe style was reported ambiguous
+or rewritten into the other style.
+Guillemets,
+which English prose never uses,
+shipped on one page although a judge named them,
+and nothing read them.
+
+The rule:
+first say which question the comparison asks.
+A model's quote against the document it quotes takes the evidence fold (`normalizePunctuation`),
+which also maps the corner brackets,
+because a model quoting a Chinese passage paraphrases them.
+Two renderings compared as one wording take the typography fold (`straightenQuotes`),
+which maps curly and straight only,
+because a rendering that kept 「」 is another rendering;
+a whole slice,
+which may carry code,
+takes `straightenProseQuotes`,
+which leaves a quote in a code span or a tag as written,
+the restoration's own reach.
+A title,
+a phrase or a document span compared with another document span needs no fold.
+Offsets taken in folded text are used only in folded text:
+every fold here maps one unit to one unit,
+and the comparison states which text its offsets index.
+A mark the pages never use is refused by a floor,
+not left to the judges:
+a judge who names it does not keep it off the page.
+Before folding a site,
+measure what the fold would move over the stored records,
+with a positive control that must move,
+and where the pinned corpus cannot reach the site,
+record it as unexposed rather than widen a reading that brings a hazard of its own
+(a single-quote pair cuts at an apostrophe;
+a wider URL stop cuts an address).
+
+What enforces it:
+`quote-normalize.unit.test.ts` pins both folds and the prose reading's code span,
+tag and astral characters;
+the attestation,
+archive-review,
+introduced-defect,
+Latin title,
+lexicon,
+slate-collapse and title-reference guards each hold a straight quote against a curly one,
+and the guillemet and sheet-leak guards hold the marks,
+the exemptions and the editor sheet's marker.
 
 ## Lint and edits
 
