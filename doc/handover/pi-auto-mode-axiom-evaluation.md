@@ -62,7 +62,8 @@ not a provider-weight ranking.
 Existing private-input consent for Jev remains sufficient for the named evaluation route.
 Task #63 records the approval and scopes remaining gates.
 Task #64 has frozen the [fresh native-Jev qualification study](../planning/pi-auto-mode-jev-fresh-qualification.md).
-Private root: `~/temp/agent/jev-native-qualification-2026-09-29`.
+Private root:
+ `~/temp/agent/jev-native-qualification-2026-09-29`.
 Its 216 new sources remain grouped across validation and locked test;
 228 calls include separate repeat/question-order controls.
 The original reserved bank remains unopened.
@@ -73,10 +74,28 @@ reconstruction/admission,
 and guard-omission controls passed.
 Private commit `4a438e6` binds 131 listed files,
 manifest SHA-256 `5ef4a294595a18474f1e91c653fc7ff1c1cec0fd2740136d66a5e91aa1c14ef4`.
-Collect validation,
-reconstruct it,
-then execute the unchanged locked test regardless of semantic validation success.
-Protocol failure stops collection without automatic retry or continuation.
+The initial validation `proc_f831` stopped after one completed pair:
+two HTTP 200 responses and `1005.230366` ms inside the assessment clock.
+The next pair had zero dispatches.
+The local assertion was `Research pacing timer returned early`,
+not a Jev refusal or assessment-budget failure.
+Original stopped raw is retained at private `9cb065a`,
+SHA-256 `462a1861d9ca47932b80b097b7ff39f3fecb4546fbabeeca6bdd0a1997eda964`.
+Task #64 is pending behind active #66.
+The separate `recovery/` plan allows only the remaining 118 validation and 108 test calls,
+with no completed-entry replay or source/question/reference/band/budget change.
+The measured-deadline pacing helper passed `proc_726c`;
+its injected early wakeup was extended,
+and the omission accepted it prematurely.
+Finite real-timer checks did not reproduce the early wakeup.
+Next: verify the accepted prefix,
+build and control actual recovery assembly/admission,
+freeze the correction,
+then resume only that missing schedule.
+Never rerun the original completed constructors,
+controls,
+freezer,
+or stopped live controller.
 No Jev training or calibration-adapter fitting is authorized.
 Task #65 then closes actionable service gaps without repeating completed audits.
 Every new query phase still needs a fixed schedule,

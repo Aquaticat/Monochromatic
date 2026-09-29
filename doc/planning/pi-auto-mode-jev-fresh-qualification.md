@@ -24,7 +24,11 @@ and reconstruction/admission controls at `7678683`.
 Private commit `4a438e6` seals 131 listed files in `execution-manifest.json`,
 SHA-256 `5ef4a294595a18474f1e91c653fc7ff1c1cec0fd2740136d66a5e91aa1c14ef4`.
 All source/input controls and the execution freeze completed before scored calls.
-Live validation and locked-test collection are the next steps.
+The initial live validation is stopped on a first-party research-pacing assertion.
+Its first pair completed successfully;
+no second pair was dispatched.
+The stopped receipt and frozen sources remain unchanged.
+Task #66 owns the separately frozen correction before remaining validation and test calls resume.
 
 The unauthenticated catalogue request returned HTTP 200 and included `typesafe/jev-1.13.0`.
 It took `541.182617` ms and returned `648828` bytes.
@@ -161,7 +165,31 @@ The admission omission control passed:
 a changed estimate in the verification receipt was rejected by the actual gate,
 but accepted when its canonical-reconstruction check was removed in a separate module copy.
 The source/input snapshot is frozen.
-Collect and reconstruct validation followed by the unchanged locked test.
+The initial validation process `proc_f831` accepted two HTTP responses in one `1005.230366` ms assessment,
+then stopped with `Research pacing timer returned early` before the next assessment.
+The exact failing gap was not retained;
+this was not a provider refusal or an assessment-budget failure.
+Private commit `9cb065a` preserves `validation.raw.json`,
+SHA-256 `462a1861d9ca47932b80b097b7ff39f3fecb4546fbabeeca6bdd0a1997eda964`.
+
+The [timer-floor diagnosis](../troubleshooting/node-timer-elapsed-floor.md)
+traces the unsupported single-wakeup assumption.
+`recovery/pacing.mjs` now waits against a measured deadline without lowering the four-second floor.
+Process `proc_726c` passed early/exact/late/stalled/backward controls,
+an omission control,
+and finite real-timer checks.
+The real-timer checks did not reproduce the original early wakeup;
+that limitation remains explicit.
+
+Task #66 must verify the accepted prefix and bind a no-replay continuation before further model calls.
+The declared recovery has at most 118 remaining validation calls and 108 test calls.
+No original completed entry,
+policy,
+question,
+reference,
+band,
+or five-second assessment budget changes.
+The ordinary original reader still must not accept the stopped phase as complete.
 Deep-recompute every report before drawing a qualification conclusion.
 Task #65 addresses actionable service gaps after the fresh semantic evidence;
 real human-authority/lifecycle/finalizer qualification remains a separate dependency.

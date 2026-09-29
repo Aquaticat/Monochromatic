@@ -1385,6 +1385,56 @@ edit `AGENTS.md`,
 use a coding-plan judge,
 nor implement production code.
 
+## Native-Jev validation stopped on local pacing
+
+The first live validation process `proc_f831` stopped after one completed two-source assessment.
+Both calls returned accepted HTTP 200 responses;
+the pair took `1005.230366` ms.
+Before the second pair began,
+the first-party runner raised `Research pacing timer returned early`.
+The active pair has zero calls and no attempts.
+This was neither a Jev refusal nor a five-second assessment failure.
+The exact failing gap was not retained because the assertion preceded its recording.
+
+Private commit `9cb065a` preserves the stopped `validation.raw.json`,
+SHA-256 `462a1861d9ca47932b80b097b7ff39f3fecb4546fbabeeca6bdd0a1997eda964`.
+The original source/input freeze remains unchanged.
+No validation receipt,
+semantic qualification result,
+or test call has been produced from that incomplete phase.
+
+Task #64 is pending behind active #66.
+The [timer-floor diagnosis](../troubleshooting/node-timer-elapsed-floor.md)
+traces the caller's unsupported inference from a single timer wakeup to an independently measured floor.
+Installed timer JavaScript exactly matched Node `v26.10.0` release source at
+`151845ab90d3926ceb36eedf1eade09619c3adc9`.
+This is not a complete native-artifact provenance claim.
+
+A separate recovery plan at private `7429415` retains the four-second research floor
+and five-second assessment clock.
+Its measured-deadline helper re-waits after an early wakeup and has a bounded wakeup count.
+Process `proc_726c` passed injected early/exact/late/stalled/backward cases,
+an omission control,
+and finite real-timer checks;
+private `9e49720` retains those results.
+The real-timer checks did not reproduce the original early wakeup,
+so no occurrence-rate or global-timing claim is made.
+
+The remaining recovery work must verify the accepted prefix,
+exercise actual no-replay assembly/admission,
+and freeze the corrected continuation before any more model calls.
+At most 118 validation and 108 test calls remain.
+Completed original entries are not replayed;
+predeclared repeat/order controls remain separately identified diagnostic entries.
+No question,
+reference,
+band,
+policy,
+recipient,
+production setting,
+Q16,
+or Laya scope changes.
+
 ## Fresh native-Jev execution freeze
 
 Task #64 is ready for its bounded live phases in
