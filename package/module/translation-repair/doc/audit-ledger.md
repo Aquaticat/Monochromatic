@@ -5602,6 +5602,12 @@ Three planted controls each failed the new case and were restored from the commi
 a citation in a decision record,
 a listed quotation no doc holds,
 and a current planning doc nothing links.
+A mutant of `citations` that never sees a quotation on its line
+failed the quotation fixture case and the repository case.
+The full suite passed on the result
+(0 FAIL,
+1,309 PASS lines;
+the harness prints a PASS line for some cases only).
 
 ### D27: the repository-level translation-repair docs have never passed the Markdown linter
 
