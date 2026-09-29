@@ -352,6 +352,19 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    Side finding:
    `doc/dependency-blocklist.md` and `doc/secret-management-caveman.html` sit outside any family.
    Approved.
+- Batch 19 (commits,
+   architecture,
+   skills):
+   14 rules stay 14;
+   GCG rewritten to the user's actual convention:
+   scope is package name without prefix,
+   bare doc family for repo-level docs (`docs(planning)`),
+   root file or tool name (`docs(AGENTS.md)`,
+   `fix(mise)`),
+   `*` only for multi-package.
+   No breaking-change clause (unused in 3000 commits).
+   No corrective comments on this session's 35 `docs(*)` commits (user choice over GCA's letter).
+   Approved.
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
@@ -1852,68 +1865,7 @@ Unrelated change blocks your edit:
  say so and ask.
 ```
 
-## Next action
-
-Batch 19 answers so far:
-rest of batch (all but GCG) approved;
-no breaking-change clause in GCG (0 of 3000 commits use `!` or `BREAKING CHANGE`).
-GCG decision (user):
-`*` is only for multi-package changes;
-repo-level doc commits use the bare doc family as scope (`docs(planning)`,
-`docs(troubleshooting)`).
-History disagrees:
-1034 of 1115 `(*)` commits touch only repo-level paths,
-including every one of this session's 35 planning-doc commits;
-bare family scopes appear 20 times (`troubleshooting` 13,
-`audit` 6,
-`runbook` 1).
-Open:
-scope for root files (`root` has 2 commits,
-`mise` 4;
-32 `AGENTS.md` commits used `*`),
-and whether to post corrective comments on this session's 35 `docs(*)` commits (GCA).
-This session's commits use `docs(planning)` from now on.
-
-### Commit message measurements (last 3000 non-merge commits, 2026-09-29)
-
-- Every subject matches `<type>(<scope>): <subject>`;
-   one lacks a scope;
-   none uses `!` or `BREAKING CHANGE`;
-   none is capitalized or ends with a period.
-- Types:
-   `docs` 2016,
-   `test` 364,
-   `fix` 280,
-   `feat` 122,
-   others under 60.
-- 1115 subjects use scope `*`:
-   1034 touch only repo-level paths (`doc/planning`,
-   `doc/troubleshooting`,
-   `doc/handover`,
-   `doc/audit`,
-   `AGENTS.md`),
-   50 one package plus repo-level paths,
-   31 several packages;
-   720 have no body.
-- 49 multi-package commits use a non-`*` scope.
-- 48 bodies carry per-package typed lines (GCB format).
-- No git-policy check validates commit messages;
-   `staged-changes-ignored` covers only pathless `--amend`/`--allow-empty`,
-   so CPN is unenforced.
-
-### SK1 to SK3 consumers (checked 2026-09-29)
-
-- The synced `setup-matt-pocock-skills` skill finds the block by its `## Agent skills` heading and writes `### Issue tracker`-style subheadings;
-   no skill matches the bold labels,
-   so they are cosmetic.
-- Consumer skills (`code-review`,
-   `to-spec`,
-   `wayfinder`) expect the tracker info in context;
-   the synced `code-review` skill checks `docs/agents/issue-tracker.md`,
-   which does not exist here (`doc/agent/`),
-   so SK1's path pointer is what redirects agents.
-
-### Pending batch 19 text
+### Batch 19
 
 ```md
 GCE:
@@ -1925,11 +1877,13 @@ Overrides the harness ask-first default.
 
 GCG:
  Commit subjects:
- `<type>(<scope>): <subject>`,
- scope required:
- package name without `@monochromatic-dev/`,
- or `*` for repo-level (`doc/`,
- `AGENTS.md`) or multi-package changes.
+ `<type>(<scope>): <subject>`;
+ scope:
+ package name minus `@monochromatic-dev/`,
+ doc family (`docs(planning)`),
+ root file or tool name (`mise`,
+ `AGENTS.md`),
+ or `*` for multi-package.
 
 GCB:
  Multi-package commit bodies:
@@ -2002,6 +1956,49 @@ SK3:
  see `doc/agent/domain.md`.
 ```
 
+#### Commit message measurements (last 3000 non-merge commits, 2026-09-29)
+
+- Every subject matches `<type>(<scope>): <subject>`;
+   one lacks a scope;
+   none uses `!` or `BREAKING CHANGE`;
+   none is capitalized or ends with a period.
+- Types:
+   `docs` 2016,
+   `test` 364,
+   `fix` 280,
+   `feat` 122,
+   others under 60.
+- 1115 subjects use scope `*`:
+   1034 touch only repo-level paths (`doc/planning`,
+   `doc/troubleshooting`,
+   `doc/handover`,
+   `doc/audit`,
+   `AGENTS.md`),
+   50 one package plus repo-level paths,
+   31 several packages;
+   720 have no body.
+- 49 multi-package commits use a non-`*` scope.
+- 48 bodies carry per-package typed lines (GCB format).
+- No git-policy check validates commit messages;
+   `staged-changes-ignored` covers only pathless `--amend`/`--allow-empty`,
+   so CPN is unenforced.
+
+#### SK1 to SK3 consumers (checked 2026-09-29)
+
+- The synced `setup-matt-pocock-skills` skill finds the block by its `## Agent skills` heading and writes `### Issue tracker`-style subheadings;
+   no skill matches the bold labels,
+   so they are cosmetic.
+- Consumer skills (`code-review`,
+   `to-spec`,
+   `wayfinder`) expect the tracker info in context;
+   the synced `code-review` skill checks `docs/agents/issue-tracker.md`,
+   which does not exist here (`doc/agent/`),
+   so SK1's path pointer is what redirects agents.
+
+## Next action
+
+Propose batch 20.
+
 ### Concurrent `AGENTS.md` changes
 
 Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- AGENTS.md`, checked 2026-09-29):
@@ -2012,18 +2009,8 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
 - 654507bf9 added SBS under "Adding new packages";
    it joins batch 16.
 
-### Remaining batches (24 rules)
+### Remaining batches (10 rules)
 
-- Batch 19:
-   GCE,
-   GCG,
-   GCB,
-   GCA,
-   CLG,
-   CPN,
-   XCM,
-   AD1 to AD4,
-   SK1 to SK3.
 - Batch 20:
    ORG,
    TAG,
