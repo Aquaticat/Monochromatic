@@ -1,16 +1,17 @@
 import {
+  mkdir,
   mkdtemp,
   mkdtempDisposable,
   readdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
-import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import { pathToFileURL, } from 'node:url';
 
 import { runnerEntrySources, } from '../build-entries.ts';
 import { contextRoot, } from '../log-context.ts';
+import { packageCacheDir, } from '../lookup-cache.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
 import {
@@ -21,13 +22,11 @@ import {
 import {
   baselineReportLines,
   censusReportLines,
-  type UnloadedSource,
 } from './coverage-census-print.ts';
 import {
   baselineStatusesOf,
   censusStretchOf,
   kindTotalsOf,
-  sourceKindOf,
   sourceRowsOf,
 } from './coverage-census-report.ts';
 import {
@@ -35,6 +34,7 @@ import {
   readBundle,
   runSuite,
   tallyCoverage,
+  unloadedSourcesOf,
 } from './coverage-census-steps.ts';
 import {
   type BundleLines,
@@ -58,8 +58,12 @@ import type { CoverageTally, } from './coverage-tally.ts';
 //
 // SPENDS NO QUOTA, and the raw coverage (about 8 GB for the whole suite) is
 // deleted once the census is written; the census and the suite's log stay in
-// a temporary directory the report names. A suite that fails is refused
-// rather than counted, since its failing tests skip code they would have run.
+// a directory the report names. Both sit under the package's cache directory
+// (`~/.cache/translation-repair/coverage` unless XDG_CACHE_HOME says
+// otherwise), ON DISK, because this host's `/tmp` is a 16 GB tmpfs held in
+// memory, which the raw coverage alone would half fill. A suite that fails is
+// refused rather than counted, since its failing tests skip code they would
+// have run.
 //
 // RUN FROM THE PACKAGE DIRECTORY, which the task does:
 // `mise run //package/module/translation-repair:coverage-census`.
@@ -200,34 +204,16 @@ async function reportCensus(
   /**
    Sources only those bundles carry, with their physical lines.
    */
-  const unloadedSources: readonly UnloadedSource[] = await Promise.all(
-    [...new Set(unloadedBundles.flatMap(function carried(bundle,): readonly string[] {
+  const unloadedSources = await unloadedSourcesOf({
+    packageDirectory,
+    carried: unloadedBundles.flatMap(function carried(bundle,): readonly string[] {
       return read.get(bundle,)
         ?.sources
         ?? [];
-    },),),]
-      .filter(function onlyThere(source,): boolean {
-        return !loadedSources.has(source,);
-      },)
-      .toSorted()
-      .map(async function counted(source,): Promise<UnloadedSource> {
-        return {
-          source,
-          kind: sourceKindOf({
-            source,
-            entryFiles,
-          },),
-          lines: (await readFile(
-            join(
-              packageDirectory,
-              source,
-            ),
-            'utf8',
-          )).split('\n',)
-            .length,
-        };
-      },),
-  );
+    },),
+    loadedSources,
+    entryFiles,
+  },);
   /**
    One row per source holding cold code.
    */
@@ -396,19 +382,30 @@ async function runCoverageCensus(): Promise<void> {
     clean,
   } = await packageCommit({ packageDirectory, },);
   /**
+   The census's home on disk, under the package's cache directory.
+   */
+  const censusHome = join(
+    packageCacheDir({ env: process.env, },),
+    'coverage',
+  );
+  await mkdir(
+    censusHome,
+    { recursive: true, },
+  );
+  /**
    Where the census and the suite's log are kept.
    */
   const reportDirectory = await mkdtemp(join(
-    tmpdir(),
-    'translation-repair-census-',
+    censusHome,
+    'census-',
   ),);
   /**
    Where V8 writes coverage, removed with everything in it when this returns
    or throws.
    */
   await using coverage = await mkdtempDisposable(join(
-    tmpdir(),
-    'translation-repair-coverage-',
+    censusHome,
+    'raw-',
   ),);
   censusLog.info(`at ${head}${clean ? '' : ' with uncommitted changes'}; coverage in ${coverage.path}, report in ${reportDirectory}`,);
   /**

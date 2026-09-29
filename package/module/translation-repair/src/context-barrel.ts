@@ -26,6 +26,7 @@ export {
   lookupCachePath,
   type LookupHit,
   type LookupRecord,
+  packageCacheDir,
   readCachedLookup,
   writeCachedLookup,
 } from './lookup-cache.ts';

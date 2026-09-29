@@ -125,7 +125,7 @@ description = "Ledger T8: the node build with a source map beside every chunk, w
 run = "rolldown --configLoader native --config rolldown.coverage.config.ts"
 
 [tasks."coverage-census"]
-description = "Ledger T8: build with source maps, run the unit suite (or the unit test files named after --) under V8 coverage, and print the package code no test ran, mapped to source lines; add --baseline <census.json> and --source <src/file.ts> after -- to read an earlier census's stretches against this run; rebuilds without maps after; SPENDS NO QUOTA (the whole suite writes about 8 GB of coverage to a temporary directory, deleted once read)"
+description = "Ledger T8: build with source maps, run the unit suite (or the unit test files named after --) under V8 coverage, and print the package code no test ran, mapped to source lines; add --baseline <census.json> and --source <src/file.ts> after -- to read an earlier census's stretches against this run; rebuilds without maps after; SPENDS NO QUOTA (the whole suite writes about 8 GB of coverage under ~/.cache/translation-repair/coverage, on disk rather than in a memory-backed /tmp, deleted once read; the census and the suite's log stay beside it)"
 depends = ["build:coverage"]
 depends_post = ["build"]
 run = "node dist/final/node/coverage-census.mjs"

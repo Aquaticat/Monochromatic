@@ -40,6 +40,7 @@ export {
   readBundle,
   runSuite,
   tallyCoverage,
+  unloadedSourcesOf,
 } from './corpus-run/coverage-census-steps.ts';
 export {
   type BundleScript,

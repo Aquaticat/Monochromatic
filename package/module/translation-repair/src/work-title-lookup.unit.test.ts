@@ -27,6 +27,7 @@ import {
   isLookupRecord,
   lookupCacheDir,
   lookupLinesOf,
+  packageCacheDir,
   lookupQueryFor,
   type LookupRecord,
   lookupWorkTitle,
@@ -182,6 +183,20 @@ await describe({
         },),).toBe('/tmp/x',);
         expect(lookupCacheDir({ env: { XDG_CACHE_HOME: '/tmp/y', }, },),).toBe('/tmp/y/translation-repair/lookup',);
         expect(lookupCacheDir({ env: {}, },),).toContain('/.cache/translation-repair/lookup',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: packageCacheDir.name,
+  children: [
+    it({
+      name: 'NAMES translation-repair UNDER XDG_CACHE_HOME, and under the home cache directory when it is unset or empty',
+      fn: async () => {
+        expect(packageCacheDir({ env: { XDG_CACHE_HOME: '/tmp/y', }, },),).toBe('/tmp/y/translation-repair',);
+        expect(packageCacheDir({ env: {}, },).endsWith('/.cache/translation-repair',),).toBe(true,);
+        expect(packageCacheDir({ env: { XDG_CACHE_HOME: '', }, },),).toBe(packageCacheDir({ env: {}, },),);
       },
     },),
   ],

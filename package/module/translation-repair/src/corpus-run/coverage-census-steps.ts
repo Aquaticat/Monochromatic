@@ -19,6 +19,8 @@ import {
   markerCount,
   PASS_MARKER,
 } from './coverage-census-input.ts';
+import type { UnloadedSource, } from './coverage-census-print.ts';
+import { sourceKindOf, } from './coverage-census-report.ts';
 import {
   type BundleScript,
   bundleScriptsOf,
@@ -38,7 +40,8 @@ import { resolveGit, } from './git-command.ts';
 // Ledger T8: the steps of the coverage census that touch files and
 // processes, apart from the entry so each is tested against a disposable
 // directory: which commit the build came from, the suite run under coverage,
-// the two readings of the coverage directory, and one bundle's text and map.
+// the two readings of the coverage directory, one bundle's text and map, and
+// the sources only unloaded bundles carry.
 
 /**
  Logger for the steps' progress lines.
@@ -393,6 +396,64 @@ export async function readBundle(
       );
     },),
   };
+}
+
+/**
+ The sources bundles no test loaded carry that no loaded bundle carries too,
+ each with its kind and physical lines, which the spans leave uncounted.
+
+ @param packageDirectory - package directory the sources are named from
+
+ @param carried - sources the unloaded bundles name, repeats allowed
+
+ @param loadedSources - sources the loaded bundles carry
+
+ @param entryFiles - sources the build names as runner entries
+
+ @returns One record per source, sorted by name
+
+ @example
+ ```ts
+ const unloaded = await unloadedSourcesOf({ packageDirectory, carried, loadedSources, entryFiles, },);
+ ```
+ */
+export async function unloadedSourcesOf(
+  {
+    packageDirectory,
+    carried,
+    loadedSources,
+    entryFiles,
+  }: {
+    readonly packageDirectory: string;
+    readonly carried: readonly string[];
+    readonly loadedSources: ReadonlySet<string>;
+    readonly entryFiles: ReadonlySet<string>;
+  },
+): Promise<readonly UnloadedSource[]> {
+  return await Promise.all(
+    [...new Set(carried,),]
+      .filter(function onlyThere(source,): boolean {
+        return !loadedSources.has(source,);
+      },)
+      .toSorted()
+      .map(async function counted(source,): Promise<UnloadedSource> {
+        return {
+          source,
+          kind: sourceKindOf({
+            source,
+            entryFiles,
+          },),
+          lines: (await readFile(
+            join(
+              packageDirectory,
+              source,
+            ),
+            'utf8',
+          )).split('\n',)
+            .length,
+        };
+      },),
+  );
 }
 
 //endregion Coverage census steps

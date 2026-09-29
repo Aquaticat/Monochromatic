@@ -75,26 +75,21 @@ export type CachedLookup =
   | { readonly kind: 'miss'; };
 
 /**
- Cache directory, from the override or the user's cache home.
- 
+ The package's directory under the user's cache home, which the lookup cache
+ and the coverage census each keep a directory in.
+
  @param env - environment to read
- 
- @returns Directory lookups are cached in
- 
+
+ @returns `translation-repair` under the XDG cache home when set, under `~/.cache` otherwise
+
  @example
  ```ts
- lookupCacheDir({ env: process.env, },);
+ packageCacheDir({ env: process.env, },);
  ```
  */
-export function lookupCacheDir(
+export function packageCacheDir(
   { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
 ): string {
-  /**
-   Explicit override when set and non-empty.
-   */
-  const override = env[LOOKUP_CACHE_DIR_VAR] ?? '';
-  if (override !== '')
-    return override;
   /**
    XDG cache home when set, the conventional default otherwise.
    */
@@ -111,6 +106,32 @@ export function lookupCacheDir(
   return join(
     base,
     'translation-repair',
+  );
+}
+
+/**
+ Cache directory, from the override or the user's cache home.
+
+ @param env - environment to read
+
+ @returns Directory lookups are cached in
+
+ @example
+ ```ts
+ lookupCacheDir({ env: process.env, },);
+ ```
+ */
+export function lookupCacheDir(
+  { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
+): string {
+  /**
+   Explicit override when set and non-empty.
+   */
+  const override = env[LOOKUP_CACHE_DIR_VAR] ?? '';
+  if (override !== '')
+    return override;
+  return join(
+    packageCacheDir({ env, },),
     'lookup',
   );
 }

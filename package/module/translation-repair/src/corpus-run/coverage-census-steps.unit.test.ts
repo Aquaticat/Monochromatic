@@ -38,6 +38,7 @@ import {
   SourceMapFileError,
   sourceLineAt,
   tallyCoverage,
+  unloadedSourcesOf,
 } from '../../dist/final/node/index.mjs';
 
 /**
@@ -399,6 +400,60 @@ await describe({
           packageDirectory: directory.path,
           bundle: 'nap.mjs',
         },),).rejects.toThrow(SourceMapFileError,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: unloadedSourcesOf.name,
+  children: [
+    it({
+      name: 'KEEPS EACH SOURCE ONCE, LEAVES OUT ONE A LOADED BUNDLE CARRIES, and counts each one\'s physical lines with its kind',
+      fn: async () => {
+        await using directory = await scratch();
+        await mkdir(
+          join(
+            directory.path,
+            'src',
+            'corpus-run',
+          ),
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            directory.path,
+            'src',
+            'nap.ts',
+          ),
+          'doze\nyawn\nstretch',
+        );
+        await writeFile(
+          join(
+            directory.path,
+            'src',
+            'corpus-run',
+            'nap-probe.ts',
+          ),
+          'blink\n',
+        );
+        expect(await unloadedSourcesOf({
+          packageDirectory: directory.path,
+          carried: ['src/nap.ts', 'src/corpus-run/nap-probe.ts', 'src/nap.ts', 'src/purr.ts',],
+          loadedSources: new Set(['src/purr.ts',],),
+          entryFiles: new Set(['src/corpus-run/nap-probe.ts',],),
+        },),).toEqual([
+          {
+            source: 'src/corpus-run/nap-probe.ts',
+            kind: 'entry file',
+            lines: 2,
+          },
+          {
+            source: 'src/nap.ts',
+            kind: 'library source',
+            lines: 3,
+          },
+        ],);
       },
     },),
   ],
