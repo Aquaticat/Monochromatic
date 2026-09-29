@@ -6688,6 +6688,21 @@ no match and unavailable fixtures.
 Each raw PNG and hierarchy remains private in
 `/home/user/temp/agent/`;
 no sanitized capture is published yet.
+After capture,
+`podman stop --time 60 fold-search-empty-review-avd` warned that
+`SIGTERM` had not stopped the container within the grace period and
+resorted to `SIGKILL`.
+The container and ADB device are gone;
+the disposable AVD may have stale locks if a later restart is needed,
+so do not infer clean shutdown or modify the original AVD.
+The first private sanitization attempt failed because the local script
+put ImageMagick's `identify` subcommand after processing options;
+ImageMagick reported
+`no decode delegate for this image format 'identify'`.
+The script now uses the verified direct `magick <image> -format ... info:`
+form and sanitization retry is in progress.
+This failure was in the script's CLI invocation,
+not evidence of defective image decoding or a failed native capture.
 The private scratch capture script
 `/home/user/temp/agent/capture-search-empty-static.mjs` refuses the
 original AVD,
