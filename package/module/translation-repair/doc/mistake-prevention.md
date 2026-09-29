@@ -116,7 +116,9 @@ M41),
 or read a test run that crashed before any verdict as a survivor (M50);
 a positive control addressed by line number changed nothing and read as a null (M52);
 and a red commit said a case pins a check its fixture could not reach,
-before any mutant had tested it (M58).
+before any mutant had tested it (M58);
+two copy-check cases passed with the copy check removed,
+since their candidate was valid against the page they used (M62).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -141,6 +143,9 @@ A message says a case pins a branch only once the mutant removing that branch is
 until then it says what the case fails on today,
 and a case that must pass a precondition to reach its branch
 is read against that precondition in the code first.
+A case guarding a short circuit is run once with the short circuit removed,
+and must fail there,
+before its commit says what it guards.
 
 What enforces it:
 the mutation harness in each fix's record,
@@ -283,6 +288,9 @@ Several sat beside claims the work they named had since overtaken.
 The repository-level docs carried 1,206 more (D26),
 and the current handover's open-work list was task numbers
 naming two pieces of work recorded nowhere else.
+Two cache-account paragraphs written for B24 said "same cache check as the paragraph before",
+which names nothing once a paragraph is added between them (M60),
+and six more references by position stand in the package (D33).
 
 The rule:
 a reference names something a later reader can open:
@@ -291,7 +299,12 @@ a doc heading or path,
 a file or symbol,
 a commit,
 a date,
-or the finding itself in words.
+or the finding itself in words,
+and never a position
+("above",
+"the paragraph before",
+"the case before this"),
+which a later insertion silently repoints.
 Open work goes in the ledger,
 not only on a task list.
 A GitHub issue is cited only after `gh issue view` shows it is the one meant,
@@ -582,6 +595,13 @@ Guillemets,
 which English prose never uses,
 shipped on one page although a judge named them,
 and nothing read them.
+A proposal that was the archive with its soft line breaks elsewhere,
+which the site renders as spaces,
+shipped as a change,
+split a slate's stake with the incumbent,
+or came back onto a consolidation slate as a lane text,
+because each site asked whether it changed anything by bytes,
+or by bytes and one rewrap of the base (ledger B26).
 
 The rule:
 first say which question the comparison asks.
@@ -596,6 +616,24 @@ which may carry code,
 takes `straightenProseQuotes`,
 which leaves a quote in a code span or a tag as written,
 the restoration's own reach.
+Whether a proposal changes the wording that stands takes `sameWording`,
+which reads both through the wrap,
+folds a paragraph's soft line breaks where the line-structure rule does not govern,
+and keeps a hard break,
+a blank line,
+an opening indent and front matter apart;
+every site that ships,
+demotes,
+collapses or offers a text asks it,
+and bytes stay only where they are the contract
+(assembly,
+offsets,
+seals,
+an artifact's persisted relation).
+A key is total:
+before one reads text through a parser,
+the parser's thrown errors are read and each gets a defined answer,
+since a comparison that throws turns a question into a crash (M61).
 A title,
 a phrase or a document span compared with another document span needs no fold.
 Offsets taken in folded text are used only in folded text:
@@ -622,7 +660,14 @@ Latin title,
 lexicon,
 slate-collapse and title-reference guards each hold a straight quote against a curly one,
 and the guillemet and sheet-leak guards hold the marks,
-the exemptions and the editor sheet's marker.
+the exemptions and the editor sheet's marker;
+`wording-key.unit.test.ts` pins what the wording key folds and what it keeps apart,
+and the slate,
+both lane wraps,
+the consolidation wrap,
+the polish round,
+the lane offer,
+the repair turn's copy check and the archive block review each hold a layout-only twin.
 
 ## Lint and edits
 

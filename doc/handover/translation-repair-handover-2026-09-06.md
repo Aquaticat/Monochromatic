@@ -100,10 +100,19 @@ this one says what changed after it.
   guillemets are refused by a floor,
   and each change rides inside its cache version;
   the attestation also reads each reference quote in one reference line (B25).
-  The families left are trimmed text compared with raw text,
-  quorum denominators,
+  The fourth,
+  trimmed text compared with raw text,
+  closed on 2026-09-29 as B26:
+  every site that ships,
+  demotes,
+  collapses or offers a wording now asks `sameWording`,
+  which reads a paragraph's soft line breaks as the site renders them,
+  so a lane text that is the archive in all but layout keeps the archive's bytes
+  (263 such lane texts in the stored runs).
+  The families left are quorum denominators,
   sheets missing blocks
-  and silent fallbacks.
+  and silent fallbacks,
+  and D33 (references by position) is open.
   Both gaps found on the way are closed:
   `code-points.ts` and `cased-letters.ts` have unit tests of their own,
   which found and fixed two lone-surrogate faults

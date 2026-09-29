@@ -316,6 +316,14 @@ a rule that cannot say keeps the candidate.
 A candidate that repeats the original in all but whitespace is refused by the rule itself
 (class sixty-five,
 2026-09-19).
+Two candidates that publish the same page are one candidate with one stake,
+the incumbent's bytes winning where it is one of them:
+trailing whitespace,
+prose quote style (ledger B24),
+and on a slice the line-structure rule does not govern,
+where a paragraph's soft line breaks fall (ledger B26);
+`wordingKey` holds the rule.
+A lane that ships the archive in all but layout keeps the archive's own bytes.
 
 ## When a tied slate is challenged as a run-off
 

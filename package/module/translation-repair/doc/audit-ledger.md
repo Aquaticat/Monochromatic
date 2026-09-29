@@ -5933,6 +5933,33 @@ The full suite passed with it
 1,310 PASS lines,
 the new case among them).
 
+### D33: references by position in comments and test names
+
+Status:
+open,
+recorded 2026-09-29.
+The repository rule is to name the thing a text points at,
+never its position,
+and a search for "see above",
+"the one above",
+"as above",
+"the paragraph before" and "every case before this"
+finds six such references in the package
+(`sentinel-probe.ts`,
+`window-trial-report.ts`,
+`declared-name-survival.ts`,
+`translate-assemble-refusals.unit.test.ts`,
+`image-reading-past-refusal.ts`,
+`slice-pair.ts`),
+and B24's account paragraphs added two more (M60).
+A reference by position names nothing once a paragraph,
+a case or a line is added between the two.
+Fix:
+a census over the package's source,
+tests and docs with a wider set of positional words,
+each read in place and rewritten to name its target,
+and a guard if a scan can tell a positional reference from ordinary prose.
+
 ## Found while fixing
 
 ### X1: the translate lane stopped the entry on a rejected slate over an archive the floor refuses
@@ -7514,6 +7541,8 @@ open,
 recorded 2026-09-29 so the work outlives the session's task list;
 family one (text indexed by UTF-16 unit) is read and fixed as B22,
 family two (matches without word boundaries) as B23,
+family three (straight against curly quotes) as B24,
+family four (trimmed text compared with raw text) as B26,
 and the other families remain.
 B1 to B20 came from the duplicate-body and letter-predicate censuses.
 The class history names other families that recurred across stages,
@@ -8273,6 +8302,189 @@ so a quote of a page's address or title verifies as if the page stated it.
 The body cannot be cut from the line reliably while a title may itself contain the separator,
 so this waits on a line format that marks where the body starts.
 
+### B26: wordings that differ from what stands only in layout (B21, family four)
+
+Status:
+fixed,
+2026-09-29.
+Classes sixty-five and one hundred one were read as their shape rather than their surface:
+two operands of one comparison had passed through different whitespace transforms.
+The transforms were enumerated first
+(`collapseKey`,
+the semantic wrap,
+`foldSoftBreaks`,
+the evidence folds,
+and every cut a page composer makes),
+then each comparison was asked which transform each side had passed.
+
+#### What the page shows
+
+The site renders a soft line break as a space.
+The data repository compiles every page with `remark-math` and nothing that turns a newline into a break
+(one-among-us/data `scripts/mdx.ts`),
+and the front end sets no `white-space` rule on the page container
+(one-among-us/web).
+So a proposal that is the archive with its soft breaks elsewhere publishes the page the archive already publishes.
+
+#### Measured before the fix
+
+Over the 6,285 comparison rows of the 266 stored artifacts,
+263 lane texts differed from the archive in whitespace only:
+186 render as the archive does
+(66 from runs on or after 2026-09-26),
+and the other 77 render differently
+(32 split or join a paragraph,
+29 join two words or split one,
+12 add or drop a hard break,
+2 indent,
+1 changes spacing inside a line,
+1 other).
+Over the 2,905 stored translate and consolidation slates,
+490 carried a candidate rendering as another does beside it,
+620 pairs,
+443 of them with the incumbent;
+in 93 the chosen candidate was the incumbent's layout twin,
+and in 8 the twins' summed weight reaches the chosen candidate's.
+Both slate counts include line-structured slices,
+which the cache records do not mark.
+Since 2026-09-26 every pair of lane texts differing from each other only in layout
+had one lane on the archive's bytes,
+so the contest bought for them was a contest between the archive and its copy.
+The soft-break fold alone missed 6 lane texts that were the archive rewrapped,
+all blockquotes,
+and no slate pair.
+Probes:
+`f4-lane-whitespace.ts`,
+`f4-soft-twins.ts`,
+`f4-fold-gap.ts`,
+in `~/temp/agent/audit-glossary-fix/`.
+
+#### The fix
+
+`wording-key.ts` gives one answer to whether a proposal is the wording that stands.
+`wordingKey` is the old `collapseKey`
+(trailing whitespace,
+blank quote lines,
+prose quote style),
+and where the line-structure rule does not govern
+it reads the text through the wrap and folds each top-level paragraph's soft breaks.
+The wrap inside is compared and never shipped;
+it catches a blockquote the rule rewrapped.
+The key relies on the wrap moving nothing on a second application:
+over the 7,462 distinct stored lane and archive texts the first wrap moved 1,876 and the second none.
+It leaves front matter as written:
+over the 92 archive front-matter blocks neither the wrap nor the fold moved a line,
+nor a planted long value,
+where both controls moved.
+A text whose fenced YAML does not parse is laid out as written (M61).
+
+Seven sites read it:
+the slate collapse and the repair turn's copy check;
+both lane wraps,
+asked before either early return and on the wrapped text,
+with a demoted proposal keeping the archive's own bytes;
+the consolidation wrap on both branches,
+where the `standingAsWritten` key is gone;
+the consolidation polish round;
+the lane offer;
+and the archive block review,
+read as prose whatever the block,
+since a demotion there only keeps the archive's bytes.
+`buildTranslateCandidates` now requires `lineStructured`,
+so no caller folds verse by default.
+Two cases that pinned the old behaviour now pin the new:
+a rewrap of unwrapped archive wording settles on the slate without buying either round,
+and the polish round's finding reads "consolidation-polish is the base in all but layout".
+Red `a3d3a04a6`,
+fix `eabe073e3`.
+
+#### Read and left as written
+
+The lane relation and the contest's slice test
+(`judgeSlice`,
+`judgeTwoLaneSlice`,
+`contestEligibleIndexes`)
+compare bytes as artifact generation 2 defines them;
+the layout twins they met since 2026-09-26 all had one lane on the archive's bytes,
+which the wrap demotion now makes the archive standing.
+Assembly invariants,
+placement offsets,
+the archive-original seal,
+delivery coherence,
+slice-record agreement and the unheard assertions compare bytes by contract.
+The consolidation candidate label,
+the standing verdict's incumbent check,
+the stand-in check and the judged part compare lane texts the wraps now settle,
+or archive text with archive text.
+Disputed wordings already compare with every whitespace removed.
+The published-page check reads the fragment body the splice writes since class one hundred one,
+and the carried-insertion check folds both sides.
+Of the 187 `trim` calls in the package's source files,
+tests aside,
+42 are direct blank checks;
+the 144 lines carrying the rest parse replies,
+logs,
+titles or git output,
+or test for blank through a variable,
+and none compares a trimmed text with an untrimmed one
+beyond the lane offer's standing check,
+which B26 fixes.
+
+#### What the fix moves over the stored runs
+
+Replayed with the current key over the 254 settled artifacts the floor replay can rebuild,
+each slice's line-structure flag read from the frozen build's rebuilt preparation
+(`b26-replay.mjs`):
+of 6,177 comparison rows,
+210 were skipped because their archive text is no longer the rebuilt slice's,
+and among the rest the lane wraps now keep the archive's bytes for 263 lane texts,
+246 on prose slices
+(81 from runs on or after 2026-09-26)
+and 17 on line-structured ones.
+155 of them differ from the archive in whitespace only.
+The other 108 differ in prose quote style as well,
+which the key has folded since B24:
+in 96 the lane had flattened the archive's curly quotes,
+so keeping the archive restores them;
+in 5 the lane curled the archive's straight ones,
+which the typography restoration itself never does to a straight document;
+7 keep the same count of curly marks.
+The slate counts stay upper bounds:
+of the 225 runs whose artifacts rebuild,
+2 hold any slice-cache files and none holds a slate,
+so a slate's line-structure flag cannot be read back.
+
+#### Mutants and caches
+
+The mutation batch (`b26-mutants.json`,
+one mutant for each fold of the key,
+its line-structured branch,
+its front-matter answer,
+and each site's demotion)
+caught 19 of 20,
+and its comment control survived.
+Reading the repair turn's copy check on the old key survived:
+its case offered the candidate against a page lacking the heading too,
+where validation passes it with or without the check,
+and the older "REPRODUCED THE INCUMBENT" case had the same shape (M62).
+Both now check against a page carrying the heading,
+and the rerun (`b26-copy-mutants.json`) catches that mutant and one removing the check,
+with its control surviving.
+Copy cases `e4cfae398`,
+corrected in `f0ddd425d`;
+`e4cfae398` carries a correcting comment.
+
+The slate,
+the consolidation wrap,
+the polish round and the lane offer ride inside translate 15 and consolidation 20,
+each account naming the change;
+no slice-cache file was written after 04:27 UTC on 2026-09-27,
+where a control from midnight finds 494.
+The lane wraps run at assembly,
+after the slice cache,
+and the archive block review keeps no cache.
+The full suite passed on `f0ddd425d` with no failing case.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -8665,6 +8877,66 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M62: a copy-check case whose candidate passed validation without the check
+
+Status:
+happened 2026-09-29 in `e4cfae398`,
+caught by B26's mutation batch,
+corrected in `f0ddd425d`,
+and the commit carries a correcting comment.
+The case offered a merged candidate against a page that had lost the same heading,
+where validation finds the candidate valid,
+so the model was never asked with or without the copy check;
+the commit message said validation "would otherwise ask the model about the heading it lacks".
+The older "REPRODUCED THE INCUMBENT" case had the same shape since it was written.
+This is M53's and M58's class again:
+a case that fails on nothing its branch decides.
+Prevention:
+a case guarding a short circuit is read against what happens without it,
+by a mutant that removes the short circuit,
+before its commit says what it guards;
+the fixture's page is named in the test file with why it makes the candidate fail (`HEADED_PAGE`).
+
+### M61: a comparison key that assumed its parts never throw and move nothing twice
+
+Status:
+happened 2026-09-29 while writing B26's fix,
+caught before its commit.
+The first `wordingKey` read every text through `foldSoftBreaks`,
+which parses the document and throws `FrontMatterParseError` on a fenced block whose YAML does not parse,
+as its own TSDoc says;
+the repair turn's copy check reads a model's reply before any floor,
+so a comparison that never threw could have stopped a slice.
+The key's own front-matter case threw on its first run.
+The same draft dropped the lane wraps' byte check after the wrap
+on the strength of the wrap moving nothing on a second application,
+which had been measured over twelve passages and never over the stored runs.
+Prevention:
+before a comparison reads text through a function,
+that function's thrown errors are read and each gets a defined answer
+(`pageLayout` lays such a text out as written);
+a property a change relies on is measured over the stored records first
+(the wrap moved 1,876 of 7,462 distinct stored texts and none on a second pass),
+or the change is written so it does not rely on it
+(the lane wraps compare the wrapped text).
+
+### M60: account paragraphs that pointed at the paragraph before them, and a status B24 left stale
+
+Status:
+happened 2026-09-29 in B24's fix commits,
+corrected in B26's.
+Two cache-account paragraphs,
+one each in `translate-document-contract.ts` and `consolidate-key.ts`,
+ended "Same cache check as the paragraph before",
+a reference by position that B26's own paragraph,
+added after them,
+would have repointed.
+B24 also left B21's status naming only families one and two as read.
+Prevention:
+`mistake-prevention.md`,
+"References in code and docs";
+closing a B21 family updates B21's status in the same commit.
 
 ### M59: error classes added and marked with only their own tests run
 
