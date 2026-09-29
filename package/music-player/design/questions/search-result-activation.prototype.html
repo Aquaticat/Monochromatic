@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search result activation, logic-only review</title>
+<style>
+:root { color-scheme: light dark; --page:#f5f6fa; --panel:#fff; --raised:#e9eaf0; --selected:#dfe7fa; --ink:#262b35; --muted:#505764; --edge:#777e8d; --accent:#345286; }
+@media (prefers-color-scheme: dark) { :root { --page:#0d0f14; --panel:#1a1d25; --raised:#292d38; --selected:#283951; --ink:#e8eaf2; --muted:#bdc1ce; --edge:#9ea4b2; --accent:#bfd0ff; } }
+* { box-sizing:border-box; }
+body { margin:0; background-color:var(--page); color:var(--ink); font:1rem/1.5 system-ui,sans-serif; }
+main { max-inline-size:85rem; margin-inline:auto; padding-inline:clamp(1rem,3vw,3rem); padding-block:1rem 4rem; }
+h1 { font-size:clamp(1.9rem,3vw,2.8rem); line-height:1.2; }
+h2 { margin-block:2rem 0.6rem; }
+h3 { margin-block:0.4rem; }
+p { max-inline-size:94ch; }
+button,input,textarea { font:inherit; }
+button { min-inline-size:3rem; min-block-size:3rem; padding:0.4rem 0.8rem; border:0.0625rem solid var(--edge); border-radius:0.55rem; background-color:var(--panel); color:var(--ink); cursor:pointer; }
+button:hover { background-color:var(--raised); }
+button:disabled { opacity:0.55; cursor:not-allowed; }
+button:focus-visible,input:focus-visible,textarea:focus-visible { outline:0.1875rem solid var(--accent); outline-offset:0.1875rem; }
+.note,.state,.choice,.scenario { border:0.0625rem solid var(--edge); border-radius:0.8rem; background-color:var(--panel); }
+.note,.state,.scenario { padding:1rem; }
+.muted { color:var(--muted); }
+.choices { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr)); gap:0.8rem; }
+.choice { display:grid; grid-template-columns:1.5rem 1fr; gap:0.7rem; min-block-size:3rem; padding:0.9rem; border-width:0.125rem; cursor:pointer; }
+.choice[data-selected='true'] { border-color:var(--accent); background-color:var(--selected); }
+.choice input { inline-size:1.3rem; block-size:1.3rem; accent-color:var(--accent); }
+.choice p { margin-block:0.35rem; }
+.state dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap:0.7rem; }
+.state dl div { padding:0.6rem 0.75rem; background-color:var(--raised); border-radius:0.5rem; }
+.state dt { font-size:0.9rem; color:var(--muted); }
+.state dd { margin:0; font-weight:700; }
+.buttons,.tabs,.steps { display:flex; flex-wrap:wrap; gap:0.6rem; }
+.tabs button[aria-selected='true'] { background-color:var(--selected); border-color:var(--accent); font-weight:700; }
+.scenario { margin-block:1rem; }
+.scenario[hidden] { display:none; }
+.status { color:var(--accent); font-weight:700; }
+textarea { display:block; inline-size:min(100%,50rem); min-block-size:6rem; padding:0.7rem; border:0.0625rem solid var(--edge); border-radius:0.5rem; background-color:var(--panel); color:var(--ink); }
+a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="muted">Music player · Search result activation · design-only logic model</p>
+  <h1>After a track starts, does Search stay open?</h1>
+  <p>This is the one consequential preference the existing player does not decide. Selected Search A still has the actual left folder browser and complete playback deck on the unfolded Fold; the cover has a full-width Search page. The fixed examples use directly named <strong>Cam</strong> (a track in Cult of Luna) and <strong>Camellia</strong> (a folder). Another Xronixle is initially playing and is not a <code>cam</code> result. This page simulates actions only: no Android, input method, Search algorithm, result tap handler or TalkBack behavior is exercised. <a href="current.html">Inspect the accepted native Search A layout</a>.</p>
+  <div class="note"><p><strong>Consistency defaults, not a menu:</strong> a folder hit opens that folder in the player without starting a new track; another track hit starts that track; an already-current track hit uses the existing player-row play/pause behavior. Source audit supports those existing action meanings, but Search does not implement them yet. A track action may also select its owning folder in player state; this model does not assert scroll-to-row or accessibility focus. An activation failure never silently substitutes a different track. For a visible folder-change test, the model starts browsing C418 while Another Xronixle from Camellia continues playing; the accepted native screenshot's starting selection need not match this logic fixture.</p></div>
+</header>
+<section aria-labelledby="choice-title"><h2 id="choice-title">One open consequence after a successful track hit</h2><div class="choices">
+  <label class="choice"><input type="radio" name="trackExit" value="stay" checked><span><strong>Stay in Search (Recommended)</strong><p><strong>Pros:</strong> keep the query and further results available while the complete deck reflects the playing track.</p><p><strong>Cons:</strong> the ordinary folder track view stays behind Search until Back.</p></span></label>
+  <label class="choice"><input type="radio" name="trackExit" value="return"><span><strong>Return to player</strong><p><strong>Pros:</strong> show the selected track's folder view immediately after playback starts.</p><p><strong>Cons:</strong> another Search visit begins with an empty query under D66, so continuing to compare matches takes another search.</p></span></label>
+</div><p><strong>Ranking: Stay &gt; Return.</strong> Staying uses the deliberately retained deck and preserves exploration; Return favors the ordinary folder view but ends the current query visit. Folder hits return to player under either choice because selecting a folder without exposing its tracks would not open it on the cover.</p></section>
+<section aria-labelledby="state-title"><h2 id="state-title">Current simulated state</h2><div class="state" aria-live="polite"><p id="last-change" class="status">Start on player. Choose a guided case or use free play.</p><dl>
+  <div><dt>Destination</dt><dd id="destination">Player</dd></div><div><dt>Search query</dt><dd id="query">None</dd></div><div><dt>Visible Search hits</dt><dd id="hits">None</dd></div><div><dt>Selected folder</dt><dd id="folder">C418</dd></div><div><dt>Queue page scope</dt><dd id="scope">C418</dd></div><div><dt>Current track</dt><dd id="track">Another Xronixle</dd></div><div><dt>Playback</dt><dd id="playback">Playing</dd></div><div><dt>Last result action</dt><dd id="action">None</dd></div><div><dt>Transient notice (illustrative)</dt><dd id="notice">None</dd></div>
+</dl><p class="muted">The left browser, folder Open action and complete deck are retained in both model variants on the unfolded layout. This pane is a textual state explanation, not a Fold screenshot. Scroll position, keyboard edit focus, real queue synchronization and result-row accessibility remain unverified.</p></div></section>
+<section aria-labelledby="free-title"><h2 id="free-title">Free play</h2><p>These buttons operate only on the model. Free play pauses any guided case; choose a case to restart it.</p><div class="buttons" id="free-actions"><button type="button" data-action="open">Open Search</button><button type="button" data-action="cam">Search cam</button><button type="button" data-action="another">Search Another</button><button type="button" data-action="folder">Tap Camellia folder</button><button type="button" data-action="camTrack">Tap Cam track</button><button type="button" data-action="currentTrack">Tap Another Xronixle track</button><button type="button" data-action="vanish">Remove Cam hit</button><button type="button" data-action="back">Back arrow</button><button type="button" data-action="reset">Reset</button></div></section>
+<section aria-labelledby="cases-title"><h2 id="cases-title">Guided cases</h2><p>Each case resets the model and advances the same actions as free play. Replay the track case after switching Stay/Return.</p><div class="tabs" role="tablist" aria-label="Search activation cases"><button type="button" role="tab" id="tab-folder" aria-controls="case-folder" aria-selected="true" data-case="folder">Open folder</button><button type="button" role="tab" id="tab-track" aria-controls="case-track" aria-selected="false" data-case="track">Play another track</button><button type="button" role="tab" id="tab-current" aria-controls="case-current" aria-selected="false" data-case="current">Current track</button><button type="button" role="tab" id="tab-missing" aria-controls="case-missing" aria-selected="false" data-case="missing">Missing result</button></div>
+  <section class="scenario" id="case-folder" role="tabpanel" aria-labelledby="tab-folder"><h3>Folder result opens its normal view</h3><p>Notice the folder and queue scope change, but Another Xronixle keeps playing and Search closes on either track policy.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="cam">Search cam</button><button type="button" data-action="folder">Tap Camellia folder</button></div></section>
+  <section class="scenario" id="case-track" role="tabpanel" aria-labelledby="tab-track" hidden><h3>Direct-name track starts playback</h3><p>Notice the new current track and selected owning folder. Compare whether the same <code>cam</code> results remain or the ordinary folder view appears.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="cam">Search cam</button><button type="button" data-action="camTrack">Tap Cam track</button></div></section>
+  <section class="scenario" id="case-current" role="tabpanel" aria-labelledby="tab-current" hidden><h3>Current track is only a hit for its own name</h3><p><code>Another</code> directly matches the current track; tapping it pauses in this illustration. Do not use the excluded parent-only <code>cam</code> result to test this case.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="another">Search Another</button><button type="button" data-action="currentTrack">Tap current track</button></div></section>
+  <section class="scenario" id="case-missing" role="tabpanel" aria-labelledby="tab-missing" hidden><h3>A stale Search hit vanishes before tap</h3><p>A missing hit cannot play a substitute or turn the whole query into “no matches.” D9's existing missing-file treatment is the reference, not a tested Search error handler.</p><div class="steps"><button type="button" data-action="open">Open Search</button><button type="button" data-action="cam">Search cam</button><button type="button" data-action="vanish">Cam disappears</button><button type="button" data-action="camTrack">Try the stale hit</button></div></section>
+</section>
+<section aria-labelledby="response-title"><h2 id="response-title">Only one decision needs your preference</h2><p>Reply in this chat with <strong>Stay</strong> or <strong>Return</strong> for a successful track result; state a different consequence only if neither fits. The folder and current-track defaults follow existing player interactions and remain open to a concrete veto, not another confirmation ballot. This logic model does not authorize production Search or any keyboard experiment.</p><label for="notes">Concern or different consequence</label><textarea id="notes" placeholder="If necessary, describe the behavior and paste this text into your chat response."></textarea></section>
+</main>
+<script>
+// Pure prototype transition logic; the DOM shell below never changes its rules.
+const initialState = () => ({ destination:'player', query:'', hits:[], selectedFolder:'C418', queueScope:'C418', currentTrack:'Another Xronixle', playing:true, camAvailable:true, action:'None', notice:'None' });
+function activateTrack({ state, track, folder, trackExit }) {
+  const sameTrack = state.currentTrack === track;
+  const playing = sameTrack ? !state.playing : true;
+  const outcome = sameTrack ? playing ? `Resumed ${track}` : `Paused ${track}` : `Started ${track}`;
+  return { state:{ ...state, destination:trackExit==='return'?'player':'search', query:trackExit==='return'?'':state.query,
+    hits:trackExit==='return'?[]:state.hits, selectedFolder:sameTrack?state.selectedFolder:folder,
+    queueScope:sameTrack?state.queueScope:folder, currentTrack:track, playing, action:outcome, notice:'None' },
+    message:`${outcome}; ${trackExit==='return'?'returned to the ordinary folder view.':'Search retains its current query.'} No scroll-to-row is claimed.`, accepted:true };
+}
+function step({ state, action, trackExit }) {
+  if (action === 'reset') return { state:initialState(), message:'Reset to player.', accepted:true };
+  if (action === 'open') {
+    if (state.destination === 'search') return { state, message:'Search is already open.', accepted:false };
+    return { state:{ ...state, destination:'search', query:'', hits:[], action:'Opened Search' }, message:'Search opened with a fresh query as D66 specifies.', accepted:true };
+  }
+  if (state.destination !== 'search') return { state, message:'Open Search before that action.', accepted:false };
+  if (action === 'back') return { state:{ ...state, destination:'player', query:'', hits:[], action:'Back to player' }, message:'Visible Back returned to player without changing playback.', accepted:true };
+  if (action === 'cam') return { state:{ ...state, query:'cam', hits:state.camAvailable ? ['Cam · track', 'Camellia · folder'] : ['Camellia · folder'], action:'Typed cam' }, message:'The model shows directly named mixed results; no matcher was run.', accepted:true };
+  if (action === 'another') return { state:{ ...state, query:'Another', hits:['Another Xronixle · track'], action:'Typed Another' }, message:'The current track now has a direct own-name match in the model.', accepted:true };
+  if (action === 'vanish') {
+    if (!state.hits.includes('Cam · track')) return { state, message:'Cam is not a visible hit to mark stale.', accepted:false };
+    return { state:{ ...state, camAvailable:false, action:'Cam source vanished' }, message:'Cam vanished in the model, but its displayed result is stale until a tap. No actual file system changed.', accepted:true };
+  }
+  if (action === 'folder') {
+    if (!state.hits.includes('Camellia · folder')) return { state, message:'Camellia is not in these results.', accepted:false };
+    return { state:{ ...state, destination:'player', query:'', hits:[], selectedFolder:'Camellia', queueScope:'Camellia', action:'Opened Camellia folder' }, message:'Returned to the Camellia folder; playback continued and queue page scope follows its folder.', accepted:true };
+  }
+  if (action === 'camTrack') {
+    if (!state.hits.includes('Cam · track')) return { state, message:'Search cam to display the directly named track.', accepted:false };
+    if (!state.camAvailable) return { state:{ ...state, hits:state.hits.filter(hit=>hit!=='Cam · track'),
+      action:'Cam could not be opened', notice:'Cam was removed · dismissible message (illustrative)' },
+      message:'The stale Cam hit was removed; playback and Search stayed unchanged. D9 is precedent, not a working Search error handler.', accepted:true };
+    return activateTrack({ state, track:'Cam', folder:'Cult of Luna', trackExit });
+  }
+  if (action === 'currentTrack') {
+    if (!state.hits.includes('Another Xronixle · track')) return { state, message:'Search Another to display this directly named track.', accepted:false };
+    return activateTrack({ state, track:'Another Xronixle', folder:'Camellia', trackExit });
+  }
+  throw new Error(`Unexpected result-activation action: ${action}`);
+}
+let model = initialState();
+let currentCase = 'folder';
+let nextStep = -1;
+function render(message) {
+  document.querySelectorAll('.choice').forEach(label=>{ label.dataset.selected=String(label.querySelector('input').checked); });
+  document.querySelector('#destination').textContent=model.destination==='search'?'Search':'Player';
+  document.querySelector('#query').textContent=model.destination==='search'&&model.query?model.query:'None';
+  document.querySelector('#hits').textContent=model.destination==='search'&&model.hits.length?model.hits.join(' · '):'None';
+  document.querySelector('#folder').textContent=model.selectedFolder;
+  document.querySelector('#scope').textContent=model.queueScope;
+  document.querySelector('#track').textContent=model.currentTrack;
+  document.querySelector('#playback').textContent=model.playing?'Playing':'Paused';
+  document.querySelector('#action').textContent=model.action;
+  document.querySelector('#notice').textContent=model.notice;
+  document.querySelector('#last-change').textContent=message;
+  document.querySelectorAll('.scenario').forEach(section=>{
+    section.hidden=section.id!==`case-${currentCase}`;
+    section.querySelectorAll('.steps button').forEach((button,index)=>{ button.disabled=index!==nextStep; });
+  });
+  document.querySelectorAll('[role=tab]').forEach(tab=>{
+    tab.setAttribute('aria-selected',String(tab.dataset.case===currentCase));
+    tab.tabIndex=tab.dataset.case===currentCase?0:-1;
+  });
+}
+function policy() { return document.querySelector('input[name=trackExit]:checked').value; }
+function run(action) {
+  const result=step({state:model,action,trackExit:policy()});
+  model=result.state;
+  nextStep=-1;
+  render(`${result.message} Guided case paused; select a case to restart.`);
+}
+document.querySelectorAll('input[name=trackExit]').forEach(input=>input.addEventListener('change',()=>render('Track-navigation preference preview changed. Replay a track case.')));
+document.querySelectorAll('#free-actions button').forEach(button=>button.addEventListener('click',()=>run(button.dataset.action)));
+const tabs=[...document.querySelectorAll('[role=tab]')];
+tabs.forEach(tab=>tab.addEventListener('click',()=>{currentCase=tab.dataset.case;model=initialState();nextStep=0;render(`Started ${tab.textContent} from player.`)}));
+tabs.forEach((tab,index)=>tab.addEventListener('keydown',event=>{
+  const target=event.key==='ArrowRight'?(index+1)%tabs.length:event.key==='ArrowLeft'?(index+tabs.length-1)%tabs.length:event.key==='Home'?0:event.key==='End'?tabs.length-1:null;
+  if(target===null)return;
+  event.preventDefault();tabs[target].click();tabs[target].focus();
+}));
+document.querySelectorAll('.scenario .steps button').forEach(button=>button.addEventListener('click',()=>{
+  if(button.disabled)return;
+  const result=step({state:model,action:button.dataset.action,trackExit:policy()});
+  model=result.state;
+  if(result.accepted)nextStep+=1;
+  render(result.message);
+}));
+render('Start on player. Choose a guided case or use free play.');
+</script>
+</body>
+</html>
