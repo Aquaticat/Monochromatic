@@ -39,6 +39,7 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/mdast": "catalog:",
     "@types/node": "catalog:",
+    "rolldown": "catalog:",
     "typescript": "catalog:"
   },
   "files": [
