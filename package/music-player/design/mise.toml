@@ -393,6 +393,16 @@ description = "Check the selected Fold Search artifact against its sanitized cap
 dir = "{{config_root}}"
 run = "node selected-search-question.mjs validate"
 
+[tasks."build:search:status-evidence"]
+description = "Embed sanitized keyboard-closed Search status captures for the selected Fold layout"
+dir = "{{config_root}}"
+run = "node search-status-evidence.mjs build"
+
+[tasks."lint:search:status-evidence"]
+description = "Validate the self-contained static Search status evidence and capture provenance"
+dir = "{{config_root}}"
+run = "node search-status-evidence.mjs validate"
+
 [tasks."build:search:ranking"]
 description = "Rebuild the archived D/P and M/F/T comparison from sanitized native captures"
 dir = "{{config_root}}"
