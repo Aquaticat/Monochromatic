@@ -119,8 +119,11 @@ and unchanged-policy hashing passed at commit `14aef0b4a`.
 The user answered "Confirm" to Q22's consolidated shared-understanding summary.
 The interview requirements are confirmed for private contract and real-consumer qualification,
 including the newly explicit governing-instruction path.
-Task #3 can close once this confirmation record is verified;
-continue task #16 rather than waiting for another instruction.
+Task #3 is complete after confirmation commit `89b5142b0`,
+rendered-Q22 inspection,
+scoped lint `proc_a8b2`,
+and unchanged-policy hashing.
+Task #16 is now active.
 Production stays unchanged,
 no cutoff is selected,
 and no engineering gate is declared passed by the confirmation.
@@ -133,6 +136,70 @@ reserved-bank access,
 or `AGENTS.md` change follows from resuming the interview.
 Historical statements that Q16 was paused retain their original checkpoint scope;
 this explicit resumption supersedes that pause.
+
+## Private consumer qualification started
+
+The new private workspace is `~/temp/agent/auto-mode-consumer-contract.mDLkyNoP`.
+Its first phase is `instruction-source-surfaces`,
+a source-method probe with no model calls,
+not actual TUI/RPC or human-authentication qualification.
+`phase-plan.json` fixes expected observations and stop conditions.
+`inputs-manifest.json` retains 9 copied installed/source/policy inputs;
+preparation `proc_acf5` completed once and must not be replayed.
+The source checkout remains pinned to `f07218c4d4bbc12bef056a7058c3dd49dfe41abe`.
+Installed package metadata reports Pi `0.87.1` and preparation used Node `v26.10.0`.
+
+The owned probe compares ordinary/command context access,
+earlier context-file copies versus later handler contributions,
+base versus run options,
+request-local system changes,
+forced projection,
+a removed leading system message,
+and a generic provider-payload change.
+Actual inspected method bodies and pure rendering/replay helpers are used with declared host stand-ins.
+No package startup,
+real provider,
+real session history,
+or represented operation is executed.
+The bounded container is network-disabled,
+read-only,
+non-root,
+and mount-free,
+with 2 GiB memory,
+2 CPUs,
+zero extra swap,
+and a 60-second lifetime cap.
+
+Source-integrity controls include a same-length comment mutation
+and a separate hash-guard-omitted artifact;
+the original guard stays intact.
+Independent pre-execution review added host verification of control IDs and success fields.
+Unexpected stderr remains a stopped attempt pending actual classification,
+not automatically accepted noise.
+Omission preparation completed once in `proc_8261` and must not be replayed.
+The next steps are execution freeze,
+local-only image build,
+and one source-method run.
+No runtime case result is recorded yet.
+
+The remaining work is split into independently verifiable tasks:
+
+- #68:
+  real human-origin authority.
+- #69:
+  permission lifecycle and finalization.
+- #70:
+  governing-instruction applicability.
+- #71:
+  inspected semantic-effect forms under Q13 B.
+- #72:
+  preparation-inclusive real-host manual handback.
+- #73:
+  replacement responsibility parity.
+
+These depend on the task #16 contract and applicable preceding consumer evidence.
+The old #67 preparation-stall cause remains unassigned;
+new handback qualification does not retroactively diagnose it.
 
 ## Completed fresh Jev study and next gate
 
