@@ -155,11 +155,15 @@ this one says what changed after it.
   T8 (code no unit test runs) is the open entry the launch waits for,
   an order taken under the owner's standing directive to prefer the quality of the end result,
   which the owner may veto to launch first.
-  Measured on 2026-09-29 at `cd3f14810` by block coverage mapped to source lines,
-  the unit suite leaves 1,223 spans over 3,229 lines of library source in 449 files unrun,
-  72 functions among them never called;
+  The package task `mise run coverage-census` measures it
+  by block coverage mapped to source lines;
+  its whole-suite census at `e22373347` leaves 1,232 stretches over 3,239 lines of library source in 453 files unrun,
+  72 functions among them never called,
+  and is the baseline each batch of tests is read against;
   the ledger entry has the method,
   the classes and what closes it.
+  Every source commit also runs `mise run source-scans`,
+  the package-wide scans a new file can fail (ledger M59).
 
 ### 2026-09-24, 04:30 UTC: one hundred ten classes, eight seats, two wet providers
 

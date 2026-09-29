@@ -2588,13 +2588,44 @@ the runner entry files and the runners no test loads come after the library.
 A batch proves its reach by rerunning its own test files under coverage against a mapped build:
 every span it claims must read a count above zero there.
 The whole census reruns before the launch checklist.
-The 2026-09-29 measurement ran from scratch scripts
-(`~/temp/agent/audit-glossary-fix/t8-map-build.mjs` for the mapped build,
-`t8-cold-map.mjs`,
-`t8-cold-census.mjs`,
-`t8-naive-vs-painted.mjs` and `t8-function-at.mjs`);
-they move into the package as a task before the first batch,
-as the cache-account audit did (M28).
+The first 2026-09-29 measurement ran from scratch scripts;
+the census is now the package task `mise run coverage-census`
+(`f81b58992` to `7253426c8`).
+It builds with a source map beside every chunk (`coverage-census:build`),
+runs the unit suite or the test files named after `--` with `NODE_V8_COVERAGE` set,
+refuses a failing suite,
+tallies and maps the cold code as the scratch census did,
+prints the report,
+writes `census.json` under `~/.cache/translation-repair/coverage`,
+deletes the raw coverage,
+and runs the normal build again.
+Given the same coverage and build as the scratch census,
+its functions reproduced every total of it
+(`t8-port-control.mjs` in the audit's scratch folder).
+A batch proves its reach with `--baseline <census.json>` and `--source <file>` for each source it claims,
+or,
+where the batch edits a source it claims,
+by a census of its own test files in which each claimed source is loaded and holds no stretch.
+
+The census's first whole-suite run refused,
+the suite failing on the census's own commits (M59 again,
+M63),
+and a later one showed stretches in the census's own modules (M66).
+The whole-suite census at `e22373347` (1,381 passes) is the baseline the batches are read against
+(`census-7rB6TM`):
+library source holds 1,232 stretches over 3,239 lines in 453 files,
+with 72 functions never called;
+the six runner entry files tests load hold 27 stretches over 798 lines,
+with 14 never called;
+the 36 bundles no test loads carry 13,389 physical lines in 39 sources,
+three of them library source only those bundles carry;
+other workspace packages hold 228 stretches over 3,898 lines in 59 files.
+The first batch,
+`7253426c8`,
+closed the census's own stretches;
+a census of its three test files shows `coverage-tally.ts`,
+`coverage-lines.ts`,
+`coverage-file.ts` and `build-entries.ts` loaded with no stretch left.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
@@ -9764,6 +9795,80 @@ and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
 
+### M66: a commit message claiming every branch covered before any coverage run
+
+Status:
+happened 2026-09-29 in `37e1dd8e8`,
+caught by the first whole-suite coverage census,
+closed in `7253426c8`,
+and the commit carries a correcting comment.
+The message said its seven test files "cover the census modules branch by branch".
+The census at `e22373347` named ten stretches in four of those modules
+(five in `coverage-tally.ts`,
+three in `coverage-lines.ts`,
+one each in `coverage-file.ts` and `build-entries.ts`):
+five branches no case reached,
+four `??` fallbacks on indexes always in range,
+and a test of a prefix every entry carries.
+The claim came from reading the tests,
+the very reading T8 exists to replace.
+Prevention:
+a claim that tests cover a module's branches is written only from a census of the claimed sources
+(`mise run coverage-census -- <test files>`),
+each loaded and holding no stretch.
+
+### M65: a stand-in command whose text carried the marker the census counts
+
+Status:
+happened 2026-09-29 in `37e1dd8e8`,
+caught by the first run of its test file,
+fixed in `5fb0af40e`.
+The failing-command case of `runSuite` ran a stand-in whose command text held a literal `[FAIL]`,
+and `runSuite` warns with the command it ran,
+so the suite's own log carried a failing marker.
+A census of the whole suite counts those markers,
+and would have refused every run as a failing suite.
+Prevention:
+a fixture that prints a marker tooling counts builds the marker when it runs,
+and a new test file's first run is read for markers in its log,
+not only for its exit.
+
+### M64: a directory for gigabytes of output chosen by `tmpdir()`
+
+Status:
+caught 2026-09-29 before any run,
+in the census entry of `043697797`,
+fixed in `a99c27876`.
+The census made its raw coverage directory under `tmpdir()`,
+which is `/tmp` here:
+a tmpfs of 16G held in memory (`df`),
+where the whole suite's raw coverage (8.3G by `du` of the scratch run) would take half.
+Prevention:
+output that can reach gigabytes goes under the package's cache directory on disk (`packageCacheDir`),
+and the target's filesystem is read with `df` before one is chosen.
+
+### M63: a side build named into the build fan-out
+
+Status:
+happened 2026-09-29 in `043697797`,
+caught by the log of the first coverage census run,
+fixed in `e22373347`.
+The source-map build was the task `build:coverage`.
+The package's `build` runs the root template's `fanout`,
+which starts every direct `build:*` child at once and awaits them together,
+so every `mise run build` from `043697797` to `e22373347` ran the mapped build beside the normal one,
+both cleaning and writing `dist/final/node`;
+the census log shows its closing `build` starting `build:coverage` and `build:js`.
+The tests run on builds in that window passed;
+whether any build left a directory mixing the two is not known.
+After the rename a plain build starts `build:js` and `build:js:node` alone,
+and leaves no map file in `dist`.
+Prevention:
+a task beside a fan-out parent is named outside the parent's prefix
+(`coverage-census:build`,
+`source-scans` rather than `test:scans`),
+and a new task's first run is read in its log for every task it started.
+
 ### M62: a copy-check case whose candidate passed validation without the check
 
 Status:
@@ -9854,6 +9959,24 @@ every source commit's test run includes the package-wide source scans
 `living-doc-links`
 and `log-root-scan`),
 and a ledger entry is closed only after a full suite has passed on its last commit.
+
+Recurred 2026-09-29 in the coverage census (`f81b58992` to `5fb0af40e`),
+with the prevention written and not followed:
+four census error classes marked safe to print,
+and a copy of the Han residue floor's private line-start helper,
+each commit running only its own test files.
+The census's first whole-suite run refused on five FAIL markers from `message-names-only` and `duplicate-bodies`;
+`e22373347` fixed both.
+The scans now run as one task,
+`mise run source-scans`,
+which builds and runs all fifteen that read the whole of `src` or the docs
+(the nine named,
+with `position-references`,
+`caught-errors-kept`,
+`exported-function-names`,
+`floor-inputs-stated`,
+`text-accumulators` and `rendered-sheets-census`);
+its first run passed all fifteen.
 
 ### M58: a red case whose fixture could not reach the check it was said to pin
 
@@ -10688,6 +10811,13 @@ a message with an apostrophe goes through `git commit --file` from a written fil
 never a single-quoted shell argument;
 a claim in a message is either a command's output or labelled an inference;
 and every hash in a doc comes from `git log` output in the same step that writes it.
+Once more on 2026-09-29,
+caught before the commit:
+the message file for `e22373347` named the commit that added `build:coverage` by a hash typed from memory,
+and `git log -S build:coverage` gave `043697797` before the commit was made.
+The same day `37e1dd8e8` said its cases covered every branch of the census,
+which no census had measured (M66);
+a commit comment corrects it.
 
 ### M14: a reproduction check committed without a positive control
 

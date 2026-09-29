@@ -201,13 +201,21 @@ docs naming a log line the code never writes (M20);
 a count put to the owner that measured something narrower than the option it backed (M18);
 refusals called damage from a category name (M31);
 a fix that supplies a model "missing" context built before reading the sheet (M32);
-an inferred cause written as fact (X18's first draft).
+an inferred cause written as fact (X18's first draft);
+a commit said its cases covered every branch of the coverage census,
+and the census,
+once run,
+found ten cold stretches in four of those modules (M66).
 
 The rule:
 every number,
 log line,
 cause and quoted rule is read from its source in the same step it is written,
 and the source is named beside it.
+A claim that tests cover a module's branches comes from a census of the claimed sources
+(`mise run coverage-census -- <test files>`),
+each loaded and holding no stretch,
+never from reading the tests.
 A fix that gives a model context starts by rendering the sheet and searching it for that context.
 An inference is labelled as one,
 or traced in the code before it is written.
@@ -747,7 +755,9 @@ changes that stopped calling a function left it behind,
 and nothing reported one (ledger B20);
 two error classes were marked safe to print and a third added
 with only each commit's own tests run,
-so the scan that reads every class failed two commits later (M59).
+so the scan that reads every class failed two commits later (M59),
+and the coverage census did the same with the rule written,
+its four error classes and a copied helper failing two scans on the census's own first run.
 
 The rule:
 read a region with the Read tool before editing it.
@@ -755,20 +765,15 @@ Lint,
 type check and the named tests run after the final edit of a commit,
 in that order,
 and the commit follows only a clean run of all three (M46).
-The named tests of a source commit include the package-wide source scans
-(`message-names-only`,
-`dead-functions`,
-`duplicate-bodies`,
-`tsdoc-example-scan`,
-`fixed-length-cuts`,
-`clock-time-zones`,
-`task-list-numbers`,
-`living-doc-links`
-and `log-root-scan`),
+The named tests of a source commit include the package-wide source scans,
+run as one task,
+`mise run source-scans`
+(its description lists all fifteen),
 since a new class,
 function,
 export,
-link or clock time is read by those and not by its own file's tests;
+link,
+sheet or clock time is read by those and not by its own file's tests;
 a ledger entry is closed only after a full suite has passed on its last commit (M12,
 M59).
 Neither the type check nor the linter reports an unused import here
@@ -796,6 +801,8 @@ goes in a code span,
 or behind an escaped bracket inside a quotation that spans lines.
 
 What enforces it:
+`mise run source-scans`,
+one command for every scan a new file can fail;
 the linter's `max-lines` and every other rule,
 read in full before staging;
 the Markdown linter,
@@ -807,6 +814,32 @@ the package's docs or its README whose file or heading does not exist;
 `src/dead-functions.unit.test.ts`,
 which fails on a top-level function its file never names beyond its declaration
 and on an export no other package file names.
+
+## Tasks, builds and bulk output
+
+What happened:
+a source-map build was named `build:coverage`,
+and the package's `build` fan-out starts every `build:*` child at once,
+so each plain build ran it beside the normal one into the same directory (M63);
+the census first chose `tmpdir()` for about 8 GB of raw coverage,
+where `/tmp` is a tmpfs held in memory (M64);
+a test's stand-in command carried a literal `[FAIL]`,
+which a warning quoted into the suite's own log,
+where the census counts it (M65).
+
+The rule:
+a task that must not run with a fan-out parent is named outside the parent's prefix,
+and a new task's first run is read in its log for every task it started.
+Output that can reach gigabytes goes under the package's cache directory on disk,
+after `df` has shown the filesystem.
+A fixture printing a marker that tooling counts builds the marker when it runs,
+and a new test file's first run is read for markers,
+not only for its exit.
+
+What enforces it:
+the coverage census,
+which refuses a suite whose log carries a failing marker;
+habit for the names and the directories.
 
 ## Questions to the owner
 
