@@ -281,13 +281,14 @@ rounds (2026-09-17):
   The accepted direction keeps the fixed header and selected inner A;
   it is not a production fix or evidence for other IME heights.
   The prototype needed another swipe after keyboard dismissal and refocus;
-  that navigation/scroll-restoration behavior is still open under #127.
+  D68 instead selects same-query row visibility as the desired behavior,
+  still unverified in native implementation.
   D57 separately accepts the **observed** real floating-Gboard overlap
   with some inner right-pane result lettering while `cam` remains visible.
   D53's deck exception and D55's folded-cover exception are distinct;
   no other inner floating placement or ordinary keyboard overlap is waived.
   Whether covered matches are scroll-reachable after focus changes remains
-  open under #127;
+  unverified against D68;
   their activation remains open under #129.
   See `evidence/search-result-overflow.md` for bounds and test limitations.
 - **OPEN: remaining Search behavior after D51/D52.**
@@ -336,14 +337,17 @@ rounds (2026-09-17):
   A separate visual question may remain about displaying file extensions
   in result titles;
   it is not a reason to pick a matcher library now.
-  Back/Clear/focus,
-  entry/re-entry and same-query scroll restoration (#127) are being
-  reviewed separately in
-  `evidence/search-navigation-focus-boundaries.md`
-  and the pending logic-only
-  `questions/search-navigation-focus.prototype.html` form.
-  Its checked defaults are recommendations,
-  not adopted decisions.
+  D63 to D68 settle #127's entry edit focus,
+  visible Back,
+  Clear focus state,
+  new-visit empty query,
+  conditional restored-query top position and same-query row visibility.
+  See `evidence/search-navigation-focus-boundaries.md` and the archived
+  `questions/archive/search-navigation-focus-before-selection.html`
+  comparison;
+  its alternative controls are historical rather than open choices.
+  Native focus/scroll restoration and system-Back/IME integration still
+  need verification when an implementation is authorized.
   Empty/unavailable behavior (#128),
   result activation (#129) and Search accessibility (#118) remain
   separate open decisions.

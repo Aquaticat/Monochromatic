@@ -154,9 +154,11 @@ Neither source settles the local-file product behavior.
   or toggle an already-current track.
   These are alternative behaviors,
   not two descriptions of one tap.
-- Keyboard focus,
-  Back/Clear,
-  refocus after keyboard dismissal and TalkBack are tracked separately.
+- D63 to D68 subsequently selected Search entry focus,
+  visible Back/Clear,
+  new-visit query and same-query refocus visibility.
+  Native restoration remains unverified,
+  and TalkBack stays separate under #118.
   No further IME experiments are authorized without first making a
   compelling case to the user.
 

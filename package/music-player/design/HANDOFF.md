@@ -6614,3 +6614,34 @@ posture changes,
 process restoration and return-focus target are outside this schematic.
 #128,
 #129 and #118 stay separate.
+
+## #127 accepted, question-calibration correction
+
+The user selected **all** recommended #127 behaviors and corrected the
+agent's unnecessary request for an additional answer:
+these recommendations should have been recorded with an opportunity for
+veto rather than consuming a confirmation question.
+D63 to D68 in `decisions.md` now select entry edit-focus request,
+visible Back exiting directly,
+Clear preserving focus/keyboard state,
+fresh query on re-entry,
+conditional top-of-results if query restoration is later introduced,
+and same-query row visibility after refocus.
+The `questions/search-navigation-focus.prototype.html` active question was
+moved to `questions/archive/search-navigation-focus-before-selection.html`;
+its reply field was removed and its initial choices are identified as
+selected historical decisions.
+`questions/current.template.html` and regenerated `questions/current.html`
+show **only selected goals** beside the existing Search A device captures.
+The original Android result-overflow observation is not native proof that
+D68 can be implemented for arbitrary keyboards.
+No new IME experiment,
+production Search implementation,
+backend library choice,
+original-AVD change or KWin automation occurred.
+The next separate UI review is #128 empty/unavailable behavior,
+followed by #129 activation and #118 Search accessibility.
+A proposed clarification to the existing `AGENTS.md` QGR guidance would
+say to adopt a strongly determined recommendation with a veto path rather
+than ask for ceremonial ratification;
+this session's explicit prohibition on `AGENTS.md` edits remains in force.

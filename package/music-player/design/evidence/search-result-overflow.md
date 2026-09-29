@@ -217,9 +217,9 @@ The user answered **R**,
 selecting the cover-only keyboard-aware results viewport as D56.
 The R/C comparison remains historical evidence;
 `questions/current.html` presents only the active design.
-Refocus position,
-Back/Clear/focus,
-ranking/actions and TalkBack traversal remain open.
+D63 to D68 later selected Back/Clear/focus and same-query row visibility;
+native restoration after refocus remains unverified.
+Result actions and TalkBack traversal remain separate open questions.
 This selection does not authorize production implementation.
 
 ## Inner floating-result exception question

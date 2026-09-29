@@ -167,10 +167,18 @@ The W/A [native mid-word exploration](questions/archive/search-word-boundary-def
 and [its evidence](evidence/search-word-boundary-native-comparison.md)
 are historical and unadopted;
 no matcher rule or library is selected by them.
-Continue the open UI reviews for
-[Back/Clear/focus and same-query scroll behavior](evidence/search-navigation-focus-boundaries.md)
-using the [logic-only choice walkthrough](questions/search-navigation-focus.prototype.html),
-then empty/unavailable states,
+D63 to D68 select Search entry focus,
+visible Back,
+Clear focus state,
+new-visit query behavior,
+conditional restored-query position and same-query row visibility.
+The [#127 evidence](evidence/search-navigation-focus-boundaries.md)
+and [archived logic comparison](questions/archive/search-navigation-focus-before-selection.html)
+explain the alternatives;
+the [active Search A review](questions/current.html) shows only selected
+goals alongside the retained browser and deck.
+Native realization of focus/scroll behavior remains unverified.
+Continue separate UI reviews for empty/unavailable states,
 result activation and accessibility.
 Selection does not authorize production implementation.
  Desktop implementation inherits

@@ -1,4 +1,4 @@
-# Search navigation and focus boundaries before interaction choices
+# Search navigation and focus evidence for D63 to D68
 
 ## Selected surfaces and distinct focus meanings
 
@@ -100,35 +100,35 @@ The visible header Back action is a distinct design choice:
 D47 promises a Back **path** from a separate destination,
 not the first tap's exact outcome while typing.
 
-## Independent decisions to expose
+## Compared directions and selected behavior
 
-- **Entry edit focus:** immediate query focus/keyboard request versus
-  waiting for explicit field focus.
-  The accepted E2 code already names crease clearance;
-  do not reuse it for passive entry.
-- **Visible Back arrow:** return directly to player versus hide a shown
-  keyboard first,
-  keeping Search and its query.
-  The decision is not fixed by Material's in-place bar-collapse guidance.
-- **Clear:** erase query and stay in Search;
-  independently keep the existing edit-focus/keyboard state or request
-  focus and a keyboard.
-  Compare while typing,
-  after keyboard dismissal with edit focus retained,
-  and after moving edit focus away.
-- **Re-entry query:** open with a fresh empty query versus restore the
-  previous query.
-  If it is restored,
-  **separately** choose top results versus the prior position.
-  The temporary debug `onBack` reset is not a user decision.
-- **Same-query refocus:** keep the intended row visible after the viewport
-  shrinks,
-  retain the raw list offset without visibility compensation (the
-  observed final-row extra-swipe case),
-  or reset to top.
-  A middle row and final row must be distinguishable.
-  Changing the query is a different event;
-  a repeated identical query must not reset the position.
+- **Entry edit focus (D63):** request query focus/keyboard on entry,
+  not wait for explicit field focus.
+  E-fast was selected;
+  E2 remains the unrelated accepted crease-clearance code.
+- **Visible Back arrow (D64):** return directly to player even with a
+  keyboard shown,
+  not hide the keyboard first while retaining Search.
+  Material's in-place bar-collapse guidance did not determine this.
+- **Clear (D65):** erase query and stay in Search while retaining the
+  existing edit-focus/keyboard state,
+  not force new focus.
+  The logic model compared typing,
+  dismissal with edit focus retained,
+  and moved-away edit focus.
+- **Re-entry query and position (D66/D67):** open with a fresh empty
+  query on the next visit.
+  Independently,
+  if a future design restores query text,
+  start those results at the top rather than the prior deep position.
+  Conditional P-top does not override the active Q-new direction.
+  The temporary debug `onBack` reset was not decision evidence.
+- **Same-query refocus (D68):** preserve the intended row's **visibility**
+  after the viewport shrinks;
+  raw offset alone produced the observed final-row extra swipe.
+  The comparison separately modeled a middle row and final row;
+  it did not demonstrate a native correction.
+  A changed query is a different event from same-query refocus.
 
 The Search result position is distinct from the visible left folder
 browser's own location and scroll position.
@@ -142,8 +142,10 @@ empty/unavailable content (#128),
 TalkBack traversal and announcements (#118),
 and search-library selection (D62,
 future implementation work) stay separate.
-`package/music-player/design/questions/search-navigation-focus.prototype.html`
-is an interactive **logic-only** walkthrough for these pending choices,
-not a new Android/IME verification run or adoption of its defaults.
+`package/music-player/design/questions/archive/search-navigation-focus-before-selection.html`
+retains the interactive **logic-only** comparison as historical evidence,
+not a current question or new Android/IME verification run.
+The selected D63 to D68 goals are documented in `decisions.md` and the
+active `questions/current.html` without presenting rejected variants.
 
 [m3-accessibility]: https://m3.material.io/components/search/accessibility

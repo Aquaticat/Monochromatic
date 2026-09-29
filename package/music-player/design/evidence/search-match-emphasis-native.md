@@ -169,9 +169,11 @@ not proof that highlighted rows remain readable with a keyboard.
 Other OS accent seeds and scale-dependent paint contrast are untested.
 The match spans do not create a click handler.
 D60/D61 subsequently selected direct-name membership and mixed relevance.
-Matching grammar,
-deterministic tie-breaks,
-#127 through #129 and #118 accessibility remain separate open questions.
+Matching grammar and deterministic tie-breaks remain future backend work;
+D63 to D68 later settled #127's interaction goals,
+with native refocus visibility still unverified.
+#128,
+#129 and #118 accessibility remain separate open questions.
 
 [inner-light]: ../questions/render/search-selected-accent-review-inner-results-light-s200.png
 [inner-dark]: ../questions/render/search-selected-accent-review-inner-results-dark-s200.png

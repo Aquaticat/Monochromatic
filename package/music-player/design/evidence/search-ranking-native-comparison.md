@@ -138,9 +138,10 @@ The candidates do **not** prove that the intended exact/prefix/contained
 categories could be calculated or tie-broken consistently in the real
 library.
 Folder and track actions remain a separate #129 question.
-Query focus,
-Back/Clear and scroll restoration remain #127;
-accessibility remains #118.
+D63 to D68 later selected query focus,
+visible Back/Clear and same-query row visibility;
+that scroll goal still lacks native verification.
+Accessibility remains #118.
 
 ## Bounded verification and capture manifest
 

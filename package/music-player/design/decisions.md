@@ -1677,7 +1677,10 @@ real search ranking or activation.
 
 The measured R prototype required another swipe to recover the final row
 after hiding and refocusing the keyboard.
-That refocus behavior and Back/Clear/focus remain open under #127;
+D63 to D68 subsequently settled the interaction direction:
+D68 requires the intended row to remain visible after same-query
+keyboard refocus.
+Native realization and verification remain open;
 R selects the cover viewport direction,
 not that extra swipe as a requirement.
 C's unchanged cover viewport was rejected for the measured end-of-list
