@@ -245,6 +245,50 @@ await describe({
       },
     },),
     it({
+      name: 'READS THE REFERENCE QUOTE IN ONE REFERENCE LINE AT A TIME (ledger B25): an item naming a reference that '
+        + 'does not state it takes the number of the one that does, one naming a reference that states it keeps its '
+        + 'number, and a quote running from one line into the next is found in neither',
+      fn: async () => {
+        /**
+         Two fetched pages; only the second has the stove.
+         */
+        const twoPages = '- reference 1 https://cats.example/a ("A"): Mittens had a younger brother.\n'
+          + '- reference 2 https://cats.example/b ("B"): Mittens had a younger brother who also sat by the stove.';
+        /**
+         Items as one voice answered them.
+         */
+        const verified = verifiedAttestations({
+          modelId: ROSTER[0],
+          items: [
+            {
+              ...BROTHER_ITEM,
+              reference: 1,
+            },
+            {
+              archiveQuote: 'She has a younger brother',
+              reference: 2,
+              referenceQuote: 'Mittens had a younger brother',
+            },
+            {
+              archiveQuote: 'She wears a bell.',
+              reference: 1,
+              referenceQuote: 'a younger brother. - reference 2',
+            },
+          ],
+          archiveText: ARCHIVE_TEXT,
+          referenceContext: twoPages,
+        },);
+        expect(verified.map(function numberOf(entry,): number {
+          return entry.item
+            .reference;
+        },),).toEqual([2, 2,],);
+        expect(verified.map(function quoteOf(entry,): string {
+          return entry.item
+            .archiveQuote;
+        },),).toEqual([BROTHER_ITEM.archiveQuote, 'She has a younger brother',],);
+      },
+    },),
+    it({
       name: 'MERGES overlapping quotes from distinct voices into one detail and drops one short of the quorum',
       fn: async () => {
         /**
