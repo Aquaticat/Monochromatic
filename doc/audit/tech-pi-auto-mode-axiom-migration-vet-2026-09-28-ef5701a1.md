@@ -1435,6 +1435,78 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Private instruction-source method observations
+
+After Q22 confirmation,
+task #3 closed and task #16 began private contract work.
+Downstream tasks #68 through #73 separately track actual human authority,
+lifecycle/finalization,
+instruction applicability,
+semantic effects,
+host handback,
+and replacement parity.
+
+A new source-method phase in `~/temp/agent/auto-mode-consumer-contract.mDLkyNoP` completed once.
+Its 8 predeclared observations and both source-integrity controls passed scoped assertions in `proc_fcd6`.
+Raw stdout,
+empty stderr,
+process outcome,
+and `probe.verified.json` were retained.
+No model call,
+SDK startup,
+real history load,
+represented operation,
+or production mutation occurred.
+The protocol used inspected Pi `0.87.1` method bodies and pure rendering/replay helpers
+with declared host stand-ins.
+It is not actual-host or human-authentication qualification.
+
+Preparation used host Node `v26.10.0`;
+the container reported Node `v24.21.0`.
+Execution-manifest SHA-256 is
+`8ea2c0fd07492c58a3007a680a5aad175076d4fbc52a6d83c0d9dc9fff379c01`.
+Image identity is
+`sha256:d15c48492a7dd21a977612aefa661297de4d3253d14c375e7d0157f5bcb5617a`.
+The run used 2 GiB memory,
+2 CPUs,
+zero extra swap,
+a non-root user,
+a read-only filesystem,
+no network or host mounts,
+and a 60-second container lifetime cap.
+Listed-input/image/manifest bindings passed;
+no hermetic closure or hardware/runtime attestation is claimed.
+
+The earlier synthetic owned copy omitted a deliberately later contribution.
+The run getter included it while command base options did not.
+Request-local and synthetic provider-payload changes were absent from that getter.
+The actual forced wrapper replaced the preceding context-transform marker in its controlled composition.
+The removed-leading-system case retained the exact runner diagnostic and received the changed list.
+The deployed extension order and complete `AgentSession.prompt()` lifecycle were not exercised.
+The [source-traced report](../troubleshooting/pi-instruction-snapshots.md) records these limits.
+
+A changed copied-source comment was rejected by the hash guard
+and accepted by a separate artifact omitting only that guard,
+while selected method bodies remained identical.
+The original guard was not removed from its file.
+Completed preparation,
+omission creation,
+freeze,
+build,
+and probe must not be replayed.
+
+The practical contract consequence is to separate instruction-source authority,
+observed representation,
+and coverage evidence.
+Visibility does not authenticate an instruction;
+one getter does not prove the producer inventory complete.
+Legitimate delegation must remain linked to its governing source and scope.
+The next private work is the consumer collection interface and its actual-host qualification,
+not another candidate comparison or a production cutoff.
+No upstream issue or patch was filed.
+Existing source-view discussions were read;
+related tool-removal behavior was not reproduced or claimed fixed.
+
 ## Q22 shared understanding confirmed
 
 The user answered "Confirm" to the consolidated design summary.

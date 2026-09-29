@@ -176,11 +176,41 @@ the original guard stays intact.
 Independent pre-execution review added host verification of control IDs and success fields.
 Unexpected stderr remains a stopped attempt pending actual classification,
 not automatically accepted noise.
-Omission preparation completed once in `proc_8261` and must not be replayed.
-The next steps are execution freeze,
-local-only image build,
-and one source-method run.
-No runtime case result is recorded yet.
+Omission preparation `proc_8261`,
+execution freeze `proc_b7de`,
+image build `proc_4ef1`,
+and source-method probe `proc_fcd6` completed once.
+Do not replay them.
+The result checkpoint `proc_7d2c` retained raw stdout,
+empty stderr,
+process metadata,
+and `probe.verified.json`.
+All 8 scheduled observations and both source-integrity controls passed their scoped assertions.
+
+The runtime was Node `v24.21.0`,
+not preparation's host Node `v26.10.0`.
+Execution-manifest SHA-256 is
+`8ea2c0fd07492c58a3007a680a5aad175076d4fbc52a6d83c0d9dc9fff379c01`;
+image identity is
+`sha256:d15c48492a7dd21a977612aefa661297de4d3253d14c375e7d0157f5bcb5617a`.
+`actualHostIntegrationVerified` remains false.
+
+The earlier owned copy missed a later context-file contribution;
+the current-run getter saw it,
+but did not reflect request-local or synthetic provider-payload changes.
+Forced projection replaced the preceding request-local content in its controlled case.
+The missing-leading-system case returned the changed list while reporting its exact diagnostic.
+These establish different instruction views,
+not the authority of any added text.
+The [source-traced report](../troubleshooting/pi-instruction-snapshots.md)
+records tested scope and upstream context.
+No upstream issue or patch was filed.
+
+The next task #16 work is an explicit contract for instruction-source authority,
+observed views,
+and coverage witnesses,
+followed by actual-consumer qualification of the chosen collection interface.
+Do not infer a complete or authenticated instruction set from one getter or rendered prompt.
 
 The remaining work is split into independently verifiable tasks:
 

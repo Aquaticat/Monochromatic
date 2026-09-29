@@ -138,6 +138,52 @@ assistant assertion,
 or model-generated relation is not interchangeable with a trusted witness.
 Missing evidence remains missing rather than being encoded as probability zero.
 
+### Instruction authority, observed views, and coverage are separate
+
+The [Pi instruction-view probe](../troubleshooting/pi-instruction-snapshots.md)
+measured differences between an early context-file copy,
+run options,
+the current prompt getter,
+request-local system messages,
+and a synthetic provider payload.
+It used inspected source methods under Node `v24.21.0`,
+not the actual host or an authenticated input producer.
+Do not turn those observations into a production collector qualification.
+
+The private consumer contract must distinguish:
+
+- An instruction source and its code-established authority,
+  priority,
+  scope,
+  version,
+  and any legitimate delegation.
+  A raw role or filename cannot construct that authority.
+- An observed representation,
+  including its composition stage,
+  owned bytes or structured content,
+  digest,
+  and source links.
+  Seeing text at a stage does not establish its authority or prove later stages are covered.
+- Coverage evidence for the admitted producer inventory and current action.
+  An unaccounted instruction producer,
+  unresolved delegation,
+  collector error,
+  or opaque transformation cannot become a claim that no relevant instruction exists.
+  A caller-supplied completeness Boolean is not proof.
+
+A governing instruction can legitimately delegate scoped instructions to another source.
+That is different from a payload promoting itself into authority.
+Keep the delegating instruction,
+referred source identity,
+and scope restrictions linked in code.
+The existing request/prose studies do not qualify those additional relations.
+
+The review module should own collection and finalization behind its review interface,
+rather than making callers assemble purportedly trusted facts.
+The real host and disposable test adapters must exercise that same interface.
+Source-method observations are preliminary evidence for designing it,
+not a substitute for the later consumer tests.
+
 ## Fact and axiom inventory
 
 ### Filesystem target and access
