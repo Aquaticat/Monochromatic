@@ -415,14 +415,22 @@ The earlier recommendation to require new confirmation for every fork was reject
 Copied text or an entry ID alone cannot establish inheritance authority.
 Explicitly broader grant scope remains outside this ordinary session-scoped default.
 
-The user has now explicitly resumed the interview.
-[Q16](pi-auto-mode-axioms.md#q16-revoking-inherited-directives)
-asks what happens by default to an already inherited directive in B when its originating session A resets:
-the inherited grant becomes ineligible,
-or it remains valid.
-Linked revocation is recommended but remains unanswered.
-Reset-UI choices and the storage mechanism are not part of this question.
-Reset behavior originating inside a fork and subsequent lifecycle details depend on this choice.
+The user selected [Q16 B](pi-auto-mode-axioms.md#q16-revoking-inherited-directives):
+resetting originating session A leaves its already inherited directive valid in verified fork B.
+Revoke that directive in B separately.
+The linked-revocation recommendation was rejected.
+Keep B's current eligibility separate from whether the original directive remains active in A;
+the original human-confirmation witness is still required.
+A reset inside B has Q14's branch-wide effect for B's session ID.
+No new global-reset behavior or storage/copy mechanism is selected.
+
+The resumed interview now asks
+[Q17](pi-auto-mode-axioms.md#q17-new-request-conflicting-with-an-active-standing-prohibition):
+whether a later explicit human request requires exception confirmation
+when an ordinary active standing prohibition covers the requested action.
+The recommendation to confirm remains unaccepted.
+This question concerns one action,
+not persistent changes to the standing directive.
 No option permits unwitnessed authority or a fixed-block override.
 
 ### Existing approval reuse

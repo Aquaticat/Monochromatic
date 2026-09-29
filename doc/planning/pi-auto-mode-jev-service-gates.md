@@ -289,7 +289,9 @@ The remaining consumer gates are:
 - Replacement responsibility coverage and final shared-understanding confirmation before production mutation.
 
 These are not solved by another generic provider comparison or a dashboard inspection.
-The user has explicitly resumed the integration interview at Q16.
+The user has explicitly resumed the integration interview and selected Q16 B:
+resetting the originating session leaves its already inherited directive valid in the fork.
+Q17 now concerns later requests conflicting with ordinary standing prohibitions.
 Production implementation still requires the remaining design and qualification gates
 and final shared-understanding confirmation.
 

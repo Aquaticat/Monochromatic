@@ -37,16 +37,22 @@ Current references:
 ## Current interview state
 
 The user explicitly resumed the design interview with "Okay resume it now."
-Task #3 is active at unanswered Q16:
-revocation of reusable trust directives inherited by an already-created verified fork.
+The user answered Q16 B:
+resetting originating session A leaves its inherited reusable directive valid in verified fork B.
+Revoke it in B separately.
+The linked-revocation recommendation was rejected.
 Q14 A and Q15 B remain settled and must not be re-asked.
+Keep B's current eligibility distinct from the original human-confirmation witness;
+A's reset does not erase that historical confirmation for B.
+No global-reset command or storage/copy mechanism was selected.
+
+Task #3 is active at unanswered Q17:
+a later explicit human request conflicts with an ordinary active standing prohibition.
 The [resumed design frontier](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
-records the question and its dependent branches.
-Linked revocation is recommended,
-not selected.
-The alternative is keeping the inherited grant valid in B after A resets.
-The question selects default revocation semantics,
-not a new scope-selection prompt or a storage/copy mechanism.
+records the question.
+Explicit exception confirmation is recommended but unaccepted;
+the alternative is treating the later request as sufficient authority for this action.
+Neither option overrides a fixed block or selects persistent directive edits.
 No production implementation,
 cutoff selection,
 Laya restart,
@@ -120,7 +126,8 @@ Vendor-documented adversarial-state sensitivity and the recurring read-scope pat
 Complete current policy is still mandatory despite generic vendor filtering advice.
 
 Real human-authority/lifecycle/finalizer qualification remains separate.
-Q16 is now the resumed interview frontier.
+Q16 B is settled;
+Q17 is now the resumed interview frontier.
 No production cutoff or code change has been approved,
 and the final shared-design confirmation is not complete.
 

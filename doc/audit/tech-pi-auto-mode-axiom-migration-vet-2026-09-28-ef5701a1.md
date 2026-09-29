@@ -1435,10 +1435,40 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Accepted Q16 and next policy question
+
+The user answered Q16 with "B":
+resetting originating session A leaves its already inherited reusable directive valid in verified fork B.
+Revoke that directive in B separately.
+The linked-revocation recommendation was rejected;
+do not reintroduce it as an implementation prerequisite.
+
+Q15 still requires verified lineage and the original human-confirmation witness.
+Keep that historical witness distinct from current eligibility in A:
+A's reset cannot invalidate B merely because the original directive is no longer active in A.
+Q14 still gives a reset within B branch-wide effect for B's session ID.
+No new global-reset command,
+reset UI,
+storage mechanism,
+exact-action approval lifetime,
+or production implementation was selected.
+
+The next [policy question](../planning/pi-auto-mode-axioms.md#q17-new-request-conflicting-with-an-active-standing-prohibition)
+concerns a later explicit request by the same verified human
+that conflicts with an ordinary active standing prohibition.
+Exception confirmation is recommended but not accepted;
+the alternative treats the later request as sufficient authority for this action.
+The question does not choose persistent edits to the standing directive
+and cannot override fixed blocks.
+Independent review confirmed that this does not reopen Q14 through Q16
+or confuse older permission with a later request.
+No new model assessment or recipient follows.
+
 ## Integration interview explicitly resumed
 
 After completed bounded Jev qualification and service-evidence reconciliation,
-the user instructed: "Okay resume it now."
+the user instructed:
+ "Okay resume it now."
 This resumes the design interview only.
 Task #3 is active at unanswered Q16,
 whether an originating session's reset revokes reusable directives already inherited by a verified fork.

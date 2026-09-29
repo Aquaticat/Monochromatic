@@ -754,11 +754,13 @@ No production thresholds have been chosen.
 The user explicitly resumed the interview with "Okay resume it now."
 The Jev qualification direction remains approved;
 this does not authorize production implementation or select a cutoff.
-The current frontier is Q16,
-revocation of ordinary reusable trust directives already inherited by a verified fork.
+The user selected Q16 B:
+resetting the originating session leaves its already inherited directive valid in the verified fork.
 Q14 and Q15 remain settled.
-Reset behavior originating inside a fork and subsequent inherited-grant lifecycle details
-are downstream of this answer.
+The current frontier is Q17,
+handling a new explicit human request that conflicts with an active ordinary standing prohibition.
+This concerns authorization precedence,
+not model judgment of the final action or a fixed-block override.
 Other contract and qualification branches remain open;
 final shared-understanding confirmation is still required.
 Laya work and the original reserved corpus remain outside this resumption.
@@ -902,34 +904,47 @@ or settle revocation in already-forked sessions.
 Eligible human-confirmed reusable trust directives may inherit into a new forked session.
 Verified lineage and a valid original human witness are required.
 Copied text or a copied entry ID alone does not supply authority.
-Revocation linkage between the originating session and an existing fork remains Q16.
+Q16 B leaves the inherited directive valid after the originating session resets.
 
 ### Q16: Revoking inherited directives
 
-Unanswered.
+Settled: B.
 An ordinary session-scoped directive is human-confirmed in session A
 and inherited by verified fork B.
-By default after A resets its trust directives,
-should that inherited permission become ineligible in B,
-or remain valid in B?
+Resetting A leaves that inherited directive valid in B;
+the user must revoke it there separately.
+The linked-revocation recommendation was not selected.
+Do not silently implement automatic parent-to-fork revocation.
 
-The recommendation is linked revocation:
-A's reset makes B's inherited directive ineligible for subsequent approvals,
-without undoing completed operations or revoking a separately confirmed grant in B.
-That is a proposal,
-not an accepted policy.
-It concerns reusable directives only,
-not exact-action approval records or explicitly broader grant lifetimes.
+B still requires verified lineage and the original human-confirmation witness under Q15.
+Historical confirmation and current eligibility in A are different facts:
+A's local reset must not invalidate B merely because that directive is no longer active in A.
+A reset within B still has Q14's branch-wide effect for B's session ID.
+No global-reset command,
+new reset UI,
+storage/copy mechanism,
+exact-action approval lifetime,
+or explicitly broader grant lifetime is selected by this answer.
 
+### Q17: New request conflicting with an active standing prohibition
+
+Unanswered.
+An active ordinary human directive forbids uploading the repository's `.env`.
+The same human later explicitly requests that upload,
+without explicitly addressing the earlier prohibition.
+Assume no fixed block applies and all other required evidence is satisfied.
+
+Should code ask for explicit confirmation of an exception for this action,
+or treat the later explicit request as sufficient authority for this action?
+The recommendation is confirmation:
+it distinguishes a deliberate exception from an ordinary request that overlooks the standing restriction,
+at the cost of another prompt.
+Treating the later request as sufficient follows current intent without that extra interaction,
+but allows a standing restriction to be bypassed without acknowledgement.
 Ranking:
-linked revocation > the inherited grant remaining valid.
-Linked revocation makes the originating reset effective for this inherited authority,
-but can interrupt a fork's continuing workflow.
-Keeping the inherited grant valid preserves fork continuity,
-but A's reset no longer removes that authority from B.
-No reset prompt,
-scope-selection UI,
-or storage/copy mechanism is selected by this question.
+confirmation > the later request alone.
+The question does not decide a persistent edit to the standing directive.
+No model chooses the precedence or overrides fixed blocks.
 
 ## Accepted TypeSafe AUP scope
 
