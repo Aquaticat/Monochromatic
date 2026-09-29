@@ -6701,8 +6701,9 @@ reads the corpus as the old one did.
 ### X21: a `$...$` pair is a formula on the site and prose here
 
 Status:
-open,
-found 2026-09-29 rereading `doc/repetition.md` ("The site's grammar is not this one").
+closed 2026-09-29,
+premise refuted by measurement;
+found the same day rereading `doc/repetition.md` ("The site's grammar is not this one").
 The site compiles each page under `remark-math` and `rehype-katex`,
 so a `$...$` pair is a formula there,
 while this package parses it as prose;
@@ -6720,6 +6721,61 @@ the settled pages and the artifact strings;
 replay those passes over them;
 if any rewrites inside a formula,
 protect math pairs in `corpus-run/prose-ranges.ts` and `typography-prose-mask.ts` as the site's compiler reads them,
+with a guard shown failing first.
+
+What the census found:
+
+-   No formula exists where the passes act.
+    The site's own compiler
+    (`@mdx-js/mdx` 3.1.1 with `remark-math` 6.0.0,
+    the versions its lockfile resolves,
+    installed in `~/temp/agent/x21-math/` and run after the site's own rewrite of HTML comments into JSX comments,
+    `census.mjs`)
+    finds no math node in any of the 92 sources or archive translations at the pin,
+    nor in any of the 273 settled pages under the agent runs
+    (the package's own runs roots hold artifacts but no written pages).
+    A planted file holding a formula,
+    a pair of dollar amounts and a display block showed the census finding all three.
+-   The entry's "six source pages carry one" counted dollar signs rather than formulas.
+    Of the 395 dollar signs in the pinned sources and archives,
+    all but one open a template string (`'${...}'`) inside a JSX attribute such as a photo list,
+    which the MDX compiler reads as code;
+    the one left is a single currency sign in `mikaela_khara`'s archive translation,
+    with nothing to pair with.
+-   So no typography or spelling pass has ever run inside a formula,
+    and a mask protecting formulas would guard nothing and could not be shown red.
+    What the census did find is a different gap,
+    recorded as X22.
+
+### X22: this package's strict parse lacks the site's math grammar
+
+Status:
+open,
+to be built before the next launch;
+found 2026-09-29 closing X21.
+`parse-mdx.ts` says it parses with the grammar family the site compiles with,
+but the site adds `remark-math` and this package does not,
+so a wording that forms a formula passes the strict parse the publisher runs (the eighth class)
+and renders as TeX on the site.
+Models write such wordings:
+over every string of the 370 artifacts under the agent runs and the package's runs roots
+(`~/temp/agent/x21-math/artifact-dollars.mjs`,
+each candidate confirmed by the site's compiler),
+44 form a math node.
+43 are judges' reasons,
+findings and claim summaries,
+which reach no page;
+one is page text,
+a translate-slate candidate in `XingZ616` (slice 83) that wrote a TeX command between dollar signs
+where the source has no formula.
+It did not ship,
+since no settled page carries a math node,
+but nothing refused it.
+Fix:
+add `remark-math` at the site's major version to `parseMdxBody`,
+first showing the parse tree unchanged over every current input
+(so no cache version moves),
+then a floor where the quote-balance floor stands that refuses a wording forming a math node its incumbent lacks,
 with a guard shown failing first.
 
 ## Recurring code families
