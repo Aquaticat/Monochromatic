@@ -329,6 +329,15 @@ RLM per rule plus `mise run //package/module/token-count:count -- --model claude
    RCO moves to the `choosing-technology` skill (user chose move over always-loaded),
    AP5 to `package/config/rolldown/README.md`.
    Approved.
+- Batch 17 (completeness,
+   verification):
+   17 rules become 12,
+   964 to 796 tokens;
+   retires TC2 into TCV,
+   VB2 to VB4 into VB1,
+   VB6 into VUB;
+   CXL widens to any plugin or process cleanup (already applied to pi plugins) and stays under "Package completeness".
+   Approved.
 - Retired-code references:
    rewrite every reference in other docs to the successor code (user chose this over a retired-codes list).
 
@@ -1614,14 +1623,7 @@ AP5:
  and this package as a devDependency.
 ```
 
-## Next action
-
-Batch 17 proposed:
-17 rules become 12,
-964 to 796 tokens;
-awaiting user answers.
-
-### Pending batch 17 text
+### Batch 17
 
 ```md
 PKG:
@@ -1709,14 +1711,9 @@ TAE:
  never from how it should work.
 ```
 
-Retires TC2 into TCV,
-VB2 to VB4 into VB1,
-VB6 into VUB.
-CXL widens from semantic plugin cleanup to any plugin or process cleanup:
-`doc/planning/pi-goal-stop-hook.md` and `doc/troubleshooting/pi-auto-mode-subagent-model-scope.md` already apply it to pi plugins.
-CXL stays under "Package completeness":
-the audit's misplacement flag echoed an example from the audit prompt,
-and its stderr-capture requirement is a completion check.
+## Next action
+
+Propose batch 18.
 
 ### Concurrent `AGENTS.md` changes
 
@@ -1728,20 +1725,8 @@ Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- A
 - 654507bf9 added SBS under "Adding new packages";
    it joins batch 16.
 
-### Remaining batches (62 rules)
+### Remaining batches (45 rules)
 
-- Batch 17:
-   PKG,
-   TCV,
-   TC2,
-   GFP,
-   CXL,
-   VUB,
-   VB1 to VB7,
-   ABR,
-   URF,
-   THR,
-   TAE.
 - Batch 18:
    WR2 to WR5,
    MD1 to MD8,
