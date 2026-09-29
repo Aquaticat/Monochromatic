@@ -83,6 +83,11 @@ const MIN_CONTENT_WORDS = 2;
 const MAX_PHRASE_WORDS = 12;
 
 /**
+ Word start marking that the tokenizer stands between words.
+ */
+const NO_WORD = -1;
+
+/**
  One passage the shipped document repeats more than the archive did.
  
  @example
@@ -174,25 +179,37 @@ export function whitespaceTokensOf({ text, }: { readonly text: string; },): read
   const words: string[] = [];
 
   /**
-   Characters of the word being read.
+   Where the word being read starts, `NO_WORD` between words.
    */
-  let held = '';
+  let start = NO_WORD;
+
+  /**
+   Offset of the character being read, in UTF-16 units.
+   */
+  let at = 0;
 
   // A SINGLE LINEAR PASS rather than a split on a whitespace pattern, per `RG1`:
   // the rule is "break on whitespace", which an index scan states directly, and
   // this runs in O(n) with no backtracking to reason about on document-sized
-  // input.
+  // input. Each word is sliced once where it ends rather than grown a
+  // character at a time, per `RG2` (ledger B29).
   for (const character of text) {
     if (character.trim() === '') {
-      if (held !== '')
-        words.push(held,);
-      held = '';
-      continue;
+      if (start !== NO_WORD) {
+        words.push(text.slice(
+          start,
+          at,
+        ),);
+      }
+      start = NO_WORD;
     }
-    held += character;
+    else if (start === NO_WORD) {
+      start = at;
+    }
+    at += character.length;
   }
-  if (held !== '')
-    words.push(held,);
+  if (start !== NO_WORD)
+    words.push(text.slice(start,),);
   return words;
 }
 

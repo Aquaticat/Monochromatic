@@ -29,6 +29,11 @@ import {
 const GROUP = 2;
 
 /**
+ Run start marking that no Han run is open.
+ */
+const NO_RUN = -1;
+
+/**
  Capitalises a word.
 
  @param word - lower-case syllables joined
@@ -103,13 +108,18 @@ function romanisedRun({ run, }: { readonly run: string; },): string {
  */
 export function handleReading({ name, }: { readonly name: string; },): string {
   /**
-   Rendering built so far.
+   Pieces of the rendering, in order, joined once at the end rather than
+   grown a character at a time, per `RG2` (ledger B29).
    */
-  let rendered = '';
+  const pieces: string[] = [];
   /**
-   Han run gathered so far.
+   Where the open Han run starts, `NO_RUN` while none is open.
    */
-  let run = '';
+  let runStart = NO_RUN;
+  /**
+   Offset of the character being read, in UTF-16 units.
+   */
+  let at = 0;
   /**
    Whether the character last written out ends a Latin word (a letter,
    accented or not, a digit, or a combining mark on a letter), which a run
@@ -119,22 +129,35 @@ export function handleReading({ name, }: { readonly name: string; },): string {
   let afterLatin = false;
   for (const character of name) {
     if (isHanCharacter({ character, },)) {
-      if ((run === '') && afterLatin)
-        rendered += ' ';
-      run += character;
+      if (runStart === NO_RUN) {
+        if (afterLatin)
+          pieces.push(' ',);
+        runStart = at;
+      }
+      at += character.length;
       continue;
     }
-    if (run !== '') {
-      rendered += romanisedRun({ run, },);
-      run = '';
+    if (runStart !== NO_RUN) {
+      pieces.push(romanisedRun({
+        run: name.slice(
+          runStart,
+          at,
+        ),
+      },),);
+      runStart = NO_RUN;
       if (isLatinWordCharacter({ character, },))
-        rendered += ' ';
+        pieces.push(' ',);
     }
-    rendered += character;
+    pieces.push(character,);
     afterLatin = continuesLatinWord({ character, },);
+    at += character.length;
   }
-  if (run !== '')
-    rendered += romanisedRun({ run, },);
+  if (runStart !== NO_RUN)
+    pieces.push(romanisedRun({ run: name.slice(runStart,), },),);
+  /**
+   Rendering as the page shows it.
+   */
+  const rendered = pieces.join('',);
   return rendered;
 }
 
