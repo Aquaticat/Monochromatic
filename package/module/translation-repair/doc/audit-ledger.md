@@ -5725,8 +5725,8 @@ which found the snapshot's own next steps stopped the same way.
 ### D29: zone-less clock times in the living planning docs
 
 Status:
-open,
-found 2026-09-29 while widening the guards to the living repository-level docs for D26.
+fixed 2026-09-29,
+found the same day while widening the guards to the living repository-level docs for D26.
 `src/living-docs.test-fixture.ts` counts the readiness signal and the OpenRouter pass log as living,
 since the current handover links both as current,
 but the clock guard does not read them yet:
@@ -5740,6 +5740,54 @@ resolve each from its source
 `git log` and `find` print local time),
 write its zone,
 and add both docs to the clock guard's read.
+
+What was done:
+
+-   The scan found 408 zone-less times at the fix
+    (`~/temp/agent/audit-glossary-fix/d29-zoneless.txt`),
+    all in sections whose headings date them.
+    Each was read against the run logs,
+    whose stamps are UTC
+    (`d29-verify2.mjs`):
+    a time was looked up in the logs its own section names,
+    the logs of the entry its heading names dated that day or the next,
+    and the run log its heading names,
+    both as written and four hours later,
+    which is where an EDT wall time would read in UTC.
+    318 matched only as written.
+    A first pass against every log at once was set aside:
+    across 1,013 logs about one second in eight carries some stamp,
+    so a lone match four hours off proves nothing.
+-   The other 90 were read one by one
+    (with the doc's prose masked so no page text was printed):
+    the hakureico passes of 2026-09-08,
+    whose headings name no entry,
+    matched in that day's hakureico logs as written and not four hours later;
+    `hulicaijia8`'s bounds matched as written on the day before its section's date;
+    the launch times of `XingZ625` and `XingZ624` agree with their tallies' durations only as UTC
+    (a 02:21 UTC launch plus 6h54m ends before the 09:40 UTC read,
+    where four hours later would end after it),
+    and `XingZ607`'s phases only as UTC with its seven-hour deadline at 21:39 UTC;
+    and the rest name a run by the UTC time of its heading (the page of 21:03 UTC),
+    add a duration to a UTC time,
+    or sit inside a section whose other times the logs confirm.
+    None was local but one:
+    a systemd-oomd kill the pass log quoted from the journal as local time,
+    now 01:19:47 UTC with the journal's 21:19:47 EDT beside it,
+    which agrees with the pass's death at 01:19 UTC two lines earlier.
+-   `c7d0f34b0` wrote the zones:
+    a script appended " UTC" after each time and its seconds,
+    leaving the first end of a direct range to its second end,
+    and a line-by-line check found the diff otherwise unchanged
+    (`d29-diffcheck.mjs`);
+    the one cross-date range heading carries UTC on both ends,
+    since the guard pairs a range only when one time follows the other.
+
+Guard:
+`src/clock-time-zones.unit.test.ts` reads both planning docs through the living-docs fixture
+and asserts the pass log is among what it reads.
+A zone-less time planted in each failed it with the site named,
+and it passed again once both files were restored from the commit.
 
 ### D30: the runbooks and troubleshooting docs sat outside the living set
 
@@ -5880,6 +5928,10 @@ the repeated-heading suffix,
 images,
 and absolute URLs)
 were each caught.
+The full suite passed with it
+(0 FAIL,
+1,310 PASS lines,
+the new case among them).
 
 ## Found while fixing
 

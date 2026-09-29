@@ -8,8 +8,10 @@
  WHAT IS READ is prose: the comments of every TypeScript file under `src`
  (tests included, since their comments document too), the package's docs and
  README, the translation-repair decision records at the repository root, the
- canonical handover and the snapshot it links, and the translation-repair
- runbooks and troubleshooting docs (ledger D30). String literals are fixture
+ canonical handover and the snapshot it links, the readiness signal and the
+ OpenRouter pass log it links as current (ledger D29), and the
+ translation-repair runbooks and troubleshooting docs (ledger D30). String
+ literals are fixture
  text and are not read, and neither is code: a code span or a fenced block
  quotes a command or a format, not a moment.
 
@@ -606,12 +608,11 @@ function commentProse(
 }
 
 /**
- Every prose file the guard reads. The living planning docs are not read yet:
- 404 zone-less times stand in the pass log, each to be resolved from its
- source first (ledger D29).
+ Every prose file the guard reads.
 
  @returns Prose of the package's source comments, docs and README, the
- decision records, and the current handover
+ decision records, the current handover, the planning docs it links as current
+ (ledger D29), and the runbooks and troubleshooting docs
 
  @throws {@link Error} when the living docs cannot be located, since the guard
  would then read less than it claims
@@ -629,7 +630,7 @@ async function readLivingProse(): Promise<readonly Prose[]> {
   /**
    Living repository-level docs.
    */
-  const { decisionRecords, handover, operations, } = await readLivingRepositoryDocs();
+  const { decisionRecords, handover, currentPlanning, operations, } = await readLivingRepositoryDocs();
   /**
    Markdown paths from the repository root.
    */
@@ -642,6 +643,7 @@ async function readLivingProse(): Promise<readonly Prose[]> {
     join(pkg, 'README.md',),
     ...decisionRecords,
     ...handover,
+    ...currentPlanning,
     ...operations,
   ];
   /**
@@ -709,8 +711,8 @@ await describe({
       },
     },),
     it({
-      name: 'FINDS NO ZONE-LESS CLOCK TIME in the package\'s comments and docs, the decision records or the '
-        + 'current handover',
+      name: 'FINDS NO ZONE-LESS CLOCK TIME in the package\'s comments and docs, the decision records, the '
+        + 'current handover, the planning docs it links as current, or the runbooks and troubleshooting docs',
       fn: async () => {
         /**
          Every prose file read.
@@ -718,6 +720,9 @@ await describe({
         const files = await readLivingProse();
         expect(files.some(function isHandover({ path, },): boolean {
           return path.includes('translation-repair-handover-',);
+        },),).toBe(true,);
+        expect(files.some(function isPassLog({ path, },): boolean {
+          return path.endsWith('translation-repair-openrouter-2026-09-03.md',);
         },),).toBe(true,);
         expect(files.flatMap(function inFile(prose,): readonly string[] {
           return zonelessTimes({ prose, },);
