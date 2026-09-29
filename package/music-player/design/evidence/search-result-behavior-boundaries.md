@@ -53,8 +53,11 @@ not exercised matching rules or selected tap effects.
 The earlier aligned,
 unhighlighted APK SHA-256 was
 `bf9a51c42facfca969e275d5fe55769656c451900f57689dc7c24190e8d6d2ef`.
-The active accent-highlighted installed APK and local build both hash to
-`7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`.
+The historical accent-highlighted D59 APK and matching local build hashed
+to `7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`.
+The later corrected static fixture installed on the disposable Fold hashed
+to `1caee7060acfb5bbcd9a02142b4c9bada6b5886517157d25fef4a48b9b1e9c05`;
+it likewise did not exercise a result tap.
 These source fixtures cannot prove actions,
 search scope,
 matching algorithms,
@@ -169,3 +172,6 @@ current UI task.
 No concrete ranking algorithm,
 matcher dependency,
 result-tap effect or production Search code is adopted by this note.
+The current read-only activation audit and its single remaining
+track-navigation preference are in
+`package/music-player/design/evidence/search-result-activation-frontier.md`.

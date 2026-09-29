@@ -357,8 +357,13 @@ rounds (2026-09-17):
   Exact cause-specific recovery copy/control depends on a truthful
   source-status owner in a future implementation;
   the broad debug unavailable wording was rejected.
-  Result activation (review task 129) and Search accessibility
-  (review task 118) remain separate open decisions.
+  The result-activation audit at
+  `evidence/search-result-activation-frontier.md` carries existing
+  folder/track effects forward as recommendations,
+  while `questions/search-result-activation.prototype.html` isolates the
+  remaining Stay-versus-Return preference for a successful track hit.
+  No real result tap has been verified.
+  Search accessibility (review task 118) remains separate.
   D21's global command hotkey and Settings row
   do not transfer to Search.
   D25 still reserves Ctrl+F for search and Ctrl+O for the

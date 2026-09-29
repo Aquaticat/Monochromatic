@@ -6774,3 +6774,48 @@ The next independent UI review is result activation (internal review task
 then Search accessibility (internal review task 118).
 Internal review-task ID link cleanup remains pending separately;
 never mutate the unrelated GitHub Issues with those numbers.
+
+## Result activation: one unresolved track-navigation consequence
+
+`evidence/search-result-activation-frontier.md` and the older
+`evidence/search-result-behavior-boundaries.md` now separate existing
+player-list actions from unimplemented Search-result taps.
+`PlayerController.selectPage(page)` changes selected folder and queue
+page scope without autoplay.
+`playIndex(index)` and `playCurrent()` start another track;
+`refresh(followCurrent = true)` selects its owning page in player state,
+but no source proves an automatic scroll to that track's row.
+The existing player-list current row calls `togglePlay()` rather than
+restarting its track through `playIndex`.
+D9 removes a vanished file row and shows a dismissible message;
+that is an incumbent error precedent,
+not a verified Search handler.
+No result tap was installed or exercised.
+
+The self-contained `questions/search-result-activation.prototype.html`
+uses a pure in-memory logic model to show a folder hit returning to the
+normal folder view,
+another track starting,
+a direct own-name hit on the already-current track toggling play/pause,
+and a stale hit that cannot start a substitute.
+It starts browsing C418 while Another Xronixle from Camellia plays so a
+folder selection visibly changes;
+this differs deliberately from the selected native screenshot's initial
+Camellia selection and is disclosed in the form.
+The only remaining preference is whether a successful **track** tap
+stays in Search (recommended,
+retaining query and visible deck) or returns to the ordinary folder view
+(ending that Search visit under D66).
+Folder hits return to the player in both.
+The HTML model was exercised under both policies,
+all guided/free actions,
+invalid actions,
+keyboard-operable tabs and the free-text field.
+It passed light/dark,
+narrow-width and axe WCAG A/AA checks without console errors;
+these are browser checks,
+not native result activation or TalkBack proof.
+Do not convert the source-backed defaults into another multi-question
+ballot;
+only the consequential track Stay/Return tradeoff needs a user
+preference.

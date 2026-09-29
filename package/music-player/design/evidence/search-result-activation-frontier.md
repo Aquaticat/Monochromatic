@@ -127,10 +127,19 @@ The visible Back arrow is a separate explicit exit (D64).
 A visual/logic comparison must start from selected A with its real left
 browser and full deck,
 not the obsolete blank-left or two-row parent-only `cam` fixture.
-If a prototype simulates activation,
-label all queue,
-player and focus outcomes as a model,
-not as Android behavior.
+The [logic-only interaction walkthrough](../questions/search-result-activation.prototype.html)
+models a directly named `Cam` track,
+a `Camellia` folder and an `Another Xronixle` current-track hit
+under an `Another` query.
+It offers only the remaining **track-success Stay versus Return** choice,
+with folder/current-track defaults carried from incumbent behavior and
+an illustrative D9-style stale-result notice.
+Its player,
+queue and navigation outputs are a model,
+not Android verification;
+it does not simulate keyboard edit focus,
+TalkBack,
+file loading or a real tap handler.
 Native TalkBack traversal and announcements remain the separate Search
 accessibility review;
 no further IME study is authorized without first making a compelling case

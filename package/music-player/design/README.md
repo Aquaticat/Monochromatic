@@ -185,7 +185,11 @@ The [status evidence](evidence/search-empty-unavailable-boundaries.md)
 and [keyboard-closed native gallery](questions/search-status-evidence.html)
 show these states on the selected Fold layout,
 not an implemented lookup or a selected cause-specific recovery control.
-Continue separate UI reviews for result activation and accessibility.
+The [result-activation audit](evidence/search-result-activation-frontier.md)
+and [logic-only track-navigation comparison](questions/search-result-activation.prototype.html)
+keep source-backed folder/track actions separate from the remaining
+Stay-versus-Return preference after a successful track hit.
+Search accessibility remains a separate review.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.
