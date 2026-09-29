@@ -1,7 +1,7 @@
 /**
  Tests for pair agreement across every voice.
  
- `#245`: both pairing stages took candidates from the first usable reply and
+ Both pairing stages once took candidates from the first usable reply and
  only counted the others, so a pair two later voices named vanished when the
  first omitted it. These cases pin agreement per pair, the vote rule for a
  contested source, and the strictly increasing result the step builders need.

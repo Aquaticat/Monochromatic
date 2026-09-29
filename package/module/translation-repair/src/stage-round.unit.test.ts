@@ -3,7 +3,7 @@
  fan-out took and how much of that was spent waiting after quorum already
  stood.
  
- `#215` OPENED ON A LOG THAT COULD NOT ANSWER ITS OWN QUESTION.
+ THE TIMING WORK OPENED ON A LOG THAT COULD NOT ANSWER ITS OWN QUESTION.
  `doc/audit/every-volume-guard-is-blind-to-one-model.md` had to bound the
  straggler cost from above, at the grace window times the number of cut
  events, and recorded that confirming it "needs the dispatch timestamps the
@@ -346,7 +346,7 @@ await describe({
     it({
       name: 'SEPARATES THE TIME A ROUND WORKED FROM THE TIME IT WAITED, so a straggler cost is '
         + 'read off the log instead of bounded above at the whole grace window times the number '
-        + 'of cut events, which is all `#215` found the log able to support',
+        + 'of cut events, which is all the old log was found able to support',
       fn: async () => {
         /**
          Every message the round logged.

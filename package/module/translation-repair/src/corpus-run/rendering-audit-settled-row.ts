@@ -146,7 +146,7 @@ export type SettledAuditRow = {
    CARRIES DOCUMENT SPANS. Every screened finding holds `locator.text` and
    `focus.text` sliced from the original and from the rendering under audit,
    and every voice's `reason` is model prose about them, so a persisted run
-   of this probe is corpus-bearing and the `#219` sanitization must treat
+   of this probe is corpus-bearing and the end-of-project sanitization must treat
    the runs directory's `rendering-audit-settled` files as such. An earlier
    version of this note claimed the row carried no text; that was true of
    `textIdentity` and never of this field.

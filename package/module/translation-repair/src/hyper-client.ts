@@ -374,7 +374,7 @@ export function createHyperClient(
        THE SCHEMA IS STATED DOWNSTREAM, not here. `buildAnthropicBody` routes
        every schema-bearing call through `renderToolSystemPrompt`, which
        prints the whole schema into this protocol's `system` field along with
-       its format rules. `#216` checked before adding a second copy.
+       its format rules, which was checked before adding a second copy.
        */
       const bodyJson = JSON.stringify(buildAnthropicBody({
         modelId: servedId,

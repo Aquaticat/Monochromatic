@@ -2,7 +2,7 @@
 // Lets one invocation run under a different per-entry ceiling than the built-in
 // one, without rebuilding.
 //
-// TWO USES, and only one of them is testing. `#196`'s second way out is to
+// TWO USES, and only one of them is testing. A second way out for the largest entries is to
 // raise the cap for entries above some slice count, and any such rule needs the
 // ceiling to be settable before it can be a rule at all. The other is that the
 // re-attempt queue only does anything to an entry the cap CUTS, so verifying it

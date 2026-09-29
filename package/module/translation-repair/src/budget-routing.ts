@@ -25,8 +25,8 @@ import type { QuotaSnapshot, } from './synthetic-quota.ts';
 // slower than the split and still buys the answer.
 //
 // SYNTHETIC HAS TWO LIMITS, not one. A five-hour rolling window and a weekly
-// credit budget, and either being empty is a reason to fail over. `#199` was
-// opened because the weekly one emptied and 866 of 875 lost voices carried a
+// credit budget, and either being empty is a reason to fail over. A second provider was
+// added because the weekly one emptied and 866 of 875 lost voices carried a
 // single HTTP 429, while the reader that would have seen it coming had been
 // parsing `weekly.percentRemaining` and discarding it since 2026-07-16.
 //
@@ -67,7 +67,7 @@ export class EveryProviderDryError extends Error {
    Builds failure stating that no provider can serve any call.
    
    @param measured - meter states and holds at the decision, stated so a
-   reader can tell exhaustion from refusal holds (#474, option 3);
+   reader can tell exhaustion from refusal holds;
    composed by the caller from the dryness record and the holds, and "no
    reading cited" where the caller has none
    

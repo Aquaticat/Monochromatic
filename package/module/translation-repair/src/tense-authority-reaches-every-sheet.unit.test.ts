@@ -229,7 +229,7 @@ await describe({
         + 'existing translation\'s tense (the whole-package audit of 2026-09-27: class seventy-six\'s wording '
         + 'survived on this sheet beside the house rule saying the opposite)',
       fn: async () => {
-        // The verse rule outranks the shape rule by #150. It must not be read
+        // The verse rule outranks the shape rule. It must not be read
         // as outranking this one, which is about neither shape nor lines.
         const prose = systemOf({
           messages: buildTranslateMessages({ sourceText: SOURCE_TEXT, existingText: EXISTING_TEXT, },).messages,

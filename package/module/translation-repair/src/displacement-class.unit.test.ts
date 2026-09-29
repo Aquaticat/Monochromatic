@@ -141,7 +141,7 @@ await describe({
   name: documentBaseline.name,
   children: [
     it({
-      name: 'LETS NO SINGLE LONG SLICE DECIDE, which is the property `#163` changed the estimator '
+      name: 'LETS NO SINGLE LONG SLICE DECIDE, which is the property the estimator was changed '
         + 'to get: the pooled ratio this replaced would read 4.26 here because one slice carries '
         + 'nine tenths of the characters, while every slice counting once reads 3',
       fn: async () => {

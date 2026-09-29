@@ -26,7 +26,7 @@ import {
 // WHETHER EACH PROVIDER STILL HAS MONEY, cached, and correctable by what the
 // wire actually says.
 //
-// `#199` exists because a pass exhausted one provider's weekly credit and 866
+// Routing exists because a pass exhausted one provider's weekly credit and 866
 // of 875 lost voices carried a single HTTP 429. Routing away from an exhausted
 // provider needs to know it is exhausted, and there are two ways to learn that:
 // ask the meter, or be refused. This reads both.

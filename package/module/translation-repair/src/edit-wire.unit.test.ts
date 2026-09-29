@@ -307,7 +307,7 @@ await describe({
 
     it({
       name: 'FOLDS an invisible variant out of an edit at intake and names it, so the checkers '
-        + 'judge the bytes that ship (#264)',
+        + 'judge the bytes that ship',
       fn: async () => {
         const { operations, findings, } = resolveEditorEdits({
           wire: {

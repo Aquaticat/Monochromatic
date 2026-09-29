@@ -15,8 +15,8 @@
 // corpus), so they pass through. The zero-width joiner (U+200D) is left alone
 // because emoji sequences are built from it.
 //
-// APPLIED AT INTAKE, NOT AT PUBLISH. Both deciders judge the bytes that ship
-// (`#162`); folding after judging would ship bytes nobody judged. The fold is
+// APPLIED AT INTAKE, NOT AT PUBLISH. Both deciders judge the bytes that ship;
+// folding after judging would ship bytes nobody judged. The fold is
 // therefore applied where each lane turns an answer into a candidate, and the
 // corpus pass folds archive English before preparation. Candidate, incumbent,
 // artifact and page all carry bytes the deciders saw.

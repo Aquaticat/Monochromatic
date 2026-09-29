@@ -32,7 +32,7 @@ const NO_CAP = -1;
  SPELLED SEPARATELY FROM {@link NO_CAP} DESPITE SHARING A VALUE. One is a
  cap and the other is an array position, and a reader who meets `NO_CAP` in
  an index comparison has to stop and work out whether that is deliberate.
- Two meanings on one constant is the defect `#170` was opened for.
+ Two meanings on one constant is a defect this package has fixed before.
  */
 const FLAG_ABSENT = -1;
 

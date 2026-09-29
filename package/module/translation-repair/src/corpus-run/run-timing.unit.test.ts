@@ -1,9 +1,9 @@
 /**
- Tests for reading a run's own timing lines back, which is what `#215` built
+ Tests for reading a run's own timing lines back, which is what the timing work built
  so a run could say where its wall-clock went.
  
  THE OVERLAP CASE IS THE POINT. Achieved concurrency is an overlap count over
- call intervals, and before `#215` a completion line said only when a call
+ call intervals, and before the timing work a completion line said only when a call
  ended, so no interval existed and the question had no answer. The figures
  asserted here are hand-computed from the fixture rather than recorded from a
  run, so a change in the sweep fails the case instead of moving the target.
@@ -36,14 +36,14 @@ const ROUND_LINE = '[info] [2026-08-25T10:00:30.000Z] [translation-repair] [edit
   + 'editor round: 6/7 heard, 91402ms total, 61401ms to quorum, 30001ms in grace';
 
 /**
- A completion line as `reportStreamProgress` writes it since `#215`.
+ A completion line as `reportStreamProgress` writes it since the timing work.
  */
 const TIMED_CALL_LINE = '[info] [2026-08-25T10:00:10.000Z] [translation-repair] '
   + '[reportStreamProgress] stream hf:whiskers: completed, elapsed 10000ms, firstByte 40ms, '
   + 'maxGap 4ms, 512 raw chars, 0 unreadable frames, 40 content chars, 7 reasoning chars';
 
 /**
- A completion line as every log written before `#215` carries it, with no
+ A completion line as every log written before the timing work carries it, with no
  duration anywhere on it.
  */
 const UNTIMED_CALL_LINE = '[info] [2026-08-25T10:00:11.000Z] [translation-repair] '
@@ -195,7 +195,7 @@ await describe({
 
         it({
           name: 'SKIPS A COMPLETION LINE THAT PREDATES THE DURATION FIELD, which every log '
-            + 'written before `#215` is, so a concurrency is never computed from the half of a '
+            + 'written before the timing work is, so a concurrency is never computed from the half of a '
             + 'mixed archive that happens to be readable',
           fn: async () => {
             expect(readCallTiming({ line: UNTIMED_CALL_LINE, },).kind,).toBe('untimed',);

@@ -65,7 +65,7 @@ const ORDINAL_DIGITS = 6;
  with its separators made file-safe, then the process id.
  
  ONE PER PROCESS, so two launches into one runs directory never write the
- same name. `#246`: the ordinal alone restarted at zero per process, and a
+ same name. The ordinal alone once restarted at zero per process, and a
  relaunch into the same directory, which is the documented resume path,
  overwrote the earlier launch's contests one by one with no reader able to
  tell. Names still sort as text into contest order: launches by their stamp,

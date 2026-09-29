@@ -7,8 +7,8 @@
  shipped text, cannot be told apart from the lane simply disagreeing with
  itself run to run. A version that ran two arms and reported
  `narrowRepeatAgreed: true` would not fail loudly. It would produce a confident
- number from a comparison with no band under it, and every reading of `#186`
- would tilt toward width mattering.
+ number from a comparison with no band under it, and every reading of the width
+ question would tilt toward width mattering.
  
  SO THE COUNT IS THE ASSERTION. Both fixtures below count editor calls per
  seat, and the seats are asymmetric on purpose: two narrow against three wide,

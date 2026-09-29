@@ -275,7 +275,7 @@ export function wrapConsolidation(
  wrap touching one: over the 211 line-structured slices of the pinned corpus
  this rule changes 189 and breaks 470 of the 1091 lines they already carry.
  Wrapping their proposals would put text in front of the judges that breaks
- the very rule `#177` gave them to enforce.
+ the very rule they were given to enforce.
  
  @param voices - proposals that passed the validity floor
  

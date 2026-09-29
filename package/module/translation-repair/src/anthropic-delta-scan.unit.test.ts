@@ -171,7 +171,7 @@ await describe({
 
     it({
       name: 'FORWARDS a thinking delta as the reasoning channel, which this transport DECLARES '
-        + 'rather than spelling two ways: the blindness `#158` measured at 47 percent of calls '
+        + 'rather than spelling two ways: the blindness once measured at 47 percent of calls '
         + 'cannot recur through a typed block',
       fn: async () => {
         const deltas = scanAll({
@@ -242,7 +242,7 @@ await describe({
         + 'block declaration cannot demote the answer: this is the frame qwen3.8-max sends, which '
         + 'reopens one index as thinking after opening it as a tool call',
       fn: async () => {
-        // THE CAPTURED SHAPE, `#211`, 2026-08-25. Index 1 opens as `tool_use`
+        // THE CAPTURED SHAPE, 2026-08-25. Index 1 opens as `tool_use`
         // and is then reopened as `thinking` with no stop between, after which
         // both delta kinds arrive under it. The scanner keeps the later
         // declaration, so this case fails outright unless the answer channel is

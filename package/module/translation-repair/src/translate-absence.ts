@@ -74,7 +74,7 @@ export type TranslateAbsenceReason =
    entries, spread evenly over all six models. In that hour XIEPT2's translate
    lane went from 13 computed and 0 unfilled to 9 computed and 10 unfilled.
    Every one of those ten would have been recorded as a property of the
-   passage. `#198`.
+   passage.
    */
   | 'no-voice-heard'
   /**

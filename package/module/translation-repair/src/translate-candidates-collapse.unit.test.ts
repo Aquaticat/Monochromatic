@@ -173,7 +173,7 @@ await describe({
 
     it({
       name: 'FOLDS an invisible variant out of a translation at intake, names it with its author, '
-        + 'and collapses the folded rendering into a plain one that says the same (#264)',
+        + 'and collapses the folded rendering into a plain one that says the same',
       fn: async () => {
         const set = buildTranslateCandidates({
           voices: [

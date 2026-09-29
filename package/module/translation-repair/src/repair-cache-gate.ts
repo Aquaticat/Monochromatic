@@ -5,7 +5,7 @@ import { silentStagesOf, } from './stage-silence.ts';
 // WHY A SETTLED SLICE MAY NOT BE CACHED, said as reasons rather than as a
 // boolean, so the driver's warn line names what happened.
 //
-// Two reasons, one old and one from `#238`. No critic heard was always
+// Two reasons, one old and one newer. No critic heard was always
 // refused; a stage that fell short of quorum was not, because it settles on
 // an ordinary "unchanged" exit with critics heard and only a finding says
 // otherwise. Cached, that finding travelled with a record every later run

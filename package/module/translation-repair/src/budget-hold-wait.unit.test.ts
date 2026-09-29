@@ -2,7 +2,7 @@
  Tests the budget reading that waits out a refusal hold before calling every
  provider dry.
  
- THE CASE IS THE PIN PASS OF 2026-09-02 (#474): two 429 holds, both meters
+ THE CASE IS THE PIN PASS OF 2026-09-02: two 429 holds, both meters
  wet, and every remaining entry failed inside one second because the holds
  were read as empty meters. Here the reading waits out the shortest hold and
  reads again, and ends the run only when nothing a wait could change is left.
@@ -351,7 +351,7 @@ await describe({
           expect(outcome.thrown instanceof EveryProviderDryError,).toBe(true,);
           expect(outcome.reads,).toBe(outcome.expectedReads,);
           // The message states what was measured, so a reader can tell
-          // exhaustion from refusal holds (#474, option 3).
+          // exhaustion from refusal holds.
           expect((outcome.thrown as Error).message,)
             .toContain('meters read synthetic dry, bedrock dry, hyper dry, openrouter dry; holds synthetic',);
         }

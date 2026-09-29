@@ -8,8 +8,8 @@
 // to one CLI family, `rendering-audit-settled*`, which reads finished runs and
 // prints; the pass driver calls none of it and the pooling filter none either.
 //
-// TWO OF ITS MODULES HAD NEVER BEEN NAMED BY ANY BARREL. `#231` measured the
-// package's reachability and found `rendering-audit-settled-args.ts` and
+// TWO OF ITS MODULES HAD NEVER BEEN NAMED BY ANY BARREL. Measuring the
+// package's reachability found `rendering-audit-settled-args.ts` and
 // `rendering-audit-settled-print.ts` reachable only from the CLI that runs on
 // import, which no test can import. They are here so their exports can be
 // tested like every sibling's.

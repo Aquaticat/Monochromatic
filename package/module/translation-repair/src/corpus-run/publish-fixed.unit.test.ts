@@ -492,7 +492,7 @@ const OVERSTATED_BY = 5;
  Builds an artifact whose comparison row claims MORE archive wording at the
  slice than the archive actually holds there.
  
- MODELS THE `#194` CLASS RATHER THAN A TYPO: an artifact and the publisher
+ MODELS A KNOWN FAILURE CLASS RATHER THAN A TYPO: an artifact and the publisher
  disagreeing about what a slice covers is exactly the state that cost XIEPT2
  four hours and forty-eight minutes, and it is invisible to every check that
  reads only one of the two. The wording still ships and still lands in order,

@@ -38,8 +38,8 @@ import {
 //
 // THE SITE'S OWN GRAMMAR IS NOT THIS ONE. The corpus repo compiles a page with
 // MDX 3 and remark-math after rewriting HTML comments into JSX comments
-// (`scripts/build.ts`, `scripts/mdx.ts` there); `#267` tracks reconciling the
-// two. For destinations the difference does not matter: a link is a link under
+// (`scripts/build.ts`, `scripts/mdx.ts` there); reconciling the
+// two is open. For destinations the difference does not matter: a link is a link under
 // both, and the bare-run scan catches what either tree would not.
 //
 // THE ARCHIVE'S RENDERING COUNTS. Where the archive rendered a reference

@@ -519,7 +519,7 @@ export async function gatherStageVoices<ValueT,>(
           // serves a second call for the same model and prompt from its cache,
           // schema mismatch included, so re-sending the same bytes came back
           // with the same unreadable answer in 0 to 1 ms every time it was
-          // measured (`#473`, five recovery rounds over two passes on
+          // measured (five recovery rounds over two passes on
           // 2026-09-02). The nudge tells the model what happened and makes the
           // digest new.
           messages: [
@@ -547,7 +547,7 @@ export async function gatherStageVoices<ValueT,>(
       /**
        Re-asked voices that came back readable, counted on their own line so
        the round's value can be read off a run log without pairing gather
-       lines by hand (`#473`: the owner kept the round on 2026-09-03, and
+       lines by hand (the owner kept the round on 2026-09-03, and
        this is what says whether it earns its call).
        */
       const recoveredHeard = recovered.filter(function heard(outcome,): boolean {

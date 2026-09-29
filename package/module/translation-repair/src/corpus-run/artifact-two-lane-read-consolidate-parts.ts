@@ -222,7 +222,7 @@ export function parseVerdict(
  
  Reads one judge`s gate ballot.
  
- THE EVIDENCE FIELDS ARE READ AS CHOICES, not as prose. `#164` found the gate
+ THE EVIDENCE FIELDS ARE READ AS CHOICES, not as prose. The gate was once found
  shipping a rendering its own ballots named faultier because nothing counted
  them; a name outside the three would be counted as nothing and would weaken
  that evidence silently.

@@ -5,7 +5,7 @@ import { readDirectoryNames, } from './slice-cache-namespace.ts';
 // Why a capped entry gets another go INSIDE one invocation, and what stops it.
 //
 // The largest entries cannot settle inside `HARD_CAP_MINUTES` in one attempt.
-// `#196` measured XingZ60 at 45 repair-lane slices in 4 h 51 m of a 420-minute
+// XingZ60 was measured at 45 repair-lane slices in 4 h 51 m of a 420-minute
 // cap, with 119 slices prepared and a translate lane of the same size behind
 // it, and recorded three ways out. Its first was to run such an entry as a
 // SEQUENCE of attempts against a frozen build, noted as costing nothing to

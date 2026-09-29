@@ -182,7 +182,7 @@ await describe({
         + 'rather than once per window position. Growth stops at twelve words, '
         + 'so a longer passage spans many windows of exactly that length and '
         + 'the containment rule cannot merge them: they are all the same '
-        + 'length, so no one of them contains another. `#183` measured an '
+        + 'length, so no one of them contains another. A measurement found an '
         + '877-word duplication arriving as 866 findings, which made every '
         + 'corpus aggregate over this token a statement about one slice',
       fn: async () => {

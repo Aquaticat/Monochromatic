@@ -20,7 +20,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Editor width probe
-// `#186`: does seating more EDITORS buy a better repair, with the judging panel
+// The width question: does seating more EDITORS buy a better repair, with the judging panel
 // held fixed.
 //
 // NEITHER WIDTH IS WRITTEN HERE. The narrow arm is whatever `RUN_MODELS` seats

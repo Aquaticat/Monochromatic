@@ -5,9 +5,9 @@ import { errorName, } from './error-name.ts';
 //
 // V8 GIVES A `JSON.parse` REFUSAL A MESSAGE THAT QUOTES THE TEXT IT REFUSED,
 // ten characters of it, so forwarding a caught error's message is a disclosure
-// decision and not a formatting one. `#220` was this same mechanism reaching a
-// terminal past an absent catch; `#224` is it reaching one through a catch that
-// repeats the message.
+// decision and not a formatting one. This same mechanism has reached a
+// terminal past an absent catch, and through a catch that repeats the
+// message.
 //
 // NOT A SECOND `caughtValueText`. That function answers "what does this value
 // say". This one answers "may this value's message be repeated". The house rule

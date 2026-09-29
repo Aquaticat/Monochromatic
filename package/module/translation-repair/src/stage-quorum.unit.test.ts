@@ -664,7 +664,7 @@ await describe({
       name: 'RE-ASKS AN UNREADABLE ANSWER WITH A DIFFERENT PROMPT, the original plus a complaint '
         + 'naming what happened, so the prompt-uniqueness cache cannot serve the same unreadable '
         + 'bytes back: five recovery rounds over two passes on 2026-09-02 recovered nothing in 0 '
-        + 'to 1 ms each (#473)',
+        + 'to 1 ms each',
       fn: async () => {
         /** Text of every message each call to the flaky model carried, in call order. */
         const seen: (readonly string[])[] = [];

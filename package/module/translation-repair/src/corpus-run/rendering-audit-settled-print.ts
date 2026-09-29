@@ -77,7 +77,7 @@ export function printSplit({ split, }: { readonly split: AudienceSplit; },): voi
 export function printRelations(
   { tallies, }: { readonly tallies: readonly PageRelationTally[]; },
 ): void {
-  console.log('\nWHAT A DOCUMENT WOULD CARRY AT THE SAME SLICES (#166)',);
+  console.log('\nWHAT A DOCUMENT WOULD CARRY AT THE SAME SLICES',);
   for (const tally of tallies) {
     /**
      Relation name, padded so the counts beside it read down the page.
@@ -91,7 +91,7 @@ export function printRelations(
   }
   console.log(
     '  A displaced subject was audited on wording no reader of a document would meet.'
-      + ' An undecided one is waiting on #175, not overruled.',
+      + ' An undecided one is waiting on a decision, not overruled.',
   );
 }
 

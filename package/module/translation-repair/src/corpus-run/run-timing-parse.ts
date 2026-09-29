@@ -2,9 +2,9 @@ import { isAsciiDigits, } from '../ascii-letters.ts';
 
 //region Run timing parse
 // Reads a run's own log back into the two shapes that say where its wall-clock
-// went, and answers the question `#215` was opened on.
+// went, and answers the question the timing work was opened on.
 //
-// TWO LINES CARRY THE CLOCK, and neither did before `#215`:
+// TWO LINES CARRY THE CLOCK, and neither did before the timing work:
 //
 //   The ROUND line, from `runGatherRound`, splits one fan-out into the time it
 //   spent working and the time it spent waiting on a straggler after quorum
@@ -17,7 +17,7 @@ import { isAsciiDigits, } from '../ascii-letters.ts';
 //
 // EVERY READ NAMES WHAT IT FOUND rather than returning an absence. A completion
 // line with no duration and a line that is not a completion at all are
-// different facts about a log: the first says this run predates `#215`, and a
+// different facts about a log: the first says this run predates the timing work, and a
 // report that folded them together would describe a mixed archive's readable
 // half as the whole of it.
 //
@@ -45,7 +45,7 @@ const ROUND_MARKER = ' round: ';
 const GRACE_FIELD = 'ms in grace';
 
 /**
- Field a completion line carries only since `#215`.
+ Field a completion line carries only since the timing work.
  */
 const ELAPSED_FIELD = 'elapsed ';
 
@@ -171,7 +171,7 @@ export type CallReading =
   | {
     /**
      Completion line carrying no duration, which every log written before
-     `#215` is made of. Counted rather than skipped, so a report can say how
+     the timing work is made of. Counted rather than skipped, so a report can say how
      much of an archive it could not read.
      */
     readonly kind: 'untimed';

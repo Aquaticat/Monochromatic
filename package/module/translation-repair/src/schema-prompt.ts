@@ -12,7 +12,7 @@ import {
 // THE OWNER ASKED FOR THIS DIRECTLY: "Some model/provider pairs can behave
 // badly w/o a detailed system prompt, including but not limited to giving wrong
 // tool call formats", and "please make sure to put even the full tool schema
-// into system prompts". Before `#216` not one of the seventeen modules that
+// into system prompts". Before that, not one of the seventeen modules that
 // build a `role: 'system'` message mentioned the shape it expects back. The
 // schema travelled as the API-level `response_format` field and nowhere else,
 // so a model that does not honour that field had nothing to go on.

@@ -901,7 +901,7 @@ await describe({
     it({
       name: 'SHIPS A CONSOLIDATION BOTH ROUNDS BACKED, CARRYING THE SEMANTIC LINE BREAKS both lanes '
         + 'apply at their own assembly step and this stage had none. REWRAPPED IS FALSE AND THAT IS '
-        + 'THE POINT since `#162`: the breaks are there before either decider reads the proposal, so '
+        + 'THE POINT since 2026-08-22: the breaks are there before either decider reads the proposal, so '
         + 'the shipping wrap finds nothing left to correct. It asserted true until 2026-08-22, when '
         + 'what shipped was still being altered after the gate had approved it',
       fn: async () => {
@@ -1464,7 +1464,7 @@ await describe({
     },),
 
     it({
-      name: 'SETTLES A PURE RE-WRAPPING WITHOUT BUYING EITHER ROUND, which is what `#162` changed. '
+      name: 'SETTLES A PURE RE-WRAPPING WITHOUT BUYING EITHER ROUND, which is what changed on 2026-08-22. '
         + 'This case asserted wrap-erased-difference until 2026-08-22: the proposal reached the slate '
         + 'unwrapped, both deciders spent ballots on where the lines broke, and the shipping wrap '
         + 'demoted it at the end. Wrapped before the slate it IS the standing text, the candidate '
@@ -1492,7 +1492,7 @@ await describe({
     },),
 
     it({
-      name: 'SHOWS A GOVERNED ROUND\'S JUDGES THE RULE AGAINST MERGING LINES. `#176` gave this fact to the '
+      name: 'SHOWS A GOVERNED ROUND\'S JUDGES THE RULE AGAINST MERGING LINES. One change gave this fact to the '
         + 'consolidation PRODUCERS and stopped there, so for a day the judges weighed proposals written to '
         + 'unmerge a passage against a criterion telling them a shape the ORIGINAL lacks is no fault. This '
         + 'reads the judges\' own request rather than the settlement, because a settlement decided the right '

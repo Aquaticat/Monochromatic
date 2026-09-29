@@ -30,7 +30,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // slices, so one long contaminated slice moves it while a hundred short clean
 // ones do not.
 //
-// The THIRD version, `#163`, measured them against each other over the 89
+// The THIRD version measured them against each other over the 89
 // documents that offer a baseline. Removing the implausible slices moves a
 // pooled centre in 7 more documents than it moves a median, and flips 7 onto the
 // corpus reference where a median flips 2. `shi_Yumiaoya` was re-read under both
@@ -49,9 +49,9 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 // surplus reads 0.41 under this baseline, 0.44 leaving the pair out, and 0.51
 // over all slices. THE CONCLUSION SURVIVES ALL THREE, since the deficit is the
 // smaller side under every one, but the estimator is endogenous and the honest
-// fix is a baseline computed per adjacency with that pair excluded. Recorded on
-// `#432` with those measurements rather than changed at the same time as the
-// numbers that depend on it.
+// fix is a baseline computed per adjacency with that pair excluded. That fix is
+// recorded here with those measurements rather than made at the same time as
+// the numbers that depend on it.
 
 /**
  Expansion the corpus works at, used when a document cannot speak for itself.
@@ -308,7 +308,7 @@ export function sliceRatios(
  Expansion to read a document's slices against.
  
  THE MEDIAN OF PER-SLICE RATIOS RATHER THAN A POOLED AGGREGATE, reversing what
- this file did until `#163` measured the two against each other. A pooled
+ this file did until the two were measured against each other. A pooled
  ratio is decided by the longest slices, so a single contaminated long slice
  moves it; every slice counts once here. Measured over the pinned commit's 89
  documents that offer a baseline at all, removing the implausible slices moves
@@ -331,7 +331,7 @@ export function sliceRatios(
  replaces. Moving text between two slices changes both their ratios, so it
  moves this centre whenever it moves either of them across the middle of the
  order. The region comment gives the measured size of that effect for the
- aggregate and `#432` carries the fix; the median inherits the question.
+ aggregate and the fix it would take; the median inherits the question.
  
  @param slices - slices believed to be translated
  

@@ -17,7 +17,7 @@ import type { RosterModelId, } from './roster-id.ts';
 // WHAT EVERY SEAT WAS ASKED AND WHAT IT GAVE BACK, counted at the client seam
 // and said out loud once, when the command ends.
 //
-// `#235` ran a four-slice calibration in which five of ten seats failed every
+// A four-slice calibration once ran with five of ten seats failing every
 // call they made, 25 of 25 each, and the command exited 0. Quorum is five of
 // ten and was met on the nose by the other five. The calibration's closing
 // coverage sentence did name the five seats, but as "wrote nothing at all",

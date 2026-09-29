@@ -28,7 +28,7 @@ import {
 // EVERY CALL THE SENSITIVITY INSTRUMENT MAKES, AS DATA, so a test can read what
 // each arm sends before a run spends anything on it.
 //
-// `#247` found the instrument's `prior=shown` arm sending the same prompt as
+// The instrument's `prior=shown` arm was once found sending the same prompt as
 // its `prior=absent` arm. It passed the prior issue and no disclosure, relying
 // on the probe's default, and that default had flipped to `withheld` when
 // production stopped rendering the list; the two arms then differed only in

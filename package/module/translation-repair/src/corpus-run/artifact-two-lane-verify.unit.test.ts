@@ -11,7 +11,7 @@
  identity names a slicing the lanes never ran over is filed as sound, and every
  later reading of it is confidently wrong.
  
- `#224` IS WHY THEY ARE WORTH TESTING BY HAND. There the defect was the OPEN
+ A PAST DEFECT IS WHY THEY ARE WORTH TESTING BY HAND. There the defect was the OPEN
  rather than the message: the guard's wording was right and the condition never
  fired, so every test that read the message passed while nothing was guarded.
  Each case below drives one refusal and changes exactly one thing from a

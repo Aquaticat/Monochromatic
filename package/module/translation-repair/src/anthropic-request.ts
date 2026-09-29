@@ -30,7 +30,7 @@ import {
 //   `max_tokens` is REQUIRED. The OpenAI side leaves it off by default, on the
 //   measured grounds that thinking tokens count against it and a tight cap
 //   truncates mid-thinking. There is no leaving it off here, so it defaults to
-//   the per-model ceiling the owner decided on: the lower of `#156`'s measured
+//   the per-model ceiling the owner decided on: the lower of the measured
 //   answer bound and the model's own cap.
 //
 //   Structured output is a TOOL rather than a `response_format`, which

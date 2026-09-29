@@ -8,13 +8,13 @@ import {
 } from './run-timing-parse.ts';
 
 //region Run timing read
-// Turns a log's timing lines into the two answers `#215` was opened to make
+// Turns a log's timing lines into the two answers the timing work was opened to make
 // possible: how much of a run's wall-clock went into waiting on stragglers,
 // and how many calls were actually in flight at once.
 //
 // ACHIEVED CONCURRENCY IS AN OVERLAP COUNT, not an average of anything. Each
 // call occupies `[endedAt - elapsedMs, endedAt]`, and sweeping those endpoints
-// in order gives the exact number in flight at every instant. Before `#215` a
+// in order gives the exact number in flight at every instant. Before the timing work a
 // completion line said only when a call ended, so no interval existed to
 // overlap and the question had no answer at all.
 
@@ -39,7 +39,7 @@ export type RunTiming = {
 
   /**
    Completion lines that carried no `elapsed` field, which is every one in a
-   log written before `#215`. A concurrency computed while this is above zero
+   log written before the timing work. A concurrency computed while this is above zero
    describes only the calls that happened to be readable.
    */
   readonly callsWithoutDuration: number;
@@ -140,7 +140,7 @@ export function readRunTiming(
     }
 
     // ONE READ DECIDES ALL THREE OUTCOMES. The parse already separates a
-    // completion carrying a duration from one that predates `#215` and from a
+    // completion carrying a duration from one that predates the timing work and from a
     // line that is not a completion at all, so nothing here re-inspects the
     // text to tell them apart.
     /**

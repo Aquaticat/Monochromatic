@@ -49,7 +49,7 @@ export type SectionRoundOutcome = {
    EMPTY MEANS KEEP THE DETERMINISTIC ALIGNER, and the caller must read it
    that way rather than as "align nothing": a document handed an empty pairing
    would come out with every section unpaired on both sides, which is the
-   failure `#157` recorded one scale down.
+   failure already recorded one scale down.
    */
   readonly pairing: readonly SectionPair[];
 

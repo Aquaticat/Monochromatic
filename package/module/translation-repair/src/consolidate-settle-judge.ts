@@ -204,13 +204,13 @@ export async function judgeConsolidationSlate(
     ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
     ...identity,
     // WHAT THE PRODUCERS WERE SHOWN, forwarded rather than recomputed.
-    // `#176` put the pictures in front of the producers and left the
+    // One change put the pictures in front of the producers and left the
     // judges blind, which is worse than both being blind: a producer that
     // used a picture correctly then looked to its judge like one
     // inventing detail.
     ...evidence,
     // THE SAME FLAG THE PRODUCERS WERE GIVEN, which the settlement has held
-    // since it was written and passed to nobody. `#176` gave it to the
+    // since it was written and passed to nobody. It was then given to the
     // consolidation producers; leaving the judges out of it would have the
     // judges mark down exactly the unmerging the producers were told to do.
     lineStructured,

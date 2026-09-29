@@ -23,7 +23,7 @@ import { ssePayloadOf, } from './sse-data-line.ts';
 // implementation of those guards would be unmeasured, and would drift from
 // this one invisibly. One scanner interface, two wire formats.
 //
-// THE THINKING CHANNEL IS TYPED HERE RATHER THAN SNIFFED. `#158` cost 47
+// THE THINKING CHANNEL IS TYPED HERE RATHER THAN SNIFFED. Sniffing once cost 47
 // percent of calls to a scanner that had to guess which of two field spellings
 // carried reasoning, because the OpenAI-shaped provider names it
 // `reasoning_content` on some models and `reasoning` on others. Anthropic
@@ -95,7 +95,7 @@ const DELTA_CHANNELS: Readonly<Record<string, StreamChannel>> = {
  argument fragment cannot be deliberation: it is the structured answer by
  construction, filling a schema this pipeline sent.
  
- CAPTURED FROM THE WIRE on 2026-08-25, `#211`. `qwen3.8-max` on Charm Hyper
+ CAPTURED FROM THE WIRE on 2026-08-25. `qwen3.8-max` on Charm Hyper
  opens index 1 as `tool_use`, then opens THE SAME INDEX again as `thinking`,
  and thereafter interleaves `thinking_delta` and `input_json_delta` under it.
  The block map keeps the later declaration, so the block-type override filed

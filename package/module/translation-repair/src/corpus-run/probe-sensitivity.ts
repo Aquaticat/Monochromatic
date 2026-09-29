@@ -32,8 +32,8 @@ import {
 // Probe inputs live in `probe-sensitivity-input.ts` and are cat-themed invention.
 // NO corpus text, licensed or otherwise, takes part, and this writes nothing.
 //
-// THE ARMS LIVE IN `probe-sensitivity-arms.ts`, as data with a test, since
-// `#247`: this file once built its arms inline, and its `prior=shown` arm sent
+// THE ARMS LIVE IN `probe-sensitivity-arms.ts`, as data with a test,
+// because this file once built its arms inline, and its `prior=shown` arm sent
 // the same prompt as its `prior=absent` arm because it relied on a default
 // that had flipped. Every arm now names the list it sends, and the test holds
 // the name to the value before a run spends anything.

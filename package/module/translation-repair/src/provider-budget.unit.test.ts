@@ -31,7 +31,7 @@ const WET_QUOTA = {
 
 /**
  Quota snapshot of a provider whose weekly credit ran out, which is the
- state `#199` was opened on.
+ state multi-provider routing was built for.
  */
 const DRY_QUOTA = {
   ...WET_QUOTA,
@@ -280,7 +280,7 @@ await describe({
       name: 'HOLDS A PROVIDER THAT REFUSED US WHILE ITS METER READS WET for the rate-limit backoff, '
         + 'not the exhaustion cooldown, re-reading the meter at once: a 429 from a wet provider is '
         + 'its concurrency limit, and the five-minute hold on it is what ended the pin pass of '
-        + '2026-09-02 (#474)',
+        + '2026-09-02',
       fn: async () => {
         /** Stub providers whose meters all report budget left. */
         const { synthetic, hyper, openrouter, reads, } = stubProviders({},);

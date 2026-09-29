@@ -709,7 +709,7 @@ export const RUN_MODELS: RepairModels = {
   // DISJOINT AGAIN SINCE 2026-09-01, BY MEASUREMENT RATHER THAN BY RULE: the
   // editor calibration seated no checker as editor or refiner. Overlap stays
   // PERMITTED, the owner's decision of 2026-08-24 (enable the discount and let
-  // every model do both; `#187` found the checker-side discount unreachable in
+  // every model do both; the checker-side discount was found unreachable in
   // production for exactly the reason the old note here gave), so a future
   // seating that overlaps needs no rule change.
   //

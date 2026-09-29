@@ -25,7 +25,7 @@ import type { RootContent, } from 'mdast';
 // assembly replaced the opener away and copied the closer through, losing 3708
 // characters of will and leaving markup that closes nothing. No invariant could
 // see it, because all of them reason over blocks and a tag in no block is not
-// one. `#154` has the measurements.
+// one.
 //
 // SO THE SPANS REPORTED HERE ARE NOT DECORATION. They are the input that makes
 // a tag reachable by the block beside it, and a caller that reads `blocks` and

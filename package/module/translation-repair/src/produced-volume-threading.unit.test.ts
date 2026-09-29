@@ -1,5 +1,5 @@
 /**
- Tests that `#184`'s produced-volume bound REACHES THE WIRE on every producing
+ Tests that the produced-volume bound REACHES THE WIRE on every producing
  call the translate lane makes, the re-ask included.
  
  WHY THIS IS SEPARATE FROM `produced-volume-bound.unit.test.ts`. That one hands
@@ -8,14 +8,14 @@
  the bound crosses five boundaries as an OPTIONAL field forwarded by
  conditional spread: quorum, round, call, client, transport. Delete any one of
  those spreads and the code still compiles, the whole suite still passes, and
- production silently returns to the state `#184` existed to end, where the
+ production silently returns to the state the bound existed to end, where the
  seam exists and nothing passes anything through it. Only a test that reads
  what the CLIENT was handed can see that.
  
  THE SECOND THING IT PINS IS THE PRODUCING RE-ASK. An invalid candidate is
  sent back to its author for a fresh rendering of the same slice, which is a
  producing call by every measure that matters, and it was left unbounded when
- `#184` landed. It is also the busiest one: measured over 32 artifacts, the
+ the bound landed. It is also the busiest one: measured over 32 artifacts, the
  re-ask fired on 96 of 175 slices.
  
  NO NETWORK. The client is a stub scripting one invalid rendering and one
@@ -76,7 +76,7 @@ const MERGED_TEXT = 'A day in the cat\'s life: it dozes on the windowsill.';
 const TRANSLATOR = SEAT_SYNTHETIC_VISION_WITHHELD;
 
 /**
- Characters the runaway that opened `#184` emitted for a 56-character slice.
+ Characters the runaway that prompted the bound emitted for a 56-character slice.
  
  Named here so the widened re-ask bound can be shown to still catch it: a
  bound generous enough to never refuse a legitimate repair is worth nothing if
@@ -269,7 +269,7 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS THE WIDENED RE-ASK BOUND UNDER THE EMISSION THAT OPENED #184, so the room '
+      name: 'KEEPS THE WIDENED RE-ASK BOUND UNDER THE EMISSION THAT PROMPTED THE BOUND, so the room '
         + 'made for an explanation did not also make room for the runaway: generosity that '
         + 'disarms the guard would be worse than no guard, because it would read as one',
       fn: async function wideningKeepsDetection() {

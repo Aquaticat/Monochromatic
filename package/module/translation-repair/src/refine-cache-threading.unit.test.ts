@@ -3,9 +3,9 @@
  it.
  
  WHY THE CACHE IS LOAD-BEARING. The naturalness lane buys a rewriter round, a
- ballot and a defect check per refinable slice. `#171` records what happens
- without a cache: a resumed run republishes nothing and rebuys all of it, and
- `#174` made every cached stage republish its findings rather than go quiet.
+ ballot and a defect check per refinable slice. Without a cache,
+ a resumed run republishes nothing and rebuys all of it, and
+ every cached stage now republishes its findings rather than going quiet.
  The cache is how a run that was interrupted costs what it already paid.
  
  WHAT WAS MEASURED. On 2026-08-25, inverting this step's conditional spread so

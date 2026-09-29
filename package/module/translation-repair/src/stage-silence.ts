@@ -2,7 +2,7 @@
 // THE ONE SPELLING of the finding a stage leaves when it heard nobody, and the
 // question every cache asks before it keeps or resumes a settlement.
 //
-// `#238`: the quorum gather never throws on shortfall; it returns
+// The quorum gather never throws on shortfall; it returns
 // `stage-quorum-unmet (...)` as a finding, and every silent stage downstream
 // lands on an ordinary "unchanged" exit with `heardCritics > 0`, so a slice
 // settled during a provider outage was persisted and memoised as "examined and

@@ -244,7 +244,7 @@ await describe({
     it({
       name: 'OVERRIDES A CLAUSE SOME JUDGE IS ACTUALLY GIVEN, spelled the same way in both criteria. An override '
         + 'naming a sentence that no longer appears anywhere is worse than no override at all: it reads as '
-        + 'settled precedence while leaving the contradiction `#150` fixed standing in front of the judge',
+        + 'settled precedence while leaving the contradiction fixed for producers standing in front of the judge',
       fn: async () => {
         /**
          Criteria as a governed slice is given them.

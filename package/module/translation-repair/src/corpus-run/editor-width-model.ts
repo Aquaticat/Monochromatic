@@ -4,7 +4,7 @@ import type { RosterModelId, } from '../synthetic-catalog.ts';
 // How a width comparison is read, kept apart from the calls that gather it so
 // the reading can be tested without spending quota.
 //
-// The question this serves is `#186`: does seating more EDITORS produce a
+// The question this serves: does seating more EDITORS produce a
 // better repair, holding the judging panel fixed. Two things make that harder
 // to read than it looks.
 //
@@ -101,7 +101,7 @@ export type WidthRow = {
    candidates against the same selection minimum, so it can split its own vote
    and settle on the incumbent where the narrow arm settled on a repair. That
    shows up as `differs` exactly like a better rewrite does, and the two are
-   opposite answers to `#186`: one says widening improved the repair, the
+   opposite answers to the width question: one says widening improved the repair, the
    other says widening suppressed it.
    */
   readonly narrowShipped: boolean;
@@ -225,7 +225,7 @@ export function readHeadToHead(
 }
 
 /**
- What the whole draw says, in the terms `#186` has to answer in.
+ What the whole draw says, in the terms the width question has to answer in.
  */
 export type WidthSummary = {
   /**

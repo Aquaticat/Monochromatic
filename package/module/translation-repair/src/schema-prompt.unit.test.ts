@@ -1,7 +1,7 @@
 /**
  Tests for stating a call's own response schema inside its system prompt.
  
- `#216` IMPLEMENTS A DIRECT OWNER INSTRUCTION: put the full schema into the
+ THIS IMPLEMENTS A DIRECT OWNER INSTRUCTION: put the full schema into the
  system prompt, because some model and provider pairs behave badly without a
  detailed one and answer in the wrong shape. Before this, seventeen modules
  built a system message and not one mentioned the shape it expected back.

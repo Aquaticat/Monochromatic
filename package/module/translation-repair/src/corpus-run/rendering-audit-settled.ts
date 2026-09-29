@@ -231,7 +231,7 @@ async function main(): Promise<void> {
   if (buying.length > 0) {
     /**
      One client for the whole run, built here rather than per subject: a
-     client carries the provider seats, and `#235`'s seat report reads one
+     client carries the provider seats, and the seat report reads one
      run-wide tally, so one client is what a run is. Built only once
      something is bought, so `--cap 0`, the wiring check that reads the
      archive and asks nobody, still needs no key.

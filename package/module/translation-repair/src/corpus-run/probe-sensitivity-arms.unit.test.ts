@@ -1,7 +1,7 @@
 /**
  Tests for the sensitivity instrument's arms table.
  
- `#247` found the instrument's `prior=shown` arm sending the same prompt as
+ The instrument's `prior=shown` arm was once found sending the same prompt as
  its `prior=absent` arm, because it relied on a default that had flipped. The
  cases below hold every arm's printed label to the disclosure it sends, so a
  run's lines cannot describe a prompt effect that is a screen effect again,

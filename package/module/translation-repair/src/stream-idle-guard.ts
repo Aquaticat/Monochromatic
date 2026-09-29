@@ -161,7 +161,7 @@ export type StreamProgress = {
   /**
    Milliseconds from arming the guard to this reading.
    
-   ANSWERS WHERE A RUN'S WALL-CLOCK WENT, which nothing could before `#215`.
+   ANSWERS WHERE A RUN'S WALL-CLOCK WENT, which nothing could before the timing work.
    Dispatch is logged at `debug` and production runs emit `info` and `warn`
    only, so a stream's start time was unrecoverable and the only concurrency
    figure derivable was a clustering of completion timestamps, which cannot

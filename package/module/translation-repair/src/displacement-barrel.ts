@@ -3,8 +3,8 @@
 // enough that they may not say what normal is, what a document's own expansion
 // therefore comes to, and which slice pairs look like a passage that moved.
 //
-// SPLIT OUT OF THE TRANSLATE BARREL when `#163` added the implausibility
-// predicate and pushed that file one line over the budget. Grouping by what the
+// SPLIT OUT OF THE TRANSLATE BARREL when adding the implausibility
+// predicate pushed that file one line over the budget. Grouping by what the
 // exports MEASURE rather than by which lane happens to read them also puts the
 // estimator beside the predicate that filters its input, which is the pair a
 // reader has to see together to check that the filter is not circular.

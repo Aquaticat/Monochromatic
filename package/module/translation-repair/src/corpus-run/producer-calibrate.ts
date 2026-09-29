@@ -270,8 +270,8 @@ async function main(): Promise<void> {
     // THE PRODUCING STAGES CARRY ONLY A HEARD COUNT OUT (`heardTranslators`,
     // `heardEditors`), never the ids, so this table cannot tell a producer that
     // answered and was dropped before judging from one that never answered.
-    // The line it prints says so and points at the SEAT lines; `#266` tracks
-    // carrying the ids out.
+    // The line it prints says so and points at the SEAT lines; carrying the
+    // ids out is still open.
     answered: { kind: 'unrecorded', },
   },);
 

@@ -459,7 +459,7 @@ await describe({
 
     it({
       name: 'REFUSES A BALLOT NAMING A RENDERING THAT DOES NOT EXIST, because the evidence fields are '
-        + 'read as choices rather than as prose. #164 found the gate shipping a rendering its own '
+        + 'read as choices rather than as prose. The gate was once found shipping a rendering its own '
         + 'ballots named faultier because nothing counted them, and a name outside the three would be '
         + 'counted as nothing and weaken that evidence silently',
       fn: async () => {

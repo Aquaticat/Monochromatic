@@ -10,7 +10,7 @@ import type { SelectionRound, } from './self-preference.ts';
 // `producer-standing.ts` counts, so an EDITOR can be ranked by the same
 // instrument that ranks a writer.
 //
-// `#200` was opened believing this needed either a schema change or a replay
+// This was once believed to need either a schema change or a replay
 // path, because a settled artifact exposes neither the envelopes nor the
 // issues an editor worked from. Reading the contracts says otherwise:
 // `ChunkRepairOutcome.rounds` already carries, per round, the slate judges saw

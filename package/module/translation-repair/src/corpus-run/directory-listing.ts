@@ -10,7 +10,7 @@ import { errorName, } from '../error-name.ts';
 // `error-name.ts` records: `verify-published.ts` returned an empty array and
 // printed the absence, and `editor-standing-read.ts` carried its own
 // `DirectoryReading` union for the identical job. A third caller was about to
-// be written for `#217`.
+// be written for the published-tree listing.
 //
 // NAMES THE FILESYSTEM REASON, NOT THE CLASS. Both copies reported
 // `errorName`, which answers `Error` for every filesystem failure: a run

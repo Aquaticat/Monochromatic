@@ -272,7 +272,7 @@ export function createSyntheticClient(
        THIS PROTOCOL HAS NOWHERE ELSE TO PUT IT. The Anthropic path states the
        schema in its own `system` field through `renderToolSystemPrompt`; an
        OpenAI-compatible body carries only `response_format`, which a model
-       that does not honour that field never sees. `#216`.
+       that does not honour that field never sees.
        */
       const asked = withSchemaInSystemPrompt({
         messages: request.messages,

@@ -1,7 +1,7 @@
 //region Stated refusal
 // A REFUSAL A COMMAND STATES IN ITS OWN WORDS, and may therefore repeat.
 //
-// `#226` put every entry point through `reportingRefusals`, which drops the
+// Every entry point goes through `reportingRefusals`, which drops the
 // message of any class that has not declared it quote-free. That was the right
 // default and it broke something real: twelve throw sites across ten CLIs
 // carried usage lines, missing-key lines and probe refusals, and every one of

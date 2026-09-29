@@ -9,7 +9,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // `pickSpreadSample` takes `slice(0, NaN)` and returns nothing, and the run
 // then edits, judges and reports over an empty sample. It prints its roster, it
 // prints its totals, it exits zero, and every number in it is over no slices at
-// all. `#231` measured that: `count NaN -> picked 0`.
+// all. It was measured: `count NaN -> picked 0`.
 //
 // A CALIBRATION THAT MEASURED NOTHING IS WORSE THAN ONE THAT REFUSED, because
 // the operator reads the clean exit as evidence. That is the whole argument for

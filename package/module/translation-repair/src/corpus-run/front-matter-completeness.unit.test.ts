@@ -45,7 +45,7 @@ const TARGET_TEXT = '---\nname: EntryId\ninfo:\n  alias: Maomao\n---\n\nBody.\n'
 
 /**
  Complete target page fixture whose visible name is the directory id with
- nothing Latin beside it: the #269 shape, the one the lanes still render.
+ nothing Latin beside it: the directory-id shape, the one the lanes still render.
  */
 const FOLDER_TEXT = '---\nname: EntryId\ninfo:\n  alias: 猫咪\n---\n\nBody.\n';
 

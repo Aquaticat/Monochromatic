@@ -11,7 +11,7 @@ import type {
 // Says whether the wording one audit subject carries is the wording a document
 // assembled today would carry, WITHOUT changing what the audit reads.
 //
-// WHY BESIDE RATHER THAN INSTEAD. `#166` recorded a prescription to route the
+// WHY BESIDE RATHER THAN INSTEAD. A prescription was once recorded to route the
 // settled audit through `wouldShipTextPerSlice`, and measuring the archive
 // refuted it. Of 47 settled artifacts, 33 carry `pending-human-decision` and no
 // consolidation, so under a would-ship reading their text falls all the way to
@@ -26,13 +26,13 @@ import type {
 //
 // THREE ANSWERS, NOT TWO, and the third is the point. The archive standing on
 // an artifact nobody has decided is the ABSENCE of a decision, not a
-// displacement, and it is absent pending `#175` with the owner. Collapsing it
-// into "the archive ships instead" would be stale the day that is answered.
+// displacement: the artifact records it as pending a human decision.
+// Collapsing it into "the archive ships instead" would be stale the day that is answered.
 //
 // THE DECIDER IS CARRIED BY REFERENCE rather than spelled into member names
 // like `displaced-by-consolidation`. Spelling them would duplicate
 // `WouldShipDecider`'s list, so a decider added later would silently produce no
-// new relation. That is the drift class `#170` measured, twice, in this family.
+// new relation. That drift class was measured twice in this family.
 
 /**
  How one audited rendering relates to what a document would carry today.

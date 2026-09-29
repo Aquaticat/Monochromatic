@@ -104,8 +104,8 @@ export type RefineStageResult = {
    Refiners heard with a usable answer, whether or not it proposed a change.
    
    CARRIED OUT SO A STANDING CAN TELL ANSWERED FROM SILENT. A rewriter that
-   leaves a paragraph as it stands never reaches a slate, and `#263` found
-   that reported as provider silence beside a SEAT line saying the seat had
+   leaves a paragraph as it stands never reaches a slate, and that was once
+   reported as provider silence beside a SEAT line saying the seat had
    answered every ask. Empty on the exit that asks nobody.
    */
   readonly heard: readonly RosterModelId[];

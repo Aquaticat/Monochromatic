@@ -5,7 +5,7 @@
  is near its line budget, and `MXL` forbids raising one. The seam under test
  is also narrower than that file's subject, which is the whole client.
  
- WHY ONLY THIS PROVIDER. `#216` was opened believing no system prompt carried
+ WHY ONLY THIS PROVIDER. It was once believed that no system prompt carried
  its schema. Reading the deciding source refuted that for Charm Hyper:
  `buildAnthropicBody` routes every schema-bearing call through
  `renderToolSystemPrompt`, which prints the whole schema into the `system`

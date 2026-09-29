@@ -555,7 +555,7 @@ await describe({
         // transport failure this actually is.
         expect(caught instanceof MalformedCompletionError,).toBe(true,);
         // THE FIRST ATTEMPT PLUS BOTH RETRIES. A provider that cuts a stream
-        // still answers HTTP 200, so this count is what `#228` changed: the
+        // still answers HTTP 200, so this count is what the verify wiring changed: the
         // ladder used to return after one call, and the voice was simply lost.
         expect(exchanges.length,).toBe(3,);
       },

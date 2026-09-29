@@ -4,7 +4,7 @@ import { StatedRefusalError, } from './stated-refusal.ts';
 // Lets one invocation run its stage rounds under a different straggler window
 // than the built-in one, without rebuilding.
 //
-// ONE USE, and it is measurement. `#229` ranks lengthening the window as the
+// ONE USE, and it is measurement. A measurement ranked lengthening the window as the
 // first lever left against lost voices, since every cut stream in the last
 // production run was a model still reasoning when the window closed, and the
 // only way to price a longer window is a run under one matched against a run
@@ -34,7 +34,8 @@ export const STRAGGLER_GRACE_VAR = 'TRANSLATION_REPAIR_STRAGGLER_GRACE_MS';
  under four slices in flight, arm D ran this window at the same normalized
  cost as arm B's built-in window and cut 2 voices against B's 7, because the
  wait a longer window adds is what overlap fills. The corpus pass keeps
- `STRAGGLER_GRACE_MS` until `#261` gives it overlap too.
+ `STRAGGLER_GRACE_MS` (`doc/decision/translation-repair-straggler-grace.md`),
+ though it too keeps four slices in flight since 2026-09-06.
  */
 export const CALIBRATION_STRAGGLER_GRACE_MS = 300_000;
 

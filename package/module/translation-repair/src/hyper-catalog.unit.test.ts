@@ -3,7 +3,7 @@
  
  THIS FILE PINS MEASUREMENTS, not preferences. Every value it checks came from
  live calls, and each one is a value that a plausible reading of provider
- docs could get wrong: model answer ceiling can sit below bound `#156`,
+ docs could get wrong: model answer ceiling can sit below the measured answer bound,
  and provider-specific image input support must be read rather than inferred.
  
  A CHANGED VALUE HERE IS A PROVIDER CHANGE, so these cases are meant to fail

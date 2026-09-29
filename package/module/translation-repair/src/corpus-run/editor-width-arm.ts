@@ -50,7 +50,7 @@ export type ArmOutcome = {
  
  READS THE PRODUCER OFF THE RESULT rather than indexing the slate.
  `selectedIndex` is one-based over a slate the round may have reordered, which
- is the trap `#187` documented; `shippedProducer` is the stage's own answer.
+ is a documented trap; `shippedProducer` is the stage's own answer.
  
  @param stage - what one arm returned
  

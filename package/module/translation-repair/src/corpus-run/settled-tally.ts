@@ -171,7 +171,8 @@ export function settledTallyLine(
    ZERO IS THE HONEST ANSWER on an undecided entry, and it is meant to be
    read beside `selection=pending-human-decision` on the same line: two
    lanes proposed changes and, as things stand, a document would carry none
-   of them. That is `#175`, stated in the log rather than left to inference.
+   of them. That is the pending decision, stated in the log rather than left
+   to inference.
    */
   const pageChanged = shipped.filter(function pageCarriesAChange(
     {

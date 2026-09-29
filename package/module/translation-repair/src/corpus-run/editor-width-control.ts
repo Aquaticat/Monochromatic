@@ -52,8 +52,8 @@ const TERMINATORS = [
 /**
  Removes one whole sentence, or reports that there was none to remove.
  
- DELETION RATHER THAN CORRUPTION is the damage of choice because `#155`
- already names dropped page content a fault the pipeline cares about, so a
+ DELETION RATHER THAN CORRUPTION is the damage of choice because
+ dropped page content is already a named fault the pipeline cares about, so a
  panel that misses it is missing something the corpus rules already say
  matters.
  

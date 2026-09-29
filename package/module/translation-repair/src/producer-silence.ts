@@ -11,7 +11,7 @@ import type { RosterModelId, } from './roster-id.ts';
 // off the table; a slate where every producer proposed the same wording ships
 // without a ballot being cast over it; and a rewriter that answers every ask
 // and leaves the paragraph as it stands never reaches a slate at all, which
-// `#263` found reported as provider silence beside a SEAT line saying the seat
+// was once reported as provider silence beside a SEAT line saying the seat
 // had answered 31 of 31.
 //
 // THE REASONS CALL FOR DIFFERENT ACTIONS, which is why they are separated

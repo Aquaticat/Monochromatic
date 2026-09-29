@@ -2,7 +2,7 @@
  Tests for the Messages API request body.
  
  THE CEILING CASES PIN AN OWNER DECISION, not a preference: `max_tokens` is
- the lower of `#156`'s measured answer bound and the model's own cap, and a
+ the lower of the measured answer bound and the model's own cap, and a
  caller's own ceiling may lower it further but never raise it. A body that
  asked for more than the model can emit would be answered with a truncation
  the pipeline reads as a schema mismatch, which costs a call and blames a
@@ -277,7 +277,7 @@ await describe({
 
     it({
       name: 'ASKS FOR THE PER-MODEL CEILING where the caller named none, which is the lower of '
-        + "#156's measured bound and the model's own cap",
+        + "the measured answer bound and the model's own cap",
       fn: async () => {
         // The ceilings themselves are measurements pinned in
         // `hyper-catalog.unit.test.ts`; this case pins that the body asks for them.

@@ -524,7 +524,7 @@ await describe({
 
     it({
       name: 'REPORTS a refiner that answered and proposed nothing as heard, with no contributor '
-        + 'and no round, which is the shape #263 found reported as provider silence',
+        + 'and no round, which is the shape once reported as provider silence',
       fn: async () => {
         /** Result of a refiner answering every ask with an empty rewrite list. */
         const result = await runFixture(scriptedRefiner({ ballot: 1, },),);

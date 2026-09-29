@@ -1623,7 +1623,7 @@ await describe({
     },),
 
     it({
-      name: 'SHOWS THE SLATE JUDGES WHAT THE PICTURES NEAR THEIR SLICE SAY. `#176` gave the readings to '
+      name: 'SHOWS THE SLATE JUDGES WHAT THE PICTURES NEAR THEIR SLICE SAY. One change gave the readings to '
         + 'this stage\'s PRODUCERS and stopped, so for one day the judges weighed proposals written '
         + 'against evidence they could not see, which is worse than both halves being blind: a producer '
         + 'that used a picture correctly looked to its judge like one inventing detail. Read off the '

@@ -3,7 +3,7 @@
  
  WHAT THESE PIN: a class that may be quoted is quoted up to the cap and no
  further, and a class that may not be quoted is named, which is the refusal
- rule `#237` closed on.
+ rule every stdout printer follows.
  
  @module
  */

@@ -7,7 +7,7 @@
 // nothing above the client seam asks. The pipeline's stages name a panelist and
 // get an answer; only this layer knows there is more than one way to reach one.
 //
-// `#199` opened this. A corpus pass exhausted one provider's weekly credit, and
+// WHY IT EXISTS. A corpus pass exhausted one provider's weekly credit, and
 // 866 of 875 lost voices carried a single HTTP 429. A second provider is the
 // only remedy that works against an exhausted budget.
 

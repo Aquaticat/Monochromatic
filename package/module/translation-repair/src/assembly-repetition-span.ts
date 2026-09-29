@@ -1,6 +1,6 @@
 //region Assembly repetition span
 // GROWING WINDOWS INTO THE SPAN THEY BELONG TO, which is the step
-// `assembly-repetition.ts` did not have and `#183` measured the cost of.
+// `assembly-repetition.ts` did not have, at a measured cost.
 //
 // That file finds repeats by counting fixed-length windows, longest first, and
 // suppresses any phrase CONTAINED IN one already reported. That rule handles

@@ -13,8 +13,8 @@
  unchanged-without are the two agreements, and the two crossings are the two
  refusals. A check reading either field alone would accept all four.
  
- WHY THE BALLOT'S EVIDENCE FIELDS ARE CHOICES AND NOT PROSE. `#164` found the
- gate shipping a rendering its own ballots named faultier, because nothing
+ WHY THE BALLOT'S EVIDENCE FIELDS ARE CHOICES AND NOT PROSE. The gate was once
+ found shipping a rendering its own ballots named faultier, because nothing
  counted them. A name outside the three would be counted as nothing and would
  weaken that evidence silently, so the lists are parsed as names rather than
  as strings.
@@ -442,7 +442,7 @@ await describe({
 
     it({
       name: 'REFUSES an evidence list naming a rendering that does not '
-        + 'exist, which is what `#164` turns on: a name outside the three '
+        + 'exist, which is what counting the evidence turns on: a name outside the three '
         + 'would be counted as nothing, and the evidence would weaken in '
         + 'silence',
       fn: async () => {

@@ -1,7 +1,7 @@
 /**
  Tests for the contest ledger's file names.
  
- `#246`: the ordinal restarted at zero per process, so a relaunch into the
+ The ordinal once restarted at zero per process, so a relaunch into the
  same runs directory overwrote the earlier launch's contests one by one. The
  cases hold the name to the launch it was written by and to text order.
  

@@ -1,8 +1,8 @@
 /**
  Tests for whether a capped entry earns another attempt inside one invocation.
  
- `#196` measured the largest entries as unable to settle inside the 420-minute
- hard cap, and the way out it ranked first needs a build that does not move
+ The largest entries were measured as unable to settle inside the 420-minute
+ hard cap, and the way out ranked first needs a build that does not move
  between attempts. One invocation IS such a window, so the pass now re-queues
  an entry that made progress. What that costs if it is wrong is the whole
  three-day soft budget spent on one entry, so the stop condition is the part

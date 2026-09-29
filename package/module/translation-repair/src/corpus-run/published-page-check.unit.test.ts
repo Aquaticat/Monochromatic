@@ -280,7 +280,7 @@ await describe({
       name:
         'COUNTS A SILENT SLICE AND REQUIRES NOTHING OF THE PAGE FOR IT, since a slice that ships no '
         + 'wording has none to look for. Requiring something there would report every unfilled anchor '
-        + 'as a lost passage, which is the state `#194` made ordinary rather than fatal',
+        + 'as a lost passage, which is a state already made ordinary rather than fatal',
       fn: async () => {
         const check = pageCarriesEveryWording({
           artifact: artifactShipping([FIRST_NAP, '', SECOND_NAP,],),

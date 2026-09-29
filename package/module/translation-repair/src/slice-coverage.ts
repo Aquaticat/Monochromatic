@@ -27,7 +27,7 @@ import type { DocumentNode, } from './document-node.ts';
 // ONE TRANSLATION BLOCK MAY LEGITIMATELY REACH NO SLICE, and only one kind:
 // one the roster's pairing accounted for nowhere. `declined-target-runs.ts`
 // states why such a block has to leave every slice span rather than ride inside
-// a neighbouring one, and `#157` records the letter that was nearly deleted
+// a neighbouring one, and a letter was once nearly deleted
 // because it did not.
 //
 // THIS DOES NOT WEAKEN THE RULE, it sharpens it. The enemy here was never

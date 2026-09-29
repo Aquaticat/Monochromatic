@@ -439,7 +439,7 @@ export async function consolidateDocument(
             // THE WINDOW REACHES THE JUDGING HALF ONLY, for now. The producer sheet
             // has no block for it, so putting it here promises nothing to a producer
             // and gives `settleConsolidation` what its judges need. Whether the
-            // producers should have it too is a real question and `#178` records it
+            // producers should have it too is a real question, recorded
             // as an explicit exclusion rather than answering it in passing.
             ...((neighbours.sourceText === '') ? {} : { neighbouringSourceText: neighbours.sourceText, }),
             ...((neighbours.incumbentText === '')

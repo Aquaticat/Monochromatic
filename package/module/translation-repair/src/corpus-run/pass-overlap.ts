@@ -4,7 +4,7 @@ import { readOverlapSetting, } from './slice-overlap.ts';
 // Corpus pass keeps four slices in flight since the four matched pairs of
 // 2026-08-27 and 2026-08-28 were read into a default on 2026-09-06
 // (`doc/decision/translation-repair-pass-overlap.md`). One was the value
-// while `#261` waited for those pairs.
+// while the decision waited for those pairs.
 
 /**
  Corpus-pass slice overlap when invocation sets no environment override.

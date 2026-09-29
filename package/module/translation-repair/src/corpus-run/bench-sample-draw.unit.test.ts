@@ -5,7 +5,7 @@
  widths on the same slices. Handed an empty sample it would run every width
  over no work, find no difference between them, and print that as a result;
  the widths would be reported indistinguishable on evidence that never
- existed. `#188` settled a width question on 231 rounds, and a silent empty
+ existed. A width question was settled on 231 rounds, and a silent empty
  draw is exactly how that kind of answer goes wrong.
  
  WHAT WAS MEASURED. On 2026-08-25, inverting this guard so a corpus that DID

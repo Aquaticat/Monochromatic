@@ -166,7 +166,7 @@ import type { LaneText, } from './translate-candidates.ts';
  keyed by them (ledger H5); a slice nobody re-seated keys as before, so no
  key moves. Same check, same result.
 
- THE PRE-LAUNCH CHECK OF 2026-09-28 (task #395, ledger M28): 20 was set
+ THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 22:56 on 2026-09-27, after the newest slice-cache file under the
  agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under

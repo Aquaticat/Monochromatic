@@ -78,8 +78,8 @@ import {
 // Nothing here re-decides that; this file supplies the facts the policy reads
 // and performs whatever it returns.
 //
-// A REFUSED CALL IS RE-ROUTED, NOT LOST. That is the whole reason `#199` was
-// opened: a pass exhausted one provider's weekly credit and 866 of 875 lost
+// A REFUSED CALL IS RE-ROUTED, NOT LOST. That is the whole reason routing
+// exists: a pass exhausted one provider's weekly credit and 866 of 875 lost
 // voices carried a single HTTP 429. Retrying an exhausted provider never
 // succeeds and refusing to settle turns a budget problem into holes in the
 // deliverable, so a budget refusal marks that provider and asks the next.
@@ -93,7 +93,7 @@ import {
 // RE-ROUTED AT MOST ONCE PER PROVIDER. Each refusal marks its provider and
 // asks the budgets again through `readBudgetsPastHolds`, which waits out a
 // refusal hold before calling every provider dry, so a refuser can come back
-// for a later re-route once its hold has ended (the #474 shape); an all-dry
+// for a later re-route once its hold has ended; an all-dry
 // reading no hold explains raises, and the call ends there. The loop is
 // bounded by the number of providers, so a wall of refusals is an answer
 // rather than an invitation to keep going.

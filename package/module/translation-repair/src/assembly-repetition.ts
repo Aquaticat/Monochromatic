@@ -76,7 +76,7 @@ const MIN_CONTENT_WORDS = 2;
  a passage longer than this spans several windows of exactly this length, and
  a suppression rule that only drops a phrase contained in a longer one cannot
  merge them: they are all the same length, so no one of them contains
- another. `#183` measured what that cost, an 877-word duplication reported as
+ another. That cost was measured: an 877-word duplication reported as
  866 findings, and `assembly-repetition-span.ts` now grows this layer's
  windows into the passages they belong to before any of them is reported.
  */

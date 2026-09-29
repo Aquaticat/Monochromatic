@@ -696,8 +696,7 @@ await describe({
     it({
       name: 'ROUTES a Charm Hyper endpoint label to the second provider and '
         + 'never to the first, with the first provider live: serving '
-        + 'capability is a property of the pair, not of a provider\'s health '
-        + '(`#235`)',
+        + 'capability is a property of the pair, not of a provider\'s health',
       fn: async () => {
         using _key = withApiKey({ value: 'whiskers-not-a-real-key', },);
         using _second = withHyperKey({ value: 'mittens-not-a-real-key', },);

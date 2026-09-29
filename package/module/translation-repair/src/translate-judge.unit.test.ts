@@ -347,7 +347,7 @@ await describe({
       name:
         'REFUSES AN ANCHOR AS `no-voice-heard` WHEN NOBODY ANSWERED, because an empty slate with no '
         + 'translator heard says nothing about the passage and everything about the hour. Recorded as '
-        + '`no-candidate` until `#198`, which is how a provider having a bad hour left holes in '
+        + '`no-candidate` until the reason split, which is how a provider having a bad hour left holes in '
         + 'published pages that nothing could tell from passages the models genuinely could not render',
       fn: async () => {
         const refusal = await refusalOverAnchor({ heardTranslators: 0, },);

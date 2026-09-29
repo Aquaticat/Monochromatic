@@ -441,8 +441,8 @@ async function main(): Promise<void> {
    test: slices ran one at a time because one slice already fans eight models
    across several stages, and stacking whole lanes was expected to queue
    behind the per-model concurrency the client enforces anyway. That was
-   written before the multi-provider routing existed, and the run `#215`
-   measured spends 87.2% of its round time waiting after quorum, at a mean of
+   written before the multi-provider routing existed, and the run the
+   timing work measured spends 87.2% of its round time waiting after quorum, at a mean of
    2.56 calls in flight.
    */
   const perSlice: readonly SliceRounds[] = await Promise.all(

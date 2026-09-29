@@ -13,7 +13,7 @@ import {
 // nine of the last ten read pages rewriting `desc` or `alias` ("We're not
 // supposed to change front matter though?"). The rule: the archive's front
 // matter is published as it stands, and the lanes render it only where the
-// archive never translated it, which is the #269 shape the publication guard
+// archive never translated it, which is the directory-id shape the publication guard
 // already names: the visible name is the directory id while the source names
 // the person, and neither the pinyin reading nor an alias makes the id stand.
 //
@@ -84,7 +84,7 @@ export function archiveFrontMatterStands(
     return true;
   // THE ID STANDS AS A RENDERING (the owner's decision of 2026-09-07): the
   // pinyin of the source's name, the source's own alias, or a Latin-script
-  // alias beside it. What is left is the #269 shape, which the lanes render.
+  // alias beside it. What is left is the directory-id shape, which the lanes render.
   return directoryIdNameStands({
     entryId,
     source,

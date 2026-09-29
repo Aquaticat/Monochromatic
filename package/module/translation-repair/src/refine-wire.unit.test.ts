@@ -437,7 +437,7 @@ await describe({
 
     it({
       name: 'FOLDS an invisible variant out of a rewrite at intake and names it, so the judges see '
-        + 'the bytes that ship (#264)',
+        + 'the bytes that ship',
       fn: async () => {
         const { operations, findings, } = resolveRefineRewrites({
           wire: {

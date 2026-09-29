@@ -10,7 +10,7 @@ import {
 //region CLI refusal
 // Turns ANY failure out of a CLI body into a report that quotes nothing.
 //
-// `#222` closed the half of `#220` that mattered most: a run file no longer
+// The half of that defect that mattered most is closed: a run file no longer
 // prints itself when it will not parse. Verifying that at the boundary showed
 // the other half still open. The refusal is safe now, but it is still UNCAUGHT,
 // and a bundled CLI is one line of minified JavaScript, so Node echoes about
@@ -21,7 +21,7 @@ import {
 // ugly report for a permanently undiagnosable one. That reasoning was right
 // about the cost and wrong about the choice, because the two are separable.
 //
-// `#225` supplied the fact the old note did not have. A `YAMLParseError`
+// A measurement supplied the fact the old note did not have. A `YAMLParseError`
 // message embeds a source code frame, measured on five failure shapes and
 // present in all five, and Node renders a cause chain. Re-throwing therefore
 // published a page's front matter, which names a person, through a printer that
@@ -34,7 +34,7 @@ import {
 // diagnosable, and a class that declares its message quote-free still gets to
 // say it in full.
 //
-// `#226` put EVERY corpus-run entry point through this, thirty-eight of them,
+// EVERY corpus-run entry point was put through this, thirty-eight of them,
 // after measuring the four cells it turns on. Running the source on a throwaway
 // fixture under node's type stripping:
 //

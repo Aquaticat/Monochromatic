@@ -396,7 +396,7 @@ import type { RepairModels, } from './repair-contract.ts';
  whose voices a round hears; checked on 2026-09-28: still no slice-cache
  file newer than 00:26 on 2026-09-27.
 
- THE PRE-LAUNCH CHECK OF 2026-09-28 (task #395, ledger M28): 33 was set
+ THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 33 was set
  in `f2cd70ece` at 22:41 on 2026-09-27, after the newest slice-cache file under the
  agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under

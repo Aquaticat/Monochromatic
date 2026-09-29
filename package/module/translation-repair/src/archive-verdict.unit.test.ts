@@ -1,7 +1,7 @@
 /**
  Tests for the archive verdict the lane contest settles beside its choice.
  
- WHAT IS UNDER TEST is the gap `#181` opened: a contest that backs neither
+ WHAT IS UNDER TEST is a gap once found: a contest that backs neither
  candidate used to say nothing at all about the text already published, even
  though that text is what ships when both candidates lose. The verdict is an
  ORTHOGONAL BALLOT FIELD, so these cases check that it settles by the same

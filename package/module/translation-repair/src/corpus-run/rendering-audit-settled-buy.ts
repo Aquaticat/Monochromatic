@@ -255,7 +255,7 @@ export function printPopulation(
 
     /**
      Slices no stage has decided at all, which is the absence of a decision
-     rather than one, and is pending `#175` with the owner.
+     rather than one: the artifact records it as pending a human decision.
      */
     const undecided = subjects.filter(function wasNeverAsked(subject,): boolean {
       /**

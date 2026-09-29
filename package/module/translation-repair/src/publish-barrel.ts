@@ -5,7 +5,7 @@
 // Split out of `corpus-barrel.ts` when that file reached its line budget, at
 // the seam the other two splits used: by AUDIENCE. Everything here answers a
 // question about the DELIVERABLE, the mirrored tree of fixed `page.en.md`
-// files `#175` made this pipeline's output. The measurement CLIs ask none of
+// files that are this pipeline's output. The measurement CLIs ask none of
 // it, and the three files form one chain: `would-ship-text.ts` says what a
 // slice contributes, `publish-fixed.ts` turns that into a page, and
 // `published-page-check.ts` reads the page back and refuses one that disagrees.

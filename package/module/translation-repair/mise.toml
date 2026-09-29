@@ -76,7 +76,7 @@ depends = ["build"]
 run = "node dist/final/node/recall-benchmark.mjs"
 
 [tasks."probe-sensitivity"]
-description = "#247: ask whether the introduced-defect probe can detect damage at all, each region under three prior-issue lists (none, withheld from the prompt as production sends, rendered as the abandoned prompt did), cat-themed fixtures only; SPENDS QUOTA"
+description = "Ask whether the introduced-defect probe can detect damage at all, each region under three prior-issue lists (none, withheld from the prompt as production sends, rendered as the abandoned prompt did), cat-themed fixtures only; SPENDS QUOTA"
 depends = ["build"]
 run = "node dist/final/node/probe-sensitivity.mjs"
 
@@ -86,12 +86,12 @@ depends = ["build"]
 run = "node dist/final/node/audit-sensitivity.mjs"
 
 [tasks."rendering-audit-settled"]
-description = "#115: run the rendering audit over every decided slice of every settled version 2 artifact in an archive, reading retained and replaced slices apart; TELEMETRY ONLY, nothing it says gates what ships; SPENDS QUOTA unless --cap 0 (pass --archive dir, --clone dir, --only ids, --cap n after --)"
+description = "Run the rendering audit over every decided slice of every settled version 2 artifact in an archive, reading retained and replaced slices apart; TELEMETRY ONLY, nothing it says gates what ships; SPENDS QUOTA unless --cap 0 (pass --archive dir, --clone dir, --only ids, --cap n after --)"
 depends = ["build"]
 run = "node dist/final/node/rendering-audit-settled.mjs"
 
 [tasks."rendering-audit-settled-report"]
-description = "#115: read a persisted settled-audit run: the archive and fresh halves apart, what each auditor thought was worth a claim, and the #107 relocation candidates; SPENDS NO QUOTA (pass --run path after -- to read a run other than the newest)"
+description = "Read a persisted settled-audit run: the archive and fresh halves apart, what each auditor thought was worth a claim, and the relocation candidates; SPENDS NO QUOTA (pass --run path after -- to read a run other than the newest)"
 depends = ["build"]
 run = "node dist/final/node/rendering-audit-settled-report.mjs"
 
@@ -101,17 +101,17 @@ depends = ["build"]
 run = "node dist/final/node/coverage-probe.mjs"
 
 [tasks."coverage-control-probe"]
-description = "#106: ask the coverage roster about a passage, delete the spans it anchored on, and ask again, to find out whether an absence vote is reachable at all; SPENDS QUOTA (pass --only ids after --)"
+description = "Ask the coverage roster about a passage, delete the spans it anchored on, and ask again, to find out whether an absence vote is reachable at all; SPENDS QUOTA (pass --only ids after --)"
 depends = ["build"]
 run = "node dist/final/node/coverage-control-probe.mjs"
 
 [tasks."run-timing-report"]
-description = "#215: read back where a run's wall-clock went, splitting every round into the time it worked and the time it waited on a straggler, and counting how many calls were in flight at once; SPENDS NO QUOTA (name one or more log paths after --)"
+description = "Read back where a run's wall-clock went, splitting every round into the time it worked and the time it waited on a straggler, and counting how many calls were in flight at once; SPENDS NO QUOTA (name one or more log paths after --)"
 depends = ["build"]
 run = "node dist/final/node/run-timing-report.mjs"
 
 [tasks."spend-report"]
-description = "#210: read what a run cost from the SPEND lines its own log carries, priced against a DATED Charm Hyper rate table; subscription seats are counted but never priced; SPENDS NO QUOTA (name one or more log paths after --)"
+description = "Read what a run cost from the SPEND lines its own log carries, priced against a DATED Charm Hyper rate table; subscription seats are counted but never priced; SPENDS NO QUOTA (name one or more log paths after --)"
 depends = ["build"]
 run = "node dist/final/node/spend-report.mjs"
 
@@ -121,7 +121,7 @@ depends = ["build"]
 run = "node dist/final/node/cap-census.mjs"
 
 [tasks."ledger-report"]
-description = "#212: read the candidate ledger a run wrote, saying who produced what, how often it was chosen, and what judges said about it; pass --model <id> after -- to read one seat's candidates and its judges' verbatim reasons; SPENDS NO QUOTA (prints corpus wording when a model is named)"
+description = "Read the candidate ledger a run wrote, saying who produced what, how often it was chosen, and what judges said about it; pass --model <id> after -- to read one seat's candidates and its judges' verbatim reasons; SPENDS NO QUOTA (prints corpus wording when a model is named)"
 depends = ["build"]
 run = "node dist/final/node/ledger-report.mjs"
 
@@ -131,17 +131,17 @@ depends = ["build"]
 run = "node dist/final/node/slice-cost-report.mjs"
 
 [tasks."displacement-probe"]
-description = "#107: read per-slice size ratios against each document's own median to find passages the translation moved across a section boundary; SPENDS NO QUOTA"
+description = "Read per-slice size ratios against each document's own median to find passages the translation moved across a section boundary; SPENDS NO QUOTA"
 depends = ["build"]
 run = "node dist/final/node/displacement-probe.mjs"
 
 [tasks."editor-calibrate"]
-description = "#200: rank every model on the EDITOR's own job by driving the whole repair lane, every roster model editing and judging each slice, and report the refiner standing off the same spend; SPENDS QUOTA (pass a slice count after --, default 6; TRANSLATION_REPAIR_SLICE_OVERLAP=N runs N slices at once, default 4, and the straggler window is 300000 ms unless TRANSLATION_REPAIR_STRAGGLER_GRACE_MS says otherwise, both decided 2026-08-26)"
+description = "Rank every model on the EDITOR's own job by driving the whole repair lane, every roster model editing and judging each slice, and report the refiner standing off the same spend; SPENDS QUOTA (pass a slice count after --, default 6; TRANSLATION_REPAIR_SLICE_OVERLAP=N runs N slices at once, default 4, and the straggler window is 300000 ms unless TRANSLATION_REPAIR_STRAGGLER_GRACE_MS says otherwise, both decided 2026-08-26)"
 depends = ["build"]
 run = "node dist/final/node/editor-calibrate.mjs"
 
 [tasks."editor-width-probe"]
-description = "#186: run the same slices at the production editor width and at the whole roster, judged by one fixed panel, with the narrow arm repeated as a null band and the two winners contested in both seating orders; SPENDS QUOTA (pass a sample size after --, default 18 halved into two draws)"
+description = "Run the same slices at the production editor width and at the whole roster, judged by one fixed panel, with the narrow arm repeated as a null band and the two winners contested in both seating orders; SPENDS QUOTA (pass a sample size after --, default 18 halved into two draws)"
 depends = ["build"]
 run = "node dist/final/node/editor-width-probe.mjs"
 
@@ -151,7 +151,7 @@ depends = ["build"]
 run = "node dist/final/node/judge-fidelity-probe.mjs"
 
 [tasks."translate-probe"]
-description = "PROTOTYPE for #70: ask a translator ensemble to render the corpus section with the worst coverage gap, which the repair loop cannot express"
+description = "PROTOTYPE for the translate-first re-design: ask a translator ensemble to render the corpus section with the worst coverage gap, which the repair loop cannot express"
 depends = ["build"]
 run = "node dist/final/node/translate-probe.mjs"
 
@@ -171,7 +171,7 @@ depends = ["build"]
 run = "node dist/final/node/score-verify.mjs"
 
 [tasks."probe-relabel"]
-description = "#247: re-probe the regions a human read as damaged under three arms (the production disclosure, the other prompt, no list at all), to separate a suppressing prompt from a dismissing screen from a hard judgement; SPENDS QUOTA"
+description = "Re-probe the regions a human read as damaged under three arms (the production disclosure, the other prompt, no list at all), to separate a suppressing prompt from a dismissing screen from a hard judgement; SPENDS QUOTA"
 depends = ["build"]
 run = "node dist/final/node/probe-relabel.mjs"
 
@@ -186,17 +186,17 @@ depends = ["build"]
 run = "node dist/final/node/model-health.mjs"
 
 [tasks."budget-sample"]
-description = "#201: take one reading of both providers' meters and leave it in the log, so an outage's END is observed during the quiet stretches when no pass is running; SPENDS NO GENERATION (capture both streams: `> log 2>&1`)"
+description = "Take one reading of both providers' meters and leave it in the log, so an outage's END is observed during the quiet stretches when no pass is running; SPENDS NO GENERATION (capture both streams: `> log 2>&1`)"
 depends = ["build"]
 run = "node dist/final/node/budget-sample.mjs"
 
 [tasks."editor-standing-read"]
-description = "#200: read the EDITOR and REFINER standings off already-settled artifacts, reported per pipeline digest and never pooled across them; OBSERVATIONAL, so it ranks only models that held a seat and is silent about the rest; SPENDS NOTHING (pass one or more run directories after --, default this run's)"
+description = "Read the EDITOR and REFINER standings off already-settled artifacts, reported per pipeline digest and never pooled across them; OBSERVATIONAL, so it ranks only models that held a seat and is silent about the rest; SPENDS NOTHING (pass one or more run directories after --, default this run's)"
 depends = ["build"]
 run = "node dist/final/node/editor-standing-read.mjs"
 
 [tasks."meter-report"]
-description = "#201: read provider availability back out of run logs and report each provider's duty cycle and longest outage as bounded ranges; SPENDS NO QUOTA (pass one or more log paths after --)"
+description = "Read provider availability back out of run logs and report each provider's duty cycle and longest outage as bounded ranges; SPENDS NO QUOTA (pass one or more log paths after --)"
 depends = ["build"]
 run = "node dist/final/node/meter-report.mjs"
 
@@ -230,6 +230,6 @@ depends = ["build"]
 run = "node dist/final/node/verify-published.mjs"
 
 [tasks."window-trial-probe"]
-description = "#107: judge flagged slices and matched controls three times over ONE slate, narrow, narrow again, then with the neighbouring original, and report whether the window moved the replacement rate further than two narrow runs move it; SPENDS QUOTA, resumes from its ledger, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR"
+description = "Judge flagged slices and matched controls three times over ONE slate, narrow, narrow again, then with the neighbouring original, and report whether the window moved the replacement rate further than two narrow runs move it; SPENDS QUOTA, resumes from its ledger, wants a throwaway TRANSLATION_REPAIR_RUNS_DIR"
 depends = ["build"]
 run = "node dist/final/node/window-trial-probe.mjs"

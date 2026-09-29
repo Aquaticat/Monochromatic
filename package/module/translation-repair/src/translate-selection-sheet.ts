@@ -183,8 +183,8 @@ export const TRANSLATE_SELECTION_CRITERIA: readonly string[] = [
  reading criterion four alone has been handed a reason to prefer the merged
  rival it was measured against.
  
- THE SAME CONTRADICTION `#150` FIXED, on the other side of the round. That
- task made the verse rule outrank the page rule for producers and said so in
+ THE SAME CONTRADICTION FIXED FOR PRODUCERS, on the other side of the round.
+ That fix made the verse rule outrank the page rule for producers and said so in
  the rule text rather than by ordering, because a model resolves a
  contradiction however it likes when neither side defers. Ordering alone
  would be the same mistake here.

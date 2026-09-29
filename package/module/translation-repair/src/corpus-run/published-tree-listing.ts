@@ -14,7 +14,7 @@ import {
 //region Published tree listing
 // What a run left on disk, and whether it left anything worth checking.
 //
-// SPLIT OUT OF `verify-published.ts` FOR `#217`, which is the defect this
+// SPLIT OUT OF `verify-published.ts` FOR THE DEFECT this
 // module exists to make impossible. The listing used to answer an absent
 // directory with an empty array and print the absence on STDERR, so a run with
 // no artifacts directory at all printed the same stdout summary as a run whose
@@ -233,7 +233,7 @@ export async function publishedEntryIds(
  which is the verifier's one nonzero exit. An artifacts directory that is not
  there means the caller is pointed at something that is not a run. An
  artifacts directory holding no artifact means the run settled no entry.
- Neither is a clean run, and before `#217` both read as one.
+ Neither is a clean run, and both once read as one.
 
  AN ABSENT PUBLISHED TREE IS DELIBERATELY NOT ONE OF THEM. Beside real
  artifacts it means every settled entry was never published: no pass settles

@@ -155,7 +155,7 @@ await describe({
 
     it({
       name: 'REPORTS a seat that answered and never reached a slate as answered-but-unslated, '
-        + 'never as silent, once the seat records who answered (#263)',
+        + 'never as silent, once the seat records who answered',
       fn: async () => {
         /**
          Coverage where one absent-from-the-table model was heard on every
@@ -386,7 +386,7 @@ await describe({
 
     it({
       name: 'names an answered-but-unslated seat on its own line, which never tells the reader '
-        + 'to re-run it and never calls it silent (#263)',
+        + 'to re-run it and never calls it silent',
       fn: async () => {
         /**
          Lines for the live case: one seat heard on every ask with nothing

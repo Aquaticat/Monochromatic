@@ -6,15 +6,15 @@
  checked a foreign class came straight back out, on the reasoning that
  catching every `Error` destroys the stack of a genuine programming fault.
  
- `#225` showed re-throwing is not neutral: it hands the decision to whatever
+ Re-throwing was shown not to be neutral: it hands the decision to whatever
  prints next, and Node's reporter renders a cause chain, which is how a YAML
  refusal published a page's front matter. So everything is caught now, and the
  cases below hold both halves at once: the message must NOT be repeated, and
  the frames MUST still be there.
  
- THREE EXIT CODES NOW, AND EACH IS DEFINED AGAINST THE OTHER TWO. `#226`
+ THREE EXIT CODES NOW, AND EACH IS DEFINED AGAINST THE OTHER TWO. One change
  closed the message of every class that had not declared itself quote-free,
- and `#227` decided which of our own may speak. So what a reader gets depends
+ and a later rule decided which of our own may speak. So what a reader gets depends
  on the class thrown: a stated refusal says its sentence and stops at 6, a
  marked class that is not one says its sentence AND keeps its frames at 5, and
  everything else is named without being quoted. The cases below hold one of
@@ -376,7 +376,7 @@ await describe({
         await reportingRefusals({
           what: 'editor-calibrate',
           run: async () => {
-            // A run that finishes, which is what `#235` hid behind.
+            // A run that finishes, which is what a half-dark calibration hid behind.
           },
           seats,
         },);

@@ -196,7 +196,7 @@ await describe({
 
     it({
       name: 'SAYS HOW LONG THE CALL TOOK, in the same line as its outcome: a log of phase timings '
-        + 'and character counts cannot answer where a pass spent its hours, and `#215` found no '
+        + 'and character counts cannot answer where a pass spent its hours, and a search found no '
         + 'line anywhere that carried a call duration',
       fn: async () => {
         /**

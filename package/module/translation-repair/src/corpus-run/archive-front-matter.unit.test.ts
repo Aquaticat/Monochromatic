@@ -9,7 +9,7 @@
  on the day of the decision: 23 of 92 archives name their directory, 8 of
  them because the source does too, and the other 15 all stand by the
  exemptions of 2026-09-07, so every pinned archive stands and the rendering
- path is kept for the #269 shape alone.
+ path is kept for the directory-id shape alone.
  
  Cat-themed invention throughout; no corpus content appears here.
  
@@ -46,7 +46,7 @@ const NAMED_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫咪\n---\n\n正文�
 
 /**
  An archive still showing the directory id with nothing Latin beside it:
- the #269 shape, never translated.
+ the directory-id shape, never translated.
  */
 const FOLDER_ARCHIVE = '---\nname: EntryId\ninfo:\n  alias: 猫咪\n---\n\nBody.\n';
 
@@ -78,7 +78,7 @@ await describe({
     },),
     it({
       name: 'DOES NOT STAND where the archive shows the directory id with nothing Latin beside it while the '
-        + 'source names the person, the #269 shape, which is the one shape the lanes still render',
+        + 'source names the person, the directory-id shape, which is the one shape the lanes still render',
       fn: async () => {
         expect(archiveFrontMatterStands({
           entryId: 'EntryId',

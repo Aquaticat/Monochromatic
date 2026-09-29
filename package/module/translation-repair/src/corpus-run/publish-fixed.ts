@@ -214,7 +214,7 @@ export function shippableReplacements(
  `wouldShipTextPerSlice` gives them: wrapped as the stage that settled them
  left them, in the archive's quote style, and with the page-assembly rows in
  place. Re-wrapping at this site would change
- text both deciders already approved, which is the defect `#162` closed at the
+ text both deciders already approved, which is the defect already closed at the
  consolidation. Nothing normalizes the trailing newline either: the archive
  text is preserved byte for byte outside the slices that were replaced.
  

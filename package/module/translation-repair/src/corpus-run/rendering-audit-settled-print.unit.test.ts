@@ -245,7 +245,7 @@ await describe({
         // The note is the difference between a reader treating an undecided
         // subject as a finding and treating it as work not yet done, so it is
         // printed even when no relation was tallied.
-        expect(said.includes('waiting on #175, not overruled',),).toBe(true,);
+        expect(said.includes('waiting on a decision, not overruled',),).toBe(true,);
       },
     },),
   ],

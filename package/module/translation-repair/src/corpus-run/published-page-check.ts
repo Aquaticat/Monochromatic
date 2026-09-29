@@ -11,10 +11,10 @@ import { PublishedPageDisagreesError, } from './published-page-disagreement.ts';
 //region Published page check
 // Reads the DELIVERABLE back, which until now nothing did.
 //
-// `#175` made the mirrored tree of fixed `*.en.md` pages the thing this pipeline
+// The mirrored tree of fixed `*.en.md` pages is the thing this pipeline
 // produces, and every check built since reads artifacts instead. An artifact is
-// what the deciders said; a page is what a reader gets. `#194` is what the gap
-// between them costs: the publisher turned a named absence back into the empty
+// what the deciders said; a page is what a reader gets. What the gap
+// between them costs is known: the publisher turned a named absence back into the empty
 // string, and the only thing that noticed was a guard inside the splice, after
 // four hours and forty-eight minutes of calls.
 //

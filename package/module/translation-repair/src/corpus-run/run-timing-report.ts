@@ -13,7 +13,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // WHERE A RUN'S WALL-CLOCK WENT, read back off its own log. Spends no quota and
 // touches no model.
 //
-// `#215` OPENED ON A LOG THAT COULD NOT ANSWER THIS.
+// THE TIMING WORK OPENED ON A LOG THAT COULD NOT ANSWER THIS.
 // `doc/audit/every-volume-guard-is-blind-to-one-model.md` had to bound the
 // straggler cost from above, at the grace window times the number of cut
 // events, and recorded that confirming it "needs the dispatch timestamps the
@@ -21,7 +21,7 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // them back.
 //
 // A LOG WITH NO TIMING LINES AND A RUN THAT WAITED ON NOTHING ARE DIFFERENT
-// ANSWERS, and this says which. Every log written before `#215` carries no
+// ANSWERS, and this says which. Every log written before the timing work carries no
 // round line and no `elapsed`, so silence is the ordinary case for the archive.
 //
 // PRINTS IDS, COUNTS AND DURATIONS. Never a passage: a run log holds
@@ -128,7 +128,7 @@ function printRounds({ reading, }: { readonly reading: RunTiming; },): void {
 
   if (roundCount === 0) {
     console.log(
-      'NO ROUND LINE. This log predates `#215`, so how long each fan-out took and how much of that '
+      'NO ROUND LINE. This log predates round lines and call durations, so how long each fan-out took and how much of that '
         + 'was spent waiting after quorum are both unrecorded. That is not the same as a run that '
         + 'never waited.',
     );
@@ -253,7 +253,7 @@ async function reportRunTiming(): Promise<void> {
   if (reading.callsWithoutDuration > 0) {
     console.log(
       `${String(reading.callsWithoutDuration,)} completion lines carry no elapsed field, so they `
-        + 'predate `#215` and no interval exists for them. Concurrency below, if any, describes '
+        + 'predate call durations and no interval exists for them. Concurrency below, if any, describes '
         + 'only the calls that could be timed.',
     );
   }

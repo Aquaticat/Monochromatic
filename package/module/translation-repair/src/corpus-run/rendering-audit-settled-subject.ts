@@ -22,8 +22,8 @@ import {
 //
 // EVERY SUBJECT NAMES BOTH QUESTIONS. The lane-scoped fields say what the
 // judges really decided, which is what the audit reads; `pageRelation` says
-// whether a later stage overruled it. Neither is a default, per the decision
-// recorded in `#166`.
+// whether a later stage overruled it. Neither is a default, for the reason
+// `rendering-audit-settled-relation.ts` gives.
 /**
  Declared names and handles a run licensed, or a positive statement that the
  pair declared none.
@@ -119,8 +119,8 @@ export type SettledAuditSubject = {
   /**
    Whether any later stage overruled that rendering.
    
-   ADDED BESIDE the lane-scoped fields rather than replacing them, per the
-   decision recorded in `#166`. The audit still reads what the judges
+   ADDED BESIDE the lane-scoped fields rather than replacing them, for the
+   reason `rendering-audit-settled-relation.ts` gives. The audit still reads what the judges
    really decided; this says whether a reader of an assembled document
    would ever meet it.
    */

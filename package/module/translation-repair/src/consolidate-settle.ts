@@ -178,7 +178,7 @@ export type ConsolidationSubject = {
   /**
    What the pictures near this slice were read to say.
    
-   DECLARED HERE FROM 2026-08-22, having been PASSED here since `#176`. The
+   DECLARED HERE FROM 2026-08-22, having been PASSED here earlier. The
    driver builds one subject and hands it to both halves, so the field was
    already arriving; only this type and the judging call were unaware of it,
    which is precisely how the judges came to weigh proposals written against
@@ -542,7 +542,7 @@ export async function settleConsolidation(
    Those same proposals as they would actually ship.
    
    WRAPPED BEFORE THE SLATE IS BUILT rather than after the gate has spoken,
-   which is the whole of `#162`. Wrapping only the winner leaves both
+   which is the whole of the fix. Wrapping only the winner leaves both
    deciders judging bytes the run then changes, and it did: over the two most
    recent runs of the band pair 15 of the 16 shipped consolidations came back
    from `wrapConsolidation` altered.

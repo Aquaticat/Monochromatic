@@ -283,8 +283,7 @@ function renderItem(
  `reviewer-claims`: every item was flagged and the claims are printed, which
  is the verify sheet. `blind`: the items mix flagged and silent ones with the
  claims stripped, which is the damage sheet; telling that grader every item
- was flagged primed a Y on exactly the partition scored as probe misses
- (`#248`).
+ was flagged primed a Y on exactly the partition scored as probe misses.
  
  @example
  ```ts

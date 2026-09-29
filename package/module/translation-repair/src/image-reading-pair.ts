@@ -462,7 +462,7 @@ export async function readImagePair(
       // compiler cannot carry a predicate`s result into the mapper, and the
       // empty string that stood here to satisfy it was a reading nobody
       // produced. It was unreachable only for as long as the filter above it
-      // stayed exactly right, and `#194` is what that arrangement costs: a
+      // stayed exactly right, and it is known what that arrangement costs: a
       // named absence turned back into a sentinel one call from where the
       // shape existed to forbid it.
       if (reading.kind !== 'read')

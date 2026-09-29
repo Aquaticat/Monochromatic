@@ -11,8 +11,8 @@
  right rule pointed the wrong way, since there the ORIGINAL is what carries
  the line structure and the archive page is what merged it. A translator
  obeying the rule unmerges, and its judge had been handed a reason to prefer
- the merged rival. Measured under `#162`: 211 slices across 34 entries of the
- 92 pairs are governed.
+ the merged rival. Measured when wrapping moved before judging:
+ 211 slices across 34 entries of the 92 pairs are governed.
  
  WHY IT IS NOT ENOUGH TO TEST THE HALVES. `translate-judge.unit.test.ts` and
  `translate-stage.unit.test.ts` each carry a governed and an ungoverned round,
@@ -28,7 +28,7 @@
  `TRANSLATE_LINE_STRUCTURE_CRITERION`, its TRANSLATOR sheets carry
  `TRANSLATE_LINE_STRUCTURE_RULE`, and an ungoverned document's sheets carry
  neither. The translator half is the control that makes the judge half
- legible: it is the wiring `#150` landed and this fixture's governance is
+ legible: it is the verse-rule wiring and this fixture's governance is
  only a claim until something production decides agrees with it.
  
  READING THE RETURN VALUE WOULD PROVE NOTHING. A judging window was once built,
@@ -383,8 +383,8 @@ await describe({
     },),
 
     it({
-      name: 'DERIVES THE VERDICT FROM THE DOCUMENT AND SHOWS IT TO THE TRANSLATORS, which is the wiring '
-        + '`#150` landed and the control the judge cases need. Nothing here writes the flag out by hand: '
+      name: 'DERIVES THE VERDICT FROM THE DOCUMENT AND SHOWS IT TO THE TRANSLATORS, which is the verse-rule '
+        + 'wiring and the control the judge cases need. Nothing here writes the flag out by hand: '
         + 'the driver reads it off the prepared pair, so a translator sheet carrying the rule proves this '
         + 'document really is governed as production decides governance',
       fn: async () => {

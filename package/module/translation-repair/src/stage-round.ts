@@ -302,7 +302,7 @@ export async function runGatherRound<ValueT,>(
   /**
    When this round dispatched, so its own line can say how long it took.
    
-   THE RUN COULD NOT SAY WHERE ITS HOURS WENT. `#215` found that the only
+   THE RUN COULD NOT SAY WHERE ITS HOURS WENT. It was found that the only
    per-call line fires at completion, so a log carries no round boundary at
    all: nothing separates the time a round spent gathering from the time it
    spent waiting on a straggler after quorum already stood. That second

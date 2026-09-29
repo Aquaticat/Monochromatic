@@ -7,7 +7,7 @@ import type { ContainerSpan, } from './unwrap-container.ts';
 
 //region Container extents
 // A block's extent used to be its mdast position and nothing else, and that is
-// the whole of `#154`: a container's opening and closing tags belong to no
+// the whole defect: a container's opening and closing tags belong to no
 // node, so every range minted from a first node's start and a last node's end
 // drew its boundary straight through them. TWO independent sites mint such
 // ranges, section chunking in `chunk-document.ts` and slice carving in

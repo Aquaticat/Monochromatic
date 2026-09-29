@@ -132,7 +132,7 @@ await describe({
 
     it({
       name: 'renders the standings, then the answered-but-unslated seat, then the silent seat, '
-        + 'each on its own line (#263)',
+        + 'each on its own line',
       fn: async () => {
         /**
          Report for one voted round on the first of two slices, at a seat

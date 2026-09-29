@@ -4,7 +4,7 @@ import { readAttemptOutcome, } from './entry-reattempt.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
 
 //region Entry attempt queue
-// The loop `#196` turns on, lifted out of `corpus-pass.ts` so it can be tested
+// The re-attempt loop, lifted out of `corpus-pass.ts` so it can be tested
 // without a corpus, a provider, or seven hours.
 //
 // `entry-reattempt.ts` decides whether ONE attempt earned another. This drives

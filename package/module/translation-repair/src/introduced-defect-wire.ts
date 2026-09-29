@@ -300,7 +300,7 @@ export type PriorIssueDisclosure = 'rendered' | 'withheld';
  measure the production condition.
  
  ONE CONSTANT, so an instrument's "production" arm cannot drift from what the
- pass sends. `#247` found two instruments labelling an arm "shown" while
+ pass sends. Two instruments were once found labelling an arm "shown" while
  relying on a default that had meanwhile flipped to `withheld`, so their
  closing notes described a prompt effect that was a screen effect.
  

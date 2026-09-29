@@ -110,7 +110,7 @@ export type HyperModelInfo = {
   /**
    Ceiling this model will emit, from `max_output_tokens` on the catalog.
    
-   TWO OF THESE SIT BELOW the 32000 answer bound `#156` measured, so the bound
+   TWO OF THESE SIT BELOW the measured 32000 answer bound, so the bound
    has to be read per model rather than globally: `gpt-oss-120b` stops at
    13107 and `kimi-k3` at 16000. A request that asks for more than a model can
    emit buys a truncation and reports it as a schema mismatch, which sends a
@@ -151,7 +151,7 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = ser
 },);
 
 /**
- Bound `#156` measured for answer volume, in tokens.
+ Measured bound for answer volume, in tokens.
  
  KEPT HERE BESIDE THE PER-MODEL CEILINGS it has to be reconciled against,
  rather than imported from the guard that enforces it, so a reader comparing
@@ -163,7 +163,7 @@ const MEASURED_ANSWER_BOUND = 32_000;
  How many tokens to ask one model for, honouring both bounds.
  
  ONE-SIDED ON PURPOSE: this only ever lowers the ask. A model that can emit
- more than `#156` measured is still held to the measured bound, because that
+ more than was measured is still held to the measured bound, because that
  bound is about what an answer should be rather than what a model can do.
  
  @param modelId - model the request is for
@@ -248,8 +248,8 @@ export type HyperOriginNamesAreServed = HyperOriginRosterId extends HyperServedI
 
 /**
  The proof above, instantiated, so a roster label with no catalog row stops
- the type check instead of surfacing at run time as one lost voice per call
- (`#241`): when the conditional resolves to `never`, `true` is not assignable
+ the type check instead of surfacing at run time as one lost voice per call:
+ when the conditional resolves to `never`, `true` is not assignable
  and `lint:types` fails on this line, naming the drift.
  
  @example

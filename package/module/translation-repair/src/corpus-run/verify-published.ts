@@ -49,7 +49,7 @@ import {
 //
 //   Does every page carry the wording its artifact says would ship, and is it
 //   as long as the archive plus every change the slices made? That is the
-//   question `#194` was a failure of: the publisher handed the assembler a blank
+//   question a past failure turned on: the publisher handed the assembler a blank
 //   rendering, and only a guard inside the splice noticed.
 //
 // THE SECOND HALF OF THAT QUESTION WAS ADDED AFTER A CONTROL FAILED. Checking

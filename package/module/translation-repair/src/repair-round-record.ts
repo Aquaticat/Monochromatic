@@ -343,7 +343,7 @@ export function describeJudgedRound<ValueT,>(
 /**
  Records an envelope's sole proposal being adopted without a vote.
  
- RECORDED AT ALL because `#239` found the sole path pushing no round, so
+ RECORDED AT ALL because the sole path was found pushing no round, so
  `issue-authors` read no author for any issue such an envelope served: a
  checker who wrote that text voted on it at full weight and the artifact said
  nobody wrote it. The record is the same slate shape a judged round carries,

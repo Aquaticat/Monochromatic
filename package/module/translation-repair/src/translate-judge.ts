@@ -177,7 +177,7 @@ export async function judgeTranslateSlate(
     /**
      Whether the enclosing chunk is governed by the verse rule.
      
-     REQUIRED RATHER THAN OPTIONAL, which is the whole lesson of `#176`. The
+     REQUIRED RATHER THAN OPTIONAL, which is the lesson the consolidation taught. The
      consolidation producers carried this same fact as an optional field for a
      day, no caller ever set it, and every verse passage was quietly told it
      was prose. An optional flag here would fail exactly that way again, and
@@ -281,7 +281,7 @@ export async function judgeTranslateSlate(
      Whether the slate is empty because nobody was heard, rather than because
      everybody was heard and proposed nothing usable.
      
-     TWO DIFFERENT FACTS WEARING ONE WORD until `#198`. Translators that
+     TWO DIFFERENT FACTS WEARING ONE WORD until the reason split. Translators that
      answered and proposed nothing a guard would accept are evidence about
      THE PASSAGE, and the gap they leave is one a re-run would probably meet
      again. A slate where every voice was lost is evidence about THE HOUR,

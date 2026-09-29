@@ -433,7 +433,7 @@ await describe({
         + 'ON PURPOSE. This entry is undecided with no consolidation, so the archive stands at every '
         + 'slice that has one: two lanes proposed changes and, as things stand, a document would '
         + 'carry none of them. Read beside selection=pending-human-decision on the same line, that '
-        + 'is #175 stated in the log rather than left to inference',
+        + 'is the pending decision stated in the log rather than left to inference',
       fn: async () => {
         /**
          Its fields.

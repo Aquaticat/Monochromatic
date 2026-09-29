@@ -26,7 +26,7 @@ await describe({
   name: foldInvisibleVariants.name,
   children: [
     it({
-      name: 'folds the non-breaking hyphen to a hyphen and names it with its count (#264)',
+      name: 'folds the non-breaking hyphen to a hyphen and names it with its count',
       fn: async () => {
         const folded = foldInvisibleVariants({ text: 'A non\u2011binary, part\u2011time shop cat.', },);
 

@@ -1,7 +1,7 @@
 /**
  Tests for whether a run left anything to verify, and how it says so.
  
- `#217` IS THE WHOLE POINT. `verify-published.ts` answered an absent
+ THIS IS THE WHOLE POINT. `verify-published.ts` answered an absent
  artifacts directory with an empty list and printed the absence on stderr, so
  a directory that was never a run printed the same stdout summary as a run
  whose every page agreed, and left the same exit code behind. Anything using
@@ -381,7 +381,7 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a run that settled no entry, which is `#217` itself: an '
+      name: 'REFUSES a run that settled no entry, which is the original defect itself: an '
         + 'empty run used to report exactly what a perfect run reports',
       fn: async () => {
         const verdict = whatThereIsToVerify({

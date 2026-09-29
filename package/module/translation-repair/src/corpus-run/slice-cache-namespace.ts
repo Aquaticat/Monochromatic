@@ -345,7 +345,7 @@ export async function loadNamespacedSlices<ValueT,>(
         );
       else
         // Said out loud, because a record the guard refuses is recomputed and
-        // paid for again, and since `#238` a refused record may be a settlement
+        // paid for again, and a refused record may be a settlement
         // reached while a stage heard nobody rather than a shape drift.
         rl.warn(`${namespace.marker}: ${name} is not a resumable value for this lane; it will be recomputed`,);
     }

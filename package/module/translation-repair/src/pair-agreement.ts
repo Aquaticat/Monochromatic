@@ -6,7 +6,7 @@ import {
 //region Pair agreement
 // WHICH PAIRS THE ROSTER AGREED ON, counted over every usable voice.
 //
-// `#245`: both pairing stages tallied votes over every reply but took their
+// Both pairing stages once tallied votes over every reply but took their
 // candidates from the FIRST usable reply alone, so a correspondence two other
 // voices named was dropped whenever the first voice omitted it, and which
 // pairs survived depended on which seat answered usably first. Agreement is

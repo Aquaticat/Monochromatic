@@ -12,7 +12,7 @@ import {
 // Final page must retain parseable metadata under explicit reviewed slice.
 //
 // STRUCTURAL CHECKS ONLY, by the owner's decision of 2026-09-02. The rule of
-// 2026-08-28 ("review visible front matter", written for #269, archives whose
+// 2026-08-28 ("review visible front matter", written for archives whose
 // metadata was never translated) refused a page whose metadata equalled the
 // archive's while the source's differed, reading that as nobody having
 // reviewed the slice. Chinese and English metadata always differ, so the

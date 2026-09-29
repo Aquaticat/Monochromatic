@@ -416,7 +416,7 @@ await describe({
           budgets,
         },);
 
-        // THE WHOLE REASON `#199` EXISTS: a pass exhausted one provider's
+        // THE WHOLE REASON ROUTING EXISTS: a pass exhausted one provider's
         // weekly credit and 866 of 875 lost voices carried this one status.
         // Retrying the exhausted provider never succeeds, and refusing to
         // settle turns a budget problem into holes in the deliverable.
@@ -530,7 +530,7 @@ await describe({
 
     it({
       name: 'WAITS OUT THE SHORTEST HOLD when every provider is held out by refusals, then routes '
-        + 'to the one that came back, instead of ending the run: the pin pass of 2026-09-02 (#474) '
+        + 'to the one that came back, instead of ending the run: the pin pass of 2026-09-02 '
         + 'failed every remaining entry inside one second on two holds while both meters read wet',
       fn: async () => {
         const { callers, called, } = stubProviders({},);
