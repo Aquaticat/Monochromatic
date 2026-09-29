@@ -781,7 +781,19 @@ including `AGENTS.md`;
 if no relevant instruction applies,
 the user specifies no outcome for that case.
 The previous prompt-versus-deny menu incorrectly excluded policy-derived authority.
-The contract is being reconciled with this correction before final shared-understanding confirmation.
+The authority correction is recorded in the contract and independently reviewed.
+The remaining interview gate is final shared-understanding confirmation.
+After confirmation,
+continue the private contract and real-consumer qualification work:
+instruction applicability,
+human provenance,
+effects,
+lifecycle,
+finalization,
+host-level deadline handling,
+and replacement parity.
+Production stays unchanged;
+no cutoff or completed qualification result is implied by that confirmation.
 Other contract and qualification branches remain open;
 final shared-understanding confirmation is still required.
 Laya work and the original reserved corpus remain outside this resumption.

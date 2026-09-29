@@ -111,7 +111,15 @@ not changed in production.
 The request/prose studies remain limited semantic evidence;
 sending complete policy bytes did not qualify governing-instruction application.
 Keep frozen labels and completed phases unchanged.
-Task #3 remains active while reconciling this correction and preparing final shared-understanding confirmation.
+The correction is recorded and independently reviewed;
+rendered Markdown,
+scoped lint,
+a scoped stale-Q21-reference search,
+and unchanged-policy hashing passed at commit `14aef0b4a`.
+Task #3 remains active pending final shared-understanding confirmation.
+The next work after confirmation is the private contract and real-consumer qualification,
+including the newly explicit governing-instruction path,
+not production mutation or cutoff selection.
 The [current design record](../planning/pi-auto-mode-axioms.md#resumed-integration-interview)
 is authoritative over superseded questions in historical checkpoints.
 No production implementation,
