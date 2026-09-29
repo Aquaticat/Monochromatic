@@ -1493,7 +1493,7 @@ the key naming the starting roster)
 had guards that could not fail,
 and `5f64cbe91` makes each fail,
 all three caught on the second run.
-X16 corrects one line of the measurement above:
+X16 corrects one line of the `h16-count.mjs` measurement:
 `Z60` opens a quoted line,
 and within a page each name-like token ships in one casing.
 
@@ -3962,7 +3962,7 @@ the comment-wording control survives.
 
 Status:
 fixed or closed,
-item by item below (2026-09-28).
+item by item in this entry (2026-09-28).
 Found in the audit:
 glosses of works outside the panel's apparatus list;
 a supplied object outside its forced-difference line;
@@ -4040,7 +4040,7 @@ a scale line or the carve-out each fails a guard.
 Expected but unmeasured (QAB):
 defining major and critical may move how many accuracy issues the panel settles at major or worse,
 which the archive dispute reads;
-the next run's artifacts measure it against the census above.
+the next run's artifacts measure it against the `l5-neutral-census.mjs` census.
 Because an accepted addition can no longer settle at neutral,
 the dispute rule's "addition at any severity" now means any severity from minor up in effect
 (`design-commitments.md` records this as a quality refinement of the 2026-09-26 ruling).
@@ -4847,7 +4847,7 @@ Roster values were computed from `src/corpus-run/run-config.ts` itself:
 `RUN_READER_MODELS` 6,
 7 wide seats,
 8 late judges.
-Paths below are package-relative.
+Paths in this section are package-relative.
 
 ### D1: the README says the editor roster check still requires disinterested judges
 
@@ -5228,7 +5228,7 @@ Emphasis became sentence case,
 bold where the stress carries meaning;
 the three seat states `producer-silence.ts` prints became code spans in prose rather than labelled bullets.
 A probe over every package Markdown file,
-not only the list below,
+not only the files this finding named,
 found four more in `doc/repetition.md` and four in this ledger,
 fixed in the same commit.
 Kept:
@@ -9276,7 +9276,7 @@ a leftover check chained to the build,
 and twice during X17:
 `git diff | rg --count <long lines> ; true`,
 to force a zero exit when nothing matched,
-the same form recorded above once already,
+the same form as the `<test> | rg ... ; true` and S5 instances in this entry,
 and `rg --count FAIL log ; rg --count PASS log` reading the suite,
 where `rg --count FAIL log || true` then a second call is the recorded form.
 Once more during audit area six (B14),
