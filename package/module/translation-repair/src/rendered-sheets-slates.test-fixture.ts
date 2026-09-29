@@ -26,6 +26,9 @@ import {
   translatedSlateCriteria,
   translateSelectionCriteria,
   translateSelectionTask,
+  translateSlateEvidence,
+  repairSelectionSourceEvidence,
+  type SelectEvidence,
 } from '../dist/final/node/index.mjs';
 
 import {
@@ -33,6 +36,7 @@ import {
   SOURCE,
   ARCHIVE,
   REPAIR,
+  IDENTITY,
   REFERENCES,
   ARCHIVE_QUOTE,
   VERSE_SOURCE,
@@ -41,6 +45,51 @@ import {
 } from './rendered-sheets-texts.test-fixture.ts';
 
 //region Slate sheets
+
+/**
+ The evidence `judgeTranslateSlate` sends a translate slate, with the
+ fixture's declared names and references (ledger B28).
+
+ @param sourceText - original the slate renders
+
+ @returns Evidence entries, in the order the judges read them
+
+ @example
+ ```ts
+ const evidence = translatedEvidence({ sourceText: SOURCE, },);
+ ```
+ */
+function translatedEvidence({ sourceText, }: { readonly sourceText: string; },): readonly SelectEvidence[] {
+  return translateSlateEvidence({
+    sourceText,
+    identityContext: IDENTITY,
+    referenceContext: REFERENCES,
+  },);
+}
+
+/**
+ The evidence `editor-ensemble.ts` sends a repair slate, with the fixture's
+ declared names and references (ledger B28).
+
+ @returns Evidence entries, the original first
+
+ @example
+ ```ts
+ const evidence = repairedEvidence();
+ ```
+ */
+function repairedEvidence(): readonly SelectEvidence[] {
+  return [
+    {
+      label: 'ORIGINAL (Chinese)',
+      text: SOURCE,
+    },
+    ...repairSelectionSourceEvidence({
+      identityContext: IDENTITY,
+      referenceContext: REFERENCES,
+    },),
+  ];
+}
 
 /**
  Every refinement mode, each of which asks its own slate.
@@ -96,10 +145,7 @@ function typedDecisionText(): string {
   const decision = selectDecision({
     task: TRANSLATE_SELECTION_TASK,
     criteria: translateSelectionCriteria({ lineStructured: false, },),
-    evidence: [{
-      label: 'ORIGINAL (Chinese)',
-      text: SOURCE,
-    },],
+    evidence: translatedEvidence({ sourceText: SOURCE, },),
     rendered: [
       ARCHIVE,
       REPAIR,
@@ -124,13 +170,6 @@ function typedDecisionText(): string {
  ```
  */
 export function slateSheets(): readonly RenderedSheet[] {
-  /**
-   The original as every slate's first evidence.
-   */
-  const original = [{
-    label: 'ORIGINAL (Chinese)',
-    text: SOURCE,
-  },];
   return [
     {
       name: 'envelope slate',
@@ -138,7 +177,7 @@ export function slateSheets(): readonly RenderedSheet[] {
         messages: buildCandidateSelectMessages({
           task: ENVELOPE_SELECTION_TASK,
           criteria: ENVELOPE_SELECTION_CRITERIA,
-          evidence: original,
+          evidence: repairedEvidence(),
           rendered: [
             ARCHIVE_QUOTE,
             TENSE_REGION.editorAfter,
@@ -154,7 +193,7 @@ export function slateSheets(): readonly RenderedSheet[] {
         messages: buildCandidateSelectMessages({
           task: CHUNK_SELECTION_TASK,
           criteria: CHUNK_SELECTION_CRITERIA,
-          evidence: original,
+          evidence: repairedEvidence(),
           rendered: [
             ARCHIVE,
             REPAIR,
@@ -196,10 +235,7 @@ export function slateSheets(): readonly RenderedSheet[] {
               },
             ],
           },),
-          evidence: [{
-            label: 'ORIGINAL (Chinese)',
-            text: VERSE_SOURCE,
-          },],
+          evidence: translatedEvidence({ sourceText: VERSE_SOURCE, },),
           rendered: [
             'The kitten fell asleep. It dreamed of fish.',
             'The kitten fell asleep.<br/>It dreamed of fish.',
@@ -218,7 +254,7 @@ export function slateSheets(): readonly RenderedSheet[] {
             lineStructured: false,
             syntax: 'front-matter',
           },),
-          evidence: original,
+          evidence: translatedEvidence({ sourceText: SOURCE, },),
           rendered: [
             ARCHIVE,
             REPAIR,
@@ -241,6 +277,7 @@ export function slateSheets(): readonly RenderedSheet[] {
               sourceText: SOURCE,
               repairedText: REPAIR,
               referenceContext: REFERENCES,
+              identityContext: IDENTITY,
             },),
             rendered: [
               REPAIR,

@@ -16,6 +16,7 @@ import {
   HOUSE_POLICY_BLOCK,
   TRANSLATE_SELECTION_TASK,
   translateSelectionCriteria,
+  translateSlateEvidence,
 } from '../dist/final/node/index.mjs';
 import {
   type RenderedSheet,
@@ -67,6 +68,9 @@ export function renderedSheets(): readonly RenderedSheet[] {
     targetText: ARCHIVE,
     envelopes: [],
     issues: [],
+    // What `repair-editor-stage.ts` passes it (ledger S14).
+    identityContext: IDENTITY,
+    referenceContext: REFERENCES,
   },);
   /**
    Refiner exchange, whose messages the sheet joins.
@@ -210,12 +214,12 @@ export function renderedSheets(): readonly RenderedSheet[] {
         messages: buildCandidateSelectMessages({
           task: TRANSLATE_SELECTION_TASK,
           criteria: translateSelectionCriteria({ lineStructured: false, },),
-          evidence: [
-            {
-              label: 'ORIGINAL (Chinese)',
-              text: SOURCE,
-            },
-          ],
+          // The evidence `judgeTranslateSlate` sends.
+          evidence: translateSlateEvidence({
+            sourceText: SOURCE,
+            identityContext: IDENTITY,
+            referenceContext: REFERENCES,
+          },),
           rendered: [
             ARCHIVE,
             REPAIR,
@@ -251,6 +255,8 @@ export function renderedSheets(): readonly RenderedSheet[] {
           subject: {
             sourceText: SOURCE,
             candidateText: ARCHIVE,
+            // What `corpus-run/rendering-audit-settled-buy.ts` passes a page that declares names.
+            identityContext: IDENTITY,
           },
         },),
       },),
