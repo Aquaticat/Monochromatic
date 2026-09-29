@@ -40,7 +40,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  buildRefineSelectionContext,
   messageText,
+  type RefineStageMode,
   refineSettledSlices,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -173,24 +175,48 @@ const OUTCOMES: readonly ChunkRepairOutcome[] = [
 ];
 
 /**
- Runs the step and returns every sheet its rewriters were asked.
- 
- @param identityContext - declared names to thread, absent for the control
- 
- @returns User sheets of the rewriter exchanges, in order
- 
+ Sheets one run of the step asked, by who was asked.
+
  @example
  ```ts
- const sheets = await rewriterSheets({ identityContext: IDENTITY_CONTEXT, },);
+ const sheets: StepSheets = { rewriter: [], judges: [], };
  ```
  */
-async function rewriterSheets(
+type StepSheets = {
+  /**
+   User sheet of every rewriter exchange, in order.
+   */
+  readonly rewriter: readonly string[];
+  /**
+   Whole text of every judge exchange choosing among the rewrites, in order.
+   */
+  readonly judges: readonly string[];
+};
+
+/**
+ Runs the step and returns every sheet its rewriters and judges were asked.
+
+ @param identityContext - declared names to thread, absent for the control
+
+ @returns Sheets of the rewriter and judge exchanges, in order
+
+ @example
+ ```ts
+ const { rewriter, judges, } = await stepSheets({ identityContext: IDENTITY_CONTEXT, },);
+ ```
+ */
+async function stepSheets(
   { identityContext, }: { readonly identityContext?: string; },
-): Promise<readonly string[]> {
+): Promise<StepSheets> {
   /**
    User sheet of every rewriter exchange, in order.
    */
   const asked: string[] = [];
+  /**
+   Whole text of every judge exchange, in order: the slate carries its
+   evidence in the user message and its rules in the system one.
+   */
+  const judged: string[] = [];
 
   /**
    Client scripting each stage by the schema it asks for.
@@ -217,6 +243,13 @@ async function rewriterSheets(
       const content = (last === undefined) ? '' : messageText({ message: last, },);
       if (stage === 'refine_report')
         asked.push(content,);
+      if (stage === 'candidate_ballot') {
+        judged.push(request.messages
+          .map(function textOf(message,): string {
+            return messageText({ message, },);
+          },)
+          .join('\n',),);
+      }
 
       /**
        Scripted reply for the stage.
@@ -276,7 +309,10 @@ async function rewriterSheets(
     l,
   },);
 
-  return asked;
+  return {
+    rewriter: asked,
+    judges: judged,
+  };
 }
 
 //endregion Fixtures
@@ -291,7 +327,7 @@ await describe({
         /**
          Sheets the rewriters were asked with the block threaded.
          */
-        const sheets = await rewriterSheets({ identityContext: IDENTITY_CONTEXT, },);
+        const { rewriter: sheets, } = await stepSheets({ identityContext: IDENTITY_CONTEXT, },);
 
         expect(sheets.length,).toBeGreaterThan(0,);
         for (const sheet of sheets) {
@@ -302,18 +338,109 @@ await describe({
     },),
     it({
       name: 'SENDS NO BLOCK AT ALL when the document declares nothing, which is the control that '
-        + 'makes the case above legible: a step pasting the heading unconditionally would satisfy it',
+        + 'makes the HANDS THE DECLARED NAMES DOWN case legible: a step pasting the heading '
+        + 'unconditionally would satisfy it',
       fn: async () => {
         /**
          Sheets the rewriters were asked with nothing declared.
          */
-        const sheets = await rewriterSheets({},);
+        const { rewriter: sheets, } = await stepSheets({},);
 
         expect(sheets.length,).toBeGreaterThan(0,);
         for (const sheet of sheets) {
           expect(sheet.includes(IDENTITY_FENCE,),).toBe(false,);
           expect(sheet.includes(IDENTITY_MARK,),).toBe(false,);
         }
+      },
+    },),
+    it({
+      name: 'HANDS THE DECLARED NAMES to the judges choosing among the rewrites too (ledger B28): the '
+        + 'rewriter was told a handle survives exactly, and a judge not told so can prefer a rewrite '
+        + 'that changes it',
+      fn: async () => {
+        /**
+         Judge sheets with the block threaded, and with nothing declared.
+         */
+        const [declared, bare,] = await Promise.all([
+          stepSheets({ identityContext: IDENTITY_CONTEXT, },),
+          stepSheets({},),
+        ],);
+
+        expect(declared.judges.length,).toBeGreaterThan(0,);
+        expect(bare.judges.length,).toBeGreaterThan(0,);
+        expect({
+          declared: declared.judges.every(function carries(sheet,): boolean {
+            return sheet.includes(IDENTITY_MARK,);
+          },),
+          bare: bare.judges.some(function carries(sheet,): boolean {
+            return sheet.includes(IDENTITY_MARK,);
+          },),
+        },).toEqual({
+          declared: true,
+          bare: false,
+        },);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${buildRefineSelectionContext.name} (ledger B28)`,
+  children: [
+    it({
+      name: 'GIVES the refine judges the declared names as labelled evidence in every mode, and none when the '
+        + 'page declares nothing',
+      fn: async () => {
+        /**
+         One mode of each kind the refine stage asks.
+         */
+        const modes: readonly RefineStageMode[] = [
+          { kind: 'comparative', },
+          {
+            kind: 'required-naturalness-correction',
+            findings: [{
+              paragraph: 1,
+              problem: 'Reads as a calque.',
+            },],
+          },
+          {
+            kind: 'objection-correction',
+            groups: [{
+              origin: 'consolidation gate',
+              objections: ['The tense shifts mid-paragraph.',],
+            },],
+          },
+        ];
+        /**
+         Per mode: whether the declared names reach the evidence with them, and without.
+         */
+        const readings = modes.map(function readingOf(mode,): string {
+          /**
+           Evidence with the page's declared names.
+           */
+          const declared = buildRefineSelectionContext({
+            mode,
+            sourceText: SOURCE_PARAGRAPH,
+            repairedText: SMOOTH_TEXT,
+            identityContext: IDENTITY_CONTEXT,
+          },).evidence;
+          /**
+           Evidence for a page that declares nothing.
+           */
+          const bare = buildRefineSelectionContext({
+            mode,
+            sourceText: SOURCE_PARAGRAPH,
+            repairedText: SMOOTH_TEXT,
+          },).evidence;
+          return `${mode.kind}: declared ${String(declared.some(function namesThem(entry,): boolean {
+            return entry.label.startsWith('DECLARED NAMES',) && entry.text.includes(IDENTITY_MARK,);
+          },),)}, bare ${String(bare.some(function namesAny(entry,): boolean {
+            return entry.label.startsWith('DECLARED NAMES',);
+          },),)}`;
+        },);
+        expect(readings,).toEqual(modes.map(function expected(mode,): string {
+          return `${mode.kind}: declared true, bare false`;
+        },),);
       },
     },),
   ],
