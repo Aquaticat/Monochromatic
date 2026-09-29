@@ -20,7 +20,7 @@
 // runs and handles, so two readings of a Chinese picture carry none. Single
 // characters fail the other way: two unrelated English texts share most of the
 // alphabet, so single-character overlap runs near one on a wrong pair. Trigrams
-// are starved by neither, which is why the threshold below is stated over them.
+// are starved by neither, which is why `CORROBORATION_TRIGRAM_SHARE` is stated over them.
 //
 // MEASURED, WITH ITS CONTROL. Over five pictures each read by both models, and
 // every cross-pair as the control:

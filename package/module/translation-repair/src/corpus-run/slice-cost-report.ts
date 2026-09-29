@@ -378,7 +378,7 @@ function printSpread({ rows, }: { readonly rows: readonly SliceCostRow[]; },): v
   console.log(`  ratio     ${ratio}x`,);
   console.log(
     '  A large ratio with the DEARER slice no larger than the cheaper one refutes'
-      + ' size as the driver outright, whatever the bands above show, and points at'
+      + ' size as the driver outright, whatever this report\'s bands show, and points at'
       + ' how much each slice turned out to need instead.',
   );
 }

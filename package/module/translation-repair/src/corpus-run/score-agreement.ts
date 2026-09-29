@@ -262,7 +262,7 @@ async function reportGrades(): Promise<void> {
   else
     console.log(
       'NOTE no manifest found beside this sheet, so nothing proves the '
-        + 'pre-grades below describe the same draw. Both files are joined by '
+        + 'pre-grades this report reads describe the same draw. Both files are joined by '
         + 'POSITION and neither prints an issue id.',
     );
 

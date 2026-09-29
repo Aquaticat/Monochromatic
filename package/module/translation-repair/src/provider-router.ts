@@ -313,7 +313,7 @@ export function createRoutingClient(
       },);
 
     // THE SLOT IS TAKEN HERE, NOT AT DISPATCH, and there must be no `await`
-    // between reading the ledger above and this line. Two calls choosing at
+    // between reading `ledger.saturated` and this line. Two calls choosing at
     // once both resume from the budget read before either has been sent, so a
     // count that only rose at dispatch showed both of them a free slot and put
     // both on the same provider. Counting at the decision closes that, because

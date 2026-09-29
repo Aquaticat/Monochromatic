@@ -269,7 +269,7 @@ export function scoreGradeAgreement(
 
   // COUNT ALONE IS NOT ENOUGH: a pre-grade file indexed from zero, or shifted
   // by one, has the right size and misses every sheet position, and every
-  // lookup below would then read as a disagreement rather than as a file fault.
+  // `byIndex` lookup would then read as a disagreement rather than as a file fault.
   for (const item of human) {
     if (!byIndex.has(item.index,))
       throw new StatedRefusalError({

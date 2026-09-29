@@ -203,7 +203,7 @@ and whether the owner's allowlist carries the model:
 Every roster model has at least seven ZDR endpoints,
 so `zdr: true` removes no model.
 
-Spelling map used by the pricing below and to be carried into the catalog:
+Spelling map used by this section's pricing and to be carried into the catalog:
 
 - `hf:moonshotai/Kimi-K3` and `kimi-k3` -> `moonshotai/kimi-k3`
 - `minimax-m3` -> `minimax/minimax-m3`
@@ -487,7 +487,8 @@ one OpenAI-shaped path is one reader to maintain.
 Qwen3.8-27B's chat median (4856 ms on a short prompt) sits in the band of the other models,
 unlike its Hyper serving,
 so its withholding rule stays "served by Hyper" and it is seated when OpenRouter would serve it;
-the live pass below is where that is checked on corpus-sized prompts.
+the first live pass ("The first live pass with OpenRouter in the order")
+is where that is checked on corpus-sized prompts.
 
 Width:
 32 concurrent chat completions per model on `deepseek/deepseek-v4-flash-0731` (32 of 32 conformant,
@@ -3609,7 +3610,7 @@ its first two calls went to `gemma-4-26b-a4b` and `gpt-oss-120b` at 21:47:27 UTC
 and neither seat touched Hyper all pass.
 `SEATS DARK` names Qwen3.8-27B,
 thrown 30 of 30,
-which is the hold below and not the model.
+which is the `markRefused` hold on Hyper and not the model.
 
 ### The twelfth class working, and what it uncovered
 
@@ -13255,7 +13256,7 @@ read it on `mikaela16` before calling it a class.
 `mikaela14` (entry `mikaela_khara`,
 frozen `0ab0abdd8`,
 pid 691210) was launched at 04:53 UTC 2026-09-24 and killed at 05:05 UTC
-under always-kill-and-relaunch once the chain arm below landed,
+under always-kill-and-relaunch once the chain arm (`caac222a6`) landed,
 12 min in,
 in the consolidation at chunk 26 of 34,
 no tally,
@@ -17074,7 +17075,7 @@ Synthetic dry throughout,
 glm-5.3 dark (asked 585,
 threw 585).
 No page and no artifact were written;
-the reading below comes from the run log and the slice cache.
+this reading comes from the run log and the slice cache.
 
 The stop:
 `TALLY ... error=slice 89 did not meet absolute naturalness floor`,

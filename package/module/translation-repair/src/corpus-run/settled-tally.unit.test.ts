@@ -214,7 +214,7 @@ function catArtifact(): SettledArtifact {
     ],
     laneSelection: { kind: 'pending-human-decision', },
 
-    // A STATED ABSENCE, which the contract requires and the cast below was
+    // A STATED ABSENCE, which the contract requires and this fixture's type cast was
     // hiding: leaving it out made this fixture claim a shape no pipeline
     // writes, and the first reader to reach for the field found undefined.
     consolidation: { kind: 'not-run', },

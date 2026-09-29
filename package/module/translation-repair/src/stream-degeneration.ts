@@ -43,7 +43,7 @@ const WINDOW_CHARS = 64;
 const WINDOW_STRIDE = 32;
 
 /**
- Windows kept in the trailing sample, which at the stride above is about
+ Windows kept in the trailing sample, which at `WINDOW_STRIDE` is about
  131000 characters of recent text.
  
  TRAILING RATHER THAN CUMULATIVE so late-onset degeneration is caught. A
@@ -81,7 +81,7 @@ const TRAILING_WINDOWS = 4_096;
 const MIN_WINDOWS_FOR_VERDICT = 4_096;
 
 /**
- The bar above in characters rather than windows, exported so a second
+ `MIN_WINDOWS_FOR_VERDICT` in characters rather than windows, exported so a second
  detector fed the same generated text can be gated on the identical
  artifact-evidence bar rather than defining an independent one that could
  drift from it.

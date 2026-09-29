@@ -333,7 +333,7 @@ It ran the named control,
 on the definition fixed here,
 and recorded 3 of 77 stages against 11 of 80,
 or 0.039 against 0.138.
-Nothing below displaces it.
+Nothing in the second reading displaces it.
 
 What follows is a second reading taken from a different population:
 the evening corpus pass,

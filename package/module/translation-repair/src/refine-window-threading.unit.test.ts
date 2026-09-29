@@ -408,7 +408,7 @@ async function probeSheets(
 
   // DISTINCT SHEETS, because the probe asks EVERY prober in the roster the same
   // sheet and the roster holds three. Keeping the duplicates would make the
-  // one-sheet-per-slice attribution below refuse on a run that behaved
+  // one-sheet-per-slice attribution refuse on a run that behaved
   // perfectly, and loosening that attribution instead would give up the check
   // that a sheet belongs to the slice it claims.
   return [...new Set(probed,),].map(function split(sheet,): ProbeSheet {

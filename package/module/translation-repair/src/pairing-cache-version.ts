@@ -59,7 +59,7 @@
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
- accounts above name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
+ accounts in this TSDoc name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
 
  @example
  ```ts

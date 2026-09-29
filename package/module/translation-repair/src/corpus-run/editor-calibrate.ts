@@ -431,7 +431,7 @@ async function main(): Promise<void> {
   /**
    What every slice produced, IN SAMPLE ORDER rather than completion order.
    
-   ORDER MATTERS HERE AND NOWHERE ELSE IN THE RUN. Every standing below is
+   ORDER MATTERS HERE AND NOWHERE ELSE IN THE RUN. Every standing this command reports is
    computed off this array, so a report that depended on which slice happened
    to finish first would not be comparable between two runs of one sample,
    which is exactly what the overlap dial measures. `Promise.all` keeps input

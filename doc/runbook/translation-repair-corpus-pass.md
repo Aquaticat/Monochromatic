@@ -504,7 +504,7 @@ Each is the exact string the log carries.
 When the run has exited,
 check its output rather than its log.
 
-### Three exit codes every command below can leave
+### Three exit codes every command in this runbook can leave
 
 Each command has its own verdicts in `1` through `3`,
 listed with it.

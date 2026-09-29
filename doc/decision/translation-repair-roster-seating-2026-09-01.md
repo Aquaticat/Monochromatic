@@ -299,7 +299,7 @@ the owner chose to seat the judge per provider rather than drop it
 `corpus-run/run-seats.ts`).
 The seat is
 withheld while Synthetic is dry and sits while Synthetic serves it;
-the evidence below stands as the
+the evidence bullets of this addendum stand as the
 record of why.
 
 Dropped under the owner's standing authorisation ("I authorize you to drop any model from any role,

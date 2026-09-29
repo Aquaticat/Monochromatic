@@ -187,7 +187,7 @@ export function readImageSource(
    Media type, which every part after the first qualifies.
    
    DEFAULTED because a split always yields a first element and the type cannot
-   say so. An empty media type is refused just below either way, so the default
+   say so. An empty media type is refused by the `mediaType.length === 0` check either way, so the default
    changes no outcome and asserts nothing.
    */
   const [mediaType = '',] = parameters;

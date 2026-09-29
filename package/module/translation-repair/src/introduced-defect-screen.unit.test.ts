@@ -430,7 +430,8 @@ await describe({
     it({
       name: 'still DISCOUNTS a removal claim whose dropped wording sits INSIDE '
         + 'the prior quote, since removing the phrase the critic objected to is '
-        + 'what the repair was for. Without this the fix above would just turn '
+        + 'what the repair was for. Without this the "KEEPS a removal claim whose dropped wording '
+        + 'CONTAINS the prior quote" fix would just turn '
         + 'the suppression off and count every licensed removal as damage',
       fn: async () => {
         const [tally,] = screenIntroducedDefects({

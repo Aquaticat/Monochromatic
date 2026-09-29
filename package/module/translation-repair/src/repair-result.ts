@@ -63,7 +63,7 @@ export type RepairTranslationResult = {
   readonly sliceCritics: readonly SliceCriticRecord[];
 
   /**
-   Slices the preparation produced, which every index below is out of.
+   Slices the preparation produced, which every index set of this result is out of.
    
    Reported because a consumer holding only this result could not otherwise
    range-check the index sets, nor tell a document with one changed slice out

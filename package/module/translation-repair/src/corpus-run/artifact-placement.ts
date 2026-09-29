@@ -237,7 +237,7 @@ export async function readPlacement(
      Artifact as parsed JSON.
      
      READ AND PARSED THROUGH ONE GUARD. Opening was a bare `readFile` until
-     2026-08-25, so a file that would not open arrived at the sink below as an
+     2026-08-25, so a file that would not open arrived at this function's `catch` as an
      ordinary `Error` whose message quotes the whole path, and the only safe
      thing to say about it was `refused by Error`. This names the filesystem
      code, and names the file by base name.

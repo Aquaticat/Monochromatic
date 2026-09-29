@@ -380,7 +380,7 @@ an invalid translated slice goes back to its author rather than being dropped.
 
 ## What the code enforced until 2026-08-15, and what it enforces now
 
-The rulings above were recorded before the code matched them.
+The rulings this record states were recorded before the code matched them.
 `assertJudgeableProducerRoster` still required two judges with no stake in any
 candidate,
 which is the rule the self-vote discount replaced.

@@ -37,7 +37,7 @@ import { carriesWord, } from './word-bounds.ts';
 // MEASURED ON WHAT WAS AVAILABLE, both directions. The six real transcriptions
 // kept from the 2026-08-19 boundary probe run 976 to 1520 bytes and contain ZERO
 // English negation words and ZERO picture words between them, so the rule cannot
-// reach them on either test. The two refusals above carry both, at 27 and 41
+// reach them on either test. The two refusals the WHY THIS IS ITS OWN SCREEN paragraph quotes carry both, at 27 and 41
 // characters. The separation is not marginal on this sample, and the length
 // bound is a second margin rather than the main one: an English transcription
 // long enough to discuss text and negate something is past it before either word

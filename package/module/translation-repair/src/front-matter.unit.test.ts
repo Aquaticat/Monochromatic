@@ -207,7 +207,7 @@ const REFUSAL_FIXTURE_WORD = 'Tuftmallow';
  Front matter whose YAML refuses, with the fixture word on the offending line.
  
  MEASURED: this refuses as `BLOCK_AS_IMPLICIT_KEY` at line 1 column 7, and the
- parser's own message reproduces the line. The control below asserts that,
+ parser's own message reproduces the line. `rawYamlRefusal`, the control, asserts that,
  because an absence assertion against a probe that cannot show a difference
  proves nothing.
  */

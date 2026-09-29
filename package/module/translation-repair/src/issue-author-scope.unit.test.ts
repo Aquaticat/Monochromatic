@@ -30,7 +30,7 @@ import {
 const WHISKER = 'adjudicated/whisker';
 
 /**
- Model that wins the envelope rounds below unless a case says otherwise.
+ Model that wins the envelope rounds in this file unless a case says otherwise.
  */
 const AUTHOR: RosterModelId = SEAT_HYPER_OPENROUTER_VISION_EDITOR;
 

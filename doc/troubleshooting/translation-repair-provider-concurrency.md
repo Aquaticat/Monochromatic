@@ -235,7 +235,7 @@ and the router refuses it at call time as `NoProviderForModelError` until the ho
 so a round counts the seat unreachable and neither asks nor waits;
 the provider's other models are served throughout.
 The OpenRouter error reference is client-rendered and could not be fetched with a plain request;
-the shape above is the live body.
+the shape this section quotes is the live body.
 
 ## Hyper's daily limit is not its hourly one (2026-09-07)
 

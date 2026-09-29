@@ -19,7 +19,7 @@ import type {
 // population on the strength of corruption, and the eligible-versus-ineligible
 // split is the one thing every number in the report rests on.
 //
-// So everything below throws rather than dropping. A dropped record produces a
+// So every decoder in this module throws rather than dropping. A dropped record produces a
 // smaller denominator and a plausible-looking rate; a throw names the artifact
 // and the path.
 

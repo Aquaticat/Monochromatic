@@ -10,7 +10,7 @@
  number from a comparison with no band under it, and every reading of the width
  question would tilt toward width mattering.
  
- SO THE COUNT IS THE ASSERTION. Both fixtures below count editor calls per
+ SO THE COUNT IS THE ASSERTION. Both fixtures in this file count editor calls per
  seat, and the seats are asymmetric on purpose: two narrow against three wide,
  so three arms cost seven calls where two would cost five. A count is the only
  evidence that separates them, because both shapes return a well-formed row.

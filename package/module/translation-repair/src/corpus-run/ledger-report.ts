@@ -356,7 +356,7 @@ async function reportLedger(): Promise<void> {
   printSummary({ reading, },);
 }
 
-// NOT WRAPPED IN A CATCH. Every failure raised below now names itself safely:
+// NOT WRAPPED IN A CATCH. Every failure this command raises now names itself safely:
 // the reads go through `readRunJson`, which refuses without quoting the file it
 // could not parse, and the listing re-raises with a code rather than a path.
 // Wrapping them under one class name would replace a message that says what

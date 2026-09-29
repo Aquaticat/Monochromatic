@@ -151,7 +151,7 @@ await describe({
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
         expect(reads,).toEqual({ quota: 1, credits: 1, openrouter: 1, },);
         // The fourth provider has no client here, so it reads as dry and is
-        // never asked; `bedrock: true` in every view below says so.
+        // never asked; `bedrock: true` in every view this file expects says so.
       },
     },),
 

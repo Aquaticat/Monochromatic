@@ -197,7 +197,7 @@ What it means concretely:
 -   The self-certification weight is a half WHEN there is any self-certification to weigh,
     which today
     there is not.
-    See the dependency below before writing code for this.
+    See "The half cannot take effect yet" before writing code for this.
 -   The number was a stated preference rather than a derived one when it was chosen.
     It has since been
     measured,

@@ -458,7 +458,7 @@ so the passage reaches the lanes as one slice and the carried verdict is never a
 Leading and trailing gaps keep their own rules (the tail bound,
 the leading skip),
 and a gap with blocks on one side alone stays bare.
-The fold above remains for the shapes it was built on:
+The 2026-09-24 neighbour fold remains for the shapes it was built on:
 an original the roster placed nothing beside while the archive rendered it inside a neighbour's span.
 
 

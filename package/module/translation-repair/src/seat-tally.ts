@@ -279,7 +279,7 @@ export function seatTallyClient(
 ): SyntheticClient {
   /**
    Typed exchange the wrapped client offers, bound once so the closure
-   below keeps the narrowing.
+   this function returns keeps the narrowing.
    */
   const innerDecide = inner.decide;
   return {

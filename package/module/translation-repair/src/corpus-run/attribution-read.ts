@@ -306,7 +306,7 @@ export type AttributionGather = {
  Reads every settled artifact into the shape the report needs.
  
  ISOLATED PER ARTIFACT, which is the difference between a loud failure and a
- useless one. The decoding below throws by design, and a bare
+ useless one. The decoding (`attribution-decode.ts`) throws by design, and a bare
  `Promise.all` over the directory would let ONE bad file reject the whole
  gather: a single truncated artifact would mean no calibration at all for
  every other entry in the run. That is the same disproportion the writer
@@ -369,7 +369,7 @@ export async function gatherAttributionEntries(
           // THE READ IS INSIDE THE GUARD TOO, not only the parse. Opening was a
           // bare `readFile` until 2026-08-25, so a file that would not open
           // arrived here as an ordinary `Error` whose message quotes the whole
-          // path, and the sink below could only answer `refused by Error`. This
+          // path, and the `catch` around it could only answer `refused by Error`. This
           // names the filesystem code instead, and names the file by base name.
           parsed: await readRunJson({
             path: join(

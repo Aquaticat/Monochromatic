@@ -148,7 +148,7 @@ async function sampleBudgets(): Promise<void> {
     return `${view[provider] ? 'avoid' : 'use'} ${provider}`;
   },);
   rl.info(
-    `SAMPLED: routing would ${verdicts.join(', ',)}. The reading logged above is the record; `
+    `SAMPLED: routing would ${verdicts.join(', ',)}. The reading this command logged is the record; `
       + 'read a collection of them with `mise run //package/module/translation-repair:meter-report`',
   );
 }

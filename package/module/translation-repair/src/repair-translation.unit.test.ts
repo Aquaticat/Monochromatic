@@ -450,7 +450,7 @@ await describe({
     it({
       name: 'CARRIES per-chunk critic calibration into the result, so the '
         + 'artifact records who was asked and who raised each claim. Without '
-        + 'this the whole attribution path ends in memory: every stage below '
+        + 'this the whole attribution path ends in memory: every stage the result is built from '
         + 'collects it correctly and nothing durable ever sees it, which is '
         + 'indistinguishable from never having built it',
       fn: async () => {

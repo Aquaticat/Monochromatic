@@ -305,7 +305,7 @@ export async function attemptStageCall<ValueT,>(
       // limit before it was complete, which the cause keeps apart (ledger
       // P10). The kinds are `refusal-shaped` and `schema-mismatch`, and nothing
       // else reaches here: a stream cut by the idle, runaway or degeneration
-      // guards throws and lands in the catch below as not answered, and a
+      // guards throws and lands in this function's `catch` as not answered, and a
       // straggler the round abandons is classified in `stage-round.ts`, never
       // here. CONFIRMED LIVE on the first recovery rounds (two calibration arms
       // of 2026-08-26): all four re-asked voices were `schema-mismatch`, three

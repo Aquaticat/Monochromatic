@@ -2,7 +2,7 @@
 
 Round three asks TWO questions and hands you TWO files to answer them in.
 This is the first round with a second sheet,
-so the ordering below is not a formality:
+so this runbook's ordering is not a formality:
 grading them out of order changes what the first number measures.
 
 ## Before you start

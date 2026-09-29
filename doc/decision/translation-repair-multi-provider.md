@@ -595,7 +595,7 @@ Seating them in that order would be reading a ranking as a result.
 The four at the bottom are consistently below the null,
 `z` between -2.18 and -2.54,
 and not one of them clears the corrected threshold either.
-Four independent models all landing below by a similar margin is suggestive,
+Four independent models all landing below the null by a similar margin is suggestive,
 but no single one of them is individually established as worse.
 
 WHAT IT WOULD TAKE.
@@ -956,7 +956,7 @@ Hyper's duty cycle has not been measured,
 so that ratio cannot be evaluated yet.
 It does not decide the seat either way,
 because it prices only the THIRD seat's marginal quality
-while the arrangement above prices the whole stage's survival,
+while the count of editors each arrangement keeps prices the whole stage's survival,
 and survival is the larger term.
 
 THE OUTAGE TABLE STOPPED BEING AN ARGUMENT THE SAME AFTERNOON.

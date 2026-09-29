@@ -8,7 +8,7 @@
  critics read. It is only left out of the record of what the slice was built
  from, which means a claim anchored to it has nowhere to land.
  
- So the coverage invariant gets asserted on every shape below rather than
+ So the coverage invariant gets asserted on every shape in this file rather than
  once, and the module's own stated exception, an entirely one-sided section,
  is asserted as the exception it is.
  

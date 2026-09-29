@@ -27,7 +27,7 @@ import { TranslationRepairInterruptedError, } from './translation-repair-interru
 //
 // SPLIT FROM THE DRIVER so the union has a home and the driver keeps its line
 // budget for the loop it exists to run. What lives here is only the shape of
-// one attempt; every decision about the document stays above.
+// one attempt; every decision about the document stays with the driver.
 //
 // THE ABORT COMES FIRST, before the refusal. Under an abort every exchange is
 // torn down and arrives as silence, so a slice with no incumbent reports

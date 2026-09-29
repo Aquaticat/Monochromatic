@@ -288,7 +288,7 @@ and nothing about the text is different in kind.
 THE CONTROL RAN FIRST,
 per `QPC`.
 Text from the same generator that never repeats scores 1.0000 and reads healthy,
-so the low ratios above are the loop rather than the fixture.
+so the low ratios this probe printed are the loop rather than the fixture.
 A first attempt at this probe padded a single sentence to length,
 which made the block internally repetitive
 and returned the same ratio for every period,
@@ -364,7 +364,7 @@ Not usually,
 but in every case,
 because every server-sent event body begins that way.
 The id itself varies by sender:
-the fixture above shows `chatcmpl-tabby`
+the fixture this section quotes shows `chatcmpl-tabby`
 and production shows a bare hexadecimal string,
 so grep for the `data: {"id":` prefix rather than for either id.
 The model's words are in there,

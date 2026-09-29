@@ -154,7 +154,7 @@ export function buildSettledArtifact(
     chunkCritics: result.sliceCritics,
     repairedText: result.repairedText,
 
-    // Slices the preparation produced, which both index sets below are out of.
+    // Slices the preparation produced, which both index sets of this artifact are out of.
     // Without it a reader holding an artifact can range-check neither, and
     // cannot tell one changed slice of two from one of two hundred.
     sliceCount: result.sliceCount,
@@ -165,7 +165,7 @@ export function buildSettledArtifact(
     // decided, and a slice can be withdrawn while carrying no issue of its own.
     // Absent from artifacts settled before 2026-08-15, so a reader must treat
     // their absence as unknown rather than as empty. `readArtifactChangeSets`
-    // is that reader, and the schema version above is what tells it which rule
+    // is that reader, and `artifactSchemaVersion` is what tells it which rule
     // to apply.
     //
     // SPELLED THE WAY GENERATION 1 SPELLED IT, as with `chunkCritics`.

@@ -673,7 +673,7 @@ export function extractGradingCandidate(
   /**
    First member claim in document order, carrying the headline category and
    summary a grader reads first; `at` keeps the empty-claims narrowing the
-   fallbacks below rely on.
+   fallbacks in this function rely on.
    */
   const primary = issue.claims
     .at(0,);

@@ -248,7 +248,7 @@ export function assembleRepair(
     // Every prepared slice, decided or left alone, paired with the archive's
     // own wording. Built from the outcomes rather than from the surviving
     // replacements, because this side of the record is what the lane CHOSE and
-    // the index sets above are what the document carries.
+    // `changedSliceIndices` and `withdrawnSliceIndices` are what the document carries.
     sliceTexts: repairLaneWordings({
       slices,
       outcomes,

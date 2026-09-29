@@ -300,7 +300,7 @@ await describe({
   name: assertLedgerDescribesPreparation.name,
   children: [
     it({
-      name: 'ACCEPTS a ledger whose rows describe this preparation, so the refusals below are '
+      name: 'ACCEPTS a ledger whose rows describe this preparation, so the refusal cases in this file are '
         + 'about what they change and not about the fixture',
       fn: async () => {
         expect(() => {

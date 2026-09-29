@@ -80,8 +80,8 @@ export type AbsoluteNaturalnessReviewSubject = {
 
   /**
    Whether the line rule governs the passage. On prose the sheet shows each
-   paragraph on one line, as it renders (ledger H6); the texts above stay
-   exact, since the review digests them and the artifact reader recomputes
+   paragraph on one line, as it renders (ledger H6); `sourceText`, `candidateText` and
+   `paragraphs` stay exact, since the review digests them and the artifact reader recomputes
    those digests from the shipped text. REQUIRED, NOT DEFAULTED, the H2
    lesson.
    */

@@ -168,8 +168,8 @@ await describe({
 
         /**
          The same words, laid out as a model that preserves line breaks
-         would return them: a newline sits where the single-line reading
-         above has a plain space.
+         would return them: a newline sits where `onOneLine`
+         has a plain space.
          */
         const acrossLines = characterTrigrams({ text: 'Tabby\npurrs\nloudly', },);
 

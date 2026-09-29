@@ -408,7 +408,7 @@ function scriptedPhase(
           reason: 'scripted',
         }
         // The naturalness probe answers a DIFFERENT schema from the checker,
-        // and the checker-shaped fallback below fails its guard. That failure
+        // and the checker-shaped fallback fails its guard. That failure
         // is swallowed as a lost voice, so without this branch the probe would
         // report nothing heard and a case asserting it ran would pass for the
         // wrong reason.
@@ -799,7 +799,8 @@ await describe({
 
     it({
       name: 'NAMES NO REFINER ON A SLICE IT ROLLED BACK, which is the control '
-        + 'proving the union above is not stored unconditionally. The rewrite '
+        + 'proving the "STORES BOTH STAGES ON A RECORD WHOSE REWRITE SHIPPED" union is not stored '
+        + 'unconditionally. The rewrite '
         + 'those refiners produced is exactly the text the rollback threw away, '
         + 'and naming them would discount a checker over words no reader saw',
       fn: async function aRolledBackRewriteAddsNobody() {

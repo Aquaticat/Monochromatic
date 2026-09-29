@@ -130,7 +130,7 @@ export type BenchRow = {
    This round as {@link selfPreference} needs to read it: who wrote each
    candidate, and every ballot cast over that slate.
    
-   KEPT RATHER THAN COUNTED, because the total above cannot answer the
+   KEPT RATHER THAN COUNTED, because `selfVotes` cannot answer the
    question it looks like it answers. How often a producer backs its own work
    says nothing alone: a model whose translations are better would do that
    without any favouritism. The paired comparison needs to know what judges

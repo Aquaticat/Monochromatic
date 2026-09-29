@@ -390,7 +390,7 @@ await describe({
         const archive = parseDocument({ text: malformedText, },);
 
         // Positive control: the fixture really is malformed on both counts
-        // integrity reads, so the equality below is not over a clean archive.
+        // integrity reads, so the `measurePatchedCandidate` equality is not over a clean archive.
         expect(downgradeCount({ document: archive, },),).toBeGreaterThan(0,);
         expect(footnoteBreakCount({ document: archive, },),).toBeGreaterThan(0,);
         expect(

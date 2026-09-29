@@ -8,7 +8,7 @@
  and `parse-document.ts` used to stringify that straight into a stored
  finding.
  
- The control below is what keeps the absence assertions honest: it asserts the
+ The control, `rawMdxRefusal`, is what keeps the absence assertions honest: it asserts the
  RAW parser does quote, on the same fixture, before anything asserts that the
  wrapper does not.
  

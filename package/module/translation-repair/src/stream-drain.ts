@@ -303,7 +303,7 @@ export async function drainBody(
         // The MODEL'S label, not `response.url`: every chat-completions call
         // shares one endpoint across the whole roster, so attributing a
         // runaway to the endpoint makes a per-model latency figure unreadable.
-        // `stopReading` above still logs `response.url`, because releasing the
+        // `stopReading` still logs `response.url`, because releasing the
         // right socket is a URL question and naming the runaway is a model
         // question.
         throw runawayError({
@@ -329,7 +329,7 @@ export async function drainBody(
     /**
      Whether this catch is a termination THIS SYSTEM CHOSE rather than a
      stall or steering, decided once so the logged outcome and the rethrow
-     below agree with each other by construction rather than by staying in
+     agree with each other by construction rather than by staying in
      sync across two separate checks.
      */
     const isSelfEnded = isSelfEndedStream({ error, },);

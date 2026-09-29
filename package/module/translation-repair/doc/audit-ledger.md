@@ -1383,7 +1383,7 @@ A mutant dropping the Freudian hold fails the guard.
 ### H15: fixtures carry corpus text
 
 Status:
-fixed in `98054d72b` (every file below rewritten with invention).
+fixed in `98054d72b` (every file this entry lists rewritten with invention).
 `address-drop.unit.test.ts` (two fixtures),
 `consolidation-polish-gate.unit.test.ts`,
 `rendering-glossary-idiom.unit.test.ts`,
@@ -1850,7 +1850,7 @@ and `PRIOR FAILED CONSOLIDATION STRATEGY` are fenced but not listed.
 ### E8: more fixtures paraphrase corpus content
 
 Status:
-fixed in `98054d72b` (every file below rewritten with invention).
+fixed in `98054d72b` (every file this entry lists rewritten with invention).
 `archive-footnote-relabel.unit.test.ts`,
 `pair-definition-order.unit.test.ts`,
 `coverage-verdict.unit.test.ts` (names from the corpus).
@@ -3932,7 +3932,7 @@ It runs over the edits every per-edit gate passed (`apply-patch-markup.ts`),
 and refusals stay in input order.
 The gate reads the whole source document where the chunk has it (`documentSourceText`),
 else the chunk's source,
-and the replay below measured only the document case.
+and the replay this entry records measured only the document case.
 `EditorStageResult.preservation` carries the gate,
 and the L3 strip re-applies it to the kept edits,
 since the kept side of a move whose writer was stripped has lost its atom.
@@ -4730,7 +4730,7 @@ at all 9 sites the repaired text holds more lines than the archive English and t
 and 76 becoming 91 or 92),
 so a later step set the text on more lines
 (first written here as the ORIGINAL's lines;
-the ORIGINALs of the two sites below hold 3 lines and 1,
+the ORIGINALs of the two sites this entry names hold 3 lines and 1,
 and the step is the semantic wrap,
 `wrapReplacementText`:
 both repaired texts equal their own wrap,
@@ -6162,7 +6162,7 @@ the fix commit replaced it with the entry's shape
 and the mutation check (pre-fix masker,
 rebuilt) showed the corrected case failing.
 
-Found as (the diagnosis below blamed the carve and was wrong):
+Found as (this first diagnosis blamed the carve and was wrong):
 NIGHT81473140 slice 22 of the deterministic carve opens a `<blockquote>` that closes in a later slice,
 so the strict grammar refuses the original (`end-tag-mismatch` at 1:1) and the verdict is `unknown`.
 The producers read `unknown` as a pass (`translate-floor.ts` keeps any voice not `invalid`;

@@ -459,7 +459,7 @@ export function prepareDocumentPair(
     slices.push(...stamped,);
   }
 
-  // BELT OVER BRACES, and worth the line. The restamp above already makes this
+  // BELT OVER BRACES, and worth the line. `reindexSlicePair`'s restamp already makes this
   // true from this path, so it can only fail if that restamp is changed or
   // removed. What it pins is the property everything downstream reads: the
   // lanes, the assembly and the cross-lane comparison are all further from the

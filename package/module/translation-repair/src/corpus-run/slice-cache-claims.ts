@@ -47,7 +47,7 @@ export type SliceNamespace = {
  "discarding 3 cached slices". Both are bought from the roster, so both cost
  real calls to rebuy.
  
- THE NAMED EXPORTS BELOW READ OUT OF HERE and `EVERY_SLICE_NAMESPACE` is this
+ THE NAMED EXPORTS OF THIS MODULE READ OUT OF HERE and `EVERY_SLICE_NAMESPACE` is this
  record's values, so no namespace can exist for one and not the other. A
  seventh written as a standalone constant escapes that, which is why it must
  be written here instead: the point is that forgetting is not a way to get

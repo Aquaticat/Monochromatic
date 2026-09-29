@@ -358,7 +358,7 @@ async function runRecallBenchmark(): Promise<void> {
   // A ZERO DENOMINATOR IS NOT A ZERO RATE. The scorecard prints 0 for a
   // recall over no seeds and a coverage over no attempts, which reads like a
   // measured zero to anyone who does not check the counts first; the record is
-  // kept above and the run refuses here rather than print such a line.
+  // already kept and the run refuses here rather than print such a line.
   if ((scorecard.dispatchedEntries === 0) || (scorecard.plantedSeeds === 0))
     throw new StatedRefusalError({
       says: `the bench dispatched ${String(scorecard.dispatchedEntries,)} entries and planted ${

@@ -90,7 +90,7 @@ export function repairLaneRecordsOf(
   },
 ): RepairLaneRecords {
   /**
-   Artifact with its envelope proven, so the walk below is type-checked.
+   Artifact with its envelope proven, so reading `lanes.repair.raw` is type-checked.
    */
   const artifact = parseSettledTwoLaneArtifact({ value, },);
 

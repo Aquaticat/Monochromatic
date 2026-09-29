@@ -327,7 +327,7 @@ export function buildLaneSliceTexts(
       .sliceIndex;
   },),);
 
-  // Both maps above would swallow a repeat: the last entry would win and the
+  // `byIndex` and `prepared` would both swallow a repeat: the last entry would win and the
   // list would still be the right length, so a decision would be silently
   // reused for one slice and lost for another.
   if (prepared.size !== slices.length)

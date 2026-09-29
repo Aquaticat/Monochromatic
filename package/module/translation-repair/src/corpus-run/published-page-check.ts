@@ -281,7 +281,7 @@ export function pageWeighsWhatItShould(
   const slices = wouldShipTextPerSlice({ artifact, },);
 
   /**
-   Archive wording each slice covers, by index, so the sum below reads both
+   Archive wording each slice covers, by index, so the sum this function takes reads both
    sides of one slice without walking the comparison again.
    */
   const incumbentBySlice = new Map(artifact.comparison

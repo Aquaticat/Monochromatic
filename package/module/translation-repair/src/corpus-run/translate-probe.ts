@@ -240,7 +240,7 @@ async function main(): Promise<void> {
 
   /**
    Slices the line-structure rule governs, decided by the pipeline's own
-   function over this section and its slices, so the sheet below is the one a
+   function over this section and its slices, so the sheet this probe builds is the one a
    run shows rather than one missing the rule (ledger H2).
    */
   const governed = governedSliceIndices({

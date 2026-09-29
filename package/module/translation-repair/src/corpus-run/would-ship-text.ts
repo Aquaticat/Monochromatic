@@ -560,8 +560,8 @@ export function wouldShipTextFor(
   },
 ): WouldShipReading {
   /**
-   What the page-level guard did here, read FIRST: it read the page the three
-   stages below compose, and its record says what that page carries.
+   What the page-level guard did here, read FIRST: it read the page `lanes`,
+   `laneSelection` and `consolidation` compose, and its record says what that page carries.
    */
   const override = pageAssemblyOverrideAt({
     pageAssembly: artifact.pageAssembly ?? NO_PAGE_ASSEMBLY,

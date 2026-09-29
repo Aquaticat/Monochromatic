@@ -275,7 +275,7 @@ async function main(): Promise<void> {
   if (rows.length === 0) {
     console.log(
       'NOTHING WAS DAMAGED on this entry, so it says nothing either way about whether a '
-        + 'deleted rendering is noticed. Read its refusals above instead: they are what the '
+        + 'deleted rendering is noticed. Read the refusals this probe printed instead: they are what the '
         + 'roster says about this page as it stands.',
     );
     return;

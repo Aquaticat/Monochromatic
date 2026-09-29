@@ -457,7 +457,7 @@ export type SettledPreparation = {
   /**
    Which decider chose the aligned sections, and what it chose.
    
-   THE OTHER HALF OF THE PAIRING RECIPE. `blockPairing` above is keyed by
+   THE OTHER HALF OF THE PAIRING RECIPE. The `blockPairing` field is keyed by
    aligned section index, and those indices only mean something under the
    section alignment that was in force. A reader rebuilding the slicing
    needs both, and until this field it had one.
@@ -538,7 +538,7 @@ export type ArtifactSectionAlignment = {
  */
 export type ArtifactSectionPairing = {
   /**
-   Aligned section this answers about, which every index below is local to.
+   Aligned section this answers about, which every other index of this pairing is local to.
    */
   readonly sectionIndex: number;
 

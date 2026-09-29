@@ -1541,7 +1541,7 @@ await describe({
         'REFUSES each lane`s own status ON THE OTHER LANE, in both directions. The two allowed sets sit '
         + 'a few lines apart in one file, so a reader that offered either set to both lanes would take '
         + 'a repair result claiming it was complete and a translate result claiming it was unchanged, '
-        + 'and every relation below reads a status it was never asked to doubt',
+        + 'and every relation the reader checks after it reads a status it was never asked to doubt',
       fn: async () => {
         /**
          What repairBorrowsTranslate raised, read for its class as well as its wording.

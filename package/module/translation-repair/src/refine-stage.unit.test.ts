@@ -352,7 +352,8 @@ await describe({
     },),
 
     it({
-      name: 'ACCEPTS that same rewrite when nothing is declared, so the refusal above is '
+      name: 'ACCEPTS that same rewrite when nothing is declared, so the "REFUSES a rewrite that dropped a '
+        + 'DECLARED name" refusal is '
         + 'attributable to the declared list rather than to the atom gate or to a rewrite the '
         + 'judges would have turned down anyway',
       fn: async () => {

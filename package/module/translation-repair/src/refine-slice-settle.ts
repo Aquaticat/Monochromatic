@@ -328,7 +328,7 @@ export async function settleRefinedSlice(
    decides in: `retainsResolvedIssues` rolls back the whole slice too.
    
    The roster is the checkers, exactly as the accuracy probe uses, and
-   `assertCheckerIndependence` in the phase above has already established that
+   `assertCheckerIndependence` in the refine phase has already established that
    no refiner is among them, so nobody audits their own rewrite.
    */
   const refinementDefects = await runIntroducedDefectProbe({
@@ -437,7 +437,7 @@ export async function settleRefinedSlice(
       repairedText: refined.refinedText,
       // WHO WROTE THE TEXT THIS RECORD NOW CARRIES, which stopped being the
       // editors alone the moment a refinement shipped. `retainsResolvedIssues`
-      // above unions both stages for its own recheck, but that union lives in
+      // unions both stages for its own recheck, but that union lives in
       // an argument and dies with the call. Left un-stored, this record would
       // credit the editors with words a refiner replaced, and any later reader
       // of it would let that refiner certify its own rewrite at full weight.
@@ -450,7 +450,7 @@ export async function settleRefinedSlice(
       // same rule the accuracy stage applies: a resolution credited to text the
       // document does not carry is a repair no reader saw.
       resolvedIssueIds: changed ? outcome.resolvedIssueIds : [],
-      // THE DECIDING ROUND'S, carried through unchanged. The recheck above is a
+      // THE DECIDING ROUND'S, carried through unchanged. The `retainsResolvedIssues` recheck is a
       // rollback gate rather than a re-decision: it either keeps the rewrite or
       // discards it whole, and never revises what `resolvedIssueIds` says.
       checkerReadings: outcome.checkerReadings,

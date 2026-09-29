@@ -670,7 +670,7 @@ await describe({
       fn: async () => {
         /**
          Planted failure this test proves escapes unwrapped. Identity is
-         checked below rather than a message, so no accidental string
+         checked by this case rather than a message, so no accidental string
          overlap with a real `CorpusReadError` could pass this test by
          coincidence.
          */

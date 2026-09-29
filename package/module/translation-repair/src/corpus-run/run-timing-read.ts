@@ -218,7 +218,7 @@ export function measureInFlight(
 
   /**
    First endpoint, which exists because the call list was checked non-empty
-   above and every call contributes two.
+   first and every call contributes two.
    */
   const opening = nonNullishOrThrow(events[0],);
 

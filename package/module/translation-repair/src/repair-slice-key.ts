@@ -233,7 +233,7 @@ import type { RepairModels, } from './repair-contract.ts';
  VERSION 27 STAYS PUT FOR THE REPAIR-LANE WINDOW, and this file's own rule
  is that a version holding still owes the same account as one that moves.
  
- The window is folded into the key BELOW rather than ridden on the version,
+ The window is folded into the key itself rather than ridden on the version,
  and that is what makes the version unnecessary. A slice that has a neighbour
  now keys on its window, so it misses whatever it was worth and recomputes,
  which is correct: the stages are being asked a different question. A slice
@@ -401,7 +401,7 @@ import type { RepairModels, } from './repair-contract.ts';
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
- accounts above name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
+ accounts in this TSDoc name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
 
  VERSION 34, 2026-09-28, the first number spent while a run held the
  previous one. TianqiChen66621 ran the frozen dist of `9a3f28b30` and wrote

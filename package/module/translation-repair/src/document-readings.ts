@@ -33,7 +33,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // means a slice's key is a function of readings that already exist, rather than
 // of readings a later slice might still produce.
 //
-// BYTES ARE HANDED IN, never read from disk here. The driver above is a function
+// BYTES ARE HANDED IN, never read from disk here. `readDocumentPictures` is a function
 // of its inputs and its injected client, which is what makes it testable without
 // a corpus and what keeps a corpus layout out of the lane. The corpus-run layer
 // knows the entry id and the photos directory; this knows neither.

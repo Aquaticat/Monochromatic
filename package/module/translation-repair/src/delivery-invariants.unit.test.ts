@@ -218,7 +218,7 @@ await describe({
   children: [
     it({
       name: 'accepts a ledger whose shipped rows write the document the lane returned, which is the '
-        + 'ordinary case and the positive control every refusal below rests on',
+        + 'ordinary case and the positive control every refusal case in this file rests on',
       fn: async () => {
         expect(function checkAgreement(): void {
           assertDeliveryAgreesWithDocument({

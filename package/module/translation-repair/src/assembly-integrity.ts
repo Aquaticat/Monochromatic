@@ -348,7 +348,7 @@ export function guardFootnoteAssembly(
     for (let round = 0; round <= rounds; round += 1) {
       /**
        This round's replacements under a name nothing reassigns, so every
-       closure below reads the round it was made in rather than the cursor.
+       closure this round makes reads the round it was made in rather than the cursor.
        */
       const standing = surviving;
 

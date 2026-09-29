@@ -27,7 +27,7 @@ await describe({
     it({
       name: 'RECORDS each unfilled passage as a gap the page ships without, naming the slice and the '
         + 'reason (the no-loop design of 2026-09-01; XIEPT2 was dropped after 35 minutes on 2026-09-02 '
-        + 'by the refusal below over one passage two judge rounds could not back), and records nothing '
+        + 'by `UnfilledPageError` over one passage two judge rounds could not back), and records nothing '
         + 'for a complete page',
       fn: async () => {
         expect(unfilledPageFindings({

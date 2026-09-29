@@ -113,7 +113,7 @@ export type ContentChunk = ChunkPosition & {
  type, so `nodes` and `text` stay wide and {@link makeInsertionChunk} is what
  keeps them empty. A hand-built insertion carrying nodes or text is therefore
  expressible; `assertPlacementLayout` refuses it at assembly, which is the
- last point before anything is written, and every lane above trusts the
+ last point before anything is written, and every lane trusts the
  discriminant rather than re-deriving it.
  
  @example

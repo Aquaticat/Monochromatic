@@ -3,7 +3,7 @@
  
  WHY THIS MATTERS ENOUGH TO PIN. The assembly guard is the only layer that can
  see a footnote, because a footnote is a relation BETWEEN slices and every
- stage below works inside one. When it withdraws a repair the run already paid
+ other stage works inside one. When it withdraws a repair the run already paid
  for, the single line it logs is the only place an operator watching a pass
  learns that it happened; the findings say why, and this says that.
  

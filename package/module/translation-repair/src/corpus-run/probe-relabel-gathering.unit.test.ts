@@ -14,7 +14,7 @@
  different question: measured on the first control run, the regions that
  happened to come first replaced 12 to 63 characters while the damaged regions
  replaced 60 to 268, so a quiet control would have been partly a statement
- about how much text there was to damage. The fixture below puts the SHORTEST
+ about how much text there was to damage. This file's fixture puts the SHORTEST
  unflagged region first in document order and requires it to be dropped, so an
  implementation that took document order would return it and fail.
  

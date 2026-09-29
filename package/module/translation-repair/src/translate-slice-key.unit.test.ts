@@ -185,7 +185,7 @@ await describe({
     },),
     it({
       name: 'keys the same slice to the same string when nothing varies, which is the whole point '
-        + 'of the key and the thing every separation above is measured against',
+        + 'of the key and the thing every separation case in this file is measured against',
       fn: async () => {
         expect(keyFor({},),).toBe(keyFor({},),);
       },

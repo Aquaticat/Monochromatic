@@ -161,7 +161,7 @@ export function classifyInsertionCoverage(
    voted absent, one claimed partial coverage and quoted the Chinese passage
    itself, which anchors nowhere on the page; the passage shipped as a silent
    gap. An unanchorable claim is still no vote for absence, but where the only
-   votes are absent ones, the whole-page shortfall corroboration below is what
+   votes are absent ones, the whole-page shortfall corroboration is what
    decides, as it does for a majority.
    */
   const absent = rows.filter(function absentVerdict(row,): boolean {

@@ -5,7 +5,7 @@
  passages that were never about the same thing in front of the critics, which
  then report differences between them and are right to. It is known that a
  wrong pairing is worse than no pairing for exactly this reason, so every
- malformed reply below must throw rather than be tidied into something usable.
+ malformed reply in this file must throw rather than be tidied into something usable.
  
  Fixtures are cat-themed invention mirroring corpus structure only.
  

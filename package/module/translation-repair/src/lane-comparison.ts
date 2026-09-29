@@ -406,7 +406,7 @@ export function compareDocumentLanes(
     readonly translate: IdentifiedDeliveryLedger;
   },
 ): LaneComparison {
-  // THE FIRST THING CHECKED, because everything below joins on a slice index
+  // THE FIRST THING CHECKED, because every other step of this comparison joins on a slice index
   // and an index means nothing without the slicing that issued it. Two ledgers
   // from different artifacts of the same entry line up perfectly and describe
   // different passages.

@@ -245,7 +245,7 @@ then how many entries carry the kind at least once.
      64  30  refine-skip block/3           4   3  alignment sections-merged
 ```
 
-The tail below those runs to single figures:
+The rest of the tail runs to single figures:
 `no-quotes`,
 `unknown-severity`,
  `unknown-vote`,
@@ -422,7 +422,7 @@ Thirteen is enough to test the quarter:
   one-sided 5% upper bound: true share <= 20.5%
 ```
 
-So the prediction above is REJECTED at the conventional level.
+So the prediction this section tests is REJECTED at the conventional level.
 
 ### CLOSED at 30 misses: soft wrapping is not a material cause
 

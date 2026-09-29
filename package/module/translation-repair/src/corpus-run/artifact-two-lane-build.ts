@@ -295,7 +295,7 @@ export function buildSettledTwoLaneArtifact(
 
       // Read off the PREPARATION, which this artifact says these describe. The
       // driver reports the same list, and picking one of two claims is what
-      // `assertFindingsDescribePreparation` above exists to stop: with the two
+      // `assertFindingsDescribePreparation` exists to stop: with the two
       // checked equal, this reads from the side the field is filed under.
       alignmentFindings: [...prepared.alignmentFindings,],
 

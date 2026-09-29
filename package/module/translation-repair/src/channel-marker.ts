@@ -207,7 +207,7 @@ export function stripChannelMarker(
   },
 ): ChannelMarkerStrip {
   /**
-   Nothing removed, which every rejection below returns.
+   Nothing removed, which every rejection in this function returns.
    */
   const untouched: ChannelMarkerStrip = {
     content: text,

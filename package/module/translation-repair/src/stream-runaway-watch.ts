@@ -223,7 +223,7 @@ export function watchRunaway(
   /**
    Turns raw server-sent events into generated text, per channel.
    
-   CHOSEN BY GRAMMAR since a second provider joined. Every threshold below was
+   CHOSEN BY GRAMMAR since a second provider joined. Every threshold this watch applies was
    measured on one wire and applies to both, but only if the events are read
    at all: a stream drained with the wrong reader shows an empty answer
    channel, which every guard here reads as a perfectly well-behaved call.

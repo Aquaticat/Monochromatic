@@ -11,7 +11,7 @@
  WHAT WAS MEASURED. On 2026-08-25, inverting the comparison that reads the
  pool-all variable failed no test in this package. A reader that mistook
  PRESENCE for the accepted VALUE would refuse ordinary invocations and admit
- the contradictory one, which is why both directions are pinned below rather
+ the contradictory one, which is why both directions are pinned in this file rather
  than the refusal alone.
  
  THE SECOND CASE IS THE DISCRIMINATING ONE. A variable exported with any other

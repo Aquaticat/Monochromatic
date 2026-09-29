@@ -481,7 +481,7 @@ export async function runGatherRound<ValueT,>(
   abandon.abort();
 
   // The caller's abort has to leave this round as a FAILURE, not as a thin
-  // roster. `allSettled` above swallows every ask the abort tore down, so a
+  // roster. `allSettled` swallows every ask the abort tore down, so a
   // stop that arrives after quorum would otherwise return the voices that beat
   // it and read exactly like an ordinary degraded round: the stage would decide
   // on that, the slice would settle, and the driver would cache a decision the

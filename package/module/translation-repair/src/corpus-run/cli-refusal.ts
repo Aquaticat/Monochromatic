@@ -213,7 +213,7 @@ export async function reportingRefusals(
     }
 
     console.error(
-      '  This is a fault in the command rather than in the run. The frames below name the '
+      '  This is a fault in the command rather than in the run. The stack frames printed with it name the '
         + 'built files it stopped in.',
     );
     console.error(framesOf({ error, },),);

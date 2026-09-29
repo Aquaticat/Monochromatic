@@ -4921,7 +4921,7 @@ and the session still starts with `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1`
 
 ## The three checks
 
-Named in every reading above and defined here,
+Named in every reading of this handover and defined here,
 since the readings cite them by count and a reader who has not met them cannot run them.
 They are the three additions the classes of 2026-09-08 made to the seven steps of the 2026-09-04 snapshot,
 each read off the pass log and the shipped page:

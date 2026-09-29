@@ -34,7 +34,7 @@ import { codePointCount, } from './code-points.ts';
  
  Using the median rather than a lower percentile makes the shortfall a
  statement about a TYPICAL page, so a page that is merely terse reads as
- slightly short rather than as missing a passage, and the budget below keeps
+ slightly short rather than as missing a passage, and the shortfall budget `admitWithinShortfall` spends keeps
  that slight shortness from admitting anything of real size.
  */
 export const CORPUS_EXPANSION = 2.65;

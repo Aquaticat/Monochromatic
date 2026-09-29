@@ -112,7 +112,7 @@ await describe({
         const pronoun = sourcePronounLines({ text: SOURCE, },);
         /** Note lines. */
         const notes = entryNoteLines({ sourceDocument, targetDocument, },);
-        // Each part is present in the fixture, so its absence below is the helper's.
+        // Each part is present in the fixture, so any absence this assertion finds is the helper's.
         expect({
           declared: declared.length > 0,
           pronoun: pronoun.length > 0,

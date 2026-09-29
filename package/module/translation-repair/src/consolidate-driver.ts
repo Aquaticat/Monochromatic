@@ -334,7 +334,7 @@ export async function consolidateDocument(
           /**
            Whether the line-structure rule governs this slice.
            
-           READ ONCE, because four places below need this same answer: the sheet
+           READ ONCE, because four places need this same answer: the sheet
            the producers are shown, the guard that reads their proposals, the key
            the settlement resumes under, and the wrap. Asking the set four times
            is how four answers drift into three.

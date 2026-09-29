@@ -455,7 +455,7 @@ async function reportMeters(): Promise<void> {
   );
 
   /**
-   Earliest reading, which opens the window everything below sits in.
+   Earliest reading, which opens the window every figure of this report sits in.
    */
   const first = samples.at(0,);
 

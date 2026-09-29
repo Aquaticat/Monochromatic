@@ -260,7 +260,7 @@ export function validateNamedSets(
   },);
   for (const [position, set,] of sets.entries()) {
     /**
-     This list's indices, which the map above produced at the same position.
+     This list's indices, which `named` holds at the same position.
      */
     const indices = named[position] ?? new Set<number>();
     assertNamesLegalSlices({

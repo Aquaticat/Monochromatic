@@ -350,7 +350,7 @@ export function spliceSlices(
   // failure. Identity comes first because a list that names one slice twice
   // is a caller disagreeing with the slicer, which explains every offset
   // complaint that would follow it.
-  // POSITIONAL INDICES, which the sort below depends on and this function
+  // POSITIONAL INDICES, which this function's sort depends on and it
   // cannot otherwise assume. Two anchors at one boundary are written in
   // descending index order so they land in ascending order, which is document
   // order only while an index IS a position. A caller handing in slices whose

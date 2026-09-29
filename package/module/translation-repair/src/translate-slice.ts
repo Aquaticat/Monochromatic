@@ -132,8 +132,8 @@ export async function settleTranslateSlice(
   } = slice.target;
 
   /**
-   Wordings a disputed slice refuses, none elsewhere; the stage and the
-   archive floor below read the same list.
+   Wordings a disputed slice refuses, none elsewhere; the stage and
+   `archiveFloor` read the same list.
    */
   const disputedWordings = (archiveDispute === undefined)
     ? []
@@ -214,7 +214,7 @@ export async function settleTranslateSlice(
   },);
 
   /**
-   The publication rule's answer on the archive a refusal below would keep,
+   The publication rule's answer on the archive a refusal in this function would keep,
    asked only where one could keep it (ledger X6): the consolidation refuses
    such an archive as a standing, so keeping it here only withheld the
    judges' replacement from the slate. Admitted where nothing would be kept.
@@ -235,7 +235,7 @@ export async function settleTranslateSlice(
   }
 
   /**
-   Whether a refusal below may keep the archive: there is one to damage and
+   Whether a refusal in this function may keep the archive: there is one to damage and
    the publication rule admits it.
    */
   const keepsArchive = guardedIncumbent && archiveFloor.admitted;

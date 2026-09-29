@@ -44,7 +44,7 @@ import {
 // is judged on contributing entries rather than accepted counts because the
 // draw round-robins across entries. A preliminary run draws with a different
 // seed on purpose, so repeated previews can never become a way of choosing the
-// gate sample. The reconcile below aborts loudly if a parsed accepted count
+// gate sample. The reconcile in `draw-entry-load.ts` aborts loudly if a parsed accepted count
 // disagrees with the artifact's own tally, so the sample is never silently
 // short.
 

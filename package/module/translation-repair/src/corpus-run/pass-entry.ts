@@ -151,7 +151,7 @@ async function runEntryPipeline(
     /**
      What the archive's translators' notes say about whose text the page is,
      read BEFORE ANY PURCHASE: a page the note calls the author's own English
-     is declined here, and nothing below runs for it (the owner's rule of
+     is declined here, and nothing else in this function runs for it (the owner's rule of
      2026-09-08, `pass-decline.ts`).
      */
     const archiveOriginal = entryArchiveOriginalOf({ entry, },);

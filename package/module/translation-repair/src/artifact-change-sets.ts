@@ -263,7 +263,7 @@ export function readArtifactChangeSets(
 
   /**
    Whether the shipped set was written at all, by key rather than by value, so
-   an explicit JSON `null` counts as present and is refused below rather than
+   an explicit JSON `null` counts as present and is refused by the index-set read rather than
    passing for an artifact that predates the field.
    */
   const hasShipped = Object.hasOwn(

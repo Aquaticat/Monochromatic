@@ -239,7 +239,7 @@ function printCost({ cost, }: { readonly cost: SpendCost; },): void {
   if (unpricedCount > 0) {
     console.log(
       `UNPRICED, and these are not free: ${String(unpricedCount,)} metered seats have no row in `
-        + `the price table read ${cost.pricedAsOf}. The total above is short by whatever they cost`,
+        + `the price table read ${cost.pricedAsOf}. This report's total is short by whatever they cost`,
     );
     for (const seat of cost.unpriced) {
       console.log(tokensOnlyLine({ seat, },),);
@@ -346,8 +346,8 @@ async function reportSpendCost(): Promise<void> {
 
   if (tally.unreadableLines > 0) {
     console.log(
-      `${String(tally.unreadableLines,)} lines carried the marker and would not parse, so the totals `
-        + 'below are short by whatever those calls cost',
+      `${String(tally.unreadableLines,)} lines carried the marker and would not parse, so this report's totals `
+        + 'are short by whatever those calls cost',
     );
   }
 
