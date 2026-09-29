@@ -336,8 +336,11 @@ rounds (2026-09-17):
   A separate visual question may remain about displaying file extensions
   in result titles;
   it is not a reason to pick a matcher library now.
-  Back/Clear/focus and scroll restoration (#127),
-  empty/unavailable behavior (#128),
+  Back/Clear/focus,
+  entry/re-entry and same-query scroll restoration (#127) are being
+  reviewed separately in
+  `evidence/search-navigation-focus-boundaries.md`.
+  Empty/unavailable behavior (#128),
   result activation (#129) and Search accessibility (#118) remain
   separate open decisions.
   D21's global command hotkey and Settings row

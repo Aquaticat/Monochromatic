@@ -167,7 +167,8 @@ The W/A [native mid-word exploration](questions/archive/search-word-boundary-def
 and [its evidence](evidence/search-word-boundary-native-comparison.md)
 are historical and unadopted;
 no matcher rule or library is selected by them.
-Continue the open UI reviews for Back/Clear/focus,
+Continue the open UI reviews for
+[Back/Clear/focus and same-query scroll behavior](evidence/search-navigation-focus-boundaries.md),
 empty/unavailable states,
 result activation and accessibility.
 Selection does not authorize production implementation.

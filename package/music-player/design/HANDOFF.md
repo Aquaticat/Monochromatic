@@ -6558,3 +6558,32 @@ The next active UI area is #127 Back/Clear/focus and scroll restoration,
 then #128 empty/unavailable messaging,
 #129 result activation and #118 Search accessibility.
 The original AVD remains untouched and the disposable Fold is stopped.
+
+## #127 Search navigation and focus evidence started
+
+`evidence/search-navigation-focus-boundaries.md` distinguishes already
+selected D47/D48 destination/header behavior from keyboard **edit** focus
+and separate #118 accessibility focus.
+The debug-only inner `SearchPersistentDeckStudy.kt` and delegated cover
+`SearchLayoutStudy.kt` on prototype branch
+`prototype/music-player-theme-compose` (commit `cc66a0dcf`)
+close and clear query on Back,
+reopen from the player with an empty query,
+and clear the text without closing Search;
+these are prototype state transitions,
+not ratified production behavior.
+The archived Material Search guidance's in-place bar-collapse Back action
+cannot be substituted for D47's separate page return.
+Existing D56 evidence showed the final cover row needed another swipe
+after hiding and refocusing the keyboard,
+but D56 accepted the viewport direction,
+not that extra swipe as a requirement.
+Entry edit focus,
+system Back when a keyboard is visible,
+re-entry query lifetime and same-query scroll restoration are independent
+UI decisions to compare.
+No new IME experiment is authorized unless a compelling reason is first
+explained to the user;
+plan a logic-only walkthrough rather than claiming new native focus evidence.
+#128,
+#129 and #118 stay separate.
