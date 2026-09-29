@@ -174,8 +174,9 @@ async function orphanStoreCopy(): Promise<void> {
 
 /**
  Applies the scenario's post-install mutation before the tool runs. An if/else
- chain maps each mutation to its action (rule PP9: no switch), delegating to
- {@link seedStaleOrphan} and {@link removeAllModules} for the multi-step cases.
+ chain maps each mutation to its action (lint rule no-restricted-syntax/no-switch),
+ delegating to {@link seedStaleOrphan} and {@link removeAllModules} for the
+ multi-step cases.
  
  @param scenario - scenario whose mutation to apply
  

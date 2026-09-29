@@ -88,7 +88,7 @@ pub fn apply(
             continue;
         }
 
-        // A directive with no justification does not suppress. AGENTS.md LN5
+        // A directive with no justification does not suppress. AGENTS.md LN3
         // requires one, and a directive that silenced a rule while explaining
         // nothing would be the exact thing that rule exists to prevent.
         if directive.justification.is_none() {

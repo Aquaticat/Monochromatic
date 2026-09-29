@@ -359,7 +359,7 @@ async function provisionFromSnapshot(
 ): Promise<Provisioned> {
   /**
    Guard reaping the snapshot when this scope exits, so it never leaks even if
-   provisioning throws (PP3).
+   provisioning throws (`using` cleanup, never `try...finally`).
    */
   await using _snapshotCleanup = {
     async [Symbol.asyncDispose](): Promise<void> {

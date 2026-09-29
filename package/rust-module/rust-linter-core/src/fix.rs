@@ -71,7 +71,7 @@ impl FixKind {
         //           borrow back to a value so it can be compared; `::` is the
         //           namespace separator, reaching a variant inside its enum.
         //           An if/else chain rather than a `match`, because the repo's
-        //           AGENTS.md PP9 prefers chains over `switch`-shaped constructs.
+        //           the repo's no-switch lint rule prefers chains over `switch`-shaped constructs.
         // Why:      Safe edits are applied under every ceiling, dangerous ones
         //           only under the highest.
         if *self == FixKind::Safe {

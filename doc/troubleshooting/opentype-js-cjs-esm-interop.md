@@ -336,7 +336,7 @@ No allow-list exists for this rule (see Root cause),
  so each flagged line in
 `build-font.ts` needs a scoped disable comment naming the reason,
  per this
-repo's lint-suppression convention (`AGENTS.md` `LN3`/`LN5`):
+repo's lint-suppression convention (`AGENTS.md` `LN3`):
 
 ```ts
 // oxlint-disable-next-line import/no-named-as-default-member -- opentype.js's UMD bundle defeats cjs-module-lexer's named-export detection (see doc/troubleshooting/opentype-js-cjs-esm-interop.md); the default import's .Path/.Glyph/.Font members are the only ones that work under Node's CJS/ESM interop

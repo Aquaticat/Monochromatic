@@ -1074,7 +1074,7 @@ Adjacent-pair reasons.
    aarch64 sizes were not measured.
 - Nothing here measures how long it takes to write meow's evaluator,
    and no such estimate is offered,
-   per rule CK3.
+   per rule QJ1.
 
 ## Recommendation
 

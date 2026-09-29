@@ -195,7 +195,7 @@ Each step's evidence is in the linked documents.
    pointer-only outputs,
    eviction by a size cap plus 30-day age,
    flaky retry reporting,
-   and rule `FLG` in `AGENTS.md`.
+   and rule `QGR` in `AGENTS.md`.
 - Decided 2026-09-17 and recorded in "Declarative configuration" in the design:
    the configuration may be Turing-complete,
    HCL syntax is lightly endorsed,

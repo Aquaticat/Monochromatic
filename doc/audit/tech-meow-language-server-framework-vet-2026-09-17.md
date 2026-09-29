@@ -786,7 +786,7 @@ which depends on it.
    the newest stable,
    was.
 - No estimate is offered for how long any option takes to implement,
-   per rule CK3.
+   per rule QJ1.
 
 ## Recommendation
 

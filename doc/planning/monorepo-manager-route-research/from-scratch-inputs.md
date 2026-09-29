@@ -275,8 +275,8 @@ All conditional on keeping TypeScript on Node.
   `**/*.config.*` files are exempt (`package/config/oxlint/src/overrides.ts:130-135`, verified);
   Rust has the same 300-line budget (`MXR`, `AGENTS.md:1005-1013`, verified).
 - Docs in code: `TSD` TSDoc on all declarations (`AGENTS.md:1121`), `RDC` rustdoc on all Rust items (`:1015-1018`) (verified).
-- Errors: `PP4` custom error classes and `@throws` (`AGENTS.md:1281`), `PP7` never `process.exit`, never swallow (`:1294`),
-  `PP8` throw on unreachable (`:1299`), `PP9` no `switch` (`:1303`) (verified by tag line).
+- Errors: `PP4` custom error classes and `@throws` (`AGENTS.md:1281`), never `process.exit` (`unicorn/no-process-exit`), never swallow (`LG2`),
+  `PP8` throw on unreachable (`:1299`), no `switch` (`no-restricted-syntax/no-switch`) (verified by tag line).
 - Config: `AD2` switch to TypeScript config when config needs logic (`AGENTS.md:1730`), `AD3` direct async execution over descriptor or interpreter (`:1735`) (verified).
   The user relaxed FE01: configuration need not be TypeScript (`tech-monorepo-manager-vet-2026-09-16.md:97-101`, verified).
 - CLI packaging: `AP4` `#!/usr/bin/env node` shebang for `bin` packages (`AGENTS.md:1396`); `CM3` builds via tasks (`:860`) (verified).

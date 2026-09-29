@@ -258,7 +258,7 @@ suppression,
  and `AGENTS.md` MXL and RDC say never disable those two rules.
 oxlint ships `--report-unused-disable-directives` as a headline feature,
  and
-`AGENTS.md` LN5/LN6 do allow justified `oxlint-disable-next-line` for TypeScript.
+`AGENTS.md` LN3/LN6 do allow justified `oxlint-disable-next-line` for TypeScript.
 
 Measured usage:
 1258 `oxlint-disable` occurrences across 624 TypeScript files,
@@ -293,7 +293,7 @@ Settled alongside it,
   `#![register_tool(monochromatic)]` is nightly-only.
 - A justification after `--` is mandatory;
   a directive without one is itself a violation.
-  `AGENTS.md` LN5 already requires this and 94 percent of existing TypeScript
+  `AGENTS.md` LN3 already requires this and 94 percent of existing TypeScript
   directives comply.
   This is a superset of oxlint's behaviour,
    not parity with it.
@@ -531,7 +531,7 @@ Available for the text-predicate half where one is needed:
 `package/rust-module/forbidden-regex`,
 the in-house linear-time engine with fuzz and bench harnesses,
 already consumed by `package/cli/forbidden-strings` over a path dependency.
-Using it rather than `regex` satisfies RG2 and RG3 by construction.
+Using it rather than `regex` satisfies RG2 and the `no-regex` lint rule by construction.
 
 ### D5. Crate layout
 
@@ -572,7 +572,9 @@ New crate names must be checked against `forbidden-strings.append.local.txt`
 before use (NCD),
  and each new package needs its own `Cargo.toml`,
 `mise.toml`,
-`README.md` and `LICENSES/` tree (AP1 to AP3,
+`README.md` and `LICENSES/` tree (AP1,
+ AP2,
+ DM1,
  PKG).
 
 ### D7. Comment convention at this scale
@@ -940,7 +942,7 @@ rather than one umbrella task:
      code actions from the
     fix model.
      Verified in an editor,
-     not by piped test input (VB3).
+     not by piped test input (VB1).
 11. Introspection:
     `--print-config`,
     `--rules`,

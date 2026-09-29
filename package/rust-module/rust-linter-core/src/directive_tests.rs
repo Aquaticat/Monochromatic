@@ -200,7 +200,7 @@ fn directive_does_not_reach_other_rules() {
     assert_eq!(outcome.kept.len(), 1, "a different rule survives");
 }
 
-// What:     The case AGENTS.md MXL, MXR and RDC turn on.
+// What:     The case the repo's MXL, MXR and RDC rules turn on.
 // Why:      Those rules say `max-lines` and `require-rustdoc` are never
 //           disabled. That guarantee is only worth something if a directive
 //           aimed at one is refused AND reported, rather than quietly ignored.

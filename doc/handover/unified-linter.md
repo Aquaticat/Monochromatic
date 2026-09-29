@@ -20,7 +20,7 @@ Nothing is implemented until the user confirms a shared understanding.
 Keep this handover current after every answer,
 correction,
 decision,
-and verification (`AGENTS.md` HUP and DCK).
+and verification (`AGENTS.md` DCK).
 
 ## Incumbents
 

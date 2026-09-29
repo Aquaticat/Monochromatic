@@ -284,7 +284,7 @@ rg --files-with-matches --glob '!node_modules' --glob '!**/dist/**' \
    and audits,
   none of which proposes one.
 - `nano-spawn` is a catalog entry at `pnpm-workspace.yaml:102` (`>=2.1.0`),
-  so rule `DM2` is satisfied by a `catalog:` reference.
+  so rule `DM1` is satisfied by a `catalog:` reference.
   Verified by reading that file.
 
 ## Coverage ledger
@@ -424,7 +424,7 @@ Rule `MD5` forbids tables,
 - Owner after the rewrite:
   vm-builder's own manifest,
   `"nano-spawn": "catalog:"`,
-   under rule `DM2`.
+   under rule `DM1`.
 - Selection status:
   recommended.
 - Parity test:
@@ -470,7 +470,7 @@ Rule `MD5` forbids tables,
   a unit test asserting a non-zero exit throws,
   plus the existing behavior that `sudo` prompts still reach the terminal,
   which only a manual run can show
-  (rule `CKA`:
+  (rule `CB1`:
   that manual step belongs in a runbook if the user wants it proven).
 - Retired behavior:
   two of the three copies.
@@ -935,7 +935,7 @@ Run with `mise run //package/dev-script/vm-builder:test:unit`,
 which the root template globs as `**/*.unit.test.ts`.
 Verified:
 `mise.no-env.toml:548` and `:566-572`.
-Rule `CM4`:
+Rule `CM3`:
 never `bun test`.
 
 ### Verification at the user boundary
@@ -954,7 +954,7 @@ The honest boundary check is:
   Verified by reading that file.
 - The `sudo` prompt and the `virsh domstate` read are proven only by a real run,
   which is the user's to make.
-  Rule `CKA` and rule `RBK`:
+  Rule `CB1` and rule `RBK`:
   if the user wants that proven,
   it belongs in `doc/runbook/`,
   written through the `runbook` skill.
@@ -1394,7 +1394,7 @@ only choices that hinge on non-measurable preference or authority appear here.
 Rule `QSP`:
 they are separable,
  and answering several of them is reachable.
-Rule `OPI`:
+Rule `OPT`:
 each carries pros,
  cons,
  and a ranking with the reason deciding each adjacent pair.

@@ -493,7 +493,7 @@ impl Rule for RequireRustdoc {
 
     // What:     The trait leaves this method without a default body, so every
     //           rule states its own answer rather than inheriting one.
-    // Why:      `false`, because AGENTS.md RDC requires rustdoc on every
+    // Why:      `false`, because the repo's RDC rule requires rustdoc on every
     //           documentable item and says never to disable the check: the remedy
     //           for an undocumented item is to document it. A directive aimed at
     //           this rule is therefore itself reported rather than obeyed.

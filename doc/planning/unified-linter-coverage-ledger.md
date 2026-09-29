@@ -2,7 +2,7 @@
 
 Every responsibility the incumbent Rust linter and Markdown linter carry,
 who consumes it,
-and its owner in the unified linter (`AGENTS.md` RCO).
+and its owner in the unified linter (rule RCO in the `choosing-technology` skill).
 Design interview state:
 [`doc/handover/unified-linter.md`](../handover/unified-linter.md).
 
@@ -541,7 +541,7 @@ registered as `markdown/autofix` in `cli-git.config.ts:22-43`.
    MXR names `monochromatic-rust-linter`;
    RDC names `require-rustdoc` and the cxx-qt carve-out;
    MXL,
-   LN5,
+   LN3,
    MD1,
    MD3,
    MD4,

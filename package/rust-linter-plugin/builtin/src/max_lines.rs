@@ -97,7 +97,7 @@ impl Rule for MaxLines {
 
     // What:     `fn allows_suppression(&self) -> bool { false }`. The trait gives
     //           this method no default body, so every rule has to answer.
-    // Why:      `false`, because AGENTS.md MXL and MXR say the budget is never
+    // Why:      `false`, because the repo's MXL and MXR rules say the budget is never
     //           disabled: the remedy for an over-budget file is to split it, not
     //           to comment the rule away. A directive aimed at this rule is
     //           therefore itself reported rather than obeyed.

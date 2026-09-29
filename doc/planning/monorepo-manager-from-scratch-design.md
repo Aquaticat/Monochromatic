@@ -3438,7 +3438,7 @@ there is no cache-off flag or per-definition result-reuse toggle.
 
 ## Open questions
 
-User choices research raises are asked as they arise (rule `FLG`).
+User choices research raises are asked as they arise (rule `QGR`).
 
 The pending task-name,
 override,

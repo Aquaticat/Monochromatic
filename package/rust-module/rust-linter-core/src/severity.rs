@@ -54,7 +54,7 @@ impl RuleSeverity {
     // ```
     /// Parse a severity from config or command-line text, aliases included.
     pub fn parse(text: &str) -> Option<Self> {
-        // An if/else chain rather than a `match`, per AGENTS.md PP9.
+        // An if/else chain rather than a `match`, per the repo's no-switch lint rule.
         if text == "off" || text == "allow" {
             return Some(RuleSeverity::Off);
         } else if text == "warn" {
