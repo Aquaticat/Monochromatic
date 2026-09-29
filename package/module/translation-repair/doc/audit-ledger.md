@@ -2885,6 +2885,18 @@ the third,
 a round that took nothing back,
 reads the same under both.
 
+The whole-suite census at `73c702e24` (1,397 passes,
+`census-K2JBPw`,
+format 2) is the baseline for the anonymous callbacks and the library stretches still cold:
+library source holds 1,142 stretches over 2,910 lines in 429 files,
+with 35 functions never called;
+the six runner entry files tests load hold 27 stretches over 799 lines,
+with 14 never called;
+the 36 bundles no test loads carry 13,462 physical lines in 39 sources;
+other workspace packages hold 228 stretches over 4,234 lines in 60 files.
+Batches from here read their reach against it,
+and the readings earlier batches took against `census-qilSwP` stand.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
