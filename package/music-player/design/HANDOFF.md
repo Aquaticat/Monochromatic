@@ -45,9 +45,15 @@ Internal tasks 131 and 133 track future source-status binding and native
 Search accessibility acceptance,
 both gated on separate implementation authorization.
 Legacy documentation lint remains internal task 119.
-The status-document sweep updates `README.md`,
+The completed status-document sweep updated `README.md`,
 `open-questions.md`,
 `candidates.md` and this frontier without adding a new design question.
+It also closed D15's superseded fast-scroller comparison in `decisions.md`
+against D17's filtering-picker decision.
+GitHub-rendered headings/prose were checked and no Markdown lint finding
+intersected the sweep's changed blocks.
+Existing legacy findings remain the separate internal task 119,
+not native accessibility failures.
 
 You are picking this project up with **no prior context**.
  Everything known about it
