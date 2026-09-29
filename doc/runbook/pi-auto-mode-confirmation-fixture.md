@@ -69,8 +69,10 @@ TODO
 4.  Press **Enter** without changing the filename.
     Nano should report that the file was written.
 5.  Press **Ctrl+X**.
-    Nano and its test terminal should close,
+    Nano should close,
     and the agent should receive a non-content completion summary.
+    Report any remaining test window;
+    detached terminal closure is not independently attested.
 
 To cancel instead,
 leave the **Response** section empty and press **Ctrl+X**.
@@ -113,7 +115,11 @@ or qualify other Pi input producers.
 Status:
 TODO
 
-The requester removes its temporary answer workspace after completion.
+The requester places its temporary answer workspace under the ignored private directory
+and removes that workspace after completion.
+An interrupted controller must not publish approval;
+its detached editor closure remains unestablished.
+No unrelated terminal process is terminated.
 The private test receipt and disposable fixture remain as local evidence.
 No production permission,
 editor configuration,
