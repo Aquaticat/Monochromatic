@@ -173,6 +173,11 @@ export function buildRenderingAuditMessages(
   { subject, }: { readonly subject: RenderingAuditSubject; },
 ): readonly ChatMessage[] {
   /**
+   Names and terms the run licensed, empty where it licensed none.
+   */
+  const identity = subject.identityContext ?? '';
+
+  /**
    What the pages the ORIGINAL links say, empty where it links nowhere.
    */
   const references = subject.referenceContext ?? '';
@@ -184,7 +189,7 @@ export function buildRenderingAuditMessages(
     texts: [
       subject.sourceText,
       subject.candidateText,
-      subject.identityContext ?? '',
+      identity,
       references,
     ],
   },);
@@ -206,17 +211,19 @@ export function buildRenderingAuditMessages(
         fence,
         subject.candidateText,
         fence,
-        ...((subject.identityContext === undefined)
+        // NO BLOCK AT ALL for an empty one, as for none: a heading over an
+        // empty fence invites an auditor to read the absence as a rule.
+        ...((identity === '')
           ? []
           : [
             '',
             'DECLARED NAMES, licensed for this document, not a defect when the candidate follows it:',
             fence,
-            subject.identityContext,
+            identity,
             fence,
           ]),
-        // NO BLOCK AT ALL where the ORIGINAL links nowhere, so an audit shown
-        // no references reads exactly as one did before references existed.
+        // NOR where the ORIGINAL links nowhere, so an audit shown no
+        // references reads exactly as one did before references existed.
         ...((references === '')
           ? []
           : [
