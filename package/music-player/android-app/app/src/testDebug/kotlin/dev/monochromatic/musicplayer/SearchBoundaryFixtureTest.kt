@@ -58,7 +58,7 @@ class SearchBoundaryFixtureTest {
 
     /** Checks that one folder and one track with interior matches occur only in the anywhere variant. */
     @Test
-    fun onlyAnywhereVariantAddsInteriorDirectTrackNames() {
+    fun onlyAnywhereVariantAddsInteriorFolderAndTrack() {
         val wordStart = searchBoundaryHits(allowInterior = false)
         val anywhere = searchBoundaryHits(allowInterior = true)
 
