@@ -189,6 +189,16 @@ import type { SliceReplacement, } from './splice-slices.ts';
  survival answer changes, and neither they nor any stored artifact carries
  such an ideograph; same check, same result.
 
+ Rides inside 15 too: the declared-name guard and the link-name floor carry a
+ declared name only where it stands as a name, a letter meeting a digit and a
+ small letter meeting a capital counting as edges, and the link floor reads a
+ Latin source form, a mention and a page handle at handle edges (ledger B23,
+ `name-projection.ts`, `11d029fde`); over the would-ship slices of every
+ settled artifact, four wordings of two slices now drop a declared form the
+ old containment took as kept, and no link-floor or contributor-authority
+ answer moves that this change explains; checked on 2026-09-29: still no
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

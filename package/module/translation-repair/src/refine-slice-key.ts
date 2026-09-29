@@ -166,6 +166,14 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  `preservation-tokens.ts`); over the pinned archives and settled pages no
  survival answer changes, and neither carries such an ideograph; checked on
  2026-09-29: still no slice-cache file newer than 04:26 UTC on 2026-09-27.
+
+ Rides inside 5 too: the declared-name guard a rewrite passes carries a
+ declared name only where it stands as a name, a letter meeting a digit and a
+ small letter meeting a capital counting as edges (ledger B23,
+ `name-projection.ts`, `11d029fde`); no stored rewrite was replayed, so the
+ effect is read from the translate replay, where four wordings of two slices
+ now drop a declared form; checked on 2026-09-29: still no slice-cache file
+ newer than 04:26 UTC on 2026-09-27.
  */
 export const REFINE_CACHE_VERSION = 5;
 
