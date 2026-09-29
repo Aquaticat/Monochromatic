@@ -7630,10 +7630,28 @@ and every scan that feeds one:
   `fixed-length-cuts.unit.test.ts` lists every other `.slice(0, LIMIT)` and `.slice(-LIMIT)` with its reason,
   so a new fixed-length cut is classed before it lands.
   `NOTE_WORDS` counted units and is `NOTE_OPENING_UNITS`.
+- The shared readers themselves.
+  `code-points.ts` and `cased-letters.ts` shipped tested only through their callers;
+  the text barrel now exports both,
+  and each has its own unit test.
+  Those tests found two faults with a lone surrogate:
+  `codePointCount` counted every unit that is not a second half,
+  so a lone second half counted as nothing,
+  and `wholeOpening` dropped a lone first half that no pair followed.
+  Both now read a lone half as one character,
+  as the string's own iteration does.
+  Red `a6193fc8f`,
+  fix `f6e93ed5f`;
+  9 mutants are caught,
+  and a comment control survives.
+  `lone-surrogate-census.mjs` finds no lone surrogate in the pinned corpus
+  or in any string of the 265 stored artifacts,
+  while its control finds both kinds.
 
 Read and left as they stand:
-`translate-neutral-pronoun.ts` compares one unit with U+2E80,
-and a surrogate half compares above it as its whole code point would;
+`translate-neutral-pronoun.ts` compared one unit with U+2E80,
+and a surrogate half compares above it as its whole code point would
+(B23 has since replaced that comparison with `tokenStarts`);
 the recurrence watcher's tails are compared unit for unit with the buffer they came from;
 the refusal windows are searched for markers a cut character cannot match;
 and `latin-letters.ts`,

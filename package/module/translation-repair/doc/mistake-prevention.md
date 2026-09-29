@@ -449,6 +449,9 @@ a Deseret letter beside a Canadian date,
 and a pinyin pair over such an ideograph (ledger B22).
 Two readings of a cased letter disagreed about script letters,
 and eleven fixed-length text cuts could keep half an emoji.
+The shared readers shipped tested only through their callers,
+and their own tests later found a lone second half counted as nothing
+and an opening that dropped a lone first half although no pair was cut.
 
 The rule:
 a test whose domain reaches past the first plane
@@ -467,8 +470,12 @@ never by comparing a character with its case mapping.
 A text's opening cut at a fixed length goes through `wholeOpening`.
 A guard for such a scan runs its text in a script beyond the first plane
 and compares the result with the same text in Latin letters.
+A shared reader gets a unit test of its own when it is extracted,
+with lone surrogate halves among its cases.
 
 What enforces it:
+`src/code-points.unit.test.ts` and `src/cased-letters.unit.test.ts` pin the readers themselves,
+lone halves included;
 `src/fixed-length-cuts.unit.test.ts` fails on any `.slice(0, LIMIT)` or `.slice(-LIMIT)` it does not list with a reason;
 the Latin-twin cases in `corpus-run/canadian-forms.unit.test.ts`,
 and the script and Extension B cases in the declared-name,
