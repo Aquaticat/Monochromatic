@@ -103,13 +103,13 @@ other text scales,
 keyboard-open fit,
 focus behavior,
 activation or accessibility traversal.
-Choosing a numeric E2 floor remains a design decision;
-compliance at that floor needs its own later verification.
+The numeric floor required the user's design decision;
+compliance at that floor still needs separate later verification.
 The user stated **7.5mm total minimum even on a future narrower-crease
 device**,
 then required re-asking because the form omitted views with Search closed.
-This statement is pending explicit re-confirmation after those player views;
-no numeric `min_padding` decision was recorded from the incomplete review.
+No numeric `min_padding` decision was recorded from that incomplete review;
+the later confirmation after player views is documented in the corrected set.
 The historical player preview still uses fixed 414dp panes and a 24dp stripe,
 so it cannot stand in for a native E2 player-floor variant.
 An initial debug-only Search-closed player variant painted a gray central
@@ -136,7 +136,7 @@ just outside the approximate crease endpoint x `1093`.
 The corrected nine-state capture set and current form are described next.
 No floor decision was recorded from the earlier incomplete review.
 
-## Corrected player and Search comparison awaiting re-confirmation
+## Corrected player and Search comparison with P7.5 selected
 
 Debug-only commits `c15a2d5b5` and `678fd7d8f` moved the E2 floor owner to
 **meaning-bearing content** in both the Search-closed player and Search page.
@@ -151,8 +151,12 @@ right-side content and its associated control targets move where the floor
 demands it.
 Those hit bounds are not measured as part of E2's informational floor.
 There is no gray structural stripe in the corrected captures.
-The **selected total minimum** remains undecided until the user re-confirms
-after viewing Search-closed screens.
+The user explicitly reconfirmed **P7.5** after receiving the full player,
+empty Search and positive-results comparison.
+This is an independent 7.5mm **total opposing-information minimum** even on
+a future device with a narrower physical crease;
+if the crease is wider,
+its actual width still governs.
 
 The inspected installed APK bytes matched SHA-256
 `d301bebdd35d053ee63cbd9a8500949fb97b8be5dc26c9bb971be1493a3462b5`.
@@ -169,18 +173,18 @@ EXIF and timestamp PNG chunks were removed.
 Only sanitized images are linked here:
 
 - P7.5,
-  proposed independent **7.5mm total** minimum even on narrower-crease
+  **selected independent 7.5mm total** minimum even on narrower-crease
   devices:
   [player, Search closed](../questions/render/search-e2-complete-7p5-player-inner-light-s200.png),
   [empty Search](../questions/render/search-e2-complete-7p5-empty-inner-light-s200.png),
   [positive results](../questions/render/search-e2-complete-7p5-results-inner-light-s200.png).
 - P14,
-  proposed 14mm total minimum:
+  unselected proposed 14mm total minimum:
   [player, Search closed](../questions/render/search-e2-complete-14-player-inner-light-s200.png),
   [empty Search](../questions/render/search-e2-complete-14-empty-inner-light-s200.png),
   [positive results](../questions/render/search-e2-complete-14-results-inner-light-s200.png).
 - P20,
-  proposed 20mm total minimum:
+  unselected proposed 20mm total minimum:
   [player, Search closed](../questions/render/search-e2-complete-20-player-inner-light-s200.png),
   [empty Search](../questions/render/search-e2-complete-20-empty-inner-light-s200.png),
   [positive results](../questions/render/search-e2-complete-20-results-inner-light-s200.png).
@@ -235,7 +239,10 @@ painted glyph bounds,
 keyboard-open fit,
 scroll reachability,
 activation and screen-reader traversal still need separate verification.
-Choosing a floor will not select these debug inset mechanics or require
-surfaces,
+The selected P7.5 floor does not ratify these debug inset mechanics or
+require surfaces,
 borders,
 padding and hit regions to avoid the crease.
+A naturally wider information gap remains permitted;
+P14 and P20 were rejected as **hard minimums**,
+not prohibited whitespace.

@@ -191,10 +191,10 @@ ranking or accessibility.
 The inner text-node boxes stay to the right of the approximate crease x
 `[983,1093)` in the inspected stress states;
 the screenshots visibly preserve an unlettered central band,
-but neither measurement certifies every glyph-ink edge or E2's open
-numeric `min_padding`.
-The cover viewport comparison is **not adopted** for production or inserted
-into the accepted A review.
+but neither measurement certifies every glyph-ink edge or compliance with
+the later user-selected **7.5mm total** E2 floor.
+The cover viewport comparison was unaccepted at capture time;
+D56 later selected its direction without authorizing production code.
 Raw status-bearing screenshots and hierarchies remain private.
 
 ## Historical R/C review and D56 selection

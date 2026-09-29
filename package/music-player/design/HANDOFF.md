@@ -5899,9 +5899,10 @@ pixels after the sanitized status band was excluded.
 Details and limitations are in
 `package/music-player/design/evidence/selected-search-crease-geometry.md`.
 
-E2's `max(min_padding, crease_width)` still lacks a chosen numeric
-`min_padding`.
-Neither the 167px box gap nor 12dp mode-button internal padding sets it.
+At this measurement point,
+E2's `max(min_padding, crease_width)` lacked a chosen numeric `min_padding`.
+Neither the 167px box gap nor 12dp mode-button internal padding determined
+the 7.5mm floor the user chose later.
 Inspect accepted spacing precedent and present visible variants only if a
 larger opposing-information floor would change the accepted A composition.
 Long result names,
@@ -6074,7 +6075,7 @@ Refocus requires another swipe in the measured opt-in state;
 that interaction,
 Back/Clear and result ranking/actions remain #116,
 inner floating-keyboard result-lettering overlap remains #122,
-E2's informational `min_padding` remains #120,
+E2's informational `min_padding` was still open at that point (#120),
 and full Search accessibility traversal remains #118.
 D56 does not authorize production work or further IME experimentation.
 
@@ -6131,11 +6132,11 @@ The user then stated **7.5mm total minimum even if a future device has a
 narrower crease**,
 but explicitly required the review to be redone and the question re-asked
 because it omitted **Search-closed player views**.
-Treat 7.5mm as the user's stated answer awaiting re-confirmation,
-not a recorded final `min_padding` decision.
-That P0/P14/P20 form was paused;
-Search-closed player views are now part of the replacement.
-The 7.5mm statement awaits the explicitly requested re-ask.
+That first 7.5mm statement was not recorded as final because the user
+explicitly requested Search-closed views and a re-ask.
+The P0/P14/P20 form was paused;
+the later complete comparison and confirmation are recorded in the final
+paragraph of this section.
 Do not treat the historical fixed-414dp/24dp player preview as E2-compliant.
 The first separately rendered Search-closed player captures exposed an
 **unaccepted gray central rectangle** from painting the whole inset Row
@@ -6188,7 +6189,21 @@ left browser or deck width.
 `package/music-player/design/evidence/crease-floor-native-comparison.md`
 records the physical fixture,
 measured boxes and caveats.
-The re-ask still needs the user's answer before recording `min_padding`.
+After inspecting the corrected player and Search review,
+the user explicitly answered **P7.5**.
+E2's `min_padding` is now a **7.5mm total minimum between opposing
+informational marks**,
+independent of a future narrower crease;
+use `max(7.5mm, actual crease width)` if that crease is wider.
+Decorative surfaces,
+borders,
+padding and hit bounds do not count toward this distance.
+P14/P20 were not chosen as hard floors,
+though naturally wider information spacing is allowed.
+The selected floor does not certify all glyph ink,
+longer names,
+other scales or keyboard-open layouts;
+these remain implementation verification work.
 No production change or new IME experiment was performed;
 only the disposable capped Fold was used.
 The original AVD remains untouched.

@@ -307,7 +307,7 @@ rounds (2026-09-17):
   Cover-specific accessibility remains open;
   D39/D40 settled only the unfolded
   screen.
-- **OPEN: player information clearance across the crease (E2).**
+- **SETTLED floor; OPEN verification: player information clearance across the crease (E2).**
   The user
   corrected the fixed 24dp unpainted gap:
   keep opposing **informational
@@ -323,8 +323,16 @@ rounds (2026-09-17):
   zero-width emulator hinge-area sensor is an occlusion model,
   not the
   visible dent.
-  The numeric `min_padding` for this boundary remains open;
-  the 12dp mode-button text rule is unrelated.
+  The user reconfirmed **`min_padding = 7.5mm` total opposing-information
+  separation** after reviewing the player before Search and both Search states.
+  This independent floor remains 7.5mm even if a future device's crease is
+  narrower;
+  a wider actual crease still wins through `max(min_padding, crease_width)`.
+  It is not a 7.5mm margin on either side,
+  nor a limit on backgrounds,
+  borders,
+  padding or hit regions.
+  The 12dp mode-button text rule is unrelated.
   The [selected-A Search measurement](evidence/selected-search-crease-geometry.md)
   found no app-node box intersecting the approximate dent and a 167px
   projected horizontal gap between extreme boxes across the inner fixtures.
@@ -344,11 +352,13 @@ rounds (2026-09-17):
   The player shifts right-side text;
   the Search content inset also moves associated control targets,
   but their hit bounds do not count toward E2's informational floor.
-  The user stated 7.5mm as an independent total minimum even for a future
-  narrower crease,
-  but asked to be shown these player views and then re-asked.
-  The numeric floor is therefore not recorded as final;
-  painted clearance and other scales remain unverified.
+  The user then explicitly reconfirmed **P7.5** in the revised review.
+  P14 and P20 are historical alternatives,
+  not chosen hard floors.
+  Painted clearance,
+  longer text,
+  other display scales,
+  keyboard-open fit and accessibility remain unverified.
   Borders,
   paddings,
   input/row

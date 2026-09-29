@@ -132,7 +132,13 @@ floating layout.
 and bounded accepted overlays.
 The [selected Search A crease measurement](evidence/selected-search-crease-geometry.md)
 records the visible central band and app-node geometry;
-it does not choose E2's still-open minimum opposing-information padding.
+it did not determine a floor.
+After the [native player/Search comparison](evidence/crease-floor-native-comparison.md),
+the user chose **7.5mm total** minimum between opposing informational marks,
+even for a future narrower-crease device.
+E2 still permits backgrounds,
+borders,
+padding and hit regions to cross the center.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.

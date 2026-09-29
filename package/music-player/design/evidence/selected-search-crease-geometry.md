@@ -99,7 +99,8 @@ If those boxes enclose all relevant glyph ink,
 their projected gap is a conservative lower bound for those marks;
 that enclosure has not been verified for every node.
 Neither the 167px node-box measurement nor its approximately 68.5dp
-conversion at 390dpi selects the still-open `min_padding` term.
+conversion at 390dpi determined the later user-selected 7.5mm
+`min_padding` term.
 The accepted 12dp mode-button content padding and Material field padding
 have different ownership and cannot be transplanted as an opposing-pane
 minimum.
@@ -107,15 +108,15 @@ If a chosen minimum later exceeds the **measured painted** clearance
 in some state,
 that state needs a visible layout response;
 this before-state reading alone does not establish which minimum fits.
-Long result names,
-other screen states and the preference for a future minimum clearance
-remain separate review work.
+The floor preference was later settled as 7.5mm total opposing-information
+separation;
+long result names and other screen states remain verification work.
 The first policy question at
 `package/music-player/design/questions/crease-floor-review.html` was
 withdrawn after the user noted that it showed just one existing mockup.
 Its proportional bars were not native layout variants.
 The P0/P10/P12 menu was **not answered**;
-no numeric floor was selected.
+no numeric floor was selected at that time.
 After another correction requested Search-closed player views and rejected
 an interim gray structural stripe,
 the replacement at the same review path now embeds distinct debug-only
@@ -124,8 +125,10 @@ P14 and P20 in the player,
 empty Search and results states.
 The [native floor study](crease-floor-native-comparison.md) records their
 after-state informational box positions and continuous surfaces.
-The user stated 7.5mm as the total independent floor even on a future
-narrower-crease device,
-but explicitly asked for re-confirmation after viewing the player.
-The numeric choice remains pending;
-no new IME experiment was performed.
+The user first stated 7.5mm as the independent **total** floor even on a
+future narrower-crease device,
+then explicitly re-confirmed **P7.5** after seeing the player and Search
+captures.
+Decorative marks and hit regions remain outside this numeric rule;
+painted glyph clearance and other states still require verification.
+No new IME experiment was performed.

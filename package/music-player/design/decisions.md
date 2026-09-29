@@ -651,8 +651,13 @@ Where information is arranged on opposing sides of the fold,
  its clearance
 is **`max(min_padding, crease_width)`** after both terms are expressed in the
 same physical coordinate system.
- This is **not** a required empty surface
-gap between two panes.
+The user reconfirmed **`min_padding = 7.5mm` as a minimum total gap between
+opposing information** on 2026-09-26,
+including on future devices whose physical crease is narrower than 7.5mm.
+For a wider crease,
+the physical crease width still governs.
+This is one total left-to-right information gap,
+not 7.5mm on each side and **not** a required empty surface gap between panes.
  Text,
  labels and other informative marks stay out;
 backgrounds,
@@ -713,6 +718,25 @@ near-crease example** for this player's text placement.
 this app-content requirement.
  The earlier "no app-owned paint or hit region"
 version of E2 was an erroneous interpretation and is withdrawn.
+
+The numeric floor was selected only after a debug-only Compose comparison
+showed the player with Search closed,
+empty Search and results for P7.5,
+P14 and P20 on the disposable Pixel 9 Pro Fold.
+The earlier measurement-bar form,
+Search-only comparison and gray-strip player prototype were rejected as
+incomplete or as applying the floor to surfaces.
+P14 and P20 were not selected as hard floors;
+the decision does not prohibit naturally wider information spacing.
+The accepted player browser,
+full deck,
+right-side Search layout and track-row surfaces remain structurally intact.
+The captured 200% keyboard-closed node-box projections support this visual
+choice but do not certify every glyph's ink,
+long names,
+other display settings or keyboard-open fit.
+The evidence is in `package/music-player/design/evidence/crease-floor-native-comparison.md`.
+No production Search implementation was authorized.
 
 ### E3. Tabletop posture = candidate tabletop-c
 The user’s own proposal,
