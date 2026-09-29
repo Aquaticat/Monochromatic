@@ -11,6 +11,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  archiveDisputesOf,
   frontMatterRepairOutcome,
   frontMatterSlice,
   validateFrontMatterTranslation,
@@ -139,6 +140,23 @@ await describe({
         expect(outcome.findings,).toContain(
           'repair-front-matter-not-applicable (translate ensemble owns YAML metadata)',
         );
+      },
+    },),
+    // LEDGER B29: the front-matter contest checks its lanes without the
+    // slice's disputed wordings (`lane-contest-eligibility.ts`), which is
+    // sound only while no dispute can exist at a front-matter slice.
+    it({
+      name: 'RAISES NO ISSUE, so no dispute and no disputed wording exists at a front-matter slice',
+      fn: async () => {
+        /**
+         Repair row for the metadata slice.
+         */
+        const outcome = frontMatterRepairOutcome({
+          sliceIndex: 0,
+          targetText: TARGET.raw,
+        },);
+        expect(outcome.issues,).toEqual([],);
+        expect(archiveDisputesOf({ chunks: [outcome,], },).size,).toBe(0,);
       },
     },),
   ],
