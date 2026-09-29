@@ -2,6 +2,7 @@ import {
   carriesAsciiLetter,
   isHanCharacter,
 } from './han-only-text.ts';
+import { straightenQuotes, } from './quote-normalize.ts';
 import { withoutComments, } from './translate-address-drop.ts';
 import { titleText, } from './han-title-read.ts';
 
@@ -17,7 +18,8 @@ import { titleText, } from './han-title-read.ts';
 // in the marks. A candidate bracketing a title that carries Latin letters
 // and no Han in 《》 is refused HERE before any judge reads it, unless the
 // page it would replace writes the same bracketed title (the XingZ60 archive
-// keeps one such line). A bracketed title that keeps Han (《舞萌DX》) is left
+// keeps one such line), curly and straight quotation marks counting as one
+// (ledger B24). A bracketed title that keeps Han (《舞萌DX》) is left
 // to the Han residue floor (`translate-han-residue.ts`, ledger F-3), which
 // refuses its Han unless an English gloss stands beside it, and to the
 // judges; comments are cut.
@@ -143,9 +145,15 @@ export function latinTitleFindings(
     readonly pageText?: string;
   },
 ): readonly string[] {
+  /**
+   Page as the typography fold reads it: a title the page writes with a
+   curly apostrophe is the one a candidate writes with a straight one, since
+   the typography restoration makes them one (ledger B24).
+   */
+  const foldedPage = straightenQuotes({ text: pageText, },);
   return latinBracketed({ text: withoutComments({ text: candidateText, },), },)
     .filter(function unkeptByPage(span,): boolean {
-      return !pageText.includes(span,);
+      return !foldedPage.includes(straightenQuotes({ text: span, },),);
     },)
     .map(function toFinding(span,): string {
       /**
