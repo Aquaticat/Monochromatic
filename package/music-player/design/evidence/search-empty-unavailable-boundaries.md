@@ -41,6 +41,39 @@ library is available” and provides no recovery control.
 No real search algorithm,
 permission recovery or result activation is implemented by these fixtures.
 
+A subsequent **keyboard-closed** static study used the same corrected debug
+APK (SHA-256
+`1caee7060acfb5bbcd9a02142b4c9bada6b5886517157d25fef4a48b9b1e9c05`)
+on the disposable `Fold_No_Hardware_Probe` inside a measured 6 GiB/2 CPU
+container.
+`questions/evidence/search-status-review-manifest.json` indexes the
+sanitized inner 2076 × 2152px and cover 1080 × 2424px rasters for empty
+query,
+fixed `zzq` no-match and forced unavailable fixtures in light/dark at
+100%/200% text.
+Every published PNG replaced its complete top status strip with the
+previously checked generic 9:41 bar;
+the private raw pixels below that strip matched the published app region
+exactly,
+and output was opaque with metadata stripped.
+The [self-contained status gallery](../questions/search-status-evidence.html)
+allows inspecting each panel at its cited dp size.
+All captured inner states retain the actual left browser,
+Open control and complete playback deck.
+At 200% text the right-side prompt and unavailable detail wrap within
+their allotted content region in this keyboard-closed fixture.
+The unavailable page simultaneously shows a populated browser and an
+already-playing track,
+so the broad label “Library unavailable” implies more than the fixture
+establishes.
+No Gboard,
+other IME,
+backend Search,
+recovery control or D63 automatic edit focus was exercised by these
+captures.
+The generic fixture copy remains historical,
+not selected just because it was captured.
+
 ## Distinct evidence states
 
 - **Empty query, library usable:** no lookup needs to have failed.
