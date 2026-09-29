@@ -33,6 +33,7 @@ import {
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
 import { gatherStageVoices, } from './stage-quorum.ts';
+import { MIN_STAGE_VOICES, } from './stage-reachable-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Reference attestation stage
@@ -64,6 +65,29 @@ export type ReferenceAttestation = {
    */
   readonly findings: readonly string[];
 };
+
+/**
+ Distinct voices a detail needs: half the voices heard, rounded up, and never
+ fewer than the two every stage keeps (ledger B29). Sized on the heard bench
+ alone, one voice heard needed one, so a single model attested or confirmed
+ a detail the repair lane then screens addition claims against.
+
+ @param heard - voices the round heard
+
+ @returns Voices that must give or confirm a detail
+
+ @example
+ ```ts
+ attestationVotesNeeded({ heard: 1, },); // 2
+ attestationVotesNeeded({ heard: 5, },); // 3
+ ```
+ */
+function attestationVotesNeeded({ heard, }: { readonly heard: number; },): number {
+  return Math.max(
+    MIN_STAGE_VOICES,
+    rosterQuorumSize({ rosterSize: heard, },),
+  );
+}
 
 /**
  Puts every verified detail to the bench as a yes-or-no candidate and keeps
@@ -182,11 +206,30 @@ async function confirmCandidates(
       ],
     };
   }
+  // A LONE VOICE DECIDES NOTHING, either way (ledger B29): it can neither
+  // confirm a candidate nor discard what the extraction quorum kept, so a
+  // confirmation heard by fewer voices than a decision needs is treated as
+  // one nobody answered.
+  if (heard < MIN_STAGE_VOICES) {
+    l.warn(
+      `ATTESTED CONFIRM heard=${String(heard,)} candidates=${String(candidates.length,)}: fewer voices than the ${
+        String(MIN_STAGE_VOICES,)
+      } a decision needs, the extraction quorum stands`,
+    );
+    return {
+      details: extracted,
+      confirmFindings: [
+        ...gather.findings,
+        `reference attestation confirmation heard ${String(heard,)} voice, fewer than the ${
+          String(MIN_STAGE_VOICES,)
+        } a decision needs; the extraction quorum stands`,
+      ],
+    };
+  }
   /**
-   Distinct confirming voices a candidate needs: half the heard bench,
-   rounded up.
+   Distinct confirming voices a candidate needs.
    */
-  const needed = rosterQuorumSize({ rosterSize: heard, },);
+  const needed = attestationVotesNeeded({ heard, },);
   /**
    Candidates confirmed by enough voices.
    */
@@ -341,9 +384,9 @@ export async function attestCitedReferences(
       0,
     );
   /**
-   Distinct voices a detail needs: half the heard bench, rounded up.
+   Distinct voices a detail needs.
    */
-  const needed = rosterQuorumSize({ rosterSize: heard, },);
+  const needed = attestationVotesNeeded({ heard, },);
   /**
    Details enough voices gave to the open question alone.
    */
