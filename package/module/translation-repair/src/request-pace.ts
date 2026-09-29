@@ -32,7 +32,7 @@ import { StatedRefusalError, } from './stated-refusal.ts';
 // slept 1,640,012 ms until the first start left the window. Takes then ran
 // through one promise chain and the sleep did not hear an abort, so every Hyper
 // call behind it waited too, and the 360 s call deadlines that fired at about
-// 08:10 were only read at 08:31:40, when the sleep ended: eight translate
+// 08:10 UTC were only read at 08:31:40 UTC, when the sleep ended: eight translate
 // slices stalled 27 to 34 minutes and the entry took 100.6 minutes. Each take
 // now RESERVES its start at once, in arrival order, and waits for it on its
 // own abortable timer: a caller that gives up leaves at once and hands its

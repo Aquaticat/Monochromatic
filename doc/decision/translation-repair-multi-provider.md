@@ -106,7 +106,7 @@ and a `subscription {limit, requests, renewsAt}` block.
 Actual dollars remaining is a better pacing signal than a percentage and should be modelled.
 
 Hyper `GET /v1/credits` gives `{"balance": N}`, measured at 249 on 2026-08-24.
-The balance refreshes every 24 hours at 02:53, so it is a daily budget and needs no spend cap.
+The balance refreshes every 24 hours at 02:53 (the zone it was observed in was never established), so it is a daily budget and needs no spend cap.
 
 ### Non-conformant answers
 
@@ -697,7 +697,7 @@ however well the router covered the wide roles.
 Charm Hyper serves `gemma-4-26b-a4b-it`.
 
 THE SYMMETRIC COST IS REAL AND WAS OBSERVED THE SAME DAY.
-A run started 2026-08-24 15:36 found Charm Hyper out of budget from its first second,
+A run started 2026-08-24 15:36 UTC found Charm Hyper out of budget from its first second,
 and the five models it refused were exactly the five Hyper-only ones:
 `qwen3.8-max`, `minimax-m3`, `gemma-4-26b-a4b-it`,
 `deepseek-v4-pro-0813` and `deepseek-v4-flash-0731`.
@@ -793,7 +793,7 @@ while the arrangement above prices the whole stage's survival,
 and survival is the larger term.
 
 THE OUTAGE TABLE STOPPED BEING AN ARGUMENT THE SAME AFTERNOON.
-The 15:36 pass reached the naturalness lane with Charm Hyper still dry
+The 15:36 UTC pass reached the naturalness lane with Charm Hyper still dry
 and logged both halves of the prediction within ten milliseconds:
 
     17:01:28.240  chunk 2: nothing to edit, unchanged
@@ -836,8 +836,8 @@ IT STILL DOES NOT MOVE THE SEAT, for three reasons, and the third is decisive:
     so 2h48m is a floor and the fraction could move either way once it lifts.
 
 -   THE DRYNESS IS PROBABLY SELF-INFLICTED. A 40-round calibration ran 11:22 to
-    14:32 and spent 937 streams, and a corpus pass ran to 14:58. Hyper was dry by
-    15:04. So this measures how fast heavy verification exhausts a budget and how
+    14:32 UTC and spent 937 streams, and a corpus pass ran to 14:58 UTC. Hyper was dry by
+    15:04 UTC. So this measures how fast heavy verification exhausts a budget and how
     long it takes to refill, which is a fact about the day's usage rather than
     about the provider. Production traffic has a different shape entirely.
 

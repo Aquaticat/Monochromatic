@@ -13,9 +13,9 @@ import { reachOf, } from '../roster-reach.ts';
 // THE THIRTEENTH CLASS, found by the third hakureico pass of 2026-09-07. Hyper
 // named its return in 538 s at 21:57 UTC and `markRefused` held it out for exactly
 // that (the twelfth class working as built). Bedrock stayed wet, so nothing
-// waited: the translate lane started at 21:58 with every Hyper-only writer
+// waited: the translate lane started at 21:58 UTC with every Hyper-only writer
 // refused as `NoProviderForModelError` in the same millisecond, the lane
-// contest and the consolidation at 22:00 ran on the two Bedrock seats alone,
+// contest and the consolidation at 22:00 UTC ran on the two Bedrock seats alone,
 // and every consolidation round read `quorum-not-met` at 0 ms. The footnote
 // passage the archive lacks stayed unfilled and three contested slices
 // settled on nobody, nine minutes before the provider came back.

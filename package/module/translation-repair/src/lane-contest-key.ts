@@ -48,8 +48,8 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 
  The glossary audit's corrections ride inside 6 too (ledger C3 to R16,
  `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
- the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20 that
- day, none after 00:27): the eligibility floor refuses and passes other forms,
+ the agent runs, still 04:26 UTC on 2026-09-27 (eighteen files after 04:20 UTC that
+ day, none after 04:27 UTC): the eligibility floor refuses and passes other forms,
  the COMMUNITY RENDERINGS block on the contest sheet counts a rendering
  inflected and bounded, and the grammatical English house rule states the
  doubled preposition. The terms, renderings and whys reach the identity
@@ -58,45 +58,45 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  Rides inside 6 too: the contest sheet no longer shows the accuracy probe's
  claims on a slice whose patch lost, since the repair candidate there never
  carried the patched text (ledger L7); checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 6 too: every gather now keeps a seat that answered unreadably
  out of the same-prompt retry rounds and re-asks each such seat, whichever
  round it came in, in the nudged recovery round (ledger P2, `005692e11`),
  which changes whose voices a round closes on; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 6 too: a reply whose complete JSON value more text follows is
  read rather than lost (ledger P8, `cac097368`), which changes whose voices
  every round hears; checked on 2026-09-28: still no slice-cache file newer
- than 00:26 on 2026-09-27.
+ than 04:26 UTC on 2026-09-27.
 
  Rides inside 6 too: a reply that could not be used is re-asked once,
  nudged, of the same model on another provider through the uniqueness
  wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
  round hears; checked on 2026-09-28: still no slice-cache file newer than
- 00:26 on 2026-09-27.
+ 04:26 UTC on 2026-09-27.
 
  Rides inside 6 too: Bedrock reads dry with 1.33 USD still left, and its
  ledger holds every billed attempt at its bound (ledger P1, `2a108dfb3`,
  `107763dbb` and `7cfd5ae4b`), so a Gemma call moves to OpenRouter sooner
  as Bedrock nears its credit, which changes whose voices a round hears;
- checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ checked on 2026-09-28: still no slice-cache file newer than 04:26 UTC on
  2026-09-27.
 
  Rides inside 6 too: the recovery round re-asks a reply the length
  limit cut with a nudge naming the cut, apart from one off the shape
  (ledger P10, `ce0ef7b51`), which changes what such a seat is asked and
  whose voices a round hears; checked on 2026-09-28: still no slice-cache
- file newer than 00:26 on 2026-09-27.
+ file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 6 too: a slice the per-slice hook re-seats under a hold is
  judged by the judges it hands over and keyed by them (ledger X12); a slice
  nobody re-seated keys as before, so no key moves. Same check, same result.
 
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 6 was set
- in `d614a0c1d` at 00:30 on 2026-09-28, after the newest slice-cache file under the
- agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
+ in `d614a0c1d` at 04:30 UTC on 2026-09-28, after the newest slice-cache file under the
+ agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).

@@ -91,7 +91,7 @@ import type { SliceReplacement, } from './splice-slices.ts';
  2026-09-27, "No eligible standing").
 
  VERSION 15, the same day, for every change to what this lane asks or
- accepts after version 14 landed at 02:34, none of which moved the number
+ accepts after version 14 landed at 06:34 UTC, none of which moved the number
  (ledger M25). The floors: the address floor (F-1), the suicide floor (F-4),
  the floors that need no grammar on an unreadable original (F-5), the
  line-structure floor (F-7), the sheet-leak floor (F-8), the neutral-pronoun
@@ -103,7 +103,7 @@ import type { SliceReplacement, } from './splice-slices.ts';
  structure. The lane contest, a windowed stage, sizes its quorum on the
  reachable bench (ledger X8). A slice settled before any of these could resume
  with a candidate the floors now refuse. It costs nothing: the newest of the
- 14,596 slice-cache files under the agent runs was written at 00:26 that day,
+ 14,596 slice-cache files under the agent runs was written at 04:26 UTC that day,
  before version 14 existed.
 
  Two later changes ride inside 15 on the same reasoning, checked on
@@ -116,8 +116,8 @@ import type { SliceReplacement, } from './splice-slices.ts';
 
  The glossary audit's corrections ride inside 15 too (ledger C3 to R16,
  `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
- the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20 that
- day, none after 00:27). The source-carry floor refuses forms it passed and
+ the agent runs, still 04:26 UTC on 2026-09-27 (eighteen files after 04:20 UTC that
+ day, none after 04:27 UTC). The source-carry floor refuses forms it passed and
  passes forms it refused (a slide onto a tier, "fossil-fuel car", "turned into
  in"), and no key reads a refused form; the COMMUNITY RENDERINGS block on the
  select sheets now counts a rendering inflected and bounded; and the
@@ -128,30 +128,30 @@ import type { SliceReplacement, } from './splice-slices.ts';
  out of the same-prompt retry rounds and re-asks each such seat, whichever
  round it came in, in the nudged recovery round (ledger P2, `005692e11`),
  which changes whose voices a round closes on; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 15 too: a reply whose complete JSON value more text follows is
  read rather than lost (ledger P8, `cac097368`), which changes whose voices
  every round hears; checked on 2026-09-28: still no slice-cache file newer
- than 00:26 on 2026-09-27.
+ than 04:26 UTC on 2026-09-27.
 
  Rides inside 15 too: a decision seat whose state the endpoint refuses
  as past its context, or that a stage cannot ask, now reads as out of reach
  for that ballot rather than as a lost voice (ledger P13, `a991ef1e1`), which
  changes the quorum a select round closes on; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 15 too: no alignment, quote-loss or declared-name refusal keeps
  an archive the publication rule refuses, and such a slice carries
  `translate-archive-ineligible` (ledger X6, `6445a2e35`), which changes a
  refused slice's text and findings; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 15 too: a reply that could not be used is re-asked once,
  nudged, of the same model on another provider through the uniqueness
  wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
  round hears; checked on 2026-09-28: still no slice-cache file newer than
- 00:26 on 2026-09-27.
+ 04:26 UTC on 2026-09-27.
 
  Rides inside 15 too: a disputed slice's repair text never stands in when it
  is the archive's own wording, and the refused-wording finding a translate
@@ -159,25 +159,25 @@ import type { SliceReplacement, } from './splice-slices.ts';
  assembly, or unconfirmed by the checkers) rather than blaming the checkers
  for both (ledger L12, `f66e96f06` and `3ffbcec10`). No settled slice moves:
  0 of 1,132 fully resolved disputes over every artifact had unchanged text.
- Checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ Checked on 2026-09-28: still no slice-cache file newer than 04:26 UTC on
  2026-09-27.
 
  Rides inside 15 too: Bedrock reads dry with 1.33 USD still left, and its
  ledger holds every billed attempt at its bound (ledger P1, `2a108dfb3`,
  `107763dbb` and `7cfd5ae4b`), so a Gemma call moves to OpenRouter sooner
  as Bedrock nears its credit, which changes whose voices a round hears;
- checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ checked on 2026-09-28: still no slice-cache file newer than 04:26 UTC on
  2026-09-27.
 
  Rides inside 15 too: the recovery round re-asks a reply the length
  limit cut with a nudge naming the cut, apart from one off the shape
  (ledger P10, `ce0ef7b51`), which changes what such a seat is asked and
  whose voices a round hears; checked on 2026-09-28: still no slice-cache
- file newer than 00:26 on 2026-09-27.
+ file newer than 04:26 UTC on 2026-09-27.
 
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
- in `66703994a` at 22:56 on 2026-09-27, after the newest slice-cache file under the
- agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
+ in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
+ agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).

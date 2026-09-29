@@ -310,7 +310,7 @@ import type { RepairModels, } from './repair-contract.ts';
  would mix reasoned and unreasoned ballots in one entry, the confusion
  version 31 was spent to prevent. It costs nothing beyond version 32: the
  newest of the 14,596 slice-cache files under the agent runs was written at
- 00:26 that day, before version 32 existed.
+ 04:26 UTC that day, before version 32 existed.
 
  EVERY REPAIR-LANE CHANGE SINCE VERSION 32 RIDES INSIDE 33, checked rather
  than assumed, since none of them moved the number when it landed (ledger
@@ -323,12 +323,12 @@ import type { RepairModels, } from './repair-contract.ts';
  house rules' "-re" line naming the meter that measures beside the metre
  (ledger K13, `403db3c6e`) reaches the critic, editor and panel sheets and
  rides inside too, checked on 2026-09-28: still no slice-cache file newer
- than 00:26 on 2026-09-27.
+ than 04:26 UTC on 2026-09-27.
 
  The glossary audit's corrections ride inside 33 too (ledger C3 to R16,
  `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
- the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20 that
- day, none after 00:27): the COMMUNITY RENDERINGS block the editor and the
+ the agent runs, still 04:26 UTC on 2026-09-27 (eighteen files after 04:20 UTC that
+ day, none after 04:27 UTC): the COMMUNITY RENDERINGS block the editor and the
  introduced-defect probe read counts a rendering inflected and bounded, and
  the grammatical English house rule on the critic, editor and panel sheets
  states the doubled preposition. The terms, renderings and whys reach the
@@ -337,30 +337,30 @@ import type { RepairModels, } from './repair-contract.ts';
  Rides inside 33 too: a panel ballot or checker report carrying no usable
  verdict on its sheet is no heard voice, so the gather re-asks the seat rather
  than closing the round on it (ledger L8, `abfc69393`); checked on 2026-09-28:
- still no slice-cache file newer than 00:26 on 2026-09-27.
+ still no slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 33 too: every gather now keeps a seat that answered unreadably
  out of the same-prompt retry rounds and re-asks each such seat, whichever
  round it came in, in the nudged recovery round (ledger P2, `005692e11`),
  which changes whose voices a round closes on; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 33 too: a reply whose complete JSON value more text follows is
  read rather than lost (ledger P8, `cac097368`), which changes whose voices
  every round hears; checked on 2026-09-28: still no slice-cache file newer
- than 00:26 on 2026-09-27.
+ than 04:26 UTC on 2026-09-27.
 
  Rides inside 33 too: a decision seat whose state the endpoint refuses
  as past its context, or that a stage cannot ask, now reads as out of reach
  for that ballot rather than as a lost voice (ledger P13, `a991ef1e1`), which
  changes the quorum a select round closes on; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 33 too: a winning patch sheds every edit whose issue the
  checkers did not confirm and at least one voted worse, and the reduced patch
  is proved once more (ledger L3, the owner's ruling of 2026-09-28,
  `69c149471`), which changes the text a chunk ships and its checker record;
- checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ checked on 2026-09-28: still no slice-cache file newer than 04:26 UTC on
  2026-09-27.
 
  Rides inside 33 too: the editor preservation gate refuses an edit that loses
@@ -368,44 +368,44 @@ import type { RepairModels, } from './repair-contract.ts';
  no addition claim quoted, and the editor sheet names every such kind (ledger
  L4, the owner's ruling of 2026-09-28, `b5338610e` and `c4a4fbb62`), which
  changes the editor's question and which edits a chunk may apply; checked on
- 2026-09-28: still no slice-cache file newer than 00:26 on 2026-09-27.
+ 2026-09-28: still no slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 33 too: the same gate refined for quality, letting an edit
  re-mark markup the translation authored and move an atom between envelopes,
  reading the whole source document, re-applied by the worse-voted strip, and
  stated on the editor sheet (ledger L4, `b07f8ac48` and `ab84cbfd7`), which
  changes the editor's question and which edits a chunk may apply; checked on
- 2026-09-28: still no slice-cache file newer than 00:26 on 2026-09-27.
+ 2026-09-28: still no slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 33 too: a reply that could not be used is re-asked once,
  nudged, of the same model on another provider through the uniqueness
  wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
  round hears; checked on 2026-09-28: still no slice-cache file newer than
- 00:26 on 2026-09-27.
+ 04:26 UTC on 2026-09-27.
 
  Rides inside 34 too: Bedrock reads dry with 1.33 USD still left, and its
  ledger holds every billed attempt at its bound (ledger P1, `2a108dfb3`,
  `107763dbb` and `7cfd5ae4b`), so a Gemma call moves to OpenRouter sooner
  as Bedrock nears its credit, which changes whose voices a round hears;
- checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ checked on 2026-09-28: still no slice-cache file newer than 04:26 UTC on
  2026-09-27.
 
  Rides inside 34 too: the recovery round re-asks a reply the length
  limit cut with a nudge naming the cut, apart from one off the shape
  (ledger P10, `ce0ef7b51`), which changes what such a seat is asked and
  whose voices a round hears; checked on 2026-09-28: still no slice-cache
- file newer than 00:26 on 2026-09-27.
+ file newer than 04:26 UTC on 2026-09-27.
 
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 33 was set
- in `f2cd70ece` at 22:41 on 2026-09-27, after the newest slice-cache file under the
- agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
+ in `f2cd70ece` at 02:41 UTC on 2026-09-28, after the newest slice-cache file under the
+ agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).
 
  VERSION 34, 2026-09-28, the first number spent while a run held the
  previous one. TianqiChen66621 ran the frozen dist of `9a3f28b30` and wrote
- 28 slice-cache files under 33, from 06:26 to 06:49 that day, so nothing may
+ 28 slice-cache files under 33, from 10:26 to 10:49 UTC that day, so nothing may
  ride inside 33 from here on. Both kinds of change at once (ledger L5): the
  RECORD, because the tally holds an acceptance settled at neutral for a human
  (`e87e353ae`), so a slice settled under 33 would resume carrying accepted
@@ -421,7 +421,7 @@ import type { RepairModels, } from './repair-contract.ts';
  Rides inside 34: the declared-identity rule says a footnote marker carries
  its note, on the critic, panel, editor and introduced-defect probe sheets
  (ledger L5, `868e848d3`); checked on 2026-09-28 after TianqiChen66621: no
- slice-cache file newer than 00:26 on 2026-09-27 remains.
+ slice-cache file newer than 04:26 UTC on 2026-09-27 remains.
 
  Rides inside 34 too: the critic and panel sheets share one block of
  obligatory differences, which replaces the panel's line on small words
@@ -436,7 +436,7 @@ import type { RepairModels, } from './repair-contract.ts';
  their rules, the cited references and each claim's quotes, on the proof and
  its worse-vote recheck (ledger L14, `resolution-sheet-evidence.ts`), which
  changes the ballots that decide resolution and strip edits; checked again on
- 2026-09-28: the only slice-cache file not older than 00:26 on 2026-09-27 is
+ 2026-09-28: the only slice-cache file not older than 04:26 UTC on 2026-09-27 is
  the consolidation entry written that minute.
 
  Rides inside 34 too: claim summaries fold onto one line on the panel,

@@ -467,7 +467,7 @@ since the cache key names the reader roster.
 Decided by the pooled-null rule the editor and translator seats of this decision were read by,
 run as `producer-calibrate 40 --candidates google.gemma-4-e2b` on `5462257b4`
 (launched 13:07 UTC,
-standing printed 16:07,
+standing printed 16:07 UTC,
 10795 s wall clock,
 one slice at a time,
 every one of the ten models writing and judging every slice),
@@ -666,7 +666,7 @@ a writer leaves the translator seat when its z crosses the Bonferroni threshold 
 and a candidate not separated from the null takes it.
 Instrument:
 `producer-calibrate 40 --candidates inception/mercury-2.5` on frozen `3224ff347`,
-launched detached at 17:06 UTC and printing `STANDING over 40 rounds` at 20:02,
+launched detached at 17:06 UTC and printing `STANDING over 40 rounds` at 20:02 UTC,
 log `~/temp/agent/producer-calibrate-mercury-20260909.log`,
 read with the scratch `read-standing.mjs`.
 
@@ -1025,7 +1025,7 @@ a writer leaves the translator seat when its z crosses the Bonferroni threshold 
 and a candidate not separated from the null takes it.
 Instrument:
 `producer-calibrate 40 --candidates deepseek-v4.1-flash` on frozen `6eada935a`,
-launched detached at 14:53 UTC and printing `STANDING over 40 rounds` at 16:45,
+launched detached at 14:53 UTC and printing `STANDING over 40 rounds` at 16:45 UTC,
 log `~/temp/agent/producer-calibrate-v41flash-20260919.log`,
 read with the scratch `read-standing.mjs`.
 About 0.24 USD by the OpenRouter spend lines,

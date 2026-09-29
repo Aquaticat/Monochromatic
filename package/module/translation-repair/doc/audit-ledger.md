@@ -4580,7 +4580,7 @@ and both fence mutants are caught.
 Cache:
 rides inside repair 34 and refine 5,
 checked on 2026-09-28:
-the only slice-cache file not older than 00:26 on 2026-09-27 is the consolidation entry written that minute.
+the only slice-cache file not older than 04:26 UTC on 2026-09-27 is the consolidation entry written that minute.
 
 Scope kept out,
 as a candidate rather than bundled:
@@ -5459,7 +5459,8 @@ some of them ranges that state the zone once
 ("02:35 and 02:45 UTC").
 Most are the cache-version histories written for M28 on 2026-09-28,
 which give commit times as `git log` prints them
-(`66703994a` "at 22:56 on 2026-09-27" is 02:56 UTC on 2026-09-28)
+(`66703994a` was written as 22:56 EDT on 2026-09-27,
+which is 02:56 UTC on 2026-09-28)
 and slice-cache file times as `find` prints them,
 both in local time.
 Fix:
@@ -5750,7 +5751,7 @@ The run shape now carries the judges beside the writers.
 Every consolidation key moved inside version 20,
 under which no slice-cache file had been written
 (checked 2026-09-28:
-the newest is the TianqiChen66620 consolidation entry at 00:26 on 2026-09-27).
+the newest is the TianqiChen66620 consolidation entry at 04:26 UTC on 2026-09-27).
 The other run shapes carry every bench they ask:
 the translate lane's its writers and judges,
 refine's its refiners,
@@ -5946,8 +5947,8 @@ Both rounds persist once any voice was usable (`usable > 0`),
 so a one-voice answer is kept as well.
 Neither the keys' TSDoc nor `doc/decision/llm-assisted-block-pairing.md` rules that pairing is roster-independent.
 Pairing answers live beside the slice caches (`slice-cache/<entry>/pairing.*.json`);
-version 3 was set in `d614a0c1d` at 00:30 on 2026-09-28,
-after the newest slice-cache file (00:26 on 2026-09-27),
+version 3 was set in `d614a0c1d` at 04:30 UTC on 2026-09-28,
+after the newest slice-cache file (04:26 UTC on 2026-09-27),
 so none was written under 3 and the roster can ride inside it.
 It must land before the preparation half of X12,
 or a re-seated section resumes the old bench's answer.
@@ -6039,7 +6040,7 @@ and the two embedded NUL cases they had pinned to one key now differ;
 three tests that joined the key by hand name its material and call the encoder instead (the M39 lesson).
 Rides inside version 3:
 checked again on 2026-09-28,
-the newest slice-cache file is still from 00:26 on 2026-09-27.
+the newest slice-cache file is still from 04:26 UTC on 2026-09-27.
 Mutation checked with a control:
 nine mutants caught (the question kind,
 roster,
@@ -6216,7 +6217,7 @@ so the key is set in every test process (checked as a boolean:
 `TRANSLATION_REPAIR_EXA_API_KEY` is non-empty).
 H16's red guard (`31c7d3f00`) prepared an original naming an invented title through that path:
 the preparation bought one Exa search for it
-and wrote the answer to `~/.cache/translation-repair/lookup/84fcabcd8c13….json` at 15:42.
+and wrote the answer to `~/.cache/translation-repair/lookup/84fcabcd8c13….json` at 19:42 UTC.
 The five other lookup records whose titles a fixture also names are corpus titles live runs bought.
 The three reads now come through `PassOutsideReads` (`corpus-run/pass-outside-reads.ts`),
 required by `preparePassEntry` and `runPassPreparation`;
@@ -7157,16 +7158,16 @@ corrected in `66703994a`,
 which moved the translate cache to 15 and the consolidation cache to 20,
 with the repair cache's version 33 account naming what rode inside it,
 2026-09-27.
-The translate and consolidation versions landed at 02:34 (`bd98bdc70`);
+The translate and consolidation versions landed at 06:34 UTC (`bd98bdc70`);
 after them the F-series floors,
 the Han residue floor,
 the sheets reading the declared names and house rules,
 the reachable quorum and the A17 signer floor all changed what those stages ask or accept,
 and none moved a number;
-the repair lane had four more such changes after its version 32 (03:34).
+the repair lane had four more such changes after its version 32 (07:34 UTC).
 No harm reached a page,
 and only by luck:
-no run cached a slice after 00:26 that day.
+no run cached a slice after 04:26 UTC that day.
 Each version file says the bump is enforced by nothing and was missed before.
 Prevention:
 a commit that changes a floor,
@@ -7228,7 +7229,7 @@ its eligibility floor,
 its windows and its quorum,
 and its ballots were cached under version 5 on fifteen days of changing sheets;
 pairing (version 2 since 2026-08-29) kept its number through windowed rounds and bench-sized quorums;
-refine (version 5 since 03:34 on 2026-09-27) carried house-rule changes with no account.
+refine (version 5 since 07:34 UTC on 2026-09-27) carried house-rule changes with no account.
 Found while accounting for K13,
 whose house-rule line reaches every one of those sheets.
 The page-assembly Canadian pass is outside every key,
@@ -7244,14 +7245,14 @@ the shared house rules and prose ranges included.
 The first pre-launch check under this rule,
 2026-09-28,
 run by `cache-account-audit.ts` over all six constants:
-translate 15 and consolidation 20 set in `66703994a` (22:56 on 2026-09-27),
-repair 33 in `f2cd70ece` (22:41),
-refine 5 in `30e66051e` (03:34 that morning),
-lane contest 6 and pairing 3 in `d614a0c1d` (00:30 on 2026-09-28).
-Every one was set after the newest slice-cache file under the agent runs (00:26 on 2026-09-27),
+translate 15 and consolidation 20 set in `66703994a` (02:56 UTC on 2026-09-28),
+repair 33 in `f2cd70ece` (02:41 UTC on 2026-09-28),
+refine 5 in `30e66051e` (07:34 UTC on 2026-09-27),
+lane contest 6 and pairing 3 in `d614a0c1d` (04:30 UTC on 2026-09-28).
+Every one was set after the newest slice-cache file under the agent runs (04:26 UTC on 2026-09-27),
 and none has been written since:
-`find ... -newermt '2026-09-27 00:27'` gives 0,
-and its control at 00:20 gives 18.
+`TZ=UTC find ... -newermt '2026-09-27 04:27'` gives 0,
+and its control at 04:20 UTC gives 18.
 So no answer cached under an earlier question can be served under any current number,
 and no version moves.
 Of the 153 non-test source commits since the earliest of them,
@@ -7263,8 +7264,8 @@ dated.
 Rerun 2026-09-28 over seven constants,
 with the page title lexicon's `PAGE_TITLE_CACHE_VERSION` 1 (`ea61cbd4c`)
 added to the script and the repair version now 34 (`ef20e7978`):
-`find ... -newermt '2026-09-27 00:20'` gives the same 18 files,
-all by 00:26 that day,
+`TZ=UTC find ... -newermt '2026-09-27 04:20'` gives the same 18 files,
+all by 04:26 UTC that day,
 and none since,
 so every number still holds what it names.
 The page title lines and X20's heading pairs reach the slices through the identity context,

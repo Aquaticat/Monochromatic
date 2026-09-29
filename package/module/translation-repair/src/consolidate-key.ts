@@ -90,7 +90,7 @@ import type { LaneText, } from './translate-candidates.ts';
  disputed slice like an undisputed one.
 
  VERSION 20, the same day, for every change to what this stage asks or
- accepts after version 19 landed at 02:34, none of which moved the number
+ accepts after version 19 landed at 06:34 UTC, none of which moved the number
  (ledger M25): the floors a proposal is held to (F-1 to F-11, Han left in
  prose, a Han signer left in Han or romanized with no meaning), the gate and
  the polish gate reading the page and line rules, the refiner and writer no
@@ -99,7 +99,7 @@ import type { LaneText, } from './translate-candidates.ts';
  quorum on the reachable bench (ledger E3 and X8), and a slice with no valid
  wording keeping the archive, which is never persisted. A settlement written
  before any of these could resume past a floor it now fails. It costs
- nothing: no slice-cache file under the agent runs was written after 00:26
+ nothing: no slice-cache file under the agent runs was written after 04:26 UTC
  that day, before version 19 existed.
 
  Two later changes ride inside 20 on the same reasoning, checked on
@@ -111,8 +111,8 @@ import type { LaneText, } from './translate-candidates.ts';
 
  The glossary audit's corrections ride inside 20 too (ledger C3 to R16,
  `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
- the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20 that
- day, none after 00:27): the source-carry floor a proposal is held to refuses
+ the agent runs, still 04:26 UTC on 2026-09-27 (eighteen files after 04:20 UTC that
+ day, none after 04:27 UTC): the source-carry floor a proposal is held to refuses
  and passes other forms, the COMMUNITY RENDERINGS block on the gate and the
  polish gate counts a rendering inflected and bounded, and the grammatical
  English house rule states the doubled preposition. The terms, renderings and
@@ -122,44 +122,44 @@ import type { LaneText, } from './translate-candidates.ts';
  out of the same-prompt retry rounds and re-asks each such seat, whichever
  round it came in, in the nudged recovery round (ledger P2, `005692e11`),
  which changes whose voices a round closes on; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 20 too: a reply whose complete JSON value more text follows is
  read rather than lost (ledger P8, `cac097368`), which changes whose voices
  every round hears; checked on 2026-09-28: still no slice-cache file newer
- than 00:26 on 2026-09-27.
+ than 04:26 UTC on 2026-09-27.
 
  Rides inside 20 too: a reply that could not be used is re-asked once,
  nudged, of the same model on another provider through the uniqueness
  wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
  round hears; checked on 2026-09-28: still no slice-cache file newer than
- 00:26 on 2026-09-27.
+ 04:26 UTC on 2026-09-27.
 
  Rides inside 20 too: a disputed slice's repair text never stands in when it
  is the archive's own wording, and the refused-wording finding says why the
  repair lane's text is refused (ledger L12, `f66e96f06` and `3ffbcec10`). No
  settled slice moves: 0 of 1,132 fully resolved disputes over every artifact
  had unchanged text. Checked on 2026-09-28: still no slice-cache file newer
- than 00:26 on 2026-09-27.
+ than 04:26 UTC on 2026-09-27.
 
  Rides inside 20 too: Bedrock reads dry with 1.33 USD still left, and its
  ledger holds every billed attempt at its bound (ledger P1, `2a108dfb3`,
  `107763dbb` and `7cfd5ae4b`), so a Gemma call moves to OpenRouter sooner
  as Bedrock nears its credit, which changes whose voices a round hears;
- checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ checked on 2026-09-28: still no slice-cache file newer than 04:26 UTC on
  2026-09-27.
 
  Rides inside 20 too: the recovery round re-asks a reply the length
  limit cut with a nudge naming the cut, apart from one off the shape
  (ledger P10, `ce0ef7b51`), which changes what such a seat is asked and
  whose voices a round hears; checked on 2026-09-28: still no slice-cache
- file newer than 00:26 on 2026-09-27.
+ file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 20 too: the run shape carries the slate judges beside the
  writers (ledger X11), which left it when `9a7d48354` split them from the
  writers on 2026-09-02, so a settlement another judging bench reached never
  resumes; every key moves, and none was written under 20. Checked on
- 2026-09-28: still no slice-cache file newer than 00:26 on 2026-09-27.
+ 2026-09-28: still no slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 20 too: a slice the per-slice hook re-seats under a hold runs
  on the writers, slate judges and naturalness roles it hands over and is
@@ -167,8 +167,8 @@ import type { LaneText, } from './translate-candidates.ts';
  key moves. Same check, same result.
 
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
- in `66703994a` at 22:56 on 2026-09-27, after the newest slice-cache file under the
- agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
+ in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
+ agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).

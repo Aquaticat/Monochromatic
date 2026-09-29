@@ -61,14 +61,14 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  house correction as an improvement (`091307d14`), one house-form list
  (`fa949b78f`), the introduced-defect probe's reading (`b6df6d5ee`), and the
  meter beside the metre (ledger K13, `403db3c6e`). It costs nothing: the
- newest slice-cache file under the agent runs was written at 00:26 on
- 2026-09-27, before version 5 landed at 03:34.
+ newest slice-cache file under the agent runs was written at 04:26 UTC on
+ 2026-09-27, before version 5 landed at 07:34 UTC.
 
  The glossary audit's grammatical English house rule, which now states the
  doubled preposition (ledger R5, `357f534b7`), reaches the refiner's sheet and
  rides inside 5 too, checked on 2026-09-28 against the newest slice-cache file
- under the agent runs, still 00:26 on 2026-09-27 (eighteen files after 00:20
- that day, none after 00:27). The refiner reads no glossary floor and no
+ under the agent runs, still 04:26 UTC on 2026-09-27 (eighteen files after 04:20 UTC
+ that day, none after 04:27 UTC). The refiner reads no glossary floor and no
  COMMUNITY RENDERINGS block; the glossary's terms, renderings and whys reach
  it through the identity context, which the key hashes.
 
@@ -76,59 +76,59 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  ballot or checker report carrying no usable verdict on its sheet is no heard
  voice, so the gather re-asks the seat rather than closing the round on it
  (ledger L8, `abfc69393`); checked on 2026-09-28: still no slice-cache file
- newer than 00:26 on 2026-09-27.
+ newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 5 too: every gather now keeps a seat that answered unreadably
  out of the same-prompt retry rounds and re-asks each such seat, whichever
  round it came in, in the nudged recovery round (ledger P2, `005692e11`),
  which changes whose voices a round closes on; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 5 too: a reply whose complete JSON value more text follows is
  read rather than lost (ledger P8, `cac097368`), which changes whose voices
  every round hears; checked on 2026-09-28: still no slice-cache file newer
- than 00:26 on 2026-09-27.
+ than 04:26 UTC on 2026-09-27.
 
  Rides inside 5 too: a decision seat whose state the endpoint refuses
  as past its context, or that a stage cannot ask, now reads as out of reach
  for that ballot rather than as a lost voice (ledger P13, `a991ef1e1`), which
  changes the quorum a select round closes on; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 5 too: the retention recheck now also rules on every accepted
  issue `T1` leaves open, which is every accepted issue of a rewrite of the
  archive after a lost patch, and rolls the slice back on one worse ballot
  (ledger L11, `462c514ee`), so a stored settlement may now be a rollback and
  carries that round's readings; checked on 2026-09-28: still no slice-cache
- file newer than 00:26 on 2026-09-27.
+ file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 5 too: a rewrite the damage probe admits a claim against now
  keeps the text before it, with no report attached (ledger L11, `d41ad44c4`),
  so a stored settlement may be that rollback; checked on 2026-09-28: still no
- slice-cache file newer than 00:26 on 2026-09-27.
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
 
  Rides inside 5 too: a reply that could not be used is re-asked once,
  nudged, of the same model on another provider through the uniqueness
  wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
  round hears; checked on 2026-09-28: still no slice-cache file newer than
- 00:26 on 2026-09-27.
+ 04:26 UTC on 2026-09-27.
 
  Rides inside 5 too: Bedrock reads dry with 1.33 USD still left, and its
  ledger holds every billed attempt at its bound (ledger P1, `2a108dfb3`,
  `107763dbb` and `7cfd5ae4b`), so a Gemma call moves to OpenRouter sooner
  as Bedrock nears its credit, which changes whose voices a round hears;
- checked on 2026-09-28: still no slice-cache file newer than 00:26 on
+ checked on 2026-09-28: still no slice-cache file newer than 04:26 UTC on
  2026-09-27.
 
  Rides inside 5 too: the recovery round re-asks a reply the length
  limit cut with a nudge naming the cut, apart from one off the shape
  (ledger P10, `ce0ef7b51`), which changes what such a seat is asked and
  whose voices a round hears; checked on 2026-09-28: still no slice-cache
- file newer than 00:26 on 2026-09-27.
+ file newer than 04:26 UTC on 2026-09-27.
 
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 5 was set
- in `30e66051e` at 03:34 on 2026-09-27, after the newest slice-cache file under the
- agent runs (00:26 on 2026-09-27), and no slice-cache file has been written
+ in `30e66051e` at 07:34 UTC on 2026-09-27, after the newest slice-cache file under the
+ agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
  since, so no answer cached under an earlier question can be served under
  this number. Every source commit since then rides inside it, those the
  accounts above name and those they do not (`cache-account-audit.ts`, ledger M28).
@@ -136,9 +136,9 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  Rides inside 5 too: the declared-identity rule says a footnote marker
  carries its note, and it reaches the introduced-defect probe the refine
  phase runs (ledger L5, `868e848d3`). Checked on 2026-09-28 after
- TianqiChen66621: that run wrote slice-cache files from 06:26 to 06:49 and
+ TianqiChen66621: that run wrote slice-cache files from 10:26 to 10:49 UTC on 2026-09-28 and
  the pass retired them when its artifact landed, so still no slice-cache file
- newer than 00:26 on 2026-09-27 remains to be served under this number.
+ newer than 04:26 UTC on 2026-09-27 remains to be served under this number.
 
  Rides inside 5 too: patch application, which the naturalness rewrite goes
  through, clamps each replacement line to the deepest quote its context
@@ -149,7 +149,7 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  their rules, the cited references and each claim's quotes (ledger L14,
  `resolution-sheet-evidence.ts`), and one worse ballot rolls the rewrite
  back; checked again on 2026-09-28: the only slice-cache file not older than
- 00:26 on 2026-09-27 is the consolidation entry written that minute.
+ 04:26 UTC on 2026-09-27 is the consolidation entry written that minute.
 
  Rides inside 5 too: a slice whose non-translation votes stand is refined
  like any other (ledger L15, `f77363387`), where a stored settlement for one

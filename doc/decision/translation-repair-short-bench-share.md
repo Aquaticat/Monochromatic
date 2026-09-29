@@ -93,7 +93,7 @@ which sizes the WEIGHT a winner needs.
 The GATHER still sized its quorum on the seats the phase seated,
 and on 2026-09-09 at 20:23 UTC that cost an entry:
 the seat reader read Synthetic wet at 0.04 percent of its rolling week and seated Qwen3.8-27B and Kimi-K3,
-the provider refused at 20:25,
+the provider refused at 20:25 UTC,
 the router named those two and the dark `glm-5.3` unreachable,
 and `hulicaijia`'s archive block review needed 6 voices of an 11-seat bench,
 heard 5,

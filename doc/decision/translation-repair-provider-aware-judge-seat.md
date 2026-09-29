@@ -47,8 +47,8 @@ morning's drop of Qwen3.8-27B raised. Landed in `package/module/translation-repa
 - Synthetic serves the seat slowly too, only less often: on that run it was cut from 5 of 21 judge
   rounds on Synthetic (67 to 85 seconds of reasoning), against 30 of 34 and 21 of 24 on Hyper. The
   seat buys 16 answers in 21 there; the rule does not make it a fast judge.
-- One reading per entry is too coarse for a long entry. XIEPT2 the same day read wet at 08:16, Synthetic
-  ran dry at 08:19, and the seat sat on Hyper for three and a half hours: abandoned in 102 judge calls,
+- One reading per entry is too coarse for a long entry. XIEPT2 the same day read wet at 08:16 UTC, Synthetic
+  ran dry at 08:19 UTC, and the seat sat on Hyper for three and a half hours: abandoned in 102 judge calls,
   75 rounds at the full 60 s grace, consolidation 134 minutes for 28 slices
   (`~/temp/agent/xiept2-postscript-20260903`). The meter is now read again before the lane contest and
   before consolidation, so a seat given at the lanes is withdrawn once Synthetic is dry.

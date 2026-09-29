@@ -2327,7 +2327,7 @@ Pass pid `1425902`,
 runs `~/temp/agent/Mio9-20260909`,
 log `~/temp/agent/Mio9-20260909.log`,
 managed terminal-only supervisor `proc_5d73` (`translation-repair-Mio9-20260909`).
-Prelaunch meters at 23:48 and launch meters at 23:49:
+Prelaunch meters at 23:48 UTC and launch meters at 23:49 UTC:
 OpenRouter 269.40 USD,
 Bedrock 186.06 USD,
 Synthetic weekly zero,
@@ -2378,7 +2378,7 @@ log `~/temp/agent/Mio8-20260909.log`.
 The managed supervisor is `translation-repair-Mio8-20260909` (`proc_8ef1`);
 it watches that pid's lifetime and emits only its terminal state,
 not progress.
-Launch-time meters at 21:58 match the 21:55 prelaunch reading:
+Launch-time meters at 21:58 UTC match the 21:55 UTC prelaunch reading:
 OpenRouter 270.03 USD,
 Bedrock 186.24 USD,
 Synthetic weekly zero,
@@ -2415,13 +2415,13 @@ The queue and owner decisions remain unchanged.
 
 Historical state at the handoff follows.
 As of 21:00 UTC on 2026-09-09 the code tip is `40aba2fdb` and the documents move after it.
-The 40-round producer calibration launched at 17:06 UTC printed its standing at 20:02:
+The 40-round producer calibration launched at 17:06 UTC printed its standing at 20:02 UTC:
 `inception/mercury-2.5` is not separated from the pooled null (z -0.43) and takes the translator and
 consolidation seats (`028432713`),
 and `deepseek-v4-pro-0813` is below it across the Bonferroni threshold for the second calibration running
 (z -3.18 after z -2.31 on 2026-09-08) and leaves the translator seat (`a5e0efc7f`),
 keeping every judge seat.
-The seventh `Mio` SETTLED at 20:16 after 116 minutes for 0.59 USD on OpenRouter,
+The seventh `Mio` SETTLED at 20:16 UTC after 116 minutes for 0.59 USD on OpenRouter,
 with the three answers of 17:25 UTC and the reach fix all behaving on a real page,
 and its page is one defect short of publishable:
 CLASS TWENTY-FIVE,
@@ -2550,12 +2550,12 @@ see "What to do next".
 The paragraphs that follow are the state of 2026-09-07 and stand as history.
 
 Three pages of `yulianNyanner` shipped on the plain invocation today and each was read:
-21:03 on the class-five build (44.9 minutes,
+21:03 UTC on the class-five build (44.9 minutes,
 found the sixth class),
-22:10 on the class-six build (39.4 minutes,
+22:10 UTC on the class-six build (39.4 minutes,
 headings held,
 found the seventh),
-23:11 on the class-seven build (44.1 minutes,
+23:11 UTC on the class-seven build (44.1 minutes,
 apostrophes held,
 found the eighth),
 and 00:12 UTC on 2026-09-07 on the class-eight build (51.2 minutes,
@@ -2566,13 +2566,13 @@ each at zero USD with an unstarved consolidation and `verify-published` matched.
 `TLL1122` then shipped on the ellipsis build at 01:41 UTC on 2026-09-07 (30.1 minutes,
 the first read page with a footnote,
 no class found).
-`Huasheng` was launched at 01:44 UTC and killed at 02:56 under the rule after the slice floor refused
+`Huasheng` was launched at 01:44 UTC and killed at 02:56 UTC under the rule after the slice floor refused
 its two container halves (the ninth class,
 fixed in `ed7f82de9`).
 `Huasheng` ran again on the class-nine build from 03:09 UTC:
 the container halves passed,
-the Synthetic week ran dry at 04:36,
-and slice 21 stopped the entry at 05:21 because every producer followed the source's two poem
+the Synthetic week ran dry at 04:36 UTC,
+and slice 21 stopped the entry at 05:21 UTC because every producer followed the source's two poem
 paragraphs where the archive has five and the block floor requires the archive's.
 That was the tenth class and a design question;
 the owner chose either rendering at 08:38 UTC and it is landed bounded to split-only pages
@@ -3356,17 +3356,17 @@ The 2026-09-08 commits:
     class twelve holding Hyper out for the 538 s it named,
     and the translate lane and consolidation running on nobody under that hold;
     read in the planning log under "The first hakureico page".
-    The fourth launch at 22:21 (runs dir `~/temp/agent/hakureico4-20260907`,
+    The fourth launch at 22:21 UTC (runs dir `~/temp/agent/hakureico4-20260907`,
     pid 3814733) is on it.
 -   `a317f4e03` (2026-09-07,
     21:45 UTC):
     Bedrock sits ahead of Hyper,
-    the owner's decision of 21:41 ("Yes Bedrock sit ahead"),
+    the owner's decision of 21:41 UTC ("Yes Bedrock sit ahead"),
     recorded as the addendum in `doc/decision/translation-repair-openrouter-fallback.md`;
     with it the probe flags `--candidates` and `--candidates-alone` (`8f47f117b`,
     `7de4e7b64`),
     rebased from `translation-repair-class12`.
-    The second hakureico pass was killed under the rule at 21:41 and the third launched at 21:47
+    The second hakureico pass was killed under the rule at 21:41 UTC and the third launched at 21:47 UTC
     (runs dir `~/temp/agent/hakureico3-20260907`,
     pid 3764858),
     the first in which Bedrock takes the seats it shares with Hyper.
@@ -3377,7 +3377,7 @@ The 2026-09-08 commits:
     eleven since the fourth provider,
     so the first `hakureico` launch judged and translated with two unmeasured models;
     killed under the rule after eight Bedrock calls,
-    relaunched at 21:08 on the fix.
+    relaunched at 21:08 UTC on the fix.
     Beside it,
     unmerged on `translation-repair-class12` until that pass settles:
     `abdb06c1b` and `35e0b1fad`,
@@ -3422,10 +3422,10 @@ The 2026-09-08 commits:
     `ec91a14f5` ship every stage's wording in the archive's quote convention at the would-ship reading,
     with guard `fd7701f49` shown to fail first,
     and add the 贴贴 example to the house policy;
-    `c421c2e31` and `6b842dcdf` record the 22:10 page and add the apostrophe count to the reading steps.
+    `c421c2e31` and `6b842dcdf` record the 22:10 UTC page and add the apostrophe count to the reading steps.
 -   `e5bd6bf0f` inventories `CollapsedHeadingError` for the names-only message check,
     after the full suite on the class-six build showed 2 `FAIL`;
-    the 22:06 launch was killed for it under the rule.
+    the 22:06 UTC launch was killed for it under the rule.
 -   `7effa1b73` records the first page and the sixth class;
     `7f0d84169` and `7a01c9048` close the oxlint findings in the new code.
 -   `459b2007f` names the heading a source comment sits under on its identity-context line,
@@ -3559,7 +3559,7 @@ which closes the last open item of the 2026-09-04 snapshot.
 
 ## The seventh class
 
-Found on the 22:10 page,
+Found on the 22:10 UTC page,
 where the headings held.
 Five contractions carry a straight apostrophe against thirty curly ones on a page whose archive is curly
 throughout,
@@ -3582,7 +3582,7 @@ and 自慰 read by its blunt literal sense in a quoted despairing thought.
 
 ## The eighth class
 
-Found on the 23:11 page,
+Found on the 23:11 UTC page,
 where the apostrophes held.
 The blockquoted component line shipped as `{[“…”]}`,
 a JSX string literal in typographic quotes,
@@ -3709,19 +3709,19 @@ declining the rest as the seated `gemma-4-26b-a4b-it` did on the same questions.
 The wide-seat rule is pre-registered in the planning log;
 no seat moves until the probe has run over the fourth artifact.
 Where the two seats both Hyper and Bedrock serve go is Hyper's first:
-when Synthetic dried at 21:24 the pass sent `gemma-4-26b-a4b-it` and `gpt-oss-120b` to Hyper
-and Bedrock had answered nothing by 21:35.
+when Synthetic dried at 21:24 UTC the pass sent `gemma-4-26b-a4b-it` and `gpt-oss-120b` to Hyper
+and Bedrock had answered nothing by 21:35 UTC.
 
 ## The thirteenth class
 
 Found by the third hakureico pass of 2026-09-07 at the first phase boundary after a named hold.
-Hyper's daily limit answered 429 naming its return in 538 s at 21:57;
+Hyper's daily limit answered 429 naming its return in 538 s at 21:57 UTC;
 the twelfth class ended the ladder at once and held Hyper out for exactly that.
 Bedrock stayed wet,
 so nothing waited:
-the translate lane started at 21:58 with every Hyper-only writer refused in the same millisecond
+the translate lane started at 21:58 UTC with every Hyper-only writer refused in the same millisecond
 (the footnote passage the archive lacks stayed unfilled),
-the lane contest and consolidation at 22:00 ran on the two Bedrock seats,
+the lane contest and consolidation at 22:00 UTC ran on the two Bedrock seats,
 and every consolidation round read `quorum-not-met` at 0 ms,
 five and a half minutes before Hyper came back.
 Landed in `752bf9a9b`:
@@ -3916,7 +3916,7 @@ an `InStreamProviderError` line with `code unnamed` is this class caught.
 The twelfth `hakureico` pass (`bb04656ef`,
 18:21 to 20:10 UTC on 2026-09-08,
 108.4 minutes,
-`~/temp/agent/hakureico12-20260908`) settled on Bedrock and OpenRouter with Synthetic's week returning at 19:48.
+`~/temp/agent/hakureico12-20260908`) settled on Bedrock and OpenRouter with Synthetic's week returning at 19:48 UTC.
 Its page passed the three checks it was launched for:
 the front matter is the archive's seven lines byte for byte
 (artifact `artifactSchemaVersion: 11`,
@@ -4532,7 +4532,7 @@ Built as `5bda732de`.
     and relaunch the same entry into a fresh runs dir on the new build;
     a page finished on a superseded build is not readiness evidence;
     a known fix lands before the launch.
-    The 19:53 launch was killed under it after 264 calls.
+    The 19:53 UTC launch was killed under it after 264 calls.
 -   The owner's rule of 2026-09-27:
     "Always fix and re-launch."
     Every rendering a read finds that can be translated better is fixed in the same turn
@@ -4580,7 +4580,7 @@ Historical balances at 20:29 UTC:
 
 - OpenRouter 270.03 USD,
     the owner's final top-up ("I have topped up OpenRouter one final time";
-    273.99 at the 16:45 launch).
+    273.99 at the 16:45 UTC launch).
     The 3.96 spent since is the whole evening:
     the third `noname` 1.87 (1.14 of it the Kimi leak),
     the Mercury calibration 1.82 over 176 minutes,
@@ -4609,7 +4609,7 @@ so every non-Bedrock call went to OpenRouter):
 21 passes logged 104.31 USD on OpenRouter while the balance moved 130.99 to 0.09,
 the 26.6 USD between them the abandoned streams the endpoints billed to the end before
 `4f87555fc` wrote a line for them;
-with the 69 USD spent between the 200.01 top-up of 2026-09-08 11:26 UTC and 01:34,
+with the 69 USD spent between the 200.01 top-up of 2026-09-08 11:26 UTC and 01:34 UTC,
 that is the 200 USD the owner asked about.
 Per pass,
 in launch order:
@@ -4645,7 +4645,7 @@ minimax-m3 2.40,
 glm-5.3-flash 0.77.
 
 WHAT A PASS COSTS ON THE LEVERS
-(since the 16:45 launch of the third `noname` on `33a023445`):
+(since the 16:45 UTC launch of the third `noname` on `33a023445`):
 
 - The third `noname`,
     83 minutes,
@@ -4896,7 +4896,7 @@ each read off the pass log and the shipped page:
     23 of 23 with a control); L7, the contest shown damage from a patch that lost (`3bed8241d`); L8, a ballot
     with no usable verdict counted as heard (`abfc69393`); P2, the recovery round losing an early unreadable
     seat (`005692e11`). Each rides inside the current cache versions with a written account, since no
-    slice-cache file under the agent runs is newer than 00:26 on 2026-09-27; #395 rechecks all six before launch.
+    slice-cache file under the agent runs is newer than 04:26 UTC on 2026-09-27; the M28 check reruns over every cache version before launch.
     OWNER QUESTIONS, TO ASK IN ONE BATCH once the unblocked run-affecting items land (ledger L3, L4, L11, P9
     hold the measurements): L3, edits the checkers did not confirm shipping inside a winning patch (18 of 51
     TianqiChen666 patches); L11, the naturalness rewrite of the archive after a lost patch shipping with no
@@ -6480,7 +6480,7 @@ each read off the pass log and the shipped page:
 7.  Synthetic's weekly meter is a ROLLING WINDOW,
     not a calendar week (measured 2026-09-08:
     0 percent at 12:26 UTC after the ninth pass spent its 5.8 percent,
-    2 percent at 13:07 with no top-up,
+    2 percent at 13:07 UTC with no top-up,
     then falling again as the calibration spent it),
     so it returns on its own as the oldest usage ages out and reads dry only while it stands at zero,
     while its five-hour window refills on its own
@@ -6494,7 +6494,7 @@ each read off the pass log and the shipped page:
     the Mercury calibration 0.98 by round 21),
     Bedrock 186.49 USD (0.19 on that pass,
     8.77 today),
-    Synthetic at zero of its rolling week since 17:25,
+    Synthetic at zero of its rolling week since 17:25 UTC,
     Hyper 0 since 12:45 UTC on 2026-09-08 and never to be recharged (the owner's words);
     the whole account is under "Costs".
     Bedrock and OpenRouter are the two wet providers and together reach every bench at every phase,

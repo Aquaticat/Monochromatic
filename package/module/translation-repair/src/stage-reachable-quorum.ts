@@ -11,7 +11,7 @@ import { rosterQuorumSize, } from './roster-quorum-size.ts';
 //
 // WHY IT EXISTS. On 2026-09-09 at 20:23 UTC the seat reader read Synthetic
 // wet at 0.04 percent of its week and seated Qwen3.8-27B and Kimi-K3; the
-// provider refused at 20:25, the router named those two and the dark
+// provider refused at 20:25 UTC, the router named those two and the dark
 // `glm-5.3` unreachable, and the archive block review of `hulicaijia` sized
 // its quorum at 6 of 11, heard 5, spent its retry rounds re-asking the three
 // refused seats, and interrupted the entry provider-unavailable at 382 s.

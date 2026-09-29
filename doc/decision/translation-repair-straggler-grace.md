@@ -211,7 +211,7 @@ five entries none of which appear in that audit or in the baseline table above.
 It was read from a frozen snapshot,
 `~/temp/agent/grace-remeasure-snapshot.log`,
 3271 lines,
-taken at 19:34 with four entries settled and the fifth mid-flight.
+taken at 23:34 UTC with four entries settled and the fifth mid-flight.
 Frozen first because the live log grows between commands,
 and two readings of it disagreed by six stages.
 
