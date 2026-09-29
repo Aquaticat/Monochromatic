@@ -1758,8 +1758,11 @@ the user required each visible `cam` match (including case variants such as
 `Cam`) to be highlighted **in place** in Search results.
 That includes result titles and the supporting parent-folder text when it
 contains the match;
-it does not restyle the retained left folder browser or turn a static row
-into an action.
+`cam` must visibly match `Cam` in the accepted fixture.
+This establishes the shown ASCII case equivalence,
+not general Unicode casefolding.
+The emphasis does not restyle the retained left folder browser or turn a
+static row into an action.
 The first debug-only highlight used the theme's tertiary-container role
 and rendered purple;
 the user rejected that color and specified a color **derived from the
@@ -1783,18 +1786,26 @@ The exact prototype blend is reviewable and not a universal palette pass.
 
 After reviewing D59-highlighted native inner and cover examples,
 the user selected **Scope D** over P.
-A folder may appear because its own name matches;
-a track may appear because its own filename matches.
-The displayed parent-folder name remains disambiguating context,
-not a separate source of track matches.
+A folder may appear because its **own name** matches;
+a track may appear because its **own final filename component** matches.
+`Track.displayPath` and `PageEntry.name` can contain relative folder
+segments (see
+`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/Track.kt`
+and
+`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/Page.kt`);
+indexing either entire displayed path would violate this decision.
+Parent and ancestor folder segments remain disambiguating context,
+not sources of track matches.
+D sets the eligible fields,
+not a current-directory-only coverage limit or a file-index implementation.
 The synthetic `Another Xronixle` row must **not** appear solely because
 its immediate parent is `Camellia` for query `cam`.
 This keeps matching-folder results visible without deciding what tapping
 that folder does (#129).
-It does not decide Unicode casefolding,
+It does not decide broader Unicode equivalence,
 filename extension handling,
-partial-token matching,
-ancestor-path search,
+mid-word substring matching,
+multiple query terms,
 result count limits or an index implementation.
 The user's choice is a design direction,
 not authorization for production Search code.
@@ -1803,11 +1814,14 @@ not authorization for production Search code.
 
 The user independently selected **Order M** over folders-first F and
 tracks-first T in the same D59-highlighted matrix.
-For the illustrative `cam` fixture,
+For the accepted `cam` examples,
 an exact `Cam` track precedes the prefix `Camellia` folder,
 which stays near the top;
-other direct track and folder hits are interleaved by the shown
-exact/prefix/contained relationship.
+`Live at Camellia` remains a match beginning at a later word.
+Other direct track and folder hits interleave across those observed
+relationships.
+The example does not decide whether `cam` inside `Scamper`
+should match.
 This does not select a concrete scorer,
 normalization rule,
 locale-aware or deterministic tie-break,

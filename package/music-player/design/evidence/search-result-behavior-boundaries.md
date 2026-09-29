@@ -109,16 +109,30 @@ Neither source settles the local-file product behavior.
 ## Settled fields and order, unresolved matching and actions
 
 - D60 searched fields:
-  direct folder names and track filenames.
-  Parent-folder names remain visible as context but do not create
-  parent-only track hits.
+  each folder's own name and each track's final filename component.
+  `Track.displayPath` and `PageEntry.name` can include relative folders
+  (`package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/Track.kt`
+  and
+  `package/music-player/android-app/app/src/main/kotlin/dev/monochromatic/musicplayer/core/Page.kt`);
+  those parent/ancestor segments remain visible context but cannot create
+  track hits.
+  D does not restrict the search to the current browser folder.
   A large-library result limit has not been selected.
-- Matching rules still open:
-  exact,
-  prefix and substring relationships in the fixture are examples,
-  not decisions about casefolding,
-  normalization,
-  filename extension parsing or token boundaries.
+- Matching outcomes already fixed by the accepted examples:
+  `cam` finds `Cam`,
+  prefix `Camellia` and later-word `Live at Camellia`.
+  The user asked to highlight those `Cam` spans in place.
+  Case-sensitive-only,
+  exact-only,
+  whole-word-only and whole-name-prefix-only menus conflict with the
+  selected design.
+- Matching questions still open:
+  `Scamper` tests a middle-of-word occurrence not shown in the fixture;
+  extension-only hits such as `flac`,
+  whether `Cam.flac` counts as an exact stem,
+  punctuation/multiple-term parsing and broader Unicode equivalence are
+  independent decisions.
+  A static caption does not choose their implementation.
 - D61 ordering priority:
   mixed relevance across folder and track types rather than whole-type
   grouping.

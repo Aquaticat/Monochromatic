@@ -6451,5 +6451,15 @@ The disposable emulator was stopped through its owning container after
 these keyboard-closed captures;
 `adb devices -l` and `podman ps` showed it absent.
 The original AVD remains untouched.
-#116 stays in progress for matching grammar and deterministic tie-breaks;
+`evidence/search-matching-acceptance-ledger.md` now distinguishes the
+already selected `cam`/`Cam`,
+`Camellia` prefix and `Live at Camellia` later-word outcomes from genuine
+open cases:
+mid-word fragments,
+filename extensions/stem exactness,
+Unicode equivalence,
+multiple terms and deterministic ties.
+D60 also forbids indexing a whole relative display path as a track name,
+since that would reintroduce parent-only hits.
+#116 stays in progress for those bounded matching/tie questions;
 #127 through #129 and #118 remain separate pending reviews.

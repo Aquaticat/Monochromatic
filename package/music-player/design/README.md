@@ -159,9 +159,12 @@ The [archived native comparison](questions/archive/search-ranking-before-dm.html
 and [fixture evidence](evidence/search-ranking-native-comparison.md) retain
 all D/P and M/F/T alternatives as decision history,
 not active choices or a selected scorer.
-Matching grammar,
-deterministic tie-breaks,
-result activation and Search accessibility remain open.
+The [matching acceptance ledger](evidence/search-matching-acceptance-ledger.md)
+separates settled `cam` examples from still-open mid-word,
+extension,
+Unicode,
+term and tie-break behavior.
+Result activation and Search accessibility remain open.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.

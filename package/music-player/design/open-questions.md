@@ -320,9 +320,17 @@ rounds (2026-09-17):
   to reveal the last supporting line fully;
   those were comparison cases,
   not selected directions.
-  Matching grammar,
-  deterministic tie-breaks,
-  large-library limits and a real index remain open under #116.
+  The accepted `cam` examples already require `Cam` case equivalence,
+  prefix `Camellia` and later-word `Live at Camellia` matches.
+  Remaining #116 design questions concern mid-word fragments,
+  filename extensions,
+  broader Unicode equivalence,
+  multiple terms,
+  deterministic ties and large-library result limits;
+  see `evidence/search-matching-acceptance-ledger.md` for separate
+  examples and accepted controls.
+  A real index is implementation work,
+  not a user-facing policy selected by the fixture.
   Back/Clear/focus and scroll restoration (#127),
   empty/unavailable behavior (#128),
   result activation (#129) and Search accessibility (#118) remain
