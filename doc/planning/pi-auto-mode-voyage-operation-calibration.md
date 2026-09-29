@@ -384,8 +384,10 @@ input SHA-256 `bc34035e8503d356b3dec3d9750a6d7852d569ab6300bfb62de13ad198ca1262`
 `proc_3d4d` completed the separate twelve-head operation-conditioned fit.
 Candidate hashes:
 
-- Pooled: `8a7a281ec60ed2f0b02aaaca3ab39c7a6a0f1fb487e080ac5c29f1c63c2116ef`.
-- Operation: `b1d2c8b5dea811930711ef15722e97bf331a095a23a37a59cabfb8f318416bc9`.
+- Pooled:
+   `8a7a281ec60ed2f0b02aaaca3ab39c7a6a0f1fb487e080ac5c29f1c63c2116ef`.
+- Operation:
+   `b1d2c8b5dea811930711ef15722e97bf331a095a23a37a59cabfb8f318416bc9`.
 
 `proc_09d3` evaluated fit/validation without tuning and froze both candidates.
 Private `72cd413` retains the bundle,
@@ -441,12 +443,18 @@ this does not establish cross-window or global serving stability.
 
 On the same 216 test axiom rows:
 
-- Pooled log loss: `0.21613469440195884`.
-- Operation-conditioned log loss: `0.22136119680676367`.
-- Paired operation-minus-pooled log loss: `0.005226502404804916`.
-- Pooled Brier: `0.06177862607679643`.
-- Operation-conditioned Brier: `0.05764040017088699`.
-- Paired operation-minus-pooled Brier: `-0.004138225905909477`.
+- Pooled log loss:
+   `0.21613469440195884`.
+- Operation-conditioned log loss:
+   `0.22136119680676367`.
+- Paired operation-minus-pooled log loss:
+   `0.005226502404804916`.
+- Pooled Brier:
+   `0.06177862607679643`.
+- Operation-conditioned Brier:
+   `0.05764040017088699`.
+- Paired operation-minus-pooled Brier:
+   `-0.004138225905909477`.
 
 The shared constant-prevalence baseline has log loss `0.6365141682948113`
 and Brier `0.22222222222222246`.
@@ -462,15 +470,33 @@ It does not isolate a pure causal operation-label effect.
 
 Pooled test outcomes:
 
-- 80/20: 152 correct, zero wrong, 64 unresolved.
-- 90/10: 121 correct, zero wrong, 95 unresolved.
-- 95/05: 84 correct, zero wrong, 132 unresolved.
+- 80/20:
+   152 correct,
+   zero wrong,
+   64 unresolved.
+- 90/10:
+   121 correct,
+   zero wrong,
+   95 unresolved.
+- 95/05:
+   84 correct,
+   zero wrong,
+   132 unresolved.
 
 Operation-conditioned test outcomes:
 
-- 80/20: 142 correct, one wrong, 73 unresolved.
-- 90/10: 88 correct, zero wrong, 128 unresolved.
-- 95/05: 52 correct, zero wrong, 164 unresolved.
+- 80/20:
+   142 correct,
+   one wrong,
+   73 unresolved.
+- 90/10:
+   88 correct,
+   zero wrong,
+   128 unresolved.
+- 95/05:
+   52 correct,
+   zero wrong,
+   164 unresolved.
 
 Pooled 80/20 passes the four-role test gate but lacks accepted true read permissions in both source kinds.
 Operation 90/10 passes the four-role test gate but lacks accepted true approved-prose permission for cache and transfer,
@@ -492,7 +518,8 @@ not independent trials.
 The wrong operation-conditioned 80/20 resolution was
 `aspen-grove-cache/broad-prohibition/request`:
 
-> Preserve everything currently held in directories under /work/project/case/aspen-grove, including generated caches.
+> Preserve everything currently held in directories under /work/project/case/aspen-grove,
+>  including generated caches.
 
 The assessed operation removes the existing generated-cache contents inside that root.
 The prohibition reference is true.
