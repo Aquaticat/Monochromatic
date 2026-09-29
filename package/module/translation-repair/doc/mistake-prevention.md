@@ -829,3 +829,60 @@ never inline where it is sent.
 What enforces it:
 `rendered-sheets-census.unit.test.ts` fails when a `build…Messages` function goes unrendered;
 sheets built without that naming need their own entry by hand.
+
+## What each sheet is shown
+
+What happened:
+two sheets listed the apparatus kinds without the bound that says what apparatus never is;
+the archive block review and its slate,
+coverage,
+the page-title lexicon and the refine slates carried house rules that point to a DECLARED NAMES block,
+and never got one,
+though each caller held the names (ledger B28).
+The lexicon ran before preparation,
+which built the identity lines inline where nothing else could read them.
+The refiner was told a handle survives exactly,
+and the judges choosing among its rewrites were not.
+The fixture rendered 13 of its 38 sheets naming the block without it,
+so no guard reading the rendered sheets could tell a sheet that lacks the block from one the fixture left bare,
+and the fence each new block needed and the follow-up coverage sheet went untested until a mutation batch.
+
+The rule:
+a sheet whose rules name a block carries that block wherever its caller holds it.
+Adding a block to a sheet threads it from where production holds it
+(`pass-prepare.ts`,
+`pass-insertion-admission.ts`,
+the stage)
+in the same change,
+and a case drives the caller and reads the model call.
+What a writer is shown,
+the judges of its text are shown:
+the names,
+the references and the bounds.
+A block a sheet encloses goes into the texts its fence is chosen against,
+and every branch of a sheet
+(a first ask,
+a follow-up)
+carries the same blocks.
+Context read by more than one sheet is assembled once and read by each
+(`page-identity-lines.ts`,
+`declared-names-evidence.ts`,
+`translate-slate-evidence.ts`),
+never rebuilt inline beside a caller.
+The rendered-sheets fixtures give each sheet what production passes it,
+through the functions production calls where there are any.
+
+What enforces it:
+`rendered-sheets-context.unit.test.ts` fails on a rendered sheet that names the DECLARED NAMES block or CITED REFERENCES without carrying the fixture's,
+unless it is exempt by name with its reason,
+and on an exemption gone stale;
+the caller cases
+(`pass-prepare-archive-review-context`,
+`pass-insertion-admission-identity`,
+`pass-prepare-lexicon-context`,
+`refine-identity-threading`)
+fail when a caller stops threading the names;
+`sheet-fence.test-fixture.ts` lets a case read the fence a sheet opened a block with.
+A sheet whose rules name no block,
+and a caller whose fixture passes a block production does not,
+are outside what these can see.

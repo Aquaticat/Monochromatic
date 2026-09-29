@@ -8672,6 +8672,39 @@ The restoration judge and the derivability probe are measurement probes.
   The review's outcome findings reach stored files too rarely
   (2 files hold any)
   to count what the slates chose.
+- Coverage finds "a fact,
+  a name,
+  a number" of a Chinese passage in the English
+  without the declared names its house rules point to,
+  so a passage anchored mainly by a declared name can read as uncovered.
+  Preparation holds the identity where `pass-insertion-admission.ts` calls the stage.
+- The page-title lexicon writes shipped title renderings under house rules that say to use vocabulary a note line in the DECLARED NAMES block establishes,
+  and to give a work its official English title,
+  and gets no such block:
+  it runs before preparation,
+  which built the identity lines inline,
+  so the web lookups bought for the works the original names never reached it.
+  No stored production run records a lexicon round:
+  the 27 files under `~/temp/agent/` that log one are this audit's own full-suite logs,
+  and no slice-cache file has been written since the lexicon's cache version was set.
+- The refine slates carry the house rules and none of the declared names,
+  though `refine-stage.ts` holds them and hands them to the refiner,
+  which is told a handle survives exactly:
+  the judges choosing among its rewrites could prefer one that respells a declared handle or changes a declared pronoun.
+  This one was read as sound in the first pass of this entry,
+  which checked the refine slates for the apparatus bound only.
+- The rendered-sheets fixtures rendered 13 of their 38 sheets naming the DECLARED NAMES block without it:
+  the editor,
+  the translate and repair slates,
+  the typed decision and the rendering audit,
+  which production gives the names,
+  the three refine slates,
+  which it did not,
+  and the house rules and the restoration judge,
+  which rightly carry none.
+  A guard reading the rendered sheets could not tell a sheet that lacks the block from one the fixture left bare,
+  which is how the coverage,
+  lexicon and refine gaps went unseen.
 
 The narrative bound:
 red `f8f5ec907`
@@ -8710,18 +8743,105 @@ caught all fourteen,
 and its comment control survived.
 The full suite passed on `06c6d22ad` with no failing case.
 
-#### Still open
+Coverage:
+red `1176f4584`,
+fix `628d8ff53`.
+`pass-insertion-admission.ts` passes the identity preparation holds to the coverage stage,
+whose sheet carries it as a DECLARED NAMES block ahead of the passage,
+with the shared declared-identity rules and one line saying a name the English writes in its declared form states the name the passage writes.
+The coverage probe and control keep asking without it:
+they measure the sheet over seeded passages.
 
-- Coverage finds "a fact,
-  a name,
-  a number" of a Chinese passage in the English
-  without the declared names its house rules point to,
-  so a passage anchored mainly by a declared name can read as uncovered.
-  Preparation holds the identity where `pass-insertion-admission.ts` calls the stage.
-- The page-title lexicon writes shipped title renderings under house rules that say to use vocabulary a note line in the DECLARED NAMES block establishes,
-  and gets no such block;
-  its lines are themselves part of the identity preparation builds,
-  so what it could be given is the rest of that identity.
+The page-title lexicon:
+red `2516419a4`,
+fix `7bf2db51a`.
+`page-identity-lines.ts` assembles the identity lines in one place,
+which preparation reads,
+and so does the preparation pass for the lexicon,
+with every context line but the lexicon's own:
+the work-title lookups and the names other entries declare.
+The lexicon sheet shows them with the declared-identity rules,
+its cache key hashes the identity it showed,
+and the page-title cache version's account records why the change rides inside version 1.
+
+The three sheets' role lines,
+the one line each adds after the shared declared-identity rules,
+became named constants in `355aaf84f`,
+matching the literals they replaced character for character,
+so a case can require a line without copying its wording.
+A mutation batch over the coverage and lexicon threads
+(`b28-coverage-lexicon-mutants.json`,
+23 mutants)
+caught 15,
+and the comment control survived with 7 real survivors:
+the follow-up coverage sheet without the rules,
+both sheets choosing a fence without the identity,
+both role lines dropped,
+the lexicon's identity without other entries' names or read off the original in place of the archive,
+and the shared assembly without its notes or its pronoun line.
+`d37228134` added a case aimed at each,
+with `sheet-fence.test-fixture.ts` reading the fence a sheet opened a block with,
+so the fence cases need not ask `selectFence` for the answer,
+and cases on the archive review's role line and fence,
+which the first batch never mutated.
+The rerun
+(`b28-survivor-mutants.json`,
+15 mutants:
+those 7,
+the archive review's role line and both of its fence inputs,
+and three more parts of the assembly and its order)
+caught all 15,
+and its comment control survived.
+
+The refine slates:
+red `d24ba1401`,
+fix `02adee08f`.
+`buildRefineSelectionContext` takes the identity and shows it in every mode,
+ahead of the references,
+and the stage passes it.
+The entry comes from `declared-names-evidence.ts`,
+the repair slates' labelled entry moved out of `repair-selection-evidence.ts`
+(a probe over the built index finds the shared label equal to the repair literal it replaced),
+which the archive correction slate now reads in place of the bare heading,
+since its criteria never mention names.
+The refine key already hashes the identity,
+and refine version 5's account records the change riding inside it.
+The mutation batch
+(`b28-refine-mutants.json`,
+7 mutants:
+the stage's thread,
+the names in the context,
+the correction mode without them,
+the shared entry returning nothing,
+and the repair,
+archive and translate slates without the names)
+caught all 7,
+the translate slate's on a rerun after its pattern was corrected for the move's indent,
+and its comment control survived.
+
+The fixture and a guard:
+`8aaedecf5` moves the translate slate's evidence assembly unchanged into `translateSlateEvidence`
+(the 78 lines at the previous commit,
+dedented,
+equal the new function's array body),
+and `a271f6f8a` renders every sheet with the context production gives it:
+the repair and translate slates and the typed decision through the evidence functions production calls,
+and the editor,
+the rendering audit and the refine slates with what their callers pass.
+`rendered-sheets-context.unit.test.ts` then requires every rendered sheet naming the DECLARED NAMES block to carry the fixture's names,
+and every sheet naming CITED REFERENCES the fixture's references,
+with the house rules and the restoration judge exempt by name and reason,
+and a case failing on a stale exemption.
+With the editor's context taken out of the fixture,
+the guard names the editor;
+the fixture restored,
+it passes.
+
+The cache-account audit
+(`mise run cache-account-audit`)
+reports every source commit since the seven versions were set riding inside all seven,
+the archive review and coverage changes among them,
+since no slice-cache file has been written since.
 
 #### Read and left as they are
 
@@ -8729,14 +8849,21 @@ The editor and the resolution judge act on issues the critic and panel classed,
 and both of those carry the kinds and the bound.
 The refiner and the refine slates judge against the current text,
 where dropping a gloss is "dropped",
-and the refiner is told declared names survive exactly.
+so the apparatus bound adds nothing there;
+what the refine slates lacked was the declared names,
+fixed in `02adee08f`.
+The translate slates label the names with the bare heading,
+since their own criteria state the declared-name rules
+(`translate-selection-sheet.ts`).
 Production passes the translate slates,
-the repair slates,
-the editor and the rendering audit the declared names and references the fixture rendered them without
+the repair slates and the editor the declared names and references,
+and the rendering audit the declared names
 (`translate-judge.ts`,
 `editor-ensemble.ts`,
 `repair-editor-stage.ts`,
-`rendering-audit.ts`).
+`corpus-run/rendering-audit-settled-buy.ts`);
+the first pass of this entry cited `rendering-audit.ts` for the last,
+which passes whatever subject its caller builds.
 The readers,
 the attestation and the pairing sheets carry no house rules,
 and write nothing that ships.
