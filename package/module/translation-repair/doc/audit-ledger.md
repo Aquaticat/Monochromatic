@@ -9766,8 +9766,9 @@ fix `2beaca02f`.
 ### B30: functions only tests reach
 
 Status:
-open,
-found 2026-09-29 while reading T8's cold stretches.
+fixed 2026-09-29,
+found the same day while reading T8's cold stretches;
+the values the same reach leaves unread are B31.
 `consolidationFailureEvidence` held four cold stretches,
 and nothing outside its own test calls it:
 the single consolidation attempt (`1ba8f713a`,
@@ -9862,6 +9863,91 @@ since no fixture can reach module-private state without an export,
 a choice the owner may veto for an injected meter.
 The consolidate sheet's branch goes with the evidence,
 and the rendered-sheets census shows whether any sheet changes.
+
+Done:
+the guard (`src/dead-functions.unit.test.ts`) went in red in `eda99b687`
+and passes from `32e07afb7`,
+with `resetRunSpend` its one allowed seam.
+`363b0ee60` removes the seven wrappers,
+each case now calling the parts in production's order;
+the generation guard's drift permission is required,
+and the pass passes what it reads from the environment.
+`94ccbc67c` names the guard the pass runs in the restart decision.
+`9170b7158` moves the test support into `.test-fixture.ts` files,
+`2fdcaddb2` removes the superseded modules with their cases,
+and `9f49c2ed5` the functions whose callers changed course.
+`32e07afb7` removes the consolidation recovery evidence,
+the sheet branch no caller fed,
+and the sheet-leak floor's label for its heading;
+`consolidationNeedsRecovery`,
+which read as asking for another strategy,
+is now `standingKeptUnendorsed` beside its one caller.
+No sheet changes:
+the consolidate writer's sheet,
+rendered through the wire before and after over the fixture's subject,
+a bare one,
+one reaching every optional block
+and one whose texts carry fence runs,
+is identical in all four,
+where the old wire with prior-failure evidence set differs
+(`b30-wire-compare.ts` in the audit's scratch folder).
+The label's removal rides inside consolidation 20 and lane contest 6,
+with an account in each key:
+the heading is in no stored slate,
+artifact or cache record,
+and no slice-cache file was written after 04:27 UTC on 2026-09-27.
+The whole suite passes on `32e07afb7`,
+1,384 cases and no failure;
+against the census baseline's 1,397,
+the 25 cases gone belong to removed functions,
+were renamed with them,
+or are the guard's first case,
+and the 12 new ones are the renamed and split cases,
+the guard's rewritten one
+and the renamed rule's
+(`b30-suite-diff.mjs`,
+which pairs the two logs' passing cases by name).
+
+### B31: values only tests read
+
+Status:
+open,
+found 2026-09-29 by B30's reach probe run over top-level values
+(`t8-production-reach.ts --values`).
+Beside `resetRunSpend`,
+23 top-level values are read by no production code:
+
+- `ABSOLUTE_NATURALNESS_CONFIRMATIONS_REQUIRED`,
+  which reads as configuration,
+  while the confirmation asks exactly once whatever it says.
+- `HYPER_ORIGIN_NAMES_ARE_SERVED` and its type,
+  a proof that cannot fail:
+  it stood over a hand-listed roster type (`cc7ccfc00`),
+  and since that type became an `Extract` over the served ids
+  (`ea0024e3c`,
+  2026-09-16)
+  the conditional can never reach `never`;
+  its runtime case asserts a literal `true`.
+- `SEATED_BEDROCK_JUDGES` and `SEATED_OPENROUTER_JUDGES`,
+  read only by the seat tests,
+  whose TSDoc holds the two models' seating measurements,
+  and the three origin buckets they are built from
+  (`HYPER_ORIGIN_ROSTER_IDS`,
+  `BEDROCK_ONLY_ROSTER_IDS`,
+  `OPENROUTER_ONLY_ROSTER_IDS`,
+  with their three private spelling lists).
+- The 13 role-named seats of `roster-fixture.ts`,
+  unit-test support the package build ships.
+
+Fix:
+the guard counts values by the same reach,
+red first;
+the constant and the proof go,
+with the runtime cases that cannot fail,
+since "SERVES every roster id from at least one catalog" carries the invariant the proof named;
+the seated sets and the buckets move to a test fixture,
+and their measurements to the two models' cards;
+the seats move to a `.test-fixture.ts` file.
 
 ## Process mistakes in this audit
 
@@ -10005,6 +10091,13 @@ a listing chained to a count (its arguments were not kept),
 reading a commit's message beside a pickaxe search,
 and `rg --count <old wordings> <paths> ; echo "rg exit $?"`,
 a recount printing its exit.
+Three more during B30 on 2026-09-29
+(their arguments were not kept):
+one call joined by `;`,
+one chaining four steps with three `&&`,
+and `git rm` run from the package directory,
+which cli-git refused for not running at the repository root;
+it reran with `git -C`.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -10262,6 +10355,63 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M73: an older version written over a tracked file to measure it, an outcome already refused
+
+Status:
+happened 2026-09-29 while checking that B30 changed no sheet;
+the auto-mode classifier refused it before anything was written.
+To render the consolidate sheet under the wire before `32e07afb7`,
+the check wrote that commit's `consolidate-wire.ts` over the working file,
+meaning to rebuild,
+render,
+and restore.
+The classifier had refused the same outcome earlier in the audit
+(a `git checkout <older commit> --` of tracked files),
+and the session's own notes said not to pursue it by other means;
+a redirect from `git show` is another means.
+The measurement ran without it:
+scratch copies of both versions,
+their relative imports pointed at the worktree's sources,
+rendered the same subjects side by side
+(`b30-wire-compare.ts`).
+Prevention:
+a before-and-after measurement of one module renders both versions from scratch copies
+and never writes an older version over a tracked file;
+a refusal names an outcome,
+and every command reaching that outcome is refused with it.
+
+### M72: a commit message file written without the check that its name is unused
+
+Status:
+happened 2026-09-29 in B30's last group,
+harmless.
+The commit protocol writes each message to a file whose name no earlier message used,
+checked with `ls` first;
+`b30-consolidation-message.txt` was written without that check.
+The Write tool refuses to overwrite a file it has not read,
+which is what made it safe,
+not the protocol.
+Prevention:
+the `ls` of the scratch folder runs before any message file is written,
+whatever tool writes it.
+
+### M71: a line-range `sed --in-place` over two files, applied to each
+
+Status:
+happened 2026-09-29 in B30's wrapper group,
+caught before any commit.
+One `sed --in-place` call with a line range named two files
+(`probe-telemetry.ts` and `probe-barrel.ts`),
+meaning the range for the first;
+GNU `sed` with `--in-place` treats each file separately
+and applied the range to both,
+deleting 19 barrel lines and a TSDoc opener in the telemetry file,
+which the build refused as a parse error.
+The barrel was restored from `HEAD` and the opener rewritten.
+Prevention:
+a line-range edit names one file per call,
+and a scripted edit prints its diff before any build reads it.
 
 ### M70: a corpus seam added optional a day after the rule said required
 

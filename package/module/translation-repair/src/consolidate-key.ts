@@ -228,6 +228,18 @@ import type { LaneText, } from './translate-candidates.ts';
  find, rerun on 2026-09-29, again finds no file written after 04:27 UTC on
  2026-09-27 against a control of 494.
 
+ Rides inside 20 too: the validator that judges the standing, every lane
+ text offered and each consolidation candidate no longer lists the PRIOR
+ FAILED CONSOLIDATION STRATEGY heading among the sheet labels it refuses
+ unfenced (ledger B30, `translate-sheet-leak.ts`, `32e07afb7`), since no
+ sheet has carried it since the single consolidation attempt (`1ba8f713a`);
+ a fenced copy is still refused. An rg for the heading over the run
+ directories, the agent runs and the user cache finds it only in logs,
+ source copies and build output, in no stored slate, artifact or cache
+ record; checked on 2026-09-29: no slice-cache file was written after 04:27
+ UTC on 2026-09-27, where a control from midnight finds 494 and an earlier
+ check's own output file.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

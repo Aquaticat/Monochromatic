@@ -70,9 +70,11 @@ which the next launch waits for),
 T9 (every test run writes a log into `node_modules`,
 owned by `module-logger`,
 issue #576),
-B30 (57 functions no production code reaches,
-which the dead-functions guard missed because it counts tests and barrel re-exports as callers;
-being removed or moved to test fixtures group by group behind a guard by production reach,
+B31 (23 top-level values no production code reads,
+found by B30's reach probe run over values,
+where B30's 57 functions are now removed or moved behind a guard by production reach;
+the guard extends to values red first,
+then the values go or move to test fixtures,
 then the whole census reruns and T8's batches resume against it),
 and L6 (the lane contest on insertion slices,
 designed and deferred past the next launch);

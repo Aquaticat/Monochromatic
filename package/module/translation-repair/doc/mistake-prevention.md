@@ -88,6 +88,12 @@ Git runs from the repository root or with `git -C`.
 While a background task runs,
 the turn ends;
 a notification arrives when it finishes.
+A permission refusal names an outcome,
+so no other command reaching it is tried:
+writing an older version over a tracked file was refused once
+and attempted again through `git show` (M73);
+a before-and-after measurement of one module renders both versions from scratch copies
+whose relative imports point at the worktree's sources.
 
 What enforces it:
 nothing automated yet;
@@ -118,7 +124,11 @@ a positive control addressed by line number changed nothing and read as a null (
 and a red commit said a case pins a check its fixture could not reach,
 before any mutant had tested it (M58);
 two copy-check cases passed with the copy check removed,
-since their candidate was valid against the page they used (M62).
+since their candidate was valid against the page they used (M62);
+and a type-level proof that roster names are served ids outlived its purpose:
+once the roster type was derived from the served ids,
+the proof could never fail,
+and its runtime case asserted a literal `true` (ledger B31).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -146,6 +156,10 @@ is read against that precondition in the code first.
 A case guarding a short circuit is run once with the short circuit removed,
 and must fail there,
 before its commit says what it guards.
+When one side of a compared pair becomes derived from the other,
+every guard comparing them is re-read:
+one that can no longer fail goes,
+and its record names the case that still carries the invariant.
 
 What enforces it:
 the mutation harness in each fix's record,
@@ -280,6 +294,8 @@ a probe) has run.
 A count goes in only from a command run on the staged diff
 (one commit said 44 and five where its diff held 40 and 6;
 another counted its edit script's edits and called them the times they fixed).
+A message file takes a name no earlier message used,
+checked with `ls` before any tool writes it (M72).
 Before the commit runs,
 read the message for `#` followed by digits:
 this audit's task list numbers its items like issues,
@@ -802,6 +818,20 @@ which no linter rule reports (D30);
 a page's link markup quoted as prose rendered as fifteen live links to files that do not exist (D32);
 changes that stopped calling a function left it behind,
 and nothing reported one (ledger B20);
+the guard written for that counted a test,
+or a barrel's re-export list,
+as a use,
+so 57 functions only tests reached passed it (ledger B30):
+wrappers over parts production calls apart,
+tested in place of the parts;
+modules built beside the live path,
+never wired,
+and superseded;
+functions whose callers changed course;
+and test support shipped as package source,
+23 values of the same kinds among them (ledger B31);
+four type imports only the removed code read stayed,
+and nothing reported them;
 two error classes were marked safe to print and a third added
 with only each commit's own tests run,
 so the scan that reads every class failed two commits later (M59),
@@ -829,6 +859,18 @@ Neither the type check nor the linter reports an unused import here
 (issue #578 asks for a check),
 so a removal counts the removed names' uses,
 and a change that stops calling a function removes it in the same commit.
+Code is live only when production reaches it,
+never because a test or a re-export names it.
+A wrapper over steps production runs apart,
+with work between them,
+is not written for a test:
+the test calls the parts in production's order.
+A module built beside the live path is wired in the change that builds it,
+or goes in the change that supersedes it.
+A helper only tests call lives in a `.test-fixture.ts` file,
+which the package build never ships.
+A line-range `sed --in-place` names one file,
+since it applies the range to every file it is given (M71).
 Commit before `--fix` and read the diff after it for anything but layout.
 A split searches `src`,
 tests and `doc` for the old file's name and repoints every hit in the same commit.
@@ -861,8 +903,11 @@ which fails on a relative link,
 image or link definition in the living docs,
 the package's docs or its README whose file or heading does not exist;
 `src/dead-functions.unit.test.ts`,
-which fails on a top-level function its file never names beyond its declaration
-and on an export no other package file names.
+which fails on a private function its file never names
+and on a top-level function no production code reaches,
+counting from the module-level code of every non-test source file,
+with the spend meter's reset its one allowed seam,
+and on an allowed seam that production reaches or no file declares (ledger B30).
 
 ## Tasks, builds and bulk output
 

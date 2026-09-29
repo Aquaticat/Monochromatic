@@ -165,6 +165,18 @@ this one says what changed after it.
   and a whole-suite census of the new format is the baseline each batch of tests is read against;
   the ledger entry has the method,
   the classes and what closes it.
+  Reading T8's cold stretches,
+  B30 found 57 functions only tests reached,
+  which the dead-functions guard had passed because it counted a test or a re-export as a use;
+  it closed on 2026-09-29
+  (`eda99b687` to `32e07afb7`):
+  the guard counts reach from production code,
+  and each function was removed,
+  or moved to a `.test-fixture.ts` file.
+  B31,
+  the 23 top-level values the same reach leaves unread,
+  is next,
+  then a fresh whole-suite census before T8's batches resume.
   Every source commit also runs `mise run source-scans`,
   the package-wide scans a new file can fail (ledger M59).
 
