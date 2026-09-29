@@ -8877,9 +8877,9 @@ Status:
 fixed,
 2026-09-29,
 with one gap left open and named under its own heading.
-The full suite passed on `39e61d6d0`,
-the entry's last code commit,
-with no failing case among 1352 passing groups.
+The full suite passed on `1aa472e32`,
+the entry's last commit touching source,
+with no failing case among 1354 passing groups.
 
 A silent fallback is a value the code supplies where the caller held a real one:
 a parameter default read as "none",
@@ -9060,6 +9060,31 @@ since it reads a fixed table.
 Three mutants
 (`b29-guard-mutants.json`)
 were each caught.
+
+The one unreadable call the scan names rests on a literal it cannot read,
+`translateSliceInput`'s returned stage input.
+A batch dropping each of that literal's seven inputs
+(`b29-stage-input-mutants.json`)
+caught four
+(the identity,
+the dispute note,
+the disputed wordings,
+the pictures)
+and left the cited references,
+the attested lines and the declared names unpinned.
+`709c0d3d4` adds a case reading all three off the stage input,
+a rerun caught each,
+and `1aa472e32` names the pinning tests in the exemption's reason.
+
+The cache-account audit
+(`mise run cache-account-audit`)
+reports every source commit since the seven versions were set riding inside all seven,
+this entry's among them,
+since no slice-cache file has been written since:
+386 source commits since the oldest of the seven was set
+(refine version 5,
+`30e66051e`),
+60 of them named by an account.
 
 #### Open
 
