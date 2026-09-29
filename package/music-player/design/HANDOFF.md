@@ -6222,15 +6222,21 @@ whereas their headers used a 48dp leading icon slot.
 The user directed common icon and text anchors.
 Debug-only prototype commit `baa37caaf` centers result icons inside the
 same 48dp slot and places titles directly after it on both panels.
-The post-edit installed APK SHA-256 is
+At this D58 alignment checkpoint,
+the installed APK SHA-256 was
 `bf9a51c42facfca969e275d5fe55769656c451900f57689dc7c24190e8d6d2ef`.
+D59 later superseded that APK as the **active ranking review** source;
+its installed hash is recorded in the match-emphasis section.
 The 200% after-state hierarchies now place `cam` and `Cam` at identical
 x `1249` on the inner display and x `156` on the cover.
 The full native captures visually align the Back/result-icon column too;
 D58 records the user-directed correction.
-Only the newly recaptured rasters from this APK may be used for the ranking
-review;
-earlier unaligned scratch captures are not review assets.
+These D58 rasters prove the alignment correction,
+not the later requested match-emphasis treatment.
+The active ranking review instead uses the D59-accent APK rasters from
+`questions/render/search-rank-accent-review-*.png`;
+earlier unaligned and unhighlighted scratch captures are not active
+review assets.
 The keyboard-closed native check at 100% confirmed those same x starts
 and the painted icon centers,
 with the former 29px offset as a positive control.
@@ -6239,9 +6245,10 @@ pre-D58 keyboard-open images remain labeled geometry-only evidence.
 The installed APK hash matched the local build and all published captures
 had their full status region replaced without changing app pixels.
 See `evidence/search-header-result-alignment.md`.
-The alternate `SearchLayoutStudy` correction built but was not natively
-exercised;
-no arbitrary keyboard-open alignment claim is made.
+The `search-deck-*` cover candidate delegates to `SearchLayoutStudy`;
+the native cover captures exercise its `SearchLayoutRow` correction.
+Only its rejected alternate unfolded branches remain unexercised.
+No arbitrary keyboard-open alignment claim is made.
 The selected A browser,
 deck,
 cover viewport and E2 floor remain unchanged.
@@ -6280,7 +6287,7 @@ it does not assume the folder opens until #129 decides that action.
 P's displacement depends on M/F/T order,
 not membership alone.
 It ranks M over F because the exact track remains first,
-and F over T because the folder route stays prominent.
+and F over T because matching folder results stay prominent.
 Those are reasoned recommendations,
 not adopted choices.
 The user must answer **Scope D or P** and **Order M,
@@ -6333,12 +6340,57 @@ Keyboard-closed 200% light/dark native short-result samples on both
 panels show a blue-toned accent highlight rather than purple;
 the previous purple scratch captures must not be published or used in the
 final comparison.
-The full accent-corrected ranking/selected-image recapture,
-contrast and bounds check,
-sanitation,
-review regeneration and browser verification remain in progress.
-Do not ask for Scope D/P or Order M/F/T until the updated form shows
-this accent-derived emphasis.
+All native ranking positions were recaptured at 200% on both panels from
+this installed APK,
+plus selected short results at 100% and 200% in actual light and dark app
+schemes.
+Only the full-status-replaced,
+metadata-stripped accent-corrected rasters were published under
+`questions/render/search-rank-accent-review-*.png` and
+`search-selected-accent-review-*.png`.
+The parent-only `Another Xronixle` result highlights `Cam` in its
+supporting `Camellia` path,
+not its nonmatching title;
+all other shown `Cam` occurrences are highlighted in place.
+The host-JVM fixture tests passed for repeated upper/lowercase occurrences,
+parent-only context,
+empty/nonmatching query and variable accent/scene inputs.
+Solid glyph/fill samples on the measured light and dark palettes gave
+`8.26:1` and `10.32:1` contrast;
+this is not a universal palette or antialiased-glyph pass.
+The fixed ranking fixture retained its ordered identities after bolding.
+The first cover M/P and T/P scrolled samples clipped the final supporting
+line even though its reported bounds ended before the gesture indicator.
+A second keyboard-closed upward swipe exposed each full line;
+only those corrected scrolled samples appear in the active matrix.
+The verifier now compares terminal detail-node height to the complete
+91px folder or 182px track detail,
+and rejects both a swapped order and a deliberately retained clipped
+one-swipe M/P sample as positive controls.
+That does not validate post-refocus reachability or every keyboard.
+`evidence/search-match-emphasis-native.md` records the bounded method.
+The selected-only `questions/current.html` now uses accent-highlighted
+short results on both panels at both scales in light/dark,
+and `questions/ranking-review.html` begins with visible light/dark
+highlight examples before the full updated two-scope by three-order matrix.
+Both HTML pages were built,
+validated and exercised in a browser without console errors;
+the ranking form was checked at desktop and mobile width with working
+modal device-size previews,
+fit/reset/zoom and axe WCAG A/AA audit without findings.
+The user's requested precondition for re-asking Scope D/P and Order M/F/T
+has now been met;
+neither scope nor order is adopted yet.
 No production Search edit,
 IME experiment,
-original AVD edit or KWin automation is authorized.
+original AVD edit or KWin automation was performed.
+After the initial capture set,
+`podman exec fold-search-highlight-avd ... adb -s emulator-5580 emu kill`
+stopped the bounded disposable emulator.
+It was restarted within the same 6 GiB/2 CPU cap solely to check the
+clipped cover details,
+then `podman exec fold-search-highlight-clip-avd ... adb -s emulator-5580 emu kill`
+returned `OK: killing emulator`.
+`adb devices -l` and `podman ps` subsequently listed neither the
+emulator nor that container.
+The user's original AVD remains untouched.

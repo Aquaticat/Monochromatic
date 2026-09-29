@@ -1772,6 +1772,11 @@ No fixed purple swatch,
 new production Search feature,
 result membership/rank,
 Unicode matching grammar or keyboard behavior is decided here.
+The corrected disposable-AVD APK SHA-256
+`7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`
+was captured at 100% and 200% in light/dark with the keyboard closed;
+`evidence/search-match-emphasis-native.md` records bounded contrast,
+text bounds and provenance.
 The exact prototype blend is reviewable and not a universal palette pass.
 
 ---

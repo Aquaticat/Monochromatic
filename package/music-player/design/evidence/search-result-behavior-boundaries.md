@@ -15,7 +15,10 @@ E2's selected physical floor applies only to meaning-bearing marks.
 D58 aligns Back/result icons and query/result titles in the debug-only
 keyboard-closed native study at 100% and 200% on both Fold panels;
 see `search-header-result-alignment.md`.
-None of these choices specifies result ranking or what tapping a result does.
+D59 highlights matching `cam` substrings in place from the theme's OS
+accent with OKLCH adjustment;
+see `search-match-emphasis-native.md`.
+Neither visual rule specifies result ranking or what tapping a result does.
 `package/music-player/design/decisions.md` records those bounds.
 
 The debug-only
@@ -38,8 +41,11 @@ Those rows are not produced by a search index:
 their exact/prefix/contained and parent-only captions describe
 illustrative categories,
 not exercised matching rules or selected tap effects.
-The installed fixture APK SHA-256 is
+The earlier aligned,
+unhighlighted APK SHA-256 was
 `bf9a51c42facfca969e275d5fe55769656c451900f57689dc7c24190e8d6d2ef`.
+The active accent-highlighted installed APK and local build both hash to
+`7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`.
 These source fixtures cannot prove actions,
 search scope,
 matching algorithms,

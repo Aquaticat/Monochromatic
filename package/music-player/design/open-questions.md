@@ -306,8 +306,13 @@ rounds (2026-09-17):
   D59 requires every visible result title/parent-context `cam` occurrence
   to be emphasized from the OS accent with OKLCH adjustment,
   not the rejected purple tertiary-container role.
-  The separate `questions/ranking-review.html` still shows pre-D59
-  unhighlighted evidence and must be refreshed before #116 is re-asked.
+  The separate `questions/ranking-review.html` now embeds the OS-accent
+  OKLCH highlight on native light/dark selected examples and every visible
+  ranking-matrix row;
+  see `evidence/search-match-emphasis-native.md`.
+  The cover M/P and T/P fixture needed a second keyboard-closed swipe
+  to reveal the last supporting line fully;
+  the final comparison uses those complete frames.
   Membership/order remain unselected;
   the visual fixture does not decide matching grammar,
   tie-break implementation or a real index.

@@ -4,12 +4,20 @@
 
 This #116 comparison uses only debug fixture rows from
 `SearchRankingFixture.kt` on prototype commit `6addfc139`,
-with D58's aligned row correction from `baa37caaf`.
-The installed debug APK and the local build both hashed to SHA-256
-`bf9a51c42facfca969e275d5fe55769656c451900f57689dc7c24190e8d6d2ef`.
+D58's aligned row correction from `baa37caaf`,
+and D59's OS-accent match spans from `b471ec537`.
+The currently linked sanitized images come from the installed debug APK
+whose SHA-256 matched the local build:
+`7195af99031158bfb8efce2abab3c98ebaf17928739c290010bc6dea1317244f`.
+The earlier `bf9a51c42facfca969e275d5fe55769656c451900f57689dc7c24190e8d6d2ef`
+images remain a pre-D59 baseline,
+not the active review.
 The activity dispatches `search-deck-*` candidates to
 `SearchPersistentDeckStudy.kt`;
-these screenshots do not exercise the separate `SearchLayoutStudy.kt` branch.
+its cover branch delegates to `SearchLayoutStudy.kt`.
+These screenshots exercise the inner persistent result rows and the
+cover layout rows,
+not the rejected alternate unfolded arrangements.
 All samples have a prefilled `cam` query,
 a closed keyboard,
 200% text and 390dpi.
@@ -131,23 +139,29 @@ accessibility remains #118.
 
 ## Bounded verification and capture manifest
 
-The private UI Automator hierarchy was checked for the ordered,
-fully visible title/detail pairs in every initial and scrolled capture.
+The private UI Automator hierarchy was checked for ordered result
+identities in initial and scrolled captures.
 Across both panels and all membership/order combinations,
-the initial state included the first row and the scrolled state showed the
-last row with its title and detail node bounds ending before the painted
-system gesture indicator;
-together they exposed every fixed fixture row.
-A cropped native light screenshot placed the inner indicator at y `2108`
-to `2117` and the cover indicator at y `2390` to `2399`.
-The closest inner terminal detail node ended at y `2106`,
-before that observed indicator.
-This is a bound and paint comparison on these frames,
-not proof of arbitrary keyboard heights or a universal safe-area rule.
-Deliberately swapping two expected positions caused the order check to
-fail (positive control).
-This verifies the **synthetic fixture order** and keyboard-closed
-visibility,
+the initial state included the first row;
+the corrected scrolled state showed the last title and its **complete**
+supporting line.
+Together those positions exposed every fixed fixture row.
+A cropped native light screenshot placed the inner gesture indicator at
+y `2108` to `2117` and the cover indicator at y `2390` to `2399`.
+The closest inner terminal detail node ended at y `2106`.
+One-swipe cover M/P initially exposed only 144px of the expected 182px
+parent-only supporting line;
+cover T/P exposed only 53px of the 91px final folder detail.
+Both truncated nodes ended before the gesture indicator,
+so bounds alone had falsely suggested complete visibility.
+A second upward swipe produced full 182px and 91px detail nodes,
+each ending at y `2345`;
+native crops then showed all lettering before the cover gesture indicator.
+The active M/P and T/P scrolled images use those **two-swipe** captures.
+The verifier rejected both a deliberately swapped result order and a
+private clipped M/P hierarchy (positive controls).
+This verifies the **synthetic fixture order** and bounded
+keyboard-closed terminal visibility,
 not a real result algorithm,
 an actual scroll boundary,
 covered-row activation or post-refocus reachability.
@@ -155,11 +169,11 @@ The parent-only row in the inner mixed/folders initial view was below the
 viewport,
 so the paired scrolled view is essential.
 
-Each published PNG is named
-`search-rank-review-{inner|cover}-{rankfolders|rankmixed|ranktracks}-{direct|parenthits}[-end]-s200.png`.
+Each active reviewed PNG is named
+`search-rank-accent-review-{inner|cover}-{rankfolders|rankmixed|ranktracks}-{direct|parenthits}[-end]-s200.png`.
 The corresponding private capture used the same panel/order/membership
-suffix under `search-rank-` for initial,
-or `search-rank-end-` for scrolled,
+suffix under `search-accent-rank-` for initial,
+or `search-accent-rank-end-` for scrolled,
 with adjacent `.xml` and `.json` source files.
 The source metadata records the precise candidate token
 `search-deck-right-lift-retain-e2floor7p5-imeviewport-{rank}[optional -parenthits]-results-light`,
@@ -181,14 +195,14 @@ evidence note.
 No production Search code,
 original AVD setting or new IME test was changed.
 
-[inner-mixed-direct-top]: ../questions/render/search-rank-review-inner-rankmixed-direct-s200.png
-[inner-mixed-direct-end]: ../questions/render/search-rank-review-inner-rankmixed-direct-end-s200.png
-[inner-mixed-parent-top]: ../questions/render/search-rank-review-inner-rankmixed-parenthits-s200.png
-[inner-mixed-parent-end]: ../questions/render/search-rank-review-inner-rankmixed-parenthits-end-s200.png
-[cover-mixed-parent-top]: ../questions/render/search-rank-review-cover-rankmixed-parenthits-s200.png
-[cover-mixed-parent-end]: ../questions/render/search-rank-review-cover-rankmixed-parenthits-end-s200.png
-[cover-mixed-direct-top]: ../questions/render/search-rank-review-cover-rankmixed-direct-s200.png
-[inner-folders-direct-top]: ../questions/render/search-rank-review-inner-rankfolders-direct-s200.png
-[cover-folders-direct-top]: ../questions/render/search-rank-review-cover-rankfolders-direct-s200.png
-[inner-tracks-direct-top]: ../questions/render/search-rank-review-inner-ranktracks-direct-s200.png
-[cover-tracks-parent-end]: ../questions/render/search-rank-review-cover-ranktracks-parenthits-end-s200.png
+[inner-mixed-direct-top]: ../questions/render/search-rank-accent-review-inner-rankmixed-direct-s200.png
+[inner-mixed-direct-end]: ../questions/render/search-rank-accent-review-inner-rankmixed-direct-end-s200.png
+[inner-mixed-parent-top]: ../questions/render/search-rank-accent-review-inner-rankmixed-parenthits-s200.png
+[inner-mixed-parent-end]: ../questions/render/search-rank-accent-review-inner-rankmixed-parenthits-end-s200.png
+[cover-mixed-parent-top]: ../questions/render/search-rank-accent-review-cover-rankmixed-parenthits-s200.png
+[cover-mixed-parent-end]: ../questions/render/search-rank-accent-review-cover-rankmixed-parenthits-end-s200.png
+[cover-mixed-direct-top]: ../questions/render/search-rank-accent-review-cover-rankmixed-direct-s200.png
+[inner-folders-direct-top]: ../questions/render/search-rank-accent-review-inner-rankfolders-direct-s200.png
+[cover-folders-direct-top]: ../questions/render/search-rank-accent-review-cover-rankfolders-direct-s200.png
+[inner-tracks-direct-top]: ../questions/render/search-rank-accent-review-inner-ranktracks-direct-s200.png
+[cover-tracks-parent-end]: ../questions/render/search-rank-accent-review-cover-ranktracks-parenthits-end-s200.png

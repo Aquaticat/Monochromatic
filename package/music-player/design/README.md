@@ -143,11 +143,17 @@ D58 corrects the Search-opened result columns:
 Back and result-icon paint share a leading center,
 while the query and result titles share a start on the disposable Fold at
 100% and 200% keyboard-closed text scales.
-The [native alignment evidence](evidence/search-header-result-alignment.md)
-and the refreshed selected-only `questions/current.html` show the correction;
-historical keyboard-open captures remain labeled as pre-D58 geometry evidence.
+D59 emphasizes each visible result-title or matching-parent `cam` substring
+in place with bold ink over an OS-accent-derived OKLCH fill,
+not the rejected purple tertiary container.
+The [native alignment evidence](evidence/search-header-result-alignment.md),
+[native match-emphasis evidence](evidence/search-match-emphasis-native.md)
+and refreshed selected-only `questions/current.html` show these corrections;
+historical keyboard-open captures remain labeled as pre-D58/D59
+geometry evidence.
 The separate [Search membership and order review](questions/ranking-review.html)
-compares direct-name and immediate-parent-only track membership with mixed,
+now shows accent-highlighted native samples before comparing direct-name
+and immediate-parent-only track membership with mixed,
 folders-first and tracks-first display priorities.
 Its [fixture evidence](evidence/search-ranking-native-comparison.md) is
 illustrative,

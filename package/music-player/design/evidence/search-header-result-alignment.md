@@ -85,17 +85,22 @@ other text,
 longer titles,
 future devices,
 keyboard-open fit or accessibility.
-`SearchLayoutStudy.kt` also received the 48dp-slot correction and built,
-but the native captures here exercise selected
-`SearchPersistentDeckStudy.kt`,
-not that alternate layout branch.
+The debug activity dispatches the `search-deck-*` candidate to
+`SearchPersistentDeckStudy.kt`.
+Its **cover** branch delegates to `SearchLayoutStudy.kt` and renders
+`SearchLayoutRow`;
+therefore these native captures exercise both the selected inner
+`PersistentResultLine` and delegated cover `SearchLayoutRow` alignment.
+Historical alternate unfolded branches of `SearchLayoutStudy.kt` were not
+exercised by this selected comparison.
 
 ## Unchanged and unverified behavior
 
-The new screenshot sets have the selected E2 P7.5 floor,
-D56 cover viewport marker,
+The inner screenshots retain the selected E2 P7.5 floor,
 left folder browser and complete deck;
-they do not validate activation,
+the cover screenshots retain the full-width Search destination and D56
+viewport marker.
+They do not validate activation,
 ranking,
 TalkBack,
 arbitrary keyboards or IME transitions.
