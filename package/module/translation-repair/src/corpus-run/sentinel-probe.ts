@@ -1,4 +1,5 @@
 import { refusalText, } from '../refusal-text.ts';
+import { wholeOpening, } from '../code-points.ts';
 import { readCorpusFile, } from '../corpus-source.ts';
 import { repairTranslation, } from '../repair-entry.ts';
 import {
@@ -26,7 +27,8 @@ const DEFAULT_SENTINELS: readonly string[] = [
 ];
 
 /**
- Characters of an error message kept in a PROBE line.
+ Most UTF-16 units of an error message kept in a PROBE line, ending on a
+ whole character (`wholeOpening`).
  */
 const ERROR_MESSAGE_CAP = 200;
 
@@ -165,11 +167,10 @@ async function probeCorpusEntries(): Promise<void> {
        Failure text for the PROBE line: a marked class in its own words,
        anything else by name only; capped after that.
        */
-      const message = refusalText({ error, },)
-        .slice(
-          0,
-          ERROR_MESSAGE_CAP,
-        );
+      const message = wholeOpening({
+        text: refusalText({ error, },),
+        units: ERROR_MESSAGE_CAP,
+      },);
       console.log(`PROBE ${id} status=ERROR ms=${String(Date.now() - t0,)} error=${message}`,);
     }
   }

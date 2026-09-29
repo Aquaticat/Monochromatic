@@ -1,3 +1,4 @@
+import { wholeOpening, } from './code-points.ts';
 import {
   type AnchoredSpan,
   anchorLocatedSpan,
@@ -251,7 +252,9 @@ function readSide(
 }
 
 /**
- Characters of a model-supplied word a drop reason may repeat.
+ Most UTF-16 units of a model-supplied word a drop reason may repeat; the cut
+ ends on a whole character (`wholeOpening`), so a persisted run row never
+ carries half an emoji.
  */
 const DROPPED_WORD_LIMIT = 32;
 
@@ -261,7 +264,8 @@ const DROPPED_WORD_LIMIT = 32;
  THE DIAGNOSTIC EXISTS TO SAY WHICH WORD, not to store prose. A drop reason
  is persisted in every run row, and a model answering the category or verdict
  field with a sentence would put that sentence in the run file whole. One
- token, cut at a fixed length, names the word and carries nothing after it.
+ token, cut at a fixed length on a whole character, names the word and
+ carries nothing after it.
  
  @param word - category or verdict as the model wrote it
  
@@ -290,10 +294,10 @@ function boundedWord({ word, }: { readonly word: string; },): string {
    */
   const token = tokens[0] ?? '';
 
-  return token.slice(
-    0,
-    DROPPED_WORD_LIMIT,
-  );
+  return wholeOpening({
+    text: token,
+    units: DROPPED_WORD_LIMIT,
+  },);
 }
 
 /**

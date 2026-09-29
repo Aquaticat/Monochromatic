@@ -1,5 +1,6 @@
 import type { CompletionUsage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { wholeOpening, } from './code-points.ts';
 import {
   isJsonArray,
   isJsonRecord,
@@ -27,8 +28,9 @@ import {
 // two meter endpoints now do because each is bound to one provider by construction.
 
 /**
- Character count of the body excerpt embedded in thrown errors,
- bounding log size while keeping enough context to diagnose.
+ Most UTF-16 units of the body excerpt embedded in thrown errors,
+ bounding log size while keeping enough context to diagnose; the excerpt
+ ends on a whole character (`wholeOpening`).
  */
 const BODY_EXCERPT_LIMIT = 600;
 
@@ -89,18 +91,18 @@ export class SyntheticHttpError extends Error {
       (excerpt === 'withheld')
         ? (summary ?? `provider API returned HTTP ${String(status,)}`)
         : `${summary ?? `provider API returned HTTP ${String(status,)}:`} ${
-          bodyText.slice(
-            0,
-            BODY_EXCERPT_LIMIT,
-          )
+          wholeOpening({
+            text: bodyText,
+            units: BODY_EXCERPT_LIMIT,
+          },)
         }`,
     );
     this.name = 'SyntheticHttpError';
     this.status = status;
-    this.bodyExcerpt = bodyText.slice(
-      0,
-      BODY_EXCERPT_LIMIT,
-    );
+    this.bodyExcerpt = wholeOpening({
+      text: bodyText,
+      units: BODY_EXCERPT_LIMIT,
+    },);
   }
 }
 

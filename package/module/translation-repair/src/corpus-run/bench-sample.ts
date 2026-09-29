@@ -1,5 +1,6 @@
 import { resolveRealGit as resolveGit, } from '@monochromatic-dev/git-executable/ts';
 import { alignDocumentSections, } from '../chunk-document.ts';
+import { wholeOpening, } from '../code-points.ts';
 import {
   type CorpusPin,
   listCorpusPeople,
@@ -23,8 +24,9 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 // Spends no quota. Reads the pinned corpus only.
 
 /**
- Characters of a read failure kept when an entry is skipped, enough to name
- the missing side without printing a stack per entry.
+ Most UTF-16 units of a read failure kept when an entry is skipped, enough to
+ name the missing side without printing a stack per entry; the cut ends on a
+ whole character (`wholeOpening`).
  */
 const SKIP_DETAIL_CHARS = 80;
 
@@ -209,11 +211,10 @@ export async function sampleBenchSlices(
         /**
          Why this entry could not be sliced, trimmed for one log line.
          */
-        const detail = String(error,)
-          .slice(
-            0,
-            SKIP_DETAIL_CHARS,
-          );
+        const detail = wholeOpening({
+          text: String(error,),
+          units: SKIP_DETAIL_CHARS,
+        },);
         console.log(`BENCH skipping ${entryId}: ${detail}`,);
         return [];
       }

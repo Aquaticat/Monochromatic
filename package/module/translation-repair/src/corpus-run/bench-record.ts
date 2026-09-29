@@ -9,6 +9,7 @@ import type {
   JsonSchemaResponseFormat,
   SyntheticClient,
 } from '../chat-contract.ts';
+import { wholeOpening, } from '../code-points.ts';
 import type { QuotaSnapshot, } from '../synthetic-quota.ts';
 import { refusalText, } from '../refusal-text.ts';
 
@@ -27,8 +28,9 @@ import { refusalText, } from '../refusal-text.ts';
 // from a ballot or a repair turn.
 
 /**
- Characters of a thrown failure kept on its row, enough to tell a timeout from
- a transport drop without carrying a stack into a summary.
+ Most UTF-16 units of a thrown failure kept on its row, enough to tell a
+ timeout from a transport drop without carrying a stack into a summary; the
+ cut ends on a whole character (`wholeOpening`).
  */
 const FAILURE_DETAIL_CHARS = 40;
 
@@ -288,11 +290,10 @@ export function recordingClient(
        What failed, as its class name or its marked message, so a row never
        carries a provider body.
        */
-      const detail = refusalText({ error, },)
-        .slice(
-          0,
-          FAILURE_DETAIL_CHARS,
-        );
+      const detail = wholeOpening({
+        text: refusalText({ error, },),
+        units: FAILURE_DETAIL_CHARS,
+      },);
       calls.push({
         schema: schemaOf({ request, },),
         modelId: request.modelId,

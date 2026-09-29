@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wholeOpening, } from '../code-points.ts';
 import { errorName, } from '../error-name.ts';
 import {
   createRunClient,
@@ -39,8 +40,9 @@ const HEALTH_PROMPT =
     + 'windowsill."';
 
 /**
- How much of a raw reply the log line carries.
- 
+ How much of a raw reply the log line carries, in UTF-16 units, ending on a
+ whole character (`wholeOpening`).
+
  Enough to show a prefix, a fence, or an apology sitting in front of the JSON,
  which is what this probe was built to catch, and short enough that six models
  fit in one readable screen.
@@ -158,14 +160,13 @@ async function reportModelHealth(): Promise<void> {
       );
       if (('rawText' in outcome) && ((typeof outcome.rawText) === 'string'))
         l.info(
-          `${modelId}: first ${
+          `${modelId}: raw reply opening (at most ${
             String(RAW_REPLY_PREVIEW_CHARS,)
-          } chars of raw reply: ${
-            JSON.stringify(outcome.rawText
-              .slice(
-                0,
-                RAW_REPLY_PREVIEW_CHARS,
-              ),)
+          } UTF-16 units): ${
+            JSON.stringify(wholeOpening({
+              text: outcome.rawText,
+              units: RAW_REPLY_PREVIEW_CHARS,
+            },),)
           }`,
         );
     } catch (error) {
@@ -177,11 +178,10 @@ async function reportModelHealth(): Promise<void> {
        What was thrown, rendered and bounded so a long provider body cannot
        fill the report.
        */
-      const detail = String(error,)
-        .slice(
-          0,
-          RAW_REPLY_PREVIEW_CHARS,
-        );
+      const detail = wholeOpening({
+        text: String(error,),
+        units: RAW_REPLY_PREVIEW_CHARS,
+      },);
 
       unreachable.push(modelId,);
       l.warn(`${modelId}: UNREACHABLE (${errorName({ error, },)}): ${detail}`,);

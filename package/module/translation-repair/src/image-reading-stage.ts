@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wholeOpening, } from './code-points.ts';
 import { encodeImageAsset, } from './image-asset.ts';
 import { readingMakesSense, } from './image-reading-sense.ts';
 import { readsImages, } from './roster-reach.ts';
@@ -69,8 +70,8 @@ export const READING_INSTRUCTION: string = 'Transcribe every word visible in thi
   + 'say so plainly and say nothing else.';
 
 /**
- How much of a refused reply the log keeps: enough for the sentence that
- refused, which the screen measured at 27 and 41 characters.
+ Most UTF-16 units of a refused reply the log keeps: enough for the sentence
+ that refused, which the screen measured at 27 and 41 characters.
  */
 const REFUSED_OPENING_CHARS = 160;
 
@@ -358,12 +359,12 @@ export async function readImageAsset(
     // alone whether three readers had declined to read or had reported that
     // a painting carries no text.
     /**
-     Opening of the reply.
+     Opening of the reply, ending on a whole character.
      */
-    const sliced = trimmed.slice(
-      0,
-      REFUSED_OPENING_CHARS,
-    );
+    const sliced = wholeOpening({
+      text: trimmed,
+      units: REFUSED_OPENING_CHARS,
+    },);
 
     /**
      Opening quoted for the log.

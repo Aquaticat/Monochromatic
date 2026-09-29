@@ -1,5 +1,6 @@
 import { join, } from 'node:path';
 
+import { wholeOpening, } from '../code-points.ts';
 import {
   type LedgerReading,
   readLedgerDirectory,
@@ -72,7 +73,8 @@ const NO_FLAG = -1;
 const FLAGS_START = 2;
 
 /**
- Characters of a candidate shown before it is cut.
+ Most UTF-16 units of a candidate shown before it is cut, ending on a whole
+ character (`wholeOpening`).
  */
 const EXCERPT_CHARS = 400;
 
@@ -106,12 +108,10 @@ function printReading(
     `\n--- ${String(at + 1,)} --- ${reading.won ? 'CHOSEN' : 'not chosen'} `
       + `--- ${reading.task}`,
   );
-  console.log(reading
-    .rendered
-    .slice(
-      0,
-      EXCERPT_CHARS,
-    ),);
+  console.log(wholeOpening({
+    text: reading.rendered,
+    units: EXCERPT_CHARS,
+  },),);
   /**
    Disinterested judges that named this candidate.
    */

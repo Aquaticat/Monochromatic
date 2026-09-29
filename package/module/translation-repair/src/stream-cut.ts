@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { wholeOpening, } from './code-points.ts';
 import { contextRoot, } from './log-context.ts';
 import type { StreamProgress, } from './stream-idle-guard.ts';
 
@@ -31,8 +32,9 @@ import type { StreamProgress, } from './stream-idle-guard.ts';
 const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
- Characters of generated text to show in the log line.
- 
+ Most UTF-16 units of generated text to show in the log line, ending on a
+ whole character (`wholeOpening`).
+
  ENOUGH TO SEE WHAT KIND OF TEXT IT IS and no more. The opening tells a
  thinking block from an answer from an empty cut, which is the whole diagnostic
  question, while a longer excerpt would put licensed corpus material into a run
@@ -211,11 +213,10 @@ export function reportStreamProgress(
    Opening of what the model generated, with newlines flattened so one
    stream is one line.
    */
-  const opening = openingText
-    .slice(
-      0,
-      OPENING_CHARS,
-    )
+  const opening = wholeOpening({
+    text: openingText,
+    units: OPENING_CHARS,
+  },)
     .split('\n',)
     .join(' ',);
 

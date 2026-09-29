@@ -20,6 +20,16 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 const BMP_MAX = 0xFF_FF;
 
 /**
+ First UTF-16 unit that can only be the FIRST half of a surrogate pair.
+ */
+const HIGH_SURROGATE_FIRST = 0xD8_00;
+
+/**
+ Last such unit.
+ */
+const HIGH_SURROGATE_LAST = 0xDB_FF;
+
+/**
  First UTF-16 unit that can only be the SECOND half of a surrogate pair.
  */
 const LOW_SURROGATE_FIRST = 0xDC_00;
@@ -139,6 +149,54 @@ export function codePointBefore({
       at,
     );
   return text.charAt(at - 1,);
+}
+
+/**
+ The opening of a text, at most a number of UTF-16 units long, that never
+ ends inside a character: where the limit falls between the two halves of a
+ surrogate pair, the first half is left out too (ledger B21). A cut by
+ `slice` alone kept half an emoji in an error's excerpt, a stream's opening
+ and a refused reply's opening, and the log showed `\ud83d` or a
+ replacement character.
+
+ @param text - text to cut
+
+ @param units - most UTF-16 units the opening may run to
+
+ @returns The whole text where it fits, else its longest opening within the
+ limit that ends on a whole character
+
+ @example
+ ```ts
+ wholeOpening({ text: 'nap\u{1F431}', units: 4, },); // 'nap'
+ ```
+ */
+export function wholeOpening({
+  text,
+  units,
+}: {
+  readonly text: string;
+  readonly units: number;
+},): string {
+  if (text.length <= units)
+    return text;
+  /**
+   The opening cut by units.
+   */
+  const cut = text.slice(
+    0,
+    units,
+  );
+  /**
+   Its last unit, none for an empty cut.
+   */
+  const last = cut.codePointAt(cut.length - 1,) ?? 0;
+  return ((last >= HIGH_SURROGATE_FIRST) && (last <= HIGH_SURROGATE_LAST))
+    ? cut.slice(
+      0,
+      -1,
+    )
+    : cut;
 }
 
 //endregion Code points

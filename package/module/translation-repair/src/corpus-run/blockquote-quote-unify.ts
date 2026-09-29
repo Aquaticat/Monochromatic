@@ -1,5 +1,6 @@
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
+import { wholeOpening, } from '../code-points.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import {
   blockquoteParagraphs,
@@ -55,9 +56,11 @@ const QUOTE_PAIRS: readonly QuotePair[] = [
 const STRAIGHT_LONE_MARKS = 2;
 
 /**
- Code units of a paragraph's opening words a finding quotes.
+ Most UTF-16 units of a paragraph's opening a finding quotes, ending on a
+ whole character (`wholeOpening`). Named as units, not words: the name
+ `NOTE_WORDS` promised words and the cut counted units (ledger B21).
  */
-const NOTE_WORDS = 40;
+const NOTE_OPENING_UNITS = 40;
 
 /**
  Whether a paragraph's words open with a pair's opening mark and close with
@@ -420,12 +423,12 @@ function unwrapSlice({ text, }: { readonly text: string; },): TextRewrite {
         ' / ',
       );
       /**
-       Opening words the note quotes.
+       Opening the note quotes.
        */
-      const opening = flat.slice(
-        0,
-        NOTE_WORDS,
-      );
+      const opening = wholeOpening({
+        text: flat,
+        units: NOTE_OPENING_UNITS,
+      },);
       return `${opening}… unwrapped to the archive's bare blockquote style`;
     },);
   return {
