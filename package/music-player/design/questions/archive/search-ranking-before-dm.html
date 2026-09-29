@@ -231,7 +231,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
     <article class="capture-card"><h3>Cover · light app</h3><img data-highlight-panel="cover" data-highlight-scheme="light" data-panel="cover" width="1080" height="2424" alt="Cover Search with OS-accent match highlights in light mode"><button type="button" data-preview="cover" data-position="top" data-highlight-scheme="light">Inspect cover light at device size</button></article>
     <article class="capture-card"><h3>Cover · dark app</h3><img data-highlight-panel="cover" data-highlight-scheme="dark" data-panel="cover" width="1080" height="2424" alt="Cover Search with OS-accent match highlights in dark mode"><button type="button" data-preview="cover" data-position="top" data-highlight-scheme="dark">Inspect cover dark at device size</button></article>
   </div>
-  <p class="muted">The cited app schemes use the measured disposable Fold wallpaper accent. Other wallpaper accents, font scales, keyboard-open fit and a real search algorithm remain unverified. Result activation is still #129.</p>
+  <p class="muted">The cited app schemes use the measured disposable Fold wallpaper accent. Other wallpaper accents, font scales, keyboard-open fit and a real search algorithm remain unverified. Result activation was still pending under review task 129 at this historical point.</p>
 </section>
 <section aria-labelledby="scope-title">
   <h2 id="scope-title">Question 1: Can a track match only through its immediate parent folder?</h2>
@@ -239,7 +239,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
   <fieldset>
     <legend>Preview membership scope</legend>
     <div class="choice-grid">
-      <label class="option" data-scope-choice="direct"><input type="radio" name="scope" value="direct" checked><span><strong>Scope D: names only (Recommended)</strong><span class="selection-note"></span><p><strong>Pros:</strong> avoids adding every child of a matching folder as a separate track hit; the matching folder still appears as its own result.</p><p><strong>Cons:</strong> a track whose own name lacks the query is not a separate hit. Whether opening the folder can lead to that track is a separate #129 action decision.</p></span></label>
+      <label class="option" data-scope-choice="direct"><input type="radio" name="scope" value="direct" checked><span><strong>Scope D: names only (Recommended)</strong><span class="selection-note"></span><p><strong>Pros:</strong> avoids adding every child of a matching folder as a separate track hit; the matching folder still appears as its own result.</p><p><strong>Cons:</strong> a track whose own name lacks the query is not a separate hit. Whether opening the folder can lead to that track was a separate review task 129 action decision.</p></span></label>
       <label class="option" data-scope-choice="parenthits"><input type="radio" name="scope" value="parenthits"><span><strong>Scope P: include immediate-parent-only tracks</strong><span class="selection-note"></span><p><strong>Pros:</strong> exposes a track directly when its containing folder matches.</p><p><strong>Cons:</strong> a matching folder can add many child rows. M and F append these after direct matches; T can put them before folders. On this keyboard-closed cover fixture, M/P and T/P needed a second swipe to reveal the last supporting line completely. Real-library result counts were not measured.</p></span></label>
     </div>
   </fieldset>
@@ -253,7 +253,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
       <figure><img data-scope-asset="parenthits" data-panel="cover" width="1080" height="2424" alt="Parent-only match included on the cover"><figcaption class="preview-label">P · cover, initial</figcaption></figure>
     </div>
   </div>
-  <p><strong>Ranking: D &gt; P.</strong> D avoids unmeasured expansion by parent-only child rows while still displaying the matching folder. Whether that folder leads to its contents depends on #129 and is not assumed. P improves direct track discovery, but its unmeasured increase in result membership makes it second; displacement also depends on the chosen order. A collapsible child group was considered, but it adds an untested interaction and would depend on #129; it is not a third membership choice.</p>
+  <p><strong>Ranking: D &gt; P.</strong> D avoids unmeasured expansion by parent-only child rows while still displaying the matching folder. Whether that folder led to its contents depended on review task 129 and was not assumed at this stage. P improves direct track discovery, but its unmeasured increase in result membership makes it second; displacement also depends on the chosen order. A collapsible child group was considered, but it adds an untested interaction and would depend on review task 129; it is not a third membership choice.</p>
 </section>
 <section aria-labelledby="order-title">
   <h2 id="order-title">Question 2: Which result type gets priority?</h2>
@@ -262,7 +262,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
     <legend>Preview result order</legend>
     <div class="choice-grid">
       <label class="option" data-order-choice="rankmixed"><input type="radio" name="order" value="rankmixed" checked><span><strong>Order M: relevance-mixed (Recommended)</strong><span class="selection-note"></span><p><strong>Pros:</strong> exact <code>Cam</code> track first, with the matching <code>Camellia</code> folder still near the top; one list for direct matches.</p><p><strong>Cons:</strong> folders and tracks alternate, so type-only scanning is less linear.</p></span></label>
-      <label class="option" data-order-choice="rankfolders"><input type="radio" name="order" value="rankfolders"><span><strong>Order F: folders first</strong><span class="selection-note"></span><p><strong>Pros:</strong> puts matching folder results first beside the visible filesystem browser; any folder action remains #129.</p><p><strong>Cons:</strong> a prefix folder can outrank an exact track filename such as <code>Cam</code>.</p></span></label>
+      <label class="option" data-order-choice="rankfolders"><input type="radio" name="order" value="rankfolders"><span><strong>Order F: folders first</strong><span class="selection-note"></span><p><strong>Pros:</strong> puts matching folder results first beside the visible filesystem browser; folder action remained review task 129 at this stage.</p><p><strong>Cons:</strong> a prefix folder can outrank an exact track filename such as <code>Cam</code>.</p></span></label>
       <label class="option" data-order-choice="ranktracks"><input type="radio" name="order" value="ranktracks"><span><strong>Order T: tracks first</strong><span class="selection-note"></span><p><strong>Pros:</strong> emphasizes the files a listener may play, with title and parent disambiguation.</p><p><strong>Cons:</strong> folders move down; parent inclusion may put a parent-only track before its folder.</p></span></label>
     </div>
   </fieldset>
@@ -285,7 +285,7 @@ dialog::backdrop { background-color: var(--color-backdrop); }
 <section aria-labelledby="answer-title">
   <h2 id="answer-title">Recorded decision</h2>
   <p><strong>D/M selected.</strong> D60 chose direct folder names and track filenames without parent-only track expansion. D61 chose mixed relevance instead of folders-first or tracks-first. The controls in this archive only expose the evidence that led to that decision. Inspect <a href="../current.html">the active selected Search review</a> for the D/M state; this archival matrix is not a question to answer.
-  <p class="muted">Matching grammar, locale/tie-break behavior and limits on result counts need separate evidence after these priorities. D63 to D68 later selected Search navigation/focus (#127) separately; empty/unavailable states (#128), result activation (#129), accessibility (#118) and production implementation remain outside this historical question. Source and limitations: <code>package/music-player/design/evidence/search-ranking-native-comparison.md</code>.</p>
+  <p class="muted">Matching grammar, locale/tie-break behavior and limits on result counts need separate evidence after these priorities. D63 to D68 later selected Search navigation/focus (review task 127), D69 to D71 selected Search status (review task 128), and D72 to D74 selected result effects (review task 129) separately; accessibility (review task 118) and production implementation remain outside this historical question. Source and limitations: <code>package/music-player/design/evidence/search-ranking-native-comparison.md</code>.</p>
 </section>
 </main>
 <dialog id="preview" aria-labelledby="preview-title">
