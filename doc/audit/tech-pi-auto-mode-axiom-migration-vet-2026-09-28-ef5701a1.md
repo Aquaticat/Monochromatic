@@ -1435,6 +1435,75 @@ production setting,
 Q16,
 or Laya scope changes.
 
+## Private policy-index offset failure and remedy
+
+Task #16's structural-index constructor `proc_0f5a` stopped on its astral-offset fixture
+after 6 preceding controls passed.
+Node reported `AssertionError [ERR_ASSERTION]`:
+actual tagged codes `[]`,
+expected `['HON']`.
+No actual policy index was produced by that attempt.
+Its source epoch,
+started receipt,
+and failure receipt remain preserved.
+
+A fresh diagnostic `proc_a92e` measured direct `satteri@0.10.5`,
+the repository wrapper,
+and correction applied to a cloned direct tree.
+The original target begins at UTF-16 offset 12:
+direct output was 12,
+wrapped and corrected-clone output was 13.
+The minimized target at 4 similarly became 5.
+ASCII/BMP controls stayed correct;
+selected parent/text point objects were not shared.
+Current source tag `satteri-v0.10.5`,
+commit `b3d38e1e341c809b20b76a655e9b1601d11bd1f0`,
+explicitly serializes UTF-16 positions.
+The installed wrapper still applies its historical code-point conversion.
+
+This is the already tracked current-repository [issue 559](https://github.com/Aquaticat/Monochromatic/issues/559).
+The accepted unified-linter decision leaves the retiring TypeScript linter unpatched.
+No production parser,
+dependency configuration,
+or upstream source was changed.
+No duplicate issue or comment was filed.
+
+A new private adapter epoch under `contract/native-index`
+uses the same installed dependency without the obsolete conversion.
+It preserves the original index implementation and parent references.
+`proc_62b7` passed all 14 recorded controls,
+including the original failure and duplicate-guard omission,
+and rejected its untested MDX path.
+The complete unchanged policy indexed as 276 tagged paragraphs and 47 headings
+with no unclassified top-level nodes.
+This is structural coverage,
+not semantic coverage or instruction-authority qualification.
+
+Private native-coordinate document composition
+reused existing `Rule.check()` and `applyFixes()` interfaces without disabling a rule.
+`proc_2b2d` verified the Unicode/bold fix,
+all-rule fixpoint,
+selected nested/block spans,
+and refusal to skip image/LFS context.
+The legacy path missed the fixed semantic-line-break finding on that fixture.
+`proc_74a0` then checked and rendered the full Unicode-bearing
+[Satteri report](../troubleshooting/satteri-offsets.md):
+zero diagnostics,
+no format change,
+and the historical record retained with a current compatibility warning.
+Do not apply the ordinary broken offset-correction path to that report.
+
+Task #74 is complete at this private-workaround scope;
+#16 has resumed.
+The old source-method phase,
+stopped constructor,
+completed diagnostics,
+and adapter/control constructors must not be replayed.
+There were no external model assessment calls,
+policy-byte edits,
+reserved-bank reads,
+or production-cutover changes.
+
 ## Private instruction-source method observations
 
 After Q22 confirmation,

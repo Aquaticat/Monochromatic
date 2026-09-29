@@ -123,7 +123,9 @@ Task #3 is complete after confirmation commit `89b5142b0`,
 rendered-Q22 inspection,
 scoped lint `proc_a8b2`,
 and unchanged-policy hashing.
-Task #16 is now active.
+Task #74 is complete at its private-workaround scope;
+the production TypeScript linter remains intentionally unchanged under issue 559's existing decision.
+Task #16 has resumed and remains in progress.
 Production stays unchanged,
 no cutoff is selected,
 and no engineering gate is declared passed by the confirmation.
@@ -230,6 +232,76 @@ The remaining work is split into independently verifiable tasks:
 These depend on the task #16 contract and applicable preceding consumer evidence.
 The old #67 preparation-stall cause remains unassigned;
 new handback qualification does not retroactively diagnose it.
+
+## Structural policy index and known offset defect
+
+The private contract draft is `contract/README.md` under the current workspace.
+It is committed and rendered/scoped-linted in `proc_3501`,
+not a qualified host adapter.
+
+The first structural-index constructor `proc_0f5a` stopped at the astral-offset control
+with `AssertionError [ERR_ASSERTION]`:
+actual codes `[]`,
+expected `['HON']`.
+Six preceding controls passed;
+no real policy index was produced.
+`contract/policy-index-started.json` and `policy-index-failure.json` retain that attempt.
+Do not replay it in place or change its fixture labels.
+
+Fresh differential probe `proc_a92e` found that direct installed `satteri@0.10.5`
+returns the correct UTF-16 offset 12 for the original target,
+while the repository wrapper and direct use of its legacy correction move it to 13.
+The minimized target offset 4 similarly moves to 5.
+ASCII/BMP controls stayed correct;
+selected paragraph/text points were not aliased.
+The diagnostic is retained in `contract/offset-diagnostic/result-initial.json`.
+
+Source tag `satteri-v0.10.5` resolves to `b3d38e1e341c809b20b76a655e9b1601d11bd1f0`;
+read-only checkout is `~/temp/agent/satteri-offset-source.dR6ZsYSZ`.
+Its materialized-tree serializer emits UTF-16 offsets.
+The extra repository conversion is the already tracked
+[issue 559](https://github.com/Aquaticat/Monochromatic/issues/559).
+The accepted [unified-linter decision](unified-linter.md) does not patch the retiring TypeScript linter.
+Do not reopen that choice or change production code for this migration.
+
+A new private adapter epoch,
+`contract/native-index`,
+keeps the original index implementation and references unchanged
+but uses the same Satteri dependency without the obsolete correction.
+`proc_62b7` passed all 14 recorded controls,
+rejected its untested MDX path,
+and indexed the actual policy as 276 tagged paragraphs and 47 headings
+with no unclassified top-level nodes.
+Semantic coverage and authority remain explicitly unestablished.
+The policy bytes/hash are unchanged.
+The stopped parent epoch remains preserved.
+
+Private document composition in `contract/native-docs` uses the existing `Rule.check()` functions
+and `applyFixes()` with native-coordinate Markdown trees,
+not the broken parser orchestration.
+`proc_2b2d` verified a Unicode/bold fix,
+idempotent all-rule checking,
+selected nested/block source spans,
+and refusal to omit image/LFS context.
+The legacy path missed the fixed semantic-line-break finding on that fixture.
+No lint rule was disabled.
+The current [Satteri report](../troubleshooting/satteri-offsets.md)
+retains the 0.9.4 history and records the 0.10.5 consumer-side defect.
+Use the verified private composition for that Unicode-bearing document,
+not the ordinary `format:markdown` path.
+
+`proc_74a0` checked the entire Unicode-bearing Satteri report through the verified native composition:
+zero diagnostics,
+no format change,
+and a complete retained HTML render.
+The rendered current/historical sections and the retired-draft warning were inspected;
+`git diff --check` and current-policy hashing passed.
+Task #74 is complete;
+#16's instruction-source/observation/coverage contract has resumed.
+No model call,
+production parser edit,
+upstream patch,
+or new issue was made.
 
 ## Completed fresh Jev study and next gate
 
