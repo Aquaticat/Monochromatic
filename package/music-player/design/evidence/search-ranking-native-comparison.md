@@ -12,8 +12,10 @@ The activity dispatches `search-deck-*` candidates to
 these screenshots do not exercise the separate `SearchLayoutStudy.kt` branch.
 All samples have a prefilled `cam` query,
 a closed keyboard,
-200% text,
-390dpi and the selected inner-browser/deck and E2 P7.5 layout.
+200% text and 390dpi.
+The inner samples retain the selected folder browser,
+complete deck and E2 P7.5 floor;
+the cover samples use its full-width Search destination.
 The native inner screen is 2076 × 2152 physical px;
 the cover is 1080 × 2424px.
 The cover-only D56 viewport marker remains in the candidate name.

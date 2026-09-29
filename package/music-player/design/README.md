@@ -139,6 +139,19 @@ even for a future narrower-crease device.
 E2 still permits backgrounds,
 borders,
 padding and hit regions to cross the center.
+D58 corrects the Search-opened result columns:
+Back and result-icon paint share a leading center,
+while the query and result titles share a start on the disposable Fold at
+100% and 200% keyboard-closed text scales.
+The [native alignment evidence](evidence/search-header-result-alignment.md)
+and the refreshed selected-only `questions/current.html` show the correction;
+historical keyboard-open captures remain labeled as pre-D58 geometry evidence.
+The separate [Search membership and order review](questions/ranking-review.html)
+compares direct-name and immediate-parent-only track membership with mixed,
+folders-first and tracks-first display priorities.
+Its [fixture evidence](evidence/search-ranking-native-comparison.md) is
+illustrative,
+not a selected ranking algorithm or result action.
 Selection does not authorize production implementation.
  Desktop implementation inherits
 the Fold visual choices even if its own proportions would suggest a different layout.

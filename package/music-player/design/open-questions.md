@@ -301,7 +301,12 @@ rounds (2026-09-17):
   `material-3-compliance.md`.
   D58 settles horizontal Back/result-icon and query/result-title alignment
   on both Fold panels;
-  the measured 200% text starts matched after correction.
+  measured 100% and 200% text starts and icon-paint centers matched after
+  correction.
+  The separate `questions/ranking-review.html` shows unselected #116
+  membership and ordering choices from a fixed 200% debug fixture.
+  It does not decide matching grammar,
+  tie-break implementation or a real index.
   Search matching/ranking (#116),
   result activation (#129),
   Back/Clear/focus (#127) and empty/unavailable behavior (#128) remain

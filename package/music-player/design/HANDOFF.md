@@ -6246,3 +6246,65 @@ The selected A browser,
 deck,
 cover viewport and E2 floor remain unchanged.
 No production Search or new IME experiment was authorized.
+
+## Search membership and order review awaits two answers
+
+`questions/ranking-review.html` is a **separate, unselected** #116
+review from the D58-corrected installed APK.
+It independently shows membership D (direct folder/filename only)
+or P (add a track matched solely through its immediate parent),
+then ordering M (exact-first relevance-mixed),
+F (folders first)
+or T (tracks first).
+The full two-by-three matrix uses native 200% captures of the inner and
+cover in initial and scrolled positions with a closed keyboard.
+The display text includes `Cam` exact,
+`Camellia` and `Camera Obscura` folders,
+two `Camellia Waltz` filenames under distinct parents,
+`Live at Camellia` contained,
+and optional `Another Xronixle` parent-only.
+All result identities/orders are hard-authored debug fixtures,
+not a search index,
+ranking engine or enabled result tap.
+`evidence/search-ranking-native-comparison.md` records the source,
+installed APK SHA-256,
+initial/scrolled difference,
+full terminal-row visibility and an order-check positive control.
+Sanitized images are at `questions/render/search-rank-review-*.png`;
+private raw screen/status and XML source stay under the private agent
+scratch root.
+
+The form recommends D over P to avoid flooding a large folder match;
+it ranks M over F because the exact track remains first,
+and F over T because the folder route stays prominent.
+Those are reasoned recommendations,
+not adopted choices.
+The user must answer **Scope D or P** and **Order M,
+F or T** independently;
+matching grammar,
+Unicode/path/tie-breaking semantics and real-library scaling need further
+separate evidence after those priorities.
+#129 result activation,
+#127 Back/Clear/focus and scroll restoration,
+#128 empty/unavailable states and #118 accessibility remain open.
+The selected-only `questions/current.html` embeds newly aligned short
+results at 100% and 200% in light/dark,
+and labels its older keyboard-open captures as historical pre-D58
+geometry evidence.
+The separate ranking form follows the viewer's light/dark system chrome,
+keeps fixed light APK rasters,
+and was exercised in the browser across all matrix combinations,
+all four device-size previews,
+zoom/fit/reset,
+mobile and desktop viewports;
+its axe WCAG A/AA run had no violations.
+No keyboard was reopened for D58 or this ranking study.
+
+After final capture,
+`adb emu kill` from the host reported a console-token mismatch.
+The same explicit serial command from inside the owning disposable
+container returned `OK: killing emulator`;
+`emulator-5580` and the container then stopped.
+`doc/troubleshooting/android-emulator-console-token-container-home.md`
+records that boundary.
+The original AVD was not touched.
