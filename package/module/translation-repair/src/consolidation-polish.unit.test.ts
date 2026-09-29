@@ -342,7 +342,7 @@ await describe({
     it({
       name: 'WRAPS THE REFINEMENT BEFORE ITS GATE so the gate judges the bytes the page carries, '
         + 'LEAVES a line-structured slice as the refiner wrote it, and DEMOTES a refinement that is '
-        + 'only the base re-wrapped',
+        + 'only the base re-wrapped or the base with its soft line breaks elsewhere (ledger B26)',
       fn: async () => {
         /**
          Gate subjects the scripted gate was shown, so the test can prove
@@ -462,6 +462,30 @@ await describe({
               return finding.includes('matched the base once wrapped',);
             },),
         ).toBe(true,);
+
+        // Nor is one that is the base with a soft break where the wrap would
+        // never put it: the site renders it as a space, and no wrap of either
+        // text makes the two equal, since the wrap only adds breaks (ledger B26).
+        const softOnly = await polishConsolidation({
+          client: rewritingClient({
+            newText: 'She viewed rainy days proactively and spent many a cozy afternoon\nwith the other cats, '
+              + 'while doing her best to stay curious and close to the cats around her.',
+          },),
+          sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 1,
+          config: CONFIG,
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-soft-break-test', },),
+        },);
+        expect(softOnly.kind,).toBe('settled',);
+        if (softOnly.kind !== 'settled')
+          throw new Error('soft-break fixture did not settle',);
+        expect(softOnly.changed,).toBe(false,);
+        expect(softOnly.text,).toBe(BASE,);
       },
     },),
 

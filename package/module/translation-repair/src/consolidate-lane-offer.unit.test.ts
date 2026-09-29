@@ -124,6 +124,22 @@ await describe({
     },),
 
     it({
+      name: 'LEAVES OUT the lane whose text is the standing with its soft line breaks elsewhere, which the site '
+        + 'renders as the same page, so a withheld standing is not offered back under a lane name (ledger B26)',
+      fn: async () => {
+        expect(laneTextsForSlate({
+          ...SLICE,
+          standingText: 'The cat fell asleep by the\n[window](https://example.invalid/cat).',
+        },),).toEqual([
+          {
+            lane: 'translate',
+            text: TRANSLATE_TEXT,
+          },
+        ],);
+      },
+    },),
+
+    it({
       name: 'LEAVES OUT a lane text the deterministic publication rule refuses, since the slate '
         + 'floor would refuse it and a judge choosing it would choose nothing',
       fn: async () => {

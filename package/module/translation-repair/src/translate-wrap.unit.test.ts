@@ -204,6 +204,106 @@ await describe({
     },),
 
     it({
+      name: 'DEMOTES A RECORD WHOSE WORDING IS THE ARCHIVE\'S WITH ITS SOFT LINE BREAKS ELSEWHERE, even when '
+        + 'the wrap leaves it as it is, and ships the archive\'s own bytes: the site renders a soft break as a '
+        + 'space, so the page would not change and the record would report a change nobody made (ledger B26)',
+      fn: async () => {
+        /**
+         Archive wording with a soft break inside its paragraph.
+         */
+        const incumbentText = 'The cat naps on the mat\nall afternoon.';
+        const wrapped = wrapTranslateRecords({
+          slices: [pairOf({
+            sliceIndex: 0,
+            incumbentText,
+          },),],
+          settled: [recordOf({
+            sliceIndex: 0,
+            outputText: 'The cat naps on the mat all afternoon.',
+            changed: true,
+          },),],
+          lineStructuredSlices: new Set(),
+          l,
+        },);
+
+        expect(wrapped[0]?.outputText,).toBe(incumbentText,);
+        expect(wrapped[0]?.changed,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'DEMOTES A BLOCKQUOTE THAT IS THE ARCHIVE\'S REWRAPPED, which the soft-break fold alone cannot '
+        + 'see, since it folds top-level paragraphs only (ledger B26)',
+      fn: async () => {
+        /**
+         Archive quotation on one line.
+         */
+        const incumbentText = '> The cat naps. The dog waits.';
+        const wrapped = wrapTranslateRecords({
+          slices: [pairOf({
+            sliceIndex: 0,
+            incumbentText,
+          },),],
+          settled: [recordOf({
+            sliceIndex: 0,
+            outputText: '> The cat naps.\n> The dog waits.',
+            changed: true,
+          },),],
+          lineStructuredSlices: new Set(),
+          l,
+        },);
+
+        expect(wrapped[0]?.outputText,).toBe(incumbentText,);
+        expect(wrapped[0]?.changed,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'DEMOTES A LINE-STRUCTURED RECORD that differs from the archive only after its last character, '
+        + 'and KEEPS one whose lines differ, since there the line breaks are the producer\'s work (ledger B26)',
+      fn: async () => {
+        /**
+         Archive wording, one line per original line.
+         */
+        const incumbentText = 'The cat wakes.\nSun is warm.';
+        const wrapped = wrapTranslateRecords({
+          slices: [
+            pairOf({
+              sliceIndex: 0,
+              incumbentText,
+            },),
+            pairOf({
+              sliceIndex: 1,
+              incumbentText,
+            },),
+          ],
+          settled: [
+            recordOf({
+              sliceIndex: 0,
+              outputText: `${incumbentText}\n`,
+              changed: true,
+            },),
+            recordOf({
+              sliceIndex: 1,
+              outputText: 'The cat wakes. Sun is warm.',
+              changed: true,
+            },),
+          ],
+          lineStructuredSlices: new Set([
+            0,
+            1,
+          ],),
+          l,
+        },);
+
+        expect(wrapped[0]?.outputText,).toBe(incumbentText,);
+        expect(wrapped[0]?.changed,).toBe(false,);
+        expect(wrapped[1]?.outputText,).toBe('The cat wakes. Sun is warm.',);
+        expect(wrapped[1]?.changed,).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'WRAPS EVERY CHANGED RECORD rather than the first, since a document settles many '
         + 'slices and a loop that stopped early would ship a mixture nobody could account for',
       fn: async () => {

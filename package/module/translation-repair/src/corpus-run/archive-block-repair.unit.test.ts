@@ -261,6 +261,44 @@ await describe({
       },
     },),
     it({
+      name: 'RETAINS A REVISION THAT IS THE BLOCK WITH ITS SOFT LINE BREAKS ELSEWHERE, which the site renders '
+        + 'as the same page, as it retains one repeating the block byte for byte, and still APPLIES one that '
+        + 'changes a word (ledger B26)',
+      fn: async () => {
+        const first = 'The cat naps on the mat\nall afternoon.';
+        const second = 'The dog barks.';
+        const targetText = `${first}\n\n${second}`;
+        const blocks = [
+          blockAt({ targetText, blockText: first, blockId: 'block/0', }),
+          blockAt({ targetText, blockText: second, blockId: 'block/1', }),
+        ];
+        const sourceContexts = new Map(blocks.map(function context(block,): readonly [string, string] {
+          return [archiveBlockIdentity({ block, targetText, }), '猫在睡觉。',] as const;
+        },),);
+        const repaired = await repairArchiveBlocks({
+          client: correctionClient({
+            replacementFor: function replacement(prompt,): string {
+              return prompt.lastIndexOf('all afternoon',) > prompt.lastIndexOf(second,)
+                ? 'The cat naps on the mat all afternoon.'
+                : 'The dog sleeps.';
+            },
+          },),
+          modelIds: ROSTER,
+          targetText,
+          sourceContexts,
+          blocks,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: 5_000,
+          l,
+        },);
+
+        expect(repaired.targetText,).toBe(`${first}\n\nThe dog sleeps.`);
+        expect(repaired.findings.some(function retained(finding,): boolean {
+          return finding.startsWith('archive block revision repeated its original wording and was retained',);
+        },),).toBe(true);
+      },
+    },),
+    it({
       name: 'LEAVES ONE BLANK LINE where a removed block stood between two others, and none where it '
         + 'opened the body (class ninety-four, XingZ627, 2026-09-23: the archive\'s placeholder line was '
         + 'removed and the page shipped three blank lines after its front matter)',

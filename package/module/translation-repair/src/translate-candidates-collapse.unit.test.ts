@@ -221,6 +221,48 @@ await describe({
     },),
 
     it({
+      name: 'COLLAPSES a rendering onto the incumbent when it differs only in where a paragraph\'s soft line '
+        + 'breaks fall, which the site renders as spaces (ledger B26), and KEEPS apart one that adds a hard '
+        + 'break, one that splits the paragraph and one that changes a word, each a different page',
+      fn: async () => {
+        /**
+         Archive text with a soft line break inside its one paragraph.
+         */
+        const incumbent = 'The cat naps on the mat\nall afternoon.';
+        /**
+         Slate offered one rendering at a time beside the incumbent.
+
+         @param translation - rendering a translator proposed
+
+         @returns Renderings the ballot carries
+
+         @example
+         ```ts
+         const rendered = renderedBeside({ translation: 'The cat naps.', },);
+         ```
+         */
+        function renderedBeside({ translation, }: { readonly translation: string; },): readonly string[] {
+          return buildTranslateCandidates({
+            voices: [voiceOf({
+              at: 0,
+              translation,
+            },),],
+            translatorModelIds: [...TRANSLATORS,],
+            incumbentText: incumbent,
+          },)
+            .candidates
+            .map(function toRendering(candidate,): string {
+              return candidate.rendered;
+            },);
+        }
+        expect(renderedBeside({ translation: 'The cat naps on the mat all afternoon.', },),).toEqual([incumbent,],);
+        expect(renderedBeside({ translation: 'The cat naps on the mat  \nall afternoon.', },),).toHaveLength(2,);
+        expect(renderedBeside({ translation: 'The cat naps on the mat\n\nall afternoon.', },),).toHaveLength(2,);
+        expect(renderedBeside({ translation: 'The cat naps on the rug\nall afternoon.', },),).toHaveLength(2,);
+      },
+    },),
+
+    it({
       name: 'FOLDS an invisible variant out of a translation at intake, names it with its author, '
         + 'and collapses the folded rendering into a plain one that says the same',
       fn: async () => {

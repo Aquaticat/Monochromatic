@@ -232,6 +232,49 @@ await describe({
     },),
 
     it({
+      name: 'DEMOTES A CONSOLIDATION WHOSE WORDING IS THE STANDING TEXT WITH ITS SOFT LINE BREAKS ELSEWHERE, '
+        + 'which no wrap of either text makes equal, since the wrap only adds breaks: the site renders a soft '
+        + 'break as a space, so shipping it would report a change the page does not show (ledger B26)',
+      fn: async () => {
+        /**
+         What stands, with a soft break the wrap would never put there.
+         */
+        const standingText = 'The cat naps on the mat\nall afternoon.';
+
+        const shipped = wrapConsolidation({
+          outcome: gateSettling({ ships: 'consolidated', },),
+          consolidatedText: 'The cat naps on the mat all afternoon.',
+          standingText,
+          lineStructured: false,
+          l,
+        },);
+
+        expect(shipped.ships,).toBe('standing',);
+        expect(shipped.text,).toBe(standingText,);
+        expect(shipped.demoted,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'DEMOTES A GOVERNED CONSOLIDATION THAT IS THE STANDING TEXT BUT FOR A TRAILING NEWLINE, which the '
+        + 'slate already reads as one wording; the producer\'s own lines still ship, as "SHIPS THE '
+        + 'PRODUCER\'S OWN LINES ON A LINE-STRUCTURED SLICE" pins (ledger B26)',
+      fn: async () => {
+        const trailing = wrapConsolidation({
+          outcome: gateSettling({ ships: 'consolidated', },),
+          consolidatedText: `${VERSE_UNMERGED}\n`,
+          standingText: VERSE_UNMERGED,
+          lineStructured: true,
+          l,
+        },);
+
+        expect(trailing.ships,).toBe('standing',);
+        expect(trailing.text,).toBe(VERSE_UNMERGED,);
+        expect(trailing.demoted,).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'STILL REPORTS THE REWRAP ON A DEMOTED SLICE, since the two facts answer different '
         + 'questions: whether the rule had to correct the producer, and whether anything survived it',
       fn: async () => {

@@ -212,6 +212,106 @@ await describe({
     },),
 
     it({
+      name: 'DEMOTES AN OUTCOME WHOSE WORDING IS THE ARCHIVE\'S WITH ITS SOFT LINE BREAKS ELSEWHERE, even when '
+        + 'the wrap leaves it as it is, and ships the archive\'s own bytes: the site renders a soft break as a '
+        + 'space, so the page would not change and the outcome would report a change nobody made (ledger B26)',
+      fn: async () => {
+        /**
+         Archive wording with a soft break inside its paragraph.
+         */
+        const incumbentText = 'The cat naps on the mat\nall afternoon.';
+        const wrapped = wrapRepairOutcomes({
+          slices: [pairOf({
+            sliceIndex: 0,
+            incumbentText,
+          },),],
+          outcomes: [outcomeOf({
+            sliceIndex: 0,
+            repairedText: 'The cat naps on the mat all afternoon.',
+            changed: true,
+          },),],
+          lineStructuredSlices: new Set(),
+          l,
+        },);
+
+        expect(wrapped[0]?.repairedText,).toBe(incumbentText,);
+        expect(wrapped[0]?.changed,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'DEMOTES A BLOCKQUOTE THAT IS THE ARCHIVE\'S REWRAPPED, which the soft-break fold alone cannot '
+        + 'see, since it folds top-level paragraphs only (ledger B26)',
+      fn: async () => {
+        /**
+         Archive quotation on one line.
+         */
+        const incumbentText = '> The cat naps. The dog waits.';
+        const wrapped = wrapRepairOutcomes({
+          slices: [pairOf({
+            sliceIndex: 0,
+            incumbentText,
+          },),],
+          outcomes: [outcomeOf({
+            sliceIndex: 0,
+            repairedText: '> The cat naps.\n> The dog waits.',
+            changed: true,
+          },),],
+          lineStructuredSlices: new Set(),
+          l,
+        },);
+
+        expect(wrapped[0]?.repairedText,).toBe(incumbentText,);
+        expect(wrapped[0]?.changed,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'DEMOTES A LINE-STRUCTURED OUTCOME that differs from the archive only after its last character, '
+        + 'and KEEPS one whose lines differ, since there the line breaks are the producer\'s work (ledger B26)',
+      fn: async () => {
+        /**
+         Archive wording, one line per original line.
+         */
+        const incumbentText = 'The cat wakes.\nSun is warm.';
+        const wrapped = wrapRepairOutcomes({
+          slices: [
+            pairOf({
+              sliceIndex: 0,
+              incumbentText,
+            },),
+            pairOf({
+              sliceIndex: 1,
+              incumbentText,
+            },),
+          ],
+          outcomes: [
+            outcomeOf({
+              sliceIndex: 0,
+              repairedText: `${incumbentText}\n`,
+              changed: true,
+            },),
+            outcomeOf({
+              sliceIndex: 1,
+              repairedText: 'The cat wakes. Sun is warm.',
+              changed: true,
+            },),
+          ],
+          lineStructuredSlices: new Set([
+            0,
+            1,
+          ],),
+          l,
+        },);
+
+        expect(wrapped[0]?.repairedText,).toBe(incumbentText,);
+        expect(wrapped[0]?.changed,).toBe(false,);
+        expect(wrapped[1]?.repairedText,).toBe('The cat wakes. Sun is warm.',);
+        expect(wrapped[1]?.changed,).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'KEEPS A SLICE THE ARCHIVE NEVER TRANSLATED as a change, since filling an empty '
         + 'passage differs from it however the filling is wrapped',
       fn: async () => {
