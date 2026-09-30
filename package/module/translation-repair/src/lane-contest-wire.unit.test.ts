@@ -53,22 +53,25 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES a reply whose findings are not a list of strings',
+      name: 'ACCEPTS a reply whose findings are not a list of strings, since the choice is what the contest '
+        + 'counts (ledger B46)',
       fn: async () => {
-        // SHAPE IS STILL ENFORCED. Loosening the vocabulary check must not
-        // loosen the shape check, or the reader receives values it cannot read.
+        // THE SHAPE OF A FINDING NO LONGER COSTS A VOICE EITHER. This case
+        // once pinned the refusal, so the reader would never receive a value
+        // it could not read; the reader now reads such a field as no findings,
+        // as the consolidation gate's has since 2026-08-26.
         expect(isLaneContestWire({
           choice: 'repair',
           unsupported: [ 7, ],
           dropped: [],
           reason: 'x',
-        },),).toBe(false,);
+        },),).toBe(true,);
         expect(isLaneContestWire({
           choice: 'repair',
           unsupported: 'napping',
           dropped: [],
           reason: 'x',
-        },),).toBe(false,);
+        },),).toBe(true,);
       },
     },),
     it({
@@ -83,8 +86,9 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES a reply it cannot read as a ballot (not an object, null, or with the choice, a findings list '
-        + 'or the reason missing, or a reason that is not text), and ACCEPTS the same reply whole',
+      name: 'REFUSES a reply it cannot read as a ballot (not an object, null, or with the choice or the reason '
+        + 'missing, or a reason that is not text), and ACCEPTS the same reply whole or with a findings list missing '
+        + '(ledger B46)',
       fn: async () => {
         /** The whole reply first, then that reply with one part taken away or broken. */
         const replies: readonly unknown[] = [
@@ -99,7 +103,7 @@ await describe({
         ];
         expect(replies.map(function usable(reply,): boolean {
           return isLaneContestWire(reply,);
-        },),).toEqual([ true, false, false, false, false, false, false, false, ],);
+        },),).toEqual([ true, false, false, false, true, true, false, false, ],);
       },
     },),
   ],
@@ -154,6 +158,30 @@ await describe({
         expect(ballot.unsupportedRaw,).toEqual([ 'napping in the sun', ],);
         expect(ballot.dropped,).toEqual([],);
         expect(ballot.droppedRaw,).toEqual([ 'the second bowl', ],);
+      },
+    },),
+    it({
+      name: 'KEEPS the choice of a ballot whose findings are not lists of strings, and reads them as none '
+        + '(ledger B46)',
+      fn: async () => {
+        /** A reply whose findings are a stray number and a bare phrase. */
+        const reply: unknown = {
+          choice: 'repair',
+          unsupported: [ 7, ],
+          dropped: 'the second bowl',
+          reason: 'the translate candidate adds an afternoon',
+        };
+        if (!isLaneContestWire(reply,))
+          throw new Error('the guard refused a reply whose choice and reason it can read',);
+        /** The ballot read off it. */
+        const ballot = readLaneContestBallot({ wire: reply, },);
+        expect([
+          ballot.choice,
+          ballot.unsupported,
+          ballot.unsupportedRaw,
+          ballot.dropped,
+          ballot.droppedRaw,
+        ],).toEqual([ 'repair', [], [], [], [], ],);
       },
     },),
     it({

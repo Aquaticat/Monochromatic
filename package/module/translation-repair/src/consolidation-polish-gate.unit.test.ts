@@ -18,6 +18,7 @@ import {
   type ConsolidationPolishBallot,
   isConsolidationPolishGateWire,
   messageText,
+  readConsolidationPolishBallot,
   settleConsolidationPolishBallots,
 } from '../dist/final/node/index.mjs';
 
@@ -90,8 +91,9 @@ await describe({
   name: isConsolidationPolishGateWire.name,
   children: [
     it({
-      name: 'REFUSES a reply it cannot read as a ballot (not an object, null, or with the choice, a findings key '
-        + 'or the reason missing, or a reason that is not text), and ACCEPTS the same reply whole',
+      name: 'REFUSES a reply it cannot read as a ballot (not an object, null, or with the choice or the reason '
+        + 'missing, or a reason that is not text), and ACCEPTS the same reply whole or with a findings key missing '
+        + '(ledger B46)',
       fn: async () => {
         /** The whole reply first, then that reply with one part taken away or broken. */
         const replies: readonly unknown[] = [
@@ -106,7 +108,36 @@ await describe({
         ];
         expect(replies.map(function usable(reply,): boolean {
           return isConsolidationPolishGateWire(reply,);
-        },),).toEqual([ true, false, false, false, false, false, false, false, ],);
+        },),).toEqual([ true, false, false, false, true, true, false, false, ],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: readConsolidationPolishBallot.name,
+  children: [
+    it({
+      name: 'KEEPS the choice of a ballot whose findings are not lists of strings, and reads them as none',
+      fn: async () => {
+        /** A reply whose findings are a stray null and a bare phrase. */
+        const reply: unknown = {
+          choice: 'base',
+          unsupported: null,
+          dropped: 'the second cat',
+          reason: 'the polish drops the second cat',
+        };
+        if (!isConsolidationPolishGateWire(reply,))
+          throw new Error('the guard refused a reply whose choice and reason it can read',);
+        /** The ballot read off it. */
+        const read = readConsolidationPolishBallot({ wire: reply, },);
+        expect([
+          read.choice,
+          read.unsupported,
+          read.unsupportedRaw,
+          read.dropped,
+          read.droppedRaw,
+        ],).toEqual([ 'base', [], [], [], [], ],);
       },
     },),
   ],
