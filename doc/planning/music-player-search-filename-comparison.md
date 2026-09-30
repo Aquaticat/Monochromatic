@@ -148,8 +148,26 @@ copied row UI,
 real media files,
 source indexing or production edits.
 
-This route is pending implementation and inspected capture.
-Audit rendering-relevant host setup and dependencies first;
+The debug-only host is implemented in prototype `720ba418f`.
+It mirrors production `enableEdgeToEdge`,
+full-size `MaterialTheme`/`Surface` hosting and the private dynamic-color
+selection expression;
+the manifest inherits the same app theme.
+The production renderer and controller are invoked,
+not copied.
+The private host color factory is mirrored,
+not invoked through reflection.
+
+The first host-JVM run compiled but failed in newly added Android logging.
+A mandatory event writer now gives native code real tagged Android logs
+and host tests recorded diagnostics.
+No production source,
+test configuration or logging removal was needed.
+The [logging-boundary investigation][logging-boundary] records the correction.
+Complete tests,
+a fresh specific autoplay-guard mutation failure,
+exact restoration and an APK rebuild passed.
+Native capture and inspected geometry remain pending;
 calling the composable alone does not prove matching window geometry.
 Describe the result as a static native production-renderer capture with
 synthetic tracks,
@@ -187,3 +205,4 @@ matcher/library choice,
 IME experiment or original-AVD change follows automatically from this proposal.
 
 [frontier]: ../../package/music-player/design/evidence/search-filename-presentation-frontier.md
+[logging-boundary]: ../troubleshooting/android-agp-9-host-jvm-log-boundary.md
