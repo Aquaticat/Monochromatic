@@ -132,5 +132,40 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'STANDS ASIDE WHERE EVERY WORD OF THE RUN STARTS WITH A SMALL LETTER (ledger B58), since no word opens '
+        + 'the title',
+      fn: async () => {
+        /**
+         Credit rendering the title in small letters only.
+         */
+        const credit = '—— Yunmao, wu hou mao yu (午后猫语)';
+        /**
+         Pass over that credit.
+         */
+        const unified = passOver({ credit, },);
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
+          HEADING_ROW.replacementText,
+          credit,
+        ],);
+        expect(unified.findings,).toEqual([
+          `title-reference-ambiguous (slice 1: ${WHOSE}, but every word of the glossed run starts with a small letter, `
+          + 'so where its title starts cannot be read)',
+        ],);
+      },
+    },),
+    it({
+      name: 'READS A WORD OPENING WITH A DIGIT AS THE TITLE\'S FIRST (ledger B58): no small letter, no lead-in',
+      fn: async () => {
+        /**
+         Pass over a credit whose glossed run opens with a digit.
+         */
+        const unified = passOver({ credit: '—— Yunmao, 9 Cat Talks (午后猫语)', },);
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
+          HEADING_ROW.replacementText,
+          '—— Yunmao, Afternoon Cat Murmurs (午后猫语)',
+        ],);
+      },
+    },),
   ],
 },);

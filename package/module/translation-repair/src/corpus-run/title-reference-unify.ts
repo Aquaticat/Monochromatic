@@ -1,5 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import { isSmallLetter, } from '../cased-letters.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
+import { codePointAt, } from '../code-points.ts';
 import { isHanOnly, } from '../han-only-text.ts';
 import { straightenQuotes, } from '../quote-normalize.ts';
 import { wordStarts, } from '../word-bounds.ts';
@@ -42,10 +44,21 @@ const TRAILING_MARKS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- Words a glossed run may exceed the heading's rendering by and still be
- read as the title alone.
+ Separator between the words of a run.
  */
-const RUN_SLACK = 2;
+const WORD_SEPARATOR = ' ';
+
+/**
+ Why a glossed run's title is left as it stands: it has more words than the
+ heading's rendering.
+ */
+const RUN_LONGER = 'the glossed run reads as more than the title';
+
+/**
+ Why a glossed run's title is left as it stands: no word of the run can
+ start a title.
+ */
+const RUN_UNCAPITALIZED = 'every word of the glossed run starts with a small letter, so where its title starts cannot be read';
 
 /**
  Opening parenthesis of a gloss.
@@ -79,12 +92,13 @@ type RenderedHeading = {
 
 /**
  Outcome of a rewrite: the text rewritten with what changed, already the
- heading's, or a run that cannot be read as the title alone.
+ heading's, or a run that cannot be read as the title alone, with why.
  */
 type RewriteOutcome = {
   readonly kind: 'same';
 } | {
   readonly kind: 'ambiguous';
+  readonly reason: string;
 } | {
   readonly kind: 'rewritten';
   readonly text: string;
@@ -234,7 +248,7 @@ function wordCount({ text, }: { readonly text: string; },): number {
   /**
    Words of the run.
    */
-  const words = text.split(' ',)
+  const words = text.split(WORD_SEPARATOR,)
     .filter(function nonEmpty(word,): boolean {
       return word !== '';
     },);
@@ -282,8 +296,44 @@ function endsWithWords(
 }
 
 /**
- Page text with the located rendering rewritten to the heading's, undefined
- where it already is the heading's or cannot be read as the title alone.
+ Offset of a glossed run's first word that does not open with a small
+ letter, where its title starts; the run's length where every word does.
+
+ A TITLE OPENS WITH A CAPITAL (ledger B58). The pages write titles in
+ English title case, which capitalizes a title's first word, so small-letter
+ words ahead of it ("from", "sung in") lead into the title and stay on the
+ page. Small is read by general category (`isSmallLetter`), since a word
+ leading in may open with an accented letter; a word opening with a capital,
+ a digit or anything else that is no small letter opens the title.
+
+ @param run - glossed run, trimmed
+
+ @returns Offset where the title starts
+
+ @example
+ ```ts
+ leadInEnd({ run: 'sung in Cat Talk', },); // 8
+ ```
+ */
+function leadInEnd({ run, }: { readonly run: string; },): number {
+  for (let at = 0; at < run.length; at += 1) {
+    /**
+     Whether a word starts here: no space, at the run's start or after one.
+     */
+    const startsWord = (run.charAt(at,) !== WORD_SEPARATOR) && ((at === 0) || (run.charAt(at - 1,) === WORD_SEPARATOR));
+    if (startsWord && (!isSmallLetter({ character: codePointAt({
+      text: run,
+      at,
+    },), },)))
+      return at;
+  }
+  return run.length;
+}
+
+/**
+ Page text with the located rendering rewritten to the heading's, a glossed
+ run's lead-in words kept; `same` where it already is the heading's, and
+ `ambiguous` with why where it cannot be read as the title alone.
 
  @param text - page text of the slice
 
@@ -346,8 +396,32 @@ function rewriteLocated(
   // makes one; rewriting it would only swap one quote style for the other.
   if ((straightenQuotes({ text: core, },) === straightenQuotes({ text: heading.rendering, },)) || glossEndsWithHeading)
     return { kind: 'same', };
-  if ((located.kind === 'gloss') && (wordCount({ text: core, },) > (wordCount({ text: heading.rendering, },) + RUN_SLACK)))
-    return { kind: 'ambiguous', };
+  /**
+   Length of the words leading into the title: a glossed run's small-letter
+   words ahead of it, none for a quoted, bracketed or linked span, which is
+   the title alone.
+   */
+  const leadIn = (located.kind === 'gloss') ? leadInEnd({ run: core, },) : 0;
+  /**
+   Rendering of the title alone.
+   */
+  const title = core.slice(leadIn,);
+  if ((located.kind === 'gloss') && (title === '')) {
+    return {
+      kind: 'ambiguous',
+      reason: RUN_UNCAPITALIZED,
+    };
+  }
+  // NO MORE WORDS THAN THE HEADING'S (ledger B58). A capitalized word leading
+  // in ("From" opening a line) cannot be told from the title's first word, and
+  // the two words of slack the run once had rewrote such words away; a run
+  // longer than the heading's rendering is reported instead.
+  if ((located.kind === 'gloss') && (wordCount({ text: title, },) > wordCount({ text: heading.rendering, },))) {
+    return {
+      kind: 'ambiguous',
+      reason: RUN_LONGER,
+    };
+  }
   /**
    Rendering as the heading has it, punctuation kept.
    */
@@ -356,9 +430,9 @@ function rewriteLocated(
     kind: 'rewritten',
     text: `${text.slice(
       0,
-      located.start,
+      located.start + leadIn,
     )}${after}${text.slice(located.end,)}`,
-    before: core,
+    before: title,
     after: heading.rendering,
   };
 }
@@ -482,7 +556,7 @@ export function unifyTitleReferences(
       if (outcome.kind === 'same')
         continue;
       if (outcome.kind === 'ambiguous') {
-        findings.push(`title-reference-ambiguous (slice ${String(sliceIndex,)}: ${whose}, but the glossed run reads as more than the title)`,);
+        findings.push(`title-reference-ambiguous (slice ${String(sliceIndex,)}: ${whose}, but ${outcome.reason})`,);
         continue;
       }
       rewritten.set(
