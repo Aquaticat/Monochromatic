@@ -30,8 +30,9 @@ if (mutation === 'without-exact-cohort') {
 }
 if (mutation === 'without-evidence-only') {
   const source = readFileSync(builderPath, 'utf8');
-  const start = source.indexOf('  if (/type="radio"');
-  const end = source.indexOf('\n  console.log(\'Validated exact offline evidence review', start);
+  const diagnostic = source.indexOf('    throw new Error(\'Filename evidence review cannot contain policy votes');
+  const start = source.lastIndexOf('\n  if (', diagnostic);
+  const end = source.indexOf('\n  console.log(\'Validated exact offline evidence review', diagnostic);
   if (start < 0 || end < 0) throw new Error('Evidence-only mutation target differs.');
   writeFileSync(builderPath, source.slice(0, start) + source.slice(end));
 }
@@ -65,6 +66,13 @@ function expectTemplateRejection({ original, changed, diagnostic }) {
 try {
   const positive = invoke('build');
   if (positive.status !== 0 || invoke('validate').status !== 0) throw new Error('Disposable positive review failed.');
+  const quotedPath = join(fixture, 'questions', 'search-filename-comparison.template.html');
+  const quotedOriginal = readFileSync(quotedPath, 'utf8');
+  writeFileSync(quotedPath, quotedOriginal.replace('id="final-notes" name="notes"',
+    'id="final-notes" name="notes" data-example="required now"'));
+  if (invoke('build').status !== 0 || invoke('validate').status !== 0) throw new Error('Quoted required word misread as attribute.');
+  writeFileSync(quotedPath, quotedOriginal);
+  if (invoke('build').status !== 0) throw new Error('Quoted-value positive control did not restore.');
   const wrongHash = structuredClone(comparison);
   wrongHash.witnesses[0].sha256 = '0'.repeat(64);
   expectRejection({ data: wrongHash, diagnostic: 'capture hash, dimension or environment failed' });

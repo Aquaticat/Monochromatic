@@ -119,7 +119,7 @@ if (command === 'build') {
       (html.match(/<form\b/g) ?? []).length !== 1) {
     throw new Error('Filename review is not a self-contained evidence-only form with optional observations.');
   }
-  if (/type="radio"|name="placement"|name="visibility"|data\.get\('(placement|visibility)'\)|<textarea\b[^>]*\brequired\b/i.test(html)) {
+  if (/<input\b[^>]*\btype="radio"|name="placement"|name="visibility"|data\.get\('(placement|visibility)'\)|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {
     throw new Error('Filename evidence review cannot contain policy votes or required observations.');
   }
   console.log('Validated exact offline evidence review, optional observations, native images and immutable provenance.');

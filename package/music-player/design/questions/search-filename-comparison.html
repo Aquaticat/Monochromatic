@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>Search filename placement and visibility review</title>
+<title>Search filename evidence and configurable supporting text</title>
 <style>
 :root { color-scheme: light dark; --color-surface: #fcf9ff; --color-card: #f0edf5; --color-text: #201e26;
   --color-muted: #56515e; --color-line: #756e81; --color-focus: #554184; --color-selected: #e5dafa; }
@@ -45,14 +45,6 @@ figure h3 { margin-block-start: 0; }
 .preview-button { display: grid; gap: 0.75rem; inline-size: 100%; padding-block: 0.5rem; padding-inline: 0.5rem; }
 .preview-button img { display: block; inline-size: 100%; block-size: auto; }
 figcaption { margin-block-start: 0.8rem; font-size: 0.9rem; overflow-wrap: anywhere; }
-.choices { display: grid; gap: 1rem; }
-.choices label { display: grid; grid-template-columns: 3rem 1fr; gap: 1rem; align-items: start;
-  padding-block: 1rem; padding-inline: 1rem; border-width: 0.125rem; border-style: solid;
-  border-color: var(--color-line); border-radius: 0.75rem; min-inline-size: 3rem; min-block-size: 3rem; }
-.choices label:has(input:checked) { border-color: var(--color-focus); background-color: var(--color-selected); }
-.selected-marker { display: none; font-weight: 700; }
-.choices label:has(input:checked) .selected-marker { display: block; }
-.choices input { margin-block: 0; margin-inline: 0; accent-color: var(--color-focus); }
 textarea { display: block; inline-size: 100%; min-block-size: 8rem; padding-block: 0.75rem; padding-inline: 0.75rem; }
 summary { min-inline-size: 3rem; min-block-size: 3rem; cursor: pointer; padding-block: 0.7rem; padding-inline: 0.5rem;
   font-weight: 700; }
@@ -69,14 +61,16 @@ dialog h2 { margin-block-start: 0; }
 </head>
 <body>
 <header>
-<p class="summary-text">Design review only. No policy is preselected.</p>
-<h1>Where should filename suffixes appear, and when should they remain visible?</h1>
-<p>Purpose: compare filename presentation within accepted Search A. Placement and visibility are independent,
-so supporting-line placement can combine with either visibility policy. Placement is where a retained suffix appears;
-visibility decides whether an eligible suffix is retained. Ordinary-player retention and
-D11's Settings example select neither.</p>
-<p>Inspect long names, duplicate names and ancestor context, then answer both questions and the final free-text field.
-Reply in this chat using the prepared text or your own wording. This authorizes no production Search implementation.</p>
+<p class="summary-text">Evidence review only. Fixed-policy question withdrawn.</p>
+<h1>Filename evidence within configurable supporting text</h1>
+<p class="note"><strong>Supporting text is user-configurable through templates in Settings.</strong>
+The placement/visibility policy vote is withdrawn because it omitted this settled requirement.
+These comparisons show exact authored debug layouts, not template-engine output, implemented presets or Settings functionality.</p>
+<p>Purpose: retain measured wrapping, clipping and distinguishing-information evidence within accepted Search A.
+Suffix placement and retention remain useful analytical dimensions, not exhaustive product choices.
+Default templates and their interaction with required distinguishing information remain undesigned.</p>
+<p>Inspect long names, duplicate names and ancestor context. Optional observations are local evidence feedback,
+not policy selection or a completion gate. This authorizes no production Search implementation.</p>
 <p class="note">Native images are keyboard-closed static debug fixtures, not indexed files, matching, activation,
 speech or focus studies. This is not native accessibility acceptance. The inner browser and complete deck remain;
 the cover has no added deck. Dotted folders stay literal, and suffix text establishes neither kind nor encoding.</p>
@@ -95,7 +89,7 @@ bottom navigation remains. Logical dp uses the measured 390dpi density, not your
 </section>
 <form id="review-form">
 <section aria-labelledby="placement-title">
-<h2 id="placement-title">Placement: keep the literal name together or move its exact suffix to support?</h2>
+<h2 id="placement-title">Suffix placement in exact authored layouts</h2>
 <p>The same authored long-name pair, kind, parent, action, membership and order are held constant.
 Both options keep <code>.flac</code> and <code>.mp3</code> visible. Moving the suffix did not reduce measured title
 or supporting-line height in this pair. At 200%, some literal-name supporting lines wrap more, reducing initial viewport content.</p>
@@ -117,45 +111,28 @@ placement also needs scrolling. The final row and support are shown after one bo
 <figure data-scene="literalsupport" data-position="scrolled"><h3>Supporting suffix: final-row scroll witness</h3><button type="button" class="preview-button"><img alt="Native supporting-suffix literal list after scrolling with extensionless Cam and Track library root Play visible"><span>Open supporting-suffix final row</span></button><figcaption></figcaption></figure>
 </div>
 </details>
-<p><strong>Ranking: full literal title &gt; supporting suffix</strong>, because secondary placement bought no long-name
-height reduction and cost initial literal-list visibility. This is a recommendation for correction or veto, not a selected policy.</p>
-<fieldset><legend>Choose placement independently of visibility</legend><div class="choices">
-<label><input type="radio" name="placement" value="Full literal title" required><span><strong>Full literal title (Recommended)</strong><br>
-Pros: contiguous literal name; suffix at title emphasis; more initial literal content in the tested inner 200% view.<br>
-Cons: retains suffix punctuation in titles, including long names.<span class="selected-marker">Selected placement</span></span></label>
-<label><input type="radio" name="placement" value="Supporting suffix" required><span><strong>Supporting suffix</strong><br>
-Pros: cleaner stem title; exact suffix grouped with kind and context.<br>
-Cons: weaker suffix emphasis; split literal name; extra support wraps in some tested literal cases; no long-pair height saving.<span class="selected-marker">Selected placement</span></span></label>
-<label><input type="radio" name="placement" value="Keep placement open" required><span><strong>Keep placement open</strong><br>
-Neither built option expresses your preference. Explain the missing consequence in the final notes.<span class="selected-marker">Selected placement response</span></span></label>
-</div></fieldset>
+<p>Measured consequence: supporting placement bought no long-pair height reduction and reduced initial
+literal-list content in the tested 200% inner view. This finding applies to these authored strings and conditions;
+it neither selects a default template nor constrains user-configurable support.</p>
 </section>
 <section aria-labelledby="visibility-title">
-<h2 id="visibility-title">Visibility: always retain suffixes or omit only with known safe scope?</h2>
+<h2 id="visibility-title">Authored suffix-retention controls</h2>
 <p><code>Cam Solo.opus</code> is the authored eligible case. Same-parent <code>Cam.flac</code> and <code>Cam.mp3</code>
 retain their cues. <code>Cam Outside.flac</code> also retains its cue: a same-parent <code>Cam Outside.mp3</code>
 partner is authored outside the displayed subset. Visible rows alone do not establish uniqueness.</p>
 <p class="note">The fixtures supply scope and eligibility flags. They do not inspect an inventory or detect collisions.
-Unknown scope is not proof of uniqueness. A conditional policy would need independently known scope and retain
-cues when safety is unknown. This review selects no parser, matcher or collision algorithm.</p>
+Unknown scope is not proof of uniqueness. Real scope knowledge and the interaction between customized text
+and required visible distinction remain undesigned. This review selects no parser, matcher, collision algorithm,
+automatic suffix restoration or template rejection rule.</p>
 <div class="gallery">
 <figure data-scene="visibilityfull"><h3>Title placement: always visible</h3><button type="button" class="preview-button"><img alt="Native title placement with all authored suffixes visible, including Cam Solo opus"><span>Open always-visible title placement</span></button><figcaption></figcaption></figure>
 <figure data-scene="visibilityconditional"><h3>Title placement: eligible-only omission</h3><button type="button" class="preview-button"><img alt="Same native title-placement list omitting only Cam Solo suffix while collision cues and dotted folder stay literal"><span>Open conditional title placement</span></button><figcaption></figcaption></figure>
 <figure data-scene="visibilitysupportfull"><h3>Supporting placement: always visible</h3><button type="button" class="preview-button"><img alt="Native supporting placement with all authored suffixes visible in support"><span>Open always-visible supporting placement</span></button><figcaption></figcaption></figure>
 <figure data-scene="visibilitysupportconditional"><h3>Supporting placement: eligible-only omission</h3><button type="button" class="preview-button"><img alt="Same native supporting placement with only eligible Cam Solo suffix omitted and required cues retained"><span>Open conditional supporting placement</span></button><figcaption></figcaption></figure>
 </div>
-<p><strong>Ranking: always visible &gt; conditional omission</strong>, because this eligible omission reduced text but not
-measured vertical space, while real conditional behavior needs scope knowledge the fixture does not supply.</p>
-<fieldset><legend>Choose visibility independently of placement</legend><div class="choices">
-<label><input type="radio" name="visibility" value="Always visible" required><span><strong>Always visible (Recommended)</strong><br>
-Pros: preserves information; no uniqueness assessment needed for suffix visibility.<br>
-Cons: extra literal text on an eligible unambiguous name.<span class="selected-marker">Selected visibility</span></span></label>
-<label><input type="radio" name="visibility" value="Conditional omission with independently known safe scope" required><span><strong>Conditional omission</strong><br>
-Pros: removes suffix text when the relevant scope is actually known safe.<br>
-Cons: scope-dependent behavior; cues still needed for non-displayed partners or unknown scope; no measured height saving here.<span class="selected-marker">Selected visibility</span></span></label>
-<label><input type="radio" name="visibility" value="Keep visibility open" required><span><strong>Keep visibility open</strong><br>
-Neither built policy expresses your preference. Explain the missing consequence in the final notes.<span class="selected-marker">Selected visibility response</span></span></label>
-</div></fieldset>
+<p>Measured consequence: the authored eligible omission reduced text but not vertical space in either
+placement. The policy recommendation is withdrawn. These scope flags do not implement template conditions,
+prove uniqueness or settle a renderer fallback.</p>
 </section>
 <details><summary>Inspect the actual ordinary-player renderer as incumbent context</summary>
 <p>These invoke real <code>playerScreen</code>, private rows and pager, and real controller with synthetic paused
@@ -163,7 +140,7 @@ inputs and a no-audio double. The private host color expression is mirrored. The
 <code>MainActivity</code>, live playback or native packaging equivalence. Short-name controls are no-current only.</p>
 <p>The actual full-width ordinary player retains long suffixes at inner 100%, unlike the narrower copied control.
 In the captured cover and 200% cases, long suffixes clip. Current-row fill does not recover those clipped suffixes.
-This does not select either Search policy.</p>
+This selects no Search default or custom template.</p>
 <div class="gallery">
 <figure data-source="baseline" data-scene="long-none"><h3>Actual player: long pair, no current row</h3><button type="button" class="preview-button"><img alt="Actual ordinary-player renderer with synthetic long filename pair and no current-row decoration"><span>Open actual player with no current row</span></button><figcaption></figcaption></figure>
 <figure data-source="baseline" data-scene="long-first"><h3>Actual player: long pair, first current</h3><button type="button" class="preview-button"><img alt="Actual ordinary-player renderer with synthetic long filename pair and first current row paused"><span>Open actual player with first current row</span></button><figcaption></figcaption></figure>
@@ -188,12 +165,12 @@ covering 32 inner initial views. This does not independently remeasure E2 cleara
 activation, speech, native contrast acceptance, actual 48dp actions or focus transitions. D75 to D80's accessibility
 policy acceptance is separate from task 133's native implementation gate.</p>
 </details>
-<fieldset><legend>Final notes</legend><label for="final-notes">Corrections, missing consequences or a different filename preference</label>
-<textarea id="final-notes" name="notes" placeholder="Optional: explain what the built options miss."></textarea></fieldset>
-<button type="submit">Prepare reply</button>
-<section id="response" hidden aria-labelledby="response-title"><h2 id="response-title">Reply in this chat</h2>
-<p id="response-status" role="status">Nothing has been sent. Use this text or your own wording.</p>
-<label for="reply">Prepared reply</label><textarea id="reply" readonly></textarea></section>
+<fieldset><legend>Optional evidence observations</legend><label for="final-notes">Observed wrapping, clipping or missing evidence</label>
+<textarea id="final-notes" name="notes" placeholder="Optional observations only; no policy answer is required."></textarea></fieldset>
+<button type="submit">Prepare observations</button>
+<section id="response" hidden aria-labelledby="response-title"><h2 id="response-title">Optional observations to copy</h2>
+<p id="response-status" role="status">Nothing has been sent or saved by this review. No filename policy is selected.</p>
+<label for="reply">Prepared observations</label><textarea id="reply" readonly></textarea></section>
 </form>
 <dialog id="preview" aria-labelledby="preview-title">
 <h2 id="preview-title">Native witness</h2>
@@ -275,15 +252,16 @@ document.getElementById('native-preview').addEventListener('click', () => { stat
 render();
 //endregion
 
-//region Independent responses, recommendations never become implicit human answers
+//region Optional evidence feedback, observations never become policy acceptance
 function prepareReply(event) {
   event.preventDefault();
   const form = document.getElementById('review-form');
   if (!form.reportValidity()) return;
   const data = new FormData(form);
   const notes = String(data.get('notes')).trim();
-  document.getElementById('reply').value = 'Filename placement: ' + data.get('placement') +
-    '\nFilename visibility: ' + data.get('visibility') + '\nFinal notes: ' + (notes || 'None.');
+  document.getElementById('reply').value = 'Search filename evidence observations\n' +
+    'Supporting text remains user-configurable through templates in Settings.\n' +
+    'Observations: ' + (notes || 'None.') + '\nNo filename policy selection or production authorization.';
   document.getElementById('response').hidden = false;
   document.getElementById('reply').focus();
 }
