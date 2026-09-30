@@ -46,7 +46,7 @@ recorded in `evidence/search-filename-presentation-frontier.md`.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
 Search's extension display.
-Internal task 136 checks filename-backed label witnesses;
+Internal task 136 checks synthetic complete-filename label witnesses;
 task 137 resolves the resulting visual-review boundary.
 Both exclude matcher choices,
 new IME work and native accessibility acceptance.

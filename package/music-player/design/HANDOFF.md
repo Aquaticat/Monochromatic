@@ -27,7 +27,7 @@ audit:
 the ordinary-player helpers retain filename suffixes,
 D11's shortened Settings example does not separately settle Search,
 and the Search fixture lacks real source filenames.
-Internal task 136 checks specifically motivated filename-backed,
+Internal task 136 checks specifically motivated synthetic complete-filename,
 keyboard-closed native label witnesses;
 task 137 evaluates whether they warrant another visual comparison.
 No extension preference has been selected.

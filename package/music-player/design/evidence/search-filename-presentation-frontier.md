@@ -100,8 +100,10 @@ is scored against `Cam.flac`.
 
 ## Verified fixture preparation
 
-The debug linked worktree added literal short,
-long and edge filename scenes without changing the selected row renderers.
+The debug linked worktree added synthetic complete-filename labels in
+short,
+long and edge scenes without changing the selected row renderers.
+These strings are not actual media files or indexed results.
 Prototype commits are `1cbbba772` and `1ff1d135a`.
 The host-JVM `SearchFilenameFixtureTest` report records 5 tests,
 zero failures,
@@ -133,7 +135,7 @@ Native captures remain pending.
 
 ## Next verification
 
-Internal task 136 checks filename-backed fixed data in the existing
+Internal task 136 checks synthetic complete-filename labels in the existing
 nonfunctional Compose study,
 keyboard closed,
 on both Fold panels at 100% and 200% text.
@@ -149,6 +151,14 @@ Inspect every published region and sanitize status information.
 Internal task 137 then decides whether the witnessed filename-preserving
 incumbent supports an evidence-led recommendation or a consequential
 visual comparison remains.
+Before recommending,
+add a matched ordinary-player rendering and equal complete filenames
+under different ancestor paths sharing a leaf-folder label.
+Stable frames and hierarchy text are capture prerequisites,
+not proof that distinguishing suffixes or parent paths are visible.
+Inspect rendered labels and add scrolled witnesses where needed.
+Unchanged row-renderer code does not imply unchanged wrapping,
+row heights or visible-result capacity.
 If needed,
 extension visibility and placement remain separable choices.
 No hide/show preference is selected by this source audit.
