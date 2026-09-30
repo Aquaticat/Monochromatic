@@ -292,6 +292,21 @@ setup outside the authorized scope remains gated.
 It would still establish static presentation only,
 not playback or complete player behavior.
 
+## Runtime shutdown
+
+The owned filename runtime was shut down through its container's ADB
+`emu kill` after the control capture.
+Container,
+ADB-device and owner-PID checks are empty.
+The measured control-run snapshot was restored first:
+200% font scale,
+night mode enabled,
+cover state,
+accessibility disabled and no enabled accessibility service.
+That snapshot does not reconstruct settings before the original matrix;
+no such baseline was retained.
+No original-AVD state was changed.
+
 ## Assessment and proposed next comparison
 
 The bounded assessment supports another consequential comparison,

@@ -80,8 +80,13 @@ live announcements,
 return focus or cover traversal.
 The accessibility study's disposable emulator was stopped.
 A separately motivated,
-keyboard-closed filename-label witness now uses the disposable AVD
+keyboard-closed filename-label witness used the disposable AVD
 within an inspected 6 GiB/2 CPU cap.
+The filename runtime is now shut down through its owning container's ADB;
+container,
+device and owner PID checks are empty.
+The measured control-run settings snapshot was restored first.
+It does not reconstruct settings preceding the original filename matrix.
 Build,
 fixture unit checks and the native capture matrix passed.
 Exact retained RGB,
@@ -92,8 +97,10 @@ zero changed-block findings,
 with 185 existing findings in the three-file canonical scope left to
 internal task 119.
 Task 136's bounded matrix is complete;
-task 137's assessment is awaiting final rendered verification and
-runtime shutdown before administrative closure.
+task 137's bounded assessment is awaiting final rendered verification
+before administrative closure.
+The proposed next comparison is not a selected extension policy or
+implicit authorization for dependent work.
 The original AVD,
 production Search,
 matcher/library choice,
