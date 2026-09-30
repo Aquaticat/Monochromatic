@@ -69,8 +69,13 @@ not live playback or full `MainActivity`/service/source integration.
 `doc/planning/music-player-search-filename-comparison.md` keeps
 placement and visibility independent.
 The user directed continued work after the bounded assessment.
-Internal tasks 138 to 140 continue baseline verification,
-usable debug-native variants and a verified visual review.
+Internal task 138 is complete as a static actual-renderer baseline.
+Publication/provenance,
+retained test reports,
+scoped lint and rendered-document verification passed after the source-scope
+correction.
+Task 139 is building usable debug-native placement and visibility variants;
+task 140 follows with inspected evidence and a verified visual review.
 Prototype `720ba418f` uses public `playerScreen` and the real controller
 with a paused no-audio double;
 no production source was changed.
