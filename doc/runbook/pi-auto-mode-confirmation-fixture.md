@@ -72,7 +72,8 @@ stop and have the agent prepare a fresh,
 separately identified test.
 Existing constructor and execution receipts must not be overwritten or replayed.
 
-The new window title is **Pi answer: save and exit to submit (clean fixture)**.
+The new window title is **Pi answer:
+ save and exit to submit (clean fixture)**.
 Only this new window is active;
 any older test window remains inactive.
 The document is `ANSWER.md`,
