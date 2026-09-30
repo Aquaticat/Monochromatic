@@ -2,8 +2,6 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { isInsertionChunk, } from '../chunk-placement.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
-import type { PreparedDocumentPair, } from '../document-preparation.ts';
-import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 
 //region Rebuild rows
@@ -58,35 +56,31 @@ function rowDivergence(
 /**
  How a rebuilt carve departs from the one the artifact records.
 
- @param artifact - artifact whose repair ledger records the run's carve
+ TAKES THE ROWS AND THE SLICES, not the artifact and the preparation they
+ come from, since nothing else of either is read; the caller names which
+ ledger records the run's carve.
 
- @param prepared - carve the rebuild produced
+ @param rows - rows the run recorded, one per slice it carved: the repair
+ lane's delivery ledger
+
+ @param slices - slices the rebuild carved
 
  @returns The first departure, empty when every row matches
 
  @example
  ```ts
- const divergence = carveDivergence({ artifact, prepared, },);
+ const divergence = carveDivergence({ rows: artifact.lanes.repair.delivery, slices: prepared.slices, },);
  ```
  */
 export function carveDivergence(
   {
-    artifact,
-    prepared,
+    rows,
+    slices,
   }: {
-    readonly artifact: ParsedTwoLaneArtifact;
-    readonly prepared: PreparedDocumentPair;
+    readonly rows: readonly ArtifactDeliveryRow[];
+    readonly slices: readonly ChunkPair[];
   },
 ): string {
-  /**
-   Rows the run recorded, one per slice it carved.
-   */
-  const { delivery: rows, } = artifact.lanes
-    .repair;
-  /**
-   Slices the rebuild carved.
-   */
-  const { slices, } = prepared;
   if (rows.length !== slices.length)
     return `${String(slices.length,)} slices rebuilt where the run recorded ${String(rows.length,)}`;
   // The two lists are one length here, so every position has a row and a slice.

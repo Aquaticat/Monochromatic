@@ -349,6 +349,27 @@ await describe({
     },),
 
     it({
+      name: 'CARRIES a file named nothing but the suffix by its name among the unplaceable, since its entry '
+        + 'id is empty and an empty id in a report is a blank line nobody can act on',
+      fn: async () => {
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: '',
+              tip: TIP_A,
+              digest: DIGEST_A,
+            },
+          ],
+        },);
+
+        const census = await censusByGeneration({ artifactsDir: dir, },);
+
+        expect(census.untaggedIds,).toEqual(['.json',],);
+        expect(census.groups,).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'REFUSES an artifact that records no id of its own. Presence is '
         + 'required rather than merely agreement: guarding the comparison on '
         + 'the field being there meant an artifact claiming no identity was '
@@ -586,6 +607,50 @@ await describe({
               return line.includes('1 ELIGIBLE',);
             },),
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'NAMES a generation the required commit excludes as stale, beside the one it keeps, so the '
+        + 'report shows which build fell out of the pool',
+      fn: async () => {
+        const [root, head,] = await gitBounds();
+
+        const dir = await writeArtifacts({
+          entries: [
+            {
+              entryId: 'Mittens',
+              tip: head,
+              digest: DIGEST_A,
+            },
+            {
+              entryId: 'Biscuit',
+              tip: root,
+              digest: DIGEST_B,
+            },
+          ],
+        },);
+
+        const eligible = await selectEligible({
+          census: await censusByGeneration({ artifactsDir: dir, },),
+          requiredCommit: head,
+        },);
+
+        /**
+         The report's per-generation lines, one for each build the census found.
+         */
+        const generationLines = eligible.report
+          .filter(function perGeneration(line: string,): boolean {
+            return line.includes('stale, excluded',) || line.includes('ELIGIBLE',);
+          },);
+
+        expect(eligible.excludedIds,).toEqual(['Biscuit',],);
+        expect(generationLines.filter(function stale(line: string,): boolean {
+          return line.includes('stale, excluded',);
+        },).length,).toBe(1,);
+        expect(generationLines.filter(function kept(line: string,): boolean {
+          return line.includes('1 ELIGIBLE',);
+        },).length,).toBe(1,);
       },
     },),
 

@@ -183,6 +183,43 @@ await describe({
         expect(said.includes(DECIDED_SILL,),).toBe(false,);
       },
     },),
+
+    it({
+      name: 'NAMES ONLY THE TYPE of a member that is not an object at all, which has no fields to list',
+      fn: async () => {
+        const refusalOfNewMember = caught(function newMember() {
+          toArtifactOutcome({ outcome: DECIDED_SILL as unknown as LaneSliceOutcome, },);
+        },);
+
+        /**
+         What the refusal says.
+         */
+        const said = (refusalOfNewMember as Error).message;
+
+        expect(said,).toContain('lane outcome carries a member version 2 does not describe: a string',);
+        expect(said.includes(DECIDED_SILL,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'SAYS A MEMBER CARRIES NO KIND rather than reading a missing discriminant as one, and still names '
+        + 'its fields and none of their values',
+      fn: async () => {
+        const refusalOfNewMember = caught(function newMember() {
+          toArtifactOutcome({
+            outcome: { acceptedText: DECIDED_SILL, } as unknown as LaneSliceOutcome,
+          },);
+        },);
+
+        /**
+         What the refusal says.
+         */
+        const said = (refusalOfNewMember as Error).message;
+
+        expect(said,).toContain('kind (no kind), fields [acceptedText]',);
+        expect(said.includes(DECIDED_SILL,),).toBe(false,);
+      },
+    },),
   ],
 },);
 

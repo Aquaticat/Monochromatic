@@ -557,6 +557,81 @@ await describe({
     },),
 
     it({
+      name: 'NAMES AN ID RECORDED AS NULL as null on the POOL line, apart from an absent one',
+      fn: async () => {
+        using printed = collectingLogs({ lines: [], },);
+
+        expect(await placementOf({
+          body: {
+            id: null,
+            tip: FIXED_TIP,
+            pipelineDigest: FIXED_DIGEST,
+          },
+          name: 'Nulled.json',
+        },),)
+          .toEqual({ kind: 'untagged', },);
+        expect(linesAbout({
+          lines: printed.lines,
+          name: 'Nulled.json',
+        },),)
+          .toEqual([
+            'POOL Nulled.json records an id that is not its file name (null); '
+              + 'treating it as unplaceable',
+          ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES AN ID RECORDED AS AN ARRAY by its kind alone on the POOL line, never its members',
+      fn: async () => {
+        using printed = collectingLogs({ lines: [], },);
+
+        expect(await placementOf({
+          body: {
+            id: ['Whiskers',],
+            tip: FIXED_TIP,
+            pipelineDigest: FIXED_DIGEST,
+          },
+          name: 'Listed.json',
+        },),)
+          .toEqual({ kind: 'untagged', },);
+        expect(linesAbout({
+          lines: printed.lines,
+          name: 'Listed.json',
+        },),)
+          .toEqual([
+            'POOL Listed.json records an id that is not its file name (an array); '
+              + 'treating it as unplaceable',
+          ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES AN ID RECORDED AS AN OBJECT by its kind alone on the POOL line, never its fields',
+      fn: async () => {
+        using printed = collectingLogs({ lines: [], },);
+
+        expect(await placementOf({
+          body: {
+            id: { name: 'Whiskers', },
+            tip: FIXED_TIP,
+            pipelineDigest: FIXED_DIGEST,
+          },
+          name: 'Nested.json',
+        },),)
+          .toEqual({ kind: 'untagged', },);
+        expect(linesAbout({
+          lines: printed.lines,
+          name: 'Nested.json',
+        },),)
+          .toEqual([
+            'POOL Nested.json records an id that is not its file name (an object); '
+              + 'treating it as unplaceable',
+          ],);
+      },
+    },),
+
+    it({
       name: 'NAMES A NON-STRING DIGEST BY SHAPE on the POOL line',
       fn: async () => {
         using printed = collectingLogs({ lines: [], },);

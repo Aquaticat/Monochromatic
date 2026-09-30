@@ -79,6 +79,7 @@ export {
   type RecipeHalf,
   recipeOf,
 } from './corpus-run/artifact-two-lane-rebuild.ts';
+export { carveDivergence, } from './corpus-run/artifact-two-lane-rebuild-rows.ts';
 export {
   carveSettled,
   listSettledEntryIds,

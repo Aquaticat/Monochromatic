@@ -330,11 +330,15 @@ export function rebuildPreparation(
     ...((blockPairings === undefined) ? {} : { blockPairings, }),
   },);
   /**
-   First departure from the run's recorded carve, empty for none.
+   First departure from the run's recorded carve, empty for none. The repair
+   lane's ledger records it, a row for every slice the run carved.
    */
   const divergence = carveDivergence({
-    artifact,
-    prepared,
+    rows: artifact
+      .lanes
+      .repair
+      .delivery,
+    slices: prepared.slices,
   },);
   return {
     prepared,
