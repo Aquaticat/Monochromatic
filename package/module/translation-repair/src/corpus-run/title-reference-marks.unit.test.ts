@@ -76,5 +76,35 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'KEEPS A QUOTED SPAN\'S TRAILING PERIOD OUTSIDE THE REWRITE, where the page closes its quote after it',
+      fn: async () => {
+        /**
+         Pass over a credit whose quote closes after a period.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            HEADING,
+            pair({
+              sliceIndex: 1,
+              source: '—— 云猫《午后猫语》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADING_ROW,
+            {
+              sliceIndex: 1,
+              replacementText: '—— Yunmao \u{201C}Afternoon Cat Talk.\u{201D}',
+            },
+          ],
+        },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe('—— Yunmao \u{201C}Afternoon Cat Murmurs.\u{201D}',);
+        expect(unified.findings,).toEqual([
+          'title-reference-unified (slice 1: "Afternoon Cat Talk" to "Afternoon Cat Murmurs"; 「午后猫语」 rendered by the '
+          + 'heading of slice 0 as "Afternoon Cat Murmurs")',
+        ],);
+      },
+    },),
   ],
 },);

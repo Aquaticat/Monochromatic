@@ -201,5 +201,42 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'READS THE QUOTES WHERE THE GLOSS FOLLOWS A QUOTED TITLE, since no run stands between the quote and the gloss',
+      fn: async () => {
+        /**
+         Pass over a credit glossing a quoted title.
+         */
+        const unified = passOver({ credit: '—— Yunmao, \u{201C}Cat Talk\u{201D} (午后猫语)', },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe('—— Yunmao, \u{201C}Afternoon Cat Murmurs\u{201D} (午后猫语)',);
+      },
+    },),
+    it({
+      name: 'REPORTS A GLOSS OPENING THE PAGE UNPLACED, since no English stands before it',
+      fn: async () => {
+        /**
+         Credit opening with the bare gloss.
+         */
+        const credit = '(午后猫语) — Yunmao';
+        /**
+         Pass over that credit.
+         */
+        const unified = passOver({ credit, },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe(credit,);
+        expect(unified.findings,).toEqual([
+          `title-reference-unplaced (slice 1: ${WHOSE}, no linked, glossed, bracketed or quoted span found)`,
+        ],);
+      },
+    },),
+    it({
+      name: 'READS A RUN BACK TO THE PAGE\'S START where no boundary stands before it',
+      fn: async () => {
+        /**
+         Pass over a credit that opens with the glossed title.
+         */
+        const unified = passOver({ credit: 'Cat Talk (午后猫语) — Yunmao', },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe('Afternoon Cat Murmurs (午后猫语) — Yunmao',);
+      },
+    },),
   ],
 },);

@@ -32,6 +32,59 @@ const CREDIT = pair({
 },);
 
 /**
+ Page after the pass over one heading and a credit bracketing its title.
+
+ @param title - title the original heads and credits
+
+ @param heading - page text of the heading
+
+ @param credit - page text of the credit
+
+ @returns Rows and findings
+
+ @example
+ ```ts
+ const unified = passOverHeading({ title: '猫', heading: '### Cat', credit: '—— Yunmao “Kitty”', },);
+ ```
+ */
+function passOverHeading(
+  {
+    title,
+    heading,
+    credit,
+  }: {
+    readonly title: string;
+    readonly heading: string;
+    readonly credit: string;
+  },
+): ReturnType<typeof unifyTitleReferences> {
+  return unifyTitleReferences({
+    slices: [
+      pair({
+        sliceIndex: 0,
+        source: `### ${title}`,
+        target: '',
+      },),
+      pair({
+        sliceIndex: 1,
+        source: `—— 云猫《${title}》`,
+        target: '',
+      },),
+    ],
+    replacements: [
+      {
+        sliceIndex: 0,
+        replacementText: heading,
+      },
+      {
+        sliceIndex: 1,
+        replacementText: credit,
+      },
+    ],
+  },);
+}
+
+/**
  Page after the pass over two headings titled alike and the credit between
  them.
 
@@ -97,6 +150,69 @@ function passOverTwoHeadings(
 await describe({
   name: `${unifyTitleReferences.name} over the headings a reference points at`,
   children: [
+    it({
+      name: 'TAKES A HEADING RENDERED WITH ITS HAN GLOSS AS THE ENGLISH ALONE, so the reference carries no gloss',
+      fn: async () => {
+        /**
+         Pass over a heading that glosses its own title.
+         */
+        const unified = passOverHeading({
+          title: '午后猫语',
+          heading: '### Afternoon Cat Murmurs (午后猫语)',
+          credit: '—— Yunmao \u{201C}Cat Talk\u{201D}',
+        },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe('—— Yunmao \u{201C}Afternoon Cat Murmurs\u{201D}',);
+        expect(unified.findings,).toEqual([
+          'title-reference-unified (slice 1: "Cat Talk" to "Afternoon Cat Murmurs"; 「午后猫语」 rendered by the heading of '
+          + 'slice 0 as "Afternoon Cat Murmurs")',
+        ],);
+      },
+    },),
+    it({
+      name: 'READS NO HEADING WHOSE ORIGINAL TITLE CARRIES A LATIN LETTER: the pass reads Han titles only',
+      fn: async () => {
+        /**
+         Pass over a heading titled partly in Latin letters.
+         */
+        const unified = passOverHeading({
+          title: 'Nyan猫',
+          heading: '### Nyan Cat',
+          credit: '—— Yunmao \u{201C}Nyan Kitty\u{201D}',
+        },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe('—— Yunmao \u{201C}Nyan Kitty\u{201D}',);
+        expect(unified.findings,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'READS NO HEADING THE PAGE RENDERS AS ITS HAN GLOSS ALONE, which leaves no English to take',
+      fn: async () => {
+        /**
+         Pass over a heading written as a bare gloss.
+         */
+        const unified = passOverHeading({
+          title: '午后猫语',
+          heading: '### (午后猫语)',
+          credit: '—— Yunmao \u{201C}Cat Talk\u{201D}',
+        },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe('—— Yunmao \u{201C}Cat Talk\u{201D}',);
+        expect(unified.findings,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'READS NO HEADING THE PAGE LEAVES IN HAN, which leaves no English to take',
+      fn: async () => {
+        /**
+         Pass over a heading the page keeps as the original writes it.
+         */
+        const unified = passOverHeading({
+          title: '午后猫语',
+          heading: '### 午后猫语',
+          credit: '—— Yunmao \u{201C}Cat Talk\u{201D}',
+        },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe('—— Yunmao \u{201C}Cat Talk\u{201D}',);
+        expect(unified.findings,).toEqual([],);
+      },
+    },),
     it({
       name: 'LEAVES A REFERENCE TO A TITLE TWO HEADINGS RENDER APART, since which rendering it takes cannot be read',
       fn: async () => {

@@ -216,5 +216,57 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'READS THE QUOTES WHERE THE ORIGINAL\'S LINK NEVER CLOSES, since no destination can be read from it',
+      fn: async () => {
+        /**
+         Pass over an original whose link lost its closing parenthesis.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            HEADING,
+            pair({
+              sliceIndex: 1,
+              source: '——出自《[窗边猫](https://example.test/cat》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADING_ROW,
+            {
+              sliceIndex: 1,
+              replacementText: '——From \u{201C}The Window Cat\u{201D}',
+            },
+          ],
+        },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe('——From \u{201C}Cat by the Window\u{201D}',);
+      },
+    },),
+    it({
+      name: 'READS THE QUOTES WHERE THE PAGE LINKS THE DESTINATION NOWHERE',
+      fn: async () => {
+        /**
+         Pass over a page that quotes the title instead of linking it.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            HEADING,
+            pair({
+              sliceIndex: 1,
+              source: '——出自《[窗边猫](https://example.test/cat)》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADING_ROW,
+            {
+              sliceIndex: 1,
+              replacementText: '——From the page \u{201C}The Window Cat\u{201D}',
+            },
+          ],
+        },);
+        expect(textsOf({ rows: unified.replacements, },)[1],).toBe('——From the page \u{201C}Cat by the Window\u{201D}',);
+      },
+    },),
   ],
 },);
