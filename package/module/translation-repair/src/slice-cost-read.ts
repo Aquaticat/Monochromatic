@@ -1,5 +1,4 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-
+import { isAsciiDigits, } from './ascii-letters.ts';
 import {
   SLICE_COST_EXITS,
   SLICE_COST_LANES,
@@ -76,39 +75,6 @@ export type SliceCostReading = {
 };
 
 /**
- Fields a cost line must carry for a row to be built from it.
- 
- `exit` is REQUIRED rather than optional, though it was added after the rest.
- No production log carries the older shape: the telemetry landed after the only
- pass that has run, so there are no legacy lines to stay compatible with, and
- an optional field would mean inventing an exit for a line that named none.
- */
-const REQUIRED_FIELDS = [
-  'lane',
-  'chunk',
-  'sourceChars',
-  'ms',
-  'exit',
-] as const;
-
-/**
- Values each enumerated field may carry.
- 
- Read from the writer's own lists, so a lane or exit added there is accepted
- here without a second edit.
- */
-const ENUMERATED_FIELDS: ReadonlyMap<string, readonly string[]> = new Map<string, readonly string[]>([
-  [
-    'lane',
-    SLICE_COST_LANES,
-  ],
-  [
-    'exit',
-    SLICE_COST_EXITS,
-  ],
-],);
-
-/**
  Splits one marker-bearing line into its `key=value` pairs.
  
  @param line - whole log line, including whatever the logger prefixed
@@ -156,117 +122,85 @@ function fieldsOf({ line, }: { readonly line: string; },): ReadonlyMap<string, s
 }
 
 /**
- Whether a field's text is a whole number, and what it is when so.
+ What one field of a cost line reads as: the value it carries, or the words
+ naming why it carries none.
  
- DISCRIMINATED rather than a nullish union, because absence and zero are both
- ordinary answers here: a slice can genuinely cost 0 ms, and a sentinel would
- make that indistinguishable from a field the log never carried.
+ DISCRIMINATED rather than a nullish union, because zero is an ordinary
+ answer here: a slice can genuinely cost 0 ms, and a sentinel would make that
+ indistinguishable from a field the log never carried.
  
  @example
  ```ts
- const read: WholeRead = wholeNumber({ raw, },);
+ const reading: FieldReading<number> = { kind: 'read', value: 45_210, };
  ```
  */
-type WholeRead = {
+type FieldReading<ValueT,> = {
   /**
-   Text names a whole number.
+   Field carries a value this reader accepts.
    */
-  readonly kind: 'whole';
+  readonly kind: 'read';
 
   /**
-   Number it names.
+   Value it carries.
    */
-  readonly value: number;
+  readonly value: ValueT;
 } | {
   /**
-   Text names something else.
+   Field is absent, or carries something this reader does not accept.
    */
-  readonly kind: 'not-whole';
+  readonly kind: 'refused';
+
+  /**
+   Field name and what it carried, as a dropped line's reason lists it.
+   */
+  readonly reason: string;
 };
 
 /**
- Reads one whole number out of a field's text.
+ Words a field whose text this reader does not accept.
  
- @param raw - field value as the log carried it
+ @param name - field refused
  
- @returns Whole number, or a refusal when the text names something else
+ @param raw - text the line carried for it
  
- @example
- ```ts
- const ms = wholeNumber({ raw, },);
- ```
- */
-function wholeNumber({ raw, }: { readonly raw: string; },): WholeRead {
-  /**
-   Value read as a number, which is `NaN` for anything else.
-   */
-  const value = Number(raw,);
-
-  return Number.isInteger(value,)
-    ? {
-      kind: 'whole',
-      value,
-    }
-    : { kind: 'not-whole', };
-}
-
-/**
- Reads a field the caller has already proven is a whole number.
- 
- @param fields - pairs read off one line
- 
- @param name - field to read
- 
- @returns Number it carries
- 
- @throws {@link Error} when called before validation, which is a programming
- error rather than a malformed log
+ @returns Field name and its text, with an empty text said as `empty` so the
+ reason does not end in a bare space
  
  @example
  ```ts
- const ms = provenWhole({ fields, name: 'ms', },);
+ spelledAs({ name: 'ms', raw: '45e', },); // 'ms 45e'
  ```
  */
-function provenWhole(
+function spelledAs(
   {
-    fields,
     name,
+    raw,
   }: {
-    readonly fields: ReadonlyMap<string, string>;
     readonly name: string;
+    readonly raw: string;
   },
-): number {
-  /**
-   What this field carries, which validation proved is a whole number.
-   */
-  const read = wholeNumber({ raw: nonNullishOrThrow(fields.get(name,),), },);
-  if (read.kind !== 'whole')
-    throw new Error(`${name} was read as a number before it was checked to be one`,);
-
-  return read.value;
+): string {
+  return (raw === '') ? `${name} empty` : `${name} ${raw}`;
 }
 
 /**
- Reads a field the caller has already proven carries one of a fixed set of
- values, narrowed to that set.
+ Reads a field that carries one of a fixed set of values.
  
  @param fields - pairs read off one line
  
  @param name - field to read
  
- @param allowed - values validation checked it against
+ @param allowed - values it may carry, read from the writer's own list so a
+ lane or exit added there is accepted here without a second edit
  
- @returns Value it carries, as a member of that set
- 
- @throws {@link Error} when called before validation, which is a programming
- error rather than a malformed log
+ @returns Member it carries, or the refusal naming what it carried instead
  
  @example
  ```ts
- const lane = provenMember({ fields, name: 'lane', allowed: SLICE_COST_LANES, },);
+ const lane = memberField({ fields, name: 'lane', allowed: SLICE_COST_LANES, },);
  ```
  */
-function provenMember<const MemberT extends string,>(
+function memberField<const MemberT extends string,>(
   {
     fields,
     name,
@@ -276,22 +210,98 @@ function provenMember<const MemberT extends string,>(
     readonly name: string;
     readonly allowed: readonly MemberT[];
   },
-): MemberT {
+): FieldReading<MemberT> {
   /**
-   What this field carries, as text.
+   Text the line carried for this field, absent when it named none.
    */
-  const raw = nonNullishOrThrow(fields.get(name,),);
+  const raw = fields.get(name,);
+  if (raw === undefined) {
+    return {
+      kind: 'refused',
+      reason: `${name} missing`,
+    };
+  }
 
   /**
-   Member matching it, which validation proved exists.
+   Member that text spells, absent when it spells none.
    */
   const found = allowed.find(function matches(member,): boolean {
     return member === raw;
   },);
-  if (found === undefined)
-    throw new Error(`${name} was read as one of its values before it was checked to be one`,);
+  if (found === undefined) {
+    return {
+      kind: 'refused',
+      reason: spelledAs({
+        name,
+        raw,
+      },),
+    };
+  }
+  return {
+    kind: 'read',
+    value: found,
+  };
+}
 
-  return found;
+/**
+ Reads a field that carries a count: a slice index, a character count or a
+ duration.
+ 
+ PLAIN DECIMAL DIGITS ONLY, which is all `armSliceCost` writes. This read
+ `Number(raw)` and asked whether that was an integer, and `Number` also reads
+ an empty text as 0, `0x1F` as 31, `1e3` as 1000 and a leading sign, so a
+ field nobody wrote as a count became one (ledger B71). A digit run past the
+ largest integer a double holds exactly is refused too, since it would read as
+ a neighbouring number.
+ 
+ @param fields - pairs read off one line
+ 
+ @param name - field to read
+ 
+ @returns Count it carries, or the refusal naming what it carried instead
+ 
+ @example
+ ```ts
+ const ms = countField({ fields, name: 'ms', },);
+ ```
+ */
+function countField(
+  {
+    fields,
+    name,
+  }: {
+    readonly fields: ReadonlyMap<string, string>;
+    readonly name: string;
+  },
+): FieldReading<number> {
+  /**
+   Text the line carried for this field, absent when it named none.
+   */
+  const raw = fields.get(name,);
+  if (raw === undefined) {
+    return {
+      kind: 'refused',
+      reason: `${name} missing`,
+    };
+  }
+
+  /**
+   Count those digits spell, read only once they are known to be digits.
+   */
+  const value = isAsciiDigits({ text: raw, },) ? Number(raw,) : Number.NaN;
+  if (!Number.isSafeInteger(value,)) {
+    return {
+      kind: 'refused',
+      reason: spelledAs({
+        name,
+        raw,
+      },),
+    };
+  }
+  return {
+    kind: 'read',
+    value,
+  };
 }
 
 /**
@@ -327,10 +337,10 @@ type LineReading = {
 /**
  Turns one line's fields into a row, or says why they are not one.
  
- VALIDATES AND BUILDS TOGETHER, so no field is checked in one place and read in
- another. Splitting them would leave the reader holding values the type system
- cannot see were checked, and the usual repair for that is a default, which
- invents a measurement nothing measured.
+ VALIDATES AND BUILDS TOGETHER: each field is read once, into its value or its
+ refusal, and the row is built from those readings. This used to check every
+ field in one loop and read each again through a helper that threw when the
+ loop had not checked it, a throw no line could reach.
  
  @param fields - pairs read off one line
  
@@ -344,73 +354,83 @@ type LineReading = {
 function readLine(
   { fields, }: { readonly fields: ReadonlyMap<string, string>; },
 ): LineReading {
+  // IN THE ORDER THE WRITER WRITES THEM, so a dropped line names its fields in
+  // the order they appear on it.
   /**
-   Names that failed, collected in declared order.
+   Lane that paid.
    */
-  const failed: string[] = [];
-  for (const name of REQUIRED_FIELDS) {
-    if (!fields.has(name,)) {
-      failed.push(`${name} missing`,);
-      continue;
-    }
+  const lane = memberField({
+    fields,
+    name: 'lane',
+    allowed: SLICE_COST_LANES,
+  },);
 
-    /**
-     Value the line carried for it.
-     */
-    const raw = nonNullishOrThrow(fields.get(name,),);
+  /**
+   Slice measured.
+   */
+  const sliceIndex = countField({
+    fields,
+    name: 'chunk',
+  },);
 
-    /**
-     Values this field may carry, absent when it carries a number instead.
-     */
-    const allowed = ENUMERATED_FIELDS.get(name,);
-    if (allowed !== undefined) {
-      if (!allowed.includes(raw,))
-        failed.push(`${name} ${raw}`,);
+  /**
+   Size of what was translated.
+   */
+  const sourceChars = countField({
+    fields,
+    name: 'sourceChars',
+  },);
 
-      continue;
-    }
+  /**
+   Wall time the slice took.
+   */
+  const elapsedMs = countField({
+    fields,
+    name: 'ms',
+  },);
 
-    /**
-     Whether this field's text names a whole number.
-     */
-    const read = wholeNumber({ raw, },);
-    if (read.kind !== 'whole')
-      failed.push(`${name} ${raw}`,);
-  }
-
-  if (failed.length > 0) {
+  // `exit` IS REQUIRED rather than optional, though it was added after the
+  // rest. No production log carries the older shape: the telemetry landed after
+  // the only pass that had run, so there are no legacy lines to stay compatible
+  // with, and an optional field would mean inventing an exit for a line that
+  // named none.
+  /**
+   How the lane left the slice.
+   */
+  const exit = memberField({
+    fields,
+    name: 'exit',
+    allowed: SLICE_COST_EXITS,
+  },);
+  if ((lane.kind === 'read')
+    && (sliceIndex.kind === 'read')
+    && (sourceChars.kind === 'read')
+    && (elapsedMs.kind === 'read')
+    && (exit.kind === 'read')) {
     return {
-      kind: 'dropped',
-      reason: failed.join(', ',),
+      kind: 'row',
+      row: {
+        lane: lane.value,
+        exit: exit.value,
+        sliceIndex: sliceIndex.value,
+        sourceChars: sourceChars.value,
+        elapsedMs: elapsedMs.value,
+      },
     };
   }
-
   return {
-    kind: 'row',
-    row: {
-      lane: provenMember({
-        fields,
-        name: 'lane',
-        allowed: SLICE_COST_LANES,
-      },),
-      exit: provenMember({
-        fields,
-        name: 'exit',
-        allowed: SLICE_COST_EXITS,
-      },),
-      sliceIndex: provenWhole({
-        fields,
-        name: 'chunk',
-      },),
-      sourceChars: provenWhole({
-        fields,
-        name: 'sourceChars',
-      },),
-      elapsedMs: provenWhole({
-        fields,
-        name: 'ms',
-      },),
-    },
+    kind: 'dropped',
+    reason: [
+      lane,
+      sliceIndex,
+      sourceChars,
+      elapsedMs,
+      exit,
+    ]
+      .flatMap(function refusal(reading: FieldReading<unknown>,): readonly string[] {
+        return (reading.kind === 'refused') ? [reading.reason,] : [];
+      },)
+      .join(', ',),
   };
 }
 

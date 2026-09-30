@@ -180,6 +180,18 @@ await describe({
       },
     },),
     it({
+      name:
+        'REFUSES a digit run past the largest integer a double holds exactly, since `9007199254740993` '
+        + 'reads back as 9007199254740992 and the row would carry a count nobody wrote',
+      fn: async () => {
+        const { rows, dropped, } = readSliceCosts({
+          log: 'SLICE-COST lane=repair chunk=9007199254740993 sourceChars=10 ms=5 exit=computed',
+        },);
+        expect(rows,).toHaveLength(0,);
+        expect(dropped,).toEqual(['chunk 9007199254740993',],);
+      },
+    },),
+    it({
       name: 'reports nothing at all, not even a refusal, for a log that mentions no cost',
       fn: async () => {
         const { rows, dropped, } = readSliceCosts({ log: 'three cats, no costs\nnor here', },);
