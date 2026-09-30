@@ -19,12 +19,21 @@ copyFileSync(join(root, 'questions', 'search-filename-comparison.template.html')
 const builderPath = join(fixture, 'search-filename-comparison.mjs');
 copyFileSync(join(root, 'search-filename-comparison.mjs'), builderPath);
 const mutation = process.argv[2];
-if (mutation !== undefined && mutation !== 'without-exact-cohort') throw new Error('Unknown filename review test mutation.');
+if (mutation !== undefined && !['without-exact-cohort', 'without-evidence-only'].includes(mutation)) {
+  throw new Error('Unknown filename review test mutation.');
+}
 if (mutation === 'without-exact-cohort') {
   const guard = `if (JSON.stringify(Object.keys(images).sort()) !== JSON.stringify(expectedKeys.sort())) {\n  throw new Error('Filename review must contain the exact initial, baseline and six scrolled combinations.');\n}`;
   const source = readFileSync(builderPath, 'utf8');
   if (source.split(guard).length !== 2) throw new Error('Exact-cohort mutation target differs.');
   writeFileSync(builderPath, source.replace(guard, ''));
+}
+if (mutation === 'without-evidence-only') {
+  const source = readFileSync(builderPath, 'utf8');
+  const start = source.indexOf('  if (/type="radio"');
+  const end = source.indexOf('\n  console.log(\'Validated exact offline evidence review', start);
+  if (start < 0 || end < 0) throw new Error('Evidence-only mutation target differs.');
+  writeFileSync(builderPath, source.slice(0, start) + source.slice(end));
 }
 function invoke(command) {
   return spawnSync(process.execPath, [join(fixture, 'search-filename-comparison.mjs'), command], {
@@ -39,6 +48,19 @@ function expectRejection({ data, diagnostic }) {
     throw new Error(`Expected filename review rejection absent: ${diagnostic}; status ${result.status}.`);
   }
   writeComparison(comparison);
+}
+function expectTemplateRejection({ original, changed, diagnostic }) {
+  const path = join(fixture, 'questions', 'search-filename-comparison.template.html');
+  const template = readFileSync(path, 'utf8');
+  if (!template.includes(original)) throw new Error('Template test target is absent.');
+  writeFileSync(path, template.replace(original, changed));
+  if (invoke('build').status !== 0) throw new Error('Changed template could not build for validation.');
+  const result = invoke('validate');
+  if (result.status === 0 || !result.stderr.includes(diagnostic)) {
+    throw new Error(`Expected evidence-only review rejection absent: ${diagnostic}; status ${result.status}.`);
+  }
+  writeFileSync(path, template);
+  if (invoke('build').status !== 0 || invoke('validate').status !== 0) throw new Error('Restored template failed.');
 }
 try {
   const positive = invoke('build');
@@ -59,6 +81,15 @@ try {
   target.file = `search-filename-comparison-${target.panel}-unusedscroll-end-${target.scheme}-s200.png`;
   copyFileSync(join(evidence, original), join(evidence, target.file));
   expectRejection({ data: missingScroll, diagnostic: 'exact initial, baseline and six scrolled combinations' });
+  const evidenceDiagnostic = 'cannot contain policy votes or required observations';
+  expectTemplateRejection({ original: '<form id="review-form">',
+    changed: '<form id="review-form"><input type="radio" name="placement">', diagnostic: evidenceDiagnostic });
+  expectTemplateRejection({ original: 'id="final-notes" name="notes"',
+    changed: 'id="final-notes" name="notes" required', diagnostic: evidenceDiagnostic });
+  expectTemplateRejection({ original: "  const notes = String(data.get('notes')).trim();",
+    changed: "  data.get('visibility');\n  const notes = String(data.get('notes')).trim();", diagnostic: evidenceDiagnostic });
+  expectTemplateRejection({ original: 'Supporting text is user-configurable through templates in Settings',
+    changed: 'Fixed supporting text', diagnostic: 'missing Supporting text is user-configurable through templates in Settings' });
   const output = join(fixture, 'questions', 'search-filename-comparison.html');
   writeFileSync(output, readFileSync(output, 'utf8').replace('Fixed-policy question withdrawn.', 'Changed review.'));
   const changed = invoke('validate');

@@ -116,9 +116,11 @@ if (command === 'build') {
     if (!html.includes(marker)) throw new Error(`Filename review is missing ${marker}.`);
   }
   if (/__FILENAME_REVIEW_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
-      (html.match(/<form\b/g) ?? []).length !== 1 || /type="radio"|name="placement"|name="visibility"/.test(html) ||
-      /data\.get\('(placement|visibility)'\)|<textarea\b[^>]*\brequired\b/.test(html)) {
+      (html.match(/<form\b/g) ?? []).length !== 1) {
     throw new Error('Filename review is not a self-contained evidence-only form with optional observations.');
+  }
+  if (/type="radio"|name="placement"|name="visibility"|data\.get\('(placement|visibility)'\)|<textarea\b[^>]*\brequired\b/i.test(html)) {
+    throw new Error('Filename evidence review cannot contain policy votes or required observations.');
   }
   console.log('Validated exact offline evidence review, optional observations, native images and immutable provenance.');
 } else {
