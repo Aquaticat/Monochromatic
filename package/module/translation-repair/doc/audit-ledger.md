@@ -2999,6 +2999,33 @@ one census per batch with all its test files,
 and prove reach from the fresh census's rows for every claimed source,
 with the baseline reading's named claims for sources the baseline holds no stretch in.
 
+The second batch (`a564eccc7`) took the absolute naturalness review readers
+(`artifact-two-lane-read-naturalness-review.ts`,
+`-round`,
+`-seat`,
+`-digest`
+and `-confirmation`),
+24 stretches:
+18 refusals of a malformed stored review,
+and 6 guards and fallbacks in four functions that no stored review reaches,
+removed (the fallbacks are listed under B29).
+Its test's refusal cases had checked only that something threw,
+so a case refused by another check passed;
+each now checks the path and reason its message carries,
+and a copy with one reason changed failed on that case.
+The third batch (`09b76e1b4`) took the polish and polish gate readers,
+12 stretches,
+all reachable,
+and tightened that test's refusals the same way.
+Each batch's census of its own test file
+(`census-0C66lF`,
+`census-e9z8Pk`)
+read every claimed stretch as run
+and left no stretch in its readers,
+and the whole suite at `a564eccc7` printed 1,389 PASS lines and no FAIL line.
+Many older tests check a refusal by its class or by throwing at all,
+so each batch reads its test's refusal cases and makes each name the check it means.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -9864,6 +9891,23 @@ fix `2beaca02f`.
 - A Han character beyond the first plane that pinyin-pro cannot read passes through the handle reading as written.
   No pinned original or stored artifact carries one
   (ledger B21's census).
+
+#### Fallbacks T8's coverage found unreachable
+
+T8's batches read each cold nullish fallback for reachability before writing a case,
+and remove the ones no input reaches,
+since one would substitute a value silently the day an invariant broke.
+Each is replaced by code that has no such branch,
+or by `nonNullishOrThrow` where the type needs narrowing,
+so a broken invariant throws.
+
+- `placeTally` read an unloaded bundle's sources with `?? []`;
+  `requireMapFor` refuses every unloaded bundle with no map first
+  (`5e27208c7`).
+- `parseNaturalnessConfirmations` fell back to `-1` for a confirmation's round position
+  and read a missing decisive round as a different roster;
+  each confirmation is now matched to its round in one step that refuses a confirmation matching none
+  (`a564eccc7`).
 
 ### B30: functions only tests reach
 

@@ -128,12 +128,22 @@ since their candidate was valid against the page they used (M62);
 and a type-level proof that roster names are served ids outlived its purpose:
 once the roster type was derived from the served ids,
 the proof could never fail,
-and its runtime case asserted a literal `true` (ledger B31).
+and its runtime case asserted a literal `true` (ledger B31);
+and refusal cases checked only that a read threw,
+or threw an error of the right class,
+so a case refused by an earlier check than the one it names passed
+(the naturalness review,
+polish and census input tests,
+tightened under T8).
 
 The rule:
 a red guard is read case by case before the fix,
 and each case must fail for the reason its name gives;
 after the fix every case turns green.
+A refusal case checks the message the refusal carries,
+the path and reason for an artifact read,
+beside the error class,
+and a copy with one expected message changed must fail.
 A test added for a defect runs against the build before the fix and must fail there before the fix is committed.
 A guard over several sites asserts that each site is reached,
 one assertion per site,
