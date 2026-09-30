@@ -1,9 +1,11 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   estimateExpansion,
   GAP_PENALTY,
   scorePairing,
 } from './align-blocks.ts';
 import type { DocumentNode, } from './document-node.ts';
+import { tableCell, } from './table-cell.ts';
 
 //region Block alignment walk
 // The monotone alignment itself: a Needleman-Wunsch walk over two block lists,
@@ -172,41 +174,54 @@ function buildTable(
       /**
        Original block this cell considers, present by the loop bounds.
        */
-      const sourceNode = sourceNodes[row - 1];
+      const sourceNode = nonNullishOrThrow(sourceNodes[row - 1],);
 
       /**
        Translation block this cell considers, present by the loop bounds.
        */
-      const targetNode = targetNodes[column - 1];
-      /* v8 ignore next 2 -- @preserve loop bounds guarantee both blocks */
-      if ((sourceNode === undefined) || (targetNode === undefined))
-        throw new Error('unreachable: alignment walked outside its inputs',);
+      const targetNode = nonNullishOrThrow(targetNodes[column - 1],);
+
+      /**
+       Score of the cell diagonally before this one, a row already built.
+       */
+      const { score: diagonal, } = tableCell({
+        table,
+        row: row - 1,
+        column: column - 1,
+      },);
+
+      /**
+       Score of the cell above this one, a row already built.
+       */
+      const { score: above, } = tableCell({
+        table,
+        row: row - 1,
+        column,
+      },);
+
+      /**
+       Score of the cell to the left, built earlier in this row.
+       */
+      const { score: left, } = nonNullishOrThrow(cells[column - 1],);
 
       /**
        Score for partnering the two blocks.
        */
-      const pairScore = (table[row - 1]?.[column - 1]
-        ?.score
-        ?? 0)
-        + scorePairing({
-          source: sourceNode,
-          target: targetNode,
-          expansion,
-        },);
+      const pairScore = diagonal + scorePairing({
+        source: sourceNode,
+        target: targetNode,
+        expansion,
+      },);
 
       /**
        Score for leaving the original's block unpartnered.
        */
-      const skipSourceScore = (table[row - 1]?.[column]
-        ?.score
-        ?? 0) + GAP_PENALTY;
+      const skipSourceScore = above + GAP_PENALTY;
 
       /**
        Score for leaving the translation's block unpartnered.
        */
-      const skipTargetScore = (cells[column - 1]
-        ?.score
-        ?? 0) + GAP_PENALTY;
+      const skipTargetScore = left + GAP_PENALTY;
 
       /**
        Best of the three moves; pairing wins ties so the alignment stays as
@@ -229,6 +244,43 @@ function buildTable(
     table.push(cells,);
   }
   return table;
+}
+
+/**
+ Move recorded at the traceback's position in a filled table.
+
+ @param table - filled score table
+
+ @param cursor - position inside it
+
+ @returns The move that produced that cell
+
+ @example
+ ```ts
+ const move = moveAt({ table, cursor: { row: 2, column: 1, }, },);
+ ```
+ */
+function moveAt(
+  {
+    table,
+    cursor,
+  }: {
+    readonly table: readonly (readonly Cell[])[];
+    readonly cursor: {
+      readonly row: number;
+      readonly column: number;
+    };
+  },
+): Cell['move'] {
+  /**
+   Cell at the position.
+   */
+  const { move, } = tableCell({
+    table,
+    row: cursor.row,
+    column: cursor.column,
+  },);
+  return move;
 }
 
 /**
@@ -278,14 +330,21 @@ export function alignBlocks(
     row: sourceNodes.length,
     column: targetNodes.length,
   };
-  while ((cursor.row > 0) || (cursor.column > 0)) {
-    /**
-     Move recorded for the current cell.
-     */
-    const move = table[cursor.row]?.[cursor.column]
-      ?.move;
-    if ((move === 'pair') && (cursor.row > 0)
-      && (cursor.column > 0)) {
+  // Row zero's cells skip targets, column zero's skip sources, and every other
+  // cell pairs or skips, so each move steps toward the origin, the one cell
+  // whose move is `start`.
+  for (
+    let move = moveAt({
+      table,
+      cursor,
+    },);
+    move !== 'start';
+    move = moveAt({
+      table,
+      cursor,
+    },)
+  ) {
+    if (move === 'pair') {
       reversed.push({
         kind: 'paired',
         sourceIndex: cursor.row - 1,
@@ -295,7 +354,7 @@ export function alignBlocks(
       cursor.column -= 1;
       continue;
     }
-    if ((move === 'skip-source') && (cursor.row > 0)) {
+    if (move === 'skip-source') {
       reversed.push({
         kind: 'source-only',
         sourceIndex: cursor.row - 1,
@@ -303,20 +362,11 @@ export function alignBlocks(
       cursor.row -= 1;
       continue;
     }
-    if (cursor.column > 0) {
-      reversed.push({
-        kind: 'target-only',
-        targetIndex: cursor.column - 1,
-      },);
-      cursor.column -= 1;
-      continue;
-    }
-    /* v8 ignore next 4 -- @preserve every reachable cell records a usable move */
     reversed.push({
-      kind: 'source-only',
-      sourceIndex: cursor.row - 1,
+      kind: 'target-only',
+      targetIndex: cursor.column - 1,
     },);
-    cursor.row -= 1;
+    cursor.column -= 1;
   }
   return reversed.toReversed();
 }

@@ -1,8 +1,10 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { buildGrid, } from './align-headings-grid.ts';
 import {
   type OptimalPaths,
   scanOptimalPaths,
 } from './align-headings-optimal.ts';
+import { tableCell, } from './table-cell.ts';
 
 //region Forced heading alignment
 // An aligner that can REFUSE. The shipped scorer cannot: a pairing scores
@@ -287,35 +289,46 @@ export function alignHeadingsForced(
    */
   const claimed = new Set<number>();
 
+  // The scan holds one partner set and one gap set per source unit, and one
+  // partner set and one gap flag per target unit, so every read of them by a
+  // unit's index finds its entry.
   for (let row = 0; row < rows; row += 1) {
     /**
      Targets this source unit could pair with optimally.
      */
-    const partners = partnersOfSource[row] ?? new Set<number>();
+    const partners = nonNullishOrThrow(partnersOfSource[row],);
+
+    /**
+     Target columns at which this source unit could go unpaired optimally.
+     */
+    const gapColumns = nonNullishOrThrow(sourceGapColumns[row],);
 
     /**
      The single partner, when there is exactly one and no gap competes.
      */
-    const only = ((partners.size === 1)
-        && ((sourceGapColumns[row]
-          ?.size
-          ?? 0) === 0))
+    const only = ((partners.size === 1) && (gapColumns.size === 0))
       ? [...partners,][0]
       : undefined;
 
-    if ((only !== undefined)
-      && ((partnersOfTarget[only]
-        ?.size
-        ?? 0) === 1)
-      && (!(targetCanGap[only] ?? false))) {
-      steps.push({
-        kind: 'paired',
-        sourceIndex: row,
-        targetIndex: only,
-        affinity: grid.affinity[row]?.[only] ?? 0,
-      },);
-      claimed.add(only,);
-      continue;
+    if (only !== undefined) {
+      /**
+       How many sources the single partner could pair with optimally.
+       */
+      const { size: partnerSources, } = nonNullishOrThrow(partnersOfTarget[only],);
+      if ((partnerSources === 1) && (!nonNullishOrThrow(targetCanGap[only],))) {
+        steps.push({
+          kind: 'paired',
+          sourceIndex: row,
+          targetIndex: only,
+          affinity: tableCell({
+            table: grid.affinity,
+            row,
+            column: only,
+          },),
+        },);
+        claimed.add(only,);
+        continue;
+      }
     }
 
     steps.push({
@@ -324,7 +337,7 @@ export function alignHeadingsForced(
       reason: (partners.size === 0) ? 'forced-gap' : 'ambiguous',
       anchor: anchorFor({
         partners,
-        gapColumns: sourceGapColumns[row] ?? new Set<number>(),
+        gapColumns,
       },),
     },);
   }
@@ -332,12 +345,14 @@ export function alignHeadingsForced(
   for (let column = 0; column < columns; column += 1) {
     if (claimed.has(column,))
       continue;
+    /**
+     How many sources this target could pair with optimally.
+     */
+    const { size: partnerSources, } = nonNullishOrThrow(partnersOfTarget[column],);
     steps.push({
       kind: 'target-only',
       targetIndex: column,
-      reason: ((partnersOfTarget[column]
-        ?.size
-        ?? 0) === 0) ? 'forced-gap' : 'ambiguous',
+      reason: (partnerSources === 0) ? 'forced-gap' : 'ambiguous',
     },);
   }
 

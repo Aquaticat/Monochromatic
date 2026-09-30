@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   addScore,
   beats,
@@ -9,6 +10,7 @@ import {
   sameScore,
   UNREACHABLE,
 } from './align-headings-grid.ts';
+import { tableCell, } from './table-cell.ts';
 
 //region Optimal heading paths
 // The DP behind the forced aligner, and the scan that reads every optimal path
@@ -26,6 +28,12 @@ import {
 // column at which it is skipped is that place. Recording only that a gap was
 // possible answers "is this section untranslated" and loses "and where does it
 // belong", which is the half an insertion cannot proceed without.
+//
+// EVERY CELL HOLDS A SCORE. A cell is reached from the origin by gaps alone,
+// from the cell before it in its row or column, which the walk fills first in
+// either direction; a cell's best starts at UNREACHABLE and any finite
+// candidate beats it. So a filled table holds a finite score in every cell,
+// and a read of one is a read of `tableCell`, never a skip (T8 batch 11).
 
 /**
  What every optimal alignment does with each unit.
@@ -108,7 +116,7 @@ function fillTable(
    Column the walk starts from.
    */
   const originColumn = forward ? 0 : columns;
-  (table[originRow] ?? [])[originColumn] = [
+  nonNullishOrThrow(table[originRow],)[originColumn] = [
     0,
     0,
     0
@@ -193,20 +201,15 @@ function fillTable(
           continue;
 
         /**
-         Score at the neighbour this move comes from.
-         */
-        const from = table[neighbourRow]?.[neighbourColumn];
-        if ((from === undefined) || sameScore({
-          left: from,
-          right: UNREACHABLE,
-        },))
-          continue;
-
-        /**
-         Score of reaching this cell that way.
+         Score of reaching this cell that way, from a neighbour the walk has
+         already filled.
          */
         const candidate = addScore({
-          left: from,
+          left: tableCell({
+            table,
+            row: neighbourRow,
+            column: neighbourColumn,
+          },),
           right: cost,
         },);
         if (beats({
@@ -216,7 +219,7 @@ function fillTable(
           best = candidate;
       }
 
-      (table[row] ?? [])[at] = best;
+      nonNullishOrThrow(table[row],)[at] = best;
     }
   }
 
@@ -294,7 +297,11 @@ export function scanOptimalPaths(
   /**
    Score of an optimal alignment.
    */
-  const optimal = forward[rows]?.[columns] ?? UNREACHABLE;
+  const optimal = tableCell({
+    table: forward,
+    row: rows,
+    column: columns,
+  },);
 
   /**
    Target units each source unit pairs with on SOME optimal path.
@@ -337,41 +344,39 @@ export function scanOptimalPaths(
       /**
        Best score reaching this cell.
        */
-      const here = forward[row]?.[column];
-      if ((here === undefined) || sameScore({
-        left: here,
-        right: UNREACHABLE,
-      },))
-        continue;
+      const here = tableCell({
+        table: forward,
+        row,
+        column,
+      },);
 
       if ((row < rows) && (column < columns)) {
-        /**
-         Affinity of pairing these two units.
-         */
-        const value = grid.affinity[row]?.[column] ?? 0;
-
         /**
          Whole-path score if this pairing is taken here.
          */
         const through = addScore({
           left: addScore({
             left: here,
-            right: [
-              (grid.trusted[row]?.[column] ?? false) ? value : 0,
-              0,
-              value,
-            ],
+            right: pairScore({
+              grid,
+              sourceIndex: row,
+              targetIndex: column,
+            },),
           },),
-          right: backward[row + 1]?.[column + 1] ?? UNREACHABLE,
+          right: tableCell({
+            table: backward,
+            row: row + 1,
+            column: column + 1,
+          },),
         },);
         if (sameScore({
           left: through,
           right: optimal,
         },)) {
-          partnersOfSource[row]
-            ?.add(column,);
-          partnersOfTarget[column]
-            ?.add(row,);
+          nonNullishOrThrow(partnersOfSource[row],)
+            .add(column,);
+          nonNullishOrThrow(partnersOfTarget[column],)
+            .add(row,);
         }
       }
 
@@ -384,14 +389,19 @@ export function scanOptimalPaths(
             left: here,
             right: GAP,
           },),
-          right: backward[row + 1]?.[column] ?? UNREACHABLE,
+          right: tableCell({
+            table: backward,
+            row: row + 1,
+            column,
+          },),
         },);
         if (sameScore({
           left: through,
           right: optimal,
-        },))
-          sourceGapColumns[row]
-            ?.add(column,);
+        },)) {
+          nonNullishOrThrow(sourceGapColumns[row],)
+            .add(column,);
+        }
       }
 
       if (column < columns) {
@@ -403,7 +413,11 @@ export function scanOptimalPaths(
             left: here,
             right: GAP,
           },),
-          right: backward[row]?.[column + 1] ?? UNREACHABLE,
+          right: tableCell({
+            table: backward,
+            row,
+            column: column + 1,
+          },),
         },);
         if (sameScore({
           left: through,

@@ -1,4 +1,6 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { headingAffinity, } from './heading-affinity.ts';
+import { tableCell, } from './table-cell.ts';
 
 //region Heading alignment grid
 // Scoring primitives for the forced aligner: the lexicographic score, its
@@ -207,7 +209,9 @@ export function buildGrid(
             otherRow,
             index,
           ): boolean {
-            return (index === sourceIndex) || ((otherRow[targetIndex] ?? 0) < value);
+            // Every row scores every target, so the column holds a cell in
+            // each.
+            return (index === sourceIndex) || (nonNullishOrThrow(otherRow[targetIndex],) < value);
           },);
       },);
     },),
@@ -242,11 +246,24 @@ export function pairScore(
   },
 ): LexScore {
   /**
-   Affinity of this pairing.
+   Affinity of this pairing, a cell the grid holds for every unit on both
+   sides.
    */
-  const value = grid.affinity[sourceIndex]?.[targetIndex] ?? 0;
+  const value = tableCell({
+    table: grid.affinity,
+    row: sourceIndex,
+    column: targetIndex,
+  },);
+  /**
+   Whether the pairing may anchor.
+   */
+  const trusted = tableCell({
+    table: grid.trusted,
+    row: sourceIndex,
+    column: targetIndex,
+  },);
   return [
-    (grid.trusted[sourceIndex]?.[targetIndex] ?? false) ? value : 0,
+    trusted ? value : 0,
     0,
     value,
   ];

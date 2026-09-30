@@ -124,6 +124,7 @@ export {
   type OptimalPaths,
   scanOptimalPaths,
 } from './align-headings-optimal.ts';
+export { tableCell, } from './table-cell.ts';
 export {
   dedupeAcceptedIssues,
   type DedupeOutcome,
