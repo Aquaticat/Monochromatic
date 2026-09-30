@@ -368,6 +368,9 @@ Under the no-loop design of 2026-09-01 an insertion is recovered supplementary c
 so its absence is a gap rather than a missing required page.
 A passage admitted for translation when a provider outage leaves every translator unheard is different:
 the entry stops `INCOMPLETE` and keeps its slice cache for a later run.
+A stored prompt payload the run cannot read or write stops the entry `INCOMPLETE` too,
+its tally line naming what refused;
+`PromptPayloadStoreError` (`src/prompt-payload-store.ts`) says what to do about one.
 
 ## Contract
 

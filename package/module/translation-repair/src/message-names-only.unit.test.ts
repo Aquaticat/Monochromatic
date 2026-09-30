@@ -312,7 +312,9 @@ const NAMED_PARTS: Record<string, string> = {
   'producerModelIds.join(\', \',)': 'model ids from the catalog',
   'provider': 'member of a closed provider union',
   'reason': 'authored phrase, or a member of a closed union, at every throw site; or a marked class\'s sentence '
-    + 'forwarded from a catch narrowed to it, at a site FORWARDING_SITES lists',
+    + 'forwarded from a catch narrowed to it, at a site FORWARDING_SITES lists; or, for a prompt payload record, '
+    + 'an authored phrase naming a JSON path in the record or ending in the filesystem code or class name '
+    + '`failureName` gives (ledger B69), never a stored value',
   'WORDING_FAULT_SENTENCES[fault]': 'one of five fixed phrases, keyed by a closed fault kind',
   'rightId': 'envelope id',
   'role': 'roster role name this package defines',

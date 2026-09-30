@@ -332,11 +332,13 @@ const REFUSED_RECORDS: readonly RefusedRecord[] = [
   {
     name: 'text that is not JSON',
     record: '{"version":',
-    reason: 'the record is not JSON (SyntaxError)',
+    reason: 'the record is not JSON',
   },
   {
+    // A string rather than an array: the record guard lets an array through
+    // to be probed for fields (`json-guard.ts` `isJsonRecord`).
     name: 'JSON that is not an object',
-    record: JSON.stringify([SLEPT,],),
+    record: JSON.stringify(SLEPT,),
     reason: 'the record is not a JSON object',
   },
   {

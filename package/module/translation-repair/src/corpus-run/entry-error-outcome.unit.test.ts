@@ -47,6 +47,7 @@ await describe({
       new PromptPayloadStoreError({
         promptDigest: 'fixture-digest',
         operation: 'read',
+        reason: 'the record is not JSON',
       },),
       new TranslationRepairInterruptedError({
         reason: 'provider-unavailable',
