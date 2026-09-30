@@ -3039,8 +3039,10 @@ now narrowed with `nonNullishOrThrow`.
 Reading every consolidation refusal whole found five reasons that read wrong after "expected",
 two of them saying the opposite of what the reader wants (B33).
 Its census of six test files (`census-7fz0Nm`) read the 11 claimed stretches as run and none still cold.
-The whole-artifact and consolidated-parts tests still check many refusals by a fragment of path or reason;
-tightening them is queued as its own pass.
+The whole-artifact and consolidated-parts tests still checked many refusals by a fragment of path or reason;
+`1e813a44b` made all 42 whole-message checks,
+after a probe printed each fragment beside its message,
+and a copy of each test with one expected message changed failed on that case.
 
 B34 (`7360aae58`,
 `a1e4accbd`) came next,
