@@ -20,8 +20,6 @@ import {
 
 import {
   bedrockIdFor,
-  HYPER_ORIGIN_NAMES_ARE_SERVED,
-  HYPER_ORIGIN_ROSTER_IDS,
   hyperIdFor,
   isDecisionSeat,
   openRouterIdFor,
@@ -80,25 +78,12 @@ await describe({
         expect(unserved,).toStrictEqual([],);
       },
     },),
-    it({
-      name: 'HAS a Charm Hyper row for every Hyper-only roster label, the half of the roster with no '
-        + 'other provider to fall back to',
-      fn: async () => {
-        /**
-         Hyper-only labels the Hyper catalog does not carry.
-         */
-        const missing = HYPER_ORIGIN_ROSTER_IDS.filter(function noRow(modelId,): boolean {
-          return !hyperServesLabel(modelId,);
-        },);
-        expect(missing,).toStrictEqual([],);
-      },
-    },),
-    it({
-      name: 'CARRIES the type-level proof as a value, so the same drift also stops the type check',
-      fn: async () => {
-        expect(HYPER_ORIGIN_NAMES_ARE_SERVED,).toBe(true,);
-      },
-    },),
+    // NO CASE FOR THE HYPER-SPELLED HALF ALONE (ledger B31). Its row check
+    // could not fail apart from this one: the Hyper catalog refuses to load
+    // unless its rows are exactly the Hyper spellings, so a Hyper-spelled
+    // roster id always has a row, and the type proof beside it stood over a
+    // type derived from those spellings. A roster id no catalog spells fails
+    // here, whichever provider it was meant for.
   ],
 },);
 

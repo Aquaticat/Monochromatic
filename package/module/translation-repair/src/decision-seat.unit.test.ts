@@ -19,7 +19,6 @@ import {
   DECISION_ONLY_ROSTER_IDS,
   isDecisionSeat,
   judgeSeatsFor,
-  OPENROUTER_DECISION_IDS,
   reachOf,
   readsImages,
   ROSTER_MODEL_IDS,
@@ -43,7 +42,6 @@ await describe({
       fn: async () => {
         expect(ROSTER_MODEL_IDS.includes(SEAT_OPENROUTER_DECISIONS,),).toBe(true,);
         expect([...DECISION_ONLY_ROSTER_IDS,],).toEqual([SEAT_OPENROUTER_DECISIONS,],);
-        expect([...OPENROUTER_DECISION_IDS,],).toEqual([SEAT_OPENROUTER_DECISIONS,],);
         expect(isDecisionSeat({ modelId: SEAT_OPENROUTER_DECISIONS, },),).toBe(true,);
         expect(isDecisionSeat({ modelId: 'minimax-m3', },),).toBe(false,);
         expect(reachOf({ modelId: SEAT_OPENROUTER_DECISIONS, },),).toEqual({

@@ -263,7 +263,6 @@ export {
   HYPER_MESSAGES_URL,
   HYPER_MODELS,
   NO_SYNTHETIC_COUNTERPART,
-  HYPER_ORIGIN_NAMES_ARE_SERVED,
   type HyperModelInfo,
   type HyperServedId,
 } from './hyper-catalog.ts';

@@ -27,7 +27,6 @@ import {
   MODEL_CARDS,
   OPENROUTER_MODELS,
   OPENROUTER_ONLY_ROSTER_IDS,
-  OPENROUTER_DECISION_IDS,
   OPENROUTER_SERVED_IDS,
   ROSTER_CARDS,
   ROSTER_MODEL_IDS,
@@ -75,9 +74,17 @@ await describe({
         expect(carried.hyper.toSorted(),).toEqual([...HYPER_SERVED_IDS,].toSorted(),);
         expect(carried.openrouter.toSorted(),).toEqual([...OPENROUTER_SERVED_IDS,].toSorted(),);
         expect(carried.bedrock.toSorted(),).toEqual([...BEDROCK_SERVED_IDS,].toSorted(),);
-        expect(ROSTER_CARDS.flatMap(function decisionId(card,): readonly string[] {
+        // THE DECISIONS SPELLINGS ARE A TYPE, NOT A LIST (ledger B31): the
+        // type checker holds each card's spelling to the union, and what is
+        // left to check here is that no two cards share one.
+        /**
+         Decisions spellings the cards carry.
+         */
+        const decisionIds = ROSTER_CARDS.flatMap(function decisionId(card,): readonly string[] {
           return (card.decisions === undefined) ? [] : [card.decisions.id,];
-        },).toSorted(),).toEqual([...OPENROUTER_DECISION_IDS,].toSorted(),);
+        },);
+        expect(decisionIds.length,).toBeGreaterThan(0,);
+        expect(new Set(decisionIds,).size,).toBe(decisionIds.length,);
       },
     },),
 

@@ -11,7 +11,6 @@ export {
   HYPER_SERVED_IDS,
   type OpenRouterDecisionId,
   type OpenRouterOnlyRosterId,
-  OPENROUTER_DECISION_IDS,
   OPENROUTER_SERVED_IDS,
   SYNTHETIC_SERVED_IDS,
   type SyntheticServedId,

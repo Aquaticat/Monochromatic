@@ -208,27 +208,22 @@ export type BedrockOnlyRosterId = Extract<RosterModelId, BedrockServedId>;
 export type OpenRouterOnlyRosterId = Extract<RosterModelId, OpenRouterServedId>;
 
 /**
- Spellings OpenRouter's decisions endpoint serves: typed-decision models
- that take no chat completion (`decisions-client.ts`), listed apart from
- the chat spellings so no chat catalog, cap table or reach ever names them.
- Jev 1.13 joined on 2026-09-18 on the owner's approval.
+ Model identifier OpenRouter's decisions endpoint accepts on the wire:
+ typed-decision models that take no chat completion (`decisions-client.ts`),
+ spelled apart from the chat spellings so no chat catalog, cap table or reach
+ ever names them. Jev 1.13 joined on 2026-09-18 on the owner's approval.
 
- @example
- ```ts
- const everyone = OPENROUTER_DECISION_IDS;
- ```
- */
-export const OPENROUTER_DECISION_IDS = ['typesafe/jev-1.13',] as const;
-
-/**
- Model identifier the decisions endpoint accepts on the wire.
+ A UNION WITHOUT A LIST (ledger B31). No production code iterates the
+ decisions spellings, so the list this type was once derived from was read
+ by tests alone; a decisions model joins this union and gets a card, whose
+ `decisions.id` the type checker holds to it.
 
  @example
  ```ts
  const modelId: OpenRouterDecisionId = 'typesafe/jev-1.13';
  ```
  */
-export type OpenRouterDecisionId = typeof OPENROUTER_DECISION_IDS[number];
+export type OpenRouterDecisionId = 'typesafe/jev-1.13';
 
 /**
  Roster models only the decisions endpoint serves: by the naming rule, the

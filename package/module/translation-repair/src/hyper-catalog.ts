@@ -1,6 +1,5 @@
 import { servedRecord, } from './model-card-derive.ts';
 import type {
-  HyperOriginRosterId,
   HyperServedId,
   SyntheticServedId,
 } from './roster-id.ts';
@@ -188,31 +187,5 @@ export function answerCeilingFor(
     maxOutputLength,
   );
 }
-
-/**
- Proof that every roster name for a Hyper-only model is an id this provider
- serves.
- 
- A TYPE, NOT A TEST, because the two lists live in different files for
- cycle reasons and a drift between them would otherwise surface as a request
- naming a model that does not exist. Assigning the narrower to the wider fails
- to compile the moment a name is added to one and not the other.
- 
- @internal
- */
-export type HyperOriginNamesAreServed = HyperOriginRosterId extends HyperServedId ? true : never;
-
-/**
- `HyperOriginNamesAreServed`, instantiated, so a roster label with no catalog row stops
- the type check instead of surfacing at run time as one lost voice per call:
- when the conditional resolves to `never`, `true` is not assignable
- and `lint:types` fails on this line, naming the drift.
- 
- @example
- ```ts
- expect(HYPER_ORIGIN_NAMES_ARE_SERVED,).toBe(true,);
- ```
- */
-export const HYPER_ORIGIN_NAMES_ARE_SERVED: HyperOriginNamesAreServed = true;
 
 //endregion Hyper catalog

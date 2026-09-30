@@ -4,7 +4,6 @@
 export { renderConsolidationBrief, } from './consolidate-brief.ts';
 export { applyFinalPolish, } from './consolidation-polish-apply.ts';
 export {
-  ABSOLUTE_NATURALNESS_CONFIRMATIONS_REQUIRED,
   type ConfirmedAbsoluteNaturalness,
   confirmAbsoluteNaturalness,
 } from './absolute-naturalness-confirmation.ts';

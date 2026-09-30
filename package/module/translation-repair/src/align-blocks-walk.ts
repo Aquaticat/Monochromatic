@@ -1,5 +1,6 @@
 import {
   estimateExpansion,
+  GAP_PENALTY,
   scorePairing,
 } from './align-blocks.ts';
 import type { DocumentNode, } from './document-node.ts';
@@ -14,13 +15,6 @@ import type { DocumentNode, } from './document-node.ts';
 // The walk reports skips rather than hiding them. The drift this replaces left
 // no trace at all in any artifact, which is why it survived until a human
 // graded the output.
-
-/**
- Cost of leaving a block unpartnered, mirrored from the scoring module's
- calibration: below the swing between a kind match and a kind mismatch, so
- one dropped block is cheaper to skip than to force onto its neighbour.
- */
-const GAP_PENALTY = -1.5;
 
 /**
  One step of the alignment: a partnered pair, or a block skipped on one side.

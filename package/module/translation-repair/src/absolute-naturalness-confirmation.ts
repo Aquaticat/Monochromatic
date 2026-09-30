@@ -14,11 +14,6 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
 // repeating same model and prompt as fake independent evidence.
 
 /**
- Successful review rounds required after first acceptable reading.
- */
-export const ABSOLUTE_NATURALNESS_CONFIRMATIONS_REQUIRED = 1;
-
-/**
  Decisive review beside earlier acceptable readings of same exact candidate.
  
  @example

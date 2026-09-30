@@ -53,8 +53,14 @@ const LENGTH_PLAUSIBILITY_WEIGHT = 1;
  Cost of leaving a block unpartnered. Set below the swing between a kind
  match and a kind mismatch, so a single dropped block is cheaper to skip than
  to force onto a neighbour, which is exactly the drift being fixed.
+
+ DECLARED HERE, BESIDE THE SCORES IT IS SET AGAINST, and paid by the walk
+ (`align-blocks-walk.ts`). From the first commit of both files (`35c4a4aac`)
+ until 2026-09-29 the walk declared its own copy "mirrored from" this one
+ and nothing read this one, so retuning it here would have changed nothing
+ (ledger B31).
  */
-const GAP_PENALTY = -1.5;
+export const GAP_PENALTY = -1.5;
 
 /**
  Characters a Chinese block typically becomes in English, used only when the
