@@ -4,6 +4,7 @@
   "htmlSha256": "c056bdcf630f3393ea5ccc3d8c225bf20bc94b47fb7f0956ed4fec440d905e5a",
   "builderSha256": "00b6a4c6aeb24cfb25b748a92f7f3804cc72f2dfaa7d2304d06a5ce4073d4ffe",
   "comparisonManifestSha256": "1e4b5d6b74d1de9812ae38a2fff7df82f014640f17138634de1c7c2d68506cad",
+  "browserEngine": "Chromium from the bounded verification image; Firefox ESR 140 not exercised",
   "browserCliVersion": "0.38.1",
   "axeVersion": "4.12.1",
   "resourceBounds": {
