@@ -189,6 +189,13 @@ Prototype `b97387118` adds separate debug-only scene pairs for long-name
 placement,
 literal/ancestor placement and authored visibility.
 Prototype `40d1f76bc` adds the fixture and shared-route tests.
+The complete unit task passed,
+with 9 comparison tests and zero failures/errors/skips.
+Removing the unknown-scene guard made its fresh targeted test fail;
+exact restoration,
+complete tests and APK rebuild passed.
+The capped disposable runtime is capturing the initial six-scene native
+matrix.
 Native inspection and comparative conclusions remain pending.
 
 The placement pair retains exact literal suffixes either in the title or
