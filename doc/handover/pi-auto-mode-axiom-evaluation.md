@@ -592,7 +592,7 @@ The catalog predeclares 13 pairs/26 workers:
 34 SDK sessions,
 68 scripted responses,
 34 own callbacks,
-32 actual managers,
+32 returned owned SDK manager identities,
 six child allocations,
 and four successful ledger publications.
 Prefix JSON and persisted-path guards are aggregate claims;
@@ -668,14 +668,68 @@ tightens the existing null/count probe rule;
 `AGENTS.md` remains untouched and that proposal is unaccepted.
 Every future prerequisite must explicitly pass its command result before dependent claims or dispatch.
 
+Persisted source documentation checkpoint `proc_a3fc` passed:
+28 documents,
+zero native diagnostics,
+and no genuine content read.
+Receipt commit `proc_e41b` exited zero;
+#85 is complete at source-only scope.
+
+Fork/recapture source #86 now includes the capped owner wrapper,
+operation-local references,
+fresh synthetic decoder inputs,
+and identical pinned ledger templates.
+Independent review corrected exact returned-origin binding,
+complete ledger snapshots,
+pre-call fault invariants,
+and import replacement-token encoding.
+One source-only `fork-source-check/` smoke `proc_d55f` passed:
+eight parsed ledger variants,
+four dedicated mock-wrapper copies,
+thirteen source/JSON import-literal cases,
+six fork classifier rows,
+two recapture rows,
+and six fatal-reference controls.
+Outcome:
+exit zero,
+no signal,
+stdout 494 bytes,
+and stderr zero.
+Twelve total loaded wrappers are mock-bound;
+parsed ledger guards were not behaviorally exercised.
+The actual SDK owner was pinned and read,
+not imported.
+A new synthetic decoder original was admitted,
+not a human witness.
+Complete tool-read review bodies were compared to current dispatch bytes by a real gate,
+and root-cwd Git/creation checks explicitly passed before dispatch.
+No command delivery was mistaken for command success.
+
+Counters distinguish owner-delegate invocations,
+accepted return events,
+and unique returned owned manager identities.
+The controlled fault occurs after owner return,
+not an observed SDK-internal allocation-then-throw defect.
+The retained fault manager is not a published ledger child.
+Unexercised helper recovery,
+invalid wrapper configuration/returns/delegate failures,
+and adversarial filesystem loading remain gaps.
+Source literal round trips do not establish path confinement.
+No SDK session,
+genuine original,
+model,
+grant,
+or action ran;
+current eligibility and actual SDK guard sensitivity remain false.
+The consumed source smoke is not replayed.
+
 No common SDK worker,
 combined generated-source closure,
 freeze,
 or actual SDK sensitivity dispatch exists.
 Next:
- finish persisted source documentation,
-implement fork/recapture source #86,
-then one combined controller with pre-call accounting and unopened-suffix stops.
+finish fork source documentation checkpoint,
+then #87 admits one combined worker/controller with pre-call accounting and unopened-suffix stops.
 No genuine originals,
 model calls,
 grants,
