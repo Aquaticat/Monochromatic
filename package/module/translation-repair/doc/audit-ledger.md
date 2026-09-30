@@ -2920,6 +2920,85 @@ and moves the tally's placement out of the entry at its line budget
 which this census lists among the library sources only unloaded bundles carry,
 so a test of it is part of the library batches.
 
+The first batch against `census-wNMuym` tests that placement (`5e27208c7`).
+`coverage-census-place.unit.test.ts` builds a disposable package with bundles,
+maps,
+sources and a coverage file,
+and drives `placeTally` through `tallyCoverage` and `bundleMapsOf`:
+a cold block and an uncalled function placed on their source lines,
+the sources loaded and unloaded bundles carry,
+a bundle holding only import and export statements read for nothing,
+and each of the three refusals by name.
+A format 2 census of the test file (`census-qGKHBE`) left one stretch,
+lines 212 to 213:
+the `?? []` for an unloaded bundle with no reading.
+`requireMapFor` refuses every unloaded bundle with no map before that line,
+so the fallback never ran;
+the unloaded sources now come from the mapped readings of bundles no process loaded,
+as the loaded sources do,
+and a second census (`census-4rpchd`) loads the file with no stretch left.
+Both censuses ran at `e96946582` with the batch uncommitted.
+
+That batch's baseline reading printed `ran 0, still cold 0, not loaded 0`,
+which reads as nothing left to do:
+`census-wNMuym` never loaded the placement file,
+so it holds no stretch there,
+and the reading counted only the baseline's stretches.
+A claimed source with no baseline stretch proves nothing through those counts,
+whether the baseline ran it whole,
+never loaded it,
+or names no such path.
+`297c72fd5` reads the baseline's loaded sources too,
+counts each such claimed source in the reading's first line,
+and names it with both censuses' standing.
+For a source the baseline never loaded,
+the proof is this run's own rows:
+loaded,
+with no cold stretch left.
+Its census against `census-wNMuym` (`census-mHL50b`) printed the placement file as not loaded there
+and `coverage-census-report.ts` as ran whole there,
+each with no cold stretch now.
+`76a9e39ca` records in `bundleMapsOf`'s TSDoc that a bundle with no map holding code no test ran is now refused after the suite,
+at the cost of one suite run,
+and why that is rare:
+the coverage build cleans its directory before it writes.
+
+The triage of the queue
+(`t8-triage.mjs` in the audit's scratch folder,
+reading `census-wNMuym`'s library stretches against the source at `76a9e39ca`,
+where only the census files moved lines since the baseline)
+classes each stretch by the first construct its lines hold,
+in the order throw,
+catch,
+nullish fallback,
+optional chain,
+ternary,
+function or callback,
+loop,
+return,
+branch.
+Of the 1,104 stretches in 423 files,
+181 hold a throw,
+7 a catch,
+222 a nullish fallback,
+2 an optional chain,
+276 a ternary,
+32 a function or callback,
+4 a loop,
+296 a return,
+43 a branch,
+and 41 none of these.
+The largest clusters by file stem are the corpus-run artifact files (78 stretches in 27 files),
+translate (70 in 28)
+and repair (46 in 17).
+Each fallback and throw is read for reachability before a case is written:
+an unreachable one is removed and recorded under B21's silent fallbacks,
+a reachable one gets a case.
+Batches go by shared fixture rather than by file,
+one census per batch with all its test files,
+and prove reach from the fresh census's rows for every claimed source,
+with the baseline reading's named claims for sources the baseline holds no stretch in.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -10045,8 +10124,17 @@ tests and fixtures included,
 it found 15 unread bindings,
 all in package source.
 Five are error classes a TSDoc `@throws {@link …}` line names,
-the only place a file names an error its callee throws;
-the other ten are read nowhere:
+the only place a file names an error its callee throws,
+and each line holds:
+`artifact-repair-read.ts`,
+`corpus-run/artifact-rounds-read.ts` and `corpus-run/artifact-vote-read.ts` call the `require*` helpers of `artifact-guard.ts`,
+which throw `ArtifactParseError`;
+`dedupe-issues.ts` calls `mergeDuplicateEvidence`,
+which throws `IssueEvidenceConflictError` through `mergeClaimEvidence`;
+and `corpus-run/judge-fidelity-probe.ts` calls `reviewedFidelityTrials`,
+which throws `FidelityReferenceError`.
+Those imports stay.
+The other ten are read nowhere:
 `footnoteMarkerLabels` and `ChunkPair`,
 left by `9f49c2ed5` (B30,
 which removed the functions reading them);
@@ -10477,6 +10565,22 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M76: an inference about a census written as its output
+
+Status:
+happened 2026-09-30 (UTC) in `5e27208c7`'s message,
+found the same hour on review,
+and corrected by a comment on that commit.
+The message said `census-wNMuym` listed the placement file as carried only by `coverage-census.mjs`.
+`census.json` records no carrying bundle for an unloaded source;
+the claim was inferred from that bundle standing among the unloaded ones
+and from `coverage-census.ts` being the module's only importer at `6e631988b`.
+The rule that a claim in a message is a command's output or labelled an inference was already written,
+and the message did not apply it.
+Prevention:
+a census-derived claim names the `census.json` field or the report line it comes from before it is written;
+a claim no field or line holds is labelled an inference.
 
 ### M75: removals that left the imports they no longer read
 

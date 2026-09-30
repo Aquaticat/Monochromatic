@@ -228,7 +228,12 @@ an inferred cause written as fact (X18's first draft);
 a commit said its cases covered every branch of the coverage census,
 and the census,
 once run,
-found ten cold stretches in four of those modules (M66).
+found ten cold stretches in four of those modules (M66);
+a batch's baseline reading printed all zeros for a source its baseline never loaded,
+which reads as nothing left to do (T8,
+fixed in `297c72fd5`);
+a message said a census recorded which bundle carried a source,
+which `census.json` does not record (M76).
 
 The rule:
 every number,
@@ -239,6 +244,10 @@ A claim that tests cover a module's branches comes from a census of the claimed 
 (`mise run coverage-census -- <test files>`),
 each loaded and holding no stretch in a census of format 2 or later (M67),
 never from reading the tests.
+A claimed source the baseline holds no stretch in is proven by this run's rows alone:
+the baseline reading names each one,
+and one the baseline never loaded must be loaded now with no cold stretch left.
+A claim drawn from a census names the `census.json` field or the report line that holds it.
 A fix that gives a model context starts by rendering the sheet and searching it for that context.
 An inference is labelled as one,
 or traced in the code before it is written.

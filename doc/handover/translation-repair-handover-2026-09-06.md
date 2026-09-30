@@ -191,8 +191,17 @@ this one says what changed after it.
   (the package's `mistake-prevention.md` names the issue),
   three of the audit's own removals had left ten,
   and `src/unused-imports.unit.test.ts` now fails on any.
-  Next is a fresh whole-suite census,
-  the baseline T8's batches resume against.
+  The whole-suite census at `6e631988b` (`census-wNMuym`,
+  1,387 PASS lines) is the baseline T8's batches resume against:
+  library source holds 1,104 stretches in 423 files,
+  with 29 functions never called.
+  On 2026-09-30 (UTC) the first batch tested the census's own placement (`5e27208c7`),
+  and the census now names each claimed source its baseline holds no stretch in (`297c72fd5`),
+  since a source the baseline never loaded had read as all zeros.
+  Next are the library batches,
+  grouped by shared fixture,
+  each throw and nullish fallback read for reachability before a case is written;
+  the ledger's T8 entry has the triage counts.
   Every source commit also runs `mise run source-scans`,
   the package-wide scans a new file can fail (ledger M59).
 

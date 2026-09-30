@@ -71,8 +71,24 @@ B30,
 B31 and B32 closed on its way,
 so `src/dead-code.unit.test.ts` now fails on any function,
 class or value production does not reach,
-`src/unused-imports.unit.test.ts` on any import nothing reads,
-and a fresh whole-suite census is the baseline its batches resume against),
+and `src/unused-imports.unit.test.ts` on any import nothing reads.
+Its batches resume against the whole-suite census at `6e631988b` (`census-wNMuym`):
+library source holds 1,104 stretches over 2,799 lines in 423 files,
+with 29 functions never called,
+and the runner entry files and unloaded bundles come after.
+As of 2026-09-30 (UTC),
+the first batch tests the census's own placement (`5e27208c7`),
+and the census now names a claimed source its baseline holds no stretch in (`297c72fd5`).
+By the first construct each stretch's lines hold,
+the queue is 181 throws,
+222 nullish fallbacks,
+276 ternaries,
+296 returns
+and 129 others;
+each throw and fallback is read for reachability first,
+and an unreachable one is removed rather than tested.
+Holding the launch for T8 is a quality call recorded for the owner to veto,
+and these counts are the size of what it holds the launch for),
 T9 (every test run writes a log into `node_modules`,
 owned by `module-logger`,
 issue #576),
