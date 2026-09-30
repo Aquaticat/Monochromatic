@@ -78,10 +78,12 @@ const RUN_PICTURE_SOURCES: PassPictureSources = {
  
  @param visualEvidenceReader - optional integration-test evidence seam
  
- @param priorReadings - completed evidence retained within this pinned entry
+ @param priorReadings - completed evidence retained within this pinned entry,
+ empty before the entry's first reading
 
  @param beforePicture - per-picture hook handing each picture the readers it
- runs on (ledger X12)
+ runs on (ledger X12); required, as the one caller (`readSeatedPictures`)
+ always passes it and its entry map (ledger T8)
 
  @param pictureSources - where bytes and OCR text come from, the run's own
  when absent
@@ -93,7 +95,7 @@ const RUN_PICTURE_SOURCES: PassPictureSources = {
  
  @example
  ```ts
- const readings = await readPassVisualEvidence({ client, slices, pin, entryId, readerModelIds, cache, signal, perCallTimeoutMs, l, });
+ const readings = await readPassVisualEvidence({ client, slices, pin, entryId, readerModelIds, cache, signal, perCallTimeoutMs, l, priorReadings, beforePicture, });
  ```
  */
 export async function readPassVisualEvidence(
@@ -108,7 +110,7 @@ export async function readPassVisualEvidence(
     perCallTimeoutMs,
     l,
     visualEvidenceReader,
-    priorReadings = new Map(),
+    priorReadings,
     beforePicture,
     pictureSources = RUN_PICTURE_SOURCES,
   }: {
@@ -122,8 +124,8 @@ export async function readPassVisualEvidence(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
-    readonly priorReadings?: ReadonlyMap<string, PairedReading>;
-    readonly beforePicture?: () => Promise<PictureReaderSeating>;
+    readonly priorReadings: ReadonlyMap<string, PairedReading>;
+    readonly beforePicture: () => Promise<PictureReaderSeating>;
     readonly pictureSources?: PassPictureSources;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
@@ -171,7 +173,7 @@ export async function readPassVisualEvidence(
       signal,
       perCallTimeoutMs,
       l,
-      ...((beforePicture === undefined) ? {} : { beforePicture, }),
+      beforePicture,
     },)
     : await visualEvidenceReader({ slices, },);
   assertVisualEvidenceComplete({

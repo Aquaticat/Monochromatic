@@ -78,7 +78,7 @@ function benchesUnder(
     select: seats.selectJudges,
     slate: seats.slateJudges,
     editors: seats.repairModels.editorModelIds,
-    refiners: seats.repairModels.refinerModelIds ?? [],
+    refiners: seats.repairModels.refinerModelIds,
     translators: seats.translators,
     readers: seats.readers,
   };

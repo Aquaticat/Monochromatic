@@ -1,11 +1,11 @@
 /**
  Tests for the final polish's configuration.
 
- WHAT THIS FILE PINS: a roster without refiners, which the repair contract
- names a supported configuration ("Absent means the lane is off",
- `repair-contract.ts`), turns the polish off rather than running it with
- nobody to write; a roster with refiners configures it from the roster and
- the prepared document.
+ WHAT THIS FILE PINS: a roster with refiners, which every corpus run seats
+ (`RunRepairModels`), configures the polish from its refiners and judges, the
+ gate bench and the prepared document. A roster without refiners has no
+ builder: the one that answered it with a disabled kind lost its last
+ production caller when the pass began building through this one (ledger T8).
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  consolidationPolishConfiguration,
+  configuredConsolidationPolish,
   prepareDocumentPair,
   type RepairModels,
 } from '../dist/final/node/index.mjs';
@@ -38,12 +38,13 @@ const PREPARED = prepareDocumentPair({
 },);
 
 /**
- A repair roster with every required role and no refiners.
+ A repair roster with every required role and its refiners seated.
  */
-const WITHOUT_REFINERS: RepairModels = {
+const WITH_REFINERS: RepairModels & Required<Pick<RepairModels, 'refinerModelIds'>> = {
   criticModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
   panelModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
   editorModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+  refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
   judgeModelIds: [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,],
   checkerModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
 };
@@ -54,43 +55,28 @@ const WITHOUT_REFINERS: RepairModels = {
 const GATE = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD,] as const;
 
 await describe({
-  name: consolidationPolishConfiguration.name,
+  name: configuredConsolidationPolish.name,
   children: [
-    it({
-      name: 'TURNS THE POLISH OFF for a roster without refiners, the configuration the repair contract supports',
-      fn: async () => {
-        expect(consolidationPolishConfiguration({
-          prepared: PREPARED,
-          models: WITHOUT_REFINERS,
-          gateModelIds: GATE,
-        },),).toEqual({ kind: 'disabled', },);
-      },
-    },),
     it({
       name: 'CONFIGURES THE POLISH from a roster with refiners: its refiners and judges, the gate bench, and '
         + 'the prepared document\'s declared names',
       fn: async () => {
         /**
-         The configuration a roster with refiners gives.
+         The configuration that roster gives.
          */
-        const configured = consolidationPolishConfiguration({
+        const configured = configuredConsolidationPolish({
           prepared: PREPARED,
-          models: {
-            ...WITHOUT_REFINERS,
-            refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-          },
+          models: WITH_REFINERS,
           gateModelIds: GATE,
         },);
-        if (configured.kind !== 'configured')
-          throw new Error(`expected a configured polish, got ${configured.kind}`,);
         expect({
-          refinerModelIds: configured.config.refinerModelIds,
-          judgeModelIds: configured.config.judgeModelIds,
-          gateModelIds: configured.config.gateModelIds,
-          declaredNames: configured.config.declaredNames,
+          refinerModelIds: configured.refinerModelIds,
+          judgeModelIds: configured.judgeModelIds,
+          gateModelIds: configured.gateModelIds,
+          declaredNames: configured.declaredNames,
         },).toEqual({
           refinerModelIds: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-          judgeModelIds: WITHOUT_REFINERS.judgeModelIds,
+          judgeModelIds: WITH_REFINERS.judgeModelIds,
           gateModelIds: GATE,
           declaredNames: PREPARED.declaredNames,
         },);

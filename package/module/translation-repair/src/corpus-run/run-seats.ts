@@ -11,7 +11,6 @@ import type {
 import {
   assertCheckerIndependence,
   assertCheckerQuorumReachable,
-  type RepairModels,
 } from '../repair-contract.ts';
 import { reachOf, } from '../roster-reach.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
@@ -27,6 +26,7 @@ import {
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
+  type RunRepairModels,
 } from './run-config.ts';
 
 //region Provider-aware judge seats
@@ -173,9 +173,11 @@ export type JudgeSeats = {
   readonly roster: readonly RosterModelId[];
 
   /**
-   Repair lane roles with the wide, select and checker seats applied.
+   Repair lane roles with the wide, select and checker seats applied, the
+   run's roster otherwise, so the refiners every run seats stay required and
+   the consolidation's naturalness roles never read as off (ledger T8).
    */
-  readonly repairModels: RepairModels;
+  readonly repairModels: RunRepairModels;
 
   /**
    Translate lane roles with the translator and select seats applied.

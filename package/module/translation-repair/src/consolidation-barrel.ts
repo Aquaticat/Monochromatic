@@ -60,7 +60,7 @@ export {
 // wiring (ledger X14).
 export { runPassConsolidation, } from './corpus-run/pass-consolidate.ts';
 export { type RunClient, } from './corpus-run/run-client-contract.ts';
-export { consolidationPolishConfiguration, } from './consolidation-polish-config.ts';
+export { configuredConsolidationPolish, } from './consolidation-polish-config.ts';
 export {
   type ConsolidationNaturalnessAudit,
   type ConsolidationNaturalnessCorrectionAudit,

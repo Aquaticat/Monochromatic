@@ -3,7 +3,7 @@ import type { ArchiveDispute, } from '../archive-dispute.ts';
 
 import { consolidateDocument, } from '../consolidate-driver.ts';
 import type { RunClient, } from './run-client-contract.ts';
-import { consolidationPolishConfiguration, } from '../consolidation-polish-config.ts';
+import { configuredConsolidationPolish, } from '../consolidation-polish-config.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { sliceNeighbourContexts, } from '../fidelity-window.ts';
 import type { PairedReading, } from '../image-reading-pair.ts';
@@ -102,9 +102,10 @@ export async function runPassConsolidation(
     l,
   },);
   /**
-   Production naturalness roles and document guard facts.
+   Production naturalness roles and document guard facts, always configured:
+   the run's roster seats its refiners (`RunRepairModels`).
    */
-  const polish = consolidationPolishConfiguration({
+  const polishConfig = configuredConsolidationPolish({
     prepared,
     models: seats.repairModels,
     gateModelIds: seats.lateJudges,
@@ -130,7 +131,7 @@ export async function runPassConsolidation(
     // on the provider that would serve it writes nothing (`run-seats.ts`).
     modelIds: seats.writers,
     judgeModelIds: seats.slateJudges,
-    ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
+    polishConfig,
     frontMatterSlices,
     lineStructuredSlices: prepared.lineStructuredSliceIndices,
     // A linked title naming a declared person takes the declared form on

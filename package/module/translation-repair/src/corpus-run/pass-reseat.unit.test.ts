@@ -26,8 +26,8 @@ import {
 
 import {
   type BudgetView,
+  configuredConsolidationPolish,
   consolidationHooksFor,
-  consolidationPolishConfiguration,
   contestHooksFor,
   insertionHooksFor,
   judgeSeatsFor,
@@ -390,26 +390,22 @@ await describe({
          */
         const seats = judgeSeatsFor({ dry: BEDROCK_AND_OPENROUTER, },);
         /**
-         Naturalness roles that reading configures, as `pass-consolidate.ts` builds them.
-         */
-        const polish = consolidationPolishConfiguration({
-          prepared: PREPARED,
-          models: seats.repairModels,
-          gateModelIds: seats.lateJudges,
-        },);
-        /**
-         Roster the slice should run on.
+         Roster the slice should run on, its naturalness roles as `pass-consolidate.ts` builds them.
          */
         const roster = {
           modelIds: seats.writers,
           judgeModelIds: seats.slateJudges,
-          ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
+          polishConfig: configuredConsolidationPolish({
+            prepared: PREPARED,
+            models: seats.repairModels,
+            gateModelIds: seats.lateJudges,
+          },),
         };
         /**
          Line naming the phase the reading waited on and the roster it seated.
          */
         const reseatLine = `JUDGE SEATS phase=consolidation slice re-seated under a hold: writers=${seats.writers.join(',',)} `
-          + `slateJudges=${seats.slateJudges.join(',',)} polish=${polish.kind}`;
+          + `slateJudges=${seats.slateJudges.join(',',)} polishGate=${seats.lateJudges.join(',',)}`;
         expect({
           underHold,
           afterHold,

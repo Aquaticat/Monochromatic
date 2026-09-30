@@ -102,11 +102,12 @@ export function benchesOf(
   { seats, }: { readonly seats: JudgeSeats; },
 ): Readonly<Record<BenchName, readonly RosterModelId[]>> {
   /**
-   Repair lane writers, whose refiners are optional in the contract.
+   Repair lane writers; the run's roster always seats refiners
+   (`RunRepairModels`).
    */
   const {
     editorModelIds,
-    refinerModelIds = [],
+    refinerModelIds,
   } = seats.repairModels;
   return {
     wide: seats.wideSeats,

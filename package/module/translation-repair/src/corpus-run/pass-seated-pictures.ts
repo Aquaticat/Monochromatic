@@ -50,7 +50,9 @@ import { readJudgeSeats, } from './run-seats-read.ts';
  
  @param visualEvidenceReader - optional integration-test evidence seam
  
- @param priorReadings - completed evidence retained within this pinned entry
+ @param priorReadings - completed evidence retained within this pinned entry,
+ empty before the entry's first reading; required, since the one caller
+ ({@link createPassPictureReader}) always holds the entry's map (ledger T8)
 
  @param pictureSources - where bytes and OCR text come from, the run's own
  when absent; a test hands stand-ins to drive the readers' re-seat hook
@@ -63,7 +65,7 @@ import { readJudgeSeats, } from './run-seats-read.ts';
 
  @example
  ```ts
- const readings = await readSeatedPictures({ client, slices, entryId, cache, signal, l, },);
+ const readings = await readSeatedPictures({ client, slices, entryId, cache, signal, l, priorReadings, },);
  ```
  */
 export async function readSeatedPictures(
@@ -85,7 +87,7 @@ export async function readSeatedPictures(
     readonly signal: AbortSignal;
     readonly l: Logger;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
-    readonly priorReadings?: ReadonlyMap<string, PairedReading>;
+    readonly priorReadings: ReadonlyMap<string, PairedReading>;
     readonly pictureSources?: PassPictureSources;
   },
 ): Promise<ReadonlyMap<string, PairedReading>> {
@@ -109,7 +111,7 @@ export async function readSeatedPictures(
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     l,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
-    ...((priorReadings === undefined) ? {} : { priorReadings, }),
+    priorReadings,
     ...((pictureSources === undefined) ? {} : { pictureSources, }),
     // EVERY PICTURE RE-SEATS UNDER A HOLD (ledger X12,
     // `pass-pictures-reseat.ts`), with a memo per call, since each call

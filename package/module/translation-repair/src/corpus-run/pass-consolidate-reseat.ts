@@ -1,7 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { ConsolidateSliceSeating, } from '../consolidate-slice-seating.ts';
-import { consolidationPolishConfiguration, } from '../consolidation-polish-config.ts';
+import { configuredConsolidationPolish, } from '../consolidation-polish-config.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import {
   type Reseated,
@@ -64,14 +64,6 @@ function consolidationSeatingOf(
   },
 ): Reseated<ConsolidateSliceSeating> {
   /**
-   Naturalness roles that reading configures.
-   */
-  const polish = consolidationPolishConfiguration({
-    prepared,
-    models: seats.repairModels,
-    gateModelIds: seats.lateJudges,
-  },);
-  /**
    Writers the slice runs on, for the line.
    */
   const writers = seats.writers
@@ -81,15 +73,27 @@ function consolidationSeatingOf(
    */
   const judges = seats.slateJudges
     .join(',',);
+  /**
+   Naturalness gate the slice runs on, for the line: the reading re-seats it,
+   while the polish itself is always configured, the run's roster seating its
+   refiners (`RunRepairModels`), so the line names the gate rather than a kind
+   that never varies.
+   */
+  const polishGate = seats.lateJudges
+    .join(',',);
   return {
     seating: {
       roster: {
         modelIds: seats.writers,
         judgeModelIds: seats.slateJudges,
-        ...((polish.kind === 'configured') ? { polishConfig: polish.config, } : {}),
+        polishConfig: configuredConsolidationPolish({
+          prepared,
+          models: seats.repairModels,
+          gateModelIds: seats.lateJudges,
+        },),
       },
     },
-    line: `slice re-seated under a hold: writers=${writers} slateJudges=${judges} polish=${polish.kind}`,
+    line: `slice re-seated under a hold: writers=${writers} slateJudges=${judges} polishGate=${polishGate}`,
   };
 }
 

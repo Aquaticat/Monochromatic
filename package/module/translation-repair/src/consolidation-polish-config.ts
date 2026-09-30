@@ -6,79 +6,51 @@ import type { RepairModels, } from './repair-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
 //region Consolidation polish configuration
+// ONE BUILDER, NO "OFF" KIND (ledger T8, 2026-09-30). The only production
+// caller is the corpus pass, whose roster always seats refiners
+// (`RunRepairModels`), so the pass never met a roster without them; the
+// function that answered one with a disabled kind had no production caller
+// left once the pass built through this one. A library caller whose roster
+// seats no refiners passes no `polishConfig` to the consolidation, which then
+// runs no polish.
 
 /**
- Configured final polish or supported disabled state.
- 
- @example
- ```ts
- const configured = consolidationPolishConfiguration({ prepared, models, gateModelIds, });
- ```
- */
-export type ConsolidationPolishConfiguration =
-  | {
-    /**
-     Naturalness lane has no configured writers.
-     */
-    readonly kind: 'disabled';
-  }
-  | {
-    /**
-     Naturalness lane is configured.
-     */
-    readonly kind: 'configured';
+ Builds final body polish configuration from a roster that seats refiners.
 
-    /**
-     Final polish roles and document facts.
-     */
-    readonly config: ConsolidationPolishConfig;
-  };
-
-/**
- Builds final body polish configuration from prepared document and run roles.
- 
  @param prepared - shared source-target preparation
- 
- @param models - repair role configuration carrying measured refiners
- 
+
+ @param models - repair role configuration with its refiners seated, which
+ the run's roster always is
+
  @param gateModelIds - whole roster running final fidelity gate
- 
- @returns Configured polish or explicit disabled state
- 
+
+ @returns Final polish roles and document facts
+
  @example
  ```ts
- const configured = consolidationPolishConfiguration({ prepared, models, gateModelIds, });
+ const polishConfig = configuredConsolidationPolish({ prepared, models, gateModelIds, });
  ```
  */
-export function consolidationPolishConfiguration(
+export function configuredConsolidationPolish(
   {
     prepared,
     models,
     gateModelIds,
   }: {
     readonly prepared: PreparedDocumentPair;
-    readonly models: RepairModels;
+    readonly models: RepairModels & { readonly refinerModelIds: readonly RosterModelId[]; };
     readonly gateModelIds: readonly RosterModelId[];
   },
-): ConsolidationPolishConfiguration {
-  /**
-   Configured naturalness writers, absent when lane is disabled.
-   */
-  const { refinerModelIds, } = models;
-  if (refinerModelIds === undefined)
-    return { kind: 'disabled', };
+): ConsolidationPolishConfig {
   return {
-    kind: 'configured',
-    config: {
-      refinerModelIds,
-      judgeModelIds: models.judgeModelIds,
-      gateModelIds,
-      declaredNames: prepared.declaredNames,
-      ...((prepared.declaredNamePairs === undefined) ? {} : { declaredNamePairs: prepared.declaredNamePairs, }),
-      definitions: collectDefinitions({
-        document: parseDocument({ text: prepared.targetText, },),
-      },),
-    },
+    refinerModelIds: models.refinerModelIds,
+    judgeModelIds: models.judgeModelIds,
+    gateModelIds,
+    declaredNames: prepared.declaredNames,
+    ...((prepared.declaredNamePairs === undefined) ? {} : { declaredNamePairs: prepared.declaredNamePairs, }),
+    definitions: collectDefinitions({
+      document: parseDocument({ text: prepared.targetText, },),
+    },),
   };
 }
 
