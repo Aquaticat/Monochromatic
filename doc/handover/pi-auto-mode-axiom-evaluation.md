@@ -510,8 +510,15 @@ The completed origin reference is retained;
 actual fork and child/reset suffix were not reached.
 Earlier source-only clearance missed this transcript premise and is narrowed accordingly.
 No Pi defect or upstream filing follows.
-Next: separately declare exact retained system-prefix mechanics without treating the prefix as authority;
-settle any additional configuration-binding premise before its source review/freeze/runtime.
+The separate `fork-system-prefix-controls/` correction is predeclared and undispatched.
+Independent scope review resolved the prefix requirement as exact mechanical retention:
+immutable owned entry ID/JSON and complete branch JSON captured before copying,
+with exact five-role order and named positions.
+Configuration-derived section equality is not required for copying consistency;
+prompt/configuration fidelity and instruction authority/applicability remain separate unqualified properties.
+Next: implement and independently review that separate correction,
+including predeclared synthetic prefix rejection controls,
+then freeze new closure before one runtime.
 The completed `root-sensitivity-controls/` phase read no genuine original and replayed no interaction.
 The new `fork-mechanical-controls/` worker privately rereads retained admitted evidence before SDK startup;
 it does not mutate originals,
