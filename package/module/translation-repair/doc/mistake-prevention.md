@@ -1258,3 +1258,23 @@ and its tests carry an opening mark that never closed.
 What enforces it:
 habit and review;
 each reader's stray-mark case fails if the reader stops using the shared rule.
+
+## Exits an outcome rule reaches
+
+What happened:
+the owner's rule to keep wording that cannot ship and ship the slice reached the judge's decline exit,
+and not its empty-slate exit beside it,
+so a slice whose archive wording the floor refused and whose translators proposed nothing usable stopped the entry (ledger B39).
+
+The rule:
+a rule that changes what an outcome does (ship,
+stop,
+keep) lists every exit that produces that outcome:
+each throw of the error class that carries it and each caller that rethrows it,
+and states for each whether the rule applies and why.
+Each exit it applies to has a case.
+
+What enforces it:
+habit and review;
+an exit the rule missed can show in the coverage census as a rethrow no test reaches,
+as this one did.

@@ -30,7 +30,10 @@ import type { TranslateFollowupEvidence, } from './translate-wire.ts';
 // rethrew into a content slice, which the slice attempt rethrows in turn, so
 // the entry stopped. The follow-up round now ships its preferred candidate
 // past a declined challenge round instead; the first round still defers to
-// the follow-up, which is the designed re-ask.
+// the follow-up, which is the designed re-ask. Where the follow-up round's
+// translators are heard and propose nothing the floor accepts, the wording
+// the archive has stands on that round (ledger B39), where the empty slate
+// raised and stopped the entry the same way.
 
 /**
  Everything one produce-and-judge round needs, shared by both rounds.

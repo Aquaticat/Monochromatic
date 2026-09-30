@@ -15,7 +15,6 @@ import type {
   TranslateSliceRecord,
 } from './translate-document-contract.ts';
 import { settleTranslateSlice, } from './translate-slice.ts';
-import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 
 //region Translate slice attempt
 // One slice's round, with settled and unfilled shapes named.
@@ -91,8 +90,9 @@ export type SliceAttempt = {
  
  @returns Settled record, or the fact that this passage stays missing
  
- @throws Whatever the slice throws that is not an absence refusal, and the
- caller's abort reason by identity when the signal fired
+ @throws Whatever the slice throws that is not an absence refusal over an
+ insertion slice (a refusal over a slice the archive translates among them),
+ and the caller's abort reason by identity when the signal fired
  
  @example
  ```ts
@@ -178,21 +178,16 @@ export async function attemptTranslateSlice(
       );
       throw signal.reason;
     }
-    if (error instanceof TranslateAbsenceError) {
-      // SECOND BACKSTOP, and deliberately not trusting the error alone. Only a
-      // slice with nothing in the archive can be unfilled; a content slice
-      // reported that way would record a passage the archive DOES translate as
-      // one it never did, and every count of missing passages would inherit it.
-      // The stage decides absence from this same chunk, so disagreement here
-      // means the two were handed different slices.
-      if (!isInsertionChunk(slice.target,))
-        throw error;
-      if (error.reason === 'no-voice-heard') {
-        throw new TranslationRepairInterruptedError({
-          reason: 'provider-unavailable',
-          findings: error.findings,
-        },);
-      }
+    // SECOND BACKSTOP, and deliberately not trusting the error alone. Only a
+    // slice with nothing in the archive can be unfilled; a content slice
+    // reported that way would record a passage the archive DOES translate as
+    // one it never did, and every count of missing passages would inherit it.
+    // So an absence on a content slice is rethrown with every other failure.
+    // Since ledger B39 none arrives: wording the archive has and the floor
+    // refuses stands on the stage's follow-up round rather than raising. A
+    // slate nobody was heard on never arrives as an absence either: the stage
+    // turns it into a provider interruption (`translate-stage-repair.ts`).
+    if ((error instanceof TranslateAbsenceError) && isInsertionChunk(slice.target,)) {
       return {
         kind: 'unfilled',
         reason: error.reason,

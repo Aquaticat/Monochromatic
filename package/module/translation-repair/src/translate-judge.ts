@@ -124,7 +124,9 @@ import { translateSlateEvidence, } from './translate-slate-evidence.ts';
  
  @throws {@link TranslateAbsenceError} when a slice with no incumbent produced
  nothing to write, which every fallback here would otherwise report as a
- settled slice carrying the archive's own wording, of which there is none
+ settled slice carrying the archive's own wording, of which there is none;
+ withheld wording that exists stands instead on the round that ships past a
+ decline, where translators were heard (ledger B39)
  
  @throws {@link BlankSelectionError} when selection chose text that says
  nothing for a source that says something, in EITHER mode, since that is a
@@ -252,8 +254,9 @@ export async function judgeTranslateSlate(
     // and could not be offered as a candidate. In `present` mode that is a
     // content span holding only whitespace, and the archive's own wording there
     // IS the blank: it stands, and no model matched it. In `absent` mode this
-    // object is never returned at all, since every exit that would reach it
-    // refuses instead.
+    // object is returned only for wording that exists and cannot ship, on the
+    // round that ships past a decline and hears no usable proposal (ledger
+    // B39); every other exit that would reach it refuses instead.
     producer: incumbentOnSlate?.producer
       ?? {
         kind: 'incumbent',
@@ -318,7 +321,19 @@ export async function judgeTranslateSlate(
     // stands and the slice is genuinely settled. With none, the same fallback
     // ships the empty string and reports a settled slice, so the run claims a
     // rendering it never produced for a passage that still has none.
-    if (incumbentKind === 'absent') {
+    //
+    // WORDING THAT EXISTS AND CANNOT SHIP STANDS (ledger B39) on the round
+    // that ships past a decline, where translators were heard and none
+    // proposed wording the floor accepts: the owner's rule keeps the archive
+    // at a slice no wording passed and ships (2026-09-27, "No valid wording"),
+    // where this exit raised, and the slice attempt rethrew the absence for a
+    // slice the archive translates, stopping the entry. A slate nobody was
+    // heard on still raises: that is the hour, not the passage.
+    /**
+     Whether the absent incumbent is withheld wording this round keeps.
+     */
+    const keepsWithheld = shipPastDecline && (!nobodyHeard);
+    if ((incumbentKind === 'absent') && (!keepsWithheld)) {
       throw new TranslateAbsenceError({
         reason: named.reason,
         findings: noCandidateFindings,

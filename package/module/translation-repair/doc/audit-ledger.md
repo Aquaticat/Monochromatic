@@ -10731,6 +10731,50 @@ The Latin and Han title findings reach the model in the revision round,
 and the page-title spans and the work-title scan feed preparation,
 so the change joins the translate and preparation cache accounts before a launch.
 
+### B39: an empty slate over wording the floor refused stopped the entry
+
+Status:
+fixed 2026-09-30 (UTC) with the sixth T8 batch,
+found reading `translate-slice-attempt.ts` 189,
+the rethrow of an absence refusal on a slice the archive translates,
+which its comment called a backstop no input reaches.
+A slice whose archive wording the deterministic floor refuses
+reaches the translate stage as an absent incumbent,
+withheld rather than missing (`translate-stage.ts`).
+The owner's rule keeps the archive at a slice no wording passed and ships
+(2026-09-27,
+"No valid wording"),
+and "Preference + polish" made the follow-up round ship its preferred candidate past a declined challenge round.
+That rule reached the judge's decline exit and not its empty-slate exit:
+where every translator was heard and none proposed wording the floor accepts,
+the slate was empty in both rounds,
+the judge raised `no-candidate` with the message that the archive has no translation,
+the stage rethrew it,
+and the slice attempt rethrew it for a content slice,
+so the entry stopped where the rule says it ships.
+A case running the stage over such a slice
+(the address floor refusing the archive and every translator's defended narration)
+raised `no-candidate` on the build from before the fix.
+Whether any run met it is not measured.
+
+Fix:
+on the round that ships past a decline,
+an empty slate whose translators were heard keeps the withheld wording and names `no-candidate`,
+the same record a present incumbent's empty slate returns;
+a slate nobody was heard on still raises,
+and the stage still turns that into a provider interruption,
+since it says nothing about the passage.
+The slice attempt now returns an unfilled slice only for an absence over an insertion slice
+and rethrows everything else in one statement,
+a content slice's absence among it,
+so the backstop stands with no statement of its own;
+its branch for `no-voice-heard` is gone,
+since the stage converts that reason before the attempt sees it.
+`translate-withheld-empty-slate.unit.test.ts` pins the whole kept record,
+and that a slate nobody was heard on still interrupts.
+The stage's record keeps the archive's wording,
+so the translate cache account takes this change before a launch.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
