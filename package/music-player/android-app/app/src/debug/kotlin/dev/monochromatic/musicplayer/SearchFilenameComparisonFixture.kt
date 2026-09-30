@@ -37,10 +37,13 @@ internal fun filenameComparisonSceneOrEmpty(candidate: String): String {
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // for (const scene of filenameComparisonScenes) if (candidate.includes(`-${scene}-`)) return scene;
+    // for (const scene of filenameComparisonScenes) {
+    //   if (candidate.includes(`-${scene}-`) || candidate.endsWith(`-${scene}`)) return scene;
+    // }
     // ```
     for (scene in filenameComparisonScenes) {
-        if (candidate.contains("-$scene-")) return scene
+        // The cover delegate puts a dark scene at the end; light scenes have a following marker.
+        if (candidate.contains("-$scene-") || candidate.endsWith("-$scene")) return scene
     }
     return ""
 }

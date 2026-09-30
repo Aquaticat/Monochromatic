@@ -145,6 +145,9 @@ class SearchFilenameComparisonFixtureTest {
             assertEquals(filenameComparisonHits(scene), searchRankingHits(scene, includeParent = true))
             assertEquals(scene, filenameComparisonSceneOrEmpty("search-deck-right-lift-retain-e2floor7p5-imeviewport-$scene-results-light"))
             assertEquals(scene, filenameComparisonSceneOrEmpty("search-layout-docked-$scene-results"))
+            // Match the actual cover delegate grammar, including its terminal dark marker.
+            assertEquals(scene, filenameComparisonSceneOrEmpty("search-layout-docked-results-imeviewport-$scene"))
+            assertEquals(scene, filenameComparisonSceneOrEmpty("search-layout-docked-results-imeviewport-$scene-light"))
         }
     }
 
