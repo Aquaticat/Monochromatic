@@ -72,10 +72,13 @@ B31 and B32 closed on its way,
 so `src/dead-code.unit.test.ts` now fails on any function,
 class or value production does not reach,
 and `src/unused-imports.unit.test.ts` on any import nothing reads.
-Its batches read against the whole-suite census at `a46136f5d` (`census-VdHVJb`,
-1,395 PASS lines,
-taken from a tree with nothing uncommitted):
-library source holds 1,039 stretches over 2,541 lines in 400 files,
+Its batches read against the whole-suite census at `aeab4cfad` (`census-xBFoZt`,
+1,396 PASS lines,
+taken from a tree with nothing uncommitted),
+the first taken on an unminified build:
+every census before it measured compressed code,
+which folds unreached guards into expressions coverage gives no range (ledger M79).
+Library source holds 1,184 stretches over 2,481 lines in 418 files,
 with 27 functions never called,
 and the runner entry files and unloaded bundles come after.
 As of 2026-09-30 (UTC),
@@ -101,12 +104,12 @@ which `message-names-only.unit.test.ts` now checks at every construction.
 The census reading now leaves sources edited since its baseline out of its counts,
 since it matches stretches by line (`d27a89dd0`).
 By the first construct each stretch's lines hold
-(`t8-triage-vdhvjb.txt` in the audit's scratch folder),
-the queue is 135 throws,
-220 nullish fallbacks,
-271 ternaries,
-288 returns
-and 125 others;
+(`t8-triage-xbfozt.txt` in the audit's scratch folder),
+the queue is 137 throws,
+219 nullish fallbacks,
+269 ternaries,
+420 returns
+and 139 others;
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 Holding the launch for T8 is a quality call recorded for the owner to veto,

@@ -3227,6 +3227,32 @@ the first taken unminified,
 lists it again for its cluster.
 The suite passing 1,395 times on both builds also says the tests do not depend on minification,
 which matters now that the census runs them against a build that differs from the shipped one.
+Put back to compressed,
+the coverage build met the new refusal before the suite ran:
+the census named 174 mapped bundles with no module region comment and ran no test.
+
+The sixth batch's baseline is that commit's whole-suite census
+(`aeab4cfad`,
+`census-xBFoZt`,
+1,396 PASS lines,
+taken from a tree with nothing uncommitted),
+whose library counts match `census-gMPS3j`'s:
+1,184 stretches over 2,481 lines in 418 files,
+with 27 functions never called.
+By the first construct each stretch's lines hold
+(`t8-triage-xbfozt.txt`),
+the queue is 420 returns,
+269 ternaries,
+219 nullish fallbacks,
+137 throws
+and 139 others.
+The triage's "uncalled function" kind is new:
+it counts stretches the census names by the function they span,
+and the census names 31 stretches under `src/` that way here against 1 in `census-VdHVJb`,
+25 of them in library source.
+The translate modules are still the largest cluster
+(73 stretches in 28 files),
+and the sixth batch takes them.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 

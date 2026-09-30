@@ -222,9 +222,14 @@ this one says what changed after it.
   The fifth batch took the comparison,
   coherence,
   digest and identity modules (`fc9e80ca8`).
-  The baseline is now the whole suite at `a46136f5d` (`census-VdHVJb`,
-  1,395 PASS lines):
-  library source holds 1,039 stretches over 2,541 lines in 400 files,
+  Every census through `census-VdHVJb` measured a compressed build,
+  which folds unreached guards into expressions coverage gives no range;
+  the coverage build is now unminified and the census refuses a minified one
+  (ledger M79,
+  `aeab4cfad`).
+  The baseline is now the whole suite at `aeab4cfad` (`census-xBFoZt`,
+  1,396 PASS lines):
+  library source holds 1,184 stretches over 2,481 lines in 418 files,
   with 27 functions never called.
   Next are the library batches,
   one triage cluster each,
