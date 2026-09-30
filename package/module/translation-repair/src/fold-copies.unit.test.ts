@@ -1,0 +1,504 @@
+/**
+ Guards against a fold that copies what it has built at every step: a
+ `reduce` whose callback returns its accumulator spread into a new list, or
+ cut and rejoined, and a loop that reassigns a list or text as a copy of
+ itself. Each step then costs as much as everything before it, so the fold
+ costs the square of its input where one pass would do (rule ITR in
+ `AGENTS.md`). `scanNearest` in `pair-sections-steps.ts` did this until the
+ sixteenth T8 batch rewrote it as a loop, and nothing read the shape
+ (ledger B70).
+
+ WHAT THE SCAN READS. Inside a `reduce` or `reduceRight` callback, the names
+ its first parameter binds, destructured or not, and any path rooted at one:
+ a spread of one inside a list, a copying method called on one (`concat`,
+ `slice`, `toSpliced`, `toSorted`, `toReversed`, `with`, `flat`), a `Map` or
+ `Set` built from one, and, where the fold starts from text, `+` with one.
+ Inside a loop, an assignment whose value copies its own target the same
+ ways. A spread inside a record is not read: a record of fixed fields costs
+ the same at every step. Named exemptions state why a fold's copies are
+ bounded or are its meaning.
+
+ THE FIXTURE CASE COMES FIRST, so the package-wide case is read against a
+ scan shown able to find each kind (ledger M21). Fixtures are cat-themed;
+ the package case reads this package's own source.
+
+ @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import {
+  childNodes,
+  isTreeNode,
+  parseSource,
+  readPackageSource,
+  type SourceText,
+  type TreeNode,
+} from './source-scan.test-fixture.ts';
+
+/**
+ Node kinds that loop.
+ */
+const LOOP_KINDS: ReadonlySet<string> = new Set([
+  'DoWhileStatement',
+  'ForInStatement',
+  'ForOfStatement',
+  'ForStatement',
+  'WhileStatement',
+],);
+
+/**
+ Node kinds that open a function, which starts a fresh loop depth.
+ */
+const FUNCTION_KINDS: ReadonlySet<string> = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression',],);
+
+/**
+ Methods that return a copy of the list or text they are called on.
+ */
+const COPYING_METHODS: ReadonlySet<string> = new Set([
+  'concat',
+  'flat',
+  'slice',
+  'toReversed',
+  'toSorted',
+  'toSpliced',
+  'with',
+],);
+
+/**
+ Constructors that copy the collection they are handed.
+ */
+const COPYING_CONSTRUCTORS: ReadonlySet<string> = new Set(['Map', 'Set',],);
+
+/**
+ Folds whose copies are bounded or are their meaning, each as
+ `path#site: names`, with why.
+ */
+const BOUNDED_OR_SEQUENTIAL: Readonly<Record<string, string>> = {
+  'assembly-repetition-span.ts#grownSpans: covered':
+    'each run is checked against the regions the runs before it left, merged, so the regions are rebuilt between checks',
+  'corpus-run/archive-block-repair.ts#repairArchiveBlocks: revisedText':
+    'each removal span reads the separators the later blocks\' revisions left, so the text is rewritten block by block',
+  'corpus-run/archive-stub.ts#isStubMarkerParagraph/unwrap: text':
+    'folds over the fixed MARKER_WRAPS table, not over the input',
+  'corpus-run/name-gloss-restore.ts#restore/place: current':
+    'each gloss is placed by a search of the text the glosses before it left',
+  'invisible-variants.ts#foldInvisibleVariants/fold: folded':
+    'folds over the fixed FOLDS table, not over the input',
+  'seeded-error.ts#applySeededErrors/applyOne: state':
+    'each needle is found in the text the seeds before it left, and their regions shift with it',
+  'splice-slices.ts#spliceSlices/spliceOne: text':
+    'each edit composes its separators against the tail the later edits wrote',
+  'stage-quorum.ts#collectRounds: pending':
+    'the next round\'s queue, rebuilt once per round, and the rounds are bounded by maxRetryRounds',
+};
+
+/**
+ Name an identifier node carries.
+
+ @param node - identifier node
+
+ @returns Its name, empty for any other node
+
+ @example
+ ```ts
+ const name = identifierName({ node: callback.id, },);
+ ```
+ */
+function identifierName({ node, }: { readonly node: unknown; },): string {
+  if (!isTreeNode(node,))
+    return '';
+  /**
+   The node's name field.
+   */
+  const { name, } = node;
+  return ((node.type === 'Identifier') && ((typeof name) === 'string')) ? (name as string) : '';
+}
+
+/**
+ Names a binding pattern binds, destructured or not.
+
+ @param pattern - parameter or declaration target
+
+ @returns Every name it binds
+
+ @example
+ ```ts
+ const names = boundNames({ pattern: callback.params[0], },);
+ ```
+ */
+function boundNames({ pattern, }: { readonly pattern: unknown; },): ReadonlySet<string> {
+  /**
+   Names found so far.
+   */
+  const names = new Set<string>();
+  /**
+   Pattern nodes still to read.
+   */
+  const pending: unknown[] = [pattern,];
+  while (pending.length > 0) {
+    /**
+     Pattern node read now.
+     */
+    const node = pending.pop();
+    if (!isTreeNode(node,))
+      continue;
+    if (node.type === 'Identifier')
+      names.add(identifierName({ node, },),);
+    else if (node.type === 'ObjectPattern') {
+      for (const property of node.properties as readonly TreeNode[])
+        pending.push((property.type === 'RestElement') ? property.argument : property.value,);
+    }
+    else if (node.type === 'ArrayPattern')
+      pending.push(...(node.elements as readonly unknown[]),);
+    else if (node.type === 'AssignmentPattern')
+      pending.push(node.left,);
+    else if (node.type === 'RestElement')
+      pending.push(node.argument,);
+  }
+  return names;
+}
+
+/**
+ Node kinds that wrap one expression without changing what it names.
+ */
+const WRAPPER_KINDS: ReadonlySet<string> = new Set([
+  'ChainExpression',
+  'ParenthesizedExpression',
+  'TSAsExpression',
+  'TSNonNullExpression',
+  'TSSatisfiesExpression',
+],);
+
+/**
+ The expression one step nearer a path's root.
+
+ @param node - member access or wrapper
+
+ @returns What it reads from or wraps, nothing for any other node
+
+ @example
+ ```ts
+ const inner = innerOf({ node: member, },); // state for state.kept
+ ```
+ */
+function innerOf({ node, }: { readonly node: TreeNode; },): unknown {
+  if (node.type === 'MemberExpression')
+    return node.object;
+  return WRAPPER_KINDS.has(node.type,) ? node.expression : undefined;
+}
+
+/**
+ The name a member path, a chain or a cast is rooted at.
+
+ @param node - expression read
+
+ @returns The root identifier's name, empty when the path starts elsewhere
+
+ @example
+ ```ts
+ const root = rootName({ node: spread.argument, },); // 'state' for state.kept
+ ```
+ */
+function rootName({ node, }: { readonly node: unknown; },): string {
+  for (let current = node; isTreeNode(current,); current = innerOf({ node: current, },)) {
+    if (current.type === 'Identifier')
+      return identifierName({ node: current, },);
+  }
+  return '';
+}
+
+/**
+ Whether an expression starts as text: a string or a template literal.
+
+ @param node - expression read
+
+ @returns Whether it is text
+
+ @example
+ ```ts
+ const textFold = startsAsText({ node: reduceCall.arguments[1], },);
+ ```
+ */
+function startsAsText({ node, }: { readonly node: unknown; },): boolean {
+  return isTreeNode(node,)
+    && (((node.type === 'Literal') && ((typeof node.value) === 'string')) || (node.type === 'TemplateLiteral'));
+}
+
+/**
+ Whether a subtree copies any of the given names.
+
+ @param root - subtree read
+
+ @param names - names whose copies count
+
+ @param textFold - whether `+` with one of the names counts, as in a fold that starts from text
+
+ @returns Whether a copy appears
+
+ @example
+ ```ts
+ const copies = copiesAny({ root: callback.body, names, textFold: false, },);
+ ```
+ */
+function copiesAny(
+  {
+    root,
+    names,
+    textFold,
+  }: {
+    readonly root: TreeNode;
+    readonly names: ReadonlySet<string>;
+    readonly textFold: boolean;
+  },
+): boolean {
+  /**
+   Nodes still to visit, each with the list it sits in when it is a spread.
+   */
+  const pending: { readonly node: TreeNode; readonly inList: boolean; }[] = [{
+    node: root,
+    inList: false,
+  },];
+  while (pending.length > 0) {
+    /**
+     Node visited now.
+     */
+    const { node, inList, } = pending.pop() as (typeof pending)[number];
+    pending.push(...childNodes({ node, },).map(function withParent(child,) {
+      return {
+        node: child,
+        inList: node.type === 'ArrayExpression',
+      };
+    },),);
+    if ((node.type === 'SpreadElement') && inList && names.has(rootName({ node: node.argument, },),))
+      return true;
+    if ((node.type === 'CallExpression') && isTreeNode(node.callee,) && (node.callee.type === 'MemberExpression')
+      && (node.callee.computed !== true)
+      && COPYING_METHODS.has(identifierName({ node: node.callee.property, },),)
+      && names.has(rootName({ node: node.callee.object, },),))
+      return true;
+    if ((node.type === 'NewExpression') && COPYING_CONSTRUCTORS.has(identifierName({ node: node.callee, },),)
+      && (node.arguments as readonly TreeNode[]).some(argument => names.has(rootName({ node: argument, },),)))
+      return true;
+    if (textFold && (node.type === 'BinaryExpression') && (node.operator === '+')
+      && (names.has(rootName({ node: node.left, },),) || names.has(rootName({ node: node.right, },),)))
+      return true;
+  }
+  return false;
+}
+
+/**
+ The callback of a `reduce` or `reduceRight` call, and whether the fold
+ starts from text.
+
+ @param node - call expression
+
+ @returns The callback and its start, or nothing for any other call
+
+ @example
+ ```ts
+ const fold = foldOf({ node, },);
+ ```
+ */
+function foldOf({ node, }: { readonly node: TreeNode; },): readonly { readonly callback: TreeNode; readonly textFold: boolean; }[] {
+  if ((node.type !== 'CallExpression') || (!isTreeNode(node.callee,)) || (node.callee.type !== 'MemberExpression'))
+    return [];
+  if (!['reduce', 'reduceRight',].includes(identifierName({ node: node.callee.property, },),))
+    return [];
+  /**
+   The call's callback and its start.
+   */
+  const [callback, start,] = node.arguments as readonly unknown[];
+  if ((!isTreeNode(callback,)) || (!FUNCTION_KINDS.has(callback.type,)))
+    return [];
+  return [{
+    callback,
+    textFold: startsAsText({ node: start, },),
+  },];
+}
+
+/**
+ Folds and loops in the package's source that copy what they build, as
+ `path#site: names`.
+
+ @param files - files read; tests and fixtures are skipped
+
+ @returns Findings, sorted and without repeats
+
+ @example
+ ```ts
+ const copied = foldCopies({ files, },);
+ ```
+ */
+function foldCopies({ files, }: { readonly files: readonly SourceText[]; },): readonly string[] {
+  /**
+   Findings so far.
+   */
+  const found = new Set<string>();
+  for (const file of files) {
+    if (file.isTest)
+      continue;
+    /**
+     The parsed file.
+     */
+    const { program, } = parseSource({ file, },);
+    /**
+     Nodes still to visit, each with its enclosing named function and loop depth.
+     */
+    const pending: { readonly node: TreeNode; readonly site: string; readonly loops: number; }[] = [{
+      node: program,
+      site: '<module>',
+      loops: 0,
+    },];
+    while (pending.length > 0) {
+      /**
+       Node visited now.
+       */
+      const { node, site, loops, } = pending.pop() as (typeof pending)[number];
+      /**
+       Whether the node opens a function.
+       */
+      const opensFunction = FUNCTION_KINDS.has(node.type,);
+      /**
+       The function's own name, empty when it has none.
+       */
+      const ownName = opensFunction ? identifierName({ node: node.id, },) : '';
+      /**
+       Enclosing named function for the node's children.
+       */
+      const here = (ownName === '') ? site : ownName;
+      /**
+       Loop depth for the node's children.
+       */
+      const depth = opensFunction ? 0 : (loops + (LOOP_KINDS.has(node.type,) ? 1 : 0));
+      pending.push(...childNodes({ node, },).map(function withContext(child,) {
+        return {
+          node: child,
+          site: here,
+          loops: depth,
+        };
+      },),);
+      for (const { callback, textFold, } of foldOf({ node, },)) {
+        /**
+         Names the callback's accumulator binds.
+         */
+        const names = boundNames({ pattern: (callback.params as readonly unknown[])[0], },);
+        if (isTreeNode(callback.body,) && copiesAny({ root: callback.body, names, textFold, },)) {
+          /**
+           The callback's own name, or a stand-in for an anonymous one.
+           */
+          const callbackName = identifierName({ node: callback.id, },) || '<anonymous>';
+          found.add(`${file.path}#${site}/${callbackName}: ${[...names,].join(', ',)}`,);
+        }
+      }
+      if ((node.type !== 'AssignmentExpression') || (node.operator !== '=') || (loops === 0))
+        continue;
+      /**
+       The assignment's target.
+       */
+      const name = identifierName({ node: node.left, },);
+      if ((name !== '') && isTreeNode(node.right,)
+        && copiesAny({ root: node.right, names: new Set([name,],), textFold: false, },))
+        found.add(`${file.path}#${site}: ${name}`,);
+    }
+  }
+  return [...found,].toSorted();
+}
+
+/**
+ A fixture file, as the scan reads one.
+
+ @param path - file name
+
+ @param text - file text
+
+ @param isTest - whether it stands for a test
+
+ @returns Source file
+
+ @example
+ ```ts
+ const file = fixture({ path: 'cat.ts', text: 'export function nap() {}', isTest: false, },);
+ ```
+ */
+function fixture(
+  {
+    path,
+    text,
+    isTest,
+  }: {
+    readonly path: string;
+    readonly text: string;
+    readonly isTest: boolean;
+  },
+): SourceText {
+  return {
+    path,
+    text,
+    isTest,
+  };
+}
+
+await describe({
+  name: 'fold copies (ledger B70)',
+  children: [
+    it({
+      name: 'FINDS a fold copying its list by spread, through a field, through a destructured name, by concat, '
+        + 'by slice, by toSpliced and into a Set, text grown by + from a text start, and a loop reassigning a '
+        + 'copy of itself, and leaves a sum, an appending fold, a record fold, a copy outside any loop, and tests',
+      fn: async () => {
+        expect(foldCopies({
+          files: [
+            fixture({
+              path: 'cat.ts',
+              text: [
+                'const cats = [\'tabby\', \'calico\',];',
+                'export function line() { return cats.reduce(function queue(acc: string[], cat) { return [...acc, cat]; }, []); }',
+                'export function nearest() { return cats.reduce(function scan(state: { found: string[] }, cat) { return { found: [...state.found, cat] }; }, { found: [] }); }',
+                'export function seen() { return cats.reduce(function note({ names }: { names: string[] }, cat) { return { names: [...names, cat] }; }, { names: [] }); }',
+                'export function joined() { return cats.reduce(function join(acc: string[], cat) { return acc.concat([cat]); }, []); }',
+                'export function spliced(text: string) { return cats.reduce(function cut(current, cat) { return current.slice(0, 1) + cat + current.slice(1); }, text); }',
+                'export function dropped() { return cats.reduce(function drop(state: { left: string[] }, cat) { return { left: state.left.toSpliced(0, 1) }; }, { left: cats }); }',
+                'export function distinct() { return cats.reduce(function keep(acc: Set<string>, cat) { const next = new Set(acc); next.add(cat); return next; }, new Set<string>()); }',
+                'export function named() { return cats.reduce(function purr(acc, cat) { return acc + cat; }, \'\'); }',
+                'export function rebuilt() { let pile: string[] = []; for (const cat of cats) pile = [...pile, cat]; return pile; }',
+                'export function trimmed(url: string) { let run = url; while (run.endsWith(\'.\')) run = run.slice(0, -1); return run; }',
+                'export function sum() { return cats.reduce(function add(acc, cat) { return acc + cat.length; }, 0); }',
+                'export function pushed() { return cats.reduce(function push(acc: string[], cat) { acc.push(cat); return acc; }, []); }',
+                'export function tally() { return cats.reduce(function count(acc: { n: number }, cat) { return { ...acc, n: acc.n + cat.length }; }, { n: 0 }); }',
+                'export function once() { let pile: string[] = []; pile = [...pile, \'tabby\']; return pile; }',
+              ].join('\n',),
+              isTest: false,
+            },),
+            fixture({
+              path: 'cat.unit.test.ts',
+              text: 'const copied = [\'nap\'].reduce(function copy(acc: string[], c) { return [...acc, c]; }, []);',
+              isTest: true,
+            },),
+          ],
+        },),).toEqual([
+          'cat.ts#distinct/keep: acc',
+          'cat.ts#dropped/drop: state',
+          'cat.ts#joined/join: acc',
+          'cat.ts#line/queue: acc',
+          'cat.ts#named/purr: acc',
+          'cat.ts#nearest/scan: state',
+          'cat.ts#rebuilt: pile',
+          'cat.ts#seen/note: names',
+          'cat.ts#spliced/cut: current',
+          'cat.ts#trimmed: run',
+        ],);
+      },
+    },),
+    it({
+      name: 'FINDS NO FOLD COPYING WHAT IT BUILDS across the package but the folds named as bounded or sequential',
+      fn: async () => {
+        expect(foldCopies({ files: await readPackageSource(), },),).toEqual(Object.keys(BOUNDED_OR_SEQUENTIAL,).toSorted(),);
+      },
+    },),
+  ],
+},);
