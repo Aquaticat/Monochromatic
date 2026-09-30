@@ -24,8 +24,15 @@ not the selected future Search layout.
 Prototype `720ba418f` supplied the debug-only host,
 fixture,
 no-audio engine and tests.
-The complete production Android source/resource tree matched main revision
-`4da3fa051` at capture preparation.
+The tracked production Android source/resource diff against main revision
+`4da3fa051` was empty at capture preparation.
+A complete filesystem recheck,
+including untracked and ignored files,
+found the same 43 non-JNI source/resource files with identical bytes.
+Main additionally holds 10 generated JNI binaries absent from the prototype.
+The complete `src/main` trees and packaged native playback surface are
+therefore not identical;
+the initial broader source-tree claim is withdrawn.
 The retained installed APK SHA-256 is
 `84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e`.
 
@@ -78,6 +85,9 @@ pager and chrome implementations are invoked,
 not copied.
 Older-platform color fallback behavior was not exercised by this Android
 `37` matrix.
+The existing prototype build also adds debug-only extended Material icons;
+its build configuration is not claimed identical to production.
+No dependency was selected or installed by this baseline task.
 
 The controlled disposable debug-signature rejection required uninstall and
 reinstall of the disposable app only.
@@ -128,8 +138,10 @@ including each selection condition and the short-name visibility control.
 - Cover at `100%` and `200%`:
   the long rows ellipsize before those suffixes in every captured
   selection/theme condition.
-- Both panels and scales:
+- Both panels and scales,
+  no-current condition only:
   the short pair visibly retains `.flac`/`.mp3` in light and dark.
+  Short first/second-current conditions were not captured.
 - Current selection:
   the actual filled current-row background moves between the correct rows.
   It does not recover a clipped suffix in the tested states.

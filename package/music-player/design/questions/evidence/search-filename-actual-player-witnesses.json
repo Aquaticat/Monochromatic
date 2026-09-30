@@ -1058,5 +1058,15 @@
         "Cam.mp3"
       ]
     }
-  ]
+  ],
+  "sourceAudit": {
+    "trackedDiffEmptyAtCapture": true,
+    "productionRevision": "2b4adf460d1cdbc3f90552051c0e0fb4f18a3d7e",
+    "completeFilesystemRecheck": true,
+    "matchingNonJniSourceResourceFiles": 43,
+    "mainOnlyGeneratedJniBinaries": 10,
+    "completeSrcMainTreeIdentity": false,
+    "excludedSurface": "Native playback packaging and full MainActivity integration",
+    "existingBuildDifference": "Prototype debugImplementation of material-icons-extended"
+  }
 }
