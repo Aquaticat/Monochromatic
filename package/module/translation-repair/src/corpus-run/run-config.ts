@@ -5,10 +5,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import spawn from 'nano-spawn';
 
 import { contextRoot, } from '../log-context.ts';
-import type {
-  ModelCaller,
-  SyntheticClient,
-} from '../chat-contract.ts';
+import type { SyntheticClient, } from '../chat-contract.ts';
 import {
   CORPUS_COMMIT_SHA,
   type CorpusPin,
@@ -40,7 +37,6 @@ import {
   fetchTransport,
   type ModelTransport,
 } from '../synthetic-transport.ts';
-import type { ProviderName, } from '../provider-name.ts';
 import type { RunClient, } from './run-client-contract.ts';
 import { promptPayloadStore, } from '../prompt-payload-store.ts';
 import { configureProviders, } from './run-providers.ts';

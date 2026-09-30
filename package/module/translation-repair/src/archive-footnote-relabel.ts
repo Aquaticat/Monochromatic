@@ -1,9 +1,6 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import type { DefinitionLabelPair, } from './pair-definition-order.ts';
-import {
-  activeFootnoteMarkers,
-  footnoteMarkerLabels,
-} from './active-footnote-markers.ts';
+import { activeFootnoteMarkers, } from './active-footnote-markers.ts';
 import {
   normalizeFootnoteIdentifier,
   relabelsFootnote,

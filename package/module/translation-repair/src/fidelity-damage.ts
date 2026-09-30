@@ -1,4 +1,3 @@
-import type { ChunkPair, } from './chunk-document.ts';
 import { deriveOmissionSeeds, } from './derive-seeds.ts';
 import {
   sharedNumber,

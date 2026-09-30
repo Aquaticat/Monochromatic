@@ -40,10 +40,9 @@ import { bedrockIdFor, } from './roster-reach.ts';
 import { withSchemaInSystemPrompt, } from './schema-prompt.ts';
 import { reportSpend, } from './spend-line.ts';
 import { extractStreamedCompletion, } from './stream-completion.ts';
-import {
-  fetchTransport,
-  type ModelTransport,
-  type TransportReply,
+import type {
+  ModelTransport,
+  TransportReply,
 } from './synthetic-transport.ts';
 import {
   DEFAULT_RETRY_POLICY,

@@ -35,7 +35,6 @@ import type { ProviderBudgets, } from './provider-budget.ts';
 import {
   PROVIDER_ORDER,
   type ProviderName,
-  type ProviderRecord,
 } from './provider-name.ts';
 import { NoProviderForModelError, } from './no-provider-for-model-error.ts';
 import {

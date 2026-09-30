@@ -45,10 +45,9 @@ import {
   extractStreamedCompletion,
   requireStreamTerminator,
 } from './stream-completion.ts';
-import {
-  fetchTransport,
-  type ModelTransport,
-  type TransportReply,
+import type {
+  ModelTransport,
+  TransportReply,
 } from './synthetic-transport.ts';
 import {
   DEFAULT_RETRY_POLICY,

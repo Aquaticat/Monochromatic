@@ -36,10 +36,9 @@ import {
   exchangeWithRetry,
   type RetryPolicy,
 } from './transient-retry.ts';
-import {
-  fetchTransport,
-  type ModelTransport,
-  type TransportReply,
+import type {
+  ModelTransport,
+  TransportReply,
 } from './synthetic-transport.ts';
 
 //region Synthetic client

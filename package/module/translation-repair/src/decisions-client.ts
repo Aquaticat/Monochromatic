@@ -13,10 +13,7 @@ import {
 import { decisionsCardOf, } from './model-card-derive.ts';
 import { OPENROUTER_AUTH_HEADER, } from './openrouter-catalog.ts';
 import { reportSpend, } from './spend-line.ts';
-import {
-  fetchTransport,
-  type ModelTransport,
-} from './synthetic-transport.ts';
+import type { ModelTransport, } from './synthetic-transport.ts';
 import {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,

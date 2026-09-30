@@ -40,10 +40,9 @@ import { failureForReply, } from './request-size-refusal.ts';
 import { reportSpend, } from './spend-line.ts';
 import type { RosterModelId, } from './roster-id.ts';
 import { hyperIdFor, } from './roster-reach.ts';
-import {
-  fetchTransport,
-  type ModelTransport,
-  type TransportReply,
+import type {
+  ModelTransport,
+  TransportReply,
 } from './synthetic-transport.ts';
 import {
   DEFAULT_RETRY_POLICY,
