@@ -23,12 +23,14 @@ import {
   censusStretchesOf,
   editedClaimsOf,
   emptyClaimsOf,
+  isUnmappedSource,
   kindTotalsOf,
   type MappedStretch,
   requirePlacedFunctions,
   sourceKindOf,
   sourceRowsOf,
   StatedRefusalError,
+  unmappedSourceOf,
 } from '../../dist/final/node/index.mjs';
 import { recorded, } from './coverage-census.test-fixture.ts';
 
@@ -276,6 +278,24 @@ await describe({
             entryFiles,
           },)
         ),).toEqual(['unmapped', 'other package', 'entry file', 'library source',],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isUnmappedSource.name,
+  children: [
+    it({
+      name: 'READS THE SOURCE unmappedSourceOf GIVES A BUNDLE AS UNMAPPED, and a source path as mapped, even one '
+        + 'whose later part reads "(unmapped)"',
+      fn: async () => {
+        expect(unmappedSourceOf({ bundle: 'nap-AAAA.mjs', },),).toBe('(unmapped) nap-AAAA.mjs',);
+        expect([
+          unmappedSourceOf({ bundle: 'nap-AAAA.mjs', },),
+          'src/nap.ts',
+          'src/(unmapped) nap.ts',
+        ].map((source,) => isUnmappedSource({ source, },)),).toEqual([true, false, false,],);
       },
     },),
   ],

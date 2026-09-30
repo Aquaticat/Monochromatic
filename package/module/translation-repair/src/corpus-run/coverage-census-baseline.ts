@@ -1,4 +1,7 @@
-import type { CensusStretch, } from './coverage-census-report.ts';
+import {
+  type CensusStretch,
+  isUnmappedSource,
+} from './coverage-census-report.ts';
 
 //region Coverage census baseline reading
 // Ledger T8: how a batch's run reads an earlier census, so the batch can prove
@@ -435,7 +438,10 @@ function heldThroughout(
  packages `census-5PAw2O` left cold again went unprinted. A stretch reaching
  past the baseline's lines is named too, since the lines it gained went cold.
  A source edited since the baseline's commit is left to `editedClaimsOf`,
- since its baseline lines name other code now.
+ since its baseline lines name other code now. Code no source map places is
+ left out too: it has no lines to compare, and it takes its bundle's name, so
+ a rebuild that renamed the bundle read its unchanged stretches as cold
+ since; the census's own report counts it.
 
  @param baseline - earlier census read
 
@@ -490,6 +496,7 @@ export function coldSinceOf(
       const { source, } = stretch;
       return ((sources.size === 0) || sources.has(source,))
         && (!edited.has(source,))
+        && (!isUnmappedSource({ source, },))
         && (!heldThroughout({
           stretch,
           held: heldBySource.get(source,) ?? [],

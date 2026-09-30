@@ -118,6 +118,47 @@ export type KindTotal = Omit<SourceRow, 'source'> & {
 };
 
 /**
+ What opens the source a census gives code no source map places. The code has
+ no source, so the census names the bundle carrying it, marked so no source
+ path reads the same.
+ */
+const UNMAPPED_MARK = '(unmapped) ';
+
+/**
+ The source a census gives code no source map places.
+
+ @param bundle - bundle carrying it
+
+ @returns `(unmapped) <bundle>`
+
+ @example
+ ```ts
+ const source = unmappedSourceOf({ bundle: 'nap-AAAA.mjs', },);
+ ```
+ */
+export function unmappedSourceOf({ bundle, }: { readonly bundle: string; },): string {
+  return `${UNMAPPED_MARK}${bundle}`;
+}
+
+/**
+ Whether a census source names code no source map places. Such code has no
+ lines, and its name moves with its bundle's, so nothing matched by source and
+ line reads it across a rebuild.
+
+ @param source - source as a census records it
+
+ @returns Whether it is `(unmapped) <bundle>`
+
+ @example
+ ```ts
+ const unmapped = isUnmappedSource({ source: '(unmapped) nap-AAAA.mjs', },); // true
+ ```
+ */
+export function isUnmappedSource({ source, }: { readonly source: string; },): boolean {
+  return source.startsWith(UNMAPPED_MARK,);
+}
+
+/**
  Records a mapped stretch as one census stretch per piece, each over the
  source lines its characters map to (ledger M67: one record per stretch put
  every source after the first out of the census).
@@ -159,7 +200,7 @@ export function censusStretchesOf({ stretch, }: { readonly stretch: MappedStretc
         === 'unmapped') {
         return {
           ...placed,
-          source: `(unmapped) ${stretch.bundle}`,
+          source: unmappedSourceOf({ bundle: stretch.bundle, },),
           startLine: 0,
           endLine: 0,
         };
@@ -222,7 +263,7 @@ export function requirePlacedFunctions(
       === 'mapped')
       ? fn.at
       : {
-        source: `(unmapped) ${fn.bundle}`,
+        source: unmappedSourceOf({ bundle: fn.bundle, },),
         line: 0,
       };
     return !stretches.some(function covers(stretch,): boolean {
@@ -275,7 +316,7 @@ export function sourceKindOf(
     readonly entryFiles: ReadonlySet<string>;
   },
 ): SourceKind {
-  if (source.startsWith('(unmapped) ',))
+  if (isUnmappedSource({ source, },))
     return 'unmapped';
   if (!source.startsWith('src/',))
     return 'other package';

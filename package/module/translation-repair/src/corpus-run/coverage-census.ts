@@ -38,6 +38,7 @@ import {
 import {
   kindTotalsOf,
   sourceRowsOf,
+  unmappedSourceOf,
 } from './coverage-census-report.ts';
 import {
   runSuite,
@@ -220,7 +221,7 @@ async function reportCensus(
             source: (fn.at
               .kind
               === 'mapped') ? fn.at
-                .source : `(unmapped) ${fn.bundle}`,
+                .source : unmappedSourceOf({ bundle: fn.bundle, },),
             line: (fn.at
               .kind
               === 'mapped') ? fn.at

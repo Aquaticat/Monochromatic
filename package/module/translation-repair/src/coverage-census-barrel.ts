@@ -52,6 +52,7 @@ export {
 export {
   type CensusStretch,
   censusStretchesOf,
+  isUnmappedSource,
   type KindTotal,
   kindTotalsOf,
   requirePlacedFunctions,
@@ -59,6 +60,7 @@ export {
   sourceKindOf,
   type SourceRow,
   sourceRowsOf,
+  unmappedSourceOf,
 } from './corpus-run/coverage-census-report.ts';
 export {
   coverageReadings,
