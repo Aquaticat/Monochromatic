@@ -1,5 +1,4 @@
-import { join, } from 'node:path';
-
+import { artifactsDirOf, } from './artifact-file-name.ts';
 import { gatherAttributionEntries, } from './attribution-read.ts';
 import {
   buildAttributionReport,
@@ -148,10 +147,7 @@ async function main(): Promise<void> {
   /**
    Directory this run wrote artifacts into.
    */
-  const artifactsDir = join(
-    await resolveRunsDir(),
-    'artifacts',
-  );
+  const artifactsDir = artifactsDirOf({ runsDir: await resolveRunsDir(), },);
 
   // NAMES THE RUN IT READ, first line, always. `resolveRunsDir` falls back to a
   // default when TRANSLATION_REPAIR_RUNS_DIR is unset, so a report can describe

@@ -28,7 +28,10 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
-import { listArtifactFiles, } from './artifact-file-name.ts';
+import {
+  artifactsDirOf,
+  listArtifactFiles,
+} from './artifact-file-name.ts';
 
 //region Score probe
 // Reports what the shadow-mode introduced-defect probe found across a run's
@@ -230,10 +233,7 @@ async function main(): Promise<void> {
   /**
    Directory this run wrote artifacts into.
    */
-  const artifactsDir = join(
-    await resolveRunsDir(),
-    'artifacts',
-  );
+  const artifactsDir = artifactsDirOf({ runsDir: await resolveRunsDir(), },);
 
   // NAMES THE RUN IT READ, first line, always. `resolveRunsDir` falls back to a
   // default when TRANSLATION_REPAIR_RUNS_DIR is unset, so a report can describe

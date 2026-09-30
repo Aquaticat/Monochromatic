@@ -1,6 +1,7 @@
 import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { artifactsDirOf, } from './artifact-file-name.ts';
 import { DECLINED_DIR, } from './declined-entries.ts';
 import { FIXED_TREE_DIR, } from './publish-fixed.ts';
 
@@ -9,10 +10,24 @@ import { FIXED_TREE_DIR, } from './publish-fixed.ts';
 // its line budget. Every path is under the one runs directory so a throwaway
 // run leaves a throwaway tree and nothing carrying corpus wording can reach
 // git: runs directories live outside this repository.
+//
+// EACH DIRECTORY NAME HAS ONE SPELLING, kept by the module that owns what the
+// directory holds and imported here, so a reader that walks a runs directory
+// (the cap census skips the large ones) cannot drift from what a pass writes.
+
+/**
+ Directory under a runs dir holding per-entry slice caches.
+ */
+export const SLICE_CACHE_DIR = 'slice-cache';
+
+/**
+ Directory under a runs dir holding the prompt payloads a run's client stores.
+ */
+export const PROMPT_PAYLOADS_DIR = 'prompt-payloads';
 
 /**
  The directories and files one pass reads and writes under its runs dir.
- 
+
  @example
  ```ts
  const layout: RunsLayout = await prepareRunsLayout({ runsDir, },);
@@ -43,6 +58,11 @@ export type RunsLayout = {
   readonly sliceCacheDir: string;
 
   /**
+   Directory the run's client stores prompt payloads in.
+   */
+  readonly promptPayloadDir: string;
+
+  /**
    Persisted attempt-count map path.
    */
   readonly attemptsPath: string;
@@ -51,17 +71,17 @@ export type RunsLayout = {
 /**
  Names every path under a runs dir and creates the two the pass promises to
  leave behind even when it settles nothing.
- 
+
  THE ARTIFACTS DIRECTORY AND THE PUBLISHED TREE ARE CREATED HERE rather than
  lazily at the first entry, so a pass that settles no entry still leaves the
  empty tree it promised rather than nothing. The tree sits BESIDE the
  artifacts, under the same runs directory, so a tree carrying corpus wording
  inherits the property that keeps that wording safe.
- 
+
  @param runsDir - durable, gitignored output root for this run
- 
+
  @returns Every path the pass uses
- 
+
  @example
  ```ts
  const { artifactsDir, publishDir, } = await prepareRunsLayout({ runsDir, },);
@@ -73,10 +93,7 @@ export async function prepareRunsLayout(
   /**
    Per-entry artifact directory.
    */
-  const artifactsDir = join(
-    runsDir,
-    'artifacts',
-  );
+  const artifactsDir = artifactsDirOf({ runsDir, },);
   await mkdir(
     artifactsDir,
     { recursive: true, },
@@ -101,7 +118,11 @@ export async function prepareRunsLayout(
     ),
     sliceCacheDir: join(
       runsDir,
-      'slice-cache',
+      SLICE_CACHE_DIR,
+    ),
+    promptPayloadDir: join(
+      runsDir,
+      PROMPT_PAYLOADS_DIR,
     ),
     attemptsPath: join(
       runsDir,

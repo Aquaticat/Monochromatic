@@ -12,6 +12,7 @@ import { readRunJson, } from '../run-json-read.ts';
 import {
   type ArtifactFileName,
   artifactFileNameOf,
+  artifactsDirOf,
   entryIdOfArtifact,
   listArtifactFiles,
 } from './artifact-file-name.ts';
@@ -22,7 +23,6 @@ import {
   rebuildPreparation,
   recipeOf,
 } from './artifact-two-lane-rebuild.ts';
-import { ARTIFACTS_DIR, } from './published-tree-listing.ts';
 
 //region Settled carve
 // Carving a corpus entry the way the pass carved it when it settled.
@@ -162,10 +162,7 @@ export async function listSettledEntryIds(
   /**
    Where a pass writes its artifacts.
    */
-  const artifactsDir = join(
-    runsDir,
-    ARTIFACTS_DIR,
-  );
+  const artifactsDir = artifactsDirOf({ runsDir, },);
   /**
    Artifact files the directory holds, regular files only, as the census and
    the scheduler list them (ledger B64).
@@ -216,8 +213,7 @@ export async function readSettledRecipe(
    Where this entry's artifact would sit.
    */
   const path = join(
-    runsDir,
-    ARTIFACTS_DIR,
+    artifactsDirOf({ runsDir, },),
     artifactFileNameOf({ entryId, },),
   );
   try {

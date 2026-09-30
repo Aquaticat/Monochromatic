@@ -6,6 +6,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { ARTIFACTS_DIR, } from './artifact-file-name.ts';
 import {
   capSamplesOf,
   type CapSample,
@@ -18,6 +19,10 @@ import {
   type ProviderCapReading,
 } from './cap-census-rule.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import {
+  PROMPT_PAYLOADS_DIR,
+  SLICE_CACHE_DIR,
+} from './runs-layout.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
 //region Cap census
@@ -46,10 +51,10 @@ const MAX_DEPTH = 3;
  Directories that hold no run log and are large: caches, artifacts, payloads.
  */
 const SKIPPED_DIRS: ReadonlySet<string> = new Set([
-  'slice-cache',
-  'artifacts',
+  SLICE_CACHE_DIR,
+  ARTIFACTS_DIR,
   'node_modules',
-  'prompt-payloads',
+  PROMPT_PAYLOADS_DIR,
 ],);
 
 /**

@@ -20,7 +20,9 @@ import {
 } from './digest-group.ts';
 import {
   type ArtifactFileName,
+  ARTIFACTS_DIR,
   artifactFilesIn,
+  artifactsDirOf,
 } from './artifact-file-name.ts';
 import {
   readRepairRounds,
@@ -58,11 +60,6 @@ import { reportingRefusals, } from './cli-refusal.ts';
  Exit code left behind when no artifact carried a round at all.
  */
 const NOTHING_RECORDED = 1;
-
-/**
- Directory under a run directory holding one settled artifact per entry.
- */
-const ARTIFACTS_DIR = 'artifacts';
 
 /**
  One artifact's rounds, kept grouped by the chunk that produced them.
@@ -146,10 +143,7 @@ async function artifactPaths(
   /**
    Nested layout, which is what a pass writes.
    */
-  const nested = join(
-    path,
-    ARTIFACTS_DIR,
-  );
+  const nested = artifactsDirOf({ runsDir: path, },);
 
   /**
    What that subdirectory held, if it is there at all.

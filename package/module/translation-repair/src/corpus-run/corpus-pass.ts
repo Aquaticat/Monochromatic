@@ -266,6 +266,7 @@ async function runCorpusPass(): Promise<void> {
     publishDir,
     declinedDir,
     sliceCacheDir,
+    promptPayloadDir,
     attemptsPath,
   } = await prepareRunsLayout({ runsDir, },);
 
@@ -529,12 +530,7 @@ async function runCorpusPass(): Promise<void> {
   /**
    Shared client using measured production provider concurrency.
    */
-  const client = createRunClient({
-    promptPayloadDir: join(
-      runsDir,
-      'prompt-payloads',
-    ),
-  },);
+  const client = createRunClient({ promptPayloadDir, },);
 
   if (process.argv
     .includes('--plan',)) {

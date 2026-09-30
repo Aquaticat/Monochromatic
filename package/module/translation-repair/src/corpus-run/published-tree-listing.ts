@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import {
   artifactFilesIn,
+  artifactsDirOf,
   entryIdOfArtifact,
 } from './artifact-file-name.ts';
 import {
@@ -35,11 +36,6 @@ import {
 //
 // PRINTS AND RETURNS IDS, NAMES AND COUNTS. Never a passage, because a run
 // directory holds unlicensed corpus wording.
-
-/**
- Directory under a runs dir holding one settled artifact per entry.
- */
-export const ARTIFACTS_DIR = 'artifacts';
 
 /**
  What a run leaves to verify, or why it leaves nothing.
@@ -94,12 +90,7 @@ export async function settledEntryIds(
   /**
    The artifacts the directory holds, or why it holds nothing here.
    */
-  const listing = await artifactFilesIn({
-    dir: join(
-      runsDir,
-      ARTIFACTS_DIR,
-    ),
-  },);
+  const listing = await artifactFilesIn({ dir: artifactsDirOf({ runsDir, },), },);
 
   if (listing.kind === 'unreadable')
     return listing;

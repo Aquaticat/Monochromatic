@@ -1,5 +1,4 @@
 import { writeFile, } from 'node:fs/promises';
-import { join, } from 'node:path';
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
@@ -28,7 +27,10 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
-import { listArtifactFiles, } from './artifact-file-name.ts';
+import {
+  artifactsDirOf,
+  listArtifactFiles,
+} from './artifact-file-name.ts';
 import {
   type EntryContribution,
   loadEntry,
@@ -103,10 +105,7 @@ async function drawGradingSample(): Promise<void> {
   /**
    Per-entry artifact directory.
    */
-  const artifactsDir = join(
-    runsDir,
-    'artifacts',
-  );
+  const artifactsDir = artifactsDirOf({ runsDir, },);
 
   /**
    One directory listing, shared with the census.

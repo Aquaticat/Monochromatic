@@ -2,7 +2,10 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { errorName, } from '../error-name.ts';
-import { artifactFileNameOf, } from './artifact-file-name.ts';
+import {
+  artifactFileNameOf,
+  artifactsDirOf,
+} from './artifact-file-name.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import {
   ENGLISH_PAGE_FILE,
@@ -18,7 +21,6 @@ import {
   pairPublishedPages,
 } from './published-page-check.ts';
 import {
-  ARTIFACTS_DIR,
   publishedEntryIds,
   settledEntryIds,
   whatThereIsToVerify,
@@ -118,8 +120,7 @@ async function readEntry(
       artifact: parseSettledTwoLaneArtifact({
         value: JSON.parse(await readFile(
           join(
-            runsDir,
-            ARTIFACTS_DIR,
+            artifactsDirOf({ runsDir, },),
             artifactFileNameOf({ entryId, },),
           ),
           'utf8',

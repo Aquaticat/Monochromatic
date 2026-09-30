@@ -25,7 +25,10 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
-import { listArtifactFiles, } from './artifact-file-name.ts';
+import {
+  artifactsDirOf,
+  listArtifactFiles,
+} from './artifact-file-name.ts';
 
 import { textSettingOf, } from './env-text-setting.ts';
 
@@ -104,7 +107,7 @@ async function collectShippedRegions(
    Directory the settled artifacts sit in, named once so the listing, the
    census and the later reads cannot drift onto different paths.
    */
-  const artifactsDir = `${dir}/artifacts`;
+  const artifactsDir = artifactsDirOf({ runsDir: dir, },);
 
   /**
    One directory listing, shared with the census.

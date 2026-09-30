@@ -1,4 +1,5 @@
 import { readdir, } from 'node:fs/promises';
+import { join, } from 'node:path';
 
 import { filesystemReason, } from './directory-listing.ts';
 
@@ -17,6 +18,30 @@ import { filesystemReason, } from './directory-listing.ts';
  What ends an artifact's file name.
  */
 const ARTIFACT_SUFFIX = '.json';
+
+/**
+ Directory under a runs directory holding one artifact per settled entry.
+ */
+export const ARTIFACTS_DIR = 'artifacts';
+
+/**
+ The artifacts directory of one runs directory.
+
+ @param runsDir - runs directory a pass writes into
+
+ @returns Path of its artifacts directory
+
+ @example
+ ```ts
+ const artifactsDir = artifactsDirOf({ runsDir, },);
+ ```
+ */
+export function artifactsDirOf({ runsDir, }: { readonly runsDir: string; },): string {
+  return join(
+    runsDir,
+    ARTIFACTS_DIR,
+  );
+}
 
 /**
  An artifact's file name: an entry id and the suffix.
@@ -157,7 +182,7 @@ export type ArtifactListing =
 
  @example
  ```ts
- const listing = await artifactFilesIn({ dir: join(runsDir, 'artifacts',), },);
+ const listing = await artifactFilesIn({ dir: artifactsDirOf({ runsDir, },), },);
  ```
  */
 export async function artifactFilesIn(

@@ -66,5 +66,11 @@ export {
   type PublishDefect,
   publishDefects,
 } from './corpus-run/publish-defects.ts';
+export {
+  prepareRunsLayout,
+  PROMPT_PAYLOADS_DIR,
+  type RunsLayout,
+  SLICE_CACHE_DIR,
+} from './corpus-run/runs-layout.ts';
 
 //endregion Corpus entry barrel

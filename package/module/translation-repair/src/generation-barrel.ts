@@ -19,7 +19,9 @@ export {
 export {
   type ArtifactFileName,
   artifactFileNameOf,
+  ARTIFACTS_DIR,
   artifactFilesIn,
+  artifactsDirOf,
   type ArtifactListing,
   entryIdOfArtifact,
   isArtifactFileName,
