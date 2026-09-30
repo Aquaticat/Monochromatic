@@ -348,10 +348,12 @@ Width,
 chrome and parent context matter;
 this is not a causal isolation of ellipsis or a presentation preference.
 
-The new disposable runtime remains owned and capped for the authorized
-comparison work.
-Its fresh settings snapshot is distinct from the stopped control runtime.
-Restoration and shutdown remain due after those captures.
+The new disposable runtime was restored to its fresh settings snapshot,
+which is distinct from the stopped control runtime,
+then gracefully stopped.
+Container,
+ADB target,
+owning process and matching emulator process absence were verified.
 
 ## Assessment and proposed next comparison
 
@@ -373,9 +375,20 @@ collision cases.
 Conditional visibility needs a known fixture scope,
 including a partner outside displayed results;
 this does not authorize matching or collision-detection implementation.
-A preference question waits for meaningful built and verified options.
-No new questionnaire or dependent implementation is authorized by this
-assessment.
+The continued-work authorization produced meaningful debug-only options:
+64 initial views and six scrolled literal-name witnesses,
+all inspected and published with separate immutable provenance.
+[The usable comparison](search-filename-usable-comparison.md) records
+bounded placement and visibility recommendations,
+not selections.
+[The self-contained review](../questions/search-filename-comparison.html)
+keeps both questions independent and composable,
+unselected,
+and ends with free text.
+Its offline consumer checks exercised every embedded native image,
+form choice,
+modal and viewer control across desktop/mobile light/dark conditions.
+Dependent implementation remains unauthorized.
 No hide/show or placement preference has been adopted.
 TalkBack,
 activation,

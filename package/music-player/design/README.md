@@ -61,9 +61,20 @@ Its synthetic paused inputs close the copied-row rendering gap,
 not real playback or complete `MainActivity` integration.
 Unlike the narrower replica,
 the actual ordinary player retains long suffixes on inner at 100%.
-Usable placement/visibility alternatives remain the next design work.
-This does not select extension visibility or placement,
-authorize dependent implementation or prove native activation.
+Usable placement/visibility alternatives are now built,
+captured and inspected.
+`evidence/search-filename-usable-comparison.md` and
+`questions/evidence/search-filename-comparison-witnesses.json`
+record 64 initial and six scrolled native views.
+`questions/search-filename-comparison.html` is the self-contained,
+unselected independent review with final notes and the actual-renderer
+baseline included.
+Offline desktop/mobile light/dark checks exercised all 102 images and
+controls with no A/AA axe violations,
+incomplete checks or console errors.
+The current disposable runtime was restored to its fresh snapshot and stopped.
+Neither recommendation selects extension visibility or placement,
+authorizes dependent implementation or proves native activation.
 
 Status vocabulary follows `open-questions.md` section 0:
 settled decisions are not shipped behavior,

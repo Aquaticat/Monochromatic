@@ -89,7 +89,7 @@ The next attempt rejected stale hierarchy input after `uiautomator`
 returned a null root.
 Fresh-path,
 command-output and complete-XML controls now pass.
-The capped disposable runtime is capturing the eight-scene matrix in
+The capped disposable runtime completed the eight-scene matrix in
 `search-comparison-fresh` with those controls and leading-title/support
 multiplicity checks.
 Task 139 completed with 64 initial keyboard-closed views and six
@@ -102,16 +102,34 @@ The initial matrix's crop/RGB/opacity/metadata checks passed.
 Ordered title/support records expose initial 200% clipping rather than
 claim every hierarchy-present label is fully visible.
 Both rejected attempts and their APKs remain private and separate.
-Task 140 is in progress:
-publish provenanced comparisons,
-verify the independent visual review,
-then restore the fresh snapshot and stop the owned runtime.
+Task 140 published 70 inspected native comparisons and the ordered
+320-slot semantic layout census.
+`evidence/search-filename-usable-comparison.md` records the bounded
+recommendations;
+`questions/search-filename-comparison.html` contains the independent,
+unselected placement and visibility form with final notes.
+Its 102 embedded images include the separately provenanced actual-player
+baseline.
+Offline consumer checks decoded and opened every image,
+verified controls and stale-reply invalidation,
+and passed desktop/mobile light/dark axe checks with zero A/AA violations,
+incomplete checks or console errors.
+The exact required-scroll-cohort guard failed its fresh disposable mutant
+and passed the restored tests.
+Scoped Markdown/rendering verification remains the final publication gate.
 Prototype `720ba418f` uses public `playerScreen` and the real controller
 with a paused no-audio double;
 no production source was changed.
-The newly owned disposable runtime remains capped and running for the
-next authorized captures;
-its fresh settings restoration and shutdown remain due.
+The newly owned runtime's fresh snapshot was restored:
+font 2.0,
+night yes,
+inner panel 2,
+accessibility off/services null and stay-on value 1.
+It exited gracefully;
+container,
+ADB target,
+owning process and matching emulator process absence were verified.
+This does not restore a prior run or modify the original AVD.
 This is authorization to gather design evidence,
 not selection of a presentation policy or production implementation.
 No extension preference has been selected.

@@ -66,11 +66,19 @@ paused inputs,
 not live playback or full `MainActivity` integration.
 The actual ordinary player retains long suffixes on inner at 100%,
 which the narrower replica did not establish.
-The proposed follow-up in
-`doc/planning/music-player-search-filename-comparison.md` separates
-placement from visibility;
-it selects neither and authorizes no dependent implementation.
-Both investigations exclude matcher choices,
+The completed debug-native follow-up separates placement from visibility:
+`evidence/search-filename-usable-comparison.md` and
+`questions/evidence/search-filename-comparison-witnesses.json`
+record 64 initial plus six scrolled inspected views.
+`questions/search-filename-comparison.html` presents both dimensions and
+their composition as independent,
+unselected questions with final notes.
+The bounded recommendation is full literal title and always-visible suffixes;
+neither is accepted.
+The runtime's fresh settings were restored and it was stopped.
+`doc/planning/music-player-search-filename-comparison.md` selects no policy
+and authorizes no dependent implementation.
+All filename investigations exclude matcher choices,
 new IME work and native accessibility acceptance.
 
 - **PROVISIONAL: folded-cover picker P4 (D46).**

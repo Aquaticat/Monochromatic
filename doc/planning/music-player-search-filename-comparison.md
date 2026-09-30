@@ -242,7 +242,40 @@ literal row/support in the affected 200% views;
 those records do not establish ink or action bounds.
 Both partial attempts and their APKs remain private and separate.
 See [the hierarchy acquisition diagnosis](../troubleshooting/android-17-uiautomator-null-root-stale-dump.md).
-Native inspection and comparative conclusions remain pending.
+Native inspection is complete.
+[The usable comparison](../../package/music-player/design/evidence/search-filename-usable-comparison.md)
+records bounded recommendations:
+full literal title > supporting suffix,
+and always visible > conditional omission.
+The tested long pair had no semantic title/support-height reduction;
+secondary placement wrapped some literal support and reduced initial content.
+The eligible-only omission reduced text but not tested height in either
+placement.
+The public layout record now includes the full ordered 320-slot census.
+Publication rechecks retained acquisition flags and exact dump success,
+not unconditional provenance assertions.
+The fresh settings snapshot was restored and the owned runtime stopped;
+container,
+ADB target and owner/emulator process absence were verified.
+
+[The self-contained review](../../package/music-player/design/questions/search-filename-comparison.html)
+has independent placement and visibility questions,
+composition examples and final notes.
+Recommendations are not preselected answers.
+Its exact cohort includes every intended scrolled witness.
+A fresh disposable guard-removal mutant failed the intended missing-scroll
+assertion;
+restored fixture tests passed.
+Build precedes artifact validation through a sequenced package task.
+Changing either response or final notes invalidates any prepared reply.
+Offline consumer checks decoded and opened all 102 images,
+including the separately provenanced actual-player baseline,
+and exercised controls across desktop/mobile light/dark conditions.
+Four A/AA axe checks had zero violations or incomplete checks;
+no console errors were observed.
+Rendered/scoped Markdown verification is still pending.
+No filename policy has been adopted.
+Suffix-query emphasis and changing real inventory scope remain unexercised.
 
 The placement pair retains exact literal suffixes either in the title or
 in the supporting line with unchanged kind,

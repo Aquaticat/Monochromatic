@@ -3,7 +3,8 @@
 ## Purpose and status
 
 Task 139 completed the debug-only native comparison.
-Task 140 published the evidence and is preparing the independent visual review.
+Task 140 published the evidence and verified the independent visual review.
+Scoped rendered-document verification is the remaining publication gate.
 Neither filename policy is selected.
 The accepted Search A layout,
 E2 information-only clearance,
@@ -185,6 +186,23 @@ to inspect placement and visibility separately,
 including their composition,
 then answer both questions and the final free-text field.
 The recommendation is not a preselected answer.
+The review contains 102 checked images,
+including the separately provenanced actual-player baseline.
+Offline consumer verification decoded and opened each one,
+exercised every form/viewer control,
+checked independent and keep-open answers,
+and confirmed that edited choices or notes invalidate a prepared reply.
+Adversarial notes remained inert textarea text.
+Desktop/mobile light/dark checks had zero A/AA axe violations,
+incomplete checks or console errors.
+Browser accessibility checks apply to the review page,
+not native acceptance.
+A committed disposable guard test failed when the exact-scroll-cohort
+validation was removed from the copied builder,
+then passed with the original builder.
+Hash,
+traversal,
+metadata-agreement and changed-output rejection controls also passed.
 
 This study establishes static debug presentation only.
 It does not verify Search matching,
@@ -194,6 +212,8 @@ speech,
 focus transitions,
 actual 48dp result actions,
 contrast acceptance,
+suffix-query emphasis,
+changing real inventory scope,
 native packaging or live playback.
 D75 to D80's accepted accessibility design direction remains separate from
 native implementation acceptance.
