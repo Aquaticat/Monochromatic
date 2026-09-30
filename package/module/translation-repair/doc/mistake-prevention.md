@@ -324,6 +324,11 @@ A suite's count is its describe blocks,
 one PASS line each,
 never its cases:
 one record called 1,384 PASS lines cases (M74).
+A red run's findings are described from the arrays it printed,
+each group counted against them,
+never from the plan:
+one red message summed eight findings as nine
+and named a class its site's callee never throws (M77).
 A message file takes a name no earlier message used,
 checked with `ls` before any tool writes it (M72).
 Before the commit runs,
@@ -1124,3 +1129,47 @@ a clause that names the error only to test its class passes,
 so review still reads what a clause returns.
 `text-accumulators.unit.test.ts` fails on a `let` begun as text and grown inside a loop,
 unless it is named as reading no text.
+
+## Messages a marked class carries
+
+What happened:
+`ArtifactParseError` declares `messageNamesOnly`,
+so every refusal printer repeats its message,
+and six of its throw sites handed it another error's text.
+Two quoted the stored value they refused,
+a pipeline digest and a preparation identity,
+through the assertion's own message;
+one forwarded an unmarked class whose throw sites wrote finished sentences;
+one forwarded from a check that could not fire.
+The inventory checked what each marked constructor interpolates,
+so none of it showed (ledger B34).
+The digest's own message described the hex half as the whole value,
+leaving out the scheme name every digest starts with.
+
+The rule:
+a marked class writes its sentence itself,
+from counts,
+names and closed kinds it is handed,
+never from a finished message.
+A throw site hands a marked class a caught error's text only from a catch narrowed to marked classes,
+and rethrows anything else unchanged.
+A reader refusing a stored value by its shape tests the shape itself,
+says in its own words what shape it expected,
+built from the constants the check reads,
+and never quotes the value;
+an assertion that also narrows runs after that test.
+A class that writes its own sentence and stays unmarked says why in the inventory's withheld list.
+
+What enforces it:
+`message-names-only.unit.test.ts` fails on a marked class whose constructor interpolates a part the inventory does not name,
+on a marked class forwarding a `message` parameter,
+on an unmarked class writing its own sentence without a withheld reason,
+and on any construction of a marked class whose arguments turn a caught error into text
+(a template holding the binding,
+`String` or `caughtValueText` of it,
+or its `message` or `stack`)
+at a site `FORWARDING_SITES` does not list,
+or lists as forwarding from a catch narrowed to anything but marked classes.
+It reads a narrowing by its presence in the catch,
+not as proof that it guards the throw,
+so each listed site is still read by hand.

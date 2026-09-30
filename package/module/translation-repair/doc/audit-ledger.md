@@ -3042,6 +3042,37 @@ Its census of six test files (`census-7fz0Nm`) read the 11 claimed stretches as 
 The whole-artifact and consolidated-parts tests still check many refusals by a fragment of path or reason;
 tightening them is queued as its own pass.
 
+B34 (`7360aae58`,
+`a1e4accbd`) came next,
+since the tightening pass would have pinned messages it rewrote.
+It removed the corpus verification's two lane checks,
+which no artifact the reader accepts can fail,
+narrowed `compareLanes`' and `assertDerivationsAgree`'s lookups after a length check with `nonNullishOrThrow`,
+and gave `compareLanes`' archive-wording refusal its first case.
+Its census of eight test files (`census-9ZsGww`) printed no stretch in the comparison,
+comparison fault,
+comparison reader
+and corpus verification sources.
+The same census printed stretches in the pipeline digest
+(three lines of the foreign-entry refusal:
+two ternaries and a fallback),
+the wording coherence rule
+(two refusals no case in that run reached),
+row equality
+(`decisionsEqual`'s last return)
+and the preparation identity's framing,
+which the next batch reads against a whole-suite census.
+Its baseline reading printed "ran 13" over those sources,
+and some of the 13 had only moved:
+the reading compares line numbers,
+and B34 had edited the digest,
+identity
+and wording coherence modules,
+so their stretches at the baseline's lines now point at other code.
+`baselineStatusesOf`'s TSDoc says an edited source is read against a fresh census instead,
+and the printed reading says nothing of it;
+a fix is queued.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -10270,6 +10301,83 @@ Each test quoting one now checks the whole message.
 No scan can tell a well-formed reason from another,
 so the prevention doc's rule is to read each new refusal's message whole in its test.
 
+### B34: marked refusals carrying a caught error's text
+
+Status:
+fixed 2026-09-30 (UTC) in `a1e4accbd`,
+guard red first in `7360aae58`,
+found the same day in the B33 census's output (`reason-census.txt` in the audit's scratch folder),
+which lists five reasons built from `caughtValueText(error)` and one from `error.message`.
+`ArtifactParseError` declares `messageNamesOnly`,
+so `refusalText` repeats its message wherever a refusal is printed,
+on the promise that the message holds only authored sentences,
+counts,
+names and what the operator typed.
+The inventory in `message-names-only.unit.test.ts` checks what a marked class's own constructor interpolates,
+and could not see a throw site handing it another error's text.
+Six sites did.
+Two of them quoted the stored value:
+a pipeline digest refused by forwarding `assertPipelineDigest`'s `TypeError`,
+which prints the value it received,
+and a preparation identity refused by forwarding `PreparationIdentityError`,
+whose first message printed the value.
+Both values are hashes a run writes,
+never corpus text,
+but a tampered or foreign artifact holds whatever string it holds,
+and the field readers' own region says they refuse "with the dotted path of the field rather than its content".
+The comparison reader forwarded `ArtifactComparisonError`,
+an unmarked class its throw sites handed finished sentences;
+those sentences held names and numbers,
+and nothing checked that they would keep to that.
+The corpus verification wrapper forwarded `ArtifactPreparationMismatchError` for each lane's slice count,
+from a check that could not fire:
+the reader already refuses a lane whose ledger does not hold one row per prepared slice
+and a lane count other than its ledger's length,
+and the verification checks the preparation's count first.
+The remaining two forwarded from narrowed catches:
+the change-set reader from `AssemblyContractError`,
+which is marked,
+and the row relations reader from `DeliveryCoherenceError`,
+which is marked,
+and `WordingCoherenceError`,
+which took finished sentences from its throw sites and so could not carry the marker.
+
+The digest module's own words were wrong too:
+the `TypeError`,
+its `@throws`,
+and `isDigestShaped`'s `@returns` said a digest is 64 lowercase hex characters,
+and every digest starts with the scheme name `sha256-tree-v1:`;
+the `PipelineDigest` type's TSDoc said a digest cannot be told from a git object id by shape,
+which the scheme name makes false.
+
+Fix:
+the digest and identity readers refuse by shape
+(`isDigestShaped`,
+and a new `isPreparationIdentityShaped`)
+in words built from the constants the checks read
+(`PIPELINE_DIGEST_SHAPE`,
+`PREPARATION_IDENTITY_SHAPE`),
+then narrow.
+`ArtifactComparisonError` takes a closed fault and writes its own sentence,
+carries the marker,
+and the comparison reader's catch narrows to it and rethrows anything else;
+`comparisonRowDifferences` returns `ComparisonRowField`,
+so the fields a sentence lists are names by type.
+`WordingCoherenceError` writes its sentence from a slice index and a closed fault kind,
+in `7360aae58`.
+The corpus verification drops the wrapper and both lane checks.
+The guard's new case finds every construction of a marked class whose arguments turn a caught error into text
+(a template holding the binding,
+`String` or `caughtValueText` of it,
+or its `message` or `stack`),
+reads which classes the enclosing catch narrows to,
+and fails on one missing from `FORWARDING_SITES`
+or listed as forwarding from a catch narrowed to anything but marked classes.
+Its red run listed the comparison reader as narrowed to `LaneComparisonError`,
+the live comparison's class rather than the one `compareLanes` throws;
+the fix commit corrected the entry,
+and a comment on the red commit records it (M77).
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -10676,6 +10784,26 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M77: a red commit's message summing its own run wrongly
+
+Status:
+happened 2026-09-30 (UTC) in `7360aae58`'s message,
+found within the hour while reading the red run's assertion output,
+and corrected by a comment on that commit.
+The message said the run found "the listed three forwarding sites,
+the parseArgs and JSON offset sites,
+and four unlisted ones",
+which sums to nine against the eight found;
+the run's `actual` array held the comparison reader unnarrowed,
+one of the four,
+so only two listed forwarding sites were found as listed.
+The listed entry also named `LaneComparisonError` for a reader whose callee throws `ArtifactComparisonError`,
+a class name written from the plan rather than read from `compareLanes`.
+Prevention:
+a message describing a run's findings is written from the run's printed arrays,
+each group counted against them,
+and a class a guard lists for a site is read from the throw sites the site calls.
 
 ### M76: an inference about a census written as its output
 
