@@ -926,5 +926,54 @@ await describe({
         expect(polish.proposedText,).not.toBe(BASE,);
       },
     },),
+
+    it({
+      name: 'NAMES AN OBJECTION CORRECTION by its judges and objection count, and whether the round corrected '
+        + 'the base or kept it',
+      fn: async () => {
+        /**
+         The objection correction each run asks.
+         */
+        const mode = {
+          kind: 'objection-correction',
+          groups: [{
+            origin: 'consolidation gate',
+            objections: ['The base calls her outlook proactive, which the ORIGINAL does not say.',],
+          },],
+        } as const;
+        /**
+         Each gate choice, and the objection finding its run recorded.
+         */
+        const recorded = await Promise.all((['polished', 'base',] as const).map(
+          async function findingFor(gateChoice,): Promise<readonly [string, readonly string[],]> {
+            const polish = await polishConsolidation({
+              client: recordingClient({ gateChoice, },).client,
+              sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
+              archiveText: BASE,
+              baseText: BASE,
+              lineStructured: false,
+              sliceIndex: 0,
+              config: CONFIG,
+              mode,
+              signal: AbortSignal.timeout(5_000,),
+              perCallTimeoutMs: 5_000,
+              l: tagged({ tag: 'consolidation-polish-test', },),
+            },);
+            if (polish.kind !== 'settled')
+              throw new Error(`expected a settled polish, got ${polish.kind}`,);
+            return [
+              gateChoice,
+              polish.findings.filter(function namesObjectionPolish(finding,): boolean {
+                return finding.startsWith('polish-objection-correction',);
+              },),
+            ];
+          },
+        ),);
+        expect(recorded,).toEqual([
+          ['polished', ['polish-objection-correction (consolidation gate: 1 objection(s), corrected)',],],
+          ['base', ['polish-objection-correction (consolidation gate: 1 objection(s), base kept)',],],
+        ],);
+      },
+    },),
   ],
 },);
