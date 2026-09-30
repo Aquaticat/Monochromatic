@@ -445,6 +445,59 @@ function shiftedCarried(): InsertionAdmission {
   };
 }
 
+/**
+ Archive of the mirrored shift: the nap rendered in the paragraph the pairing
+ gave the homecoming, and the homecoming and the bath rendered as one
+ paragraph after it.
+ */
+const MIRRORED_TARGET_TEXT = `${HEADING_TARGET}\n\n${NAP_TARGET}\n\n${HOME_TARGET} ${BATH_TARGET}\n`;
+
+/**
+ The prepared pair the pairing left one off on the far side: the nap stands
+ carried, the homecoming holds the nap's rendering alone, and the bath holds
+ the homecoming's rendering beside its own.
+
+ @returns Prepared pair with four slices, the nap at position 1
+
+ @example
+ ```ts
+ const prepared = mirroredPair();
+ ```
+ */
+function mirroredPair(): PreparedDocumentPair {
+  return {
+    sourceText: SOURCE_TEXT,
+    targetText: MIRRORED_TARGET_TEXT,
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 4,
+    slices: [
+      {
+        source: contentOver({ sliceIndex: 0, text: SOURCE_TEXT, fragment: HEADING_SOURCE, },),
+        target: contentOver({ sliceIndex: 0, text: MIRRORED_TARGET_TEXT, fragment: HEADING_TARGET, },),
+      },
+      {
+        source: contentOver({ sliceIndex: 1, text: SOURCE_TEXT, fragment: NAP_SOURCE, },),
+        target: makeInsertionChunk({ sliceIndex: 1, offset: MIRRORED_TARGET_TEXT.indexOf(NAP_TARGET,), },),
+      },
+      {
+        source: contentOver({ sliceIndex: 2, text: SOURCE_TEXT, fragment: HOME_SOURCE, },),
+        target: contentOver({ sliceIndex: 2, text: MIRRORED_TARGET_TEXT, fragment: NAP_TARGET, },),
+      },
+      {
+        source: contentOver({ sliceIndex: 3, text: SOURCE_TEXT, fragment: BATH_SOURCE, },),
+        target: contentOver({
+          sliceIndex: 3,
+          text: MIRRORED_TARGET_TEXT,
+          fragment: `${HOME_TARGET} ${BATH_TARGET}`,
+        },),
+      },
+    ],
+  };
+}
+
 await describe({
   name: foldCarriedInsertions.name,
   children: [
@@ -508,6 +561,24 @@ await describe({
         },);
         expect(straddling.prepared.slices[2]?.source.text,).toBe(HOME_SOURCE,);
         expect(straddling.admission.carried?.length,).toBe(1,);
+
+        /**
+         Evidence in an archive paragraph no paired span holds: the page
+         carries it after the bath, and no slice's target reaches it.
+         */
+        const unheldPair = preparedPair();
+        const unheld = foldCarriedInsertions({
+          prepared: {
+            ...unheldPair,
+            targetText: `${TARGET_TEXT}\nThe dog barked.\n`,
+          },
+          admission: carriedOn({ evidence: ['The dog barked.',], },),
+        },);
+        expect(unheld.prepared.slices[2]?.source.text,).toBe(HOME_SOURCE,);
+        expect(unheld.admission.carried?.length,).toBe(1,);
+        expect(unheld.asides,).toEqual([
+          'slice 1 stays carried: evidence a block of the region sits in no paired slice',
+        ],);
 
         /**
          A carrier whose source starts past a word the pairing left to nobody.
@@ -626,6 +697,28 @@ await describe({
         expect(chained.asides,).toEqual([],);
 
         /**
+         The bath listed first: it folds into the play, the play's source
+         then abuts the nap's, and the nap folds on the same pass, so the
+         passes after it find nothing left to fold.
+         */
+        const bathFirst = foldCarriedInsertions({
+          prepared: chainedPair(),
+          admission: {
+            positions: new Set(),
+            carried: [
+              { position: 3, sliceIndex: 3, sourceText: BATH_SOURCE, evidence: [BATH_TARGET,], },
+              { position: 2, sliceIndex: 2, sourceText: NAP_SOURCE, evidence: [NAP_TARGET,], },
+            ],
+            findings: [],
+          },
+        },);
+        expect(bathFirst.prepared.slices,).toEqual(chained.prepared.slices,);
+        expect(bathFirst.admission.carried,).toEqual([],);
+        expect(bathFirst.admission.folded,).toEqual(chained.admission.folded,);
+        expect(bathFirst.findings,).toEqual(chained.findings,);
+        expect(bathFirst.asides,).toEqual([],);
+
+        /**
          The bath still carried and not folding (its evidence nowhere): the
          nap's source does not abut the play's, so it stays carried with the
          bath's source named as the gap.
@@ -706,6 +799,56 @@ await describe({
         expect(plain.prepared.slices[1]?.source.text,).toBe(ASK_SOURCE.slice(0, -1,),);
         expect(plain.prepared.slices[2]?.source.text,).toBe(`${PURR_SOURCE}\n\n${NAP_SOURCE}`,);
         expect(plain.findings,).toEqual([`${CARRIED_FOLDED_FINDING} (slice 3 into slice 2)`,],);
+
+        /**
+         Neither the heading nor the question paired: the purr has no paired
+         slice before it to take its own source, so the plain fold stands.
+         */
+        const headless = shiftedPair();
+        const noReceiver = foldCarriedInsertions({
+          prepared: {
+            ...headless,
+            slices: headless.slices.map(function unpairOpening(slice,): ChunkPair {
+              if (slice.target.sliceIndex > 1)
+                return slice;
+              return {
+                ...slice,
+                target: makeInsertionChunk({
+                  sliceIndex: slice.target.sliceIndex,
+                  offset: 0,
+                },),
+              };
+            },),
+          },
+          admission: shiftedCarried(),
+        },);
+        expect(noReceiver.prepared.slices[2]?.source.text,).toBe(`${PURR_SOURCE}\n\n${NAP_SOURCE}`,);
+        expect(noReceiver.findings,).toEqual([`${CARRIED_FOLDED_FINDING} (slice 3 into slice 2)`,],);
+      },
+    },),
+    it({
+      name: 'SHIFTS the carrier\'s own source to the slice after it where the carrier follows the passage, the '
+        + 'mirror of the TianqiChen66611 shape (class one hundred seventy-nine)',
+      fn: async () => {
+        /**
+         The homecoming paired with the nap's rendering, the bath with the
+         homecoming's and its own.
+         */
+        const mirrored = foldCarriedInsertions({
+          prepared: mirroredPair(),
+          admission: carriedOn({ evidence: [NAP_TARGET,], },),
+        },);
+        expect(mirrored.prepared.slices[2]?.source.text,).toBe(NAP_SOURCE,);
+        expect(mirrored.prepared.slices[2]?.source.sliceIndex,).toBe(2,);
+        expect(mirrored.prepared.slices[3]?.source.text,).toBe(`${HOME_SOURCE}\n\n${BATH_SOURCE}`,);
+        expect(mirrored.prepared.slices[3]?.source.sliceIndex,).toBe(3,);
+        expect(mirrored.admission.folded,).toEqual([{ position: 1, sliceIndex: 1, carrierSliceIndex: 2, },],);
+        expect(mirrored.findings,).toEqual([
+          `${CARRIED_FOLDED_FINDING} (slice 1 into slice 2)`,
+          `${CARRIED_SHIFTED_FINDING} (slice 2's own source joins slice 3: slice 2's archive span renders slice 1's `
+          + 'passage alone)',
+        ],);
+        expect(mirrored.asides,).toEqual([],);
       },
     },),
   ],

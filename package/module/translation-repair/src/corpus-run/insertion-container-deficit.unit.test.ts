@@ -309,6 +309,75 @@ await describe({
       },
     },),
     it({
+      name: 'COUNTS THE WHOLE HALF where the archive\'s opening half does not write the container\'s tag',
+      fn: async () => {
+        const deficit = admitContainerDeficit({
+          slices: containerSlices({ openTarget: '<summary>The cat\'s story</summary>', },),
+          positions: new Set(),
+          unresolvedRows: [missingRow({ verdict: 'absent', },),],
+        },);
+        expect([...deficit.positions,],).toEqual([2,],);
+        expect(deficit.findings,).toEqual([
+          'insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3: the original writes '
+          + '4 blocks there, the archive 3)',
+        ],);
+      },
+    },),
+    it({
+      name: 'SPENDS THE DEFICIT IN DOCUMENT ORDER, whatever order the rows come in: one block short, the '
+        + 'earlier of two absent paragraphs is admitted and the later stays unresolved',
+      fn: async () => {
+        /**
+         Second paragraph the archive never rendered.
+         */
+        const secondMissing = '猫睡醒以后又吃了一顿。';
+        /**
+         Row for the second paragraph, one position after the first.
+         */
+        const laterRow: InsertionCoverageRow = {
+          ...missingRow({ verdict: 'absent', },),
+          position: 3,
+          sliceIndex: 3,
+          sourceText: secondMissing,
+        };
+        const deficit = admitContainerDeficit({
+          // Five blocks in the original's container, four in the archive's.
+          slices: [
+            paired({
+              sliceIndex: 0,
+              source: OPEN_SOURCE,
+              target: OPEN_TARGET,
+            },),
+            paired({
+              sliceIndex: 1,
+              source: FIRST_SOURCE,
+              target: FIRST_TARGET,
+            },),
+            insertion({
+              sliceIndex: 2,
+              source: MISSING_SOURCE,
+            },),
+            insertion({
+              sliceIndex: 3,
+              source: secondMissing,
+            },),
+            paired({
+              sliceIndex: 4,
+              source: CLOSE_SOURCE,
+              target: WHOLE_CLOSE_TARGET,
+            },),
+          ],
+          positions: new Set(),
+          unresolvedRows: [
+            laterRow,
+            missingRow({ verdict: 'absent', },),
+          ],
+        },);
+        expect([...deficit.positions,],).toEqual([2,],);
+        expect(deficit.unresolvedRows,).toEqual([laterRow,],);
+      },
+    },),
+    it({
       name: 'COUNTS NOTHING BEFORE THE CONTAINER\'S OWN OPENING TAG, where the opening half starts with a whole '
         + 'element of the same name whose archive copy is a paragraph short (ledger B67)',
       fn: async () => {
