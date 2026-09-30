@@ -194,6 +194,45 @@ const FRONT_ROW: ArtifactComparisonRow = {
   incumbentText: FRONT_ARCHIVE,
 };
 
+/**
+ A contest over the one contested slice whose two refusing ballots judged the
+ archive alike, a quorum of voices on it, with the verdict the case records.
+
+ @param judged - what each ballot made of the archive
+
+ @param verdict - verdict the record claims
+
+ @returns Selection as an artifact carries it
+ */
+function archiveContest(
+  {
+    judged,
+    verdict,
+  }: {
+    readonly judged: 'publishable' | 'flawed';
+    readonly verdict: Readonly<Record<string, string>>;
+  },
+) {
+  return {
+    kind: 'contested',
+    slices: [{
+      sliceIndex: 0,
+      verdict,
+      ballots: [
+        {
+          ...FOR_NEITHER,
+          archive: judged,
+        },
+        {
+          ...FOR_NEITHER,
+          archive: judged,
+        },
+      ],
+      usable: 2,
+    },],
+  };
+}
+
 await describe({
   name: parseLaneSelection.name,
   children: [
@@ -376,7 +415,10 @@ await describe({
           generation: 7,
         },),);
         expect(refusal,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusal as Error).message,).toContain('eligibility',);
+        expect((refusal as Error).message,).toContain(
+          `at ${SELECTION_PATH}.slices[0].eligibility: expected source-backed syntax eligibility record rather than `
+            + 'absence',
+        );
       },
     },),
 
@@ -406,7 +448,10 @@ await describe({
           generation: 7,
         },),);
         expect(refusal,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusal as Error).message,).toContain('eligibility.repair',);
+        expect((refusal as Error).message,).toContain(
+          `at ${SELECTION_PATH}.slices[0].eligibility.repair: expected ineligible, which deterministic syntax guard `
+            + 'derives, rather than eligible.',
+        );
       },
     },),
 
@@ -564,7 +609,9 @@ await describe({
         },);
 
         expect(refusalOfParseLaneSelection,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfParseLaneSelection as Error).message,).toContain('CatEntry1.laneSelection.kind',);
+        expect((refusalOfParseLaneSelection as Error).message,).toContain(
+          `at ${SELECTION_PATH}.kind: expected one of pending-human-decision, contested.`,
+        );
       },
     },),
     it({
@@ -582,7 +629,121 @@ await describe({
             path: SELECTION_PATH,
             keys: SLICE_SPELLED_KEYS,
           },);
-        },).toThrow(SELECTION_PATH,);
+        },).toThrow(`at ${SELECTION_PATH}.slices: expected no key here beyond kind.`,);
+      },
+    },),
+    it({
+      name: 'REFUSES A CONTESTED SLICE the recomputed comparison does not hold, since no lane row can say what '
+        + 'its ballots chose between',
+      fn: async () => {
+        /**
+         The read of a contest answering slice 5 of a one-slice comparison.
+         */
+        const read = () =>
+          parseLaneSelection({
+            value: {
+              kind: 'contested',
+              slices: [{
+                sliceIndex: 5,
+                verdict: { kind: 'quorum-not-met', },
+                ballots: [FOR_REPAIR,],
+                usable: 1,
+              },],
+            },
+            comparison: ONE_CONTESTED,
+            path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
+          },);
+        expect(read,).toThrow(ArtifactParseError,);
+        expect(read,).toThrow(
+          `at ${SELECTION_PATH}.slices[0].sliceIndex: expected an index naming a slice the recomputed comparison `
+            + 'holds.',
+        );
+      },
+    },),
+    it({
+      name: 'ACCEPTS A SETTLED REFUSAL NAMING WHAT THE ROSTER MADE OF THE ARCHIVE, endorsed where enough voices '
+        + 'would publish it and declined where enough found it flawed',
+      fn: async () => {
+        for (const [judged, archive,] of [
+          ['publishable', 'endorsed',],
+          ['flawed', 'declined',],
+        ] as const) {
+          /**
+           Selection whose two refusing ballots judged the archive alike.
+           */
+          const selection = parseLaneSelection({
+            value: archiveContest({
+              judged,
+              verdict: {
+                kind: 'settled-neither',
+                archive,
+              },
+            },),
+            comparison: ONE_CONTESTED,
+            path: SELECTION_PATH,
+            keys: SLICE_SPELLED_KEYS,
+          },);
+          if (selection.kind !== 'contested')
+            throw new Error('reader returned a pending selection for a contested one',);
+          expect(selection.slices
+            .at(0,)
+            ?.verdict,).toEqual({
+            kind: 'settled-neither',
+            archive,
+          },);
+        }
+      },
+    },),
+    it({
+      name: 'REFUSES A RECORDED ARCHIVE OUTCOME the ballots do not settle on: one left out, one reversed, one this '
+        + 'version does not describe, and one beside a kind that carries none',
+      fn: async () => {
+        for (const [verdict, says,] of [
+          [
+            { kind: 'settled-neither', },
+            '.verdict: expected settled-neither:endorsed, which is what these ballots settle on, rather than '
+            + 'settled-neither.',
+          ],
+          [
+            {
+              kind: 'settled-neither',
+              archive: 'declined',
+            },
+            '.verdict: expected settled-neither:endorsed, which is what these ballots settle on, rather than '
+            + 'settled-neither:declined.',
+          ],
+          [
+            {
+              kind: 'settled-neither',
+              archive: 'adored',
+            },
+            '.verdict.archive: expected one of endorsed, declined.',
+          ],
+          [
+            {
+              kind: 'quorum-not-met',
+              archive: 'endorsed',
+            },
+            '.verdict.kind: expected one of settled-neither.',
+          ],
+        ] as const) {
+          /**
+           The read, repeated for each check.
+           */
+          const read = () =>
+            parseLaneSelection({
+              value: archiveContest({
+                judged: 'publishable',
+                verdict,
+              },),
+              comparison: ONE_CONTESTED,
+              path: SELECTION_PATH,
+              keys: SLICE_SPELLED_KEYS,
+            },);
+          expect(read,).toThrow(ArtifactParseError,);
+          expect(read,).toThrow(`at ${SELECTION_PATH}.slices[0]${says}`,);
+        }
       },
     },),
   ],

@@ -80,7 +80,7 @@ export function parseShipped(
     if (replaces) {
       throw new ArtifactParseError({
         path,
-        reason: 'a slice whose terminal is consolidated must carry the text it ships',
+        reason: 'the text a slice whose terminal is consolidated ships',
       },);
     }
     return { kind: 'unchanged', };
@@ -97,7 +97,7 @@ export function parseShipped(
     if (replaces) {
       throw new ArtifactParseError({
         path,
-        reason: 'a slice whose terminal is consolidated ships its consolidation, not the archive',
+        reason: 'the consolidation a slice whose terminal is consolidated ships, rather than the archive',
       },);
     }
     return { kind: 'archive', };
@@ -114,7 +114,7 @@ export function parseShipped(
     if (replaces) {
       throw new ArtifactParseError({
         path,
-        reason: 'a slice whose terminal is consolidated ships its consolidation, not the incumbent',
+        reason: 'the consolidation a slice whose terminal is consolidated ships, rather than the incumbent',
       },);
     }
     return {
@@ -142,7 +142,7 @@ export function parseShipped(
   if (!replaces) {
     throw new ArtifactParseError({
       path,
-      reason: `text to ship, from a slice whose terminal is ${terminal} and settled on no change`,
+      reason: `no text to ship, since a slice whose terminal is ${terminal} settled on no change`,
     },);
   }
   return {

@@ -1,5 +1,6 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { compareLanes, } from './artifact-two-lane-comparison.ts';
 import { comparisonRowDifferences, } from './artifact-two-lane-row-equality.ts';
 import type {
@@ -130,15 +131,10 @@ export function assertRecordedComparisonMatches(
     row,
   ] of derived.entries()) {
     /**
-     Row the artifact recorded at the same position.
+     Row the artifact recorded at the same position; the two hold the same
+     number of rows, so there is one.
      */
-    const theirs = recorded[position];
-    if (theirs === undefined) {
-      throw new ArtifactParseError({
-        path: `${path}[${String(position,)}]`,
-        reason: 'a row wherever the ledgers produce one',
-      },);
-    }
+    const theirs = nonNullishOrThrow(recorded[position],);
 
     // FIELD BY FIELD rather than by serialized bytes, since these rows came off
     // disk in whatever key order the file wrote them and key order is not part

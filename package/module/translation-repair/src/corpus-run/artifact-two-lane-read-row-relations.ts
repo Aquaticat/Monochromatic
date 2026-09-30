@@ -1,5 +1,6 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   assertDeliveryCoherent,
   DeliveryCoherenceError,
@@ -111,15 +112,10 @@ export function assertEvidenceMatchesLedger(
   ] of evidence.entries()) {
     /**
      Ledger row at the same POSITION, which is where a ledger built from this
-     result holds the same slice.
+     result holds the same slice; the two hold the same number of rows, so
+     there is one.
      */
-    const theirs = ledger[position];
-    if (theirs === undefined) {
-      throw new ArtifactParseError({
-        path: `${path}.delivery[${String(position,)}]`,
-        reason: 'a row wherever the raw result has one',
-      },);
-    }
+    const theirs = nonNullishOrThrow(ledger[position],);
     if (mine.sliceIndex !== theirs.sliceIndex) {
       throw new ArtifactParseError({
         path: `${path}.delivery[${String(position,)}].sliceIndex`,

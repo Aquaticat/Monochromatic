@@ -141,7 +141,7 @@ await describe({
 
         expect(refusalOfSilentDrop,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfSilentDrop as Error).message,)
-          .toContain('a slice whose terminal is consolidated must carry the text it ships',);
+          .toContain(`at ${SLICE_PATH}: expected the text a slice whose terminal is consolidated ships.`,);
       },
     },),
 
@@ -163,7 +163,10 @@ await describe({
 
         expect(refusalOfStrayText,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfStrayText as Error).message,)
-          .toContain('from a slice whose terminal is slate-endorsed-standing',);
+          .toContain(
+            `at ${SLICE_PATH}: expected no text to ship, since a slice whose terminal is slate-endorsed-standing `
+              + 'settled on no change.',
+          );
       },
     },),
 

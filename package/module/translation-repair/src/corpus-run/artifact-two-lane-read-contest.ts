@@ -115,7 +115,7 @@ function parseContestSlice(
   if (row === undefined) {
     throw new ArtifactParseError({
       path: `${path}.${keys.sliceIndex}`,
-      reason: 'index naming no recomputed comparison row',
+      reason: 'an index naming a slice the recomputed comparison holds',
     },);
   }
   /**

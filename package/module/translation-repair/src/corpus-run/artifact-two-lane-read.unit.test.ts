@@ -949,6 +949,30 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES A LEDGER holding other than one row per prepared slice, naming both counts',
+      fn: async () => {
+        /**
+         The read of an artifact whose preparation names a third slice neither ledger holds.
+         */
+        const read = () =>
+          parseSettledTwoLaneArtifact({
+            value: artifactWith({
+              preparation: {
+                identity: PREPARATION_IDENTITY,
+                sliceCount: 3,
+                sourceChars: 40,
+                targetChars: 60,
+                sourceBytes: 90,
+                alignmentPairCount: 2,
+                alignmentFindings: [],
+              },
+            },),
+          },);
+        expect(read,).toThrow(ArtifactParseError,);
+        expect(read,).toThrow('lanes.repair.delivery: expected one row per prepared slice, which is 3 here, rather than 2.',);
+      },
+    },),
+    it({
       name:
         'REFUSES two ledgers of equal length covering DIFFERENT slices, which a length check alone reads '
         + 'as a matching pair and which no later join could recover from',

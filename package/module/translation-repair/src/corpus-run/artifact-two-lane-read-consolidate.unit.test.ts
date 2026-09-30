@@ -46,6 +46,12 @@ import {
 const AT = 'whiskers.consolidation';
 
 /**
+ How a refusal under that path reads once `readingOf` has caught it, so each
+ case checks the whole message: the class, the path and the reason.
+ */
+const REFUSED_AT = `ArtifactParseError: artifact parse failed at ${AT}`;
+
+/**
  One slice as the driver records a consolidation that shipped.
  */
 const SHIPPED_SLICE = {
@@ -287,7 +293,10 @@ await describe({
           },
           laneSelection: contestOf({ sliceIndexes: [2,], },),
         },);
-        expect(refused.reason,).toContain('ships its consolidation, not the incumbent',);
+        expect(refused.reason,).toBe(
+          `${REFUSED_AT}.slices[0].shipped: expected the consolidation a slice whose terminal is consolidated `
+            + 'ships, rather than the incumbent.',
+        );
       },
     },),
 
@@ -326,7 +335,10 @@ await describe({
           },
           laneSelection: contestOf({ sliceIndexes: [1,], },),
         },);
-        expect(consolidated.kind,).toBe('refused',);
+        expect(consolidated.reason,).toBe(
+          `${REFUSED_AT}.slices[0].shipped: expected the consolidation a slice whose terminal is consolidated `
+            + 'ships, rather than the archive.',
+        );
 
         const carryingText = readingOf({
           value: {
@@ -343,7 +355,7 @@ await describe({
           },
           laneSelection: contestOf({ sliceIndexes: [1,], },),
         },);
-        expect(carryingText.kind,).toBe('refused',);
+        expect(carryingText.reason,).toBe(`${REFUSED_AT}.slices[0].shipped.text: expected no key here beyond kind.`,);
       },
     },),
 
@@ -364,8 +376,10 @@ await describe({
           },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('settled on no change',),).toBe(true,);
+        expect(read.reason,).toBe(
+          `${REFUSED_AT}.slices[0].shipped: expected no text to ship, since a slice whose terminal is `
+            + 'gate-kept-standing settled on no change.',
+        );
       },
     },),
 
@@ -386,8 +400,9 @@ await describe({
           },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('must carry the text it ships',),).toBe(true,);
+        expect(read.reason,).toBe(
+          `${REFUSED_AT}.slices[0].shipped: expected the text a slice whose terminal is consolidated ships.`,
+        );
       },
     },),
 
@@ -408,8 +423,11 @@ await describe({
           },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('terminal',),).toBe(true,);
+        expect(read.reason,).toBe(
+          `${REFUSED_AT}.slices[0].terminal: expected one of incumbent-only, no-standing-text, `
+            + 'slate-endorsed-standing, slate-unjudged-standing, slate-declined-standing, slate-kept-standing, '
+            + 'gate-kept-standing, wrap-erased-difference, consolidated.',
+        );
       },
     },),
 
@@ -428,8 +446,7 @@ await describe({
           },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('appears more than once',),).toBe(true,);
+        expect(read.reason,).toBe(`${REFUSED_AT}.slices: expected one record per slice; slice 1 appears more than once.`,);
       },
     },),
 
@@ -453,8 +470,7 @@ await describe({
           },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('usable',),).toBe(true,);
+        expect(read.reason,).toBe(`${REFUSED_AT}.slices[0].gate.usable: expected 1 matching stored ballots.`,);
       },
     },),
 
@@ -485,8 +501,9 @@ await describe({
           },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('consolidated, standing, neither',),).toBe(true,);
+        expect(read.reason,).toBe(
+          `${REFUSED_AT}.slices[0].gate.ballots[0].dropped[0]: expected one of consolidated, standing, neither.`,
+        );
       },
     },),
 
@@ -503,8 +520,7 @@ await describe({
           },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('heardTranslators',),).toBe(true,);
+        expect(read.reason,).toBe(`${REFUSED_AT}.heardTranslators: expected no key here beyond kind, slices.`,);
       },
     },),
 
@@ -538,9 +554,10 @@ await describe({
           },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('slices [0,1]',),).toBe(true,);
-        expect(read.reason.includes('rather than [0]',),).toBe(true,);
+        expect(read.reason,).toBe(
+          `${REFUSED_AT}.slices: expected slices [0,1], one per slice the contest settled and in its order, `
+            + 'rather than [0].',
+        );
       },
     },),
 
@@ -559,9 +576,10 @@ await describe({
           laneSelection: contestOf({ sliceIndexes: [0,], },),
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('slices [0]',),).toBe(true,);
-        expect(read.reason.includes('rather than [0,1]',),).toBe(true,);
+        expect(read.reason,).toBe(
+          `${REFUSED_AT}.slices: expected slices [0], one per slice the contest settled and in its order, `
+            + 'rather than [0,1].',
+        );
       },
     },),
 
@@ -580,8 +598,10 @@ await describe({
           },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('rather than [1,0]',),).toBe(true,);
+        expect(read.reason,).toBe(
+          `${REFUSED_AT}.slices: expected slices [0,1], one per slice the contest settled and in its order, `
+            + 'rather than [1,0].',
+        );
       },
     },),
 
@@ -598,8 +618,35 @@ await describe({
           laneSelection: { kind: 'pending-human-decision', },
         },);
 
-        expect(read.kind,).toBe('refused',);
-        expect(read.reason.includes('slices []',),).toBe(true,);
+        expect(read.reason,).toBe(
+          `${REFUSED_AT}.slices: expected slices [], one per slice the contest settled and in its order, `
+            + 'rather than [1].',
+        );
+      },
+    },),
+
+    it({
+      name: 'REFUSES A STAGE KIND and a gate kind this version does not name, rather than reading either as a '
+        + 'stage or a gate that did not run',
+      fn: async () => {
+        expect(readingOf({
+          value: {
+            kind: 'napping',
+            slices: [],
+          },
+        },).reason,).toBe(`${REFUSED_AT}.kind: expected one of settled, not-run.`,);
+        expect(readingOf({
+          value: {
+            kind: 'settled',
+            slices: [
+              SHIPPED_SLICE,
+              {
+                ...FLOORED_SLICE,
+                gate: { kind: 'sleepy', },
+              },
+            ],
+          },
+        },).reason,).toBe(`${REFUSED_AT}.slices[1].gate.kind: expected one of asked, not-asked.`,);
       },
     },),
   ],

@@ -109,7 +109,8 @@ await describe({
         },);
 
         expect(refusalOfAssertRowsCoherent,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfAssertRowsCoherent as Error).message,).toContain('lanes.translate.delivery[1]',);
+        expect((refusalOfAssertRowsCoherent as Error).message,)
+          .toContain('at lanes.translate.delivery[1]: expected a row whose outcome and delivery can both be true: ',);
       },
     },),
     it({
@@ -232,6 +233,62 @@ await describe({
 
         expect(refusalOfAssertEvidenceMatchesLedger,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfAssertEvidenceMatchesLedger as Error).message,).toContain('both name decided, and they differ in what that member carries',);
+      },
+    },),
+    it({
+      name: 'REFUSES A RAW RESULT AND A LEDGER that number different rows, or that name a different slice or a '
+        + 'different archive kind at one position, each by its own reason',
+      fn: async () => {
+        /**
+         Raw result agreeing with the retained row in every field.
+         */
+        const agreeing: ArtifactEvidenceRow = {
+          sliceIndex: 0,
+          incumbentKind: 'present',
+          incumbentText: ARCHIVE_NAP,
+          outcome: { kind: 'incumbent-fallback', },
+        };
+        expect(() => {
+          assertEvidenceMatchesLedger({
+            evidence: [agreeing,],
+            ledger: [RETAINED_ROW,],
+            path: LANE_PATH,
+          },);
+        },).not
+          .toThrow();
+        for (const [evidence, says,] of [
+          [
+            [],
+            ': expected one row per slice in both, and this lane records 0 raw slices against 1 ledger rows.',
+          ],
+          [
+            [{
+              ...agreeing,
+              sliceIndex: 1,
+            },],
+            '.delivery[0].sliceIndex: expected slice 1, which the raw result names at this position, rather than '
+            + 'slice 0.',
+          ],
+          [
+            [{
+              ...agreeing,
+              incumbentKind: 'absent',
+            },],
+            '.delivery[0].incumbentKind: expected absent, as the raw result says of slice 0, rather than present.',
+          ],
+        ] as const) {
+          /**
+           The check, repeated for each assertion.
+           */
+          const check = () =>
+            assertEvidenceMatchesLedger({
+              evidence,
+              ledger: [RETAINED_ROW,],
+              path: LANE_PATH,
+            },);
+          expect(check,).toThrow(ArtifactParseError,);
+          expect(check,).toThrow(`at ${LANE_PATH}${says}`,);
+        }
       },
     },),
   ],
