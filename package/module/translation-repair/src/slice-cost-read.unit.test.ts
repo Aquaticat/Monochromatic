@@ -163,6 +163,23 @@ await describe({
       },
     },),
     it({
+      name:
+        'REFUSES an empty, hexadecimal, exponent or signed measurement, and names each, since the writer '
+        + 'writes plain decimal digits and reading any other spelling as a number invents one: an empty '
+        + 'field read as 0 and `0x1F` as 31 (ledger B71)',
+      fn: async () => {
+        const { rows, dropped, } = readSliceCosts({
+          log: 'SLICE-COST lane=repair chunk= sourceChars=0x1F ms=1e3 exit=computed\n'
+            + 'SLICE-COST lane=translate chunk=+2 sourceChars=10 ms=-3 exit=computed',
+        },);
+        expect(rows,).toHaveLength(0,);
+        expect(dropped,).toEqual([
+          'chunk empty, sourceChars 0x1F, ms 1e3',
+          'chunk +2, ms -3',
+        ],);
+      },
+    },),
+    it({
       name: 'reports nothing at all, not even a refusal, for a log that mentions no cost',
       fn: async () => {
         const { rows, dropped, } = readSliceCosts({ log: 'three cats, no costs\nnor here', },);
