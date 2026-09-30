@@ -27,7 +27,20 @@ import dev.monochromatic.musicplayer.core.Session
  * type FilenameBaselineRequest = { readonly scene: string; readonly selection: string };
  * ```
  */
-internal data class FilenameBaselineRequest(val scene: String, val selection: String)
+internal data class FilenameBaselineRequest(
+    /** Bounded long or short authored name set. */
+    val scene: String,
+    /** Independent no-current, first-current or second-current condition. */
+    val selection: String,
+    // What: (FilenameBaselineEvent) -> Unit is a typed event-to-void function.
+    // Why: The host supplies Android logging; JVM tests record identical events without platform calls.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // readonly report: (event: FilenameBaselineEvent) => void;
+    // ```
+    val report: (FilenameBaselineEvent) -> Unit,
+)
 
 /**
  * What: A data class holds the seeded real controller, recording double and literal paths.
@@ -60,6 +73,7 @@ internal data class FilenameBaselineFixture(
  * ```
  */
 internal fun filenameBaselineFixture(request: FilenameBaselineRequest): FilenameBaselineFixture {
+    request.report(FilenameBaselineEvent("filenameBaselineFixture", "scene=${request.scene} selection=${request.selection}"))
     // What: Declare a String selected by ordinary if/else statements.
     // Why: Only the bounded long and short matched-name scenes enter the real renderer.
     //
@@ -150,7 +164,7 @@ internal fun filenameBaselineFixture(request: FilenameBaselineRequest): Filename
     // const engine = new FilenameBaselineEngine();
     // const controller = new PlayerController(engine);
     // ```
-    val engine: FilenameBaselineEngine = FilenameBaselineEngine()
+    val engine: FilenameBaselineEngine = FilenameBaselineEngine(request.report)
     // Reuse the controller constructor with the recording double, never a native engine.
     val controller: PlayerController = PlayerController(engine)
     if (selectedUri == null) {

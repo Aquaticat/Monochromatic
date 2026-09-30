@@ -9,14 +9,16 @@
 // ```
 package dev.monochromatic.musicplayer
 
-// What: Log is Android's tagged diagnostic writer.
-// Why: Unexpected transport and lifecycle calls stay observable in private logcat.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import { logger } from 'android/log';
-// ```
-import android.util.Log
+/**
+ * What: A data class is an immutable value record with separate tag and message strings.
+ * Why: Native Android logging and host-JVM recording share events, not platform calls.
+ *
+ * In TS you'd write (pseudocode):
+ * ```ts
+ * type FilenameBaselineEvent = { readonly tag: string; readonly message: string };
+ * ```
+ */
+internal data class FilenameBaselineEvent(val tag: String, val message: String)
 
 /**
  * What: Implement the nominal AudioEngine interface, rather than extend a native engine.
@@ -24,10 +26,19 @@ import android.util.Log
  *
  * In TS you'd write (pseudocode):
  * ```ts
- * class FilenameBaselineEngine implements AudioEngine { /* recording paused double */ }
+ * class FilenameBaselineEngine implements AudioEngine { /* injected event writer; paused double */ }
  * ```
  */
-internal class FilenameBaselineEngine : AudioEngine {
+internal class FilenameBaselineEngine(
+    // What: A constructor property stores an event-to-Unit callback, not an Android Context.
+    // Why: Every event is emitted at its real boundary without depending on Log.i in JVM tests.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // constructor(private readonly report: (event: FilenameBaselineEvent) => void) {}
+    // ```
+    private val report: (FilenameBaselineEvent) -> Unit,
+) : AudioEngine {
     // What: String? permits a missing URI; private set limits writes to this class.
     // Why: Tests can inspect the selected synthetic identity without changing it.
     //
@@ -95,7 +106,7 @@ internal class FilenameBaselineEngine : AudioEngine {
         }
         loadedUri = uri
         loadCount += 1
-        Log.i("FilenameBaselineEngine.load", "paused synthetic load=$loadCount")
+        report(FilenameBaselineEvent("FilenameBaselineEngine.load", "paused synthetic load=$loadCount"))
     }
 
     /**
@@ -108,7 +119,7 @@ internal class FilenameBaselineEngine : AudioEngine {
      * ```
      */
     override fun play() {
-        Log.i("FilenameBaselineEngine.play", "rejecting transport request")
+        report(FilenameBaselineEvent("FilenameBaselineEngine.play", "rejecting transport request"))
         throw IllegalStateException("Filename baseline cannot request audio playback.")
     }
 
@@ -122,7 +133,7 @@ internal class FilenameBaselineEngine : AudioEngine {
      * ```
      */
     override fun pause() {
-        Log.i("FilenameBaselineEngine.pause", "already paused")
+        report(FilenameBaselineEvent("FilenameBaselineEngine.pause", "already paused"))
     }
 
     /**
@@ -136,7 +147,7 @@ internal class FilenameBaselineEngine : AudioEngine {
      */
     override fun seekTo(positionSec: Double) {
         position = positionSec
-        Log.i("FilenameBaselineEngine.seekTo", "synthetic position=$positionSec")
+        report(FilenameBaselineEvent("FilenameBaselineEngine.seekTo", "synthetic position=$positionSec"))
     }
 
     /**
@@ -149,7 +160,7 @@ internal class FilenameBaselineEngine : AudioEngine {
      * ```
      */
     override fun setVolume(volume: Float) {
-        Log.i("FilenameBaselineEngine.setVolume", "synthetic gain=$volume")
+        report(FilenameBaselineEvent("FilenameBaselineEngine.setVolume", "synthetic gain=$volume"))
     }
 
     /**
@@ -245,6 +256,6 @@ internal class FilenameBaselineEngine : AudioEngine {
         playingListener = null
         endedListener = null
         released = true
-        Log.i("FilenameBaselineEngine.release", "released paused renderer double")
+        report(FilenameBaselineEvent("FilenameBaselineEngine.release", "released paused renderer double"))
     }
 }

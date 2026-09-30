@@ -235,7 +235,10 @@ class FilenameBaselineActivity : ComponentActivity() {
         // ```ts
         // const fixture = filenameBaselineFixture({ scene, selection });
         // ```
-        val fixture: FilenameBaselineFixture = filenameBaselineFixture(FilenameBaselineRequest(scene, selection))
+        val fixture: FilenameBaselineFixture = filenameBaselineFixture(FilenameBaselineRequest(scene, selection) { event ->
+            // The host uses real tagged Android logging; the no-audio double remains JVM-testable.
+            Log.i(event.tag, event.message)
+        })
         engine = fixture.engine
         Log.i("FilenameBaselineActivity.onCreate", "scene=$scene selection=$selection page=${fixture.controller.uiState.selectedPage} current=${fixture.controller.uiState.currentIndex} paused=${!fixture.engine.playWhenReady()} style=${SessionStore.loadPageControlStyle(this)}")
         // What: The trailing lambda is the Compose tree mounted by setContent.

@@ -50,6 +50,28 @@ import dev.monochromatic.musicplayer.core.rowDisplay
  * ```
  */
 class FilenameBaselineFixtureTest {
+    // What: ArrayList stores events at this owned test boundary, not in Android Log.
+    // Why: Tests verify logging without making a platform call or silencing its failures.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private readonly diagnosticEvents: FilenameBaselineEvent[] = [];
+    // ```
+    private val diagnosticEvents: ArrayList<FilenameBaselineEvent> = ArrayList<FilenameBaselineEvent>()
+
+    /**
+     * What: Declare an event-to-Unit method before passing its bound reference.
+     * Why: Every emitted event stays inspectable by the host test without a no-op logger.
+     *
+     * In TS you'd write (pseudocode):
+     * ```ts
+     * private recordDiagnostic(event: FilenameBaselineEvent): void { this.diagnosticEvents.push(event); }
+     * ```
+     */
+    private fun recordDiagnostic(event: FilenameBaselineEvent) {
+        diagnosticEvents.add(event)
+    }
+
     /**
      * What: Test annotation marks a no-argument Unit method for JUnit.
      * Why: Both authored scenes preserve their real parent/page text without autoplay.
@@ -75,7 +97,14 @@ class FilenameBaselineFixtureTest {
             // ```ts
             // const fixture = filenameBaselineFixture({ scene, selection: 'none' });
             // ```
-            val fixture = filenameBaselineFixture(FilenameBaselineRequest(scene, "none"))
+            // What: ::recordDiagnostic is a bound function reference, not a method invocation.
+            // Why: The fixture writes real events to this test-owned recorder.
+            //
+            // In TS you\'d write (pseudocode):
+            // ```ts
+            // const report = (event: FilenameBaselineEvent) => this.recordDiagnostic(event);
+            // ```
+            val fixture = filenameBaselineFixture(FilenameBaselineRequest(scene, "none", ::recordDiagnostic))
             val state = fixture.controller.uiState
             assertEquals("Cult of Luna", state.pageLabels[state.selectedPage])
             assertEquals(2, state.pageItems.size)
@@ -86,6 +115,7 @@ class FilenameBaselineFixtureTest {
             assertEquals(0.0, fixture.engine.durationSec(), 0.0)
             assertFalse(fixture.engine.playWhenReady())
             assertTrue(fixture.engine.callbacksRegistered())
+            assertFalse(diagnosticEvents.isEmpty())
             // What: A for loop visits the two bounded row indices.
             // Why: Both distinct suffixes survive real common-root and active-page trimming.
             //
@@ -115,7 +145,7 @@ class FilenameBaselineFixtureTest {
         // Reuse bounded list iteration for the scene and independently authored selection values.
         for (scene in listOf("long", "short")) {
             for (selection in listOf("first", "second")) {
-                val fixture = filenameBaselineFixture(FilenameBaselineRequest(scene, selection))
+                val fixture = filenameBaselineFixture(FilenameBaselineRequest(scene, selection, ::recordDiagnostic))
                 // What: Int is a bounded array index; an if/else expression chooses its literal value.
                 // Why: The expected identity is independent of the controller under test.
                 //
@@ -158,7 +188,7 @@ class FilenameBaselineFixtureTest {
     @Test fun unknownSceneIsRejected() {
         var rejected: Boolean = false
         try {
-            filenameBaselineFixture(FilenameBaselineRequest("unknown", "none"))
+            filenameBaselineFixture(FilenameBaselineRequest("unknown", "none", ::recordDiagnostic))
         } catch (error: IllegalArgumentException) {
             assertEquals("Unknown actual-player filename scene: unknown", error.message)
             rejected = true
@@ -178,7 +208,7 @@ class FilenameBaselineFixtureTest {
     @Test fun unknownSelectionIsRejected() {
         var rejected: Boolean = false
         try {
-            filenameBaselineFixture(FilenameBaselineRequest("long", "unknown"))
+            filenameBaselineFixture(FilenameBaselineRequest("long", "unknown", ::recordDiagnostic))
         } catch (error: IllegalArgumentException) {
             assertEquals("Unknown actual-player filename selection: unknown", error.message)
             rejected = true
@@ -198,7 +228,7 @@ class FilenameBaselineFixtureTest {
      */
     @Test(expected = IllegalStateException::class)
     fun playbackLoadIsRejected() {
-        FilenameBaselineEngine().load("fixture://filename-player/long/0", true)
+        FilenameBaselineEngine(::recordDiagnostic).load("fixture://filename-player/long/0", true)
     }
 
     /**
@@ -212,7 +242,7 @@ class FilenameBaselineFixtureTest {
      */
     @Test(expected = IllegalStateException::class)
     fun directPlayIsRejected() {
-        FilenameBaselineEngine().play()
+        FilenameBaselineEngine(::recordDiagnostic).play()
     }
 
     /**
@@ -226,7 +256,7 @@ class FilenameBaselineFixtureTest {
      */
     @Test(expected = IllegalArgumentException::class)
     fun nonfixtureUriIsRejected() {
-        FilenameBaselineEngine().load("file:///sample.flac", false)
+        FilenameBaselineEngine(::recordDiagnostic).load("file:///sample.flac", false)
     }
 
     /**
@@ -240,7 +270,7 @@ class FilenameBaselineFixtureTest {
      */
     @Test(expected = IllegalStateException::class)
     fun releasedEngineIsRejected() {
-        val engine = FilenameBaselineEngine()
+        val engine = FilenameBaselineEngine(::recordDiagnostic)
         engine.release()
         engine.load("fixture://filename-player/long/0", false)
     }
