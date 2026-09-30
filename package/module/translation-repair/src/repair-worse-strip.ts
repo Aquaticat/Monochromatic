@@ -211,7 +211,7 @@ export type ShedProof = {
 
  @example
  ```ts
- const shed = await proveSheddingWorseVoted({ client, models, reseat, sourceText, targetText, envelopes, editor, acceptedIssues, authorship, identityContext, signal, perCallTimeoutMs, l, },);
+ const shed = await proveSheddingWorseVoted({ client, models, reseat, sourceText, targetText, envelopes, editor, acceptedIssues, authorship, neighbours, identityContext, signal, perCallTimeoutMs, l, },);
  ```
  */
 export async function proveSheddingWorseVoted(request: ProofRequest,): Promise<ShedProof> {

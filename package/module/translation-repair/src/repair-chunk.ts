@@ -397,7 +397,7 @@ export async function repairChunk(
     editor,
     acceptedIssues,
     authorship: wholeEnvelopes.authorship,
-    ...windowFragment,
+    neighbours: windowFragment,
     identityContext: identityContext ?? '',
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     signal,

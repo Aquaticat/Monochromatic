@@ -84,11 +84,11 @@ export type ChunkProof = {
  
  @param authorship - who wrote the text answering for each issue
  
- @param neighbouringSourceText - original of the passages either side, the
- auditor's window
- 
- @param neighbouringIncumbentText - archive English of those passages
- 
+ @param neighbours - the auditor's window, the very one the critic, panel and
+ editor were shown, since a probe without it was measured reporting nothing
+ about a duplication whose other half sits in the slice next door, which no
+ setting could have fixed
+
  @param identityContext - declared names and handles for the checkers and
  the probe, or the empty string on a page declaring none (ledger H8, L14)
  
@@ -119,8 +119,7 @@ export async function proveRepairedChunk(
     editor,
     acceptedIssues,
     authorship,
-    neighbouringSourceText,
-    neighbouringIncumbentText,
+    neighbours,
     identityContext,
     referenceContext,
     signal,
@@ -136,8 +135,7 @@ export async function proveRepairedChunk(
     readonly editor: EditorOutcome;
     readonly acceptedIssues: readonly AdjudicatedIssue[];
     readonly authorship: Authorship;
-    readonly neighbouringSourceText?: string;
-    readonly neighbouringIncumbentText?: string;
+    readonly neighbours: NeighbourWindow;
     readonly identityContext: string;
     readonly referenceContext?: string;
     readonly signal: AbortSignal;
@@ -145,17 +143,6 @@ export async function proveRepairedChunk(
     readonly l: Logger;
   }>,
 ): Promise<ChunkProof> {
-  /**
-   Auditor's window, the same one the stages it audits saw. Without it,
-   the probe was measured reporting nothing about a duplication whose
-   other half sits in the slice next door, which no setting could have
-   fixed.
-   */
-  const windowFragment: NeighbourWindow = {
-    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
-    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
-  };
-
   /**
    Checkers as seated now, read again at the stage so a chunk in flight at
    a dry-out asks the bench a fresh reading seats (class one hundred nine).
@@ -206,7 +193,7 @@ export async function proveRepairedChunk(
     baselineText: targetText,
     regions: repairRegions,
     issues: acceptedIssues,
-    ...windowFragment,
+    ...neighbours,
     identityContext,
     // Withheld on purpose: rendering the accepted issues into the prompt was
     // measured to silence this stage, and `introduced-defect-screen.ts` now
