@@ -510,7 +510,7 @@ The completed origin reference is retained;
 actual fork and child/reset suffix were not reached.
 Earlier source-only clearance missed this transcript premise and is narrowed accordingly.
 No Pi defect or upstream filing follows.
-The separate `fork-system-prefix-controls/` correction now has a complete private draft.
+The separate `fork-system-prefix-controls/` correction passed its finite intact mechanical reference.
 Its original owner remains byte-identical at `3ac885c762b3764192d756cfe9391cd7d2dedf0422c1185ac716cb39526958f3`.
 Pure freeze `proc_ba0c` passed four syntax checks;
 eight-case synthetic acceptance/rejection schedule `proc_16e6` passed:
@@ -525,8 +525,29 @@ A prior combined-source review was truncated and did not clear the closure.
 Independent review of explicitly embedded complete bodies,
 62,223 characters across 15 named sources,
 found no further concrete blocker conditional on new digest intake/full freeze/one matched runtime.
-New full digest intake `proc_bd33` is dispatched;
-full freeze and actual SDK correction runtime remain undispatched.
+New full digest intake `proc_bd33` passed;
+full freeze `proc_7264` passed twelve syntax checks and matched its reviewed source list.
+Protected actual SDK runtime `proc_72e8` passed after one second:
+two sessions,
+four first-party scripted responses,
+two inert callbacks,
+two owned managers,
+one reserved actual fork,
+exit zero,
+stdout 1,058 bytes,
+stderr empty,
+and no signal or bounded stop.
+Both own non-error results and final stops completed,
+including new child call/result identity and private persisted JSON.
+Initial persisted child parent-path/prefix matching preceded publication.
+The existing positive mechanical child survived origin-local reset;
+child reset left the positively prepared post-reset origin snapshot current.
+Original validation preceded SDK startup and exposed no original content.
+Zero external fetch/models,
+fixture actions,
+or grant writes;
+current human eligibility remains unestablished.
+The consumed original failure and its unopened suffix are not retroactively qualified.
 Wrong-root/cross-owner prefix captures,
 ledger recapture,
 and new persisted-path rejection branches remain untested.
@@ -536,9 +557,16 @@ with exact five-role order and named positions.
 Configuration-derived section equality is not required for copying consistency;
 prompt/configuration fidelity and instruction authority/applicability remain separate unqualified properties.
 Next:
- implement and independently review that separate correction,
-including predeclared synthetic prefix rejection controls,
-then freeze new closure before one runtime.
+ predeclare isolated synthetic fork/prefix/persisted-path sensitivity references,
+then independently review their closure and unchanged callback references before new freezes/dispatch.
+Keep cache/target/source/deadline finalization,
+genuine directive/current-grant admission,
+complete-property/raw-byte freshness,
+and preparation-inclusive handback separate.
+The current task registry lacked historical #82 and still listed completed #68/#81 as active/pending;
+those entries were reconciled from retained receipts.
+New #82 is `Record separate intact SDK prefix correction outcome`,
+not the historical diagnostic task or new authority.
 The completed `root-sensitivity-controls/` phase read no genuine original and replayed no interaction.
 The new `fork-mechanical-controls/` worker privately rereads retained admitted evidence before SDK startup;
 it does not mutate originals,

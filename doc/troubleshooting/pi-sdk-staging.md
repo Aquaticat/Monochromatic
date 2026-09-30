@@ -61,7 +61,8 @@ not runtime correctness.
 The completed root sensitivity controls remain a different passing catalog,
 not evidence for added fork guards.
 
-No verified fork workaround exists yet.
+At the consumed failure frontier,
+no verified fork correction had run.
 A separately declared correction must preserve the exact SDK prefix,
 ordered call/result/stop,
 selected records,
@@ -74,17 +75,62 @@ Do not fix the consumed source,
 filter away every system message,
 or relabel an intact test as guard sensitivity.
 
+### Separate corrected consumer result
+
+The consumed source and runtime remain unchanged.
+Separate `contract/lifecycle/fork-system-prefix-controls/` captures an opaque immutable origin prefix
+and full branch JSON after completed SDK origin execution,
+then validates exact message order with named positions.
+Before child publication,
+a private helper follows actual persisted parent links and checks selected path/prefix JSON.
+Configuration-derived sections equality is not needed for copying consistency;
+configuration fidelity and instruction authority remain unqualified.
+
+Pure freeze `proc_ba0c` and eight-case synthetic acceptance/rejection `proc_16e6` passed.
+New full digest intake `proc_bd33` and twelve-module freeze `proc_7264` preceded one protected runtime.
+`proc_72e8` passed two actual SDK sessions,
+four scripted responses,
+two inert callbacks,
+and one reserved fork:
+exit zero,
+stdout 1,058 bytes,
+empty stderr,
+no signal or bounded stop.
+Both sessions had their own completed non-error persisted result;
+origin reset and independent child reset preserved the described evidence/snapshot boundaries.
+No external fetch/models,
+fixture action,
+or grant write occurred;
+current human eligibility remained unestablished.
+This fresh pass is not a replay or retroactive pass for `proc_90f8`.
+
+Input rejection controls do not prove guard necessity or omission sensitivity.
+Wrong-root/cross-owner capture,
+ledger recapture,
+and persisted-path rejection branches remain untested.
+Full cache/target/source/deadline finalization,
+raw-byte/complete-property freshness,
+current human grants/directives,
+and five-second preparation-inclusive handback remain open.
+
 ### Upstream filing decision
 
-- Fault: the observed mismatch is the owned transcript expectation;
+- Fault:
+   the observed mismatch is the owned transcript expectation;
   no upstream defect is established.
-- Fixability: consumer correction remains open;
+- Fixability:
+  intact consumer correction passed separately;
+  sensitivity and complete finalization remain open;
   no upstream change is required by this evidence.
-- Supported use: the inspected SDK persistence path explicitly includes system messages.
-- Contribution policy: no external contribution is proposed.
-- Maintainer disposition: not assessed because no defect or contribution is established.
-- Prototype: no upstream patch is justified;
-  a separate consumer epoch remains pending.
+- Supported use:
+   the inspected SDK persistence path explicitly includes system messages.
+- Contribution policy:
+   no external contribution is proposed.
+- Maintainer disposition:
+   not assessed because no defect or contribution is established.
+- Prototype:
+   no upstream patch is justified;
+  the separate consumer epoch passed only its finite intact mechanical reference.
 
 Nothing is filed or drafted upstream.
 This incident does not establish current human-grant eligibility,
