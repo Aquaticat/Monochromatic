@@ -3305,7 +3305,10 @@ claimed sources with no stretch there 0,
 sources edited since then 20,
 and each edited source "loaded it and left 0 cold stretches".
 The batch's control copy,
-the settle test with its shipped-quote case expecting a refusal,
+the slice guards' test (`translate-slice-guards.unit.test.ts`,
+committed as `translate-slice-settle.unit.test.ts`,
+a name `translate-slice-settle.ts` already meant)
+with its shipped-quote case expecting a refusal,
 failed on that case alone.
 The defects the batch found are B35 to B42;
 B43 is open.
@@ -11060,7 +11063,7 @@ and the sentence puts each count in its number.
 which splices text and so needs each block's text.
 Cases:
 `quote-preservation.unit.test.ts` for the counter and the sentence,
-`translate-slice-settle.unit.test.ts` for a floor-valid winner dropping a quote from inside a container tag
+`translate-slice-guards.unit.test.ts` for a floor-valid winner dropping a quote from inside a container tag
 (refused,
 the counts stored)
 and one keeping its quote on the line after a paragraph's
