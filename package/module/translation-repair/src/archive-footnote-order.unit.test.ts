@@ -92,6 +92,23 @@ await describe({
     },),
 
     it({
+      name: 'SAYS NOTHING where prose sits among definitions that already follow the order, since no move was '
+        + 'needed and a note would report one withheld (ledger B55)',
+      fn: async () => {
+        expect(reorderFootnoteDefinitions({
+          text: 'A[^1].\n\n[^1]: one\n\nMore prose.\n\n[^2]: two\n',
+          order: [
+            '1',
+            '2',
+          ],
+        },),).toStrictEqual({
+          text: 'A[^1].\n\n[^1]: one\n\nMore prose.\n\n[^2]: two\n',
+          changed: false,
+        },);
+      },
+    },),
+
+    it({
       name: 'places a definition the order does not name after the ones it does, in document order',
       fn: async () => {
         expect(reorderFootnoteDefinitions({
