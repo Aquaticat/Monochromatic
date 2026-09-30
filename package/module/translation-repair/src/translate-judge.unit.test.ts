@@ -341,6 +341,87 @@ async function refusalOverAnchor(
   }
 }
 
+/**
+ Judges an empty slate over a passage whose archive English is blank: a
+ content span holding only whitespace, which the archive has and no model
+ could be offered.
+
+ @param heardTranslators - translators that answered usably
+
+ @returns What the stage settled on
+
+ @example
+ ```ts
+ const kept = await keptOverBlank({ heardTranslators: 0, },);
+ ```
+ */
+async function keptOverBlank(
+  { heardTranslators, }: { readonly heardTranslators: number; },
+): Promise<unknown> {
+  return await judgeTranslateSlate({
+    client: NOBODY_TO_ASK,
+    produced: emptySlate({ heardTranslators, },),
+    judgeModelIds: JUDGES,
+    sourceText: SOURCE_TEXT,
+    incumbentText: '   ',
+    incumbentKind: 'present',
+    lineStructured: false,
+    signal: AbortSignal.timeout(30_000,),
+    perCallTimeoutMs: 5_000,
+    l,
+  },);
+}
+
+/**
+ What the stage settles on over a blank archive span with an empty slate:
+ the span as it stands, no judging, and the reason named.
+
+ @param heardTranslators - translators that answered usably
+
+ @param decision - reason the slate is empty
+
+ @returns Whole record
+
+ @example
+ ```ts
+ const kept = blankKept({ heardTranslators: 0, decision: 'no-voice-heard', },);
+ ```
+ */
+function blankKept(
+  {
+    heardTranslators,
+    decision,
+  }: {
+    readonly heardTranslators: number;
+    readonly decision: 'no-voice-heard' | 'no-candidate';
+  },
+): unknown {
+  return {
+    text: '   ',
+    origin: 'incumbent',
+    producer: {
+      kind: 'incumbent',
+      matched: [],
+    },
+    voteWeight: 0,
+    tally: {
+      judgesAvailable: 0,
+      ballots: 0,
+      abstentions: 0,
+      selfVotes: 0,
+    },
+    ballots: [],
+    heardTranslators,
+    candidateCount: 0,
+    slate: [],
+    selectedIndex: 0,
+    shippedIndex: 0,
+    perCandidate: [],
+    decision,
+    findings: [`translate-${decision}`,],
+  };
+}
+
 await describe({
   name: `${judgeTranslateSlate.name} tells a lost voice from a hard passage`,
   children: [
@@ -354,7 +435,13 @@ await describe({
         const refusal = await refusalOverAnchor({ heardTranslators: 0, },);
 
         expect(refusal,).toBeInstanceOf(TranslateAbsenceError,);
-        expect((refusal as { readonly reason?: unknown; }).reason,).toBe('no-voice-heard',);
+        expect({
+          reason: (refusal as { readonly reason?: unknown; }).reason,
+          findings: (refusal as { readonly findings?: unknown; }).findings,
+        },).toEqual({
+          reason: 'no-voice-heard',
+          findings: ['translate-no-voice-heard',],
+        },);
       },
     },),
 
@@ -368,7 +455,28 @@ await describe({
         const refusal = await refusalOverAnchor({ heardTranslators: 3, },);
 
         expect(refusal,).toBeInstanceOf(TranslateAbsenceError,);
-        expect((refusal as { readonly reason?: unknown; }).reason,).toBe('no-candidate',);
+        expect({
+          reason: (refusal as { readonly reason?: unknown; }).reason,
+          findings: (refusal as { readonly findings?: unknown; }).findings,
+        },).toEqual({
+          reason: 'no-candidate',
+          findings: ['translate-no-candidate',],
+        },);
+      },
+    },),
+
+    it({
+      name: 'KEEPS A BLANK ARCHIVE SPAN AS IT STANDS, naming the same two reasons, where the archive has the span '
+        + 'and the slate is empty: leaving it is the state the run started in',
+      fn: async () => {
+        expect(await keptOverBlank({ heardTranslators: 0, },),).toEqual(blankKept({
+          heardTranslators: 0,
+          decision: 'no-voice-heard',
+        },),);
+        expect(await keptOverBlank({ heardTranslators: 3, },),).toEqual(blankKept({
+          heardTranslators: 3,
+          decision: 'no-candidate',
+        },),);
       },
     },),
   ],

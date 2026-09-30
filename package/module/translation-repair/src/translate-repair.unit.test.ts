@@ -201,6 +201,9 @@ function capturingLogger({ lines, }: { readonly lines: string[]; },): Logger {
  @param said - sink for every line the repair logs, for the cases that read
  the run log; the shared logger otherwise
 
+ @param syntax - explicit syntax role of the slice, absent for ordinary
+ Markdown
+
  @returns Final voices, findings, and what the follow-up call saw
 
  @example
@@ -216,6 +219,7 @@ async function runRepair(
     incumbentText = '',
     pageText = incumbentText,
     said,
+    syntax,
   }: {
     readonly translation: string;
     readonly answer: unknown;
@@ -223,6 +227,7 @@ async function runRepair(
     readonly incumbentText?: string;
     readonly pageText?: string;
     readonly said?: string[];
+    readonly syntax?: 'front-matter';
   },
 ) {
   /**
@@ -250,6 +255,7 @@ async function runRepair(
     sourceText,
     incumbentText,
     pageText,
+    ...((syntax === undefined) ? {} : { syntax, }),
     priorMessages: PRIOR_MESSAGES,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
@@ -567,6 +573,98 @@ await describe({
             return finding.startsWith(`translate-repair-unresolved (${TRANSLATOR})`,);
           },),
         ).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'RECHECKS A FRONT-MATTER REVISION AS FRONT MATTER: a revision that changes the YAML fields is refused, '
+        + 'though read as Markdown it would pass',
+      fn: async () => {
+        /**
+         Candidate carrying text below its front matter block.
+         */
+        const translation = '---\nname: Maomao\n---\n\nThe cat.';
+        const { repaired, } = await runRepair({
+          sourceText: '---\nname: 猫猫\n---\n',
+          translation,
+          syntax: 'front-matter',
+          answer: {
+            resolution: 'revised',
+            translation: '---\nname: Maomao\nextra: The cat.\n---\n',
+            explanation: 'moved the line into the block',
+          },
+        },);
+        expect(repaired,).toEqual({
+          voices: [{
+            modelId: TRANSLATOR,
+            value: { translation, },
+          },],
+          findings: [
+            `translate-invalid (${TRANSLATOR}): Your translation added text outside YAML front matter block.`,
+            `translate-repair-unresolved (${TRANSLATOR}): moved the line into the block`,
+          ],
+        },);
+      },
+    },),
+
+    it({
+      name: 'PASSES A CANDIDATE AGAINST A PAGE ONLY PLAIN MARKDOWN READS, asking nobody, and records the weaker '
+        + 'reading',
+      fn: async () => {
+        const { repaired, log, } = await runRepair({
+          translation: GOOD_TEXT,
+          pageText: '## A Day in the Cat\'s Life\n\nIt dozes {on the windowsill.',
+          answer: {
+            resolution: 'revised',
+            translation: 'unused',
+            explanation: 'unused',
+          },
+        },);
+        expect({
+          repaired,
+          calls: log.calls,
+        },).toEqual({
+          repaired: {
+            voices: [{
+              modelId: TRANSLATOR,
+              value: { translation: GOOD_TEXT, },
+            },],
+            findings: ['translate-page-downgraded (page read as plain markdown; strict MDX refused it)',],
+          },
+          calls: 0,
+        },);
+      },
+    },),
+
+    it({
+      name: 'LETS A CANDIDATE STAND UNVALIDATED where no grammar reads the original, asking nobody, and says why',
+      fn: async () => {
+        const { repaired, log, } = await runRepair({
+          sourceText: '小橘子 <未闭合 的标签 在这里。',
+          translation: 'Little Orange is here.',
+          answer: {
+            resolution: 'revised',
+            translation: 'unused',
+            explanation: 'unused',
+          },
+        },);
+        expect({
+          repaired,
+          calls: log.calls,
+        },).toEqual({
+          repaired: {
+            voices: [{
+              modelId: TRANSLATOR,
+              value: { translation: 'Little Orange is here.', },
+            },],
+            findings: [
+              'translate-unvalidated (original could not be read: MdxParseError: MDX body refused to parse at 1:17 '
+              + '(micromark-extension-mdx-jsx/unexpected-character); corpus documents compile as MDX upstream, so '
+              + 'failure signals corruption or an unsupported construct.)',
+            ],
+          },
+          calls: 0,
+        },);
       },
     },),
 
