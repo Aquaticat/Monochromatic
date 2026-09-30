@@ -167,5 +167,39 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'READS EVERY GLOSS OF THE TITLE IN A SLICE (ledger B59): each names the title, so a second credit is '
+        + 'unified with the first',
+      fn: async () => {
+        /**
+         Pass over a slice crediting the title twice, each credit glossing it.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            HEADING,
+            pair({
+              sliceIndex: 1,
+              source: '—— 云猫《午后猫语》\n\n—— 雨猫《午后猫语》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADING_ROW,
+            {
+              sliceIndex: 1,
+              replacementText: '—— Yunmao, Afternoon Cat Talk (午后猫语)\n\n—— Yumao, Cat Chatter (午后猫语)',
+            },
+          ],
+        },);
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
+          HEADING_ROW.replacementText,
+          '—— Yunmao, Afternoon Cat Murmurs (午后猫语)\n\n—— Yumao, Afternoon Cat Murmurs (午后猫语)',
+        ],);
+        expect(unified.findings,).toEqual([
+          `title-reference-unified (slice 1: "Afternoon Cat Talk" to "Afternoon Cat Murmurs"; ${WHOSE})`,
+          `title-reference-unified (slice 1: "Cat Chatter" to "Afternoon Cat Murmurs"; ${WHOSE})`,
+        ],);
+      },
+    },),
   ],
 },);
