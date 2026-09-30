@@ -253,7 +253,14 @@ The exact original helper served as the guard omission and reproduced its failed
 `proc_d680` source-method controls also preserved unmatched errors and normal submission;
 these stubs are not desktop parity.
 The frozen unlaunched `live-held-confirmation/` epoch must not dispatch with that original helper.
-The new `live-clean-confirmation/` preparation uses the tested private helper guard,
+The new `live-clean-confirmation/` intake `proc_d89c` and freeze `proc_fd3d` passed.
+The freeze checked seven scripts,
+six missing/wrong-opt-in cases,
+an isolated guard omission,
+and reversible default-spawn/title instrumentation without opening a window.
+The current helper hash is
+`9028bedacb0be9dddf90ca41a07339f6c15eb8252c51e9055a38901601354f46`.
+The fresh epoch uses the tested private helper guard,
 unchanged authentication/parser/default launcher,
 and restrictive umask `077`.
 This is not an unchanged deployed-helper claim or production patch.
