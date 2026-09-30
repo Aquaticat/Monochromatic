@@ -263,14 +263,22 @@ this one says what changed after it.
   closing all 26 of their stretches in 4 files
   (`7e3772ba8` to `95ca288cd`;
   ledger B57 to B60).
-  The baseline is now the whole suite at `95ca288cd` (`census-BF4g7o`,
-  1,445 passes):
-  library source holds 900 stretches over 1,821 lines in 321 files,
+  The eleventh batch read against the whole suite at `95ca288cd` (`census-BF4g7o`,
+  1,445 passes)
+  and took the alignment modules,
+  closing all 26 of their stretches in 5 files
+  (`c5fd0b03e` to `791bc45fe`);
+  reading its census found ledger B61 and B62,
+  open gaps in the census reading itself.
+  The baseline is now the whole suite at `791bc45fe` (`census-5PAw2O`,
+  1,446 passes):
+  library source holds 874 stretches over 1,782 lines in 316 files,
   with 19 functions never called.
   The library batches go on one triage cluster each,
-  the eleventh taking the alignment modules
-  (`align`,
-  26 stretches in 5 files),
+  B61 and B62 first,
+  then the twelfth taking the corpus-run artifact modules
+  (`corpus-run/artifact`,
+  26 stretches in 8 files),
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
   the ledger's T8 entry has the triage counts.

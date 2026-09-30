@@ -3716,6 +3716,110 @@ and `corpus-run/artifact` (8 files,
 The tie goes to the most cold lines,
 so the eleventh batch takes `align`.
 
+The eleventh batch took the alignment modules against `census-BF4g7o`
+in three code commits,
+`c5fd0b03e` to `791bc45fe`,
+and no entry of its own.
+Its census at `791bc45fe`
+(`census-5PAw2O`,
+1,446 passes,
+taken clean)
+reads against `census-BF4g7o`:
+ran 0,
+still cold 1,227,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 5.
+The five edited sources are the cluster's,
+and each "loaded it and left 0 cold stretches";
+`table-cell.ts`,
+new since the baseline,
+is among the census file's loaded sources
+and holds no cold stretch and no function never called.
+Library source went from 900 stretches to 874:
+per-file counts compared between the two census files give the cluster's 26
+(`align-headings-optimal.ts` 10,
+`align-headings-forced.ts` 7,
+`align-blocks-walk.ts` 5,
+`align-headings-grid.ts` 3,
+`align-blocks.ts` 1),
+all five files now at none,
+and no other library file changed its count.
+The 6 not loaded are the unmapped `wording-key` chunk,
+6 stretches before and after.
+Three files of other packages moved,
+and no commit since `cce456093` edits either package:
+`with-timeout.ts` (`async-time`) went from none to 1,
+`create-logger.ts` (`logger`) from 14 to 16
+and `error-format.ts` (`logger`) from 3 to 1.
+Read by line in the eight census files from `census-qTbkjB` on,
+those three files hold the same stretches in each but `census-BF4g7o`,
+whose run alone reached the timer callback in `with-timeout.ts` (lines 57 to 59),
+the sink verification failure in `create-logger.ts` (240 to 247 and 366 to 373)
+and `error-format.ts`'s lines 31 to 58 but for 41,
+49,
+50 and 52.
+So the tenth batch's "ran 3" are the `with-timeout.ts` stretch and the two `create-logger.ts` ones.
+Every test at `95ca288cd` is in this suite unchanged
+(the batch's test changes are 34 added lines in `align-blocks.unit.test.ts` and the new `table-cell.unit.test.ts`),
+so by inference a timeout and a sink failure of that one run reached them,
+not code a commit reached,
+and they are cold again here.
+The reading printed none of that:
+it reads only the baseline's stretches,
+so the stretches that went cold again,
+and a cold stretch in a source new since the baseline,
+are counted nowhere (B61,
+found with B62).
+
+How the rows closed,
+by commit:
+`c5fd0b03e` replaced the unreachable fallbacks with narrowings that throw,
+most through a new `tableCell` read (`table-cell.ts`)
+(`grid` 210,
+247 and 249,
+`optimal` 111,
+219,
+297,
+365,
+387 and 406,
+all seven of `forced`,
+`walk` 183,
+189-190,
+201-202 and 208-209),
+dropped the optimal scan's checks for a cell no filled table leaves unreached (`optimal` 203 and 345),
+called `pairScore` where the scan wrote its body out (`optimal` 351 and 360)
+and let each traceback move name its own step (`walk` 313-320);
+`40b2cd1ff` cased two blocks with no characters (`align-blocks.ts` 238);
+and `791bc45fe` summed both sides' characters through one `charsAcross`,
+where `estimateExpansion` had written the same reducer twice.
+The duplicate-body guard did not report that copy:
+the reducer's body is 42 characters once comments and whitespace go,
+under the guard's floor of 80.
+Every row but 238 is an index read into a table whose size fixes the index,
+and 238 guards input the exported scorer accepts though no parse writes it.
+With that guard removed the empty-block case alone failed,
+and the guard was restored with no diff.
+The batch's control copy,
+the align-blocks test with the empty-block case expecting a non-finite score,
+failed on that case alone and was deleted.
+
+The twelfth batch's baseline is that census
+(`791bc45fe`,
+`census-5PAw2O`):
+library source holds 874 stretches over 1,782 lines in 316 files,
+with 19 functions never called.
+By the first construct
+(`t8-triage-5paw2o.txt`),
+the queue is 347 returns,
+171 nullish fallbacks,
+158 ternaries,
+99 throws
+and 99 others.
+`corpus-run/artifact` leads alone,
+with 26 stretches in 8 files over 35 lines,
+so the twelfth batch takes it.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -12298,6 +12402,48 @@ Comparing the renderings without the fold failed the agreeing case alone.
 
 Recurrence:
 a rule that drops a case "as ambiguous" states what makes it ambiguous and keeps the cases where that does not hold.
+
+### B61: the census reading counts only the baseline's stretches
+
+Status:
+open.
+Found by the eleventh coverage batch,
+reading `census-5PAw2O` against `census-BF4g7o`.
+`baselineStatusesOf` (`corpus-run/coverage-census-baseline.ts`) reads each baseline stretch as ran,
+still cold or not loaded,
+and in a reading of every source `editedClaimsOf` names only the edited sources the baseline holds a stretch in.
+So two kinds of cold stretch are counted nowhere:
+one in an unedited source that overlaps no baseline stretch,
+code the baseline's run reached and this run did not,
+and one in a source added since the baseline.
+A batch whose change left code cold would read clean.
+At `census-5PAw2O` three stretches of the first kind stand,
+`with-timeout.ts` 57 to 59 and `create-logger.ts` 240 to 247 and 366 to 373,
+and the printed reading shows none of them;
+comparing per-file counts in a scratch script (`t8-batch8-file-diff.mjs`) showed them,
+and that comparison misses a stretch going cold where another in the same file ran.
+
+### B62: the census asks git about edits inside the package only
+
+Status:
+open.
+Found with B61.
+`sourcesEditedSince` (`corpus-run/coverage-census-commit.ts`) runs `git diff --name-only --relative` from the package directory,
+which lists no path outside it,
+and with no claimed sources asks about `.` alone.
+The census reads the sources of other packages and dependencies the suite loads as well
+(61 files at `census-5PAw2O`,
+among them `module-logger`'s,
+`module-async-time`'s and `cli-markdown-lint`'s),
+so an edit to one of them since the baseline leaves its baseline stretches matched by line against code that moved,
+the misreading `d27a89dd0` fixed for the package's own sources.
+No reading so far was touched:
+the oldest census file in the cache was taken at `e22373347` (2026-09-29),
+and between no two consecutive census files does a commit edit a source outside the package that the earlier one holds a stretch in
+(`b62-other-edits.mjs`,
+41 pairs;
+its `git diff` lists the logger's files across `ddccea85d`,
+the control).
 
 ## Process mistakes in this audit
 

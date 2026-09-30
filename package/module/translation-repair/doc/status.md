@@ -130,23 +130,34 @@ a page link that lost its opening bracket no longer takes a footnote line or ano
 a glossed title keeps the words leading into it and a longer glossed run is reported (B58),
 the link search reads the page link at the title link's place and every gloss is read (B59),
 and a title two headings render alike is unified with that rendering (B60).
-The baseline is now the whole suite at `95ca288cd` (`census-BF4g7o`,
-1,445 passes,
+The eleventh batch took the alignment modules,
+26 stretches in 5 files,
+and closed every one
+(`c5fd0b03e` to `791bc45fe`):
+the alignment tables read their cells without falling back,
+and an empty block's length fit is cased.
+Its census found B61 and B62,
+both open:
+the census reading counts nowhere a stretch that went cold since its baseline or one in a source added since,
+and asks git about edits inside the package only,
+though it reads other packages' sources too.
+The baseline is now the whole suite at `791bc45fe` (`census-5PAw2O`,
+1,446 passes,
 taken from a tree with nothing uncommitted):
-library source holds 900 stretches over 1,821 lines in 321 files,
+library source holds 874 stretches over 1,782 lines in 316 files,
 with 19 functions never called,
 and the runner entry files and unloaded bundles come after.
 By the first construct each stretch's lines hold
-(`t8-triage-bf4g7o.txt` in the audit's scratch folder),
-the queue is 348 returns,
-192 nullish fallbacks,
+(`t8-triage-5paw2o.txt` in the audit's scratch folder),
+the queue is 347 returns,
+171 nullish fallbacks,
 158 ternaries,
-100 throws
-and 102 others,
-and the eleventh batch takes the alignment modules
-(`align`,
-26 stretches in 5 files,
-tied on stretches with `corpus-run/artifact` and ahead on cold lines);
+99 throws
+and 99 others,
+and the twelfth batch takes the corpus-run artifact modules
+(`corpus-run/artifact`,
+26 stretches in 8 files),
+after B61 and B62;
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:
