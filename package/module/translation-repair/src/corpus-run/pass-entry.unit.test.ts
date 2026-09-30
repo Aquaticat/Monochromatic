@@ -1396,6 +1396,46 @@ await describe({
       },
     },),
     it({
+      name: 'DECLINES an entry whose archive note calls the page the author\'s own English BEFORE ANY PURCHASE: a '
+        + 'decline record, no model call, no artifact',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /** Model schemas asked, none expected. */
+        const served: string[] = [];
+        /** Entry whose archive carries a whole-page note. */
+        const ownEnglish = {
+          id: 'CatEntryOwnEnglish',
+          sourceText: SOURCE_TEXT,
+          targetText: `<!-- 这只猫的原文即英文 -->\n\n${TARGET_TEXT}`,
+        };
+        const outcome = await settleEntry({
+          client: entryClient({ served, }),
+          entry: ownEnglish,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          declinedDir: dirs.declinedDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          outsideReads: NO_OUTSIDE_READS,
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        expect({
+          outcome,
+          served,
+          artifacts: await artifactNames({ artifactsDir: dirs.artifactsDir, },),
+          declined: await readdir(dirs.declinedDir,),
+        },).toEqual({
+          outcome: { kind: 'declined', },
+          served: [],
+          artifacts: [],
+          declined: [`${ownEnglish.id}.json`,],
+        },);
+      },
+    },),
+    it({
       name: 'PUBLISHES preparation-stage archive correction through lanes, artifact, and page',
       fn: async () => {
         await using dirs = await throwawayDirs();

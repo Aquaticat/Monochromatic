@@ -32,10 +32,12 @@ import {
 
 import {
   assertPipelineDigest,
+  entryArchiveOriginalOf,
   type PipelineDigest,
   recordEntryDecline,
   removeDeclinedPages,
 } from '../../dist/final/node/index.mjs';
+import { capturingLogger, } from '../capturing-logger.test-fixture.ts';
 
 /**
  Hex digits in a tree digest.
@@ -128,6 +130,58 @@ async function decline(
     startedAt: Date.now(),
   },);
 }
+
+await describe({
+  name: entryArchiveOriginalOf.name,
+  children: [
+    it({
+      name: 'READS A WHOLE-PAGE NOTE as the page being the author\'s own English, and logs the note with its reading',
+      fn: async () => {
+        /**
+         Lines the reading logged.
+         */
+        const messages: string[] = [];
+
+        expect(entryArchiveOriginalOf({
+          entry: {
+            ...ENTRY,
+            targetText: '<!-- 这只猫的原文即英文 -->\n\nThe cat wrote this herself.\n',
+          },
+          l: capturingLogger({ messages, },),
+        },),).toEqual({
+          kind: 'whole-page',
+          note: '这只猫的原文即英文',
+        },);
+        expect(messages,).toEqual([
+          `[${entryArchiveOriginalOf.name}] ARCHIVE NOTE entry=${ENTRY.id} reading=whole-page: 这只猫的原文即英文`,
+        ],);
+      },
+    },),
+    it({
+      name: 'SEALS NOTHING for a note that speaks of an English original in a wording no mark reads, and WARNS so '
+        + 'a new wording is seen rather than silently unsealed (ledger E12)',
+      fn: async () => {
+        /**
+         Lines the reading logged.
+         */
+        const messages: string[] = [];
+
+        expect(entryArchiveOriginalOf({
+          entry: {
+            ...ENTRY,
+            targetText: '<!-- The cat wrote the original in English, mostly. -->\n\nThe cat wrote this herself.\n',
+          },
+          l: capturingLogger({ messages, },),
+        },),).toEqual({ kind: 'none', },);
+        expect(messages,).toEqual([
+          `[${entryArchiveOriginalOf.name}] ARCHIVE NOTE entry=${ENTRY.id} reading=unmarked-original-claim: the note `
+            + 'speaks of an English original in a wording no mark reads, so nothing is sealed; add its mark if it '
+            + 'seals (The cat wrote the original in English, mostly.)',
+        ],);
+      },
+    },),
+  ],
+},);
 
 await describe({
   name: recordEntryDecline.name,

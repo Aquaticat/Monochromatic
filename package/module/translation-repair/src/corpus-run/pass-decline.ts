@@ -1,6 +1,9 @@
 import { rm, } from 'node:fs/promises';
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import {
   archiveNoteReadingsOf,
@@ -34,20 +37,32 @@ import { RUN_CORPUS_PIN, } from './run-config.ts';
 
  @param entry - corpus pair, text already read
 
+ @param l - entry logger, which a test hands a capturing one so the warning
+ an unmarked claim must raise can be read
+
  @returns The reading, off the archive as inherited
 
  @example
  ```ts
- const reading = entryArchiveOriginalOf({ entry, },);
+ const reading = entryArchiveOriginalOf({ entry, l, },);
  ```
  */
 export function entryArchiveOriginalOf(
-  { entry, }: { readonly entry: CorpusPair; },
+  {
+    entry,
+    l,
+  }: {
+    readonly entry: CorpusPair;
+    readonly l: Logger;
+  },
 ): ArchiveOriginalReading {
   /**
-   Entry logger.
+   Entry logger, tagged with this function's name.
    */
-  const el = tagged({ tag: entry.id, },);
+  const el = tagged({
+    l,
+    tag: entryArchiveOriginalOf.name,
+  },);
   /**
    The archive as inherited.
    */

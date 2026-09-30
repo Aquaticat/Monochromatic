@@ -20,6 +20,7 @@ export type {
 } from './corpus-run/pass-entry-contract.ts';
 export { settleEntry, } from './corpus-run/pass-entry.ts';
 export {
+  entryArchiveOriginalOf,
   recordEntryDecline,
   removeDeclinedPages,
 } from './corpus-run/pass-decline.ts';

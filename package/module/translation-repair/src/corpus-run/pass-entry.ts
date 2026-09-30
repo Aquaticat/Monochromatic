@@ -158,7 +158,10 @@ async function runEntryPipeline(
      is declined here, and nothing else in this function runs for it (the owner's rule of
      2026-09-08, `pass-decline.ts`).
      */
-    const archiveOriginal = entryArchiveOriginalOf({ entry, },);
+    const archiveOriginal = entryArchiveOriginalOf({
+      entry,
+      l: tagged({ tag: entry.id, },),
+    },);
     if (archiveOriginal.kind === 'whole-page')
       return await recordEntryDecline({
         entry,
