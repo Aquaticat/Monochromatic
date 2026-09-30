@@ -3350,6 +3350,126 @@ the queue is 400 returns,
 and 121 others,
 and the repair cluster still holds 46 stretches over 148 lines in 17 files.
 
+The seventh batch took the repair modules against `census-v7Dz0r`
+and addressed all 46 of their stretches in 17 files,
+read file by file from the coverage build
+(`t8-batch7-spans.txt` in the audit's scratch folder holds each stretch's code):
+`da99d5b69` removed the per-run adjudication override,
+whose conditional spreads were 7 of the rows,
+together with its hops outside the cluster
+(`document-lanes.ts` and `panel-stage.ts`)
+(7);
+`40b9eb0b4` made the deadline required in the repair entry,
+the driver and the benchmark,
+since every production caller states one (2);
+`9fbc8c19d` handed the chunk proof the window the stages saw
+instead of rebuilding it from two optional texts (2);
+`b91a05e1b` reached the stretches of the grade reader,
+the scorecard,
+the benchmark,
+the cache gate and the sheet,
+restructured the issue record's probe counts,
+the damage evidence's report read
+and the driver's dominance reading so no arm is left that no input can take,
+and made the benchmark throw the caller's abort reason (16);
+`63140e337` reached the resume discard and both refusals under a live signal,
+the unprepared-slice check with the lane off,
+and made the lane wordings leave an unmade slice to the coverage check (5);
+`26ad14044` reached the chunk's three unchanged exits,
+the gate's refusal counts
+(sorted as finished lines,
+since one editor reply can raise only two kinds),
+the worse-vote strip's exit where every edit goes and the editor's rule addendum,
+and threaded attested details to the screen (13);
+`06f231981` read the worse-voted issues off the checker tallies,
+removing a lookup for an issue with no tally (1).
+Named apart:
+`26ad14044`'s message said a case reached that lookup's miss;
+the census at that commit still read it cold,
+and no input can reach it,
+since the checker stage keeps a tally for every accepted issue,
+one no checker voted on included.
+The source comment calling that tally absent was wrong too.
+A commit comment on `26ad14044` corrects the message,
+and `06f231981` removed the lookup and the comment.
+The adjudication thresholds are now keyed nowhere,
+since no run can change them;
+the run shape keeps `null` in their slot so no settled slice's key moved,
+which the key test's pinned literal shows
+(it failed with the slot removed and passed with it restored),
+and a change to `DEFAULT_ADJUDICATION_CONFIG` now bumps `SLICE_CACHE_VERSION`.
+The benchmark's scorecard reads coverage 1 over no records while every rate reads 0 on an empty denominator;
+coverage asks what share of entries ran and a rate what share of seeds came back,
+so the asymmetry is kept.
+The batch's calls under the owner's standing quality directive,
+each open to veto:
+removing the per-run adjudication override,
+requiring the three deadlines,
+the benchmark throwing the caller's abort reason,
+the lane wordings leaving an outcome for an unmade slice to the coverage check,
+and that scorecard asymmetry.
+A second opinion on the batch plan found `repair-slice-settle.ts` 259 to 271 missing from it
+and the benchmark's abort rethrow at odds with every other catch in the package;
+both were taken up.
+The batch's control copy,
+`repair-chunk-exits.unit.test.ts` with its worse-strip case expecting a change,
+failed on that case alone.
+
+The whole-suite census at `26ad14044`
+(`census-zCwMAm`,
+1,421 passes,
+taken clean)
+read against `census-v7Dz0r`:
+ran 9,
+still cold 1,395,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 15,
+and each edited repair source "loaded it and left 0 cold stretches"
+but `repair-worse-strip.ts`,
+which left the lookup `06f231981` then removed.
+The census at `06f231981`
+(`census-dUOMFS`,
+1,421 passes,
+taken clean)
+reads the same counts against `census-v7Dz0r`,
+with every edited repair source at 0.
+The 9 rows that ran are the rows of the four cluster files the batch reached without editing
+(`repair-sheet.ts` 5,
+`repair-grade-read.ts` 2,
+`repair-scorecard.ts` 1,
+`repair-cache-gate.ts` 1),
+listed by comparing the two census files
+(`t8-batch7-ran-rows.mjs` in the audit's scratch folder).
+The two hop files left 1 (`document-lanes.ts`) and 2 (`panel-stage.ts`):
+the baseline rows the removed hops did not cover
+(429,
+136 and 178,
+each now a line or more earlier),
+which stay in the queue for their own clusters.
+Library source went from 1,092 stretches to 1,044,
+the cluster's 46 and the hops' 2,
+so the batch left none of its own making.
+
+The eighth batch's baseline is that census
+(`06f231981`,
+`census-dUOMFS`):
+library source holds 1,044 stretches over 2,125 lines in 368 files,
+with 20 functions never called.
+By the first construct
+(`t8-triage-duomfs.txt`),
+the queue is 394 returns,
+220 ternaries,
+200 nullish fallbacks,
+117 throws
+and 113 others.
+The consolidation modules are now the largest cluster,
+55 stretches in 17 files
+(the triage's `consolidation` and `consolidate` prefixes,
+30 and 25,
+name one feature),
+and the eighth batch takes them.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -12483,6 +12603,28 @@ so `8ecf892ba` carries the first guard commit's message.
 A commit comment gives the intended one.
 The name check the prevention asks for (`ls` the name first) was skipped;
 a message file for a commit now takes a name no earlier file has.
+Again on 2026-09-30 (T8's seventh batch),
+four times,
+with no wrong outcome landing:
+the lint for `9fbc8c19d` ran in the batch of the build it read
+(rerun after the build,
+as that commit's message says);
+a build ran in the batch of the edit it read
+(rebuilt after);
+a named-test run ran in the batch of the write of its list file
+(its log shows every listed file ran);
+and a commit comment was posted in the batch of the write of its body
+(the posted body,
+fetched back,
+matches the file but for the trailing newline the fetch adds).
+The lint and the build were rerun after their writes;
+the test run and the comment were checked after the fact,
+and passed only because their writes happened to land first.
+The prevention stands as written:
+the edit or write,
+then,
+in a later response,
+the command that reads it.
 
 ### M50: a mutation runner that read a crashed test run as a survivor
 

@@ -239,13 +239,18 @@ this one says what changed after it.
   and so is B45,
   the consolidation's writers asked there;
   neither reached a pinned slice.
-  The baseline is now the whole suite at `d780418f7`,
+  The seventh batch read against the whole suite at `d780418f7`,
   B45's last commit (`census-v7Dz0r`,
-  1,417 passes):
-  library source holds 1,092 stretches over 2,276 lines in 385 files,
-  with 26 functions never called.
+  1,417 passes),
+  and took the repair modules,
+  closing all 46 of their stretches in 17 files
+  (`da99d5b69` to `06f231981`).
+  The baseline is now the whole suite at `06f231981` (`census-dUOMFS`,
+  1,421 passes):
+  library source holds 1,044 stretches over 2,125 lines in 368 files,
+  with 20 functions never called.
   The library batches go on one triage cluster each,
-  the seventh taking the repair modules (46 stretches in 17 files),
+  the eighth taking the consolidation modules (55 stretches in 17 files),
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
   the ledger's T8 entry has the triage counts.

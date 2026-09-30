@@ -96,22 +96,26 @@ finding and fixing B35 to B42 on the way.
 Each batch takes one cluster of the triage and ends with a whole-suite census at its committed head,
 which becomes the next batch's baseline.
 B43 and B45 landed after that batch,
-so the baseline is now the whole suite at their last commit,
-`d780418f7` (`census-v7Dz0r`,
-1,417 passes,
+and the seventh batch took the repair modules,
+46 stretches in 17 files,
+and closed every one
+(`da99d5b69` to `06f231981`),
+leaving none of its own making.
+The baseline is now the whole suite at `06f231981` (`census-dUOMFS`,
+1,421 passes,
 taken from a tree with nothing uncommitted):
-library source holds 1,092 stretches over 2,276 lines in 385 files,
-with 26 functions never called,
+library source holds 1,044 stretches over 2,125 lines in 368 files,
+with 20 functions never called,
 and the runner entry files and unloaded bundles come after.
 By the first construct each stretch's lines hold
-(`t8-triage-v7dz0r.txt` in the audit's scratch folder),
-the queue is 400 returns,
-244 ternaries,
-206 nullish fallbacks,
-121 throws
-and 121 others,
-and the seventh batch takes the repair modules
-(46 stretches in 17 files);
+(`t8-triage-duomfs.txt` in the audit's scratch folder),
+the queue is 394 returns,
+220 ternaries,
+200 nullish fallbacks,
+117 throws
+and 113 others,
+and the eighth batch takes the consolidation modules
+(55 stretches in 17 files);
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:
