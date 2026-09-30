@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import { isHanOnly, } from '../han-only-text.ts';
 import { straightenQuotes, } from '../quote-normalize.ts';
@@ -171,9 +172,13 @@ function renderedHeadings(
     const titles = headingTitles({ text: slice.source
       .text, },);
     /**
+     Page text of this slice, which the page text holds for every slice.
+     */
+    const text = nonNullishOrThrow(pageText.get(sliceIndex,),);
+    /**
      Titles the page heads here.
      */
-    const rendered = headingTitles({ text: pageText.get(sliceIndex,) ?? '', },);
+    const rendered = headingTitles({ text, },);
     if (titles.length !== rendered.length)
       continue;
     titles.forEach(function pairWith(
@@ -183,14 +188,17 @@ function renderedHeadings(
       if (!isHanOnly({ text: title, },))
         return;
       /**
-       Rendering without its gloss.
+       Rendering without its gloss, the page heading as many lines here as
+       the original.
        */
       const rendering = withoutTitleGloss({
-        rendering: rendered[at] ?? '',
+        rendering: nonNullishOrThrow(rendered[at],),
         title,
       },);
-      if ((rendering === '') || (rendering === title))
+      if (rendering === '')
         return;
+      // A rendering still in Han, the title itself among them, is no English
+      // to unify with.
       if (isHanOnly({ text: rendering, },))
         return;
       if (headings.has(title,))
@@ -441,8 +449,7 @@ export function unifyTitleReferences(
        Page text of this slice as it stands after earlier rewrites.
        */
       const text = rewritten.get(sliceIndex,)
-        ?? pageText.get(sliceIndex,)
-        ?? '';
+        ?? nonNullishOrThrow(pageText.get(sliceIndex,),);
       /**
        Where this slice renders the title.
        */

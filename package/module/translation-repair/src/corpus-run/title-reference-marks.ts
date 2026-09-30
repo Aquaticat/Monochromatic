@@ -202,8 +202,21 @@ export function locateMarked(
       close,
     },);
   },);
-  if (spans.length === 0)
+  /**
+   First span, and the spans after it.
+   */
+  const [
+    first,
+    ...others
+  ] = spans;
+  if (first === undefined)
     return { kind: 'none', };
+  if (others.length === 0) {
+    return {
+      kind,
+      ...first,
+    };
+  }
   /**
    Rendering as the typography fold reads it.
    */
@@ -225,17 +238,18 @@ export function locateMarked(
     },)
       .includes(0,);
   },);
-  if ((spans.length > 1) && (carrying.length !== 1))
-    return { kind: 'ambiguous', };
   /**
-   The one span, or the one carrying the heading.
+   The span carrying the heading, and any other that carries it too.
    */
-  const [span,] = (spans.length > 1) ? carrying : spans;
-  if (span === undefined)
-    return { kind: 'none', };
+  const [
+    carried,
+    ...alsoCarrying
+  ] = carrying;
+  if ((carried === undefined) || (alsoCarrying.length > 0))
+    return { kind: 'ambiguous', };
   return {
     kind,
-    ...span,
+    ...carried,
   };
 }
 

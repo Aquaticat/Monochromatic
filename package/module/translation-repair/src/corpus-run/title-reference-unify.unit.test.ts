@@ -20,53 +20,10 @@ import {
   type ChunkPair,
   unifyTitleReferences,
 } from '../../dist/final/node/index.mjs';
-
-/**
- One slice.
-
- @param sliceIndex - where the slice stands
-
- @param source - original text
-
- @param target - archive text, empty where the archive never translated it
-
- @returns Prepared pair
-
- @example
- ```ts
- const slice = pair({ sliceIndex: 0, source: '### 窗边猫', target: '', },);
- ```
- */
-function pair(
-  {
-    sliceIndex,
-    source,
-    target,
-  }: {
-    readonly sliceIndex: number;
-    readonly source: string;
-    readonly target: string;
-  },
-): ChunkPair {
-  return {
-    source: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: source.length,
-      text: source,
-    },
-    target: {
-      kind: 'content',
-      sliceIndex,
-      nodes: [],
-      startOffset: 0,
-      endOffset: target.length,
-      text: target,
-    },
-  };
-}
+import {
+  pair,
+  textsOf,
+} from './title-reference.test-fixture.ts';
 
 /**
  Two headings the archive never rendered, referenced by a link, a
@@ -159,9 +116,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },),).toEqual([
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
           '<h3 align = "center">Cat by the Window</h3>',
           '### Afternoon Cat Murmurs',
           '——From [Cat by the Window](https://example.test/cat)',
@@ -193,9 +148,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },),).toEqual([
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
           '<h3 align = "center">Cat by the Window</h3>',
           '### Afternoon Cat Murmurs',
           '—— Yunmao 《Purr 《Afternoon Cat Murmurs》',
@@ -230,9 +183,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },),).toEqual([
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
           '### Afternoon Cat Murmurs',
           '[^5]: Afternoon Cat Talk is a song.\n\n[^6]: See the end of the section “Afternoon Cat Murmurs”.',
         ],);
@@ -269,9 +220,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },),).toEqual([
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
           '### Cat Murmurs',
           '[^6]: See the end of the section “Cat Murmurs”.',
         ],);
@@ -305,9 +254,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },),).toEqual([
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
           '### Afternoon Cat Murmurs',
           '—— Yunmao, from the Afternoon Cat Murmurs (午后猫语)',
         ],);
@@ -344,9 +291,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },),).toEqual([
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
           '### Cat Murmurs',
           '—— Yunmao, Cat Murmurs (午后猫语)',
         ],);
@@ -380,9 +325,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },),).toEqual([
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
           '### Afternoon Cat Murmurs',
           'She said “Afternoon Cat Talk” sounds lovely.',
         ],);
@@ -576,9 +519,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },),).toEqual([
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
           '<h3 align = "center">Cat by the Window</h3>',
           '### Afternoon Cat Murmurs',
           '—— Yunmao "Afternoon Cat Murmurs"\n\n<Ring text="☿☿" size="1rem"/>',
@@ -622,9 +563,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },),).toEqual([
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
           '<h3 align = "center">Rainbow Cat</h3>',
           '—— Yunmao 【Dream】 Rainbow Cat\n\n<h3 align = "center">Afternoon Cat Murmurs</h3>',
         ],);
@@ -664,9 +603,7 @@ await describe({
             },
           ],
         },);
-        expect(unified.replacements.map(function textOf(row,): string {
-          return row.replacementText;
-        },)[2],).toBe(
+        expect(textsOf({ rows: unified.replacements, },)[2],).toBe(
           '<summary>“The cat said goodnight”</summary>\n\n'
             + '<p style="text-align: end;">—— Yunmao 【Dream】 “Afternoon Cat Murmurs”</p>',
         );

@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 //region Title reference scope
 // THE PART OF A SLICE'S PAGE TEXT A TITLE SEARCH READS. A definitions tail
 // carries several footnotes, each quoting its own title, so a whole-slice
@@ -356,7 +358,9 @@ function framedPageLine(
   },);
   if (sourceStarts.length !== pageStarts.length)
     return -1;
-  return pageStarts[sourceStarts.indexOf(offset,)] ?? (-1);
+  // The line opens with its own tag, so its offset is among the original's
+  // starts, and the page has a line at every place the original has one.
+  return nonNullishOrThrow(pageStarts[sourceStarts.indexOf(offset,)],);
 }
 
 /**
