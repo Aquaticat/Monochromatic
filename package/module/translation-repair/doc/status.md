@@ -181,9 +181,19 @@ leaves library source at 805 stretches over 1,636 lines in 293 files,
 with 17 functions never called.
 B68,
 found in the same file,
-comes next:
-the deficit counts a container's blocks by blank-line split rather than off the parse,
-and the census after its fix is the fifteenth batch's baseline;
+is fixed too
+(`8ec62ce62` and `19eb118ab`):
+the deficit counts a container's blocks off the parse rather than by blank-line split,
+and a passage costs what the container counted for its slice.
+The baseline is now the whole suite at `19eb118ab` (`census-VmhQQH`,
+1,467 passes,
+taken from a tree with nothing uncommitted),
+with the same library counts,
+and by the first construct
+(`t8-triage-vmhqqh.txt`)
+the fifteenth batch takes the prompt modules
+(`prompt`,
+20 stretches in 2 files);
 the runner entry files and unloaded bundles come after the library.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.

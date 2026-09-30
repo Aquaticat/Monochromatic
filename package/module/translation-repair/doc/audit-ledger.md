@@ -4186,6 +4186,29 @@ where the rule its prevention section states asks the parse.
 B68 comes before the fifteenth batch,
 whose baseline is the census taken after its fix.
 
+B68 was fixed before the fifteenth batch began
+(`8ec62ce62` and `19eb118ab`),
+so the batch reads against the whole suite at `19eb118ab`
+(`census-VmhQQH`,
+1,467 passes,
+taken clean),
+which leaves library source at 805 stretches over 1,636 lines in 293 files,
+with 17 functions never called,
+as `census-o4RZ7w` did.
+By the first construct
+(`t8-triage-vmhqqh.txt`),
+the queue is 321 returns,
+162 nullish fallbacks,
+134 ternaries,
+92 throws
+and 96 others.
+`prompt` leads alone
+(20 stretches,
+2 files,
+43 lines,
+ahead of `pair` at 19),
+so the fifteenth batch takes it.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -13152,25 +13175,74 @@ a reader that needs where a tag or token stands reads the offset its finder reco
 searching the text again for what was found is a second finder,
 which finds the first or last copy of the text rather than the one found.
 
-### B68: the container deficit counts blocks by blank-line split
+### B68: the container deficit counted blocks by blank-line split
 
-Status:
-open,
-found by the fourteenth coverage batch reading the same file as B67.
-`countBlocks` counts the blocks one side writes inside a container as runs of non-blank lines.
+Found by the fourteenth coverage batch,
+reading the same file as B67.
+`countBlocks` counted the blocks one side writes inside a container as runs of non-blank lines.
 The package's rule for a question about what a container holds is to ask the parse the floor reads
 (`mistake-prevention.md`,
 "Structure read off the parse",
 after B42),
-and a blank-line split disagrees with it wherever the two texts write one block differently:
-a list whose items the original writes tight and the archive loose,
-or a fenced block with a blank line inside.
-The count decides admission,
-so a split count can admit a passage into a container the archive renders whole,
-or refuse one the archive lacks.
-It comes before the fifteenth batch:
-red cases for both shapes,
-then the count read off the parse.
+and a blank-line split disagrees with it wherever the two texts write one block differently.
+In the red cases,
+a list written loose in the original and tight in the archive admitted an absent passage into a container the archive renders whole,
+the same list tight in the original and loose in the archive refused one the archive lacks,
+and a fenced block with a blank line inside admitted one as well.
+Whether a pinned page has such a container is not measured:
+none of the 56 settled artifacts in the worktree's run directories carries an admission finding,
+nor the coverage finding every admission writes,
+so the artifacts do not record them,
+and the logs that print them are mixed with unit-test logs.
+
+Fixed (`8ec62ce62` red,
+`19eb118ab`):
+`insertion-container-blocks.ts` reads each slice's side,
+cut to the part inside the container,
+with `readSliceSkeleton`,
+and counts its top-level blocks.
+A passage costs the blocks the container counted for its slice,
+so the deficit and what it is spent on are one measure.
+A half the parse refuses leaves the container uncounted,
+admitting nothing,
+with a finding naming the side,
+the slice and the parser's detail
+(`insertion-container-deficit-unread`);
+both documents parse whole,
+so that arm is not expected,
+and it is a finding rather than a stop because a run always ships.
+The count gives up one thing,
+recorded as a choice:
+a list the archive renders with two of its three items reads one block against one,
+which is the roster's carried and partly-carried verdicts' business.
+Counting by blank-line split again failed the three list and fence cases and nothing else.
+The census after the fix (`census-VmhQQH`,
+1,467 passes,
+taken clean)
+reads against `census-o4RZ7w`:
+ran 0,
+still cold 1,164,
+cold since then 0,
+not loaded 6,
+and per-file counts compared between the two census files change nowhere;
+both container modules are loaded and hold no cold stretch.
+
+Open:
+three more readers count blocks by blank-line split and are to be read against the same rule:
+`displacement-ratio.ts` `contentBlockCount` (the size classifier),
+`line-structure.ts` `isLineStructured`
+and `translate-address-drop.ts` `blocksOf`.
+`markdown-blocks.ts` `topLevelBlocks` states it is not a reading of structure,
+and its one caller is open too:
+`target-only-run.ts` `splitTargetOnlyRun` finds its anchor and its quoted transcript on that split
+(a block whose trimmed text starts with `>`)
+and rejoins the blocks it keeps with one blank line,
+so the target-only run is to find its blocks off the parse
+and splice the archive's own bytes rather than rejoined blocks.
+
+Recurrence:
+a count of what a passage holds reads the parse the floor reads,
+and one measure serves both sides of a comparison and what the comparison is spent on.
 
 ## Process mistakes in this audit
 

@@ -304,8 +304,13 @@ this one says what changed after it.
   with 17 functions never called.
   Ledger B68,
   the same file counting a container's blocks by blank-line split rather than off the parse,
-  comes next,
-  and the census after its fix is the fifteenth batch's baseline.
+  is fixed too (`8ec62ce62` and `19eb118ab`),
+  and the baseline is now the whole suite at `19eb118ab` (`census-VmhQQH`,
+  1,467 passes,
+  the same library counts),
+  the fifteenth batch taking the prompt modules
+  (`prompt`,
+  20 stretches in 2 files).
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;

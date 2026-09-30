@@ -1410,6 +1410,10 @@ and a replacement keeping every quote was refused
 (hulicaijia24 slice 2,
 ledger B42).
 The census stretch for the refusal looked unreachable because the floor was read as the guard's reading.
+The container block deficit counted runs of non-blank lines on each side,
+so a list written tight in the original and loose in the archive,
+or a fenced block with a blank line inside,
+moved the deficit and admitted or refused a passage wrongly (ledger B68).
 
 The rule:
 a question about what a passage's blocks are
@@ -1426,11 +1430,16 @@ a block opening on the line after a paragraph's,
 and one inside a container tag.
 Before calling a guard behind the floor unreachable,
 check that both read the structure one way.
+Where a count is compared across two sides and then spent,
+one reading serves all three:
+the deficit's passages cost the blocks the container counted for their slices.
 
 What enforces it:
 habit and review;
 `quote-preservation.unit.test.ts` carries both disagreeing shapes,
-and `quoteBlockCount` no longer exists to be reached for.
+and `quoteBlockCount` no longer exists to be reached for;
+`insertion-container-deficit.unit.test.ts` carries loose against tight lists and a fenced block with a blank line.
+Three more blank-line block readers are listed under ledger B68 to be read against this rule.
 
 ## What a catch charges
 
