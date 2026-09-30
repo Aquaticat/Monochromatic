@@ -236,10 +236,17 @@ that is separate from the original genuine requester liveness failure.
 New host intake `proc_1d05`,
 freeze `proc_fe19`,
 and rendered handoff `proc_3394` passed.
-The genuine window is not dispatched:
-`ScreenSaver.GetActive` returned true and the current graphical session reported `LockedHint=yes`.
-Task #82 tracks unlocked-desktop readiness,
-not renewed test consent.
+The initial device probes returned `ScreenSaver.GetActive=true` and graphical-session `LockedHint=yes`.
+A later dispatch-readiness check returned false and no,
+respectively.
+That establishes device availability,
+not human authentication or an approval.
+The resource-only blocker #82 was removed without requesting renewed test consent.
+Outer controller `proc_7c5f` was dispatched once for `live-clean-confirmation/`.
+Its original response and completion remain pending;
+process start alone does not establish a visible window,
+retained genuine witness,
+or detached cleanup.
 Actual requester/helper cancellation `proc_c105` then failed the unchanged helper's shutdown expectation:
 the inert editor stopped and workspace was removed,
 but the helper exited with code one and `AbortError` in private stderr.

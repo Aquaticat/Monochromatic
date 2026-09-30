@@ -53,8 +53,12 @@ The agent owns setup and execution under
 The execution deadline is five minutes,
 with a bounded cleanup grace period.
 Controller loss or cancellation stops the requester and cannot produce an accepted completion.
-The current session reports locked;
-no new window is dispatched until the desktop is unlocked and the human confirms readiness.
+The initial device probes reported locked.
+Later dispatch-readiness probes reported unlocked,
+and the agent dispatched the new one-shot controller as `proc_7c5f`.
+Original response and completion remain pending;
+if its window is absent,
+report that observation rather than entering a response elsewhere.
 The private helper has a tested expected-cancellation guard;
 production and the earlier frozen helper remain unchanged.
 The earlier unreferenced attempt remains separate private evidence.
