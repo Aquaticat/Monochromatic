@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   addressCount,
   hanThirdPersonCount,
@@ -137,13 +138,14 @@ export function blocksOf({ text, }: { readonly text: string; },): readonly strin
   const blocks: string[][] = [[],];
   for (const line of text.split('\n',)) {
     /**
-     Block the line joins: the last one open.
+     Block the line joins: the last one open, and one always is, since the
+     list starts with one and only grows.
      */
-    const open = blocks.at(-1,);
+    const open = nonNullishOrThrow(blocks.at(-1,),);
     if (line.trim() === '')
       blocks.push([],);
     else
-      open?.push(line,);
+      open.push(line,);
   }
   return blocks
     .filter(function hasLines(lines: readonly string[],): boolean {
@@ -302,7 +304,9 @@ export function droppedAddressFindings(
    */
   const renderingBlocks = blocksOf({ text: rendering, },);
   /**
-   Blocks read side by side, or the whole texts where the counts differ.
+   Blocks read side by side, or the whole texts where the counts differ; side
+   by side, every original block has its rendering block, the counts being
+   equal.
    */
   const pairs: readonly SideBySide[] = (originalBlocks.length === renderingBlocks.length)
     ? originalBlocks.map(function paired(
@@ -311,7 +315,7 @@ export function droppedAddressFindings(
     ): SideBySide {
       return {
         original: block,
-        rendering: renderingBlocks[index] ?? '',
+        rendering: nonNullishOrThrow(renderingBlocks[index],),
       };
     },)
     : [

@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   blocksOf,
   withoutHtmlComments,
@@ -267,9 +268,10 @@ function quotesPublishedWork({ block, }: { readonly block: string; },): boolean 
   },))
     return false;
   /**
-   Last line with its quotation marks stripped.
+   Last line with its quotation marks stripped; splitting yields at least one
+   line, so there is always a last.
    */
-  const attribution = (lines.at(-1,) ?? '')
+  const attribution = nonNullishOrThrow(lines.at(-1,),)
     .replaceAll(
       '>',
       '',

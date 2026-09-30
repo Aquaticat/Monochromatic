@@ -17,7 +17,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
+import {
+  validateTranslatedSlice,
+  type SliceValidation,
+} from '../dist/final/node/index.mjs';
 
 /**
  Original telling of a cat's survived attempt.
@@ -35,20 +38,53 @@ const SAID = 'That winter, the ginger cat attempted suicide; after a long rest s
 const DROPPED = 'That winter, the ginger cat fell gravely ill; after a long rest she slowly recovered.';
 
 /**
- Verdict kind of a rendering against an original.
+ Verdict on a candidate no floor refuses, with no page behind it.
+ */
+const VALID: SliceValidation = {
+  kind: 'valid',
+  pageGrammar: 'absent',
+};
+
+/**
+ Verdict refusing a candidate that drops the suicide an original names.
+
+ @param named - words for suicide the original writes, joined as the finding
+ joins them
+
+ @returns Whole verdict, so a check reads every word of the finding
+
+ @example
+ ```ts
+ expect(verdict,).toEqual(dropRefusal({ named: '自杀', },),);
+ ```
+ */
+function dropRefusal({ named, }: { readonly named: string; },): SliceValidation {
+  return {
+    kind: 'invalid',
+    findings: [
+      `Your translation drops the suicide the ORIGINAL names: the ORIGINAL passage writes ${named}, and your `
+      + 'translation carries no wording for suicide at all. A death by suicide is said to be a suicide, and a '
+      + 'survived attempt is still an attempt: say that the person attempted suicide or tried to end their life, '
+      + 'with the pronoun the page uses for them, keeping the means as vague as the house rule asks.',
+    ],
+  };
+}
+
+/**
+ Verdict on a rendering against an original, with no page behind it.
 
  @param sourceText - original passage
 
  @param candidateText - rendering under the floor
 
- @returns Kind of the verdict
+ @returns Whole verdict
 
  @example
  ```ts
- verdictKind({ sourceText: ATTEMPT, candidateText: SAID, },); // 'valid'
+ verdictOf({ sourceText: ATTEMPT, candidateText: SAID, },); // VALID
  ```
  */
-function verdictKind(
+function verdictOf(
   {
     sourceText,
     candidateText,
@@ -56,11 +92,11 @@ function verdictKind(
     readonly sourceText: string;
     readonly candidateText: string;
   },
-): string {
+): SliceValidation {
   return validateTranslatedSlice({
     sourceText,
     candidateText,
-  },).kind;
+  },);
 }
 
 await describe({
@@ -69,46 +105,48 @@ await describe({
     it({
       name: 'REFUSES a candidate that renders 自杀 with no wording for suicide at all',
       fn: async () => {
-        /**
-         Verdict on the rendering that dropped the attempt.
-         */
-        const verdict = validateTranslatedSlice({
+        expect(verdictOf({
           sourceText: ATTEMPT,
           candidateText: DROPPED,
-        },);
-        expect(verdict.kind,).toBe('invalid',);
-        if (verdict.kind !== 'invalid')
-          throw new Error('unreachable',);
-        expect(verdict.findings.join('\n',),).toContain('suicide',);
+        },),).toEqual(dropRefusal({ named: '自杀', },),);
       },
     },),
     it({
       name: 'ACCEPTS every plain way of saying it, the same for 自尽 and 轻生, and a comment\'s 自杀 asks nothing',
       fn: async () => {
-        expect(verdictKind({
+        expect(verdictOf({
           sourceText: ATTEMPT,
           candidateText: SAID,
-        },),).toBe('valid',);
-        expect(verdictKind({
+        },),).toEqual(VALID,);
+        expect(verdictOf({
           sourceText: ATTEMPT,
           candidateText: 'That winter the ginger cat tried to end her own life, and after a long rest she slowly recovered.',
-        },),).toBe('valid',);
-        expect(verdictKind({
+        },),).toEqual(VALID,);
+        expect(verdictOf({
           sourceText: '老猫对小猫说：「你千万别想着自杀。」',
           candidateText: 'The old cat told the kitten, “Don’t you ever think of killing yourself.”',
-        },),).toBe('valid',);
-        expect(verdictKind({
+        },),).toEqual(VALID,);
+        expect(verdictOf({
           sourceText: '黑猫自尽了。',
           candidateText: 'The black cat took her own life.',
-        },),).toBe('valid',);
-        expect(verdictKind({
+        },),).toEqual(VALID,);
+        expect(verdictOf({
           sourceText: '她有过轻生的念头。',
           candidateText: 'She had had suicidal thoughts.',
-        },),).toBe('valid',);
-        expect(verdictKind({
+        },),).toEqual(VALID,);
+        expect(verdictOf({
           sourceText: '<!-- 自杀 --> 猫猫睡了。',
           candidateText: 'The cat slept.',
-        },),).toBe('valid',);
+        },),).toEqual(VALID,);
+      },
+    },),
+    it({
+      name: 'ACCEPTS a life ended with a possessive and no "own" after it',
+      fn: async () => {
+        expect(verdictOf({
+          sourceText: ATTEMPT,
+          candidateText: 'That winter the ginger cat tried to end her life; after a long rest she slowly recovered.',
+        },),).toEqual(VALID,);
       },
     },),
     it({
@@ -116,59 +154,77 @@ await describe({
         + 'published English (ledger F-4: the replay refused "attempts on her own life" and a canonical quotation '
         + 'whose Chinese translation added 自杀)',
       fn: async () => {
-        expect(verdictKind({
+        expect(verdictOf({
           sourceText: ATTEMPT,
           candidateText: 'That winter the ginger cat made an attempt on her own life; after a long rest she slowly '
             + 'recovered.',
-        },),).toBe('valid',);
-        expect(verdictKind({
+        },),).toEqual(VALID,);
+        expect(verdictOf({
           sourceText: '尽管经历了数次自杀尝试，老猫仍然每天晒太阳。',
           candidateText: 'Despite several attempts on his own life, the old cat still sunned himself every day.',
-        },),).toBe('valid',);
-        expect(verdictKind({
+        },),).toEqual(VALID,);
+        expect(verdictOf({
           sourceText: '黑猫自尽了。',
           candidateText: 'The black cat died by her own hand.',
-        },),).toBe('valid',);
-        expect(verdictKind({
+        },),).toEqual(VALID,);
+        expect(verdictOf({
           sourceText: '> 「这场游戏由清醒过渡到逃遁。我们应该沿着这条线索去理解自杀。」\n>\n> ——喵喵《猫的神话》',
           candidateText: '> One must follow and understand this game that leads from lucidity to flight.\n>\n'
             + '> — Meow Meow, *The Myth of the Cat*',
-        },),).toBe('valid',);
+        },),).toEqual(VALID,);
       },
     },),
     it({
       name: 'STILL REFUSES a hand that only wrote, an unattributed quotation without the word, and names no '
         + 'pronoun the passage did not choose',
       fn: async () => {
-        expect(verdictKind({
+        expect(verdictOf({
           sourceText: '橘猫自杀前，亲手写了一封信。',
           candidateText: 'Before she left, the ginger cat wrote a letter by her own hand.',
-        },),).toBe('invalid',);
-        expect(verdictKind({
+        },),).toEqual(dropRefusal({ named: '自杀', },),);
+        expect(verdictOf({
           sourceText: '> 「千万别自杀。」',
           candidateText: '> “Please don’t go.”',
-        },),).toBe('invalid',);
-        /**
-         Verdict on a drop about a cat the passage calls 他.
-         */
-        const verdict = validateTranslatedSlice({
+        },),).toEqual(dropRefusal({ named: '自杀', },),);
+        expect(verdictOf({
           sourceText: '黑猫自杀了。',
           candidateText: 'The black cat passed away.',
-        },);
-        expect(verdict.kind === 'invalid' ? verdict.findings.join('\n',) : '',).not.toContain(' she ',);
+        },),).toEqual(dropRefusal({ named: '自杀', },),);
+      },
+    },),
+    it({
+      name: 'STILL REFUSES a life verb or kill verb with nothing after it, a life verb taking another noun, and a '
+        + '"by" opening the text, none of which says a suicide',
+      fn: async () => {
+        expect(verdictOf({
+          sourceText: ATTEMPT,
+          candidateText: 'That winter the ginger cat faced a choice she chose not to take.',
+        },),).toEqual(dropRefusal({ named: '自杀', },),);
+        expect(verdictOf({
+          sourceText: ATTEMPT,
+          candidateText: 'That winter the ginger cat ended the quarrel she had started.',
+        },),).toEqual(dropRefusal({ named: '自杀', },),);
+        expect(verdictOf({
+          sourceText: ATTEMPT,
+          candidateText: 'That winter the ginger cat found nothing left to kill.',
+        },),).toEqual(dropRefusal({ named: '自杀', },),);
+        expect(verdictOf({
+          sourceText: ATTEMPT,
+          candidateText: 'By that winter the ginger cat had fallen gravely ill.',
+        },),).toEqual(dropRefusal({ named: '自杀', },),);
       },
     },),
     it({
       name: 'REFUSES the same drop for 自尽 and 轻生',
       fn: async () => {
-        expect(verdictKind({
+        expect(verdictOf({
           sourceText: '黑猫自尽了。',
           candidateText: 'The black cat passed away.',
-        },),).toBe('invalid',);
-        expect(verdictKind({
+        },),).toEqual(dropRefusal({ named: '自尽', },),);
+        expect(verdictOf({
           sourceText: '她有过轻生的念头。',
           candidateText: 'She had had dark thoughts.',
-        },),).toBe('invalid',);
+        },),).toEqual(dropRefusal({ named: '轻生', },),);
       },
     },),
   ],
