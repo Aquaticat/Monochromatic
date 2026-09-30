@@ -1218,3 +1218,25 @@ A reader that needs a part of a key reads the field it was built from.
 What enforces it:
 habit and review;
 a fallback on a part a value always has shows in the coverage census as a stretch no test can reach.
+
+## Counts a finding states
+
+What happened:
+the reference-count floor wrote one sentence per missing or surplus copy,
+each saying the other side carried none,
+so a model carrying a link once where the original carries it twice was told it carried none (ledger B37).
+
+The rule:
+a finding comparing how often two sides carry something writes one sentence per thing compared,
+never one per copy,
+and names both counts whenever both are non-zero;
+"does not" is written only for a side that carries none.
+Its tests pin each count arm (none,
+once,
+more than once,
+on each side) by the whole sentence.
+
+What enforces it:
+habit and review;
+the atom floor's cases pin its arms,
+and an arm no case reaches shows in the coverage census.

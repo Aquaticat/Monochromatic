@@ -188,25 +188,134 @@ export function renderingPoolsOf(
 }
 
 /**
+ How many times each atom appears, keyed by exact description in order of
+ first appearance.
+
+ @param atoms - atoms one side carries
+
+ @returns Copies per key
+
+ @example
+ ```ts
+ const carried = copiesByKey({ atoms: candidate, },);
+ ```
+ */
+function copiesByKey({ atoms, }: { readonly atoms: readonly ProtectedAtom[]; },): ReadonlyMap<string, number> {
+  /**
+   Copies counted so far.
+   */
+  const counted = new Map<string, number>();
+  for (const atom of atoms) {
+    /**
+     Key identifying this atom exactly.
+     */
+    const key = describeAtom(atom,);
+    counted.set(
+      key,
+      (counted.get(key,) ?? 0) + 1,
+    );
+  }
+  return counted;
+}
+
+/**
+ A count as a finding says it.
+
+ @param count - copies, at least one
+
+ @returns "once", or the count and "times"
+
+ @example
+ ```ts
+ howOften({ count: 2, },); // '2 times'
+ ```
+ */
+function howOften({ count, }: { readonly count: number; },): string {
+  return (count === 1) ? 'once' : `${String(count,)} times`;
+}
+
+/**
+ Copies of each pool member a candidate carries, counted against the copies
+ the pool lists, so a member carried beyond its own count draws no more.
+
+ @param pool - renderings the references disagree on
+
+ @param carried - copies the candidate carries per key
+
+ @returns Copies drawn from the pool
+
+ @example
+ ```ts
+ const drawn = drawnFrom({ pool, carried, },);
+ ```
+ */
+function drawnFrom(
+  {
+    pool,
+    carried,
+  }: {
+    readonly pool: AtomRenderingPool;
+    readonly carried: ReadonlyMap<string, number>;
+  },
+): number {
+  /**
+   Members of both sides, repeated per copy.
+   */
+  const members = [
+    ...pool.fromSource,
+    ...pool.fromPage,
+  ];
+  return [...new Set(members,),].reduce(
+    function addMember(
+      sum,
+      key,
+    ): number {
+      /**
+       Copies the pool lists of this member.
+       */
+      const listed = members
+        .filter(function isMember(member,): boolean {
+          return member === key;
+        },)
+        .length;
+      return sum + Math.min(
+        listed,
+        carried.get(key,) ?? 0,
+      );
+    },
+    0,
+  );
+}
+
+// LEDGER B37 (2026-09-30). The floor pushed one sentence per missing copy and
+// one per atom carried too often, each saying the other side carried none: a
+// candidate carrying a link once where the original carries it twice was told
+// "your translation does not" carry it, and one carrying a link three times
+// where the original carries it once was told "the ORIGINAL does not". A model
+// told a side lacks an atom it has can remove every copy and be refused again
+// for the drop. Each atom now draws one sentence naming both counts.
+
+/**
  Findings for atoms the candidate owes and did not carry, invented, or
  drew from a rendering pool in the wrong number.
- 
+
  Compared as a MULTISET rather than in order, because a translation
  reorders clauses legitimately and a link moving within a sentence is not
  damage. What is damage is a reference that stopped existing, one that
  appeared from nowhere, or both renderings of one reference side by side.
- 
+
  @param page - atoms the text being replaced carries
- 
+
  @param source - atoms the original carries
- 
+
  @param candidate - atoms the candidate carries
- 
+
  @param referenceName - what a finding calls the merged reference
- 
- @returns One finding per missing or invented atom, and one per pool drawn
- from in the wrong number
- 
+
+ @returns One finding per atom carried fewer or more times than the
+ references carry it, naming both counts, and one per pool drawn from in the
+ wrong number
+
  @example
  ```ts
  const findings = atomFindings({ page, source, candidate, referenceName: 'ORIGINAL', },);
@@ -255,92 +364,93 @@ export function atomFindings(
     },),
   );
   /**
-   How many times the candidate carries each atom.
+   How many times the candidate carries each atom, in the candidate's order.
    */
-  const remaining = new Map<string, number>();
-  for (const atom of candidate) {
-    /**
-     Key identifying this atom exactly.
-     */
-    const key = describeAtom(atom,);
-    remaining.set(
-      key,
-      (remaining.get(key,) ?? 0) + 1,
-    );
-  }
+  const carried = copiesByKey({ atoms: candidate, },);
   /**
-   Copies the candidate drew from each pool.
+   How many times the references carry each atom, the larger side's count,
+   in the references' order.
    */
-  const drawn = new Map<AtomRenderingPool, number>();
+  const owed = copiesByKey({
+    atoms: mergeAtoms({
+      page,
+      source,
+    },),
+  },);
   /**
-   Atoms the references have that the candidate did not carry through.
+   Atoms the references carry more often than the candidate, outside the
+   pools, which are counted whole.
    */
-  const missing: string[] = [];
-  for (const atom of mergeAtoms({
-    page,
-    source,
-  },)) {
-    /**
-     Key identifying this atom exactly.
-     */
-    const key = describeAtom(atom,);
-    /**
-     Copies still unaccounted for on the candidate side.
-     */
-    const left = remaining.get(key,) ?? 0;
-    /**
-     Pool this key belongs to, when the references disagree on it.
-     */
-    const pool = poolOfKey.get(key,);
-    if (left === 0) {
-      if (pool === undefined)
-        missing.push(`The ${referenceName} carries ${key} and your translation does not.`,);
-      continue;
-    }
-    remaining.set(
-      key,
-      left - 1,
-    );
-    if (pool !== undefined)
-      drawn.set(
-        pool,
-        (drawn.get(pool,) ?? 0) + 1,
-      );
-  }
+  const missing = [...owed.entries(),]
+    .filter(function isShort([key, count,],): boolean {
+      return (!poolOfKey.has(key,)) && ((carried.get(key,) ?? 0) < count);
+    },)
+    .map(function toFinding([key, count,],): string {
+      /**
+       Copies the candidate carries.
+       */
+      const has = carried.get(key,) ?? 0;
+      return (has === 0)
+        ? `The ${referenceName} carries ${key}${
+          (count === 1) ? '' : ` ${howOften({ count, },)}`
+        } and your translation does not.`
+        : `The ${referenceName} carries ${key} ${howOften({ count, },)} and your translation carries it ${
+          howOften({ count: has, },)
+        }.`;
+    },);
   /**
    Pools drawn from in the wrong number.
    */
-  const misdrawn = pools
-    .filter(function isMisdrawn(pool,): boolean {
-      return (drawn.get(pool,) ?? 0) !== pool.owed;
-    },)
-    .map(function toFinding(pool,): string {
-      /**
-       Original's renderings, listed.
-       */
-      const fromSource = pool.fromSource
-        .join(', ',);
-      /**
-       Page's renderings, listed.
-       */
-      const fromPage = pool.fromPage
-        .join(', ',);
-      return `The ORIGINAL carries ${fromSource} where the PAGE AS IT STANDS carries ${fromPage}: the page rendered the original's reference another way, and your translation must carry exactly ${
+  const misdrawn = pools.flatMap(function toFinding(pool,): readonly string[] {
+    /**
+     Copies the candidate drew from the pool.
+     */
+    const drawn = drawnFrom({
+      pool,
+      carried,
+    },);
+    if (drawn === pool.owed)
+      return [];
+    /**
+     Original's renderings, listed.
+     */
+    const fromSource = pool.fromSource
+      .join(', ',);
+    /**
+     Page's renderings, listed.
+     */
+    const fromPage = pool.fromPage
+      .join(', ',);
+    return [
+      `The ORIGINAL carries ${fromSource} where the PAGE AS IT STANDS carries ${fromPage}: the page rendered the original's reference another way, and your translation must carry exactly ${
         String(pool.owed,)
-      } of these, taken from either side; it carries ${String(drawn.get(pool,) ?? 0,)}.`;
+      } of these, taken from either side; it carries ${String(drawn,)}.`,
+    ];
+  },);
+  /**
+   Atoms the candidate carries more often than the references.
+   */
+  const surplus = [...carried.entries(),]
+    .filter(function isSurplus([key, count,],): boolean {
+      return count > (owed.get(key,) ?? 0);
+    },)
+    .map(function toFinding([key, count,],): string {
+      /**
+       Copies the references carry.
+       */
+      const wanted = owed.get(key,) ?? 0;
+      return (wanted === 0)
+        ? `Your translation carries ${key}${
+          (count === 1) ? '' : ` ${howOften({ count, },)}`
+        } and the ${referenceName} does not.`
+        : `Your translation carries ${key} ${howOften({ count, },)} and the ${referenceName} carries it ${
+          howOften({ count: wanted, },)
+        }.`;
     },);
   return [
     ...missing,
     ...misdrawn,
-    ...[...remaining.entries(),]
-      .filter(function isSurplus([, count,],): boolean {
-        return count > 0;
-      },)
-      .map(function toFinding([key, count,],): string {
-        return `Your translation carries ${key}${
-          count === 1 ? '' : ` ${String(count,)} times`
-        } and the ${referenceName} does not.`;
-      },),
+    ...surplus,
   ];
 }
 

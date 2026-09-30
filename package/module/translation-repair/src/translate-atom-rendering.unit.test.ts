@@ -167,8 +167,25 @@ await describe({
           candidate: [link(A,), link(B,),],
           referenceName: 'ORIGINAL or the PAGE AS IT STANDS',
         },);
-        expect(both.length,).toBe(1,);
-        expect(both[0],).toContain('it carries 2.',);
+        expect(both,).toEqual([
+          `The ORIGINAL carries link-url ${A} where the PAGE AS IT STANDS carries link-url ${B}: the page rendered `
+            + 'the original\'s reference another way, and your translation must carry exactly 1 of these, taken from '
+            + 'either side; it carries 2.',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'COUNTS A POOLED RENDERING carried twice as one draw and one copy too many, naming both counts',
+      fn: async () => {
+        expect(atomFindings({
+          source: [link(A,),],
+          page: [link(B,),],
+          candidate: [link(A,), link(A,),],
+          referenceName: 'ORIGINAL or the PAGE AS IT STANDS',
+        },),).toEqual([
+          `Your translation carries link-url ${A} 2 times and the ORIGINAL or the PAGE AS IT STANDS carries it once.`,
+        ],);
       },
     },),
 
@@ -198,6 +215,45 @@ await describe({
           referenceName: 'ORIGINAL',
         },),).toEqual([
           `Your translation carries link-url ${C} and the ORIGINAL does not.`,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'NAMES EACH ATOM ONCE WITH ITS COUNTS, never saying a side carries none of an atom it carries fewer '
+        + 'times, nor repeating one sentence per copy',
+      fn: async () => {
+        expect(atomFindings({
+          source: [link(A,), link(C,), link(C,),],
+          page: [],
+          candidate: [link(A,),],
+          referenceName: 'ORIGINAL',
+        },),).toEqual([
+          `The ORIGINAL carries link-url ${C} 2 times and your translation does not.`,
+        ],);
+        expect(atomFindings({
+          source: [link(A,), link(C,), link(C,),],
+          page: [],
+          candidate: [link(A,), link(C,),],
+          referenceName: 'ORIGINAL',
+        },),).toEqual([
+          `The ORIGINAL carries link-url ${C} 2 times and your translation carries it once.`,
+        ],);
+        expect(atomFindings({
+          source: [link(A,),],
+          page: [],
+          candidate: [link(A,), link(C,), link(C,),],
+          referenceName: 'ORIGINAL',
+        },),).toEqual([
+          `Your translation carries link-url ${C} 2 times and the ORIGINAL does not.`,
+        ],);
+        expect(atomFindings({
+          source: [link(C,),],
+          page: [],
+          candidate: [link(C,), link(C,), link(C,),],
+          referenceName: 'ORIGINAL',
+        },),).toEqual([
+          `Your translation carries link-url ${C} 3 times and the ORIGINAL carries it once.`,
         ],);
       },
     },),

@@ -10623,6 +10623,48 @@ and the case that said the floor fell back to the original alone,
 whose page plain markdown reads,
 now says it reads the page under plain markdown and checks the grammar it names.
 
+### B37: the reference-count floor told a model a side carried none of an atom it carried
+
+Status:
+fixed 2026-09-30 (UTC) with the sixth T8 batch,
+found reading `translate-atom-rendering.ts` 341,
+the arm writing "N times" for an atom carried too often,
+which no test reached.
+The floor compares the atoms (link destinations,
+footnote markers and the like) a candidate carries with the ones the original and the page carry,
+as multisets,
+and its findings go back to the model that wrote the candidate.
+It wrote one sentence per missing copy and one per surplus atom,
+and each sentence said the other side carried none of it:
+a candidate carrying a link once where the original carries it twice was told
+"The ORIGINAL carries link-url … and your translation does not.",
+and a candidate carrying a link three times where the original carries it once was told
+"Your translation carries link-url … 2 times and the ORIGINAL does not."
+A link missing twice drew the same sentence twice.
+A model told the original lacks a link it carries can remove every copy,
+and is then refused for dropping it.
+
+Fix:
+the floor counts each side per atom and writes one sentence per atom,
+naming both counts where both are non-zero
+("The ORIGINAL carries link-url … 2 times and your translation carries it once.");
+a side carrying none keeps the sentence it had,
+with the count where it is more than one.
+The rendering pools,
+which already named both counts,
+are unchanged.
+`translate-atom-rendering.unit.test.ts` pins every arm by its whole sentence:
+missing twice,
+short by one,
+invented twice,
+carried three times against once,
+and a pooled rendering carried twice.
+Run against the build from before the change,
+the two new cases failed,
+one on two identical sentences and one on a pooled rendering's "does not".
+The finding reaches the model in the revision round,
+so the change joins the translate cache account before a launch.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
