@@ -440,8 +440,20 @@ and original/duplicate/alias re-registration rejection were exercised.
 Historical scope matching remained available after reset.
 `currentEligibilityEstablished:false` is retained;
 constructor-owned association did not establish human-authorized SDK ancestry or a current grant.
-Next work is separately declared synthetic selected-guard sensitivity,
-not replay or mutation of the genuine original epoch.
+Separately predeclared synthetic selected-guard sensitivity is implemented privately.
+Independent source review required same-owner distinct transactions,
+exact expected domain errors rather than blanket assertion catches,
+pair-identical references,
+and full generated-worker boundary checks.
+Separate inert timeout control `proc_2ced` passed explicit `SIGKILL` settlement;
+old-space limits are not total-process memory and file-backed streams are checked after exit,
+not live disk-write capped.
+Initial artifact/source freeze `proc_dde4` passed.
+Actual SDK pairs `proc_3a8b` are running;
+no completed sensitivity result is established yet.
+No genuine original read,
+mutation,
+or interaction replay belongs to that synthetic phase.
 Counterfeit root-handle rejection is not actual outsider-manager coverage.
 No source freeze or future intact pass establishes new guard-omission sensitivity.
 Its records must remain operationally test-only,
