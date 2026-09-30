@@ -30,6 +30,7 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
+import { capturingLogger, } from '../capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -806,6 +807,317 @@ await describe({
           l,
         },);
         expect([...admission.positions,],).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+/**
+ Opening half of a disclosure block: the tag and its summary.
+ */
+const DEFICIT_OPEN_SOURCE = '<details>\n\n<summary>猫的故事</summary>';
+
+/**
+ Archive's rendering of the opening half, the tag written its own way.
+ */
+const DEFICIT_OPEN_TARGET = '<details style="margin-top: 0.5rem;">\n<summary>The cat\'s story</summary>';
+
+/**
+ First paragraph inside the block, translated.
+ */
+const DEFICIT_FIRST_SOURCE = '橘猫在窗台上睡了整个下午。';
+
+/**
+ Archive's rendering of the first paragraph, running long enough that the
+ whole-page budget reads the page as complete.
+ */
+const DEFICIT_FIRST_TARGET = 'The orange cat slept on the windowsill all afternoon while the sun warmed its fur through. '
+  .repeat(3,)
+  .trimEnd();
+
+/**
+ Paragraph inside the block the archive never rendered.
+ */
+const DEFICIT_MISSING_SOURCE = '猫在夜里回家了，谁也没有听见门响。';
+
+/**
+ The archive's rendering of that paragraph, for the control whose block is
+ not short.
+ */
+const DEFICIT_MISSING_TARGET = 'The cat came home at night, and nobody heard the door.';
+
+/**
+ Closing half: the last paragraph and the closing tag.
+ */
+const DEFICIT_CLOSE_SOURCE = '猫不喜欢洗澡。\n\n</details>';
+
+/**
+ Archive's rendering of the closing half.
+ */
+const DEFICIT_CLOSE_TARGET = 'The cat does not like baths.\n\n</details>';
+
+/**
+ Builds a preparation whose source-only paragraph stands inside a disclosure
+ block, the archive's block short of it or, for the control, carrying a
+ rendering of it inside the closing half.
+
+ @param archiveShort - whether the archive's block has one paragraph fewer
+ than the original's
+
+ @returns Preparation holding the opening half, the first paragraph, the
+ source-only paragraph and the closing half
+
+ @example
+ ```ts
+ const prepared = preparedContainerDeficit({ archiveShort: true, },);
+ ```
+ */
+function preparedContainerDeficit(
+  { archiveShort, }: { readonly archiveShort: boolean; },
+): PreparedDocumentPair {
+  /**
+   The original, block by block.
+   */
+  const sourceText = `${
+    [
+      DEFICIT_OPEN_SOURCE,
+      DEFICIT_FIRST_SOURCE,
+      DEFICIT_MISSING_SOURCE,
+      DEFICIT_CLOSE_SOURCE,
+    ].join('\n\n',)
+  }\n`;
+  /**
+   The archive's closing half, carrying the paragraph for the control.
+   */
+  const closeTarget = archiveShort
+    ? DEFICIT_CLOSE_TARGET
+    : `${DEFICIT_MISSING_TARGET}\n\n${DEFICIT_CLOSE_TARGET}`;
+  /**
+   The archive, block by block.
+   */
+  const targetText = `${
+    [
+      DEFICIT_OPEN_TARGET,
+      DEFICIT_FIRST_TARGET,
+      closeTarget,
+    ].join('\n\n',)
+  }\n`;
+  /**
+   Where the archive's closing half starts, which is where the source-only
+   paragraph would land.
+   */
+  const closeTargetStart = targetText.indexOf(closeTarget,);
+  /**
+   Builds one paired slice from both sides' texts.
+
+   @param sliceIndex - where the slice stands
+
+   @param source - original text
+
+   @param target - archive text
+
+   @returns Slice paired with its rendering
+
+   @example
+   ```ts
+   const slice = pairedAt({ sliceIndex: 0, source: DEFICIT_OPEN_SOURCE, target: DEFICIT_OPEN_TARGET, },);
+   ```
+   */
+  function pairedAt(
+    {
+      sliceIndex,
+      source,
+      target,
+    }: {
+      readonly sliceIndex: number;
+      readonly source: string;
+      readonly target: string;
+    },
+  ): ChunkPair {
+    /**
+     Where the original text starts.
+     */
+    const sourceStart = sourceText.indexOf(source,);
+    /**
+     Where the archive text starts.
+     */
+    const targetStart = targetText.indexOf(target,);
+    return {
+      source: {
+        kind: 'content',
+        sliceIndex,
+        nodes: [],
+        startOffset: sourceStart,
+        endOffset: sourceStart + source.length,
+        text: source,
+      },
+      target: {
+        kind: 'content',
+        sliceIndex,
+        nodes: [],
+        startOffset: targetStart,
+        endOffset: targetStart + target.length,
+        text: target,
+      },
+    };
+  }
+  /**
+   Where the source-only paragraph starts in the original.
+   */
+  const missingStart = sourceText.indexOf(DEFICIT_MISSING_SOURCE,);
+  return {
+    sourceText,
+    targetText,
+    slices: [
+      pairedAt({
+        sliceIndex: 0,
+        source: DEFICIT_OPEN_SOURCE,
+        target: DEFICIT_OPEN_TARGET,
+      },),
+      pairedAt({
+        sliceIndex: 1,
+        source: DEFICIT_FIRST_SOURCE,
+        target: DEFICIT_FIRST_TARGET,
+      },),
+      {
+        source: {
+          kind: 'content',
+          sliceIndex: 2,
+          nodes: [],
+          startOffset: missingStart,
+          endOffset: missingStart + DEFICIT_MISSING_SOURCE.length,
+          text: DEFICIT_MISSING_SOURCE,
+        },
+        target: makeInsertionChunk({
+          sliceIndex: 2,
+          offset: closeTargetStart,
+        },),
+      },
+      pairedAt({
+        sliceIndex: 3,
+        source: DEFICIT_CLOSE_SOURCE,
+        target: closeTarget,
+      },),
+    ],
+    lineStructuredSliceIndices: new Set(),
+    declaredNames: [],
+    alignmentFindings: [],
+    unclaimedTargetBlocks: [],
+    alignmentPairCount: 3,
+  };
+}
+
+/**
+ Admits the one source-only paragraph of a container preparation, every
+ voice finding it absent, recording what the admission logged.
+
+ @param archiveShort - whether the archive's block is one paragraph short
+
+ @returns The admission beside the lines it logged
+
+ @example
+ ```ts
+ const { admission, messages, } = await deficitAdmission({ archiveShort: true, },);
+ ```
+ */
+async function deficitAdmission(
+  { archiveShort, }: { readonly archiveShort: boolean; },
+): Promise<{
+  readonly admission: InsertionAdmission;
+  readonly messages: readonly string[];
+}> {
+  /**
+   Lines the admission logged.
+   */
+  const messages: string[] = [];
+  /**
+   The admission.
+   */
+  const admission = await decidePassInsertionAdmission({
+    client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
+    prepared: preparedContainerDeficit({ archiveShort, },),
+    modelIds: ROSTER,
+    overlap: 1,
+    signal: new AbortController().signal,
+    perCallTimeoutMs: 1_000,
+    l: capturingLogger({ messages, },),
+  },);
+  return {
+    admission,
+    messages,
+  };
+}
+
+/**
+ Opening of the deficit finding for the paragraph at slice 2.
+ */
+const DEFICIT_FINDING_OPENING = 'insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3';
+
+await describe({
+  name: `${decidePassInsertionAdmission.name} over a container the archive carries short (class sixty-one)`,
+  children: [
+    it({
+      name: 'ADMITS the absent paragraph on the deficit, records the finding, and logs it under the admission\'s '
+        + 'tag; the same paragraph inside a block the archive carries whole is neither admitted on a deficit nor '
+        + 'logged as one, the control',
+      fn: async () => {
+        /**
+         Admission over the short block.
+         */
+        const short = await deficitAdmission({ archiveShort: true, },);
+        /**
+         Admission over the whole block.
+         */
+        const whole = await deficitAdmission({ archiveShort: false, },);
+        /**
+         What one admission made of the paragraph.
+
+         @param run - admission and its lines
+
+         @returns Whether the paragraph was admitted, and whether the finding
+         was recorded and logged
+
+         @example
+         ```ts
+         const read = deficitReading({ run: short, },);
+         ```
+         */
+        function deficitReading(
+          { run, }: { readonly run: Awaited<ReturnType<typeof deficitAdmission>>; },
+        ): {
+          readonly admitted: boolean;
+          readonly recorded: boolean;
+          readonly logged: boolean;
+        } {
+          return {
+            admitted: run.admission
+              .positions
+              .has(2,),
+            recorded: run.admission
+              .findings
+              .some(function opensTheFinding(finding,): boolean {
+                return finding.startsWith(DEFICIT_FINDING_OPENING,);
+              },),
+            logged: run.messages.some(function logsTheFinding(message,): boolean {
+              return message.startsWith(`[${decidePassInsertionAdmission.name}] ${DEFICIT_FINDING_OPENING}`,);
+            },),
+          };
+        }
+        expect({
+          short: deficitReading({ run: short, },),
+          whole: deficitReading({ run: whole, },),
+        },).toEqual({
+          short: {
+            admitted: true,
+            recorded: true,
+            logged: true,
+          },
+          whole: {
+            admitted: false,
+            recorded: false,
+            logged: false,
+          },
+        },);
       },
     },),
   ],
