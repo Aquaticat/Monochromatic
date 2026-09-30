@@ -398,8 +398,11 @@ Synthetic original-binding controls `proc_bda2` passed:
 invalid capture/nonce/scope/writer/finalization and summary-only fixtures stopped before actual SDK import.
 The intact synthetic fixture and capture-check omission reached SDK barrel import,
 with zero sessions/models/genuine reads and no genuine-authority claim.
-Guarded source freeze is running;
-its actual original-reading consumer remains undispatched.
+Guarded source freeze `proc_25cf` passed with the reviewed construction-owner closure pin.
+Protected actual consumer `proc_baa1` is running;
+no completed outcome or admission claim is established yet.
+The preceding unlaunched draft remains withheld.
+No genuine requester/editor is replayed.
 It carries original configured-writer/byte/presentation/exact-scope evidence,
 not summary booleans or arbitrary tokens.
 Original validation must finish before SDK/provider startup;
