@@ -843,3 +843,113 @@ No clone,
 account change,
 vendor contact,
 or upstream mutation follows from the owned exit-status correction.
+
+## Owned fork source-accounting and encoded import boundary
+
+### Symptom and source
+
+Independent draft review found that counters called constructor invocations actually counted owner-delegate entries.
+It also found a replacement-string boundary after URL/JSON encoding and a masked extra-system test.
+These were owned prototype defects,
+corrected before the new source smoke was consumed.
+They do not establish an SDK defect or previously executed allocation failure.
+
+In the private qualification repository,
+`contract/lifecycle/fork-sensitivity-controls/fork-owner-wrapper.mjs:50` records a boundary request before admission.
+Its delegate counter at line 56 records entering the owned factory,
+not observing an SDK-internal constructor:
+
+```javascript
+// Private contract repository: contract/lifecycle/fork-sensitivity-controls/fork-owner-wrapper.mjs:50 to 57
+childRequests += 1;
+if (!configured || returnedRoot === undefined) throw new SyntheticForkFixtureError('Declared synthetic origin construction is unavailable');
+if (originManager !== returnedRoot) throw new SyntheticForkFixtureError('Declared synthetic fork source is not the returned origin manager');
+assertBaselineOwnedManager(originManager);
+if (childReserved) throw new SyntheticForkBudgetError();
+childReserved = true;
+childOwnerDelegateCalls += 1;
+const manager = forkBaselineOwnedManager(originManager);
+```
+
+The controlled fault follows the owned returned child,
+not an SDK-internal allocation-then-throw event.
+The recovered child cannot be relabeled as successful ledger publication.
+The import fix is at `contract/lifecycle/fork-sensitivity-controls/encoded-owner-import.mjs:7`:
+
+```javascript
+// Private contract repository: contract/lifecycle/fork-sensitivity-controls/encoded-owner-import.mjs:7
+return source.replace(selector, () => JSON.stringify(pathToFileURL(ownerPath).href));
+```
+
+The callback preserves encoded path text as data rather than replacement directives.
+The corrected extra-system reference test supplies a valid frozen return and checks capture was never called;
+a malformed return can no longer mask that rejection.
+
+### Verification and limits
+
+One separately declared source-only `proc_d55f` passed on the pinned Node v26.10.0 runtime:
+exit zero,
+stdout 494 bytes,
+stderr zero,
+and no signal.
+Its working catalog includes eight parsed ledger variants,
+four dedicated mock wrapper copies,
+six fork classifier rows,
+two recapture rows,
+and thirteen source/JSON import-literal cases.
+The unsafe string-replacement positive control differs for a dollar replacement token.
+The rejection catalog includes unknown errors,
+sink failure,
+pair-inappropriate domain errors,
+invalid ledger permission metadata,
+malformed recapture output,
+and extra system entries.
+
+The actual SDK owner is only read/pinned;
+all twelve loaded wrapper modules are mock-bound.
+Ledger guards were not behaviorally exercised.
+The new decoder originals are synthetic,
+not a configured-host human witness.
+The real body-identity gate compared complete reviewed tool-read sources against dispatch bytes.
+Successful root-cwd Git and checked creation boundaries were explicitly admitted before dispatch.
+The consumed task was `mise --no-env --no-hooks run check` from `fork-source-check/`;
+do not rerun it.
+SDK imports,
+genuine originals,
+models,
+grants,
+and represented actions are zero.
+
+### Rejected interpretations and next verification
+
+Do not equate delegate entries with constructor or complete internal-allocation counts,
+return events with unique identities,
+fault recovery with published inheritance,
+or source literal round trips with filesystem confinement.
+Mock rows and imported ledger variants do not establish actual SDK guard sensitivity.
+Helper recovery and documented invalid configuration/delegate/return branches remain unexercised.
+The shared actual SDK closure needs a new review,
+freeze,
+and bounded phase with own callback/result/persistence/stop/idle observations.
+The worker old-space,
+post-exit stream-size,
+and timeout controls do not establish total memory,
+live-write caps,
+or parent-stall resistance.
+
+### Upstream filing decision
+
+Nothing to add or file.
+The deciding counters,
+interpolation,
+and reference-test isolation are owned code.
+An upstream defect,
+upstream fix necessity,
+supported upstream failing use case,
+contribution acceptance,
+maintainer response,
+and compatible upstream patch are not established.
+No external source edit,
+account change,
+vendor contact,
+or upstream mutation follows from this source-only correction.

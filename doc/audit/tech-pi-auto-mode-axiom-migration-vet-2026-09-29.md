@@ -434,9 +434,65 @@ fixture action,
 or grant write occurred.
 The old failed runtime remains consumed and is not retroactively qualified.
 Input rejections do not prove guard necessity or source-omission sensitivity.
-Wrong-root/cross-owner prefix capture,
+Actual SDK guard sensitivity for wrong-root/cross-owner prefix capture,
 ledger recapture,
-and new persisted-path rejection branches remain untested.
+and persisted-path rejection remains unqualified.
+Separately declared source-only prefix smoke `proc_29bd` passed eight source pairs,
+16 unchanged-reference movements,
+nine malformed-capture rejections,
+and an independent opaque-shape omission positive control.
+Persisted smoke `proc_7dd8` passed five ordered aggregate negative movements and four direct domain rejections
+on a new explicitly translated custom-error baseline,
+not the historical assertion implementation.
+Its preflight Git root-cwd rejection and false initial admission claims remain preserved and authoritatively corrected;
+finite source acceptance does not rehabilitate that failed procedure.
+Full-document checkpoints `proc_702f` and `proc_a3fc` passed 26 and 28 documents respectively,
+without native diagnostics or genuine-original reads.
+Fork source smoke `proc_d55f` then passed once:
+eight parsed mock-bound ledger variants,
+four dedicated wrapper-unit copies,
+thirteen source/JSON import-literal cases with unsafe replacement positive control,
+six fork classifier rows,
+two recapture rows,
+and six fatal-reference controls.
+It exited zero,
+with stdout 494 bytes and stderr zero.
+Twelve wrapper modules are mock-bound in total;
+ledger variants were parsed,
+not behaviorally exercised.
+Complete nineteen-body independent review,
+real reviewed-body equality checks,
+projection byte admission,
+and explicitly successful root-cwd Git/creation checks preceded dispatch.
+The actual SDK owner was read/pinned,
+not imported.
+Synthetic decoder originals carry no human authentication.
+All source smokes used zero SDK sessions,
+genuine originals,
+external models,
+grants,
+and represented actions.
+They establish no current eligibility or actual SDK sensitivity.
+Counter names now distinguish owner delegate entries,
+accepted return events,
+and distinct returned owned-manager identities;
+controlled wrapper faults follow owner return,
+not observed SDK-internal allocation-then-throw failures.
+Unexercised recovery/configuration/delegate/invalid-return branches and adversarial filesystem loading remain gaps.
+The shared actual SDK worker/generator/controller/full closure/freeze remain absent.
+One combined thirteen-pair/twenty-six-worker phase must retain one 900,000 ms preparation/acceptance deadline,
+34 SDK sessions,
+68 scripted responses,
+34 own callbacks,
+32 returned owned SDK manager identities,
+six child allocations,
+and four successful ledger publications.
+No family resets the deadline;
+unknown/setup/assertion/SDK-caught/malformed results stop the unopened suffix.
+Source passes do not authorize new human epochs,
+reserved scenarios,
+production adoption,
+or replay.
 Cache/target/source/deadline finalization,
 current human grant/directive admission,
 complete-property/raw-byte freshness,
