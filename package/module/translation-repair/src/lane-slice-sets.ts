@@ -56,6 +56,21 @@ export type NamedSliceSet = {
 };
 
 /**
+ One list beside the indices it names, read once and carried together.
+ */
+type NamedIndices = {
+  /**
+   List the lane named.
+   */
+  readonly set: NamedSliceSet;
+
+  /**
+   Its indices, repeats already refused.
+   */
+  readonly indices: ReadonlySet<number>;
+};
+
+/**
  Refuses a list that repeats a slice, and turns it into a set.
  
  @param set - list being checked, for its label and indices
@@ -253,16 +268,19 @@ export function validateNamedSets(
   },
 ): readonly ReadonlySet<number>[] {
   /**
-   Each list as a set, refusing repeats within one list.
+   Each list beside its indices, repeats within one list refused as each is
+   read. Paired once, so no later step looks a list's indices up by position.
    */
-  const named = sets.map(function toSet(set,): ReadonlySet<number> {
-    return distinctIndices({ set, },);
+  const named = sets.map(function withIndices(set,): NamedIndices {
+    return {
+      set,
+      indices: distinctIndices({ set, },),
+    };
   },);
-  for (const [position, set,] of sets.entries()) {
-    /**
-     This list's indices, which `named` holds at the same position.
-     */
-    const indices = named[position] ?? new Set<number>();
+  for (const {
+    set,
+    indices,
+  } of named) {
     assertNamesLegalSlices({
       set,
       indices,
@@ -274,27 +292,19 @@ export function validateNamedSets(
   // BEFORE THE ARCHIVE RULES, because a slice named by two lists disagrees with
   // itself first: reporting which archive rule it breaks would answer a
   // question neither list has earned the right to ask.
-  for (const [position, set,] of sets.entries()) {
-    for (const [otherPosition, other,] of sets.entries()) {
-      if (otherPosition <= position)
-        continue;
-
-      /**
-       Slices both lists name, which is a contradiction whichever two they
-       are.
-       */
-      const mine = named[position] ?? new Set<number>();
-
-      /**
-       Indices the later list names.
-       */
-      const theirs = named[otherPosition] ?? new Set<number>();
-
+  for (const [position, {
+    set,
+    indices,
+  },] of named.entries()) {
+    for (const {
+      set: other,
+      indices: otherIndices,
+    } of named.slice(position + 1,)) {
       /**
        Slices both name, which is a contradiction whichever two lists they are.
        */
-      const both = [...mine,].filter(function inOther(sliceIndex,): boolean {
-        return theirs.has(sliceIndex,);
+      const both = [...indices,].filter(function inOther(sliceIndex,): boolean {
+        return otherIndices.has(sliceIndex,);
       },);
       for (const sliceIndex of both) {
         throw new LaneSliceCoverageError({
@@ -308,14 +318,19 @@ export function validateNamedSets(
       }
     }
   }
-  for (const [position, set,] of sets.entries()) {
+  for (const {
+    set,
+    indices,
+  } of named) {
     assertArchiveAllows({
       set,
-      indices: named[position] ?? new Set<number>(),
+      indices,
       slices,
     },);
   }
-  return named;
+  return named.map(function indicesOf({ indices, },): ReadonlySet<number> {
+    return indices;
+  },);
 }
 
 //endregion Lane slice sets

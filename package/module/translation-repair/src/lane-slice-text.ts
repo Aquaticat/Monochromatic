@@ -171,10 +171,9 @@ export type UndecidedSlicePolicy =
  
  @param sliceIndex - slice being named, for the failure message
  
- @param byIndex - wordings the lane reported, by slice index; asked BOTH
- whether it holds this slice and what it holds, because a slice reported with
- nothing in it and a slice not reported at all are different faults and a
- lookup answers them the same way
+ @param byIndex - wordings the lane reported, by slice index; every decision
+ carries its wording as a string, the empty string included, so a slice the
+ map holds is a decided slice
  
  @param unfilledHere - whether the lane named this slice as reached and
  unfillable
@@ -185,8 +184,7 @@ export type UndecidedSlicePolicy =
  
  @returns Outcome for this slice
  
- @throws {@link LaneSliceCoverageError} when a decision carries no wording, or
- when a gap is left under `refuse`
+ @throws {@link LaneSliceCoverageError} when a gap is left under `refuse`
  
  @example
  ```ts
@@ -210,24 +208,15 @@ function outcomeOf(
     readonly undecided: UndecidedSlicePolicy;
   },
 ): LaneSliceOutcome {
-  if (byIndex.has(sliceIndex,)) {
-    /**
-     Wording the lane reported, which `byIndex.has` proves is
-     there unless the lane reported the slice with nothing in it.
-     */
-    const acceptedText = byIndex.get(sliceIndex,);
-    if ((typeof acceptedText) !== 'string')
-      throw new LaneSliceCoverageError({
-        fault: {
-          kind: 'decided-without-wording',
-          sliceIndex,
-        },
-      },);
+  /**
+   Wording the lane decided for this slice, absent where it decided none.
+   */
+  const acceptedText = byIndex.get(sliceIndex,);
+  if (acceptedText !== undefined)
     return {
       kind: 'decided',
       acceptedText,
     };
-  }
 
   // NAMED RATHER THAN INFERRED, and checked before the policy, because a slice
   // the lane reached and could not fill is neither of the two shapes the policy

@@ -2,6 +2,7 @@ import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 
@@ -382,14 +383,11 @@ export async function contestDocumentLanes(
            */
           const sliceModelIds = seating.modelIds ?? modelIds;
           /**
-           Original of this slice, which every ledger row carries.
+           Original of this slice, which every ledger row carries. The
+           comparison is built from the repair ledger row by row
+           (`compareLanes`), so every compared slice has one there.
            */
-          const sourceText = sourceTexts.get(row.sliceIndex,);
-          if (sourceText === undefined) {
-            throw new Error(
-              `lane contest: slice ${String(row.sliceIndex,)} is compared and does not appear in the repair ledger`,
-            );
-          }
+          const sourceText = nonNullishOrThrow(sourceTexts.get(row.sliceIndex,),);
 
           /**
            Syntax role shared by prompt and cache key.

@@ -143,16 +143,6 @@ export type LaneSliceCoverageFault = {
   readonly sliceIndex: number;
 } | {
   /**
-   Lane decided a slice and recorded no wording for it.
-   */
-  readonly kind: 'decided-without-wording';
-
-  /**
-   Slice decided.
-   */
-  readonly sliceIndex: number;
-} | {
-  /**
    Lane left a prepared slice undecided under a policy that refuses that.
    */
   readonly kind: 'left-undecided';
@@ -260,8 +250,6 @@ export function laneCoverageSentence({ fault, }: { readonly fault: LaneSliceCove
     return `lane reports slice ${String(fault.sliceIndex,)} as ${fault.set} and ${
       fault.other
     } at once, so what it did there is stated twice and differently`;
-  if (fault.kind === 'decided-without-wording')
-    return `lane decided slice ${String(fault.sliceIndex,)} with no wording`;
   if (fault.kind === 'left-undecided')
     return `lane left prepared slice ${String(fault.sliceIndex,)} undecided`;
   if (fault.kind === 'preparation-repeats')

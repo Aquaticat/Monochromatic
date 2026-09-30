@@ -239,6 +239,17 @@ export function settleArchiveBallots(
 }
 
 /**
+ A ballot this stage read from a seat it asked, which always names that seat.
+ 
+ SEATED BY CONSTRUCTION. `LaneContestBallot` leaves the seat optional for a
+ ballot read back from an artifact settled before seats were recorded; every
+ ballot this stage builds comes from a reply its round received from one
+ seat, so the seat is always there, and the stage's own helpers take this
+ type rather than asking.
+ */
+type SeatedBallot = LaneContestBallot & { readonly modelId: string; };
+
+/**
  Drops one ballot's archive answer, keeping everything else it said.
  
  @param ballot - ballot that answered about an archive that was not there
@@ -257,8 +268,8 @@ export function settleArchiveBallots(
  ```
  */
 function withoutArchiveAnswer(
-  { ballot, }: { readonly ballot: LaneContestBallot; },
-): LaneContestBallot {
+  { ballot, }: { readonly ballot: SeatedBallot; },
+): SeatedBallot {
   return {
     choice: ballot.choice,
     unsupported: ballot.unsupported,
@@ -266,8 +277,7 @@ function withoutArchiveAnswer(
     dropped: ballot.dropped,
     droppedRaw: ballot.droppedRaw,
     reason: ballot.reason,
-    // Conditional spread keeps the seat absent instead of undefined.
-    ...((ballot.modelId === undefined) ? {} : { modelId: ballot.modelId, }),
+    modelId: ballot.modelId,
   };
 }
 
@@ -293,7 +303,7 @@ function logBallots(
     ballots,
     l,
   }: {
-    readonly ballots: readonly LaneContestBallot[];
+    readonly ballots: readonly SeatedBallot[];
     readonly l: Logger;
   },
 ): void {
@@ -310,7 +320,7 @@ function logBallots(
     const dropped = ballot.dropped
       .join(', ',);
     l.info(
-      `lane contest ballot by ${ballot.modelId ?? 'an unnamed seat'}: chose ${ballot.choice}, archive ${
+      `lane contest ballot by ${ballot.modelId}: chose ${ballot.choice}, archive ${
         ballot.archive ?? 'unanswered'
       }, unsupported [${unsupported}], dropped [${dropped}]: ${ballot.reason}`,
     );
@@ -406,7 +416,7 @@ export async function contestLaneSlice(
    */
   const ballots = outcomes.flatMap(function toBallot(
     outcome,
-  ): readonly LaneContestBallot[] {
+  ): readonly SeatedBallot[] {
     /**
      This seat and its voice, heard or lost.
      */
@@ -435,7 +445,7 @@ export async function contestLaneSlice(
    stored, and stripping in one place keeps those two from disagreeing.
    */
   const recorded = (subject.incumbentText === '')
-    ? ballots.map(function strip(ballot,): LaneContestBallot {
+    ? ballots.map(function strip(ballot,): SeatedBallot {
       return withoutArchiveAnswer({ ballot, },);
     },)
     : ballots;
