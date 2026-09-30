@@ -137,8 +137,10 @@ The user owes no placement/visibility answer.
 Task 141's artifact,
 guard-removal proofs,
 consumer and document checks passed.
-The policy-vote guard also rejects required notes and policy-bearing replies;
-quoted attribute-value controls prevent mistaking placeholder wording
+The guard rejects required notes and placement/visibility lookup syntax.
+The current rendered observations add no generated policy selection;
+this is not an exhaustive policy-text classifier.
+Quoted attribute-value controls prevent mistaking placeholder wording
 for a real `required` attribute.
 Default-template design and customization/disambiguation interactions
 remain open;
