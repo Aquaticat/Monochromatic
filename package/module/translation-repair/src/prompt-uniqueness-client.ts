@@ -40,11 +40,11 @@ type PromptValue =
 /**
  Narrows a prompt value to a list, keeping its items typed as prompt values
  where `Array.isArray` alone would widen them.
-
+ 
  @param value - prompt value of either compound shape, or a string
-
+ 
  @returns Whether value is a list
-
+ 
  @example
  ```ts
  const isList = isPromptList(value,);
@@ -56,18 +56,18 @@ function isPromptList(value: PromptValue,): value is readonly PromptValue[] {
 
 /**
  Serializes prompt value with stable object-key order.
-
+ 
  Arrays preserve semantic order while object construction order does not affect identity.
-
+ 
  KEYS SORT BY UTF-16 CODE UNIT, as canonical JSON (RFC 8785) sorts them, and as
  the default `toSorted` compares strings. `localeCompare` follows the host's
  locale, and this digest names a durable payload record that a run on another
  host may read.
-
+ 
  @param value - prompt value composed from protocol strings
-
+ 
  @returns Stable structural serialization
-
+ 
  @example
  ```ts
  const serialized = canonicalPromptValue({ role: 'user', content: 'Hello', },);
