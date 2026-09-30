@@ -219,8 +219,11 @@ this one says what changed after it.
   (`4ab6436bf`,
   `d27a89dd0`),
   and refuses a baseline taken with uncommitted changes.
-  Next is a whole-suite census at a committed head as the new baseline,
-  then the library batches,
+  The new baseline is the whole suite at `d51526b60` (`census-oRsK9f`,
+  1,394 PASS lines):
+  library source holds 1,051 stretches over 2,581 lines in 407 files,
+  with 27 functions never called.
+  Next are the library batches,
   grouped by shared fixture,
   each throw and nullish fallback read for reachability before a case is written;
   the ledger's T8 entry has the triage counts.

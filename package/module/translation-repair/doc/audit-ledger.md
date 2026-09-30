@@ -3093,6 +3093,23 @@ lines 77 to 80,
 read as run,
 and no commit has touched that file since the baseline.
 
+The batches now read against the whole suite at `d51526b60` under the census
+(`census-oRsK9f`,
+1,394 PASS lines and no FAIL line,
+taken from a tree with nothing uncommitted under the package),
+which is also the whole-suite run B34's barrel,
+return-type and error-class changes had not yet had.
+Library source holds 1,051 stretches over 2,581 lines in 407 files,
+with 27 functions never called.
+By the first construct each stretch's lines hold
+(`t8-triage-orsk9f.txt`,
+from `t8-triage.mjs` in the audit's scratch folder),
+the queue is 290 returns,
+274 ternaries,
+221 nullish fallbacks,
+141 throws
+and 125 others.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

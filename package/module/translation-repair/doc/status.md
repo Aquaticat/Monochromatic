@@ -72,9 +72,11 @@ B31 and B32 closed on its way,
 so `src/dead-code.unit.test.ts` now fails on any function,
 class or value production does not reach,
 and `src/unused-imports.unit.test.ts` on any import nothing reads.
-Its batches resume against the whole-suite census at `6e631988b` (`census-wNMuym`):
-library source holds 1,104 stretches over 2,799 lines in 423 files,
-with 29 functions never called,
+Its batches read against the whole-suite census at `d51526b60` (`census-oRsK9f`,
+1,394 PASS lines,
+taken from a tree with nothing uncommitted):
+library source holds 1,051 stretches over 2,581 lines in 407 files,
+with 27 functions never called,
 and the runner entry files and unloaded bundles come after.
 As of 2026-09-30 (UTC),
 the first batch tests the census's own placement (`5e27208c7`),
@@ -91,14 +93,14 @@ every artifact refusal reason the B33 census read now reads as what the reader e
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
 which `message-names-only.unit.test.ts` now checks at every construction.
 The census reading now leaves sources edited since its baseline out of its counts,
-since it matches stretches by line (`d27a89dd0`),
-and the next batch reads against a whole-suite census taken at a committed head.
-By the first construct each stretch's lines hold,
-the queue is 181 throws,
-222 nullish fallbacks,
-276 ternaries,
-296 returns
-and 129 others;
+since it matches stretches by line (`d27a89dd0`).
+By the first construct each stretch's lines hold
+(`t8-triage-orsk9f.txt` in the audit's scratch folder),
+the queue is 141 throws,
+221 nullish fallbacks,
+274 ternaries,
+290 returns
+and 125 others;
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 Holding the launch for T8 is a quality call recorded for the owner to veto,
