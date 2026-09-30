@@ -4,8 +4,12 @@
 
 The bounded filename assessment warrants a consequential comparison,
 not a filename-display selection.
-This is a proposal,
-not an accepted decision or authorization for dependent implementation.
+The user directed continued work after the bounded assessment.
+That authorizes further design-only evidence gathering and debug-native
+variants within the retained constraints,
+not selection of extension visibility or placement and not production
+implementation.
+This plan remains a proposal for the eventual presentation choice.
 Search A,
 E2's information clearance,
 the retained inner browser and complete deck,
@@ -128,6 +132,46 @@ B ranks ahead of C because deferral preserves the tested distinctions
 rather than adopting a treatment that hides them.
 This ranks investigation paths,
 not selected extension visibility or placement.
+
+## Actual-renderer baseline route
+
+Source inspection found a public `playerScreen` composable in
+`MainActivity.kt`.
+It calls the real private row/pager renderers and production chrome.
+`PlayerController` accepts the existing `AudioEngine` interface;
+synthetic tracks can enter through `openLibrary` without autoplay,
+and a selected URI can be restored paused through `finishLoad`.
+A debug-only host can therefore call the actual production renderer with
+a recording no-audio engine,
+without reflection,
+copied row UI,
+real media files,
+source indexing or production edits.
+
+This route is pending implementation and inspected capture.
+Audit rendering-relevant host setup and dependencies first;
+calling the composable alone does not prove matching window geometry.
+Describe the result as a static native production-renderer capture with
+synthetic tracks,
+not a live player,
+service/library loading or playback verification.
+
+## Communication correction
+
+The user should not have needed to say “Keep working.”
+The completed bounded assessment left permitted evidence gathering,
+not a presentation choice requiring an immediate answer.
+Continue that work before presenting remaining visual preferences.
+
+The proposed `AGENTS.md` change tightens the existing `PXQ` rule;
+no instruction file is edited in this round:
+
+```text
+# AGENTS.md proposed PXQ replacement
+PXQ:
+ Finish the authorized queue. More permitted evidence gathering is a next step, not a user gate.
+ Stop only for a named blocker or user choice; never require "continue".
+```
 
 ## Decision checkpoint
 

@@ -61,6 +61,14 @@ The genuine ordinary-player baseline is still missing.
 `doc/planning/music-player-search-filename-comparison.md` proposes
 independent placement and visibility comparisons,
 not an accepted preference or authorization for dependent work.
+The user directed continued work after the bounded assessment.
+Internal tasks 138 to 140 continue actual-renderer baseline capture,
+usable debug-native presentation variants and verified visual review.
+The public `playerScreen` and `AudioEngine` seam avoid the earlier copied-row
+limitation;
+that actual-renderer capture remains pending.
+This is authorization to gather design evidence,
+not selection of a presentation policy or production implementation.
 No extension preference has been selected.
 Matcher selection,
 new IME studies and original-AVD changes remain excluded.
