@@ -500,7 +500,18 @@ Node emitted `AssertionError [ERR_ASSERTION]` at the parent acceptance gate:
 `Historical fork consumer failed; detailed diagnostics remain private; stop without replay`.
 The attempt and unopened suffix are consumed/preserved;
 no fork pass or original-grant premise is established.
-Fixed-schema private failure metadata inspection `proc_5f79` is separate and pending.
+Fixed-schema private coordinate inspection `proc_5f79` passed:
+`attachment.mjs:128` rejected the origin message-role sequence before fork construction.
+Strict enum reader `proc_2412` failed and remains consumed;
+separate enum-metadata correction `proc_ef03` passed without SDK/original replay.
+Actual roles were `system/user/assistant/toolResult/assistant`;
+the owned reference incorrectly omitted the leading `system` entry.
+The completed origin reference is retained;
+actual fork and child/reset suffix were not reached.
+Earlier source-only clearance missed this transcript premise and is narrowed accordingly.
+No Pi defect or upstream filing follows.
+Next: separately declare exact retained system-prefix mechanics without treating the prefix as authority;
+settle any additional configuration-binding premise before its source review/freeze/runtime.
 The completed `root-sensitivity-controls/` phase read no genuine original and replayed no interaction.
 The new `fork-mechanical-controls/` worker privately rereads retained admitted evidence before SDK startup;
 it does not mutate originals,

@@ -1,5 +1,97 @@
 # Pi 0.87.1 nominal dependency inventory rejects the configured workspace graph
 
+## Owned fork consumer omitted a persisted system entry
+
+### Symptom and evidence
+
+The separate private fork mechanics controller `proc_90f8` failed after one second.
+Node emitted `AssertionError [ERR_ASSERTION]` at the parent acceptance gate:
+`Historical fork consumer failed; detailed diagnostics remain private; stop without replay`.
+The child exited one without a signal or bounded stop,
+with empty stdout and 818 bytes of private stderr.
+
+Fixed-coordinate inspection `proc_5f79` identified the owned assertion at
+`contract/lifecycle/fork-mechanical-controls/attachment.mjs:128`.
+Strict role metadata reader `proc_2412` failed without exporting its rejected token.
+Separately declared enum-only correction `proc_ef03` admitted:
+`system/user/assistant/toolResult/assistant`.
+The reference expected `user/assistant/toolResult/assistant`.
+The consumed runtime reached the completed origin-session reference,
+but rejected before actual fork construction.
+Its child/reset suffix remains unqualified.
+
+### Source cause and rejected premise
+
+The error was in the owned consumer's four-role expectation,
+not demonstrated upstream behavior failure.
+The earlier source-only clearance missed the persisted-prefix premise.
+
+Pinned Pi source `packages/coding-agent/src/core/agent-session.ts:1420`
+constructs a structured system message when prompt sections change:
+
+```ts
+// packages/coding-agent/src/core/agent-session.ts:1420
+return sections ? { role: "system", content: "", sections, timestamp: Date.now() } : undefined;
+```
+
+The same file at line 933 includes system messages in ordinary persistence:
+
+```ts
+// packages/coding-agent/src/core/agent-session.ts:933
+event.message.role === "system" ||
+event.message.role === "user" ||
+event.message.role === "assistant" ||
+event.message.role === "toolResult"
+```
+
+This source admits persisted system entries;
+the private enum receipt establishes the actual fixture's leading role.
+Those facts do not establish every section's producer,
+configuration binding,
+or authority.
+Read-only source remains commit `f07218c4d4bbc12bef056a7058c3dd49dfe41abe`.
+
+### Verification and next correction
+
+The consumed command was `mise --no-env --no-hooks run probe`
+from the private `contract/lifecycle/fork-mechanical-controls/` directory.
+It must not be launched again.
+The separate full closure freeze `proc_2cae` passed ten syntax checks,
+not runtime correctness.
+The completed root sensitivity controls remain a different passing catalog,
+not evidence for added fork guards.
+
+No verified fork workaround exists yet.
+A separately declared correction must preserve the exact SDK prefix,
+ordered call/result/stop,
+selected records,
+complete branch JSON,
+and original immutable evidence linkage.
+Accepting a system role cannot admit instruction authority or a human grant.
+Any configuration-bound prefix assertion needs its deciding getter/projection source,
+not a guessed section schema.
+Do not fix the consumed source,
+filter away every system message,
+or relabel an intact test as guard sensitivity.
+
+### Upstream filing decision
+
+- Fault: the observed mismatch is the owned transcript expectation;
+  no upstream defect is established.
+- Fixability: consumer correction remains open;
+  no upstream change is required by this evidence.
+- Supported use: the inspected SDK persistence path explicitly includes system messages.
+- Contribution policy: no external contribution is proposed.
+- Maintainer disposition: not assessed because no defect or contribution is established.
+- Prototype: no upstream patch is justified;
+  a separate consumer epoch remains pending.
+
+Nothing is filed or drafted upstream.
+This incident does not establish current human-grant eligibility,
+human-authorized transfer,
+complete lifecycle coverage,
+or five-second handback.
+
 ## Symptom
 
 The private auto-mode SDK preparation controller stopped before evaluating package code:
