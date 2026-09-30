@@ -33,6 +33,7 @@
 import {
   mkdir,
   mkdtemp,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -288,6 +289,29 @@ await describe({
             'Mittens',
             'Whiskers',
           ],);
+      },
+    },),
+
+    it({
+      name: 'SKIPS a directory and a symlink named like an artifact, which the census and the scheduler never '
+        + 'count as settled either, so verifying and republishing never look for their pages (ledger B64)',
+      fn: async () => {
+        const runsDir = await runSettling({ names: ['Mittens.json',], },);
+        await mkdir(join(
+          runsDir,
+          ARTIFACTS,
+          'Tabby.json',
+        ),);
+        await symlink(
+          'Mittens.json',
+          join(
+            runsDir,
+            ARTIFACTS,
+            'Siamese.json',
+          ),
+        );
+        expect(namesOf({ reading: await settledEntryIds({ runsDir, },), },),)
+          .toEqual(['Mittens',],);
       },
     },),
 
