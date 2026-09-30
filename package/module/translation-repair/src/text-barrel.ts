@@ -17,6 +17,10 @@ export {
 } from './cased-letters.ts';
 export { longestRunOf, } from './character-run.ts';
 export {
+  type ClosedMarkSpan,
+  closedMarkSpans,
+} from './closed-mark-spans.ts';
+export {
   codePointAt,
   codePointBefore,
   codePointCount,

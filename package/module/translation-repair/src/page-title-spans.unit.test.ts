@@ -72,6 +72,14 @@ await describe({
       },
     },),
     it({
+      name: 'READS AN OPENING MARK THAT NEVER CLOSED AS NO TITLE (ledger B38), counting only the title after it, '
+        + 'though the same stray mark stands before it twice',
+      fn: async () => {
+        expect(spansOf({ sourceText: '小猫唱了《喵《猫之歌》。\n\n再唱一遍《喵《猫之歌》。\n', },),)
+          .toEqual([{ source: '猫之歌', occurrences: 2, },],);
+      },
+    },),
+    it({
       name: 'LEAVES A TITLE WRITTEN ONCE, since nothing can render it two ways',
       fn: async () => {
         expect(spansOf({ sourceText: '小猫唱了《猫之歌》。\n', },),).toEqual([],);

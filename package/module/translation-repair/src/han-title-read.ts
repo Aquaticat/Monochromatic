@@ -1,3 +1,4 @@
+import { closedMarkSpans, } from './closed-mark-spans.ts';
 import {
   carriesHan,
   isHanOnly,
@@ -150,29 +151,18 @@ export function bracketedTitles(
    Titles read so far.
    */
   const titles: string[] = [];
-  for (
-    let open = text.indexOf(TITLE_OPEN,);
-    open !== (-1);
-    open = text.indexOf(
-      TITLE_OPEN,
-      open + 1,
-    )
-  ) {
-    /**
-     Where that title closes, -1 for never.
-     */
-    const close = text.indexOf(
-      TITLE_CLOSE,
-      open + 1,
-    );
-    if (close === (-1))
-      break;
+  // A MARK THAT NEVER CLOSED brackets nothing (ledger B38).
+  for (const span of closedMarkSpans({
+    text,
+    open: TITLE_OPEN,
+    close: TITLE_CLOSE,
+  },)) {
     /**
      Title between the brackets, the link text where they hold a link.
      */
     const title = titleText({ bracketed: text.slice(
-      open + 1,
-      close,
+      span.open + TITLE_OPEN.length,
+      span.close,
     ), },);
     if (isFreshTitle({
       title,

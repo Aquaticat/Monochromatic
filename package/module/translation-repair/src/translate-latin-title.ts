@@ -1,3 +1,4 @@
+import { closedMarkSpans, } from './closed-mark-spans.ts';
 import {
   carriesAsciiLetter,
   isHanCharacter,
@@ -81,29 +82,18 @@ function latinBracketed({ text, }: { readonly text: string; },): readonly string
    Spans read so far.
    */
   const spans: string[] = [];
-  for (
-    let open = text.indexOf(TITLE_OPEN,);
-    open !== (-1);
-    open = text.indexOf(
-      TITLE_OPEN,
-      open + 1,
-    )
-  ) {
-    /**
-     Where that title closes, -1 for never.
-     */
-    const close = text.indexOf(
-      TITLE_CLOSE,
-      open + 1,
-    );
-    if (close === (-1))
-      break;
+  // A MARK THAT NEVER CLOSED brackets nothing (ledger B38).
+  for (const marks of closedMarkSpans({
+    text,
+    open: TITLE_OPEN,
+    close: TITLE_CLOSE,
+  },)) {
     /**
      Text between the marks.
      */
     const bracketed = text.slice(
-      open + 1,
-      close,
+      marks.open + TITLE_OPEN.length,
+      marks.close,
     );
     /**
      Span with its marks.

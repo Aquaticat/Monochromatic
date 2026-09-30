@@ -93,6 +93,23 @@ await describe({
       },
     },),
     it({
+      name: 'READS AN OPENING MARK THAT NEVER CLOSED AS NO TITLE (ledger B38): a stray 《 before a title leaves the '
+        + 'title quoted alone, and a 《 with no 》 after it ends the reading',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '她的诗：《Purr，还有《Cats Are Liquid》；下一首《Meow',
+          candidateText: 'Her poems: 《Purr, and 《Cats Are Liquid》; next, 《Meow',
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [
+            'Your translation sets the English title 《Cats Are Liquid》 in the Chinese title marks 《》, which mean '
+            + 'nothing in English prose: an English page sets a work\'s title in quotation marks, so write “Cats Are '
+            + 'Liquid” (keeping any link on the title).',
+          ],
+        },);
+      },
+    },),
+    it({
       name: 'ACCEPTS a bracketed title that keeps Han beside its Latin letters when its English stands beside it '
         + '(bare, the Han residue floor refuses it: ledger F-3)',
       fn: async () => {

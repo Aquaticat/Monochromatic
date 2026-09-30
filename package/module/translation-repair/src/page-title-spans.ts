@@ -1,3 +1,4 @@
+import { closedMarkSpans, } from './closed-mark-spans.ts';
 import { codePointCount, } from './code-points.ts';
 import { carriesHan, } from './han-only-text.ts';
 import {
@@ -81,7 +82,8 @@ function shownText({ span, }: { readonly span: string; },): string {
 }
 
 /**
- Texts between an opening and a closing marker, by one linear scan.
+ Texts between an opening and a closing marker, a marker that never closed
+ enclosing nothing (ledger B38).
 
  @param text - page text
 
@@ -107,36 +109,20 @@ function spansBetween(
     readonly close: string;
   },
 ): readonly PlacedText[] {
-  /**
-   Spans found.
-   */
-  const spans: PlacedText[] = [];
-  for (
-    let at = text.indexOf(open,);
-    at !== (-1);
-    at = text.indexOf(
-      open,
-      at + open.length,
-    )
-  ) {
-    /**
-     Where this span closes.
-     */
-    const end = text.indexOf(
-      close,
-      at + open.length,
-    );
-    if (end === (-1))
-      break;
-    spans.push({
-      text: shownText({ span: text.slice(
-        at + open.length,
-        end,
-      ), },),
-      at,
+  return closedMarkSpans({
+    text,
+    open,
+    close,
+  },)
+    .map(function placed(span,): PlacedText {
+      return {
+        text: shownText({ span: text.slice(
+          span.open + open.length,
+          span.close,
+        ), },),
+        at: span.open,
+      };
     },);
-  }
-  return spans;
 }
 
 /**

@@ -10643,6 +10643,13 @@ and a candidate carrying a link three times where the original carries it once w
 A link missing twice drew the same sentence twice.
 A model told the original lacks a link it carries can remove every copy,
 and is then refused for dropping it.
+Of the log files on this machine carrying the floor's sentences,
+701 carry one missing-atom sentence twice on one line,
+and none carries a surplus sentence with a count
+(`t8b6-b37-logscan.mjs` in the audit's scratch folder).
+Those files are unit-suite logs and the logger's per-process files,
+which do not say by path whether a pass or a test wrote them,
+so how many pass runs sent such a sentence to a model is not measured.
 
 Fix:
 the floor counts each side per atom and writes one sentence per atom,
@@ -10664,6 +10671,65 @@ the two new cases failed,
 one on two identical sentences and one on a pooled rendering's "does not".
 The finding reaches the model in the revision round,
 so the change joins the translate cache account before a launch.
+
+### B38: readers of paired marks took an unclosed mark's next title into its span
+
+Status:
+fixed 2026-09-30 (UTC) with the sixth T8 batch,
+found writing a case for `translate-latin-title.ts` 100,
+the reader's stop at an opening mark with no closing mark after it.
+Five readers paired each opening mark with the next closing mark:
+the Latin title floor and the Han title reader (`han-title-read.ts`),
+which read candidates and originals for the translate floors,
+the page-title spans (`page-title-spans.ts`),
+the work-title scan (`work-title-scan.ts`),
+and the title-reference locator (`corpus-run/title-reference-marks.ts`).
+An opening mark that never closed took the next title into its span.
+Given `《Purr, and 《Cats Are Liquid》`,
+the Latin title floor told the model to write `“Purr, and 《Cats Are Liquid”`
+beside a second finding for the real title;
+the Han title floor named a title holding the stray mark;
+the work-title scan looked up the stray span and never the title inside it;
+the page-title spans counted a stray span as a title of its own;
+and the locator,
+reading a page's `《Purr 《Cat Talk》`,
+rewrote `Purr 《Cat Talk` whole with the heading's rendering,
+dropping the words before the title.
+Three of the readers scanned forward from every opening mark,
+so their time grew with the square of the unclosed marks:
+the old reader shape took 225 ms at 10,000 unclosed marks and 14,153 ms at 80,000,
+where the shared reader takes under 2 ms at 80,000 (`t8b6-b38-timing.mjs` in the audit's scratch folder).
+The pinned corpus (279 Markdown files at `a41fc607e`) holds no unclosed 《 or 【,
+five unclosed 「 in five files,
+and four unclosed “ in two files,
+each of those four with its next opening mark on the same line
+(`t8b6-b38-corpus.mjs` and `t8b6-b38-corpus2.mjs`),
+so no English page there uses the multi-paragraph convention of opening each paragraph and closing only the last.
+
+Fix:
+`closed-mark-spans.ts` holds the one pairing rule every reader now uses:
+a closing mark answers the last opening mark before it,
+so an opening mark followed by another before any closing one encloses nothing,
+a closing mark with no opening mark before it is text,
+and identical marks (straight quotation marks) pair in turn.
+It reads each stretch of text once forward and once backward.
+On text whose marks all close,
+every reader returns what it returned before.
+`closed-mark-spans.unit.test.ts` pins the rule,
+and each reader has a stray-mark case:
+the Latin and Han title floors' verdicts,
+`workTitlesOf`,
+`repeatedTitleSpans` with the same stray mark twice,
+and `unifyTitleReferences` keeping the words before the title.
+Run against the build from before the change,
+all five reader cases failed.
+A multi-paragraph quotation on a page would now show its last paragraph to the locator as a quoted span,
+as any quoted line of dialogue is;
+before,
+it was read as one span crossing lines and left out.
+The Latin and Han title findings reach the model in the revision round,
+and the page-title spans and the work-title scan feed preparation,
+so the change joins the translate and preparation cache accounts before a launch.
 
 ## Process mistakes in this audit
 

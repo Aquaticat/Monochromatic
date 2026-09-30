@@ -1,3 +1,4 @@
+import { closedMarkSpans, } from '../closed-mark-spans.ts';
 import { straightenQuotes, } from '../quote-normalize.ts';
 import { wordStarts, } from '../word-bounds.ts';
 import type {
@@ -97,7 +98,8 @@ function opensAttributeValue(
 }
 
 /**
- Every span between an opening and a closing mark on one line.
+ Every span between an opening and a closing mark on one line, a mark that
+ never closed enclosing nothing (ledger B38).
 
  @param pageText - page text of the slice
 
@@ -123,53 +125,32 @@ function spansBetween(
     readonly close: string;
   },
 ): readonly Span[] {
-  /**
-   Spans read so far.
-   */
-  const spans: Span[] = [];
-  for (
-    let at = pageText.indexOf(open,);
-    at !== (-1);
-    at = pageText.indexOf(
-      open,
-      at + 1,
-    )
-  ) {
-    /**
-     Offset of the closing mark, -1 for none.
-     */
-    const closeAt = pageText.indexOf(
-      close,
-      at + open.length,
-    );
-    if (closeAt === (-1))
-      break;
-    /**
-     Inner span.
-     */
-    const inner = pageText.slice(
-      at + open.length,
-      closeAt,
-    );
-    /**
-     Whether the opening mark stands in prose, not after an attribute's equals sign.
-     */
-    const prose = !opensAttributeValue({
-      pageText,
-      at,
-    },);
-    /**
-     Whether the span stays on one line.
-     */
-    const oneLine = !inner.includes(LINE_END,);
-    if (oneLine && prose)
-      spans.push({
-        start: at + open.length,
-        end: closeAt,
+  return closedMarkSpans({
+    text: pageText,
+    open,
+    close,
+  },)
+    .filter(function inProseOnOneLine(marks,): boolean {
+      /**
+       Whether the opening mark stands in prose, not after an attribute's
+       equals sign.
+       */
+      const prose = !opensAttributeValue({
+        pageText,
+        at: marks.open,
       },);
-    at = closeAt;
-  }
-  return spans;
+      return prose && (!pageText.slice(
+        marks.open + open.length,
+        marks.close,
+      )
+        .includes(LINE_END,));
+    },)
+    .map(function inner(marks,): Span {
+      return {
+        start: marks.open + open.length,
+        end: marks.close,
+      };
+    },);
 }
 
 /**

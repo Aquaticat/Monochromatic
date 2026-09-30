@@ -177,6 +177,32 @@ await describe({
       },
     },),
     it({
+      name: 'READS AN OPENING MARK ON THE PAGE THAT NEVER CLOSED AS NO TITLE (ledger B38), rewriting the bracketed '
+        + 'title after it and keeping the words before it',
+      fn: async () => {
+        /**
+         Pass over a credit whose page carries a stray opening mark.
+         */
+        const unified = unifyTitleReferences({
+          slices: SLICES,
+          replacements: [
+            ...HEADINGS,
+            {
+              sliceIndex: 4,
+              replacementText: '—— Yunmao 《Purr 《Cat Talk》',
+            },
+          ],
+        },);
+        expect(unified.replacements.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).toEqual([
+          '<h3 align = "center">Cat by the Window</h3>',
+          '### Afternoon Cat Murmurs',
+          '—— Yunmao 《Purr 《Afternoon Cat Murmurs》',
+        ],);
+      },
+    },),
+    it({
       name: 'SCOPES THE SEARCH TO THE LINE THAT BRACKETS THE TITLE (ledger B23), not an earlier footnote naming it bare',
       fn: async () => {
         /**

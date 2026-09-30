@@ -129,6 +129,23 @@ await describe({
       },
     },),
     it({
+      name: 'READS AN OPENING MARK THAT NEVER CLOSED AS NO TITLE (ledger B38), so the title after a stray 《 is the '
+        + 'only one named',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '她的歌：《喵，还有《猫猫摇篮曲》。',
+          candidateText: 'Her songs: 《喵，还有《猫猫摇篮曲》.',
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [
+            'Your translation leaves the title 《猫猫摇篮曲》 in Han: a work the ORIGINAL names is called by its English '
+            + 'title on the page, the official English title where one exists and a translation of the title where none '
+            + 'does, and the Han never stands alone as the name.',
+          ],
+        },);
+      },
+    },),
+    it({
       name: 'ACCEPTS the title translated, glossed, Latin-bearing and glossed, kept by the page, or standing in a comment',
       fn: async () => {
         expect(validateTranslatedSlice({

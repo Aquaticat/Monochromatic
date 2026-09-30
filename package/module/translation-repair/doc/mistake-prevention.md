@@ -1240,3 +1240,21 @@ What enforces it:
 habit and review;
 the atom floor's cases pin its arms,
 and an arm no case reaches shows in the coverage census.
+
+## Paired marks
+
+What happened:
+five readers of paired marks each paired an opening mark with the next closing mark,
+so an opening mark that never closed took the next title into its span,
+and three of them grew with the square of the unclosed marks (ledger B38).
+
+The rule:
+a reader of paired marks (title marks,
+quotation marks,
+brackets) reads spans through `closedMarkSpans` (`closed-mark-spans.ts`),
+never through an `indexOf` loop of its own,
+and its tests carry an opening mark that never closed.
+
+What enforces it:
+habit and review;
+each reader's stray-mark case fails if the reader stops using the shared rule.

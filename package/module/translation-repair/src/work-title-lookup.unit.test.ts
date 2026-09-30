@@ -166,6 +166,12 @@ await describe({
         expect(lookupQueryFor({ title: '《活着》', },),).toBe('《活着》 official English title',);
       },
     },),
+    it({
+      name: 'READS AN OPENING MARK THAT NEVER CLOSED AS NO TITLE (ledger B38), and looks up the title after it',
+      fn: async () => {
+        expect(workTitlesOf({ text: '她读《猫，又读《猫经》。', },),).toEqual(['《猫经》',],);
+      },
+    },),
   ],
 },);
 
