@@ -61,6 +61,7 @@ export {
   blankAgainst,
   BlankSelectionError,
   type IncumbentKind,
+  requireTranslateAbsence,
   TranslateAbsenceError,
   type TranslateAbsenceReason,
 } from './translate-absence.ts';

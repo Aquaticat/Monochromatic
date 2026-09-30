@@ -252,6 +252,34 @@ export class TranslateAbsenceError extends Error {
 }
 
 /**
+ The absence a catch clause caught, or what it caught rethrown unchanged.
+
+ ONE NARROWING FOR EVERY CATCH THAT ACTS ON AN ABSENCE ALONE. The judges'
+ retry and the stage's depth-two rounds each caught a round's failure, acted
+ on an absence and rethrew anything else from a statement of their own; the
+ stage's rethrow was reachable only through a fault inside judging, since a
+ provider's fault reaches judging as a lost voice (`stage-call.ts`), and no
+ stage case could send one there. Here it is one statement with its own
+ cases.
+
+ @param error - value the catch clause bound
+
+ @returns The absence itself
+
+ @throws What was caught, by identity, when it is not an absence
+
+ @example
+ ```ts
+ const rejection = requireTranslateAbsence({ error, },);
+ ```
+ */
+export function requireTranslateAbsence({ error, }: { readonly error: unknown; },): TranslateAbsenceError {
+  if (error instanceof TranslateAbsenceError)
+    return error;
+  throw error;
+}
+
+/**
  Reports whether a winning text says nothing about a source that says
  something.
  

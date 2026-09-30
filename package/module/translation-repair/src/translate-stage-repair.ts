@@ -7,6 +7,7 @@ import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import {
+  requireTranslateAbsence,
   TranslateAbsenceError,
   type IncumbentKind,
 } from './translate-absence.ts';
@@ -56,8 +57,8 @@ type TranslateRoundInput = ForeignBorrowed<{
   readonly pictureContext?: string;
   readonly syntax?: SliceSyntax;
   readonly lineStructured: boolean;
-  readonly declared?: readonly DeclaredNamePair[];
-  readonly disputedWordings?: readonly DisputedWording[];
+  readonly declared: readonly DeclaredNamePair[];
+  readonly disputedWordings: readonly DisputedWording[];
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
@@ -111,8 +112,8 @@ async function produceAndJudgeOnce(
     ...((input.syntax === undefined) ? {} : { syntax: input.syntax, }),
     ...((followupEvidence === undefined) ? {} : { followupEvidence, }),
     lineStructured: input.lineStructured,
-    ...((input.declared === undefined) ? {} : { declared: input.declared, }),
-    ...((input.disputedWordings === undefined) ? {} : { disputedWordings: input.disputedWordings, }),
+    declared: input.declared,
+    disputedWordings: input.disputedWordings,
     signal: input.signal,
     perCallTimeoutMs: input.perCallTimeoutMs,
     l: input.l,
@@ -166,16 +167,18 @@ async function produceAndJudgeOnce(
       .aborted)
       throw input.signal
         .reason;
-    if (!(error instanceof TranslateAbsenceError))
-      throw error;
-    if (error.reason === 'no-voice-heard') {
+    /**
+     The absence judging raised; anything else leaves as it came.
+     */
+    const rejection = requireTranslateAbsence({ error, },);
+    if (rejection.reason === 'no-voice-heard') {
       throw new TranslationRepairInterruptedError({
         reason: 'provider-unavailable',
-        findings: error.findings,
+        findings: rejection.findings,
       },);
     }
     return {
-      rejection: error,
+      rejection,
       candidateTexts,
     };
   }
@@ -237,8 +240,8 @@ export async function runTranslateRepairs(
     sourceText,
     incumbentText,
     incumbentKind,
-    incumbentEligible = true,
-    incumbentWithheld = false,
+    incumbentEligible,
+    incumbentWithheld,
     identityContext,
     referenceContext,
     attestedLines,
@@ -260,8 +263,8 @@ export async function runTranslateRepairs(
     readonly sourceText: string;
     readonly incumbentText: string;
     readonly incumbentKind: IncumbentKind;
-    readonly incumbentEligible?: boolean;
-    readonly incumbentWithheld?: boolean;
+    readonly incumbentEligible: boolean;
+    readonly incumbentWithheld: boolean;
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly attestedLines?: readonly string[];
@@ -271,8 +274,8 @@ export async function runTranslateRepairs(
     readonly pictureContext?: string;
     readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
-    readonly declared?: readonly DeclaredNamePair[];
-    readonly disputedWordings?: readonly DisputedWording[];
+    readonly declared: readonly DeclaredNamePair[];
+    readonly disputedWordings: readonly DisputedWording[];
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -299,8 +302,8 @@ export async function runTranslateRepairs(
     ...((pictureContext === undefined) ? {} : { pictureContext, }),
     ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
-    ...((declared === undefined) ? {} : { declared, }),
-    ...((disputedWordings === undefined) ? {} : { disputedWordings, }),
+    declared,
+    disputedWordings,
     signal,
     perCallTimeoutMs,
     l,

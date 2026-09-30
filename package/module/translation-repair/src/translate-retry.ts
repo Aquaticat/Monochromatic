@@ -1,5 +1,6 @@
 import { judgeTranslateSlate, } from './translate-judge.ts';
 import {
+  requireTranslateAbsence,
   TranslateAbsenceError,
   type TranslateAbsenceReason,
 } from './translate-absence.ts';
@@ -198,12 +199,9 @@ async function askJudges(
   catch (error) {
     // Only an absence is a decline this can act on. Anything else, an abort
     // or a transport fault, belongs to the caller unchanged.
-    if (!(error instanceof TranslateAbsenceError))
-      throw error;
-
     return {
       kind: 'raised',
-      error,
+      error: requireTranslateAbsence({ error, },),
     };
   }
 }
