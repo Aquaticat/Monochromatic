@@ -214,15 +214,63 @@ and controller-loss verification remain before a new genuine dispatch.
 The prior source-review clearance is explicitly retracted in a separate correction.
 No Node/Pi defect or actual SDK-session failure is established.
 
-Next:
-finish the private bootstrap controls and obtain authorization for a separately frozen new genuine epoch.
-No new human dispatch,
-production grant,
-cutoff,
-or adoption is authorized by these results.
-Detached terminal cleanup,
-other writer coverage,
-and the separate downstream gates remain unqualified.
+The user subsequently authorized all qualification tests within the existing limits.
+That authorization permits a new separately frozen fixture epoch,
+not replay of the consumed attempt,
+production changes,
+cutoffs,
+reserved scenarios,
+or wider model/input scope.
+
+## Authorized clean-helper frontier
+
+Generic held-lifetime controls `proc_4d23` passed the retained-prefix reconciliation and unresolved/suffix cases.
+They cover dynamic completion/rejection,
+interruption,
+controller loss,
+deadline,
+synchronous deadline overrun,
+missing IPC,
+and a deadline-guard omission.
+The prior owned control driver `proc_299d` failed awaiting child `close` after explicit IPC disconnect;
+its failure and completed prefix remain unchanged.
+That incident is separate from the original genuine unreferenced-await failure.
+
+Actual requester cancellation `proc_c105` stopped the inert editor and removed its workspace,
+but the unchanged helper exited one with private `AbortError` stderr.
+The guarded private helper passed `proc_4e89` interruption,
+controller-loss,
+and deadline cases with zero exit,
+empty stderr,
+terminated inert editors,
+removed workspaces,
+and no capture/publication.
+The original helper as guard omission reproduced the failed cleanup expectation.
+Extracted-method `proc_d680` controls preserve unmatched errors and normal submission;
+those stubs are not actual desktop parity.
+No production helper was changed.
+
+The unlaunched `live-held-confirmation/` freeze remains preserved and is forbidden for dispatch.
+The fresh `live-clean-confirmation/` intake `proc_d89c` and freeze `proc_fd3d` passed.
+Its executed helper SHA-256 is
+`9028bedacb0be9dddf90ca41a07339f6c15eb8252c51e9055a38901601354f46`,
+including the separately disclosed canonical final LF.
+It binds the successful private helper controls,
+uses restrictive umask `077`,
+and retains unchanged authentication/parser/default-launcher behavior.
+This is a privately changed helper,
+not an unchanged deployed-helper or production-writer admission.
+
+No new genuine window has been dispatched:
+read-only probes reported active screen saver and graphical-session `LockedHint=yes`.
+Task #82 waits for human desktop unlock/readiness,
+not additional test authorization.
+Recheck freshness before the one-shot outer controller;
+never bypass the lock or synthesize a human response.
+Genuine capture,
+actual Ghostty/Nano closure,
+other writers,
+and downstream gates remain unqualified.
 See the [source trace and limits](../troubleshooting/pi-input-provenance.md).
 
 ## Next bounded work
