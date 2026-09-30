@@ -414,7 +414,9 @@ export async function runEditorStage(
       // into a log line and the reasons went nowhere, so the preservation gate
       // could reject every edit in a run and the artifact would look ordinary.
       // Counted by reason rather than listed, since one bad editor can produce
-      // many refusals of one kind and the shape is what a reader needs.
+      // many refusals of one kind and the shape is what a reader needs. Sorted
+      // as finished lines: they share one prefix and each kind appears once, so
+      // their code-unit order is the kinds' order, with no comparator to write.
       ...[...patch.rejected
         .reduce(
           function tally(
@@ -422,11 +424,20 @@ export async function runEditorStage(
             rejection,
           ) {
         /**
+         Where the reason's parenthetical detail begins, when it has one.
+         */
+        const detailAt = rejection.reason
+          .indexOf(' (',);
+        /**
          Reason with its parenthetical detail stripped, so counts group.
          */
-        const kind = rejection.reason
-          .split(' (',)[0]
-          ?? rejection.reason;
+        const kind = (detailAt === (-1))
+          ? rejection.reason
+          : rejection.reason
+            .slice(
+              0,
+              detailAt,
+            );
         return counts.set(
           kind,
           (counts.get(kind,) ?? 0) + 1,
@@ -434,15 +445,10 @@ export async function runEditorStage(
       },
           new Map<string, number>(),
         ),]
-        .toSorted(function byKind(
-          [left,],
-          [right,],
-        ): number {
-        return (left < right) ? (-1) : 1;
-      },)
         .map(function toFinding([kind, count,],): string {
         return `editor-rejected ${kind} (${String(count,)})`;
-      },),
+      },)
+        .toSorted(),
     ],
   };
 }
