@@ -157,7 +157,10 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
     //   .find(v => candidate.includes(`-${v}`)) ?? '';
     // ```
     // Cover uses the same literal filename scenes without adding a deck or changing the header.
-    val rankVariant = if (candidate.contains("-rankfileshort")) "rankfileshort"
+    // Reuse the registry rather than duplicate the independent comparison markers.
+    val filenameComparisonScene = filenameComparisonSceneOrEmpty(candidate)
+    val rankVariant = if (filenameComparisonScene.length > 0) filenameComparisonScene
+        else if (candidate.contains("-rankfileshort")) "rankfileshort"
         else if (candidate.contains("-rankfilelong")) "rankfilelong"
         else if (candidate.contains("-rankfileedge")) "rankfileedge"
         else if (candidate.contains("-rankfilecontext")) "rankfilecontext"

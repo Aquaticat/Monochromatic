@@ -226,7 +226,10 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
     //   .find(v => candidate.includes(`-${v}-`)) ?? '';
     // ```
     // Literal filename scenes retain the selected Search host and fixed query.
-    val rankVariant = if (candidate.contains("-rankfileshort-")) "rankfileshort"
+    // The comparison registry yields a named scene or the explicit empty fallback.
+    val filenameComparisonScene = filenameComparisonSceneOrEmpty(candidate)
+    val rankVariant = if (filenameComparisonScene.length > 0) filenameComparisonScene
+        else if (candidate.contains("-rankfileshort-")) "rankfileshort"
         else if (candidate.contains("-rankfilelong-")) "rankfilelong"
         else if (candidate.contains("-rankfileedge-")) "rankfileedge"
         else if (candidate.contains("-rankfilecontext-")) "rankfilecontext"
