@@ -87,6 +87,70 @@ Neither option increases Android emulator memory or proves Gboard behavior.
 - Treating the `--help` text as proof that `getopt` accepts the long form
   misses the earlier parser gate.
 
+## A later display control found a false positive
+
+A later filename-label study mounted the host's `/usr` read-only into a
+Fedora 44 container.
+That host directory did not contain `/usr/bin/Xvfb`.
+The private wrapper retained SHA-256
+`aac25303a72f3c45ab01fcc37c2fda19abe24f5e3d17a6602a6f79cbc2b7f172`.
+Running its `--auto-servernum` branch with `/usr/bin/true` returned zero
+while stderr said:
+
+```text
+/opt/xvfb-run: line 163: Xvfb: command not found
+```
+
+The same missing executable made the `-d` startup exit before the
+emulator command,
+with its Xvfb diagnostic hidden by the default `/dev/null` error file.
+No guest boot or AVD-lock failure was established by that exit.
+
+The deciding private wrapper's lines `161` to `174` start Xvfb,
+while lines `182` to `203` return the requested command's status:
+
+```sh
+# /home/user/temp/agent/fold-no-hardware-avd/xvfb-run-fedora44
+XAUTHORITY=$AUTHFILE Xvfb ":$SERVERNUM" $XVFBARGS $LISTENTCP >>"$ERRORFILE" 2>&1 &
+XVFBPID=$!
+# The requested command can succeed without using a display.
+DISPLAY=:$SERVERNUM XAUTHORITY=$AUTHFILE "$@" 2>&1
+RETVAL=$?
+exit $RETVAL
+```
+
+This is not proof that the document's original installed-Xvfb control
+failed.
+It proves that `/usr/bin/true` alone cannot establish a usable X display.
+Do not promote a successful emulator help invocation to a boot or
+renderer positive control either.
+
+The later study copied the existing image's `Xvfb` executable into
+private scratch and mounted it at `/opt/Xvfb`,
+with `PATH=/opt:/usr/bin:/usr/sbin`.
+The source image was `localhost/monochromatic-playwright:latest`,
+image ID `4b8805002ee369c81b7826b941afc52c0c9678a0d0e427a0fefd1684b78b5f94`;
+the copied executable's SHA-256 was
+`2c7f5a9534410fed5092d782a69ca7ffd9fce80e98b81ffe4944d703dd11d3b1`.
+Its `ldd` output resolved all listed dependencies against the host's
+mounted runtime.
+No host package or SDK file was edited.
+
+Within the same 2 GiB/2 CPU bounds,
+the wrapper then ran `xdpyinfo` against its actual display and returned
+zero.
+Output reported display `:99`,
+X protocol `11.0` and `640x480` pixels.
+This is a display positive control,
+not Android rendering or label evidence.
+The private binary bridge depends on the measured runtime dependencies;
+it is not a portable installation recipe.
+
+The added container case changes no upstream filing decision:
+the container omitted the required executable,
+and the original command-only probe did not exercise a display.
+No upstream defect or source fix was established by this case.
+
 ## Upstream filing decision
 
 No `.out-of-scope/` entry names Fedora Xvfb or this option mismatch.

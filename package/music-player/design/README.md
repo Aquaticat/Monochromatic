@@ -42,7 +42,11 @@ native result activation,
 live announcements and return focus still need separately authorized
 implementation verification.
 No new IME experiment or production Search work is authorized.
-The disposable review emulator is stopped.
+The accessibility study's disposable emulator was stopped.
+The next design-only,
+keyboard-closed filename-label witness uses the capped disposable AVD;
+`evidence/search-filename-presentation-frontier.md` records its purpose
+and pending native evidence.
 
 Status vocabulary follows `open-questions.md` section 0:
 settled decisions are not shipped behavior,

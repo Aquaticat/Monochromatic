@@ -98,6 +98,39 @@ is scored against `Cam.flac`.
   filtered,
   later-arriving or off-screen partners must not silently change identity.
 
+## Verified fixture preparation
+
+The debug linked worktree added literal short,
+long and edge filename scenes without changing the selected row renderers.
+Prototype commits are `1cbbba772` and `1ff1d135a`.
+The host-JVM `SearchFilenameFixtureTest` report records 5 tests,
+zero failures,
+zero errors and zero skips.
+The unknown-scene test failed when the guard was replaced by a short-scene
+fallback;
+restoring the exact source restored the passing test run.
+The rebuilt debug APK SHA-256 is
+`9fade97bc256c4597d14833bb01d9058aa1f65cfec4502debddbd3cb51b11983`.
+
+The successful build used the existing package's `prototype:build` task
+through `mise run --skip-tools` in a 6 GiB/2 CPU container.
+The initial container failed while trying to resolve/install unrelated
+root tools;
+read-only installed tools and plugins plus the explicit skip flag
+reached the package task.
+No dependency was selected or installed by the filename work.
+Build and unit tests are preparation,
+not native label evidence.
+
+A later display positive control repaired the label study's container
+bridge;
+`doc/troubleshooting/fedora-44-xvfb-run-auto-display.md` records why a
+successful `/usr/bin/true` did not prove Xvfb readiness.
+The actual display control passed before the new disposable boot.
+`podman inspect` reports `6442450944` memory bytes and `2000000000`
+NanoCPUs for `fold-search-filename-avd`.
+Native captures remain pending.
+
 ## Next verification
 
 Internal task 136 checks filename-backed fixed data in the existing

@@ -47,7 +47,12 @@ TalkBack evidence;
 they do not prove native activation,
 live announcements,
 return focus or cover traversal.
-The disposable emulator is stopped.
+The accessibility study's disposable emulator was stopped.
+A separately motivated,
+keyboard-closed filename-label witness now uses the disposable AVD
+within an inspected 6 GiB/2 CPU cap.
+Build and fixture unit checks pass;
+native captures remain pending.
 The original AVD,
 production Search,
 matcher/library choice,
