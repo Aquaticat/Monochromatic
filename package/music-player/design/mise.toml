@@ -413,6 +413,11 @@ description = "Validate exact offline filename review content, native image hash
 dir = "{{config_root}}"
 run = "node search-filename-comparison.mjs validate"
 
+[tasks."verify:search:filename-comparison"]
+description = "Sequence native filename review build before exact artifact validation"
+dir = "{{config_root}}"
+run = ["node search-filename-comparison.mjs build", "node search-filename-comparison.mjs validate"]
+
 [tasks."build:search:ranking"]
 description = "Rebuild the archived D/P and M/F/T comparison from sanitized native captures"
 dir = "{{config_root}}"

@@ -40,6 +40,11 @@ for (const capture of [...comparison.witnesses, ...baseline.captures]) {
   const position = capture.position ?? 'initial';
   const scene = source === 'baseline' ? `${capture.scene}-${capture.selection}` : capture.scene;
   const key = `${source}/${capture.panel}/${scene}/${capture.scheme}/${capture.fontScale}/${position}`;
+  const endMarker = position === 'scrolled' ? '-end' : '';
+  const expectedFile = `search-filename-${source === 'baseline' ? 'actual-player' : 'comparison'}-${capture.panel}-${scene}${endMarker}-${capture.scheme}-s${capture.fontScale * 100}.png`;
+  if (file !== expectedFile || !['initial', 'scrolled'].includes(position)) {
+    throw new Error(`${file}: filename and capture metadata disagree.`);
+  }
   if (images[key]) throw new Error(`Duplicate filename review capture: ${key}.`);
   images[key] = { file, hash, width: dimensions.width, height: dimensions.height, density: 390,
     source: `data:image/png;base64,${png.toString('base64')}` };
@@ -64,6 +69,28 @@ for (const panel of ['inner', 'cover']) {
 //endregion
 
 //region Build and validation, template and committed output must contain the same checked cohort
+const expectedKeys = [];
+for (const panel of ['inner', 'cover']) {
+  for (const scheme of ['light', 'dark']) {
+    for (const scale of [1, 2]) {
+      for (const scene of ['placementfull', 'placementsupport', 'literalfull', 'literalsupport',
+        'visibilityfull', 'visibilityconditional', 'visibilitysupportfull', 'visibilitysupportconditional']) {
+        expectedKeys.push(`comparison/${panel}/${scene}/${scheme}/${scale}/initial`);
+      }
+      for (const scene of ['long-none', 'long-first', 'long-second', 'short-none']) {
+        expectedKeys.push(`baseline/${panel}/${scene}/${scheme}/${scale}/initial`);
+      }
+    }
+  }
+}
+for (const scheme of ['light', 'dark']) {
+  for (const [panel, scene] of [['inner', 'literalfull'], ['inner', 'literalsupport'], ['cover', 'literalsupport']]) {
+    expectedKeys.push(`comparison/${panel}/${scene}/${scheme}/2/scrolled`);
+  }
+}
+if (JSON.stringify(Object.keys(images).sort()) !== JSON.stringify(expectedKeys.sort())) {
+  throw new Error('Filename review must contain the exact initial, baseline and six scrolled combinations.');
+}
 const templatePath = join(question, 'search-filename-comparison.template.html');
 const outputPath = join(question, 'search-filename-comparison.html');
 const template = readFileSync(templatePath, 'utf8');

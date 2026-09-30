@@ -181,8 +181,9 @@ The owned disposable runtime was capped at 6 GiB/2 CPU; its fresh snapshot was r
 <p>Source inner panel: 2076 × 2152px; retained app area 2076 × 2016px after removing 136 status pixels.
 Source cover: 1080 × 2424px; retained app area 1080 × 2273px after removing 151 status pixels.</p>
 <p>Accepted Search A, E2 clearance, spacing, inner browser and complete deck are retained. Cover remains full-width
-without an added deck. Exact measured Search-header-region RGB matched across all 64 initial views; retained inner browser/deck RGB matched
-across all 32 inner initial views. Semantic title/support rectangles are not ink or action bounds.</p>
+without an added deck. Within each matched panel/theme/font-scale group, exact measured Search-header-region RGB
+matched across the options, covering 64 initial views; retained inner browser/deck RGB matched across the options,
+covering 32 inner initial views. This does not independently remeasure E2 clearance. Semantic title/support rectangles are not ink or action bounds.</p>
 <p>Static source inspection, hierarchy presence, stable frames and this browser review establish no matching,
 activation, speech, native contrast acceptance, actual 48dp actions or focus transitions. D75 to D80's accessibility
 policy acceptance is separate from task 133's native implementation gate.</p>
@@ -223,9 +224,12 @@ function render() {
   document.getElementById('environment').textContent = state.panel + ' panel · ' + state.fontScale * 100 +
     '% native text · ' + selectedScheme() + ' native images. Thumbnail size is not native font scale.';
   for (const figure of document.querySelectorAll('figure[data-scene]')) {
+    const intentionallyAbsent = figure.dataset.position === 'scrolled' &&
+      (state.fontScale !== 2 || (figure.dataset.scene === 'literalfull' && state.panel === 'cover'));
+    figure.hidden = intentionallyAbsent;
+    if (intentionallyAbsent) continue;
     const image = images[imageKey(figure)];
-    figure.hidden = !image;
-    if (!image) continue;
+    if (!image) throw new Error('Required native witness is absent: ' + imageKey(figure));
     const element = figure.querySelector('img');
     element.src = image.source;
     element.width = image.width;
@@ -283,6 +287,12 @@ function prepareReply(event) {
   document.getElementById('response').hidden = false;
   document.getElementById('reply').focus();
 }
+function invalidateReply() {
+  document.getElementById('reply').value = '';
+  document.getElementById('response').hidden = true;
+}
+document.getElementById('review-form').addEventListener('input', invalidateReply);
+document.getElementById('review-form').addEventListener('change', invalidateReply);
 document.getElementById('review-form').addEventListener('submit', prepareReply);
 //endregion
 </script>

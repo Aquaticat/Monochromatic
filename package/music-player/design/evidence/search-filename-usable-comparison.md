@@ -43,8 +43,12 @@ XML,
 OCR and logs are not published.
 The [layout record](../questions/evidence/search-filename-comparison-layout.json)
 contains 320 ordered semantic title/support slots.
-Exact measured Search-header-region RGB is unchanged across 64 initial views;
-retained inner browser/deck RGB is unchanged across 32 inner views.
+Within each matched panel/theme/font-scale group,
+exact measured Search-header-region RGB is unchanged across options,
+covering 64 initial views;
+retained inner browser/deck RGB is unchanged across options,
+covering 32 inner views.
+This cross-option equality does not independently remeasure E2 clearance.
 The raw comparison-region coordinates are retained in that record.
 Two rejected earlier capture attempts and their APKs remain separate.
 They are not evidence from the completed cohort.
