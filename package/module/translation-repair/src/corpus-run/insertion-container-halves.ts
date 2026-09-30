@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from '../chunk-document.ts';
 import {
   bothHalvesInserted,
@@ -108,16 +110,15 @@ export function admitContainerHalves(
       if (admitted === undefined)
         return [];
       /**
-       Prepared slice at the admitted position, whose index the finding names.
+       Prepared slice at the admitted position, whose index the finding
+       names: the position lies between two of these slices' own positions.
        */
-      const admittedSlice = slices[admitted];
+      const admittedSlice = nonNullishOrThrow(slices[admitted],);
       /**
        Slice index of the admitted position, read off the prepared slices.
        */
-      const beside = (admittedSlice === undefined)
-        ? admitted
-        : admittedSlice.target
-          .sliceIndex;
+      const beside = admittedSlice.target
+        .sliceIndex;
       return [
         pair.open,
         pair.close,

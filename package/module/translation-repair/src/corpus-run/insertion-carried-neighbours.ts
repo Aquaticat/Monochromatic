@@ -1,5 +1,8 @@
 import type { ChunkPair, } from '../chunk-document.ts';
-import { isInsertionChunk, } from '../chunk-placement.ts';
+import {
+  type ContentChunk,
+  isInsertionChunk,
+} from '../chunk-placement.ts';
 
 //region Carried passage neighbours
 // WHICH PAIRED SLICES STAND NEXT TO A POSITION. The fold (class one hundred
@@ -9,6 +12,64 @@ import { isInsertionChunk, } from '../chunk-placement.ts';
 // carried passage beside another carried passage (mikaela14) still finds the
 // paired slice beyond it; the abutting check refuses a fold or a shift across
 // a source nobody has absorbed.
+//
+// A NEIGHBOUR CARRIES ITS SLICE, narrowed to a paired one where it is found.
+// The fold and the shift read the carrier's archive span and source from it,
+// so neither looks a position up again and guards a lookup that cannot miss.
+
+/**
+ A prepared slice the archive renders, so its target is a span of text.
+
+ @example
+ ```ts
+ const carrier: PairedSlice = { source, target, };
+ ```
+ */
+export type PairedSlice = ChunkPair & {
+  /**
+   Archive span rendering this slice.
+   */
+  readonly target: ContentChunk;
+};
+
+/**
+ A paired slice next to a carried passage, with where it stands.
+
+ @example
+ ```ts
+ const neighbour: PairedNeighbour = { position: 2, slice: carrier, };
+ ```
+ */
+export type PairedNeighbour = {
+  /**
+   Position in prepared slice order.
+   */
+  readonly position: number;
+
+  /**
+   The slice there.
+   */
+  readonly slice: PairedSlice;
+};
+
+/**
+ Whether the archive renders a slice.
+
+ TAKES ITS PARAMETER POSITIONALLY: a type predicate narrows a named
+ parameter, and a destructured object has none.
+
+ @param slice - prepared slice
+
+ @returns True where its target is a span of text
+
+ @example
+ ```ts
+ const paired = isPairedSlice(slice,);
+ ```
+ */
+function isPairedSlice(slice: ChunkPair,): slice is PairedSlice {
+  return !isInsertionChunk(slice.target,);
+}
 
 /**
  Nearest paired slice on one side of a position, looking past insertions.
@@ -19,7 +80,7 @@ import { isInsertionChunk, } from '../chunk-placement.ts';
 
  @param step - direction: -1 for earlier, 1 for later
 
- @returns Position of that slice, none where only insertions lie that way
+ @returns That slice with its position, none where only insertions lie that way
 
  @example
  ```ts
@@ -36,37 +97,36 @@ export function pairedNeighbourToward(
     readonly position: number;
     readonly step: number;
   },
-): readonly number[] {
+): readonly PairedNeighbour[] {
   /**
-   Positions on that side, nearest first.
+   Paired slices on that side, nearest first.
    */
   const thatWay = slices
-    .map(function positionOf(
-      _slice,
+    .flatMap(function pairedOnSide(
+      slice,
       index,
-    ): number {
-      return index;
-    },)
-    .filter(function onSide(index,): boolean {
-      return (step < 0) ? (index < position) : (index > position);
+    ): readonly PairedNeighbour[] {
+      /**
+       Whether this position lies on the side looked at.
+       */
+      const onSide = (step < 0) ? (index < position) : (index > position);
+      return (onSide && isPairedSlice(slice,))
+        ? [{
+          position: index,
+          slice,
+        },]
+        : [];
     },)
     .toSorted(function nearestFirst(
       a,
       b,
     ): number {
-      return Math.abs(a - position,) - Math.abs(b - position,);
+      return Math.abs(a.position - position,) - Math.abs(b.position - position,);
     },);
-  /**
-   The nearest paired one.
-   */
-  const nearest = thatWay.find(function isPaired(index,): boolean {
-    /**
-     Slice at that position.
-     */
-    const slice = slices[index];
-    return (slice !== undefined) && (!isInsertionChunk(slice.target,));
-  },);
-  return (nearest === undefined) ? [] : [nearest,];
+  return thatWay.slice(
+    0,
+    1,
+  );
 }
 
 /**
@@ -96,7 +156,7 @@ export function pairedNeighbours(
     readonly slices: readonly ChunkPair[];
     readonly position: number;
   },
-): readonly number[] {
+): readonly PairedNeighbour[] {
   return [
     ...pairedNeighbourToward({
       slices,

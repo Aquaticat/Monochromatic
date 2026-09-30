@@ -207,40 +207,52 @@ export function anchorRegion(
 }
 
 /**
- Whether the original writes nothing but blank space between two spans.
+ Whether the original writes nothing but blank space between two spans,
+ whichever comes first.
+
+ IN EITHER ORDER, so no caller picks which span it names first by the
+ slices' positions. The gap runs from the earlier span's end to the later
+ one's start. Spans that overlap have no gap and count as abutting:
+ prepared sources never overlap, and widening either over the other gives
+ their union, which is what a fold makes of two abutting spans.
 
  @param sourceText - whole original
 
- @param first - earlier source chunk
+ @param one - either source chunk
 
- @param second - later source chunk
+ @param other - the other one
 
  @returns True where the spans abut across blank space alone
 
  @example
  ```ts
- const touching = abutting({ sourceText, first: a.source, second: b.source, },);
+ const touching = abutting({ sourceText, one: a.source, other: b.source, },);
  ```
  */
 export function abutting(
   {
     sourceText,
-    first,
-    second,
+    one,
+    other,
   }: {
     readonly sourceText: string;
-    readonly first: ContentChunk;
-    readonly second: ContentChunk;
+    readonly one: ContentChunk;
+    readonly other: ContentChunk;
   },
 ): boolean {
-  if (second.startOffset < first.endOffset)
-    return false;
   /**
-   What the original writes between the two spans.
+   What the original writes between the two spans, empty where they
+   overlap.
    */
   const between = sourceText.slice(
-    first.endOffset,
-    second.startOffset,
+    Math.min(
+      one.endOffset,
+      other.endOffset,
+    ),
+    Math.max(
+      one.startOffset,
+      other.startOffset,
+    ),
   );
   return between.trim() === '';
 }

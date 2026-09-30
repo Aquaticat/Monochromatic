@@ -132,25 +132,7 @@ function foldPass(
         target,
         candidate,
       },);
-      /**
-       The carrier as the earlier folds left it, absent on a stand-aside.
-       */
-      const carrier = (decision.kind === 'aside') ? undefined : state.slices[decision.carrierPosition];
-      /**
-       The carried slice.
-       */
-      const carriedSlice = state.slices[candidate.position];
-      /**
-       Whether nothing folds: the decision stood aside or a slice is missing.
-       */
-      const standsAside = (decision.kind === 'aside')
-        || (carrier === undefined)
-        || (carriedSlice === undefined);
-      if (standsAside) {
-        /**
-         Why it stays carried.
-         */
-        const reason = (decision.kind === 'aside') ? decision.reason : 'carrier or carried slice missing from the slicing';
+      if (decision.kind === 'aside') {
         return {
           slices: state.slices,
           kept: [
@@ -161,19 +143,23 @@ function foldPass(
           findings: state.findings,
           asides: [
             ...state.asides,
-            `slice ${String(candidate.sliceIndex,)} stays carried: ${reason}`,
+            `slice ${String(candidate.sliceIndex,)} stays carried: ${decision.reason}`,
           ],
         };
       }
       /**
+       The carrier as the earlier folds left it, and the carried slice.
+       */
+      const {
+        carrier,
+        carried,
+      } = decision;
+      /**
        Stable index the lanes report the carrier under.
        */
-      const carrierSliceIndex = carrier.target
+      const carrierSliceIndex = carrier.slice
+        .target
         .sliceIndex;
-      /**
-       The receiver of a shift, absent on a plain fold.
-       */
-      const receiver = (decision.kind === 'shift') ? state.slices[decision.receiverPosition] : undefined;
       /**
        Slices after this fold: on a shift the carrier holds the carried source
        and its own joins the receiver (class one hundred seventy-nine); on a
@@ -183,34 +169,36 @@ function foldPass(
         ? shiftSlices({
           sourceText,
           slices: state.slices,
-          carrierPosition: decision.carrierPosition,
-          receiverPosition: decision.receiverPosition,
-          carried: carriedSlice,
+          carrier,
+          receiver: decision.receiver,
+          carried,
         },)
         : state.slices
           .map(function replaceCarrier(
             slice,
             position,
           ): ChunkPair {
-            return (position === decision.carrierPosition)
+            return (position === carrier.position)
               ? widenSource({
                 sourceText,
-                widened: carrier,
-                absorbed: carriedSlice,
+                widened: carrier.slice,
+                absorbed: carried,
               },)
               : slice;
           },);
       /**
        The shift's own finding, none on a plain fold.
        */
-      const shiftFindings = (receiver === undefined)
-        ? []
-        : [shiftedFinding({
+      const shiftFindings = (decision.kind === 'shift')
+        ? [shiftedFinding({
           carrierSliceIndex,
-          receiverSliceIndex: receiver.target
+          receiverSliceIndex: decision.receiver
+            .slice
+            .target
             .sliceIndex,
           carriedSliceIndex: candidate.sliceIndex,
-        },),];
+        },),]
+        : [];
       return {
         slices: nextSlices,
         kept: state.kept,

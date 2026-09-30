@@ -1,13 +1,21 @@
+import {
+  nonemptyOrThrow,
+  nonNullishOrThrow,
+} from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from '../chunk-document.ts';
-import { isInsertionChunk, } from '../chunk-placement.ts';
 import type { CarriedInsertion, } from '../insertion-admission.ts';
 import type { AnchorTarget, } from '../validate-issue.ts';
 import {
   abutting,
   type AnchorHolder,
   anchorRegion,
+  type RegionAnchoring,
 } from './insertion-carried-anchor.ts';
-import { pairedNeighbours, } from './insertion-carried-neighbours.ts';
+import {
+  type PairedNeighbour,
+  pairedNeighbours,
+} from './insertion-carried-neighbours.ts';
 import { shiftReceiver, } from './insertion-carried-shift.ts';
 
 //region Carried insertion fold decision
@@ -18,6 +26,11 @@ import { shiftReceiver, } from './insertion-carried-shift.ts';
 // abutting across blank space alone. Every stand-aside names its reason.
 // Where the carrier's span renders the passage alone, the decision is a
 // shift (insertion-carried-shift.ts, class one hundred seventy-nine).
+//
+// A DECISION CARRIES THE SLICES IT DECIDED ON: the carrier and receiver as
+// the neighbour search found them, paired, and the carried slice as read.
+// The fold then looks nothing up again, and no lookup that cannot miss is
+// guarded (T8 batch 14).
 
 /**
  One carried passage's fold decision.
@@ -25,7 +38,16 @@ import { shiftReceiver, } from './insertion-carried-shift.ts';
 export type FoldDecision =
   | {
     readonly kind: 'fold';
-    readonly carrierPosition: number;
+
+    /**
+     Paired neighbour whose source widens over the passage.
+     */
+    readonly carrier: PairedNeighbour;
+
+    /**
+     The carried slice as prepared.
+     */
+    readonly carried: ChunkPair;
   }
   | {
     /**
@@ -34,8 +56,22 @@ export type FoldDecision =
      seventy-nine).
      */
     readonly kind: 'shift';
-    readonly carrierPosition: number;
-    readonly receiverPosition: number;
+
+    /**
+     Paired neighbour that takes the passage's source.
+     */
+    readonly carrier: PairedNeighbour;
+
+    /**
+     Paired slice on the carrier's far side that takes the carrier's own
+     source.
+     */
+    readonly receiver: PairedNeighbour;
+
+    /**
+     The carried slice as prepared.
+     */
+    readonly carried: ChunkPair;
   }
   | {
     readonly kind: 'aside';
@@ -47,9 +83,29 @@ export type FoldDecision =
   };
 
 /**
+ A region the anchoring placed.
+ */
+type PlacedRegion = Extract<RegionAnchoring, { readonly anchored: true; }>;
+
+/**
+ A region the anchoring could not place, with why.
+ */
+type UnplacedRegion = Extract<RegionAnchoring, { readonly anchored: false; }>;
+
+/**
  One neighbour's share of the anchored text.
  */
-type NeighbourShare = Pick<AnchorHolder, 'codePoints' | 'position'>;
+type NeighbourShare = {
+  /**
+   The neighbour.
+   */
+  readonly neighbour: PairedNeighbour;
+
+  /**
+   Code points of the anchored text its span holds.
+   */
+  readonly codePoints: number;
+};
 
 /**
  The neighbour holding the larger share of the anchored text, the earlier on
@@ -57,13 +113,14 @@ type NeighbourShare = Pick<AnchorHolder, 'codePoints' | 'position'>;
 
  @param holders - every block's holder with its share
 
- @param neighbours - positions next to the carried slice, earlier first
+ @param neighbours - paired slices next to the carried one, earlier first,
+ which hold every holder's block
 
- @returns Position of the carrier
+ @returns The carrier
 
  @example
  ```ts
- const carrier = carrierAmong({ holders, neighbours: [1, 3,], },);
+ const carrier = carrierAmong({ holders, neighbours, },);
  ```
  */
 function carrierAmong(
@@ -72,18 +129,18 @@ function carrierAmong(
     neighbours,
   }: {
     readonly holders: readonly AnchorHolder[];
-    readonly neighbours: readonly number[];
+    readonly neighbours: readonly PairedNeighbour[];
   },
-): number {
+): PairedNeighbour {
   /**
    Each neighbour's share of the quoted text.
    */
-  const shares = neighbours.map(function shareOf(position,): NeighbourShare {
+  const shares = neighbours.map(function shareOf(neighbour,): NeighbourShare {
     return {
-      position,
+      neighbour,
       codePoints: holders
         .filter(function held(holder,): boolean {
-          return holder.position === position;
+          return holder.position === neighbour.position;
         },)
         .reduce(function sum(
           total,
@@ -104,7 +161,7 @@ function carrierAmong(
   ): NeighbourShare {
     return (next.codePoints > best.codePoints) ? next : best;
   },);
-  return largest.position;
+  return largest.neighbour;
 }
 
 /**
@@ -138,20 +195,17 @@ export function decideFold(
     readonly candidate: CarriedInsertion;
   },
 ): FoldDecision {
+  // A CARRIED VERDICT RESTS ON EVIDENCE. `judgeCoverage` calls a passage
+  // carried only on a majority of full votes, and its evidence is those
+  // votes' matched regions, so a carried passage always names one.
   /**
    Distinct regions the voices anchored.
    */
-  const regions = [...new Set(candidate.evidence,),];
-  if (regions.length === 0) {
-    return {
-      kind: 'aside',
-      reason: 'no evidence region',
-    };
-  }
+  const regions = nonemptyOrThrow([...new Set(candidate.evidence,),],);
   /**
    Where each region sits, block by block.
    */
-  const anchorings = regions.map(function anchorOne(region,) {
+  const anchorings = regions.map(function anchorOne(region,): RegionAnchoring {
     return anchorRegion({
       slices,
       target,
@@ -161,21 +215,25 @@ export function decideFold(
   /**
    The first region the anchoring could not place, if any.
    */
-  const unplaced = anchorings.find(function isUnplaced(anchoring,): boolean {
+  const unplaced = anchorings.find(function isUnplaced(anchoring,): anchoring is UnplacedRegion {
     return !anchoring.anchored;
   },);
-  if ((unplaced !== undefined) && (!unplaced.anchored)) {
+  if (unplaced !== undefined) {
     return {
       kind: 'aside',
       reason: `evidence ${unplaced.reason}`,
     };
   }
   /**
-   Every block's holder across every region.
+   Every block's holder across every region, all of which are placed.
    */
-  const holders = anchorings.flatMap(function holdersOf(anchoring,): readonly AnchorHolder[] {
-    return anchoring.anchored ? anchoring.holders : [];
-  },);
+  const holders = anchorings
+    .filter(function isPlaced(anchoring,): anchoring is PlacedRegion {
+      return anchoring.anchored;
+    },)
+    .flatMap(function holdersOf(anchoring,): readonly AnchorHolder[] {
+      return anchoring.holders;
+    },);
   /**
    Nearest paired slices on either side, earlier first; carried passages in
    a row (mikaela14) are looked through.
@@ -188,7 +246,9 @@ export function decideFold(
    A block held by a slice that is not a neighbour, if any.
    */
   const stray = holders.find(function isStray(holder,): boolean {
-    return !neighbours.includes(holder.position,);
+    return !neighbours.some(function holds(neighbour,): boolean {
+      return neighbour.position === holder.position;
+    },);
   },);
   if (stray !== undefined) {
     return {
@@ -199,55 +259,33 @@ export function decideFold(
   /**
    The neighbour holding most of the evidence.
    */
-  const carrierPosition = carrierAmong({
+  const carrier = carrierAmong({
     holders,
     neighbours,
   },);
   /**
-   The carried slice as prepared.
+   The carried slice as prepared: the recorded insertion, since the rows are
+   built from the insertion slices at these positions, the admission's
+   positions index this preparation, and a fold rewrites only a carrier's
+   source, keeping every slice where it stands.
    */
-  const carriedSlice = slices[candidate.position];
+  const carried = nonNullishOrThrow(slices[candidate.position],);
   /**
-   The carrier as prepared.
+   Whether the two sources abut across blank space alone.
    */
-  const carrier = slices[carrierPosition];
-  if ((carriedSlice === undefined) || (carrier === undefined)) {
-    return {
-      kind: 'aside',
-      reason: 'carrier or carried slice missing from the slicing',
-    };
-  }
-  /**
-   Stable index the carried slice reports under.
-   */
-  const carriedSliceIndex = carriedSlice.target
-    .sliceIndex;
-  if ((!isInsertionChunk(carriedSlice.target,)) || (carriedSliceIndex !== candidate.sliceIndex)) {
-    return {
-      kind: 'aside',
-      reason: 'the carried position is not the recorded insertion',
-    };
-  }
-  /**
-   Whether the two sources abut across blank space alone, in either order.
-   */
-  const touching = (carrierPosition < candidate.position)
-    ? abutting({
-      sourceText,
-      first: carrier.source,
-      second: carriedSlice.source,
-    },)
-    : abutting({
-      sourceText,
-      first: carriedSlice.source,
-      second: carrier.source,
-    },);
-  /**
-   Stable index the carrier reports under.
-   */
-  const carrierIndex = carrier.target
-    .sliceIndex;
+  const touching = abutting({
+    sourceText,
+    one: carrier.slice
+      .source,
+    other: carried.source,
+  },);
   if (!touching) {
+    /**
+     Stable index the carrier reports under.
+     */
+    const carrierIndex = carrier.slice
+      .target
+      .sliceIndex;
     return {
       kind: 'aside',
       reason: `the original writes more than blank space between the carried source and slice ${String(carrierIndex,)}`,
@@ -257,24 +295,26 @@ export function decideFold(
    The far neighbour taking the carrier's own source, where the carrier's
    span renders the passage alone.
    */
-  const [receiverPosition,] = shiftReceiver({
+  const [receiver,] = shiftReceiver({
     slices,
     sourceText,
     target,
     holders,
-    carrierPosition,
+    carrier,
     carriedPosition: candidate.position,
   },);
-  if (receiverPosition !== undefined) {
+  if (receiver !== undefined) {
     return {
       kind: 'shift',
-      carrierPosition,
-      receiverPosition,
+      carrier,
+      receiver,
+      carried,
     };
   }
   return {
     kind: 'fold',
-    carrierPosition,
+    carrier,
+    carried,
   };
 }
 

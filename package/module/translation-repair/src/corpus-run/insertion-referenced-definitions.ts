@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from '../chunk-document.ts';
 import {
   type FootnoteMention,
@@ -36,6 +38,27 @@ type Referrer =
     readonly sliceIndex: number;
   }
   | { readonly kind: 'page'; };
+
+/**
+ An unresolved row that defines a label the shipping page references and
+ does not define, with that label and who references it.
+ */
+type FollowingDefinition = {
+  /**
+   Row admitted with its marker.
+   */
+  readonly row: InsertionCoverageRow;
+
+  /**
+   Label it defines, with its convention.
+   */
+  readonly label: string;
+
+  /**
+   Who references the label.
+   */
+  readonly referrer: Referrer;
+};
 
 /**
  Labels a text mentions in one role: convention and identifier together,
@@ -135,12 +158,10 @@ export function admitReferencedDefinitions(
     ): number {
       return left - right;
     },)
-    .flatMap(function toSlice(position,): readonly ChunkPair[] {
-      /**
-       Prepared slice at this position, absent when the position is out of range.
-       */
-      const slice = slices[position];
-      return (slice === undefined) ? [] : [slice,];
+    .map(function toSlice(position,): ChunkPair {
+      // Admitted positions index these slices: every admission reads them
+      // off the same preparation.
+      return nonNullishOrThrow(slices[position],);
     },);
   /**
    Who references each label the shipping page will carry, the page first,
@@ -199,34 +220,32 @@ export function admitReferencedDefinitions(
   /**
    Unresolved rows defining a referenced, undefined label, each with that label and its referrer.
    */
-  const following = unresolvedRows.flatMap(function definitionRows(row,): readonly {
-    readonly row: InsertionCoverageRow;
-    readonly label: string;
-    readonly referrer: Referrer;
-  }[] {
+  const following = unresolvedRows.flatMap(function definitionRows(row,): readonly FollowingDefinition[] {
     /**
-     First label this row defines that the page references and lacks.
+     Labels this row defines that the page references and lacks, each with
+     its referrer, read in one lookup; the first is the one admitted.
      */
     const wanted = labelsOf({
       text: row.sourceText,
       role: 'definition',
     },)
-      .find(function referencedAndMissing(label,): boolean {
-        return referrers.has(label,) && (!defined.has(label,));
+      .flatMap(function referencedAndMissing(label,): readonly FollowingDefinition[] {
+        /**
+         Who references the label, absent where nobody does.
+         */
+        const referrer = referrers.get(label,);
+        return ((referrer === undefined) || defined.has(label,))
+          ? []
+          : [{
+            row,
+            label,
+            referrer,
+          },];
       },);
-    if (wanted === undefined)
-      return [];
-    /**
-     Who references the label, present by the filter.
-     */
-    const referrer = referrers.get(wanted,);
-    if (referrer === undefined)
-      return [];
-    return [{
-      row,
-      label: wanted,
-      referrer,
-    },];
+    return wanted.slice(
+      0,
+      1,
+    );
   },);
   /**
    Positions the definitions add.

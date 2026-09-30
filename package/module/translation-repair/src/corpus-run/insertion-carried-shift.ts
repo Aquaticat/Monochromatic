@@ -1,14 +1,14 @@
 import type { ChunkPair, } from '../chunk-document.ts';
-import {
-  type ContentChunk,
-  isInsertionChunk,
-} from '../chunk-placement.ts';
+import type { ContentChunk, } from '../chunk-placement.ts';
 import type { AnchorTarget, } from '../validate-issue.ts';
 import {
   abutting,
   type AnchorHolder,
 } from './insertion-carried-anchor.ts';
-import { pairedNeighbourToward, } from './insertion-carried-neighbours.ts';
+import {
+  type PairedNeighbour,
+  pairedNeighbourToward,
+} from './insertion-carried-neighbours.ts';
 
 //region Carried passage shift
 // THE PAIRING LEFT ONE OFF. On TianqiChen66611 (2026-09-26) the archive
@@ -44,15 +44,15 @@ export const CARRIED_SHIFTED_FINDING = 'insertion-carried-shifted';
 
  @param holders - every evidence block's holder
 
- @param carrierPosition - the slice the passage folds into
+ @param carrier - the paired slice the passage folds into
 
  @param carriedPosition - the carried passage
 
- @returns Position of the receiving slice, none where the plain fold stands
+ @returns The receiving slice, none where the plain fold stands
 
  @example
  ```ts
- const [receiverPosition,] = shiftReceiver({ slices, sourceText, target, holders, carrierPosition: 2, carriedPosition: 3, },);
+ const [receiver,] = shiftReceiver({ slices, sourceText, target, holders, carrier, carriedPosition: 3, },);
  ```
  */
 export function shiftReceiver(
@@ -61,35 +61,30 @@ export function shiftReceiver(
     sourceText,
     target,
     holders,
-    carrierPosition,
+    carrier,
     carriedPosition,
   }: {
     readonly slices: readonly ChunkPair[];
     readonly sourceText: string;
     readonly target: AnchorTarget;
     readonly holders: readonly AnchorHolder[];
-    readonly carrierPosition: number;
+    readonly carrier: PairedNeighbour;
     readonly carriedPosition: number;
   },
-): readonly number[] {
-  /**
-   The carrier as prepared.
-   */
-  const carrier = slices[carrierPosition];
-  if ((carrier === undefined) || isInsertionChunk(carrier.target,))
-    return [];
+): readonly PairedNeighbour[] {
   /**
    Whether every evidence block sits in the carrier's span.
    */
   const carrierAlone = holders.every(function inCarrier(holder,): boolean {
-    return holder.position === carrierPosition;
+    return holder.position === carrier.position;
   },);
   if (!carrierAlone)
     return [];
   /**
    The carrier's archive span.
    */
-  const span = carrier.target;
+  const span = carrier.slice
+    .target;
   /**
    Archive blocks inside that span.
    */
@@ -115,34 +110,24 @@ export function shiftReceiver(
   /**
    The paired slice on the far side of the carrier from the passage.
    */
-  const [receiverPosition,] = pairedNeighbourToward({
+  const [receiver,] = pairedNeighbourToward({
     slices,
-    position: carrierPosition,
-    step: (carrierPosition < carriedPosition) ? -1 : 1,
+    position: carrier.position,
+    step: (carrier.position < carriedPosition) ? -1 : 1,
   },);
-  if (receiverPosition === undefined)
-    return [];
-  /**
-   The receiving slice.
-   */
-  const receiver = slices[receiverPosition];
   if (receiver === undefined)
     return [];
   /**
    Whether the carrier's source and the receiver's abut across blank space.
    */
-  const touching = (receiverPosition < carrierPosition)
-    ? abutting({
-      sourceText,
-      first: receiver.source,
-      second: carrier.source,
-    },)
-    : abutting({
-      sourceText,
-      first: carrier.source,
-      second: receiver.source,
-    },);
-  return touching ? [receiverPosition,] : [];
+  const touching = abutting({
+    sourceText,
+    one: receiver.slice
+      .source,
+    other: carrier.slice
+      .source,
+  },);
+  return touching ? [receiver,] : [];
 }
 
 /**
@@ -232,9 +217,9 @@ export function widenSource(
 
  @param slices - prepared slices as they stand
 
- @param carrierPosition - the slice the passage folds into
+ @param carrier - the paired slice the passage folds into
 
- @param receiverPosition - the far neighbour taking the carrier's own source
+ @param receiver - the far neighbour taking the carrier's own source
 
  @param carried - the carried slice
 
@@ -242,21 +227,21 @@ export function widenSource(
 
  @example
  ```ts
- const next = shiftSlices({ sourceText, slices, carrierPosition: 2, receiverPosition: 1, carried, },);
+ const next = shiftSlices({ sourceText, slices, carrier, receiver, carried, },);
  ```
  */
 export function shiftSlices(
   {
     sourceText,
     slices,
-    carrierPosition,
-    receiverPosition,
+    carrier,
+    receiver,
     carried,
   }: {
     readonly sourceText: string;
     readonly slices: readonly ChunkPair[];
-    readonly carrierPosition: number;
-    readonly receiverPosition: number;
+    readonly carrier: PairedNeighbour;
+    readonly receiver: PairedNeighbour;
     readonly carried: ChunkPair;
   },
 ): readonly ChunkPair[] {
@@ -264,20 +249,14 @@ export function shiftSlices(
     slice,
     position,
   ): ChunkPair {
-    if (position === receiverPosition) {
-      /**
-       The carrier as it stands, whose own source the receiver takes.
-       */
-      const carrier = slices[carrierPosition];
-      return (carrier === undefined)
-        ? slice
-        : widenSource({
-          sourceText,
-          widened: slice,
-          absorbed: carrier,
-        },);
+    if (position === receiver.position) {
+      return widenSource({
+        sourceText,
+        widened: slice,
+        absorbed: carrier.slice,
+      },);
     }
-    if (position !== carrierPosition)
+    if (position !== carrier.position)
       return slice;
     /**
      Stable index the carrier's source reports under.
