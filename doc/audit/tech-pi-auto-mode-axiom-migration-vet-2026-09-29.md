@@ -324,12 +324,31 @@ The selected change moved each unchanged reference at the SDK tool-result bounda
 startup errors and SDK-caught tool exceptions could not satisfy it.
 New-epoch dependency file/link admission does not refresh earlier runs or final source freshness.
 
-A protected original exact-action admission phase is predeclared but unimplemented/undispatched.
-It must bind the retained actual writer,
-original bytes,
-presentation,
-and accepted scope before any SDK/provider startup,
-then expose only fixed non-content projections and privacy-safe errors.
+The protected original exact-action draft passed source freeze `proc_9f96`,
+but its original-reading run was withheld after independent serialized-source privacy/closure review.
+Separate parse controls `proc_8fc3` passed exit-zero malformed output containment,
+fixed schema/error boundaries,
+private diagnostic-write failure,
+and an unsafe-parser positive contrast.
+Synthetic original-binding controls `proc_bda2` passed:
+invalid capture/nonce/scope/writer/finalization and summary-only fixtures stopped before actual SDK import;
+intact and equality-omitted synthetic fixtures reached SDK barrel import,
+with no genuine originals or sessions.
+Guarded source freeze `proc_25cf` pinned the reviewed constructor owner.
+Protected actual consumer `proc_baa1` then passed one SDK session,
+two scripted responses,
+one inert callback,
+empty private stderr,
+and zero fetch/models/grant writes.
+Original writer/UTF-8/presentation/nonce/scope stayed privately owned before SDK startup.
+Summary/action/machine-handle and directive promotion controls passed at the actual tool-result boundary.
+No original live interaction was replayed.
+Current eligibility remains unestablished.
+The original standalone fixture transaction did not name an SDK session ID;
+constructor association can establish test-owned root/epoch mechanics,
+not retroactive human-witnessed ancestry or renewed authorization.
+The next separately predeclared root attachment/reset phase remains unimplemented/undispatched
+and must keep records operationally test-only.
 Historical admission does not itself confer current eligibility or reusable authority.
 Target/source/deadline/cache finalization,
 genuine directive admission,
