@@ -36,7 +36,10 @@ export {
   entriesFinishedThisRun,
   finishedEntryIds,
 } from './corpus-run/pass-finished.ts';
-export { openNamespacedCache, } from './corpus-run/slice-cache-namespace.ts';
+export {
+  isSliceFileName,
+  openNamespacedCache,
+} from './corpus-run/slice-cache-namespace.ts';
 export { verifyArtifactMeasurements, } from './corpus-run/artifact-two-lane-corpus-verify.ts';
 export {
   type HostIdentity,
@@ -79,6 +82,7 @@ export {
   namesIn,
   namesOfKind,
   presentNamesOfKind,
+  readingOf,
 } from './corpus-run/directory-listing.ts';
 
 //endregion Corpus entry barrel

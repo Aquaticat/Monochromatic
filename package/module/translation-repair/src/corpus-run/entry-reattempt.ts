@@ -1,5 +1,6 @@
 import { presentNamesOfKind, } from './directory-listing.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
+import { isSliceFileName, } from './slice-cache-namespace.ts';
 
 //region Entry reattempt
 // Why a capped entry gets another go INSIDE one invocation, and what stops it.
@@ -48,12 +49,6 @@ import type { EntryOutcome, } from './pass-entry-contract.ts';
 // 45 by reading them back. Had setup cached anywhere else, the largest entries,
 // which are the ones this exists for, would have stalled on every first
 // attempt.
-
-/**
- Suffix every persisted slice carries, as against the `.txt` generation
- markers sitting beside them in the same directory.
- */
-const SLICE_SUFFIX = '.json';
 
 /**
  What one attempt earned, and so whether the invocation comes back to it.
@@ -130,7 +125,7 @@ export async function countCachedSlices(
     kind: 'file',
   },))
     .filter(function isSlice(name,): boolean {
-      return name.endsWith(SLICE_SUFFIX,);
+      return isSliceFileName({ name, },);
     },)
     .length;
 }

@@ -65,6 +65,12 @@ export {
   refusalOf,
   type RefusedFile,
 } from './corpus-run/ledger-directory.ts';
+// The ledger's own names, beside its reader; `pipeline-barrel.ts`, which
+// exports the recorder, is at its line budget.
+export {
+  isLedgerFileName,
+  LEDGER_DIR,
+} from './candidate-ledger.ts';
 export {
   type CandidateReading,
   type LedgerSummary,

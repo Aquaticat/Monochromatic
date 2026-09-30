@@ -15,6 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  isLedgerFileName,
   LAUNCH_STAMP,
   ledgerFileName,
 } from '../dist/final/node/index.mjs';
@@ -73,6 +74,37 @@ await describe({
         expect(LAUNCH_STAMP.endsWith(`-${String(process.pid,)}`,),).toBe(true,);
         expect(LAUNCH_STAMP.includes(':',),).toBe(false,);
         expect(LAUNCH_STAMP.includes('.',),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isLedgerFileName.name,
+  children: [
+    it({
+      name: 'ACCEPTS a name the recorder writes, the control the refusal departs from',
+      fn: async () => {
+        expect(isLedgerFileName({
+          name: ledgerFileName({
+            ordinal: 0,
+            launch: LAUNCH_STAMP,
+          },),
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REFUSES the atomic write\'s temporary name for that contest, which is no contest until it is '
+        + 'renamed (ledger B65)',
+      fn: async () => {
+        expect(isLedgerFileName({
+          name: `${
+            ledgerFileName({
+              ordinal: 0,
+              launch: LAUNCH_STAMP,
+            },)
+          }.4242.partial`,
+        },),).toBe(false,);
       },
     },),
   ],

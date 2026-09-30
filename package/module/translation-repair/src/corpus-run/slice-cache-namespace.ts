@@ -91,6 +91,25 @@ const CLAIMED_PREFIXES: readonly string[] = EVERY_SLICE_NAMESPACE
 
 
 /**
+ Whether a file in an entry's cache directory is a slice of some lane. Every
+ lane writes its slices under the one suffix, and neither a generation marker
+ nor a slice still being written under its atomic write's temporary name
+ carries it.
+
+ @param name - file name, without a directory
+
+ @returns Whether it ends in the slice suffix
+
+ @example
+ ```ts
+ const isSlice = isSliceFileName({ name: 'translate.0-1-tabby.json', },);
+ ```
+ */
+export function isSliceFileName({ name, }: { readonly name: string; },): boolean {
+  return name.endsWith(JSON_SUFFIX,);
+}
+
+/**
  Whether a file in a shared cache directory belongs to one lane.
  
  @param name - file name as `readdir` returned it
@@ -113,7 +132,7 @@ export function belongsToNamespace(
     readonly namespace: SliceNamespace;
   },
 ): boolean {
-  if (!name.endsWith(JSON_SUFFIX,))
+  if (!isSliceFileName({ name, },))
     return false;
   if (namespace.prefix !== '')
     return name.startsWith(namespace.prefix,);

@@ -1,5 +1,6 @@
 import { join, } from 'node:path';
 
+import { LEDGER_DIR, } from '../candidate-ledger.ts';
 import { wholeOpening, } from '../code-points.ts';
 import {
   type LedgerReading,
@@ -51,11 +52,6 @@ const LEDGER_INCOMPLETE = 2;
  Exit code left behind when the seat flag arrived with no seat after it.
  */
 const ASKED_WITHOUT_A_SEAT = 3;
-
-/**
- Directory under a runs dir the ledger lives in.
- */
-const LEDGER_DIR = 'ledger';
 
 /**
  Flag naming a single seat to read in full.

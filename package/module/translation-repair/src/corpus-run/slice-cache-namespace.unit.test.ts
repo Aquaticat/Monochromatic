@@ -33,6 +33,7 @@ import {
 import {
   belongsToNamespace,
   EVERY_SLICE_NAMESPACE,
+  isSliceFileName,
   PICTURE_READING_NAMESPACE,
   REPAIR_SLICE_NAMESPACE,
   type SliceNamespace,
@@ -168,6 +169,42 @@ await describe({
         },);
 
         expect(new Set(markers,).size,).toBe(markers.length,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isSliceFileName.name,
+  children: [
+    it({
+      name: 'ACCEPTS every lane\'s slice file, the control the refusals depart from',
+      fn: async () => {
+        for (const namespace of EVERY_SLICE_NAMESPACE)
+          expect(isSliceFileName({
+            name: fileIn({
+              namespace,
+              key: 'abc',
+            },),
+          },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES every lane\'s generation marker and a slice still being written under its temporary name '
+        + '(ledger B65)',
+      fn: async () => {
+        for (const namespace of EVERY_SLICE_NAMESPACE) {
+          expect(isSliceFileName({ name: namespace.marker, },),).toBe(false,);
+          expect(isSliceFileName({
+            name: `${
+              fileIn({
+                namespace,
+                key: 'abc',
+              },)
+            }.4242.partial`,
+          },),).toBe(false,);
+        }
       },
     },),
   ],

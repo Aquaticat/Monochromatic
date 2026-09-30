@@ -34,6 +34,7 @@ import {
 import {
   namesOfKind,
   presentNamesOfKind,
+  readingOf,
 } from '../../dist/final/node/index.mjs';
 
 //region Directory listing tests
@@ -186,6 +187,56 @@ await describe({
           'code',
           'ENOTDIR',
         );
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: readingOf.name,
+  children: [
+    it({
+      name: 'READS WHAT THE LISTING RETURNS, the control the refusals depart from',
+      fn: async () => {
+        expect(await readingOf({
+          list: async function listed(): Promise<readonly string[]> {
+            return ['Mittens.json',];
+          },
+        },),).toEqual({
+          kind: 'read',
+          names: ['Mittens.json',],
+        },);
+      },
+    },),
+
+    it({
+      name: 'REPORTS A FILESYSTEM FAILURE BY ITS CODE rather than raising, so an operator reads the remedy',
+      fn: async () => {
+        expect(await readingOf({
+          list: async function refused(): Promise<readonly string[]> {
+            throw Object.assign(
+              new Error('the cat sat on the permissions',),
+              { code: 'EACCES', },
+            );
+          },
+        },),).toEqual({
+          kind: 'unreadable',
+          reason: 'EACCES',
+        },);
+      },
+    },),
+
+    it({
+      name: 'NAMES THE CLASS of a failure that carries no code, never its message',
+      fn: async () => {
+        expect(await readingOf({
+          list: async function refused(): Promise<readonly string[]> {
+            throw new TypeError('Mittens knocked the listing off the table',);
+          },
+        },),).toEqual({
+          kind: 'unreadable',
+          reason: 'TypeError',
+        },);
       },
     },),
   ],

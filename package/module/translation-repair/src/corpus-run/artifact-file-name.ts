@@ -1,7 +1,10 @@
-import { readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { filesystemReason, } from './directory-listing.ts';
+import {
+  type DirectoryReading,
+  namesOfKind,
+  readingOf,
+} from './directory-listing.ts';
 
 //region Artifact file name
 // WHAT NAMES AN ARTIFACT, read one way. A settled entry's artifact is a
@@ -109,12 +112,12 @@ export function artifactFileNameOf({ entryId, }: { readonly entryId: string; },)
 /**
  Lists the artifacts a directory holds: its REGULAR FILES named like one.
 
- Directory entries are checked rather than assumed. A directory named
- `backup.json` otherwise reached `readFile` and threw EISDIR out of the whole
- census, and a symlink was followed wherever it pointed, which could
- duplicate another artifact under a second identity or leave the directory
- entirely. Neither is an artifact, and neither should cost more than being
- skipped.
+ Directory entries are checked rather than assumed (`namesOfKind`). A
+ directory named `backup.json` otherwise reached `readFile` and threw EISDIR
+ out of the whole census, and a symlink was followed wherever it pointed,
+ which could duplicate another artifact under a second identity or leave the
+ directory entirely. Neither is an artifact, and neither should cost more
+ than being skipped.
 
  @param artifactsDir - directory holding one JSON per settled entry
 
@@ -128,53 +131,21 @@ export function artifactFileNameOf({ entryId, }: { readonly entryId: string; },)
 export async function listArtifactFiles(
   { artifactsDir, }: { readonly artifactsDir: string; },
 ): Promise<readonly ArtifactFileName[]> {
-  return (await readdir(
-    artifactsDir,
-    { withFileTypes: true, },
-  ))
-    .filter(function isRegularFile(entry,): boolean {
-      return entry.isFile();
-    },)
-    .map(function toName(entry,): string {
-      return entry.name;
-    },)
+  return (await namesOfKind({
+    dir: artifactsDir,
+    kind: 'file',
+  },))
     .filter(isArtifactFileName,);
 }
-
-/**
- What listing one directory's artifacts produced.
-
- ABSENCE IS A KIND, as it is for any directory listing here: a directory
- holding no artifact and a directory that is not there both leave nothing to
- read, but only one says the caller was pointed somewhere real.
-
- @example
- ```ts
- const listing: ArtifactListing = { kind: 'read', names: ['Mittens.json',], };
- ```
- */
-export type ArtifactListing =
-  | {
-    readonly kind: 'read';
-
-    /**
-     Artifact file names, unsorted.
-     */
-    readonly names: readonly ArtifactFileName[];
-  }
-  | {
-    readonly kind: 'unreadable';
-
-    /**
-     Filesystem reason, as a bounded token: `ENOENT`, `EACCES`, `ENOTDIR`.
-     */
-    readonly reason: string;
-  };
 
 /**
  Lists the artifacts a directory holds, reporting an absent or unreadable
  directory rather than raising, for readers that choose between layouts or
  report a missing run as a finding.
+
+ ABSENCE IS A KIND, as it is for any directory listing here: a directory
+ holding no artifact and a directory that is not there both leave nothing to
+ read, but only one says the caller was pointed somewhere real.
 
  @param dir - directory that may hold artifacts
 
@@ -187,18 +158,12 @@ export type ArtifactListing =
  */
 export async function artifactFilesIn(
   { dir, }: { readonly dir: string; },
-): Promise<ArtifactListing> {
-  try {
-    return {
-      kind: 'read',
-      names: await listArtifactFiles({ artifactsDir: dir, },),
-    };
-  } catch (error) {
-    return {
-      kind: 'unreadable',
-      reason: filesystemReason({ error, },),
-    };
-  }
+): Promise<DirectoryReading<ArtifactFileName>> {
+  return await readingOf({
+    list: async function listed(): Promise<readonly ArtifactFileName[]> {
+      return await listArtifactFiles({ artifactsDir: dir, },);
+    },
+  },);
 }
 
 //endregion Artifact file name

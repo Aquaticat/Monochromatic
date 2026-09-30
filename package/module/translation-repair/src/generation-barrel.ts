@@ -22,7 +22,6 @@ export {
   ARTIFACTS_DIR,
   artifactFilesIn,
   artifactsDirOf,
-  type ArtifactListing,
   entryIdOfArtifact,
   isArtifactFileName,
   listArtifactFiles,

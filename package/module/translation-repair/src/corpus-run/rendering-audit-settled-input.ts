@@ -1,7 +1,4 @@
 import {
-  readdir,
-} from 'node:fs/promises';
-import {
   basename,
   join,
 } from 'node:path';
@@ -14,10 +11,7 @@ import {
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
-import {
-  isArtifactFileName,
-  listArtifactFiles,
-} from './artifact-file-name.ts';
+import { listArtifactFiles, } from './artifact-file-name.ts';
 import { verifyArtifactMeasurements, } from './artifact-two-lane-corpus-verify.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
@@ -26,6 +20,7 @@ import {
   rebuildPreparation,
   type RecipeHalf,
 } from './artifact-two-lane-rebuild.ts';
+import { namesOfKind, } from './directory-listing.ts';
 import {
   identityOf,
   type SettledAuditSubject,
@@ -418,46 +413,18 @@ async function locateSettledArtifacts(
   { archiveDir, }: { readonly archiveDir: string; },
 ): Promise<readonly ArtifactLocation[]> {
   /**
-   Everything the archive directory holds, read once.
-   */
-  const entries = await readdir(
-    archiveDir,
-    { withFileTypes: true, },
-  );
-
-  /**
    Run-set subdirectories, sorted.
    */
-  const runSets = entries
-    .filter(function isRunSet(entry,): boolean {
-      return entry.isDirectory();
-    },)
-    .map(function named(entry,): string {
-      return entry.name;
-    },)
-    .toSorted();
+  const runSets = (await namesOfKind({
+    dir: archiveDir,
+    kind: 'directory',
+  },)).toSorted();
 
   /**
-   Artifacts sitting at the archive root, which is the layout a pass writes.
+   Artifacts sitting at the archive root, which is the layout a pass writes:
+   regular files named like one, as every artifact reader lists them.
    */
-  const loose = entries
-    .filter(function isLooseArtifact(entry,): boolean {
-      /**
-       Whether this entry is a file at all.
-       */
-      const isFile = entry.isFile();
-
-      /**
-       Whether it is named like an artifact.
-       */
-      const isJson = isArtifactFileName(entry.name,);
-
-      return isFile && isJson;
-    },)
-    .map(function named(entry,): string {
-      return entry.name;
-    },)
-    .toSorted();
+  const loose = (await listArtifactFiles({ artifactsDir: archiveDir, },)).toSorted();
 
   // STATED, NOT FAULTED: the archive is the operator's, the path is what they
   // typed, and the remedy is theirs, so `reportingRefusals` prints this line

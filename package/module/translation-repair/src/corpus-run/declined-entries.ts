@@ -1,12 +1,11 @@
-import type { Dirent, } from 'node:fs';
-import {
-  mkdir,
-  readdir,
-} from 'node:fs/promises';
+import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { writeFileAtomic, } from './atomic-write.ts';
-import { filesystemReason, } from './directory-listing.ts';
+import {
+  filesystemReason,
+  presentNamesOfKind,
+} from './directory-listing.ts';
 
 //region Declined entries
 // WHAT A PASS LEAVES BEHIND FOR AN ENTRY IT DECLINED, and how the next pass
@@ -178,36 +177,30 @@ export class DeclinedEntriesUnreadableError extends Error {
 }
 
 /**
- What the decline directory holds, typed so a non-file is never a record.
+ The files the decline directory holds, so a non-file is never a record.
 
  @param declinedDir - directory of decline records
 
- @returns Its entries, none for an absent directory
+ @returns Their names, none for an absent directory
 
  @throws {@link DeclinedEntriesUnreadableError} for any other listing failure
 
  @example
  ```ts
- const entries = await recordEntries({ declinedDir, },);
+ const names = await recordFiles({ declinedDir, },);
  ```
  */
-async function recordEntries(
+async function recordFiles(
   { declinedDir, }: { readonly declinedDir: string; },
-): Promise<readonly Dirent[]> {
+): Promise<readonly string[]> {
   try {
-    return await readdir(
-      declinedDir,
-      { withFileTypes: true, },
-    );
+    return await presentNamesOfKind({
+      dir: declinedDir,
+      kind: 'file',
+    },);
   } catch (error) {
-    /**
-     Filesystem code the listing failed with.
-     */
-    const filesystemCode = filesystemReason({ error, },);
-    if (filesystemCode === 'ENOENT')
-      return [];
     throw new DeclinedEntriesUnreadableError({
-      filesystemCode,
+      filesystemCode: filesystemReason({ error, },),
       cause: error,
     },);
   }
@@ -234,13 +227,7 @@ export async function declinedEntryIds(
   { declinedDir, }: { readonly declinedDir: string; },
 ): Promise<ReadonlySet<string>> {
   return new Set(
-    (await recordEntries({ declinedDir, },))
-      .filter(function isRecordFile(entry,): boolean {
-        return entry.isFile();
-      },)
-      .map(function toName({ name, },): string {
-        return name;
-      },)
+    (await recordFiles({ declinedDir, },))
       .filter(function isRecord(name,): boolean {
         return name.endsWith(RECORD_SUFFIX,);
       },)

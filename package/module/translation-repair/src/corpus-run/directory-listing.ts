@@ -15,7 +15,9 @@ import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 // slice cache, ENOTDIR out of the published tree), read a record twice
 // through a link, or read a write still in flight under its temporary name
 // (`atomic-write.ts`). So a reader lists through `namesOfKind` and filters
-// the names its writer gives records.
+// the names its writer gives records, and nothing else in the package calls
+// `readdir` but the walkers `directory-listing-scan.unit.test.ts` names, each
+// with why it must see every kind.
 //
 // LIFTED OUT OF TWO COPIES on 2026-08-25, following the same rule
 // `error-name.ts` records: `verify-published.ts` returned an empty array and
@@ -39,19 +41,22 @@ import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
  there both yield nothing to work on, but only one of them says the caller
  was pointed somewhere real.
  
+ TYPED BY THE NAMES A READER TAKES, so a listing of artifacts reads as
+ artifact file names (`artifact-file-name.ts`) through the same union.
+
  @example
  ```ts
  const reading: DirectoryReading = { kind: 'read', names: [], };
  ```
  */
-export type DirectoryReading =
+export type DirectoryReading<NameT extends string = string,> =
   | {
     readonly kind: 'read';
 
     /**
-     Everything the directory holds, in whatever order it gave them.
+     The entries the reader takes, in whatever order the directory gave them.
      */
-    readonly names: readonly string[];
+    readonly names: readonly NameT[];
   }
   | {
     readonly kind: 'unreadable';
@@ -199,6 +204,36 @@ export async function presentNamesOfKind(
 }
 
 /**
+ Runs one listing, reporting a directory it could not read rather than
+ raising, for readers that choose between layouts or report a missing run as
+ a finding.
+
+ @param list - listing to run, which raises what `readdir` raises
+
+ @returns Its names, or why the directory could not be listed
+
+ @example
+ ```ts
+ const reading = await readingOf({ list: async () => await namesOfKind({ dir, kind: 'file', },), },);
+ ```
+ */
+export async function readingOf<const NameT extends string,>(
+  { list, }: { readonly list: () => Promise<readonly NameT[]>; },
+): Promise<DirectoryReading<NameT>> {
+  try {
+    return {
+      kind: 'read',
+      names: await list(),
+    };
+  } catch (error) {
+    return {
+      kind: 'unreadable',
+      reason: filesystemReason({ error, },),
+    };
+  }
+}
+
+/**
  Lists the entries of one kind a directory holds, reporting an absent one
  rather than raising.
 
@@ -222,20 +257,14 @@ export async function namesIn(
     readonly kind: EntryKind;
   },
 ): Promise<DirectoryReading> {
-  try {
-    return {
-      kind: 'read',
-      names: await namesOfKind({
+  return await readingOf({
+    list: async function listed(): Promise<readonly string[]> {
+      return await namesOfKind({
         dir,
         kind,
-      },),
-    };
-  } catch (error) {
-    return {
-      kind: 'unreadable',
-      reason: filesystemReason({ error, },),
-    };
-  }
+      },);
+    },
+  },);
 }
 
 //endregion Directory listing

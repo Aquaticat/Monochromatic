@@ -2,7 +2,6 @@ import {
   mkdir,
   mkdtemp,
   mkdtempDisposable,
-  readdir,
   readFile,
   writeFile,
 } from 'node:fs/promises';
@@ -51,6 +50,7 @@ import {
 } from './coverage-bundle-maps.ts';
 import { placeTally, } from './coverage-census-place.ts';
 import type { CoverageTally, } from './coverage-tally.ts';
+import { namesOfKind, } from './directory-listing.ts';
 
 //region Coverage census
 // LEDGER T8: WHICH PACKAGE CODE THE UNIT SUITE NEVER RUNS, measured rather
@@ -365,7 +365,10 @@ async function runCoverageCensus(): Promise<void> {
    The build's bundles, split by whether a map stands beside each.
    */
   const bundleMaps = bundleMapsOf({
-    built: await readdir(distDirectory,),
+    built: await namesOfKind({
+      dir: distDirectory,
+      kind: 'file',
+    },),
     distDirectory,
   },);
   /**

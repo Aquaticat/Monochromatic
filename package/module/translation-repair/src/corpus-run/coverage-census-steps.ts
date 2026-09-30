@@ -1,6 +1,5 @@
 import {
   open,
-  readdir,
   readFile,
 } from 'node:fs/promises';
 import {
@@ -21,6 +20,7 @@ import {
 } from './coverage-census-input.ts';
 import type { UnloadedSource, } from './coverage-census-print.ts';
 import { sourceKindOf, } from './coverage-census-report.ts';
+import { namesOfKind, } from './directory-listing.ts';
 import {
   type BundleScript,
   bundleScriptsOf,
@@ -240,7 +240,10 @@ export async function tallyCoverage(
   /**
    Every coverage file, in one fixed order for both readings.
    */
-  const paths = (await readdir(coverageDirectory,))
+  const paths = (await namesOfKind({
+    dir: coverageDirectory,
+    kind: 'file',
+  },))
     .toSorted()
     .map(function inDirectory(name,): string {
       return join(
