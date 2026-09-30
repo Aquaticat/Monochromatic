@@ -319,6 +319,24 @@ with no lifecycle API call,
 genuine input,
 model,
 or GUI interaction.
+That diagnostic subsequently passed graph/import/setup.
+The original stop's cause remains unassigned.
+Previously unopened API checks passed separately as `proc_d73c`:
+three synthetic-data `SessionManager` instances,
+zero `AgentSession` runs,
+and no model/fetch/genuine input.
+
+A partial private lifecycle consumer now owns concrete SDK construction/fork,
+synthetic source handles,
+immutable entry snapshots,
+session-wide reset epochs,
+and grant/branch/policy/cancellation final checks.
+Its actual-session/inert-callback mechanics test `proc_f2c1` is running.
+This synthetic-only phase cannot create human grants or qualify the complete lifecycle engine.
+Target/source/deadline/cache guards,
+real original-action admission,
+a distinct genuine reusable directive,
+and guard omissions remain required.
 
 Next qualification work:
 qualify reset,
