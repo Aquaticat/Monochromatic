@@ -39,6 +39,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import {
+  childNodes,
+  isTreeNode,
+  parseSource,
+  readPackageSource,
+  type SourceText,
+  type TreeNode,
+} from './source-scan.test-fixture.ts';
+
 //region Marked message inventory
 
 /**
@@ -166,6 +175,7 @@ const MARKED_CLASSES: readonly string[] = [
   'VisualEvidenceInterruptedError',
   'UnseatedStandingError',
   'WindowEvidenceError',
+  'WordingCoherenceError',
   'WritingBenchUnreachableError',
 ];
 
@@ -296,7 +306,9 @@ const NAMED_PARTS: Record<string, string> = {
   'phase': 'name of the stream phase this package defines',
   'producerModelIds.join(\', \',)': 'model ids from the catalog',
   'provider': 'member of a closed provider union',
-  'reason': 'authored phrase, or a member of a closed union, at every throw site',
+  'reason': 'authored phrase, or a member of a closed union, at every throw site; or a marked class\'s sentence '
+    + 'forwarded from a catch narrowed to it, at a site FORWARDING_SITES lists',
+  'WORDING_FAULT_SENTENCES[fault]': 'one of five fixed phrases, keyed by a closed fault kind',
   'rightId': 'envelope id',
   'role': 'roster role name this package defines',
   'says': 'authored phrase saying what in a coverage census input did not read, at every throw site; it names at '
@@ -662,6 +674,376 @@ async function scanSource(): Promise<readonly ScannedClass[]> {
 
 //endregion Source scan
 
+//region Forwarded messages
+// A MARKED CLASS CAN STILL CARRY TEXT IT DID NOT WRITE, through a throw site
+// that hands it a caught error's message (ledger B34): `ArtifactParseError`
+// printed a pipeline digest and a preparation identity that way, quoted by the
+// errors it caught. This scan finds every construction of a marked class whose
+// arguments name a catch clause's binding or call `caughtValueText`, and reads
+// which classes that catch narrows its binding to with `instanceof`. Only a
+// catch narrowed to marked classes may forward, since their sentences are
+// checked by this file; each such site is listed. The narrowing is read by
+// its presence in the clause, not proven to guard the throw, so a review of
+// each listed site still decides it.
+
+/**
+ A marked class's construction that carries text a caught error wrote.
+ */
+type Forwarding = {
+  /**
+   File, relative to `src`.
+   */
+  readonly file: string;
+
+  /**
+   Marked class constructed.
+   */
+  readonly className: string;
+
+  /**
+   Classes the enclosing catch narrows its binding to, sorted; none where it
+   narrows nothing or the text arrives outside a catch.
+   */
+  readonly narrowedTo: readonly string[];
+};
+
+/**
+ How a listed site uses the caught error's text.
+
+ FORWARDS: the text becomes part of the marked message, so the catch must
+ narrow to marked classes, whose sentences this file checks. OPERATOR-TYPED:
+ the text is a library's message quoting only what the operator typed, which
+ the marker permits. READ-FOR-A-NUMBER: the text is read for a number the
+ class's own inventory names, and none of it reaches the message.
+ */
+type ForwardingKind = 'forwards' | 'operator-typed' | 'read-for-a-number';
+
+/**
+ Every construction of a marked class whose arguments turn a caught error
+ into text, with how that text is used and what it names.
+ */
+const FORWARDING_SITES: readonly (Forwarding & {
+  /**
+   How the caught error's text is used.
+   */
+  readonly kind: ForwardingKind;
+
+  /**
+   What that text names, read at the throw sites it comes from.
+   */
+  readonly names: string;
+})[] = [
+  {
+    file: 'artifact-change-sets.ts',
+    className: 'ArtifactParseError',
+    narrowedTo: ['AssemblyContractError',],
+    kind: 'forwards',
+    names: 'slice indexes and index-set sizes',
+  },
+  {
+    file: 'corpus-run/artifact-two-lane-read-comparison.ts',
+    className: 'ArtifactParseError',
+    narrowedTo: ['LaneComparisonError',],
+    kind: 'forwards',
+    names: 'positions, slice indexes and lane names',
+  },
+  {
+    file: 'corpus-run/artifact-two-lane-read-row-relations.ts',
+    className: 'ArtifactParseError',
+    narrowedTo: ['DeliveryCoherenceError', 'WordingCoherenceError',],
+    kind: 'forwards',
+    names: 'a slice index and fault and outcome kinds',
+  },
+  {
+    file: 'corpus-run/coverage-census-input.ts',
+    className: 'StatedRefusalError',
+    narrowedTo: [],
+    kind: 'operator-typed',
+    names: 'the arguments the operator typed, as Node\'s parseArgs quotes them',
+  },
+  {
+    file: 'run-json-read.ts',
+    className: 'RunJsonUnreadableError',
+    narrowedTo: [],
+    kind: 'read-for-a-number',
+    names: 'the byte offset JSON.parse reports, read by offsetIn as a number',
+  },
+];
+
+/**
+ Node kinds a scan for names under an expression does not enter.
+ */
+const NESTED_FUNCTION_KINDS: ReadonlySet<string> = new Set(['ArrowFunctionExpression', 'FunctionDeclaration', 'FunctionExpression',],);
+
+/**
+ Name an identifier node carries.
+
+ @param node - node to read
+
+ @returns Its name, empty for any node that is not an identifier
+
+ @example
+ ```ts
+ const name = identifierNameOf({ node: construction.callee, },);
+ ```
+ */
+function identifierNameOf({ node, }: { readonly node: unknown; },): string {
+  if ((!isTreeNode(node,)) || (node.type !== 'Identifier'))
+    return '';
+  /**
+   The node's name field.
+   */
+  const { name, } = node;
+  return ((typeof name) === 'string') ? name : '';
+}
+
+/**
+ Members through which a value becomes its text.
+ */
+const TEXT_MEMBERS: ReadonlySet<string> = new Set(['message', 'stack',],);
+
+/**
+ Every identifier some nodes turn into text, functions nested in them left out:
+ one interpolated into a template, handed to `String` or `caughtValueText`, or
+ read through its `message` or `stack`. A value handed on whole, as a
+ `cause` a class reads a position or a name from, is not text here: the
+ class's own sentence is what the inventory checks. `caughtValueText` counts
+ by name too, wherever it is called.
+
+ @param roots - nodes to read
+
+ @returns Names found, each once
+
+ @example
+ ```ts
+ const named = textNamesUnder({ roots: construction.arguments, },);
+ ```
+ */
+function textNamesUnder({ roots, }: { readonly roots: readonly TreeNode[]; },): ReadonlySet<string> {
+  /**
+   Names found so far.
+   */
+  const found = new Set<string>();
+  /**
+   Nodes still to read.
+   */
+  const pending = [...roots,];
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (NESTED_FUNCTION_KINDS.has(node.type,))
+      continue;
+    /**
+     Name this node calls, when it is a call.
+     */
+    const called = (node.type === 'CallExpression') ? identifierNameOf({ node: node.callee, },) : '';
+    /**
+     Arguments of that call.
+     */
+    const callArguments = (Array.isArray(node.arguments,) ? node.arguments : []).filter(function isNode(
+      argument: unknown,
+    ): argument is TreeNode {
+      return isTreeNode(argument,);
+    },);
+    if (called === 'caughtValueText')
+      found.add(called,);
+    if ((called === 'caughtValueText') || (called === 'String')) {
+      for (const argument of callArguments)
+        found.add(identifierNameOf({ node: argument, },),);
+    }
+    if ((node.type === 'MemberExpression') && TEXT_MEMBERS.has(identifierNameOf({ node: node.property, },),))
+      found.add(identifierNameOf({ node: node.object, },),);
+    if ((node.type === 'TemplateLiteral') && Array.isArray(node.expressions,)) {
+      for (const expression of node.expressions)
+        found.add(identifierNameOf({ node: expression, },),);
+    }
+    pending.push(...childNodes({ node, },),);
+  }
+  found.delete('',);
+  return found;
+}
+
+/**
+ Classes a catch clause narrows its binding to with `instanceof`.
+
+ @param body - the clause's block
+
+ @param binding - name the clause binds its error to
+
+ @returns Class names, sorted and each once
+
+ @example
+ ```ts
+ const narrowedTo = narrowingsOf({ body, binding: 'error', },);
+ ```
+ */
+function narrowingsOf(
+  {
+    body,
+    binding,
+  }: {
+    readonly body: TreeNode;
+    readonly binding: string;
+  },
+): readonly string[] {
+  /**
+   Classes found so far.
+   */
+  const found = new Set<string>();
+  /**
+   Nodes still to read.
+   */
+  const pending = [body,];
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if ((node.type === 'BinaryExpression') && (node.operator === 'instanceof')
+      && (identifierNameOf({ node: node.left, },) === binding)) {
+      /**
+       Class tested against.
+       */
+      const tested = identifierNameOf({ node: node.right, },);
+      if (tested !== '')
+        found.add(tested,);
+    }
+    pending.push(...childNodes({ node, },),);
+  }
+  return [...found,].toSorted();
+}
+
+/**
+ One catch clause enclosing a node, as the forwarding scan carries it.
+ */
+type CatchScope = {
+  /**
+   Name the clause binds its error to.
+   */
+  readonly binding: string;
+
+  /**
+   The clause's block.
+   */
+  readonly body: TreeNode;
+};
+
+/**
+ Every construction of a marked class in one file that forwards a caught
+ error's text: its arguments name an enclosing catch clause's binding, or call
+ `caughtValueText`.
+
+ @param file - file to read
+
+ @param marked - classes that declare the marker
+
+ @returns Each such construction, in no particular order
+
+ @example
+ ```ts
+ const found = forwardingIn({ file, marked: new Set(MARKED_CLASSES,), },);
+ ```
+ */
+function forwardingIn(
+  {
+    file,
+    marked,
+  }: {
+    readonly file: SourceText;
+    readonly marked: ReadonlySet<string>;
+  },
+): readonly Forwarding[] {
+  /**
+   The file's syntax tree.
+   */
+  const { program, } = parseSource({ file, },);
+  /**
+   Constructions found so far.
+   */
+  const found: Forwarding[] = [];
+  /**
+   Nodes still to read, each with the catch clauses enclosing it.
+   */
+  const pending: { readonly node: TreeNode; readonly catches: readonly CatchScope[]; }[] = [{
+    node: program,
+    catches: [],
+  },];
+  for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
+    /**
+     Node read now, and the clauses around it.
+     */
+    const {
+      node,
+      catches,
+    } = next;
+    /**
+     Class constructed here, or nothing.
+     */
+    const className = (node.type === 'NewExpression') ? identifierNameOf({ node: node.callee, },) : '';
+    if (marked.has(className,)) {
+      /**
+       Names the construction's arguments carry.
+       */
+      const named = textNamesUnder({
+        roots: Array.isArray(node.arguments,) ? node.arguments.filter(isTreeNode,) : [],
+      },);
+      /**
+       Innermost enclosing clause whose binding the arguments name.
+       */
+      const scope = catches.findLast(function namesBinding(candidate,): boolean {
+        return named.has(candidate.binding,);
+      },);
+      if ((scope !== undefined) || named.has('caughtValueText',)) {
+        found.push({
+          file: file.path,
+          className,
+          narrowedTo: (scope === undefined) ? [] : narrowingsOf(scope,),
+        },);
+      }
+    }
+    /**
+     Clauses enclosing this node's children.
+     */
+    const inner = ((node.type === 'CatchClause') && isTreeNode(node.body,))
+      ? [
+        ...catches,
+        {
+          binding: identifierNameOf({ node: node.param, },),
+          body: node.body,
+        },
+      ]
+      : catches;
+    pending.push(...childNodes({ node, },)
+      .map(function withScopes(child,) {
+        return {
+          node: child,
+          catches: inner,
+        };
+      },),);
+  }
+  return found;
+}
+
+/**
+ Sorts forwarding records into one comparable order.
+
+ @param records - records to sort
+
+ @returns Each as one line, sorted
+
+ @example
+ ```ts
+ const lines = forwardingLines({ records: found, },);
+ ```
+ */
+function forwardingLines({ records, }: { readonly records: readonly Forwarding[]; },): readonly string[] {
+  return records
+    .map(function line({
+      file,
+      className,
+      narrowedTo,
+    },): string {
+      return `${file}: ${className} narrowed to [${narrowedTo.join(', ',)}]`;
+    },)
+    .toSorted();
+}
+
+//endregion Forwarded messages
+
 await describe({
   name: 'messageNamesOnly',
   children: [
@@ -746,6 +1128,85 @@ await describe({
             },)
             .toSorted(),
         ).toEqual(Object.keys(WITHHELD,).toSorted(),);
+      },
+    },),
+
+    it({
+      name: 'FINDS a marked class handed a caught error\'s text, with the classes its catch narrows to: '
+        + 'unnarrowed, narrowed to a marked class, narrowed to another, through String of the binding, and '
+        + 'through caughtValueText outside any catch; and leaves a catch that only logs, one handing the error '
+        + 'on whole or reading its name, and an unmarked class',
+      fn: async () => {
+        /**
+         One cat-themed file holding each shape, a function apiece.
+         */
+        // Each interpolation's `$` and `{` are split across a concatenation, so
+        // no plain string holds a whole placeholder, which lint reads as a
+        // template literal written by mistake.
+        const catFile: SourceText = {
+          path: 'cat-refusals.ts',
+          isTest: false,
+          text: [
+            'function nap() { try { purr(); } catch (error) { throw new MarkedError({ reason: `a nap: $'
+              + '{caughtValueText(error,)}`, },); } }',
+            'function knead() { try { purr(); } catch (error) { if (!(error instanceof PurrError)) throw error; '
+              + 'throw new MarkedError({ reason: `a knead: $'
+              + '{error.message}`, },); } }',
+            'function stretch() { try { purr(); } catch (error) { if (!(error instanceof HissError)) throw error; '
+              + 'throw new MarkedError({ reason: String(error,), },); } }',
+            'function yawn(error: unknown) { return new MarkedError({ reason: caughtValueText(error,), },); }',
+            'function doze() { try { purr(); } catch (error) { log(error,); throw new MarkedError({ reason: \'a doze\', },); } }',
+            'function pounce() { try { purr(); } catch (error) { throw new MarkedError({ cause: error, kind: error.name, },); } }',
+            'function groom() { try { purr(); } catch (error) { throw new PlainError({ reason: caughtValueText(error,), },); } }',
+          ].join('\n',),
+        };
+        expect(forwardingLines({
+          records: forwardingIn({
+            file: catFile,
+            marked: new Set(['MarkedError', 'PurrError',],),
+          },),
+        },),).toEqual([
+          'cat-refusals.ts: MarkedError narrowed to [HissError]',
+          'cat-refusals.ts: MarkedError narrowed to [PurrError]',
+          'cat-refusals.ts: MarkedError narrowed to []',
+          'cat-refusals.ts: MarkedError narrowed to []',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'FORWARDS A CAUGHT ERROR\'S TEXT into a marked class only at the listed sites, each narrowed to '
+        + 'marked classes, and every listed site still forwards (ledger B34)',
+      fn: async () => {
+        /**
+         Every non-test source file.
+         */
+        const files = (await readPackageSource()).filter(function isSource(file,): boolean {
+          return !file.path.includes('.test.',);
+        },);
+        /**
+         Every forwarding construction across them.
+         */
+        const found = files.flatMap(function inFile(file,): readonly Forwarding[] {
+          return forwardingIn({
+            file,
+            marked: new Set(MARKED_CLASSES,),
+          },);
+        },);
+        expect(forwardingLines({ records: found, },),).toEqual(forwardingLines({ records: FORWARDING_SITES, },),);
+        expect(FORWARDING_SITES.flatMap(function unmarkedNarrowing(site,): readonly string[] {
+          if (site.kind !== 'forwards')
+            return [];
+          return (site.narrowedTo.length === 0)
+            ? [`${site.file}: forwards from an unnarrowed catch`,]
+            : site.narrowedTo
+              .filter(function isUnmarked(className,): boolean {
+                return !MARKED_CLASSES.includes(className,);
+              },)
+              .map(function located(className,): string {
+                return `${site.file}: narrowed to unmarked ${className}`;
+              },);
+        },),).toEqual([],);
       },
     },),
   ],

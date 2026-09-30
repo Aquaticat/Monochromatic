@@ -16,32 +16,94 @@ import type { LaneSliceText, } from './lane-slice-text.ts';
 // that no reader has to trust the writer.
 
 /**
+ Which contradiction between a slice's outcome and the archive's state a
+ wording carries.
+
+ @example
+ ```ts
+ const fault: WordingFault = 'fallback-without-archive';
+ ```
+ */
+export type WordingFault =
+  | 'fallback-without-archive'
+  | 'missing-where-archive-holds'
+  | 'nothing-to-do-where-archive-holds'
+  | 'empty-decision-without-archive'
+  | 'wording-beside-absent-archive';
+
+/**
+ What each fault says, after the slice it names.
+ */
+const WORDING_FAULT_SENTENCES: Readonly<Record<WordingFault, string>> = {
+  'fallback-without-archive': 'reports the archive\'s wording standing by default, and the archive holds none',
+  'missing-where-archive-holds': 'reports a missing passage, and the archive holds wording for it',
+  'nothing-to-do-where-archive-holds': 'reports this lane having nothing to work on, and the archive holds wording '
+    + 'there',
+  'empty-decision-without-archive': 'reports a decision of empty wording where the archive holds none, so nothing '
+    + 'was filled and nothing distinguishes it from a passage still missing',
+  'wording-beside-absent-archive': 'says the archive holds no wording and carries some anyway, so the two sides of '
+    + 'this row were built from different preparations',
+};
+
+/**
  Raised when one slice's outcome contradicts what the archive holds there.
- 
+
  SEPARATE FROM COVERAGE. A coverage failure means the lane and the preparation
  disagree about which slices exist; this means one wording disagrees with
  itself, which no join or count could detect afterwards because every field is
  individually well formed.
- 
+
+ THE CLASS WRITES ITS SENTENCE, from a slice index and a closed fault kind,
+ so its message names a slice and a fixed phrase and nothing a caller wrote;
+ the artifact reader forwards it into its own refusal on that ground (ledger
+ B34).
+
  @example
  ```ts
- throw new WordingCoherenceError({ message: 'slice 4 falls back on wording the archive lacks', },);
+ throw new WordingCoherenceError({ sliceIndex: 4, fault: 'fallback-without-archive', },);
  ```
  */
 export class WordingCoherenceError extends Error {
   /**
+   Declares this message safe to forward: a slice index and a fixed phrase.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Slice whose wording contradicts itself.
+   */
+  readonly sliceIndex: number;
+
+  /**
+   Which contradiction it carries.
+   */
+  readonly fault: WordingFault;
+
+  /**
    Builds the error with a message naming the slice and the contradiction.
-   
-   @param message - what contradicts what, naming the slice index
-   
+
+   @param sliceIndex - slice whose wording contradicts itself
+
+   @param fault - which contradiction it carries
+
    @example
    ```ts
-   throw new WordingCoherenceError({ message: 'slice 4 falls back on wording the archive lacks', },);
+   throw new WordingCoherenceError({ sliceIndex: 4, fault: 'fallback-without-archive', },);
    ```
    */
-  constructor({ message, }: { readonly message: string; },) {
-    super(message,);
+  constructor(
+    {
+      sliceIndex,
+      fault,
+    }: {
+      readonly sliceIndex: number;
+      readonly fault: WordingFault;
+    },
+  ) {
+    super(`slice ${String(sliceIndex,)} ${WORDING_FAULT_SENTENCES[fault]}`,);
     this.name = 'WordingCoherenceError';
+    this.sliceIndex = sliceIndex;
+    this.fault = fault;
   }
 }
 
@@ -64,17 +126,14 @@ export function assertWordingCoherent(
   { wording, }: { readonly wording: LaneSliceText; },
 ): void {
   /**
-   Slice being checked, named in every message so a failure points at a row.
-   */
-  const at = `slice ${String(wording.sliceIndex,)}`;
-
-  /**
-   What the lane did here, and whether the archive holds anything here, which
-   are the two axes this rule relates.
+   What the lane did here, whether the archive holds anything here, which are
+   the two axes this rule relates, and the slice every refusal names so a
+   failure points at a row.
    */
   const {
     outcome,
     incumbentKind,
+    sliceIndex,
   } = wording;
 
   // NOTHING TO FALL BACK ON. `incumbent-fallback` says the archive's own
@@ -83,7 +142,8 @@ export function assertWordingCoherent(
   // not exist.
   if ((outcome.kind === 'incumbent-fallback') && (incumbentKind === 'absent')) {
     throw new WordingCoherenceError({
-      message: `${at} reports the archive's wording standing by default, and the archive holds none`,
+      sliceIndex,
+      fault: 'fallback-without-archive',
     },);
   }
 
@@ -92,7 +152,8 @@ export function assertWordingCoherent(
   // as one it never did, and every count of missing passages inherits that.
   if ((outcome.kind === 'unfilled') && (incumbentKind === 'present')) {
     throw new WordingCoherenceError({
-      message: `${at} reports a missing passage, and the archive holds wording for it`,
+      sliceIndex,
+      fault: 'missing-where-archive-holds',
     },);
   }
 
@@ -102,7 +163,8 @@ export function assertWordingCoherent(
   // definition and declining it is a choice rather than a structural fact.
   if ((outcome.kind === 'not-applicable') && (incumbentKind === 'present')) {
     throw new WordingCoherenceError({
-      message: `${at} reports this lane having nothing to work on, and the archive holds wording there`,
+      sliceIndex,
+      fault: 'nothing-to-do-where-archive-holds',
     },);
   }
 
@@ -114,8 +176,8 @@ export function assertWordingCoherent(
     && (incumbentKind === 'absent')
     && (outcome.acceptedText === '')) {
     throw new WordingCoherenceError({
-      message: `${at} reports a decision of empty wording where the archive holds none, `
-        + 'so nothing was filled and nothing distinguishes it from a passage still missing',
+      sliceIndex,
+      fault: 'empty-decision-without-archive',
     },);
   }
 
@@ -125,8 +187,8 @@ export function assertWordingCoherent(
   // that has since changed, or a row assembled from two.
   if ((incumbentKind === 'absent') && (wording.incumbentText !== '')) {
     throw new WordingCoherenceError({
-      message: `${at} says the archive holds no wording and carries some anyway, `
-        + 'so the two sides of this row were built from different preparations',
+      sliceIndex,
+      fault: 'wording-beside-absent-archive',
     },);
   }
 }
