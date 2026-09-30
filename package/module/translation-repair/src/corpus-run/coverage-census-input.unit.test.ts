@@ -167,7 +167,8 @@ await describe({
               stretches: [STRETCH,],
               loadedSources: [],
             },),
-            'it was taken with uncommitted changes under the package',
+            'it was taken with uncommitted changes under the package, so its lines match no commit a later reading '
+            + 'can compare the tree with; commit, then take the baseline again',
           ],
         ] as const) {
           /**

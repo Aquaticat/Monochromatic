@@ -34,72 +34,18 @@ import {
   type CoverageTally,
   createCoverageTally,
 } from './coverage-tally.ts';
-import { resolveGit, } from './git-command.ts';
 
 //region Coverage census steps
 // Ledger T8: the steps of the coverage census that touch files and
 // processes, apart from the entry so each is tested against a disposable
-// directory: which commit the build came from, the suite run under coverage,
-// the two readings of the coverage directory, one bundle's text and map, and
-// the sources only unloaded bundles carry.
+// directory: the suite run under coverage, the two readings of the coverage
+// directory, one bundle's text and map, and the sources only unloaded bundles
+// carry. What git says of the tree is `coverage-census-commit.ts`.
 
 /**
  Logger for the steps' progress lines.
  */
 const stepsLog = contextRoot({ tag: 'coverage-census', },);
-
-/**
- The commit the package's files were built from, and whether they match it.
-
- @param packageDirectory - package directory, inside a git work tree
-
- @returns Nine-character hash and whether `git status` shows no change under the package
-
- @example
- ```ts
- const { head, clean, } = await packageCommit({ packageDirectory, },);
- ```
- */
-export async function packageCommit({ packageDirectory, }: { readonly packageDirectory: string; },): Promise<{
-  readonly head: string;
-  readonly clean: boolean;
-}> {
-  /**
-   Git to run.
-   */
-  const git = await resolveGit();
-  /**
-   The commit.
-   */
-  const { stdout: head, } = await spawn(
-    git,
-    [
-      '-C',
-      packageDirectory,
-      'rev-parse',
-      '--short=9',
-      'HEAD',
-    ],
-  );
-  /**
-   Changes under the package.
-   */
-  const { stdout: changes, } = await spawn(
-    git,
-    [
-      '-C',
-      packageDirectory,
-      'status',
-      '--porcelain',
-      '--',
-      '.',
-    ],
-  );
-  return {
-    head: head.trim(),
-    clean: changes.trim() === '',
-  };
-}
 
 /**
  Runs a test command with V8 writing coverage, its output in a log file

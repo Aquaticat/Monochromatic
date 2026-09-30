@@ -2,9 +2,11 @@
  Tests the coverage census's report (ledger T8): how a mapped stretch is
  recorded, one record per source piece, the refusal of a census that places an
  uncalled function outside its own source's stretches (ledger M67), how
- sources are sorted into kinds, the rows and totals, how a batch's run reads
- an earlier census's stretches, and which claimed sources that census holds
- no stretch in. Paths and names are cat-themed invention.
+ sources are sorted into kinds, the rows and totals, and, from
+ `coverage-census-baseline.ts`, how a batch's run reads an earlier census's
+ stretches, which claimed sources that census holds no stretch in, and which
+ were edited since its commit. They share this file's stretch fixture. Paths
+ and names are cat-themed invention.
 
  @module
  */
@@ -19,6 +21,7 @@ import {
   baselineStatusesOf,
   type CensusStretch,
   censusStretchesOf,
+  editedClaimsOf,
   emptyClaimsOf,
   kindTotalsOf,
   type MappedStretch,
@@ -616,6 +619,93 @@ await describe({
           loadedSources: new Set(['src/purr.ts', 'src/yawn.ts',],),
           sources: new Set(['src/purr.ts', 'src/yawn.ts',],),
         },).map((claim,) => claim.source),).toEqual(['src/yawn.ts',],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: editedClaimsOf.name,
+  children: [
+    it({
+      name:
+        'NAMES EACH CLAIMED SOURCE EDITED SINCE THE BASELINE, sorted, with whether this run loaded it and the cold '
+        + 'stretches it left there, whether or not the baseline holds a stretch in it, and leaves an unedited one',
+      fn: async () => {
+        expect(editedClaimsOf({
+          baseline: {
+            head: 'c0ffee123',
+            stretches: [
+              recorded({
+                source: 'src/nap.ts',
+                startLine: 3,
+                endLine: 5,
+              },),
+            ],
+            loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
+          },
+          edited: new Set(['src/nap.ts', 'src/yawn.ts', 'src/knead.ts',],),
+          current: [
+            recorded({
+              source: 'src/nap.ts',
+              startLine: 12,
+              endLine: 12,
+            },),
+            recorded({
+              source: 'src/nap.ts',
+              startLine: 20,
+              endLine: 21,
+            },),
+          ],
+          loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
+          sources: new Set(['src/yawn.ts', 'src/purr.ts', 'src/nap.ts',],),
+        },),).toEqual([
+          {
+            source: 'src/nap.ts',
+            loadedNow: true,
+            coldNow: 2,
+          },
+          {
+            source: 'src/yawn.ts',
+            loadedNow: false,
+            coldNow: 0,
+          },
+        ],);
+      },
+    },),
+    it({
+      name:
+        'NAMES ONLY SOURCES THE BASELINE HOLDS A STRETCH IN when the batch claims none, so a reading of every source '
+        + 'does not list each document and test edited since',
+      fn: async () => {
+        expect(editedClaimsOf({
+          baseline: {
+            head: 'c0ffee123',
+            stretches: [
+              recorded({
+                source: 'src/nap.ts',
+                startLine: 3,
+                endLine: 5,
+              },),
+              recorded({
+                source: 'src/purr.ts',
+                startLine: 1,
+                endLine: 1,
+              },),
+            ],
+            loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
+          },
+          edited: new Set(['src/nap.ts', 'doc/whiskers.md', 'src/nap.unit.test.ts',],),
+          current: [],
+          loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
+          sources: new Set(),
+        },),).toEqual([
+          {
+            source: 'src/nap.ts',
+            loadedNow: true,
+            coldNow: 0,
+          },
+        ],);
       },
     },),
   ],

@@ -7,10 +7,8 @@ import {
   isJsonRecord,
 } from '../json-guard.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
-import type {
-  BaselineCensus,
-  CensusStretch,
-} from './coverage-census-report.ts';
+import type { BaselineCensus, } from './coverage-census-baseline.ts';
+import type { CensusStretch, } from './coverage-census-report.ts';
 
 //region Coverage census input
 // Ledger T8: what the coverage census is asked to do, read from its command
@@ -243,20 +241,27 @@ function isCensusStretch(value: unknown,): value is CensusStretch {
 }
 
 /**
- Reads the stretches and loaded sources out of an earlier census file.
+ Reads the commit, stretches and loaded sources out of an earlier census
+ file.
+
+ TAKEN FROM A TREE MATCHING ITS COMMIT, or refused: a later reading tells
+ which sources were edited since by comparing the tree with that commit, and a
+ census of uncommitted code has lines no commit holds.
 
  @param path - file read, named in the refusal
 
  @param text - its contents
 
- @returns Its stretches and loaded sources
+ @returns Its commit, stretches and loaded sources
 
  @throws CensusBaselineError where the file is not the current census format,
- or holds no list of stretches or of loaded sources
+ holds no list of stretches or of loaded sources, names no commit, does not
+ say whether its tree matched that commit, or was taken with uncommitted
+ changes
 
  @example
  ```ts
- const { stretches, loadedSources, } = readBaselineCensus({ path, text, },);
+ const { head, stretches, loadedSources, } = readBaselineCensus({ path, text, },);
  ```
  */
 export function readBaselineCensus(
@@ -284,9 +289,12 @@ export function readBaselineCensus(
         + 'source changes (ledger M67) records cold code under the wrong source, so run a fresh baseline',
     },);
   /**
-   Its stretches and loaded sources as parsed.
+   Its commit, whether the tree matched it, its stretches and its loaded
+   sources, as parsed.
    */
   const {
+    head,
+    clean,
     stretches,
     loadedSources,
   } = parsed;
@@ -302,7 +310,24 @@ export function readBaselineCensus(
       path,
       says: 'it has no list of loaded sources, each a path',
     },);
+  if (((typeof head) !== 'string') || (head === ''))
+    throw new CensusBaselineError({
+      path,
+      says: 'it names no commit it was taken at',
+    },);
+  if ((typeof clean) !== 'boolean')
+    throw new CensusBaselineError({
+      path,
+      says: 'it does not say whether its tree matched that commit',
+    },);
+  if (!clean)
+    throw new CensusBaselineError({
+      path,
+      says: 'it was taken with uncommitted changes under the package, so its lines match no commit a later '
+        + 'reading can compare the tree with; commit, then take the baseline again',
+    },);
   return {
+    head,
     stretches,
     loadedSources: new Set(loadedSources,),
   };

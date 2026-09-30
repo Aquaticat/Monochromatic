@@ -1,10 +1,13 @@
 import type {
-  CensusStretch,
+  EditedClaim,
   EmptyClaim,
+  StretchStatus,
+} from './coverage-census-baseline.ts';
+import type {
+  CensusStretch,
   KindTotal,
   SourceKind,
   SourceRow,
-  StretchStatus,
 } from './coverage-census-report.ts';
 import type { MappedFunction, } from './coverage-lines.ts';
 
@@ -200,35 +203,75 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
 }
 
 /**
+ Says what this run left in one source, which is all that speaks for a
+ source the baseline cannot.
+
+ @param loadedNow - whether a bundle this run loaded carried it
+
+ @param coldNow - cold stretches this run left in it
+
+ @returns Clause for a report line
+
+ @example
+ ```ts
+ const now = standingNow({ loadedNow: true, coldNow: 0, },);
+ ```
+ */
+function standingNow(
+  {
+    loadedNow,
+    coldNow,
+  }: {
+    readonly loadedNow: boolean;
+    readonly coldNow: number;
+  },
+): string {
+  return loadedNow
+    ? `this run loaded it and left ${String(coldNow,)} cold stretches`
+    : 'this run did not load it';
+}
+
+/**
  The report of a batch read against an earlier census.
 
  @param path - earlier census read
 
- @param statuses - each of its stretches in the claimed sources with its status
+ @param head - commit it was taken at
+
+ @param statuses - each of its stretches in the claimed sources with its
+ status, outside sources edited since that commit
 
  @param emptyClaims - claimed sources it holds no stretch in, which the
  statuses cannot speak for, so each is printed with both censuses' standing
 
+ @param editedClaims - sources edited since its commit, whose baseline lines
+ name other code now, so each is printed with this run's standing alone
+
  @returns Lines to print, in order: counts, then every stretch not proven
- run, then every claimed source holding no baseline stretch
+ run, then every claimed source holding no baseline stretch, then every
+ edited source
 
  @example
  ```ts
- for (const line of baselineReportLines({ path, statuses, emptyClaims, },)) console.log(line,);
+ for (const line of baselineReportLines({ path, head, statuses, emptyClaims, editedClaims, },)) console.log(line,);
  ```
  */
 export function baselineReportLines(
   {
     path,
+    head,
     statuses,
     emptyClaims,
+    editedClaims,
   }: {
     readonly path: string;
+    readonly head: string;
     readonly statuses: readonly {
       readonly stretch: CensusStretch;
       readonly status: StretchStatus;
     }[];
     readonly emptyClaims: readonly EmptyClaim[];
+    readonly editedClaims: readonly EditedClaim[];
   },
 ): readonly string[] {
   /**
@@ -244,9 +287,18 @@ export function baselineReportLines(
     },)
       .length;
   }
+  /**
+   The counts the first line states, in order.
+   */
+  const counts = [
+    `ran ${String(countOf('ran',),)}`,
+    `still cold ${String(countOf('still cold',),)}`,
+    `not loaded ${String(countOf('not loaded',),)}`,
+    `claimed sources with no stretch there ${String(emptyClaims.length,)}`,
+    `sources edited since then ${String(editedClaims.length,)}`,
+  ];
   return [
-    `against ${path}: ran ${String(countOf('ran',),)}, still cold ${String(countOf('still cold',),)}, `
-    + `not loaded ${String(countOf('not loaded',),)}, claimed sources with no stretch there ${String(emptyClaims.length,)}`,
+    `against ${path} at ${head}: ${counts.join(', ',)}`,
     ...statuses
       .filter(function unproven(read,): boolean {
         return read.status !== 'ran';
@@ -269,13 +321,24 @@ export function baselineReportLines(
       const then = loadedAtBaseline
         ? 'ran whole there'
         : 'not loaded there, so the baseline proves nothing of it';
-      /**
-       What this run says of it.
-       */
-      const now = loadedNow
-        ? `this run loaded it and left ${String(coldNow,)} cold stretches`
-        : 'this run did not load it';
-      return `  no baseline stretch (${then}); ${now}: ${source}`;
+      return `  no baseline stretch (${then}); ${
+        standingNow({
+          loadedNow,
+          coldNow,
+        },)
+      }: ${source}`;
+    },),
+    ...editedClaims.map(function editedClaimLine({
+      source,
+      loadedNow,
+      coldNow,
+    },): string {
+      return `  edited since ${head}, so its baseline lines name other code; ${
+        standingNow({
+          loadedNow,
+          coldNow,
+        },)
+      }: ${source}`;
     },),
   ];
 }

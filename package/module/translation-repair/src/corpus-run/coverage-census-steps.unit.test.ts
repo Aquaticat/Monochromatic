@@ -2,9 +2,9 @@
  Tests the coverage census's steps that touch files and processes (ledger
  T8), each against a disposable directory: a command run under coverage with
  its markers and exit code read from its log, the coverage directory read
- twice in one order, a bundle's map read with its sources named from the
- package, and the commit a throwaway repository's files match. Names are
- cat-themed invention.
+ twice in one order, and a bundle's map read with its sources named from the
+ package. What git says of a throwaway repository is
+ `coverage-census-commit.unit.test.ts`. Names are cat-themed invention.
 
  @module
  */
@@ -15,24 +15,18 @@ import {
   readFile,
   writeFile,
 } from 'node:fs/promises';
-import {
-  devNull,
-  tmpdir,
-} from 'node:os';
+import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-import { resolveRealGit, } from '@monochromatic-dev/git-executable/ts';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import spawn from 'nano-spawn';
 
 import {
   CoverageFileError,
   coverageReadings,
-  packageCommit,
   readBundle,
   runSuite,
   SourceMapFileError,
@@ -454,90 +448,6 @@ await describe({
             lines: 3,
           },
         ],);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: packageCommit.name,
-  children: [
-    it({
-      name: 'NAMES THE COMMIT BY NINE CHARACTERS, clean until a file under the package changes',
-      fn: async () => {
-        await using directory = await scratch();
-        const git = await resolveRealGit();
-        const hermetic = {
-          env: {
-            GIT_CONFIG_GLOBAL: devNull,
-            GIT_CONFIG_SYSTEM: devNull,
-          },
-        };
-        await spawn(
-          git,
-          [
-            'init',
-            directory.path,
-          ],
-          hermetic,
-        );
-        await writeFile(
-          join(
-            directory.path,
-            'nap.txt',
-          ),
-          'nap\n',
-        );
-        await spawn(
-          git,
-          [
-            '-C',
-            directory.path,
-            'add',
-            'nap.txt',
-          ],
-          hermetic,
-        );
-        await spawn(
-          git,
-          [
-            '-C',
-            directory.path,
-            '-c',
-            'user.name=cat',
-            '-c',
-            'user.email=cat@example.org',
-            'commit',
-            '--message',
-            'nap',
-            '--no-gpg-sign',
-          ],
-          hermetic,
-        );
-        const { stdout: full, } = await spawn(
-          git,
-          [
-            '-C',
-            directory.path,
-            'rev-parse',
-            'HEAD',
-          ],
-          hermetic,
-        );
-        const committed = await packageCommit({ packageDirectory: directory.path, },);
-        expect(committed.head,).toBe(full.slice(
-          0,
-          9,
-        ),);
-        expect(committed.clean,).toBe(true,);
-        await writeFile(
-          join(
-            directory.path,
-            'nap.txt',
-          ),
-          'purr\n',
-        );
-        expect((await packageCommit({ packageDirectory: directory.path, },)).clean,).toBe(false,);
       },
     },),
   ],

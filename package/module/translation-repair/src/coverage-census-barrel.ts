@@ -36,10 +36,19 @@ export {
 export {
   type BaselineCensus,
   baselineStatusesOf,
-  type CensusStretch,
-  censusStretchesOf,
+  type EditedClaim,
+  editedClaimsOf,
   type EmptyClaim,
   emptyClaimsOf,
+  type StretchStatus,
+} from './corpus-run/coverage-census-baseline.ts';
+export {
+  packageCommit,
+  sourcesEditedSince,
+} from './corpus-run/coverage-census-commit.ts';
+export {
+  type CensusStretch,
+  censusStretchesOf,
   type KindTotal,
   kindTotalsOf,
   requirePlacedFunctions,
@@ -47,11 +56,9 @@ export {
   sourceKindOf,
   type SourceRow,
   sourceRowsOf,
-  type StretchStatus,
 } from './corpus-run/coverage-census-report.ts';
 export {
   coverageReadings,
-  packageCommit,
   readBundle,
   runSuite,
   tallyCoverage,

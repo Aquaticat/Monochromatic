@@ -27,12 +27,18 @@ import {
 import {
   type BaselineCensus,
   baselineStatusesOf,
+  editedClaimsOf,
   emptyClaimsOf,
+} from './coverage-census-baseline.ts';
+import {
+  packageCommit,
+  sourcesEditedSince,
+} from './coverage-census-commit.ts';
+import {
   kindTotalsOf,
   sourceRowsOf,
 } from './coverage-census-report.ts';
 import {
-  packageCommit,
   runSuite,
   tallyCoverage,
 } from './coverage-census-steps.ts';
@@ -57,8 +63,11 @@ import type { CoverageTally, } from './coverage-tally.ts';
 // claims: every claimed stretch must read as ran, and every claimed source the
 // baseline holds no stretch in must be loaded by this run with no cold
 // stretch left, since a baseline that never loaded a source proves nothing of
-// it. The baseline must be of the current census format, and is read before
-// the suite runs.
+// it. A claimed source edited since the baseline's commit is held to the same
+// standard, this run loading it and leaving no cold stretch, since its
+// baseline lines name other code now. The baseline must be of the current
+// census format, taken from a tree matching its commit, and is read before the
+// suite runs.
 //
 // SPENDS NO QUOTA, and the raw coverage (about 8 GB for the whole suite) is
 // deleted once the census is written; the census and the suite's log stay in
@@ -228,6 +237,48 @@ async function reportCensus(
    */
   const claimed = new Set(asked.sources,);
   /**
+   Each baseline reading, sources edited since its commit read apart.
+   */
+  const baselineReadings = await Promise.all(baselines.map(async function baselineLines({
+    path,
+    census: baseline,
+  },): Promise<readonly string[]> {
+    /**
+     Claimed sources, or every file under the package, changed since the
+     baseline's commit, whose baseline lines name other code now.
+     */
+    const edited = await sourcesEditedSince({
+      packageDirectory,
+      head: baseline.head,
+      sources: asked.sources,
+    },);
+    return baselineReportLines({
+      path,
+      head: baseline.head,
+      statuses: baselineStatusesOf({
+        baseline: baseline.stretches,
+        current: stretches,
+        loadedSources,
+        sources: claimed,
+        edited,
+      },),
+      emptyClaims: emptyClaimsOf({
+        baseline,
+        edited,
+        current: stretches,
+        loadedSources,
+        sources: claimed,
+      },),
+      editedClaims: editedClaimsOf({
+        baseline,
+        edited,
+        current: stretches,
+        loadedSources,
+        sources: claimed,
+      },),
+    },);
+  },),);
+  /**
    Every line of the report, then each baseline reading.
    */
   const lines = [
@@ -245,26 +296,7 @@ async function reportCensus(
         censusPath,
       },
     },),
-    ...baselines.flatMap(function baselineLines({
-      path,
-      census: baseline,
-    },): readonly string[] {
-      return baselineReportLines({
-        path,
-        statuses: baselineStatusesOf({
-          baseline: baseline.stretches,
-          current: stretches,
-          loadedSources,
-          sources: claimed,
-        },),
-        emptyClaims: emptyClaimsOf({
-          baseline,
-          current: stretches,
-          loadedSources,
-          sources: claimed,
-        },),
-      },);
-    },),
+    ...baselineReadings.flat(),
   ];
   for (const line of lines)
     console.log(line,);
