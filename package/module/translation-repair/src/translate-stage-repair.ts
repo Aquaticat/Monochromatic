@@ -216,12 +216,14 @@ async function produceAndJudgeOnce(
  
  @param l - pipeline logger
  
- @returns Settled text and evidence
- 
- @throws {@link TranslateAbsenceError} when both fixed rounds leave the passage unwritten
- 
+ @returns Settled text and evidence, the first round's findings and the
+ follow-up's named before the follow-up's own where there was one (ledger B41)
+
+ @throws {@link TranslateAbsenceError} when both fixed rounds leave the passage
+ unwritten, carrying both rounds' findings
+
  @throws {@link TranslationRepairInterruptedError} when no judging voice was heard
- 
+
  @example
  ```ts
  const result = await runTranslateRepairs({ ...inputs, });
@@ -309,30 +311,70 @@ export async function runTranslateRepairs(
   const first = await produceAndJudgeOnce({ input, },);
   if ('result' in first)
     return first.result;
-  l.info(
-    `translate stage: one follow-up round after ${first.rejection
-      .reason}; `
-      + `${String(first.candidateTexts
-        .length,)} rejected candidates`,
-  );
+  /**
+   Why the judges rejected the first round.
+   */
+  const firstReason = first.rejection
+    .reason;
+  /**
+   How many candidates the first round's judges rejected.
+   */
+  const rejectedCount = first.candidateTexts
+    .length;
+  /**
+   What names the follow-up round and why it was asked, for the log and the
+   record alike.
+   */
+  const followupNamed = `after ${firstReason}, ${String(rejectedCount,)} rejected candidates`;
+  l.info(`translate stage: one follow-up round ${followupNamed}`,);
   /**
    Single follow-up round carrying the located rejection evidence.
    */
   const second = await produceAndJudgeOnce({
     input,
     followupEvidence: {
-      reason: first.rejection
-        .reason,
+      reason: firstReason,
       candidateTexts: first.candidateTexts,
       findings: first.rejection
         .findings,
     },
   },);
-  if ('result' in second)
-    return second.result;
+  // THE FIRST ROUND'S EVIDENCE IS KEPT, then the follow-up is named, then its
+  // own record follows (ledger B41): the record showed the follow-up round
+  // alone, so a slice filled or left unfilled at depth two could not say its
+  // first slate was declined, nor why, where the judges' retry keeps every
+  // ask it made.
+  /**
+   The first round's findings with the follow-up named after them.
+   */
+  const firstRound = [
+    ...first.rejection
+      .findings,
+    `translate-followup-round (${followupNamed})`,
+  ];
+  if ('result' in second) {
+    return {
+      ...second.result,
+      findings: [
+        ...firstRound,
+        ...second.result
+          .findings,
+      ],
+    };
+  }
   // Depth two is spent: the absence is settled evidence now, and the slice
   // attempt records the passage as unfilled instead of throwing the entry.
-  throw second.rejection;
+  // It carries no finalists: the judges' retry settles every tie before an
+  // absence leaves it (`translate-retry.ts`).
+  throw new TranslateAbsenceError({
+    reason: second.rejection
+      .reason,
+    findings: [
+      ...firstRound,
+      ...second.rejection
+        .findings,
+    ],
+  },);
 }
 
 //endregion Translate stage repair

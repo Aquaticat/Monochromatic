@@ -171,11 +171,27 @@ await describe({
           + 'the ORIGINAL writes there ("she": 1 against 0), so a pronoun stands where the address stood. A pronoun '
           + 'the ORIGINAL writes is rendered as written where it stands: address the person the ORIGINAL addresses.';
         /**
+         What each of the two rounds records: every translator's refused
+         narration and defence of it, and the empty slate.
+         */
+        const round = [
+          `translate-invalid (${String(TRANSLATORS[1],)}): ${dropped}`,
+          `translate-repair-as-intended (${String(TRANSLATORS[1],)}): the narration is deliberate`,
+          `translate-invalid (${String(TRANSLATORS[0],)}): ${dropped}`,
+          `translate-repair-as-intended (${String(TRANSLATORS[0],)}): the narration is deliberate`,
+          `translate-candidate-refused (${String(TRANSLATORS[1],)}): ${dropped}`,
+          `translate-candidate-refused (${String(TRANSLATORS[0],)}): ${dropped}`,
+          'translate incumbent excluded by deterministic source floor',
+          'translate-candidates (2/2 heard, 0 distinct, 0 collapsed)',
+          'translate-no-candidate',
+        ];
+        /**
          What the stage settled on.
          */
         const result = await stageOver({ heard: true, },) as { readonly findings: readonly string[]; };
         // The translators' lines come in the order their answers arrived, which
-        // says nothing, so the findings are compared as a sorted list.
+        // says nothing, so the findings are compared as a sorted list; both
+        // rounds are on it, the follow-up named between them (ledger B41).
         expect({
           ...result,
           findings: result.findings.toSorted(),
@@ -202,15 +218,9 @@ await describe({
           perCandidate: [],
           decision: 'no-candidate',
           findings: [
-            `translate-invalid (${String(TRANSLATORS[1],)}): ${dropped}`,
-            `translate-repair-as-intended (${String(TRANSLATORS[1],)}): the narration is deliberate`,
-            `translate-invalid (${String(TRANSLATORS[0],)}): ${dropped}`,
-            `translate-repair-as-intended (${String(TRANSLATORS[0],)}): the narration is deliberate`,
-            `translate-candidate-refused (${String(TRANSLATORS[1],)}): ${dropped}`,
-            `translate-candidate-refused (${String(TRANSLATORS[0],)}): ${dropped}`,
-            'translate incumbent excluded by deterministic source floor',
-            'translate-candidates (2/2 heard, 0 distinct, 0 collapsed)',
-            'translate-no-candidate',
+            ...round,
+            'translate-followup-round (after no-candidate, 0 rejected candidates)',
+            ...round,
           ].toSorted(),
         },);
       },

@@ -10875,6 +10875,42 @@ and image reading stages can change,
 and so can page assembly's,
 so the cache-account audit before a launch takes this change beside B36 to B39.
 
+### B41: the translate stage's record dropped its first round
+
+Status:
+fixed 2026-09-30 (UTC),
+found reading `runTranslateRepairs` for the B39 fix.
+A slice whose incumbent is absent or withheld gets a follow-up round when the first round's judges reject every candidate,
+and `runTranslateRepairs` returned the follow-up round's record as it stood,
+or rethrew the follow-up's absence as it stood.
+The first round's findings reached the follow-up's translators as evidence,
+and nothing else kept them:
+a slice filled at depth two recorded no decline at all
+(read from the code),
+and one left unfilled recorded a single round,
+where the judges' retry beside it carries every ask it made
+("so the record shows each ask rather than only the one that answered",
+`translate-retry.ts`)
+and a stage case pins that a settled absence carries the evidence of the work that led to it.
+Measured on the build from before the fix:
+the depth-two absence in `translate-stage.unit.test.ts` carried the 7 findings of one round,
+where the two rounds make 15.
+
+Fix:
+the record and the settled absence carry the first round's findings,
+then `translate-followup-round (after <reason>, <count> rejected candidates)`,
+the sentence the log already wrote,
+then the follow-up round's own.
+Nothing in the package parses a stage record's findings
+(`rg` over the source outside the translate modules finds no reader of a translate finding by name),
+so the change reaches the records alone.
+The rethrown absence carries no finalists,
+since every absence the judges' retry lets out is built without them.
+The stage case compares the whole record around the named follow-up,
+and the B39 case pins both rounds on the kept record.
+The translate records change,
+so the cache-account audit before a launch takes this change beside B36 to B40.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

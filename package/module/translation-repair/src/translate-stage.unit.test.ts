@@ -827,6 +827,86 @@ await describe({
     },),
 
     it({
+      name: 'CARRIES THE FIRST ROUND\'S EVIDENCE beside the follow-up\'s and names the follow-up, on a settled '
+        + 'absence and on a follow-up that fills, so the record says the first slate was declined and why '
+        + '(ledger B41)',
+      fn: async () => {
+        /**
+         What one declined round records: the slate, the decline, the same
+         panel asked again, and its second decline, each ask with the slate it
+         judged.
+         */
+        const declinedRound = [
+          'translate incumbent excluded by deterministic source floor',
+          'translate-candidates (3/3 heard, 3 distinct, 0 collapsed)',
+          'translate-declined (rejection)',
+          'translate-declined-retried',
+          'translate incumbent excluded by deterministic source floor',
+          'translate-candidates (3/3 heard, 3 distinct, 0 collapsed)',
+          'translate-declined (rejection)',
+        ];
+        /**
+         What names the follow-up round and why it was asked.
+         */
+        const followup = 'translate-followup-round (after no-candidate-backed, 3 rejected candidates)';
+        /**
+         What the depth-two rounds raised when both declined.
+         */
+        const raised = await (async function attempt(): Promise<unknown> {
+          try {
+            await runLane({
+              translations: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill, tail draped beside the radiator.',
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat naps on the sill, its tail hanging near the heater.',
+                [SEAT_HYPER_VISION]: 'The cat sleeps on the ledge, tail beside the radiator.',
+              },
+              needle: '',
+              incumbentText: '',
+              incumbentKind: 'absent',
+            },);
+            return 'settled';
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+        if (!(raised instanceof TranslateAbsenceError))
+          throw new Error('expected settled translate absence',);
+        expect(raised.findings,).toEqual([
+          ...declinedRound,
+          followup,
+          ...declinedRound,
+        ],);
+
+        const { result, } = await runLane({
+          translations: {
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'A cat rests at the window.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A cat rests beside the heater.',
+            [SEAT_HYPER_VISION]: 'The cat is near a window.',
+          },
+          followupTranslations: [{
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The repaired cat dozes on the windowsill, tail beside the radiator.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'A repaired cat naps on the sill, its tail beside the heater.',
+            [SEAT_HYPER_VISION]: 'The repaired cat sleeps by the radiator.',
+          },],
+          needle: 'repaired',
+          incumbentText: '',
+          incumbentKind: 'absent',
+        },);
+        expect(result.text,).toContain('repaired',);
+        // The follow-up is judged at its first ask, so what follows the marker
+        // is that round's own record.
+        expect(result.findings.slice(
+          0,
+          declinedRound.length + 1,
+        ),).toEqual([
+          ...declinedRound,
+          followup,
+        ],);
+      },
+    },),
+
+    it({
       name: 'ACCEPTS a candidate backed on the second ask at a passage with NO '
         + 'existing translation, which is the door the other retry cases never '
         + 'open: a decline there leaves by an exception rather than a return, so '

@@ -1314,3 +1314,21 @@ No scan finds the old shape:
 a check can store a trimmed value in one statement and compare it in another,
 as the panel ballot's did,
 which a token scan does not follow.
+
+## Records of more than one round
+
+What happened:
+the judges' retry kept the findings of every ask it made,
+and the translate stage's follow-up round one level up returned its own record alone,
+so a slice settled at depth two could not say its first slate was declined (ledger B41).
+
+The rule:
+code that runs a stage again and returns one result carries every earlier round's findings into it,
+earliest first,
+with a finding naming each new round and why it was asked,
+on the returning path and the raising path alike.
+Its test compares the whole record around that finding.
+
+What enforces it:
+habit and review;
+the stage case and the B39 case fail if the depth-two layer drops a round again.
