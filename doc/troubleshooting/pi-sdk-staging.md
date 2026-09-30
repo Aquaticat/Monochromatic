@@ -767,3 +767,79 @@ No source clone,
 account change,
 vendor contact,
 or upstream mutation is needed for this owned command-serialization correction.
+
+## Owned command-result admission after a root-cwd rejection
+
+### Symptom and source
+
+The persisted source-smoke preflight ran `git diff` from `contract/lifecycle`.
+The configured `cli-git` wrapper returned `require-root/not-at-root`,
+exit code one,
+before Git diff or the chained namespace-absence test ran.
+The owned boundary is `package/git-policy/cli/src/rule/require-root.ts:181`:
+
+```typescript
+// package/git-policy/cli/src/rule/require-root.ts:181 to 187
+if (repoRoot !== effectiveCwd) {
+  throw new RequireRootViolationError(
+    `cli-git: not at the root of the git repository. `
+      + `Repo root is ${repoRoot} but effective cwd is ${effectiveCwd}. `
+      + `Tip: cd to ${repoRoot} or pass -C ${repoRoot} before the subcommand.`,
+  );
+}
+```
+
+The orchestration awaited the returned tool object but did not gate on its exit status.
+It then falsely described the diff and namespace checks as successful and dispatched the pure source smoke.
+This is an owned orchestration failure,
+not a broken Git root guard.
+
+### Verification and authoritative correction
+
+The failing catalog is the recorded preflight exit one.
+The clean catalog is the subsequent scoped root-cwd `git diff` returning zero.
+That later measurement is post-dispatch,
+not retroactive evidence that the skipped checks ran.
+The pure new-baseline smoke itself passed once as `proc_7dd8`:
+all ordered aggregate movements,
+four direct domain rejections,
+exit zero,
+no signal,
+stdout 427 bytes,
+and stderr zero.
+Complete prior body review,
+successful predispatch byte hashes,
+validated fixed worker projection,
+and matching post-run sources support that finite source result.
+They do not turn the failed admission procedure into success.
+`preflight-git-scope-correction.json` and `result-disposition.json` retain the authoritative scope;
+the original false metadata and consumed code remain preserved.
+
+### Prospective correction and rejected approaches
+
+Require each prerequisite command's successful exit status before dependent claims or dispatch.
+Tool-response fulfillment is not command success.
+For `bash`,
+inspect `exit_code` explicitly;
+an intended failure needs its own predeclared accepted result.
+Use repository-root cwd for scoped Git operations.
+Later measurements must retain their actual observation time.
+Do not erase false historical metadata,
+repeat consumed source tests,
+or treat create-new markers as complete historical namespace proof.
+The [instruction-tightening proposal](../planning/pi-command-result-admission.md) is unaccepted;
+`AGENTS.md` remains untouched.
+
+### Upstream filing decision
+
+Nothing to add or file:
+the deciding guard is owned source and rejected the observed non-root cwd.
+An upstream failing use case,
+upstream root cause,
+maintainer/contribution acceptance,
+upstream fix necessity,
+and compatible upstream prototype are not established.
+No clone,
+account change,
+vendor contact,
+or upstream mutation follows from the owned exit-status correction.

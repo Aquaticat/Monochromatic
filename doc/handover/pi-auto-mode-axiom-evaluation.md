@@ -632,13 +632,49 @@ grant,
 or action ran in that source smoke.
 It is not actual SDK guard sensitivity;
 its worker/controller/plan remain consumed without replay.
+Prefix source handoff #84 is complete at source-only scope;
+`proc_702f` rendered 26 documents with zero native diagnostics and no genuine reads.
+Persisted source #85 now has a separately changed explicit custom-error baseline,
+not unchanged historical assertion source.
+Its one pure smoke `proc_7dd8` passed the valid positive and all five ordered aggregate negatives
+in intact/unchecked-return variants,
+plus four direct domain rejections.
+Outcome:
+exit zero,
+no signal,
+stdout 427 bytes,
+stderr zero.
+The historical verifier was hash-checked,
+not executed;
+behavioral equivalence and individual cycle/termination guard necessity remain unestablished.
+
+Its Git preflight was not successful:
+`cli-git` returned `require-root/not-at-root`,
+exit one,
+so the chained namespace-absence test did not run.
+The initial scope record falsely claimed both checks succeeded.
+Authoritative `preflight-git-scope-correction.json` and `result-disposition.json` preserve and retract that claim.
+A later root-cwd diff is post-dispatch evidence only.
+Create-new marker/directory success proves those creation boundaries,
+not historical namespace freshness or a retroactive preflight.
+Independent review accepts the finite new-baseline source result from prior complete body review,
+successful predispatch hashes,
+validated worker result,
+and matching post-run sources,
+while retaining the admission procedure failure.
+No smoke replay or combined SDK clearance follows.
+[Command-result admission proposal](../planning/pi-command-result-admission.md)
+tightens the existing null/count probe rule;
+`AGENTS.md` remains untouched and that proposal is unaccepted.
+Every future prerequisite must explicitly pass its command result before dependent claims or dispatch.
+
 No common SDK worker,
 combined generated-source closure,
 freeze,
 or actual SDK sensitivity dispatch exists.
 Next:
- finish prefix source handoff,
-implement persisted-path and fork/recapture modules separately,
+ finish persisted source documentation,
+implement fork/recapture source #86,
 then one combined controller with pre-call accounting and unopened-suffix stops.
 No genuine originals,
 model calls,
