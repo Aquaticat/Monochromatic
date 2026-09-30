@@ -6,6 +6,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
+import { wordForCount, } from './count-word.ts';
 import {
   applyLaneContestEligibility,
   describeInadmissibleLanes,
@@ -421,11 +422,17 @@ export async function contestDocumentLanes(
            */
           const repairDamageClaims = damageClaimsBySlice.get(row.sliceIndex,) ?? [];
           // Logged so a run's log witnesses whether the judges were shown any claim,
-          // which the ballots alone do not say.
+          // which the ballots alone do not say; the count takes its own word
+          // (ledger B66).
           if (repairDamageClaims.length > 0) {
             dl.info(
-              `slice ${String(row.sliceIndex,)}: ${String(repairDamageClaims.length,)} corroborated damage claims `
-                + 'shown to the judges',
+              `slice ${String(row.sliceIndex,)}: ${String(repairDamageClaims.length,)} corroborated damage ${
+                wordForCount({
+                  count: repairDamageClaims.length,
+                  one: 'claim',
+                  many: 'claims',
+                },)
+              } shown to the judges`,
             );
           }
           /**

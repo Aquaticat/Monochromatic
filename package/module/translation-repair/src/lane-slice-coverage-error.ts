@@ -1,3 +1,8 @@
+import {
+  howOften,
+  wordForCount,
+} from './count-word.ts';
+
 //region Lane slice coverage error
 // The failure both halves of the wording builder raise, in its own file so they
 // can share it without one importing the other.
@@ -6,6 +11,10 @@
 // check. The per-list checks now live in `lane-slice-sets.ts`, which the builder
 // calls, so leaving the class behind would have made the two files import each
 // other.
+//
+// EVERY COUNT TAKES ITS OWN WORD (ledger B66). A repeat fault's distinct count
+// is 1 whenever two entries share one index, and a fixed plural after it read
+// "under 1 distinct indices".
 
 /**
  Sets a lane may name slices under, beside its decisions.
@@ -218,9 +227,19 @@ export type LaneSliceCoverageFault = {
  */
 export function laneCoverageSentence({ fault, }: { readonly fault: LaneSliceCoverageFault; },): string {
   if (fault.kind === 'set-repeats')
-    return `lane reports ${String(fault.claimed,)} ${fault.set} slices under ${
-      String(fault.distinct,)
-    } distinct indices`;
+    return `lane reports ${String(fault.claimed,)} ${fault.set} ${
+      wordForCount({
+        count: fault.claimed,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } under ${String(fault.distinct,)} distinct ${
+      wordForCount({
+        count: fault.distinct,
+        one: 'index',
+        many: 'indices',
+      },)
+    }`;
   if (fault.kind === 'set-names-unproduced')
     return `lane reports slice ${String(fault.sliceIndex,)} ${fault.set}, which this preparation never produced`;
   if (fault.kind === 'set-and-decided') {
@@ -246,9 +265,27 @@ export function laneCoverageSentence({ fault, }: { readonly fault: LaneSliceCove
   if (fault.kind === 'left-undecided')
     return `lane left prepared slice ${String(fault.sliceIndex,)} undecided`;
   if (fault.kind === 'preparation-repeats')
-    return `preparation produced ${String(fault.slices,)} slices under ${String(fault.distinct,)} distinct indices`;
+    return `preparation produced ${String(fault.slices,)} ${
+      wordForCount({
+        count: fault.slices,
+        one: 'slice',
+        many: 'slices',
+      },)
+    } under ${String(fault.distinct,)} distinct ${
+      wordForCount({
+        count: fault.distinct,
+        one: 'index',
+        many: 'indices',
+      },)
+    }`;
   if (fault.kind === 'decisions-repeat')
-    return `lane decided ${String(fault.decisions,)} times over ${String(fault.distinct,)} distinct slices`;
+    return `lane decided ${howOften({ count: fault.decisions, },)} over ${String(fault.distinct,)} distinct ${
+      wordForCount({
+        count: fault.distinct,
+        one: 'slice',
+        many: 'slices',
+      },)
+    }`;
   if (fault.kind === 'decided-unproduced')
     return `lane decided slice ${String(fault.sliceIndex,)}, which this preparation never produced`;
   return `lane reports reaching slice ${
