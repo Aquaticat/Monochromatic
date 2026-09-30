@@ -737,13 +737,33 @@ or action ran;
 current eligibility and actual SDK guard sensitivity remain false.
 The consumed source smoke is not replayed.
 
-No common SDK worker,
-combined generated-source closure,
+Fork source checkpoint `proc_fcd4` and its receipt commit `proc_c7bf` completed.
+The new private `combined-sdk-phase/` namespace has draft worker,
+runtime,
+completion helper,
+generator,
+fixed projections,
+body gate,
+and controller source.
+It has no complete reviewed generated-source records,
+admitted executable closure,
 freeze,
-or actual SDK sensitivity dispatch exists.
+or actual SDK sensitivity dispatch.
+The phase remains unadmitted.
+A separate consumed syntax probe `proc_a690` observed two unlinked modules and one syntax rejection;
+it imported no SDK and evaluated no generated source.
+Its selected dispatch executable was not bound by the original substring preflight.
+Post-exit canonicalization is later evidence,
+not retroactive identity proof.
+The private `syntax-parser-probe/runtime-disposition.json` governs that narrow observation.
+The private parent `protected-policy-read-correction.json` supersedes the premature complete-policy-read note.
+The task registry again returned a stale frontier;
+receipt-based reconciliation establishes no cause,
+new authorization,
+or replay permission.
 Next:
-finish fork source documentation checkpoint,
-then #87 admits one combined worker/controller with pre-call accounting and unopened-suffix stops.
+review the complete generated text and first-party dependency closure,
+then admit a separately frozen bounded phase with pre-call accounting and unopened-suffix stops.
 No genuine originals,
 model calls,
 grants,

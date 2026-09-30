@@ -20,6 +20,17 @@ require `exit_code === 0` unless the test predeclares a specific failure as its 
 Awaiting a tool call or receiving `Promise.allSettled` fulfillment establishes response delivery,
 not command success.
 Keep unexpected failures and unexecuted suffixes separate from later successful measurements.
+Successful exit alone does not establish that output belongs to the selected subject.
+The syntax-probe preflight combined `mise which node` with a hash of another installation path;
+substring presence matched that second path,
+not the selected executable.
+Resolve and hash the actual selected executable as a structured identity,
+launch that canonical path,
+and verify `process.execPath` before dependent work.
+Post-exit identity measurements remain later evidence.
+Similarly,
+a tool read with visibly truncated output does not establish complete input coverage;
+read the missing range before admission rather than claiming an earlier prerequisite succeeded.
 
 ## Proposed instruction replacement
 
