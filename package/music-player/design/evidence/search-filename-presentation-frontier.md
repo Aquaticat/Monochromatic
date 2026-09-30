@@ -194,16 +194,14 @@ activation,
 spoken output or focus behavior.
 No extension-visibility preference was adopted.
 
-## Remaining comparison evidence
+## Inspected comparative controls
 
 Internal task 137 assesses whether incumbent advice or a consequential
 visual comparison is supported.
-The native matrix alone does not isolate the suffix's contribution to
-wrapping or compare presentation alternatives.
-Matched ordinary-player and Search baselines remain unrendered,
-as do equal complete filenames under ancestors sharing a leaf-folder
-label.
-Prototype commit `7ecfb4880` prepares these bounded controls:
+The original matrix alone did not isolate the suffix's contribution to
+wrapping or test equal complete filenames under ancestors sharing a
+leaf-folder label.
+Prototype commits `7ecfb4880` and `a2e74a012` supply these bounded controls:
 
 - Equal `Cam.flac` labels with `Collection A / Live` and
   `Collection B / Live` context.
@@ -230,25 +228,102 @@ errors or skips;
 removing the unknown-scene guard was rejected again.
 The rebuilt control APK SHA-256 is
 `9e1f40a131931f13b44e1a6e8200c30bce553c777cee6b5cc615631765698f9d`.
-The 32-view control capture is running,
-not yet inspected or published.
+The [separate control manifest][control-manifest] links 32 inspected,
+keyboard-closed views:
+long,
+context,
+suffix-omitted and ordinary-row controls across both panels,
+100%/200% text and light/dark.
+Exact retained RGB,
+opacity,
+PNG metadata checks and a changed-PNG rejection passed.
 The original 24-view matrix retains its original APK provenance.
-No visibility or placement policy has been selected.
-Before recommending,
-add a matched ordinary-player rendering and equal complete filenames
-under different ancestor paths sharing a leaf-folder label.
-Stable frames and hierarchy text are capture prerequisites,
-not proof that distinguishing suffixes or parent paths are visible.
-Inspect rendered labels and add scrolled witnesses where needed.
-Unchanged row-renderer code does not imply unchanged wrapping,
-row heights or visible-result capacity.
-If needed,
-extension visibility and placement remain separable choices.
-No hide/show preference is selected by this source audit.
+The first control attempt was interrupted by Node.js's ADB-output buffer
+limit,
+not a filename or keyboard failure;
+[the troubleshooting record][buffer-record] explains the tested correction.
+
+### Measured results and limitations
+
+- Full Search visibly retains `.flac` and `.mp3` in every long-name
+  control view.
+  The suffix-omitted control shows identical titles and parent context;
+  it is deliberately ambiguous,
+  not a usable proposed design.
+- Removing only those literal suffixes did not reduce title line counts
+  in these samples:
+  two lines at 100% on either panel,
+  four inner and three cover at 200%.
+  Corresponding title and supporting-text rectangles match in all
+  eight panel/scale/theme combinations.
+  This is measured text geometry,
+  not action bounds or a general result-capacity claim.
+- The [layout measurements][control-layout] validate each intended full
+  title's occurrence and text rectangles.
+  A shorter native `Cam.flac` title produces a smaller measured height,
+  establishing that the extraction can detect height differences.
+  A changed RGB byte separately checks the pixel comparator.
+- New full-long controls have identical retained app-area RGB to the
+  corresponding original long-name captures.
+  This covers those views only,
+  not APK equivalence or other behavior.
+- `Collection A / Live` and `Collection B / Live` remain visibly distinct
+  beneath the equal `Cam.flac` titles in every context view.
+  This proves those authored paths are visible,
+  not that arbitrary ancestor paths or real source identities are solved.
+- The ordinary-row replica ellipsizes the long names before their
+  distinguishing suffixes in every tested state.
+  It uses `Live/` before the filename and omits Search's row decoration
+  and support.
+  The observation therefore does not isolate ellipsis alone or establish
+  live ordinary-player behavior.
+- Every row in these authored lists fits without scrolling.
+  No scrolled witness was needed for these particular controls.
+
+The actual ordinary-player screen with matched names,
+real chrome,
+available width,
+folder/page context and applicable current-track decoration remains
+uncaptured.
+The replica does not satisfy that live baseline.
+Any future claim comparing Search with the incumbent player needs that
+baseline on disposable data;
+setup outside the authorized scope remains gated.
+It would still establish static presentation only,
+not playback or complete player behavior.
+
+## Assessment and proposed next comparison
+
+The bounded assessment supports another consequential comparison,
+not incumbent-only advice or a selected extension preference.
+The measured omission control supplies no title-height saving for these
+samples and loses the distinguishing information.
+The source-shaped replica cannot justify copying its one-line treatment
+into Search.
+Neither finding proves the current full-title treatment superior to an
+unbuilt alternative.
+
+[The proposed comparison plan][comparison-plan] keeps visibility and
+placement independent.
+It compares complete filenames in titles with stem-first titles that
+retain exact literal suffixes in supporting information,
+then examines visibility using explicitly authored unambiguous and
+collision cases.
+Conditional visibility needs a known fixture scope,
+including a partner outside displayed results;
+this does not authorize matching or collision-detection implementation.
+A preference question waits for meaningful built and verified options.
+No new questionnaire or dependent implementation is authorized by this
+assessment.
+No hide/show or placement preference has been adopted.
 TalkBack,
 activation,
-focus transitions and keyboard-open behavior remain outside its proof.
+focus transitions and keyboard-open behavior remain outside the proof.
 
 [filename-manifest]: ../questions/evidence/search-filename-witnesses.json
 [inner-long]: ../questions/evidence/search-filename-inner-long-dark-s200.png
 [cover-long]: ../questions/evidence/search-filename-cover-long-dark-s200.png
+[control-manifest]: ../questions/evidence/search-filename-control-witnesses.json
+[control-layout]: ../questions/evidence/search-filename-control-layout.json
+[buffer-record]: ../../../../doc/troubleshooting/node-26-adb-dumpsys-buffer-limit.md
+[comparison-plan]: ../../../../doc/planning/music-player-search-filename-comparison.md

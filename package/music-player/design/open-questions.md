@@ -52,9 +52,18 @@ its manifest is `questions/evidence/search-filename-witnesses.json`.
 Suffix-distinct examples remain visibly distinguishable in those
 captured states,
 not proven for every filename or a live source.
-Task 137 retains the unrendered matched ordinary-player/Search baselines
-and ancestor-path disambiguation before presentation advice.
-Both exclude matcher choices,
+Task 137's 32-view comparative controls are inspected and published in
+`questions/evidence/search-filename-control-witnesses.json`.
+Literal suffix omission keeps the measured title height in these samples
+but loses the distinguishing information.
+Ancestor A/B paths remain visible;
+the ordinary-row replica hides the tested suffixes.
+The genuine ordinary-player baseline remains uncaptured.
+The proposed follow-up in
+`doc/planning/music-player-search-filename-comparison.md` separates
+placement from visibility;
+it selects neither and authorizes no dependent implementation.
+Both investigations exclude matcher choices,
 new IME work and native accessibility acceptance.
 
 - **PROVISIONAL: folded-cover picker P4 (D46).**

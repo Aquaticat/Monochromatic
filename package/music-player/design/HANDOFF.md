@@ -36,8 +36,9 @@ status-cropped matrix is in
 Both suffix-distinct pairs remain visibly distinguishable in the tested
 states;
 long titles wrap to four lines inner and three cover at 200%.
-Task 137 still needs comparative evidence before any presentation
-recommendation.
+Task 137's bounded comparative assessment supports a further
+consequential comparison,
+not incumbent-only advice or a selected presentation.
 Prototype commit `7ecfb4880` prepares a matched suffix-omitted Search
 negative control,
 equal filenames under distinct ancestors with the same leaf-folder name,
@@ -49,8 +50,17 @@ The 9 fixture tests,
 unknown-guard mutation/restoration and rebuild passed.
 Control APK SHA-256 is
 `9e1f40a131931f13b44e1a6e8200c30bce553c777cee6b5cc615631765698f9d`.
-The new 32-view capture is running;
-no control image or comparative conclusion has been accepted yet.
+The 32-view control matrix is inspected and published in
+`questions/evidence/search-filename-control-witnesses.json`.
+Full versus literal suffix-omitted titles have equal measured text
+rectangles in these samples;
+omission does not reclaim title height and makes the pair ambiguous.
+Ancestor A/B context stays visible;
+the ordinary-row replica ellipsizes the distinguishing suffixes.
+The genuine ordinary-player baseline is still missing.
+`doc/planning/music-player-search-filename-comparison.md` proposes
+independent placement and visibility comparisons,
+not an accepted preference or authorization for dependent work.
 No extension preference has been selected.
 Matcher selection,
 new IME studies and original-AVD changes remain excluded.
@@ -82,7 +92,8 @@ zero changed-block findings,
 with 185 existing findings in the three-file canonical scope left to
 internal task 119.
 Task 136's bounded matrix is complete;
-task 137 is active on the missing comparison evidence.
+task 137's assessment is awaiting final rendered verification and
+runtime shutdown before administrative closure.
 The original AVD,
 production Search,
 matcher/library choice,

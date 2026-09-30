@@ -1,0 +1,213 @@
+{
+  "scope": "Synthetic matched text-node geometry, not hit bounds, universal capacity, activation or visible disambiguation proof",
+  "comparisons": [
+    {
+      "panel": "inner",
+      "scheme": "light",
+      "scale": 100,
+      "shortTitleHeightPositiveControl": 59,
+      "fullTitleHeight": 118,
+      "fullTitleBounds": [
+        "[1249,338][2037,456]",
+        "[1249,553][2037,671]"
+      ],
+      "omittedTitleBounds": [
+        "[1249,338][2037,456]",
+        "[1249,553][2037,671]"
+      ],
+      "fullSupportingBounds": [
+        "[1249,456][1735,505]",
+        "[1249,671][1735,720]"
+      ],
+      "omittedSupportingBounds": [
+        "[1249,456][1735,505]",
+        "[1249,671][1735,720]"
+      ],
+      "sameTitleBounds": true,
+      "sameSupportingBounds": true,
+      "originalLongAppAreaRgbIdentical": true
+    },
+    {
+      "panel": "inner",
+      "scheme": "light",
+      "scale": 200,
+      "shortTitleHeightPositiveControl": 103,
+      "fullTitleHeight": 412,
+      "fullTitleBounds": [
+        "[1249,338][2037,750]",
+        "[1249,980][2037,1392]"
+      ],
+      "omittedTitleBounds": [
+        "[1249,338][2037,750]",
+        "[1249,980][2037,1392]"
+      ],
+      "fullSupportingBounds": [
+        "[1249,750][2037,932]",
+        "[1249,1392][2037,1574]"
+      ],
+      "omittedSupportingBounds": [
+        "[1249,750][2037,932]",
+        "[1249,1392][2037,1574]"
+      ],
+      "sameTitleBounds": true,
+      "sameSupportingBounds": true,
+      "originalLongAppAreaRgbIdentical": true
+    },
+    {
+      "panel": "inner",
+      "scheme": "dark",
+      "scale": 100,
+      "shortTitleHeightPositiveControl": 59,
+      "fullTitleHeight": 118,
+      "fullTitleBounds": [
+        "[1249,338][2037,456]",
+        "[1249,553][2037,671]"
+      ],
+      "omittedTitleBounds": [
+        "[1249,338][2037,456]",
+        "[1249,553][2037,671]"
+      ],
+      "fullSupportingBounds": [
+        "[1249,456][1735,505]",
+        "[1249,671][1735,720]"
+      ],
+      "omittedSupportingBounds": [
+        "[1249,456][1735,505]",
+        "[1249,671][1735,720]"
+      ],
+      "sameTitleBounds": true,
+      "sameSupportingBounds": true,
+      "originalLongAppAreaRgbIdentical": true
+    },
+    {
+      "panel": "inner",
+      "scheme": "dark",
+      "scale": 200,
+      "shortTitleHeightPositiveControl": 103,
+      "fullTitleHeight": 412,
+      "fullTitleBounds": [
+        "[1249,338][2037,750]",
+        "[1249,980][2037,1392]"
+      ],
+      "omittedTitleBounds": [
+        "[1249,338][2037,750]",
+        "[1249,980][2037,1392]"
+      ],
+      "fullSupportingBounds": [
+        "[1249,750][2037,932]",
+        "[1249,1392][2037,1574]"
+      ],
+      "omittedSupportingBounds": [
+        "[1249,750][2037,932]",
+        "[1249,1392][2037,1574]"
+      ],
+      "sameTitleBounds": true,
+      "sameSupportingBounds": true,
+      "originalLongAppAreaRgbIdentical": true
+    },
+    {
+      "panel": "cover",
+      "scheme": "light",
+      "scale": 100,
+      "shortTitleHeightPositiveControl": 59,
+      "fullTitleHeight": 118,
+      "fullTitleBounds": [
+        "[156,350][992,468]",
+        "[156,557][992,675]"
+      ],
+      "omittedTitleBounds": [
+        "[156,350][992,468]",
+        "[156,557][992,675]"
+      ],
+      "fullSupportingBounds": [
+        "[156,468][642,517]",
+        "[156,675][642,724]"
+      ],
+      "omittedSupportingBounds": [
+        "[156,468][642,517]",
+        "[156,675][642,724]"
+      ],
+      "sameTitleBounds": true,
+      "sameSupportingBounds": true,
+      "originalLongAppAreaRgbIdentical": true
+    },
+    {
+      "panel": "cover",
+      "scheme": "light",
+      "scale": 200,
+      "shortTitleHeightPositiveControl": 103,
+      "fullTitleHeight": 309,
+      "fullTitleBounds": [
+        "[156,350][992,659]",
+        "[156,881][992,1190]"
+      ],
+      "omittedTitleBounds": [
+        "[156,350][992,659]",
+        "[156,881][992,1190]"
+      ],
+      "fullSupportingBounds": [
+        "[156,659][992,841]",
+        "[156,1190][992,1372]"
+      ],
+      "omittedSupportingBounds": [
+        "[156,659][992,841]",
+        "[156,1190][992,1372]"
+      ],
+      "sameTitleBounds": true,
+      "sameSupportingBounds": true,
+      "originalLongAppAreaRgbIdentical": true
+    },
+    {
+      "panel": "cover",
+      "scheme": "dark",
+      "scale": 100,
+      "shortTitleHeightPositiveControl": 59,
+      "fullTitleHeight": 118,
+      "fullTitleBounds": [
+        "[156,350][992,468]",
+        "[156,557][992,675]"
+      ],
+      "omittedTitleBounds": [
+        "[156,350][992,468]",
+        "[156,557][992,675]"
+      ],
+      "fullSupportingBounds": [
+        "[156,468][642,517]",
+        "[156,675][642,724]"
+      ],
+      "omittedSupportingBounds": [
+        "[156,468][642,517]",
+        "[156,675][642,724]"
+      ],
+      "sameTitleBounds": true,
+      "sameSupportingBounds": true,
+      "originalLongAppAreaRgbIdentical": true
+    },
+    {
+      "panel": "cover",
+      "scheme": "dark",
+      "scale": 200,
+      "shortTitleHeightPositiveControl": 103,
+      "fullTitleHeight": 309,
+      "fullTitleBounds": [
+        "[156,350][992,659]",
+        "[156,881][992,1190]"
+      ],
+      "omittedTitleBounds": [
+        "[156,350][992,659]",
+        "[156,881][992,1190]"
+      ],
+      "fullSupportingBounds": [
+        "[156,659][992,841]",
+        "[156,1190][992,1372]"
+      ],
+      "omittedSupportingBounds": [
+        "[156,659][992,841]",
+        "[156,1190][992,1372]"
+      ],
+      "sameTitleBounds": true,
+      "sameSupportingBounds": true,
+      "originalLongAppAreaRgbIdentical": true
+    }
+  ]
+}

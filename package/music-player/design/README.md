@@ -46,10 +46,17 @@ The accessibility study's disposable emulator was stopped.
 The next design-only,
 keyboard-closed filename-label study used the capped disposable AVD.
 `evidence/search-filename-presentation-frontier.md` records the inspected
-24-view native matrix and remaining comparative evidence;
-`questions/evidence/search-filename-witnesses.json` links sanitized
-app-area crops.
-This does not select extension visibility or prove native activation.
+24-view native matrix and the separately inspected 32-view controls.
+`questions/evidence/search-filename-witnesses.json` and
+`questions/evidence/search-filename-control-witnesses.json` link sanitized
+app-area crops with separate provenance.
+The bounded assessment warrants a consequential comparison,
+not incumbent-only advice;
+`doc/planning/music-player-search-filename-comparison.md` records its
+proposed scope.
+The genuine ordinary-player baseline remains uncaptured.
+This does not select extension visibility or placement,
+authorize dependent implementation or prove native activation.
 
 Status vocabulary follows `open-questions.md` section 0:
 settled decisions are not shipped behavior,
