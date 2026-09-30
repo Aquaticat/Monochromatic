@@ -492,8 +492,15 @@ The declarations and odd/even scripted response schedule were present;
 source closure and own persisted-result JSON references were tightened.
 Independent source-only follow-up found no further concrete blocker.
 Full closure freeze `proc_2cae` passed ten syntax checks and matched the separate reviewed digest list.
-One protected actual SDK fork runtime `proc_90f8` is running;
-its outcome is not established yet.
+One protected actual SDK fork runtime `proc_90f8` failed after one second.
+The worker exited one,
+without a signal or bounded stop,
+with empty stdout and 818 bytes of private stderr.
+Node emitted `AssertionError [ERR_ASSERTION]` at the parent acceptance gate:
+`Historical fork consumer failed; detailed diagnostics remain private; stop without replay`.
+The attempt and unopened suffix are consumed/preserved;
+no fork pass or original-grant premise is established.
+Fixed-schema private failure metadata inspection `proc_5f79` is separate and pending.
 The completed `root-sensitivity-controls/` phase read no genuine original and replayed no interaction.
 The new `fork-mechanical-controls/` worker privately rereads retained admitted evidence before SDK startup;
 it does not mutate originals,
