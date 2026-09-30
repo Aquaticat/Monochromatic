@@ -37,6 +37,11 @@
       </intent-filter>
       <meta-data android:name='android.view.im' android:resource='@xml/fold_probe_input_method' />
     </service>
+    <!-- Actual production player renderer with synthetic tracks and a paused no-audio engine. -->
+    <activity
+      android:name='.FilenameBaselineActivity'
+      android:exported='true'
+    />
     <!-- Debug-only, non-functional Compose surface used for Pixel Fold screenshot capture. -->
     <activity
       android:name='.DesignCandidateActivity'
