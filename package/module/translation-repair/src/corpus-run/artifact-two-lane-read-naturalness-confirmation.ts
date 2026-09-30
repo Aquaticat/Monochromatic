@@ -20,6 +20,21 @@ type RoundParser = (input: {
 }) => ArtifactNaturalnessReviewRound;
 
 /**
+ A confirmation beside the decisive review of its exact candidate.
+ */
+type ConfirmationMatch = {
+  /**
+   Earlier acceptable reading.
+   */
+  readonly confirmation: ArtifactNaturalnessReviewRound;
+
+  /**
+   Decisive review of the same candidate and paragraphs.
+   */
+  readonly decisive: ArtifactNaturalnessReviewRound;
+};
+
+/**
  Reads and binds optional acceptance confirmations added within schema nine.
  
  Absence remains readable for historical schema-nine artifacts.
@@ -30,7 +45,9 @@ type RoundParser = (input: {
  @param present - whether artifact explicitly carries confirmation key
  
  @param rounds - decisive candidate reviews in correction order
- 
+
+ @param final - last of those reviews, which authorizes publication
+
  @param path - artifact review path
  
  @param parseRound - exact schema-nine round parser
@@ -39,7 +56,7 @@ type RoundParser = (input: {
  
  @example
  ```ts
- const confirmations = parseNaturalnessConfirmations({ value, present: true, rounds, path, parseRound, });
+ const confirmations = parseNaturalnessConfirmations({ value, present: true, rounds, final, path, parseRound, });
  ```
  */
 export function parseNaturalnessConfirmations(
@@ -47,12 +64,14 @@ export function parseNaturalnessConfirmations(
     value,
     present,
     rounds,
+    final,
     path,
     parseRound,
   }: {
     readonly value: unknown;
     readonly present: boolean;
     readonly rounds: readonly ArtifactNaturalnessReviewRound[];
+    readonly final: ArtifactNaturalnessReviewRound;
     readonly path: string;
     readonly parseRound: RoundParser;
   },
@@ -98,67 +117,55 @@ export function parseNaturalnessConfirmations(
     },);
   }
   /**
-   Decisive-round position corresponding to each confirmation.
+   Each confirmation beside the decisive review of its exact candidate,
+   refusing one that matches none.
    */
-  const confirmedRoundIndexes = confirmations.map(function matchingRoundIndex(
-    confirmation,
-  ): number {
-    return rounds.findIndex(function sameCandidate(round,): boolean {
+  const matches = confirmations.map(function matchOf(confirmation,): ConfirmationMatch {
+    /**
+     Decisive review of the same candidate and paragraphs.
+     */
+    const decisive = rounds.find(function sameCandidate(round,): boolean {
       return (round.candidateDigest === confirmation.candidateDigest)
         && (round.candidateText === confirmation.candidateText)
         && (JSON.stringify(round.paragraphDigests,)
           === JSON.stringify(confirmation.paragraphDigests,));
     },);
+    if (decisive === undefined) {
+      throw new ArtifactParseError({
+        path: `${path}.confirmations`,
+        reason: 'exact candidate and paragraph identities of one decisive review round',
+      },);
+    }
+    return {
+      confirmation,
+      decisive,
+    };
   },);
-  if (confirmedRoundIndexes.some(function unmatched(index,): boolean {
-    return index < 0;
-  },)) {
-    throw new ArtifactParseError({
-      path: `${path}.confirmations`,
-      reason: 'exact candidate and paragraph identities of one decisive review round',
-    },);
-  }
+  /**
+   Decisive-round position of each confirmation.
+   */
+  const confirmedRoundIndexes = matches.map(function positionOf({ decisive, },): number {
+    return rounds.indexOf(decisive,);
+  },);
   if (confirmedRoundIndexes.some(function outOfOrder(
     index,
     at,
   ): boolean {
     /**
-     Position before current confirmation.
+     Prior confirmation's decisive position, none before the first.
      */
-    const previousAt = at - 1;
-    /**
-     Prior confirmation's decisive position when one exists.
-     */
-    const previousRead = confirmedRoundIndexes[previousAt];
-    /**
-     Prior confirmation's position or before-first sentinel.
-     */
-    const previous = previousRead ?? (-1);
-    return (at > 0) && (index <= previous);
+    const previous = confirmedRoundIndexes[at - 1];
+    return (previous !== undefined) && (index <= previous);
   },)) {
     throw new ArtifactParseError({
       path: `${path}.confirmations`,
       reason: 'same candidate order as decisive review rounds',
     },);
   }
-  if (confirmations.some(function differentRoster(
+  if (matches.some(function differentRoster({
     confirmation,
-    at,
-  ): boolean {
-    /**
-     Decisive same-candidate position when one exists.
-     */
-    const decisiveIndexRead = confirmedRoundIndexes[at];
-    /**
-     Decisive position or unmatched sentinel.
-     */
-    const decisiveIndex = decisiveIndexRead ?? (-1);
-    /**
-     Decisive same-candidate review established by identity check.
-     */
-    const decisive = rounds[decisiveIndex];
-    if (decisive === undefined)
-      return true;
+    decisive,
+  },): boolean {
     /**
      Requested reviewer identities in stable roster order.
      */
@@ -184,16 +191,6 @@ export function parseNaturalnessConfirmations(
     },);
   }
 
-  /**
-   Final decisive review that authorizes publication.
-   */
-  const final = rounds.at(-1,);
-  if (final === undefined) {
-    throw new ArtifactParseError({
-      path: `${path}.confirmations`,
-      reason: 'decisive final candidate review',
-    },);
-  }
   // The repeated-acceptance invariant binds only an accepted final: a
   // rejected or quorumless final round is recorded evidence under the
   // no-loop design and legitimately carries no earlier acceptable reading.

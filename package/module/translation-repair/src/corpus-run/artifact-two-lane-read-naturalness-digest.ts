@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { requireExactKeys, } from '../artifact-exact-guard.ts';
 import { isLowerHexDigit, } from '../ascii-letters.ts';
 import {
@@ -246,20 +248,17 @@ export function assertNaturalnessCorrectionChain(
     correction,
     index,
   ): void {
+    // The review reader holds one round more than it holds transitions
+    // (`parseNaturalnessReview` refuses any other count), so both rounds
+    // around each transition exist.
     /**
      Rejected review feeding this correction.
      */
-    const input = rounds[index];
+    const input = nonNullishOrThrow(rounds[index],);
     /**
      Review over exact gated correction output.
      */
-    const output = rounds[index + 1];
-    if ((input === undefined) || (output === undefined)) {
-      throw new ArtifactParseError({
-        path: `${path}.corrections[${String(index,)}]`,
-        reason: 'adjacent input and output review rounds',
-      },);
-    }
+    const output = nonNullishOrThrow(rounds[index + 1],);
     /**
      Canonical digest of findings correction received.
      */
@@ -349,15 +348,24 @@ export function assertReviewedCandidateDigests(
 
 /**
  Verifies final candidate and paragraph digests against exact final text.
- 
- @param final - final accepted review
- 
+
+ Where the generation records paragraph identities, the round reader
+ (`parseNaturalnessReviewRound`) has already checked the final round's
+ candidate digest, paragraph count and paragraph digests against its own
+ candidate text, so only that text is compared with the text that ships.
+ Before 2026-09-30 (UTC) this also refused a final round with no paragraph
+ digests, which that reader never returns, and checked the digests again
+ against the same text (ledger T8).
+
+ @param final - final review, read by `parseNaturalnessReviewRound` under the
+ same generation flags
+
  @param finalText - exact polish text artifact says ships
- 
+
  @param path - final review round path
- 
+
  @param paragraphDigestsRequired - whether generation records paragraph identities
- 
+
  @example
  ```ts
  assertFinalNaturalnessDigests({ final, finalText, path, paragraphDigestsRequired: true, });
@@ -385,20 +393,6 @@ export function assertFinalNaturalnessDigests(
         reason: 'exact final polish text',
       },);
     }
-    if (final.paragraphDigests === undefined) {
-      throw new ArtifactParseError({
-        path: `${path}.paragraphDigests`,
-        reason: 'reviewed paragraph identities',
-      },);
-    }
-    assertReviewedCandidateDigests({
-      candidateText: finalText,
-      candidateDigest: final.candidateDigest,
-      paragraphCount: final.paragraphCount,
-      paragraphDigests: final.paragraphDigests,
-      path,
-      everyBodyBlockReviewed,
-    },);
     return;
   }
   /**

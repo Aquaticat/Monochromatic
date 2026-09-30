@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { requireExactKeys, } from '../artifact-exact-guard.ts';
 import {
   ArtifactParseError,
@@ -174,19 +176,10 @@ export function parseNaturalnessReview(
    */
   const confirmationsPresent = correctionChainRequired && ('confirmations' in record);
   /**
-   Initial review, always present by length check.
+   Final review, present because the rounds number one more than the
+   correction count, which is never negative.
    */
-  const [initial,] = rounds;
-  /**
-   Final review, always present by length check.
-   */
-  const final = rounds.at(-1,);
-  if ((initial === undefined) || (final === undefined)) {
-    throw new ArtifactParseError({
-      path: `${path}.rounds`,
-      reason: 'initial and final absolute review',
-    },);
-  }
+  const final = nonNullishOrThrow(rounds.at(-1,),);
   /**
    Reviews that each authorized one correction generation.
    */
@@ -217,6 +210,7 @@ export function parseNaturalnessReview(
     value: record.confirmations,
     present: confirmationsPresent,
     rounds,
+    final,
     path,
     parseRound: parseConfirmationRound,
   },);

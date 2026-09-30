@@ -1,6 +1,10 @@
 /**
- Tests absolute naturalness review recomputation, correction binding, and acceptance confirmation.
- 
+ Tests absolute naturalness review recomputation, correction binding, and
+ acceptance confirmation, through the one reader the package exports: every
+ refusal of the review, round, seat, digest and confirmation readers is
+ checked by the path and reason it names, so a case refused by another
+ check fails. Model ids and texts are cat-themed invention.
+
  @module
  */
 
@@ -12,9 +16,15 @@ import {
 
 import {
   type ArtifactNaturalnessReviewSeat,
+  ArtifactParseError,
   hashContent,
   parseNaturalnessReview,
 } from '../../dist/final/node/index.mjs';
+
+/**
+ Artifact path every case reads the review at.
+ */
+const REVIEW_PATH = 'consolidation.slices[0].polish.review';
 
 /**
  Exact final text review binds to.
@@ -263,6 +273,83 @@ const CONFIRMED_CHAINED_REVIEW = {
   ],
 };
 
+/**
+ Reads a review expecting the refusal of one check, named by the path and
+ reason its message carries.
+
+ @param value - review as an artifact carries it
+
+ @param says - `at <path>: expected <reason>` text the refusal carries
+
+ @param correctionChainRequired - whether to read under generation nine
+
+ @param finalText - text the artifact says ships
+ */
+function expectRefused(
+  {
+    value,
+    says,
+    correctionChainRequired = false,
+    finalText = FINAL_TEXT,
+  }: {
+    readonly value: unknown;
+    readonly says: string;
+    readonly correctionChainRequired?: boolean;
+    readonly finalText?: string;
+  },
+): void {
+  /**
+   The read, repeated for each check.
+   */
+  const read = () =>
+    parseNaturalnessReview({
+      value,
+      path: REVIEW_PATH,
+      finalText,
+      correctionChainRequired,
+    },);
+  expect(read,).toThrow(ArtifactParseError,);
+  expect(read,).toThrow(`at ${REVIEW_PATH}${says}`,);
+}
+
+/**
+ The no-correction review with its first round's first seat replaced.
+
+ @param seat - seat as an artifact carries it
+
+ @returns Review value
+ */
+function reviewWithSeat(seat: unknown,): unknown {
+  return {
+    ...REVIEW,
+    rounds: [{
+      ...REVIEW.rounds[0],
+      seats: [seat, REVIEW.rounds[0].seats[1],],
+    },],
+  };
+}
+
+/**
+ The two-correction chain with its first round's fields replaced.
+
+ @param fields - fields written over the first round
+
+ @returns Review value
+ */
+function chainWithFirstRound(fields: Readonly<Record<string, unknown>>,): unknown {
+  return {
+    ...CHAINED_REVIEW,
+    rounds: [
+      {
+        ...CHAINED_REVIEW.rounds[0],
+        ...fields,
+      },
+      CHAINED_REVIEW.rounds[1],
+      CHAINED_REVIEW.rounds[2],
+    ],
+  };
+}
+
 await describe({
   name: parseNaturalnessReview.name,
   children: [
@@ -271,7 +358,7 @@ await describe({
       fn: async () => {
         const parsed = parseNaturalnessReview({
           value: REVIEW,
-          path: 'consolidation.slices[0].polish.review',
+          path: REVIEW_PATH,
           finalText: FINAL_TEXT,
         },);
         expect(parsed,).toEqual(REVIEW,);
@@ -283,7 +370,7 @@ await describe({
       fn: async () => {
         const parsed = parseNaturalnessReview({
           value: CHAINED_REVIEW,
-          path: 'consolidation.slices[0].polish.review',
+          path: REVIEW_PATH,
           finalText: FINAL_TEXT,
           correctionChainRequired: true,
         },);
@@ -296,7 +383,7 @@ await describe({
       fn: async () => {
         const parsed = parseNaturalnessReview({
           value: THREE_CORRECTION_REVIEW,
-          path: 'consolidation.slices[0].polish.review',
+          path: REVIEW_PATH,
           finalText: FINAL_TEXT,
           correctionChainRequired: true,
         },);
@@ -309,7 +396,7 @@ await describe({
       fn: async () => {
         const parsed = parseNaturalnessReview({
           value: CONFIRMED_CHAINED_REVIEW,
-          path: 'consolidation.slices[0].polish.review',
+          path: REVIEW_PATH,
           finalText: FINAL_TEXT,
           correctionChainRequired: true,
         },);
@@ -318,176 +405,411 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES MISSING FINAL, REJECTED, DUPLICATE, UNBOUND, REORDERED, OR DIFFERENT-ROSTER CONFIRMATION',
+      name: 'REFUSES MISSING FINAL, REJECTED, DUPLICATE, UNBOUND, REORDERED, OR DIFFERENT-ROSTER CONFIRMATION, '
+        + 'each by its own reason',
       fn: async () => {
-        const cases: readonly unknown[] = [
-          {
-            ...CONFIRMED_CHAINED_REVIEW,
-            confirmations: [CONFIRMED_CHAINED_REVIEW.confirmations[0],],
-          },
-          {
-            ...CONFIRMED_CHAINED_REVIEW,
-            confirmations: [{
-              ...CONFIRMED_CHAINED_REVIEW.confirmations[1],
-              verdict: 'unacceptable',
-              seats: [
-                unacceptableSeat({
-                  modelId: 'hf:cat/Cat-A',
-                  problem: 'Still awkward.',
-                },),
-                acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
-              ],
-              findings: [{ paragraph: 1, problem: 'Still awkward.', },],
-            },],
-          },
-          {
-            ...CONFIRMED_CHAINED_REVIEW,
-            confirmations: [
-              CONFIRMED_CHAINED_REVIEW.confirmations[1],
-              CONFIRMED_CHAINED_REVIEW.confirmations[1],
-            ],
-          },
-          {
-            ...CONFIRMED_CHAINED_REVIEW,
-            confirmations: [acceptableRound({ text: 'The cat sat elsewhere.', },),],
-          },
-          {
-            ...CONFIRMED_CHAINED_REVIEW,
-            confirmations: CONFIRMED_CHAINED_REVIEW.confirmations.toReversed(),
-          },
-          {
-            ...CONFIRMED_CHAINED_REVIEW,
-            confirmations: [
-              CONFIRMED_CHAINED_REVIEW.confirmations[0],
-              {
+        for (const [value, says,] of [
+          [
+            {
+              ...CONFIRMED_CHAINED_REVIEW,
+              confirmations: [CONFIRMED_CHAINED_REVIEW.confirmations[0],],
+            },
+            '.confirmations: expected earlier acceptable reading of exact final candidate',
+          ],
+          [
+            {
+              ...CONFIRMED_CHAINED_REVIEW,
+              confirmations: [{
                 ...CONFIRMED_CHAINED_REVIEW.confirmations[1],
+                verdict: 'unacceptable',
+                seats: [
+                  unacceptableSeat({
+                    modelId: 'hf:cat/Cat-A',
+                    problem: 'Still awkward.',
+                  },),
+                  acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
+                ],
+                findings: [{ paragraph: 1, problem: 'Still awkward.', },],
+              },],
+            },
+            '.confirmations: expected acceptable earlier readings before decisive same-candidate review',
+          ],
+          [
+            {
+              ...CONFIRMED_CHAINED_REVIEW,
+              confirmations: [
+                CONFIRMED_CHAINED_REVIEW.confirmations[1],
+                CONFIRMED_CHAINED_REVIEW.confirmations[1],
+              ],
+            },
+            '.confirmations: expected at most one acceptance confirmation per reviewed candidate',
+          ],
+          [
+            {
+              ...CONFIRMED_CHAINED_REVIEW,
+              confirmations: [acceptableRound({ text: 'The cat sat elsewhere.', },),],
+            },
+            '.confirmations: expected exact candidate and paragraph identities of one decisive review round',
+          ],
+          [
+            {
+              ...CONFIRMED_CHAINED_REVIEW,
+              confirmations: CONFIRMED_CHAINED_REVIEW.confirmations.toReversed(),
+            },
+            '.confirmations: expected same candidate order as decisive review rounds',
+          ],
+          [
+            {
+              ...CONFIRMED_CHAINED_REVIEW,
+              confirmations: [
+                CONFIRMED_CHAINED_REVIEW.confirmations[0],
+                {
+                  ...CONFIRMED_CHAINED_REVIEW.confirmations[1],
+                  seats: [
+                    acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
+                    acceptableSeat({ modelId: 'hf:cat/Cat-C', },),
+                  ],
+                },
+              ],
+            },
+            '.confirmations: expected same requested reviewer roster and quorum basis as decisive review',
+          ],
+        ] as const) {
+          expectRefused({
+            value,
+            says,
+            correctionChainRequired: true,
+          },);
+        }
+      },
+    },),
+
+    it({
+      name: 'REFUSES A MUTATED CORRECTION, CANDIDATE OR PARAGRAPH DIGEST in a generation-nine chain, each by its own '
+        + 'reason: extended candidate text, too few paragraph digests, a paragraph count the text does not have, a '
+        + 'candidate digest of other text, a changed findings digest, and a changed final paragraph digest',
+      fn: async () => {
+        /**
+         Paragraph digest of the first round's one paragraph.
+         */
+        const initialDigest = hashContent({ content: INITIAL_TEXT, },);
+        for (const [value, says,] of [
+          [
+            chainWithFirstRound({ candidateText: `${INITIAL_TEXT} Extra sentence.`, },),
+            '.rounds[0].paragraphDigests: expected SHA-256 digest of every structurally correctable reviewed paragraph',
+          ],
+          [
+            chainWithFirstRound({ paragraphDigests: [], },),
+            '.rounds[0].paragraphDigests: expected 1 reviewed paragraph digests',
+          ],
+          [
+            chainWithFirstRound({
+              paragraphCount: 2,
+              paragraphDigests: [initialDigest, initialDigest,],
+            },),
+            '.rounds[0].paragraphCount: expected structurally correctable paragraph count of reviewed candidate text',
+          ],
+          [
+            chainWithFirstRound({ candidateDigest: hashContent({ content: 'The cat napped elsewhere.', },), },),
+            '.rounds[0].candidateDigest: expected SHA-256 of exact reviewed candidate text',
+          ],
+          [
+            {
+              ...CHAINED_REVIEW,
+              corrections: [
+                { ...CHAINED_REVIEW.corrections[0], findingsDigest: '0'.repeat(64,), },
+                CHAINED_REVIEW.corrections[1],
+              ],
+            },
+            '.corrections[0]: expected digest chain from rejected review through canonical findings to next gated text',
+          ],
+          [
+            {
+              ...CHAINED_REVIEW,
+              rounds: [
+                CHAINED_REVIEW.rounds[0],
+                CHAINED_REVIEW.rounds[1],
+                {
+                  ...CHAINED_REVIEW.rounds[2],
+                  paragraphDigests: ['0'.repeat(64,),],
+                },
+              ],
+            },
+            '.rounds[2].paragraphDigests: expected SHA-256 digest of every structurally correctable reviewed paragraph',
+          ],
+        ] as const) {
+          expectRefused({
+            value,
+            says,
+            correctionChainRequired: true,
+          },);
+        }
+      },
+    },),
+
+    it({
+      name: 'REFUSES A GENERATION-NINE CHAIN whose final candidate is not the text that ships, whose transitions '
+        + 'number other than its correction count, or whose first round did not reject the text it corrected',
+      fn: async () => {
+        expectRefused({
+          value: CHAINED_REVIEW,
+          says: '.rounds[2].candidateText: expected exact final polish text',
+          correctionChainRequired: true,
+          finalText: 'The cat slept elsewhere.',
+        },);
+        expectRefused({
+          value: {
+            ...CHAINED_REVIEW,
+            corrections: [CHAINED_REVIEW.corrections[0],],
+          },
+          says: '.corrections: expected 2 digest-bound correction transitions',
+          correctionChainRequired: true,
+        },);
+        expectRefused({
+          value: chainWithFirstRound(acceptableRound({ text: INITIAL_TEXT, },),),
+          says: '.rounds: expected unacceptable review before every correction',
+          correctionChainRequired: true,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES MUTATED COUNTS, VERDICT, DIGEST, MODEL IDS, PARAGRAPHS, CORRECTIONS, OR BELOW-HALF APPROVAL, '
+        + 'each by its own reason, and more than one correction outside the digest chain',
+      fn: async () => {
+        for (const [value, says,] of [
+          [
+            {
+              ...REVIEW,
+              rounds: [{ ...REVIEW.rounds[0], usable: 1, },],
+            },
+            '.rounds[0].usable: expected 2 derived from seat statuses',
+          ],
+          [
+            {
+              ...REVIEW,
+              rounds: [{ ...REVIEW.rounds[0], verdict: 'unacceptable', },],
+            },
+            '.rounds[0].verdict: expected acceptable, derived from seat statuses and quorum',
+          ],
+          [
+            {
+              ...REVIEW,
+              rounds: [{ ...REVIEW.rounds[0], candidateDigest: '0'.repeat(64,), },],
+            },
+            '.rounds[0].candidateDigest: expected SHA-256 of final polish text',
+          ],
+          [
+            {
+              ...REVIEW,
+              rounds: [{
+                ...REVIEW.rounds[0],
                 seats: [
                   acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
-                  acceptableSeat({ modelId: 'hf:cat/Cat-C', },),
+                  acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
                 ],
-              },
-            ],
-          },
-        ];
-        for (const value of cases) {
-          expect(() => parseNaturalnessReview({
+              },],
+            },
+            '.rounds[0].seats: expected one status per unique reviewer model id',
+          ],
+          [
+            {
+              ...REVIEW,
+              rounds: [{ ...REVIEW.rounds[0], paragraphCount: 2, },],
+            },
+            '.rounds[0].paragraphCount: expected structurally correctable paragraph count of final polish text',
+          ],
+          [
+            {
+              ...REVIEW,
+              correctionCount: 1,
+            },
+            '.rounds: expected 2 rounds for correction count',
+          ],
+          [
+            {
+              ...REVIEW,
+              correctionCount: 2,
+            },
+            '.correctionCount: expected zero or one legacy correction',
+          ],
+          [
+            {
+              ...REVIEW,
+              rounds: [{
+                ...REVIEW.rounds[0],
+                seats: [
+                  acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
+                  acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
+                  unusableSeat({ modelId: 'hf:cat/Cat-C', },),
+                  unusableSeat({ modelId: 'hf:cat/Cat-D', },),
+                  unusableSeat({ modelId: 'hf:cat/Cat-E', },),
+                  unusableSeat({ modelId: 'hf:cat/Cat-F', },),
+                ],
+              },],
+            },
+            '.rounds[0].verdict: expected quorum-not-met, derived from seat statuses and quorum',
+          ],
+        ] as const) {
+          expectRefused({
             value,
-            path: 'consolidation.slices[0].polish.review',
-            finalText: FINAL_TEXT,
-            correctionChainRequired: true,
-          },),).toThrow();
+            says,
+          },);
         }
       },
     },),
 
     it({
-      name: 'REFUSES MUTATED CORRECTION OR FINAL PARAGRAPH DIGEST in generation-nine chain',
+      name: 'REFUSES A ROUND whose findings name a paragraph it did not review, or whose stored findings are not '
+        + 'its rejecting seats\' findings',
       fn: async () => {
-        const cases: readonly unknown[] = [
-          {
-            ...CHAINED_REVIEW,
-            rounds: [
-              {
-                ...CHAINED_REVIEW.rounds[0],
-                candidateText: `${INITIAL_TEXT} Extra sentence.`,
-              },
-              CHAINED_REVIEW.rounds[1],
-              CHAINED_REVIEW.rounds[2],
-            ],
-          },
-          {
-            ...CHAINED_REVIEW,
-            corrections: [
-              { ...CHAINED_REVIEW.corrections[0], findingsDigest: '0'.repeat(64,), },
-              CHAINED_REVIEW.corrections[1],
-            ],
-          },
-          {
-            ...CHAINED_REVIEW,
-            rounds: [
-              CHAINED_REVIEW.rounds[0],
-              CHAINED_REVIEW.rounds[1],
-              {
-                ...CHAINED_REVIEW.rounds[2],
-                paragraphDigests: ['0'.repeat(64,),],
-              },
-            ],
-          },
-        ];
-        for (const value of cases) {
-          expect(() => parseNaturalnessReview({
-            value,
-            path: 'consolidation.slices[0].polish.review',
-            finalText: FINAL_TEXT,
-            correctionChainRequired: true,
-          },),).toThrow();
+        expectRefused({
+          value: reviewWithSeat(unacceptableSeat({
+            modelId: 'hf:cat/Cat-A',
+            problem: 'Stored findings leave this out.',
+          },),),
+          says: '.rounds[0].findings: expected deduplicated unacceptable-seat findings in roster order',
+        },);
+        expectRefused({
+          value: reviewWithSeat({
+            ...unacceptableSeat({
+              modelId: 'hf:cat/Cat-A',
+              problem: 'Names a second paragraph.',
+            },),
+            findings: [{ paragraph: 2, problem: 'Names a second paragraph.', },],
+          },),
+          says: '.rounds[0].seats: expected findings naming existing reviewed paragraph',
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A SEAT with an unknown status, a finding at paragraph zero or with no problem, an acceptable '
+        + 'seat with findings, an unacceptable seat without, and an unusable seat with a finding or a reason',
+      fn: async () => {
+        /**
+         A rejecting seat, whose findings each case replaces.
+         */
+        const rejecting = unacceptableSeat({
+          modelId: 'hf:cat/Cat-A',
+          problem: 'Replace nominalized verb phrase.',
+        },);
+        for (const [seat, says,] of [
+          [
+            {
+              ...rejecting,
+              status: 'sleepy',
+            },
+            '.rounds[0].seats[0].status: expected one of acceptable, unacceptable, unusable',
+          ],
+          [
+            {
+              ...rejecting,
+              findings: [{ paragraph: 0, problem: 'Paragraph zero.', },],
+            },
+            '.rounds[0].seats[0].findings[0].paragraph: expected one-based paragraph number',
+          ],
+          [
+            {
+              ...rejecting,
+              findings: [{ paragraph: 1, problem: '', },],
+            },
+            '.rounds[0].seats[0].findings[0].problem: expected non-empty actionable defect',
+          ],
+          [
+            {
+              ...acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
+              findings: rejecting.findings,
+            },
+            '.rounds[0].seats[0].findings: expected empty findings for acceptable seat',
+          ],
+          [
+            {
+              ...rejecting,
+              findings: [],
+            },
+            '.rounds[0].seats[0].findings: expected at least one finding for unacceptable seat',
+          ],
+          [
+            {
+              ...unusableSeat({ modelId: 'hf:cat/Cat-A', },),
+              findings: rejecting.findings,
+            },
+            '.rounds[0].seats[0]: expected unusable seat with empty findings and reason',
+          ],
+          [
+            {
+              ...unusableSeat({ modelId: 'hf:cat/Cat-A', },),
+              reason: 'timed out',
+            },
+            '.rounds[0].seats[0]: expected unusable seat with empty findings and reason',
+          ],
+        ] as const) {
+          expectRefused({
+            value: reviewWithSeat(seat,),
+            says,
+          },);
         }
       },
     },),
 
     it({
-      name: 'REFUSES MUTATED COUNTS, VERDICT, DIGEST, MODEL IDS, PARAGRAPHS, CORRECTIONS, OR BELOW-HALF APPROVAL',
+      name: 'REFUSES A CANDIDATE DIGEST that is not 64 lowercase hexadecimal characters: one short, and one in '
+        + 'capitals',
       fn: async () => {
-        const cases: readonly unknown[] = [
-          {
-            ...REVIEW,
-            rounds: [{ ...REVIEW.rounds[0], usable: 1, },],
-          },
-          {
-            ...REVIEW,
-            rounds: [{ ...REVIEW.rounds[0], verdict: 'unacceptable', },],
-          },
-          {
-            ...REVIEW,
-            rounds: [{ ...REVIEW.rounds[0], candidateDigest: '0'.repeat(64,), },],
-          },
-          {
-            ...REVIEW,
-            rounds: [{
-              ...REVIEW.rounds[0],
-              seats: [
-                acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
-                acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
-              ],
-            },],
-          },
-          {
-            ...REVIEW,
-            rounds: [{ ...REVIEW.rounds[0], paragraphCount: 2, },],
-          },
-          {
-            ...REVIEW,
-            correctionCount: 1,
-          },
-          {
-            ...REVIEW,
-            rounds: [{
-              ...REVIEW.rounds[0],
-              seats: [
-                acceptableSeat({ modelId: 'hf:cat/Cat-A', },),
-                acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
-                unusableSeat({ modelId: 'hf:cat/Cat-C', },),
-                unusableSeat({ modelId: 'hf:cat/Cat-D', },),
-                unusableSeat({ modelId: 'hf:cat/Cat-E', },),
-                unusableSeat({ modelId: 'hf:cat/Cat-F', },),
-              ],
-            },],
-          },
-        ];
-        for (const value of cases) {
-          expect(() => parseNaturalnessReview({
-            value,
-            path: 'consolidation.slices[0].polish.review',
-            finalText: FINAL_TEXT,
-          },),).toThrow();
+        for (const candidateDigest of ['a'.repeat(63,), 'A'.repeat(64,),]) {
+          expectRefused({
+            value: {
+              ...REVIEW,
+              rounds: [{
+                ...REVIEW.rounds[0],
+                candidateDigest,
+              },],
+            },
+            says: '.rounds[0].candidateDigest: expected lowercase hexadecimal SHA-256 digest',
+          },);
         }
+      },
+    },),
+
+    it({
+      name: 'COUNTS REVIEWED PARAGRAPHS AS THE WRITING GENERATION SHOWED THEM: a blockquote after a paragraph is '
+        + 'a second reviewed paragraph where every body block was shown (generation ten), and not where only '
+        + 'the refinable paragraphs were',
+      fn: async () => {
+        /**
+         A paragraph, then a blockquote the polish may not edit.
+         */
+        const quotedText = `${FINAL_TEXT}\n\n> The cat dreamed of fish.`;
+        /**
+         A no-correction review of it counting both blocks.
+         */
+        const review = {
+          correctionCount: 0,
+          rounds: [{
+            ...REVIEW.rounds[0],
+            candidateDigest: hashContent({ content: quotedText, },),
+            paragraphCount: 2,
+          },],
+        };
+        expect(parseNaturalnessReview({
+          value: review,
+          path: REVIEW_PATH,
+          finalText: quotedText,
+          everyBodyBlockReviewed: true,
+        },),).toEqual(review,);
+        expectRefused({
+          value: review,
+          says: '.rounds[0].paragraphCount: expected structurally correctable paragraph count of final polish text',
+          finalText: quotedText,
+        },);
       },
     },),
 
     it({
       name: 'READS A ROUND CLOSED ON A SHORT BENCH by the seats it counted out of reach (ledger E3): five '
         + 'asked over a bench of eight, two refused, three accepting is acceptable only beside that count, '
-        + 'and a count wider than the bench is refused',
+        + 'and a count wider than the bench is refused, as is a bench smaller than the seats recorded',
       fn: async () => {
         /**
          The round as the stage writes it, before its count of seats out of reach.
@@ -535,7 +857,7 @@ await describe({
         function read(value: unknown,): unknown {
           return parseNaturalnessReview({
             value,
-            path: 'consolidation.slices[0].polish.review',
+            path: REVIEW_PATH,
             finalText: FINAL_TEXT,
             quorumBasisRequired: true,
           },);
@@ -546,8 +868,20 @@ await describe({
          */
         const readBack = read(reviewCounting({ unreachable: 5, },),);
         expect(readBack,).toEqual(reviewCounting({ unreachable: 5, },),);
-        expect(() => read(reviewCounting({}),),).toThrow();
-        expect(() => read(reviewCounting({ unreachable: 9, },),),).toThrow();
+        expect(() => read(reviewCounting({}),),)
+          .toThrow(`at ${REVIEW_PATH}.rounds[0].verdict: expected quorum-not-met, derived from seat statuses and quorum`,);
+        expect(() => read(reviewCounting({ unreachable: 9, },),),)
+          .toThrow(`at ${REVIEW_PATH}.rounds[0].unreachable: expected at most the 8 seats of the bench`,);
+        expect(() =>
+          read({
+            correctionCount: 0,
+            rounds: [{
+              ...shortRound,
+              quorumOver: 4,
+            },],
+          },)
+        ,)
+          .toThrow(`at ${REVIEW_PATH}.rounds[0].quorumOver: expected safe integer quorum basis covering every recorded seat`,);
       },
     },),
   ],
