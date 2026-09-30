@@ -185,7 +185,7 @@ service/library loading or playback verification.
 ## Prepared usable variants
 
 Task 139 completed as a debug-only native presentation study.
-Task 140 is publishing and verifying the comparison review.
+Task 140 completed comparison publication and review verification.
 Prototype `b97387118` adds separate debug-only scene pairs for long-name
 placement,
 literal/ancestor placement and authored visibility.

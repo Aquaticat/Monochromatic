@@ -353,9 +353,11 @@ node foremost.
 The screenshot region was also inspected.
 The computed flat pairs measured:
 
-- Light: `rgb(32, 30, 38)` on `rgb(252, 249, 255)`,
+- Light:
+  `rgb(32, 30, 38)` on `rgb(252, 249, 255)`,
   15.78947720932554:1.
-- Dark: `rgb(238, 231, 246)` on `rgb(23, 21, 29)`,
+- Dark:
+  `rgb(238, 231, 246)` on `rgb(23, 21, 29)`,
   14.978445394818559:1.
 
 Black/white and equal-color controls yielded 21:1 and 1:1.
@@ -385,8 +387,13 @@ Treating that rejection as a demonstrated contrast violation would be wrong.
 No CSS workaround,
 axe rule disable or upstream source edit was applied.
 The manual fallback's tradeoff is an explicit,
-flat-opaque-color-only review;
-unrecognized diagnostics or color-chain effects still fail verification.
+flat-opaque-color-only review.
+It accepts only axe 4.12.1's exact partial-overlap diagnostic on
+`#preview-metadata` at the desktop width.
+Other diagnostics,
+selectors,
+versions,
+widths or color-chain effects fail verification.
 
 ### Upstream filing decision for the filename incident
 
