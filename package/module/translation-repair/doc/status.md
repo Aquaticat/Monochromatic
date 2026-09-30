@@ -153,18 +153,24 @@ a draw's sample manifest names the pool's build again,
 where every real draw had recorded none (B63),
 and every reader of an artifacts directory lists regular files named `*.json` through one module,
 where four took a directory or a symlink named like an artifact as a settled entry (B64).
-The baseline is now the whole suite at `99eed862e` (`census-aoSuO0`,
-1,458 passes,
+B65 followed from B64's open question and is fixed
+(`e987110a1` to `6583c32c4`):
+every reader of a run directory lists through `directory-listing.ts` and takes only the kind of entry its writer makes,
+so the ledger report no longer reads the atomic writer's temporary files as contests
+and a stray file in the published tree no longer stops the verifier,
+and a source scan refuses any other listing.
+The baseline is now the whole suite at `6583c32c4` (`census-EiesJ9`,
+1,464 passes,
 taken from a tree with nothing uncommitted):
-library source holds 848 stretches over 1,747 lines in 308 files,
+library source holds 847 stretches over 1,745 lines in 307 files,
 with 19 functions never called,
 and the runner entry files and unloaded bundles come after.
 By the first construct each stretch's lines hold
-(`t8-triage-aosuo0.txt` in the audit's scratch folder),
+(`t8-triage-eiesj9.txt` in the audit's scratch folder),
 the queue is 339 returns,
 167 nullish fallbacks,
 146 ternaries,
-97 throws
+96 throws
 and 99 others,
 and the thirteenth batch takes the lane modules
 (`lane`,

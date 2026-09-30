@@ -3961,6 +3961,38 @@ and `corpus-run/insertion` (7 files,
 The tie goes to the most cold lines,
 so the thirteenth batch takes `lane`.
 
+B65 was fixed before the thirteenth batch began
+(`e987110a1` to `6583c32c4`),
+so the batch reads against a census taken after it:
+the whole suite at `6583c32c4`
+(`census-EiesJ9`,
+1,464 passes,
+taken clean)
+reads against `census-aoSuO0`:
+ran 0,
+still cold 1,194,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 6.
+Per-file counts compared between the two census files differ in one library source,
+`slice-cache-store.ts`,
+from 1 stretch to none
+(the ENOTDIR catch B65 removed),
+so library source holds 847 stretches over 1,745 lines in 307 files,
+with 19 functions never called;
+the unmapped `wording-key` chunk is renamed again,
+6 stretches under each name.
+By the first construct
+(`t8-triage-eiesj9.txt`),
+the queue is 339 returns,
+167 nullish fallbacks,
+146 ternaries,
+96 throws
+and 99 others,
+and `lane` still ties `corpus-run/insertion` at 21 stretches with the most cold lines (59 against 50),
+so the thirteenth batch takes `lane` against `census-EiesJ9`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -12747,16 +12779,102 @@ Letting a non-regular file through the lister failed six test files
 `editor-standing-read`,
 `pass-settled`).
 
-Open:
+Checked since (B65):
 the ledger,
-slice-cache and probe-run directories are listed by other code,
-some of it expecting subdirectories;
-whether any of those readers takes a non-file entry as one of its records was not checked.
+the published tree,
+the probe runs and the slice cache each took an entry their writer never wrote,
+and every listing now goes through one module.
 
 Recurrence:
 a rule about what a directory holds lives in one module every reader lists through,
 and a new reader of that directory starts from that module;
 a name spelled in two files becomes a constant one of them owns.
+
+### B65: readers of the run's other directories took entries their writer never wrote
+
+Found answering B64's open question,
+by reading every directory listing in library source
+(`rg 'readdir|opendir|Dirent|glob'`,
+test files and fixtures aside).
+Six readers took an entry of the wrong kind,
+or a write still in flight,
+as a record:
+
+- `ledger-directory.ts` `readLedgerDirectory` attempted every name.
+  The recorder writes each contest through `writeFileAtomic`,
+  whose temporary name is `<name>.<pid>.partial` beside the target,
+  so a report listing the ledger mid-write,
+  or after a crash between write and rename,
+  read that file as a contest
+  (a whole one read as a round,
+  a cut one counted among the refused contests,
+  which the report calls contests the run recorded).
+  A directory named like a contest was refused the same way,
+  and a symlink to one counted that contest twice.
+- `published-tree-listing.ts` `publishedEntryIds` listed the people directory by name and looked for each name's page;
+  a regular file there raised ENOTDIR out of the listing,
+  and so out of `verify-published`,
+  whose owner rule is to print its findings and ship,
+  and a symlink to an entry directory counted that page under a second name.
+- `rendering-audit-settled-runs.ts` `newestRun` took a directory named like a later run as the newest run.
+- `slice-cache-namespace.ts`:
+  a directory named like one of a lane's slices raised EISDIR out of the cache open,
+  stopping the entry,
+  and the discard's `rm` raised on it too.
+- `slice-cache-store.ts` `listResumableEntries` resumed an entry with progress a second time under a symlink's name.
+- `entry-reattempt.ts` `countCachedSlices` counted a directory named like a slice as progress.
+
+Every case but one needs an entry no pass writes,
+placed by hand;
+the ledger's partial file is the one an ordinary crash leaves,
+and a report run mid-write can meet.
+Reading the listings also found the copies B64's rule is about:
+`artifactFilesIn` and its `ArtifactListing` union (B64's own) repeated `namesIn` and `DirectoryReading`;
+three readers repeated a listing that reads an absent directory as empty
+(`ledger-directory.ts`,
+`slice-cache-dir-read.ts` `readDirectoryNames`,
+`declined-entries.ts`);
+`declined-entries.ts` and the rendering audit's layout listing each filtered a `withFileTypes` listing by hand;
+the ledger directory's name was spelled in `candidate-ledger.ts` and `ledger-report.ts`;
+and the slice suffix in `slice-cache-namespace.ts` and `entry-reattempt.ts`.
+`declined-entries.ts` (ledger A9b),
+`pipeline-digest.ts` and the rendering audit's layout listing already checked each entry's kind.
+
+Fixed (`e987110a1` red,
+`467ab6c48`,
+then `6583c32c4` with no behaviour change):
+`corpus-run/directory-listing.ts` decides what kind of entry a reader takes:
+`namesOfKind` lists regular files or directories by the entry's own type,
+so a link is neither and is never followed;
+`presentNamesOfKind` reads an absent directory as holding none;
+`readingOf` reports an unreadable directory by its filesystem code,
+and `namesIn` and `artifactFilesIn` both read through it.
+Each reader takes the kind its writer makes,
+and the ledger takes only names `ledgerFileName` writes (`isLedgerFileName`).
+The ledger directory's name and the slice suffix each have one owner
+(`LEDGER_DIR`,
+`isSliceFileName`).
+`directory-listing-scan.unit.test.ts`,
+now among the source scans,
+fails on any directory-listing import from `node:fs` or `node:fs/promises`,
+and any namespace,
+default or dynamic import of them,
+outside the listing module and the two walkers it names with why
+(`pipeline-digest.ts`,
+`cap-census.ts`).
+Letting every kind through `namesOfKind` failed the B65 cases for an entry that is not the kind asked for in six test files
+(the slice cache's open case unseen behind its file's first failing describe),
+both kind cases of `directory-listing.unit.test.ts`,
+and the older case for a plain file under the slice-cache root,
+whose ENOTDIR catch the fix removed;
+letting `.partial` names through the ledger failed the in-flight case alone;
+a stray `readdir` import in `ledger-directory.ts` failed the scan's package case.
+
+Recurrence:
+a reader lists through `directory-listing.ts` and names the kind of entry its writer makes,
+then filters by the name its writer gives a record,
+so a write still under its temporary name is never read;
+the scan refuses any other listing.
 
 ## Process mistakes in this audit
 

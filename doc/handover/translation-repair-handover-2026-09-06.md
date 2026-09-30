@@ -279,9 +279,13 @@ this one says what changed after it.
   closing all 26 of their stretches in 8 files
   (`21d3654d5` to `99eed862e`;
   ledger B63 and B64).
-  The baseline is now the whole suite at `99eed862e` (`census-aoSuO0`,
-  1,458 passes):
-  library source holds 848 stretches over 1,747 lines in 308 files,
+  Ledger B65,
+  run-directory readers taking entries their writer never wrote,
+  was fixed before the thirteenth batch (`e987110a1` to `6583c32c4`),
+  with a source scan that holds every listing to `directory-listing.ts`.
+  The baseline is now the whole suite at `6583c32c4` (`census-EiesJ9`,
+  1,464 passes):
+  library source holds 847 stretches over 1,745 lines in 307 files,
   with 19 functions never called.
   The library batches go on one triage cluster each,
   the thirteenth taking the lane modules

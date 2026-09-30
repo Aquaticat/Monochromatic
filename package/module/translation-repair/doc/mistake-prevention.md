@@ -596,6 +596,11 @@ so a directory or a symlink named like an artifact became a settled entry;
 five more filtered the one lister's names by the suffix again,
 four sliced the suffix off by hand,
 and ten files spelled the directory's name (ledger B64).
+The same lapse sat in the run's other directories:
+the ledger report read the atomic writer's temporary files as contests,
+a stray file in the published tree raised ENOTDIR out of the verifier,
+and the slice cache stopped an entry on a directory named like a slice;
+meanwhile B64's own listing result was a copy of one `directory-listing.ts` already had (ledger B65).
 
 The rule:
 before writing a helper,
@@ -614,6 +619,12 @@ A rule about what a directory holds lives in one module every reader lists throu
 and a new reader of that directory starts from that module;
 a name spelled in two files becomes a constant one of them owns
 (`runs-layout.ts` for the slice-cache and prompt-payload directories).
+Every reader lists through `corpus-run/directory-listing.ts`,
+naming the kind of entry its writer makes
+(files or directories,
+never links),
+then filters by the name its writer gives a record,
+so a write still under its temporary name is never read.
 
 What enforces it:
 `src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
@@ -630,6 +641,9 @@ The shared helpers (`code-points.ts`,
 `index-pair-list.ts`,
 `sse-data-line.ts`,
 `corpus-run/span-rewrites.ts`) say so in their headers.
+`src/directory-listing-scan.unit.test.ts` (ledger B65),
+among the source scans,
+fails on any directory-listing import outside `directory-listing.ts` and the walkers it names with why.
 
 ## Text by code point
 
