@@ -1990,33 +1990,6 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES TO CACHE ABSOLUTE NATURALNESS FAILURE, so retry asks again instead of twin-reusing rejected text',
-      fn: async () => {
-        expect(consolidationWorthResuming({
-          standingMayShip: true,
-          settlement: {
-            ...settlementFor({ terminal: 'gate-kept-standing', usable: 2, },),
-            polish: {
-              kind: 'unsettled',
-              baseText: 'The cat actively faced the day.',
-              proposedText: 'The cat actively faced the day.',
-              refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-              contributors: [],
-              rounds: [],
-              review: {
-                correctionCount: 1,
-                corrections: [],
-                rounds: [],
-                confirmations: [],
-              },
-              findings: ['absolute-naturalness correction made no approved text change',],
-            },
-          },
-        },),).toBe(false,);
-      },
-    },),
-
-    it({
       name: 'CACHES A SLICE STOPPED BEFORE THE GATE BY THE SLATE OR THE CONTEST, because neither is a '
         + 'fact about who answered. A floor that refused every proposal read the structural guard, and '
         + 'a contest that named neither lane left nothing to improve on; both hold on any night',

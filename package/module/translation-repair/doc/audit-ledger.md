@@ -11700,6 +11700,48 @@ trace every caller's handler for that raise
 and retire the ones it left unreachable,
 with a named fault where the rule's premise is another module's.
 
+### B52: an unsettled polish nothing built, and three guards against it
+
+Found by the eighth coverage batch (census-dUOMFS),
+at the driver's raise of `NaturalnessCompletenessError` for a polish of kind `unsettled`.
+No production code builds that kind:
+`rg` over `src` without tests finds only its definition and its readers,
+and `git show` of `consolidation-polish.ts` just before `0f1898942`
+shows the one construction that commit removed,
+"remove the naturalness correction loop" of 2026-09-01.
+Its TSDoc kept it "for old records and defensive guards",
+but no record can carry it:
+the artifact projection's output holds only `settled` and `not-run`,
+the consolidation cache refused to keep an `unsettled` settlement,
+and no slice-cache file has been written since 04:27 UTC on 2026-09-27,
+before the cache version the current keys carry.
+Three guards read it:
+the driver's raise,
+the persistence check refusing it,
+and the artifact projection's throw.
+
+Fixed as a quality call open to veto:
+the kind and its three guards are gone,
+the projection loses the slice index it took only to name the throw,
+and the one test that built the kind,
+a persistence case for a correction loop that no longer exists,
+went with it.
+`NaturalnessCompletenessError` stays,
+thrown by the artifact completeness check.
+The cost log's `unsettled` exit stays readable and is no longer written:
+an `rg` over the agent runs found `exit=unsettled` in a validation log of 2026-08-29.
+
+Left as it is:
+the consolidation cache's shape check trusts a cached settlement's `polish` without reading it,
+a gap for the cache store's own entry;
+and the settlement type still admits a gate's terminal with no gate and a declined slate with no decision,
+states only a type split by terminal would rule out.
+
+Recurrence:
+a variant kept "for old records" names the records;
+check each store it could live in before keeping it,
+and delete it with its guards when none can hold it.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

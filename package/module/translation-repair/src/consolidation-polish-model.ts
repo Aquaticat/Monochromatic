@@ -177,53 +177,10 @@ export type ConsolidationPolish =
      Findings from proposal, validation, gate and absolute review.
      */
     readonly findings: readonly string[];
-  }
-  | {
-    /**
-     Legacy nonpublishable state retained for old records and defensive guards.
-     Current runtime throws operational interruption instead of producing it.
-     */
-    readonly kind: 'unsettled';
-
-    /**
-     Approved fidelity baseline that remains unpublishable for naturalness.
-     */
-    readonly baseText: string;
-
-    /**
-     Last selected correction proposal, whether or not gates accepted it.
-     */
-    readonly proposedText: string;
-
-    /**
-     Rewriters returning usable answer across recorded rounds.
-     */
-    readonly refinersHeard: readonly RosterModelId[];
-
-    /**
-     Models whose work last would-ship candidate carries.
-     */
-    readonly contributors: readonly RosterModelId[];
-
-    /**
-     Candidate-selection rounds from initial and corrective generations.
-     */
-    readonly rounds: readonly RepairJudgedRound[];
-
-    /**
-     Last comparative fidelity gate, when correction reached it.
-     */
-    readonly gate?: ConsolidationPolishGateOutcome;
-
-    /**
-     Absolute reviews proving why publication remains refused.
-     */
-    readonly review: ConsolidationNaturalnessAudit;
-
-    /**
-     Stable correction and review findings.
-     */
-    readonly findings: readonly string[];
   };
+// NO UNSETTLED POLISH (ledger B52): a third kind recorded a correction loop
+// that never earned publication. Nothing has built it since the loop went on
+// 2026-09-01; artifacts never stored it and the consolidation cache refused to
+// keep it, so no record carries it, and its guards went with it.
 
 //endregion Consolidation naturalness model

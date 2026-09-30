@@ -5,7 +5,6 @@ import type {
   ProposalVerdict,
 } from '../consolidate-settle.ts';
 import type { GateBallot, } from '../consolidate-gate-wire.ts';
-import { NaturalnessCompletenessError, } from '../naturalness-completeness-error.ts';
 
 //region Artifact version 2 consolidation
 // ONE CONSOLIDATED SLICE AS THE STAGE LEFT IT, written so a later reader can
@@ -452,24 +451,16 @@ export type ArtifactConsolidateSlice = {
  Projects internal polish settlement into artifact audit shape.
  
  @param settlement - consolidation result carrying optional polish
- 
- @param sliceIndex - prepared slice named if unsettled reaches serializer
- 
+
  @returns Artifact polish record, naming disabled stage when absent
- 
+
  @example
  ```ts
- const polish = artifactPolishOf({ settlement, sliceIndex, },);
+ const polish = artifactPolishOf({ settlement, },);
  ```
  */
 function artifactPolishOf(
-  {
-    settlement,
-    sliceIndex,
-  }: {
-    readonly settlement: ConsolidationSettlement;
-    readonly sliceIndex: number;
-  },
+  { settlement, }: { readonly settlement: ConsolidationSettlement; },
 ): ArtifactConsolidationPolish {
   /**
    Internal polish settlement, absent before stage integration.
@@ -483,8 +474,6 @@ function artifactPolishOf(
   }
   if (polish.kind === 'not-run')
     return polish;
-  if (polish.kind === 'unsettled')
-    throw new NaturalnessCompletenessError({ sliceIndex, },);
   /**
    Naturalness selection rounds retained in run ledger.
    */
@@ -607,10 +596,7 @@ export function describeConsolidateSlice(
         ballots: gate.ballots,
         usable: gate.usable,
       },
-    polish: artifactPolishOf({
-      settlement,
-      sliceIndex,
-    },),
+    polish: artifactPolishOf({ settlement, },),
   };
 }
 

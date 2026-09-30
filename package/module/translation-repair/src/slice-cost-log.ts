@@ -83,7 +83,12 @@ export const SLICE_COST_EXITS = [
  `reused` shared an identical purchase in same run, and `no-translation`
  found nothing to repair. `unfilled`, `unsettled`, and `failed` bought work but
  produced no final answer. `aborted` was cut mid-flight and prices deadline.
- 
+
+ `unsettled` IS READ, NO LONGER WRITTEN (ledger B52): it named a polish the
+ correction loop left unpublishable, which nothing has built since that loop
+ went on 2026-09-01; logs from before carry it (a validation run of
+ 2026-08-29 does), so the reader still accepts it.
+
  @example
  ```ts
  const exit: SliceCostExit = 'resumed';
