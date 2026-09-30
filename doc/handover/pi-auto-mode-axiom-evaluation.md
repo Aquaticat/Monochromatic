@@ -510,14 +510,26 @@ The completed origin reference is retained;
 actual fork and child/reset suffix were not reached.
 Earlier source-only clearance missed this transcript premise and is narrowed accordingly.
 No Pi defect or upstream filing follows.
-The separate `fork-system-prefix-controls/` correction has a partial private opaque prefix-owner/ledger draft.
-Its original owner is copied unchanged,
-and its pure synthetic rejection schedule is predeclared.
-The complete SDK worker/parent,
-control implementation,
-source review,
-freezes,
-and runtimes remain absent/undispatched.
+The separate `fork-system-prefix-controls/` correction now has a complete private draft.
+Its original owner remains byte-identical at `3ac885c762b3764192d756cfe9391cd7d2dedf0422c1185ac716cb39526958f3`.
+Pure freeze `proc_ba0c` passed four syntax checks;
+eight-case synthetic acceptance/rejection schedule `proc_16e6` passed:
+exit zero,
+301 stdout bytes,
+empty stderr,
+no SDK imports/constructors or genuine reads.
+These input controls establish neither guard necessity nor source-omission sensitivity.
+The corrected ledger retains opaque immutable prefix/branch references before copying
+and follows actual persisted child parent links before publishing its handle.
+A prior combined-source review was truncated and did not clear the closure.
+Independent review of explicitly embedded complete bodies,
+62,223 characters across 15 named sources,
+found no further concrete blocker conditional on new digest intake/full freeze/one matched runtime.
+New full digest intake `proc_bd33` is dispatched;
+full freeze and actual SDK correction runtime remain undispatched.
+Wrong-root/cross-owner prefix captures,
+ledger recapture,
+and new persisted-path rejection branches remain untested.
 Independent scope review resolved the prefix requirement as exact mechanical retention:
 immutable owned entry ID/JSON and complete branch JSON captured before copying,
 with exact five-role order and named positions.
