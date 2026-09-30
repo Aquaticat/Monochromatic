@@ -11520,6 +11520,59 @@ The replies the runs stored under `prompt-payloads/` were not counted for such b
 they sit in many run roots,
 and no count over them could show it covered every reply behind a cached ballot.
 
+### B47: a refine mode no production code built, kept alive by tests
+
+Found by the eighth coverage batch (census-dUOMFS),
+where `consolidation-polish-round.ts` asked the same question three times:
+whether the mode was `required-naturalness-correction`.
+No production code builds that mode:
+`rg` over `src` without tests or fixtures finds only reads.
+`git log -S` names `0f1898942` from 2026-09-01,
+"remove the naturalness correction loop",
+which removed its only producer;
+the mode,
+its branches in the refine prompt,
+the refine selection context and the polish gate sheet,
+its prior-correction rendering,
+and its `no-correction` outcome all stayed,
+built by tests alone,
+and the rendered-sheets fixture rendered a slate no run could send.
+Production builds two modes:
+comparative and objection correction.
+
+Fixed in `6a3e6cffa`,
+a quality call open to veto:
+the mode and everything only it reached are gone,
+and so is `disposition` on the refine stage and polish round results,
+which without `no-correction` equalled `changed`
+and which no production code read.
+The cases that built the mode now pin the objection mode where it had the same thing to pin:
+fencing,
+the base label,
+and a declined or split round keeping the text.
+
+No cache version moves,
+on a measurement rather than a reading:
+a probe rendered 58 sheets from the builds before and after the edit:
+every fixture sheet,
+and the gate,
+the selection context and the refine prompt in each live mode,
+with and without declared names and references.
+49 are byte-identical;
+the 9 that differ are the removed mode's own renders,
+the probe's positive control.
+
+Recurrence:
+when a commit removes a producer,
+`rg` for every constructor of the value it produced,
+and remove each branch,
+type member and test that only that value reached.
+A test that builds a value production cannot build keeps dead code looking covered.
+Left as it is:
+`consolidation-polish.ts` still records `correctionCount: 0` and `corrections: []` on every review;
+those are stored artifact fields with readers,
+so changing them is a schema change for its own entry.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

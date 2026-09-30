@@ -1099,6 +1099,10 @@ Consolidation cache generation 8 makes required correction a distinct non-fallba
 Correction rewriters and selectors now receive structured paragraph findings as fenced evidence;
 selectors are told unchanged text cannot ship,
 and decline or tie records `no-correction` rather than fallback.
+That mode is gone:
+its loop went on 2026-09-01,
+and ledger B47 (2026-09-30) removed the mode and its outcome,
+which only tests still built.
 Comparative refinement retains its accepted-input fallback.
 Structural validation,
 fidelity gate,
