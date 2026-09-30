@@ -2255,6 +2255,29 @@ new IME experiment or original-AVD change is authorized.
 
 ---
 
+### D81. Supporting text is user-configurable through templates in Settings
+
+Supporting text is templated and the user can configure it in Settings.
+The user reaffirmed this agreement when the filename review presented
+supporting text as a fixed placement/visibility policy.
+Search filename review must preserve this configurability.
+D35's neutral default supporting-text role does not hard-code its content.
+
+The fixed-policy filename question is withdrawn.
+The native captures remain evidence of exact authored layouts,
+not implemented templates,
+Settings functionality or accepted defaults.
+Template fields,
+grammar,
+editor details,
+other row-type scope and interactions with required distinguishing
+information remain undesigned.
+Title customization is not implied by configurable supporting text.
+D77's accessible-action naming direction and the need for visible distinction
+before activation remain intact;
+no automatic suffix restoration or collision fallback is selected.
+No production implementation is authorized by this clarification.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

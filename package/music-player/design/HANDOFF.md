@@ -104,10 +104,13 @@ claim every hierarchy-present label is fully visible.
 Both rejected attempts and their APKs remain private and separate.
 Task 140 published 70 inspected native comparisons and the ordered
 320-slot semantic layout census.
-`evidence/search-filename-usable-comparison.md` records the bounded
-recommendations;
-`questions/search-filename-comparison.html` contains the independent,
-unselected placement and visibility form with final notes.
+The fixed placement/visibility question and its policy recommendations
+are withdrawn after the user reaffirmed configurable supporting-text
+templates edited in Settings.
+D81 and `open-questions.md` section 11e preserve this agreement.
+Task 141 corrects `questions/search-filename-comparison.html` to an
+evidence-only review with optional observations;
+the authored captures are not implemented templates or presets.
 Its 102 embedded images include the separately provenanced actual-player
 baseline.
 Offline consumer checks decoded and opened every image,
@@ -125,8 +128,13 @@ Desktop axe metadata contrast incompletes were retained and resolved only
 by flat opaque computed colors and live text hit tests;
 `questions/evidence/search-filename-comparison-review-verification.json`
 records the exact audit and manual-review boundary.
-Task 140 is complete as comparison publication and review verification.
-Both filename preferences still require the human's independent answers.
+Task 140's technical publication checks passed,
+but its policy-question framing is superseded by task 141.
+The user owes no placement/visibility answer.
+Default-template design and customization/disambiguation interactions
+remain open;
+no fields,
+Settings controls or renderer fallback have been invented.
 Prototype `720ba418f` uses public `playerScreen` and the real controller
 with a paused no-audio double;
 no production source was changed.

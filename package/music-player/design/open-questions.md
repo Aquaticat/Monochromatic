@@ -70,11 +70,15 @@ The completed debug-native follow-up separates placement from visibility:
 `evidence/search-filename-usable-comparison.md` and
 `questions/evidence/search-filename-comparison-witnesses.json`
 record 64 initial plus six scrolled inspected views.
-`questions/search-filename-comparison.html` presents both dimensions and
-their composition as independent,
-unselected questions with final notes.
-The bounded recommendation is full literal title and always-visible suffixes;
-neither is accepted.
+The fixed placement/visibility question is withdrawn because it omitted
+settled supporting-text configurability.
+D81 records templates editable in Settings.
+Internal task 141 corrects `questions/search-filename-comparison.html`
+to an evidence-only review with optional observations.
+The authored comparisons remain valid measurements,
+not template-engine output or implemented presets.
+Default-template design and customization/disambiguation interactions remain
+open without a replacement policy vote.
 The runtime's fresh settings were restored and it was stopped.
 `doc/planning/music-player-search-filename-comparison.md` selects no policy
 and authorizes no dependent implementation.
@@ -1058,7 +1062,7 @@ surface with a Search button and page.
  The recorded Fold Search decisions and accessibility round are settled
  through D75 to D80;
  section 0b separates adopted goals,
- the independent extension-display visual question and deferred native
+ the template-aware filename-design work and deferred native
  acceptance.
  Reconsidering the picker
 remains a separate pre-1.x question, not a promise to replace it;
@@ -1076,21 +1080,23 @@ captures at 100% and 200% text.
  The error bar, undo toast, settings pane, context menu, first-run prompt and
 scan bar remain undrawn in light; do not credit the cover decision as evidence for them.
 
-### 11e. Custom display templating — stated, not designed
-The product will allow users to set a custom display through templating.
- That is the
-reason D35 keeps the default supporting line neutral.
- The user's statement does not
-yet settle template scope,
- available fields,
- syntax,
- editing surface,
- preview,
+### 11e. Custom display templating: Settings requirement settled, details open
+
+The product lets users configure supporting text through templates in Settings.
+D81 records the user's reaffirmation during Search filename review.
+D35 keeps the default supporting-text role neutral rather than fixing its
+content or emphasis.
+The editing location and supporting-text configurability are settled;
+fields,
+grammar,
+editor controls,
+preview,
 validation,
- fallback behavior,
- or whether templates apply beyond track rows.
- Do not
-invent those details or narrow the requirement without a dedicated design round.
+fallback behavior,
+other row-type coverage and title customization remain undesigned.
+Default templates and their interaction with required visible distinction
+need a dedicated design round.
+Do not replace this requirement with a fixed supporting-text policy vote.
 
 ## 12. Existing-screen refinement, 3B settled and accepted
 

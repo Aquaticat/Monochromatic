@@ -66,9 +66,13 @@ captured and inspected.
 `evidence/search-filename-usable-comparison.md` and
 `questions/evidence/search-filename-comparison-witnesses.json`
 record 64 initial and six scrolled native views.
-`questions/search-filename-comparison.html` is the self-contained,
-unselected independent review with final notes and the actual-renderer
-baseline included.
+The fixed-policy filename question is withdrawn.
+D81 preserves supporting-text templates configurable in Settings.
+Task 141 corrects `questions/search-filename-comparison.html` to an
+evidence-only review with optional observations and the separately
+provenanced actual-renderer baseline.
+The comparison captures are authored layouts,
+not template-engine output or implemented presets.
 Offline checks decoded and opened all 102 images.
 Separate desktop/mobile light/dark checks exercised modal/viewer controls
 and all four composed answers.
@@ -80,8 +84,10 @@ manual check without changing the axe result.
 retains the exact coverage;
 no console errors were observed.
 The current disposable runtime was restored to its fresh snapshot and stopped.
-Neither recommendation selects extension visibility or placement,
-authorizes dependent implementation or proves native activation.
+The policy recommendations are withdrawn,
+not accepted defaults.
+Template/default and distinguishing-information interactions remain open.
+No dependent implementation or native activation is established.
 
 Status vocabulary follows `open-questions.md` section 0:
 settled decisions are not shipped behavior,

@@ -13,9 +13,12 @@ No production Search,
 matcher selection,
 new IME study or original-AVD change is authorized.
 
-File-extension presentation remains open.
-Neither the extensionless Search fixture nor existing player code is a
-new user preference.
+File-extension presentation remains open within the required configurable
+supporting-text template model.
+D81 records editing through Settings.
+The incompatible fixed-policy question is withdrawn;
+neither the authored layouts nor existing player code selects a default
+or renderer fallback.
 
 ## Source audit
 
@@ -378,13 +381,14 @@ this does not authorize matching or collision-detection implementation.
 The continued-work authorization produced meaningful debug-only options:
 64 initial views and six scrolled literal-name witnesses,
 all inspected and published with separate immutable provenance.
-[The usable comparison](search-filename-usable-comparison.md) records
-bounded placement and visibility recommendations,
-not selections.
-[The self-contained review](../questions/search-filename-comparison.html)
-keeps both questions independent and composable,
-unselected,
-and ends with free text.
+[The usable comparison](search-filename-usable-comparison.md) retains the
+bounded measurements.
+Its fixed-policy recommendations and question are withdrawn because they
+omitted configurable supporting-text templates edited in Settings.
+Task 141 corrects [the self-contained review](../questions/search-filename-comparison.html)
+to evidence-only inspection with optional observations.
+Captures remain authored layouts,
+not a template implementation or default selection.
 Its offline consumer checks exercised every embedded native image,
 form choice,
 modal and viewer control across desktop/mobile light/dark conditions.
