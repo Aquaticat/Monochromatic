@@ -347,8 +347,26 @@ Current eligibility remains unestablished.
 The original standalone fixture transaction did not name an SDK session ID;
 constructor association can establish test-owned root/epoch mechanics,
 not retroactive human-witnessed ancestry or renewed authorization.
-The next separately predeclared root attachment/reset phase remains unimplemented/undispatched
-and must keep records operationally test-only.
+The separately frozen root attachment/reset reference `proc_a39a`/`proc_d4f5` passed:
+one SDK session,
+two first-party scripted responses,
+one inert callback,
+empty private stderr,
+and zero fetch/models/fixture executions/grant writes.
+Original admission finished before SDK startup.
+Repeated valid original admissions and owner-issued views share canonical process-local transaction identity.
+Canonical manager binding shares local reset state across pre-existing branches;
+prepared snapshots,
+navigation,
+and old/duplicate/alias source re-registration did not revive mechanics after reset.
+Historical original scope matching remained available.
+Records stayed operationally test-only and `currentEligibilityEstablished:false` stayed explicit.
+Constructor-owned association is not retroactive human-witnessed ancestry or renewed authorization.
+Counterfeit root-handle rejection does not cover an actual outsider manager;
+process-local uniqueness does not cover restart/reimport/reconstruction.
+A separately predeclared synthetic sensitivity schedule is unimplemented/undispatched;
+this intact reference does not establish selected-guard sensitivity.
+No genuine original mutation or interaction replay is permitted.
 Historical admission does not itself confer current eligibility or reusable authority.
 Target/source/deadline/cache finalization,
 genuine directive admission,
