@@ -182,6 +182,34 @@ synthetic tracks,
 not a live player,
 service/library loading or playback verification.
 
+## Prepared usable variants
+
+Task 139 is in progress.
+Prototype `b97387118` adds separate debug-only scene pairs for long-name
+placement,
+literal/ancestor placement and authored visibility.
+Prototype `40d1f76bc` adds the fixture and shared-route tests.
+Native inspection and comparative conclusions remain pending.
+
+The placement pair retains exact literal suffixes either in the title or
+in the supporting line with unchanged kind,
+parent and action.
+Dotted folders remain indivisible literal names;
+uppercase suffixes,
+leading/internal dots,
+Unicode and extensionless tracks are explicit data,
+not parser output.
+
+The visibility pair changes only an authored unambiguous `Cam Solo.opus`.
+Same-parent `Cam.flac`/`Cam.mp3` keeps its cues.
+`Cam Outside.flac` also keeps its cue because an authored
+`Cam Outside.mp3` partner exists outside the displayed subset.
+The subset and cue flags are fixed study inputs,
+not query evaluation or collision detection.
+Both native hosts use the same comparison-scene registry.
+No spacing,
+Search A/E2 geometry or native matching implementation was changed.
+
 ## Communication correction
 
 The user should not have needed to say “Keep working.”
