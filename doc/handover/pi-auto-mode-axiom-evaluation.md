@@ -417,8 +417,17 @@ not a current human grant:
 The original scope did not name an SDK session ID;
 constructor ownership can establish experimental association,
 not retroactive human-witnessed session ancestry or renewed authorization.
-Next `root-attachment-controls/` is a separately predeclared,
-unimplemented/undispatched mechanical attachment/reset phase.
+Next `root-attachment-controls/` is a separately predeclared mechanical attachment/reset phase.
+Its private source/SDK-reference draft is implemented but runtime remains undispatched.
+Partial source intake `proc_43ef` passed syntax only,
+not the later worker or reference-tightening changes.
+Independent serialized-source review required a branch-A positive before reset,
+second-constructor rejection before allocating another manager,
+and an exact test-owned custom-entry/data allowlist inside the callback and after SDK idle.
+Those references are now included;
+complete source freeze `proc_a39a` is running.
+Counterfeit root-handle rejection is not actual outsider-manager coverage.
+No source freeze or future intact pass establishes new guard-omission sensitivity.
 Its records must remain operationally test-only,
 canonicalize duplicate validated views of the same original transaction,
 and retain historical evidence without allowing post-reset reauthorization.
