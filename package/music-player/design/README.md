@@ -68,14 +68,15 @@ captured and inspected.
 record 64 initial and six scrolled native views.
 The fixed-policy filename question is withdrawn.
 D81 preserves supporting-text templates configurable in Settings.
-Task 141 corrects `questions/search-filename-comparison.html` to an
+Task 141 corrected `questions/search-filename-comparison.html` to an
 evidence-only review with optional observations and the separately
 provenanced actual-renderer baseline.
 The comparison captures are authored layouts,
 not template-engine output or implemented presets.
 Offline checks decoded and opened all 102 images.
 Separate desktop/mobile light/dark checks exercised modal/viewer controls
-and all four composed answers.
+and optional empty/blank observations,
+inert adversarial notes and stale-observation invalidation.
 Closed-page A/AA audits had no violations or incomplete checks.
 Open-dialog desktop metadata contrast remained axe incomplete;
 flat opaque computed-color and live-hit-test review resolved that bounded

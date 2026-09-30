@@ -73,8 +73,8 @@ record 64 initial plus six scrolled inspected views.
 The fixed placement/visibility question is withdrawn because it omitted
 settled supporting-text configurability.
 D81 records templates editable in Settings.
-Internal task 141 corrects `questions/search-filename-comparison.html`
-to an evidence-only review with optional observations.
+Internal task 141 corrected `questions/search-filename-comparison.html`
+to a verified evidence-only review with optional observations.
 The authored comparisons remain valid measurements,
 not template-engine output or implemented presets.
 Default-template design and customization/disambiguation interactions remain

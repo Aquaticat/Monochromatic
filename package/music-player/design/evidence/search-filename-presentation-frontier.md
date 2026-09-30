@@ -385,13 +385,16 @@ all inspected and published with separate immutable provenance.
 bounded measurements.
 Its fixed-policy recommendations and question are withdrawn because they
 omitted configurable supporting-text templates edited in Settings.
-Task 141 corrects [the self-contained review](../questions/search-filename-comparison.html)
-to evidence-only inspection with optional observations.
+Task 141 corrected [the self-contained review](../questions/search-filename-comparison.html)
+to verified evidence-only inspection with optional observations.
 Captures remain authored layouts,
 not a template implementation or default selection.
-Its offline consumer checks exercised every embedded native image,
-form choice,
-modal and viewer control across desktop/mobile light/dark conditions.
+Fresh consumer checks decoded and opened all 102 images in the
+initial desktop/light interaction pass.
+Optional observations and modal/zoom/pan controls were separately checked
+in each desktop/mobile light/dark context.
+There are no policy votes;
+this does not verify each preview in each environment.
 Dependent implementation remains unauthorized.
 No hide/show or placement preference has been adopted.
 TalkBack,

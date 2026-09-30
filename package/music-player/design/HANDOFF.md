@@ -108,22 +108,25 @@ The fixed placement/visibility question and its policy recommendations
 are withdrawn after the user reaffirmed configurable supporting-text
 templates edited in Settings.
 D81 and `open-questions.md` section 11e preserve this agreement.
-Task 141 corrects `questions/search-filename-comparison.html` to an
+Task 141 corrected `questions/search-filename-comparison.html` to an
 evidence-only review with optional observations;
 the authored captures are not implemented templates or presets.
 Its 102 embedded images include the separately provenanced actual-player
 baseline.
-Offline consumer checks decoded and opened every image,
-verified controls and stale-reply invalidation,
-and passed desktop/mobile light/dark axe checks with zero A/AA violations,
-incomplete checks or console errors.
+Fresh evidence-only consumer checks decoded and opened all 102 images.
+Empty/blank observations,
+inert adversarial notes and stale-observation invalidation passed in
+all desktop/mobile light/dark contexts.
+There are no policy votes or required observations.
+Closed-page A/AA audits had zero violations or incomplete checks;
+no console errors were observed.
 The exact required-scroll-cohort guard failed its fresh disposable mutant
 and passed the restored tests.
 Scoped Markdown,
 changed-block,
 rendering and link verification passed.
-The open-dialog follow-up separately checked modal/zoom/pan and all four
-composed answers in each desktop/mobile light/dark context.
+Fresh open-dialog checks separately exercised modal/zoom/pan and
+Escape/focus return in each desktop/mobile light/dark context.
 Desktop axe metadata contrast incompletes were retained and resolved only
 by flat opaque computed colors and live text hit tests;
 `questions/evidence/search-filename-comparison-review-verification.json`
@@ -131,6 +134,12 @@ records the exact audit and manual-review boundary.
 Task 140's technical publication checks passed,
 but its policy-question framing is superseded by task 141.
 The user owes no placement/visibility answer.
+Task 141's artifact,
+guard-removal proofs,
+consumer and document checks passed.
+The policy-vote guard also rejects required notes and policy-bearing replies;
+quoted attribute-value controls prevent mistaking placeholder wording
+for a real `required` attribute.
 Default-template design and customization/disambiguation interactions
 remain open;
 no fields,

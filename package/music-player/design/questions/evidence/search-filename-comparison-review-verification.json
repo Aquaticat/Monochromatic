@@ -1,10 +1,11 @@
 {
-  "schema": 1,
-  "scope": "Offline HTML comparison and review controls, not native application accessibility or filename policy acceptance.",
-  "htmlSha256": "c056bdcf630f3393ea5ccc3d8c225bf20bc94b47fb7f0956ed4fec440d905e5a",
-  "builderSha256": "00b6a4c6aeb24cfb25b748a92f7f3804cc72f2dfaa7d2304d06a5ce4073d4ffe",
+  "schema": 2,
+  "scope": "Evidence-only offline HTML review after withdrawal of the incompatible fixed-policy question. Supporting text remains templated and user-configurable in Settings. No defaults, template engine or renderer fallback selected.",
+  "supersedes": "search-filename-policy-withdrawn-verification.json",
+  "htmlSha256": "b7fa3d5c605f4256eb5a6addfd441d6cca10a507f669774ae18c64bc0a7782a8",
+  "builderSha256": "340280f8f4b2c5ba510729cad432b4d992eac43e534e91bd3eba0b5b26b7aca4",
   "comparisonManifestSha256": "1e4b5d6b74d1de9812ae38a2fff7df82f014640f17138634de1c7c2d68506cad",
-  "browserEngine": "Chromium from the bounded verification image; Firefox ESR 140 not exercised",
+  "browserEngine": "Chromium from bounded verification image; Firefox ESR 140 not exercised",
   "browserCliVersion": "0.38.1",
   "axeVersion": "4.12.1",
   "resourceBounds": {
@@ -12,172 +13,211 @@
     "cpu": 2
   },
   "offline": true,
-  "decodedAndOpenedDistinctImages": 102,
   "imageCohorts": {
-    "comparison": 70,
-    "actualPlayerBaseline": 32
+    "authoredDebugLayouts": 70,
+    "actualProductionRendererWithSyntheticInputs": 32
   },
-  "closedPageAudits": [
+  "distinctImagesDecodedAndOpened": 102,
+  "closedPageContexts": [
     {
       "width": 1440,
       "height": 1000,
       "scheme": "light",
-      "counts": {
+      "axeCounts": {
         "inapplicable": 40,
         "incomplete": 0,
         "passes": 22,
         "violations": 0
-      }
+      },
+      "interactiveControlsAtLeast48CssPixels": true,
+      "documentOverflow": false,
+      "optionalEmptyAndBlankObservationsChecked": true,
+      "adversarialNotesRemainInert": true,
+      "editedNotesInvalidatePreparedObservations": true,
+      "noPolicyVotes": true
     },
     {
       "width": 1440,
       "height": 1000,
       "scheme": "dark",
-      "counts": {
+      "axeCounts": {
         "inapplicable": 40,
         "incomplete": 0,
         "passes": 22,
         "violations": 0
-      }
+      },
+      "interactiveControlsAtLeast48CssPixels": true,
+      "documentOverflow": false,
+      "optionalEmptyAndBlankObservationsChecked": true,
+      "adversarialNotesRemainInert": true,
+      "editedNotesInvalidatePreparedObservations": true,
+      "noPolicyVotes": true
     },
     {
       "width": 390,
       "height": 844,
       "scheme": "light",
-      "counts": {
+      "axeCounts": {
         "inapplicable": 40,
         "incomplete": 0,
         "passes": 22,
         "violations": 0
-      }
+      },
+      "interactiveControlsAtLeast48CssPixels": true,
+      "documentOverflow": false,
+      "optionalEmptyAndBlankObservationsChecked": true,
+      "adversarialNotesRemainInert": true,
+      "editedNotesInvalidatePreparedObservations": true,
+      "noPolicyVotes": true
     },
     {
       "width": 390,
       "height": 844,
       "scheme": "dark",
-      "counts": {
+      "axeCounts": {
         "inapplicable": 40,
         "incomplete": 0,
         "passes": 22,
         "violations": 0
-      }
+      },
+      "interactiveControlsAtLeast48CssPixels": true,
+      "documentOverflow": false,
+      "optionalEmptyAndBlankObservationsChecked": true,
+      "adversarialNotesRemainInert": true,
+      "editedNotesInvalidatePreparedObservations": true,
+      "noPolicyVotes": true
     }
   ],
-  "modalAndResponseContexts": [
+  "modalContexts": [
     {
       "width": 1440,
       "height": 1000,
       "scheme": "light",
-      "modalAxeCounts": {
+      "axeCounts": {
         "inapplicable": 45,
         "incomplete": 1,
         "passes": 17,
         "violations": 0
       },
+      "controlsAtLeast48CssPixels": true,
+      "nativePixelsAndPan": true,
+      "reset100Dp": true,
       "manualContrast": [
         {
           "selector": "#preview-metadata",
           "foreground": "rgb(32, 30, 38)",
           "background": "rgb(252, 249, 255)",
           "ratio": 15.78947720932554,
-          "visibleTextHitTestTopmost": true,
-          "sampledTextRects": 3,
-          "scope": "Flat opaque RGB text/background pair only; retained axe incomplete, not converted to an axe pass."
+          "textCenterHitTestTopmost": true,
+          "textRectSamples": 3,
+          "scope": "Exact desktop axe4.12.1 metadata partial-overlap incomplete only; retained axe uncertainty, flat opaque computed RGB-pair review."
         }
-      ],
-      "allFourPlacementVisibilityCompositionsChecked": true,
-      "modalControlsAtLeast48CssPixels": true,
-      "nativePixelsAndPan": true,
-      "reset100Dp": true,
-      "staleReplyInvalidated": true
+      ]
     },
     {
       "width": 1440,
       "height": 1000,
       "scheme": "dark",
-      "modalAxeCounts": {
+      "axeCounts": {
         "inapplicable": 45,
         "incomplete": 1,
         "passes": 17,
         "violations": 0
       },
+      "controlsAtLeast48CssPixels": true,
+      "nativePixelsAndPan": true,
+      "reset100Dp": true,
       "manualContrast": [
         {
           "selector": "#preview-metadata",
           "foreground": "rgb(238, 231, 246)",
           "background": "rgb(23, 21, 29)",
           "ratio": 14.978445394818559,
-          "visibleTextHitTestTopmost": true,
-          "sampledTextRects": 3,
-          "scope": "Flat opaque RGB text/background pair only; retained axe incomplete, not converted to an axe pass."
+          "textCenterHitTestTopmost": true,
+          "textRectSamples": 3,
+          "scope": "Exact desktop axe4.12.1 metadata partial-overlap incomplete only; retained axe uncertainty, flat opaque computed RGB-pair review."
         }
-      ],
-      "allFourPlacementVisibilityCompositionsChecked": true,
-      "modalControlsAtLeast48CssPixels": true,
-      "nativePixelsAndPan": true,
-      "reset100Dp": true,
-      "staleReplyInvalidated": true
+      ]
     },
     {
       "width": 390,
       "height": 844,
       "scheme": "light",
-      "modalAxeCounts": {
+      "axeCounts": {
         "inapplicable": 45,
         "incomplete": 0,
         "passes": 17,
         "violations": 0
       },
-      "manualContrast": [],
-      "allFourPlacementVisibilityCompositionsChecked": true,
-      "modalControlsAtLeast48CssPixels": true,
+      "controlsAtLeast48CssPixels": true,
       "nativePixelsAndPan": true,
       "reset100Dp": true,
-      "staleReplyInvalidated": true
+      "manualContrast": []
     },
     {
       "width": 390,
       "height": 844,
       "scheme": "dark",
-      "modalAxeCounts": {
+      "axeCounts": {
         "inapplicable": 45,
         "incomplete": 0,
         "passes": 17,
         "violations": 0
       },
-      "manualContrast": [],
-      "allFourPlacementVisibilityCompositionsChecked": true,
-      "modalControlsAtLeast48CssPixels": true,
+      "controlsAtLeast48CssPixels": true,
       "nativePixelsAndPan": true,
       "reset100Dp": true,
-      "staleReplyInvalidated": true
+      "manualContrast": []
     }
   ],
-  "independentUnselectedQuestionsValidated": true,
-  "adversarialNotesRemainInert": true,
   "consoleErrors": 0,
   "browsersClosed": true,
-  "exactCohortGuard": {
-    "positiveReportSha256": "db38648b7cff13870ea66309d0eb7fabaf2301979215c8f61b5b087dece37c4e",
-    "intendedGuardRemovalFailureReportSha256": "5269bfeed1cabb48a50f2df61a1e2b85240e3f8be6c00d8ce9bfc033cadc0ec1",
-    "restoredReportSha256": "db38648b7cff13870ea66309d0eb7fabaf2301979215c8f61b5b087dece37c4e",
-    "scope": "Mutation changes only a copied builder in the disposable test fixture."
+  "guardProofReportSha256": {
+    "positive": "db38648b7cff13870ea66309d0eb7fabaf2301979215c8f61b5b087dece37c4e",
+    "without-exact-cohort": "97b5621bb22e0a6d2380609973c1dbcdafbfb7adb1317e30f3b53b97c6720b6a",
+    "without-evidence-only": "d5b6486c996fec75cceb567da70e47f8ac5a7587f6e3b8f76466dcbc0f2eabf6",
+    "restored": "db38648b7cff13870ea66309d0eb7fabaf2301979215c8f61b5b087dece37c4e"
   },
   "documents": {
     "scopedLintPassed": true,
     "changedBlockFindings": 0,
-    "existingCanonicalFindings": 185,
-    "canonicalPrefixLinesRendered": 200,
-    "fullScopedDocumentsRendered": [
+    "existingCanonicalFindings": 202,
+    "canonicalScope": [
+      "package/music-player/design/HANDOFF.md",
+      "package/music-player/design/open-questions.md",
+      "package/music-player/design/README.md",
+      "package/music-player/design/decisions.md"
+    ],
+    "rendered": [
+      "package/music-player/design/HANDOFF.md",
+      "package/music-player/design/open-questions.md",
+      "package/music-player/design/README.md",
+      "package/music-player/design/decisions.md",
       "doc/planning/music-player-search-filename-comparison.md",
       "package/music-player/design/evidence/search-filename-usable-comparison.md",
-      "package/music-player/design/evidence/search-filename-presentation-frontier.md"
-    ]
+      "package/music-player/design/evidence/search-filename-presentation-frontier.md",
+      "doc/troubleshooting/axe-modal-dialog-contrast.md"
+    ],
+    "extraSectionsFullyRendered": [
+      "D81",
+      "11e"
+    ],
+    "localLinksChecked": true,
+    "exactHtmlValidated": true,
+    "archiveHashMatches": true
+  },
+  "preservation": {
+    "nativeManifestAndLayoutUnchanged": true,
+    "selectedReviewUnchanged": true,
+    "productionSourceUnchanged": true,
+    "decisionRecordUpdatedOnlyForHumanTemplateSettingsClarification": "D81"
   },
   "limits": [
-    "All distinct images opened in the initial desktop/light interaction pass; not every image opened in every review environment.",
-    "Modal/zoom/pan and all four composed form answers separately exercised in each desktop/mobile light/dark context.",
-    "Desktop modal contrast remains axe incomplete on metadata; flat computed colors and live text hit-tests resolve that manual review only.",
-    "No native matching, activation, speech, action bounds, contrast or focus transitions accepted."
+    "All102 distinct images opened in the initial desktop/light interaction pass, not every preview in every environment.",
+    "Modal/zoom/pan and optional-observation behavior separately checked in each desktop/mobile light/dark context.",
+    "Computed metadata contrast resolves only its flat-pair manual review; no native contrast acceptance.",
+    "Native captures are not template-engine output, implemented presets or Settings functionality.",
+    "Default template, supported fields, grammar, other row-type scope, title customization and customization/disambiguation interactions remain undesigned.",
+    "No native matching, activation, speech, action bounds, focus transitions, new IME study or production implementation authorized."
   ]
 }

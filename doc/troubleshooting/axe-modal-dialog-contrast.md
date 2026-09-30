@@ -330,6 +330,13 @@ not why this review's virtual stacks differ.
 
 ### Verification and bounded manual resolution
 
+The policy-selection form was later withdrawn because supporting text is
+templated and user-configurable in Settings.
+The observations in this subsection belong to that archived form.
+Fresh [evidence-only review checks][template-verification] repeated the
+closed-page/modal audits and bounded manual review after removing votes;
+they do not implement templates or establish native acceptance.
+
 The [verification summary][filename-verification] retains the closed-page
 and open-dialog results separately.
 The checks ran offline in a 2GiB/2CPU container.
@@ -431,4 +438,5 @@ Nothing additive establishing a bug or fix was identified.
 No new issue,
 comment or patch was sent.
 
-[filename-verification]: ../../package/music-player/design/questions/evidence/search-filename-comparison-review-verification.json
+[filename-verification]: ../../package/music-player/design/questions/evidence/search-filename-policy-withdrawn-verification.json
+[template-verification]: ../../package/music-player/design/questions/evidence/search-filename-comparison-review-verification.json

@@ -189,7 +189,7 @@ in Settings.
 D35 already left row content and emphasis to custom display templating;
 D81 records the Search-review clarification and editing location.
 The fixed placement/visibility ballot omitted that agreement and is withdrawn.
-Task 141 corrects the artifact to evidence-only inspection with optional
+Task 141 corrected the artifact to verified evidence-only inspection with optional
 observations,
 not another default-only version of the same question.
 No user answer is required to close this correction.
@@ -301,7 +301,7 @@ container,
 ADB target and owner/emulator process absence were verified.
 
 [The self-contained review](../../package/music-player/design/questions/search-filename-comparison.html)
-is being corrected under task 141 to an evidence-only artifact with
+was corrected under task 141 to a verified evidence-only artifact with
 composition examples and optional observations.
 It no longer asks for fixed supporting-text placement or retention policies.
 Its exact cohort includes every intended scrolled witness.
@@ -310,8 +310,16 @@ assertion;
 restored fixture tests passed.
 Build precedes artifact validation through a sequenced package task.
 The archived ballot invalidated prepared replies on changed choices or notes.
-The replacement requires observations to stay optional and never encode
-policy selection.
+The replacement keeps observations optional and never encodes policy
+selection.
+Its fresh no-policy-vote guard-removal mutant failed the intended test;
+positive and restored checks passed.
+Quoted attribute-value controls keep placeholder wording distinct from
+a real required-notes attribute.
+Fresh consumer checks opened all 102 images,
+checked optional observations in each desktop/mobile light/dark context,
+and separately repeated modal/zoom/pan/focus checks in those contexts.
+The current verification summary supersedes the archived ballot's report.
 Offline consumer checks decoded and opened all 102 images,
 including the separately provenanced actual-player baseline,
 while modal/zoom/pan and all four composed answers were separately checked

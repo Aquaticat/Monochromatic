@@ -7,7 +7,7 @@ Task 140's technical evidence publication and browser checks passed.
 Its fixed-policy question is withdrawn after the user reaffirmed supporting-text
 templates editable in Settings.
 D81 preserves that agreement;
-task 141 corrects this to evidence-only review.
+task 141 corrected this to verified evidence-only review.
 The authored layouts are not template-engine output or implemented presets.
 Neither filename policy is selected.
 The accepted Search A layout,
@@ -212,7 +212,25 @@ withdrawn policy form;
 [its verification summary](../questions/evidence/search-filename-policy-withdrawn-verification.json)
 keeps the image census and interaction-context coverage distinct.
 They do not verify the corrected evidence-only review.
-Task 141 reruns the consumer and document checks for that replacement.
+Task 141's fresh consumer and document checks passed for the replacement.
+[The current verification summary](../questions/evidence/search-filename-comparison-review-verification.json)
+pins its HTML/builder and records exact revised coverage.
+All 102 images were decoded and opened in the initial desktop/light pass.
+Optional empty/blank observations,
+inert adversarial notes and stale-observation invalidation passed in each
+desktop/mobile light/dark context.
+There are no policy votes or required observations.
+The independent open-dialog follow-up checked controls,
+zoom,
+pan,
+Escape and focus return in each context.
+Desktop metadata contrast retained its exact axe incomplete and bounded
+flat-color/manual hit-test resolution;
+mobile modal audits had no incompletes.
+Fresh removal of the no-policy-vote guard failed its intended copied-builder
+test,
+then restored checks passed.
+The existing exact-cohort guard also failed its fresh removal mutant.
 All 102 images opened in the first desktop/light interaction pass.
 Modal/zoom/pan controls and all four composed answers were separately checked
 in each desktop/mobile light/dark context.
