@@ -349,8 +349,24 @@ A separate `consumer-fresh/` revision adds canonical binding,
 session/epoch-bound witness birth,
 selected-record/branch dependencies,
 and a frozen nested array.
-Its new controls and source freeze are pending,
-not a replay or a qualified fix.
+The `consumer-fresh/` source freeze `proc_3a1d` failed syntax before SDK startup.
+The failed source/freezer are preserved;
+separate `consumer-branch-bound/` removes one excess predicate parenthesis.
+Its source freeze `proc_4a16` passed,
+and actual consumer run `proc_072e` passed through two sessions,
+four first-party scripted responses,
+and two inert callbacks,
+with no stderr/model/genuine input.
+Executed new assertions include canonical duplicate binding,
+non-owned actual SDK manager rejection,
+pre-reset witness re-registration rejection,
+existing divergent-branch reset,
+and nested result-array freezing.
+This is a finite correction-control pass,
+not complete lifecycle clearance.
+A separately declared `omission-controls/` phase now freezes intact/one-change pairs.
+It requires unchanged references to move the actual SDK tool result;
+startup errors or caught SDK tool exceptions cannot count as guard evidence.
 This synthetic-only phase cannot create human grants or qualify the complete lifecycle engine.
 Target/source/deadline/cache guards,
 real original-action admission,
