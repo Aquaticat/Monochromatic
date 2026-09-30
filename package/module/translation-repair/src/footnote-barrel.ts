@@ -56,6 +56,8 @@ export {
 } from './footnote-identifier.ts';
 export {
   footnoteIdentifiers,
+  type FootnoteMention,
+  footnoteMentions,
   FootnoteOverflowError,
   MAX_SLICE_IDENTIFIERS,
 } from './footnote-mentions.ts';

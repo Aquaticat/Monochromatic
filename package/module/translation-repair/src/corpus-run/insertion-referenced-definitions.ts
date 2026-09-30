@@ -1,5 +1,8 @@
 import type { ChunkPair, } from '../chunk-document.ts';
-import { footnoteIdentifiers, } from '../footnote-mentions.ts';
+import {
+  type FootnoteMention,
+  footnoteMentions,
+} from '../footnote-mentions.ts';
 import type { InsertionCoverageRow, } from './insertion-coverage-model.ts';
 
 //region Insertion referenced definitions
@@ -35,62 +38,14 @@ type Referrer =
   | { readonly kind: 'page'; };
 
 /**
- One footnote mention read off a text.
- */
-type Mention = {
-  /**
-   Whether the mention defines the label or points at it.
-   */
-  readonly role: string;
-
-  /**
-   Convention and identifier together, which is what a definition must match.
-   */
-  readonly label: string;
-};
-
-/**
- Reads every footnote mention a text makes, keyed by role.
-
- @param text - slice source or the standing page
-
- @returns Mentions with the label spelled as the scanner keys it
-
- @example
- ```ts
- const mentions = mentionsOf({ text: 'A nap[^1].', },);
- ```
- */
-function mentionsOf({ text, }: { readonly text: string; },): readonly Mention[] {
-  /**
-   Mention keys the scanner produced, role first.
-   */
-  const keys = footnoteIdentifiers({ text, },)
-    .keys();
-  return [...keys,]
-    .map(function toMention(key,): Mention {
-      /**
-       Position of the first space, which ends the role.
-       */
-      const roleEnd = key.indexOf(' ',);
-      return {
-        role: key.slice(
-          0,
-          roleEnd,
-        ),
-        label: key.slice(roleEnd + 1,),
-      };
-    },);
-}
-
-/**
- Labels a text mentions in one role.
+ Labels a text mentions in one role: convention and identifier together,
+ which is what a definition must match.
 
  @param text - slice source or the standing page
 
  @param role - `reference` or `definition`
 
- @returns Labels in that role
+ @returns Labels in that role, in the order the text first mentions each
 
  @example
  ```ts
@@ -103,16 +58,18 @@ function labelsOf(
     role,
   }: {
     readonly text: string;
-    readonly role: string;
+    readonly role: FootnoteMention['role'];
   },
 ): readonly string[] {
-  return mentionsOf({ text, },)
-    .filter(function inRole(mention,): boolean {
-      return mention.role === role;
-    },)
-    .map(function toLabel(mention,): string {
-      return mention.label;
-    },);
+  return [
+    ...new Set(footnoteMentions({ text, },)
+      .filter(function inRole(mention,): boolean {
+        return mention.role === role;
+      },)
+      .map(function toLabel(mention,): string {
+        return `${mention.convention} ${mention.identifier}`;
+      },),),
+  ];
 }
 
 /**

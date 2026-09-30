@@ -7,7 +7,10 @@ import {
   definitionBlockCount,
   trimOrphanDefinitions,
 } from './assembly-orphan-trim.ts';
-import { footnoteIdentifiers, } from './footnote-mentions.ts';
+import {
+  footnoteIdentifiers,
+  footnoteMentions,
+} from './footnote-mentions.ts';
 import type { FootnoteGraphFinding, } from './footnote-model.ts';
 import {
   introducedFootnoteFindings,
@@ -155,16 +158,10 @@ function definesIdentifier(
     readonly identifier: string;
   },
 ): boolean {
-  /**
-   Every mention key the text carries.
-   */
-  const keys = [
-    ...footnoteIdentifiers({ text, },)
-      .keys(),
-  ];
-  return keys.some(function defines(key,): boolean {
-    return key.startsWith('definition ',) && key.endsWith(` ${identifier}`,);
-  },);
+  return footnoteMentions({ text, },)
+    .some(function defines(mention,): boolean {
+      return (mention.role === 'definition') && (mention.identifier === identifier);
+    },);
 }
 
 /**

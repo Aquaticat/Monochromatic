@@ -1197,3 +1197,20 @@ or lists as forwarding from a catch narrowed to anything but marked classes.
 It reads a narrowing by its presence in the catch,
 not as proof that it guards the throw,
 so each listed site is still read by hand.
+
+## Fields carried as strings
+
+What happened:
+footnote mentions were keyed as `role convention identifier` strings,
+and four readers split the keys back into parts three different ways,
+two with a fallback for a part the key always has (ledger B35).
+
+The rule:
+a producer hands its readers fields;
+a key string is built where keys are compared,
+and nothing reads a part of one back.
+A reader that needs a part of a key reads the field it was built from.
+
+What enforces it:
+habit and review;
+a fallback on a part a value always has shows in the coverage census as a stretch no test can reach.

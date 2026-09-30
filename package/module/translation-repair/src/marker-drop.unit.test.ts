@@ -39,13 +39,17 @@ await describe({
     it({
       name: 'REFUSES a candidate that drops a marker the ORIGINAL carries, naming the marker',
       fn: async () => {
-        const result = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: CITING,
           candidateText: DROPPED,
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [
+            'Your translation drops footnote 3: the ORIGINAL passage carries the marker [^3] and your translation '
+              + 'does not. Keep the marker where the note is cited, since the note is defined elsewhere on the page '
+              + 'and loses its place without it, and leave the definition out.',
+          ],
         },);
-        expect(result.kind,).toBe('invalid',);
-        if (result.kind === 'invalid')
-          expect(result.findings.join('\n',),).toContain('[^3]',);
       },
     },),
     it({

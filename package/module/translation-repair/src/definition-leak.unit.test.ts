@@ -31,29 +31,37 @@ const CLEAN = 'The cat naps on the windowsill[^1].';
  */
 const LEAKED = `${CLEAN}\n\n[^1]: That is its favourite spot.`;
 
+/**
+ What the floor tells the writer of that rendering.
+ */
+const LEAK_FINDING = 'Your translation defines footnote [^1], but the ORIGINAL passage only refers to it: the note is '
+  + 'defined elsewhere on the page and rendered there. Keep the marker and leave the definition out.';
+
 await describe({
   name: 'a footnote definition the original passage does not carry (class forty-nine)',
   children: [
     it({
       name: 'REFUSES a candidate defining a note the ORIGINAL only refers to',
       fn: async () => {
-        const result = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: REFERRING,
           candidateText: LEAKED,
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [LEAK_FINDING,],
         },);
-        expect(result.kind,).toBe('invalid',);
-        if (result.kind === 'invalid')
-          expect(result.findings.join('\n',),).toContain('[^1]',);
       },
     },),
     it({
       name: 'REFUSES it under the full-width convention too, since the identifiers are one note',
       fn: async () => {
-        const result = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: '猫在窗台上打盹〔1〕。',
           candidateText: LEAKED,
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [LEAK_FINDING,],
         },);
-        expect(result.kind,).toBe('invalid',);
       },
     },),
     it({

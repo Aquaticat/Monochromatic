@@ -158,33 +158,61 @@ function opensDefinition(
 }
 
 /**
- Counts every footnote mention a text makes, by ROLE.
- 
+ One footnote mention a text makes.
+
+ FIELDS, NOT A KEY STRING (ledger B35): readers that wanted the identifier or
+ the role used to split `footnoteIdentifiers`' `role convention identifier`
+ keys back apart, three different ways, each with a fallback for a part the
+ key always has.
+ */
+export type FootnoteMention = {
+  /**
+   Whether the mention defines the footnote or points at it.
+   */
+  readonly role: 'definition' | 'reference';
+
+  /**
+   Marker convention, since the two conventions number independently.
+   */
+  readonly convention: 'gfm' | 'fullwidth-bracket';
+
+  /**
+   Identifier folded to the parser's spelling, because a finding looked up by
+   it names the footnote as mdast keys it. Scanning gives the source spelling,
+   and the two differ on any label carrying a letter.
+   */
+  readonly identifier: string;
+};
+
+/**
+ Every footnote mention a text makes, with its ROLE.
+
  Role matters for attribution: a slice that turns `[^1]: the note` into prose
  saying `see[^1]` mentions the identifier exactly as often as before, and only
- the role says it changed. Every mention is counted, including a definition's
+ the role says it changed. Every mention is listed, including a definition's
  own label, so a slice that stops mentioning an identifier in either role is
  a suspect.
- 
+
  @param text - slice text or whole document
- 
- @returns Mentions keyed as `role convention identifier`
- 
- @throws {@link Error} when a text mentions more identifiers than
- {@link MAX_SLICE_IDENTIFIERS}, which no prose slice does
- 
+
+ @returns Mentions, the GFM convention's first, each convention's in text
+ order
+
+ @throws {@link FootnoteOverflowError} when a text mentions more identifiers
+ than {@link MAX_SLICE_IDENTIFIERS} in one convention, which no prose slice does
+
  @example
  ```ts
- const counts = footnoteIdentifiers({ text: 'A nap[^1].', },);
+ const mentions = footnoteMentions({ text: 'A nap[^1].', },);
  ```
  */
-export function footnoteIdentifiers(
+export function footnoteMentions(
   { text, }: { readonly text: string; },
-): ReadonlyMap<string, number> {
+): readonly FootnoteMention[] {
   /**
-   Mentions accumulated across both conventions.
+   Mentions across both conventions.
    */
-  const counts = new Map<string, number>();
+  const mentions: FootnoteMention[] = [];
   for (const [convention, hits, separator, markerLength,] of [
     [
       'gfm',
@@ -205,34 +233,56 @@ export function footnoteIdentifiers(
         convention,
       },);
     for (const hit of hits) {
-      /**
-       Role this mention plays, which a bare identifier cannot say.
-       */
-      const role = opensDefinition({
-        text,
-        offset: hit.localOffset,
-        markerLength: markerLength + identifierLength({ hit, },),
-        separator,
-      },)
-        ? 'definition'
-        : 'reference';
-
-      /**
-       Key naming role and convention, since the two conventions number
-       independently and the roles are what a defect is about.
-       
-       Identifier folded to the parser's spelling, because a finding this key
-       is looked up by names the footnote as mdast keys it. Scanning gives the
-       source spelling, and the two differ on any label carrying a letter.
-       */
-      const key = `${role} ${convention} ${
-        normalizeFootnoteIdentifier({ identifier: hit.identifier, },)
-      }`;
-      counts.set(
-        key,
-        (counts.get(key,) ?? 0) + 1,
-      );
+      mentions.push({
+        role: opensDefinition({
+          text,
+          offset: hit.localOffset,
+          markerLength: markerLength + identifierLength({ hit, },),
+          separator,
+        },)
+          ? 'definition'
+          : 'reference',
+        convention,
+        identifier: normalizeFootnoteIdentifier({ identifier: hit.identifier, },),
+      },);
     }
+  }
+  return mentions;
+}
+
+/**
+ Counts every footnote mention a text makes, by role, convention and
+ identifier, for comparing one text's mentions with another's.
+
+ @param text - slice text or whole document
+
+ @returns Mention counts keyed as `role convention identifier`
+
+ @throws {@link FootnoteOverflowError} when a text mentions more identifiers
+ than {@link MAX_SLICE_IDENTIFIERS} in one convention, which no prose slice does
+
+ @example
+ ```ts
+ const counts = footnoteIdentifiers({ text: 'A nap[^1].', },);
+ ```
+ */
+export function footnoteIdentifiers(
+  { text, }: { readonly text: string; },
+): ReadonlyMap<string, number> {
+  /**
+   Mentions counted so far, by key.
+   */
+  const counts = new Map<string, number>();
+  for (const mention of footnoteMentions({ text, },)) {
+    /**
+     Key naming role, convention and identifier: the roles are what a defect
+     is about, and the conventions number independently.
+     */
+    const key = `${mention.role} ${mention.convention} ${mention.identifier}`;
+    counts.set(
+      key,
+      (counts.get(key,) ?? 0) + 1,
+    );
   }
   return counts;
 }

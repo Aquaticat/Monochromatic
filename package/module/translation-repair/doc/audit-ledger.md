@@ -10559,6 +10559,32 @@ the live comparison's class rather than the one `compareLanes` throws;
 the fix commit corrected the entry,
 and a comment on the red commit records it (M77).
 
+### B35: footnote mentions encoded as key strings and parsed back
+
+Status:
+fixed 2026-09-30 (UTC) with the sixth T8 batch,
+found reading its stretches:
+`translate-definition-leak.ts` 46 and `translate-marker-drop.ts` 50 each fell back to `''`
+for the third space-separated part of a key that always has three.
+`footnoteIdentifiers` keyed each mention as the string `role convention identifier`,
+and four readers wanting the parts split it back apart three ways:
+the two floors by `split(' ')[2] ?? ''`,
+the insertion admission by the first space,
+and the assembly guard by `startsWith` and `endsWith`.
+A key is a comparison value,
+and none of the readers compared keys;
+each wanted a field.
+
+Fix:
+`footnoteMentions` lists each mention with its role,
+convention and folded identifier as fields,
+and `footnoteIdentifiers` counts keys built from it
+for the one reader that compares two texts' mentions.
+The four readers read the fields.
+`footnote-mentions.unit.test.ts` pins the list,
+the counts and the overflow refusal's whole message;
+the two floors' refusal cases read their whole verdicts.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

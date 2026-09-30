@@ -1,4 +1,4 @@
-import { footnoteIdentifiers, } from './footnote-mentions.ts';
+import { footnoteMentions, } from './footnote-mentions.ts';
 
 //region Footnote marker the passage carries
 // CLASS NINETY-TWO (XingZ626, 2026-09-23). The original's line about the
@@ -17,11 +17,6 @@ import { footnoteIdentifiers, } from './footnote-mentions.ts';
 // candidate carries beyond the original's is no fault here.
 
 /**
- Position of the identifier in a `role convention identifier` key.
- */
-const IDENTIFIER_POSITION = 2;
-
-/**
  Identifiers a text cites, folded across both conventions since the two
  spell one note.
 
@@ -35,19 +30,12 @@ const IDENTIFIER_POSITION = 2;
  ```
  */
 function citedIdentifiers({ text, }: { readonly text: string; },): ReadonlySet<string> {
-  /**
-   Every mention key the text carries.
-   */
-  const keys = [
-    ...footnoteIdentifiers({ text, },)
-      .keys(),
-  ];
-  return new Set(keys
-    .filter(function isReference(key,): boolean {
-      return key.startsWith('reference ',);
+  return new Set(footnoteMentions({ text, },)
+    .filter(function isReference(mention,): boolean {
+      return mention.role === 'reference';
     },)
-    .map(function toIdentifier(key,): string {
-      return key.split(' ',)[IDENTIFIER_POSITION] ?? '';
+    .map(function toIdentifier(mention,): string {
+      return mention.identifier;
     },),);
 }
 

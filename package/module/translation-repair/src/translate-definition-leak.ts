@@ -1,4 +1,4 @@
-import { footnoteIdentifiers, } from './footnote-mentions.ts';
+import { footnoteMentions, } from './footnote-mentions.ts';
 
 //region Footnote definition the passage does not carry
 // MEASURED ON SHI_YUMIAOYA3 (2026-09-17): the translate lane's rendering of
@@ -11,11 +11,6 @@ import { footnoteIdentifiers, } from './footnote-mentions.ts';
 // belongs to the slice whose original defines it, so a candidate defining a
 // note neither its original nor its page slice defines is refused before any
 // judge reads it.
-
-/**
- Position of the identifier in a `role convention identifier` key.
- */
-const IDENTIFIER_POSITION = 2;
 
 /**
  Identifiers a text defines, folded across both conventions since the two
@@ -31,19 +26,12 @@ const IDENTIFIER_POSITION = 2;
  ```
  */
 function definedIdentifiers({ text, }: { readonly text: string; },): ReadonlySet<string> {
-  /**
-   Every mention key the text carries.
-   */
-  const keys = [
-    ...footnoteIdentifiers({ text, },)
-      .keys(),
-  ];
-  return new Set(keys
-    .filter(function isDefinition(key,): boolean {
-      return key.startsWith('definition ',);
+  return new Set(footnoteMentions({ text, },)
+    .filter(function isDefinition(mention,): boolean {
+      return mention.role === 'definition';
     },)
-    .map(function toIdentifier(key,): string {
-      return key.split(' ',)[IDENTIFIER_POSITION] ?? '';
+    .map(function toIdentifier(mention,): string {
+      return mention.identifier;
     },),);
 }
 
