@@ -489,9 +489,11 @@ closure,
 or runtime.
 Next action: independent complete executable-source review,
 then a full closure freeze before any actual SDK fork dispatch.
-No genuine original read,
-mutation,
-or interaction replay belongs to that synthetic phase.
+The completed `root-sensitivity-controls/` phase read no genuine original and replayed no interaction.
+The new `fork-mechanical-controls/` worker privately rereads retained admitted evidence before SDK startup;
+it does not mutate originals,
+replay a requester/editor,
+or establish a current human grant.
 Counterfeit root-handle rejection is not actual outsider-manager coverage.
 No source freeze or future intact pass establishes new guard-omission sensitivity.
 Its records must remain operationally test-only,
@@ -507,7 +509,8 @@ only non-content projections and fixed privacy-safe errors may cross the tool/pr
 This new evidence-admission transaction is not a replay of the completed human interaction.
 Historical witness admission alone establishes neither current permission eligibility
 nor reusable-directive authority.
-This synthetic-only phase cannot create human grants or qualify the complete lifecycle engine.
+Neither the completed synthetic root contrasts nor the new historical fork mechanics
+can create human grants or qualify the complete lifecycle engine.
 Target/source/deadline/cache guards,
 real original-action admission,
 a distinct genuine reusable directive,
