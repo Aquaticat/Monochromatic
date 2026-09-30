@@ -160,6 +160,9 @@ internal fun SearchLayoutStudy(candidate: String, hidePositiveHeading: Boolean =
     val rankVariant = if (candidate.contains("-rankfileshort")) "rankfileshort"
         else if (candidate.contains("-rankfilelong")) "rankfilelong"
         else if (candidate.contains("-rankfileedge")) "rankfileedge"
+        else if (candidate.contains("-rankfilecontext")) "rankfilecontext"
+        else if (candidate.contains("-rankfilestem")) "rankfilestem"
+        else if (candidate.contains("-rankfileordinary")) "rankfileordinary"
         else if (candidate.contains("-rankword")) "rankword"
         else if (candidate.contains("-rankany")) "rankany"
         else if (candidate.contains("-rankfolders")) "rankfolders"
@@ -379,9 +382,14 @@ private fun SearchLayoutRows(query: String, unavailable: Boolean, modifier: Modi
                 searchBoundaryHits(allowInterior = rankVariant == "rankany")
             } else searchRankingHits(rankVariant, includeParentHits)
             for (hit in hits) {
-                SearchLayoutRow(title = hit.title, detail = hit.detail, kind = hit.kind,
-                    query = query, halfClearance = halfClearance, fullWidth = fullWidth,
-                    pageColor = pageColor)
+                // The same source-shaped control is available on cover; it is not the live ordinary player.
+                if (rankVariant == "rankfileordinary") {
+                    FilenameOrdinaryRowControl(title = hit.title)
+                } else {
+                    SearchLayoutRow(title = hit.title, detail = hit.detail, kind = hit.kind,
+                        query = query, halfClearance = halfClearance, fullWidth = fullWidth,
+                        pageColor = pageColor)
+                }
             }
             return@Column
         }

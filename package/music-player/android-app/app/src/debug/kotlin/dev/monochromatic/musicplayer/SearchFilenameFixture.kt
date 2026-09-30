@@ -8,7 +8,7 @@
 package dev.monochromatic.musicplayer
 
 /**
- * What: Return literal filename-backed examples for one keyboard-closed scene.
+ * What: Return synthetic complete-filename labels for one keyboard-closed scene.
  * Why: Observe suffix visibility without implementing a parser, matcher or activation.
  *
  * In TS you'd write (pseudocode):
@@ -50,6 +50,32 @@ internal fun searchFilenameHits(variant: String): List<SearchRankingHit> {
             SearchRankingHit(".Cam.session.opus", "Track · Archive / Live · Play", "Track"),
             SearchRankingHit("かめりあ(Camellia) - Camellia Waltz.flac", "Track · Camellia · Play", "Track"),
             SearchRankingHit("Cam", "Track · library root · Play", "Track"),
+        )
+    }
+    // These equal complete names share the leaf-folder label, but their ancestor paths differ.
+    if (variant == "rankfilecontext") {
+        return listOf(
+            SearchRankingHit("Cam.flac", "Track · Collection A / Live · Play", "Track"),
+            SearchRankingHit("Cam.flac", "Track · Collection B / Live · Play", "Track"),
+        )
+    }
+    // Omit only the known literal suffixes for a matched negative control, not a parser or usable option.
+    if (variant == "rankfilestem") {
+        return listOf(
+            SearchRankingHit("Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+                "Track · Cult of Luna / Live · Play", "Track"),
+            SearchRankingHit("Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+                "Track · Cult of Luna / Live · Play", "Track"),
+            SearchRankingHit("Camellia", "Folder · library root · Open", "Folder"),
+        )
+    }
+    // The ordinary-row mechanism control keeps the same long pair, without claiming a live player test.
+    if (variant == "rankfileordinary") {
+        return listOf(
+            SearchRankingHit("Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+                "Track · Cult of Luna / Live · Play", "Track"),
+            SearchRankingHit("Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3",
+                "Track · Cult of Luna / Live · Play", "Track"),
         )
     }
     // What: IllegalArgumentException is a standard failure class whose text names the invalid scene.

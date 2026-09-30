@@ -229,6 +229,9 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
     val rankVariant = if (candidate.contains("-rankfileshort-")) "rankfileshort"
         else if (candidate.contains("-rankfilelong-")) "rankfilelong"
         else if (candidate.contains("-rankfileedge-")) "rankfileedge"
+        else if (candidate.contains("-rankfilecontext-")) "rankfilecontext"
+        else if (candidate.contains("-rankfilestem-")) "rankfilestem"
+        else if (candidate.contains("-rankfileordinary-")) "rankfileordinary"
         else if (candidate.contains("-rankword-")) "rankword"
         else if (candidate.contains("-rankany-")) "rankany"
         else if (candidate.contains("-rankfolders-")) "rankfolders"
@@ -706,8 +709,13 @@ private fun PersistentSearchPane(query: String, onQueryChange: (String) -> Unit,
                         searchBoundaryHits(allowInterior = rankVariant == "rankany")
                     } else searchRankingHits(rankVariant, includeParentHits)
                     for (hit in hits) {
-                        PersistentResultLine(title = hit.title, detail = hit.detail, kind = hit.kind,
-                            query = query, pageColor = pageColor)
+                        // The ordinary control copies a text mechanism, not a live player or a selected Search change.
+                        if (rankVariant == "rankfileordinary") {
+                            FilenameOrdinaryRowControl(title = hit.title)
+                        } else {
+                            PersistentResultLine(title = hit.title, detail = hit.detail, kind = hit.kind,
+                                query = query, pageColor = pageColor)
+                        }
                     }
                 } else if (overflowStudy) {
                     PersistentResultLine(title = overflowFolderTitle,
