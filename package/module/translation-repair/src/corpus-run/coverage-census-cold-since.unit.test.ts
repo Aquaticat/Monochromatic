@@ -22,7 +22,8 @@ await describe({
   children: [
     it({
       name: 'NAMES EACH STRETCH THIS RUN LEFT COLD IN LINES NO BASELINE STRETCH OF ITS SOURCE HELD, sorted by source '
-        + 'and line, including one in a source the baseline ran whole, and leaves one inside the baseline\'s lines',
+        + 'and then line whatever order the run listed them in, including one in a source the baseline ran whole, '
+        + 'and leaves one inside the baseline\'s lines',
       fn: async () => {
         expect(coldSinceOf({
           baseline: {
@@ -44,6 +45,11 @@ await describe({
             },),
             recorded({
               source: 'src/nap.ts',
+              startLine: 12,
+              endLine: 12,
+            },),
+            recorded({
+              source: 'src/nap.ts',
               startLine: 8,
               endLine: 9,
             },),
@@ -60,6 +66,7 @@ await describe({
           loadedAtBaseline,
         },) => [stretch.source, stretch.startLine, stretch.endLine, loadedAtBaseline,]),).toEqual([
           ['src/nap.ts', 8, 9, true,],
+          ['src/nap.ts', 12, 12, true,],
           ['src/purr.ts', 1, 1, true,],
         ],);
       },
