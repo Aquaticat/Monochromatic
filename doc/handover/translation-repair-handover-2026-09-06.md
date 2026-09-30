@@ -198,7 +198,29 @@ this one says what changed after it.
   On 2026-09-30 (UTC) the first batch tested the census's own placement (`5e27208c7`),
   and the census now names each claimed source its baseline holds no stretch in (`297c72fd5`),
   since a source the baseline never loaded had read as all zeros.
-  Next are the library batches,
+  The second to fourth batches took the naturalness review,
+  polish,
+  and contest,
+  lane,
+  comparison and consolidation readers
+  (`a564eccc7`,
+  `09b76e1b4`,
+  `74387b886`).
+  B33 reworded six artifact refusal reasons that did not read as what the reader expected
+  (`74387b886`,
+  `ebaa97908`),
+  and B34 stopped marked refusals from carrying a caught error's text,
+  two of which had quoted a stored digest or identity
+  (`7360aae58`,
+  `a1e4accbd`);
+  `message-names-only.unit.test.ts` now checks every such construction.
+  The census reading also stopped counting stretches of sources edited since the baseline as run,
+  since it matches by line
+  (`4ab6436bf`,
+  `d27a89dd0`),
+  and refuses a baseline taken with uncommitted changes.
+  Next is a whole-suite census at a committed head as the new baseline,
+  then the library batches,
   grouped by shared fixture,
   each throw and nullish fallback read for reachability before a case is written;
   the ledger's T8 entry has the triage counts.

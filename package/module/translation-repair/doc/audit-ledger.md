@@ -3069,9 +3069,29 @@ and B34 had edited the digest,
 identity
 and wording coherence modules,
 so their stretches at the baseline's lines now point at other code.
-`baselineStatusesOf`'s TSDoc says an edited source is read against a fresh census instead,
-and the printed reading says nothing of it;
-a fix is queued.
+`baselineStatusesOf`'s TSDoc said an edited source is read against a fresh census instead,
+and the printed reading said nothing of it.
+Fixed in `d27a89dd0`
+(red first in `4ab6436bf`):
+the reading asks git which claimed sources differ between the baseline's commit and the tree
+(`sourcesEditedSince`),
+leaves them out of every count,
+and prints each with this run's own standing,
+"edited since <commit>,
+so its baseline lines name other code";
+a baseline taken with uncommitted changes is refused,
+since its lines match no commit.
+Each earlier batch's claim was read again against its own census's rows,
+which no line match touches:
+the naturalness readers in `census-0C66lF`,
+the polish readers in `census-e9z8Pk`
+and the fourth batch's ten readers in `census-7fz0Nm` hold no stretch,
+except the consolidated slice reader's lines 195 and 254 to 264 in the last,
+which that batch's six test files never reach and the whole suite at the baseline did;
+its one baseline stretch,
+lines 77 to 80,
+read as run,
+and no commit has touched that file since the baseline.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 

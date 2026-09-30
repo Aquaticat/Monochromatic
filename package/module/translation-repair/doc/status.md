@@ -90,6 +90,9 @@ B33 and B34 closed on the way:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
 which `message-names-only.unit.test.ts` now checks at every construction.
+The census reading now leaves sources edited since its baseline out of its counts,
+since it matches stretches by line (`d27a89dd0`),
+and the next batch reads against a whole-suite census taken at a committed head.
 By the first construct each stretch's lines hold,
 the queue is 181 throws,
 222 nullish fallbacks,
