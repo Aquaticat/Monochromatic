@@ -1,6 +1,10 @@
 import type { SampleGeneration, } from '../sample-manifest.ts';
 
 import type { EligibleEntries, } from './artifact-eligible.ts';
+import {
+  type ArtifactFileName,
+  entryIdOfArtifact,
+} from './artifact-file-name.ts';
 
 //region Pool generation
 // Which built pipeline a draw's pool was settled under, in the shape the sample
@@ -26,10 +30,15 @@ import type { EligibleEntries, } from './artifact-eligible.ts';
  that guard had failed, which is worth reporting as an absence rather than
  silently taking the first.
  
+ LOOKED UP BY ENTRY ID. The draw keeps artifact file names, and the pool's
+ lookup keys the census's entry ids; looking the file name up as it came
+ matched nothing, so every real draw's manifest recorded no generation at
+ all while the fixtures, keyed by file name, passed (ledger B63).
+
  @param eligible - what the pool resolved to
- 
+
  @param names - artifact file names the draw actually kept
- 
+
  @returns Recorded generation, or why one could not be named
  
  @example
@@ -43,7 +52,7 @@ export function poolGeneration(
     names,
   }: {
     readonly eligible: EligibleEntries;
-    readonly names: readonly string[];
+    readonly names: readonly ArtifactFileName[];
   },
 ): SampleGeneration {
   /**
@@ -57,7 +66,7 @@ export function poolGeneration(
            Digest this entry recorded, empty when it recorded none.
            */
           const recorded = eligible.digestByEntry
-            .get(name,);
+            .get(entryIdOfArtifact({ name, },),);
           return recorded ?? '';
         },)
         .filter(function isKnown(digest,): boolean {

@@ -6,9 +6,16 @@
  entry the pool ADMITTED, while a draw keeps a subset of those; reading the
  lookup's values directly would let an entry the draw never touched decide the
  pool's generation, or turn a clean single-generation draw into the
- two-generation refusal the "REFUSES a pool spanning two builds" case pins. Every case here therefore hands over a lookup
- wider than the kept names.
- 
+ two-generation refusal the "REFUSES a pool spanning two builds" case pins.
+ Every case here therefore hands over a lookup wider than the kept names.
+
+ THE LOOKUP KEYS ENTRY IDS AND THE DRAW KEEPS FILE NAMES. This file's
+ fixtures used to key the lookup by file name too, agreeing with a lookup
+ that read the kept name as it came, while the real lookup keys the census's
+ entry ids; so every real draw's manifest recorded no generation at all
+ (ledger B63). The fixtures now key by entry id, and one case drives the
+ real census.
+
  THE COUNT AND THE DIGEST ARE COUNTED OVER DIFFERENT SETS, deliberately. The
  digest comes from kept entries that recorded one, and `entries` comes from
  every kept name. A pool where half the artifacts predate digest recording
@@ -35,6 +42,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactFileName,
+  artifactFileNameOf,
   censusByGeneration,
   type EligibleEntries,
   keepEligible,
@@ -46,27 +55,27 @@ import {
 //region Pool generation tests
 
 /**
- Artifact one household's draw kept.
+ Entry one household's draw kept.
  */
-const WHISKERS = 'whiskers.json';
+const WHISKERS = 'whiskers';
 
 /**
- Second artifact of that draw.
+ Second entry of that draw.
  */
-const MITTENS = 'mittens.json';
+const MITTENS = 'mittens';
 
 /**
- Third artifact of that draw.
+ Third entry of that draw.
  */
-const SAFFRON = 'saffron.json';
+const SAFFRON = 'saffron';
 
 /**
- Artifact the pool admitted and the draw did NOT keep.
- 
+ Entry the pool admitted and the draw did NOT keep.
+
  Present in every lookup this file builds, so any case that starts reading the lookup
  rather than the kept names fails on the extra generation it introduces.
  */
-const UNDRAWN = 'pepperbox.json';
+const UNDRAWN = 'pepperbox';
 
 /**
  Built pipeline most of these artifacts were settled under.
@@ -94,18 +103,20 @@ const NOTHING_RECORDED = 'no kept entry recorded a pipeline digest';
 const TWO_GENERATIONS = 'pool holds 2 generations, which the pool guard should have refused';
 
 /**
- Artifacts the whole-household draw kept.
+ Artifact file names the whole-household draw kept, as a draw hands them over.
  */
-const WHOLE_HOUSEHOLD: readonly string[] = [
+const WHOLE_HOUSEHOLD: readonly ArtifactFileName[] = [
   WHISKERS,
   MITTENS,
   SAFFRON,
-];
+].map(function toName(entryId,): ArtifactFileName {
+  return artifactFileNameOf({ entryId, },);
+},);
 
 /**
  How many that comes to, which is what a manifest reports as the pool width.
  */
-const HOUSEHOLD_SIZE = 3;
+const HOUSEHOLD_SIZE = WHOLE_HOUSEHOLD.length;
 
 /**
  Builds an eligibility result carrying one digest lookup and nothing else the
@@ -116,7 +127,8 @@ const HOUSEHOLD_SIZE = 3;
  them: a fixture that agreed with the kept names could not tell a reader of
  `entryIds` from a reader of `names`.
  
- @param digests - what each admitted entry recorded, keyed by artifact name
+ @param digests - what each admitted entry recorded, keyed by entry id as the
+ census keys it
  
  @returns Eligibility result shaped for this function's one question
  
