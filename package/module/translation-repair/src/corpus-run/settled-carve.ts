@@ -10,6 +10,7 @@ import {
   readCorpusFile,
 } from '../corpus-source.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import {
@@ -141,27 +142,6 @@ export type SettledCarve = {
 };
 
 /**
- Whether an error says the path does not exist.
- 
- @param error - caught value
- 
- @returns Whether it is the missing-path error, which is an ordinary answer
- here rather than a fault
- 
- @example
- ```ts
- if (isMissingPath({ error, },)) return [];
- ```
- */
-function isMissingPath({ error, }: { readonly error: unknown; },): boolean {
-  if (!Error.isError(error,))
-    return false;
-  if (!('code' in error))
-    return false;
-  return error.code === 'ENOENT';
-}
-
-/**
  Lists the entries a runs directory holds settled artifacts for.
  
  @param runsDir - runs directory whose `artifacts/` subdirectory is read
@@ -189,9 +169,8 @@ export async function listSettledEntryIds(
   catch (error) {
     // A runs directory nothing has settled into yet has no artifacts
     // subdirectory, which is an ordinary state rather than a fault.
-    if (isMissingPath({ error, },))
-      return [];
-    throw error;
+    rethrowUnlessMissingPath({ error, },);
+    return [];
   }
   return (await readdir(artifactsDir,))
     .filter(function isArtifact(name,): boolean {
@@ -242,9 +221,8 @@ export async function readSettledRecipe(
     await access(path,);
   }
   catch (error) {
-    if (isMissingPath({ error, },))
-      return { kind: 'unsettled', };
-    throw error;
+    rethrowUnlessMissingPath({ error, },);
+    return { kind: 'unsettled', };
   }
 
   /**

@@ -10,6 +10,7 @@ import {
   type ArchiveOriginalReading,
   archiveOriginalReadingOf,
 } from '../archive-original-note.ts';
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { parseDocument, } from '../parse-document.ts';
 import {
   declinedEntryIds,
@@ -118,10 +119,8 @@ async function removeLeftoverPage(
     return true;
   }
   catch (error) {
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return false;
-    throw error;
+    rethrowUnlessMissingPath({ error, },);
+    return false;
   }
 }
 

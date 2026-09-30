@@ -8,6 +8,7 @@ import {
 import { join, } from 'node:path';
 
 import { contextRoot, } from '../log-context.ts';
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import {
   hostIdentity,
   startTicksOf,
@@ -355,10 +356,8 @@ export async function evictStaleLock(
     );
   }
   catch (error) {
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return 'gone';
-    throw error;
+    rethrowUnlessMissingPath({ error, },);
+    return 'gone';
   }
   await rm(
     asideName,

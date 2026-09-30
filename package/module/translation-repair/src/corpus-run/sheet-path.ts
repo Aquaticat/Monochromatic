@@ -2,6 +2,7 @@ import { stat, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { isAsciiAlphanumeric, } from '../ascii-letters.ts';
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 
 //region Grading sheet path
 // Decides where a grading sheet is written, and refuses to write over one that
@@ -227,11 +228,8 @@ async function pathExists({ path, }: { readonly path: string; },): Promise<boole
     // ENOENT is the expected "not there" answer. Anything else (EACCES, EIO)
     // means the question went unanswered, and treating that as absence is how
     // a guard talks itself into deleting data.
-    if (Error.isError(error,)
-      && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return false;
-    throw error;
+    rethrowUnlessMissingPath({ error, },);
+    return false;
   }
 }
 

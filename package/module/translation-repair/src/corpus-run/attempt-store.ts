@@ -4,6 +4,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from '../log-context.ts';
 import { isJsonRecord, } from '../json-guard.ts';
+import { isMissingPathError, } from '../missing-path-error.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 
 //region Attempt store
@@ -100,9 +101,7 @@ export async function readAttemptMap(attemptsPath: string,): Promise<AttemptMap>
   catch (error) {
     // Missing (ENOENT) is a first run and says nothing; malformed (SyntaxError)
     // resets to empty and says so; any other read fault is real and surfaces.
-    if (Error.isError(error,)
-      && ('code' in error)
-      && (error.code === 'ENOENT'))
+    if (isMissingPathError({ error, },))
       return {};
     if (error instanceof SyntaxError) {
       rl.warn(`attempts file does not parse (${error.name}); attempt counts start over, so the ordering forgets which entries kept failing`,);

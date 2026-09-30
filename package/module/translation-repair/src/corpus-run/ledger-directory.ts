@@ -2,6 +2,7 @@ import { readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { failureName, } from '../error-name.ts';
+import { isMissingPathError, } from '../missing-path-error.ts';
 import { refusalText, } from '../refusal-text.ts';
 import {
   readRunJson,
@@ -23,12 +24,6 @@ import {
 // EVERY FILE IS ATTEMPTED. A report exists to say what a run recorded, and one
 // unreadable file is not an answer about the others. Stopping at the first would
 // also make the report's completeness depend on directory order.
-
-/**
- Code a filesystem failure carries when the path simply is not there, which
- is the one failure a run with no ledger is expected to produce.
- */
-const DIRECTORY_ABSENT = 'ENOENT';
 
 /**
  One ledger file that could not be read, said without being quoted.
@@ -120,9 +115,7 @@ async function namesUnder(
     // nothing read the same downstream, and treating a permission failure as an
     // empty ledger would report a roster question as unanswerable when the
     // evidence is sitting there.
-    if (Error.isError(error,)
-      && ('code' in error)
-      && (error.code === DIRECTORY_ABSENT))
+    if (isMissingPathError({ error, },))
       return [];
 
     throw new Error(

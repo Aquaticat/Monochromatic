@@ -1,6 +1,7 @@
 import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import {
   type DirectoryReading,
   namesIn,
@@ -149,10 +150,8 @@ async function carriesPage(
     return true;
   }
   catch (error) {
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return false;
-    throw error;
+    rethrowUnlessMissingPath({ error, },);
+    return false;
   }
 }
 

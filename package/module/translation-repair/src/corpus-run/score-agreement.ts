@@ -9,6 +9,7 @@ import {
   scoreGradedPrecision,
 } from '../grade-agreement.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { parseRunJson, } from '../run-json-read.ts';
 import { parseGradedSheet, } from '../grade-sheet-read.ts';
 import { readSheetIdentity, } from '../repair-grade-read.ts';
@@ -132,10 +133,8 @@ async function readOptional(
   catch (error) {
     // An absent pre-grade file is the ordinary case before calibration starts;
     // anything else is a real fault and must surface.
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return { found: false, };
-    throw error;
+    rethrowUnlessMissingPath({ error, },);
+    return { found: false, };
   }
 }
 

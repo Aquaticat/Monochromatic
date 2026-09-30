@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { errorName, } from '../error-name.ts';
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
@@ -194,10 +195,8 @@ async function pageOnDisk(
     };
   }
   catch (error) {
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return { kind: 'missing', };
-    throw error;
+    rethrowUnlessMissingPath({ error, },);
+    return { kind: 'missing', };
   }
 }
 

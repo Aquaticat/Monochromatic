@@ -1,11 +1,11 @@
 import {
   appendFile,
   mkdir,
-  readFile,
 } from 'node:fs/promises';
 import { dirname, } from 'node:path';
 
 import { isJsonRecord, } from '../json-guard.ts';
+import { readTextOrEmptyIfMissing, } from '../read-text-if-present.ts';
 
 //region Window trial ledger
 // What a window trial has already bought, kept on disk as it is bought.
@@ -202,9 +202,10 @@ export async function readTrialLedger(
   { path, }: { readonly path: string; },
 ): Promise<readonly WindowTrialRow[]> {
   /**
-   Whole ledger, absent when nothing has been bought yet.
+   Whole ledger, empty when nothing has been bought yet: absent is the
+   ordinary state before the first arm is bought.
    */
-  const text = await readLedgerText({ path, },);
+  const text = await readTextOrEmptyIfMissing({ path, },);
   if (text === '')
     return [];
 
@@ -237,37 +238,6 @@ export async function readTrialLedger(
       throw error;
     }
   },);
-}
-
-/**
- Reads a ledger's text, reporting an absent file as empty.
- 
- @param path - ledger file
- 
- @returns File contents, empty when it does not exist
- 
- @example
- ```ts
- const text = await readLedgerText({ path, },);
- ```
- */
-async function readLedgerText(
-  { path, }: { readonly path: string; },
-): Promise<string> {
-  try {
-    return await readFile(
-      path,
-      'utf8',
-    );
-  }
-  catch (error) {
-    // Absent is the ordinary state before the first arm is bought.
-    if (Error.isError(error,)
-      && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return '';
-    throw error;
-  }
 }
 
 /**

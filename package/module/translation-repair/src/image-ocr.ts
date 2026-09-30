@@ -16,6 +16,7 @@ import {
 
 import { extensionOf, } from './image-asset.ts';
 import { MIN_READING_CHARS, } from './image-reading-sense.ts';
+import { isMissingPathError, } from './missing-path-error.ts';
 import { refusalText, } from './refusal-text.ts';
 
 //region Image OCR
@@ -380,10 +381,11 @@ export async function readImageWithOcr(
   catch (error) {
     /**
      Whether the tool is absent rather than unhappy, which are different
-     problems for whoever reads the run.
+     problems for whoever reads the run: a spawn of a program not installed
+     fails with `ENOENT`, a run that fails carries its exit code instead. Read
+     off the code, not the error's text, which carries the tool's own output.
      */
-    const missing = String(error,)
-      .includes('ENOENT',);
+    const missing = isMissingPathError({ error, },);
     ol.warn(`${assetName}: tesseract ${missing ? 'is not installed' : 'failed'} (${String(error,)})`,);
     return {
       kind: 'unavailable',

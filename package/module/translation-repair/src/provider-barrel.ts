@@ -16,6 +16,11 @@ export {
   failureName,
 } from './error-name.ts';
 export {
+  isMissingPathError,
+  rethrowUnlessMissingPath,
+} from './missing-path-error.ts';
+export { readTextOrEmptyIfMissing, } from './read-text-if-present.ts';
+export {
   type NamingError,
   namesWithoutQuoting,
   refusalText,

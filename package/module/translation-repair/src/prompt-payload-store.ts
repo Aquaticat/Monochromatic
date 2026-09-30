@@ -6,6 +6,7 @@ import { join, } from 'node:path';
 
 import type { ChatTextReply, } from './chat-contract.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { isMissingPathError, } from './missing-path-error.ts';
 import { isProviderName, } from './provider-name.ts';
 import { writeFileAtomic, } from './corpus-run/atomic-write.ts';
 
@@ -89,22 +90,6 @@ export type PromptPayloadStore = {
 };
 
 /**
- Whether caught filesystem error reports absent file.
- 
- @param error - caught read failure
- 
- @returns Whether record simply does not exist
- 
- @example
- ```ts
- if (isMissingFile({ error, })) return PROMPT_PAYLOAD_MISSING;
- ```
- */
-function isMissingFile({ error, }: { readonly error: unknown; },): boolean {
-  return isJsonRecord(error,) && (error.code === 'ENOENT');
-}
-
-/**
  Reads payload text or domain absence sentinel.
  
  @param path - digest-derived payload path
@@ -134,7 +119,7 @@ async function readPayloadText(
     );
   }
   catch (error) {
-    if (isMissingFile({ error, }))
+    if (isMissingPathError({ error, },))
       return PROMPT_PAYLOAD_MISSING;
     throw new PromptPayloadStoreError({
       promptDigest,

@@ -1,9 +1,8 @@
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
+import { readTextOrEmptyIfMissing, } from '../read-text-if-present.ts';
 import type { SliceNamespace, } from './slice-cache-claims.ts';
 
 //region Slice cache directory reads
@@ -33,11 +32,8 @@ export async function readDirectoryNames(
   catch (error) {
     // An absent directory (ENOENT) means no prior progress; anything else is a
     // real fault and must surface.
-    if (Error.isError(error,)
-      && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return [];
-    throw error;
+    rethrowUnlessMissingPath({ error, },);
+    return [];
   }
 }
 
@@ -67,29 +63,21 @@ export async function readNamespaceGeneration(
     readonly namespace: SliceNamespace;
   },
 ): Promise<string> {
-  try {
-    /**
-     Raw marker text, including its trailing newline.
-     */
-    const text = await readFile(
-      join(
-        dir,
-        namespace.marker,
-      ),
-      'utf8',
-    );
-    return text.trim();
-  }
-  catch (error) {
-    // Absent is the ordinary state for a lane that has not written here yet.
-    // Anything else, a permission fault above all, must NOT read as absent:
-    // that answer discards every settled slice this lane owns.
-    if (Error.isError(error,)
-      && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return '';
-    throw error;
-  }
+  // Absent is the ordinary state for a lane that has not written here yet.
+  // Anything else, a permission fault above all, must NOT read as absent:
+  // that answer discards every settled slice this lane owns, so the read
+  // raises it.
+  /**
+   Raw marker text, including its trailing newline; empty where the lane has
+   not written here.
+   */
+  const text = await readTextOrEmptyIfMissing({
+    path: join(
+      dir,
+      namespace.marker,
+    ),
+  },);
+  return text.trim();
 }
 
 //endregion Slice cache directory reads

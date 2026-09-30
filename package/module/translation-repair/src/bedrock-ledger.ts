@@ -1,7 +1,6 @@
 import {
   appendFile,
   mkdir,
-  readFile,
 } from 'node:fs/promises';
 import { homedir, } from 'node:os';
 import {
@@ -14,6 +13,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { contextRoot, } from './log-context.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { readTextOrEmptyIfMissing, } from './read-text-if-present.ts';
 import {
   isSpendReckoning,
   type SpendReckoning,
@@ -505,18 +505,7 @@ export function createBedrockLedger(
     /**
      Whole file, or nothing where none exists yet.
      */
-    const text = await (async function readOrEmpty(): Promise<string> {
-      try {
-        return await readFile(
-          path,
-          'utf8',
-        );
-      } catch (error) {
-        if (isJsonRecord(error,) && (error.code === 'ENOENT'))
-          return '';
-        throw error;
-      }
-    })();
+    const text = await readTextOrEmptyIfMissing({ path, },);
 
     /**
      Entries the file holds, in order.

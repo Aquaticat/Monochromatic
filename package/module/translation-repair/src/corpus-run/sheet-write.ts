@@ -1,6 +1,7 @@
 import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 
@@ -20,7 +21,10 @@ import { writeFileAtomic, } from './atomic-write.ts';
  @param path - file to look for
  
  @returns Whether it is there
- 
+
+ @throws Whatever `access` raised other than the path's absence, since a sheet
+ that could not be looked for may be a grader's work the write would replace
+
  @example
  ```ts
  const taken = await exists({ path, },);
@@ -32,12 +36,11 @@ async function exists({ path, }: { readonly path: string; },): Promise<boolean> 
     return true;
   }
   catch (error) {
-    // Absent is the ordinary answer; anything else is still an absence for
-    // this purpose, and the write that follows says what is wrong with the path.
-    if (Error.isError(error,) && ('code' in error)
-      && (error.code === 'ENOENT'))
-      return false;
-    throw error;
+    // Absent is the ordinary answer. Anything else (a permission refused, a
+    // file where a directory belongs) is raised as it came, not read as
+    // absence: this comment once said the opposite while the code raised it.
+    rethrowUnlessMissingPath({ error, },);
+    return false;
   }
 }
 
