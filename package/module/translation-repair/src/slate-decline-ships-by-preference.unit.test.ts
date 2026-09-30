@@ -219,6 +219,8 @@ function rejectingClient(
 
  @param judgeSheets - where each judge sheet is recorded
 
+ @param judgeModelIds - judges the slate seats, the roster's by default
+
  @returns What the retry settled on
 
  @example
@@ -230,9 +232,11 @@ async function judgedRejecting(
   {
     withheldStanding,
     judgeSheets,
+    judgeModelIds = JUDGES,
   }: {
     readonly withheldStanding?: boolean;
     readonly judgeSheets: string[];
+    readonly judgeModelIds?: readonly RosterModelId[];
   },
 ): Promise<TranslateStageResult> {
   /**
@@ -286,7 +290,7 @@ async function judgedRejecting(
     judging: {
       client,
       produced: withLanes,
-      judgeModelIds: JUDGES,
+      judgeModelIds,
       sourceText: SOURCE,
       incumbentText: '',
       incumbentKind: 'absent',
@@ -388,6 +392,35 @@ await describe({
           return (sheet.includes('the wording in place cannot ship',))
             && (!sheet.includes('there is no existing translation of this passage',));
         },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'SHIPS THE REPAIR LANE TEXT WITH NO WEIGHT AND NO OBJECTIONS where no judge sat: the round declined '
+        + 'before counting any candidate',
+      fn: async () => {
+        /**
+         Every judge sheet the judging sent, which stays empty.
+         */
+        const judgeSheets: string[] = [];
+        const result = await judgedRejecting({
+          withheldStanding: true,
+          judgeSheets,
+          judgeModelIds: [],
+        },);
+        expect({
+          text: result.text,
+          voteWeight: result.voteWeight,
+          shippedPastDecline: result.shippedPastDecline,
+          judgeSheets,
+        },).toEqual({
+          text: REPAIR_LANE.text,
+          voteWeight: 0,
+          shippedPastDecline: {
+            basis: 'repair lane',
+            objections: [],
+          },
+          judgeSheets: [],
+        },);
       },
     },),
     it({

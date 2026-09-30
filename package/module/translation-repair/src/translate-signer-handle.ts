@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { signaturesOf, } from './corpus-run/attribution-line.ts';
 import {
   handleReading,
@@ -202,18 +204,21 @@ export function signerHandleFindings(
     if (!carriesHan({ text: name, },))
       return [];
     /**
-     Page's rendering of this signer, where the page lines up.
+     Page's rendering of this signer, where the page lines up; lined up, the
+     page signs as often as the original does, so it has one at this place.
      */
-    const pageName = pageAligned ? (pageNames[at] ?? '') : '';
+    const pageName = pageAligned ? nonNullishOrThrow(pageNames[at],) : '';
     if ((pageName !== '') && (!carriesHan({ text: pageName, },)))
       return [];
     if (declared.some(function declares({ source, },): boolean {
       return source === name;
     },))
       return [];
+    // The candidate signs as often as the original, checked on entry, so it
+    // has a signer at this place.
     return signerFinding({
       name,
-      rendered: candidateNames[at] ?? '',
+      rendered: nonNullishOrThrow(candidateNames[at],),
     },);
   },);
 }

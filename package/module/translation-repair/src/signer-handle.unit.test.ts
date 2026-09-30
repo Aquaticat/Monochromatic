@@ -30,6 +30,29 @@ const SOURCE_TEXT = '猫在窗台上睡觉。\n\n——橘猫，2021年';
 const ARCHIVE_IN_HAN = 'The cat sleeps on the windowsill.\n\n——橘猫, 2021';
 
 /**
+ What every signer finding tells the writer to do for this signer: the
+ handle's reading, and the house rule's own example rather than a template.
+ */
+const INSTRUCTION = 'Write Jumao, followed by what 橘猫 means in English in parentheses, as the house rule writes '
+  + 'Jinxin (Brocade Heart); the page keeps the meaning at its first appearance and drops it after that.';
+
+/**
+ Finding refusing a reading written with no meaning after it.
+
+ @param bare - reading as the candidate writes it
+
+ @returns The finding, word for word
+
+ @example
+ ```ts
+ unglossedFinding({ bare: 'Jumao', },);
+ ```
+ */
+function unglossedFinding({ bare, }: { readonly bare: string; },): string {
+  return `The signature names 橘猫 and your translation writes "${bare}" with no literal meaning. ${INSTRUCTION}`;
+}
+
+/**
  Findings a candidate draws against the original and a page, empty when it
  passes.
 
@@ -76,14 +99,9 @@ await describe({
     it({
       name: 'REFUSES THE PINYIN READING WITH NO LITERAL MEANING, and names the reading to gloss',
       fn: async () => {
-        /**
-         Findings against the bare reading.
-         */
-        const findings = findingsFor({
+        expect(findingsFor({
           candidateText: 'The cat sleeps on the windowsill.\n\n—— Jumao, 2021',
-        },).join(' ',);
-        expect(findings,).toContain('Jumao',);
-        expect(findings,).toContain('literal meaning',);
+        },),).toEqual([unglossedFinding({ bare: 'Jumao', },),],);
       },
     },),
     it({
@@ -96,7 +114,7 @@ await describe({
         ]) {
           expect(findingsFor({
             candidateText: `The cat sleeps on the windowsill.\n\n—— ${rendering}, 2021`,
-          },).join(' ',),).toContain('literal meaning',);
+          },),).toEqual([unglossedFinding({ bare: rendering, },),],);
         }
       },
     },),
@@ -106,7 +124,7 @@ await describe({
       fn: async () => {
         expect(findingsFor({
           candidateText: 'The cat sleeps on the windowsill.\n\n——橘猫, 2021',
-        },).join(' ',),).toContain('Jumao',);
+        },),).toEqual([`The signature names 橘猫 and your translation leaves it in Han. ${INSTRUCTION}`,],);
       },
     },),
     it({
@@ -128,21 +146,10 @@ await describe({
         ]) {
           expect(findingsFor({
             candidateText: `The cat sleeps on the windowsill.\n\n—— Jumao (${placeholder}), 2021`,
-          },).join(' ',),).toContain('Jumao',);
+          },),).toEqual([
+            `The signature names 橘猫 and the parentheses after "Jumao" hold a placeholder, not a meaning. ${INSTRUCTION}`,
+          ],);
         }
-      },
-    },),
-    it({
-      name: 'GIVES NO TEMPLATE TO COPY: the finding names the reading and shows the house rule\'s example',
-      fn: async () => {
-        /**
-         Findings against the bare reading.
-         */
-        const findings = findingsFor({
-          candidateText: 'The cat sleeps on the windowsill.\n\n—— Jumao, 2021',
-        },).join(' ',);
-        expect(findings,).not.toContain('(its literal meaning',);
-        expect(findings,).toContain('Jinxin (Brocade Heart)',);
       },
     },),
     it({
@@ -158,6 +165,18 @@ await describe({
           pageText: '',
           declared: [{ source: '橘猫', rendering: 'Marmalade', },],
         },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'LEAVES A SIGNER THE ORIGINAL ITSELF SIGNS IN LATIN LETTERS, which asks for no reading',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '猫在窗台上睡觉。\n\n——Maomao，2021年',
+          candidateText: 'The cat sleeps on the windowsill.\n\n—— Maomao, 2021',
+        },),).toEqual({
+          kind: 'valid',
+          pageGrammar: 'absent',
+        },);
       },
     },),
   ],

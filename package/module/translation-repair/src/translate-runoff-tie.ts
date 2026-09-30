@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   type Candidate,
@@ -240,22 +241,20 @@ export function breakRunoffTie<ValueT,>(
    Tied finalists with their preference, best first, slate order breaking
    equal preference.
    */
-  const [chosen,] = rankedByPreference({
-    finalists: tied.flatMap(function withCandidate(drawn,): readonly PlacedCandidate<ValueT>[] {
-      /**
-       Finalist at this one-based position.
-       */
-      const candidate = candidates[drawn.index - 1];
-      return (candidate === undefined)
-        ? []
-        : [{
-          index: drawn.index,
-          candidate,
-        },];
+  const [first,] = rankedByPreference({
+    finalists: tied.map(function withCandidate(drawn,): PlacedCandidate<ValueT> {
+      return {
+        index: drawn.index,
+        // The round counts one row per candidate on the slate, so every
+        // tied row names a position the slate has.
+        candidate: nonNullishOrThrow(candidates[drawn.index - 1],),
+      };
     },),
   },);
-  if (chosen === undefined)
-    return { kind: 'unbroken', };
+  /**
+   The preferred finalist; at least two tied, so there is one.
+   */
+  const chosen = nonNullishOrThrow(first,);
   return {
     kind: 'broken',
     index: chosen.index,
@@ -280,18 +279,13 @@ export function breakRunoffTie<ValueT,>(
 
  @param declineFindings - findings the decline reports
 
- @param declined - the decline in the stage's vocabulary, raised if the
- round offered nothing to ship
-
  @param l - logger of the judging stage
 
  @returns The shipped candidate's record
 
- @throws {@link TranslateAbsenceError} when the round offered no candidate
-
  @example
  ```ts
- return shipPreferredPastDecline({ outcome, rotated, keepIncumbent, declineFindings, declined, l, },);
+ return shipPreferredPastDecline({ outcome, rotated, keepIncumbent, declineFindings, l, },);
  ```
  */
 function shipPreferredPastDecline(
@@ -300,21 +294,19 @@ function shipPreferredPastDecline(
     rotated,
     keepIncumbent,
     declineFindings,
-    declined,
     l,
   }: {
     readonly outcome: Extract<SelectionOutcome<TranslateCandidateValue>, { readonly kind: 'declined'; }>;
     readonly rotated: readonly Candidate<TranslateCandidateValue>[];
     readonly keepIncumbent: Omit<TranslateStageResult, 'decision' | 'findings'>;
     readonly declineFindings: readonly string[];
-    readonly declined: TranslateAbsenceReason;
     readonly l: Logger;
   },
 ): TranslateStageResult {
   /**
    The round's candidates by preference, best first.
    */
-  const [chosen,] = rankedByPreference({
+  const [first,] = rankedByPreference({
     finalists: rotated.map(function placed(
       candidate,
       position,
@@ -325,12 +317,11 @@ function shipPreferredPastDecline(
       };
     },),
   },);
-  if (chosen === undefined) {
-    throw new TranslateAbsenceError({
-      reason: declined,
-      findings: declineFindings,
-    },);
-  }
+  /**
+   The preferred candidate. The judge stage returns before judging an empty
+   slate (`translate-judge.ts`), so a declined round offered at least one.
+   */
+  const chosen = nonNullishOrThrow(first,);
   /**
    What the ballots that did not back the shipped candidate said, once each.
    */
@@ -353,7 +344,9 @@ function shipPreferredPastDecline(
     ),
   ];
   /**
-   Weight the shipped candidate drew, zero where nobody named it.
+   Weight the shipped candidate drew: its row's weight, which is zero where
+   no ballot named it, and zero where the round counted no rows at all
+   because it declined before any judge sat.
    */
   const drawn = outcome.perCandidate
     .find(function atChosen(weighed,): boolean {
@@ -485,7 +478,6 @@ export function settleAbsentDecline(
       rotated,
       keepIncumbent,
       declineFindings,
-      declined,
       l,
     },);
   }

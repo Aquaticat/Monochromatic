@@ -102,22 +102,14 @@ function drew(
 }
 
 /**
- Renderings the finalists carry, in slate order.
-
- @param finalists - candidates the run-off offers
-
- @returns Their rendered texts
-
- @example
- ```ts
- const texts = renderedOf({ finalists, },);
- ```
+ Slate of four, which the whole-value checks name finalists from.
  */
-function renderedOf({ finalists, }: { readonly finalists: readonly Candidate<string>[]; },): readonly string[] {
-  return finalists.map(function toRendered(candidate,): string {
-    return candidate.rendered;
-  },);
-}
+const SLATE_OF_FOUR = candidates({ count: 4, },);
+
+/**
+ Slate of three, which the whole-value checks name finalists from.
+ */
+const SLATE_OF_THREE = candidates({ count: 3, },);
 
 await describe({
   name: 'the run-off narrows to the leaders (class sixty-three, XingZ613 slice 84)',
@@ -148,13 +140,13 @@ await describe({
           ],
           disposition: 'indecision',
         },);
-        expect(runoff.kind,).toBe('narrowed',);
-        if (runoff.kind !== 'narrowed')
-          throw new Error('narrowed expected',);
-        expect(renderedOf({ finalists: runoff.finalists, },),).toEqual([
-          RENDERINGS[0],
-          RENDERINGS[3],
-        ],);
+        expect(runoff,).toEqual({
+          kind: 'narrowed',
+          finalists: [
+            SLATE_OF_FOUR[0],
+            SLATE_OF_FOUR[3],
+          ],
+        },);
       },
     },),
     it({
@@ -181,13 +173,13 @@ await describe({
           ],
           disposition: 'indecision',
         },);
-        expect(runoff.kind,).toBe('narrowed',);
-        if (runoff.kind !== 'narrowed')
-          throw new Error('narrowed expected',);
-        expect(renderedOf({ finalists: runoff.finalists, },),).toEqual([
-          RENDERINGS[0],
-          RENDERINGS[1],
-        ],);
+        expect(runoff,).toEqual({
+          kind: 'narrowed',
+          finalists: [
+            SLATE_OF_FOUR[0],
+            SLATE_OF_FOUR[1],
+          ],
+        },);
       },
     },),
     it({
@@ -209,10 +201,47 @@ await describe({
           ],
           disposition: 'indecision',
         },);
-        expect(runoff.kind,).toBe('narrowed',);
-        if (runoff.kind !== 'narrowed')
-          throw new Error('narrowed expected',);
-        expect(runoff.finalists.length,).toBe(2,);
+        expect(runoff,).toEqual({
+          kind: 'narrowed',
+          finalists: [
+            SLATE_OF_THREE[0],
+            SLATE_OF_THREE[1],
+          ],
+        },);
+      },
+    },),
+    it({
+      name: 'PREFERS THE RUNNER-UP WITH MORE BALLOTS at equal weight, before slate position',
+      fn: async () => {
+        // Candidate 1 leads; candidates 2 and 3 both drew a weight of 1, one
+        // from a full ballot and one from two half ballots.
+        expect(runoffFinalists({
+          candidates: SLATE_OF_FOUR,
+          perCandidate: [
+            drew({
+              index: 1,
+              ballots: 2,
+              weight: 2,
+            },),
+            drew({
+              index: 2,
+              ballots: 1,
+              weight: 1,
+            },),
+            drew({
+              index: 3,
+              ballots: 2,
+              weight: 1,
+            },),
+          ],
+          disposition: 'indecision',
+        },),).toEqual({
+          kind: 'narrowed',
+          finalists: [
+            SLATE_OF_FOUR[0],
+            SLATE_OF_FOUR[2],
+          ],
+        },);
       },
     },),
     it({
