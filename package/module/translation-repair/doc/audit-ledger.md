@@ -3612,6 +3612,110 @@ and `corpus-run/title` (4 files,
 The tie goes to the most cold lines,
 so the tenth batch takes `corpus-run/title`.
 
+The tenth batch took the corpus-run title modules against `census-VW2tHL`
+in nine code commits,
+`7e3772ba8` to `95ca288cd`,
+and entries B57 to B60.
+Its census at `95ca288cd`
+(`census-BF4g7o`,
+1,445 passes,
+taken clean)
+reads against `census-VW2tHL`:
+ran 3,
+still cold 1,220,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 16.
+The four title sources are among the edited ones,
+and each "loaded it and left 0 cold stretches";
+the two modules B59 split from them,
+`title-reference-link.ts` and `title-reference-rewrite.ts`,
+are new since the baseline,
+and the census lists both among loaded sources and neither among cold ones or functions never called.
+The other twelve edited sources are B56's (`9a02d8e0b`),
+committed after the baseline was taken.
+Library source went from 938 stretches to 900:
+per-file counts compared between the two census files give the cluster's 26
+(`title-reference-unify.ts` 12,
+`title-reference-locate.ts` 7,
+`title-reference-scope.ts` 6,
+`title-reference-marks.ts` 1),
+all four files now at none,
+and B56's 12 in nine files:
+the ten rethrow arms it named,
+and `settled-carve.ts`'s two early returns in its own `isMissingPath`,
+which B56 removed
+(lines 158 and 160 at `51b888ac2`).
+`settled-carve.ts` went from 4 to none;
+`bedrock-ledger.ts`,
+`page-republish.ts`,
+`published-tree-listing.ts`,
+`runs-lock.ts`,
+`sheet-path.ts`,
+`sheet-write.ts`,
+`slice-cache-dir-read.ts`
+and `window-trial-ledger.ts` lost one each.
+No library file outside those changed its count.
+The census does not list the 3 rows that ran;
+by inference from the per-file counts they lie in the other packages' sources,
+where `with-timeout.ts` (`async-time`) went from 1 to none and `create-logger.ts` (`logger`) from 16 to 14,
+while `error-format.ts` (`logger`) went from 1 to 3;
+the 6 not loaded are the unmapped `wording-key` chunk under a new bundle name,
+6 stretches before and after.
+
+How the rows closed,
+by commit:
+`7e3772ba8` replaced the unreachable fallbacks with narrowings that throw
+(`unify` 176,
+189 and 444-445,
+`scope` 359)
+and read the marked spans as first and rest,
+with a case for two spans both carrying the heading (`marks` 235);
+`fdceec645` (B57) cased a page carrying the destination with no `[` before it (`locate` 196);
+`ae29c52fa` (B58) cased a glossed run longer than the heading (`unify` 342 and 477-480);
+`a90f7fd98` (B60) cased two headings rendering one title apart (`unify` 197 and 209);
+and `95ca288cd` cased the rest:
+a heading glossing its own title,
+one with a Latin letter in its original title,
+one rendered as its gloss alone and one left in Han (`unify` 122-127,
+184,
+193 and 195),
+an original link that never closes and a page that quotes a linked title (`locate` 152 and 187),
+a gloss after a quoted title,
+one opening the page
+and a run reaching the page's start (`locate` 249,
+282-284,
+320-322 and 351-353),
+the five scope arms (`scope` 130,
+166,
+210,
+358 and 438)
+and a quoted span's trailing period (`unify` 314).
+B57 to B60 came from reading those arms against the pass's own rules.
+The batch's control copy,
+the marks test with the trailing-period case expecting the span unrewritten,
+failed on that case alone and was deleted.
+
+The eleventh batch's baseline is that census
+(`95ca288cd`,
+`census-BF4g7o`):
+library source holds 900 stretches over 1,821 lines in 321 files,
+with 19 functions never called.
+By the first construct
+(`t8-triage-bf4g7o.txt`),
+the queue is 348 returns,
+192 nullish fallbacks,
+158 ternaries,
+100 throws
+and 102 others.
+Two clusters tie at 26 stretches:
+`align` (5 files,
+39 lines)
+and `corpus-run/artifact` (8 files,
+35 lines).
+The tie goes to the most cold lines,
+so the eleventh batch takes `align`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -12064,6 +12168,136 @@ since its refusal names the code.
 Recurrence:
 a catch that answers "not there" uses `rethrowUnlessMissingPath` or `isMissingPathError`;
 a comment explaining what a catch does with the other failures is read against the arm it describes.
+
+### B57: a page link's text read back to any bracket, across lines and links
+
+Found by the tenth coverage batch (census-VW2tHL),
+reading `title-reference-locate.ts:196`,
+the arm where no `[` stands before the page's link.
+`locateLink` read the link text as everything after `lastIndexOf('[', middle)`,
+with no bound,
+so a page link to the title's destination that lost its opening bracket
+took the text back to any earlier `[` in the slice,
+and the unify pass rewrote all of it to the heading's rendering.
+A probe over the built package
+(`~/temp/agent/audit-glossary-fix/title-ref-probe.mjs`,
+cat-themed fixtures):
+a footnote definition line ahead of such a link on the page became part of the link text and was deleted,
+and so was an earlier link on the same line.
+At the pin none of the page links to the 22 destinations the originals link a Han heading title to is malformed
+(`b57-link-census.mjs`,
+over the 214 settled pages whose entry the pin holds).
+
+Fixed (`571e47c64` red,
+`fdceec645`):
+`linkTextBefore` reads leftward from the link's `](` to the nearest `[`
+and reads no link where a newline or another link's `]` comes first,
+or where no `[` does,
+so the reference falls through to the other shapes and is reported unplaced if none holds it.
+Removing the break check failed the two red cases alone.
+The reading moved with the link search into `title-reference-link.ts` under B59.
+
+Recurrence:
+a span read back from an anchor is bounded by the syntax it belongs to,
+here the line and the brackets of one link,
+and a test gives it a malformed neighbour.
+
+### B58: a glossed title's lead-in words rewritten away
+
+Found by the tenth coverage batch,
+reading `title-reference-unify.ts:342`,
+the arm where a glossed run is too long to be the title.
+`rewriteLocated` read the run before a Han gloss (`Title (标题)`) as the title
+whenever it had at most two words more than the heading's rendering
+(`RUN_SLACK`,
+added in `2f8bcfe93` with no reason given for the two),
+and rewrote the whole run,
+so the words leading into the title went with it:
+in the probe the credits `—— Yunmao, from Afternoon Cat Talk (午后猫语)`
+and `—— Yunmao, sung in Afternoon Cat Talk (午后猫语)`
+both became `—— Yunmao, Afternoon Cat Murmurs (午后猫语)`.
+At the pin 2 glossed references to a Han heading title stand on the 214 pairable settled pages,
+neither opening with a small letter
+(`b57-gloss-run-census.mjs`).
+
+Fixed (`344e1b79a` red,
+`ae29c52fa`):
+`leadInEnd` starts a glossed run's title at its first word that does not open with a small letter,
+since English title case capitalizes a title's first word,
+and the rewrite keeps the words before it;
+small is `isSmallLetter`'s general category,
+read by whole code point.
+`RUN_SLACK` is gone:
+a capitalized word leading in ("——From Afternoon Cat Talk") cannot be told from a title's first word,
+so a glossed title with more words than the heading's rendering is reported rather than rewritten,
+and a run whose every word opens small is reported with its own reason.
+That a longer English rendering of the same title is now reported where it was rewritten
+is a quality call open to veto:
+no word is dropped unseen,
+at the cost of one more finding to read.
+Forcing the lead-in to none failed the lead-in and all-small cases;
+restoring the two words of slack failed the capitalized case alone.
+
+Recurrence:
+a tolerance constant states the evidence for its value,
+and a rewrite of a span whose edge is guessed keeps the words outside the guess or reports it.
+
+### B59: the link and gloss searches read only the first occurrence
+
+Found with B57 and B58,
+by probe against the locator's own rule:
+a slice offering two spans of one shape is reported,
+not guessed at.
+The bracket and quote searches kept it;
+the link search took the page's first link to the destination,
+and the gloss search the first `(title)`.
+So where the original links the destination from another word as well as the title
+(`[这里](url)` and `《[title](url)》`),
+the page's first link,
+"here",
+was rewritten to the title,
+and a slice glossing the title twice unified the first gloss only.
+At the pin no destination the originals link a Han heading title to is linked twice in an original or on a page,
+and no page glosses a heading title twice.
+
+Fixed (`b926e5c9c` red,
+`04788c132`):
+`locateLink` (now in `title-reference-link.ts`) counts the links to the destination in the original and on the page,
+takes the page's link at the title link's place where the counts agree,
+and reports the reference ambiguous where they do not;
+`locateGlosses` reads every gloss,
+since each names the title;
+and the rewrite (now in `title-reference-rewrite.ts`) returns the span it replaces,
+so the renderings of one reference are each rewritten against the same text and spliced in one pass.
+The two moves kept `title-reference-locate.ts` and `title-reference-unify.ts` under `max-lines`.
+Taking the first link and the first gloss again failed the three red cases alone.
+
+Recurrence:
+a search whose module promises to report two spans of one shape counts its hits before taking one.
+
+### B60: a title two headings render alike dropped as ambiguous
+
+Found by the tenth coverage batch,
+reading `title-reference-unify.ts:197` and `:209`,
+the arm that drops a title two headings share.
+`renderedHeadings` dropped every such title "as ambiguous",
+which it is only where the headings render it apart;
+rendered alike,
+a reference to either has one rendering to take,
+and the drop left it unrewritten.
+At the pin no original heads a Han title twice.
+
+Fixed as a quality call open to veto (`a90f7fd98`):
+a shared title is kept where its renderings agree,
+read through the typography fold (B24),
+and dropped where they differ;
+`RenderedHeading` carries every slice heading the title,
+the pass skips all of them,
+and the finding names them.
+Comparing the renderings without the fold failed the agreeing case alone.
+
+Recurrence:
+a rule that drops a case "as ambiguous" states what makes it ambiguous and keeps the cases where that does not hold.
 
 ## Process mistakes in this audit
 

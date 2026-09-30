@@ -121,22 +121,32 @@ finding and fixing B53 to B55 on the way:
 the schema guard no longer advises deleting a non-artifact as another schema generation (B53),
 the preparation's own findings reach the artifact (B54),
 and definitions already in order draw no reorder note (B55).
-The baseline is now the whole suite at `51b888ac2` (`census-VW2tHL`,
-1,437 passes,
+The tenth batch took the corpus-run title modules,
+26 stretches in 4 files,
+and closed every one
+(`7e3772ba8` to `95ca288cd`),
+finding and fixing B57 to B60 on the way:
+a page link that lost its opening bracket no longer takes a footnote line or another link into its text (B57),
+a glossed title keeps the words leading into it and a longer glossed run is reported (B58),
+the link search reads the page link at the title link's place and every gloss is read (B59),
+and a title two headings render alike is unified with that rendering (B60).
+The baseline is now the whole suite at `95ca288cd` (`census-BF4g7o`,
+1,445 passes,
 taken from a tree with nothing uncommitted):
-library source holds 938 stretches over 1,893 lines in 329 files,
+library source holds 900 stretches over 1,821 lines in 321 files,
 with 19 functions never called,
 and the runner entry files and unloaded bundles come after.
 By the first construct each stretch's lines hold
-(`t8-triage-vw2thl.txt` in the audit's scratch folder),
-the queue is 366 returns,
-196 nullish fallbacks,
-161 ternaries,
-110 throws
-and 105 others,
-and the tenth batch takes the corpus-run title modules
-(26 stretches in 4 files,
-tied on stretches with `align` and `corpus-run/artifact` and ahead on cold lines);
+(`t8-triage-bf4g7o.txt` in the audit's scratch folder),
+the queue is 348 returns,
+192 nullish fallbacks,
+158 ternaries,
+100 throws
+and 102 others,
+and the eleventh batch takes the alignment modules
+(`align`,
+26 stretches in 5 files,
+tied on stretches with `corpus-run/artifact` and ahead on cold lines);
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:
