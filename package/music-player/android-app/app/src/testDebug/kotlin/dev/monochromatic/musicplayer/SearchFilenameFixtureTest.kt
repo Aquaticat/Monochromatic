@@ -25,6 +25,9 @@ import org.junit.Assert.assertEquals
 // ```
 import org.junit.Test
 
+// The real rowDisplay utility must leave the ordinary control's remaining path and suffix intact.
+import dev.monochromatic.musicplayer.core.rowDisplay
+
 /**
  * What: Group filename witness checks in a class, rather than a singleton object.
  * Why: JUnit creates a fresh test instance for each independent method.
@@ -90,6 +93,13 @@ class SearchFilenameFixtureTest {
         assertEquals(listOf(original[0], original[1]), control)
     }
 
+    /** Check the real prefix utility preserves the ordinary control's remaining path and suffix. */
+    @Test
+    fun ordinaryControlUsesLiteralRelativePath() {
+        val title = "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac"
+        assertEquals("Live/$title", rowDisplay("Cult of Luna", "Cult of Luna/Live/$title"))
+    }
+
     /** Check the shared renderer's fixture entry point against every filename scene. */
     @Test
     fun existingResultEntryPointReturnsFilenameScenes() {
@@ -97,6 +107,7 @@ class SearchFilenameFixtureTest {
         for (variant in listOf("rankfileshort", "rankfilelong", "rankfileedge",
             "rankfilecontext", "rankfilestem", "rankfileordinary")) {
             assertEquals(searchFilenameHits(variant), searchRankingHits(variant, includeParent = false))
+            assertEquals(searchFilenameHits(variant), searchRankingHits(variant, includeParent = true))
         }
     }
 

@@ -27,7 +27,8 @@ internal data class SearchRankingHit(val title: String, val detail: String, val 
  */
 internal fun searchRankingHits(variant: String, includeParent: Boolean): List<SearchRankingHit> {
     // Filename scenes vary only literal fixture data, never production matching or selected row geometry.
-    if (variant == "rankfileshort" || variant == "rankfilelong" || variant == "rankfileedge") {
+    if (variant == "rankfileshort" || variant == "rankfilelong" || variant == "rankfileedge" ||
+        variant == "rankfilecontext" || variant == "rankfilestem" || variant == "rankfileordinary") {
         return searchFilenameHits(variant)
     }
     // What: These record constructors make synthetic folders and track filenames explicit.
