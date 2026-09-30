@@ -14,6 +14,17 @@ Historical window IDs and observations remain for traceability, not as instructi
 
 ## Current frontier (2026-09-29)
 
+The user accepted the reviewed accessibility goals as “good enough” and
+asked what comes next while directing continued work.
+Record this as acceptance of D75 to D80's design direction,
+not authorization for production Search or proof of native accessibility.
+The next bounded design investigation is result-name presentation:
+compare the ordinary player's incumbent filename/title treatment with
+Search and duplicate-name disambiguation before deciding whether another
+visual comparison is needed.
+Matcher selection,
+new IME studies and original-AVD changes remain excluded.
+
 The Search **accessibility design review is complete** through D75 to D80.
 The recorded Search A decisions remain selected;
 file-extension display in result titles is a separate open visual question

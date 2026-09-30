@@ -2099,6 +2099,10 @@ fuzzy matcher selection or new IME experiment is authorized.
 Adopted as an evidence-led recommendation under the user's instruction
 to record strongly determined defaults with a correction/veto path,
 not as a separately answered questionnaire.
+The user subsequently accepted the reviewed goals as “good enough” and
+asked to continue design work.
+That confirms D75 to D80's design direction,
+not the unverified native behavior.
 Initial accessibility focus goes to the query field on both Fold panels.
 Its accessible name remains “Search music”;
 the current value is separate from that name.
