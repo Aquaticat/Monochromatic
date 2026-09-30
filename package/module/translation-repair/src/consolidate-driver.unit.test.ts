@@ -1356,6 +1356,7 @@ await describe({
          */
         const written: string[] = [];
         await expect(persistConsolidationSettlement({
+          standingMayShip: true,
           key: 'consolidation-persistence-guard-fixture',
           settlement: settlementReaching({ terminal: 'incumbent-only', },),
           cache: {
@@ -1905,6 +1906,7 @@ await describe({
         + 'verdict the gate itself declined to reach',
       fn: async () => {
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: settlementFor({ terminal: 'gate-kept-standing', usable: 1, },),
         },),).toBe(false,);
       },
@@ -1917,6 +1919,7 @@ await describe({
         + 'had already settled',
       fn: async () => {
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: settlementFor({ terminal: 'consolidated', usable: 2, },),
         },),).toBe(true,);
       },
@@ -1963,6 +1966,7 @@ await describe({
       name: 'REFUSES TO CACHE ABSOLUTE NATURALNESS FAILURE, so retry asks again instead of twin-reusing rejected text',
       fn: async () => {
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: {
             ...settlementFor({ terminal: 'gate-kept-standing', usable: 2, },),
             polish: {
@@ -1991,9 +1995,11 @@ await describe({
         + 'a contest that named neither lane left nothing to improve on; both hold on any night',
       fn: async () => {
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: settlementFor({ terminal: 'incumbent-only', },),
         },),).toBe(true,);
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: settlementFor({ terminal: 'no-standing-text', },),
         },),).toBe(true,);
       },
@@ -2006,6 +2012,7 @@ await describe({
         + 'standing claims endorsement, so this rests on no coupling two files away',
       fn: async () => {
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: {
             ...settlementFor({ terminal: 'incumbent-only', },),
             archiveKept: true,
@@ -2029,12 +2036,15 @@ await describe({
         + 'would freeze an undecided panel',
       fn: async () => {
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'declined-indecision', },),
         },),).toBe(false,);
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'declined-rejection', },),
         },),).toBe(false,);
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: settlementFor({ terminal: 'slate-endorsed-standing', decision: 'judged', },),
         },),).toBe(true,);
 
@@ -2043,6 +2053,7 @@ await describe({
         // the `declined-indecision` and `declined-rejection` settlements and gets
         // the opposite answer, so the name alone cannot decide this one.
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: settlementFor({ terminal: 'slate-declined-standing', decision: 'no-candidate-backed', },),
         },),).toBe(true,);
       },
@@ -2055,6 +2066,7 @@ await describe({
         + 'working panel where no panel spoke',
       fn: async () => {
         expect(consolidationWorthResuming({
+          standingMayShip: true,
           settlement: settlementFor({ terminal: 'slate-unjudged-standing', decision: 'sole-candidate', },),
         },),).toBe(true,);
       },

@@ -308,6 +308,8 @@ async function settleWith(
   const judgeSheets: string[] = [];
 
   const settled = await settleConsolidation({
+    standingMayShip: true,
+    standingEligible: true,
     client: createSyntheticClient({
       apiKey: 'test-key',
       transport: async function routingTransport(exchange,) {

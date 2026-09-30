@@ -30,8 +30,8 @@ type ConsolidationBuyInput = {
   readonly lineStructured: boolean;
   readonly sliceIndex: number;
   readonly polishConfig?: ConsolidationPolishConfig;
-  readonly standingMayShip?: boolean;
-  readonly standingEligible?: boolean;
+  readonly standingMayShip: boolean;
+  readonly standingEligible: boolean;
   /**
    Why the deterministic gate refused the standing, for the gate sheet
    (class fifty-six, 2026-09-18).
@@ -126,8 +126,8 @@ async function buyConsolidationAttempt(
     lineStructured,
     sliceIndex,
     polishConfig,
-    standingMayShip = true,
-    standingEligible = true,
+    standingMayShip,
+    standingEligible,
     standingRefusal,
     standingFindings = [],
     laneTexts = [],
@@ -312,7 +312,7 @@ export async function buyConsolidationSlice(
   /**
    Whether archive or lane standing may already ship.
    */
-  const standingMayShip = input.standingMayShip ?? true;
+  const { standingMayShip, } = input;
   /**
    Settlement from the single attempt.
    */

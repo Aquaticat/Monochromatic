@@ -352,7 +352,7 @@ export type ConsolidationSettlement = {
 
  @example
  ```ts
- const settled = await settleConsolidation({ client, roster, subject, voices, validity, producedFindings, standingText, lineStructured, signal, perCallTimeoutMs, l, },);
+ const settled = await settleConsolidation({ client, roster, subject, voices, validity, producedFindings, standingText, standingMayShip, standingEligible, lineStructured, signal, perCallTimeoutMs, l, },);
  ```
  */
 export async function settleConsolidation(
@@ -368,8 +368,8 @@ export async function settleConsolidation(
     lineStructured,
     sliceIndex = 0,
     polishConfig,
-    standingMayShip = true,
-    standingEligible = true,
+    standingMayShip,
+    standingEligible,
     standingRefusal,
     laneTexts = [],
     runoffOverStanding = false,
@@ -388,8 +388,8 @@ export async function settleConsolidation(
     readonly lineStructured: boolean;
     readonly sliceIndex?: number;
     readonly polishConfig?: ConsolidationPolishConfig;
-    readonly standingMayShip?: boolean;
-    readonly standingEligible?: boolean;
+    readonly standingMayShip: boolean;
+    readonly standingEligible: boolean;
     readonly standingRefusal?: string;
     readonly laneTexts?: readonly LaneText[];
     readonly runoffOverStanding?: boolean;

@@ -616,6 +616,7 @@ async function settleWith(
   const gateSheets: string[] = [];
 
   const settled = await settleConsolidation({
+    standingMayShip: true,
     client: routedClient({
       judgeReply,
       gateReply,
@@ -819,6 +820,7 @@ await describe({
          */
         const servedSchemas: string[] = [];
         const settled = await settleConsolidation({
+          standingEligible: true,
           client: standingPolishClient({ servedSchemas, }),
           roster: ROSTER,
           subject: {
@@ -860,6 +862,7 @@ await describe({
          */
         const servedSchemas: string[] = [];
         const settled = await settleConsolidation({
+          standingEligible: true,
           client: standingPolishClient({ servedSchemas, }),
           roster: ROSTER,
           subject: {

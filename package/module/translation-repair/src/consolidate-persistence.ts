@@ -52,10 +52,10 @@ const SETTLED_WITHOUT_A_GATE: readonly ConsolidationTerminal[] = [
 export function consolidationWorthResuming(
   {
     settlement,
-    standingMayShip = true,
+    standingMayShip,
   }: {
     readonly settlement: ConsolidationSettlement;
-    readonly standingMayShip?: boolean;
+    readonly standingMayShip: boolean;
   },
 ): boolean {
   // AN ARCHIVE-KEPT SETTLEMENT IS NEVER KEPT (owner, 2026-09-27, "Keep
@@ -144,13 +144,13 @@ export async function persistConsolidationSettlement(
     key,
     settlement,
     cache,
-    standingMayShip = true,
+    standingMayShip,
     signal,
   }: ForeignBorrowed<{
     readonly key: string;
     readonly settlement: ConsolidationSettlement;
     readonly cache: SliceCache<ConsolidationSettlement>;
-    readonly standingMayShip?: boolean;
+    readonly standingMayShip: boolean;
     readonly signal: AbortSignal;
   }>,
 ): Promise<boolean> {
