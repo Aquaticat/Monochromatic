@@ -114,5 +114,39 @@ await describe({
         expect(unified.findings,).toEqual([UNPLACED,],);
       },
     },),
+    it({
+      name: 'READS NO LINK where no opening bracket stands before the destination on the page',
+      fn: async () => {
+        /**
+         Page text carrying the destination with no bracket before it.
+         */
+        const page = '——From The Window Cat](https://example.test/cat)';
+        /**
+         Pass over the heading and that page.
+         */
+        const unified = unifyTitleReferences({
+          slices: [
+            HEADING,
+            pair({
+              sliceIndex: 1,
+              source: '——出自《[窗边猫](https://example.test/cat)》',
+              target: '',
+            },),
+          ],
+          replacements: [
+            HEADING_ROW,
+            {
+              sliceIndex: 1,
+              replacementText: page,
+            },
+          ],
+        },);
+        expect(textsOf({ rows: unified.replacements, },),).toEqual([
+          HEADING_ROW.replacementText,
+          page,
+        ],);
+        expect(unified.findings,).toEqual([UNPLACED,],);
+      },
+    },),
   ],
 },);

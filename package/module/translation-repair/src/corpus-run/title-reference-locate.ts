@@ -60,6 +60,15 @@ const GLOSS_CLOSE = ')';
 const LINE_END = '\n';
 
 /**
+ Characters no link text holds: a newline, and the closing bracket of
+ another link's text.
+ */
+const LINK_TEXT_BREAKS: ReadonlySet<string> = new Set([
+  LINE_END,
+  ']',
+],);
+
+/**
  Quote pairs a title may stand in, opening then closing.
  */
 const QUOTE_PAIRS: readonly (readonly [
@@ -157,6 +166,53 @@ function linkDestination(
 }
 
 /**
+ Link text ending at a link's middle, read leftward to the nearest `[`; none
+ where a newline or another link's `]` comes first, or no `[` does.
+
+ A LINK'S TEXT STANDS ON ITS DESTINATION'S LINE AND HOLDS NO BRACKET (ledger
+ B57). Read back to the nearest `[` with no bound, a page link that lost its
+ opening bracket took an earlier footnote line or another link with it, and
+ the rewrite replaced them with the title; such a line renders no link.
+
+ @param pageText - page text of the slice
+
+ @param middle - offset of the `](` that ends the text
+
+ @returns Located link text, or none
+
+ @example
+ ```ts
+ linkTextBefore({ pageText: 'From [The Cat](https://example.test/cat)', middle: 13, },); // link 6 to 13
+ ```
+ */
+function linkTextBefore(
+  {
+    pageText,
+    middle,
+  }: {
+    readonly pageText: string;
+    readonly middle: number;
+  },
+): TitleLocation {
+  for (let at = middle - 1; at >= 0; at -= 1) {
+    /**
+     Character read leftward from the middle.
+     */
+    const character = pageText.charAt(at,);
+    if (character === LINK_OPEN) {
+      return {
+        kind: 'link',
+        start: at + LINK_OPEN.length,
+        end: middle,
+      };
+    }
+    if (LINK_TEXT_BREAKS.has(character,))
+      return { kind: 'none', };
+  }
+  return { kind: 'none', };
+}
+
+/**
  Where the page renders a link to a destination: its link text.
 
  @param pageText - page text of the slice
@@ -185,20 +241,10 @@ function locateLink(
   const middle = pageText.indexOf(`${LINK_MIDDLE}${destination}${LINK_CLOSE}`,);
   if (middle === (-1))
     return { kind: 'none', };
-  /**
-   Offset of the link text's opening, -1 for none.
-   */
-  const open = pageText.lastIndexOf(
-    LINK_OPEN,
+  return linkTextBefore({
+    pageText,
     middle,
-  );
-  if (open === (-1))
-    return { kind: 'none', };
-  return {
-    kind: 'link',
-    start: open + LINK_OPEN.length,
-    end: middle,
-  };
+  },);
 }
 
 /**
