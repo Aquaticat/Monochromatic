@@ -42,12 +42,17 @@ import {
 
 
 /**
- What keeps a text off the slate, read off the floor's verdict.
+ What the floor said against a text, read off its verdict.
+
+ Whether the text may stand is read off the verdict's kind, not off this
+ list, so a refusal that named nothing still keeps the text off the slate;
+ the floor names at least one finding for every refusal it returns
+ (`translate-validate.ts`), and a stand-in line for one that named none
+ was unreachable.
 
  @param verdict - deterministic source floor's verdict
 
- @returns Nothing for a pass and never nothing otherwise: the findings of a
- refusal, a stand-in line for a refusal that named none, or the reason no
+ @returns Nothing for a pass, the findings of a refusal, or the reason no
  comparison was possible, which keeps the text off the slate too
 
  @example
@@ -60,11 +65,7 @@ function floorFindings({ verdict, }: { readonly verdict: SliceValidation; },): r
     return [];
   if (verdict.kind === 'unknown')
     return [verdict.detail,];
-  /**
-   Findings the refusal named.
-   */
-  const { findings, } = verdict;
-  return (findings.length > 0) ? findings : ['refused without a finding',];
+  return verdict.findings;
 }
 
 /**
@@ -200,33 +201,33 @@ export async function runTranslateStage(
   },);
 
   /**
-   Deterministic source floor's findings on the archive wording, none where
-   there is no archive wording or it passes.
+   Deterministic source floor's verdict on the archive wording, absent where
+   there is no archive wording.
    */
-  const incumbentFindings = (incumbentKind === 'present')
-    ? floorFindings({
-      verdict: validateTranslatedSlice({
-        sourceText,
-        candidateText: incumbentText,
-        pageText: incumbentText,
-        ...((syntax === undefined) ? {} : { syntax, }),
-        lineStructured,
-        declared,
-        disputedWordings,
-      },),
+  const incumbentVerdict = (incumbentKind === 'present')
+    ? validateTranslatedSlice({
+      sourceText,
+      candidateText: incumbentText,
+      pageText: incumbentText,
+      ...((syntax === undefined) ? {} : { syntax, }),
+      lineStructured,
+      declared,
+      disputedWordings,
     },)
-    : [];
+    : undefined;
   /**
    Whether archive wording itself may remain candidate or fallback.
    */
-  const incumbentEligible = (incumbentKind === 'present') && (incumbentFindings.length === 0);
+  const incumbentEligible = incumbentVerdict?.kind === 'valid';
   // The finding line alone said a floor refused the archive, not which: the
   // yingying10 read could not tell the class one hundred fourteen refusal from
   // any other without replaying the slice.
-  if (incumbentFindings.length > 0) {
-    l.warn(
-      `translate incumbent excluded by deterministic source floor: ${incumbentFindings.join(' | ',)}`,
-    );
+  if ((incumbentVerdict !== undefined) && (!incumbentEligible)) {
+    /**
+     What the floor said against the archive wording.
+     */
+    const against = floorFindings({ verdict: incumbentVerdict, },);
+    l.warn(`translate incumbent excluded by deterministic source floor: ${against.join(' | ',)}`,);
   }
   /**
    Existing fallback kind after deterministic source floor.

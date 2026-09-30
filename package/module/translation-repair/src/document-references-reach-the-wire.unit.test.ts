@@ -190,17 +190,14 @@ async function runDocument(
   const requests: { readonly schema: string; readonly content: string; }[] = [];
 
   /**
-   Preparation the driver slices its work from.
+   Preparation the driver slices its work from, handed the evidence the way
+   the corpus pass hands it.
    */
   const prepared = prepareDocumentPair({
     sourceText: SOURCE_TEXT,
     targetText: TARGET_TEXT,
-  },);
-  await translateDocument({
-    client: recordingClient({ requests, },),
-    prepared: withReferences
+    ...(withReferences
       ? {
-        ...prepared,
         referenceContext: REFERENCES,
         attestedDetails: [{
           archiveQuote: ATTESTED_QUOTE,
@@ -210,7 +207,11 @@ async function runDocument(
           heard: 3,
         },],
       }
-      : prepared,
+      : {}),
+  },);
+  await translateDocument({
+    client: recordingClient({ requests, },),
+    prepared,
     models: MODELS,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
