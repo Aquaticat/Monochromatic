@@ -1963,6 +1963,33 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES TO CACHE A GATE\'S TERMINAL WITH NO GATE RECORDED, which the settlement type admits and no '
+        + 'settlement builder produces: without the ballots there is no quorum to trust',
+      fn: async () => {
+        expect((['consolidated', 'gate-kept-standing', 'wrap-erased-difference',] as const).map(
+          function worthResuming(terminal,): boolean {
+            return consolidationWorthResuming({
+              standingMayShip: true,
+              settlement: settlementFor({ terminal, },),
+            },);
+          },
+        ),).toEqual([false, false, false,],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES TO CACHE A DECLINED SLATE WITH NO DECISION RECORDED, which the settlement type admits and no '
+        + 'settlement builder produces (the absence exit ledger B51 removed built one, marked archive-kept): '
+        + 'without the decision there is no telling a settled decline from a pending one',
+      fn: async () => {
+        expect(consolidationWorthResuming({
+          standingMayShip: true,
+          settlement: settlementFor({ terminal: 'slate-declined-standing', },),
+        },),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'REFUSES TO CACHE ABSOLUTE NATURALNESS FAILURE, so retry asks again instead of twin-reusing rejected text',
       fn: async () => {
         expect(consolidationWorthResuming({

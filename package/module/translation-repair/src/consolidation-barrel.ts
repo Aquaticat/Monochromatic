@@ -148,7 +148,10 @@ export {
   isConsolidateGateWire,
   readConsolidateGateBallot,
 } from './consolidate-gate-wire.ts';
-export { standingKeptUnendorsed, } from './consolidate-slice-buy.ts';
+export {
+  buyConsolidationSlice,
+  standingKeptUnendorsed,
+} from './consolidate-slice-buy.ts';
 export {
   buildConsolidateMessages,
   type ConsolidateSubject,
