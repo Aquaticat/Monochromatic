@@ -449,8 +449,21 @@ Separate inert timeout control `proc_2ced` passed explicit `SIGKILL` settlement;
 old-space limits are not total-process memory and file-backed streams are checked after exit,
 not live disk-write capped.
 Initial artifact/source freeze `proc_dde4` passed.
-Actual SDK pairs `proc_3a8b` are running;
-no completed sensitivity result is established yet.
+Actual SDK pairs `proc_3a8b` passed:
+every intact reference passed and every selected source change moved its unchanged reference
+through a completed non-error actual tool result.
+Fourteen AgentSessions,
+twenty-eight first-party scripted responses,
+and fourteen callbacks had zero private stderr,
+zero genuine original/model reads,
+and zero fixture action executions/grant writes.
+These finite synthetic references establish selected root-guard sensitivity,
+not current human-grant eligibility,
+fork inheritance,
+cache ownership,
+or full finalization.
+Next is separately predeclared test-owned fork mechanics with an explicit mechanical-only eligibility premise;
+no inheritance rule can supply the missing initial human-grant premise.
 No genuine original read,
 mutation,
 or interaction replay belongs to that synthetic phase.
