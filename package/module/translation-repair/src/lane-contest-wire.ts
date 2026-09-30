@@ -7,7 +7,7 @@ import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import {
   CONTEST_POLICY,
-  isStringList,
+  findingsOrNone,
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
@@ -144,10 +144,25 @@ export type LaneContestWire = {
    the reader takes it as it stands.
    */
   readonly choice: LaneChoice;
-  readonly unsupported: readonly string[];
-  readonly dropped: readonly string[];
+
+  /**
+   Findings against a candidate, a list of strings when the model followed
+   the schema and whatever it wrote otherwise; the reader narrows (ledger
+   B46).
+   */
+  readonly unsupported: unknown;
+
+  /**
+   Findings of dropped content, read the same way.
+   */
+  readonly dropped: unknown;
   readonly reason: string;
-  readonly archive?: string;
+
+  /**
+   Archive answer as the model wrote it, which the guard does not check and
+   the reader narrows to a verdict.
+   */
+  readonly archive?: unknown;
 };
 
 /**
@@ -208,10 +223,12 @@ function isArchiveVerdict(value: unknown,): value is ArchiveVerdict {
 /**
  Whether a reply carries the shape a ballot is read from.
  
- SHAPE ONLY. Whether the findings are consistent with the choice is the
- reader's question, because an inconsistent ballot is still a ballot that was
- cast and is worth recording as one.
- 
+ A READABLE CHOICE AND REASON ONLY. Whether the findings are consistent with
+ the choice is the reader's question, because an inconsistent ballot is still
+ a ballot that was cast and is worth recording as one; and since 2026-09-30
+ their shape is too (ledger B46): findings missing or not a list of strings
+ read as none, where they used to cost the whole ballot.
+
  @param value - parsed reply
  
  @returns Whether it can be read as a ballot
@@ -224,10 +241,7 @@ function isArchiveVerdict(value: unknown,): value is ArchiveVerdict {
 export function isLaneContestWire(value: unknown,): value is LaneContestWire {
   if (!isJsonRecord(value,))
     return false;
-  return isLaneChoice(value.choice,)
-    && isStringList(value.unsupported,)
-    && isStringList(value.dropped,)
-    && ((typeof value.reason) === 'string');
+  return isLaneChoice(value.choice,) && ((typeof value.reason) === 'string');
 }
 
 /**
@@ -256,19 +270,29 @@ export function readLaneContestBallot(
     ? { archive: wire.archive, }
     : {};
 
+  /**
+   Findings against a candidate, none where the model wrote no list.
+   */
+  const unsupported = findingsOrNone(wire.unsupported,);
+
+  /**
+   Findings of dropped content, read the same way.
+   */
+  const dropped = findingsOrNone(wire.dropped,);
+
   return {
     ...archive,
     choice: wire.choice,
     unsupported: readCandidateNames({
-      findings: wire.unsupported,
+      findings: unsupported,
       names: CANDIDATE_NAMES,
     },),
-    unsupportedRaw: wire.unsupported,
+    unsupportedRaw: unsupported,
     dropped: readCandidateNames({
-      findings: wire.dropped,
+      findings: dropped,
       names: CANDIDATE_NAMES,
     },),
-    droppedRaw: wire.dropped,
+    droppedRaw: dropped,
     reason: wire.reason,
   };
 }

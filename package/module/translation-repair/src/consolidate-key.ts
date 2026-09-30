@@ -240,6 +240,14 @@ import type { LaneText, } from './translate-candidates.ts';
  UTC on 2026-09-27, where a control from midnight finds 494 and an earlier
  check's own output file.
 
+ Rides inside 20 too: a consolidate-gate or polish-gate ballot whose findings
+ key is left out keeps its choice, read as no findings, where either gate
+ refused it whole (ledger B46, `findingsOrNone` in `contest-ballot-wire.ts`,
+ `consolidate-gate-wire.ts`, `consolidation-polish-gate-wire.ts`), which
+ changes whose voices a gate round hears; checked on 2026-09-30: no
+ slice-cache file was written after 04:27 UTC on 2026-09-27, where a control
+ from midnight that day finds 494.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

@@ -11451,6 +11451,75 @@ both cold in `census-6nasbO` as well;
 the census holds 1,452 stretches,
 2 fewer than `census-qTbkjB`.
 
+### B46: ballot guards that disagreed on whether a finding's shape costs a voice
+
+Status:
+fixed 2026-09-30 (UTC),
+found reading the ballot-reply guards in T8's eighth batch.
+Three guards decide whether a judge's reply is a ballot:
+the lane contest's (`lane-contest-wire.ts`),
+the consolidation gate's (`consolidate-gate-wire.ts`)
+and the polish gate's (`consolidation-polish-gate-wire.ts`).
+The lane contest refused a reply whose `unsupported` or `dropped` was missing or not a list of strings,
+choice and reason readable or not.
+The two gates kept a reply whose findings were anything at all,
+reading a non-list as no findings,
+but refused one with a findings key left out.
+So a reply whose findings were `null` was a ballot at the gates and a lost voice at the contest,
+and a reply with `dropped` left out was a lost voice at all three.
+
+How they came apart:
+`57e0ad7fa` (2026-08-20) stopped the lane contest's guard refusing findings over their wording,
+after calibration lost two of its first sixty voices that way,
+on the rule that the choice is what a contest counts and no wording of a finding may cost a voice;
+it kept the shape check,
+which its test pinned so that the reader would never receive a value it could not read.
+consolidate-10
+(`f83e9b449`,
+2026-08-26,
+`doc/audit/translation-repair-package-audit.md`)
+carried the rule to type at the consolidation gate,
+narrowing in the reader instead,
+but left the gate's key-presence checks,
+and neither change read the other guard.
+The shape check was deliberate,
+but for the reader's sake,
+and a reader that narrows removes that reason.
+
+Decided,
+under the owner's standing quality directive and open to veto:
+one rule for all three.
+A reply is a ballot when its choice names a candidate and its reason is text;
+findings left out,
+`null`,
+a bare phrase or a list carrying anything but strings read as no findings,
+raw findings included.
+`findingsOrNone` (`contest-ballot-wire.ts`) is the one reading,
+and each reader takes both fields through it;
+the lane contest's wire type now carries the findings,
+and the archive answer its guard never checked,
+as `unknown`.
+Cases:
+each guard's case in `consolidate-gate-wire.unit.test.ts`,
+`lane-contest-wire.unit.test.ts` and `consolidation-polish-gate.unit.test.ts`
+accepts a reply with a findings key left out;
+the lane contest's case that pinned the refusal of a non-list now pins its acceptance;
+a reader case each for the lane contest and the polish gate reads non-list findings as none,
+choice kept;
+`contest-ballot-wire.unit.test.ts` pins `findingsOrNone`.
+Those cases were committed red first (`395567499`):
+the three guard cases and the lane contest's non-list case failed against the build before the fix.
+The change turns a lost voice into a kept one and never the reverse,
+which changes whose voices a round hears,
+so the accounts ride inside `LANE_CONTEST_CACHE_VERSION` 6 and `CONSOLIDATE_CACHE_VERSION` 20:
+no slice-cache file was written after 04:27 UTC on 2026-09-27
+under the agent runs or either worktree's runs directory,
+copy payloads left out,
+where a control from midnight that day finds 494.
+The replies the runs stored under `prompt-payloads/` were not counted for such ballots:
+they sit in many run roots,
+and no count over them could show it covered every reply behind a cached ballot.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

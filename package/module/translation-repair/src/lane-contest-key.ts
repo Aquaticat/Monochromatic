@@ -133,6 +133,13 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  artifact or cache record; checked on 2026-09-29: no slice-cache file was
  written after 04:27 UTC on 2026-09-27.
 
+ Rides inside 6 too: a ballot whose findings are left out or are not a list
+ of strings keeps its choice, read as no findings, where the contest refused
+ it whole (ledger B46, `findingsOrNone` in `contest-ballot-wire.ts`,
+ `lane-contest-wire.ts`), which changes whose voices a round hears; checked
+ on 2026-09-30: no slice-cache file was written after 04:27 UTC on
+ 2026-09-27, where a control from midnight that day finds 494.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 6 was set
  in `d614a0c1d` at 04:30 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

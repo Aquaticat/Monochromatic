@@ -157,6 +157,7 @@ export {
   CONTEST_POLICY,
   CONTEST_REFUSAL,
   contestResponseFormat,
+  findingsOrNone,
   isStringList,
   namesOneOf,
   readCandidateNames,

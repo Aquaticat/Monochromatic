@@ -5,7 +5,7 @@ import type { SliceSyntax, } from './chunk-document.ts';
 import {
   CONTEST_POLICY,
   CONTEST_REFUSAL,
-  isStringList,
+  findingsOrNone,
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
@@ -150,14 +150,11 @@ export type GateWire = {
 export function isConsolidateGateWire(value: unknown,): value is GateWire {
   if (!isJsonRecord(value,))
     return false;
-  if (!('unsupported' in value))
-    return false;
-  if (!('dropped' in value))
-    return false;
-  // THE LISTS ARE NOT CHECKED HERE. `contest-ballot-wire.ts` records that no
-  // wording of a finding may cost a voice; a wrong TYPE, a `null` from a model
-  // that ignored the schema, used to cost the whole ballot, choice included.
-  // The reader takes a non-list as an empty list and keeps the choice.
+  // THE FINDINGS ARE NOT CHECKED HERE. `contest-ballot-wire.ts` records that
+  // no wording of a finding may cost a voice; a wrong TYPE, a `null` from a
+  // model that ignored the schema, used to cost the whole ballot, choice
+  // included, and until 2026-09-30 a findings key left out still did (ledger
+  // B46). The reader takes each through `findingsOrNone` and keeps the choice.
   return isGateChoice(value.choice,)
     && ((typeof value.reason) === 'string');
 }
@@ -180,12 +177,12 @@ export function readConsolidateGateBallot(
   /**
    Findings against the consolidation, empty where the model wrote no list.
    */
-  const unsupported = isStringList(wire.unsupported,) ? wire.unsupported : [];
+  const unsupported = findingsOrNone(wire.unsupported,);
 
   /**
    Findings of dropped content, read the same way.
    */
-  const dropped = isStringList(wire.dropped,) ? wire.dropped : [];
+  const dropped = findingsOrNone(wire.dropped,);
 
   return {
     choice: wire.choice,

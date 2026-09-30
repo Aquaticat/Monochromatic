@@ -154,18 +154,21 @@ export function contestResponseFormat(
 
 /**
  Whether a value is a list of strings, whatever those strings say.
- 
+
  SHAPE, NOT VOCABULARY. An earlier form of the lane contest's guard demanded
  that every member name a candidate, so a judge that filled the findings with
  the offending phrases instead lost its whole ballot, choice included. Two of
  the first sixty calibration voices went that way, both carrying a usable
  choice. The choice is the thing a contest counts, and no wording of a finding
  may cost a voice.
- 
+
+ NOR DOES SHAPE COST ONE (ledger B46): no ballot guard asks this of a findings
+ field any more; each reader takes the field through {@link findingsOrNone}.
+
  @param value - list from a reply
- 
+
  @returns Whether it is a list of strings
- 
+
  @example
  ```ts
  const shaped = isStringList([ 'repair', ],);
@@ -176,6 +179,31 @@ export function isStringList(value: unknown,): value is readonly string[] {
     && value.every(function isText(member: unknown,): boolean {
       return ((typeof member) === 'string');
     },);
+}
+
+/**
+ A ballot's findings field as the list of strings it is, or no findings.
+
+ A FINDING'S SHAPE NEVER COSTS A VOICE (ledger B46). A judge that left a
+ findings field out, wrote `null`, or wrote a bare phrase where a list goes
+ still cast its choice, and the choice is what a contest counts. Before
+ 2026-09-30 the lane contest refused such a ballot whole, and the
+ consolidation and polish gates refused one with the field left out while
+ keeping one with the field set to anything; all three readers now take the
+ field through here, and their guards ask only for a readable choice and
+ reason.
+
+ @param value - findings field as the reply carried it, absent included
+
+ @returns Its strings, or none when it is not a list of strings
+
+ @example
+ ```ts
+ const unsupported = findingsOrNone(wire.unsupported,);
+ ```
+ */
+export function findingsOrNone(value: unknown,): readonly string[] {
+  return isStringList(value,) ? value : [];
 }
 
 /**

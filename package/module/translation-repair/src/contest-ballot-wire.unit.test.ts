@@ -20,6 +20,7 @@ import {
   CONTEST_POLICY,
   CONTEST_REFUSAL,
   contestResponseFormat,
+  findingsOrNone,
   isStringList,
   namesOneOf,
   readCandidateNames,
@@ -163,6 +164,27 @@ await describe({
       name: 'REFUSES a value that is not a list',
       fn: async () => {
         expect(isStringList('tabby',),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: findingsOrNone.name,
+  children: [
+    it({
+      name: 'KEEPS a list of strings as it stands, and READS a field left out, null, a bare phrase or a list '
+        + 'carrying anything but strings as no findings (ledger B46)',
+      fn: async () => {
+        /** A list of strings. */
+        const listed = [ 'napping in the sun', ];
+        expect([
+          findingsOrNone(listed,),
+          findingsOrNone(undefined,),
+          findingsOrNone(null,),
+          findingsOrNone('napping in the sun',),
+          findingsOrNone([ 'tabby', 1, ],),
+        ],).toEqual([ listed, [], [], [], [], ],);
       },
     },),
   ],

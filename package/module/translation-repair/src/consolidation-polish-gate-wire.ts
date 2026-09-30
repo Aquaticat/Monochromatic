@@ -9,7 +9,7 @@ import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
 import { communityRenderingsBlock, } from './community-glossary.ts';
 import {
   CONTEST_REFUSAL,
-  isStringList,
+  findingsOrNone,
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
@@ -250,10 +250,9 @@ export function isConsolidationPolishGateWire(
 ): value is ConsolidationPolishGateWire {
   if (!isJsonRecord(value,))
     return false;
-  if (!('unsupported' in value))
-    return false;
-  if (!('dropped' in value))
-    return false;
+  // THE FINDINGS ARE NOT CHECKED HERE, as the consolidate gate's are not: a
+  // finding's shape never costs a voice (ledger B46), and the reader takes
+  // each through `findingsOrNone`.
   return isPolishChoice(value.choice,) && ((typeof value.reason) === 'string');
 }
 
@@ -275,11 +274,11 @@ export function readConsolidationPolishBallot(
   /**
    Unsupported findings, empty when model wrote another shape.
    */
-  const unsupported = isStringList(wire.unsupported,) ? wire.unsupported : [];
+  const unsupported = findingsOrNone(wire.unsupported,);
   /**
    Dropped findings, empty when model wrote another shape.
    */
-  const dropped = isStringList(wire.dropped,) ? wire.dropped : [];
+  const dropped = findingsOrNone(wire.dropped,);
   return {
     choice: wire.choice,
     unsupported: readCandidateNames({
