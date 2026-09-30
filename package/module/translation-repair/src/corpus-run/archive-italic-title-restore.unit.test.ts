@@ -174,5 +174,19 @@ await describe({
         },),).toBe('The kitten loved *Été des chats*.',);
       },
     },),
+    it({
+      name: 'WRITES the outer of two nested quoted titles and keeps the text after it, where the inner one\'s '
+        + 'spacing shrinks when read as one line (ledger B70)',
+      fn: async () => {
+        // THE INNER TITLE GETS SHORTER in italics: its two spaces read as one.
+        // Written one at a time, last first, the inner went in first and the
+        // outer then cut at an end one unit past where its quote now closed,
+        // taking the period with it.
+        expect(secondSlice({
+          archive: 'The cat loved *The "Long Nap" Chronicles* and *Long Nap*.',
+          replacement: 'The kitten loved “The "Long  Nap" Chronicles”.',
+        },),).toBe('The kitten loved *The "Long Nap" Chronicles*.',);
+      },
+    },),
   ],
 },);
