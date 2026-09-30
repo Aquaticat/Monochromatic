@@ -11849,6 +11849,80 @@ Recurrence:
 where a classification's TSDoc says one answer takes a different remedy,
 check every refusal built from it gives that answer its own.
 
+### B54: the preparation's own findings never reached an artifact
+
+Found by the ninth coverage batch (census-SfAXnI),
+casing the footnote relabel's rows.
+`preparePassEntry` (`pass-prepare.ts`) returned its own findings,
+the footnote relabel's,
+the reference attestation's,
+the page title lexicon's,
+the archive block review's
+and the unclaimed-blocks line,
+in a list beside the preparation,
+and `pass-entry.ts` destructured that list as `pairingFindings` and never read it again.
+Only the pairing round's findings reached the artifact,
+because `prepare-with-pairing.ts` also folds them into `alignmentFindings`,
+the channel the artifact records,
+as its commit said they should ("Findings ride the alignment channel,
+which already reaches the artifact",
+`c914333fa`).
+Ledger X18 had guarded that the evidence rounds' findings survive every way out of the preparation,
+reading the list nothing downstream read.
+
+Measured on a past run:
+hulicaijia31's log holds footnote lines for a reading left out,
+a relabel,
+retained labels and moved definitions,
+and its artifact holds 16 alignment findings,
+none opening "footnotes:";
+across the 263 artifacts under `~/temp/agent/**/artifacts` that `rg` reached,
+no string opens `"footnotes: `.
+
+Fixed as a quality call open to veto:
+red first (`8f014848e`,
+five test files reading the channel the artifact records,
+seven cases failing),
+then `398cd3448`:
+the preparation carries its own findings on `alignmentFindings`,
+after the pairing round's,
+on each way out,
+and the result type drops the list beside it,
+so no caller can read one the artifact never sees.
+No cache account moves:
+no cache key,
+preparation identity or model sheet reads `alignmentFindings`.
+
+Recurrence:
+a value returned for "the entry's findings" is checked at the artifact,
+the boundary its reader sees,
+not at the function that returns it.
+
+### B55: a reorder note for definitions already in order
+
+Found with B54,
+casing the relabel's reorder note.
+`reorderFootnoteDefinitions` (`archive-footnote-order.ts`) noted that the definitions were interleaved with other blocks,
+or shared container delimiters,
+before testing whether they already followed the order asked for.
+Definitions already in the original's order with prose among them came back with the note,
+and the relabel reported "archive definitions stand",
+a withheld move where none was needed;
+since B54 that finding reaches the artifact.
+The note's own TSDoc said it explains why the text stands
+"when it does and the order asked for differs".
+A probe over the built package (`~/temp/agent/audit-glossary-fix/b55-probe.mjs`,
+cat-themed fixtures) gave the same finding for in-order and out-of-order definitions.
+
+Fixed (`2824c6259` red,
+`e2edf037a`):
+the already-in-order return comes before the two refusals.
+The text returned is the same on every path;
+only the note moves.
+
+Recurrence:
+a note or finding that says work was withheld is emitted only where the work was wanted.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
