@@ -364,8 +364,33 @@ Records stayed operationally test-only and `currentEligibilityEstablished:false`
 Constructor-owned association is not retroactive human-witnessed ancestry or renewed authorization.
 Counterfeit root-handle rejection does not cover an actual outsider manager;
 process-local uniqueness does not cover restart/reimport/reconstruction.
-A separately predeclared synthetic sensitivity schedule is unimplemented/undispatched;
-this intact reference does not establish selected-guard sensitivity.
+Separate synthetic source/artifact freeze `proc_dde4` and actual SDK contrasts `proc_3a8b` passed
+all seven intact/selected-change pairs.
+Fourteen sessions,
+twenty-eight first-party scripted responses,
+and fourteen inert callbacks completed with non-error tool results and empty private stderr.
+The unchanged references moved for canonical transaction identity,
+canonical manager reset state,
+duplicate association,
+post-reset attachment,
+epoch eligibility filtering,
+snapshot epoch,
+and snapshot ownership.
+All evidence was independently synthetic;
+no genuine originals,
+external models,
+fixture operations,
+or grants were used.
+Current human-grant eligibility remains unestablished.
+Old-space is not total-process memory;
+file-backed streams are checked after exit,
+not live disk-write capped.
+Separate inert control `proc_2ced` passed explicit force-signal timeout settlement,
+not scheduler/kernel stall resistance or preparation-inclusive handback.
+Next is a separately predeclared,
+unimplemented/undispatched test-owned independent-fork mechanics phase:
+a positive mechanical origin premise is required,
+but inheritance does not supply an initial human grant.
 No genuine original mutation or interaction replay is permitted.
 Historical admission does not itself confer current eligibility or reusable authority.
 Target/source/deadline/cache finalization,
