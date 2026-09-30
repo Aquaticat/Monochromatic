@@ -23,10 +23,12 @@ import {
   type CarriedInsertion,
   type ChunkPair,
   foldCarriedInsertions,
+  foldPassCarried,
   type InsertionAdmission,
   makeInsertionChunk,
   type PreparedDocumentPair,
 } from '../../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from '../capturing-logger.test-fixture.ts';
 
 /**
  Heading both sides carry.
@@ -704,6 +706,91 @@ await describe({
         expect(plain.prepared.slices[1]?.source.text,).toBe(ASK_SOURCE.slice(0, -1,),);
         expect(plain.prepared.slices[2]?.source.text,).toBe(`${PURR_SOURCE}\n\n${NAP_SOURCE}`,);
         expect(plain.findings,).toEqual([`${CARRIED_FOLDED_FINDING} (slice 3 into slice 2)`,],);
+      },
+    },),
+  ],
+},);
+
+/**
+ Runs the pass's fold over the nap carried on one region, keeping every line
+ it logged behind its level.
+
+ @param region - the one region the roster anchored
+
+ @returns The admission after the fold beside the lines
+
+ @example
+ ```ts
+ const { admission, lines, } = passFoldOver({ region: NAP_TARGET, },);
+ ```
+ */
+function passFoldOver(
+  { region, }: { readonly region: string; },
+): {
+  readonly admission: InsertionAdmission;
+  readonly lines: readonly string[];
+} {
+  /**
+   Lines the fold logged.
+   */
+  const lines: string[] = [];
+  /**
+   The fold's outcome.
+   */
+  const { admission, } = foldPassCarried({
+    paired: preparedPair(),
+    admission: carriedOn({ evidence: [region,], },),
+    l: levelCapturingLogger({ lines, },),
+  },);
+  return {
+    admission,
+    lines,
+  };
+}
+
+await describe({
+  name: foldPassCarried.name,
+  children: [
+    it({
+      name: 'LOGS A FOLD at information, with the region the passage was carried on, under the pass\'s tag',
+      fn: async () => {
+        /**
+         The nap carried on its own rendering, inside the homecoming's span.
+         */
+        const folded = passFoldOver({ region: NAP_TARGET, },);
+        expect({
+          lines: folded.lines,
+          stillCarried: folded.admission.carried,
+        },).toEqual({
+          lines: [
+            `info [${foldPassCarried.name}] ${CARRIED_FOLDED_FINDING} (slice 1 into slice 2)`,
+            `info [${foldPassCarried.name}] slice 1 carried on 1 region(s): ${JSON.stringify(NAP_TARGET,)}`,
+          ],
+          stillCarried: [],
+        },);
+      },
+    },),
+    it({
+      name: 'WARNS A STAND-ASIDE naming why the passage stays carried, beside the region it was carried on, so a '
+        + 'log reader tells a passage the fold could not place from one it folded (class one hundred eleven)',
+      fn: async () => {
+        /**
+         The nap carried on the bath's rendering, two slices away.
+         */
+        const aside = passFoldOver({ region: BATH_TARGET, },);
+        /**
+         The lines before the region line, which should be the one warning.
+         */
+        const [warning = '', ...rest] = aside.lines;
+        expect({
+          warns: warning.startsWith(`warn [${foldPassCarried.name}] slice 1 stays carried: `,),
+          rest,
+          stillCarried: aside.admission.carried?.length,
+        },).toEqual({
+          warns: true,
+          rest: [`info [${foldPassCarried.name}] slice 1 carried on 1 region(s): ${JSON.stringify(BATH_TARGET,)}`,],
+          stillCarried: 1,
+        },);
       },
     },),
   ],

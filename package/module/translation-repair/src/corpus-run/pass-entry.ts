@@ -19,7 +19,7 @@ import type {
   CorpusPair,
   EntryOutcome,
 } from './pass-entry-contract.ts';
-import { foldCarriedInsertions, } from './insertion-carried-fold.ts';
+import { foldPassCarried, } from './pass-carried-fold.ts';
 import { admitPassInsertions, } from './pass-insertion-reseat.ts';
 import { runPassConsolidation, } from './pass-consolidate.ts';
 import type { PipelineDigest, } from './pipeline-digest.ts';
@@ -291,50 +291,17 @@ async function runEntryPipeline(
      The slicing with every carried passage folded into the neighbour whose
      archive span renders it (class one hundred ten, mikaela12): both lanes
      then write that neighbour from the source it actually renders, instead
-     of dropping the passage the archive merged in.
+     of dropping the passage the archive merged in. The fold's lines print
+     under the entry (`pass-carried-fold.ts`).
      */
     const {
       prepared,
       admission: translateInsertionAdmission,
-      findings: foldFindings,
-      asides: foldAsides,
-    } = foldCarriedInsertions({
-      prepared: paired,
+    } = foldPassCarried({
+      paired,
       admission: admissionAsRead,
+      l: tagged({ tag: entry.id, },),
     },);
-    /**
-     Entry logger the fold findings print under.
-     */
-    const foldLogger = tagged({ tag: entry.id, },);
-    for (const finding of foldFindings)
-      foldLogger.info(finding,);
-    // A passage that stays carried says why (class one hundred eleven,
-    // mikaela13): the log reader can tell a scattered rendering from one the
-    // fold could not place.
-    for (const aside of foldAsides)
-      foldLogger.warn(aside,);
-    // Every carried passage, folded or not, prints the regions its coverage
-    // rests on, so a carried-evidence-lost stop at publish or a fold's choice
-    // of carrier (class one hundred seventy-nine) can be read against the
-    // admission without the artifact.
-    for (const carried of admissionAsRead.carried ?? []) {
-      /**
-       Regions the coverage voices quoted, one JSON string each.
-       */
-      const regions = carried.evidence
-        .map(function preview(region,): string {
-          return JSON.stringify(region,);
-        },)
-        .join(' | ',);
-      /**
-       How many regions the voices quoted.
-       */
-      const regionCount = carried.evidence
-        .length;
-      foldLogger.info(
-        `slice ${String(carried.sliceIndex,)} carried on ${String(regionCount,)} region(s): ${regions}`,
-      );
-    }
 
     /**
      What both lanes made of that slicing, with neither preferred, on the

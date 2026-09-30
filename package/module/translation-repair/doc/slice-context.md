@@ -233,7 +233,11 @@ and the sources must abut.
 The other neighbour keeps its own source and writes its own line;
 the carrier renders the passage.
 A stand-aside names its reason in a `stays carried:` warn line,
-and every passage still carried prints its evidence regions at the admission.
+and every carried passage,
+folded or not,
+prints its evidence regions at the admission
+(both from `corpus-run/pass-carried-fold.ts`,
+under the entry's tag and `[foldPassCarried]`).
 
 Two carried passages in a row (`mikaela14`):
 a passage's neighbours are the nearest paired slices on each side,
