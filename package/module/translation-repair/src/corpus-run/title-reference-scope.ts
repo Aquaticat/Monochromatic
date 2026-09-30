@@ -473,4 +473,13 @@ export type LocatedTitle = {
  */
 export type TitleLocation = LocatedTitle | { readonly kind: 'ambiguous'; } | { readonly kind: 'none'; };
 
+/**
+ Outcome of a slice's search: every rendering located, in page order; an
+ ambiguous slice; or none.
+ */
+export type TitleLocations = {
+  readonly kind: 'located';
+  readonly renderings: readonly LocatedTitle[];
+} | { readonly kind: 'ambiguous'; } | { readonly kind: 'none'; };
+
 //endregion Title reference scope

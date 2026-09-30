@@ -1,10 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-import { isSmallLetter, } from '../cased-letters.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
-import { codePointAt, } from '../code-points.ts';
 import { isHanOnly, } from '../han-only-text.ts';
-import { straightenQuotes, } from '../quote-normalize.ts';
-import { wordStarts, } from '../word-bounds.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { withoutHtmlComments, } from '../translate-address-drop.ts';
 import {
@@ -13,10 +9,11 @@ import {
   withRewrittenText,
 } from './assembly-page-text.ts';
 import { headingTitles, } from './heading-title-lines.ts';
+import { locateTitleRendering, } from './title-reference-locate.ts';
 import {
-  type LocatedTitle,
-  locateTitleRendering,
-} from './title-reference-locate.ts';
+  type RenderedHeading,
+  rewriteRenderings,
+} from './title-reference-rewrite.ts';
 import { bracketsTitle, } from './title-reference-scope.ts';
 
 //region Title reference unify
@@ -29,36 +26,9 @@ import { bracketsTitle, } from './title-reference-scope.ts';
 // Cage". Every slice is judged alone and no judge sees the heading beside
 // the reference. THE PAGE DECIDES ONCE, HERE, where every heading is in
 // view: a reference to a section title takes the heading's rendering,
-// found in the referencing slice by the link's destination, by the Han
+// found in the referencing slice by the link's destination, by every Han
 // gloss after the English, by title brackets or by quotes; a slice that
-// offers two spans of one shape is reported, not guessed at.
-
-/**
- Punctuation a quoted span may end with, kept outside the rewrite.
- */
-const TRAILING_MARKS: ReadonlySet<string> = new Set([
-  ',',
-  '.',
-  '!',
-  '?',
-],);
-
-/**
- Separator between the words of a run.
- */
-const WORD_SEPARATOR = ' ';
-
-/**
- Why a glossed run's title is left as it stands: it has more words than the
- heading's rendering.
- */
-const RUN_LONGER = 'the glossed run reads as more than the title';
-
-/**
- Why a glossed run's title is left as it stands: no word of the run can
- start a title.
- */
-const RUN_UNCAPITALIZED = 'every word of the glossed run starts with a small letter, so where its title starts cannot be read';
+// offers two bracketed or quoted spans is reported, not guessed at.
 
 /**
  Opening parenthesis of a gloss.
@@ -69,42 +39,6 @@ const GLOSS_OPEN = '(';
  Closing parenthesis of a gloss.
  */
 const GLOSS_CLOSE = ')';
-
-/**
- One section heading as the page renders it.
- */
-type RenderedHeading = {
-  /**
-   Slice whose text carries the heading.
-   */
-  readonly sliceIndex: number;
-
-  /**
-   Title as the original writes it.
-   */
-  readonly title: string;
-
-  /**
-   Title as the page renders it, any Han gloss stripped.
-   */
-  readonly rendering: string;
-};
-
-/**
- Outcome of a rewrite: the text rewritten with what changed, already the
- heading's, or a run that cannot be read as the title alone, with why.
- */
-type RewriteOutcome = {
-  readonly kind: 'same';
-} | {
-  readonly kind: 'ambiguous';
-  readonly reason: string;
-} | {
-  readonly kind: 'rewritten';
-  readonly text: string;
-  readonly before: string;
-  readonly after: string;
-};
 
 /**
  Rendering with a trailing Han gloss of the title stripped.
@@ -233,211 +167,6 @@ function renderedHeadings(
 }
 
 /**
- Count of words in a run.
-
- @param text - run of words
-
- @returns Words separated by spaces
-
- @example
- ```ts
- wordCount({ text: 'Cat in a Cage', },); // 4
- ```
- */
-function wordCount({ text, }: { readonly text: string; },): number {
-  /**
-   Words of the run.
-   */
-  const words = text.split(WORD_SEPARATOR,)
-    .filter(function nonEmpty(word,): boolean {
-      return word !== '';
-    },);
-  return words.length;
-}
-
-/**
- Whether a text ends with a run of words, the run starting at a word edge.
-
- @param text - text read
-
- @param tail - words it may end with
-
- @returns Whether the text ends with the tail and no word runs into it
-
- @example
- ```ts
- endsWithWords({ text: 'from the Cat Murmurs', tail: 'Cat Murmurs', },); // true
- endsWithWords({ text: 'Wildcat Murmurs', tail: 'cat Murmurs', },); // false
- ```
- */
-function endsWithWords(
-  {
-    text,
-    tail,
-  }: {
-    readonly text: string;
-    readonly tail: string;
-  },
-): boolean {
-  /**
-   Where the tail would start if the text ends with it.
-   */
-  const tailAt = text.length - tail.length;
-
-  /**
-   Offsets where the tail stands as words.
-   */
-  const starts = wordStarts({
-    text,
-    needle: tail,
-    end: 'word',
-  },);
-  return starts.includes(tailAt,);
-}
-
-/**
- Offset of a glossed run's first word that does not open with a small
- letter, where its title starts; the run's length where every word does.
-
- A TITLE OPENS WITH A CAPITAL (ledger B58). The pages write titles in
- English title case, which capitalizes a title's first word, so small-letter
- words ahead of it ("from", "sung in") lead into the title and stay on the
- page. Small is read by general category (`isSmallLetter`), since a word
- leading in may open with an accented letter; a word opening with a capital,
- a digit or anything else that is no small letter opens the title.
-
- @param run - glossed run, trimmed
-
- @returns Offset where the title starts
-
- @example
- ```ts
- leadInEnd({ run: 'sung in Cat Talk', },); // 8
- ```
- */
-function leadInEnd({ run, }: { readonly run: string; },): number {
-  for (let at = 0; at < run.length; at += 1) {
-    /**
-     Whether a word starts here: no space, at the run's start or after one.
-     */
-    const startsWord = (run.charAt(at,) !== WORD_SEPARATOR) && ((at === 0) || (run.charAt(at - 1,) === WORD_SEPARATOR));
-    if (startsWord && (!isSmallLetter({ character: codePointAt({
-      text: run,
-      at,
-    },), },)))
-      return at;
-  }
-  return run.length;
-}
-
-/**
- Page text with the located rendering rewritten to the heading's, a glossed
- run's lead-in words kept; `same` where it already is the heading's, and
- `ambiguous` with why where it cannot be read as the title alone.
-
- @param text - page text of the slice
-
- @param located - where the rendering stands
-
- @param heading - heading the reference points at
-
- @returns Rewritten text with what changed, `same` or `ambiguous`
-
- @example
- ```ts
- const outcome = rewriteLocated({ text, located, heading, },);
- ```
- */
-function rewriteLocated(
-  {
-    text,
-    located,
-    heading,
-  }: {
-    readonly text: string;
-    readonly located: LocatedTitle;
-    readonly heading: RenderedHeading;
-  },
-): RewriteOutcome {
-  /**
-   Rendering as the slice wrote it.
-   */
-  const current = text.slice(
-    located.start,
-    located.end,
-  );
-  /**
-   Trailing punctuation a quoted span keeps.
-   */
-  const trailing = TRAILING_MARKS.has(current.slice(-1,),) ? current.slice(-1,) : '';
-  /**
-   Rendering without the trailing punctuation.
-   */
-  const core = current.slice(
-    0,
-    current.length - trailing.length,
-  );
-  /**
-   Whether a glossed run ends with the heading's rendering as whole words.
-
-   ONLY A GLOSSED RUN (ledger B23). The run before a Han gloss cannot be told
-   from the words ahead of it ("from the Afternoon Cat Murmurs"), so it reads
-   as the heading's when it ends with it; a quoted, bracketed or linked span
-   is the title alone, and one that only ends with the heading's rendering
-   ("Evening Cat Murmurs") is another rendering. The end is read at a word
-   edge, so "Wildcat Murmurs" does not end in "cat Murmurs".
-   */
-  const glossEndsWithHeading = (located.kind === 'gloss') && endsWithWords({
-    text: straightenQuotes({ text: core, },),
-    tail: straightenQuotes({ text: heading.rendering, },),
-  },);
-  // THE TYPOGRAPHY FOLD (ledger B24): a reference apart from the heading only
-  // in apostrophe style is the heading's, which the typography restoration
-  // makes one; rewriting it would only swap one quote style for the other.
-  if ((straightenQuotes({ text: core, },) === straightenQuotes({ text: heading.rendering, },)) || glossEndsWithHeading)
-    return { kind: 'same', };
-  /**
-   Length of the words leading into the title: a glossed run's small-letter
-   words ahead of it, none for a quoted, bracketed or linked span, which is
-   the title alone.
-   */
-  const leadIn = (located.kind === 'gloss') ? leadInEnd({ run: core, },) : 0;
-  /**
-   Rendering of the title alone.
-   */
-  const title = core.slice(leadIn,);
-  if ((located.kind === 'gloss') && (title === '')) {
-    return {
-      kind: 'ambiguous',
-      reason: RUN_UNCAPITALIZED,
-    };
-  }
-  // NO MORE WORDS THAN THE HEADING'S (ledger B58). A capitalized word leading
-  // in ("From" opening a line) cannot be told from the title's first word, and
-  // the two words of slack the run once had rewrote such words away; a run
-  // longer than the heading's rendering is reported instead.
-  if ((located.kind === 'gloss') && (wordCount({ text: title, },) > wordCount({ text: heading.rendering, },))) {
-    return {
-      kind: 'ambiguous',
-      reason: RUN_LONGER,
-    };
-  }
-  /**
-   Rendering as the heading has it, punctuation kept.
-   */
-  const after = `${heading.rendering}${trailing}`;
-  return {
-    kind: 'rewritten',
-    text: `${text.slice(
-      0,
-      located.start + leadIn,
-    )}${after}${text.slice(located.end,)}`,
-    before: title,
-    after: heading.rendering,
-  };
-}
-
-/**
  Unifies every reference to a section title with the heading's rendering,
  across the replaced slices.
 
@@ -546,26 +275,22 @@ export function unifyTitleReferences(
         continue;
       }
       /**
-       Rewrite of the located rendering.
+       Rewrites of the located renderings.
        */
-      const outcome = rewriteLocated({
+      const rewrite = rewriteRenderings({
         text,
-        located,
+        renderings: located.renderings,
         heading,
-      },);
-      if (outcome.kind === 'same')
-        continue;
-      if (outcome.kind === 'ambiguous') {
-        findings.push(`title-reference-ambiguous (slice ${String(sliceIndex,)}: ${whose}, but ${outcome.reason})`,);
-        continue;
-      }
-      rewritten.set(
         sliceIndex,
-        outcome.text,
-      );
-      findings.push(
-        `title-reference-unified (slice ${String(sliceIndex,)}: "${outcome.before}" to "${outcome.after}"; ${whose})`,
-      );
+        whose,
+      },);
+      if (rewrite.text !== text) {
+        rewritten.set(
+          sliceIndex,
+          rewrite.text,
+        );
+      }
+      findings.push(...rewrite.findings,);
     }
   }
   /**

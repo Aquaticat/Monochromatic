@@ -1,12 +1,19 @@
+import {
+  locateLink,
+  titleLink,
+} from './title-reference-link.ts';
 import { locateMarked, } from './title-reference-marks.ts';
 import {
+  type LocatedTitle,
   referenceScope,
   type TitleLocation,
+  type TitleLocations,
 } from './title-reference-scope.ts';
 
 export type {
   LocatedTitle,
   TitleLocation,
+  TitleLocations,
 } from './title-reference-scope.ts';
 
 //region Title reference locate
@@ -15,24 +22,12 @@ export type {
 // title brackets (`《title》`) or in corner brackets (`「title」篇`); the
 // bench renders it as a link with the same destination, as the English
 // with the Han in parentheses after it, in title brackets, or in quotes.
-// Each shape is found by index scan, the link by its destination, and a
-// slice that offers two spans of the same shape is reported ambiguous
-// rather than guessed at.
-
-/**
- Opening of a Markdown link's text.
- */
-const LINK_OPEN = '[';
-
-/**
- Separator between a Markdown link's text and its destination.
- */
-const LINK_MIDDLE = '](';
-
-/**
- Closing of a Markdown link's destination.
- */
-const LINK_CLOSE = ')';
+// Each shape is found by index scan. The link is the page's link at the
+// title link's place among the links to its destination
+// (title-reference-link.ts); every gloss names the title, so each is read
+// (ledger B59); and a slice that offers two bracketed or quoted spans, or
+// links the destination a different number of times than the original, is
+// reported ambiguous rather than guessed at.
 
 /**
  Opening title bracket.
@@ -58,15 +53,6 @@ const GLOSS_CLOSE = ')';
  Newline, which no span crosses.
  */
 const LINE_END = '\n';
-
-/**
- Characters no link text holds: a newline, and the closing bracket of
- another link's text.
- */
-const LINK_TEXT_BREAKS: ReadonlySet<string> = new Set([
-  LINE_END,
-  ']',
-],);
 
 /**
  Quote pairs a title may stand in, opening then closing.
@@ -113,191 +99,73 @@ const RUN_BOUNDARIES: ReadonlySet<string> = new Set([
 ],);
 
 /**
- Destination of the link the original wraps a title in, empty where the
- original links no such title.
+ Every place the page renders the title as English with the Han in
+ parentheses after it: the English run before each parenthesis, in page
+ order, a gloss with no run before it skipped.
 
- @param sourceText - original text of the slice
-
- @param title - Han title
-
- @returns Link destination
-
- @example
- ```ts
- linkDestination({ sourceText: '《[猫](https://example.test/cat)》', title: '猫', },); // 'https://example.test/cat'
- ```
- */
-function linkDestination(
-  {
-    sourceText,
-    title,
-  }: {
-    readonly sourceText: string;
-    readonly title: string;
-  },
-): string {
-  /**
-   Link text opening the original writes.
-   */
-  const opening = `${LINK_OPEN}${title}${LINK_MIDDLE}`;
-  /**
-   Offset of the link text opening, -1 for none.
-   */
-  const open = sourceText.indexOf(opening,);
-  if (open === (-1))
-    return '';
-  /**
-   Offset of the destination's first character.
-   */
-  const from = open + opening.length;
-  /**
-   Offset of the destination's close, -1 for none.
-   */
-  const close = sourceText.indexOf(
-    LINK_CLOSE,
-    from,
-  );
-  if (close === (-1))
-    return '';
-  return sourceText.slice(
-    from,
-    close,
-  );
-}
-
-/**
- Link text ending at a link's middle, read leftward to the nearest `[`; none
- where a newline or another link's `]` comes first, or no `[` does.
-
- A LINK'S TEXT STANDS ON ITS DESTINATION'S LINE AND HOLDS NO BRACKET (ledger
- B57). Read back to the nearest `[` with no bound, a page link that lost its
- opening bracket took an earlier footnote line or another link with it, and
- the rewrite replaced them with the title; such a line renders no link.
+ EVERY GLOSS (ledger B59). Each gloss names the title, so each run before
+ one renders it; reading only the first left a second credit's rendering as
+ it stood.
 
  @param pageText - page text of the slice
 
- @param middle - offset of the `](` that ends the text
+ @param title - Han title
 
- @returns Located link text, or none
+ @returns Located runs, empty for none
 
  @example
  ```ts
- linkTextBefore({ pageText: 'From [The Cat](https://example.test/cat)', middle: 13, },); // link 6 to 13
+ locateGlosses({ pageText: '—— Yumao, Caged Cat (笼中猫)', title: '笼中猫', },); // one run, 10 to 19
  ```
  */
-function linkTextBefore(
+function locateGlosses(
   {
     pageText,
-    middle,
+    title,
   }: {
     readonly pageText: string;
-    readonly middle: number;
+    readonly title: string;
   },
-): TitleLocation {
-  for (let at = middle - 1; at >= 0; at -= 1) {
+): readonly LocatedTitle[] {
+  /**
+   Gloss after a rendering.
+   */
+  const gloss = `${GLOSS_OPEN}${title}${GLOSS_CLOSE}`;
+  /**
+   Runs found so far.
+   */
+  const runs: LocatedTitle[] = [];
+  for (
+    let open = pageText.indexOf(gloss,);
+    open !== (-1);
+    open = pageText.indexOf(
+      gloss,
+      open + gloss.length,
+    )
+  ) {
     /**
-     Character read leftward from the middle.
+     Offset just past the run, before the spaces ahead of the parenthesis.
      */
-    const character = pageText.charAt(at,);
-    if (character === LINK_OPEN) {
-      return {
-        kind: 'link',
-        start: at + LINK_OPEN.length,
-        end: middle,
-      };
+    const end = trimmedEnd({
+      pageText,
+      from: open,
+    },);
+    /**
+     Offset of the run's first character.
+     */
+    const start = runStart({
+      pageText,
+      end,
+    },);
+    if (start < end) {
+      runs.push({
+        kind: 'gloss',
+        start,
+        end,
+      },);
     }
-    if (LINK_TEXT_BREAKS.has(character,))
-      return { kind: 'none', };
   }
-  return { kind: 'none', };
-}
-
-/**
- Where the page renders a link to a destination: its link text.
-
- @param pageText - page text of the slice
-
- @param destination - link destination the original names
-
- @returns Located link text, or none
-
- @example
- ```ts
- locateLink({ pageText: 'From [The Cat](https://example.test/cat)', destination: 'https://example.test/cat', },);
- ```
- */
-function locateLink(
-  {
-    pageText,
-    destination,
-  }: {
-    readonly pageText: string;
-    readonly destination: string;
-  },
-): TitleLocation {
-  /**
-   Offset of the link's middle before the destination, -1 for none.
-   */
-  const middle = pageText.indexOf(`${LINK_MIDDLE}${destination}${LINK_CLOSE}`,);
-  if (middle === (-1))
-    return { kind: 'none', };
-  return linkTextBefore({
-    pageText,
-    middle,
-  },);
-}
-
-/**
- Where the page renders the title as English with the Han in parentheses
- after it: the English run before the parenthesis.
-
- @param pageText - page text of the slice
-
- @param title - Han title
-
- @returns Located run, or none
-
- @example
- ```ts
- locateGlossed({ pageText: '—— Yumao, Caged Cat (笼中猫)', title: '笼中猫', },);
- ```
- */
-function locateGlossed(
-  {
-    pageText,
-    title,
-  }: {
-    readonly pageText: string;
-    readonly title: string;
-  },
-): TitleLocation {
-  /**
-   Offset of the gloss's opening parenthesis, -1 for none.
-   */
-  const open = pageText.indexOf(`${GLOSS_OPEN}${title}${GLOSS_CLOSE}`,);
-  if (open === (-1))
-    return { kind: 'none', };
-  /**
-   Offset just past the run, before the spaces ahead of the parenthesis.
-   */
-  const end = trimmedEnd({
-    pageText,
-    from: open,
-  },);
-  /**
-   Offset of the run's first character.
-   */
-  const start = runStart({
-    pageText,
-    end,
-  },);
-  if (start >= end)
-    return { kind: 'none', };
-  return {
-    kind: 'gloss',
-    start,
-    end,
-  };
+  return runs;
 }
 
 /**
@@ -400,18 +268,19 @@ function boundaryBefore(
 }
 
 /**
- Location moved by an offset, so a span found inside a scope is reported
- against the whole text.
+ Outcome of a search inside a scope, a located span moved by the scope's
+ offset so it is reported against the whole text.
 
  @param location - location inside the scope
 
  @param by - offset of the scope's first character
 
- @returns Location against the whole text
+ @returns The one rendering against the whole text, or ambiguous or none as
+ found
 
  @example
  ```ts
- shifted({ location: { kind: 'quote', start: 1, end: 4, }, by: 10, },); // 11 to 14
+ shifted({ location: { kind: 'quote', start: 1, end: 4, }, by: 10, },); // one rendering, 11 to 14
  ```
  */
 function shifted(
@@ -422,19 +291,24 @@ function shifted(
     readonly location: TitleLocation;
     readonly by: number;
   },
-): TitleLocation {
+): TitleLocations {
   if ((location.kind === 'none') || (location.kind === 'ambiguous'))
     return location;
   return {
-    kind: location.kind,
-    start: location.start + by,
-    end: location.end + by,
+    kind: 'located',
+    renderings: [
+      {
+        kind: location.kind,
+        start: location.start + by,
+        end: location.end + by,
+      },
+    ],
   };
 }
 
 /**
  Where a slice's page text renders a title the original brackets: by the
- link's destination first, then by the Han gloss after the English, then
+ link's destination first, then by every Han gloss after the English, then
  by title brackets, then by quotes, the bracket and quote searches held to
  the page's definition line where the original references the title in a
  footnote definition.
@@ -447,11 +321,11 @@ function shifted(
 
  @param rendering - heading's rendering the reference should carry
 
- @returns Located rendering, ambiguous, or none
+ @returns Located renderings in page order, ambiguous, or none
 
  @example
  ```ts
- locateTitleRendering({ sourceText: '《猫》', pageText: '《Cat》', title: '猫', rendering: 'Cat', },); // bracket 1 to 4
+ locateTitleRendering({ sourceText: '《猫》', pageText: '《Cat》', title: '猫', rendering: 'Cat', },); // one bracket, 1 to 4
  ```
  */
 export function locateTitleRendering(
@@ -466,34 +340,45 @@ export function locateTitleRendering(
     readonly title: string;
     readonly rendering: string;
   },
-): TitleLocation {
+): TitleLocations {
   /**
-   Destination the original links the title to, if it does.
+   The original's link around the title, if it links it.
    */
-  const destination = linkDestination({
+  const link = titleLink({
     sourceText,
     title,
   },);
   /**
    Link text, where the page links the same destination.
    */
-  const linked = (destination === '')
+  const linked = (link.kind === 'none')
     ? { kind: 'none', } as const
     : locateLink({
+      sourceText,
       pageText,
-      destination,
+      link,
     },);
-  if (linked.kind !== 'none')
+  if (linked.kind === 'ambiguous')
     return linked;
+  if (linked.kind !== 'none') {
+    return {
+      kind: 'located',
+      renderings: [linked,],
+    };
+  }
   /**
-   English run before the Han gloss, where the page glosses.
+   English runs before the Han gloss, where the page glosses.
    */
-  const glossed = locateGlossed({
+  const glossed = locateGlosses({
     pageText,
     title,
   },);
-  if (glossed.kind !== 'none')
-    return glossed;
+  if (glossed.length > 0) {
+    return {
+      kind: 'located',
+      renderings: glossed,
+    };
+  }
   /**
    Span the bracket and quote searches read.
    */
