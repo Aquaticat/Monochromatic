@@ -203,6 +203,26 @@ wrapping or compare presentation alternatives.
 Matched ordinary-player and Search baselines remain unrendered,
 as do equal complete filenames under ancestors sharing a leaf-folder
 label.
+Prototype commit `7ecfb4880` prepares these bounded controls:
+
+- Equal `Cam.flac` labels with `Collection A / Live` and
+  `Collection B / Live` context.
+- A matched long-name Search control omitting only the known literal
+  suffixes.
+  Its equal titles and context are intentionally undisambiguated,
+  not a proposed usable presentation.
+- A source-shaped ordinary-row control using the real `rowDisplay`
+  utility and copied one-line `Text` ellipsis/padding.
+  `MainActivity.trackRow` is private;
+  this replica avoids reflection and production changes.
+  It does not exercise the live ordinary player,
+  current-track decoration,
+  click behavior,
+  complete player chrome or D11 Settings.
+
+The controls preserve the selected Search host and remain nonfunctional.
+Build/test verification and their native captures are pending.
+Their preparation does not add a selected visibility or placement policy.
 Before recommending,
 add a matched ordinary-player rendering and equal complete filenames
 under different ancestor paths sharing a leaf-folder label.

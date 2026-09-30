@@ -36,9 +36,14 @@ status-cropped matrix is in
 Both suffix-distinct pairs remain visibly distinguishable in the tested
 states;
 long titles wrap to four lines inner and three cover at 200%.
-Task 137 still needs matched ordinary-player/Search baselines and equal
-filenames under ancestors sharing a leaf-folder label before any
-presentation recommendation.
+Task 137 still needs comparative evidence before any presentation
+recommendation.
+Prototype commit `7ecfb4880` prepares a matched suffix-omitted Search
+negative control,
+equal filenames under distinct ancestors with the same leaf-folder name,
+and a source-shaped ordinary-row ellipsis control.
+That replica is not a live ordinary-player baseline;
+its build/tests and the new native captures are pending.
 No extension preference has been selected.
 Matcher selection,
 new IME studies and original-AVD changes remain excluded.
