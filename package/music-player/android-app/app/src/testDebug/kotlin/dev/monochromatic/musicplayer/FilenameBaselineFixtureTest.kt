@@ -100,7 +100,7 @@ class FilenameBaselineFixtureTest {
             // What: ::recordDiagnostic is a bound function reference, not a method invocation.
             // Why: The fixture writes real events to this test-owned recorder.
             //
-            // In TS you\'d write (pseudocode):
+            // In TS you'd write (pseudocode):
             // ```ts
             // const report = (event: FilenameBaselineEvent) => this.recordDiagnostic(event);
             // ```
@@ -115,7 +115,7 @@ class FilenameBaselineFixtureTest {
             assertEquals(0.0, fixture.engine.durationSec(), 0.0)
             assertFalse(fixture.engine.playWhenReady())
             assertTrue(fixture.engine.callbacksRegistered())
-            assertFalse(diagnosticEvents.isEmpty())
+            assertTrue(diagnosticEvents.contains(FilenameBaselineEvent("filenameBaselineFixture", "scene=$scene selection=none")))
             // What: A for loop visits the two bounded row indices.
             // Why: Both distinct suffixes survive real common-root and active-page trimming.
             //
@@ -129,6 +129,7 @@ class FilenameBaselineFixtureTest {
             }
             fixture.engine.release()
             assertFalse(fixture.engine.callbacksRegistered())
+            assertTrue(diagnosticEvents.contains(FilenameBaselineEvent("FilenameBaselineEngine.release", "released paused renderer double")))
         }
     }
 
@@ -158,6 +159,8 @@ class FilenameBaselineFixtureTest {
                 assertEquals(fixture.selectedUri, fixture.engine.loadedUri)
                 assertEquals(index, fixture.controller.uiState.currentIndex)
                 assertEquals(1, fixture.engine.loadCount)
+                assertTrue(diagnosticEvents.contains(FilenameBaselineEvent("FilenameBaselineEngine.load", "paused synthetic load=1")))
+                assertTrue(diagnosticEvents.contains(FilenameBaselineEvent("FilenameBaselineEngine.seekTo", "synthetic position=66.0")))
                 assertEquals(66.0, fixture.engine.positionSec(), 0.0)
                 assertEquals(275.0, fixture.engine.durationSec(), 0.0)
                 assertFalse(fixture.engine.playWhenReady())
@@ -240,9 +243,16 @@ class FilenameBaselineFixtureTest {
      * test('direct play is rejected', () => expect(() => engine.play()).toThrow());
      * ```
      */
-    @Test(expected = IllegalStateException::class)
-    fun directPlayIsRejected() {
-        FilenameBaselineEngine(::recordDiagnostic).play()
+    @Test fun directPlayIsRejected() {
+        var rejected: Boolean = false
+        try {
+            FilenameBaselineEngine(::recordDiagnostic).play()
+        } catch (error: IllegalStateException) {
+            assertEquals("Filename baseline cannot request audio playback.", error.message)
+            rejected = true
+        }
+        assertTrue("Direct play did not throw.", rejected)
+        assertTrue(diagnosticEvents.contains(FilenameBaselineEvent("FilenameBaselineEngine.play", "rejecting transport request")))
     }
 
     /**
