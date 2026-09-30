@@ -17,7 +17,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 import {
   CENSUS_FORMAT,
   type CensusArguments,
-  readBaselineStretches,
+  readBaselineCensus,
   readCensusArguments,
 } from './coverage-census-input.ts';
 import {
@@ -25,8 +25,9 @@ import {
   censusReportLines,
 } from './coverage-census-print.ts';
 import {
+  type BaselineCensus,
   baselineStatusesOf,
-  type CensusStretch,
+  emptyClaimsOf,
   kindTotalsOf,
   sourceRowsOf,
 } from './coverage-census-report.ts';
@@ -53,8 +54,11 @@ import type { CoverageTally, } from './coverage-tally.ts';
 //
 // A BATCH OF TESTS PROVES ITS REACH by running its own test files with
 // `--baseline <an earlier census.json>` and `--source` for each source it
-// claims: every claimed stretch must read as ran. The baseline must be of the
-// current census format, and is read before the suite runs.
+// claims: every claimed stretch must read as ran, and every claimed source the
+// baseline holds no stretch in must be loaded by this run with no cold
+// stretch left, since a baseline that never loaded a source proves nothing of
+// it. The baseline must be of the current census format, and is read before
+// the suite runs.
 //
 // SPENDS NO QUOTA, and the raw coverage (about 8 GB for the whole suite) is
 // deleted once the census is written; the census and the suite's log stay in
@@ -83,9 +87,9 @@ type Baseline = {
   readonly path: string;
 
   /**
-   Its stretches.
+   What it recorded.
    */
-  readonly stretches: readonly CensusStretch[];
+  readonly census: BaselineCensus;
 };
 
 /**
@@ -220,6 +224,10 @@ async function reportCensus(
     ),
   );
   /**
+   Sources the batch claims, empty for every source.
+   */
+  const claimed = new Set(asked.sources,);
+  /**
    Every line of the report, then each baseline reading.
    */
   const lines = [
@@ -239,15 +247,21 @@ async function reportCensus(
     },),
     ...baselines.flatMap(function baselineLines({
       path,
-      stretches: baseline,
+      census: baseline,
     },): readonly string[] {
       return baselineReportLines({
         path,
         statuses: baselineStatusesOf({
+          baseline: baseline.stretches,
+          current: stretches,
+          loadedSources,
+          sources: claimed,
+        },),
+        emptyClaims: emptyClaimsOf({
           baseline,
           current: stretches,
           loadedSources,
-          sources: new Set(asked.sources,),
+          sources: claimed,
         },),
       },);
     },),
@@ -284,7 +298,7 @@ async function runCoverageCensus(): Promise<void> {
     .map(async function readBaseline(path,): Promise<Baseline> {
     return {
       path,
-      stretches: readBaselineStretches({
+      census: readBaselineCensus({
         path,
         text: await readFile(
           path,

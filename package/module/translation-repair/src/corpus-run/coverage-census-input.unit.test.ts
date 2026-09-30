@@ -2,8 +2,8 @@
  Tests what the coverage census reads (ledger T8): the suite's markers
  counted by occurrence rather than by line, its command line with every
  refusal strict `parseArgs` and the census add, and an earlier census's
- stretches, read only from a file of the current census format. Paths are
- cat-themed invention.
+ stretches and loaded sources, read only from a file of the current census
+ format. Paths are cat-themed invention.
 
  @module
  */
@@ -20,7 +20,7 @@ import {
   FAIL_MARKER,
   markerCount,
   PASS_MARKER,
-  readBaselineStretches,
+  readBaselineCensus,
   readCensusArguments,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
@@ -113,51 +113,93 @@ await describe({
 },);
 
 await describe({
-  name: readBaselineStretches.name,
+  name: readBaselineCensus.name,
   children: [
     it({
-      name: 'READS THE STRETCHES OF A CENSUS FILE of the current format',
+      name: 'READS THE STRETCHES AND LOADED SOURCES OF A CENSUS FILE of the current format',
       fn: async () => {
-        expect(readBaselineStretches({
+        expect(readBaselineCensus({
           path: '/tmp/census.json',
           text: JSON.stringify({
             format: CENSUS_FORMAT,
             head: 'abc',
             stretches: [STRETCH,],
+            loadedSources: ['src/nap.ts', 'src/purr.ts',],
           },),
-        },),).toEqual([STRETCH,],);
+        },),).toEqual({
+          stretches: [STRETCH,],
+          loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
+        },);
       },
     },),
     it({
-      name: 'REFUSES a file that is not an object, one of an earlier format or none (the census before ledger M67), '
-        + 'one with no stretches, or one holding a stretch missing a field',
+      name: 'REFUSES, each for its own reason, a file that is not an object, one of an earlier format or none (the '
+        + 'census before ledger M67), one with no stretches, one holding a stretch missing a field, one with no '
+        + 'loaded sources, and one whose loaded sources hold something not a path',
       fn: async () => {
-        for (const text of [
-          'null',
-          JSON.stringify({
-            head: 'abc',
-            stretches: [STRETCH,],
-          },),
-          JSON.stringify({
-            format: CENSUS_FORMAT - 1,
-            stretches: [STRETCH,],
-          },),
-          JSON.stringify({
-            format: CENSUS_FORMAT,
-            head: 'abc',
-          },),
-          JSON.stringify({
-            format: CENSUS_FORMAT,
-            stretches: [{
-              ...STRETCH,
-              startLine: '1',
-            },],
-          },),
-        ]) {
-          expect(() => readBaselineStretches({
-            path: '/tmp/census.json',
-            text,
-          },),).toThrow(CensusBaselineError,);
+        for (const [text, says,] of [
+          ['null', 'it is not an object',],
+          [
+            JSON.stringify({
+              head: 'abc',
+              stretches: [STRETCH,],
+              loadedSources: [],
+            },),
+            `it is not census format ${String(CENSUS_FORMAT,)}`,
+          ],
+          [
+            JSON.stringify({
+              format: CENSUS_FORMAT - 1,
+              stretches: [STRETCH,],
+              loadedSources: [],
+            },),
+            `it is not census format ${String(CENSUS_FORMAT,)}`,
+          ],
+          [
+            JSON.stringify({
+              format: CENSUS_FORMAT,
+              head: 'abc',
+              loadedSources: [],
+            },),
+            'it has no list of stretches',
+          ],
+          [
+            JSON.stringify({
+              format: CENSUS_FORMAT,
+              stretches: [{
+                ...STRETCH,
+                startLine: '1',
+              },],
+              loadedSources: [],
+            },),
+            'it has no list of stretches',
+          ],
+          [
+            JSON.stringify({
+              format: CENSUS_FORMAT,
+              stretches: [STRETCH,],
+            },),
+            'it has no list of loaded sources',
+          ],
+          [
+            JSON.stringify({
+              format: CENSUS_FORMAT,
+              stretches: [STRETCH,],
+              loadedSources: ['src/nap.ts', 7,],
+            },),
+            'it has no list of loaded sources',
+          ],
+        ] as const) {
+          /**
+           The read, repeated for each check.
+           */
+          const read = () =>
+            readBaselineCensus({
+              path: '/tmp/census.json',
+              text,
+            },);
+          expect(read,).toThrow(CensusBaselineError,);
+          expect(read,).toThrow(says,);
         }
       },
     },),

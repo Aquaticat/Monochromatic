@@ -3,8 +3,9 @@
  commit, scope and passes; a line per kind; the bundles no test loaded with
  the library sources only they carry; library rows alone; the outermost
  uncalled functions in package source by source and line number, anonymous
- ones named so; and a baseline reading's counts and unproven stretches.
- Paths and names are cat-themed invention.
+ ones named so; and a baseline reading's counts, unproven stretches, and
+ claimed sources the baseline holds no stretch in. Paths and names are
+ cat-themed invention.
 
  @module
  */
@@ -226,10 +227,48 @@ await describe({
               status: 'not loaded',
             },
           ],
+          emptyClaims: [],
         },),).toEqual([
-          'against /tmp/census.json: ran 1, still cold 1, not loaded 1',
+          'against /tmp/census.json: ran 1, still cold 1, not loaded 1, claimed sources with no stretch there 0',
           '  still cold: src/nap.ts:8-8',
           '  not loaded: src/purr.ts:3-5',
+        ],);
+      },
+    },),
+    it({
+      name: 'COUNTS AND NAMES EACH CLAIMED SOURCE WITH NO BASELINE STRETCH, saying whether the baseline ran it whole '
+        + 'or never loaded it, and whether this run loaded it and how many cold stretches it left',
+      fn: async () => {
+        expect(baselineReportLines({
+          path: '/tmp/census.json',
+          statuses: [],
+          emptyClaims: [
+            {
+              source: 'src/knead.ts',
+              loadedAtBaseline: false,
+              loadedNow: true,
+              coldNow: 0,
+            },
+            {
+              source: 'src/purr.ts',
+              loadedAtBaseline: true,
+              loadedNow: true,
+              coldNow: 2,
+            },
+            {
+              source: 'src/yawn.ts',
+              loadedAtBaseline: false,
+              loadedNow: false,
+              coldNow: 0,
+            },
+          ],
+        },),).toEqual([
+          'against /tmp/census.json: ran 0, still cold 0, not loaded 0, claimed sources with no stretch there 3',
+          '  no baseline stretch (not loaded there, so the baseline proves nothing of it); '
+          + 'this run loaded it and left 0 cold stretches: src/knead.ts',
+          '  no baseline stretch (ran whole there); this run loaded it and left 2 cold stretches: src/purr.ts',
+          '  no baseline stretch (not loaded there, so the baseline proves nothing of it); '
+          + 'this run did not load it: src/yawn.ts',
         ],);
       },
     },),

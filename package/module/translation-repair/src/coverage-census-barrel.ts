@@ -24,7 +24,7 @@ export {
   FAIL_MARKER,
   markerCount,
   PASS_MARKER,
-  readBaselineStretches,
+  readBaselineCensus,
   readCensusArguments,
 } from './corpus-run/coverage-census-input.ts';
 export {
@@ -34,9 +34,12 @@ export {
   type UnloadedSource,
 } from './corpus-run/coverage-census-print.ts';
 export {
+  type BaselineCensus,
   baselineStatusesOf,
   type CensusStretch,
   censusStretchesOf,
+  type EmptyClaim,
+  emptyClaimsOf,
   type KindTotal,
   kindTotalsOf,
   requirePlacedFunctions,

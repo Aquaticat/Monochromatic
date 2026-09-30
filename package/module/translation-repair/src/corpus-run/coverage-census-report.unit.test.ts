@@ -2,8 +2,9 @@
  Tests the coverage census's report (ledger T8): how a mapped stretch is
  recorded, one record per source piece, the refusal of a census that places an
  uncalled function outside its own source's stretches (ledger M67), how
- sources are sorted into kinds, the rows and totals, and how a batch's run
- reads an earlier census's stretches. Paths and names are cat-themed invention.
+ sources are sorted into kinds, the rows and totals, how a batch's run reads
+ an earlier census's stretches, and which claimed sources that census holds
+ no stretch in. Paths and names are cat-themed invention.
 
  @module
  */
@@ -18,6 +19,7 @@ import {
   baselineStatusesOf,
   type CensusStretch,
   censusStretchesOf,
+  emptyClaimsOf,
   kindTotalsOf,
   type MappedStretch,
   requirePlacedFunctions,
@@ -488,6 +490,77 @@ await describe({
           loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
           sources: new Set(['src/purr.ts',],),
         },).map((read,) => [read.stretch.source, read.status,]),).toEqual([['src/purr.ts', 'ran',],],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: emptyClaimsOf.name,
+  children: [
+    it({
+      name: 'NAMES EACH CLAIMED SOURCE WITH NO BASELINE STRETCH, sorted, with whether each census loaded it and the '
+        + 'cold stretches this run left in it, and leaves a claimed source the baseline holds a stretch in',
+      fn: async () => {
+        expect(emptyClaimsOf({
+          baseline: {
+            stretches: [
+              recorded({
+                source: 'src/nap.ts',
+                startLine: 3,
+                endLine: 5,
+              },),
+            ],
+            loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
+          },
+          current: [
+            recorded({
+              source: 'src/knead.ts',
+              startLine: 2,
+              endLine: 2,
+            },),
+            recorded({
+              source: 'src/nap.ts',
+              startLine: 3,
+              endLine: 5,
+            },),
+          ],
+          loadedSources: new Set(['src/knead.ts', 'src/nap.ts', 'src/purr.ts',],),
+          sources: new Set(['src/yawn.ts', 'src/purr.ts', 'src/nap.ts', 'src/knead.ts',],),
+        },),).toEqual([
+          {
+            source: 'src/knead.ts',
+            loadedAtBaseline: false,
+            loadedNow: true,
+            coldNow: 1,
+          },
+          {
+            source: 'src/purr.ts',
+            loadedAtBaseline: true,
+            loadedNow: true,
+            coldNow: 0,
+          },
+          {
+            source: 'src/yawn.ts',
+            loadedAtBaseline: false,
+            loadedNow: false,
+            coldNow: 0,
+          },
+        ],);
+      },
+    },),
+    it({
+      name: 'NAMES NOTHING when the batch claims no source, since then every baseline stretch is read',
+      fn: async () => {
+        expect(emptyClaimsOf({
+          baseline: {
+            stretches: [],
+            loadedSources: new Set(),
+          },
+          current: [],
+          loadedSources: new Set(['src/purr.ts',],),
+          sources: new Set(),
+        },),).toEqual([],);
       },
     },),
   ],

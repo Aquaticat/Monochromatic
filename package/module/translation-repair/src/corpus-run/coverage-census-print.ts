@@ -1,5 +1,6 @@
 import type {
   CensusStretch,
+  EmptyClaim,
   KindTotal,
   SourceKind,
   SourceRow,
@@ -205,23 +206,29 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
 
  @param statuses - each of its stretches in the claimed sources with its status
 
- @returns Lines to print, in order: counts, then every stretch not proven run
+ @param emptyClaims - claimed sources it holds no stretch in, which the
+ statuses cannot speak for, so each is printed with both censuses' standing
+
+ @returns Lines to print, in order: counts, then every stretch not proven
+ run, then every claimed source holding no baseline stretch
 
  @example
  ```ts
- for (const line of baselineReportLines({ path, statuses, },)) console.log(line,);
+ for (const line of baselineReportLines({ path, statuses, emptyClaims, },)) console.log(line,);
  ```
  */
 export function baselineReportLines(
   {
     path,
     statuses,
+    emptyClaims,
   }: {
     readonly path: string;
     readonly statuses: readonly {
       readonly stretch: CensusStretch;
       readonly status: StretchStatus;
     }[];
+    readonly emptyClaims: readonly EmptyClaim[];
   },
 ): readonly string[] {
   /**
@@ -239,7 +246,7 @@ export function baselineReportLines(
   }
   return [
     `against ${path}: ran ${String(countOf('ran',),)}, still cold ${String(countOf('still cold',),)}, `
-    + `not loaded ${String(countOf('not loaded',),)}`,
+    + `not loaded ${String(countOf('not loaded',),)}, claimed sources with no stretch there ${String(emptyClaims.length,)}`,
     ...statuses
       .filter(function unproven(read,): boolean {
         return read.status !== 'ran';
@@ -250,6 +257,26 @@ export function baselineReportLines(
             .startLine,)}-${String(read.stretch
               .endLine,)}`;
       },),
+    ...emptyClaims.map(function emptyClaimLine({
+      source,
+      loadedAtBaseline,
+      loadedNow,
+      coldNow,
+    },): string {
+      /**
+       What the baseline says of the source.
+       */
+      const then = loadedAtBaseline
+        ? 'ran whole there'
+        : 'not loaded there, so the baseline proves nothing of it';
+      /**
+       What this run says of it.
+       */
+      const now = loadedNow
+        ? `this run loaded it and left ${String(coldNow,)} cold stretches`
+        : 'this run did not load it';
+      return `  no baseline stretch (${then}); ${now}: ${source}`;
+    },),
   ];
 }
 

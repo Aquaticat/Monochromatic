@@ -128,6 +128,60 @@ export type KindTotal = Omit<SourceRow, 'source'> & {
 export type StretchStatus = 'not loaded' | 'ran' | 'still cold';
 
 /**
+ What a batch reads of an earlier census.
+
+ @example
+ ```ts
+ const baseline: BaselineCensus = { stretches: [], loadedSources: new Set(['src/nap.ts',],), };
+ ```
+ */
+export type BaselineCensus = {
+  /**
+   Its stretches.
+   */
+  readonly stretches: readonly CensusStretch[];
+
+  /**
+   Sources its loaded bundles carried, which tell a claimed source holding no
+   stretch because the baseline ran all of it from one holding none because
+   the baseline never loaded it.
+   */
+  readonly loadedSources: ReadonlySet<string>;
+};
+
+/**
+ A claimed source the baseline holds no stretch in, with both censuses'
+ standing for it.
+
+ @example
+ ```ts
+ const claim: EmptyClaim = { source: 'src/nap.ts', loadedAtBaseline: false, loadedNow: true, coldNow: 0, };
+ ```
+ */
+export type EmptyClaim = {
+  /**
+   Source claimed.
+   */
+  readonly source: string;
+
+  /**
+   Whether a bundle the baseline loaded carried it; when none did, the
+   baseline proves nothing of it and this run's standing is the only reading.
+   */
+  readonly loadedAtBaseline: boolean;
+
+  /**
+   Whether a bundle this run loaded carried it.
+   */
+  readonly loadedNow: boolean;
+
+  /**
+   Cold stretches this run left in it.
+   */
+  readonly coldNow: number;
+};
+
+/**
  Records a mapped stretch as one census stretch per piece, each over the
  source lines its characters map to (ledger M67: one record per stretch put
  every source after the first out of the census).
@@ -502,6 +556,73 @@ export function baselineStatusesOf(
         stretch,
         status: overlapped ? 'still cold' : 'ran',
       } as const;
+    },);
+}
+
+/**
+ Names each claimed source the baseline holds no stretch in, which the
+ stretch statuses count nowhere: the baseline either ran all of it or never
+ loaded it (a source only an unloaded bundle carried), and in the second case
+ only this run's standing speaks for it. The placement batch of ledger T8
+ read `ran 0, still cold 0, not loaded 0` for a source its baseline never
+ loaded, which reads as nothing left to do.
+
+ @param baseline - earlier census read
+
+ @param current - stretches of this run
+
+ @param loadedSources - sources this run's loaded bundles carry
+
+ @param sources - sources the batch claims, empty for every source
+
+ @returns Each such claimed source, sorted, with both censuses' standing
+
+ @example
+ ```ts
+ const claims = emptyClaimsOf({ baseline, current, loadedSources, sources: new Set(['src/nap.ts',],), },);
+ ```
+ */
+export function emptyClaimsOf(
+  {
+    baseline,
+    current,
+    loadedSources,
+    sources,
+  }: {
+    readonly baseline: BaselineCensus;
+    readonly current: readonly CensusStretch[];
+    readonly loadedSources: ReadonlySet<string>;
+    readonly sources: ReadonlySet<string>;
+  },
+): readonly EmptyClaim[] {
+  /**
+   The baseline's stretches, and the sources its loaded bundles carried.
+   */
+  const {
+    stretches: baselineStretches,
+    loadedSources: loadedAtBaseline,
+  } = baseline;
+  /**
+   Sources holding a baseline stretch.
+   */
+  const stretched = new Set(baselineStretches.map(function sourceOf(stretch,): string {
+    return stretch.source;
+  },),);
+  return [...sources,]
+    .filter(function holdsNone(source,): boolean {
+      return !stretched.has(source,);
+    },)
+    .toSorted()
+    .map(function standing(source,): EmptyClaim {
+      return {
+        source,
+        loadedAtBaseline: loadedAtBaseline.has(source,),
+        loadedNow: loadedSources.has(source,),
+        coldNow: current.filter(function inSource(stretch,): boolean {
+          return stretch.source === source;
+        },)
+          .length,
+      };
     },);
 }
 

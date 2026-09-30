@@ -7,7 +7,10 @@ import {
   isJsonRecord,
 } from '../json-guard.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
-import type { CensusStretch, } from './coverage-census-report.ts';
+import type {
+  BaselineCensus,
+  CensusStretch,
+} from './coverage-census-report.ts';
 
 //region Coverage census input
 // Ledger T8: what the coverage census is asked to do, read from its command
@@ -240,23 +243,23 @@ function isCensusStretch(value: unknown,): value is CensusStretch {
 }
 
 /**
- Reads the stretches out of an earlier census file.
+ Reads the stretches and loaded sources out of an earlier census file.
 
  @param path - file read, named in the refusal
 
  @param text - its contents
 
- @returns Its stretches
+ @returns Its stretches and loaded sources
 
- @throws CensusBaselineError where the file is not the current census format
- or holds no list of stretches
+ @throws CensusBaselineError where the file is not the current census format,
+ or holds no list of stretches or of loaded sources
 
  @example
  ```ts
- const stretches = readBaselineStretches({ path, text, },);
+ const { stretches, loadedSources, } = readBaselineCensus({ path, text, },);
  ```
  */
-export function readBaselineStretches(
+export function readBaselineCensus(
   {
     path,
     text,
@@ -264,7 +267,7 @@ export function readBaselineStretches(
     readonly path: string;
     readonly text: string;
   },
-): readonly CensusStretch[] {
+): BaselineCensus {
   /**
    The file as JSON.
    */
@@ -281,15 +284,28 @@ export function readBaselineStretches(
         + 'source changes (ledger M67) records cold code under the wrong source, so run a fresh baseline',
     },);
   /**
-   Its stretches as parsed.
+   Its stretches and loaded sources as parsed.
    */
-  const { stretches, } = parsed;
+  const {
+    stretches,
+    loadedSources,
+  } = parsed;
   if ((!isJsonArray(stretches,)) || (!stretches.every(isCensusStretch,)))
     throw new CensusBaselineError({
       path,
       says: 'it has no list of stretches, each with a bundle, offsets, a source and lines',
     },);
-  return stretches;
+  if ((!isJsonArray(loadedSources,)) || (!loadedSources.every(function isSource(source,): source is string {
+    return (typeof source) === 'string';
+  },)))
+    throw new CensusBaselineError({
+      path,
+      says: 'it has no list of loaded sources, each a path',
+    },);
+  return {
+    stretches,
+    loadedSources: new Set(loadedSources,),
+  };
 }
 
 //endregion Coverage census input
