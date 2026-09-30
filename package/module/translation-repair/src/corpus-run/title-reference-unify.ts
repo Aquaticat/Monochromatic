@@ -1,6 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import { isHanOnly, } from '../han-only-text.ts';
+import { straightenQuotes, } from '../quote-normalize.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { withoutHtmlComments, } from '../translate-address-drop.ts';
 import {
@@ -79,7 +80,8 @@ function withoutTitleGloss(
 /**
  Every Han section heading the page renders in English, by title, where
  the page carries as many heading lines as the original for the slice; a
- title two headings share is dropped as ambiguous.
+ title two headings share is kept where they render it alike and dropped as
+ ambiguous where they do not.
 
  @param slices - prepared pairs in order
 
@@ -106,7 +108,7 @@ function renderedHeadings(
    */
   const headings = new Map<string, RenderedHeading>();
   /**
-   Titles two headings share.
+   Titles two headings render differently.
    */
   const shared = new Set<string>();
   for (const slice of slices) {
@@ -149,14 +151,37 @@ function renderedHeadings(
       // to unify with.
       if (isHanOnly({ text: rendering, },))
         return;
-      if (headings.has(title,))
+      /**
+       Heading already read under the same title, if any.
+       */
+      const read = headings.get(title,);
+      if (read === undefined) {
+        headings.set(
+          title,
+          {
+            sliceIndexes: [sliceIndex,],
+            title,
+            rendering,
+          },
+        );
+        return;
+      }
+      // A TITLE TWO HEADINGS SHARE (quality call, T8 batch 10). Rendered
+      // alike, apostrophe style aside as the typography fold reads it (ledger
+      // B24), a reference to either takes that one rendering; rendered apart,
+      // which one it takes cannot be read.
+      if (straightenQuotes({ text: read.rendering, },) !== straightenQuotes({ text: rendering, },)) {
         shared.add(title,);
+        return;
+      }
       headings.set(
         title,
         {
-          sliceIndex,
-          title,
-          rendering,
+          ...read,
+          sliceIndexes: [
+            ...read.sliceIndexes,
+            sliceIndex,
+          ],
         },
       );
     },);
@@ -241,7 +266,11 @@ export function unifyTitleReferences(
     const sourceText = withoutHtmlComments({ text: slice.source
       .text, },);
     for (const heading of headings.values()) {
-      if (heading.sliceIndex === sliceIndex)
+      /**
+       Slices whose text carries the heading.
+       */
+      const { sliceIndexes, } = heading;
+      if (sliceIndexes.includes(sliceIndex,))
         continue;
       if (!bracketsTitle({
         text: sourceText,
@@ -263,9 +292,15 @@ export function unifyTitleReferences(
         rendering: heading.rendering,
       },);
       /**
+       Heading or headings whose rendering the reference takes.
+       */
+      const headingSlices = (sliceIndexes.length === 1)
+        ? `the heading of slice ${sliceIndexes.join('',)}`
+        : `the headings of slices ${sliceIndexes.join(', ',)}`;
+      /**
        Whose rendering the reference takes, for the findings.
        */
-      const whose = `「${heading.title}」 rendered by the heading of slice ${String(heading.sliceIndex,)} as "${heading.rendering}"`;
+      const whose = `「${heading.title}」 rendered by ${headingSlices} as "${heading.rendering}"`;
       if (located.kind === 'none') {
         findings.push(`title-reference-unplaced (slice ${String(sliceIndex,)}: ${whose}, no linked, glossed, bracketed or quoted span found)`,);
         continue;

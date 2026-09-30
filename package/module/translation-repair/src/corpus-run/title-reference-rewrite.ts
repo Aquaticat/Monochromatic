@@ -43,9 +43,10 @@ const RUN_UNCAPITALIZED = 'every word of the glossed run starts with a small let
  */
 export type RenderedHeading = {
   /**
-   Slice whose text carries the heading.
+   Slices whose text carries the heading, several where headings share the
+   title and render it alike.
    */
-  readonly sliceIndex: number;
+  readonly sliceIndexes: readonly number[];
 
   /**
    Title as the original writes it.
