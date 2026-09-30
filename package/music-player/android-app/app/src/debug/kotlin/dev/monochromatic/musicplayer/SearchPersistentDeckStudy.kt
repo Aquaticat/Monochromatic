@@ -225,7 +225,11 @@ internal fun SearchPersistentDeckStudy(candidate: String) {
     // const rankVariant = ['rankword', 'rankany', 'rankfolders', 'rankmixed', 'ranktracks']
     //   .find(v => candidate.includes(`-${v}-`)) ?? '';
     // ```
-    val rankVariant = if (candidate.contains("-rankword-")) "rankword"
+    // Literal filename scenes retain the selected Search host and fixed query.
+    val rankVariant = if (candidate.contains("-rankfileshort-")) "rankfileshort"
+        else if (candidate.contains("-rankfilelong-")) "rankfilelong"
+        else if (candidate.contains("-rankfileedge-")) "rankfileedge"
+        else if (candidate.contains("-rankword-")) "rankword"
         else if (candidate.contains("-rankany-")) "rankany"
         else if (candidate.contains("-rankfolders-")) "rankfolders"
         else if (candidate.contains("-rankmixed-")) "rankmixed"
