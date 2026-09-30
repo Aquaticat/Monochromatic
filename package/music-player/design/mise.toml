@@ -403,6 +403,16 @@ description = "Validate the self-contained static Search status evidence and cap
 dir = "{{config_root}}"
 run = "node search-status-evidence.mjs validate"
 
+[tasks."build:search:filename-comparison"]
+description = "Build the independent offline filename placement and visibility review from inspected native evidence"
+dir = "{{config_root}}"
+run = "node search-filename-comparison.mjs build"
+
+[tasks."lint:search:filename-comparison"]
+description = "Validate exact offline filename review content, native image hashes and independent unselected questions"
+dir = "{{config_root}}"
+run = "node search-filename-comparison.mjs validate"
+
 [tasks."build:search:ranking"]
 description = "Rebuild the archived D/P and M/F/T comparison from sanitized native captures"
 dir = "{{config_root}}"

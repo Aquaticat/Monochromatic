@@ -3,7 +3,7 @@
 ## Purpose and status
 
 Task 139 completed the debug-only native comparison.
-Task 140 is publishing the evidence and preparing the independent visual review.
+Task 140 published the evidence and is preparing the independent visual review.
 Neither filename policy is selected.
 The accepted Search A layout,
 E2 information-only clearance,
@@ -41,6 +41,11 @@ file hashes and rejection of a changed RGB byte.
 Private original frames,
 XML,
 OCR and logs are not published.
+The [layout record](../questions/evidence/search-filename-comparison-layout.json)
+contains 320 ordered semantic title/support slots.
+Exact measured Search-header-region RGB is unchanged across 64 initial views;
+retained inner browser/deck RGB is unchanged across 32 inner views.
+The raw comparison-region coordinates are retained in that record.
 Two rejected earlier capture attempts and their APKs remain separate.
 They are not evidence from the completed cohort.
 
@@ -61,6 +66,8 @@ kind,
 parent,
 action,
 order and membership.
+Placement specifies where a retained suffix appears;
+visibility separately determines whether an eligible suffix is retained.
 Its alternatives are:
 
 - Full literal filename in the title.
@@ -187,3 +194,9 @@ native packaging or live playback.
 D75 to D80's accepted accessibility design direction remains separate from
 native implementation acceptance.
 Task 133 and the source-recovery work remain independently open.
+The current run's fresh settings snapshot was restored,
+then the owned runtime exited gracefully.
+Container,
+ADB target,
+owning process and matching emulator process absence were verified;
+this is not restoration of a prior run or the original AVD.
