@@ -30,8 +30,8 @@ A complete filesystem recheck,
 including untracked and ignored files,
 found the same 43 non-JNI source/resource files with identical bytes.
 Main additionally holds 10 generated JNI binaries absent from the prototype.
-The complete `src/main` trees and packaged native playback surface are
-therefore not identical;
+The complete `src/main` trees are therefore not identical.
+Native packaging equivalence was not established;
 the initial broader source-tree claim is withdrawn.
 The retained installed APK SHA-256 is
 `84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e`.
