@@ -116,20 +116,71 @@ await describe({
   name: readBaselineCensus.name,
   children: [
     it({
-      name: 'READS THE STRETCHES AND LOADED SOURCES OF A CENSUS FILE of the current format',
+      name: 'READS THE COMMIT, STRETCHES AND LOADED SOURCES OF A CENSUS FILE of the current format, taken from a '
+        + 'tree matching its commit',
       fn: async () => {
         expect(readBaselineCensus({
           path: '/tmp/census.json',
           text: JSON.stringify({
             format: CENSUS_FORMAT,
             head: 'abc',
+            clean: true,
             stretches: [STRETCH,],
             loadedSources: ['src/nap.ts', 'src/purr.ts',],
           },),
         },),).toEqual({
+          head: 'abc',
           stretches: [STRETCH,],
           loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
         },);
+      },
+    },),
+    it({
+      name: 'REFUSES A CENSUS NAMING NO COMMIT, one not saying whether its tree matched it, and one taken with '
+        + 'uncommitted changes: a later reading tells an edited source by comparing the tree with that commit, '
+        + 'and a census of uncommitted code has lines no commit holds',
+      fn: async () => {
+        for (const [text, says,] of [
+          [
+            JSON.stringify({
+              format: CENSUS_FORMAT,
+              clean: true,
+              stretches: [STRETCH,],
+              loadedSources: [],
+            },),
+            'it names no commit it was taken at',
+          ],
+          [
+            JSON.stringify({
+              format: CENSUS_FORMAT,
+              head: 'abc',
+              stretches: [STRETCH,],
+              loadedSources: [],
+            },),
+            'it does not say whether its tree matched that commit',
+          ],
+          [
+            JSON.stringify({
+              format: CENSUS_FORMAT,
+              head: 'abc',
+              clean: false,
+              stretches: [STRETCH,],
+              loadedSources: [],
+            },),
+            'it was taken with uncommitted changes under the package',
+          ],
+        ] as const) {
+          /**
+           The read, repeated for each check.
+           */
+          const read = () =>
+            readBaselineCensus({
+              path: '/tmp/census.json',
+              text,
+            },);
+          expect(read,).toThrow(CensusBaselineError,);
+          expect(read,).toThrow(`baseline /tmp/census.json does not read as a census this command wrote: ${says}`,);
+        }
       },
     },),
     it({

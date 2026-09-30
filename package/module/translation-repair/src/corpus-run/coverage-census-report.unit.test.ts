@@ -467,7 +467,39 @@ await describe({
           ],
           loadedSources: new Set(['src/nap.ts',],),
           sources: new Set(),
+          edited: new Set(),
         },).map((read,) => read.status),).toEqual(['still cold', 'ran', 'not loaded',],);
+      },
+    },),
+    it({
+      name:
+        'LEAVES OUT EVERY STRETCH OF A SOURCE EDITED SINCE THE BASELINE, whose lines there now name other code: '
+        + 'counting it as ran because nothing cold overlaps its old lines is how a moved stretch read as run',
+      fn: async () => {
+        expect(baselineStatusesOf({
+          baseline: [
+            recorded({
+              source: 'src/nap.ts',
+              startLine: 3,
+              endLine: 5,
+            },),
+            recorded({
+              source: 'src/purr.ts',
+              startLine: 1,
+              endLine: 2,
+            },),
+          ],
+          current: [
+            recorded({
+              source: 'src/nap.ts',
+              startLine: 14,
+              endLine: 16,
+            },),
+          ],
+          loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
+          sources: new Set(),
+          edited: new Set(['src/nap.ts',],),
+        },).map((read,) => [read.stretch.source, read.status,]),).toEqual([['src/purr.ts', 'ran',],],);
       },
     },),
     it({
@@ -489,6 +521,7 @@ await describe({
           current: [],
           loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
           sources: new Set(['src/purr.ts',],),
+          edited: new Set(),
         },).map((read,) => [read.stretch.source, read.status,]),).toEqual([['src/purr.ts', 'ran',],],);
       },
     },),
@@ -504,6 +537,7 @@ await describe({
       fn: async () => {
         expect(emptyClaimsOf({
           baseline: {
+            head: 'c0ffee123',
             stretches: [
               recorded({
                 source: 'src/nap.ts',
@@ -513,6 +547,7 @@ await describe({
             ],
             loadedSources: new Set(['src/nap.ts', 'src/purr.ts',],),
           },
+          edited: new Set(),
           current: [
             recorded({
               source: 'src/knead.ts',
@@ -554,13 +589,33 @@ await describe({
       fn: async () => {
         expect(emptyClaimsOf({
           baseline: {
+            head: 'c0ffee123',
             stretches: [],
             loadedSources: new Set(),
           },
+          edited: new Set(),
           current: [],
           loadedSources: new Set(['src/purr.ts',],),
           sources: new Set(),
         },),).toEqual([],);
+      },
+    },),
+    it({
+      name:
+        'LEAVES OUT A CLAIMED SOURCE EDITED SINCE THE BASELINE, which the edited claims name instead: "ran whole '
+        + 'there" says nothing of code written after it',
+      fn: async () => {
+        expect(emptyClaimsOf({
+          baseline: {
+            head: 'c0ffee123',
+            stretches: [],
+            loadedSources: new Set(['src/purr.ts', 'src/yawn.ts',],),
+          },
+          edited: new Set(['src/purr.ts',],),
+          current: [],
+          loadedSources: new Set(['src/purr.ts', 'src/yawn.ts',],),
+          sources: new Set(['src/purr.ts', 'src/yawn.ts',],),
+        },).map((claim,) => claim.source),).toEqual(['src/yawn.ts',],);
       },
     },),
   ],

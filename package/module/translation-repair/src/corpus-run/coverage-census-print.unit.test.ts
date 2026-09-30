@@ -206,6 +206,7 @@ await describe({
         };
         expect(baselineReportLines({
           path: '/tmp/census.json',
+          head: 'c0ffee123',
           statuses: [
             {
               stretch,
@@ -228,10 +229,43 @@ await describe({
             },
           ],
           emptyClaims: [],
+          editedClaims: [],
         },),).toEqual([
-          'against /tmp/census.json: ran 1, still cold 1, not loaded 1, claimed sources with no stretch there 0',
+          'against /tmp/census.json at c0ffee123: ran 1, still cold 1, not loaded 1, claimed sources with no stretch '
+          + 'there 0, sources edited since then 0',
           '  still cold: src/nap.ts:8-8',
           '  not loaded: src/purr.ts:3-5',
+        ],);
+      },
+    },),
+    it({
+      name:
+        'COUNTS AND NAMES EACH SOURCE EDITED SINCE THE BASELINE, whose baseline lines name other code now, with '
+        + 'whether this run loaded it and how many cold stretches it left, which is all that speaks for it',
+      fn: async () => {
+        expect(baselineReportLines({
+          path: '/tmp/census.json',
+          head: 'c0ffee123',
+          statuses: [],
+          emptyClaims: [],
+          editedClaims: [
+            {
+              source: 'src/nap.ts',
+              loadedNow: true,
+              coldNow: 2,
+            },
+            {
+              source: 'src/purr.ts',
+              loadedNow: false,
+              coldNow: 0,
+            },
+          ],
+        },),).toEqual([
+          'against /tmp/census.json at c0ffee123: ran 0, still cold 0, not loaded 0, claimed sources with no stretch '
+          + 'there 0, sources edited since then 2',
+          '  edited since c0ffee123, so its baseline lines name other code; this run loaded it and left 2 cold '
+          + 'stretches: src/nap.ts',
+          '  edited since c0ffee123, so its baseline lines name other code; this run did not load it: src/purr.ts',
         ],);
       },
     },),
@@ -241,7 +275,9 @@ await describe({
       fn: async () => {
         expect(baselineReportLines({
           path: '/tmp/census.json',
+          head: 'c0ffee123',
           statuses: [],
+          editedClaims: [],
           emptyClaims: [
             {
               source: 'src/knead.ts',
@@ -263,7 +299,8 @@ await describe({
             },
           ],
         },),).toEqual([
-          'against /tmp/census.json: ran 0, still cold 0, not loaded 0, claimed sources with no stretch there 3',
+          'against /tmp/census.json at c0ffee123: ran 0, still cold 0, not loaded 0, claimed sources with no stretch '
+          + 'there 3, sources edited since then 0',
           '  no baseline stretch (not loaded there, so the baseline proves nothing of it); '
           + 'this run loaded it and left 0 cold stretches: src/knead.ts',
           '  no baseline stretch (ran whole there); this run loaded it and left 2 cold stretches: src/purr.ts',
