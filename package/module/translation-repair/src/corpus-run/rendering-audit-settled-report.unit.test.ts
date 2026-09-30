@@ -532,6 +532,42 @@ await describe({
     },),
 
     it({
+      name: 'PICKS ONLY A FILE THE STORE FINISHED: a directory named like a later run, and a run still being '
+        + 'written under its `.partial` name, are no run (ledger B65)',
+      fn: async () => {
+        /**
+         Runs directory holding one finished run.
+         */
+        const runsDir = await throwawayRunsDir();
+
+        /**
+         The one run the store finished, which the report should read.
+         */
+        const finished = await writeRun({
+          runsDir,
+          stamp: '2026-08-25T01-00-00.000Z',
+          body: runOver({ rows: [], },),
+        },);
+        await mkdir(join(
+          runsDir,
+          PROBE_NAME,
+          '2026-08-26T01-00-00.000Z-cafef00d.json',
+        ),);
+        await writeFile(
+          join(
+            runsDir,
+            PROBE_NAME,
+            '2026-08-27T01-00-00.000Z-cafef00d.json.4242.partial',
+          ),
+          '{"rows":',
+          'utf8',
+        );
+
+        expect(await newestRun({ runsDir, },),).toBe(finished,);
+      },
+    },),
+
+    it({
       name: 'REFUSES A PROBE THAT HAS NEVER RUN as a stated refusal, since reporting nothing '
         + 'would look exactly like reporting a clean run',
       fn: async () => {

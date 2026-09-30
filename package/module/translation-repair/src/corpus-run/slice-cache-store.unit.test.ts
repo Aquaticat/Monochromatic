@@ -28,6 +28,7 @@ import {
   mkdir,
   mkdtemp,
   rm,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -641,6 +642,40 @@ await describe({
         );
 
         expect((await listResumableEntries({ dir: scratch.path, },)).size,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'EXCLUDES A SYMLINK under the cache root, which no pass writes, so an entry with progress is never '
+        + 'resumed a second time under another name (ledger B65)',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         Cache for an entry that finished one slice.
+         */
+        const cache = await openSliceCache({
+          dir: join(
+            scratch.path,
+            'Mittens',
+          ),
+          generation: TEST_GENERATION,
+        },);
+        await cache.persist({
+          key: 'slice-hash-aaa',
+          serialized: JSON.stringify(catOutcome({ sliceIndex: 0, },),),
+        },);
+        await symlink(
+          'Mittens',
+          join(
+            scratch.path,
+            'Siamese',
+          ),
+        );
+
+        expect([...await listResumableEntries({ dir: scratch.path, },),],).toStrictEqual(
+          ['Mittens',],
+        );
       },
     },),
   ],

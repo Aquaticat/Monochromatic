@@ -29,6 +29,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  mkdir,
   mkdtemp,
   writeFile,
 } from 'node:fs/promises';
@@ -196,6 +197,41 @@ await describe({
             'whiskers-cache-that-was-never-created',
           ),
         },),).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'COUNTS ONLY FILES: a directory named like a slice was bought by no attempt, and a slice still '
+        + 'being written under its `.partial` name is not yet one (ledger B65)',
+      fn: async () => {
+        /**
+         Throwaway cache directory standing in for one entry's.
+         */
+        const dir = await mkdtemp(join(
+          tmpdir(),
+          'whiskers-cache-',
+        ),);
+
+        await writeFile(
+          join(
+            dir,
+            '0-1-tabby.json',
+          ),
+          '{}\n',
+        );
+        await writeFile(
+          join(
+            dir,
+            'translate.0-2-tabby.json.4242.partial',
+          ),
+          '{',
+        );
+        await mkdir(join(
+          dir,
+          'contest.0-3-tabby.json',
+        ),);
+
+        expect(await countCachedSlices({ dir, },),).toBe(1,);
       },
     },),
   ],

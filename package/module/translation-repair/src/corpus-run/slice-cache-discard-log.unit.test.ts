@@ -31,6 +31,7 @@
  */
 
 import {
+  mkdir,
   mkdtemp,
   readdir,
   rm,
@@ -340,6 +341,49 @@ await describe({
         expect(lines[0],).toContain('filled by (unstamped)',);
       },
     },),
+
+    it({
+      name: 'LEAVES A DIRECTORY NAMED LIKE ONE OF ITS SLICES, which no lane wrote, rather than raising out of '
+        + 'the open that asked for the discard (ledger B65)',
+      fn: async () => {
+        /**
+         A cache holding one of this lane's slices beside a directory named
+         like another.
+         */
+        const dir = await cacheHolding({ names: ['mittens.a.json',], },);
+        await mkdir(join(
+          dir,
+          'mittens.b.json',
+        ),);
+
+        /**
+         Lines the discard printed, captured so none reach the test output.
+         */
+        const lines: string[] = [];
+        {
+          using capture = collectingInto({ lines, },);
+          await discardNamespace({
+            dir,
+            namespace: MITTENS,
+            cached: 'nap-3',
+          },);
+        }
+
+        /**
+         Names still on disk.
+         */
+        const left = (await readdir(dir,)).toSorted();
+        await rm(
+          dir,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+
+        expect(left,).toStrictEqual(['mittens.b.json',],);
+      },
+    },),
   ],
 },);
 
@@ -414,6 +458,62 @@ await describe({
         },);
         expect(torn.length,).toBe(1,);
         expect(torn[0],).toContain('recomputed',);
+      },
+    },),
+
+    it({
+      name: 'RESUMES PAST A DIRECTORY NAMED LIKE ONE OF ITS SLICES, which no lane wrote, rather than stopping '
+        + 'the entry on EISDIR (ledger B65)',
+      fn: async () => {
+        /**
+         Cache this lane filled under the running pipeline: one slice the
+         loader wrote, beside a directory named like another.
+         */
+        const dir = await cacheHolding({ names: [], },);
+        await writeFile(
+          join(
+            dir,
+            MITTENS.marker,
+          ),
+          'nap-3\n',
+          'utf8',
+        );
+        await writeFile(
+          join(
+            dir,
+            'mittens.a.json',
+          ),
+          JSON.stringify({
+            cacheKey: 'a',
+            record: { purred: true, },
+          },),
+          'utf8',
+        );
+        await mkdir(join(
+          dir,
+          'mittens.b.json',
+        ),);
+
+        /**
+         Keys the open resumed.
+         */
+        const resumed = [
+          ...(await openNamespacedCache({
+            dir,
+            generation: 'nap-3',
+            namespace: MITTENS,
+            isValue: anyRecord,
+          },)).resumed.keys(),
+        ];
+        await rm(
+          dir,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
+
+        expect(resumed,).toStrictEqual(['a',],);
       },
     },),
   ],

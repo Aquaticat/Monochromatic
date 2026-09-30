@@ -372,6 +372,50 @@ await describe({
     },),
 
     it({
+      name: 'SKIPS a file and a symlink in the people directory, which no pass writes there, rather than raising '
+        + 'ENOTDIR out of the verifier or counting a page that lives under another name (ledger B65)',
+      fn: async () => {
+        const runsDir = await runSettling({ names: [], },);
+        await publishInto({
+          runsDir,
+          entryIds: [
+            'Mittens',
+            'Whiskers',
+          ],
+        },);
+
+        /**
+         The published tree's people directory.
+         */
+        const peopleDir = join(
+          runsDir,
+          FIXED_TREE,
+          PEOPLE,
+        );
+        await writeFile(
+          join(
+            peopleDir,
+            'Tabby',
+          ),
+          'a note the cat left\n',
+          'utf8',
+        );
+        await symlink(
+          'Whiskers',
+          join(
+            peopleDir,
+            'Siamese',
+          ),
+        );
+        expect(namesOf({ reading: await publishedEntryIds({ runsDir, },), },),)
+          .toEqual([
+            'Mittens',
+            'Whiskers',
+          ],);
+      },
+    },),
+
+    it({
       name: 'REFUSES a run directory that published nothing at all',
       fn: async () => {
         const reading = await publishedEntryIds({ runsDir: await disposableRun(), },);

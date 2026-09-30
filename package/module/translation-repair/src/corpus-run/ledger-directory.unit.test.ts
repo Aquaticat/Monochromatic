@@ -24,6 +24,7 @@
 import {
   mkdir,
   mkdtemp,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -236,6 +237,57 @@ await describe({
           'whiskerfield-2',
           'whiskerfield-3',
         ],);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A CONTEST STILL BEING WRITTEN: the recorder writes each file under a `.partial` name and '
+        + 'renames it, so a partial file is a write in flight or cut short, never a contest (ledger B65)',
+      fn: async () => {
+        /**
+         Reading of one contest beside two partial files, one whole and one
+         cut short, as a report run mid-write or after a crash finds them.
+         */
+        const reading = await readLedgerDirectory({
+          dir: await ledgerOf({
+            files: {
+              '000001.json': ONE_ROUND,
+              '000002.json.4242.partial': ONE_ROUND,
+              '000003.json.4242.partial': '{"task":"whiskerfield-3",',
+            },
+          },),
+        },);
+
+        expect(reading.rounds.length,).toBe(1,);
+        expect(reading.refused.length,).toBe(0,);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT AN ENTRY THAT IS NOT A FILE: a directory named like a contest is no contest the run '
+        + 'recorded, and a symlink to one would count that contest twice (ledger B65)',
+      fn: async () => {
+        /**
+         Ledger holding one contest the recorder wrote.
+         */
+        const dir = await ledgerOf({ files: { '000001.json': ONE_ROUND, }, },);
+        await mkdir(join(
+          dir,
+          '000002.json',
+        ),);
+        await symlink(
+          '000001.json',
+          join(
+            dir,
+            '000003.json',
+          ),
+        );
+
+        /**
+         What the reader makes of the three entries.
+         */
+        const reading = await readLedgerDirectory({ dir, },);
+
+        expect(reading.rounds.length,).toBe(1,);
+        expect(reading.refused.length,).toBe(0,);
       },
     },),
   ],
