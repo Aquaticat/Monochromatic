@@ -75,7 +75,11 @@ function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
  neither, so it can never be resumed as a translation however the file is
  named, and a record written under an older schema is recomputed rather than
  read with fields that have since changed meaning.
- 
+
+ A DECLARED-NAME REFUSAL CARRIES THE NAMES IT DROPPED, which the report
+ names from the record; the driver has always written them, so one without
+ them came from no driver and is recomputed (ledger T8, sixth batch).
+
  @param value - parsed JSON of a cache file
  
  @returns True when the value is this schema's translate record
@@ -98,6 +102,7 @@ function isTranslateSliceRecord(
       || (value.disposition === 'refused-alignment')
       || (value.disposition === 'refused-quote-loss')
       || (value.disposition === 'refused-declared-name'))
+    && ((value.disposition !== 'refused-declared-name') || Array.isArray(value.droppedDeclaredNames,))
     && isJsonRecord(value.stageResult,)
     && isJsonRecord(value.alignment,)
     && Array.isArray(value.findings,);

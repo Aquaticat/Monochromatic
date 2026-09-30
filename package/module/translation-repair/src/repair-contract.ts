@@ -748,12 +748,10 @@ export type ChunkRepairOutcome = {
    Declared names a winning patch would have dropped, empty on every slice
    that dropped none.
    
-   Required rather than optional, unlike its translate-lane counterpart on
-   `TranslateSliceRecord`. That one is optional because settled artifacts
-   written before the guard existed carry the record and have to keep reading.
-   No artifact ever carried a repair outcome, so there is no older shape to
-   stay compatible with, and an always-present field means a reader never has
-   to tell "dropped nothing" from "field not written".
+   Required on every outcome, so a reader never has to tell "dropped
+   nothing" from "field not written". Its translate-lane counterpart on
+   `TranslateSliceRecord` is carried only by a declared-name refusal, which
+   the record's union says and the translate cache reader checks.
    */
   readonly droppedDeclaredNames: readonly string[];
 

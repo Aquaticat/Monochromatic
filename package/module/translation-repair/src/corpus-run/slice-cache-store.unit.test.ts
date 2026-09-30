@@ -744,6 +744,59 @@ await describe({
     },),
 
     it({
+      name: 'RESUMES A DECLARED-NAME REFUSAL ONLY WITH THE NAMES IT DROPPED, which the report names from the '
+        + 'record; the driver always writes them, so one without them is recomputed (ledger T8, sixth batch)',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         Entry directory both lanes share.
+         */
+        const dir = join(
+          scratch.path,
+          'whiskers',
+        );
+
+        /**
+         Cache this run writes into.
+         */
+        const first = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+
+        /**
+         A declared-name refusal as the driver writes it.
+         */
+        const named = {
+          ...catTranslateRecord({ sliceIndex: 0, },),
+          disposition: 'refused-declared-name',
+          droppedDeclaredNames: ['Whiskers',],
+        };
+        await first.persist({
+          key: 'slice-hash-named',
+          serialized: JSON.stringify(named,),
+        },);
+        await first.persist({
+          key: 'slice-hash-unnamed',
+          serialized: JSON.stringify({
+            ...catTranslateRecord({ sliceIndex: 1, },),
+            disposition: 'refused-declared-name',
+          },),
+        },);
+
+        /**
+         Same cache reopened, as the next attempt does.
+         */
+        const second = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        expect([...second.resumed.entries(),],).toEqual([['slice-hash-named', named,],],);
+      },
+    },),
+
+    it({
       name: 'NEVER resumes a repair outcome as a translation, however the file '
         + 'is named. The two lanes share one directory, and a repair outcome '
         + 'carries neither the lane discriminator nor the schema, so the guard '

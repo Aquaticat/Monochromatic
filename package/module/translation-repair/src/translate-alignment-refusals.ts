@@ -59,7 +59,7 @@ export function alignmentRefusals(
       if (record.disposition === 'refused-declared-name') {
         return [declaredNameRefusalFinding({
           sliceIndex: record.sliceIndex,
-          dropped: record.droppedDeclaredNames ?? [],
+          dropped: record.droppedDeclaredNames,
         },),];
       }
       return [];

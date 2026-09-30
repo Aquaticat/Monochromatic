@@ -383,7 +383,9 @@ await describe({
         expect(record.disposition,).toBe('refused-declared-name',);
         expect(record.outputText,).toBe(INCUMBENT_TEXT,);
         expect(record.changed,).toBe(false,);
-        expect(record.droppedDeclaredNames,).toEqual([DECLARED_ALIAS,],);
+        expect((record.disposition === 'refused-declared-name') ? record.droppedDeclaredNames : undefined,).toEqual([
+          DECLARED_ALIAS,
+        ],);
       },
     },),
     it({

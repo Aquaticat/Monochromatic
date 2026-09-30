@@ -309,19 +309,10 @@ export type TranslateDisposition =
   | 'refused-declared-name';
 
 /**
- Settled record for one translate slice.
- 
- Carries the WHOLE stage result beside the driver's decision, so a reader can
- tell "judges preferred a replacement and the guard refused it" from "judges
- kept the incumbent". Those are opposite facts about the same lane and both
- ship the same text.
- 
- @example
- ```ts
- const changed = record.outputText !== incumbentText;
- ```
+ Fields every settled translate slice record carries, whatever the driver
+ did with the stage result.
  */
-export type TranslateSliceRecord = {
+type TranslateSliceRecordFields = {
   /**
    Lane discriminator, checked when a cache file is read so a repair outcome
    can never be resumed as a translation.
@@ -355,20 +346,6 @@ export type TranslateSliceRecord = {
   readonly changed: boolean;
 
   /**
-   What the driver did with the stage result.
-   */
-  readonly disposition: TranslateDisposition;
-
-  /**
-   Declared forms the replacement dropped, when that is why it was refused.
-   
-   STORED, unlike the alignment refusal's sentence, because these forms name
-   no slice index and so survive a record being resumed at a different
-   position. The reporter has no preparation to recompute them from.
-   */
-  readonly droppedDeclaredNames?: readonly string[];
-
-  /**
    Measurements behind the alignment decision, recorded on every slice rather
    than only refused ones: a rate needs its denominator.
    */
@@ -379,6 +356,51 @@ export type TranslateSliceRecord = {
    */
   readonly findings: readonly string[];
 };
+
+/**
+ Settled record for one translate slice.
+
+ Carries the WHOLE stage result beside the driver's decision, so a reader can
+ tell "judges preferred a replacement and the guard refused it" from "judges
+ kept the incumbent". Those are opposite facts about the same lane and both
+ ship the same text.
+
+ THE DROPPED NAMES COME WITH THEIR DISPOSITION (ledger T8, sixth batch).
+ They were an optional field on every record, so the reporter fell back to
+ an empty list for a declared-name refusal that always carries them; the
+ union now says which record carries them, and the cache reader refuses a
+ declared-name refusal without them.
+
+ @example
+ ```ts
+ const changed = record.outputText !== incumbentText;
+ ```
+ */
+export type TranslateSliceRecord = TranslateSliceRecordFields & (
+  | {
+    /**
+     The declared-name guard refused the replacement.
+     */
+    readonly disposition: 'refused-declared-name';
+
+    /**
+     Declared forms the replacement dropped, which are why it was refused.
+
+     STORED, unlike the alignment refusal's sentence, because these forms
+     name no slice index and so survive a record being resumed at a
+     different position. The reporter has no preparation to recompute them
+     from.
+     */
+    readonly droppedDeclaredNames: readonly string[];
+  }
+  | {
+    /**
+     What the driver did with the stage result, where no declared name
+     refused it.
+     */
+    readonly disposition: Exclude<TranslateDisposition, 'refused-declared-name'>;
+  }
+);
 
 /**
  One passage this run left missing, with why and what it heard.
