@@ -8,6 +8,12 @@ export {
   runnerEntrySources,
 } from './build-entries.ts';
 export {
+  type BundleMaps,
+  bundleMapsOf,
+  type MapNeed,
+  requireMapFor,
+} from './corpus-run/coverage-bundle-maps.ts';
+export {
   CENSUS_FORMAT,
   CensusBaselineError,
   type CensusArguments,

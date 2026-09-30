@@ -27,23 +27,19 @@ import {
 import {
   baselineStatusesOf,
   type CensusStretch,
-  censusStretchesOf,
   kindTotalsOf,
-  requirePlacedFunctions,
   sourceRowsOf,
 } from './coverage-census-report.ts';
 import {
   packageCommit,
-  readBundle,
   runSuite,
   tallyCoverage,
-  unloadedSourcesOf,
 } from './coverage-census-steps.ts';
 import {
-  type BundleLines,
-  mapFunction,
-} from './coverage-lines.ts';
-import { mapStretch, } from './coverage-pieces.ts';
+  type BundleMaps,
+  bundleMapsOf,
+} from './coverage-bundle-maps.ts';
+import { placeTally, } from './coverage-census-place.ts';
 import type { CoverageTally, } from './coverage-tally.ts';
 
 //region Coverage census
@@ -102,7 +98,8 @@ type Baseline = {
 
  @param distDirectory - build directory
 
- @param bundles - bundles the build holds
+ @param bundleMaps - bundles the build holds, split by whether a map stands
+ beside each
 
  @param head - commit built from
 
@@ -117,12 +114,14 @@ type Baseline = {
  @param baselines - earlier census files named, already read
 
  @throws StatedRefusalError where the coverage names a bundle the build
- does not hold, or the census places an uncalled function outside its own
- source's stretches
+ does not hold, finds code no test ran in a bundle with no map, or finds
+ a bundle no test loaded that has no map to say which sources it carries,
+ or where the census places an uncalled function outside its own source's
+ stretches
 
  @example
  ```ts
- await reportCensus({ asked, packageDirectory, distDirectory, bundles, head, clean, passes, tally, reportDirectory, baselines, },);
+ await reportCensus({ asked, packageDirectory, distDirectory, bundleMaps, head, clean, passes, tally, reportDirectory, baselines, },);
  ```
  */
 async function reportCensus(
@@ -130,7 +129,7 @@ async function reportCensus(
     asked,
     packageDirectory,
     distDirectory,
-    bundles,
+    bundleMaps,
     head,
     clean,
     passes,
@@ -141,7 +140,7 @@ async function reportCensus(
     readonly asked: CensusArguments;
     readonly packageDirectory: string;
     readonly distDirectory: string;
-    readonly bundles: readonly string[];
+    readonly bundleMaps: BundleMaps;
     readonly head: string;
     readonly clean: boolean;
     readonly passes: number;
@@ -155,91 +154,19 @@ async function reportCensus(
    */
   const entryFiles = runnerEntrySources();
   /**
-   Every bundle's lines and sources, by name.
+   The tally placed on source lines.
    */
-  const read = new Map(
-    await Promise.all(bundles.map(async function readOne(bundle,) {
-    return [
-      bundle,
-      await readBundle({
-        distDirectory,
-        packageDirectory,
-        bundle,
-      },),
-    ] as const;
-  },),),
-  );
-  /**
-   Bundles some process loaded.
-   */
-  const loaded = new Set(tally.loadedBundles(),);
-  /**
-   Lines of a loaded bundle.
-
-   @param bundle - bundle the coverage names
-
-   @returns Its positions and map
-   */
-  function linesOf(bundle: string,): BundleLines {
-    /**
-     Its reading.
-     */
-    const reading = read.get(bundle,);
-    if (reading === undefined)
-      throw new StatedRefusalError({ says: `coverage names ${bundle}, which ${distDirectory} does not hold; rebuild and run again`, },);
-    return reading.lines;
-  }
-  /**
-   Cold stretches as the census records them, one per piece.
-   */
-  const stretches = tally.coldStretches()
-    .flatMap(function recorded(stretch,) {
-    return censusStretchesOf({
-      stretch: mapStretch({
-        lines: linesOf(stretch.bundle,),
-        stretch,
-      },),
-    },);
-  },);
-  /**
-   Uncalled functions with their lines.
-   */
-  const uncalled = tally.uncalledFunctions()
-    .map(function placed(fn,) {
-    return mapFunction({
-      lines: linesOf(fn.bundle,),
-      uncalled: fn,
-    },);
-  },);
-  requirePlacedFunctions({
+  const {
     stretches,
     uncalled,
-  },);
-  /**
-   Sources the loaded bundles carry.
-   */
-  const loadedSources = new Set([...read,].flatMap(function carried([bundle, reading,],): readonly string[] {
-    return loaded.has(bundle,) ? reading.sources : [];
-  },),);
-  /**
-   Bundles no process loaded.
-   */
-  const unloadedBundles = bundles
-    .filter(function unloaded(bundle,): boolean {
-      return !loaded.has(bundle,);
-    },)
-    .toSorted();
-  /**
-   Sources only those bundles carry, with their physical lines.
-   */
-  const unloadedSources = await unloadedSourcesOf({
-    packageDirectory,
-    carried: unloadedBundles.flatMap(function carried(bundle,): readonly string[] {
-      return read.get(bundle,)
-        ?.sources
-        ?? [];
-    },),
     loadedSources,
+    unloadedBundles,
+    unloadedSources,
+  } = await placeTally({
+    packageDirectory,
+    distDirectory,
+    bundleMaps,
+    tally,
     entryFiles,
   },);
   /**
@@ -380,28 +307,17 @@ async function runCoverageCensus(): Promise<void> {
     'node',
   );
   /**
-   Files the build holds.
+   The build's bundles, split by whether a map stands beside each.
    */
-  const built = await readdir(distDirectory,);
-  /**
-   Its bundles.
-   */
-  const bundles = built.filter(function isBundle(name,): boolean {
-    return name.endsWith('.mjs',);
+  const bundleMaps = bundleMapsOf({
+    built: await readdir(distDirectory,),
+    distDirectory,
   },);
   /**
-   The maps beside them.
+   Bundles without a map, named so a census that reads none of them says so.
    */
-  const maps = new Set(built.filter(function isMap(name,): boolean {
-    return name.endsWith('.mjs.map',);
-  },),);
-  if (!bundles.every(function mapped(bundle,): boolean {
-    return maps.has(`${bundle}.map`,);
-  },))
-    throw new StatedRefusalError({
-      says: `${distDirectory} holds a bundle with no source map beside it; run the census through `
-        + 'mise run //package/module/translation-repair:coverage-census, which builds with maps first',
-    },);
+  const { unmapped, } = bundleMaps;
+  censusLog.info(`bundles with no source map, read only where the census must place code in them: ${(unmapped.length === 0) ? 'none' : unmapped.join(', ',)}`,);
   /**
    The commit and whether the files match it.
    */
@@ -466,7 +382,7 @@ async function runCoverageCensus(): Promise<void> {
     asked,
     packageDirectory,
     distDirectory,
-    bundles,
+    bundleMaps,
     head,
     clean,
     passes: suite.passes,
