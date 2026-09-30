@@ -119,8 +119,22 @@ await describe({
          */
         const spaces = replyWith({ translation: '   \n  ', },);
 
+        /**
+         Revision whose replacement wording is a zero-width space, which
+         trim() keeps and the intake fold removes (ledger B40).
+         */
+        const zeroWidth = replyWith({ translation: '\u{200B}', },);
+
+        /**
+         Revision whose replacement wording is a Hangul filler, which nothing
+         folds and nothing shows.
+         */
+        const filler = replyWith({ translation: '\u{3164}', },);
+
         expect(isTranslateRepairWire(empty,),).toBe(false,);
         expect(isTranslateRepairWire(spaces,),).toBe(false,);
+        expect(isTranslateRepairWire(zeroWidth,),).toBe(false,);
+        expect(isTranslateRepairWire(filler,),).toBe(false,);
       },
     },),
     it({

@@ -1,6 +1,7 @@
 import type { SliceSyntax, } from './chunk-document.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type { LaneText, } from './translate-candidates.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import { sameWording, } from './wording-key.ts';
@@ -113,18 +114,16 @@ export function laneTextsForSlate(
     },
   ];
   return lanes.filter(function offered(laneText,): boolean {
-    /**
-     The lane's text without its surrounding whitespace, blank when the lane
-     proposed nothing.
-     */
-    const trimmed = laneText.text
-      .trim();
+    // A LANE TEXT THAT SHOWS NOTHING is a lane that proposed nothing, invisible
+    // characters `trim()` keeps among it: the deterministic rule passes a
+    // Hangul filler over a plain original (ledger B40).
+    //
     // THE STANDING'S WORDING IN ALL BUT LAYOUT IS THE STANDING (ledger B26):
     // a lane text that is the standing with its soft breaks elsewhere
     // publishes the page the standing publishes, so offering it back under a
     // lane name puts a withheld standing on the slate.
     if (
-      (trimmed === '')
+      rendersAsNothing({ text: laneText.text, },)
       || sameWording({
         proposal: laneText.text,
         standing: standingText,

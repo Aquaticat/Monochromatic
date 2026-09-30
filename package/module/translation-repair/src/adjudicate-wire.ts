@@ -9,6 +9,7 @@ import {
   isJsonArray,
   isJsonRecord,
 } from './json-guard.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Adjudication wire format
 // What panelists actually emit: integer claim references, closed-vocabulary
@@ -332,14 +333,19 @@ export function resolvePanelBallot(
      This verdict's reason, trimmed, or empty where none was given.
      */
     const reason = (verdict.reason ?? '').trim();
+    /**
+     Whether the reason shows a reader nothing: none, whitespace, or invisible
+     characters `trim()` keeps (ledger B40).
+     */
+    const reasonMissing = rendersAsNothing({ text: reason, },);
     // A MISSING REASON IS AN AUDIT GAP, NOT A LOST VOICE: the vote still
     // counts, and the gap is recorded beside it.
-    if (reason === '')
+    if (reasonMissing)
       findings.push(`missing-reason (${verdict.claim})`,);
     /**
      The reason as a spreadable field, absent where none was given.
      */
-    const given = (reason === '') ? {} : { reason, };
+    const given = reasonMissing ? {} : { reason, };
     if ((verdict.severity !== undefined) && (!isIssueSeverity(verdict.severity,))) {
       findings.push(`unknown-regrade-severity (${verdict.severity})`,);
       verdicts[claimId] = {

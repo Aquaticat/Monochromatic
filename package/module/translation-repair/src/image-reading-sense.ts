@@ -37,6 +37,7 @@ import {
   readsAsRefusal,
   refusalReportsAbsence,
 } from './reading-refusal.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { carriesWord, } from './word-bounds.ts';
 
 /**
@@ -173,8 +174,9 @@ export function readingMakesSense(
     // A short reply that negates something is an apology fragment ("I can't.",
     // "None."), which says nothing about the picture; one that negates nothing
     // is what a picture with a hull number or a date on it produces. Nothing at
-    // all is neither.
-    if ((trimmed.length === 0) || negatesSomething({ reading: trimmed, },)) {
+    // all is neither, and nothing includes invisible characters `trim()` keeps
+    // (ledger B40).
+    if (rendersAsNothing({ text: trimmed, },) || negatesSomething({ reading: trimmed, },)) {
       return {
         kind: 'refused',
         clause: 'too-short',

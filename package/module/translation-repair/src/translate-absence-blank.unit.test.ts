@@ -48,6 +48,16 @@ await describe({
           winner: ' \n\t \n ',
           sourceText: SOURCE_SAYS_SOMETHING,
         },),).toBe(true,);
+        // Invisible characters trim() keeps are nothing too (ledger B40): a
+        // zero-width space, and a Hangul filler no fold removes.
+        expect(blankAgainst({
+          winner: '\u{200B}',
+          sourceText: SOURCE_SAYS_SOMETHING,
+        },),).toBe(true,);
+        expect(blankAgainst({
+          winner: ' \u{3164} ',
+          sourceText: SOURCE_SAYS_SOMETHING,
+        },),).toBe(true,);
       },
     },),
     it({
@@ -63,6 +73,11 @@ await describe({
         expect(blankAgainst({
           winner: '',
           sourceText: '   \n  ',
+        },),).toBe(false,);
+        // So is a source of invisible characters alone (ledger B40).
+        expect(blankAgainst({
+          winner: '',
+          sourceText: '\u{2060}\u{3000}',
         },),).toBe(false,);
       },
     },),

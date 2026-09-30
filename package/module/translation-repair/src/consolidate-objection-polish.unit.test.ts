@@ -129,6 +129,8 @@ function candidateNumberOf(
 
  @param refinerSheets - where each refiner sheet is recorded
 
+ @param objection - reason every objecting gate voice gives
+
  @returns Client over the stages a settlement reaches
 
  @example
@@ -140,9 +142,11 @@ function objectingClient(
   {
     gateChoice,
     refinerSheets,
+    objection = OBJECTION,
   }: {
     readonly gateChoice: 'standing' | 'consolidated';
     readonly refinerSheets: string[];
+    readonly objection?: string;
   },
 ): SyntheticClient {
   return {
@@ -183,7 +187,7 @@ function objectingClient(
           choice: gateChoice,
           unsupported: (gateChoice === 'standing') ? ['consolidated',] : [],
           dropped: [],
-          reason: (gateChoice === 'standing') ? OBJECTION : 'faithful',
+          reason: (gateChoice === 'standing') ? objection : 'faithful',
         }
         : (schema === 'refine_report')
         ? { rewrites: [], }
@@ -214,6 +218,9 @@ function objectingClient(
 
  @param refinerSheets - where each refiner sheet is recorded
 
+ @param objection - reason every objecting gate voice gives, the fixture's
+ objection when left out
+
  @returns Settlement
 
  @example
@@ -226,16 +233,19 @@ async function settle(
     standingEligible,
     gateChoice,
     refinerSheets,
+    objection,
   }: {
     readonly standingEligible: boolean;
     readonly gateChoice: 'standing' | 'consolidated';
     readonly refinerSheets: string[];
+    readonly objection?: string;
   },
 ): Promise<ConsolidationSettlement> {
   return await settleConsolidation({
     client: objectingClient({
       gateChoice,
       refinerSheets,
+      ...((objection === undefined) ? {} : { objection, }),
     },),
     roster: ROSTER,
     subject: {
@@ -315,6 +325,26 @@ await describe({
           standingEligible: true,
           gateChoice: 'consolidated',
           refinerSheets,
+        },);
+        expect(refinerSheets.length,).toBeGreaterThan(0,);
+        expect(refinerSheets.some(function carriesObjections(sheet,): boolean {
+          return sheet.includes('OBJECTIONS FROM THE CONSOLIDATION GATE',);
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'SENDS NO OBJECTION the gate gave only invisible characters for, which trim() keeps and no refiner '
+        + 'could read (ledger B40)',
+      fn: async () => {
+        /**
+         Every refiner sheet the settlement sent.
+         */
+        const refinerSheets: string[] = [];
+        await settle({
+          standingEligible: false,
+          gateChoice: 'standing',
+          refinerSheets,
+          objection: '\u{200B}\u{2060}',
         },);
         expect(refinerSheets.length,).toBeGreaterThan(0,);
         expect(refinerSheets.some(function carriesObjections(sheet,): boolean {

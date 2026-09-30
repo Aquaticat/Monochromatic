@@ -13,6 +13,7 @@ import {
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
 } from './page-apparatus-clause.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Archive block review wire
 
@@ -209,9 +210,9 @@ export function isArchiveBlockReviewWire(value: unknown,): value is ArchiveBlock
   // never asked for an empty quote there; `dc51b02d9` fixed only `revise`).
   if (value.disposition !== 'source-supported')
     return true;
-  return value.sourceQuote
-    .trim()
-    !== '';
+  // A quote showing a reader nothing anchors nothing, invisible characters
+  // `trim()` keeps among it (ledger B40).
+  return !rendersAsNothing({ text: value.sourceQuote, },);
 }
 
 /**

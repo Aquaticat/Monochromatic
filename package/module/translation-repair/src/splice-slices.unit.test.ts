@@ -734,6 +734,65 @@ await describe({
         expect((refusalOfSpliceBlankInsertion as Error).message,).toContain('writes none',);
       },
     },),
+
+    it({
+      name: 'THROWS as well when an anchor is handed only invisible characters, which trim() keeps and no '
+        + 'reader sees, and writes blank text at an anchor whose original shows nothing either (ledger B40)',
+      fn: async () => {
+        /**
+         What spliceInvisibleInsertion raised, read for its class as well as its wording.
+         */
+        const refusalOfSpliceInvisibleInsertion = caught(function spliceInvisibleInsertion() {
+          spliceSlices({
+            targetText: TARGET_TEXT,
+            slices: [
+              ...SLICES,
+              anchorAt({
+                sliceIndex: 3,
+                offset: TARGET_TEXT.length,
+              },),
+            ],
+            replacements: [
+              write({
+                sliceIndex: 3,
+                replacementText: '\u{200B}\u{3164}',
+              },),
+            ],
+          },);
+        },);
+
+        expect(refusalOfSpliceInvisibleInsertion,).toBeInstanceOf(SliceSpliceError,);
+        expect((refusalOfSpliceInvisibleInsertion as Error).message,).toContain('writes none',);
+
+        /**
+         Anchor whose original is a zero-width space alone.
+         */
+        const silentAnchor = anchorAt({
+          sliceIndex: 3,
+          offset: TARGET_TEXT.length,
+        },);
+
+        expect(spliceSlices({
+          targetText: TARGET_TEXT,
+          slices: [
+            ...SLICES,
+            {
+              ...silentAnchor,
+              source: {
+                ...silentAnchor.source,
+                text: '\u{200B}',
+              },
+            },
+          ],
+          replacements: [
+            write({
+              sliceIndex: 3,
+              replacementText: '',
+            },),
+          ],
+        },),).toBe(TARGET_TEXT,);
+      },
+    },),
   ],
 },);
 

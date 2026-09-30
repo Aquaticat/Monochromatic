@@ -202,5 +202,24 @@ await describe({
         ],);
       },
     },),
+
+    it({
+      name: 'LEAVES OUT a lane text of invisible characters alone, which the deterministic rule passes over a '
+        + 'plain original and no reader sees (ledger B40)',
+      fn: async () => {
+        expect(laneTextsForSlate({
+          ...SLICE,
+          sourceText: '猫在窗边睡着了。',
+          repairText: '\u{3164}\u{200B}',
+          translateText: 'The cat had fallen asleep beside the window.',
+          standingEligible: true,
+        },),).toEqual([
+          {
+            lane: 'translate',
+            text: 'The cat had fallen asleep beside the window.',
+          },
+        ],);
+      },
+    },),
   ],
 },);

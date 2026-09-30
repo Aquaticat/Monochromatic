@@ -8,6 +8,7 @@ import {
   documentLineEnding,
 } from './insertion-separator.ts';
 import { assertPlacementLayout, } from './placement-layout.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { assertSliceIndexing, } from './slice-indexing.ts';
 import { matchSpanEdges, } from './span-edge-match.ts';
 
@@ -398,16 +399,15 @@ export function spliceSlices(
     const sourceText = slice.source
       .text;
     /**
-     Whether the text offered for this slice says nothing.
+     Whether the text offered for this slice shows a reader nothing, invisible
+     characters `trim()` keeps among it (ledger B40).
      */
-    const writesNothing = replacement.replacementText
-      .trim()
-      === '';
+    const writesNothing = rendersAsNothing({ text: replacement.replacementText, },);
 
     /**
      Whether the original says something.
      */
-    const sourceSaysSomething = sourceText.trim() !== '';
+    const sourceSaysSomething = !rendersAsNothing({ text: sourceText, },);
     if (missingTranslation
       && writesNothing
       && sourceSaysSomething) {

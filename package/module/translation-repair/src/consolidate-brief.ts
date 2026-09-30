@@ -1,4 +1,5 @@
 import type { LaneContestBallot, } from './lane-contest-wire.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Consolidation brief
 // Renders what the lane contest's judges said about the two candidates, as the
@@ -25,8 +26,9 @@ import type { LaneContestBallot, } from './lane-contest-wire.ts';
  
  @param findings - findings as a judge wrote them
  
- @returns Same findings, trimmed, without the ones saying nothing
- 
+ @returns Same findings, trimmed, without the ones showing a reader nothing,
+ invisible characters `trim()` keeps among them (ledger B40)
+
  @example
  ```ts
  const kept = usableFindings({ findings: [ ' repair ', '', ], },);
@@ -40,7 +42,7 @@ function usableFindings(
       return finding.trim();
     },)
     .filter(function saysSomething(finding,): boolean {
-      return finding !== '';
+      return !rendersAsNothing({ text: finding, },);
     },);
 }
 
@@ -119,7 +121,7 @@ function renderBallot(
       heading: 'Omits what the original says',
       findings: ballot.droppedRaw,
     },),
-    ...((reason === '')
+    ...(rendersAsNothing({ text: reason, },)
       ? []
       : [ `  Why: ${reason}`, ]),
   ];

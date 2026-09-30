@@ -93,7 +93,9 @@ await describe({
           ballots: [
             {
               ...full,
-              unsupportedRaw: [ '', '   ', ],
+              // A zero-width space with a Hangul filler shows nothing to a
+              // reader either, though trim() keeps it (ledger B40).
+              unsupportedRaw: [ '', '   ', '\u{200B}\u{3164}', ],
               droppedRaw: [],
             },
           ],
@@ -104,7 +106,7 @@ await describe({
       },
     },),
     it({
-      name: 'omits the reason line when a judge gave none',
+      name: 'omits the reason line when a judge gave none, or gave only invisible characters (ledger B40)',
       fn: async () => {
         const brief = renderConsolidationBrief({
           ballots: [
@@ -115,6 +117,14 @@ await describe({
           ],
         },);
         expect(brief.includes('Why:',),).toBe(false,);
+        expect(renderConsolidationBrief({
+          ballots: [
+            {
+              ...full,
+              reason: '\u{2060}',
+            },
+          ],
+        },).includes('Why:',),).toBe(false,);
       },
     },),
     it({

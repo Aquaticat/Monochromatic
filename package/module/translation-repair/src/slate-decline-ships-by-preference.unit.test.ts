@@ -120,6 +120,8 @@ const FRESH = 'The cat dozed on the windowsill, its tail hanging by the radiator
 
  @param refinerSheets - where each refiner sheet is recorded
 
+ @param rejection - reason every rejecting judge gives
+
  @returns Client over every stage these guards reach
 
  @example
@@ -131,9 +133,11 @@ function rejectingClient(
   {
     judgeSheets,
     refinerSheets,
+    rejection = REJECTION,
   }: {
     readonly judgeSheets: string[];
     readonly refinerSheets: string[];
+    readonly rejection?: string;
   },
 ): SyntheticClient {
   /**
@@ -180,7 +184,7 @@ function rejectingClient(
         : (schema === 'candidate_ballot')
         ? {
           best: 0,
-          reason: REJECTION,
+          reason: rejection,
         }
         : (schema === 'consolidate_gate')
         ? {
@@ -221,6 +225,9 @@ function rejectingClient(
 
  @param judgeModelIds - judges the slate seats, the roster's by default
 
+ @param rejection - reason every judge gives, the fixture's rejection when
+ left out
+
  @returns What the retry settled on
 
  @example
@@ -233,10 +240,12 @@ async function judgedRejecting(
     withheldStanding,
     judgeSheets,
     judgeModelIds = JUDGES,
+    rejection,
   }: {
     readonly withheldStanding?: boolean;
     readonly judgeSheets: string[];
     readonly judgeModelIds?: readonly RosterModelId[];
+    readonly rejection?: string;
   },
 ): Promise<TranslateStageResult> {
   /**
@@ -245,6 +254,7 @@ async function judgedRejecting(
   const client = rejectingClient({
     judgeSheets,
     refinerSheets: [],
+    ...((rejection === undefined) ? {} : { rejection, }),
   },);
   /**
    Slate the translators produced.
@@ -420,6 +430,21 @@ await describe({
             objections: [],
           },
           judgeSheets: [],
+        },);
+      },
+    },),
+    it({
+      name: 'RECORDS NO OBJECTION from a rejection whose reason is invisible characters alone, which trim() keeps '
+        + 'and no refiner could read (ledger B40)',
+      fn: async () => {
+        const result = await judgedRejecting({
+          withheldStanding: true,
+          judgeSheets: [],
+          rejection: '\u{200B}\u{3164}',
+        },);
+        expect(result.shippedPastDecline,).toEqual({
+          basis: 'repair lane',
+          objections: [],
         },);
       },
     },),

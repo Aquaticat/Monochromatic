@@ -10775,6 +10775,106 @@ and that a slate nobody was heard on still interrupts.
 The stage's record keeps the archive's wording,
 so the translate cache account takes this change before a launch.
 
+### B40: text that shows nothing passed every check that asked `trim()`
+
+Status:
+fixed 2026-09-30 (UTC),
+found while checking whether the B39 fix reached the consolidation lane,
+whose judge call shares the changed exit.
+The checks deciding whether a model's wording or reason said anything asked `trim()`,
+which removes ECMAScript whitespace and keeps every invisible character that is not whitespace.
+The intake fold (`invisible-variants.ts`) removes the soft hyphen (`U+00AD`),
+the zero-width space (`U+200B`),
+the word joiner (`U+2060`)
+and the byte order mark (`U+FEFF`),
+and `trim()` keeps all of them but `U+FEFF`.
+Measured on the build from before the fix
+(`t8b6-blank-slate-probe.mjs` in the audit's scratch folder):
+a translator reply of `U+200B`,
+`U+2060`
+or `U+00AD` alone passed `isTranslateReportWire`,
+and `buildTranslateCandidates` put it on the slate as a candidate of no characters.
+The slate filter's TSDoc said nothing blank reaches it,
+and `BlankSelectionError`'s said its exit was unreachable;
+both were false.
+The deterministic floor passes a proposal of `U+3000`,
+`U+00A0`,
+`U+200B`,
+`U+2060`,
+`U+3164`
+or `U+115F` alone over an original that says something
+(`t8b6-b39-blank-probe2.mjs`),
+and the Hangul fillers are not folded at all.
+The same reading let a zero-width reason meet "Reason before vote" in the panel ballot,
+reach the polish as a gate or slate objection,
+print as a judge's reason in the consolidation brief,
+anchor a source-supported archive block,
+stand as a coverage quote,
+pass as a short image reading,
+join the consolidation slate as a lane text,
+and write an anchor the splice refuses blank text for.
+Whether any run met it is not measured.
+
+Fix:
+`rendersAsNothing` (`renders-as-nothing.ts`) reads a text as nothing when every code point is Unicode White_Space,
+Default_Ignorable_Code_Point
+(`DerivedCoreProperties.txt`,
+Unicode 18.0.0)
+or a control,
+one code point at a time,
+and every one of those checks asks it:
+the translator and repair reply guards,
+the slate builder,
+`blankAgainst` on both sides,
+the absent slice's record check in `translate-slice.ts`,
+the splice's anchor check on both sides,
+the lane offer,
+the panel ballot's missing reason,
+the gate and slate objections,
+the consolidation brief's findings and reason,
+the archive-block review's anchor quote,
+the coverage quote,
+and the image reading's "nothing at all".
+Every character the fold removes is default-ignorable
+and every one it turns into a space is White_Space,
+so the fold cannot change the answer;
+the slate builder folds first and asks it of the folded bytes all the same.
+The floor is left as it is:
+every route to it passes one of the reply guards first,
+or the lane offer's check,
+and a reply guard's refusal is the designed re-ask.
+The census of the package's 154 lines calling `trim()`
+(`t8b6-b40-trim-census.txt`)
+left the rest,
+which read parsed values,
+settings,
+corpus text
+or one character's spacing.
+The editor and refiner wires fold too,
+but their guards take any string as a replacement,
+the empty one included
+(`isEditorEditWire`,
+`isRefineRewriteWire`),
+so a replacement the fold empties passes no check it would otherwise fail.
+Every case is pinned beside its check's siblings,
+and `renders-as-nothing.unit.test.ts` pins the reading itself,
+past the first plane included.
+
+The B39 exit does not reach the consolidation lane after this (an inference from the code):
+that lane counts floor survivors as heard,
+a survivor passed the reply guard,
+and the fold cannot empty what the guard passed,
+so its slate is empty only where nobody survived,
+which still raises.
+The records of the translate,
+consolidation,
+repair,
+coverage,
+archive-block review
+and image reading stages can change,
+and so can page assembly's,
+so the cache-account audit before a launch takes this change beside B36 to B39.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

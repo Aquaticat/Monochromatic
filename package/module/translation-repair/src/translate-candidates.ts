@@ -7,6 +7,7 @@ import {
   type FoldedText,
   foldInvisibleVariants,
 } from './invisible-variants.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
@@ -117,30 +118,6 @@ export type TranslateCandidateSet = {
 };
 
 /**
- Whether a candidate proposes any text at all.
- 
- A BACKSTOP SINCE THE WIRE GUARD TIGHTENED. A reply of `{"translation": ""}`
- used to satisfy the guard and arrive as a heard voice proposing to delete the
- slice; it is now refused there and the model is re-asked, so nothing blank
- reaches this filter through the ordinary path. It stays because judges cannot
- be shown an empty candidate whatever the route: it reads as a legitimate
- option to render nothing, and a slice whose incumbent is also empty would
- then have a whole ballot of nothing.
- 
- @param text - candidate text as the model returned it
- 
- @returns Whether anything but whitespace is present
- 
- @example
- ```ts
- const usable = proposesText({ text: report.translation, },);
- ```
- */
-function proposesText({ text, }: { readonly text: string; },): boolean {
-  return text.trim() !== '';
-}
-
-/**
  Assembles the candidate slate for one slice.
 
  ONE WORDING, ONE CANDIDATE. Two proposals that publish the same page share a
@@ -198,32 +175,45 @@ export function buildTranslateCandidates(
   },);
 
   /**
-   Translators that answered with nothing to ship.
+   Every translator's reply with its translation folded at intake, so the
+   judges see the bytes that would ship and the blank test reads them
+   too.
    */
-  const blank = ordered.filter(function isBlank(voice,): boolean {
-    return !proposesText({ text: voice.value
-      .translation, },);
+  const foldedReplies = ordered.map(function foldedVoice(voice,): {
+    readonly voice: HeardVoice<TranslateReportWire>;
+    readonly fold: FoldedText;
+  } {
+    return {
+      voice,
+      fold: foldInvisibleVariants({ text: voice.value
+        .translation, },),
+    };
   },);
 
+  // A BACKSTOP SINCE THE WIRE GUARD TIGHTENED, asked of the FOLDED bytes. The
+  // guard refuses a reply that shows nothing, so the ordinary path brings
+  // none here; the filter stays because judges cannot be shown an empty
+  // candidate whatever the route: it reads as a legitimate option to render
+  // nothing, and a slice whose incumbent is also empty would then have a
+  // whole ballot of nothing. Asked of the raw reply with `trim()`, it let a
+  // zero-width space through, which the fold then emptied (ledger B40).
   /**
-   Translators that proposed text, each with its translation folded at
-   intake so the judges see the bytes that would ship.
+   Translators that answered with nothing to ship.
    */
-  const folded = ordered
-    .filter(function isUsable(voice,): boolean {
-      return proposesText({ text: voice.value
-        .translation, },);
+  const blank = foldedReplies
+    .filter(function isBlank({ fold, },): boolean {
+      return rendersAsNothing({ text: fold.text, },);
     },)
-    .map(function foldedVoice(voice,): {
-      readonly voice: HeardVoice<TranslateReportWire>;
-      readonly fold: FoldedText;
-    } {
-      return {
-        voice,
-        fold: foldInvisibleVariants({ text: voice.value
-          .translation, },),
-      };
+    .map(function voiceOf({ voice, },): HeardVoice<TranslateReportWire> {
+      return voice;
     },);
+
+  /**
+   Translators that proposed text, folded.
+   */
+  const folded = foldedReplies.filter(function isUsable({ fold, },): boolean {
+    return !rendersAsNothing({ text: fold.text, },);
+  },);
 
   /**
    Every proposal worth judging: the incumbent when it has text, then any
@@ -240,8 +230,9 @@ export function buildTranslateCandidates(
    2026-09-17).
    */
   const offered: readonly Candidate<TranslateCandidateValue>[] = [
-    ...(proposesText({ text: incumbentText, },)
-      ? [
+    ...(rendersAsNothing({ text: incumbentText, },)
+      ? []
+      : [
         {
           producer: {
             kind: 'incumbent',
@@ -253,11 +244,10 @@ export function buildTranslateCandidates(
           },
           rendered: incumbentText,
         } satisfies Candidate<TranslateCandidateValue>,
-      ]
-      : []),
+      ]),
     ...laneTexts
       .filter(function isUsable(laneText,): boolean {
-        return proposesText({ text: laneText.text, },);
+        return !rendersAsNothing({ text: laneText.text, },);
       },)
       .map(function toLaneCandidate(laneText,): Candidate<TranslateCandidateValue> {
         return {

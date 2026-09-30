@@ -1,4 +1,5 @@
 import type { Candidate, } from './candidate-select-model.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type { TranslateCandidateValue, } from './translate-candidates.ts';
 
 //region Translate absence
@@ -133,8 +134,12 @@ export type UnfilledReason =
  a caller that treated it as an unfilled passage would record a slice the
  archive DOES translate as one it never did.
  
- Unreachable today, since blank proposals never become candidates and a blank
- incumbent never joins the slate. It exists so the day that changes is a loud
+ Reached by no ordinary path while the slate builder and the reply guards ask
+ `rendersAsNothing` (`renders-as-nothing.ts`): a proposal or an incumbent that
+ shows nothing never becomes a candidate. That was claimed unreachable while
+ those checks asked `trim()`, and was not: a reply of one zero-width space
+ passed them, the intake fold emptied it, and an empty candidate reached the
+ judges (ledger B40). It exists so a route that changes this is a loud
  failure rather than a deletion.
  
  @example
@@ -274,16 +279,15 @@ export function blankAgainst(
   },
 ): boolean {
   /**
-   Whether the winner says anything at all.
+   Whether the winner shows a reader anything at all (ledger B40: invisible
+   characters `trim()` keeps are nothing too).
    */
-  const saysNothing = winner.trim()
-    === '';
+  const saysNothing = rendersAsNothing({ text: winner, },);
 
   /**
    Whether there was something to render.
    */
-  const sourceSaysSomething = sourceText.trim()
-    !== '';
+  const sourceSaysSomething = !rendersAsNothing({ text: sourceText, },);
 
   return saysNothing && sourceSaysSomething;
 }

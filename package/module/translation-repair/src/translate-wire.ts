@@ -13,6 +13,7 @@ import {
 import { sourceBreakDisplay, } from './source-break-display.ts';
 import { NAME_FORM_SCOPE_RULE, } from './name-form-policy.ts';
 import { PAGE_APPARATUS_IS_KEPT, } from './page-apparatus-clause.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type {
   IncumbentKind,
   TranslateAbsenceReason,
@@ -462,11 +463,15 @@ export type TranslateReportWire = {
  
  Every source slice says something, so no legitimate reply is blank: an empty
  run cannot become a slice at all.
- 
+
+ BLANK MEANS SHOWING A READER NOTHING (ledger B40), not what `trim()` leaves:
+ a reply of one zero-width space passed a trimmed check, the intake fold then
+ emptied it, and an empty candidate reached the judges.
+
  @param value - parsed model JSON
- 
- @returns Whether value carries a translation that says something
- 
+
+ @returns Whether value carries a translation that shows something
+
  @example
  ```ts
  const ok = isTranslateReportWire(JSON.parse(text,),);
@@ -478,9 +483,7 @@ export function isTranslateReportWire(value: unknown,): value is TranslateReport
   if ((typeof value.translation) !== 'string')
     return false;
 
-  return value.translation
-    .trim()
-    !== '';
+  return !rendersAsNothing({ text: value.translation, },);
 }
 
 /**

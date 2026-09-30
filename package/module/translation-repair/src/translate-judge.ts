@@ -430,10 +430,13 @@ export async function judgeTranslateSlate(
   },);
   if (outcome.kind === 'selected') {
     // UNREACHABLE while the slate is built the way it is, and here because the
-    // day it becomes reachable is the day a slice ships a deletion. Blank
-    // proposals never become candidates and a blank incumbent never joins the
-    // slate, so a winner always says something; this states that dependency
-    // rather than relying on a reader of `candidate-select.ts` noticing it.
+    // day it becomes reachable is the day a slice ships a deletion. A proposal
+    // or an incumbent that shows nothing never becomes a candidate
+    // (`buildTranslateCandidates` asks `rendersAsNothing` of the folded bytes),
+    // so a winner always shows something; this states that dependency rather
+    // than relying on a reader of `candidate-select.ts` noticing it. An empty
+    // candidate reached the slate while that filter asked `trim()` of the raw
+    // reply (ledger B40).
     if (blankAgainst({
       winner: outcome.value
         .text,

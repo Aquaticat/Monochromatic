@@ -22,6 +22,7 @@ import type { SlateFloor, } from './consolidate-validity-floor.ts';
 import { wrapConsolidation, } from './consolidate-wrap.ts';
 import { applyFinalPolish, } from './consolidation-polish-apply.ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 
@@ -72,8 +73,10 @@ export function gateObjectionsOf(
       const { reason, } = ballot;
       return reason.trim();
     },)
+    // A reason showing a reader nothing states nothing, invisible characters
+    // `trim()` keeps among it (ledger B40).
     .filter(function stated(reason,): boolean {
-      return reason !== '';
+      return !rendersAsNothing({ text: reason, },);
     },);
   return [...new Set(reasons,),];
 }

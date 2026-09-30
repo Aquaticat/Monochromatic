@@ -13,6 +13,7 @@ import {
   dropsQuotedPassage,
   quoteLossRefusalFinding,
 } from './quote-preservation.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { restoreTargetOnlyRun, } from './target-only-run.ts';
 import { assessSliceAlignment, } from './translate-alignment.ts';
 import {
@@ -415,11 +416,10 @@ export async function settleTranslateSlice(
   // than trusted to the paths that produce it. Every way of producing nothing has already
   // thrown by here, so this is unreachable; what it pins is that a record for a
   // passage the archive never translated always carries a translation, since
-  // such a record is cached and read back as finished work.
+  // such a record is cached and read back as finished work. Nothing is what
+  // shows a reader nothing (ledger B40), not what `trim()` leaves.
   if ((incumbentKind === 'absent')
-    && (stageResult.text
-      .trim()
-      === '')) {
+    && rendersAsNothing({ text: stageResult.text, },)) {
     throw new BlankSelectionError({ findings: stageResult.findings, },);
   }
 

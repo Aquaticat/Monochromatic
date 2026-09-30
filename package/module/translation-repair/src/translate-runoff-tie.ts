@@ -7,6 +7,7 @@ import {
   describeProducer,
   type SelectionOutcome,
 } from './candidate-select-model.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 import {
   type TranslateAbsenceReason,
   TranslateAbsenceError,
@@ -336,7 +337,9 @@ function shipPreferredPastDecline(
             best,
             reason,
           } = ballot;
-          return (best !== chosen.index) && (reason.trim() !== '');
+          // A reason showing a reader nothing objects to nothing, invisible
+          // characters `trim()` keeps among it (ledger B40).
+          return (best !== chosen.index) && (!rendersAsNothing({ text: reason, },));
         },)
         .map(function reasonOf(ballot,): string {
           return ballot.reason;

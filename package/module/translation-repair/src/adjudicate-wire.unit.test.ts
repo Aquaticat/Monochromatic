@@ -176,6 +176,39 @@ await describe({
     },),
 
     it({
+      name: 'RECORDS THE SAME GAP for a reason of invisible characters alone, which trim() keeps and no reader '
+        + 'sees, so "Reason before vote" is not met by a zero-width space (ledger B40)',
+      fn: async () => {
+        /** Ballot whose first reason shows nothing, the others stated. */
+        const ballot = resolvePanelBallot({
+          wire: {
+            verdicts: [
+              {
+                claim: 1,
+                reason: '\u{200B}\u{2060}',
+                vote: 'supported',
+              },
+              {
+                claim: 2,
+                reason: 'The paw is where the original puts it.',
+                vote: 'unsupported',
+              },
+              {
+                claim: 3,
+                reason: 'The tail is not in either quote.',
+                vote: 'abstain',
+              },
+            ],
+          },
+          claimIds: CLAIM_IDS,
+          clusterIds: CLUSTER_IDS,
+        },);
+        expect(ballot.verdicts['issue/whisker'],).toEqual({ vote: 'supported', },);
+        expect(ballot.findings,).toStrictEqual(['missing-reason (1)',],);
+      },
+    },),
+
+    it({
       name: 'records out-of-range references as findings',
       fn: async () => {
         /** Ballot pointing at claims and groups beyond the sheet. */

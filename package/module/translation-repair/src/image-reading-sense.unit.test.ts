@@ -53,6 +53,9 @@ await describe({
         expect(readingMakesSense({ reading: 'DE581', },).kind,).toBe('short',);
         expect(readingMakesSense({ reading: '   a cat   ', },).kind,).toBe('short',);
         expect(readingMakesSense({ reading: '   ', },).kind,).toBe('refused',);
+        // Invisible characters trim() keeps are empty to a reader too (ledger
+        // B40), not a hull number.
+        expect(readingMakesSense({ reading: '\u{200B}\u{3164}', },).kind,).toBe('refused',);
 
         // An apology the phrase list knows is a refusal before its length is
         // looked at; one it does not know, negating, is too short to be anything.

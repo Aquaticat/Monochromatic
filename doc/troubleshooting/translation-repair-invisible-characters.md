@@ -308,3 +308,21 @@ An archive passage that itself carries one of the folded characters and is
 reproduced verbatim by a model will read as changed by the fold;
 at 11 U+2011 across the corpus that is the
 accepted cost.
+
+## A reply made only of invisible characters (2026-09-30)
+
+The checks deciding whether a model's reply said anything asked `trim()`,
+which keeps U+00AD,
+U+200B and U+2060,
+the characters the fold drops.
+A translator reply of one of them alone passed the reply guard,
+the fold emptied it,
+and an empty candidate reached the judges;
+a Hangul filler (U+3164) is not folded at all,
+and the deterministic floor passes it.
+Every such check now asks `rendersAsNothing` (`src/renders-as-nothing.ts`),
+which reads White_Space,
+default-ignorable code points and controls as nothing,
+so the reply guard refuses such a reply and the model is re-asked
+(package ledger B40,
+`package/module/translation-repair/doc/audit-ledger.md`).

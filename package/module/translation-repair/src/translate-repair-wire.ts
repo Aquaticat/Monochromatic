@@ -2,6 +2,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Translate repair wire
 // The follow-up turn a candidate's own author gets when structural validation
@@ -115,10 +116,12 @@ export function isTranslateRepairWire(value: unknown,): value is TranslateRepair
     return false;
 
   // A revision with nothing in it is not a revision, and admitting one would
-  // put an empty candidate on the ballot in the name of repairing it.
+  // put an empty candidate on the ballot in the name of repairing it. Nothing
+  // is what shows a reader nothing (ledger B40), which a zero-width space
+  // passed when this asked `trim()`.
   if (resolution !== 'revised')
     return true;
-  return translation.trim() !== '';
+  return !rendersAsNothing({ text: translation, },);
 }
 
 /**

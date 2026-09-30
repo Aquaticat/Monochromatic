@@ -91,6 +91,16 @@ const GUARD_CASES: readonly GuardCase[] = [
     false,
   ],
   [
+    'source-supported quoting only a zero-width space, which trim() keeps (ledger B40)',
+    {
+      disposition: 'source-supported',
+      sourceQuote: '\u{200B}',
+      replacementText: '',
+      finding: 'Faithful.',
+    },
+    false,
+  ],
+  [
     'a disposition the prompt never offers',
     {
       disposition: 'keep',

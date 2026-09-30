@@ -8,6 +8,7 @@ import {
 import { HOUSE_POLICY_BLOCK, } from './house-policy.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
+import { rendersAsNothing, } from './renders-as-nothing.ts';
 
 //region Coverage wire
 // The question no aligner can answer: is this passage rendered ANYWHERE in the
@@ -325,11 +326,11 @@ export function isCoverageReportWire(value: unknown,): value is CoverageReportWi
   const claimsCoverage = value.coverage !== 'none';
 
   /**
-   Whether it offers English to point at.
+   Whether it offers English to point at: a quote showing a reader nothing
+   points at nothing, invisible characters `trim()` keeps among it (ledger
+   B40).
    */
-  const offersQuote = value.quote
-    .trim()
-    !== '';
+  const offersQuote = !rendersAsNothing({ text: value.quote, },);
 
   return claimsCoverage === offersQuote;
 }

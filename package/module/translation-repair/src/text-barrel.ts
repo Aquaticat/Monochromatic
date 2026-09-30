@@ -57,6 +57,7 @@ export {
   carriesContent,
   pastQuoteMarkers,
 } from './quote-line.ts';
+export { rendersAsNothing, } from './renders-as-nothing.ts';
 export {
   carriesWord,
   tokenStarts,

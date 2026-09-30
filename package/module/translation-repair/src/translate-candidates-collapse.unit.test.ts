@@ -15,7 +15,9 @@
  
  READ THROUGH `buildTranslateCandidates` rather than at the key itself,
  because the collapse is only visible as what reaches the ballot: how many
- candidates a judge is offered, and how many stakes each carries.
+ candidates a judge is offered, and how many stakes each carries. The same
+ reading pins that a text showing nothing reaches no ballot at all (ledger
+ B40).
  
  Fixtures are cat-themed invention. No corpus content appears here.
  
@@ -296,6 +298,39 @@ await describe({
         expect(set.candidates[0]?.rendered,).toBe('A part-time shop cat.',);
         expect(set.findings,).toStrictEqual([
           `invisible-variant-folded (U+2011 x1) (${TRANSLATORS[0] ?? ''})`,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'OFFERS NO CANDIDATE for a text that shows nothing (ledger B40): a reply of a zero-width space, '
+        + 'which the fold empties, one of a Hangul filler, which no fold touches, and an incumbent or lane '
+        + 'text of invisible characters alone, naming each blank reply with its author',
+      fn: async () => {
+        const set = buildTranslateCandidates({
+          voices: [
+            voiceOf({
+              at: 0,
+              translation: '\u{200B}',
+            },),
+            voiceOf({
+              at: 1,
+              translation: '\u{3164}',
+            },),
+          ],
+          translatorModelIds: TRANSLATORS,
+          incumbentText: '\u{2060}',
+          lineStructured: false,
+          laneTexts: [{
+            lane: 'repair',
+            text: '\u{00AD}',
+          },],
+        },);
+
+        expect(set.candidates,).toStrictEqual([],);
+        expect(set.findings,).toStrictEqual([
+          `translate-blank (${TRANSLATORS[0] ?? ''})`,
+          `translate-blank (${TRANSLATORS[1] ?? ''})`,
         ],);
       },
     },),

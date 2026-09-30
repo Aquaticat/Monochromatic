@@ -1278,3 +1278,39 @@ What enforces it:
 habit and review;
 an exit the rule missed can show in the coverage census as a rethrow no test reaches,
 as this one did.
+
+## Text that shows nothing
+
+What happened:
+the checks deciding whether a model's wording or reason said anything asked `trim()`,
+which keeps every invisible character that is not whitespace,
+so a reply of one zero-width space passed the reply guard,
+the intake fold emptied it,
+and an empty candidate reached the judges;
+a zero-width reason met "Reason before vote" the same way (ledger B40).
+The docs of the two backstops said no such text could reach them.
+
+The rule:
+whether text a model wrote shows a reader anything is asked of `rendersAsNothing` (`renders-as-nothing.ts`),
+never of `trim()`,
+`length`
+or a comparison with the empty string,
+and a check that also folds or tidies the text asks it of the bytes that ship.
+`trim()` stays where the question is spacing:
+a parsed value's edges,
+a setting,
+one character's class.
+A test of such a check carries an invisible character `trim()` keeps
+(`U+200B`)
+and one no fold removes
+(`U+3164`),
+spelled as escapes.
+
+What enforces it:
+habit and review;
+`renders-as-nothing.unit.test.ts` pins the reading,
+and each check's invisible-only case fails if it returns to `trim()`.
+No scan finds the old shape:
+a check can store a trimmed value in one statement and compare it in another,
+as the panel ballot's did,
+which a token scan does not follow.

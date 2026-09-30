@@ -405,6 +405,12 @@ await describe({
           quote: '   ',
           reason: 'whitespace is not evidence',
         },),).toBe(false,);
+        // Nor is a quote no reader sees, which trim() keeps (ledger B40).
+        expect(isCoverageReportWire({
+          coverage: 'full',
+          quote: '\u{3164}',
+          reason: 'a filler is not evidence',
+        },),).toBe(false,);
       },
     },),
     it({
@@ -425,6 +431,13 @@ await describe({
         expect(isCoverageReportWire({
           coverage: 'none',
           quote: '',
+          reason: 'nothing renders it',
+        },),).toBe(true,);
+        // A quote showing nothing quotes nothing, so it agrees with no coverage
+        // (ledger B40).
+        expect(isCoverageReportWire({
+          coverage: 'none',
+          quote: '\u{200B}',
           reason: 'nothing renders it',
         },),).toBe(true,);
         expect(isCoverageReportWire({
