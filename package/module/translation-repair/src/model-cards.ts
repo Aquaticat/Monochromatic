@@ -408,6 +408,19 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     // Own p99 483 over 5,506 Bedrock calls, under the pooled 90th (the
     // 2026-09-09 table).
     completionCap: 'pooled-p90',
+    // Judge seats on the fidelity probe of 2026-09-07, under the rule
+    // pre-registered in the planning log before the seated roster was
+    // measured: a candidate joins critic, panel and judge when, over the same
+    // distinct questions, it chooses the complete text at least as often as
+    // the median seated judge and the damaged text no more often than the
+    // seated judge who chooses it most. It chose the complete text on 11 of
+    // 12 with one damaged pick, against a seated median of 9.5 and a worst
+    // damaged count of 1 (Kimi-K3 12, deepseek-v4-pro-0813 11, minimax-m3 11,
+    // deepseek-v4-flash-0731 8, gpt-oss-120b 7, gemma-4-26b-a4b-it 4).
+    // Bedrock serves it alone, so it was the third judge that answered while
+    // Hyper was held out by its daily limit. (This record sat on
+    // `SEATED_BEDROCK_JUDGES` in `run-config.ts` until 2026-09-29, a set only
+    // the seat tests read; ledger B31.)
     holds: [],
   },
   'google.gemma-4-31b': {
@@ -451,6 +464,20 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     // Own p99 3,063 over 136 OpenRouter calls, under the pooled 90th (read
     // at 20:05 UTC on 2026-09-09).
     completionCap: 'pooled-p90',
+    // Judge seats on the fidelity probe under the same rule as
+    // `google.gemma-4-e2b`, measured at 17:00 UTC on 2026-09-09 over the
+    // three settled artifacts on disk (gqt, hakureico, noname; fourteen
+    // distinct questions, twelve deletions and insertions and two
+    // alterations): 14 of 14 chose the complete text, no damaged pick, no
+    // decline, position two on 7 of 14, every one of its 14 asks usable. The
+    // seated roster's reading of the same fourteen is in the planning log of
+    // 2026-09-09 ("The owner asks where 200 USD went"); a candidate at the
+    // maximum meets both clauses of the rule whatever the seated median
+    // reads. From that reading the cheapest seat on the per-token provider
+    // (0.04 and 0.15 USD per million) sat wherever the anchor judge did.
+    // (This record sat on `SEATED_OPENROUTER_JUDGES` in
+    // `run-config.ts` until 2026-09-29, a set only the seat tests read;
+    // ledger B31.)
     // Seated as a writer by the calibration of 2026-09-09 (z -0.43); the
     // calibration of 2026-09-19 read it below the pooled null (10 of 108
     // disinterested ballots over 28 candidates, adjusted 9.3 percent,

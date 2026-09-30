@@ -527,7 +527,7 @@ evidence to weigh rather than a bar;
 the owner curates the file (`doc/decision/translation-repair-community-glossary.md`).
 Since `3224ff347` and `fcc8ca197` (2026-09-09,
 the owner's "Mercury 2.5 is out and approved") `inception/mercury-2.5` is the twelfth roster model and the one
-only OpenRouter serves (`OPENROUTER_ONLY_ROSTER_IDS`;
+only OpenRouter serves (its roster id is OpenRouter's spelling;
 0.04 and 0.15 USD per million,
 text only,
 one endpoint),
@@ -537,7 +537,7 @@ the late bench and the slate on the fidelity probe of that day
 (14 of 14 distinct questions chose the complete text,
 no damaged pick,
 no decline;
-`SEATED_OPENROUTER_JUDGES`),
+recorded on its card in `src/model-cards.ts`),
 and held out of every writing seat by `WRITER_UNMEASURED` until the 40-round producer calibration is read;
 a model one provider alone serves holds no seat until a measurement seats it,
 whichever provider it is.

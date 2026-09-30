@@ -13,7 +13,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  BEDROCK_ONLY_ROSTER_IDS,
   DECISION_ONLY_ROSTER_IDS,
   OPENROUTER_DROPPED_SEATS,
   OPENROUTER_MODELS,
@@ -30,6 +29,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
   visionReachOf,
 } from '../dist/final/node/index.mjs';
+import { BEDROCK_ONLY_ROSTER_IDS, } from './roster-buckets.test-fixture.ts';
 import { openRouterServesLabel, } from './catalog-lookups.test-fixture.ts';
 
 await describe({

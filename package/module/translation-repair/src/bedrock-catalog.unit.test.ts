@@ -17,7 +17,6 @@ import {
 import {
   BEDROCK_MANTLE_BASE_URL,
   BEDROCK_MODELS,
-  BEDROCK_ONLY_ROSTER_IDS,
   bedrockChatUrlFor,
   ROSTER_MODEL_IDS,
   SEAT_BEDROCK_ONLY_TEXT,
@@ -25,6 +24,7 @@ import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '../dist/final/node/index.mjs';
+import { BEDROCK_ONLY_ROSTER_IDS, } from './roster-buckets.test-fixture.ts';
 import { bedrockServesLabel, } from './catalog-lookups.test-fixture.ts';
 
 await describe({

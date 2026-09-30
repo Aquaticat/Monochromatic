@@ -16,23 +16,21 @@ import {
 
 import {
   BEDROCK_MODELS,
-  BEDROCK_ONLY_ROSTER_IDS,
   BEDROCK_SERVED_IDS,
   cardsServing,
   COMPLETION_CAP,
   holdSet,
   HYPER_MODELS,
-  HYPER_ORIGIN_ROSTER_IDS,
   HYPER_SERVED_IDS,
   MODEL_CARDS,
   OPENROUTER_MODELS,
-  OPENROUTER_ONLY_ROSTER_IDS,
   OPENROUTER_SERVED_IDS,
   ROSTER_CARDS,
   ROSTER_MODEL_IDS,
   SYNTHETIC_MODELS,
   SYNTHETIC_SERVED_IDS,
 } from '../dist/final/node/index.mjs';
+import { BEDROCK_ONLY_ROSTER_IDS, } from './roster-buckets.test-fixture.ts';
 import { cardOf, } from './catalog-lookups.test-fixture.ts';
 
 await describe({
@@ -129,19 +127,14 @@ await describe({
       },
     },),
 
+    // The origin buckets are test support now (`roster-buckets.test-fixture.ts`,
+    // ledger B31), and a case restating their definition against itself could
+    // not fail; what the naming rule claims about a Bedrock-spelled card is
+    // checked here.
     it({
-      name: 'DERIVES THE ORIGIN BUCKETS FROM THE SPELLINGS: Hyper-origin, Bedrock-only and OpenRouter-only '
-        + 'ids are the roster ids spelled that provider\'s way',
+      name: 'GIVES A BEDROCK-SPELLED ROSTER ID A BEDROCK SIDE ALONE: no Synthetic, Hyper or OpenRouter side',
       fn: async () => {
-        expect([...HYPER_ORIGIN_ROSTER_IDS,],).toEqual(ROSTER_MODEL_IDS.filter(function hyperSpelled(id,): boolean {
-          return (HYPER_SERVED_IDS as readonly string[]).includes(id,);
-        },),);
-        expect([...BEDROCK_ONLY_ROSTER_IDS,],).toEqual(ROSTER_MODEL_IDS.filter(function bedrockSpelled(id,): boolean {
-          return (BEDROCK_SERVED_IDS as readonly string[]).includes(id,);
-        },),);
-        expect([...OPENROUTER_ONLY_ROSTER_IDS,],).toEqual(ROSTER_MODEL_IDS.filter(function openRouterSpelled(id,): boolean {
-          return (OPENROUTER_SERVED_IDS as readonly string[]).includes(id,);
-        },),);
+        expect(BEDROCK_ONLY_ROSTER_IDS.length,).toBeGreaterThan(0,);
         for (const modelId of BEDROCK_ONLY_ROSTER_IDS) {
           /**
            Card of a Bedrock-only model.

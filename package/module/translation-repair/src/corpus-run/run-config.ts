@@ -29,10 +29,8 @@ import {
 } from '../stream-idle-guard.ts';
 import type { RosterModelId, } from '../synthetic-catalog.ts';
 import {
-  BEDROCK_ONLY_ROSTER_IDS,
   DECISION_ONLY_ROSTER_IDS,
   holdSet,
-  OPENROUTER_ONLY_ROSTER_IDS,
 } from '../model-card-derive.ts';
 import {
   readsImages,
@@ -86,41 +84,6 @@ const JUDGE_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'judge-unme
 export const OWNER_CULLED: ReadonlySet<RosterModelId> = holdSet({ hold: 'owner-culled', },);
 
 /**
- Bedrock-only models seated on the judge fidelity probe of 2026-09-07 under
- the rule pre-registered in the planning log before the seated roster was
- measured: a candidate joins critic, panel and judge when, over the same
- distinct questions, it chooses the complete text at least as often as the
- median seated judge and the damaged text no more often than the seated
- judge who chooses it most. `google.gemma-4-e2b`: 11 of 12 with one damaged
- pick, against a seated median of 9.5 and a worst damaged count of 1
- (Kimi-K3 12, deepseek-v4-pro-0813 11, minimax-m3 11, deepseek-v4-flash-0731
- 8, gpt-oss-120b 7, gemma-4-26b-a4b-it 4). Bedrock serves it alone, so it
- is the third judge that answers while Hyper is held out by its daily limit.
- */
-export const SEATED_BEDROCK_JUDGES: ReadonlySet<RosterModelId> = new Set(BEDROCK_ONLY_ROSTER_IDS
-  .filter(function seated(modelId,): boolean {
-    return !JUDGE_UNMEASURED.has(modelId,);
-  },),);
-
-/**
- OpenRouter-only models seated on the judge fidelity probe under the same
- rule. `inception/mercury-2.5`, measured 2026-09-09 17:00 UTC over the
- three settled artifacts on disk (gqt, hakureico, noname; fourteen distinct
- questions, twelve deletions and insertions and two alterations): 14 of 14
- chose the complete text, no damaged pick, no decline, position two on 7 of
- 14, every one of its 14 asks usable. The seated roster's reading of the
- same fourteen is in the planning log of 2026-09-09 ("The owner asks where
- 200 USD went"); a candidate at the maximum meets both clauses of the rule
- whatever the seated median reads. The cheapest seat on the per-token
- provider (0.04 and 0.15 USD per million) now sits wherever the anchor judge
- does.
- */
-export const SEATED_OPENROUTER_JUDGES: ReadonlySet<RosterModelId> = new Set(OPENROUTER_ONLY_ROSTER_IDS
-  .filter(function seated(modelId,): boolean {
-    return !JUDGE_UNMEASURED.has(modelId,);
-  },),);
-
-/**
  New candidates that hold no judge or preparation seat until measured
  (`judge-unmeasured` on the card). Multiple serving routes do not establish
  eligibility or transfer a predecessor's calibration.
@@ -144,7 +107,7 @@ const UNMEASURED_UNTIL_SEATED: ReadonlySet<RosterModelId> = JUDGE_UNMEASURED;
  `doc/decision/translation-repair-roster-seating-2026-09-01.md`.
  
  `inception/mercury-2.5` SAT HERE ON 2026-09-09 from its judge seat
- ({@link SEATED_OPENROUTER_JUDGES}) of 17:00 UTC until the 40-round producer
+ (its card in `model-cards.ts`) of 17:00 UTC until the 40-round producer
  calibration launched at 17:06 UTC that day (`producer-calibrate 40
  --candidates inception/mercury-2.5`, log
  `~/temp/agent/producer-calibrate-mercury-20260909.log`, read at 20:02 UTC)
@@ -182,14 +145,14 @@ export const WRITER_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({ hold: 'wr
  
  TEN SINCE 2026-09-07. Of the two Bedrock-only Gemma 4 sizes the owner
  approved that day, `google.gemma-4-e2b` joined on the judge fidelity probe
- ({@link SEATED_BEDROCK_JUDGES}) and `google.gemma-4-31b` stayed out: over the
+ (its card in `model-cards.ts`) and `google.gemma-4-31b` stayed out: over the
  same twelve questions it chose the complete text on 6, declining the rest,
  against a seated median of 9.5 (the planning log of 2026-09-07, "Measuring
  the two Bedrock-only sizes").
  
  ELEVEN SINCE 2026-09-09, when the owner approved Mercury 2.5 on OpenRouter
  and the judge fidelity probe of 17:00 UTC read it at 14 of 14
- ({@link SEATED_OPENROUTER_JUDGES}); it wrote nothing until the producer
+ (its card in `model-cards.ts`); it wrote nothing until the producer
  calibration read at 20:02 UTC the same day seated it as a writer
  ({@link WRITER_UNMEASURED}); the calibration of 2026-09-19 read it below
  the pooled null and took the translator seat back ({@link TRANSLATOR_DROPPED}).

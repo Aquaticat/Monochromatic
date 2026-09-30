@@ -30,7 +30,6 @@ export type {
 } from './model-card.ts';
 export { MODEL_CARDS, } from './model-cards.ts';
 export {
-  BEDROCK_ONLY_ROSTER_IDS,
   type CardProvider,
   cardsServing,
   DECISION_ONLY_ROSTER_IDS,
@@ -38,9 +37,7 @@ export {
   DecisionsCardMissingError,
   holdSet,
   isDecisionSeat,
-  HYPER_ORIGIN_ROSTER_IDS,
   keyedBy,
-  OPENROUTER_ONLY_ROSTER_IDS,
   recordOver,
   ROSTER_CARDS,
   type RosterCard,

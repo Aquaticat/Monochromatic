@@ -87,6 +87,10 @@ Hyper-origin identity names and Synthetic-counterpart projections are now explic
 and `hyperModelsWithoutSyntheticCounterparts`.
 These do not claim Hyper-exclusive serving;
 `reachOf` owns actual provider reach.
+Only the type and `NO_SYNTHETIC_COUNTERPART` remain package source:
+the two counterpart lists moved to a test fixture on 2026-09-29 (ledger B30),
+and `HYPER_ORIGIN_ROSTER_IDS` went the same day (ledger B31),
+since only tests read them.
 
 `qwen3.8-max` was removed from roster and Charm Hyper allowlist on 2026-08-28 at owner's instruction.
 Its metered cost was disproportionate and exceptionally expensive.

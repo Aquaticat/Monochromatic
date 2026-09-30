@@ -9,12 +9,9 @@ import type {
 } from './model-card.ts';
 import { MODEL_CARDS, } from './model-cards.ts';
 import {
-  type BedrockOnlyRosterId,
   BEDROCK_SERVED_IDS,
-  type HyperOriginRosterId,
   HYPER_SERVED_IDS,
   type HyperServedId,
-  type OpenRouterOnlyRosterId,
   OPENROUTER_SERVED_IDS,
   ROSTER_MODEL_IDS,
   type RosterModelId,
@@ -414,63 +411,5 @@ export function servedRecord<Provider extends CardProvider, Row>(
   }
   return built;
 }
-
-/**
- Hyper's spellings as plain strings, for membership tests on roster ids.
- */
-const HYPER_SPELLINGS: readonly string[] = HYPER_SERVED_IDS;
-
-/**
- Bedrock's spellings as plain strings, for membership tests on roster ids.
- */
-const BEDROCK_SPELLINGS: readonly string[] = BEDROCK_SERVED_IDS;
-
-/**
- OpenRouter's spellings as plain strings, for membership tests on roster ids.
- */
-const OPENROUTER_SPELLINGS: readonly string[] = OPENROUTER_SERVED_IDS;
-
-/**
- Roster identities introduced through Charm Hyper without a Synthetic
- spelling: by the naming rule, the roster ids spelled Hyper's way, in
- roster order.
-
- @example
- ```ts
- const everyone = HYPER_ORIGIN_ROSTER_IDS;
- ```
- */
-export const HYPER_ORIGIN_ROSTER_IDS: readonly HyperOriginRosterId[] = ROSTER_MODEL_IDS
-  .filter(function hyperSpelled(modelId,): modelId is HyperOriginRosterId {
-    return HYPER_SPELLINGS.includes(modelId,);
-  },);
-
-/**
- Roster models only Amazon Bedrock serves: by the naming rule, the roster
- ids spelled Bedrock's way, in roster order.
-
- @example
- ```ts
- const everyone = BEDROCK_ONLY_ROSTER_IDS;
- ```
- */
-export const BEDROCK_ONLY_ROSTER_IDS: readonly BedrockOnlyRosterId[] = ROSTER_MODEL_IDS
-  .filter(function bedrockSpelled(modelId,): modelId is BedrockOnlyRosterId {
-    return BEDROCK_SPELLINGS.includes(modelId,);
-  },);
-
-/**
- Roster models only OpenRouter serves: by the naming rule, the roster ids
- spelled OpenRouter's way, in roster order.
-
- @example
- ```ts
- const everyone = OPENROUTER_ONLY_ROSTER_IDS;
- ```
- */
-export const OPENROUTER_ONLY_ROSTER_IDS: readonly OpenRouterOnlyRosterId[] = ROSTER_MODEL_IDS
-  .filter(function openRouterSpelled(modelId,): modelId is OpenRouterOnlyRosterId {
-    return OPENROUTER_SPELLINGS.includes(modelId,);
-  },);
 
 //endregion Model card derivation

@@ -20,7 +20,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  BEDROCK_ONLY_ROSTER_IDS,
   HYPER_SLOW_JUDGES,
   HYPER_SLOW_SELECT_JUDGES,
   judgeSeatsFor,
@@ -47,12 +46,15 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  SEATED_BEDROCK_JUDGES,
-  SEATED_OPENROUTER_JUDGES,
   TRANSLATOR_DROPPED,
   type BudgetView,
   WRITER_UNMEASURED,
 } from '../../dist/final/node/index.mjs';
+import {
+  BEDROCK_ONLY_ROSTER_IDS,
+  SEATED_BEDROCK_JUDGES,
+  SEATED_OPENROUTER_JUDGES,
+} from '../roster-buckets.test-fixture.ts';
 
 /**
  The Hyper-slow judge.

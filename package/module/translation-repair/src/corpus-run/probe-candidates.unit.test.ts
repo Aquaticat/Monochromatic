@@ -21,7 +21,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  BEDROCK_ONLY_ROSTER_IDS,
   probeRosterWith,
   readCandidateIds,
   readCandidatesAlone,
@@ -30,6 +29,7 @@ import {
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { BEDROCK_ONLY_ROSTER_IDS, } from '../roster-buckets.test-fixture.ts';
 
 //region Probe candidate tests
 
