@@ -12010,6 +12010,61 @@ only the note moves.
 Recurrence:
 a note or finding that says work was withheld is emitted only where the work was wanted.
 
+### B56: the missing-path check written out in three shapes, one reading the error's text
+
+Found after the ninth coverage batch (census-VW2tHL),
+reading the ten catches whose rethrow arm no test reached
+(`page-republish.ts`,
+`published-tree-listing.ts`,
+`runs-lock.ts`,
+`settled-carve.ts` twice,
+`sheet-path.ts`,
+`sheet-write.ts`,
+`slice-cache-dir-read.ts`,
+`window-trial-ledger.ts`
+and `bedrock-ledger.ts`).
+Every catch that reads "nothing stands at the path" as an ordinary answer wrote the check itself,
+in three shapes:
+`Error.isError && 'code' in && code === 'ENOENT'` twelve times inline and once as `settled-carve.ts`'s own `isMissingPath`,
+`isJsonRecord(error) && code === 'ENOENT'` in `bedrock-ledger.ts` and `prompt-payload-store.ts`,
+and in `image-ocr.ts` a substring,
+`String(error).includes('ENOENT')`,
+deciding that tesseract is not installed from the error's text,
+which carries the tool's own output.
+Two defects rode with the copies.
+`sheet-write.ts`'s `exists` said in its comment that any other failure "is still an absence for this purpose"
+while its code rethrew it,
+the two written together in `ebc53f24f`.
+And the substring:
+a probe of Node's `execFile`
+(`~/temp/agent/audit-glossary-fix/enoent-spawn-probe.mjs`)
+shows an absent program rejects with code `ENOENT`
+and a program exiting 3 or 1 with that number and no `ENOENT` in its text,
+so the code decides the question and the text only happens to agree.
+No real outcome read differently in the probe.
+
+Fixed as a quality call open to veto (`9a02d8e0b`):
+`missing-path-error.ts` holds `isMissingPathError`,
+a Node error whose code is `ENOENT`,
+and `rethrowUnlessMissingPath`,
+which throws the caught value unchanged otherwise,
+the narrowing-helper shape of `requireMdxRefusal` (`f792174a2`);
+the catches read `rethrowUnlessMissingPath(...)` and then their "not there" answer,
+so each rethrow arm is the helper's,
+tested once over real `ENOENT` and `ENOTDIR` failures.
+Sharing the check left `bedrock-ledger.ts` and `window-trial-ledger.ts` with one body word for word,
+which the duplicate-body guard refused,
+so both read through `readTextOrEmptyIfMissing` (`read-text-if-present.ts`),
+and so does the cache marker read.
+`sheet-write.ts`'s comment now says what its code does,
+and `image-ocr.ts` reads the code.
+`declined-entries.ts` still reads the code through `filesystemReason`,
+since its refusal names the code.
+
+Recurrence:
+a catch that answers "not there" uses `rethrowUnlessMissingPath` or `isMissingPathError`;
+a comment explaining what a catch does with the other failures is read against the arm it describes.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
