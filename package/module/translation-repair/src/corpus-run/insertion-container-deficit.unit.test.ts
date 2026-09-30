@@ -195,6 +195,12 @@ const WHOLE_CLOSE_TARGET = `The cat came home at night.\n\n${CLOSE_TARGET}`;
 
  @param openTarget - archive text of the opening half
 
+ @param firstSource - original text of the paired paragraph
+
+ @param firstTarget - archive text of the paired paragraph
+
+ @param missingSource - original text of the passage the archive never rendered
+
  @param closeSource - original text of the closing half
 
  @param closeTarget - archive text of the closing half
@@ -210,11 +216,17 @@ function containerSlices(
   {
     openSource = OPEN_SOURCE,
     openTarget = OPEN_TARGET,
+    firstSource = FIRST_SOURCE,
+    firstTarget = FIRST_TARGET,
+    missingSource = MISSING_SOURCE,
     closeSource = CLOSE_SOURCE,
     closeTarget = CLOSE_TARGET,
   }: {
     readonly openSource?: string;
     readonly openTarget?: string;
+    readonly firstSource?: string;
+    readonly firstTarget?: string;
+    readonly missingSource?: string;
     readonly closeSource?: string;
     readonly closeTarget?: string;
   },
@@ -227,12 +239,12 @@ function containerSlices(
     },),
     paired({
       sliceIndex: 1,
-      source: FIRST_SOURCE,
-      target: FIRST_TARGET,
+      source: firstSource,
+      target: firstTarget,
     },),
     insertion({
       sliceIndex: 2,
-      source: MISSING_SOURCE,
+      source: missingSource,
     },),
     paired({
       sliceIndex: 3,
@@ -430,6 +442,115 @@ await describe({
         },);
         expect([...deficit.positions,],).toEqual([],);
         expect(deficit.unresolvedRows.length,).toBe(1,);
+      },
+    },),
+  ],
+},);
+
+/**
+ Three list items written with a blank line between each, one block to the
+ parser and three to a blank-line split.
+ */
+const LOOSE_SOURCE_LIST = '- 窗台\n\n- 阳光\n\n- 午睡';
+
+/**
+ The same items written without blank lines.
+ */
+const TIGHT_SOURCE_LIST = '- 窗台\n- 阳光\n- 午睡';
+
+/**
+ The archive's rendering of the list, loose.
+ */
+const LOOSE_TARGET_LIST = '- The sill\n\n- The sun\n\n- The nap';
+
+/**
+ The archive's rendering of the list, tight.
+ */
+const TIGHT_TARGET_LIST = '- The sill\n- The sun\n- The nap';
+
+await describe({
+  name: 'what a container holds, read off the parse (ledger B68)',
+  children: [
+    it({
+      name: 'ADMITS NOTHING where only the list is written looser in the original: the container is rendered '
+        + 'whole, and a list is one block however its items are spaced',
+      fn: async () => {
+        const deficit = admitContainerDeficit({
+          slices: containerSlices({
+            firstSource: LOOSE_SOURCE_LIST,
+            firstTarget: TIGHT_TARGET_LIST,
+            closeTarget: WHOLE_CLOSE_TARGET,
+          },),
+          positions: new Set(),
+          unresolvedRows: [missingRow({ verdict: 'absent', },),],
+        },);
+        expect([...deficit.positions,],).toEqual([],);
+      },
+    },),
+    it({
+      name: 'ADMITS THE MISSING PARAGRAPH where only the list is written looser in the archive, and counts the '
+        + 'list once on each side',
+      fn: async () => {
+        const deficit = admitContainerDeficit({
+          slices: containerSlices({
+            firstSource: TIGHT_SOURCE_LIST,
+            firstTarget: LOOSE_TARGET_LIST,
+          },),
+          positions: new Set(),
+          unresolvedRows: [missingRow({ verdict: 'absent', },),],
+        },);
+        expect([...deficit.positions,],).toEqual([2,],);
+        expect(deficit.findings,).toEqual([
+          'insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3: the original writes '
+          + '4 blocks there, the archive 3)',
+        ],);
+      },
+    },),
+    it({
+      name: 'COUNTS A FENCED BLOCK ONCE whatever blank lines it holds, so a container rendered whole admits nothing',
+      fn: async () => {
+        const deficit = admitContainerDeficit({
+          slices: containerSlices({
+            firstSource: '```\n猫\n\n睡觉\n```',
+            firstTarget: '```\nCat\nnaps\n```',
+            closeTarget: WHOLE_CLOSE_TARGET,
+          },),
+          positions: new Set(),
+          unresolvedRows: [missingRow({ verdict: 'absent', },),],
+        },);
+        expect([...deficit.positions,],).toEqual([],);
+      },
+    },),
+    it({
+      name: 'COSTS A PASSAGE the blocks the parse reads in it, so a missing loose list spends one block of the '
+        + 'deficit, as the container counts it',
+      fn: async () => {
+        const deficit = admitContainerDeficit({
+          slices: containerSlices({ missingSource: LOOSE_SOURCE_LIST, },),
+          positions: new Set(),
+          unresolvedRows: [{
+            ...missingRow({ verdict: 'absent', },),
+            sourceText: LOOSE_SOURCE_LIST,
+          },],
+        },);
+        expect([...deficit.positions,],).toEqual([2,],);
+      },
+    },),
+    it({
+      name: 'SPENDS NO DEFICIT where a half cannot be read, and says which slice and why, rather than counting '
+        + 'what the parser refused',
+      fn: async () => {
+        const deficit = admitContainerDeficit({
+          slices: containerSlices({ firstSource: '猫猫在{窗台上打盹。', },),
+          positions: new Set(),
+          unresolvedRows: [missingRow({ verdict: 'absent', },),],
+        },);
+        expect([...deficit.positions,],).toEqual([],);
+        expect(deficit.unresolvedRows.length,).toBe(1,);
+        expect(deficit.findings.length,).toBe(1,);
+        expect(deficit.findings[0]?.startsWith(
+          'insertion-container-deficit-unread (details of slices 0 to 3: the original\'s slice 1 could not be read: ',
+        ),).toBe(true,);
       },
     },),
   ],
