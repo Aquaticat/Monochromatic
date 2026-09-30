@@ -19,7 +19,6 @@ import {
   type PolishChoice,
   readConsolidationPolishBallot,
 } from './consolidation-polish-gate-wire.ts';
-import type { FanOutMode, } from './stage-fanout-window.ts';
 import { shortBenchStageFinding, } from './stage-reachable-quorum.ts';
 import { runWindowedRounds, } from './stage-windowed-rounds.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
@@ -156,10 +155,7 @@ export function settleConsolidationPolishBallots(
  @param exchangeTimeoutMs - per-call ceiling
  
  @param l - parent logger
- 
- @param fanOut - seats a round asks: the window of quorum plus one by
- default, or the whole bench a fixture scripting every seat asks for
- 
+
  @returns Panel outcome with conservative shipping choice
  
  @example
@@ -175,7 +171,6 @@ export async function gateConsolidationPolish(
     signal,
     exchangeTimeoutMs,
     l,
-    fanOut,
   }: {
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -183,7 +178,6 @@ export async function gateConsolidationPolish(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
-    readonly fanOut?: FanOutMode;
   },
 ): Promise<ConsolidationPolishGateOutcome> {
   /**
@@ -209,8 +203,6 @@ export async function gateConsolidationPolish(
     validate: isConsolidationPolishGateWire,
     stage: 'consolidation-polish-gate',
     l: gl,
-    // Conditional spread keeps the knob absent instead of undefined.
-    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
   /**
    Ballots read from usable voices.
