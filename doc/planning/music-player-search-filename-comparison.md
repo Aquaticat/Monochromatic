@@ -270,10 +270,18 @@ Build precedes artifact validation through a sequenced package task.
 Changing either response or final notes invalidates any prepared reply.
 Offline consumer checks decoded and opened all 102 images,
 including the separately provenanced actual-player baseline,
-and exercised controls across desktop/mobile light/dark conditions.
-Four A/AA axe checks had zero violations or incomplete checks;
-no console errors were observed.
-Rendered/scoped Markdown verification is still pending.
+while modal/zoom/pan and all four composed answers were separately checked
+in each desktop/mobile light/dark context.
+Four closed-page A/AA axe checks had zero violations or incomplete checks.
+Four open-dialog checks had zero violations;
+the desktop metadata contrast remained incomplete in each theme.
+Flat opaque computed pairs and live text hit tests resolved those bounded
+manual reviews without converting axe incompletes to passes.
+Mobile open-dialog checks had no incompletes.
+The published verification summary retains exact coverage.
+No console errors were observed.
+Rendered/scoped Markdown and changed-block/link verification passed.
+Task 140 is complete as comparison publication and review verification.
 No filename policy has been adopted.
 Suffix-query emphasis and changing real inventory scope remain unexercised.
 

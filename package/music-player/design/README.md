@@ -69,9 +69,16 @@ record 64 initial and six scrolled native views.
 `questions/search-filename-comparison.html` is the self-contained,
 unselected independent review with final notes and the actual-renderer
 baseline included.
-Offline desktop/mobile light/dark checks exercised all 102 images and
-controls with no A/AA axe violations,
-incomplete checks or console errors.
+Offline checks decoded and opened all 102 images.
+Separate desktop/mobile light/dark checks exercised modal/viewer controls
+and all four composed answers.
+Closed-page A/AA audits had no violations or incomplete checks.
+Open-dialog desktop metadata contrast remained axe incomplete;
+flat opaque computed-color and live-hit-test review resolved that bounded
+manual check without changing the axe result.
+`questions/evidence/search-filename-comparison-review-verification.json`
+retains the exact coverage;
+no console errors were observed.
 The current disposable runtime was restored to its fresh snapshot and stopped.
 Neither recommendation selects extension visibility or placement,
 authorizes dependent implementation or proves native activation.

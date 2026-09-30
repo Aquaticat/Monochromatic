@@ -3,8 +3,10 @@
 ## Purpose and status
 
 Task 139 completed the debug-only native comparison.
-Task 140 published the evidence and verified the independent visual review.
-Scoped rendered-document verification is the remaining publication gate.
+Task 140's comparison publication and independent review are verified.
+Scoped lint,
+changed-block checks,
+rendered Markdown and local-link checks passed.
 Neither filename policy is selected.
 The accepted Search A layout,
 E2 information-only clearance,
@@ -195,9 +197,21 @@ exercised every form/viewer control,
 checked independent and keep-open answers,
 and confirmed that edited choices or notes invalidate a prepared reply.
 Adversarial notes remained inert textarea text.
-Desktop/mobile light/dark checks had zero A/AA axe violations,
-incomplete checks or console errors.
-Browser accessibility checks apply to the review page,
+The [review verification summary](../questions/evidence/search-filename-comparison-review-verification.json)
+keeps the image census and interaction-context coverage distinct.
+All 102 images opened in the first desktop/light interaction pass.
+Modal/zoom/pan controls and all four composed answers were separately checked
+in each desktop/mobile light/dark context.
+The four closed-page A/AA audits had zero violations or incomplete checks.
+The four open-dialog audits had zero violations;
+the desktop metadata contrast remained incomplete in each theme.
+Flat opaque computed pairs and live text hit tests resolved those manual
+reviews at 15.78947720932554:1 light and 14.978445394818559:1 dark,
+without converting either axe incomplete into a pass.
+Mobile open-dialog audits had no incomplete checks.
+See [the versioned diagnosis](../../../../doc/troubleshooting/axe-modal-dialog-contrast.md).
+No console errors were observed.
+These browser checks apply to the review page,
 not native acceptance.
 A committed disposable guard test failed when the exact-scroll-cohort
 validation was removed from the copied builder,

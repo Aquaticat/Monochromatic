@@ -116,7 +116,17 @@ and passed desktop/mobile light/dark axe checks with zero A/AA violations,
 incomplete checks or console errors.
 The exact required-scroll-cohort guard failed its fresh disposable mutant
 and passed the restored tests.
-Scoped Markdown/rendering verification remains the final publication gate.
+Scoped Markdown,
+changed-block,
+rendering and link verification passed.
+The open-dialog follow-up separately checked modal/zoom/pan and all four
+composed answers in each desktop/mobile light/dark context.
+Desktop axe metadata contrast incompletes were retained and resolved only
+by flat opaque computed colors and live text hit tests;
+`questions/evidence/search-filename-comparison-review-verification.json`
+records the exact audit and manual-review boundary.
+Task 140 is complete as comparison publication and review verification.
+Both filename preferences still require the human's independent answers.
 Prototype `720ba418f` uses public `playerScreen` and the real controller
 with a paused no-audio double;
 no production source was changed.
