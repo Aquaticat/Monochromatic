@@ -1400,16 +1400,23 @@ await describe({
         + 'decline record, no model call, no artifact',
       fn: async () => {
         await using dirs = await throwawayDirs();
-        /** Model schemas asked, none expected. */
+        /**
+         Model schemas asked, none expected.
+         */
         const served: string[] = [];
-        /** Entry whose archive carries a whole-page note. */
+        /**
+         Entry whose archive carries a whole-page note.
+         */
         const ownEnglish = {
           id: 'CatEntryOwnEnglish',
           sourceText: SOURCE_TEXT,
           targetText: `<!-- 这只猫的原文即英文 -->\n\n${TARGET_TEXT}`,
         };
+        /**
+         What settling the entry answered.
+         */
         const outcome = await settleEntry({
-          client: entryClient({ served, }),
+          client: entryClient({ served, },),
           entry: ownEnglish,
           artifactsDir: dirs.artifactsDir,
           publishDir: dirs.publishDir,
