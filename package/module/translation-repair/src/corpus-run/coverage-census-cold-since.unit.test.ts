@@ -149,6 +149,34 @@ await describe({
       },
     },),
     it({
+      name: 'LEAVES OUT CODE NO SOURCE MAP PLACES, which has no lines to compare and takes its bundle\'s name, so a '
+        + 'rebuild that renames the bundle read its unchanged stretches as cold since then',
+      fn: async () => {
+        expect(coldSinceOf({
+          baseline: {
+            head: 'c0ffee123',
+            stretches: [
+              recorded({
+                source: '(unmapped) nap-AAAA.mjs',
+                startLine: 0,
+                endLine: 0,
+              },),
+            ],
+            loadedSources: new Set(['src/nap.ts',],),
+          },
+          current: [
+            recorded({
+              source: '(unmapped) nap-BBBB.mjs',
+              startLine: 0,
+              endLine: 0,
+            },),
+          ],
+          sources: new Set(),
+          edited: new Set(),
+        },),).toEqual([],);
+      },
+    },),
+    it({
       name: 'LEAVES OUT A SOURCE EDITED SINCE THE BASELINE, whose lines there name other code, and a source the batch '
         + 'does not claim when it claims any',
       fn: async () => {
