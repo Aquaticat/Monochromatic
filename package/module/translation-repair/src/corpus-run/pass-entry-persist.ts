@@ -5,6 +5,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
+import { artifactFileNameOf, } from './artifact-file-name.ts';
 import type { SettledArtifact, } from './artifact-two-lane-contract.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
 import { destinationsLine, } from './destinations-line.ts';
@@ -96,7 +97,7 @@ export async function persistSettledEntry(
   await writeFileAtomic({
     path: join(
       artifactsDir,
-      `${entryId}.json`,
+      artifactFileNameOf({ entryId, },),
     ),
     text: `${JSON.stringify(
       artifact,

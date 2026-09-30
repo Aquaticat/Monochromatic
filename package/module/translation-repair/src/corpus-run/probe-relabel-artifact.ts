@@ -15,6 +15,7 @@ import {
   type IssueSeverity,
 } from '../issue-taxonomy.ts';
 import type { RepairRegion, } from '../repair-region.ts';
+import { artifactFileNameOf, } from './artifact-file-name.ts';
 import { resolveRunsDir, } from './run-config.ts';
 
 //region Probe relabel artifact reading
@@ -439,7 +440,7 @@ export async function readArtifactRecords(
   /**
    Whole artifact as written, read once and dispatched by generation.
    */
-  const artifactValue = await readRunJson({ path: `${dir}/artifacts/${entryId}.json`, },);
+  const artifactValue = await readRunJson({ path: `${dir}/artifacts/${artifactFileNameOf({ entryId, },)}`, },);
 
   /**
    Which generation wrote it, which decides where its issue records live.

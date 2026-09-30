@@ -6,6 +6,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { errorName, } from '../error-name.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { readRunJson, } from '../run-json-read.ts';
+import { artifactFileNameOf, } from './artifact-file-name.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import { rebuildPreparation, } from './artifact-two-lane-rebuild.ts';
@@ -336,7 +337,7 @@ async function republishOne(
       value: await readRunJson({
         path: join(
           artifactsDir,
-          `${entryId}.json`,
+          artifactFileNameOf({ entryId, },),
         ),
       },),
     },);

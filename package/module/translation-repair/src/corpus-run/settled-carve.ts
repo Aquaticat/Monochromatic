@@ -11,6 +11,7 @@ import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import {
   type ArtifactFileName,
+  artifactFileNameOf,
   entryIdOfArtifact,
   listArtifactFiles,
 } from './artifact-file-name.ts';
@@ -217,7 +218,7 @@ export async function readSettledRecipe(
   const path = join(
     runsDir,
     ARTIFACTS_DIR,
-    `${entryId}.json`,
+    artifactFileNameOf({ entryId, },),
   );
   try {
     await access(path,);

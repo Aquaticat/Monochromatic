@@ -33,6 +33,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  artifactFileNameOf,
   artifactFilesIn,
   entryIdOfArtifact,
   isArtifactFileName,
@@ -131,6 +132,20 @@ await describe({
       name: 'READS the empty id off a name that is nothing but the suffix, which readers then refuse',
       fn: async () => {
         expect(entryIdOfArtifact({ name: '.json', },),).toBe('',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: artifactFileNameOf.name,
+  children: [
+    it({
+      name: 'NAMES an entry\'s artifact as the id and the suffix, which the entry id reads back',
+      fn: async () => {
+        const name = artifactFileNameOf({ entryId: 'Mittens', },);
+        expect(name,).toBe('Mittens.json',);
+        expect(entryIdOfArtifact({ name, },),).toBe('Mittens',);
       },
     },),
   ],

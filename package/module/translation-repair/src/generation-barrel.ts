@@ -18,6 +18,7 @@ export {
 } from './corpus-run/artifact-generation.ts';
 export {
   type ArtifactFileName,
+  artifactFileNameOf,
   artifactFilesIn,
   type ArtifactListing,
   entryIdOfArtifact,

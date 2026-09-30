@@ -42,11 +42,6 @@ import {
 export const ARTIFACTS_DIR = 'artifacts';
 
 /**
- Suffix every settled artifact file carries.
- */
-export const ARTIFACT_SUFFIX = '.json';
-
-/**
  What a run leaves to verify, or why it leaves nothing.
  
  @example

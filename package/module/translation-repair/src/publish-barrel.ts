@@ -37,7 +37,6 @@ export {
   shippableReplacements,
 } from './corpus-run/publish-fixed.ts';
 export {
-  ARTIFACT_SUFFIX,
   ARTIFACTS_DIR,
   publishedEntryIds,
   settledEntryIds,

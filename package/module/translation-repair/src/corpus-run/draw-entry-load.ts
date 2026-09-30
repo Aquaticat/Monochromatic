@@ -7,6 +7,10 @@ import { requireRecord, } from '../artifact-guard.ts';
 import type { readCorpusFile, } from '../corpus-source.ts';
 import { DrawReconcileError, } from './draw-reconcile.ts';
 import type { EligibleEntries, } from './artifact-eligible.ts';
+import {
+  type ArtifactFileName,
+  entryIdOfArtifact,
+} from './artifact-file-name.ts';
 import { assertArtifactProvenance, } from './artifact-provenance.ts';
 import {
   classifyBand,
@@ -98,7 +102,7 @@ export async function loadEntry(
     readSource,
   }: {
     readonly artifactsDir: string;
-    readonly name: string;
+    readonly name: ArtifactFileName;
     readonly eligible: EligibleEntries;
     readonly readSource: typeof readCorpusFile;
   },
@@ -131,10 +135,7 @@ export async function loadEntry(
   /**
    Entry id the pool keyed this file by, which is its file name.
    */
-  const keyedId = name.slice(
-    0,
-    -'.json'.length,
-  );
+  const keyedId = entryIdOfArtifact({ name, },);
 
   /**
    Commit the pool recorded for this file, absent when it placed no tip.

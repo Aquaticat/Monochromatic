@@ -66,6 +66,22 @@ export function entryIdOfArtifact({ name, }: { readonly name: ArtifactFileName; 
 }
 
 /**
+ The file name an entry's artifact is written under and read back from.
+
+ @param entryId - corpus entry
+
+ @returns Artifact file name
+
+ @example
+ ```ts
+ const name = artifactFileNameOf({ entryId: 'Mittens', },); // 'Mittens.json'
+ ```
+ */
+export function artifactFileNameOf({ entryId, }: { readonly entryId: string; },): ArtifactFileName {
+  return `${entryId}${ARTIFACT_SUFFIX}`;
+}
+
+/**
  Lists the artifacts a directory holds: its REGULAR FILES named like one.
 
  Directory entries are checked rather than assumed. A directory named

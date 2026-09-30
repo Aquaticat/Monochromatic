@@ -281,10 +281,11 @@ export async function assertArtifactsPlaceable(
   // reading only `groups` missed it entirely: a directory holding nothing but
   // unplaceable artifacts produced no groups at all and sailed through.
   //
-  // It is worse because the scheduler counts every `.json` name as settled, so
-  // such an entry is never retried, and the pool filter excludes it, so it is
-  // absent from every rate. The entry silently ceases to exist, and no count
-  // anywhere says so. Deleting the file is the whole remedy.
+  // It is worse because the scheduler counts every regular file named `*.json`
+  // as settled, whatever its contents, so such an entry is never retried, and
+  // the pool filter excludes it, so it is absent from every rate. The entry
+  // silently ceases to exist, and no count anywhere says so. Deleting the file
+  // is the whole remedy.
   /**
    Artifacts carrying nothing usable, whatever the reason.
    */

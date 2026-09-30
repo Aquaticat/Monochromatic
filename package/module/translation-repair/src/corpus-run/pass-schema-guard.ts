@@ -4,6 +4,7 @@ import { join, } from 'node:path';
 
 import { contextRoot, } from '../log-context.ts';
 import { refusalText, } from '../refusal-text.ts';
+import { artifactFileNameOf, } from './artifact-file-name.ts';
 import { ARTIFACT_SCHEMA_VERSION_V14, } from './artifact-two-lane-contract.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import { UnplaceableArtifactError, } from './pass-generation-guard.ts';
@@ -31,10 +32,11 @@ import {
 // not keep.
 //
 // WHY IT MATTERS AT ALL, given the pass would still run: the scheduler counts
-// every `.json` NAME as settled (`pass-settled.ts`), so entries of the other
-// generation are never re-run, while every reader that asks them a question
-// this generation answers refuses them. The corpus ends up part one generation
-// and part the other, and nothing in the run says so.
+// every regular file named `*.json` as settled (`pass-settled.ts`), whatever
+// its contents, so entries of the other generation are never re-run, while
+// every reader that asks them a question this generation answers refuses
+// them. The corpus ends up part one generation and part the other, and
+// nothing in the run says so.
 //
 // THE LABEL IS NOT THE SHAPE, which an independent review of the first version
 // of this guard pointed out and which it did not check. A version 1 body whose
@@ -55,11 +57,6 @@ import {
  the rest.
  */
 const NAMED_EXAMPLES = 5;
-
-/**
- Suffix every artifact file carries.
- */
-const ARTIFACT_SUFFIX = '.json';
 
 /**
  What the census made of a file that is an artifact of some generation.
@@ -404,7 +401,7 @@ async function assertBodyMatchesLabel(
   const text = await readFile(
     join(
       artifactsDir,
-      `${entryId}${ARTIFACT_SUFFIX}`,
+      artifactFileNameOf({ entryId, },),
     ),
     'utf8',
   );

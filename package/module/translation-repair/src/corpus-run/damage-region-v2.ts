@@ -1,4 +1,8 @@
 import { readRunJson, } from '../run-json-read.ts';
+import {
+  type ArtifactFileName,
+  entryIdOfArtifact,
+} from './artifact-file-name.ts';
 import type { ArtifactLaneSelection, } from './artifact-two-lane-contest.ts';
 import type { ArtifactDeliveryRow, } from './artifact-two-lane-vocabulary.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
@@ -327,7 +331,7 @@ export async function collectTwoLaneShippedRegions(
     files,
   }: {
     readonly artifactsDir: string;
-    readonly files: readonly string[];
+    readonly files: readonly ArtifactFileName[];
   },
 ): Promise<ShippedRegionCensus> {
   /**
@@ -345,10 +349,7 @@ export async function collectTwoLaneShippedRegions(
     /**
      Entry id, which is the artifact's own file name.
      */
-    const entryId = file.slice(
-      0,
-      -'.json'.length,
-    );
+    const entryId = entryIdOfArtifact({ name: file, },);
 
     /**
      Artifact, parsed by version 2's own reader so its invariants are checked

@@ -1,3 +1,8 @@
+import {
+  type ArtifactFileName,
+  entryIdOfArtifact,
+} from './artifact-file-name.ts';
+
 //region Artifact provenance
 // What a reader must prove about the BYTES IT ACTUALLY READ before a number
 // drawn from them may name a pipeline.
@@ -248,7 +253,7 @@ export function assertArtifactProvenance(
     expectedTip,
     expectedDigest,
   }: {
-    readonly name: string;
+    readonly name: ArtifactFileName;
     readonly observedId: string;
     readonly observedTip: string;
     readonly observedDigest?: string;
@@ -259,12 +264,7 @@ export function assertArtifactProvenance(
   /**
    Entry id the pool keyed on, which is the artifact's own file name.
    */
-  const keyedId = name.endsWith('.json',)
-    ? name.slice(
-      0,
-      -'.json'.length,
-    )
-    : name;
+  const keyedId = entryIdOfArtifact({ name, },);
 
   if (observedId !== keyedId)
     throw new ArtifactProvenanceError({

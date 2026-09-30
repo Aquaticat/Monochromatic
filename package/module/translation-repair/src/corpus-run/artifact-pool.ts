@@ -2,7 +2,10 @@ import {
   type EligibleEntries,
   selectEligible,
 } from './artifact-eligible.ts';
-import type { ArtifactFileName, } from './artifact-file-name.ts';
+import {
+  type ArtifactFileName,
+  entryIdOfArtifact,
+} from './artifact-file-name.ts';
 import {
   censusByGeneration,
   resolveCommit,
@@ -177,10 +180,10 @@ export function keepEligible(
     names,
     eligible,
   }: {
-    readonly names: readonly string[];
+    readonly names: readonly ArtifactFileName[];
     readonly eligible: EligibleEntries;
   },
-): readonly string[] {
+): readonly ArtifactFileName[] {
   /**
    Ids this reader must still see: everything eligible, plus every artifact
    that would not parse.
@@ -195,10 +198,7 @@ export function keepEligible(
   ],);
 
   return names.filter(function isEligible(name,): boolean {
-    return allowed.has(name.slice(
-      0,
-      -'.json'.length,
-    ),);
+    return allowed.has(entryIdOfArtifact({ name, },),);
   },);
 }
 
