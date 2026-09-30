@@ -11282,6 +11282,15 @@ and `consolidationWorthResuming` persists no archive-kept settlement,
 before this change or after,
 so no cached consolidation answers such a slice and no cache account moves.
 
+The reach check was shown to fail,
+committed first (`c9ec438c3`):
+with its condition made unmatchable and the build rerun,
+the consolidation's blind-floor case failed with `FloorGroundDisagreementError`,
+since the writers were asked and the author repair now refuses a verdict that compared nothing,
+and with the condition restored it passed.
+So the check is what keeps such a slice from stopping the entry,
+not only what saves the writers' calls.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
