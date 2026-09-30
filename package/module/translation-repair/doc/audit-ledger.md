@@ -3117,22 +3117,25 @@ coherence,
 digest
 and identity modules,
 12 stretches in seven files.
-Nine were reachable and got cases:
+Ten were reachable and got cases:
 repeated repair rows,
 a repair slice the translate ledger lacks,
-two ledgers in different orders,
+two ledgers in different orders
+(which also runs the one cold sentence of `lane-comparison-fault.ts`),
 a retained incumbent carrying other text,
 the two wording faults no case reached,
-the digest's plural refusal
+the digest refusal's two plural ternaries,
 and the identity of line-structured slices,
 which the whole suite had never hashed.
 The case named for repeated repair rows repeated both ledgers,
 so the translate check refused first and the repair check it names never ran;
 its fixture is now the one its name describes.
-Three were unreachable and went:
+Two were unreachable and went:
 `decisionsEqual`'s last return,
-and two lookups after a length or emptiness check,
+and the digest refusal's fallback for a first entry the non-empty list always has,
 now `nonNullishOrThrow`.
+The same change narrowed `compareDocumentLanes`' lookup after a length check with `nonNullishOrThrow`,
+which the census had not listed as a stretch.
 The digest refusal now names the first foreign entry by name,
 since a directory lists its entries in no promised order.
 Every refusal case in the batch's six test files reads its message whole,
@@ -3141,6 +3144,10 @@ Its census (`census-Xs4MQy`) read against `census-oRsK9f`:
 ran 4,
 still cold 0,
 and each of the four sources edited since then left no cold stretch in this run's own rows.
+From this batch on,
+each batch ends with a whole-suite census at its committed head,
+which is the batch's whole-suite run and the next batch's baseline,
+and each takes one cluster of the triage at a time.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
@@ -10853,6 +10860,26 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M78: a batch record counting its edits as its stretches
+
+Status:
+happened 2026-09-30 (UTC) in `32427c9c8`'s message and the ledger paragraph it added,
+found on review the same hour,
+corrected by a comment on that commit and in the next docs commit.
+The fifth batch's record said its 12 stretches were nine reachable and three removed;
+`census-oRsK9f`'s rows give ten and two.
+The count was taken from the list of edits,
+which held a `nonNullishOrThrow` narrowing the census never listed as a stretch,
+and counted two stretches on one line of the digest refusal as one case.
+M77's rule,
+to count against what the run printed,
+was an hour old and not applied.
+Prevention:
+a batch's stretch counts are read from the baseline census's rows,
+file by file,
+and each stretch is placed in exactly one of reachable or removed;
+an edit the census did not list is named apart.
 
 ### M77: a red commit's message summing its own run wrongly
 

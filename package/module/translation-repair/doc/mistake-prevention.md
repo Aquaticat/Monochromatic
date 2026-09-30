@@ -341,6 +341,10 @@ each group counted against them,
 never from the plan:
 one red message summed eight findings as nine
 and named a class its site's callee never throws (M77).
+A batch's stretch counts are read from the baseline census's rows file by file,
+each stretch placed in exactly one of reachable or removed,
+and an edit the census never listed is named apart:
+one record counted a narrowing the census had not listed as a removed stretch (M78).
 A message file takes a name no earlier message used,
 checked with `ls` before any tool writes it (M72).
 Before the commit runs,
