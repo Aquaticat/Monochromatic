@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type {
   ForcedAlignStep,
   InsertionAnchor,
@@ -142,25 +144,6 @@ function targetsBySource(
 }
 
 /**
- Running state of a nearest-paired-neighbour scan.
- 
- Named rather than written inline, so the accumulator's two halves each get a
- sentence: the answers reached so far, and the paired target the next section
- will read.
- */
-type NeighbourScan = {
-  /**
-   Answer per section reached so far, in scan order.
-   */
-  readonly found: readonly number[];
-
-  /**
-   Paired target most recently passed.
-   */
-  readonly nearest: number;
-};
-
-/**
  Nearest paired target passed before each section, in scan order.
  
  ONE SCAN in whichever direction the caller hands it, because "the paired
@@ -188,26 +171,22 @@ function scanNearest(
     readonly start: number;
   },
 ): readonly number[] {
-  return targets
-    .reduce(
-      function scanStep(
-        settled: NeighbourScan,
-        target,
-      ): NeighbourScan {
-        return {
-          found: [
-            ...settled.found,
-            settled.nearest,
-          ],
-          nearest: (target === BEFORE_FIRST_TARGET) ? settled.nearest : target,
-        };
-      },
-      {
-        found: [],
-        nearest: start,
-      },
-    )
-    .found;
+  // ONE PASS, appending: a fold that copies the answers so far at every section
+  // does quadratic work for a linear walk.
+  /**
+   Answer per section reached so far, in scan order.
+   */
+  const found: number[] = [];
+  /**
+   Paired target most recently passed.
+   */
+  let nearest = start;
+  for (const target of targets) {
+    found.push(nearest,);
+    if (target !== BEFORE_FIRST_TARGET)
+      nearest = target;
+  }
+  return found;
 }
 
 /**
@@ -273,6 +252,9 @@ export function sectionPairingToSteps(
     return pair.target;
   },),);
 
+  // ONE ENTRY PER ORIGINAL SECTION in `targets`, `previous` and `next`, which
+  // `sourceHeadings` counts, and a paired target names a translation section:
+  // the stage read each pair against these sides' counts (`readSectionPairing`).
   /**
    Decisions about the original's sections, in document order.
    */
@@ -286,8 +268,8 @@ export function sectionPairingToSteps(
         sourceIndex: source,
         targetIndex: target,
         affinity: headingAffinity({
-          source: sourceHeadings[source] ?? '',
-          target: targetHeadings[target] ?? '',
+          source: nonNullishOrThrow(sourceHeadings[source],),
+          target: nonNullishOrThrow(targetHeadings[target],),
         },),
       };
 
@@ -296,8 +278,8 @@ export function sectionPairingToSteps(
       sourceIndex: source,
       reason: ROSTER_UNPAIRED,
       anchor: anchorBetween({
-        previousTarget: previous[source] ?? BEFORE_FIRST_TARGET,
-        nextTarget: next[source] ?? targetHeadings.length,
+        previousTarget: nonNullishOrThrow(previous[source],),
+        nextTarget: nonNullishOrThrow(next[source],),
       },),
     };
   },);

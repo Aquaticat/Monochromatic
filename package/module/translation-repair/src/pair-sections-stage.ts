@@ -15,8 +15,8 @@ import {
 import {
   buildSectionPairingMessages,
   type NumberedSection,
+  requireSectionPairingRefusal,
   type SectionPair,
-  SectionPairingError,
 } from './pair-sections-wire.ts';
 import { agreePairs, } from './pair-agreement.ts';
 import type { FanOutMode, } from './stage-fanout-window.ts';
@@ -146,7 +146,7 @@ export type PairedDocumentRecord = {
  @returns Pairings that survived the reader, one per usable voice
  
  @throws Error when a reader raises anything other than a
- {@link SectionPairingError}, since that is a defect rather than a bad reply
+ `SectionPairingError`, since that is a defect rather than a bad reply
  
  @example
  ```ts
@@ -187,14 +187,16 @@ function readUsablePairings(
       },),);
     }
     catch (error) {
-      if (!(error instanceof SectionPairingError))
-        throw error;
+      /**
+       Why the reply cannot be used; anything else propagates.
+       */
+      const refusal = requireSectionPairingRefusal({ error, },);
       // A REPLY THAT CANNOT BE USED IS A LOST VOICE, not a stage failure: the
       // rest of the roster may still agree on a pairing, and refusing the whole
       // document because one model answered badly is the failure that once
       // discarded translated slices.
-      findings.push(`section-pairing unusable (${outcome.modelId}: ${error.message})`,);
-      l.warn(`${outcome.modelId} returned an unusable section pairing: ${error.message}`,);
+      findings.push(`section-pairing unusable (${outcome.modelId}: ${refusal.message})`,);
+      l.warn(`${outcome.modelId} returned an unusable section pairing: ${refusal.message}`,);
     }
   }
   return pairings;

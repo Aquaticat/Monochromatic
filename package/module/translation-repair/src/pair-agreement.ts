@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   settleContestedTarget,
   type VotedPair,
@@ -201,12 +203,16 @@ function bestVoted<PairT extends IndexPair,>(
   ): number {
     return right.votes - left.votes;
   },);
+  // AT LEAST ONE CANDIDATE: `agreePairs` asks about a source it drew from the
+  // agreed pairs themselves, and hands over the agreed pairs naming it.
   /**
-   The two best, either possibly absent.
+   The two best, the runner-up absent where one candidate stands alone.
    */
-  const [first, second,] = ranked;
-  if (first === undefined)
-    return [];
+  const [top, second,] = ranked;
+  /**
+   Most-voted candidate.
+   */
+  const first = nonNullishOrThrow(top,);
   if ((second !== undefined) && (second.votes === first.votes))
     return [];
   return [first,];

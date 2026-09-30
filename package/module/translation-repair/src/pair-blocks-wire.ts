@@ -47,6 +47,33 @@ export class BlockPairingError extends Error {
 }
 
 /**
+ The refusal a catch around {@link readBlockPairing} holds, for a catch that
+ treats an unusable reply as a lost voice.
+ 
+ ONE NARROWING PER CLASS, as `requireFrontMatterRefusal` (`front-matter.ts`)
+ is for its splitter: the reader raises every refusal as a
+ {@link BlockPairingError}, so a rethrow written in the catch is a statement
+ only a broken reader reaches. It stands here once, where a case reaches it.
+ 
+ @param error - what the catch caught
+ 
+ @returns The refusal
+ 
+ @throws The caught value unchanged when it is anything but a pairing
+ refusal, an unexpected state that must keep propagating
+ 
+ @example
+ ```ts
+ const refusal = requireBlockPairingRefusal({ error, },);
+ ```
+ */
+export function requireBlockPairingRefusal({ error, }: { readonly error: unknown; },): BlockPairingError {
+  if (error instanceof BlockPairingError)
+    return error;
+  throw error;
+}
+
+/**
  One block on one side, as the sheet numbers it.
  
  @example

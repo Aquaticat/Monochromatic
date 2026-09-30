@@ -9,11 +9,12 @@ import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
 import type { BlockPairingOutcome, } from './pair-blocks-stage.ts';
 import {
   type BlockPair,
-  BlockPairingError,
   type BlockPairingWire,
   type FreeOrderBlocks,
   readBlockPairing,
+  requireBlockPairingRefusal,
 } from './pair-blocks-wire.ts';
+import type { StageVoice, } from './stage-call.ts';
 import type { RoundOutcome, } from './stage-round.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 
@@ -25,6 +26,16 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  Voices that must name a relation before it is kept, distinct from the stage's roster quorum.
  */
 const AGREEMENT_NEEDED = 2;
+
+/**
+ Asked-seat outcome whose reply arrived and validated in shape.
+ */
+type HeardPairingOutcome = RoundOutcome<BlockPairingWire> & {
+  /**
+   Reply that arrived, with its validated value.
+   */
+  readonly voice: Extract<StageVoice<BlockPairingWire>, { readonly heard: true; }>;
+};
 
 /**
  Reads final asked-seat outcomes through the production pairing reader and agreement rule.
@@ -89,7 +100,7 @@ export function readBlockPairingOutcomes(
   /**
    Replies that arrived and validated in shape.
    */
-  const heardVoices = outcomes.filter(function wasHeard(outcome,): boolean {
+  const heardVoices = outcomes.filter(function wasHeard(outcome,): outcome is HeardPairingOutcome {
     return outcome.voice
       .heard;
   },);
@@ -103,11 +114,9 @@ export function readBlockPairingOutcomes(
   const pairings: (readonly BlockPair[])[] = [];
   for (const outcome of heardVoices) {
     /**
-     Reply narrowed independently from the filter's array element type.
+     This seat's reply, heard by the filter's narrowing.
      */
     const { voice, } = outcome;
-    if (!voice.heard)
-      continue;
     try {
       pairings.push(readBlockPairing({
         value: voice.value,
@@ -117,10 +126,12 @@ export function readBlockPairingOutcomes(
       },),);
     }
     catch (error) {
-      if (!(error instanceof BlockPairingError))
-        throw error;
-      findings.push(`block-pairing unusable (${outcome.modelId}: ${error.message})`,);
-      pl.warn(`${outcome.modelId} returned an unusable pairing: ${error.message}`,);
+      /**
+       Why the reply cannot be used; anything else propagates.
+       */
+      const refusal = requireBlockPairingRefusal({ error, },);
+      findings.push(`block-pairing unusable (${outcome.modelId}: ${refusal.message})`,);
+      pl.warn(`${outcome.modelId} returned an unusable pairing: ${refusal.message}`,);
     }
   }
   if (pairings.length === 0) {

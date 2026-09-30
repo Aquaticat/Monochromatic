@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { DocumentNode, } from './document-node.ts';
 import { scanGfmReferenceLiterals, } from './footnote-graph.ts';
 import type { BlockPair, } from './pair-blocks-wire.ts';
@@ -165,20 +167,43 @@ function crosses({ pairs, }: { readonly pairs: readonly BlockPair[]; },): boolea
 }
 
 /**
- Whether a block at one index is a definition.
+ One pair whose blocks are both definitions, with those blocks.
+ */
+type DefinitionBlockPair = {
+  /**
+   The pair as the roster agreed it.
+   */
+  readonly pair: BlockPair;
+
+  /**
+   The original's definition block.
+   */
+  readonly sourceNode: DocumentNode;
+
+  /**
+   The archive's definition block.
+   */
+  readonly targetNode: DocumentNode;
+};
+
+/**
+ The block a pair names on one side.
  
  @param nodes - one side of a chunk
  
- @param index - block to ask about
+ @param index - block a pair names
  
- @returns Whether it is a definition
+ @returns The block
+ 
+ @throws Error when the index names no block, which would mean the pair was
+ read against some other chunk
  
  @example
  ```ts
- isDefinitionAt({ nodes: sourceNodes, index: 7, },);
+ const node = blockAt({ nodes: sourceNodes, index: 7, },);
  ```
  */
-function isDefinitionAt(
+function blockAt(
   {
     nodes,
     index,
@@ -186,12 +211,38 @@ function isDefinitionAt(
     readonly nodes: readonly DocumentNode[];
     readonly index: number;
   },
-): boolean {
+): DocumentNode {
+  // A PAIR NAMES A BLOCK OF THE CHUNK IT WAS ASKED ABOUT: the roster's reads are
+  // range-checked against these sides by `readBlockPairing`, and the cached
+  // ones are those reads, kept under a key of these blocks' text.
+  return nonNullishOrThrow(nodes[index],);
+}
+
+/**
+ The label a definition block opens with.
+ 
+ @param node - a footnote definition block
+ 
+ @returns Its label
+ 
+ @throws Error when the block opens with no label the marker scanner reads,
+ which would mean the scanner and the parser disagree about a label
+ 
+ @example
+ ```ts
+ const label = openingLabel({ node: sourceNode, },);
+ ```
+ */
+function openingLabel({ node, }: { readonly node: DocumentNode; },): string {
+  // A FOOTNOTE DEFINITION OPENS WITH ITS LABEL: a block is zoned as one only
+  // for the parser's `footnoteDefinition` node, whose text starts `[^label]:`,
+  // and `gfmMarkerSpans` reads a label by micromark's own rule. A pair dropped
+  // here instead would leave the relabel one definition short, unsaid.
   /**
-   The block, absent past the end.
+   The label, alone in its list for a definition block.
    */
-  const node = nodes[index];
-  return (node !== undefined) && (node.zone === DEFINITION_ZONE);
+  const [label,] = definitionLabelsOf({ node, },);
+  return nonNullishOrThrow(label,);
 }
 
 /**
@@ -224,48 +275,46 @@ export function splitDefinitionPairs(
   },
 ): SplitDefinitionPairs {
   /**
-   Pairs whose both sides are definitions.
+   Pairs whose both sides are definitions, with their blocks.
    */
-  const definitionBlockPairs = pairs.filter(function isDefinitionPair(pair,): boolean {
-    return isDefinitionAt({
+  const definitionBlocks = pairs.flatMap(function asDefinitionPair(pair,): readonly DefinitionBlockPair[] {
+    /**
+     The original's block.
+     */
+    const sourceNode = blockAt({
       nodes: sourceNodes,
       index: pair.source,
-    },)
-      && isDefinitionAt({
-        nodes: targetNodes,
-        index: pair.target,
-      },);
+    },);
+    /**
+     The archive's block.
+     */
+    const targetNode = blockAt({
+      nodes: targetNodes,
+      index: pair.target,
+    },);
+    if ((sourceNode.zone !== DEFINITION_ZONE) || (targetNode.zone !== DEFINITION_ZONE))
+      return [];
+    return [ {
+      pair,
+      sourceNode,
+      targetNode,
+    }, ];
   },);
   /**
-   The same pairs by label, where both blocks open with one.
+   The definition pairs themselves.
    */
-  const definitionPairs = definitionBlockPairs
-    .flatMap(function toLabels(pair,): readonly DefinitionLabelPair[] {
-      /**
-       The original definition's block.
-       */
-      const sourceNode = sourceNodes[pair.source];
-      /**
-       The archive definition's block.
-       */
-      const targetNode = targetNodes[pair.target];
-      if ((sourceNode === undefined) || (targetNode === undefined))
-        return [];
-      /**
-       The original definition's label.
-       */
-      const [sourceLabel,] = definitionLabelsOf({ node: sourceNode, },);
-      /**
-       The archive definition's label.
-       */
-      const [targetLabel,] = definitionLabelsOf({ node: targetNode, },);
-      if ((sourceLabel === undefined) || (targetLabel === undefined))
-        return [];
-      return [ {
-        sourceLabel,
-        targetLabel,
-      }, ];
-    },);
+  const definitionBlockPairs = definitionBlocks.map(function toPair(definition,): BlockPair {
+    return definition.pair;
+  },);
+  /**
+   The same pairs by label.
+   */
+  const definitionPairs = definitionBlocks.map(function toLabels(definition,): DefinitionLabelPair {
+    return {
+      sourceLabel: openingLabel({ node: definition.sourceNode, },),
+      targetLabel: openingLabel({ node: definition.targetNode, },),
+    };
+  },);
   /**
    Whether the definitions cross, in which case the slicer walks the body
    pairs alone.

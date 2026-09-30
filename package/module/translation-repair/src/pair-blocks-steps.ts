@@ -45,15 +45,16 @@ function bareBlockPairingSteps(
   },
 ): readonly AlignmentStep[] {
   /**
-   Translation blocks each original is paired with, in document order.
+   Translation blocks each original is paired with, each once: a pair given
+   twice names its translation block once, since every block appears once.
    */
-  const targetsBySource = new Map<number, number[]>();
+  const targetsBySource = new Map<number, Set<number>>();
   for (const pair of pairs) {
     /**
      Targets recorded for this original so far.
      */
-    const already = targetsBySource.get(pair.source,) ?? [];
-    already.push(pair.target,);
+    const already = targetsBySource.get(pair.source,) ?? new Set<number>();
+    already.add(pair.target,);
     targetsBySource.set(
       pair.source,
       already,
@@ -161,9 +162,9 @@ function bareBlockPairingSteps(
       }
       continue;
     }
+    // NONE OF THESE IS CARRIED YET: no earlier original claimed any of them
+    // (`anyCarried`), and each appears once in the list.
     for (const [at, target,] of targets.entries()) {
-      if (carriedTargets.has(target,))
-        continue;
       emitUnclaimedTargetsBefore(target,);
       steps.push((at === 0)
         ? {

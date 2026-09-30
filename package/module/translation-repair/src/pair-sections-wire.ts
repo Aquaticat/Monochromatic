@@ -51,6 +51,34 @@ export class SectionPairingError extends Error {
 }
 
 /**
+ The refusal a catch around `readSectionPairing` holds, for a catch that
+ treats an unusable reply as a lost voice.
+ 
+ ONE NARROWING PER CLASS, as `requireBlockPairingRefusal`
+ (`pair-blocks-wire.ts`) is for block pairings: the reader raises every
+ refusal as a {@link SectionPairingError}, so a rethrow written in the catch
+ is a statement only a broken reader reaches. It stands here once, where a
+ case reaches it.
+ 
+ @param error - what the catch caught
+ 
+ @returns The refusal
+ 
+ @throws The caught value unchanged when it is anything but a pairing
+ refusal, an unexpected state that must keep propagating
+ 
+ @example
+ ```ts
+ const refusal = requireSectionPairingRefusal({ error, },);
+ ```
+ */
+export function requireSectionPairingRefusal({ error, }: { readonly error: unknown; },): SectionPairingError {
+  if (error instanceof SectionPairingError)
+    return error;
+  throw error;
+}
+
+/**
  One heading-bounded section on one side, as the sheet numbers it.
  
  SEPARATE FROM `NumberedBlock` despite the identical shape, because the two

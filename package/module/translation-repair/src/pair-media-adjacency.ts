@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { DocumentNode, } from './document-node.ts';
 import {
   type BlockPair,
@@ -141,16 +143,17 @@ function pairSharesMedia(
     readonly targetBlocks: readonly DocumentNode[];
   },
 ): boolean {
+  // A PAIR NAMES BLOCKS OF THESE LISTS: the roster's reads are range-checked
+  // against them by `readBlockPairing`, and the cached ones are those reads,
+  // kept under a key of these blocks' text.
   /**
    Source block this pair names.
    */
-  const source = sourceBlocks[pair.source];
+  const source = nonNullishOrThrow(sourceBlocks[pair.source],);
   /**
    Target block this pair names.
    */
-  const target = targetBlocks[pair.target];
-  if ((source === undefined) || (target === undefined))
-    return false;
+  const target = nonNullishOrThrow(targetBlocks[pair.target],);
   /**
    Source asset names.
    */
@@ -193,16 +196,16 @@ function isDetailsRun(
     readonly targetContainers: readonly ContainerSpan[];
   },
 ): boolean {
+  // A RUN LIES INSIDE THESE BLOCKS: `unclaimedRuns` walks indices below
+  // `targetBlocks.length`.
   /**
    First block in run.
    */
-  const first = targetBlocks[run.start];
+  const first = nonNullishOrThrow(targetBlocks[run.start],);
   /**
    Last block in run.
    */
-  const last = targetBlocks[run.end];
-  if ((first === undefined) || (last === undefined))
-    return false;
+  const last = nonNullishOrThrow(targetBlocks[run.end],);
   return targetContainers.some(function enclosesRun(container,): boolean {
     return (container.name === 'details')
       && (container.openerStartOffset === first.startOffset)
@@ -259,14 +262,15 @@ function mediaOwner(
     return (pair !== undefined) && mediaPairs.has(pair,);
   },);
   /**
-   Distinct source indices media boundaries name.
+   First distinct source the media boundaries name, and any others: one
+   owner exactly, or the run stays unclaimed.
    */
-  const owners = [...new Set(mediaBoundaries.map(function toSource(pair,): number {
+  const [owner, ...others] = new Set(mediaBoundaries.map(function toSource(pair,): number {
     return pair.source;
-  },),),];
-  if (owners.length !== 1)
+  },),);
+  if ((owner === undefined) || (others.length > 0))
     return MEDIA_OWNER_UNRESOLVED;
-  return owners[0] ?? MEDIA_OWNER_UNRESOLVED;
+  return owner;
 }
 
 /**
@@ -351,11 +355,8 @@ export function claimMediaAdjacentTargets(
       pairs,
       mediaPairs,
     },);
-    if ((typeof source) === 'symbol') {
-      if (source !== MEDIA_OWNER_UNRESOLVED)
-        throw new Error('unreachable: unknown media-owner sentinel',);
+    if (source === MEDIA_OWNER_UNRESOLVED)
       return [];
-    }
     /**
      Distance from first to last target.
      */

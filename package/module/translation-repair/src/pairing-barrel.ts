@@ -80,6 +80,7 @@ export {
 export {
   buildSectionPairingMessages,
   type NumberedSection,
+  requireSectionPairingRefusal,
   type SectionPair,
   SectionPairingError,
   type SectionPairingWire,
@@ -98,6 +99,7 @@ export {
   isBlockPairingWire,
   type NumberedBlock,
   readBlockPairing,
+  requireBlockPairingRefusal,
 } from './pair-blocks-wire.ts';
 
 //endregion Pairing barrel
