@@ -369,16 +369,21 @@ export function buildIssueRecords(
           },);
 
         /**
+         The accuracy probe's report, absent where nothing was probed.
+         */
+        const report = outcome.introducedDefects;
+
+        /**
          Probe tallies for exactly those regions, empty when unprobed.
          */
-        const probed = (outcome.introducedDefects
-          ?.regions
-          ?? [])
-          .filter(function coversRegion(tally,) {
-            return regions.some(function isSame(region,) {
-              return region.envelopeId === tally.envelopeId;
+        const probed = (report === undefined)
+          ? []
+          : report.regions
+            .filter(function coversRegion(tally,) {
+              return regions.some(function isSame(region,) {
+                return region.envelopeId === tally.envelopeId;
+              },);
             },);
-          },);
 
         /**
          What the checkers said about this issue, absent where none ruled.
@@ -410,16 +415,14 @@ export function buildIssueRecords(
             repairReachedReader: replacementShipped,
           },),
           refined: outcome.refined,
-          ...(probed.length === 0
+          // THE REPORT'S OWN COUNTS, read where it exists: a region it tallied
+          // implies it, so no count is ever invented for an unprobed slice.
+          ...(((report === undefined) || (probed.length === 0))
             ? {}
             : {
               introducedDefects: {
-                heardProbers: outcome.introducedDefects
-                  ?.heardProbers
-                  ?? 0,
-                configuredProbers: outcome.introducedDefects
-                  ?.configuredProbers
-                  ?? 0,
+                heardProbers: report.heardProbers,
+                configuredProbers: report.configuredProbers,
                 regions: probed,
               },
             }),

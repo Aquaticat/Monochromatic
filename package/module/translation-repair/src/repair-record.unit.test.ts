@@ -264,6 +264,36 @@ await describe({
     },),
 
     it({
+      name: 'carries the naturalness rewrite\'s probe report onto each issue of its slice field by '
+        + 'field, leaving out the findings a record declares no field for',
+      fn: async () => {
+        const records = buildIssueRecords({
+          outcomes: [
+            {
+              ...catOutcome({
+                issues: [catIssue({ issueId: 'adjudicated/nap', },),],
+                repairRegions: [catRegion({ issueIds: ['adjudicated/nap',], },),],
+                refined: true,
+              },),
+              refinementDefects: {
+                heardProbers: 2,
+                configuredProbers: 3,
+                regions: [],
+                findings: ['stage-voice-lost (prober tabby-large)',],
+              },
+            },
+          ],
+          blocked: false,
+        },);
+        expect(records[0]?.refinementDefects,).toStrictEqual({
+          heardProbers: 2,
+          configuredProbers: 3,
+          regions: [],
+        },);
+      },
+    },),
+
+    it({
       name: 'omits the final slice text only where the replacement really is '
         + 'verbatim in the returned slice, which is the claim that justifies '
         + 'omitting it',

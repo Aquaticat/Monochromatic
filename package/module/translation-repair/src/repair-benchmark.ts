@@ -184,6 +184,9 @@ export type RepairBenchmarkResult = {
  (ledger P4)
  
  @returns Graded attempts plus the aggregate scorecard
+
+ @throws Whatever `signal.reason` carries once the caller aborts; an entry's
+ fault under a live signal is recorded as that entry's error instead
  
  @example
  ```ts
@@ -359,9 +362,15 @@ export async function runRepairBenchmark(
       },);
     }
     catch (error) {
-      // Aborts must always win so user steering can stop the benchmark.
-      if (signal.aborted)
-        throw error;
+      // Aborts must always win so user steering can stop the benchmark, and
+      // the run fails BECAUSE it was aborted: whichever torn-down exchange
+      // surfaced, from the repair, the judge or the derivability probe, is a
+      // symptom, and a caller tells an abort from a fault by identity alone
+      // (as `repair-slice-buy.ts` and `translate-slice-attempt.ts` do).
+      if (signal.aborted) {
+        rl.warn(`${entry.entryId}: abandoned by the caller's abort (${String(error,)})`,);
+        throw signal.reason;
+      }
       rl.warn(`${entry.entryId}: repair threw ${String(error,)}`,);
       records.push({
         entryId: entry.entryId,

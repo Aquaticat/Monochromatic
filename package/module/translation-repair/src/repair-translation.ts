@@ -57,6 +57,16 @@ export {
 const l = contextRoot({ tag: 'translation-repair-pipeline', },);
 
 /**
+ One slice's accuracy settlement beside the slice it settled, so the
+ dominance reading takes each outcome with its own slice rather than finding
+ it by position.
+ */
+type SettledSlice = {
+  readonly slice: PreparedDocumentPair['slices'][number];
+  readonly settlement: Awaited<ReturnType<typeof settleRepairSlice>>;
+};
+
+/**
  Repairs one already prepared document pair.
  
  @param client - injected model client
@@ -203,16 +213,20 @@ export async function repairPreparedDocument(
   const twins: TwinMemo<ChunkRepairOutcome> = new Map();
 
   /**
-   Every accuracy settlement, returned in slice order.
+   Every accuracy settlement beside the slice it settled, returned in slice
+   order, so nothing downstream finds one by position.
    */
-  const settlements = await mapOverlapped({
+  const settled = await mapOverlapped({
     items: slices,
     overlap,
     oneItem: async function settleOne({
       item: slice,
       position: slicePosition,
-    },) {
-      return await inSliceLogContext({
+    },): Promise<SettledSlice> {
+      /**
+       This slice's settlement.
+       */
+      const settlement = await inSliceLogContext({
         lane: 'repair',
         sliceIndex: slice.target
           .sliceIndex,
@@ -237,14 +251,18 @@ export async function repairPreparedDocument(
           },);
         },
       },);
+      return {
+        slice,
+        settlement,
+      };
     },
   },);
 
   /**
    Accuracy outcomes in document order.
    */
-  const outcomes = settlements.map(function toOutcome(
-    settlement,
+  const outcomes = settled.map(function toOutcome(
+    { settlement, },
   ): ChunkRepairOutcome {
     return settlement.outcome;
   },);
@@ -252,8 +270,8 @@ export async function repairPreparedDocument(
   /**
    Cached outcomes refused for contradicting their text, in document order.
    */
-  const refusedCacheFindings = settlements.flatMap(function toFindings(
-    settlement,
+  const refusedCacheFindings = settled.flatMap(function toFindings(
+    { settlement, },
   ): readonly string[] {
     return settlement.refusedCacheFindings;
   },);
@@ -262,21 +280,18 @@ export async function repairPreparedDocument(
    Non-translation dominance over whole run, reported and never deciding.
    */
   const dominance = assessNonTranslationDominance({
-    slices: slices.map(function toTally(
-      sliceRef,
-      slicePosition,
+    slices: settled.map(function toTally(
+      {
+        slice,
+        settlement: { outcome, },
+      },
     ) {
-      /**
-       This slice's settled outcome.
-       */
-      const sliceOutcome = outcomes[slicePosition];
       return {
-        targetChars: sliceRef.target
+        targetChars: slice.target
           .text
           .length,
-        votesStand: sliceOutcome?.nonTranslationStanding ?? false,
-        anchorsTranslation: (sliceOutcome !== undefined)
-          && sliceAnchorsTranslation({ outcome: sliceOutcome, },),
+        votesStand: outcome.nonTranslationStanding,
+        anchorsTranslation: sliceAnchorsTranslation({ outcome, },),
       };
     },),
   },);

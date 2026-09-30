@@ -598,6 +598,108 @@ await describe({
     },),
 
     it({
+      name: 'counts the drawn siblings of a shared edit when some were not drawn, and lists their '
+        + 'positions in sheet order whatever order the edit names them in',
+      fn: async () => {
+        /** One region serving four issues, three of them drawn. */
+        const shared = catRepair({
+          disposition: 'shipped',
+          issueIds: [
+            'adjudicated/nap',
+            'adjudicated/chase',
+            'adjudicated/pounce',
+            'adjudicated/groom',
+          ],
+        },);
+        const sheet = formatRepairSheet({
+          sample: [
+            catCandidate({ repair: shared, },),
+            {
+              ...catCandidate({ repair: shared, },),
+              issueId: 'adjudicated/pounce',
+            },
+            {
+              ...catCandidate({ repair: shared, },),
+              issueId: 'adjudicated/chase',
+            },
+          ],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
+        },);
+        // Item 1's siblings are named chase (item 3), pounce (item 2) and
+        // groom (not drawn).
+        expect(sheet.includes('3 other accepted issue(s), of which 2 appear here as item(s) 2, 3.',),)
+          .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'says a region written into an insertion point replaced nothing, instead of fencing an '
+        + 'empty before',
+      fn: async () => {
+        const sheet = formatRepairSheet({
+          sample: [
+            catCandidate({
+              repair: {
+                disposition: 'shipped',
+                regions: [
+                  {
+                    issueIds: ['adjudicated/nap',],
+                    before: '',
+                    editorAfter: 'The cat also naps in the afternoon sun.',
+                  },
+                ],
+                refined: false,
+              },
+            },),
+          ],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
+        },);
+        expect(sheet.includes('- before: (nothing; this is an insertion point',),).toBe(true,);
+        expect(sheet.includes('- before, the text that was replaced:',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'carries a disposition the sheet does not know to the grader with a note to report it, '
+        + 'and no grade box, rather than dropping the item from the population',
+      fn: async () => {
+        const sheet = formatRepairSheet({
+          sample: [catCandidate({ repair: catRepair({ disposition: 'held-by-a-later-pass', },), },),],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
+        },);
+        expect(sheet.includes(
+          '- outcome: held-by-a-later-pass (unrecognized disposition; report this rather than grading it)',
+        ),).toBe(true,);
+        expect(sheet.includes('- repair grade:',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'says a side quoted nothing, rather than printing an empty line the grader would read '
+        + 'as a lost quote',
+      fn: async () => {
+        const sheet = formatRepairSheet({
+          sample: [
+            {
+              ...catCandidate({ repair: catRepair({ disposition: 'shipped', },), },),
+              sourceQuotes: [],
+            },
+          ],
+          seed: 'cat-seed',
+          corpusSha: 'sha/1',
+          drawDigest: 'digest-of-this-draw',
+        },);
+        expect(sheet.includes('- zh original says: (nothing quoted on this side)',),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'numbers items from one so they line up with the detection sheet',
       fn: async () => {
         const sheet = formatRepairSheet({

@@ -156,6 +156,36 @@ await describe({
         expect(items[0]?.verdict,).toBe('fixes',);
       },
     },),
+
+    it({
+      name: 'reads a grade whose printed legend the grader deleted, since the legend is a reminder '
+        + 'and clearing the rest of the line after the box is an ordinary edit',
+      fn: async () => {
+        const items = parseGradedRepairSheet({
+          text: [
+            '### 1. Kitten · small',
+            '- repair grade: [N, the whiskers are still missing]',
+          ].join('\n',),
+        },);
+        expect(items[0]?.verdict,).toBe('does-not-fix',);
+        expect(items[0]?.note,).toBe('the whiskers are still missing',);
+      },
+    },),
+
+    it({
+      name: 'reads a grade whose closing bracket the grader lost, up to the legend, so a typo in '
+        + 'the box does not drop the verdict',
+      fn: async () => {
+        const items = parseGradedRepairSheet({
+          text: [
+            '### 1. Kitten · small',
+            '- repair grade: [N, the tail is the wrong colour  (Y = ... · N = ...)',
+          ].join('\n',),
+        },);
+        expect(items[0]?.verdict,).toBe('does-not-fix',);
+        expect(items[0]?.note,).toBe('the tail is the wrong colour',);
+      },
+    },),
   ],
 },);
 

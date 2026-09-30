@@ -209,15 +209,18 @@ export function damageClaimLinesBySlice(
         chunk: ProbedChunk,
       ): Map<number, readonly string[]> {
         /**
+         Regions the accuracy repair's probe reported on, none where the
+         chunk changed nothing and nothing was probed.
+         */
+        const accuracyRegions = chunk.introducedDefects
+          ?.regions
+          ?? [];
+        /**
          Lines this chunk's corroborated claims make, both edits' probes.
          */
         const lines = [
           ...corroboratedLinesOf({
-            regions: chunk.accuracyPatchSelected
-              ? (chunk.introducedDefects
-                ?.regions
-                ?? [])
-              : [],
+            regions: chunk.accuracyPatchSelected ? accuracyRegions : [],
             stage: 'accuracy repair',
           },),
           ...corroboratedLinesOf({

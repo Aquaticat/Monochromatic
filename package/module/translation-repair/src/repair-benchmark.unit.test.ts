@@ -290,6 +290,34 @@ await describe({
     },),
 
     it({
+      name: 'scores a benchmark over no entries as fully covered and every rate as zero: coverage asks '
+        + 'what share of the entries ran, and none were skipped, while a rate asks what share of seeds '
+        + 'came back, and none were planted',
+      fn: async () => {
+        expect(computeRepairScorecard({ records: [], },),).toEqual({
+          dispatchedEntries: 0,
+          coverage: 1,
+          plantedSeeds: 0,
+          detectedSeeds: 0,
+          seedDetectionRate: 0,
+          policyDeclinedSeeds: 0,
+          seedDetectionRateExcludingPolicy: 0,
+          nonDerivableSeeds: 0,
+          seedDetectionRateExcludingUnfair: 0,
+          judgedSeeds: 0,
+          restoredSeeds: 0,
+          partialSeeds: 0,
+          seededRepairRate: 0,
+          seededRepairRateLenient: 0,
+          lexicalUniverse: 0,
+          lexicalRestoredSeeds: 0,
+          lexicalRepairRate: 0,
+          statusCounts: {},
+        },);
+      },
+    },),
+
+    it({
       name: 'holds a NOT-DERIVABLE seed out of the fair denominator, since the '
         + 'benchmark plants seeds by deleting published English and published '
         + 'English may carry a translator addition the Chinese never stated. '
@@ -863,6 +891,155 @@ await describe({
         },);
         expect(errored.records[0]?.outcomeKind,).toBe('error',);
         expect(errored.records[0]?.detail,).toContain('scripted transport collapse',);
+      },
+    },),
+
+    it({
+      name: 'counts the issues a run reported and, apart, those its checkers confirmed fixed, so a '
+        + 'record says how much of what was found was mended',
+      fn: async () => {
+        /**
+         Issue record as the driver reports one, fixed or not.
+
+         @param issueId - issue this record is about
+
+         @param resolved - whether the checkers confirmed the shipped text fixes it
+
+         @returns Record the scripted repair reports
+         */
+        function reportedIssue(
+          {
+            issueId,
+            resolved,
+          }: {
+            readonly issueId: string;
+            readonly resolved: boolean;
+          },
+        ) {
+          return {
+            sliceIndex: 0,
+            resolved,
+            repairRegions: [],
+            repairDisposition: 'no-region' as const,
+            refined: false,
+            issue: {
+              issueId,
+              status: 'accepted' as const,
+              severity: 'major' as const,
+              claims: [
+                {
+                  claimId: `claim/${issueId}`,
+                  claim: {
+                    category: 'accuracy/omission' as const,
+                    severity: 'major' as const,
+                    summary: 'The sentence about the full bowl is missing.',
+                    spans: [
+                      {
+                        side: 'target' as const,
+                        nodeId: 'block/1',
+                        nodeHash: hashContent({ content: 'invented', },),
+                        startOffset: 0,
+                        endOffset: 3,
+                        quotedText: 'The',
+                      },
+                    ],
+                  },
+                },
+              ],
+              tallies: {},
+            },
+          };
+        }
+        /** Scripted repair reporting one fixed issue and one it did not fix. */
+        const reportingRepair: typeof repairTranslation = async ({ targetText, },) => {
+          /** Document as this stub returns it. */
+          const repairedText = `${targetText} The cat also chases crimson butterflies across the meadow.`;
+          return {
+            repairedText,
+            status: 'repaired',
+            issues: [
+              reportedIssue({
+                issueId: 'adjudicated/tail',
+                resolved: true,
+              },),
+              reportedIssue({
+                issueId: 'adjudicated/ears',
+                resolved: false,
+              },),
+            ],
+            findings: [],
+            sliceCritics: [],
+            chunks: [],
+            sliceCount: 1,
+            changedSliceIndices: [0,],
+            withdrawnSliceIndices: [],
+            trimmedReplacements: [],
+            sliceTexts: [{
+              sliceIndex: 0,
+              incumbentKind: 'present',
+              incumbentText: targetText,
+              outcome: {
+                kind: 'decided',
+                acceptedText: repairedText,
+              },
+            },],
+          };
+        };
+        /** Benchmark over one entry. */
+        const { records, } = await runRepairBenchmark({
+          client: UNUSED_CLIENT,
+          judgeModelIds: MODELS.judgeModelIds,
+          entries: [
+            {
+              entryId: 'whiskers',
+              sourceText: '猫猫在太阳下打盹。猫猫也追蝴蝶。碗是满的。',
+              targetText: CLEAN_TEXT,
+              seeds: [BUTTERFLY_SEED,],
+            },
+          ],
+          models: MODELS,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          repair: reportingRepair,
+          judge: restoringJudge,
+        },);
+        expect([
+          records[0]?.issueCount,
+          records[0]?.resolvedIssueCount,
+        ],).toEqual([2, 1,],);
+      },
+    },),
+
+    it({
+      name: 'RAISES THE CALLER\'S ABORT REASON when an entry fails under an aborted signal, not the '
+        + 'exchange the abort tore down, so a caller tells a stop it asked for from a fault by identity',
+      fn: async () => {
+        /** Caller steering the benchmark. */
+        const controller = new AbortController();
+        /** Why the caller stopped it. */
+        const stop = new Error('scripted steering stop',);
+        /** Scripted repair whose exchange the caller's abort tears down. */
+        const abortedRepair: typeof repairTranslation = async () => {
+          controller.abort(stop,);
+          throw new Error('scripted exchange torn down by the abort',);
+        };
+        await expect(runRepairBenchmark({
+          client: UNUSED_CLIENT,
+          judgeModelIds: MODELS.judgeModelIds,
+          entries: [
+            {
+              entryId: 'whiskers',
+              sourceText: '猫',
+              targetText: CLEAN_TEXT,
+              seeds: [BUTTERFLY_SEED,],
+            },
+          ],
+          models: MODELS,
+          signal: controller.signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          repair: abortedRepair,
+          judge: restoringJudge,
+        },),).rejects.toBe(stop,);
       },
     },),
   ],
