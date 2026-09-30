@@ -113,21 +113,30 @@ a polish round that no longer buys refiners for a slice nothing can check (B48),
 a withheld slate's absence exit replaced by a named code-fault error (B51),
 standing flags that no longer default to shipping (B49),
 and a test named for an exit its input stopped reaching (B50).
-The baseline is now the whole suite at `0fba3dea4` (`census-SfAXnI`,
-1,429 passes,
+The ninth batch took the corpus-run passes,
+31 stretches in 16 files,
+and closed every one
+(`b7cab3bbb` to `51b888ac2`),
+finding and fixing B53 to B55 on the way:
+the schema guard no longer advises deleting a non-artifact as another schema generation (B53),
+the preparation's own findings reach the artifact (B54),
+and definitions already in order draw no reorder note (B55).
+The baseline is now the whole suite at `51b888ac2` (`census-VW2tHL`,
+1,437 passes,
 taken from a tree with nothing uncommitted):
-library source holds 976 stretches over 1,982 lines in 347 files,
+library source holds 938 stretches over 1,893 lines in 329 files,
 with 19 functions never called,
 and the runner entry files and unloaded bundles come after.
 By the first construct each stretch's lines hold
-(`t8-triage-sfaxni.txt` in the audit's scratch folder),
-the queue is 372 returns,
-197 nullish fallbacks,
-182 ternaries,
-114 throws
-and 111 others,
-and the ninth batch takes the corpus-run passes
-(31 stretches in 16 files);
+(`t8-triage-vw2thl.txt` in the audit's scratch folder),
+the queue is 366 returns,
+196 nullish fallbacks,
+161 ternaries,
+110 throws
+and 105 others,
+and the tenth batch takes the corpus-run title modules
+(26 stretches in 4 files,
+tied on stretches with `align` and `corpus-run/artifact` and ahead on cold lines);
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:

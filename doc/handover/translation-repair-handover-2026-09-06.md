@@ -251,12 +251,18 @@ this one says what changed after it.
   closing all 55 of their stretches in 17 files
   (`62a745069` to `0fba3dea4`;
   ledger B46 to B52).
-  The baseline is now the whole suite at `0fba3dea4` (`census-SfAXnI`,
-  1,429 passes):
-  library source holds 976 stretches over 1,982 lines in 347 files,
+  The ninth batch read against the whole suite at `0fba3dea4` (`census-SfAXnI`,
+  1,429 passes)
+  and took the corpus-run passes,
+  closing all 31 of their stretches in 16 files
+  (`b7cab3bbb` to `51b888ac2`;
+  ledger B53 to B55).
+  The baseline is now the whole suite at `51b888ac2` (`census-VW2tHL`,
+  1,437 passes):
+  library source holds 938 stretches over 1,893 lines in 329 files,
   with 19 functions never called.
   The library batches go on one triage cluster each,
-  the ninth taking the corpus-run passes (31 stretches in 16 files),
+  the tenth taking the corpus-run title modules (26 stretches in 4 files),
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
   the ledger's T8 entry has the triage counts.

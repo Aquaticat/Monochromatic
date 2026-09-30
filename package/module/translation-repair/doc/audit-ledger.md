@@ -3525,6 +3525,93 @@ The largest cluster is the corpus-run passes,
 (the triage's `corpus-run/pass` prefix),
 and the ninth batch takes them.
 
+The ninth batch took the corpus-run passes against `census-SfAXnI`
+in fifteen code commits,
+`b7cab3bbb` to `51b888ac2`,
+and entries B53 to B55.
+Its census at `51b888ac2`
+(`census-VW2tHL`,
+1,437 passes,
+taken clean)
+reads against `census-SfAXnI`:
+ran 18,
+still cold 1,291,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 11.
+Every edited pass source "loaded it and left 0 cold stretches";
+the one edited source outside the cluster is `archive-footnote-order.ts`,
+which left 1 (B55 moved its order check).
+Of the 18 rows that ran,
+12 are the cluster files the batch reached without editing
+(`pass-generation-guard.ts` 5,
+`pass-footnote-relabel-read.ts` 2,
+`pass-page-assembly.ts` 2,
+`pass-contest.ts`,
+`pass-entry-persist.ts`
+and `pass-insertion-admission.ts` 1 each),
+and 6 lie outside it,
+reached by the new `settleEntry` cases
+(`lane-contest-driver.ts` 2,
+`artifact-two-lane-build.ts`,
+`prepare-with-pairing.ts`,
+`pair-definition-order.ts`
+and `reference-attest-stage.ts` 1 each);
+the 6 not loaded are one unmapped chunk whose bundle name changed,
+6 stretches before and after.
+Library source went from 976 stretches to 938:
+per-file counts compared between the two census files give the cluster's 31,
+all 16 files now at none,
+and 7 outside it,
+the 6 that ran and `archive-footnote-order.ts`'s 1.
+The row at `pass-entry.ts:313` moved with its loop into `pass-carried-fold.ts`,
+which the census lists among loaded sources and nowhere among cold ones.
+
+How the rows closed,
+by commit:
+`b7cab3bbb` typed the seats' repair models as the run's,
+whose refiners are required,
+and dropped the pass's polish-disabled and missing-map arms (4 rows);
+`cc59c4803` narrowed three refusal catches through one helper each
+and cased the decline's removal failure (4);
+`1556de391` refused a non-artifact apart in the schema guard (B53)
+and cased the guards' counted wording (7);
+`8f3eee26d` cased the footnote relabel's disagreeing evidence and interleaved definitions (4);
+`1a6e0db7c` handed the archive-note reader the entry's logger
+and cased both its readings and the whole-page decline through `settleEntry` (2);
+`50595604b` cased a cited reference reaching the contest and consolidation sheets
+and an attested detail reaching the translators' (4);
+`5cf4536e8` cased a sealed span through `settleEntry`
+and at `publishFixedPage`,
+the one place the seal speaks (2);
+`f18381be1` cased a page pass's correction and both its warnings through `settleEntry` (2);
+`7c3c3e3b5` cased the container-deficit finding the admission logs (1);
+and `51b888ac2` moved the carried fold and its log loops behind an injected logger
+and cased a fold and a stand-aside (1).
+B54 and B55 came from reading the relabel and the preparation's findings for those cases.
+
+The tenth batch's baseline is that census
+(`51b888ac2`,
+`census-VW2tHL`):
+library source holds 938 stretches over 1,893 lines in 329 files,
+with 19 functions never called.
+By the first construct
+(`t8-triage-vw2thl.txt`),
+the queue is 366 returns,
+196 nullish fallbacks,
+161 ternaries,
+110 throws
+and 105 others.
+Three clusters tie at 26 stretches:
+`align` (5 files,
+39 lines),
+`corpus-run/artifact` (8 files,
+35 lines)
+and `corpus-run/title` (4 files,
+41 lines).
+The tie goes to the most cold lines,
+so the tenth batch takes `corpus-run/title`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -12386,6 +12473,62 @@ so an account needs no hand-written `find`.
 The copy that ran out of memory and left its payload is issue #580,
 filed against `cli-git`,
 which owns the hook.
+
+### M82: commit scopes written as `translation-repair`, not the package's name
+
+Status:
+happened throughout the audit,
+caught 2026-09-30 (UTC) while writing the ninth batch's record.
+The repository's commit rule takes the scope from the package name less `@monochromatic-dev/`,
+and `package.json` names this package `@monochromatic-dev/module-translation-repair`,
+so the scope is `module-translation-repair`.
+Of the last 400 subjects on the branch,
+245 used `translation-repair` and 131 `module-translation-repair`
+(`git log --format=%s --max-count=400`,
+counted by type and scope);
+the ninth batch's first eleven commits,
+`8536b28e1` to `9e7469896`,
+all used the short form,
+and its last seven the full one.
+No doc in the package or the handover prescribes the short form.
+Nothing reads the scope,
+so no commit is wrong in what it says,
+and none is amended.
+Prevention:
+a commit's scope is read off `package.json`'s `name` before the first commit of a session,
+and a message file is checked for it with the `#` and task-number checks.
+
+### M83: a lint's findings left unread because the command printed its log only on failure
+
+Status:
+happened 2026-09-30 (UTC) during the ninth batch's `51b888ac2`,
+caught before the commit,
+and first misdiagnosed.
+The Markdown lint of `doc/slice-context.md` ran as `astral-safe-lint.mjs <path> > <log> || tail <log>`,
+the shape every build and lint command in this audit takes.
+`astral-safe-lint.mjs` exits 0 whatever it finds,
+so the `tail` never ran,
+and its log,
+which read `semantic-line-breaks 3`,
+went unread.
+The run was then taken for one against the main checkout,
+since the shell starts every command there and this one had no `cd`,
+and it was run again from the worktree;
+that run's three findings were fixed before the commit.
+The diagnosis was wrong:
+the wrapper joins every path onto the worktree root (its `repo` constant),
+the main checkout holds no such file,
+and the first run had linted the edited file.
+The ninth batch's record first carried the wrong diagnosis as this entry;
+it was corrected before commit by reading the first log and the wrapper.
+Prevention:
+a tool that exits 0 with findings is read by its output,
+not its exit status
+(`astral-safe-lint.mjs`,
+the census,
+`run-guards-named.ts`):
+its log is printed or searched every time,
+and a diagnosis of why a run misread is checked against the tool's source before it is written down.
 
 ### M79: a coverage census measuring compressed code
 
