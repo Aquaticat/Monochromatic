@@ -5,8 +5,9 @@
  sources are sorted into kinds, the rows and totals, and, from
  `coverage-census-baseline.ts`, how a batch's run reads an earlier census's
  stretches, which claimed sources that census holds no stretch in, and which
- were edited since its commit. They share this file's stretch fixture. Paths
- and names are cat-themed invention.
+ were edited since its commit. They share the census stretch fixture
+ (`coverage-census.test-fixture.ts`). Paths and names are cat-themed
+ invention.
 
  @module
  */
@@ -19,7 +20,6 @@ import {
 
 import {
   baselineStatusesOf,
-  type CensusStretch,
   censusStretchesOf,
   editedClaimsOf,
   emptyClaimsOf,
@@ -30,6 +30,7 @@ import {
   sourceRowsOf,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { recorded, } from './coverage-census.test-fixture.ts';
 
 /**
  A block stretch in `nap.mjs` from bundle offset 10 to 20.
@@ -62,37 +63,6 @@ function at({
     source,
     line,
   } as const;
-}
-
-/**
- A recorded stretch in one source over some lines.
-
- @param source - source file
-
- @param startLine - first line
-
- @param endLine - last line
-
- @returns The stretch
- */
-function recorded({
-  source,
-  startLine,
-  endLine,
-}: {
-  readonly source: string;
-  readonly startLine: number;
-  readonly endLine: number;
-},): CensusStretch {
-  return {
-    bundle: 'nap.mjs',
-    start: 0,
-    end: 1,
-    name: '',
-    source,
-    startLine,
-    endLine,
-  };
 }
 
 await describe({
@@ -704,6 +674,48 @@ await describe({
             source: 'src/nap.ts',
             loadedNow: true,
             coldNow: 0,
+          },
+        ],);
+      },
+    },),
+    it({
+      name:
+        'NAMES A SOURCE ADDED SINCE THE BASELINE THAT THIS RUN LEFT COLD when the batch claims none, though the '
+        + 'baseline holds no stretch there: read from the baseline\'s sources alone, its cold code was counted nowhere '
+        + '(ledger B61)',
+      fn: async () => {
+        expect(editedClaimsOf({
+          baseline: {
+            head: 'c0ffee123',
+            stretches: [
+              recorded({
+                source: 'src/nap.ts',
+                startLine: 3,
+                endLine: 5,
+              },),
+            ],
+            loadedSources: new Set(['src/nap.ts',],),
+          },
+          edited: new Set(['src/knead.ts', 'src/knead.unit.test.ts',],),
+          current: [
+            recorded({
+              source: 'src/knead.ts',
+              startLine: 4,
+              endLine: 6,
+            },),
+            recorded({
+              source: 'src/nap.ts',
+              startLine: 3,
+              endLine: 5,
+            },),
+          ],
+          loadedSources: new Set(['src/knead.ts', 'src/nap.ts',],),
+          sources: new Set(),
+        },),).toEqual([
+          {
+            source: 'src/knead.ts',
+            loadedNow: true,
+            coldNow: 1,
           },
         ],);
       },
