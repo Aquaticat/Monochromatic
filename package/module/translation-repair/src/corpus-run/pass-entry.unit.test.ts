@@ -366,6 +366,140 @@ const CARRIED_ENTRY = {
 };
 
 /**
+ Clause of the archive's first section the original lacks and the cited page
+ states: the detail the attestation bench attests.
+ */
+const CITED_ARCHIVE_QUOTE = 'throughout the quiet afternoon while the sunlight is moving slowly across the room';
+
+/**
+ Words of the cited page stating that detail.
+ */
+const CITED_REFERENCE_QUOTE = 'She slept there all through the quiet afternoon, while the sunlight moved slowly across the room.';
+
+/**
+ Address of the one page the original cites, which only the reference block
+ names.
+ */
+const CITED_ADDRESS = 'https://cats.example/posts/windowsill';
+
+/**
+ What the outside reader says the cited page says, one reference line.
+ */
+const CITED_REFERENCE = `- reference 1 ${CITED_ADDRESS} ("The windowsill cat"): ${CITED_REFERENCE_QUOTE}`;
+
+/**
+ Entry the cited-reference case settles, under its own id.
+ */
+const CITED_ENTRY = {
+  id: 'CatEntryCited',
+  sourceText: SOURCE_TEXT,
+  targetText: TARGET_TEXT,
+};
+
+/**
+ Words only a consolidation producer's sheet carries, which tell it apart
+ from a translator's under the one translation schema they share.
+ */
+const CONSOLIDATION_MARK = 'Two English renderings of this passage already exist';
+
+/**
+ Fence label over the attested details on a translator's sheet.
+ */
+const ATTESTED_DETAILS_LABEL = 'ATTESTED DETAILS';
+
+/**
+ One sheet a stage sent, under the schema that asked.
+ */
+type SentSheet = {
+  readonly schema: string;
+  readonly content: string;
+};
+
+/**
+ Which sheets a case reads: the contest's, the consolidation producer's, or a
+ translator's.
+ */
+type SheetKind = 'contest' | 'consolidation' | 'translator';
+
+/**
+ Whether a sheet is of one kind.
+
+ @param sheet - sheet sent
+
+ @param kind - kind asked about
+
+ @returns Whether the sheet is of that kind
+
+ @example
+ ```ts
+ const isContest = isSheetOf({ sheet, kind: 'contest', },);
+ ```
+ */
+function isSheetOf(
+  {
+    sheet,
+    kind,
+  }: {
+    readonly sheet: SentSheet;
+    readonly kind: SheetKind;
+  },
+): boolean {
+  if (kind === 'contest')
+    return sheet.schema === 'lane_contest';
+  if (sheet.schema !== 'translation_report')
+    return false;
+  return (kind === 'consolidation') === sheet.content.includes(CONSOLIDATION_MARK,);
+}
+
+/**
+ What the sheets of one kind carried of the cited page: how many were sent,
+ how many named the page, and how many listed attested details.
+
+ @param sheets - every sheet sent
+
+ @param kind - kind read
+
+ @returns The three counts
+
+ @example
+ ```ts
+ const contest = citedEvidenceIn({ sheets, kind: 'contest', },);
+ ```
+ */
+function citedEvidenceIn(
+  {
+    sheets,
+    kind,
+  }: {
+    readonly sheets: readonly SentSheet[];
+    readonly kind: SheetKind;
+  },
+): {
+  readonly sent: number;
+  readonly namingThePage: number;
+  readonly listingAttested: number;
+} {
+  /**
+   Sheets of that kind.
+   */
+  const ofKind = sheets.filter(function isOfKind(sheet,): boolean {
+    return isSheetOf({
+      sheet,
+      kind,
+    },);
+  },);
+  return {
+    sent: ofKind.length,
+    namingThePage: ofKind.filter(function namesThePage({ content, },): boolean {
+      return content.includes(CITED_ADDRESS,);
+    },).length,
+    listingAttested: ofKind.filter(function listsAttested({ content, },): boolean {
+      return content.includes(ATTESTED_DETAILS_LABEL,) && content.includes(CITED_ARCHIVE_QUOTE,);
+    },).length,
+  };
+}
+
+/**
  Coverage behavior of pass fixture.
  */
 type CoverageScript = 'lost' | 'absent' | 'full';
@@ -582,6 +716,23 @@ function replyFor(
       reason: 'whole candidate is publication-ready',
     };
   }
+
+  // THE ATTESTATION ROUNDS RUN ONLY WHERE A CITED PAGE SAYS SOMETHING, so only
+  // the cited-reference case reaches them: every voice attests the one detail
+  // the page states, quoting both sides word for word, and then confirms it.
+  if (schema === 'reference_attest') {
+    return content.includes(CITED_REFERENCE_QUOTE,)
+      ? {
+        attested: [{
+          archiveQuote: CITED_ARCHIVE_QUOTE,
+          reference: 1,
+          referenceQuote: CITED_REFERENCE_QUOTE,
+        },],
+      }
+      : { attested: [], };
+  }
+  if (schema === 'reference_attest_confirm')
+    return { confirmed: [1,], };
   throw new Error(`no script for ${schema}`,);
 }
 
@@ -603,7 +754,10 @@ function replyFor(
  
  @param quotaReads - counter of meter readings, for the case that proves the
  judge seats are read before each phase and not once per entry
- 
+
+ @param sheets - every sheet sent, under the schema that asked, for a case
+ reading what a stage was shown
+
  @returns Client honoring the script
  
  @example
@@ -622,6 +776,7 @@ function entryClient(
     quotaReads = { count: 0, },
     archivePictureSupport,
     archiveReviewSheets,
+    sheets,
   }: {
     readonly served: string[];
     readonly failOnSchema?: string;
@@ -632,6 +787,7 @@ function entryClient(
     readonly quotaReads?: { count: number; };
     readonly archivePictureSupport?: string;
     readonly archiveReviewSheets?: string[];
+    readonly sheets?: SentSheet[];
   },
 ): RunClient {
   return {
@@ -666,6 +822,10 @@ function entryClient(
           return messageText({ message, },);
         },)
         .join('\n',);
+      sheets?.push({
+        schema,
+        content,
+      },);
 
       if ((schema === 'block_pairing') && (archivePictureSupport !== undefined)) {
         /** Pair only the shared component, leaving its archive translation for review. */
@@ -692,7 +852,7 @@ function entryClient(
        Whether shared translation schema belongs to consolidation producer.
        */
       const isConsolidation = (schema === 'translation_report')
-        && content.includes('Two English renderings of this passage already exist',);
+        && content.includes(CONSOLIDATION_MARK,);
 
       /**
        Instrument matching this request's per-slice driver.
@@ -1333,6 +1493,78 @@ await describe({
           ...asked.workTitles,
           ...asked.references,
         ],),).toEqual(new Set([ENTRY.sourceText,],),);
+      },
+    },),
+    it({
+      name: 'CARRIES A CITED PAGE\'S WORDS to the contest and the consolidation, and the detail the bench '
+        + 'attested from it to the translators, each on its own channel: the reference block where a sheet '
+        + 'weighs wording against the original, the attested details where a translator renders it',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /**
+         Every sheet sent, under the schema that asked.
+         */
+        const sheets: SentSheet[] = [];
+        await settleEntry({
+          client: entryClient({
+            served: [],
+            sheets,
+          },),
+          entry: CITED_ENTRY,
+          artifactsDir: dirs.artifactsDir,
+          publishDir: dirs.publishDir,
+          declinedDir: dirs.declinedDir,
+          sliceCacheDir: dirs.sliceCacheDir,
+          tip: 'a'.repeat(40,),
+          pipelineDigest: DIGEST,
+          outsideReads: {
+            ...NO_OUTSIDE_READS,
+            references: async function citedPage(): Promise<string> {
+              return CITED_REFERENCE;
+            },
+          },
+          hardCapMs: 60_000,
+          baseSignal: new AbortController().signal,
+        },);
+
+        /**
+         What the contest's sheets carried of the cited page.
+         */
+        const contest = citedEvidenceIn({
+          sheets,
+          kind: 'contest',
+        },);
+        /**
+         What the consolidation producers' sheets carried of it.
+         */
+        const consolidation = citedEvidenceIn({
+          sheets,
+          kind: 'consolidation',
+        },);
+        /**
+         What the translators' sheets carried of it.
+         */
+        const translator = citedEvidenceIn({
+          sheets,
+          kind: 'translator',
+        },);
+        expect({
+          contestAsked: contest.sent > 0,
+          everyContestNamesThePage: contest.namingThePage === contest.sent,
+          consolidationAsked: consolidation.sent > 0,
+          everyConsolidationNamesThePage: consolidation.namingThePage === consolidation.sent,
+          translatorAsked: translator.sent > 0,
+          everyTranslatorListsTheDetail: translator.listingAttested === translator.sent,
+          translatorsNamingThePage: translator.namingThePage,
+        },).toEqual({
+          contestAsked: true,
+          everyContestNamesThePage: true,
+          consolidationAsked: true,
+          everyConsolidationNamesThePage: true,
+          translatorAsked: true,
+          everyTranslatorListsTheDetail: true,
+          translatorsNamingThePage: 0,
+        },);
       },
     },),
     it({
