@@ -15,9 +15,9 @@ import type { FootnoteGraph, } from './footnote-model.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
 import { maskInvisibleLines, } from './mask-invisible-lines.ts';
 import {
-  MdxParseError,
   parseMarkdownBody,
   parseMdxBody,
+  requireMdxRefusal,
 } from './parse-mdx.ts';
 import {
   type ContainerSpan,
@@ -195,8 +195,10 @@ export function parseBodyTolerant(
   catch (error) {
     // Only the strict grammar's own rejection downgrades; anything else
     // is an unexpected state that must keep propagating.
-    if (!(error instanceof MdxParseError))
-      throw error;
+    /**
+     The grammar's refusal.
+     */
+    const refusal = requireMdxRefusal({ error, },);
     return {
       root: parseMarkdownBody({ body, },),
       findings: [{
@@ -204,7 +206,7 @@ export function parseBodyTolerant(
         startOffset: bodyOffset,
         endOffset: bodyOffset + body.length,
         detail: `strict MDX parse failed, fell back to plain markdown: ${
-          error.message
+          refusal.message
         }`,
       },],
     };

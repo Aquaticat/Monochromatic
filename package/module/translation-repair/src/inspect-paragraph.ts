@@ -7,8 +7,8 @@ import type {
 import type { DeepReadonlyData, } from './readonly-data.ts';
 
 import {
-  MdxParseError,
   parseMdxBody,
+  requireMdxRefusal,
 } from './parse-mdx.ts';
 import {
   type ProtectedAtom,
@@ -190,8 +190,7 @@ function parseStrictly({ text, }: { readonly text: string; },): ParseAttempt {
   catch (error) {
     // Only the strict grammar's own rejection becomes a refusal; anything
     // else is an unexpected state that must keep propagating.
-    if (!(error instanceof MdxParseError))
-      throw error;
+    requireMdxRefusal({ error, },);
     return { kind: 'refused', };
   }
 }
@@ -294,13 +293,8 @@ export function inspectParagraph(
    Atoms in document order.
    */
   const atoms: ProtectedAtom[] = [];
-  while (pending.length > 0) {
-    /**
-     Next node in document order, present because the stack is non-empty.
-     */
-    const node = pending.pop();
-    if (node === undefined)
-      continue;
+  // Next node in document order, until the stack is empty.
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
     if (MARKUP_KINDS.has(node.type,))
       return {
         kind: 'rejected',

@@ -89,6 +89,7 @@ export {
   MdxParseError,
   parseMarkdownBody,
   parseMdxBody,
+  requireMdxRefusal,
 } from './parse-mdx.ts';
 export {
   parseDocument,

@@ -1,8 +1,8 @@
 import type { Nodes, } from 'mdast';
 
 import {
-  MdxParseError,
   parseMdxBody,
+  requireMdxRefusal,
 } from './parse-mdx.ts';
 import { withoutHtmlComments, } from './translate-address-drop.ts';
 
@@ -64,13 +64,8 @@ function treeNodes({ root, }: { readonly root: Nodes; },): readonly Nodes[] {
    Nodes still to visit.
    */
   const pending: Nodes[] = [root,];
-  while (pending.length > 0) {
-    /**
-     Node visited now.
-     */
-    const node = pending.pop();
-    if (node === undefined)
-      break;
+  // Each node in turn, until the stack is empty.
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
     met.push(node,);
     if ('children' in node)
       pending.push(...(node.children as readonly Nodes[]),);
@@ -120,9 +115,8 @@ function formulaReading({ text, }: { readonly text: string; },): FormulaReading 
     };
   }
   catch (error) {
-    if (error instanceof MdxParseError)
-      return { kind: 'refused', };
-    throw error;
+    requireMdxRefusal({ error, },);
+    return { kind: 'refused', };
   }
 }
 

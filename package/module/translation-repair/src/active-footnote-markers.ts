@@ -9,8 +9,8 @@ import {
 } from './gfm-marker-spans.ts';
 import { maskInvisibleLines, } from './mask-invisible-lines.ts';
 import {
-  MdxParseError,
   parseMdxBody,
+  requireMdxRefusal,
 } from './parse-mdx.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
@@ -200,12 +200,12 @@ export function activeFootnoteMarkers({ text, }: { readonly text: string; },): r
     return markers;
   }
   catch (error) {
-    if (error instanceof MdxParseError)
-      throw new FootnoteRewriteError({
-        kind: 'syntax',
-        cause: error,
-      },);
-    throw error;
+    // A refusal of the grammar becomes a syntax rewrite error; anything
+    // else, the position refusal thrown in the walk among it, propagates.
+    throw new FootnoteRewriteError({
+      kind: 'syntax',
+      cause: requireMdxRefusal({ error, },),
+    },);
   }
 }
 

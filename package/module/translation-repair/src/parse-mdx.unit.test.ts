@@ -23,6 +23,7 @@ import remarkParse from 'remark-parse';
 import { unified, } from 'unified';
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -31,6 +32,7 @@ import {
   MdxParseError,
   namesWithoutQuoting,
   parseMdxBody,
+  requireMdxRefusal,
 } from '../dist/final/node/index.mjs';
 
 //region MDX refusal disclosure tests
@@ -145,10 +147,10 @@ await describe({
          */
         const refusal = mdxRefusal();
 
-        expect(refusal.message.includes('at 1:1',),).toBe(true,);
-        expect(
-          refusal.message.includes('mdast-util-mdx-jsx/end-tag-mismatch',),
-        ).toBe(true,);
+        expect(refusal.message,).toBe(
+          'MDX body refused to parse at 1:1 (mdast-util-mdx-jsx/end-tag-mismatch); corpus documents compile as MDX '
+            + 'upstream, so failure signals corruption or an unsupported construct.',
+        );
       },
     },),
     it({
@@ -166,6 +168,39 @@ await describe({
         const refusal = mdxRefusal();
 
         expect(namesWithoutQuoting(refusal,),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requireMdxRefusal.name,
+  children: [
+    it({
+      name: 'RETURNS the refusal a catch around the grammar holds, the same object',
+      fn: async () => {
+        /**
+         Refusal the grammar raised.
+         */
+        const refusal = mdxRefusal();
+
+        expect(requireMdxRefusal({ error: refusal, },),).toBe(refusal,);
+      },
+    },),
+    it({
+      name: 'RETHROWS anything else unchanged, an error or not, since an unexpected state must keep propagating',
+      fn: async () => {
+        /**
+         A failure that is not the grammar's refusal.
+         */
+        const stray = new TypeError('the cat knocked the parser off the table',);
+
+        expect(caught(function narrowStray(): void {
+          requireMdxRefusal({ error: stray, },);
+        },),).toBe(stray,);
+        expect(caught(function narrowString(): void {
+          requireMdxRefusal({ error: 'hairball', },);
+        },),).toBe('hairball',);
       },
     },),
   ],

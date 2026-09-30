@@ -339,13 +339,8 @@ export function markdownDestinations(
    Nodes still to visit, top of the stack first, so the walk is document order.
    */
   const pending: ReadonlyMdastContent[] = [...root.children,].toReversed();
-  while (pending.length > 0) {
-    /**
-     Node under visit.
-     */
-    const node = pending.pop();
-    if (node === undefined)
-      break;
+  // Node under visit, until the stack is empty.
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
     if ((node.type === 'link')
       || (node.type === 'image')
       || (node.type === 'definition'))

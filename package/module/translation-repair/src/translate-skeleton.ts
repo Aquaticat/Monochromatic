@@ -8,7 +8,7 @@ import { parseSliceBody, } from './parse-slice-body.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
 import { explicitBreakCounts, } from './source-only-breaks.ts';
 
-import { MdxParseError, } from './parse-mdx.ts';
+import { requireMdxRefusal, } from './parse-mdx.ts';
 import type {
   AtomKind,
   ProtectedAtom,
@@ -264,13 +264,8 @@ export function walkAtoms({ root, }: { readonly root: ReadonlyMdastRoot; },): re
    Atoms in document order.
    */
   const atoms: ProtectedAtom[] = [];
-  while (pending.length > 0) {
-    /**
-     Next node in document order.
-     */
-    const node = pending.pop();
-    if (node === undefined)
-      continue;
+  // Next node in document order, until the stack is empty.
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
     atoms.push(
       ...atomsOfNode({ node, },)
         .filter(function survivesTranslation(atom,): boolean {
@@ -372,11 +367,9 @@ export function readSliceSkeleton(
   catch (error) {
     // Only the grammar's own rejection becomes a refusal; anything else is an
     // unexpected state that must keep propagating.
-    if (!(error instanceof MdxParseError))
-      throw error;
     return {
       kind: 'unparseable',
-      detail: String(error,),
+      detail: String(requireMdxRefusal({ error, },),),
     };
   }
 }

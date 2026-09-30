@@ -5,7 +5,10 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { contextRoot, } from './log-context.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
-import { MdxParseError, } from './parse-mdx.ts';
+import {
+  MdxParseError,
+  requireMdxRefusal,
+} from './parse-mdx.ts';
 import { parseSliceBody, } from './parse-slice-body.ts';
 import type { DeepReadonlyData, } from './readonly-data.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
@@ -159,9 +162,11 @@ export function sourceBreakDisplay(
     return parts.join('',);
   }
   catch (error) {
-    if (!(error instanceof MdxParseError))
-      throw error;
-    dl.warn(`writer-source-break-display: kept original presentation because ${error.message}`,);
+    /**
+     The grammar's refusal.
+     */
+    const refusal = requireMdxRefusal({ error, },);
+    dl.warn(`writer-source-break-display: kept original presentation because ${refusal.message}`,);
     return sourceText;
   }
 }

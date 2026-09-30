@@ -193,8 +193,10 @@ export class MdxParseError extends Error {
  
  @returns mdast root whose node positions are body-relative character offsets
  
- @throws {@link MdxParseError} when source refuses to parse as MDX
- 
+ @throws {@link MdxParseError} when source refuses to parse as MDX, and for
+ any other failure inside the grammar too, a stack overflow on deep nesting
+ among them
+
  @example
  ```ts
  const root = parseMdxBody({ body: '# Title\n\nParagraph with[^1]\n\n[^1]: note\n', },);
@@ -212,6 +214,35 @@ export function parseMdxBody({ body, }: { readonly body: string; },): Root {
   catch (error) {
     throw new MdxParseError({ cause: error, },);
   }
+}
+
+/**
+ The strict grammar's refusal a catch around {@link parseMdxBody} holds,
+ for a catch that acts on the refusal alone.
+
+ SHARED RATHER THAN REPEATED (ledger T8, sixth batch). Seven catches around
+ the grammar each tested the class and rethrew anything else, and no test
+ reached a rethrow: `parseMdxBody` raises every failure as an
+ {@link MdxParseError}, and the rest of their bodies throws only where an
+ invariant breaks (a parsed node without a position). The narrowing stands
+ here once, where a case reaches the rethrow.
+
+ @param error - what the catch caught
+
+ @returns The refusal
+
+ @throws The caught value unchanged when it is anything but the grammar's
+ refusal, an unexpected state that must keep propagating
+
+ @example
+ ```ts
+ const refusal = requireMdxRefusal({ error, },);
+ ```
+ */
+export function requireMdxRefusal({ error, }: { readonly error: unknown; },): MdxParseError {
+  if (error instanceof MdxParseError)
+    return error;
+  throw error;
 }
 
 /**

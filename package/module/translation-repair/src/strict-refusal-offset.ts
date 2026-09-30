@@ -2,8 +2,8 @@ import { splitFrontMatter, } from './front-matter.ts';
 import { maskHtmlComments, } from './mask-html-comments.ts';
 import { maskInvisibleLines, } from './mask-invisible-lines.ts';
 import {
-  MdxParseError,
   parseMdxBody,
+  requireMdxRefusal,
 } from './parse-mdx.ts';
 
 //region Strict refusal offset
@@ -141,9 +141,11 @@ export function strictRefusalOffset(
     return { refused: false, };
   }
   catch (error) {
-    if (!(error instanceof MdxParseError))
-      throw error;
-    if ((error.line === undefined) || (error.column === undefined))
+    /**
+     The grammar's refusal, which names where it stopped when the parser did.
+     */
+    const refusal = requireMdxRefusal({ error, },);
+    if ((refusal.line === undefined) || (refusal.column === undefined))
       return {
         refused: true,
         offset: split.bodyOffset,
@@ -152,8 +154,8 @@ export function strictRefusalOffset(
       refused: true,
       offset: split.bodyOffset + offsetOf({
         text: masked,
-        line: error.line,
-        column: error.column,
+        line: refusal.line,
+        column: refusal.column,
       },),
     };
   }
