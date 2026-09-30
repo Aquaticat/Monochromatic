@@ -1,11 +1,11 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from '../chunk-document.ts';
-import { isInsertionChunk, } from '../chunk-placement.ts';
 import {
-  type ContainerHalfPair,
-  containerHalfPairs,
-} from '../container-half-pairs.ts';
-import { maskLoneContainerTags, } from '../mask-container-tags.ts';
-import { maskHtmlComments, } from '../mask-html-comments.ts';
+  type CarriedContainer,
+  type ContainerReading,
+  readCarriedContainers,
+} from './insertion-container-blocks.ts';
 import type { InsertionCoverageRow, } from './insertion-coverage-model.ts';
 
 //region Insertion container deficit
@@ -30,6 +30,11 @@ import type { InsertionCoverageRow, } from './insertion-coverage-model.ts';
 // minority anchored claim is no majority, and a block the archive
 // measurably lacks is the second signal; where a majority found the
 // passage carried, the row stays out. The shape of class sixty in the tail.
+//
+// THE BLOCKS ARE THE PARSE'S (ledger B68), counted in
+// `insertion-container-blocks.ts`, and a passage costs the blocks the
+// container counted for its slice, so the deficit and what it is spent on
+// are one measure.
 
 /**
  Finding prefix an admitted passage is recorded under.
@@ -52,286 +57,15 @@ export const CONTAINER_DEFICIT_ADMITTED_FINDING: string = 'insertion-container-d
 export const SPLIT_IN_CONTAINER_DEFICIT_FINDING: string = 'insertion-split-in-container-deficit';
 
 /**
- Which part of a container a slice is.
- */
-type ContainerRole = 'open' | 'close' | 'inside';
-
-/**
- One container both of whose halves the archive carries, with the blocks
- each side writes inside it.
- */
-type CarriedContainer = {
-  /**
-   Halves in their slices.
-   */
-  readonly pair: ContainerHalfPair;
-
-  /**
-   Blocks the original writes inside the container.
-   */
-  readonly sourceBlocks: number;
-
-  /**
-   Blocks the archive writes inside it.
-   */
-  readonly targetBlocks: number;
-};
-
-/**
- Counts blank-line separated blocks in text whose lone tags and comments are
- already blanked.
-
- @param text - masked text of one side of one slice
-
- @returns Blocks, one per run of non-blank lines
+ Finding prefix a container left uncounted is recorded under, because a
+ half of one side would not parse (ledger B68).
 
  @example
  ```ts
- const blocks = countBlocks({ text: 'a\n\nb\n', },); // 2
+ findings.some((finding) => finding.startsWith(CONTAINER_DEFICIT_UNREAD_FINDING));
  ```
  */
-function countBlocks({ text, }: { readonly text: string; },): number {
-  /**
-   Whether the line before was blank, so a non-blank line opens a block.
-   */
-  let afterBlank = true;
-  /**
-   Blocks opened so far.
-   */
-  let blocks = 0;
-  for (const line of text.split('\n',)) {
-    /**
-     Whether this line carries anything.
-     */
-    const filled = line.trim() !== '';
-    /**
-     Whether this line opens a block.
-     */
-    const opens = afterBlank && filled;
-    if (opens)
-      blocks += 1;
-    afterBlank = !filled;
-  }
-  return blocks;
-}
-
-/**
- Text of one side of one slice with comments and lone container tags
- blanked, cut to the part inside the container: after the opening tag in the
- opening half, before the closing tag in the closing half.
-
- @param text - side text as written
-
- @param name - element name of the container
-
- @param role - which half this slice is, or a whole slice inside
-
- @returns Masked text inside the container
-
- @example
- ```ts
- const inside = insideContainer({ text, name: 'details', role: 'open', },);
- ```
- */
-function insideContainer(
-  {
-    text,
-    name,
-    role,
-  }: {
-    readonly text: string;
-    readonly name: string;
-    readonly role: ContainerRole;
-  },
-): string {
-  /**
-   Text with comments blanked, so a tag in a comment is not structure.
-   */
-  const { masked: uncommented, } = maskHtmlComments({ text, },);
-  /**
-   Lone tags of this side, and the text with them blanked.
-   */
-  const {
-    masked,
-    tags,
-  } = maskLoneContainerTags({ text: uncommented, },);
-  if (role === 'inside')
-    return masked;
-  /**
-   Lone tags of the container's kind and name on this side, in order.
-   */
-  const ownTags = tags.filter(function ofContainer(candidate,): boolean {
-    return (candidate.kind === role) && (candidate.name === name);
-  },);
-
-  // CUT AT THE TAG ITSELF, by the offset the mask read it at (ledger B67).
-  // Searching for the tag's text found a whole element of the same name
-  // beside the container instead, and counted its blocks as the container's.
-  // The first lone opener and the last lone closer are the outermost where
-  // two containers of one name nest.
-  /**
-   The container's own tag on this side, absent where this side does not
-   write it.
-   */
-  const tag = (role === 'open') ? ownTags.at(0,) : ownTags.at(-1,);
-  if (tag === undefined)
-    return masked;
-  if (role === 'open')
-    return masked.slice(tag.endOffset,);
-  return masked.slice(
-    0,
-    tag.startOffset,
-  );
-}
-
-/**
- Role of the slice at one offset inside a container of `count` slices.
-
- @param offset - position from the opening half
-
- @param count - slices from the opening half through the closing half
-
- @returns Which part of the container the slice is
-
- @example
- ```ts
- const role = roleAt({ offset: 0, count: 4, },); // 'open'
- ```
- */
-function roleAt(
-  {
-    offset,
-    count,
-  }: {
-    readonly offset: number;
-    readonly count: number;
-  },
-): ContainerRole {
-  if (offset === 0)
-    return 'open';
-  return (offset === (count - 1)) ? 'close' : 'inside';
-}
-
-/**
- Blocks one side writes inside a container, summed over its slices.
-
- @param texts - side text of every slice from the opening half through the closing half, empty where the side has none
-
- @param name - element name of the container
-
- @returns Blocks inside the container on that side
-
- @example
- ```ts
- const blocks = blocksInside({ texts: [open, body, close,], name: 'details', },);
- ```
- */
-function blocksInside(
-  {
-    texts,
-    name,
-  }: {
-    readonly texts: readonly string[];
-    readonly name: string;
-  },
-): number {
-  return texts.reduce(
-    function add(
-      sum: number,
-      text,
-      offset,
-    ): number {
-      return sum + countBlocks({
-        text: insideContainer({
-          text,
-          name,
-          role: roleAt({
-            offset,
-            count: texts.length,
-          },),
-        },),
-      },);
-    },
-    0,
-  );
-}
-
-/**
- Reads every container both of whose halves the archive carries, with the
- blocks each side writes inside it.
-
- @param slices - prepared slices in document order
-
- @returns Carried containers in closing-half order
-
- @example
- ```ts
- const containers = carriedContainers({ slices, },);
- ```
- */
-function carriedContainers(
-  { slices, }: { readonly slices: readonly ChunkPair[]; },
-): readonly CarriedContainer[] {
-  return containerHalfPairs({ slices, },)
-    .filter(function bothCarried(pair,): boolean {
-      /**
-       Halves of the container.
-       */
-      const {
-        open,
-        close,
-      } = pair;
-      /**
-       Whether the archive carries the opening half.
-       */
-      const openCarried = !open.insertion;
-      /**
-       Whether the archive carries the closing half.
-       */
-      const closeCarried = !close.insertion;
-      return openCarried && closeCarried;
-    },)
-    .map(function counted(pair,): CarriedContainer {
-      /**
-       Halves of the container.
-       */
-      const {
-        open,
-        close,
-      } = pair;
-      /**
-       Slices from the opening half through the closing half.
-       */
-      const inside = slices.slice(
-        open.position,
-        close.position + 1,
-      );
-      return {
-        pair,
-        sourceBlocks: blocksInside({
-          texts: inside.map(function sourceOf(slice,): string {
-            /**
-             Original side of this slice.
-             */
-            const { source, } = slice;
-            return source.text;
-          },),
-          name: open.name,
-        },),
-        targetBlocks: blocksInside({
-          texts: inside.map(function targetOf(slice,): string {
-            /**
-             Archive side of this slice, which writes nothing where it is an
-             insertion.
-             */
-            const { target, } = slice;
-            return isInsertionChunk(target,) ? '' : target.text;
-          },),
-          name: open.name,
-        },),
-      };
-    },);
-}
+export const CONTAINER_DEFICIT_UNREAD_FINDING: string = 'insertion-container-deficit-unread';
 
 /**
  Whether no majority found the passage carried: an absent majority, or a
@@ -379,6 +113,37 @@ function splitFinding({ row, }: { readonly row: InsertionCoverageRow; },): reado
 }
 
 /**
+ Finding naming a container left uncounted and the slice the parse refused.
+
+ @param reading - the container as read, uncounted
+
+ @returns One finding
+
+ @example
+ ```ts
+ const line = unreadFinding({ reading, },);
+ ```
+ */
+function unreadFinding(
+  { reading, }: { readonly reading: Extract<ContainerReading, { readonly kind: 'unread'; }>; },
+): string {
+  /**
+   Halves of the container.
+   */
+  const {
+    open,
+    close,
+  } = reading.pair;
+  /**
+   Whose slice would not parse.
+   */
+  const whose = (reading.side === 'source') ? 'the original\'s' : 'the archive\'s';
+  return `${CONTAINER_DEFICIT_UNREAD_FINDING} (${open.name} of slices ${String(open.sliceIndex,)} to ${
+    String(close.sliceIndex,)
+  }: ${whose} slice ${String(reading.sliceIndex,)} could not be read: ${reading.detail})`;
+}
+
+/**
  Admits passages no majority found carried inside one carried container
  while its block deficit lasts, in document order.
 
@@ -410,6 +175,10 @@ function spendDeficit(
     close,
   } = container.pair;
   /**
+   Blocks the original writes inside the container, by position.
+   */
+  const { sourceByPosition, } = container;
+  /**
    Blocks the archive is short of, spent as rows are admitted.
    */
   let deficit = container.sourceBlocks - container.targetBlocks;
@@ -433,15 +202,10 @@ function spendDeficit(
     },);
   for (const row of inside) {
     /**
-     Blocks this row's source writes.
+     Blocks this row's slice writes, as the container counted them: the row
+     lies between the halves, so the container read its slice.
      */
-    const blocks = countBlocks({
-      text: insideContainer({
-        text: row.sourceText,
-        name: open.name,
-        role: 'inside',
-      },),
-    },);
+    const blocks = nonNullishOrThrow(sourceByPosition.get(row.position,),);
     /**
      Whether the deficit has room for this passage.
      */
@@ -474,7 +238,8 @@ function spendDeficit(
 
  @param unresolvedRows - rows neither admitted nor proven carried
 
- @returns Positions and unresolved rows after the deficit is spent, with a finding per passage admitted
+ @returns Positions and unresolved rows after the deficit is spent, with a
+ finding per passage admitted and per container left uncounted
 
  @example
  ```ts
@@ -497,16 +262,24 @@ export function admitContainerDeficit(
   readonly findings: readonly string[];
 } {
   /**
-   Positions admitted over every carried container, with their findings.
+   Positions admitted over every counted container, with their findings.
    */
   const admitted = new Map<number, readonly string[]>();
-  for (const container of carriedContainers({ slices, },)) {
+  /**
+   One finding per container left uncounted.
+   */
+  const unread: string[] = [];
+  for (const reading of readCarriedContainers({ slices, },)) {
+    if (reading.kind === 'unread') {
+      unread.push(unreadFinding({ reading, },),);
+      continue;
+    }
     for (
       const [
         position,
         findings,
       ] of spendDeficit({
-        container,
+        container: reading.container,
         unresolvedRows,
       },)
     )
@@ -523,7 +296,10 @@ export function admitContainerDeficit(
     unresolvedRows: unresolvedRows.filter(function stillUnresolved(row,): boolean {
       return !admitted.has(row.position,);
     },),
-    findings: [...admitted.values(),].flat(),
+    findings: [
+      ...[...admitted.values(),].flat(),
+      ...unread,
+    ],
   };
 }
 

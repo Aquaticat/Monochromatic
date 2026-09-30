@@ -20,6 +20,7 @@ import {
 
 import {
   admitContainerDeficit,
+  CONTAINER_DEFICIT_UNREAD_FINDING,
   type ChunkPair,
   type InsertionCoverageRow,
   makeInsertionChunk,
@@ -550,6 +551,21 @@ await describe({
         expect(deficit.findings.length,).toBe(1,);
         expect(deficit.findings[0]?.startsWith(
           'insertion-container-deficit-unread (details of slices 0 to 3: the original\'s slice 1 could not be read: ',
+        ),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'SPENDS NO DEFICIT where a half of the archive cannot be read, and names the archive\'s slice',
+      fn: async () => {
+        const deficit = admitContainerDeficit({
+          slices: containerSlices({ firstTarget: 'The cat {naps on the sill.', },),
+          positions: new Set(),
+          unresolvedRows: [missingRow({ verdict: 'absent', },),],
+        },);
+        expect([...deficit.positions,],).toEqual([],);
+        expect(deficit.findings.length,).toBe(1,);
+        expect(deficit.findings[0]?.startsWith(
+          `${CONTAINER_DEFICIT_UNREAD_FINDING} (details of slices 0 to 3: the archive's slice 1 could not be read: `,
         ),).toBe(true,);
       },
     },),
