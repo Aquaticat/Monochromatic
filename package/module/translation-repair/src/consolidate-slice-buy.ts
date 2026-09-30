@@ -138,45 +138,30 @@ async function buyConsolidationAttempt(
   }: ForeignBorrowed<ConsolidationBuyInput>,
 ): Promise<ConsolidationSettlement> {
   /**
-   Settles this question with no writer asked, on what the settlement's own
-   floor admits, so terminal, floor and findings keep their ordinary
-   meanings.
-
-   @param producedFindings - what the settlement carries in place of the
-   writers' findings
-
-   @returns Complete settlement for this question
-
-   @example
-   ```ts
-   return await settleUnwritten({ producedFindings: standingFindings, },);
-   ```
+   What every settlement of this question is given whoever wrote its slate,
+   so a settlement with no writer asked keeps the terminal, floor and
+   findings a written one would have. ONE SET for all three exits, built
+   on every call: a second copy for the exits that ask no writer left its
+   optional arms unrun there (ledger B45).
    */
-  async function settleUnwritten(
-    { producedFindings, }: { readonly producedFindings: readonly string[]; },
-  ): Promise<ConsolidationSettlement> {
-    return await settleConsolidation({
-      client,
-      roster,
-      judgeModelIds,
-      subject,
-      voices: [],
-      validity: [],
-      producedFindings,
-      standingText,
-      lineStructured,
-      sliceIndex,
-      ...((polishConfig === undefined) ? {} : { polishConfig, }),
-      standingMayShip,
-      standingEligible,
-      ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
-      laneTexts,
-      runoffOverStanding,
-      signal,
-      perCallTimeoutMs,
-      l,
-    },);
-  }
+  const question = {
+    client,
+    roster,
+    judgeModelIds,
+    subject,
+    standingText,
+    lineStructured,
+    sliceIndex,
+    ...((polishConfig === undefined) ? {} : { polishConfig, }),
+    standingMayShip,
+    standingEligible,
+    ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
+    laneTexts,
+    runoffOverStanding,
+    signal,
+    perCallTimeoutMs,
+    l,
+  };
 
   /**
    Whether the floor can pass anything a writer here could write, read as it
@@ -197,7 +182,10 @@ async function buyConsolidationAttempt(
       `slice ${String(sliceIndex,)}: the floor can compare nothing here (${reach.detail}), `
         + 'so no writer is asked',
     );
-    return await settleUnwritten({
+    return await settleConsolidation({
+      ...question,
+      voices: [],
+      validity: [],
       producedFindings: [
         ...standingFindings,
         unflooredFinding({
@@ -216,7 +204,12 @@ async function buyConsolidationAttempt(
     l.info((laneTexts.length === 0)
       ? `slice ${String(sliceIndex,)}: no standing text to consolidate against, so no slate is bought`
       : `slice ${String(sliceIndex,)}: no standing text to consolidate against; the lane texts alone go to the slate judges`,);
-    return await settleUnwritten({ producedFindings: standingFindings, },);
+    return await settleConsolidation({
+      ...question,
+      voices: [],
+      validity: [],
+      producedFindings: standingFindings,
+    },);
   }
 
   /**
@@ -245,10 +238,7 @@ async function buyConsolidationAttempt(
   }
 
   return await settleConsolidation({
-    client,
-    roster,
-    judgeModelIds,
-    subject,
+    ...question,
     voices: produced.voices,
     validity: produced.validity,
     // THE VERDICT'S FINDINGS RIDE WITH THE PRODUCERS', so the judges read
@@ -257,18 +247,6 @@ async function buyConsolidationAttempt(
       ...standingFindings,
       ...produced.findings,
     ],
-    standingText,
-    lineStructured,
-    sliceIndex,
-    ...((polishConfig === undefined) ? {} : { polishConfig, }),
-    standingMayShip,
-    standingEligible,
-    ...((standingRefusal === undefined) ? {} : { standingRefusal, }),
-    laneTexts,
-    runoffOverStanding,
-    signal,
-    perCallTimeoutMs,
-    l,
   },);
 }
 
