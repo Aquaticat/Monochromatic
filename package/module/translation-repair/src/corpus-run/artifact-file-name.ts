@@ -1,0 +1,163 @@
+import { readdir, } from 'node:fs/promises';
+
+import { filesystemReason, } from './directory-listing.ts';
+
+//region Artifact file name
+// WHAT NAMES AN ARTIFACT, read one way. A settled entry's artifact is a
+// REGULAR FILE named `<entry id>.json` in an artifacts directory. Each reader
+// used to read that for itself, filtering names by `.json` and slicing the
+// suffix off, and two of them (settled-carve.ts and the rendering audit's run
+// sets) skipped the regular-file check the census and the scheduler apply, so
+// a directory or a symlink named like an artifact became a settled entry
+// there (ledger B64). The suffix is a type as well as a check: a name that
+// passed `isArtifactFileName` carries it, and `entryIdOfArtifact` takes only
+// such a name, so no reader slices a name that lacks it.
+
+/**
+ What ends an artifact's file name.
+ */
+const ARTIFACT_SUFFIX = '.json';
+
+/**
+ An artifact's file name: an entry id and the suffix.
+
+ @example
+ ```ts
+ const name: ArtifactFileName = 'Mittens.json';
+ ```
+ */
+export type ArtifactFileName = `${string}.json`;
+
+/**
+ Whether a file name names an artifact. A plain parameter, since it narrows
+ the name itself and serves as a filter callback.
+
+ @param name - file name, without a directory
+
+ @returns Whether it ends in the artifact suffix
+
+ @example
+ ```ts
+ const names = listed.filter(isArtifactFileName,);
+ ```
+ */
+export function isArtifactFileName(name: string,): name is ArtifactFileName {
+  return name.endsWith(ARTIFACT_SUFFIX,);
+}
+
+/**
+ The entry id an artifact's file name carries, which is the name without its
+ suffix. A file called exactly `.json` carries the empty id.
+
+ @param name - artifact file name
+
+ @returns Entry id
+
+ @example
+ ```ts
+ const entryId = entryIdOfArtifact({ name: 'Mittens.json', },); // 'Mittens'
+ ```
+ */
+export function entryIdOfArtifact({ name, }: { readonly name: ArtifactFileName; },): string {
+  return name.slice(
+    0,
+    -ARTIFACT_SUFFIX.length,
+  );
+}
+
+/**
+ Lists the artifacts a directory holds: its REGULAR FILES named like one.
+
+ Directory entries are checked rather than assumed. A directory named
+ `backup.json` otherwise reached `readFile` and threw EISDIR out of the whole
+ census, and a symlink was followed wherever it pointed, which could
+ duplicate another artifact under a second identity or leave the directory
+ entirely. Neither is an artifact, and neither should cost more than being
+ skipped.
+
+ @param artifactsDir - directory holding one JSON per settled entry
+
+ @returns Artifact file names, unsorted
+
+ @example
+ ```ts
+ const names = await listArtifactFiles({ artifactsDir, },);
+ ```
+ */
+export async function listArtifactFiles(
+  { artifactsDir, }: { readonly artifactsDir: string; },
+): Promise<readonly ArtifactFileName[]> {
+  return (await readdir(
+    artifactsDir,
+    { withFileTypes: true, },
+  ))
+    .filter(function isRegularFile(entry,): boolean {
+      return entry.isFile();
+    },)
+    .map(function toName(entry,): string {
+      return entry.name;
+    },)
+    .filter(isArtifactFileName,);
+}
+
+/**
+ What listing one directory's artifacts produced.
+
+ ABSENCE IS A KIND, as it is for any directory listing here: a directory
+ holding no artifact and a directory that is not there both leave nothing to
+ read, but only one says the caller was pointed somewhere real.
+
+ @example
+ ```ts
+ const listing: ArtifactListing = { kind: 'read', names: ['Mittens.json',], };
+ ```
+ */
+export type ArtifactListing =
+  | {
+    readonly kind: 'read';
+
+    /**
+     Artifact file names, unsorted.
+     */
+    readonly names: readonly ArtifactFileName[];
+  }
+  | {
+    readonly kind: 'unreadable';
+
+    /**
+     Filesystem reason, as a bounded token: `ENOENT`, `EACCES`, `ENOTDIR`.
+     */
+    readonly reason: string;
+  };
+
+/**
+ Lists the artifacts a directory holds, reporting an absent or unreadable
+ directory rather than raising, for readers that choose between layouts or
+ report a missing run as a finding.
+
+ @param dir - directory that may hold artifacts
+
+ @returns Artifact file names, or why the directory could not be listed
+
+ @example
+ ```ts
+ const listing = await artifactFilesIn({ dir: join(runsDir, 'artifacts',), },);
+ ```
+ */
+export async function artifactFilesIn(
+  { dir, }: { readonly dir: string; },
+): Promise<ArtifactListing> {
+  try {
+    return {
+      kind: 'read',
+      names: await listArtifactFiles({ artifactsDir: dir, },),
+    };
+  } catch (error) {
+    return {
+      kind: 'unreadable',
+      reason: filesystemReason({ error, },),
+    };
+  }
+}
+
+//endregion Artifact file name

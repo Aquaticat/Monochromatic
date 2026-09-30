@@ -28,7 +28,7 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
-import { readdirArtifacts, } from './artifact-placement.ts';
+import { listArtifactFiles, } from './artifact-file-name.ts';
 
 //region Score probe
 // Reports what the shadow-mode introduced-defect probe found across a run's
@@ -68,10 +68,7 @@ async function gatherReadings(
    directory continuously: a second listing inside the census would classify a
    different set of files from the one this reader goes on to read.
    */
-  const listed = (await readdirArtifacts({ artifactsDir, },))
-    .filter(function isArtifact(name,) {
-      return name.endsWith('.json',);
-    },)
+  const listed = (await listArtifactFiles({ artifactsDir, },))
     .toSorted();
 
   /**

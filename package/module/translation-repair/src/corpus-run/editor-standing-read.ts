@@ -18,7 +18,10 @@ import {
   type DigestGroup,
   groupByDigest,
 } from './digest-group.ts';
-import { namesIn, } from './directory-listing.ts';
+import {
+  type ArtifactFileName,
+  artifactFilesIn,
+} from './artifact-file-name.ts';
 import {
   readRepairRounds,
   RoundsNotRecordedError,
@@ -62,11 +65,6 @@ const NOTHING_RECORDED = 1;
 const ARTIFACTS_DIR = 'artifacts';
 
 /**
- Suffix every settled artifact file carries.
- */
-const ARTIFACT_SUFFIX = '.json';
-
-/**
  One artifact's rounds, kept grouped by the chunk that produced them.
  */
 type ArtifactReading = {
@@ -92,14 +90,14 @@ type ArtifactReading = {
 };
 
 /**
- Turns one directory's names into the artifact paths among them.
- 
+ Turns one directory's artifact names into paths.
+
  @param dir - directory the names came from
- 
- @param names - everything the directory holds
- 
+
+ @param names - artifact files the directory holds
+
  @returns Full paths of the artifact files
- 
+
  @example
  ```ts
  const paths = artifactsAmong({ dir, names, },);
@@ -111,28 +109,28 @@ function artifactsAmong(
     names,
   }: {
     readonly dir: string;
-    readonly names: readonly string[];
+    readonly names: readonly ArtifactFileName[];
   },
 ): readonly string[] {
-  return names
-    .filter(function isArtifact(name,): boolean {
-      return name.endsWith(ARTIFACT_SUFFIX,);
-    },)
-    .map(function toPath(name,): string {
-      return join(
-        dir,
-        name,
-      );
-    },);
+  return names.map(function toPath(name,): string {
+    return join(
+      dir,
+      name,
+    );
+  },);
 }
 
 /**
  Lists artifact file paths under one named directory.
- 
+
  TAKES A RUN DIRECTORY OR AN ARTIFACTS DIRECTORY, because both get typed. A
  run directory holds `artifacts/`; naming that directory itself should work
  rather than report an empty archive.
- 
+
+ REGULAR FILES ONLY, as the census and the scheduler list them. A directory
+ named like an artifact used to be read as JSON and reported refused, and a
+ symlink was read as one more artifact (ledger B64).
+
  @param path - run directory, or its artifacts directory
  
  @returns Full paths of every artifact file found, empty where none is
@@ -156,7 +154,7 @@ async function artifactPaths(
   /**
    What that subdirectory held, if it is there at all.
    */
-  const under = await namesIn({ dir: nested, },);
+  const under = await artifactFilesIn({ dir: nested, },);
 
   if (under.kind === 'read')
     return artifactsAmong({
@@ -167,7 +165,7 @@ async function artifactPaths(
   /**
    Flat layout, reached only when the nested one is absent.
    */
-  const flat = await namesIn({ dir: path, },);
+  const flat = await artifactFilesIn({ dir: path, },);
 
   if (flat.kind === 'read')
     return artifactsAmong({

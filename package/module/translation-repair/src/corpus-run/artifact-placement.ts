@@ -1,8 +1,10 @@
-import { readdir, } from 'node:fs/promises';
-
 import { isLowerHexDigit, } from '../ascii-letters.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
+import {
+  type ArtifactFileName,
+  entryIdOfArtifact,
+} from './artifact-file-name.ts';
 import { isDigestShaped, } from './pipeline-digest.ts';
 
 //region Artifact placement
@@ -155,39 +157,6 @@ export type Placement =
   }>;
 
 /**
- Lists the REGULAR FILES of an artifacts directory.
- 
- Directory entries are checked rather than assumed. A directory named
- `backup.json` otherwise reached `readFile` and threw EISDIR out of the whole
- census, and a symlink was followed wherever it pointed, which could duplicate
- another artifact under a second identity or leave the directory entirely.
- Neither is an artifact, and neither should cost more than being skipped.
- 
- @param artifactsDir - directory holding one JSON per settled entry
- 
- @returns Names of regular files only, unsorted
- 
- @example
- ```ts
- const names = await readdirArtifacts({ artifactsDir, },);
- ```
- */
-export async function readdirArtifacts(
-  { artifactsDir, }: { readonly artifactsDir: string; },
-): Promise<readonly string[]> {
-  return (await readdir(
-    artifactsDir,
-    { withFileTypes: true, },
-  ))
-    .filter(function isRegularFile(entry,): boolean {
-      return entry.isFile();
-    },)
-    .map(function toName(entry,): string {
-      return entry.name;
-    },);
-}
-
-/**
  Reads which pipeline one artifact records.
  
  Reports rather than throws, because this package already decided a corrupt
@@ -213,16 +182,13 @@ export async function readPlacement(
     name,
   }: {
     readonly artifactsDir: string;
-    readonly name: string;
+    readonly name: ArtifactFileName;
   },
 ): Promise<Placement> {
   /**
    Entry id the pool will key this artifact by, which is its file name.
    */
-  const keyedId = name.slice(
-    0,
-    -'.json'.length,
-  );
+  const keyedId = entryIdOfArtifact({ name, },);
 
   if (keyedId === '')
     return { kind: 'untagged', };

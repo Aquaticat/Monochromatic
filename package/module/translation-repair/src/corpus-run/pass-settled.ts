@@ -1,4 +1,7 @@
-import { readdirArtifacts, } from './artifact-placement.ts';
+import {
+  entryIdOfArtifact,
+  listArtifactFiles,
+} from './artifact-file-name.ts';
 
 //region Pass settled
 // What the SCHEDULER counts as already done, read the same way the census reads
@@ -17,56 +20,18 @@ import { readdirArtifacts, } from './artifact-placement.ts';
 // listing with the reader that judges those files.
 
 /**
- Whether a directory entry name is one of our artifact files.
- 
- Applied to names already known to be REGULAR FILES, since the listing filters
- directory entries by type first.
- 
- @param name - regular file name
- 
- @returns True for `*.json` artifacts
- 
- @example
- ```ts
- const artifacts = names.filter(isArtifactFile,);
- ```
- */
-function isArtifactFile(name: string,): boolean {
-  return name.endsWith('.json',);
-}
-
-/**
- Artifact file names a directory actually holds as regular files.
- 
- @param artifactsDir - directory holding one JSON per settled entry
- 
- @returns Artifact names, unsorted
- 
- @example
- ```ts
- const names = await settledArtifactNames({ artifactsDir, },);
- ```
- */
-async function settledArtifactNames(
-  { artifactsDir, }: { readonly artifactsDir: string; },
-): Promise<readonly string[]> {
-  return (await readdirArtifacts({ artifactsDir, },))
-    .filter(isArtifactFile,);
-}
-
-/**
  Entry ids this directory already carries an artifact for.
- 
+
  Unfiltered by generation ON PURPOSE. A scheduler that skipped entries settled
  by another pipeline would re-run them into the same directory and mix
  generations, which is the failure the resume guard refuses outright.
- 
+
  @param artifactsDir - directory holding one JSON per settled entry
- 
+
  @returns Ids already settled, whatever produced them
- 
+
  @internal
- 
+
  @example
  ```ts
  const done = await artifactBackedIds({ artifactsDir, },);
@@ -76,25 +41,22 @@ export async function artifactBackedIds(
   { artifactsDir, }: { readonly artifactsDir: string; },
 ): Promise<ReadonlySet<string>> {
   return new Set(
-    (await settledArtifactNames({ artifactsDir, },))
+    (await listArtifactFiles({ artifactsDir, },))
       .map(function toId(name,): string {
-        return name.slice(
-          0,
-          -'.json'.length,
-        );
+        return entryIdOfArtifact({ name, },);
       },),
   );
 }
 
 /**
  How many entries this directory holds, for the against-target line.
- 
+
  @param artifactsDir - directory holding one JSON per settled entry
- 
+
  @returns Count of artifacts present
- 
+
  @internal
- 
+
  @example
  ```ts
  const total = await countSettled({ artifactsDir, },);
@@ -103,7 +65,7 @@ export async function artifactBackedIds(
 export async function countSettled(
   { artifactsDir, }: { readonly artifactsDir: string; },
 ): Promise<number> {
-  return (await settledArtifactNames({ artifactsDir, },))
+  return (await listArtifactFiles({ artifactsDir, },))
     .length;
 }
 

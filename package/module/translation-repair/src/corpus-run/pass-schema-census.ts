@@ -9,7 +9,10 @@ import {
   isJsonRecord,
   requireJsonSyntaxRefusal,
 } from '../json-guard.ts';
-import { readdirArtifacts, } from './artifact-placement.ts';
+import {
+  entryIdOfArtifact,
+  listArtifactFiles,
+} from './artifact-file-name.ts';
 
 //region Pass schema census
 // Which artifact GENERATION each settled file belongs to, as a discriminated
@@ -21,11 +24,6 @@ import { readdirArtifacts, } from './artifact-placement.ts';
 // build cannot read, so a message built from those keys can tell an operator
 // their malformed file is a sound result of another generation and should be
 // kept. The classification is the fact; the sentence is built from it later.
-
-/**
- Suffix every artifact file carries.
- */
-const ARTIFACT_SUFFIX = '.json';
 
 /**
  What one settled file says about its generation.
@@ -228,20 +226,14 @@ export async function censusBySchema(
   /**
    Artifact names, sorted.
    */
-  const names = (await readdirArtifacts({ artifactsDir, },))
-    .filter(function isArtifact(name,): boolean {
-      return name.endsWith(ARTIFACT_SUFFIX,);
-    },)
+  const names = (await listArtifactFiles({ artifactsDir, },))
     .toSorted();
 
   return Promise.all(names.map(async function readOne(name,): Promise<SchemaCensusRow> {
     /**
      Entry id, which is the file name without its suffix.
      */
-    const entryId = name.slice(
-      0,
-      -ARTIFACT_SUFFIX.length,
-    );
+    const entryId = entryIdOfArtifact({ name, },);
 
     /**
      Artifact text as it sits on disk.

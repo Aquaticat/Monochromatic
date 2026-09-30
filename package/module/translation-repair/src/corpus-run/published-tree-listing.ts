@@ -3,6 +3,10 @@ import { join, } from 'node:path';
 
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import {
+  artifactFilesIn,
+  entryIdOfArtifact,
+} from './artifact-file-name.ts';
+import {
   type DirectoryReading,
   namesIn,
 } from './directory-listing.ts';
@@ -75,7 +79,11 @@ export type VerifiableRun =
 
 /**
  Lists the entries a run settled, by the artifacts it wrote.
- 
+
+ Listed as the census and the scheduler list them, regular files only, so a
+ directory or a symlink named like an artifact is never an entry to verify or
+ republish (ledger B64).
+
  @param runsDir - run directory holding the artifacts
  
  @returns Entry ids, sorted, or why the artifacts directory could not be read
@@ -89,30 +97,24 @@ export async function settledEntryIds(
   { runsDir, }: { readonly runsDir: string; },
 ): Promise<DirectoryReading> {
   /**
-   Everything the artifacts directory holds, or why it holds nothing here.
+   The artifacts the directory holds, or why it holds nothing here.
    */
-  const reading = await namesIn({
+  const listing = await artifactFilesIn({
     dir: join(
       runsDir,
       ARTIFACTS_DIR,
     ),
   },);
 
-  if (reading.kind === 'unreadable')
-    return reading;
+  if (listing.kind === 'unreadable')
+    return listing;
 
   return {
     kind: 'read',
-    names: reading
+    names: listing
       .names
-      .filter(function isArtifact(name,): boolean {
-        return name.endsWith(ARTIFACT_SUFFIX,);
-      },)
       .map(function toId(name,): string {
-        return name.slice(
-          0,
-          -ARTIFACT_SUFFIX.length,
-        );
+        return entryIdOfArtifact({ name, },);
       },)
       .toSorted(),
   };

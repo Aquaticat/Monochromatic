@@ -17,8 +17,15 @@ export {
   tipContains,
 } from './corpus-run/artifact-generation.ts';
 export {
+  type ArtifactFileName,
+  artifactFilesIn,
+  type ArtifactListing,
+  entryIdOfArtifact,
+  isArtifactFileName,
+  listArtifactFiles,
+} from './corpus-run/artifact-file-name.ts';
+export {
   type Placement,
-  readdirArtifacts,
   readPlacement,
 } from './corpus-run/artifact-placement.ts';
 export {

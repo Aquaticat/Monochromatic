@@ -25,7 +25,7 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
-import { readdirArtifacts, } from './artifact-placement.ts';
+import { listArtifactFiles, } from './artifact-file-name.ts';
 
 import { textSettingOf, } from './env-text-setting.ts';
 
@@ -113,10 +113,7 @@ async function collectShippedRegions(
    continuously: a second listing inside the census would classify a different
    set of files from the one this reader goes on to read.
    */
-  const listed = (await readdirArtifacts({ artifactsDir, },))
-    .filter(function isArtifact(name,) {
-      return name.endsWith('.json',);
-    },);
+  const listed = await listArtifactFiles({ artifactsDir, },);
 
   return await collectTwoLaneShippedRegions({
     artifactsDir,

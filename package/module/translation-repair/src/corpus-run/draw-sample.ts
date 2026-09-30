@@ -28,7 +28,7 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
-import { readdirArtifacts, } from './artifact-placement.ts';
+import { listArtifactFiles, } from './artifact-file-name.ts';
 import {
   type EntryContribution,
   loadEntry,
@@ -117,10 +117,7 @@ async function drawGradingSample(): Promise<void> {
    artifact arriving between the two would join the census while never
    entering the candidate pool.
    */
-  const listed = (await readdirArtifacts({ artifactsDir, },))
-    .filter(function isArtifact(name,) {
-      return name.endsWith('.json',);
-    },)
+  const listed = (await listArtifactFiles({ artifactsDir, },))
     // Sorted so the pool is built in one fixed order. The draw itself sorts by
     // keys derived from the seed and the ids, so it does not depend on this,
     // but the POOL report and any error naming "the first bad artifact" do, and

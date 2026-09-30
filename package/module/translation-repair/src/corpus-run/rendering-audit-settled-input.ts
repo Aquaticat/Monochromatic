@@ -14,6 +14,10 @@ import {
 import { refusalText, } from '../refusal-text.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import {
+  isArtifactFileName,
+  listArtifactFiles,
+} from './artifact-file-name.ts';
 import { verifyArtifactMeasurements, } from './artifact-two-lane-corpus-verify.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
@@ -446,8 +450,7 @@ async function locateSettledArtifacts(
       /**
        Whether it is named like an artifact.
        */
-      const isJson = entry.name
-        .endsWith('.json',);
+      const isJson = isArtifactFileName(entry.name,);
 
       return isFile && isJson;
     },)
@@ -481,13 +484,15 @@ async function locateSettledArtifacts(
 
   return (await Promise.all(runSets.map(
     async function within(runSet,): Promise<readonly ArtifactLocation[]> {
-      return (await readdir(join(
-        archiveDir,
-        runSet,
-      ),))
-        .filter(function isArtifact(name,): boolean {
-          return name.endsWith('.json',);
-        },)
+      // Regular files only, as the loose layout already required: a directory
+      // named like an artifact inside a run set was read as JSON and stopped
+      // the whole archive reading (ledger B64).
+      return (await listArtifactFiles({
+        artifactsDir: join(
+          archiveDir,
+          runSet,
+        ),
+      },))
         .toSorted()
         .map(function at(artifactFile,): ArtifactLocation {
           return {

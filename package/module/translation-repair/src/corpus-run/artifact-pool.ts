@@ -2,6 +2,7 @@ import {
   type EligibleEntries,
   selectEligible,
 } from './artifact-eligible.ts';
+import type { ArtifactFileName, } from './artifact-file-name.ts';
 import {
   censusByGeneration,
   resolveCommit,
@@ -65,7 +66,7 @@ export async function resolvePool(
     names,
   }: {
     readonly artifactsDir: string;
-    readonly names?: readonly string[];
+    readonly names?: readonly ArtifactFileName[];
   },
 ): Promise<EligibleEntries> {
   /**

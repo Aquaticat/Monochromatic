@@ -1,7 +1,4 @@
-import {
-  access,
-  readdir,
-} from 'node:fs/promises';
+import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import { readSettledArtifact, } from '../artifact-read.ts';
@@ -12,6 +9,11 @@ import {
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { readRunJson, } from '../run-json-read.ts';
+import {
+  type ArtifactFileName,
+  entryIdOfArtifact,
+  listArtifactFiles,
+} from './artifact-file-name.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
 import {
   type PairingRecipe,
@@ -163,24 +165,24 @@ export async function listSettledEntryIds(
     runsDir,
     ARTIFACTS_DIR,
   );
-  try {
-    await access(artifactsDir,);
-  }
-  catch (error) {
-    // A runs directory nothing has settled into yet has no artifacts
-    // subdirectory, which is an ordinary state rather than a fault.
-    rethrowUnlessMissingPath({ error, },);
-    return [];
-  }
-  return (await readdir(artifactsDir,))
-    .filter(function isArtifact(name,): boolean {
-      return name.endsWith('.json',);
-    },)
+  /**
+   Artifact files the directory holds, regular files only, as the census and
+   the scheduler list them (ledger B64).
+   */
+  const names = await (async function listed(): Promise<readonly ArtifactFileName[]> {
+    try {
+      return await listArtifactFiles({ artifactsDir, },);
+    }
+    catch (error) {
+      // A runs directory nothing has settled into yet has no artifacts
+      // subdirectory, which is an ordinary state rather than a fault.
+      rethrowUnlessMissingPath({ error, },);
+      return [];
+    }
+  })();
+  return names
     .map(function toEntryId(name,): string {
-      return name.slice(
-        0,
-        -'.json'.length,
-      );
+      return entryIdOfArtifact({ name, },);
     },)
     .toSorted();
 }

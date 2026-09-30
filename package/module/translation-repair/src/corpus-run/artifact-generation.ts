@@ -1,9 +1,11 @@
 import spawn from 'nano-spawn';
 
 import {
-  readdirArtifacts,
-  readPlacement,
-} from './artifact-placement.ts';
+  type ArtifactFileName,
+  entryIdOfArtifact,
+  listArtifactFiles,
+} from './artifact-file-name.ts';
+import { readPlacement, } from './artifact-placement.ts';
 import { resolveGit, } from './git-command.ts';
 
 //region Artifact generation
@@ -135,7 +137,7 @@ export type GenerationCensus = Readonly<{
  
  @param names - directory listing the CALLER already took, so census and
  caller classify the same set; omitted only by callers that have not listed
- the directory themselves. It must come from {@link readdirArtifacts}, which
+ the directory themselves. It must come from {@link listArtifactFiles}, which
  is what keeps a directory or a symbolic link called `Mittens.json` out of
  both views at once. This cannot re-filter the names without taking a second
  view of a directory the accumulation is still writing to, which is the gap
@@ -154,7 +156,7 @@ export async function censusByGeneration(
     names: listed,
   }: {
     readonly artifactsDir: string;
-    readonly names?: readonly string[];
+    readonly names?: readonly ArtifactFileName[];
   },
 ): Promise<GenerationCensus> {
   /**
@@ -167,10 +169,7 @@ export async function censusByGeneration(
    entering the candidate pool. One listing threaded through closes the gap
    between the two views this module controls.
    */
-  const names = (listed ?? await readdirArtifacts({ artifactsDir, },))
-    .filter(function isArtifact(name,): boolean {
-      return name.endsWith('.json',);
-    },)
+  const names = (listed ?? await listArtifactFiles({ artifactsDir, },))
     .toSorted();
 
   /**
@@ -201,19 +200,19 @@ export async function censusByGeneration(
   /* oxlint-disable no-await-in-loop -- sequential on purpose: one artifact at a time keeps peak memory flat across a directory that reaches hundreds of megabytes */
   for (const name of names) {
     /**
+     Entry id the file name carries.
+     */
+    const stem = entryIdOfArtifact({ name, },);
+
+    /**
      Entry id, which is the artifact's own file name.
-     
+
      A file called exactly `.json` has an EMPTY stem, and an empty id in a
      report is a blank line nobody can act on, so such a file is carried by
      its name instead. It can only ever appear among the unplaceable, since
      `readPlacement` refuses an empty stem before reading anything.
      */
-    const entryId = (name === '.json')
-      ? name
-      : name.slice(
-        0,
-        -'.json'.length,
-      );
+    const entryId = (stem === '') ? name : stem;
 
     /**
      How this artifact places: its build and commit, or why it has neither.

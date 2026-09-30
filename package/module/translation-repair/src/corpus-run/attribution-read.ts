@@ -21,7 +21,7 @@ import {
   keepEligible,
   resolvePool,
 } from './artifact-pool.ts';
-import { readdirArtifacts, } from './artifact-placement.ts';
+import { listArtifactFiles, } from './artifact-file-name.ts';
 
 //region Attribution read
 // Parses settled artifacts into the shape the attribution report needs,
@@ -340,10 +340,7 @@ export async function gatherAttributionEntries(
    directory continuously: a second listing inside the census would classify a
    different set of files from the one this reader goes on to read.
    */
-  const listed = (await readdirArtifacts({ artifactsDir, },))
-    .filter(function isArtifact(name,) {
-      return name.endsWith('.json',);
-    },);
+  const listed = await listArtifactFiles({ artifactsDir, },);
 
   /**
    Artifact file names.

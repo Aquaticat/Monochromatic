@@ -38,7 +38,6 @@
 import {
   mkdir,
   mkdtemp,
-  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
@@ -51,8 +50,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  type ArtifactFileName,
   type Placement,
-  readdirArtifacts,
   readPlacement,
 } from '../../dist/final/node/index.mjs';
 
@@ -132,7 +131,7 @@ async function placementOf(
     name = 'Mittens.json',
   }: {
     readonly body: unknown;
-    readonly name?: string;
+    readonly name?: ArtifactFileName;
   },
 ): Promise<Placement> {
   return await readPlacement({
@@ -615,84 +614,6 @@ await describe({
         ],);
         expect(own.join('\n',)
           .includes('whiskers',),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: readdirArtifacts.name,
-  children: [
-    it({
-      name: 'lists every regular file, which is the control the skipping '
-        + 'cases depart from',
-      fn: async () => {
-        expect([...await readdirArtifacts({
-          artifactsDir: await artifactsDirWith({
-            files: {
-              'Mittens.json': '{}',
-              'Tabby.json': '{}',
-            },
-          },),
-        },),].toSorted(),)
-          .toEqual([
-            'Mittens.json',
-            'Tabby.json',
-          ],);
-      },
-    },),
-
-    it({
-      name: 'SKIPS a directory named like an artifact, which otherwise '
-        + 'reached the read and threw EISDIR out of the whole census',
-      fn: async () => {
-        /**
-         Disposable root holding one artifact and one impostor directory.
-         */
-        const dir = await artifactsDirWith({ files: { 'Mittens.json': '{}', }, },);
-        await mkdir(join(
-          dir,
-          'backup.json',
-        ),);
-
-        expect([...await readdirArtifacts({ artifactsDir: dir, },),],)
-          .toEqual(['Mittens.json',],);
-      },
-    },),
-
-    it({
-      name: 'SKIPS a symbolic link, which was followed wherever it pointed '
-        + 'and could duplicate another artifact under a second identity or '
-        + 'leave the directory entirely',
-      fn: async () => {
-        /**
-         Disposable root holding one artifact and a link to it.
-         */
-        const dir = await artifactsDirWith({ files: { 'Mittens.json': '{}', }, },);
-        await symlink(
-          join(
-            dir,
-            'Mittens.json',
-          ),
-          join(
-            dir,
-            'Mittens-again.json',
-          ),
-        );
-
-        expect([...await readdirArtifacts({ artifactsDir: dir, },),],)
-          .toEqual(['Mittens.json',],);
-      },
-    },),
-
-    it({
-      name: 'lists nothing for a directory holding nothing, rather than '
-        + 'refusing a run that has settled no entry yet',
-      fn: async () => {
-        expect([...await readdirArtifacts({
-          artifactsDir: await artifactsDirWith({ files: {}, },),
-        },),],)
-          .toEqual([],);
       },
     },),
   ],
