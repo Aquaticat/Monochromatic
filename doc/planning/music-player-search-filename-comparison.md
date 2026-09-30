@@ -167,8 +167,16 @@ The [logging-boundary investigation][logging-boundary] records the correction.
 Complete tests,
 a fresh specific autoplay-guard mutation failure,
 exact restoration and an APK rebuild passed.
-Native capture and inspected geometry remain pending;
-calling the composable alone does not prove matching window geometry.
+The [actual-renderer baseline][actual-baseline] now records inspected
+native chrome,
+page/current-row context and measured semantic row widths across a
+32-view matrix.
+Long suffixes are visible on inner at 100% but clipped on inner at 200%
+and cover at both scales.
+The narrower copied-row replica did not establish those actual outcomes.
+The host remains a static production-renderer capture with synthetic
+paused inputs,
+not full `MainActivity` or live playback verification.
 Describe the result as a static native production-renderer capture with
 synthetic tracks,
 not a live player,
@@ -206,3 +214,4 @@ IME experiment or original-AVD change follows automatically from this proposal.
 
 [frontier]: ../../package/music-player/design/evidence/search-filename-presentation-frontier.md
 [logging-boundary]: ../troubleshooting/android-agp-9-host-jvm-log-boundary.md
+[actual-baseline]: ../../package/music-player/design/evidence/search-filename-actual-player-baseline.md

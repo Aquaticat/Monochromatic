@@ -280,17 +280,16 @@ not a filename or keyboard failure;
 - Every row in these authored lists fits without scrolling.
   No scrolled witness was needed for these particular controls.
 
-The actual ordinary-player screen with matched names,
-real chrome,
-available width,
-folder/page context and applicable current-track decoration remains
-uncaptured.
-The replica does not satisfy that live baseline.
-Any future claim comparing Search with the incumbent player needs that
-baseline on disposable data;
-setup outside the authorized scope remains gated.
-It would still establish static presentation only,
-not playback or complete player behavior.
+The control matrix did not capture the actual ordinary-player screen.
+The subsequent [actual-renderer baseline][actual-baseline] now supplies
+matched names,
+real production chrome,
+measured available width,
+folder/page context and current-row decoration on disposable data.
+It closes that static rendering gap,
+not full `MainActivity` integration,
+source loading or live playback.
+The copied replica still cannot substitute for the actual renderer.
 
 ### Publication verification
 
@@ -313,7 +312,7 @@ It does not imply activation or other behavioral verification.
 Internal task 137 is complete as a bounded comparison assessment,
 not filename-presentation acceptance.
 
-## Runtime shutdown
+## Original/control-runtime shutdown
 
 The owned filename runtime was shut down through its container's ADB
 `emu kill` after the control capture.
@@ -327,6 +326,32 @@ accessibility disabled and no enabled accessibility service.
 That snapshot does not reconstruct settings before the original matrix;
 no such baseline was retained.
 No original-AVD state was changed.
+
+## Actual-renderer baseline continuation
+
+The user directed further bounded design work after the assessment.
+Prototype `720ba418f` invokes public production `playerScreen`,
+its real private rows/pager and `PlayerController`,
+with synthetic paused inputs and a no-audio engine.
+The [inspected baseline][actual-baseline] and
+[separate witness manifest][actual-witnesses] record its 32-view matrix,
+mirrored host color factory,
+measured `CHROMIUM_TABS` style and excluded service/source behavior.
+
+The actual full-width ordinary player retains the long pair's suffixes
+on inner at 100% in both themes and all captured selection conditions.
+It clips them on inner at 200% and cover at both scales.
+The short pair remains visible in all short-name controls.
+The narrower copied-row control therefore did not predict every actual
+player state.
+Width,
+chrome and parent context matter;
+this is not a causal isolation of ellipsis or a presentation preference.
+
+The new disposable runtime remains owned and capped for the authorized
+comparison work.
+Its fresh settings snapshot is distinct from the stopped control runtime.
+Restoration and shutdown remain due after those captures.
 
 ## Assessment and proposed next comparison
 
@@ -363,3 +388,5 @@ focus transitions and keyboard-open behavior remain outside the proof.
 [control-layout]: ../questions/evidence/search-filename-control-layout.json
 [buffer-record]: ../../../../doc/troubleshooting/node-26-adb-dumpsys-buffer-limit.md
 [comparison-plan]: ../../../../doc/planning/music-player-search-filename-comparison.md
+[actual-baseline]: search-filename-actual-player-baseline.md
+[actual-witnesses]: ../questions/evidence/search-filename-actual-player-witnesses.json

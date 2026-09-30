@@ -1,0 +1,1062 @@
+{
+  "schema": 1,
+  "scope": "Static actual production playerScreen and PlayerController with synthetic paused inputs; private host color selection mirrored; not live playback or full MainActivity/service/source/peak integration.",
+  "prototypeCommit": "720ba418fc607e29f70a549670a595c200b9356b",
+  "productionCommit": "2b4adf460d1cdbc3f90552051c0e0fb4f18a3d7e",
+  "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+  "nativeReleaseFollowupObserved": true,
+  "immediateReleaseCheckFailed": true,
+  "libraryContext": {
+    "sharedAuthoredRoot": "StudyLibrary",
+    "selectedPage": "Cult of Luna",
+    "additionalPage": "ZAnchor",
+    "anchorPath": "StudyLibrary/ZAnchor/Anchor.opus",
+    "longParent": "Cult of Luna/Live",
+    "shortParent": "Cult of Luna",
+    "actualFiles": false,
+    "sourceLoading": false,
+    "audioOutput": false
+  },
+  "hostDifferences": [
+    "Debug ComponentActivity, not MainActivity.onCreate",
+    "No peak indexing, source loading, service binding or audio engine",
+    "Public production playerScreen and real PlayerController invoked; private row/pager rendering not copied",
+    "Production private musicPlayerColorScheme expression mirrored in debug host",
+    "Same enableEdgeToEdge, full-size MaterialTheme/Surface and inherited application theme",
+    "Fresh disposable app reinstall reset app-local preferences; measured default CHROMIUM_TABS retained",
+    "Selected fixtures use authored 66-second position and 275-second duration; these are not media measurements"
+  ],
+  "sanitation": "Top system-status strip removed; bottom navigation retained. Every crop inspected in native contact sheets, exact retained RGB and opacity checked, PNG metadata removed. Raw frames, hierarchies and logs remain private.",
+  "limits": [
+    "No speech, activation, matching, focus transitions or real source identity verified",
+    "Not general capacity or universal filename legibility",
+    "Node bounds are semantic row extents, not ink bounds or an accessibility target acceptance result",
+    "Selected current-row decoration does not imply real playback"
+  ],
+  "captures": [
+    {
+      "image": "search-filename-actual-player-inner-long-none-light-s100.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "none",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "24d909b39a7fb9a5378deaf2794ff6e51b978d23783fefafeee508e5eafa3bc1",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-first-light-s100.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "first",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "90159c2f3377c5c7ac2de97b0ab61099a71a9db194451b939a6d7f1c5fec3148",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 0,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-second-light-s100.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "second",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "4b6f8eb5d170cf20d92040416e2e1e8f8b135f03ca7ae613bacf3c964edbede2",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 1,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-short-none-light-s100.png",
+      "panel": "inner",
+      "scene": "short",
+      "selection": "none",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "a77acaf1281a266ac166ad15448809b9a38dd0384633e7ff7969aa3d8101c693",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-none-dark-s100.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "none",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "6c7ea2638de041ee11b99a2d5b9e12f59047b22526c5686789c34bdf71a669d0",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-first-dark-s100.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "first",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "ba5877be2b6b5c6a413744c938dd3ec7a91ebe968442ceb79a9f5d44d97dd320",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 0,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-second-dark-s100.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "second",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "354f79674b7d792703ff673f8f840850e821cbfb0afa0501f966283efa7ffaf4",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 1,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-short-none-dark-s100.png",
+      "panel": "inner",
+      "scene": "short",
+      "selection": "none",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "cf31f5942a1b9bbdd18eda206d90b078d52b7a33dd52738cd881ca45cd8cb6e4",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-none-light-s200.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "none",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "9a50c400f49c60ba60d2b1139e54b1694ca58e8dd143c10f86bf2ad7f6b30270",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-first-light-s200.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "first",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "5c86c24ebf44e6b8100ee1a27ea1702e1b2848bb07f96f05eecd0a1fbe8de590",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 0,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-second-light-s200.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "second",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "ade5c2354cdd5448387e15b626a89e33786a00057b088b411541e7c80363a42e",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 1,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-short-none-light-s200.png",
+      "panel": "inner",
+      "scene": "short",
+      "selection": "none",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "dd4b4b1b8cfd4085b2a1f76f121bd0dc33da31bdf6b1a928f5099714b499898b",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-none-dark-s200.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "none",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "2960d163b8420b37a2cba6bccf2d30ba790d044c752561cdf9a25391b1aab2d7",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-first-dark-s200.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "first",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "77967d69bb6a4dc9284c5afe56d6624f81acad188e0c939a4e8a95b5581c113d",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 0,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-long-second-dark-s200.png",
+      "panel": "inner",
+      "scene": "long",
+      "selection": "second",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "a86dfb0f115f2361660deb4a06d5d27b2fabe69e7f00269fb32000b5b1543826",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 1,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-inner-short-none-dark-s200.png",
+      "panel": "inner",
+      "scene": "short",
+      "selection": "none",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        2076,
+        2152
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 136,
+        "width": 2076,
+        "height": 2016
+      },
+      "pngSha256": "d8731a4e664251b493b824aeec402311419a5e07dd5159ed82b5fb098e6b9df2",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-none-light-s100.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "none",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "f90aa841c16d6b03653b5771a83c96f3a4eb41ab2173fe12472a5354130ad8f5",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-first-light-s100.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "first",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "42755aa7fd7e00c1a9672ff11abf1b58acd5980c84dbc68bb0dce4f500d017d3",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 0,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-second-light-s100.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "second",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "b41eb84e240df697feadb1af7a104b7ded8a6d15c418bfd3f07efc9395c9dec4",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 1,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-short-none-light-s100.png",
+      "panel": "cover",
+      "scene": "short",
+      "selection": "none",
+      "scheme": "light",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "b84be040d5ba76c709bc6e52a0900c9fa26ad29665ddf9fc4a8d62198ae6ade0",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-none-dark-s100.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "none",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "51fe709096f0c7e024cdb7d9fb29e164e3bbcef260d9bb5a0acbb2a37efe35b3",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-first-dark-s100.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "first",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "98e7e0ae8cd230d517ad28f15f64e56cf0672248a750df10335cb035e6d04459",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 0,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-second-dark-s100.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "second",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "3a5881392dc7f3ea91cc6bf09af8c937296b2c98058bf83749b2d1c5725cffa7",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 1,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-short-none-dark-s100.png",
+      "panel": "cover",
+      "scene": "short",
+      "selection": "none",
+      "scheme": "dark",
+      "fontScale": 1,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "0c6732af92530ed3dd7f0cc109dc2274c00e0f819140ff9466060e00c11a0093",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-none-light-s200.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "none",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "e3034e4abb61f52e6c94860e750a80d57ca00b0f51d91b649366560e1e88dd78",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-first-light-s200.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "first",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "f8923f2d1c2da5880dc9ed8856d8507a9bb1fd529e415eb23cf6f81bcd0fc693",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 0,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-second-light-s200.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "second",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "039c51ddf23de1d0982c3f978706874f165998e55c93a172814fefbfc74468be",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 1,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-short-none-light-s200.png",
+      "panel": "cover",
+      "scene": "short",
+      "selection": "none",
+      "scheme": "light",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "2c3f336753ede236ba5fc0ad75b08b429bb66867716a0253867acf867b9107ca",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-none-dark-s200.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "none",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "e852b0174e33c12a648e15830d0b6a7627b1ecb22cfcd1bebccdbd47d39a2c44",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-first-dark-s200.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "first",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "151038f37591aafa4b6db0071c18037a35e1014624c13881bb8dfabcd6bc5cc9",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 0,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-long-second-dark-s200.png",
+      "panel": "cover",
+      "scene": "long",
+      "selection": "second",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "1fb9ef8e4f1ae7b83971df637c3ad2343337c25df8b98e2bd3e8627ce23bbb30",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": 1,
+      "expectedSyntheticLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+        "Live/Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3"
+      ]
+    },
+    {
+      "image": "search-filename-actual-player-cover-short-none-dark-s200.png",
+      "panel": "cover",
+      "scene": "short",
+      "selection": "none",
+      "scheme": "dark",
+      "fontScale": 2,
+      "physicalPixels": [
+        1080,
+        2424
+      ],
+      "cropPixels": {
+        "x": 0,
+        "y": 151,
+        "width": 1080,
+        "height": 2273
+      },
+      "pngSha256": "3ff1a81e914422415a20bc5a96bc8f0ba4bf9011c1da817c6bc7c4bef0a2a6e1",
+      "apkSha256": "84edf1e75cc8e9325e19ab0c23d3f1f314bc271a3479e8f3bc920f78d66fcd9e",
+      "keyboardClosed": true,
+      "stableAppFrames": true,
+      "pageControlStyle": "CHROMIUM_TABS",
+      "currentIndex": null,
+      "expectedSyntheticLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ],
+      "hierarchyPresentLabels": [
+        "Cam.flac",
+        "Cam.mp3"
+      ]
+    }
+  ]
+}

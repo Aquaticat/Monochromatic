@@ -58,7 +58,14 @@ Literal suffix omission keeps the measured title height in these samples
 but loses the distinguishing information.
 Ancestor A/B paths remain visible;
 the ordinary-row replica hides the tested suffixes.
-The genuine ordinary-player baseline remains uncaptured.
+The inspected 32-view static actual production-renderer baseline is in
+`evidence/search-filename-actual-player-baseline.md` and
+`questions/evidence/search-filename-actual-player-witnesses.json`.
+It shows the matched chrome/page/current-row context with synthetic
+paused inputs,
+not live playback or full `MainActivity` integration.
+The actual ordinary player retains long suffixes on inner at 100%,
+which the narrower replica did not establish.
 The proposed follow-up in
 `doc/planning/music-player-search-filename-comparison.md` separates
 placement from visibility;

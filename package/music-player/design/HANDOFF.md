@@ -57,16 +57,26 @@ rectangles in these samples;
 omission does not reclaim title height and makes the pair ambiguous.
 Ancestor A/B context stays visible;
 the ordinary-row replica ellipsizes the distinguishing suffixes.
-The genuine ordinary-player baseline is still missing.
-`doc/planning/music-player-search-filename-comparison.md` proposes
-independent placement and visibility comparisons,
-not an accepted preference or authorization for dependent work.
+The subsequent actual production-renderer baseline is inspected and
+published in `questions/evidence/search-filename-actual-player-witnesses.json`.
+`evidence/search-filename-actual-player-baseline.md` records the 32-view
+matrix and actual full-width chrome/page/current-row context.
+Long suffixes remain visible on inner at 100%,
+but clip on inner at 200% and cover at both scales;
+the short control stays visibly distinct.
+This closes the copied-row rendering gap,
+not live playback or full `MainActivity`/service/source integration.
+`doc/planning/music-player-search-filename-comparison.md` keeps
+placement and visibility independent.
 The user directed continued work after the bounded assessment.
-Internal tasks 138 to 140 continue actual-renderer baseline capture,
-usable debug-native presentation variants and verified visual review.
-The public `playerScreen` and `AudioEngine` seam avoid the earlier copied-row
-limitation;
-that actual-renderer capture remains pending.
+Internal tasks 138 to 140 continue baseline verification,
+usable debug-native variants and a verified visual review.
+Prototype `720ba418f` uses public `playerScreen` and the real controller
+with a paused no-audio double;
+no production source was changed.
+The newly owned disposable runtime remains capped and running for the
+next authorized captures;
+its fresh settings restoration and shutdown remain due.
 This is authorization to gather design evidence,
 not selection of a presentation policy or production implementation.
 No extension preference has been selected.

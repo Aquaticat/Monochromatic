@@ -54,7 +54,14 @@ The bounded assessment warrants a consequential comparison,
 not incumbent-only advice;
 `doc/planning/music-player-search-filename-comparison.md` records its
 proposed scope.
-The genuine ordinary-player baseline remains uncaptured.
+The inspected 32-view actual production-renderer baseline is now in
+`evidence/search-filename-actual-player-baseline.md` and
+`questions/evidence/search-filename-actual-player-witnesses.json`.
+Its synthetic paused inputs close the copied-row rendering gap,
+not real playback or complete `MainActivity` integration.
+Unlike the narrower replica,
+the actual ordinary player retains long suffixes on inner at 100%.
+Usable placement/visibility alternatives remain the next design work.
 This does not select extension visibility or placement,
 authorize dependent implementation or prove native activation.
 
