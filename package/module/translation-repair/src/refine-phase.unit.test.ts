@@ -19,14 +19,6 @@ import {
   persistRefinePhaseSlice,
   runRefinePhase,
   CheckerQuorumError,
-  SEAT_BEDROCK_ONLY_TEXT,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_HYPER_VISION,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkPair,
@@ -40,6 +32,16 @@ import {
   type SyntheticClient,
   UnpreparedSliceError,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger for the phase under test.

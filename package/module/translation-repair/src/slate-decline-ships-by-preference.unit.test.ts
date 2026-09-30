@@ -31,14 +31,16 @@ import {
   produceTranslateSlate,
   type RosterModelId,
   runTranslateStage,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   settleConsolidation,
   type SyntheticClient,
   TranslateAbsenceError,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger the stages write through, whose output is not under test.

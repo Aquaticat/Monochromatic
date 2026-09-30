@@ -39,13 +39,15 @@ import {
   inEntryLogContext,
   inSliceLogContext,
   recordContest,
+  type Candidate,
+  type SelectionBallot,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
-  type Candidate,
-  type SelectionBallot,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Variable naming the run directory, matching the module under test.

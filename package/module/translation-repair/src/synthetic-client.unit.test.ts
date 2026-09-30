@@ -18,12 +18,6 @@ import {
   createSyntheticClient,
   isJsonRecord,
   MalformedCompletionError,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   stripCodeFence,
   stripThinkBlock,
   SYNTHETIC_PER_MODEL_CONCURRENCY,
@@ -35,6 +29,14 @@ import {
   type TransportExchange,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Milliseconds granted for queued microtasks and limiter slots to settle.

@@ -19,8 +19,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_HYPER_VISION,
   shippedAuthors,
   sliceProgressLine,
   type IssueAuthorship,
@@ -28,6 +26,10 @@ import {
   type SelectionRound,
   type SliceRounds,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+} from '../roster-seats.test-fixture.ts';
 
 //region Fixtures
 

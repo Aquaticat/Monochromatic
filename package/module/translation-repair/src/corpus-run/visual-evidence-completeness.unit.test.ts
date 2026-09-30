@@ -12,11 +12,13 @@ import {
 
 import {
   assertVisualEvidenceComplete,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChunkPair,
   VisualEvidenceInterruptedError,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Prepared slice fixture naming one entry photo.

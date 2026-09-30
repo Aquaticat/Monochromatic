@@ -10,14 +10,16 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   messageText,
   runTranslateStage,
-  SEAT_HYPER_VISION,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_VISION,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+} from './roster-seats.test-fixture.ts';
 
 /** Source remains raw Markdown throughout canonical pipeline state. */
 const SOURCE = '> 猫醒了。  \n> 鸟唱了。';

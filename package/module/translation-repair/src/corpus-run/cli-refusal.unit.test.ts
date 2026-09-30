@@ -50,11 +50,13 @@ import {
   RUN_SEATS,
   RunConfigError,
   RunJsonUnreadableError,
+  StatedRefusalError,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  StatedRefusalError,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 //region CLI refusal tests
 

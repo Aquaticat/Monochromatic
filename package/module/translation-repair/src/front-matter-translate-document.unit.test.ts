@@ -14,18 +14,20 @@ import {
 import {
   messageText,
   prepareDocumentPair,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   translateDocument,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Source metadata under translation.

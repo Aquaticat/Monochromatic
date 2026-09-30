@@ -18,6 +18,12 @@ import {
 import {
   NoProviderForModelError,
   reviewAbsoluteNaturalness,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type RosterModelId,
+  type SyntheticClient,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_TEXT_BEDROCK,
@@ -26,11 +32,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type RosterModelId,
-  type SyntheticClient,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Invented reviewer roster.

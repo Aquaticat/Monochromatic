@@ -26,10 +26,12 @@ import {
   MIN_PROVIDER_CALLS,
   MODEL_CARDS,
   POOLED_P90,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_OPENROUTER_ONLY,
   SEAT_OPENROUTER_ONLY_CHECKER,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Seat served on both Hyper and OpenRouter, with a measured cap.

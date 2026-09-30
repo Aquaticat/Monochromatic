@@ -36,8 +36,8 @@ import {
   bedrockMeterLevel,
   createBedrockLedger,
   defaultBedrockLedgerPath,
-  SEAT_BEDROCK_ONLY_TEXT,
 } from '../dist/final/node/index.mjs';
+import { SEAT_BEDROCK_ONLY_TEXT, } from './roster-seats.test-fixture.ts';
 
 /**
  One priced call, cat-themed.

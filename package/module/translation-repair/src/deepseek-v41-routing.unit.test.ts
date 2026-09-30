@@ -7,10 +7,10 @@ import {
   HYPER_MESSAGES_URL,
   NoProviderForModelError,
   OPENROUTER_CHAT_URL,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
   type BudgetView,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from './roster-seats.test-fixture.ts';
 
 /** Both serving protocols carry the same invented answer. */
 const ANSWER = '{"animal":"cat","count":7}';

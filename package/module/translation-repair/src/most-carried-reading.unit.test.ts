@@ -11,10 +11,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   mostCarriedReading,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 await describe({
   name: mostCarriedReading.name,

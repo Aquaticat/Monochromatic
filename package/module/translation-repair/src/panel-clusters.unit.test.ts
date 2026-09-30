@@ -4,18 +4,20 @@ import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   buildAdjudicationMessages,
   runPanelStage,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ClaimCluster,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /** Fixture electorate remains unchanged across packets. */
 const MODELS: readonly RosterModelId[] = [SEAT_HYPER_OPENROUTER_VISION_EDITOR, SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_SYNTHETIC_TEXT_EVERYWHERE, SEAT_HYPER_VISION, SEAT_HYPER_TEXT_BEDROCK,];

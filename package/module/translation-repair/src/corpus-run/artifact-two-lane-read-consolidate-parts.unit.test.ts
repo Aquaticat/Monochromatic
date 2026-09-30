@@ -40,9 +40,9 @@ import {
   parseGateBallot,
   parseShipped,
   parseVerdict,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ArtifactConsolidationTerminal,
 } from '../../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '../roster-seats.test-fixture.ts';
 
 /**
  Dotted path the cases hand in, standing for one slice's field.

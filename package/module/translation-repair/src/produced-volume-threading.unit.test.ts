@@ -36,12 +36,12 @@ import {
 import {
   producedVolumeBound,
   produceTranslateSlate,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
 
 //region Produced volume threading
 

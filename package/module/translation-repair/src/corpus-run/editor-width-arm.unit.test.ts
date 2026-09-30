@@ -22,10 +22,6 @@ import {
 import {
   hashContent,
   runArm,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type AdjudicatedIssue,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -33,6 +29,12 @@ import {
   type SyntheticClient,
   type WidthProbeInput,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Logger for the arms under test.

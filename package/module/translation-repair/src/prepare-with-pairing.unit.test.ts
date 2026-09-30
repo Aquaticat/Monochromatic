@@ -26,12 +26,6 @@ import {
 import {
   createSyntheticClient,
   prepareDocumentPairWithRoster,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_ONLY,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type BenchSeating,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -40,6 +34,14 @@ import {
   type SyntheticClient,
   type SliceCache,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Original side, two blocks so the section is worth a question.

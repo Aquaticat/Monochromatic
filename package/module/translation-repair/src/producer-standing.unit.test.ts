@@ -13,15 +13,17 @@ import {
 import {
   preferenceRate,
   producerStandings,
-  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_HYPER_VISION,
   type ProducerStanding,
   type RosterModelId,
   type SelectionBallot,
   type SelectionRound,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Full weight a ballot carries when the judge holds no stake.

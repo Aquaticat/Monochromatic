@@ -17,10 +17,10 @@ import {
   promptUniqueClient,
   CUT_SHORT_RECOVERY_NUDGE,
   OFF_SHAPE_RECOVERY_NUDGE,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatTextRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
 
 /**
  Guard accepting any string, so a quoted JSON string is a usable answer and

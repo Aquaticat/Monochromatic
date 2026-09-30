@@ -16,15 +16,17 @@ import {
   EveryProviderDryError,
   isJsonRecord,
   NoProviderForModelError,
-  SEAT_HYPER_ONLY,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SyntheticHttpError,
   type BudgetView,
   type ProviderName,
   type ProviderRecord,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Plain text conversation reused across routed calls.

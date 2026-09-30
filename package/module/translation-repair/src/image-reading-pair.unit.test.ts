@@ -33,13 +33,15 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   isResumableReading,
   readImagePair,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatTextRequest,
   type PairedReading,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.

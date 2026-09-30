@@ -17,9 +17,9 @@ import {
   createDecisionsClient,
   DecisionReplyShapeError,
   type ModelTransport,
-  SEAT_OPENROUTER_DECISIONS,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
+import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
 
 /**
  Retry pacing that never waits, so a refused status returns at once.

@@ -32,8 +32,8 @@ import {
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '../../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from '../roster-seats.test-fixture.ts';
 
 /**
  Every provider wet, the reading that seats the widest benches.

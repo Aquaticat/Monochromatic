@@ -21,10 +21,10 @@ import {
 import {
   createSyntheticClient,
   produceConsolidations,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ConsolidateSubject,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 
 /**
  Logger for the producers under test.

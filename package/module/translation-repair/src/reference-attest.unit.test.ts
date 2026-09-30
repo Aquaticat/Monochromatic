@@ -36,12 +36,14 @@ import {
   quoteIsIn,
   REFERENCE_ATTEST_RESPONSE_FORMAT,
   screenAttestedAdditions,
+  type SyntheticClient,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  type SyntheticClient,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger for the stage.

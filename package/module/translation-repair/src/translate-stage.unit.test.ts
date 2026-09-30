@@ -30,12 +30,6 @@ import {
   firstRoundWindow,
   messageText,
   runTranslateStage,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TranslateAbsenceError,
   type ChatJsonOutcome,
@@ -44,6 +38,14 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger for the stage under test.

@@ -30,11 +30,6 @@ import {
 import {
   isAsciiDigit,
   messageText,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   settleTranslateSlice,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -44,6 +39,13 @@ import {
   type SyntheticClient,
   type TranslateSliceRecord,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger the lane writes its progress to.

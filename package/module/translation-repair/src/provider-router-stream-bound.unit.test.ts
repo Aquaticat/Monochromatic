@@ -23,11 +23,13 @@ import {
   NoProviderForModelError,
   type ProviderName,
   type ProviderRecord,
-  SEAT_BEDROCK_ONLY_TEXT,
-  SEAT_HYPER_TEXT_BEDROCK,
   StreamBoundError,
   StreamCutShortError,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_HYPER_TEXT_BEDROCK,
+} from './roster-seats.test-fixture.ts';
 
 /**
  How long the router holds a provider out for one model in these cases.

@@ -43,14 +43,6 @@ import {
   createSyntheticClient,
   firstRoundWindow,
   persistConsolidationSettlement,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_ONLY,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_OPENROUTER_DECISIONS,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_OPENROUTER_ONLY_CHECKER,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   SLICE_COST_MARKER,
   SLICE_START_MARKER,
   TRANSLATE_LINE_STRUCTURE_RULE,
@@ -71,6 +63,16 @@ import {
   type TranslateDecision,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_DECISIONS,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger the driver writes through, whose output is not under test.

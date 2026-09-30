@@ -23,15 +23,17 @@ import {
   isJsonRecord,
   MalformedCompletionError,
   ModelNotServedError,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   SyntheticHttpError,
   type ModelTransport,
   type RosterModelId,
   type TransportExchange,
   type TransportReply,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Delay of the deliberately slow test transport.

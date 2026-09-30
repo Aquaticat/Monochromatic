@@ -29,13 +29,15 @@ import {
   buildTranslateCandidates,
   messageText,
   repairInvalidCandidates,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
   type VisionMessage,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger for the repairs under test.

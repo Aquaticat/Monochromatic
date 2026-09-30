@@ -28,10 +28,12 @@ import {
 
 import {
   buildAttributionReport,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type AttributionEntry,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Critic that raises most of the claims.

@@ -28,11 +28,13 @@ import {
 import {
   buildEditorCandidates,
   hashContent,
+  type EditableEnvelope,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  type EditableEnvelope,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Translation chunk the editors propose against.

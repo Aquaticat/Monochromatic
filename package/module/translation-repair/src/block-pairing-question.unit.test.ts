@@ -5,9 +5,11 @@ import {
   type ChunkPair,
   pairingQuestionKey,
   parseDocument,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Roster every question here is asked of, which the key folds in (ledger X13).

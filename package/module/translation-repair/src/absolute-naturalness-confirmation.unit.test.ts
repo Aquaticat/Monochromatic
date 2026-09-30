@@ -13,11 +13,11 @@ import {
 
 import {
   confirmAbsoluteNaturalness,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
 
 await describe({
   name: confirmAbsoluteNaturalness.name,

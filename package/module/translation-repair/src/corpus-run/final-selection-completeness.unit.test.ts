@@ -14,10 +14,10 @@ import {
 
 import {
   finalSelectionFindings,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ArtifactContestVerdict,
   type WouldShipSource,
 } from '../../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '../roster-seats.test-fixture.ts';
 
 /**
  Archive wording in fixture.

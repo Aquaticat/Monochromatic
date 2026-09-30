@@ -26,12 +26,14 @@ import {
   OpenRouterModelNotServedError,
   resetRunSpend,
   runSpendUsd,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   SyntheticHttpError,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  One chat completion chunk as the gateway sends it.

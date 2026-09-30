@@ -26,14 +26,6 @@ import {
   NoProviderForModelError,
   ProducerRosterError,
   rosterQuorumSize,
-  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
-  SEAT_HYPER_ONLY,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   SELF_VOTE_WEIGHT,
   selectBestCandidate,
   selectChunkPatch,
@@ -48,6 +40,16 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger for the stages under test.

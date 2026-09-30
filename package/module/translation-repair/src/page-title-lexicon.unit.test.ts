@@ -23,12 +23,14 @@ import {
   PAGE_TITLE_IDENTITY_RULE,
   pageTitleLines,
   type RosterModelId,
-  SEAT_HYPER_ONLY,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   settlePageTitles,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+} from './roster-seats.test-fixture.ts';
 
 import {
   fenceOpening,

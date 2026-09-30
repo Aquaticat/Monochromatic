@@ -25,9 +25,11 @@ import {
   OffRosterModelError,
   readRepairRounds,
   RoundsNotRecordedError,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Model the roster seats today, used wherever a case is not about the roster.

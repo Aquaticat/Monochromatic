@@ -15,9 +15,11 @@ import {
   BEDROCK_COST_UNREPORTED,
   BEDROCK_MODELS,
   bedrockCostOf,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 await describe({
   name: bedrockCostOf.name,

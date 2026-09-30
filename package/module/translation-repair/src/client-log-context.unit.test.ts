@@ -19,8 +19,8 @@ import {
   createBedrockClient,
   inEntryLogContext,
   inSliceLogContext,
-  SEAT_HYPER_TEXT_BEDROCK,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_TEXT_BEDROCK, } from './roster-seats.test-fixture.ts';
 
 /**
  Stream the endpoint answers every call with: one content chunk, usage, done.

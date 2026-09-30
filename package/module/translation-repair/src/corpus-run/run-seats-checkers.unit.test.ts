@@ -28,12 +28,14 @@ import {
   providerServing,
   reachOf,
   type RosterModelId,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Providers in the order a dryness mask names them.

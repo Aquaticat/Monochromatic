@@ -23,10 +23,10 @@ import {
   promptPayloadStore,
   PromptPayloadStoreError,
   promptUniqueClient,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatTextRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
 
 /**
  Disposable temporary directory fixture.

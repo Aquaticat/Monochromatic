@@ -28,11 +28,13 @@ import {
   buildSliceCriticRecords,
   collectClaimAttributions,
   retainAttributions,
+  type ClaimEmission,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  type ClaimEmission,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Critic that finds the sunbathing omission.

@@ -22,13 +22,15 @@ import {
 
 import {
   rankStandings,
+  standingLine,
+  type ProducerStanding,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  standingLine,
-  type ProducerStanding,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Builds one standing, so each case states only what it is about.

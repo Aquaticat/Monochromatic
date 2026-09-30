@@ -15,8 +15,6 @@ import {
   appliedIssuesByEnvelope,
   collectIssueAuthors,
   NOBODY_WROTE_IT,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type EditableEnvelope,
   type EditorStageResult,
   type PatchOperation,
@@ -25,6 +23,10 @@ import {
   type RosterModelId,
   type ShippedProducer,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Issue the first envelope serves.

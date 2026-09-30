@@ -18,9 +18,9 @@ import {
   assertUnheardKeptArchive,
   heardNobodyAbout,
   RepairUnheardError,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type RepairVoiceRecord,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 
 /**
  Archive wording of the fixture slice.

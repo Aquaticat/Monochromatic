@@ -15,12 +15,12 @@ import {
 import {
   classifyWidths,
   readHeadToHead,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   summarizeWidths,
   type HeadToHeadVerdict,
   type WidthComparison,
   type WidthRow,
 } from '../../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '../roster-seats.test-fixture.ts';
 
 /**
  Repair the narrow roster shipped.

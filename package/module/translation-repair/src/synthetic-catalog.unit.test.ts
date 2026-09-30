@@ -10,9 +10,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SYNTHETIC_MODELS,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 
 await describe({
   name: 'synthetic catalog',

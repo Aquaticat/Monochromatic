@@ -30,10 +30,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   assembleRepair,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ChunkPair,
   type ChunkRepairOutcome,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 
 /**
  Logger every case replaces with one that keeps what it was told.

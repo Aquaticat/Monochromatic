@@ -28,6 +28,13 @@ import {
   NoProviderForModelError,
   CUT_SHORT_RECOVERY_NUDGE,
   OFF_SHAPE_RECOVERY_NUDGE,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type JsonSchemaResponseFormat,
+  type RosterModelId,
+  type SyntheticClient,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_ONLY,
@@ -39,12 +46,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type JsonSchemaResponseFormat,
-  type RosterModelId,
-  type SyntheticClient,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Grace the stalling case gives a re-ask before abandoning it.

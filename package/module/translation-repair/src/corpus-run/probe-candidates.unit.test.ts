@@ -26,9 +26,9 @@ import {
   readCandidatesAlone,
   ROSTER_MODEL_IDS,
   RUN_ROSTER,
-  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   StatedRefusalError,
 } from '../../dist/final/node/index.mjs';
+import { SEAT_BEDROCK_ONLY_VISION_UNSEATED, } from '../roster-seats.test-fixture.ts';
 import { BEDROCK_ONLY_ROSTER_IDS, } from '../roster-buckets.test-fixture.ts';
 
 //region Probe candidate tests

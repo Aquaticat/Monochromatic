@@ -23,11 +23,11 @@ import {
   FULL_VOTE_WEIGHT,
   NO_TYPED_ANSWER,
   type RosterModelId,
-  SEAT_OPENROUTER_DECISIONS,
   selectDecision,
   type SyntheticClient,
   TYPED_BALLOT_REASON,
 } from '../dist/final/node/index.mjs';
+import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.

@@ -16,6 +16,9 @@ import {
   FANOUT_SPARE,
   firstRoundWindow,
   rotatedBench,
+  type RosterModelId,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
@@ -23,8 +26,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  type RosterModelId,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  A seven-seat bench in roster order.

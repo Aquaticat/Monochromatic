@@ -2,15 +2,17 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import {
   readBlockPairingOutcomes,
+  type BlockPair,
+  type BlockPairingWire,
+  type RoundOutcome,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  type BlockPair,
-  type BlockPairingWire,
-  type RoundOutcome,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 const roster = [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, SEAT_SYNTHETIC_VISION_WITHHELD, SEAT_HYPER_OPENROUTER_VISION_EDITOR,] as const;
 const l = tagged({ tag: 'pairing-outcome-reading-test', },);

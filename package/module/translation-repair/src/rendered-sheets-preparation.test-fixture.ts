@@ -20,9 +20,9 @@ import {
   buildSectionPairingMessages,
   IMAGE_READING_PERSPECTIVES,
   imageReadingText,
-  SEAT_HYPER_ONLY,
   withArchiveOriginal,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_ONLY, } from './roster-seats.test-fixture.ts';
 
 import {
   type RenderedSheet,

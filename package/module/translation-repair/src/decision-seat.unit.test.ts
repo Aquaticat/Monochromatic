@@ -30,8 +30,8 @@ import {
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
-  SEAT_OPENROUTER_DECISIONS,
 } from '../dist/final/node/index.mjs';
+import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
 import { cardOf, } from './catalog-lookups.test-fixture.ts';
 
 await describe({

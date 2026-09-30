@@ -20,12 +20,6 @@ import {
   decidePassInsertionAdmission,
   makeInsertionChunk,
   messageText,
-  SEAT_HYPER_ONLY,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   TranslationRepairInterruptedError,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -36,6 +30,14 @@ import {
   type RosterModelId,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Production-shaped test roster.

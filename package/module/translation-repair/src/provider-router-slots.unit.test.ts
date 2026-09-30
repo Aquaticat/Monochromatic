@@ -13,9 +13,11 @@ import {
 
 import {
   createSlotLedger,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Model the cases count slots for.

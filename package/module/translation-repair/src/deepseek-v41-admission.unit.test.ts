@@ -17,9 +17,11 @@ import {
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /** New version identity, not an alias for Flash 0731. */
 const MODEL: string = SEAT_HYPER_OPENROUTER_UNMEASURED;

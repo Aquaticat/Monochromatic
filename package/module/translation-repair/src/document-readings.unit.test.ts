@@ -31,10 +31,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   readDocumentPictures,
-  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChunkPair,
   type PairedReading,
   type PictureReaderSeating,
@@ -42,6 +38,12 @@ import {
   type SliceCache,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger the gather writes its progress to.

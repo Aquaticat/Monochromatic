@@ -52,11 +52,6 @@ import {
   isLineStructured,
   messageText,
   prepareDocumentPair,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TRANSLATE_LINE_STRUCTURE_RULE,
   translateDocument,
@@ -66,6 +61,13 @@ import {
   type SyntheticClient,
   type TranslateModels,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger for the driver under test.

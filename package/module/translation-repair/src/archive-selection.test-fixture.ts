@@ -6,6 +6,9 @@ import {
   type ChatJsonRequest,
   messageText,
   type RosterModelId,
+  type SyntheticClient,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_ONLY,
@@ -17,8 +20,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  type SyntheticClient,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Source containing every fact the complete replacement preserves.

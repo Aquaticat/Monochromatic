@@ -24,10 +24,10 @@ import {
   rosterQuorumSize,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type BudgetView,
   WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_VISION_NO_OPENROUTER, } from '../roster-seats.test-fixture.ts';
 
 //region Seat reading tests
 

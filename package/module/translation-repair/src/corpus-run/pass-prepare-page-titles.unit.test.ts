@@ -31,12 +31,14 @@ import {
   type PipelineDigest,
   preparePassEntry,
   type RosterModelId,
+  type SyntheticClient,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  type SyntheticClient,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 

@@ -23,9 +23,11 @@ import {
   createRoutingClient,
   type ProviderName,
   type ProviderRecord,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_VISION,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Wait Hyper's window names while it is full in these cases.

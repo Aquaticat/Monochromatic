@@ -28,13 +28,15 @@ import {
   hashContent,
   runCheckerStage,
   runPanelStage,
+  type SyntheticClient,
+  UNATTRIBUTED_TEXT,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  type SyntheticClient,
-  UNATTRIBUTED_TEXT,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Invented original.

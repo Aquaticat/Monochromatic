@@ -11,15 +11,17 @@ import {
   judgeTranslateSlate,
   messageText,
   readSliceSkeleton,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ProducedSlate,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from './roster-seats.test-fixture.ts';
 
 /** Faithful rendered structure, regardless of rotated ballot position. */
 const KEPT = '> The cat wakes.<br/>The bird sings.';

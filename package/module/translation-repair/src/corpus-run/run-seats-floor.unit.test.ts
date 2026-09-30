@@ -23,15 +23,17 @@ import {
   reachableSeats,
   RUN_MODELS,
   RUN_TRANSLATORS,
-  SEAT_BEDROCK_ONLY_TEXT,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   type BudgetView,
   unreachableWritingBenches,
   WRITING_BENCH_FLOOR,
   WRITING_BENCHES,
   WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+} from '../roster-seats.test-fixture.ts';
 
 //region Writing-bench floor tests
 

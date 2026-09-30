@@ -22,13 +22,15 @@ import {
   openRouterProviderPreferencesFor,
   reachOf,
   ROSTER_MODEL_IDS,
+  visionReachOf,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_VISION,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  visionReachOf,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 import { BEDROCK_ONLY_ROSTER_IDS, } from './roster-buckets.test-fixture.ts';
 import { openRouterServesLabel, } from './catalog-lookups.test-fixture.ts';
 

@@ -26,13 +26,13 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type WouldShipReading,
   type WouldShipSource,
   UnansweredContestSliceError,
   wouldShipTextFor,
   wouldShipTextPerSlice,
 } from '../../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '../roster-seats.test-fixture.ts';
 
 /**
  Archive's own English at the slice every case reads.

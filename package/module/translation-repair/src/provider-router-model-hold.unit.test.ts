@@ -23,10 +23,12 @@ import {
   NoProviderForModelError,
   type ProviderName,
   type ProviderRecord,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Status a rate limit answers with.

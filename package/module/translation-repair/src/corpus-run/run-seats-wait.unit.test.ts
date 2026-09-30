@@ -25,12 +25,14 @@ import {
   RUN_MODELS,
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
-  SEAT_HYPER_ONLY,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   shortBenches,
   type BudgetView,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+} from '../roster-seats.test-fixture.ts';
 
 //region Bench quorum tests
 

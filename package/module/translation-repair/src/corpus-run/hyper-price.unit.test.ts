@@ -31,10 +31,12 @@ import {
   HYPER_MODELS,
   HYPER_PRICE_READ_ON,
   ratesFor,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 /**
  One million, the unit the provider quotes rates in.

@@ -18,8 +18,6 @@ import {
   KEEPS_TRUSTED_TEXT,
   LEAVES_PASSAGE_UNTRANSLATED,
   type RefineStageMode,
-  SEAT_HYPER_ONLY,
-  SEAT_OPENROUTER_ONLY,
   selectDecision,
   SHIPS_BY_PREFERENCE,
   TRANSLATE_SELECTION_TASK,
@@ -30,6 +28,10 @@ import {
   repairSelectionSourceEvidence,
   type SelectEvidence,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY,
+} from './roster-seats.test-fixture.ts';
 
 import {
   type RenderedSheet,

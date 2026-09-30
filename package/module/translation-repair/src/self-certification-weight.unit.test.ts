@@ -20,9 +20,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   tallyResolutionChecks,
   type IssueAuthorship,
   type ResolutionBallot,
@@ -31,6 +28,11 @@ import {
   UNATTRIBUTED_TEXT,
   wroteTextForIssue,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Issue the ballots below all speak about.

@@ -19,15 +19,17 @@ import {
   measureSeedRestoration,
   prepareDocumentPair,
   runRepairBenchmark,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type RepairAttemptRecord,
   type RepairModels,
   type repairTranslation,
   type runRestorationJudge,
   type SeededErrorSpec,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Clean fixture translation the seed deletes from.

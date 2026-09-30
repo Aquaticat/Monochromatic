@@ -38,11 +38,13 @@ import {
   listResumableEntries,
   openSliceCache,
   openTranslateSliceCache,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   stageQuorumUnmetFinding,
   TRANSLATE_SLICE_CACHE_VERSION,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Built pipeline the fixtures are filled under.

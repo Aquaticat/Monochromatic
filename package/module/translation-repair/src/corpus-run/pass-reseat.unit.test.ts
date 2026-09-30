@@ -35,11 +35,13 @@ import {
   picturesHooksFor,
   preparationHooksFor,
   prepareDocumentPair,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_OPENROUTER_ONLY,
   SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 /**
  The zheermao7 view at 23:15:27 UTC: Synthetic's window spent, Hyper dry,

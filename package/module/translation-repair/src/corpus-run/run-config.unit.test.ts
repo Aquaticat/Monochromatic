@@ -51,11 +51,13 @@ import {
   runClientFrom,
   RUN_SEATS,
   RunConfigError,
+  StatedRefusalError,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  StatedRefusalError,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Environment variable that overrides the runs directory.

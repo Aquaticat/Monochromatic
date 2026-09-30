@@ -30,9 +30,9 @@ import {
 
 import {
   reportSpend,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SPEND_MARKER,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 
 /**
  Model served by the metered provider, from the Charm Hyper catalog.

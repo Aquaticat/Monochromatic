@@ -9,7 +9,7 @@ the completion-cap table,
 the abandoned-spend ratios and every seat hold derive from the cards,
 the served-id lists in `src/roster-id.ts` type them,
 `mise run roster-card -- <provider> <served id>` prints a card fragment off the provider's live listing,
-and the unit tests sit models by role-named seats from `src/roster-fixture.ts`.
+and the unit tests sit models by role-named seats from `src/roster-seats.test-fixture.ts`.
 The steps are
 [the roster-change runbook](../../../../doc/runbook/translation-repair-roster-change.md)
 and the reasons

@@ -20,15 +20,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   judgedAuthors,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   sliceStandingLines,
   standingReportLines,
   type RosterModelId,
   type SelectionRound,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../roster-seats.test-fixture.ts';
 
 //region Fixtures
 

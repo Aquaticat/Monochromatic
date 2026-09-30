@@ -13,11 +13,13 @@ import {
 
 import {
   collectRefinedAuthors,
+  type RosterModelId,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  type RosterModelId,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Issue the cases in this file credit.

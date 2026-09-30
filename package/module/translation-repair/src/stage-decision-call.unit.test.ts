@@ -18,11 +18,11 @@ import {
 import {
   attemptStageCall,
   NoProviderForModelError,
-  SEAT_OPENROUTER_DECISIONS,
   type StageDecision,
   type SyntheticClient,
   SyntheticHttpError,
 } from '../dist/final/node/index.mjs';
+import { SEAT_OPENROUTER_DECISIONS, } from './roster-seats.test-fixture.ts';
 
 /**
  Logger the stage writes its progress to.

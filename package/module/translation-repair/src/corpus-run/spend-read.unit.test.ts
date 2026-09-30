@@ -30,11 +30,13 @@ import {
 import {
   readSpendLine,
   reportSpend,
+  tallySpend,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  tallySpend,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Log line as a logger writes one, tags and stamp in front of the record.

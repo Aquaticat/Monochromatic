@@ -28,14 +28,6 @@ import {
   prepareDocumentPair,
   preparePassEntry,
   repairArchiveBlocks,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_ONLY,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_OPENROUTER_DECISIONS,
-  SEAT_OPENROUTER_ONLY,
-  SEAT_OPENROUTER_ONLY_CHECKER,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type BenchSeating,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -45,6 +37,16 @@ import {
   type SyntheticClient,
   type UnclaimedTargetBlock,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_DECISIONS,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../roster-seats.test-fixture.ts';
 
 import { NO_OUTSIDE_READS, } from './pass-outside-reads.test-fixture.ts';
 

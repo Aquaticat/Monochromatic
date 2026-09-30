@@ -24,17 +24,19 @@ import {
   COMPLETION_CAP,
   createBedrockClient,
   isStreamBoundCut,
-  SEAT_BEDROCK_ONLY_TEXT,
-  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   StreamOverrunError,
   SyntheticHttpError,
   type BedrockLedger,
   type BedrockLedgerEntry,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  One chat completion chunk as the endpoint sends it.

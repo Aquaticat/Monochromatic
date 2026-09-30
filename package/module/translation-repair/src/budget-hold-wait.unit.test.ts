@@ -21,13 +21,13 @@ import {
   HOLD_POLL_MS,
   NOBODY_REFUSED,
   readBudgetsPastHolds,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   shortestHold,
   type BudgetView,
   type ProviderBudgets,
   type ProviderRecord,
   waitOutHold,
 } from '../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
 
 /**
  Abort signal that never fires.

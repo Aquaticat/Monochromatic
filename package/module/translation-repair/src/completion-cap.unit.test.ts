@@ -15,8 +15,8 @@ import {
   completionCapFor,
   MODEL_CARDS,
   ROSTER_MODEL_IDS,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from './roster-seats.test-fixture.ts';
 
 /**
  Caps the roster's cards resolve to, for the cards naming one pooled percentile.

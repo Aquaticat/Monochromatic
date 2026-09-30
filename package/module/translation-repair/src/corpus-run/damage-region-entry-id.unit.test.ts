@@ -40,7 +40,6 @@ import {
   makeInsertionChunk,
   NO_PAGE_ASSEMBLY,
   preparationIdentity,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ChunkPair,
   type DocumentLanesResult,
   type PipelineDigest,
@@ -48,6 +47,7 @@ import {
   type PreparedDocumentPair,
   type SliceDeliveryRecord,
 } from '../../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '../roster-seats.test-fixture.ts';
 
 //region Fixtures
 

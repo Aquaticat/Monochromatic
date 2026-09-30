@@ -29,10 +29,10 @@ import {
   makeInsertionChunk,
   repairLaneWordings,
   RepairUnheardError,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   type ChunkPair,
   type RepairVoiceRecord,
 } from '../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from './roster-seats.test-fixture.ts';
 
 /**
  Archive wording of each content slice, by index; the odd ones are anchors.

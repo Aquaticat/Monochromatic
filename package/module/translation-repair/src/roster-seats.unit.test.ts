@@ -19,6 +19,8 @@ import {
   reachOf,
   ROSTER_MODEL_IDS,
   type RosterModelId,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_ONLY,
@@ -32,7 +34,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 import { cardOf, } from './catalog-lookups.test-fixture.ts';
 
 /**
@@ -171,7 +173,7 @@ const CLAIMS: readonly {
 ];
 
 await describe({
-  name: 'roster-fixture',
+  name: 'roster seats',
   children: [
     it({
       name: 'MAPS EVERY SEAT TO A DISTINCT ROSTER ID and covers the whole roster, so no test needs a literal',

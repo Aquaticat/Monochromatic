@@ -26,6 +26,11 @@ import {
   reachOf,
   readsImages,
   ROSTER_MODEL_IDS,
+  syntheticEntryFor,
+  syntheticServes,
+  visionReachOf,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
@@ -36,10 +41,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  syntheticEntryFor,
-  syntheticServes,
-  visionReachOf,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 import {
   bedrockServesLabel,
   hyperServesLabel,

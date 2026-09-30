@@ -36,6 +36,11 @@ import {
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
+  TRANSLATOR_DROPPED,
+  type BudgetView,
+  WRITER_UNMEASURED,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_OPENROUTER_DECISIONS,
@@ -46,10 +51,7 @@ import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  TRANSLATOR_DROPPED,
-  type BudgetView,
-  WRITER_UNMEASURED,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 import {
   BEDROCK_ONLY_ROSTER_IDS,
   SEATED_BEDROCK_JUDGES,

@@ -29,12 +29,14 @@ import {
   computeIssueClaimId,
   parseDocument,
   runCriticStage,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Logger for the stage under test.

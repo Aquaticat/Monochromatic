@@ -25,15 +25,17 @@ import {
 import {
   coverageGapLines,
   readStandingCoverage,
-  SEAT_HYPER_TEXT_BEDROCK,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ProducerStanding,
   type RosterModelId,
   type SeatAnswers,
   UnseatedStandingError,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Model whose candidates drew ballots in every case that needs one.

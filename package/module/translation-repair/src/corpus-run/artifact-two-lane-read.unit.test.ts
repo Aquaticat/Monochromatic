@@ -27,11 +27,13 @@ import {
   ArtifactParseError,
   compareLanes,
   parseSettledTwoLaneArtifact,
+  type ArtifactDeliveryRow,
+} from '../../dist/final/node/index.mjs';
+import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  type ArtifactDeliveryRow,
-} from '../../dist/final/node/index.mjs';
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Ballot backing the translate lane, carried by the contest cases.

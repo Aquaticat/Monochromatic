@@ -30,13 +30,15 @@ import {
   MODEL_CARDS,
   OPENROUTER_DROPPED_SEATS,
   reachOf,
+  type SyntheticClient,
+  type TransportExchange,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_ONLY,
   SEAT_OPENROUTER_ONLY,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  type SyntheticClient,
-  type TransportExchange,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Keys the owner's instruction of 2026-08-25 forbids in any body, at any depth.

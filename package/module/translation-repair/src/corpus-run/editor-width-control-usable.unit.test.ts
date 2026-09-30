@@ -38,9 +38,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   messageText,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_HYPER_VISION,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   StatedRefusalError,
   type BenchSlice,
   type ChatJsonOutcome,
@@ -49,6 +46,11 @@ import {
   widthControlHolds,
   withoutASentence,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_HYPER_VISION,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+} from '../roster-seats.test-fixture.ts';
 
 import { candidateNumber, } from '../archive-selection.test-fixture.ts';
 

@@ -24,10 +24,12 @@ import {
   CATALOG_MODEL_IDS,
   compareCatalog,
   decodeModelList,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   SYNTHETIC_MODELS,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '../roster-seats.test-fixture.ts';
 
 await describe({
   name: 'CATALOG_MODEL_IDS',

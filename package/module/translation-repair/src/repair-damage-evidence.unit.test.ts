@@ -23,10 +23,10 @@ import {
 
 import {
   damageClaimLinesBySlice,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type RegionDefectTally,
   type ScreenedDefectClaim,
 } from '../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_VISION_WITHHELD, } from './roster-seats.test-fixture.ts';
 
 /**
  Builds one screened claim with the given admissibility.

@@ -30,12 +30,14 @@ import {
   messageText,
   readPastRefusal,
   REFUSAL_ASK_LIMIT,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatTextRequest,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Reader used by every case that asks a model which reads images.

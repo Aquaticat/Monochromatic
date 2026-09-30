@@ -34,7 +34,6 @@ import {
 import {
   bothOrders,
   messageText,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ArmOutcome,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -42,6 +41,7 @@ import {
   type SyntheticClient,
   type WidthProbeInput,
 } from '../../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '../roster-seats.test-fixture.ts';
 
 /**
  Logger for the comparison under test.

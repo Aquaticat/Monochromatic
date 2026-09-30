@@ -13,8 +13,8 @@ import {
 import {
   isJsonRecord,
   readJsonOutcome,
-  SEAT_HYPER_VISION,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_VISION, } from './roster-seats.test-fixture.ts';
 
 /**
  Model named on every reading, for the log lines only.

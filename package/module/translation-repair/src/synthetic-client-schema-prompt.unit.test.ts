@@ -31,10 +31,10 @@ import {
 import {
   createSyntheticClient,
   SCHEMA_BLOCK_HEADING,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   type ModelTransport,
   type TransportExchange,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 
 /**
  Streamed completion the fake transport replays, shaped as the reader wants.

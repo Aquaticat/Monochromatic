@@ -20,11 +20,6 @@ import {
   prepareDocumentPair,
   repairPreparedDocument,
   repairTranslation,
-  SEAT_OPENROUTER_ONLY_CHECKER,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-  SEAT_SYNTHETIC_VISION_WITHHELD,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkRepairOutcome,
@@ -32,6 +27,13 @@ import {
   type RepairSliceSeating,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_OPENROUTER_ONLY_CHECKER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Original document of the fixture pair.

@@ -9,17 +9,19 @@ import {
   confirmAbsoluteNaturalness,
   parseNaturalnessReview,
   reviewAbsoluteNaturalness,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type RosterModelId,
+  type SyntheticClient,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_OPENROUTER_ONLY,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type RosterModelId,
-  type SyntheticClient,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /** Asked seats matching the live failure's provider-independent shape. */
 const ROSTER = [

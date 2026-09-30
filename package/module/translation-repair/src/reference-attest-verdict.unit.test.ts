@@ -20,8 +20,8 @@ import {
   attestationVerdictLine,
   attestationVerdicts,
   keptAttestations,
-  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '../dist/final/node/index.mjs';
+import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from './roster-seats.test-fixture.ts';
 
 /**
  Voice answering every item.

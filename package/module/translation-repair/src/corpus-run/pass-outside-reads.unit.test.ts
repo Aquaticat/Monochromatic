@@ -43,10 +43,12 @@ import {
   preparePassEntry,
   REFERENCE_CACHE_SUBDIR,
   type RosterModelId,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type SyntheticClient,
 } from '../../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from '../roster-seats.test-fixture.ts';
 
 /**
  Logger the preparation writes to, whose lines are not under test.

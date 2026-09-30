@@ -19,8 +19,8 @@ import {
 
 import {
   requireProducer,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from './roster-seats.test-fixture.ts';
 
 await describe({
   name: 'artifact producer read of a lane candidate (class forty, 2026-09-17)',

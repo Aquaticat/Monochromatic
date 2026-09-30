@@ -1,4 +1,4 @@
-//region Roster fixture
+//region Roster seats
 // THE SEATS UNIT TESTS SIT MODELS IN, NAMED BY THE ROLE THE TEST LEANS ON
 // rather than by model, so a model leaving the roster changes one line here
 // and not the hundred-odd tests that only needed "a Hyper-only model" or
@@ -6,9 +6,13 @@
 // 2026-09-16 after the DeepSeek V4 unseat touched fifty-eight test files.
 //
 // EACH NAME IS A CLAIM ABOUT REACH, IMAGE INPUT AND HOLDS, and
-// `roster-fixture.unit.test.ts` holds every claim against the cards, so a
+// `roster-seats.unit.test.ts` holds every claim against the cards, so a
 // remapping that no longer fits its name fails there before any test that
 // leaned on the claim fails somewhere else.
+//
+// TEST SUPPORT, NOT PACKAGE SOURCE (ledger B31). Until 2026-09-29 this was
+// `roster-fixture.ts`, which the roster barrel re-exported, so the build
+// shipped seats only tests read.
 //
 // One exported constant per seat rather than one object: declaration emit
 // (`isolatedDeclarations`) infers a string literal's type and not an
@@ -89,4 +93,4 @@ export const SEAT_OPENROUTER_ONLY_CHECKER = 'xiaomi/mimo-v2.6-flash' as const;
  */
 export const SEAT_OPENROUTER_DECISIONS = 'typesafe/jev-1.13' as const;
 
-//endregion Roster fixture
+//endregion Roster seats

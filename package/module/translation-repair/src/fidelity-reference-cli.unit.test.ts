@@ -4,9 +4,7 @@ import { join, } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import spawn, { SubprocessError, } from 'nano-spawn';
-import {
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
-} from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from './roster-seats.test-fixture.ts';
 
 /** Native compiled CLI, never a source import. */
 const CLI = fileURLToPath(new URL('../dist/final/node/judge-fidelity-probe.mjs', import.meta.url));

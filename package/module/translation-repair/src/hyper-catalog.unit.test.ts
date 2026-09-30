@@ -22,6 +22,8 @@ import {
   answerCeilingFor,
   HYPER_MODELS,
   NO_SYNTHETIC_COUNTERPART,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_TEXT_BEDROCK,
@@ -29,7 +31,7 @@ import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 import {
   hyperModelsWithoutSyntheticCounterparts,
   hyperModelsWithSyntheticCounterparts,

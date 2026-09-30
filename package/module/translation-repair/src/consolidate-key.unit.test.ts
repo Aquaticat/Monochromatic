@@ -26,11 +26,13 @@ import {
 import {
   consolidateRunShape,
   consolidateSliceKey,
+  type LaneContestBallot,
+} from '../dist/final/node/index.mjs';
+import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   SEAT_SYNTHETIC_VISION_WITHHELD,
-  type LaneContestBallot,
-} from '../dist/final/node/index.mjs';
+} from './roster-seats.test-fixture.ts';
 
 /**
  Roster this run seats.

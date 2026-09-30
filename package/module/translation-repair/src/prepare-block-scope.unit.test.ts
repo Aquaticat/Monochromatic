@@ -6,11 +6,13 @@ import {
   parseDocument,
   prepareBlockPairing,
   prepareDocumentPair,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   subdivideChunkPair,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from './roster-seats.test-fixture.ts';
 
 const sourceText = `## 猫\n\n${'猫在暖和的房间里睡觉。'.repeat(12)} [回来](https://example.test/cat)`;
 const paragraph = 'The cat slept in the warm room, where the cat could rest all afternoon.'.repeat(2);

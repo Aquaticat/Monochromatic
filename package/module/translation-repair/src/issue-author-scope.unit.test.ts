@@ -13,8 +13,6 @@ import {
 
 import {
   collectIssueAuthors,
-  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
   type CandidateProducer,
   type EditableEnvelope,
   type EditorStageResult,
@@ -23,6 +21,10 @@ import {
   type RepairSlateEntry,
   type RosterModelId,
 } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from './roster-seats.test-fixture.ts';
 
 /**
  Issue the cases in this file credit.
