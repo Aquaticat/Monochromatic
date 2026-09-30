@@ -13,6 +13,7 @@ import {
   namesOneOf,
   readCandidateNames,
 } from './contest-ballot-wire.ts';
+import { isJsonRecord, } from './json-guard.ts';
 import {
   HOUSE_CORRECTION_IS_AN_IMPROVEMENT,
   POLISH_GATE_HOUSE_RULES,
@@ -191,7 +192,11 @@ export type ConsolidationPolishGateSubject = {
  Raw reply shape before candidate names are narrowed.
  */
 export type ConsolidationPolishGateWire = {
-  readonly choice: string;
+  /**
+   Text this judge would ship, a name the guard has already checked, so the
+   reader takes it as it stands.
+   */
+  readonly choice: PolishChoice;
   readonly unsupported: unknown;
   readonly dropped: unknown;
   readonly reason: string;
@@ -243,17 +248,13 @@ function isPolishChoice(value: unknown,): value is PolishChoice {
 export function isConsolidationPolishGateWire(
   value: unknown,
 ): value is ConsolidationPolishGateWire {
-  if (((typeof value) !== 'object') || (value === null))
-    return false;
-  if (!('choice' in value))
+  if (!isJsonRecord(value,))
     return false;
   if (!('unsupported' in value))
     return false;
   if (!('dropped' in value))
     return false;
-  if (!('reason' in value))
-    return false;
-  return isPolishChoice(value.choice) && ((typeof value.reason) === 'string');
+  return isPolishChoice(value.choice,) && ((typeof value.reason) === 'string');
 }
 
 /**
@@ -280,7 +281,7 @@ export function readConsolidationPolishBallot(
    */
   const dropped = isStringList(wire.dropped,) ? wire.dropped : [];
   return {
-    choice: isPolishChoice(wire.choice,) ? wire.choice : CONTEST_REFUSAL,
+    choice: wire.choice,
     unsupported: readCandidateNames({
       findings: unsupported,
       names: POLISH_NAMES,

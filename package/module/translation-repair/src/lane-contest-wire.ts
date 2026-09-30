@@ -4,6 +4,7 @@ import { communityRenderingsBlock, } from './community-glossary.ts';
 import type { SliceSyntax, } from './chunk-document.ts';
 import { JUDGE_LINE_STRUCTURE_CLAUSE, } from './candidate-judge-rules.ts';
 import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
+import { isJsonRecord, } from './json-guard.ts';
 import {
   CONTEST_POLICY,
   isStringList,
@@ -138,7 +139,11 @@ export type LaneContestBallot = {
  Reply shape a judge is asked for, before it is read.
  */
 export type LaneContestWire = {
-  readonly choice: string;
+  /**
+   Lane this judge would publish, a name the guard has already checked, so
+   the reader takes it as it stands.
+   */
+  readonly choice: LaneChoice;
   readonly unsupported: readonly string[];
   readonly dropped: readonly string[];
   readonly reason: string;
@@ -217,17 +222,7 @@ function isArchiveVerdict(value: unknown,): value is ArchiveVerdict {
  ```
  */
 export function isLaneContestWire(value: unknown,): value is LaneContestWire {
-  if ((typeof value) !== 'object')
-    return false;
-  if (value === null)
-    return false;
-  if (!('choice' in value))
-    return false;
-  if (!('unsupported' in value))
-    return false;
-  if (!('dropped' in value))
-    return false;
-  if (!('reason' in value))
+  if (!isJsonRecord(value,))
     return false;
   return isLaneChoice(value.choice,)
     && isStringList(value.unsupported,)
@@ -263,9 +258,7 @@ export function readLaneContestBallot(
 
   return {
     ...archive,
-    choice: isLaneChoice(wire.choice,)
-      ? wire.choice
-      : 'neither',
+    choice: wire.choice,
     unsupported: readCandidateNames({
       findings: wire.unsupported,
       names: CANDIDATE_NAMES,

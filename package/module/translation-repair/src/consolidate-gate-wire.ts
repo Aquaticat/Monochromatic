@@ -12,6 +12,7 @@ import {
 import { contestSizeNote, } from './contest-size-note.ts';
 import { JUDGE_LINE_STRUCTURE_CLAUSE, } from './candidate-judge-rules.ts';
 import { FRONT_MATTER_DECISION_RULE, } from './front-matter-translation.ts';
+import { isJsonRecord, } from './json-guard.ts';
 import { selectFence, } from './prompt-fence.ts';
 import { renderedBreakPrompt, } from './rendered-break-prompt.ts';
 import { citedReferenceCandidateLines, } from './cited-reference-rule.ts';
@@ -111,7 +112,11 @@ export type GateBallot = {
  Reply shape a judge is asked for, before it is read.
  */
 export type GateWire = {
-  readonly choice: string;
+  /**
+   Rendering this judge would publish, a name the guard has already checked,
+   so the reader takes it as it stands.
+   */
+  readonly choice: GateChoice;
 
   /**
    Findings against the consolidation, a list of strings when the model
@@ -143,17 +148,11 @@ export type GateWire = {
  ```
  */
 export function isConsolidateGateWire(value: unknown,): value is GateWire {
-  if ((typeof value) !== 'object')
-    return false;
-  if (value === null)
-    return false;
-  if (!('choice' in value))
+  if (!isJsonRecord(value,))
     return false;
   if (!('unsupported' in value))
     return false;
   if (!('dropped' in value))
-    return false;
-  if (!('reason' in value))
     return false;
   // THE LISTS ARE NOT CHECKED HERE. `contest-ballot-wire.ts` records that no
   // wording of a finding may cost a voice; a wrong TYPE, a `null` from a model
@@ -189,9 +188,7 @@ export function readConsolidateGateBallot(
   const dropped = isStringList(wire.dropped,) ? wire.dropped : [];
 
   return {
-    choice: isGateChoice(wire.choice,)
-      ? wire.choice
-      : CONTEST_REFUSAL,
+    choice: wire.choice,
     unsupported: readCandidateNames({
       findings: unsupported,
       names: GATE_NAMES,

@@ -136,6 +136,26 @@ await describe({
         },),).toBe(true,);
       },
     },),
+    it({
+      name: 'REFUSES a reply it cannot read as a ballot (not an object, null, or with the choice, a findings key '
+        + 'or the reason missing, or a reason that is not text), and ACCEPTS the same reply whole',
+      fn: async () => {
+        /** The whole reply first, then that reply with one part taken away or broken. */
+        const replies: readonly unknown[] = [
+          { choice: 'standing', unsupported: [], dropped: [], reason: 'the original supports it', },
+          'standing',
+          null,
+          { unsupported: [], dropped: [], reason: 'the original supports it', },
+          { choice: 'standing', dropped: [], reason: 'the original supports it', },
+          { choice: 'standing', unsupported: [], reason: 'the original supports it', },
+          { choice: 'standing', unsupported: [], dropped: [], },
+          { choice: 'standing', unsupported: [], dropped: [], reason: 7, },
+        ];
+        expect(replies.map(function usable(reply,): boolean {
+          return isConsolidateGateWire(reply,);
+        },),).toEqual([ true, false, false, false, false, false, false, false, ],);
+      },
+    },),
   ],
 },);
 
