@@ -1,8 +1,9 @@
 /**
  Tests what the coverage census asks git of the tree it reads (ledger T8),
  each against a throwaway repository with no global or system git
- configuration: the commit the package's files match, and which sources have
- changed since an earlier census's commit. Names are cat-themed invention.
+ configuration: the commit the package's files match, and which files of the
+ work tree have changed since an earlier census's commit, named as the census
+ names sources. Names are cat-themed invention.
 
  @module
  */
@@ -204,8 +205,8 @@ await describe({
   children: [
     it({
       name:
-        'NAMES THE ASKED SOURCES THAT DIFFER FROM A COMMIT, relative to the package as a census names them: one '
-        + 'edited and not committed, one added and committed since, and not one left as it was',
+        'NAMES THE SOURCES THAT DIFFER FROM A COMMIT, relative to the package as a census names them: one edited '
+        + 'and not committed, one added and committed since, and not one left as it was',
       fn: async () => {
         await using repository = await throwawayRepository();
         await gitIn({
@@ -261,8 +262,10 @@ await describe({
     },),
     it({
       name:
-        'NAMES EVERY CHANGED FILE UNDER THE PACKAGE when none is asked about, and none outside it, since a census '
-        + 'reads the package alone',
+        'NAMES EVERY CHANGED FILE IN THE WORK TREE, relative to the package, since a census reads the sources of '
+        + 'other packages the suite loads too: one asked about only inside the package left their stretches matched '
+        + 'by line across an edit (ledger B62). Names git would quote, a space, a double quote, a newline and Han, '
+        + 'come back as the census names them',
       fn: async () => {
         await using repository = await throwawayRepository();
         await gitIn({
@@ -292,9 +295,25 @@ await describe({
           path: 'README.md',
           text: '# Litter\n',
         },);
+        await writeUnder({
+          directory: repository.path,
+          path: 'package/whisker/src/index.ts',
+          text: 'export const whisker = 1;\n',
+        },);
+        /**
+         Sources whose names git quotes in its default output.
+         */
+        const unusual = ['src/猫 "nap".ts', 'src/nap\nkitten.ts',];
+        await Promise.all(unusual.map(async function writeFirst(path,) {
+          await writeUnder({
+            directory: packageDirectory,
+            path,
+            text: 'export const nap = 1;\n',
+          },);
+        },),);
         await commitAll({
           directory: repository.path,
-          message: 'nap, whiskers and litter',
+          message: 'nap, whiskers, litter and whisker',
         },);
         /**
          Commit an earlier census would record.
@@ -310,16 +329,28 @@ await describe({
           path: 'README.md',
           text: '# Litter, fresh\n',
         },);
+        await writeUnder({
+          directory: repository.path,
+          path: 'package/whisker/src/index.ts',
+          text: '// one more line renumbers the rest of the file\nexport const whisker = 1;\n',
+        },);
+        await Promise.all(unusual.map(async function rewrite(path,) {
+          await writeUnder({
+            directory: packageDirectory,
+            path,
+            text: 'export const nap = 2;\n',
+          },);
+        },),);
         expect([...await sourcesEditedSince({
           packageDirectory,
           head,
           sources: [],
-        },),],).toEqual(['doc/whiskers.md',],);
-        expect([...await sourcesEditedSince({
-          packageDirectory,
-          head,
-          sources: ['src/nap.ts',],
-        },),],).toEqual([],);
+        },),].toSorted(),).toEqual([
+          '../../README.md',
+          '../whisker/src/index.ts',
+          'doc/whiskers.md',
+          ...unusual,
+        ].toSorted(),);
       },
     },),
   ],
