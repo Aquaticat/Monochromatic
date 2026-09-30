@@ -567,6 +567,51 @@ The current task registry lacked historical #82 and still listed completed #68/#
 those entries were reconciled from retained receipts.
 New #82 is `Record separate intact SDK prefix correction outcome`,
 not the historical diagnostic task or new authority.
+That finite milestone is complete:
+routed audit `proc_cf32` and new full checkpoint `proc_d6ed` passed.
+The checkpoint rendered 23 documents with zero native diagnostics,
+read no genuine originals,
+and left the Unicode Sätteri report untouched.
+The new renderer uses source-path hashes and create-new HTML filenames;
+23 distinct scratch HTML artifacts were measured.
+Older basename-only renderers ran their checks but did not establish distinct retained HTML per `README.md`.
+They remain preserved without replay.
+
+Current #83 designs the fresh synthetic sensitivity catalog in `contract/lifecycle/fork-sensitivity-design/`.
+Final independent design review found no conceptual blocker,
+not executable-source or runtime clearance.
+The catalog predeclares 13 pairs/26 workers:
+34 SDK sessions,
+68 scripted responses,
+34 own callbacks,
+32 actual managers,
+six child allocations,
+and four successful ledger publications.
+Prefix JSON and persisted-path guards are aggregate claims;
+constructor wrappers cap allocation while measuring forwarded requests;
+eligibility/quota swapping tests order,
+not necessity.
+Fault-retained managers are not published ledger children.
+Each new family needs exact source/closure review,
+positive controls,
+pair-identical references,
+and one selected source edit before freezing.
+The serial phase shares one 900,000 ms preparation/acceptance deadline across all families;
+it does not reset between implementation tasks or guarantee all workers their full 60-second allowance.
+No new source implementation,
+freeze,
+or sensitivity dispatch exists.
+Next:
+ implement prefix,
+persisted-path,
+and fork/recapture modules separately,
+then one combined controller with pre-call accounting and unopened-suffix stops.
+No genuine originals,
+model calls,
+grants,
+represented actions,
+reserved scenarios,
+or production changes belong to this sensitivity catalog.
 The completed `root-sensitivity-controls/` phase read no genuine original and replayed no interaction.
 The new `fork-mechanical-controls/` worker privately rereads retained admitted evidence before SDK startup;
 it does not mutate originals,
