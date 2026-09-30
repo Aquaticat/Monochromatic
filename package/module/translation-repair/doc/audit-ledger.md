@@ -4386,6 +4386,19 @@ and a definition's opening label is read with `nonNullishOrThrow`
 rather than dropping the pair from the relabel unsaid (263):
 a block is zoned as a definition only for the parser's `footnoteDefinition` node,
 whose text opens with its label.
+That reading is measured as well:
+a scratch probe (`definition-label-probe.mjs`) parsed every page of the pinned corpus,
+the original,
+the archive and the traditional-Chinese page of each of the 92 entries,
+and read a label off each of their 158 definition blocks
+(52,
+50 and 56),
+none unlabelled;
+definitions indented by one and by three spaces,
+lazily continued,
+of two paragraphs and adjacent read a label too,
+and a definition block whose text was shifted by one character read as unlabelled,
+so the count could show one.
 The media-adjacency reads of a pair's blocks (`media` 153)
 and of a run's ends (205)
 are range-checked upstream
