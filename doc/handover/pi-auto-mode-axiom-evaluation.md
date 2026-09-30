@@ -276,7 +276,48 @@ The original launch budget is consumed.
 The user has authorized a new attempt;
 no second window has yet been opened by this correction.
 The [human handoff](../runbook/pi-auto-mode-confirmation-fixture.md) remains fixture-only and is not a replay instruction.
-Task #68 is not complete and downstream gates remain separate.
+Task #68 is now complete only at private Q23-A concrete-host workflow admission.
+Actual controller `proc_7c5f` completed with `approved-fixture`,
+original document privately captured,
+accepted fixture scope bound,
+and temporary answer workspace removed.
+No external model call or production grant was created.
+Successful local reconciliation `proc_3cd6` was followed by separately named,
+private-diagnostic-fd reconciliation `proc_5cce`.
+Original UTF-8 bytes,
+code-authored presentation/nonce,
+accepted scope,
+frozen identities,
+deadline,
+and finalization match.
+The successful parser branch explicitly constructs populated scope and digest fields;
+this is not a comparison of missing values.
+The original verifier's successful path did not qualify its unsafe assertion-error projection;
+its separately named protected reader leaves all diagnostics private.
+No old constructor or genuine window was replayed.
+
+One-shot `proc_5517` process inspection found no exact request/answer argument matches,
+and no remaining new answer workspace/file.
+That limited null does not independently attest GUI surface closure,
+all producers,
+physical-person identity,
+or comprehension.
+The original failed epoch's potentially sensitive workspace remains untouched and unadmitted.
+The admitted writer is the private observed first-party-derived requester with the qualified helper guard,
+not a production writer or unchanged deployed helper.
+
+Task #69 is active:
+qualify reset,
+verified lineage/inheritance,
+cache/navigation non-revival,
+and finalization after intervening changes using disposable actual-consumer sessions.
+Carry the private original witness binding,
+not the public summary boolean.
+Do not reclassify the exact fixture approval as a reusable directive,
+broader action approval,
+or production grant.
+Synthetic lifecycle records remain explicitly synthetic.
+Other writers and the remaining downstream gates remain unqualified.
 
 ## Current interview state
 

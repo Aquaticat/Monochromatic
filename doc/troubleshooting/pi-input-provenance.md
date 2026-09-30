@@ -830,6 +830,52 @@ private guarded-copy test,
 unchanged-helper omission,
 and source-method limits are the local filing artifact.
 
+### New genuine fixture retains original response and accepted scope
+
+The user-authorized clean epoch `proc_7c5f` completed through the actual default Ghostty/Nano workflow.
+Its validated summary reports `approved-fixture`,
+private original-document capture,
+accepted fixture scope binding,
+and temporary answer-workspace removal.
+No external model call or production grant was created.
+This is a private Q23-A workflow witness,
+not proof of physical-person identity or comprehension.
+The original failed epoch remains untouched and was not reopened or replayed.
+
+The positive parser path explicitly constructs its accepted scope and digest fields,
+so the successful comparison is not two missing values.
+The actual writer owns the presentation/capture transaction;
+a recorded workflow string or summary boolean alone would not establish that binding.
+Protected local reconciliation `proc_5cce` checks the private original UTF-8 bytes,
+nonce/presentation,
+exact accepted scope,
+frozen identities,
+deadline,
+and finalization.
+It emits only fixed non-content metadata.
+The successful initial reader `proc_3cd6` did not protect its assertion-error details;
+a separate reader/controller was added rather than replaying it.
+All worker stdout/stderr in the protected reconciliation stay on ignored private fds.
+
+One-shot exact-argument inspection `proc_5517` found no matching request/answer processes,
+and no remaining new answer workspace/file.
+This null does not independently attest GUI surface termination or other producer coverage.
+No unrelated process was signalled.
+Task #68 closes only the private configured-writer/original-response/exact-fixture-scope gate.
+Production writers,
+other input producers,
+lifecycle/finalization,
+semantic qualification,
+handback,
+and replacement parity remain separate.
+
+A proposed policy clarification belongs with the existing data-sharing guidance,
+without changing `AGENTS.md` in this task:
+private-data processors should capture worker stdout/stderr privately and project fixed non-content fields.
+Assertion exceptions can include private expected/actual values;
+successful output projection does not qualify failure-path privacy.
+The existing media inspection/masking requirements should remain unchanged.
+
 ## Proposed containment and unverified remedies
 
 Treat conversational evidence without a verified witness as non-authorizing.

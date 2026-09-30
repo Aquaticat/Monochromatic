@@ -22,10 +22,11 @@ A new window requires a separately corrected,
 frozen,
 and authorized epoch.
 The user has now authorized all tests within the existing qualification limits.
-The agent is preparing a corrected epoch with fresh scope,
-private receipts,
-and a bounded response wait.
-The human response steps apply only when the agent explicitly announces that new epoch.
+The separately frozen clean epoch completed as `proc_7c5f` with `approved-fixture`.
+Its original document and accepted scope were privately retained and reconciled.
+No production permission was granted.
+The human response steps are retained as the completed procedure,
+not permission to replay it or respond again.
 
 If the inactive editor is still open,
 press **Ctrl+X**.
@@ -56,9 +57,14 @@ Controller loss or cancellation stops the requester and cannot produce an accept
 The initial device probes reported locked.
 Later dispatch-readiness probes reported unlocked,
 and the agent dispatched the new one-shot controller as `proc_7c5f`.
-Original response and completion remain pending;
-if its window is absent,
-report that observation rather than entering a response elsewhere.
+That one-shot attempt is now complete with `approved-fixture`,
+privately retained original document,
+and accepted fixture scope binding.
+Its controller and constructors must not be replayed.
+The response steps remain historical;
+do not enter another response in an inactive window.
+A later test needs its own explicitly announced,
+separately frozen epoch.
 The private helper has a tested expected-cancellation guard;
 production and the earlier frozen helper remain unchanged.
 The earlier unreferenced attempt remains separate private evidence.
