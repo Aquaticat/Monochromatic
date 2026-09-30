@@ -38,12 +38,21 @@ Current references:
 
 ## Policy freshness checkpoint
 
-The current `AGENTS.md` was fully read after the freshness check found SHA-256
-`2f4377aa7b950d178999a88337bfd7ec1dba1723313d1650d712e06b2dc3a7cc`.
-Git history identifies `d03ec673e`,
-`docs(AGENTS.md): apply rule-by-rule optimization`.
+A new protected-policy check after the source-only fork checkpoint found SHA-256
+`1f5c31c969c5a18aa994465baf7afe25f00a7a9ab11d6190bcab56746732bd4b`:
+31,220 bytes and 1,393 lines.
+The file was read completely.
+Git history identifies `483f6f81a725b38830c8c0c4993c052e2119f58d`,
+`docs(AGENTS.md): make low context no reason to stop in PXQ`.
+The measured commit diff changes the queue-continuation paragraph;
+that source observation does not establish semantic equivalence or live-harness reload.
+Full structural recapture of these new bytes has not occurred.
 The file has no local diff;
 this task did not edit or revert it.
+The historical optimized policy identity was
+`2f4377aa7b950d178999a88337bfd7ec1dba1723313d1650d712e06b2dc3a7cc`,
+from `d03ec673e`,
+`docs(AGENTS.md): apply rule-by-rule optimization`.
 Unrelated music-player design changes are concurrent work and remain untouched.
 
 The frozen studies and original policy index used
@@ -54,7 +63,7 @@ The old 276-tag structural count does not describe the new file.
 Do not assume semantic equivalence from the optimization commit title,
 or that a live harness already reloaded its instruction snapshot.
 
-The separate `contract/policy-2f4377aa` epoch captured all 31,214 current policy bytes.
+The historical `contract/policy-2f4377aa` epoch captured all 31,214 policy bytes at that observation.
 Process `proc_67ad` passed using the unchanged native-coordinate adapter and indexer:
 204 tagged paragraphs,
 48 headings,
