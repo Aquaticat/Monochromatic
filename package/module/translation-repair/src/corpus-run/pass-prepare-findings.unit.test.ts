@@ -5,6 +5,11 @@
  corrected archive once rebuilt its findings from the re-preparation and
  dropped the attestation's.
 
+ READ OFF THE CHANNEL THE ARTIFACT RECORDS (ledger B54): the preparation's
+ `alignmentFindings`. These cases read a findings list beside the
+ preparation, which the entry pipeline never read, so the findings they
+ pinned reached no artifact.
+
  Fixtures are cat-themed invention; no corpus content appears here.
 
  @module
@@ -221,7 +226,7 @@ async function prepared(
   await rm(dir, { recursive: true, force: true, },);
   return {
     targetText: paired.prepared.targetText,
-    findings: paired.findings,
+    findings: paired.prepared.alignmentFindings,
     reviewed: asked.includes(ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT.json_schema.name,),
   };
 }

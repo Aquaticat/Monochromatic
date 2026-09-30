@@ -1425,12 +1425,22 @@ await describe({
           entryId: ARCHIVE_REVISION_ENTRY.id,
         },), 'utf8',);
 
+        /**
+         What the written artifact says preparation found (ledger B54).
+         */
+        const preparationFindings = parseSettledTwoLaneArtifact({ value: JSON.parse(artifactText,), },)
+          .preparation
+          .alignmentFindings;
+
         expect(outcome,).toEqual({ kind: 'settled', });
         expect(served,).toContain('archive_block_review');
         expect(artifactText.includes(UNSUPPORTED_ARCHIVE_BLOCK,),).toBe(false,);
         expect(page.includes(UNSUPPORTED_ARCHIVE_BLOCK,),).toBe(false,);
         expect(page,).toContain(FRESH);
         expect(page,).toContain(BIRD_FRESH);
+        expect(preparationFindings.some(function namesRevision(finding,): boolean {
+          return finding.startsWith('archive block reviewed and revised: ',);
+        },),).toBe(true,);
       },
     },),
     it({

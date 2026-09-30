@@ -246,7 +246,7 @@ await describe({
         await rm(dir, { recursive: true, force: true, },);
 
         expect(paired.prepared.targetText,).toContain('Translator: Cat Friend.');
-        expect(paired.findings.some(function namesRetainedBlock(finding,): boolean {
+        expect(paired.prepared.alignmentFindings.some(function namesRetainedBlock(finding,): boolean {
           return finding.startsWith('archive block reviewed and retained: ');
         },),).toBe(true,);
       },

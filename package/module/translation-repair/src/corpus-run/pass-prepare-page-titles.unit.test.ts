@@ -178,7 +178,7 @@ async function prepared({ sourceText, }: { readonly sourceText: string; },) {
   },);
   return {
     identityContext: paired.prepared.identityContext ?? '',
-    findings: paired.findings,
+    findings: paired.prepared.alignmentFindings,
     lexiconAsked,
   };
 }

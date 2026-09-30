@@ -364,7 +364,8 @@ await describe({
           .targetText
           .includes('Aside B',),).toBe(true,);
         expect(
-          paired.findings
+          paired.prepared
+            .alignmentFindings
             .some(function namesRemaining(finding,): boolean {
               return finding.includes('unclaimed archive blocks remain after the single correction round',);
             },),
