@@ -402,16 +402,45 @@ The completed origin reference does not qualify the unopened fork/child/reset su
 Earlier source-only clearance missed that transcript premise;
 no Pi defect or upstream filing is established.
 The old runtime/source/freeze and metadata epochs are preserved without replay.
-A separate `fork-system-prefix-controls/` correction is predeclared,
-unimplemented and undispatched.
-Its scope is immutable owned prefix entry ID/JSON and full pre-copy branch JSON retention,
-exact role order and named call/result/stop positions,
+A separate `fork-system-prefix-controls/` correction passed its finite intact mechanical reference.
+Its immutable owned prefix entry ID/JSON and full pre-copy branch JSON remain machine history,
 not configuration fidelity or instruction authority.
 Independent scope review dissolved configuration-derived section equality as a prerequisite
 for mechanical copying consistency only.
-New prefix rejection controls,
-source review,
-closure freeze and runtime remain required.
+Pure freeze `proc_ba0c` passed four syntax checks;
+eight-case synthetic acceptance/rejection `proc_16e6` passed without SDK/original reads.
+A truncated combined-source review did not clear the closure.
+Complete explicit-body independent review,
+new digest intake `proc_bd33`,
+and full freeze `proc_7264` with twelve syntax modules preceded protected runtime `proc_72e8`.
+It passed after one second:
+two actual SDK sessions,
+four first-party scripted responses,
+two inert callbacks,
+two owned managers,
+one reserved independent fork,
+exit zero,
+stdout 1,058 bytes,
+stderr empty,
+and no signal or bounded stop.
+Each session supplied its own completed non-error persisted result and final stop.
+Initial child persisted parent-path/prefix JSON matched immutable origin references before publication.
+Origin reset preserved the existing positive mechanical child;
+child reset preserved historical linkage and the positive post-reset origin snapshot.
+Original validation preceded SDK imports;
+no original content exported,
+external fetch/models,
+fixture action,
+or grant write occurred.
+The old failed runtime remains consumed and is not retroactively qualified.
+Input rejections do not prove guard necessity or source-omission sensitivity.
+Wrong-root/cross-owner prefix capture,
+ledger recapture,
+and new persisted-path rejection branches remain untested.
+Cache/target/source/deadline finalization,
+current human grant/directive admission,
+complete-property/raw-byte freshness,
+and preparation-inclusive handback remain separate gates.
 Current human-grant eligibility remains unestablished;
 inheritance does not supply an initial human grant.
 No genuine original mutation or interaction replay is permitted.
