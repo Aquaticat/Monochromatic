@@ -3026,6 +3026,22 @@ and the whole suite at `a564eccc7` printed 1,389 PASS lines and no FAIL line.
 Many older tests check a refusal by its class or by throwing at all,
 so each batch reads its test's refusal cases and makes each name the check it means.
 
+The fourth batch (`74387b886`) took the contest verdict,
+contest,
+lanes,
+row relations,
+comparison,
+consolidation
+and consolidated slice readers,
+11 stretches.
+All were reachable but two lookups following a check that two lists hold the same number of rows,
+now narrowed with `nonNullishOrThrow`.
+Reading every consolidation refusal whole found five reasons that read wrong after "expected",
+two of them saying the opposite of what the reader wants (B33).
+Its census of six test files (`census-7fz0Nm`) read the 11 claimed stretches as run and none still cold.
+The whole-artifact and consolidated-parts tests still check many refusals by a fragment of path or reason;
+tightening them is queued as its own pass.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -10202,6 +10218,57 @@ so those imports are `import type`.
 The guard passes from `c077cc881`,
 and the whole suite on it passes 1,385 describe blocks with none failing,
 the one new block the guard's.
+
+### B33: artifact refusals that say the opposite of what they expect
+
+Status:
+fixed 2026-09-30 (UTC),
+found the same day by T8's fourth batch,
+whose probe printed each refusal of the consolidation reader whole.
+`ArtifactParseError` prints `artifact parse failed at <path>: expected <reason>.`,
+so a reason is read as what the reader wanted there.
+Six were written as something else.
+Two said the opposite of what the reader wants:
+text under a terminal that changed nothing printed "expected text to ship,
+from a slice whose terminal is … and settled on no change",
+and a contested slice outside the comparison printed "expected index naming no recomputed comparison row".
+Four were sentences that do not follow "expected":
+the three refusals of a consolidated terminal's shipped record
+("expected a slice whose terminal is consolidated must carry the text it ships",
+and two that ship an archive or incumbent instead),
+and a polish whose changed flag disagrees with its text
+("expected whether final text differs from baseText").
+No test caught them,
+since every case quoting one checked a fragment
+("settled on no change",
+"must carry the text it ships")
+that the wrong reading also contains.
+
+The census (`reason-census.mjs` in the audit's scratch folder,
+over the package's own parser)
+read all 145 reasons the package's source passes to the class;
+a text search finds 146 constructions,
+the extra one the example in the class's own TSDoc.
+The other 139 read as what was expected.
+Phrases naming a state
+("present in one slice",
+"unfilled,
+since …")
+read acceptably after "expected" and stay.
+
+Fix:
+`74387b886` rewords the five in the consolidation and contest readers
+("expected no text to ship,
+since a slice whose terminal is … settled on no change";
+"expected an index naming a slice the recomputed comparison holds";
+"expected the text a slice whose terminal is consolidated ships",
+and so on),
+and `ebaa97908` makes the polish flag's reason name the value
+("expected true,
+which is whether final text differs from baseText").
+Each test quoting one now checks the whole message.
+No scan can tell a well-formed reason from another,
+so the prevention doc's rule is to read each new refusal's message whole in its test.
 
 ## Process mistakes in this audit
 
