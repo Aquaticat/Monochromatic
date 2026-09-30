@@ -20,6 +20,7 @@ internal val filenameComparisonScenes: List<String> = listOf(
     "rankfileplacementfull", "rankfileplacementsupport",
     "rankfileliteralfull", "rankfileliteralsupport",
     "rankfilevisibilityfull", "rankfilevisibilityconditional",
+    "rankfilevisibilitysupportfull", "rankfilevisibilitysupportconditional",
 )
 
 /**
@@ -58,9 +59,6 @@ internal fun filenameComparisonSceneOrEmpty(candidate: String): String {
  * ```
  */
 internal fun filenameComparisonHit(request: FilenameComparisonPresentation): SearchRankingHit {
-    if (request.suffixInSupport && request.conditionalVisibility) {
-        throw IllegalArgumentException("Comparison fixture varies suffix placement or visibility, not both at once.")
-    }
     // What: Bind the immutable record to a named local rather than modify it in place.
     // Why: All identity pieces remain available for exact comparison assertions.
     //
@@ -87,7 +85,7 @@ internal fun filenameComparisonHit(request: FilenameComparisonPresentation): Sea
     val title: String
     // The support line is another immutable text value assigned by the same presentation branch.
     val detail: String
-    if (request.suffixInSupport && item.literalSuffix.length > 0) {
+    if (request.suffixInSupport && suffixVisible && item.literalSuffix.length > 0) {
         title = item.stem
         // What: Dollar interpolation inserts values into literal text; it does not parse a filename.
         // Why: The exact dot and original suffix case remain visible beside kind and useful parent.
@@ -128,15 +126,18 @@ internal fun filenameComparisonHits(scene: String): List<SearchRankingHit> {
         items = filenamePlacementLongItems()
     } else if (scene == "rankfileliteralfull" || scene == "rankfileliteralsupport") {
         items = filenamePlacementLiteralItems()
-    } else if (scene == "rankfilevisibilityfull" || scene == "rankfilevisibilityconditional") {
+    } else if (scene == "rankfilevisibilityfull" || scene == "rankfilevisibilityconditional"
+        || scene == "rankfilevisibilitysupportfull" || scene == "rankfilevisibilitysupportconditional") {
         items = filenameVisibilityAuthoredScope()
     } else {
         throw IllegalArgumentException("Unknown filename comparison fixture: $scene")
     }
     // Read-only boolean flags vary placement and visibility in separate scene pairs.
     val suffixInSupport: Boolean = scene == "rankfileplacementsupport" || scene == "rankfileliteralsupport"
+        || scene == "rankfilevisibilitysupportfull" || scene == "rankfilevisibilitysupportconditional"
     // This flag acts only on explicit fixture eligibility, never actual inventory or matcher output.
     val conditionalVisibility: Boolean = scene == "rankfilevisibilityconditional"
+        || scene == "rankfilevisibilitysupportconditional"
     // What: ArrayList is an owned mutable builder, unlike the read-only List returned to consumers.
     // Why: Build one linear result list while preserving authored order and subset membership.
     //

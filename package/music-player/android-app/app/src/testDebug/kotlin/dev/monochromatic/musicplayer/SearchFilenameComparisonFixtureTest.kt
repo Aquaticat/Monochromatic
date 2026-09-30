@@ -158,37 +158,33 @@ class SearchFilenameComparisonFixtureTest {
         assertEquals("", filenameComparisonSceneOrEmpty("rankfileplacementfull"))
     }
 
-    /** Check causal study modes cannot accidentally change both independent dimensions at once. */
-    @Test fun combinedStudyModesAreRejected() {
-        // What: try/catch narrows the thrown class; the binding's message is checked, not discarded.
-        // Why: Rejection must come from the intended independent-study guard.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // try { format({ item, suffixInSupport: true, conditionalVisibility: true }); }
-        // catch (error) { expect(error.message).toEqual(expected); return; }
-        // throw new Error('Combined study modes did not throw.');
-        // ```
-        try {
-            // What: Construct the immutable presentation request, not a native result action.
-            // Why: The invalid fixture request is tested directly at its owned boundary.
-            //
-            // In TS you'd write (pseudocode):
-            // ```ts
-            // const request = { item: items[0], suffixInSupport: true, conditionalVisibility: true };
-            // ```
-            val request = FilenameComparisonPresentation(filenamePlacementLongItems()[0], true, true)
-            filenameComparisonHit(request)
-        } catch (error: IllegalArgumentException) {
-            assertEquals("Comparison fixture varies suffix placement or visibility, not both at once.", error.message)
-            return
+    /** Check either independent visibility choice remains reachable with supporting-line placement. */
+    @Test fun supportingPlacementComposesWithConditionalVisibility() {
+        val full = filenameComparisonHits("rankfilevisibilitysupportfull")
+        val conditional = filenameComparisonHits("rankfilevisibilitysupportconditional")
+        assertEquals(full.size, conditional.size)
+        assertEquals("Cam Solo", full[0].title)
+        assertEquals(full[0].title, conditional[0].title)
+        assertEquals("Track · .opus · Cult of Luna / Studio · Play", full[0].detail)
+        assertEquals("Track · Cult of Luna / Studio · Play", conditional[0].detail)
+        assertEquals("Track · .flac · Archive / Live · Play", conditional[3].detail)
+        // Keep every required suffix/context cue unchanged in the composed control pair.
+        for (index in 1 until full.size) {
+            assertEquals(full[index], conditional[index])
         }
-        throw AssertionError("Combined study modes did not throw.")
     }
 
     /** Check unknown comparison routing never silently substitutes a presentation. */
     @Test fun unknownComparisonIsRejected() {
-        // Reuse the typed catch and explicit failure proof for independent scene routing.
+        // What: try/catch narrows the thrown class; the binding's message is checked, not discarded.
+        // Why: Rejection must come from the owned unknown-comparison guard.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // try { filenameComparisonHits("rankfilecomparisonmissing"); }
+        // catch (error) { expect(error.message).toEqual(expected); return; }
+        // throw new Error("Unknown filename comparison scene did not throw.");
+        // ```
         try {
             filenameComparisonHits("rankfilecomparisonmissing")
         } catch (error: IllegalArgumentException) {
