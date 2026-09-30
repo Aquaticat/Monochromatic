@@ -471,3 +471,95 @@ A future upstream filing would require its own scope,
 duplicate,
 contribution,
 and demonstrated-fix checks.
+
+## Separate lifecycle API intake stop and staged diagnostic
+
+### Symptom and established boundary
+
+The new synthetic SDK API intake `proc_256c` stopped at its 15-second child bound.
+Its outer Node driver emitted
+`AssertionError [ERR_ASSERTION]: SDK API intake failed; synthetic diagnostics retained privately; no replay`.
+Retained outcome metadata reports child status null,
+`SIGTERM`,
+`ETIMEDOUT`-based bounded stop,
+and empty private stdout/stderr.
+No synthetic fixture-cwd or session-files directory was created.
+No actual SDK session-manager instance,
+provider,
+model,
+genuine original,
+or GUI interaction was reached.
+The failed epoch is preserved without replay.
+
+### Source trace and cause limit
+
+The owned `contract/lifecycle/api-intake/run.mjs:21` launches Node with
+`timeout: plan.childDeadlineMs` and private file-backed stdout/stderr.
+Its `run.mjs:23` records `child.error?.code === 'ETIMEDOUT'`.
+The worker's `probe.mjs:17` verifies every retained dependency file before importing the SDK.
+`probe.mjs:25` then awaits the SDK barrel;
+`probe.mjs:27` creates the synthetic fixture directory before
+`probe.mjs:28` constructs the first `SessionManager`.
+These are private qualification-repository paths,
+not production changes or upstream patches.
+
+```javascript
+// Private contract/lifecycle/api-intake/probe.mjs:25 to 28
+const { SessionManager } = await import(pathToFileURL(join(staging, 'repository', manifest.sdkRoot, 'dist/index.js')).href);
+const fixtureCwd = join(privateRoot, 'fixture-cwd');
+mkdirSync(fixtureCwd, { mode: 0o700 });
+const manager = SessionManager.inMemory(fixtureCwd);
+```
+
+This places the recorded stop before API construction,
+not at a reset,
+fork,
+or permission decision.
+The original worker had no stage markers;
+dependency validation versus import versus filesystem setup remains unassigned.
+Empty output alone does not identify a cause.
+
+### Verification and non-workaround result
+
+A distinct staged diagnostic `proc_0a95` used the same retained SDK graph and a 60-second bound
+within the historical SDK consumer envelope.
+It constructed no session manager and did not replay any original lifecycle API check.
+It checked 11,847 dependency files,
+completed the barrel import and synthetic directory creation,
+and exited zero with empty private stderr.
+Its observed cumulative dependency/import completion times were
+`5299.591325` ms and `5777.045059` ms.
+These are this diagnostic's observations,
+not a timing comparison or proof of the original stage/cause.
+
+The clean catalog is the separately staged graph/import/setup diagnostic.
+The failing catalog is the preserved original bounded stop with no fixture directory.
+A larger bound is not established as a fix for that original incident.
+No SDK API,
+permission lifecycle,
+producer coverage,
+or five-second handback claim follows from the diagnostic success.
+Unopened API checks require a separately declared namespace and their own outcome.
+
+### What does not work
+
+- Replaying the consumed original probe would destroy its once-only history.
+- Inferring import failure from absent stdout skips dependency checking and setup.
+- Calling the later successful diagnostic a reproduced fix would conflate distinct runs.
+- Treating copied session headers or IDs as authority would bypass original-source admission.
+
+### Upstream filing decision
+
+No upstream defect or fileable draft is established.
+The existing pinned source clone remains read-only.
+The failure is at an owned diagnostic boundary,
+not an identified SDK or Node implementation path.
+Upstream fault,
+a supported failing API use case,
+a deciding source cause,
+contribution/maintainer acceptance,
+a compatible tested fix,
+and duplicate-tracker applicability remain unestablished for this incident.
+No vendor contact,
+account change,
+or upstream filing was made.

@@ -306,7 +306,21 @@ The original failed epoch's potentially sensitive workspace remains untouched an
 The admitted writer is the private observed first-party-derived requester with the qualified helper guard,
 not a production writer or unchanged deployed helper.
 
-Task #69 is active:
+Task #69 is active.
+Its first actual SDK API intake `proc_256c` hit its 15-second child bound before creating the fixture directory.
+Retained stop metadata is `SIGTERM`,
+null child status,
+and empty private stdout/stderr.
+No SDK API instance was reached,
+but dependency validation versus import versus setup is not distinguished.
+The once-only attempt is preserved without replay.
+A separately declared staged diagnostic `proc_0a95` is now running,
+with no lifecycle API call,
+genuine input,
+model,
+or GUI interaction.
+
+Next qualification work:
 qualify reset,
 verified lineage/inheritance,
 cache/navigation non-revival,
