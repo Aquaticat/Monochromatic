@@ -11610,6 +11610,53 @@ a stage that buys model calls asks the floor's reach first,
 whoever its caller is;
 a caller's check is not the stage's.
 
+### B49: standing flags that defaulted to letting a standing ship
+
+Found by the eighth coverage batch (census-dUOMFS),
+at `input.standingMayShip ?? true` in `consolidate-slice-buy.ts`.
+Four consolidation functions defaulted `standingMayShip`,
+and two of them `standingEligible`,
+to `true`:
+the slice buy and its attempt,
+the settlement,
+and the persistence predicate and writer.
+The driver passes both flags on every production call,
+so no production caller used a default;
+a caller that forgot one would have let a standing no contest endorsed,
+or no gate found eligible,
+ship as though it were both.
+That is the silent permissive default of B21's seventh family.
+
+Fixed in `30127d1c3`:
+the flags are required.
+The test calls that relied on a default were listed by a type check against a rebuilt `dist`
+(a check before the rebuild read the old declarations and passed),
+and each now passes the value the default gave.
+
+Recurrence:
+a flag whose absent value grants something takes no default;
+and a type check of tests that import the build runs after the build.
+
+### B50: a test named for an exit the code stopped taking
+
+Found by the eighth coverage batch (census-dUOMFS):
+the census found the settlement's absence exit cold,
+yet a case in `consolidate-settle.unit.test.ts` was named for it,
+"the absence the judged round raises over an ineligible standing".
+Its run's log shows the judging returning "nothing proposed" instead:
+since B39,
+a withheld slate on which a voice was heard keeps its wording rather than raising,
+so the case's input no longer reaches the exit its name promised,
+and the name kept that exit looking covered.
+Renamed in the B50 commit to the path it takes,
+with the `translate-no-candidate` finding asserted;
+whether the absence exit can still be reached at all is its own entry.
+
+Recurrence:
+when a change moves an input to a different exit,
+rename or repoint every case named for the old one;
+a case name is a coverage claim no runner checks.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

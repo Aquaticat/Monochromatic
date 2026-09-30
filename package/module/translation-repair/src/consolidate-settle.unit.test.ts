@@ -1556,9 +1556,9 @@ await describe({
     },),
 
     it({
-      name: 'KEEPS THE ARCHIVE when the withheld slate reaches the judges with no candidate at all, the '
-        + 'absence the judged round raises over an ineligible standing: the one proposal the floor '
-        + 'passed says nothing, so nothing is left to choose',
+      name: 'KEEPS THE ARCHIVE when the withheld slate reaches the judges with no candidate at all: the one '
+        + 'proposal the floor passed says nothing, so the judging returns "nothing proposed" with a voice '
+        + 'heard (ledger B39; this case named an absence the judging stopped raising there)',
       fn: async () => {
         /**
          Calls served.
@@ -1575,6 +1575,7 @@ await describe({
         },);
         expect(settled.terminal,).toBe('slate-unjudged-standing',);
         expect(settled.archiveKept,).toBe(true,);
+        expect(settled.findings,).toContain('translate-no-candidate',);
         expect(settled.polish,).toStrictEqual({
           kind: 'not-run',
           reason: 'unsafe-baseline',
@@ -1585,6 +1586,7 @@ await describe({
         },);
       },
     },),
+
 
     it({
       name: 'SETTLES A PURE RE-WRAPPING WITHOUT BUYING EITHER ROUND, which is what changed on 2026-08-22. '
