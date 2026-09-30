@@ -23,7 +23,8 @@ compare the ordinary player's incumbent filename/title treatment with
 Search and duplicate-name disambiguation before deciding whether another
 visual comparison is needed.
 `evidence/search-filename-presentation-frontier.md` records the source
-audit: the ordinary-player helpers retain filename suffixes,
+audit:
+the ordinary-player helpers retain filename suffixes,
 D11's shortened Settings example does not separately settle Search,
 and the Search fixture lacks real source filenames.
 Internal task 136 checks specifically motivated filename-backed,
