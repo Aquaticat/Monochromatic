@@ -612,7 +612,9 @@ await describe({
         },);
 
         expect(refusalOfReadWrong,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfReadWrong as Error).message,).toContain('archiveText',);
+        expect((refusalOfReadWrong as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.preparation.archiveText: expected a string.',
+        );
       },
     },),
     it({
@@ -665,9 +667,15 @@ await describe({
           },);
         },);
         expect(refusals[0],).toBeInstanceOf(ArtifactParseError,);
-        expect((refusals[0] as Error).message,).toContain('preparation.archiveOriginalSpans',);
+        expect((refusals[0] as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.preparation.archiveOriginalSpans: expected a non-empty '
+            + 'list, since nothing sealed is recorded as absence.',
+        );
         expect(refusals[1],).toBeInstanceOf(ArtifactParseError,);
-        expect((refusals[1] as Error).message,).toContain('preparation.archiveOriginalSpans[0].endOffset',);
+        expect((refusals[1] as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.preparation.archiveOriginalSpans[0].endOffset: expected '
+            + 'an end at or after its start.',
+        );
       },
     },),
     it({
@@ -706,7 +714,10 @@ await describe({
             + 'followed by 64 lowercase hex characters.',
         );
         expect(authorityRefusal,).toBeInstanceOf(ArtifactParseError,);
-        expect((authorityRefusal as Error).message,).toContain('preparation.frontMatterAuthority',);
+        expect((authorityRefusal as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.preparation.frontMatterAuthority: expected \'archive\', the '
+            + 'one authority a preparation records.',
+        );
       },
     },),
     it({
@@ -815,7 +826,10 @@ await describe({
         },);
 
         expect(refusalOfContestsAGap,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfContestsAGap as Error).message,).toContain('slices [0], which are the ones where the two lanes differ, rather than [1]',);
+        expect((refusalOfContestsAGap as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.laneSelection.slices: expected slices [0], which are the '
+            + 'ones where the two lanes differ, rather than [1].',
+        );
       },
     },),
     it({
@@ -846,7 +860,10 @@ await describe({
         },);
 
         expect(refusalOfExtraOnEnvelope,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfExtraOnEnvelope as Error).message,).toContain('lanes.repair.whiskers',);
+        expect((refusalOfExtraOnEnvelope as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.whiskers: expected no key here beyond '
+            + 'result, delivery.',
+        );
         expect(parseSettledTwoLaneArtifact({
           value: artifactWith({
             repairRaw: {
@@ -893,8 +910,9 @@ await describe({
         },);
 
         expect(refusalOfThirdLane,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfThirdLane as Error).message,).toContain('lanes.consolidate',);
-        expect((refusalOfThirdLane as Error).message,).toContain('no key here beyond repair, translate',);
+        expect((refusalOfThirdLane as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.consolidate: expected no key here beyond repair, translate.',
+        );
       },
     },),
     it({
@@ -911,7 +929,10 @@ await describe({
         },);
 
         expect(refusalOfNullInConfig,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfNullInConfig as Error).message,).toContain('CatEntry1.callConfig.budget.slice',);
+        expect((refusalOfNullInConfig as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.callConfig.budget.slice: expected a boolean, number, '
+            + 'string, array, or object, and never null.',
+        );
         expect(parseSettledTwoLaneArtifact({
           value: artifactWith({
             translateRaw: {
@@ -950,7 +971,10 @@ await describe({
         },);
 
         expect(refusalOfRowsOutOfOrder,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfRowsOutOfOrder as Error).message,).toContain('lanes.repair.delivery[0].sliceIndex',);
+        expect((refusalOfRowsOutOfOrder as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.delivery[0].sliceIndex: expected slice 1, '
+            + 'which the raw result names at this position, rather than slice 0.',
+        );
       },
     },),
     it({
@@ -1021,7 +1045,10 @@ await describe({
         },);
 
         expect(refusalOfCoverageDiffers,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfCoverageDiffers as Error).message,).toContain('position 0 names slice 0',);
+        expect((refusalOfCoverageDiffers as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.comparison: expected two ledgers this version can compare '
+            + '(position 0 names slice 0 in the repair ledger and slice 1 in the translate ledger).',
+        );
       },
     },),
     it({
@@ -1085,7 +1112,11 @@ await describe({
         },);
 
         expect(refusalOfSlicesRepeat,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfSlicesRepeat as Error).message,).toContain('this row names 0, so the rows are a repeat',);
+        expect((refusalOfSlicesRepeat as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.delivery[1].sliceIndex: expected a slice '
+            + 'after 0, which the row before this one names, since a ledger is stated in document order and '
+            + 'every check here joins by position; this row names 0, so the rows are a repeat.',
+        );
       },
     },),
     it({
@@ -1148,7 +1179,11 @@ await describe({
         },);
 
         expect(refusalOfSlicesPermuted,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfSlicesPermuted as Error).message,).toContain('this row names 0, so the rows are out of order',);
+        expect((refusalOfSlicesPermuted as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.delivery[1].sliceIndex: expected a slice '
+            + 'after 1, which the row before this one names, since a ledger is stated in document order and '
+            + 'every check here joins by position; this row names 0, so the rows are out of order.',
+        );
       },
     },),
     it({
@@ -1212,7 +1247,11 @@ await describe({
         },);
 
         expect(refusalOfUnblockedRefusal,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfUnblockedRefusal as Error).message,).toContain('lanes.repair.result.status',);
+        expect((refusalOfUnblockedRefusal as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.result.status: expected a status this ledger '
+            + 'could hold: slice 0 reports a withdrawal by whole-document refusal, which only a blocked run '
+            + 'produces.',
+        );
 
         /**
          A blocked run naming a slice its document carries.
@@ -1250,7 +1289,10 @@ await describe({
         },);
 
         expect(refusalOfBlockedShipping,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfBlockedShipping as Error).message,).toContain('lanes.repair.result.status',);
+        expect((refusalOfBlockedShipping as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.result.status: expected a status this ledger '
+            + 'could hold: slice 0 reports assembly having run, which a blocked run never reaches.',
+        );
       },
     },),
     it({
@@ -1274,7 +1316,10 @@ await describe({
         },);
 
         expect(refusalOfShippedDisagrees,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfShippedDisagrees as Error).message,).toContain('lanes.repair.result.changedSliceIndices',);
+        expect((refusalOfShippedDisagrees as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.result.changedSliceIndices: expected 0 '
+            + 'slices, which is what this lane\'s ledger rows say, rather than 1.',
+        );
 
         /**
          A blocked run whose blocked withdrawal stays OUT of the withdrawn
@@ -1339,7 +1384,11 @@ await describe({
         },);
 
         expect(refusalOfAxesDisagree,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfAxesDisagree as Error).message,).toContain('lanes.repair.delivery[1]',);
+        expect((refusalOfAxesDisagree as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.delivery[1]: expected a row whose outcome '
+            + 'and delivery can both be true: slice 1 reports a replacement and an outcome of '
+            + 'not-applicable, so there is no decision for the delivery to describe.',
+        );
       },
     },),
     it({
@@ -1374,12 +1423,13 @@ await describe({
         },);
 
         expect(refusalOfComparisonDisagrees,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfComparisonDisagrees as Error).message,).toContain('CatEntry1.comparison[0]',);
         // The differing field is named; the stored row, which carries the archive
         // text and both lanes' output, is not quoted into a marked message that
         // every CLI prints.
-        expect((refusalOfComparisonDisagrees as Error).message,).toContain('laneRelation',);
-        expect((refusalOfComparisonDisagrees as Error).message,).not.toContain('"repairText"',);
+        expect((refusalOfComparisonDisagrees as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.comparison[0]: expected what this version\'s rules derive for slice 0 '
+            + 'from the ledgers stored beside it; the stored row differs on laneRelation.',
+        );
       },
     },),
     it({
@@ -1524,7 +1574,10 @@ await describe({
         },);
 
         expect(refusalOfCompositionDiffers,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfCompositionDiffers as Error).message,).toContain('lanes.repair.delivery[0].incumbentText',);
+        expect((refusalOfCompositionDiffers as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.delivery[0].incumbentText: expected the '
+            + 'archive wording the raw result records for slice 0.',
+        );
       },
     },),
     it({
@@ -1643,7 +1696,10 @@ await describe({
         },);
 
         expect(refusalOfCountDisagrees,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfCountDisagrees as Error).message,).toContain('lanes.translate.result.changedSliceCount',);
+        expect((refusalOfCountDisagrees as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.translate.result.changedSliceCount: expected 1, '
+            + 'which is how many slices this lane names as shipped.',
+        );
         /**
          What statusDisagrees raised, read for its class as well as its wording.
          */
@@ -1659,7 +1715,10 @@ await describe({
         },);
 
         expect(refusalOfStatusDisagrees,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfStatusDisagrees as Error).message,).toContain('lanes.translate.result.status',);
+        expect((refusalOfStatusDisagrees as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.translate.result.status: expected unfilled, since '
+            + 'this lane records a slice it reached and could not fill.',
+        );
       },
     },),
     it({
@@ -1684,8 +1743,10 @@ await describe({
         },);
 
         expect(refusalOfRepairBorrowsTranslate,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfRepairBorrowsTranslate as Error).message,)
-          .toContain('one of repaired, unchanged, blocked-non-translation',);
+        expect((refusalOfRepairBorrowsTranslate as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.result.status: expected one of repaired, '
+            + 'unchanged, blocked-non-translation.',
+        );
 
         /**
          What translateBorrowsRepair raised, read the same way.
@@ -1702,7 +1763,10 @@ await describe({
         },);
 
         expect(refusalOfTranslateBorrowsRepair,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfTranslateBorrowsRepair as Error).message,).toContain('one of complete, unfilled',);
+        expect((refusalOfTranslateBorrowsRepair as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.translate.result.status: expected one of complete, '
+            + 'unfilled.',
+        );
       },
     },),
     it({
@@ -1812,7 +1876,10 @@ await describe({
         },);
 
         expect(refusalOfUnknownSelection,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfUnknownSelection as Error).message,).toContain('CatEntry1.laneSelection.kind',);
+        expect((refusalOfUnknownSelection as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.laneSelection.kind: expected one of '
+            + 'pending-human-decision, contested.',
+        );
       },
     },),
     it({
@@ -1887,7 +1954,10 @@ await describe({
         },);
 
         expect(refusalOfRelabelled,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfRelabelled as Error).message,).toContain('chunkIndex',);
+        expect((refusalOfRelabelled as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.lanes.repair.delivery[0].chunkIndex: expected no key here '
+            + 'beyond sliceIndex, sourceText, incumbentKind, incumbentText, outcome, shippedText, delivery.',
+        );
       },
     },),
   ],

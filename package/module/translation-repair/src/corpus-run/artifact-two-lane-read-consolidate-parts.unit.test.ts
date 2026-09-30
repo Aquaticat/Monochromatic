@@ -141,7 +141,7 @@ await describe({
 
         expect(refusalOfSilentDrop,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfSilentDrop as Error).message,)
-          .toContain(`at ${SLICE_PATH}: expected the text a slice whose terminal is consolidated ships.`,);
+          .toBe(`artifact parse failed at ${SLICE_PATH}: expected the text a slice whose terminal is consolidated ships.`,);
       },
     },),
 
@@ -163,9 +163,9 @@ await describe({
 
         expect(refusalOfStrayText,).toBeInstanceOf(ArtifactParseError,);
         expect((refusalOfStrayText as Error).message,)
-          .toContain(
-            `at ${SLICE_PATH}: expected no text to ship, since a slice whose terminal is slate-endorsed-standing `
-              + 'settled on no change.',
+          .toBe(
+            `artifact parse failed at ${SLICE_PATH}: expected no text to ship, since a slice whose terminal is `
+              + 'slate-endorsed-standing settled on no change.',
           );
       },
     },),
@@ -183,10 +183,10 @@ await describe({
         },);
 
         expect(refusalOfThirdKind,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfThirdKind as Error).message,)
-          .toContain('consolidation.slices[0].shipped.kind',);
-        expect((refusalOfThirdKind as Error).message,)
-          .toContain('one of archive, consolidated, incumbent, unchanged',);
+        expect((refusalOfThirdKind as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].shipped.kind: expected one of archive, consolidated, '
+            + 'incumbent, unchanged.',
+        );
       },
     },),
 
@@ -206,8 +206,10 @@ await describe({
         },);
 
         expect(refusalOfUnchangedText,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfUnchangedText as Error).message,)
-          .toContain('no key here beyond kind',);
+        expect((refusalOfUnchangedText as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].shipped.text: expected no key here beyond '
+            + 'kind.',
+        );
       },
     },),
 
@@ -228,8 +230,10 @@ await describe({
         },);
 
         expect(refusalOfExtraKey,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfExtraKey as Error).message,)
-          .toContain('no key here beyond kind, text',);
+        expect((refusalOfExtraKey as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].shipped.settledBy: expected no key here '
+            + 'beyond kind, text.',
+        );
       },
     },),
 
@@ -249,8 +253,9 @@ await describe({
         },);
 
         expect(refusalOfNonText,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfNonText as Error).message,)
-          .toContain('consolidation.slices[0].shipped.text',);
+        expect((refusalOfNonText as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].shipped.text: expected a string.',
+        );
       },
     },),
 
@@ -336,8 +341,10 @@ await describe({
         },);
 
         expect(refusalOfThirdKind,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfThirdKind as Error).message,)
-          .toContain('one of valid, invalid',);
+        expect((refusalOfThirdKind as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].verdicts[0].kind: expected one of valid, '
+            + 'invalid.',
+        );
       },
     },),
 
@@ -360,8 +367,9 @@ await describe({
         },);
 
         expect(refusalOfNonFinding,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfNonFinding as Error).message,)
-          .toContain('consolidation.slices[0].verdicts[0].findings[1]',);
+        expect((refusalOfNonFinding as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].verdicts[0].findings[1]: expected a string.',
+        );
       },
     },),
 
@@ -381,8 +389,10 @@ await describe({
         },);
 
         expect(refusalOfExtraKey,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfExtraKey as Error).message,)
-          .toContain('no key here beyond modelId, kind, findings',);
+        expect((refusalOfExtraKey as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].verdicts[0].confidence: expected no key '
+            + 'here beyond modelId, kind, findings.',
+        );
       },
     },),
 
@@ -401,8 +411,9 @@ await describe({
         },);
 
         expect(refusalOfNoAuthor,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfNoAuthor as Error).message,)
-          .toContain('consolidation.slices[0].verdicts[0].modelId',);
+        expect((refusalOfNoAuthor as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].verdicts[0].modelId: expected a string.',
+        );
       },
     },),
   ],
@@ -438,8 +449,10 @@ await describe({
         },);
 
         expect(refusalOfStrayChoice,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfStrayChoice as Error).message,)
-          .toContain('one of consolidated, standing, neither',);
+        expect((refusalOfStrayChoice as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].gate.ballots[0].choice: expected one of '
+            + 'consolidated, standing, neither.',
+        );
       },
     },),
 
@@ -460,8 +473,10 @@ await describe({
         },);
 
         expect(refusalOfStrayName,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfStrayName as Error).message,)
-          .toContain('consolidation.slices[0].gate.ballots[0].unsupported[0]',);
+        expect((refusalOfStrayName as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].gate.ballots[0].unsupported[0]: expected '
+            + 'one of consolidated, standing, neither.',
+        );
       },
     },),
 
@@ -483,8 +498,10 @@ await describe({
         },);
 
         expect(refusalOfNonProse,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfNonProse as Error).message,)
-          .toContain('consolidation.slices[0].gate.ballots[0].droppedRaw[1]',);
+        expect((refusalOfNonProse as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].gate.ballots[0].droppedRaw[1]: expected a '
+            + 'string.',
+        );
       },
     },),
 
@@ -510,8 +527,9 @@ await describe({
         },);
 
         expect(refusalOfNoReason,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfNoReason as Error).message,)
-          .toContain('consolidation.slices[0].gate.ballots[0].reason',);
+        expect((refusalOfNoReason as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].gate.ballots[0].reason: expected a string.',
+        );
       },
     },),
 
@@ -531,8 +549,10 @@ await describe({
         },);
 
         expect(refusalOfExtraKey,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfExtraKey as Error).message,)
-          .toContain('no key here beyond choice, unsupported, unsupportedRaw, dropped, droppedRaw, reason',);
+        expect((refusalOfExtraKey as Error).message,).toBe(
+          'artifact parse failed at consolidation.slices[0].gate.ballots[0].weight: expected no key '
+            + 'here beyond choice, unsupported, unsupportedRaw, dropped, droppedRaw, reason.',
+        );
       },
     },),
   ],
