@@ -577,7 +577,15 @@ The new renderer uses source-path hashes and create-new HTML filenames;
 Older basename-only renderers ran their checks but did not establish distinct retained HTML per `README.md`.
 They remain preserved without replay.
 
-Current #83 designs the fresh synthetic sensitivity catalog in `contract/lifecycle/fork-sensitivity-design/`.
+Design #83 is complete in `contract/lifecycle/fork-sensitivity-design/`;
+`proc_e78a` rendered 24 documents with zero native diagnostics and no genuine reads.
+Task IDs remain registry-local:
+a later update could not find #84 and the registry ended at stale #81.
+Retained receipts restored #68/#81 as consumed completions,
+#82 intact and #83 design as completed,
+#84 prefix in progress,
+and #85/#86/#87 as queued work,
+without assigning a registry-reset cause or inferring test failure/new authority.
 Final independent design review found no conceptual blocker,
 not executable-source or runtime clearance.
 The catalog predeclares 13 pairs/26 workers:
@@ -598,13 +606,39 @@ pair-identical references,
 and one selected source edit before freezing.
 The serial phase shares one 900,000 ms preparation/acceptance deadline across all families;
 it does not reset between implementation tasks or guarantee all workers their full 60-second allowance.
-No new source implementation,
+Prefix fixtures,
+selected-edit definitions,
+and pair-identical reference source now exist in fresh `contract/lifecycle/fork-sensitivity-controls/`.
+Source review corrected an opaque-return classifier that could have accepted primitives/arrays.
+Its separate complete-closure source-only `prefix-reference-source-check/` passed once as `proc_29bd`:
+eight source pairs/16 parsed helper variants,
+16 pure references,
+nine malformed-success rejections,
+and a private copied shape-block omission that moved the classifier.
+Outcome:
+exit zero,
+no signal,
+stdout 352 bytes,
+stderr zero.
+The worker creates no syntax grandchildren;
+fixed projection bytes are admitted before import.
+Old-space is not total memory,
+output size is checked after exit,
+and worker timeout is not an end-to-end parent watchdog.
+No SDK,
+original,
+model,
+grant,
+or action ran in that source smoke.
+It is not actual SDK guard sensitivity;
+its worker/controller/plan remain consumed without replay.
+No common SDK worker,
+combined generated-source closure,
 freeze,
-or sensitivity dispatch exists.
+or actual SDK sensitivity dispatch exists.
 Next:
- implement prefix,
-persisted-path,
-and fork/recapture modules separately,
+ finish prefix source handoff,
+implement persisted-path and fork/recapture modules separately,
 then one combined controller with pre-call accounting and unopened-suffix stops.
 No genuine originals,
 model calls,
