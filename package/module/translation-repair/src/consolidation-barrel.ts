@@ -131,6 +131,10 @@ export {
   settleConsolidation,
 } from './consolidate-settle.ts';
 export {
+  requireWithheldSlateDecided,
+  WithheldSlateAbsenceError,
+} from './consolidate-settle-judge.ts';
+export {
   wrapConsolidation,
   wrapConsolidationProposals,
   type WrappedConsolidation,

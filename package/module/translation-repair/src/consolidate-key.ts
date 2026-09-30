@@ -255,6 +255,13 @@ import type { LaneText, } from './translate-candidates.ts';
  checked on 2026-09-30: no slice-cache file was written after 04:27 UTC on
  2026-09-27, where a control from midnight that day finds 494.
 
+ Rides inside 20 too: an absence the slate judging raises over a withheld
+ standing, which no judging reaches, throws `WithheldSlateAbsenceError`
+ where the settlement kept the archive on it (ledger B51,
+ `consolidate-settle-judge.ts`); checked on 2026-09-30: no slice-cache file
+ was written after 04:27 UTC on 2026-09-27, where a control from midnight
+ that day finds 494.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

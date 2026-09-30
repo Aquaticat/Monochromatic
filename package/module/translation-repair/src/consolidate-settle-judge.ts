@@ -22,47 +22,123 @@ import type { TranslateStageResult, } from './translate-stage-result.ts';
 // challenged and the single-round asks cannot drift apart.
 
 /**
- What the slate judging returned: a decision, or the absence it raised over
- a withheld standing, which keeps the archive rather than stopping the entry.
+ Raised when the slate judging raises an absence over a withheld standing,
+ whose slate the judging was told ships by preference.
+
+ A FAULT IN THIS CODE rather than a fact about any text (ledger B51, as
+ ledger B43 set out for the floor): a withheld slate reaches the judges only
+ with a candidate on it, since the settlement keeps the archive first where
+ no proposal survived the floor and no lane text is offered, and the lane
+ offer drops blank texts; and on a slate with a candidate the judging ships
+ its preference past every decline (owner, 2026-09-27, "Preference +
+ polish"). An absence here means one of those rules changed without the
+ other.
 
  @example
  ```ts
- const round: JudgedRound = { kind: 'decided', decided, };
+ throw new WithheldSlateAbsenceError({ reason: error.reason, cause: error, },);
  ```
  */
-export type JudgedRound =
-  | {
-    /**
-     The judges settled the slate.
-     */
-    readonly kind: 'decided';
+export class WithheldSlateAbsenceError extends Error {
+  /**
+   Declares this message safe to forward: it is one fixed sentence; the
+   absence's reason rides beside it as a field and never enters it.
+   */
+  readonly messageNamesOnly: true = true;
 
-    /**
-     What they settled.
-     */
-    readonly decided: TranslateStageResult;
+  /**
+   Why the judging said the slate had nothing to ship.
+   */
+  public readonly reason: TranslateAbsenceError['reason'];
+
+  /**
+   Builds the failure around the absence the judging raised.
+
+   @param reason - why the judging said the slate had nothing to ship
+
+   @param cause - the absence itself, kept for its findings
+
+   @example
+   ```ts
+   throw new WithheldSlateAbsenceError({ reason: error.reason, cause: error, },);
+   ```
+   */
+  public constructor(
+    {
+      reason,
+      cause,
+    }: {
+      readonly reason: TranslateAbsenceError['reason'];
+      readonly cause: TranslateAbsenceError;
+    },
+  ) {
+    super(
+      'the slate judging raised an absence over a withheld standing, whose slate ships by preference, '
+        + 'so the settlement and the judging disagree about what a withheld slate can reach',
+      { cause, },
+    );
+    this.name = 'WithheldSlateAbsenceError';
+    this.reason = reason;
   }
-  | {
-    /**
-     The slate reached the judges with nothing on it to ship.
-     */
-    readonly kind: 'absent';
+}
 
-    /**
-     The absence the judging raised, carrying its reason and findings.
-     */
-    readonly absence: TranslateAbsenceError;
-  };
+/**
+ The slate judging's decision, with an absence over a withheld standing
+ named as the fault it is.
+
+ ONE NARROWING AT THE ONE CALL SITE, so the answer that cannot come has one
+ statement with its own case, as `requireComparedVerdict` has for the floor
+ (ledger B43). An absence over an eligible standing, and anything else the
+ judging raises, passes through unchanged.
+
+ @param judged - the judging in flight
+
+ @param standingEligible - whether the standing passed the deterministic gate
+
+ @returns The judges' decision
+
+ @throws {@link WithheldSlateAbsenceError} when the judging raises an absence
+ over a withheld standing
+
+ @throws Whatever else the judging raises, unchanged
+
+ @example
+ ```ts
+ const decided = await requireWithheldSlateDecided({ judged: judgeTranslateSlate(judging,), standingEligible, },);
+ ```
+ */
+export async function requireWithheldSlateDecided<const DecidedT,>(
+  {
+    judged,
+    standingEligible,
+  }: {
+    readonly judged: Promise<DecidedT>;
+    readonly standingEligible: boolean;
+  },
+): Promise<DecidedT> {
+  try {
+    return await judged;
+  }
+  catch (error) {
+    if (standingEligible || (!(error instanceof TranslateAbsenceError)))
+      throw error;
+    throw new WithheldSlateAbsenceError({
+      reason: error.reason,
+      cause: error,
+    },);
+  }
+}
 
 /**
  Asks the slate judges over one consolidation slate.
 
- AN ABSENT SLATE WITH THE STANDING WITHHELD KEEPS THE ARCHIVE. The judge
- reports an absent incumbent as a passage the archive never carried; here
- the passage exists and failed the gate, and with no candidate or no voice
- heard nothing on the slate may ship either, so the caller keeps the archive
- (owner, 2026-09-27, "Keep archive, ship"). Until then this re-raised the
- judge's refusal under the ineligible standing's name and stopped the entry.
+ A WITHHELD SLATE IS ALWAYS DECIDED (ledger B51). It used to return the
+ absence the judging raised over a withheld standing, which the settlement
+ answered by keeping the archive (owner, 2026-09-27, "Keep archive, ship");
+ since the judging ships its preference past every decline over a withheld
+ standing, and the settlement keeps the archive before judging a slate with
+ nothing on it, no judging reaches that absence, and it is now the fault
+ `WithheldSlateAbsenceError` names.
 
  A TIE WITH THE STANDING WITHHELD IS CHALLENGED ONCE (class fifty-five,
  XingZ605 slice 13, 2026-09-18): four valid proposals, the judges 2 to 2
@@ -103,22 +179,22 @@ export type JudgedRound =
 
  @param challenged - whether a tie is run off once
 
- @param sliceIndex - prepared position of the slice, for the log
-
  @param signal - cancellation for the whole round
 
  @param perCallTimeoutMs - ceiling on each call
 
  @param l - stage logger
 
- @returns Decision, or the absence raised over a withheld standing
+ @returns The judges' decision
 
- @throws Whatever the judging raises other than an absence over a withheld
- standing
+ @throws {@link WithheldSlateAbsenceError} when the judging raises an absence
+ over a withheld standing, a fault in this code
+
+ @throws Whatever else the judging raises, unchanged
 
  @example
  ```ts
- const judgedRound = await judgeConsolidationSlate({ client, judgeModelIds, subject, built, survivors, ... },);
+ const decided = await judgeConsolidationSlate({ client, judgeModelIds, subject, built, survivors, producedFindings, standingEligible, incumbent, identity, evidence, lineStructured, challenged, signal, perCallTimeoutMs, l, },);
  ```
  */
 export async function judgeConsolidationSlate(
@@ -135,7 +211,6 @@ export async function judgeConsolidationSlate(
     evidence,
     lineStructured,
     challenged,
-    sliceIndex,
     signal,
     perCallTimeoutMs,
     l,
@@ -159,12 +234,11 @@ export async function judgeConsolidationSlate(
     }>;
     readonly lineStructured: boolean;
     readonly challenged: boolean;
-    readonly sliceIndex: number;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
   }>,
-): Promise<JudgedRound> {
+): Promise<TranslateStageResult> {
   /**
    Everything one slate judging takes, built once so the challenged and
    the single-round asks cannot drift apart.
@@ -223,25 +297,12 @@ export async function judgeConsolidationSlate(
     perCallTimeoutMs,
     l,
   };
-  try {
-    return {
-      kind: 'decided',
-      decided: challenged
-        ? await judgeSlateWithRetry({ judging, },)
-        : await judgeTranslateSlate(judging,),
-    };
-  }
-  catch (error) {
-    // Only a slate with nothing to ship reaches here now: no candidate, or
-    // no voice heard.
-    if ((standingEligible) || (!(error instanceof TranslateAbsenceError)))
-      throw error;
-    l.warn(`slice ${String(sliceIndex,)}: the withheld slate left the judges nothing (${error.reason})`,);
-    return {
-      kind: 'absent',
-      absence: error,
-    };
-  }
+  return await requireWithheldSlateDecided({
+    judged: challenged
+      ? judgeSlateWithRetry({ judging, },)
+      : judgeTranslateSlate(judging,),
+    standingEligible,
+  },);
 }
 
 //endregion Consolidate settle judging

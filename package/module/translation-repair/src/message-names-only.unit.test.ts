@@ -174,9 +174,10 @@ const MARKED_CLASSES: readonly string[] = [
   'UnpositionedNodeError',
   'UnpreparedSliceError',
   'UnsafeSeedError',
-  'VisualEvidenceInterruptedError',
   'UnseatedStandingError',
+  'VisualEvidenceInterruptedError',
   'WindowEvidenceError',
+  'WithheldSlateAbsenceError',
   'WordingCoherenceError',
   'WritingBenchUnreachableError',
 ];

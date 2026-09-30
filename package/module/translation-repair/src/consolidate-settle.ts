@@ -612,10 +612,10 @@ export async function settleConsolidation(
   },);
 
   /**
-   What the slate judges settled, or the absence they raised over a withheld
-   standing (`consolidate-settle-judge.ts`).
+   What the slate judges decided (`consolidate-settle-judge.ts`), a decision
+   over a withheld standing too (ledger B51).
    */
-  const judgedRound = await judgeConsolidationSlate({
+  const decided = await judgeConsolidationSlate({
     client,
     judgeModelIds,
     subject,
@@ -628,38 +628,10 @@ export async function settleConsolidation(
     evidence,
     lineStructured,
     challenged,
-    sliceIndex,
     signal,
     perCallTimeoutMs,
     l: sl,
   },);
-  if (judgedRound.kind === 'absent') {
-    /**
-     What the judging raised, with its reason and the round's findings.
-     */
-    const { absence, } = judgedRound;
-    return keepTheArchive({
-      // The absence carries the judged round's findings, which already hold
-      // the produce half's, so they are not added again.
-      settlement: {
-        terminal: SLATE_TERMINALS[absence.reason],
-        text: standingText,
-        floor,
-        verdicts,
-        rewrapped: false,
-        demoted: false,
-        findings: absence.findings,
-      },
-      subject,
-      sliceIndex,
-      l: sl,
-    },);
-  }
-
-  /**
-   What the slate judges decided.
-   */
-  const { decided, } = judgedRound;
 
   // THE JUDGES CHOOSING THE INCUMBENT ENDS IT. There is no consolidation to
   // gate, and asking the gate anyway would buy ballots about the text that is

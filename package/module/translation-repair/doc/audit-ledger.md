@@ -11657,6 +11657,49 @@ when a change moves an input to a different exit,
 rename or repoint every case named for the old one;
 a case name is a coverage claim no runner checks.
 
+### B51: an archive-keeping exit for an absence no judging raises
+
+Found by the eighth coverage batch (census-dUOMFS),
+behind B50:
+the settlement's exit for an absence the slate judging raised over a withheld standing
+(`consolidate-settle-judge.ts` returning it,
+`consolidate-settle.ts` keeping the archive on it)
+was cold,
+and no input reaches it.
+The judging raises over a withheld standing only on a slate with no candidate and nobody heard;
+with a candidate it ships its preference past every decline,
+by the owner's "Preference + polish" of 2026-09-27,
+and its retry raises only while a run-off still narrows.
+The settlement keeps the archive before judging where no proposal survived the floor and no lane text is offered,
+the lane offer drops blank texts and any the rule does not pass,
+and the candidate builder keeps every lane text that shows something;
+so a slate that reaches the judges has a candidate or a surviving proposal.
+Two inputs were tried and neither reached the exit:
+one blank surviving proposal returns "nothing proposed" (B50),
+and no voices at all settles `incumbent-only` first.
+
+Fixed as a quality call open to veto,
+on the shape ledger B43 set for the floor:
+the judging returns only decisions,
+and an absence over a withheld standing throws `WithheldSlateAbsenceError`,
+a fault in this code,
+through one narrowing at the one call site (`requireWithheldSlateDecided`),
+cased directly in `consolidate-settle-judge.unit.test.ts`.
+An absence over an eligible standing passes through as before.
+The owner's rules that a run always ships are about text;
+like B43's disagreement,
+this names two rules of the code falling out of step,
+which no text can cause.
+Rides inside `CONSOLIDATE_CACHE_VERSION` 20:
+no slice-cache file was written after 04:27 UTC on 2026-09-27,
+where the midnight control finds 494.
+
+Recurrence:
+when an owner rule turns a raise into a return,
+trace every caller's handler for that raise
+and retire the ones it left unreachable,
+with a named fault where the rule's premise is another module's.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
