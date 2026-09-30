@@ -74,8 +74,14 @@ Publication/provenance,
 retained test reports,
 scoped lint and rendered-document verification passed after the source-scope
 correction.
-Task 139 is building usable debug-native placement and visibility variants;
-task 140 follows with inspected evidence and a verified visual review.
+Task 139 built debug-native placement and visibility variants in
+prototype `40d1f76bc`.
+Its 9 comparison tests,
+fresh unknown-scene mutation failure,
+restoration and APK rebuild passed.
+The capped disposable runtime is capturing the six-scene initial matrix;
+inspection and any required scrolled witnesses remain pending.
+Task 140 follows with inspected evidence and a verified visual review.
 Prototype `720ba418f` uses public `playerScreen` and the real controller
 with a paused no-audio double;
 no production source was changed.
