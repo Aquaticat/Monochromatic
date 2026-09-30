@@ -16,6 +16,7 @@ import {
   mkdir,
   mkdtemp,
   rm,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import {
@@ -602,6 +603,47 @@ await describe({
           'calico',
           'tabby',
         ],);
+      },
+    },),
+    it({
+      name: 'LISTS REGULAR FILES ONLY: a directory or a symlink named like an artifact is no settled entry, as the '
+        + 'census and the scheduler read the same directory (ledger B64)',
+      fn: async () => {
+        await using runs = await throwawayRuns();
+
+        /**
+         Artifacts subdirectory with one artifact, a directory and a symlink.
+         */
+        const dir = join(
+          runs.runsDir,
+          'artifacts',
+        );
+        await mkdir(
+          join(
+            dir,
+            'persian.json',
+          ),
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            dir,
+            'tabby.json',
+          ),
+          '{}',
+          'utf8',
+        );
+        await symlink(
+          join(
+            dir,
+            'tabby.json',
+          ),
+          join(
+            dir,
+            'siamese.json',
+          ),
+        );
+        expect(await listSettledEntryIds({ runsDir: runs.runsDir, },),).toEqual(['tabby',],);
       },
     },),
   ],

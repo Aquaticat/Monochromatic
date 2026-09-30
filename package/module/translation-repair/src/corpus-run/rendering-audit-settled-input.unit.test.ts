@@ -1135,6 +1135,45 @@ await describe({
     },),
 
     it({
+      name: 'IGNORES A DIRECTORY NAMED LIKE AN ARTIFACT inside a run set, as the loose layout, the census and the '
+        + 'scheduler do: only a regular file is an artifact (ledger B64)',
+      fn: async () => {
+        await using corpus = await makeCorpus();
+        await using archive = await makeArchive();
+
+        await writeArtifact({
+          archiveDir: archive.archiveDir,
+          runSet: 'first-run',
+          prepared: prepareDocumentPair({
+            sourceText: SOURCE_PAGE,
+            targetText: TARGET_PAGE,
+          },),
+          corpusSha: corpus.commitSha,
+          entryId: ENTRY_ID,
+        },);
+        await mkdir(
+          join(
+            archive.archiveDir,
+            'first-run',
+            'saved.json',
+          ),
+          { recursive: true, },
+        );
+
+        /**
+         Everything the archive holds.
+         */
+        const readings = await readArchiveSubjects({
+          archiveDir: archive.archiveDir,
+          cloneDir: corpus.cloneDir,
+        },);
+
+        expect(readings.length,).toBe(1,);
+        expect(readings[0]?.entryId,).toBe(ENTRY_ID,);
+      },
+    },),
+
+    it({
       name: 'READS THE FLAT LAYOUT A CORPUS RUN ACTUALLY WRITES, artifacts straight under the directory '
         + 'with no run-set subdirectory. corpus-pass produces one settlement so it invents no '
         + 'subdirectory for it, and before this the audit refused such a directory with "no '
