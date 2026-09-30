@@ -1168,3 +1168,60 @@ await describe({
     },),
   ],
 },);
+
+await describe({
+  name: `${publishFixedPage.name} sealed spans`,
+  children: [
+    it({
+      name: 'SHIPS A PAGE WRITING OVER A SPAN THE ARCHIVE\'S NOTE SEALS and reports the archive-original defect, '
+        + 'since a sealed span ships as the archive has it (the owner\'s rule of 2026-09-08); the same page '
+        + 'published with no span sealed reports nothing, the control. The pass hands the spans through '
+        + 'persistSettledEntry, and this is the one place they speak',
+      fn: async () => {
+        await using tree = await throwawayTree();
+
+        /**
+         Checks the page failed with the middle paragraph sealed.
+         */
+        const sealed = await publishFixedPage({
+          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+          slices: documentSlices(),
+          archiveText: ARCHIVE,
+          sourceText: SOURCE_PAGE,
+          entryId: 'BookshopCat',
+          publishDir: tree.publishDir,
+          l: tagged({ tag: 'publish-test', },),
+          archiveOriginalSpans: [{
+            startOffset: MIDDLE_START,
+            endOffset: MIDDLE_END,
+            note: 'The cat wrote this part in English.',
+          },],
+        },);
+        /**
+         Checks the same page failed with nothing sealed.
+         */
+        const unsealed = await publishFixedPage({
+          artifact: artifactShipping({ translateText: DECIDED_MIDDLE, },),
+          slices: documentSlices(),
+          archiveText: ARCHIVE,
+          sourceText: SOURCE_PAGE,
+          entryId: 'BookshopCat',
+          publishDir: tree.publishDir,
+          l: tagged({ tag: 'publish-test', },),
+        },);
+
+        expect([
+          sealed,
+          unsealed,
+        ].map(function checksOf({ defects, },): readonly string[] {
+          return defects.map(function checkOf({ check, },): string {
+            return check;
+          },);
+        },),).toStrictEqual([
+          ['archive-original',],
+          [],
+        ],);
+      },
+    },),
+  ],
+},);

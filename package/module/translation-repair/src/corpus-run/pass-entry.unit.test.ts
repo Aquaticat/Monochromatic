@@ -397,6 +397,31 @@ const CITED_ENTRY = {
 };
 
 /**
+ What the archive's translators wrote over its second section: everything
+ under the note (以下) is the English original (原文, 英文), and neither
+ whole-page mark appears, so it seals a span and declines nothing.
+ */
+const SPAN_NOTE_TEXT = '以下内容原文为英文';
+
+/**
+ Archive paragraph under that note, which ships as the archive has it.
+ */
+const SEALED_PARAGRAPH = 'On the windowsill there is being a bird that is watching the garden for a long time while the cat '
+  + 'continues sleeping nearby.';
+
+/**
+ Entry whose archive seals its second section as the English original.
+ */
+const SEALED_ENTRY = {
+  id: 'CatEntrySealedSpan',
+  sourceText: SOURCE_TEXT,
+  targetText: TARGET_TEXT.replace(
+    '## Section two\n\n',
+    `## Section two\n\n<!-- ${SPAN_NOTE_TEXT} -->\n\n`,
+  ),
+};
+
+/**
  Words only a consolidation producer's sheet carries, which tell it apart
  from a translator's under the one translation schema they share.
  */
@@ -1564,6 +1589,90 @@ await describe({
           translatorAsked: true,
           everyTranslatorListsTheDetail: true,
           translatorsNamingThePage: 0,
+        },);
+      },
+    },),
+    it({
+      name: 'SHIPS A SECTION THE ARCHIVE\'S NOTE SEALS as the English original byte for byte, records the seal on '
+        + 'the artifact, and reports no defect, while the section outside the seal takes the lanes\' wording',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /**
+         What settling the entry printed.
+         */
+        const lines = await capturedLines({
+          body: async () => {
+            await settleEntry({
+              client: entryClient({ served: [], },),
+              entry: SEALED_ENTRY,
+              artifactsDir: dirs.artifactsDir,
+              publishDir: dirs.publishDir,
+              declinedDir: dirs.declinedDir,
+              sliceCacheDir: dirs.sliceCacheDir,
+              tip: 'a'.repeat(40,),
+              pipelineDigest: DIGEST,
+              outsideReads: NO_OUTSIDE_READS,
+              hardCapMs: 60_000,
+              baseSignal: new AbortController().signal,
+            },);
+          },
+        },);
+        /**
+         Serialized artifact through production parser.
+         */
+        const artifact = parseSettledTwoLaneArtifact({
+          value: JSON.parse(await readFile(
+            join(
+              dirs.artifactsDir,
+              `${SEALED_ENTRY.id}.json`,
+            ),
+            'utf8',
+          ),),
+        },);
+        /**
+         Spans the artifact records as sealed.
+         */
+        const spans = artifact.preparation
+          .archiveOriginalSpans
+          ?? [];
+        /**
+         Page the pass published.
+         */
+        const page = await readFile(
+          fixedPagePath({
+            publishDir: dirs.publishDir,
+            entryId: SEALED_ENTRY.id,
+          },),
+          'utf8',
+        );
+        expect({
+          notes: spans.map(function noteOf({ note, },): string {
+            return note;
+          },),
+          sealsTheParagraph: spans.some(function covers({
+            startOffset,
+            endOffset,
+          },): boolean {
+            return SEALED_ENTRY.targetText
+              .slice(
+                startOffset,
+                endOffset,
+              )
+              .includes(SEALED_PARAGRAPH,);
+          },),
+          pageKeepsTheSealedSection: page.includes(`<!-- ${SPAN_NOTE_TEXT} -->\n\n${SEALED_PARAGRAPH}\n`,),
+          pageCarriesTheLanesWordingOfSectionTwo: page.includes(BIRD_FRESH,),
+          pageCarriesTheLanesWordingOfSectionOne: page.includes(FRESH,),
+          defectLines: lines.filter(function isDefectLine(line,): boolean {
+            return line.startsWith(`DEFECTS ${SEALED_ENTRY.id} `,);
+          },),
+        },).toEqual({
+          notes: [SPAN_NOTE_TEXT,],
+          sealsTheParagraph: true,
+          pageKeepsTheSealedSection: true,
+          pageCarriesTheLanesWordingOfSectionTwo: false,
+          pageCarriesTheLanesWordingOfSectionOne: true,
+          defectLines: [],
         },);
       },
     },),
