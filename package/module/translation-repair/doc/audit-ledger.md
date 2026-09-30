@@ -11573,6 +11573,43 @@ Left as it is:
 those are stored artifact fields with readers,
 so changing them is a schema change for its own entry.
 
+### B48: a polish round that paid for text its floor could not check
+
+Found by the eighth coverage batch (census-dUOMFS):
+the polish round's structural check had an arm for the floor answering `unknown`,
+which it does only on blind ground,
+an original the strict grammar cannot read or a page no grammar reads.
+The round learned that only after paying its refiners,
+its rankers and its gate judges,
+and then kept the base.
+Ledger B43 removed the same waste from the translate stage,
+and B45 from the consolidation,
+but neither reached the polish round,
+which asked nobody whether its own ground was readable.
+In production the consolidation's reach already keeps the archive,
+unpolished,
+on a blind original,
+so only a base no grammar reads could reach it;
+the round depended on its caller for the rest.
+
+Fixed in `42bbbfa0a`:
+the round asks `floorReach` against the original and the base before anything is bought,
+and on blind ground keeps the base with a `consolidation-polish-unfloored` finding;
+the structural check's verdict goes through `requireComparedVerdict`,
+so its `unknown` arm is gone.
+The case with a blind original was shown able to fail:
+with the reach check disabled and the package rebuilt,
+it failed with `FloorGroundDisagreementError` after the refiners were asked,
+and passed again once the check was restored.
+The account rides inside `CONSOLIDATE_CACHE_VERSION` 20:
+no slice-cache file was written after 04:27 UTC on 2026-09-27,
+where the midnight control finds 494.
+
+Recurrence:
+a stage that buys model calls asks the floor's reach first,
+whoever its caller is;
+a caller's check is not the stage's.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
