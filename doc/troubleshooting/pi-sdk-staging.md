@@ -34,10 +34,10 @@ constructs a structured system message when prompt sections change:
 return sections ? { role: "system", content: "", sections, timestamp: Date.now() } : undefined;
 ```
 
-The same file at line 933 includes system messages in ordinary persistence:
+The same file at line 934 includes system messages in ordinary persistence:
 
 ```ts
-// packages/coding-agent/src/core/agent-session.ts:933
+// packages/coding-agent/src/core/agent-session.ts:934
 event.message.role === "system" ||
 event.message.role === "user" ||
 event.message.role === "assistant" ||
