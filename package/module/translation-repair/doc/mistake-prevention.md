@@ -1364,3 +1364,29 @@ What enforces it:
 habit and review;
 `quote-preservation.unit.test.ts` carries both disagreeing shapes,
 and `quoteBlockCount` no longer exists to be reached for.
+
+## What a catch charges
+
+What happened:
+the front-matter floor read the original,
+the page and the candidate inside one try,
+and its catch answered every throw as the candidate's YAML,
+so a refusal of the original's or the page's YAML was charged to a sound candidate
+and sent its author to revise it
+(ledger B44).
+
+The rule:
+a try holds only the call whose failure its catch describes,
+and the catch narrows to the class that call raises
+through the shared narrowing
+(`requireMdxRefusal`,
+`requireFrontMatterRefusal`),
+whose own case reaches the rethrow of anything else.
+A side the candidate did not write is read outside the candidate's try,
+and a side no reader reads is reported as that side's fact
+(`translate-floor-ground.ts`).
+
+What enforces it:
+habit and review;
+`front-matter-slice.unit.test.ts` carries a refused original and a refused page beside a sound candidate,
+and each narrowing's own cases reach its rethrow.

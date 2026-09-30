@@ -123,6 +123,13 @@ export {
   type SliceSkeleton,
 } from './translate-skeleton.ts';
 export {
+  type BlindGround,
+  type FrontMatterGround,
+  type MarkdownGround,
+  readFrontMatterGround,
+  readMarkdownGround,
+} from './translate-floor-ground.ts';
+export {
   type SliceValidation,
   validateTranslatedSlice,
 } from './translate-validate.ts';

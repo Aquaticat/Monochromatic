@@ -1,4 +1,4 @@
-import { FrontMatterParseError, } from './front-matter.ts';
+import { requireFrontMatterRefusal, } from './front-matter.ts';
 import { straightenProseQuotes, } from './quote-normalize.ts';
 import { wrapReplacementText, } from './semantic-wrap.ts';
 import { foldSoftBreaks, } from './soft-break-fold.ts';
@@ -130,9 +130,11 @@ function pageLayout({ text, }: { readonly text: string; },): string {
     },);
   }
   catch (error) {
-    if (error instanceof FrontMatterParseError)
-      return text;
-    throw error;
+    // The YAML refusal alone lays the text out as written; anything else
+    // keeps propagating through the shared narrowing, whose own case
+    // reaches the rethrow no caller here can.
+    requireFrontMatterRefusal({ error, },);
+    return text;
   }
 }
 

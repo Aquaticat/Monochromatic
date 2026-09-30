@@ -9,6 +9,7 @@
 import { parse as parseYaml, } from 'yaml';
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -16,6 +17,7 @@ import {
 import {
   FrontMatterParseError,
   namesWithoutQuoting,
+  requireFrontMatterRefusal,
   splitFrontMatter,
 } from '../dist/final/node/index.mjs';
 
@@ -90,15 +92,13 @@ await describe({
     it({
       name: 'throws FrontMatterParseError on invalid YAML between fences',
       fn: async () => {
-        /** Value caught from split of source with malformed YAML. */
-        let caught: unknown;
-        try {
+        /**
+         Value the split of source with malformed YAML threw.
+         */
+        const refusal = caught(function splitMalformed(): void {
           splitFrontMatter({ text: '---\nname: [unclosed\n---\n喵。\n', },);
-        }
-        catch (error) {
-          caught = error;
-        }
-        expect(caught instanceof FrontMatterParseError,).toBe(true,);
+        },);
+        expect(refusal instanceof FrontMatterParseError,).toBe(true,);
       },
     },),
   ],
@@ -330,6 +330,40 @@ await describe({
         const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
 
         expect(namesWithoutQuoting(refusal,),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requireFrontMatterRefusal.name,
+  children: [
+    it({
+      name: 'RETURNS the refusal a catch around the splitter holds, the same object',
+      fn: async () => {
+        /**
+         Refusal the splitter raised.
+         */
+        const refusal = refusalFrom({ text: REFUSING_SOURCE, },);
+
+        expect(refusal instanceof FrontMatterParseError,).toBe(true,);
+        expect(requireFrontMatterRefusal({ error: refusal, },),).toBe(refusal,);
+      },
+    },),
+    it({
+      name: 'RETHROWS anything else unchanged, an error or not, since an unexpected state must keep propagating',
+      fn: async () => {
+        /**
+         A failure that is not the splitter's refusal.
+         */
+        const stray = new TypeError('the cat sat on the YAML',);
+
+        expect(caught(function narrowStray(): void {
+          requireFrontMatterRefusal({ error: stray, },);
+        },),).toBe(stray,);
+        expect(caught(function narrowString(): void {
+          requireFrontMatterRefusal({ error: 'hairball', },);
+        },),).toBe('hairball',);
       },
     },),
   ],

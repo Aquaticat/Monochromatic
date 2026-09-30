@@ -1,6 +1,10 @@
 import { frontMatterCommentAuthorityFindings, } from './front-matter-comment-authority.ts';
-import { splitFrontMatter, } from './front-matter.ts';
+import {
+  requireFrontMatterRefusal,
+  splitFrontMatter,
+} from './front-matter.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { readFrontMatterGround, } from './translate-floor-ground.ts';
 import type { SliceValidation, } from './translate-validate.ts';
 
 //region Front matter translation
@@ -181,7 +185,11 @@ function yamlShape({ value, }: { readonly value: unknown; }): string {
  @param candidateText - proposed localized front matter
  
  @returns Translation validation result
- 
+
+ @throws Whatever the front-matter splitter throws that is not a YAML
+ refusal, since that is a fault in this code rather than a fact about any
+ text
+
  @example
  ```ts
  const validation = validateFrontMatterTranslation({ sourceText, pageText, candidateText, });
@@ -198,15 +206,18 @@ export function validateFrontMatterTranslation(
     readonly candidateText: string;
   },
 ): SliceValidation {
+  /**
+   The original's metadata and the page's, read by the one definition of
+   whether this floor can compare anything (`translate-floor-ground.ts`,
+   ledger B43), and read OUTSIDE the candidate's try: a refusal of either
+   side's YAML is not the candidate's fault, and it was charged to the
+   candidate as one (ledger B44).
+   */
+  const ground = readFrontMatterGround({
+    sourceText,
+    pageText,
+  },);
   try {
-    /**
-     Parsed source metadata defining identity relationships.
-     */
-    const source = splitFrontMatter({ text: sourceText, },);
-    /**
-     Parsed archive metadata defining structural shape.
-     */
-    const page = splitFrontMatter({ text: pageText, },);
     /**
      Parsed candidate metadata under review.
      */
@@ -231,22 +242,18 @@ export function validateFrontMatterTranslation(
         findings: ['Your translation added text outside YAML front matter block.',],
       };
     }
-    if (source.frontMatter === undefined) {
+    // AFTER THE CANDIDATE'S OWN FAULTS, which are its author's to fix
+    // whatever either side is.
+    if (ground.kind === 'blind') {
       return {
         kind: 'unknown',
-        detail: 'source front matter could not be read',
-      };
-    }
-    if ((page.frontMatter === undefined) && (pageText !== '')) {
-      return {
-        kind: 'unknown',
-        detail: 'page front matter could not be read',
+        detail: ground.detail,
       };
     }
     /**
      Parsed source metadata.
      */
-    const { data: sourceData, } = source.frontMatter;
+    const { data: sourceData, } = ground.source;
     /**
      Parsed candidate metadata.
      */
@@ -254,7 +261,7 @@ export function validateFrontMatterTranslation(
     /**
      Parsed archive metadata when target already carries it.
      */
-    const { frontMatter: pageFrontMatter, } = page;
+    const { page: pageFrontMatter, } = ground;
     /**
      Structural authority:
      archive metadata when present,
@@ -309,9 +316,16 @@ export function validateFrontMatterTranslation(
     };
   }
   catch (error) {
+    /**
+     The candidate's YAML refusal, the only thing caught here that is its
+     author's to fix: anything else is a fault in this code, and charging
+     it to the candidate would send a model to revise text with nothing
+     wrong in it (ledger B44).
+     */
+    const refusal = requireFrontMatterRefusal({ error, },);
     return {
       kind: 'invalid',
-      findings: [`Your translation could not be parsed as YAML front matter: ${String(error,)}`,],
+      findings: [`Your translation could not be parsed as YAML front matter: ${String(refusal,)}`,],
     };
   }
 }

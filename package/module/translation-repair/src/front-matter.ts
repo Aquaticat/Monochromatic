@@ -190,6 +190,33 @@ export class FrontMatterParseError extends Error {
   }
 }
 
+/**
+ The YAML refusal a catch around {@link splitFrontMatter} holds, for a catch
+ that acts on the refusal alone.
+
+ SHARED RATHER THAN REPEATED, as `requireMdxRefusal` (`parse-mdx.ts`) is
+ for the Markdown grammar: the splitter raises every refusal as a
+ {@link FrontMatterParseError}, so a rethrow written in each catch is a
+ statement no case reaches. The narrowing stands here once, where a case
+ reaches the rethrow.
+
+ @param error - what the catch caught
+
+ @returns The refusal
+
+ @throws The caught value unchanged when it is anything but the YAML
+ refusal, an unexpected state that must keep propagating
+
+ @example
+ ```ts
+ const refusal = requireFrontMatterRefusal({ error, },);
+ ```
+ */
+export function requireFrontMatterRefusal({ error, }: { readonly error: unknown; },): FrontMatterParseError {
+  if (error instanceof FrontMatterParseError)
+    return error;
+  throw error;
+}
 
 /**
  Fence line delimiting YAML front matter on both sides.

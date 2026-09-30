@@ -15,6 +15,7 @@ import { atomFindings, } from './translate-atom-rendering.ts';
 import { neutralPronounFindings, } from './translate-neutral-pronoun.ts';
 import { definitionLeakFindings, } from './translate-definition-leak.ts';
 import { leakedEscapeFindings, } from './translate-escape-leak.ts';
+import { readMarkdownGround, } from './translate-floor-ground.ts';
 import { sourceCarryFindings, } from './translate-source-carry.ts';
 import { sheetLeakFindings, } from './translate-sheet-leak.ts';
 import { untranslatedOrResidueFindings, } from './translate-han-residue.ts';
@@ -24,10 +25,7 @@ import {
   type SliceSkeleton,
 } from './translate-skeleton.ts';
 import { compareBlocks, } from './translate-validate-blocks.ts';
-import {
-  type PageGrammar,
-  readPageSkeleton,
-} from './translate-skeleton-page.ts';
+import type { PageGrammar, } from './translate-skeleton-page.ts';
 
 //region Translate validation
 // Compares a candidate translation against its ORIGINAL on everything that
@@ -323,28 +321,28 @@ export function validateTranslatedSlice(
     };
   }
   /**
-   Shape the original carries.
+   The original and the page, read by the one definition of whether this
+   floor can compare anything, which the translate stage asks before it buys
+   a round (`translate-floor-ground.ts`, ledger B43).
    */
-  const source = readSliceSkeleton({ text: sourceText, },);
+  const ground = readMarkdownGround({
+    sourceText,
+    pageText,
+  },);
 
-  // An original the strict grammar refuses is not a candidate's fault, and
-  // there is nothing to compare against. Document parsing has a plain-markdown
-  // fallback for exactly this, so a slice can reach here that no skeleton can
-  // be read from, and inventing a comparison across two grammars would
-  // manufacture findings rather than find any.
-  //
-  // THE FLOORS THAT NEED NO GRAMMAR STILL RUN (ledger F-5): a candidate left
-  // untranslated or leaving Han in its English (F-3), merging the lines of a
-  // governed slice, or keeping the neutral pronoun is refused whatever the
-  // original's grammar, since none of those reads a block.
-  if (source.kind === 'unparseable') {
+  // THE FLOORS THAT NEED NO GRAMMAR STILL RUN (ledger F-5) where no grammar
+  // reads the original: a candidate left untranslated or leaving Han in its
+  // English (F-3), merging the lines of a governed slice, or keeping the
+  // neutral pronoun is refused whatever the original's grammar, since none of
+  // those reads a block.
+  if ((ground.kind === 'blind') && (ground.side === 'original')) {
     return grammarFreeVerdict({
       sourceText,
       candidateText,
       pageText,
       lineStructured,
       declared,
-      unread: `original could not be read: ${source.detail}`,
+      unread: ground.detail,
     },);
   }
 
@@ -360,37 +358,35 @@ export function validateTranslatedSlice(
       ],
     };
 
-  /**
-   Reading of the text this candidate would replace.
-   */
-  const {
-    read: replaced,
-    grammar: pageGrammar,
-  } = readPageSkeleton({ text: pageText, },);
-
-  // A PAGE NEITHER GRAMMAR READS is not the candidate's fault either, and the
-  // block floor has nothing to stand on. It used to fall back to the original
-  // alone and pass a candidate the page never measured, reported as read by
-  // the relaxed grammar (ledger T8, sixth batch); plain markdown refuses a
-  // page only when reading it exhausts the parser, nesting past its stack.
-  // Such a page is treated as an unreadable original is.
-  if (replaced.kind === 'unparseable') {
+  // A PAGE NEITHER GRAMMAR READS is treated as an unreadable original is, once
+  // the candidate has been read, since a candidate the strict grammar refuses
+  // against a readable original is that candidate's fault whatever the page
+  // is. It used to fall back to the original alone and pass a candidate the
+  // page never measured, reported as read by the relaxed grammar (ledger T8,
+  // sixth batch).
+  if (ground.kind === 'blind') {
     return grammarFreeVerdict({
       sourceText,
       candidateText,
       pageText,
       lineStructured,
       declared,
-      unread: `page could not be read: ${replaced.detail}`,
+      unread: ground.detail,
     },);
   }
+
+  /**
+   Grammar that read the page, reported with a pass.
+   */
+  const { pageGrammar, } = ground;
 
   /**
    Page's shape, empty only where there is no page.
 
    A PAGE THE STRICT GRAMMAR REFUSES IS NOT A CANDIDATE'S FAULT, and an archive
-   written before this grammar existed can be one, so {@link readPageSkeleton}
-   downgrades the page to plain markdown rather than refusing the candidate.
+   written before this grammar existed can be one, so `readPageSkeleton`
+   (`translate-skeleton-page.ts`) downgrades the page to plain markdown rather
+   than refusing the candidate.
 
    IT NO LONGER FALLS BACK TO THE ORIGINAL ALONE, which was a check answering
    yes to a question it had never evaluated. Measured on the sixth
@@ -398,7 +394,7 @@ export function validateTranslatedSlice(
    closing tag made the page unparseable, the floor lost its block list, and a
    164-character rendering passed against a 3875-character page.
    */
-  const page: SliceSkeleton = replaced.skeleton;
+  const page: SliceSkeleton = ground.page;
 
   /**
    Page's blocks, named so the emptiness check is one step rather than three.
@@ -413,7 +409,7 @@ export function validateTranslatedSlice(
   /**
    Original's shape, now known readable.
    */
-  const expected: SliceSkeleton = source.skeleton;
+  const expected: SliceSkeleton = ground.source;
 
   /**
    Candidate's shape, now known readable.

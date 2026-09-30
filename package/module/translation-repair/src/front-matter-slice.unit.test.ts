@@ -5,6 +5,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -12,8 +13,10 @@ import {
 
 import {
   archiveDisputesOf,
+  FrontMatterParseError,
   frontMatterRepairOutcome,
   frontMatterSlice,
+  splitFrontMatter,
   validateFrontMatterTranslation,
 } from '../dist/final/node/index.mjs';
 
@@ -38,6 +41,16 @@ const TARGET = {
     info: { alias: 'Cat', },
   },
 };
+
+/**
+ A translation of the source fixture carrying the target's shape.
+ */
+const TRANSLATED = '---\nname: Mao\ninfo:\n  alias: Kitty\n---\n';
+
+/**
+ Fenced metadata whose YAML the parser refuses.
+ */
+const BROKEN_YAML = '---\nname: [broken\n---\n';
 
 /**
  Source metadata where visible name and alias identify same person form.
@@ -205,6 +218,70 @@ await describe({
           pageText: TARGET.raw,
           candidateText: '---\nname: [broken\n---\n',
         },).kind,).toBe('invalid',);
+      },
+    },),
+
+    it({
+      name: 'LEAVES A CANDIDATE UNVALIDATED where the original or the page carries no fenced front matter, '
+        + 'and still charges the candidate its own faults first',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: 'name: 猫猫\n',
+          pageText: TARGET.raw,
+          candidateText: TRANSLATED,
+        },),).toEqual({
+          kind: 'unknown',
+          detail: 'source front matter could not be read',
+        },);
+        expect(validateFrontMatterTranslation({
+          sourceText: SOURCE.raw,
+          pageText: 'name: Maomao\n',
+          candidateText: TRANSLATED,
+        },),).toEqual({
+          kind: 'unknown',
+          detail: 'page front matter could not be read',
+        },);
+        expect(validateFrontMatterTranslation({
+          sourceText: 'name: 猫猫\n',
+          pageText: TARGET.raw,
+          candidateText: `${TRANSLATED}explanation`,
+        },),).toEqual({
+          kind: 'invalid',
+          findings: ['Your translation added text outside YAML front matter block.',],
+        },);
+      },
+    },),
+
+    it({
+      name: 'LEAVES A CANDIDATE UNVALIDATED where the original\'s or the page\'s YAML is refused, rather than '
+        + 'charging that refusal to the candidate as its own (ledger B44)',
+      fn: async () => {
+        /**
+         What the splitter says of the refused YAML, which each side's detail
+         carries.
+         */
+        const refusal = caught(function splitBroken(): void {
+          splitFrontMatter({ text: BROKEN_YAML, },);
+        },);
+        if (!(refusal instanceof FrontMatterParseError))
+          throw new Error('the broken fixture parsed, so it no longer exercises a refusal',);
+
+        expect(validateFrontMatterTranslation({
+          sourceText: BROKEN_YAML,
+          pageText: TARGET.raw,
+          candidateText: TRANSLATED,
+        },),).toEqual({
+          kind: 'unknown',
+          detail: `source front matter could not be read: ${refusal.message}`,
+        },);
+        expect(validateFrontMatterTranslation({
+          sourceText: SOURCE.raw,
+          pageText: BROKEN_YAML,
+          candidateText: TRANSLATED,
+        },),).toEqual({
+          kind: 'unknown',
+          detail: `page front matter could not be read: ${refusal.message}`,
+        },);
       },
     },),
 

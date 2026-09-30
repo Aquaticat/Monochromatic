@@ -13,6 +13,7 @@ export {
 export {
   type FrontMatterBlock,
   FrontMatterParseError,
+  requireFrontMatterRefusal,
   splitFrontMatter,
   type SplitMdxDocument,
 } from './front-matter.ts';

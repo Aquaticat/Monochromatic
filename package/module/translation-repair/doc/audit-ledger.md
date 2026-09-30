@@ -11126,6 +11126,62 @@ with a finding naming the floor's reason.
 The revision round is not the place,
 since a finding about an unreadable original is one no translator can act on.
 
+First half,
+2026-09-30:
+whether the floor can compare anything is read once,
+in `translate-floor-ground.ts`,
+and both floors take their `unknown` details from it
+(`validateTranslatedSlice` for Markdown,
+`validateFrontMatterTranslation` for front matter),
+so the stage can ask the floor's own question before it buys a round.
+The Markdown floor keeps its order:
+a candidate the strict grammar refuses against a readable original is refused before an unread page is reported.
+`translate-floor-ground.unit.test.ts` pins each way a side goes unread,
+and that the floor's detail is the ground's for the same slice.
+
+### B44: the front-matter floor charged a refusal of the original's or the page's YAML to the candidate
+
+Status:
+fixed 2026-09-30 (UTC),
+found reading the front-matter floor for B43.
+`validateFrontMatterTranslation` split the original,
+the page and the candidate inside one try,
+and its catch answered every throw as the candidate's:
+"Your translation could not be parsed as YAML front matter".
+Run on the build before the fix
+(a throwaway worktree at `b70065c7f`,
+`~/temp/agent/audit-glossary-fix/b44-before-probe.ts`),
+a sound candidate against an original whose fenced YAML the parser refuses came back `invalid` with that finding,
+and so did one against such a page,
+while the same candidate against readable sides was `valid`.
+The finding sends the candidate's author to revise text with nothing wrong in it,
+and on such a slice every candidate is refused for the same reason.
+Reach at the pin:
+0 of 92 front-matter slices carry an original or a page the reader cannot read,
+and no document's front matter is refused
+(`~/temp/agent/audit-glossary-fix/b44-front-matter-reach.mjs`,
+whose controls show a broken fenced block throwing and an unfenced one reading as none);
+preparation splits every document's front matter first,
+so a refused document stops before any slice.
+
+Fix:
+both sides are read by `readFrontMatterGround` (`translate-floor-ground.ts`) outside the candidate's try.
+A refused side is a blind ground carrying the refusal's message,
+which its class declares safe to forward,
+and the floor answers `unknown` with it after the candidate's own faults.
+The catch narrows to the YAML refusal through `requireFrontMatterRefusal` (`front-matter.ts`),
+as `requireMdxRefusal` does for the Markdown grammar,
+and `wording-key.ts` narrows its own catch through it,
+whose rethrow census-6nasbO lists as cold.
+The probe over the fixed source answers `unknown` for both,
+naming the side and the parser's refusal.
+Cases:
+`front-matter-slice.unit.test.ts`,
+a refused and an unfenced original and page beside a sound candidate,
+and a candidate's own fault still charged first;
+`front-matter.unit.test.ts` for the narrowing,
+whose rethrow its case reaches.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
