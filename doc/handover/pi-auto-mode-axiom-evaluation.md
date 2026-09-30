@@ -464,6 +464,19 @@ cache ownership,
 or full finalization.
 Next is separately predeclared test-owned fork mechanics with an explicit mechanical-only eligibility premise;
 no inheritance rule can supply the missing initial human-grant premise.
+Independent design review required persisted assistant/tool-result verification,
+mechanical-ineligibility rejection before attachment while fork quota is unused,
+independent mutable child state with shared immutable original handles,
+and child-derived historical matching.
+Read-only pinned SDK source inspection `proc_fd27` found persistence on `message_end`
+and `forkFrom()` copying all non-header file entries.
+The revised schedule forks only after the origin callback,
+its own completed non-error tool result,
+final stop,
+and `waitForIdle()`.
+A partial private original-owner/fork-ledger draft now exists;
+actual worker/parent/full source freeze/runtime remain absent.
+Partial syntax intake `proc_d975` is running and is not executable closure or runtime qualification.
 No genuine original read,
 mutation,
 or interaction replay belongs to that synthetic phase.
