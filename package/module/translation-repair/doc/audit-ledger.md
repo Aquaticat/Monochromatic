@@ -11797,6 +11797,58 @@ a variant kept "for old records" names the records;
 check each store it could live in before keeping it,
 and delete it with its guards when none can hold it.
 
+### B53: a file that is not an artifact advised as one of another generation
+
+Found by the ninth coverage batch (census-SfAXnI),
+at the schema guard's label for a `malformed` row,
+"not an artifact this build recognizes at all",
+which no test ran.
+The schema census classifies a settled file that is not JSON,
+or JSON that is not a record,
+as `malformed`,
+and its TSDoc says why that answer stands apart:
+"its remedy is the opposite one.
+Another generation's artifact is a sound result to keep;
+this is a file to investigate".
+The guard grouped it with the foreign generations anyway,
+so `SchemaGenerationError` told an operator the directory
+"holds artifacts of another schema generation"
+and closed with the ways forward for a sound artifact,
+among them moving it to an archive where
+"the archived copy stays readable as the generation it is".
+
+Reach:
+the pass never met it.
+It runs `assertArtifactsPlaceable` first (`corpus-pass.ts`),
+whose placement census files an unparseable file as malformed
+and a JSON list,
+which carries no `id`,
+as untagged (`artifact-placement.ts`),
+and refuses both as unplaceable.
+A caller running the schema guard alone met the wrong advice.
+
+Fixed as a quality call open to veto (`1556de391`):
+the guard refuses `malformed` rows first,
+with `UnplaceableArtifactError`,
+whose message names each file and says removing it is the whole remedy;
+the generation label and grouping take only artifacts,
+typed so a malformed row cannot reach them.
+The case writes a sound version 1 artifact beside a non-JSON file and a JSON list,
+and reads the refusal naming the two files with that remedy,
+and naming neither "another schema generation" nor the sound artifact.
+Guard-off proof:
+with the refusal's condition set to more than a million files and a rebuild,
+`pass-schema-guard.unit.test.ts` failed on that case alone
+(its FAIL line and its describe's rollup),
+the message opening "This artifacts directory holds artifa…";
+restored with Edit,
+`git diff --stat` empty,
+and rebuilt.
+
+Recurrence:
+where a classification's TSDoc says one answer takes a different remedy,
+check every refusal built from it gives that answer its own.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
