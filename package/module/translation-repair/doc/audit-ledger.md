@@ -3254,6 +3254,82 @@ The translate modules are still the largest cluster
 (73 stretches in 28 files),
 and the sixth batch takes them.
 
+The sixth batch closed the cluster's 73 stretches in 28 files,
+read file by file from `census-xBFoZt`'s rows:
+44 reached by new cases,
+17 removed as unreachable
+(a `nonNullishOrThrow` where the value always exists,
+a parameter every caller passes made required,
+a record type that carries the field,
+a loop keyed on its own pop),
+and 12 restructured so no statement of their own remains,
+each new shape reached by cases.
+By commit:
+`62ad2c084` (ledger B35) removed the definition-leak and marker-drop key fallbacks (2);
+`f792174a2` restructured the formula and skeleton rethrows and work-stack walks (4);
+`92335e14a` (B36) reached the plain-markdown reading's catch and removed the validator's empty-skeleton alternate (2);
+`c5adca0f7` removed the reporter's dropped-names fallback with a record union (1);
+`0c2704754` reached ten address and suicide-floor stretches and removed two fallbacks (12);
+`15ea09099` (B37) rewrote the atom floor's count arm (1);
+`c44cfd311` (B38) moved the Latin title floor's stop into the paired-mark reader (1);
+`53727c304` reached the link-name,
+Han title,
+Han residue and sheet-leak stretches (10);
+`20d0b873f` reached three signer and run-off stretches and removed five (8);
+`c3c240e5a` reached the judge's blank-span exit and the author repair's three arms (4);
+`0da72d2e3` reached three retry stretches,
+restructured one and removed the loop's cap (5);
+`1e02727d6` (B39) restructured the slice attempt's rethrow and removed its no-voice conversion (2);
+`ada092329` reached ten threading and exit stretches in the stage,
+its repair half,
+the producer and the document driver,
+removed four conditional spreads and restructured one rethrow (15);
+`a589d1fde` removed the stage's stand-in for a refusal naming nothing (1);
+`83d4cd981` (B42) reached two translate-slice stretches and the rewritten quote refusal (3);
+`b546d1b2d` restructured the blank-record throw into a tested helper (1);
+`0fcb75c7b` reached the stage's line for an original no grammar reads (1).
+Named apart:
+`a589d1fde` left `floorFindings`' arm for a pass with no caller able to reach it,
+a stretch of the batch's own making that the census at `b546d1b2d` showed and `0fcb75c7b` removed (M80);
+and the quote refusal read as unreachable until a probe found the guard counting quotes the floor does not,
+which is B42.
+The whole-suite census at `0fcb75c7b`
+(`census-6nasbO`,
+1,410 passes,
+taken clean)
+read against `census-xBFoZt`:
+ran 16,
+still cold 0,
+not loaded 0,
+claimed sources with no stretch there 0,
+sources edited since then 20,
+and each edited source "loaded it and left 0 cold stretches".
+The batch's control copy,
+the settle test with its shipped-quote case expecting a refusal,
+failed on that case alone.
+The defects the batch found are B35 to B42;
+B43 is open.
+The shell rule (M1) held in every call since the batch's last context resume;
+the calls before it were not re-read.
+
+The seventh batch's baseline is that commit's whole-suite census
+(`0fcb75c7b`,
+`census-6nasbO`,
+1,410 passes,
+taken from a tree with nothing uncommitted):
+library source holds 1,095 stretches over 2,302 lines in 386 files,
+with 26 functions never called.
+By the first construct each stretch's lines hold
+(`t8-triage-6nasbo.txt`),
+the queue is 402 returns,
+244 ternaries,
+206 nullish fallbacks,
+122 throws
+and 121 others.
+The repair modules are now the largest cluster
+(46 stretches in 17 files),
+and the seventh batch takes them.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -11002,6 +11078,47 @@ Moving the count into the floor changes every lane's floor,
 so it lands after the replay over the pinned human archives and settled pages that every floor had before landing
 shows what it would refuse there.
 
+### B43: where the floor compares nothing, the stage withholds the archive and lets a candidate stand
+
+Status:
+open,
+found 2026-09-30 (UTC) closing `translate-stage.ts` 62 in the coverage census's sixth batch.
+Where the floor can compare nothing
+(an original the strict grammar cannot read,
+or a page neither grammar reads),
+`validateTranslatedSlice` answers `unknown`.
+The stage keeps the archive off the slate on it,
+since the archive stands only on a pass,
+while the author repair lets a candidate stand unvalidated (`translate-repair.ts`),
+and every later reader takes `unknown` as no pass:
+the consolidation's standing check (`readStandingVerdict`),
+the lane offer (`consolidate-lane-offer.ts`),
+the contest's eligibility (`lane-contest-eligibility.ts`)
+and the polish round (`consolidation-polish-round.ts`).
+Reach at the pin:
+0 of 1,351 slices over the 92 entries have an original the strict grammar cannot read
+(`~/temp/agent/audit-glossary-fix/t8b6-unreadable-originals.mjs`,
+whose positive control flags an unclosed tag).
+
+To decide,
+measured with a fixture rather than read:
+whether the consolidation settles such a slice on the archive,
+which would make the stage's calls there waste,
+and whether a path that skips the consolidation
+(the lanes agreeing,
+or an insertion slice the translate lane alone fills)
+ships an unvalidated text,
+which would make it a defect.
+The candidate rule:
+a slice no grammar can floor settles on the archive,
+or stays unfilled where there is none,
+before any call,
+with a finding naming the floor's reason.
+The revision round is not the place,
+since a finding about an unreadable original is one no translator can act on.
+Until then the stage case added in `0fcb75c7b` pins today's rule,
+and `translate-repair.ts` says the consolidation refuses what it lets stand.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -11408,6 +11525,20 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M80: a narrowed caller left its callee's arm with nothing to reach it
+
+Status:
+happened 2026-09-30 (UTC) in `a589d1fde`,
+caught by the batch census at `b546d1b2d`
+and removed in `0fcb75c7b`.
+That commit made the translate stage ask for the floor's findings only where the archive did not pass,
+and left `floorFindings`' arm for a pass in place,
+so the census that was to show the batch's stretches closed showed a new one of the batch's own making.
+Prevention:
+a change that narrows the condition a call sits under reads the callee's arms against the new condition in the same commit,
+and narrows the callee's parameter type where the language can say it,
+as `floorFindings` now takes only a verdict that is not a pass.
 
 ### M79: a coverage census measuring compressed code
 
@@ -11952,6 +12083,22 @@ Prevention:
 step 4 of the pre-launch list in `mistake-prevention.md` names the ISO form,
 and a check's error output goes to a file that is read,
 never to `/dev/null`.
+
+It recurred on 2026-09-30 (UTC),
+checking that B42 rides inside the translate version:
+`-newermt '2026-09-27 04:27:00 UTC'` printed zero,
+and so did its control from midnight.
+The error went to a file this time,
+and the control's zero sent the check to it;
+the ISO rerun found no file after the cutoff and 450 since 00:00 UTC that day.
+The same form found 494 on 2026-09-29,
+over the agent runs and the package's own runs directory both,
+so 44 files of that window have left those roots since
+(which ones is not measured).
+A written step and a read error file did not stop the slip,
+so the check itself is queued for `cache-account-audit`:
+report the newest slice-cache file and a control count,
+so an account needs no hand-written `find`.
 
 ### M56: a red guard whose comment case never reached the comment path
 

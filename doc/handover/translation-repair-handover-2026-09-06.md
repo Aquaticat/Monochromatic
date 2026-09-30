@@ -227,13 +227,21 @@ this one says what changed after it.
   the coverage build is now unminified and the census refuses a minified one
   (ledger M79,
   `aeab4cfad`).
-  The baseline is now the whole suite at `aeab4cfad` (`census-xBFoZt`,
-  1,396 PASS lines):
-  library source holds 1,184 stretches over 2,481 lines in 418 files,
-  with 27 functions never called.
-  Next are the library batches,
-  one triage cluster each,
-  starting with the translate modules,
+  The sixth batch read against the whole suite at `aeab4cfad` (`census-xBFoZt`,
+  1,396 PASS lines)
+  and took the translate modules,
+  closing all 73 of their stretches in 28 files
+  (`62ad2c084` to `0fcb75c7b`)
+  and fixing B35 to B42 on the way;
+  B43,
+  what the translate stage should do where the floor can compare nothing,
+  is open and reaches no pinned slice.
+  The baseline is now the whole suite at `0fcb75c7b` (`census-6nasbO`,
+  1,410 passes):
+  library source holds 1,095 stretches over 2,302 lines in 386 files,
+  with 26 functions never called.
+  The library batches go on one triage cluster each,
+  the seventh taking the repair modules (46 stretches in 17 files),
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
   the ledger's T8 entry has the triage counts.

@@ -62,7 +62,7 @@ read from TianqiChen66620's slice cache (it settled no artifact):
 over 110 issues in 36 of its 110 cached slices.
 A drop of the size that change caused (72% to 65% on one entry) is reported to the owner with the reasons it cites.
 
-Still open in the ledger on 2026-09-29,
+Still open in the ledger on 2026-09-30 (UTC),
 read off each entry's status line:
 T8 (code no unit test runs,
 measured by block coverage mapped to source lines,
@@ -72,18 +72,10 @@ B31 and B32 closed on its way,
 so `src/dead-code.unit.test.ts` now fails on any function,
 class or value production does not reach,
 and `src/unused-imports.unit.test.ts` on any import nothing reads.
-Its batches read against the whole-suite census at `aeab4cfad` (`census-xBFoZt`,
-1,396 PASS lines,
-taken from a tree with nothing uncommitted),
-the first taken on an unminified build:
-every census before it measured compressed code,
-which folds unreached guards into expressions coverage gives no range (ledger M79).
-Library source holds 1,184 stretches over 2,481 lines in 418 files,
-with 27 functions never called,
-and the runner entry files and unloaded bundles come after.
-As of 2026-09-30 (UTC),
-the first batch tests the census's own placement (`5e27208c7`),
-and the census now names a claimed source its baseline holds no stretch in (`297c72fd5`);
+Every census is taken on an unminified build,
+since compressed code folds unreached guards into expressions coverage gives no range (ledger M79).
+The first batch tests the census's own placement (`5e27208c7`),
+and the census names a claimed source its baseline holds no stretch in (`297c72fd5`);
 the second to fifth batches took the naturalness review,
 polish,
 and contest,
@@ -95,31 +87,50 @@ digest and identity modules (`a564eccc7`,
 `09b76e1b4`,
 `74387b886`,
 `fc9e80ca8`).
-Each batch now takes one cluster of the triage and ends with a whole-suite census at its committed head,
+The sixth batch took the translate modules,
+73 stretches in 28 files,
+and closed every one
+(`62ad2c084` to `0fcb75c7b`;
+the ledger's T8 entry accounts for each commit),
+finding and fixing B35 to B42 on the way.
+Each batch takes one cluster of the triage and ends with a whole-suite census at its committed head,
 which becomes the next batch's baseline.
-B33 and B34 closed on the way:
+The baseline is now the whole suite at `0fcb75c7b` (`census-6nasbO`,
+1,410 passes,
+taken from a tree with nothing uncommitted):
+library source holds 1,095 stretches over 2,302 lines in 386 files,
+with 26 functions never called,
+and the runner entry files and unloaded bundles come after.
+By the first construct each stretch's lines hold
+(`t8-triage-6nasbo.txt` in the audit's scratch folder),
+the queue is 402 returns,
+244 ternaries,
+206 nullish fallbacks,
+122 throws
+and 121 others,
+and the seventh batch takes the repair modules
+(46 stretches in 17 files);
+each throw and fallback is read for reachability first,
+and an unreachable one is removed rather than tested.
+B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
 which `message-names-only.unit.test.ts` now checks at every construction.
-The census reading now leaves sources edited since its baseline out of its counts,
+The census reading leaves sources edited since its baseline out of its counts,
 since it matches stretches by line (`d27a89dd0`).
-By the first construct each stretch's lines hold
-(`t8-triage-xbfozt.txt` in the audit's scratch folder),
-the queue is 137 throws,
-219 nullish fallbacks,
-269 ternaries,
-420 returns
-and 139 others;
-each throw and fallback is read for reachability first,
-and an unreachable one is removed rather than tested.
 Holding the launch for T8 is a quality call recorded for the owner to veto,
 and these counts are the size of what it holds the launch for),
+B43 (where the floor can compare nothing,
+the translate stage withholds the archive and lets a candidate stand;
+0 of 1,351 pinned slices reach it,
+and the end-to-end measurement that decides it is next),
 T9 (every test run writes a log into `node_modules`,
 owned by `module-logger`,
 issue #576),
 and L6 (the lane contest on insertion slices,
 designed and deferred past the next launch);
-M1 and M6 recur.
+M1,
+M6 and M57 recur.
 Every other finding the ledger names is fixed,
 measured and decided,
 or ruled on by the owner.
