@@ -30,8 +30,8 @@ import {
  Names a slice a stage settled without asking, the way every stage finding
  is named.
 
- @param stage - which stage settled it: the translate stage (ledger B43) or
- the consolidation (ledger B45)
+ @param stage - which stage settled it: the translate stage (ledger B43),
+ the consolidation (ledger B45) or the consolidation polish (ledger B48)
 
  @param detail - why the floor could compare nothing, in its own words
 
@@ -47,7 +47,7 @@ export function unflooredFinding(
     stage,
     detail,
   }: {
-    readonly stage: 'translate' | 'consolidate';
+    readonly stage: 'translate' | 'consolidate' | 'consolidation-polish';
     readonly detail: string;
   },
 ): string {

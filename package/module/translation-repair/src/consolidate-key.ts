@@ -248,6 +248,13 @@ import type { LaneText, } from './translate-candidates.ts';
  slice-cache file was written after 04:27 UTC on 2026-09-27, where a control
  from midnight that day finds 494.
 
+ Rides inside 20 too: a polish round whose original or base no grammar reads
+ keeps the base with a `consolidation-polish-unfloored` finding and asks
+ nobody, where it paid its refiners and judges for a polish the structural
+ check then left unvalidated (ledger B48, `consolidation-polish-round.ts`);
+ checked on 2026-09-30: no slice-cache file was written after 04:27 UTC on
+ 2026-09-27, where a control from midnight that day finds 494.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

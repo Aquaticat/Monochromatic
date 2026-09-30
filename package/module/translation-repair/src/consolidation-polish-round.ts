@@ -15,6 +15,11 @@ import type { RefineStageMode, } from './refine-selection-context.ts';
 import { runRefineStage, } from './refine-stage.ts';
 import { wrapReplacementText, } from './semantic-wrap.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
+import {
+  floorReach,
+  requireComparedVerdict,
+} from './translate-floor-ground.ts';
+import { unflooredFinding, } from './translate-unfloored.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import { sameWording, } from './wording-key.ts';
 
@@ -174,8 +179,13 @@ export function reviewParagraphsOf(
  
  @param l - stage logger
  
- @returns One bounded proposal round after structure and fidelity selection
- 
+ @returns One bounded proposal round after structure and fidelity selection,
+ or the base with nobody asked where the floor can compare nothing
+
+ @throws {@link import('./translate-floor-ground.ts').FloorGroundDisagreementError} when the structural check says
+ it compared nothing on ground the reach read as comparable, a fault in this
+ code
+
  @example
  ```ts
  const round = await runConsolidationPolishRound({ client, sourceText, archiveText, baseText, mode: { kind: 'comparative' }, lineStructured: false, sliceIndex: 1, config, signal, perCallTimeoutMs, l, });
@@ -216,6 +226,38 @@ export async function runConsolidationPolishRound(
     readonly l: Logger;
   }>,
 ): Promise<ConsolidationPolishRoundResult> {
+  /**
+   Whether the floor can pass any polish here, read as the structural check
+   reads one: against the original and the base it would replace.
+   */
+  const reach = floorReach({
+    sourceText,
+    pageText: baseText,
+  },);
+  // NOTHING IS BOUGHT WHERE NOTHING BOUGHT COULD PASS (ledger B48, as B43
+  // for the translate stage and B45 for the consolidation): on blind ground
+  // the structural check can at best leave a polish unvalidated, so the
+  // round used to pay its refiners and judges for text it then kept out.
+  if (reach.kind === 'blind') {
+    l.warn(
+      `slice ${String(sliceIndex,)}: the floor can compare nothing here (${reach.detail}), `
+        + 'so no refiner is asked and the base stands',
+    );
+    return {
+      text: baseText,
+      proposedText: baseText,
+      changed: false,
+      refinersHeard: [],
+      contributors: [],
+      rounds: [],
+      findings: [
+        unflooredFinding({
+          stage: 'consolidation-polish',
+          detail: reach.detail,
+        },),
+      ],
+    };
+  }
   /**
    Paragraphs eligible under final-polish zero-length floor.
    */
@@ -335,17 +377,20 @@ export async function runConsolidationPolishRound(
     );
   }
   /**
-   Structural validity before semantic comparative gate.
+   Structural validity before semantic comparative gate, on ground the
+   reach found comparable, so a pass or a refusal.
    */
-  const validation = validateTranslatedSlice({
-    sourceText,
-    candidateText: polished,
-    pageText: baseText,
-    lineStructured,
-    ...((config.declaredNamePairs === undefined) ? {} : { declared: config.declaredNamePairs, }),
-    ...((disputedWordings === undefined) ? {} : { disputedWordings, }),
+  const validation = requireComparedVerdict({
+    verdict: validateTranslatedSlice({
+      sourceText,
+      candidateText: polished,
+      pageText: baseText,
+      lineStructured,
+      ...((config.declaredNamePairs === undefined) ? {} : { declared: config.declaredNamePairs, }),
+      ...((disputedWordings === undefined) ? {} : { disputedWordings, }),
+    },),
   },);
-  if (validation.kind !== 'valid') {
+  if (validation.kind === 'invalid') {
     return {
       text: baseText,
       proposedText: polished,
@@ -355,7 +400,7 @@ export async function runConsolidationPolishRound(
       rounds: refined.rounds,
       findings: [
         ...refined.findings,
-        ...((validation.kind === 'invalid') ? validation.findings : [validation.detail,]),
+        ...validation.findings,
         'consolidation-polish structural validation kept approved base',
       ],
     };

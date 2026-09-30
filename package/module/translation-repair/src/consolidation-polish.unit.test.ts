@@ -18,9 +18,11 @@ import {
 
 import {
   assertFinalNaturalnessComplete,
+  floorReach,
   NaturalnessCompletenessError,
   polishConsolidation,
   reviewParagraphsOf,
+  unflooredFinding,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SettledArtifact,
@@ -251,6 +253,65 @@ function singleRoundClient(
     },
     quotas: async () => {
       throw new Error('quotas unused by polish stages',);
+    },
+  };
+}
+
+/**
+ Builds a client that answers every polish role and records which roles it
+ was asked, the gate choosing as scripted.
+
+ @param gateChoice - what every polish gate judge chooses
+
+ @returns The client and the schema of every request, in the order asked
+
+ @example
+ ```ts
+ const { client, asked, } = recordingClient({ gateChoice: 'base', },);
+ ```
+ */
+function recordingClient(
+  { gateChoice, }: { readonly gateChoice: 'base' | 'polished'; },
+): { readonly client: SyntheticClient; readonly asked: readonly string[]; } {
+  /**
+   Schema of every request, in the order asked.
+   */
+  const asked: string[] = [];
+  return {
+    asked,
+    client: {
+      chatText: async () => {
+        throw new Error('chatText unused by structured polish stages',);
+      },
+      chatJson: async <ValueT,>(
+        request: ChatJsonRequest<ValueT>,
+      ): Promise<ChatJsonOutcome<ValueT>> => {
+        /**
+         Schema identifying stage role.
+         */
+        const schema = request.responseFormat?.json_schema.name ?? 'no schema';
+        asked.push(schema,);
+        /**
+         Scripted stage reply.
+         */
+        const value: unknown = (schema === 'refine_report')
+          ? { rewrites: [{ paragraph: 1, newText: POLISHED, },], }
+          : (schema === 'candidate_ballot')
+          ? { best: 1, reason: 'clear idiomatic improvement with same meaning', }
+          : (schema === 'consolidation_polish_gate')
+          ? { choice: gateChoice, unsupported: [], dropped: [], reason: 'scripted fidelity comparison', }
+          : { acceptable: true, findings: [], reason: 'whole passage is publication-ready', };
+        if (!request.validate(value,))
+          throw new Error(`synthetic ${schema} reply failed validation`,);
+        return {
+          kind: 'ok',
+          value,
+          rawText: JSON.stringify(value,),
+        };
+      },
+      quotas: async () => {
+        throw new Error('quotas unused by polish stages',);
+      },
     },
   };
 }
@@ -784,6 +845,85 @@ await describe({
           kind: 'not-run',
           reason: 'front-matter',
         },);
+      },
+    },),
+
+    it({
+      name: 'ASKS NO REFINER, RANKER OR GATE where the floor can compare nothing, keeping the base with the '
+        + 'unfloored finding (ledger B48: the round paid them for a polish its structural check left unvalidated)',
+      fn: async () => {
+        /** An original the strict grammar cannot read: its brace never closes. */
+        const sourceText = '她总是乐观地看待{下雨天，和猫友们度过了许多惬意的午后。';
+        /** What the floor makes of this ground. */
+        const reach = floorReach({
+          sourceText,
+          pageText: BASE,
+        },);
+        if (reach.kind !== 'blind')
+          throw new Error('fixture original is readable, so this case would not test blind ground',);
+        const { client: recording, asked, } = recordingClient({ gateChoice: 'polished', },);
+        const polish = await polishConsolidation({
+          client: recording,
+          sourceText,
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 0,
+          config: CONFIG,
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-test', },),
+        },);
+        if (polish.kind !== 'settled')
+          throw new Error(`expected a settled polish, got ${polish.kind}`,);
+        expect(new Set(asked,),).toEqual(new Set(['absolute_naturalness_review',],),);
+        expect({
+          text: polish.text,
+          changed: polish.changed,
+          refinersHeard: polish.refinersHeard,
+          rounds: polish.rounds,
+        },).toEqual({
+          text: BASE,
+          changed: false,
+          refinersHeard: [],
+          rounds: [],
+        },);
+        expect(polish.findings,).toContain(unflooredFinding({
+          stage: 'consolidation-polish',
+          detail: reach.detail,
+        },),);
+      },
+    },),
+
+    it({
+      name: 'KEEPS THE BASE when the gate backs it over a structurally valid polish, recording the gate',
+      fn: async () => {
+        const { client: recording, asked, } = recordingClient({ gateChoice: 'base', },);
+        const polish = await polishConsolidation({
+          client: recording,
+          sourceText: '她总是乐观地看待下雨天，和猫友们度过了许多惬意的午后。',
+          archiveText: BASE,
+          baseText: BASE,
+          lineStructured: false,
+          sliceIndex: 0,
+          config: CONFIG,
+          signal: AbortSignal.timeout(5_000,),
+          perCallTimeoutMs: 5_000,
+          l: tagged({ tag: 'consolidation-polish-test', },),
+        },);
+        if (polish.kind !== 'settled')
+          throw new Error(`expected a settled polish, got ${polish.kind}`,);
+        expect(asked,).toContain('consolidation_polish_gate',);
+        expect({
+          text: polish.text,
+          changed: polish.changed,
+          ships: polish.gate?.ships,
+        },).toEqual({
+          text: BASE,
+          changed: false,
+          ships: 'base',
+        },);
+        expect(polish.proposedText,).not.toBe(BASE,);
       },
     },),
   ],
