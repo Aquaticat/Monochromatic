@@ -399,8 +399,30 @@ invalid capture/nonce/scope/writer/finalization and summary-only fixtures stoppe
 The intact synthetic fixture and capture-check omission reached SDK barrel import,
 with zero sessions/models/genuine reads and no genuine-authority claim.
 Guarded source freeze `proc_25cf` passed with the reviewed construction-owner closure pin.
-Protected actual consumer `proc_baa1` is running;
-no completed outcome or admission claim is established yet.
+Protected actual consumer `proc_baa1` passed:
+one AgentSession,
+two first-party scripted responses,
+one inert callback,
+zero fetch/external model calls,
+empty private stderr,
+and no genuine requester/editor replay.
+Original writer/UTF-8/presentation/nonce/accepted scope stayed privately owned before SDK startup.
+Copied summaries,
+action handles,
+synthetic/machine records,
+and directive promotion were rejected through the actual SDK tool-result boundary.
+This carries genuine historical fixture evidence,
+not a current human grant:
+`currentEligibilityEstablished:false` and zero production grant writes remain explicit.
+The original scope did not name an SDK session ID;
+constructor ownership can establish experimental association,
+not retroactive human-witnessed session ancestry or renewed authorization.
+Next `root-attachment-controls/` is a separately predeclared,
+unimplemented/undispatched mechanical attachment/reset phase.
+Its records must remain operationally test-only,
+canonicalize duplicate validated views of the same original transaction,
+and retain historical evidence without allowing post-reset reauthorization.
+Fork/cache/full finalization and genuine reusable-directive admission stay separate.
 The preceding unlaunched draft remains withheld.
 No genuine requester/editor is replayed.
 It carries original configured-writer/byte/presentation/exact-scope evidence,
