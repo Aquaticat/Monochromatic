@@ -476,7 +476,7 @@ export async function settleConsolidation(
     },)) {
       return keepTheArchive({
         settlement,
-        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+        subject,
         sliceIndex,
         l: sl,
       },);
@@ -509,7 +509,7 @@ export async function settleConsolidation(
     },)) {
       return keepTheArchive({
         settlement,
-        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+        subject,
         sliceIndex,
         l: sl,
       },);
@@ -650,7 +650,7 @@ export async function settleConsolidation(
         demoted: false,
         findings: absence.findings,
       },
-      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+      subject,
       sliceIndex,
       l: sl,
     },);
@@ -684,7 +684,7 @@ export async function settleConsolidation(
     },)) {
       return keepTheArchive({
         settlement,
-        ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+        subject,
         sliceIndex,
         l: sl,
       },);

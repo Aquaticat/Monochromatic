@@ -249,6 +249,51 @@ await describe({
     },),
 
     it({
+      name: 'READS A FRONT-MATTER STANDING AND INCUMBENT UNDER THE FRONT-MATTER RULE: a standing that renames a '
+        + 'YAML field is refused and the valid incumbent stands in, where the Markdown rule the same call makes '
+        + 'without the syntax role keeps the standing',
+      fn: async () => {
+        /** The slice's metadata, whose name the alias repeats. */
+        const sourceText = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
+        /** The contest's winner, which renamed a field. */
+        const renamed = '---\ntitle: Maomao Cat\ninfo:\n  alias: Maomao Cat\n---\n';
+        /** The archive's metadata, valid under either rule. */
+        const incumbent = '---\nname: Maomao Cat\ninfo:\n  alias: Maomao Cat\n---\n';
+        /** The slice as both calls read it, apart from the syntax role. */
+        const slice = {
+          sourceText,
+          standingText: renamed,
+          incumbentText: incumbent,
+          lineStructured: false,
+          choice: 'translate',
+          contestVerdict: {
+            kind: 'lane-won',
+            lane: 'translate',
+          },
+          sliceIndex: 6,
+        } as const;
+        /** Verdict under the Markdown rule. */
+        const markdown = readStandingVerdict({
+          ...slice,
+          l: capturing().l,
+        },);
+        /** Verdict under the front-matter rule. */
+        const frontMatter = readStandingVerdict({
+          ...slice,
+          syntax: 'front-matter',
+          l: capturing().l,
+        },);
+        expect([
+          [markdown.incumbentStandsIn, markdown.settlementText,],
+          [frontMatter.incumbentStandsIn, frontMatter.settlementText,],
+        ],).toEqual([
+          [false, renamed,],
+          [true, incumbent,],
+        ],);
+      },
+    },),
+
+    it({
       name: 'WRITES NOTHING for a valid standing with a won contest behind it',
       fn: async () => {
         const { l, warnings, } = capturing();

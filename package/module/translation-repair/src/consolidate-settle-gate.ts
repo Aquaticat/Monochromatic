@@ -258,7 +258,7 @@ export async function gateAndShip(
   },)) {
     return keepTheArchive({
       settlement,
-      ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+      subject,
       sliceIndex,
       l,
     },);

@@ -2,7 +2,6 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from './chat-contract.ts';
-import type { SliceSyntax, } from './chunk-document.ts';
 import type { ConsolidationPolishConfig, } from './consolidation-polish-model.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
 import {
@@ -155,10 +154,9 @@ export function reviewParagraphsOf(
  
  @param archiveText - archived English evidence
  
- @param baseText - exact would-ship input to this round
- 
- @param syntax - syntax role, absent for body prose
- 
+ @param baseText - exact would-ship input to this round, always body prose:
+ the polish returns before any round on front matter, the one syntax role
+
  @param lineStructured - source line-boundary policy
  
  @param identityContext - declared identities and contributor forms
@@ -197,7 +195,6 @@ export async function runConsolidationPolishRound(
     sourceText,
     archiveText,
     baseText,
-    syntax,
     lineStructured,
     identityContext,
     referenceContext,
@@ -214,7 +211,6 @@ export async function runConsolidationPolishRound(
     readonly sourceText: string;
     readonly archiveText: string;
     readonly baseText: string;
-    readonly syntax?: SliceSyntax;
     readonly lineStructured: boolean;
     readonly identityContext?: string;
     readonly referenceContext?: string;
@@ -355,7 +351,6 @@ export async function runConsolidationPolishRound(
     sourceText,
     candidateText: polished,
     pageText: baseText,
-    ...((syntax === undefined) ? {} : { syntax, }),
     lineStructured,
     ...((config.declaredNamePairs === undefined) ? {} : { declared: config.declaredNamePairs, }),
     ...((disputedWordings === undefined) ? {} : { disputedWordings, }),

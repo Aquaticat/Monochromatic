@@ -221,5 +221,48 @@ await describe({
         ],);
       },
     },),
+
+    it({
+      name: 'READS A FRONT-MATTER SLICE\'S LANE TEXTS UNDER THE FRONT-MATTER RULE, leaving out one that renames a '
+        + 'YAML field, which the Markdown rule the same call makes without the syntax role offers',
+      fn: async () => {
+        /** The slice's metadata, whose name the alias repeats. */
+        const sourceText = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
+        /** The archive's metadata, which stands. */
+        const page = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
+        /** The slice as both calls read it, apart from the syntax role. */
+        const slice = {
+          sourceText,
+          incumbentText: page,
+          repairText: '---\ntitle: Maomao Cat\ninfo:\n  alias: Maomao Cat\n---\n',
+          translateText: '---\nname: Maomao Cat\ninfo:\n  alias: Maomao Cat\n---\n',
+          standingText: page,
+          standingMayShip: false,
+          standingEligible: true,
+        };
+        /**
+         Lanes one call offers.
+
+         @param offered - lane texts the call put on the slate
+
+         @returns Their lanes, in slate order
+         */
+        function lanesOf(offered: readonly { readonly lane: string; }[],): readonly string[] {
+          return offered.map(function toLane(laneText,): string {
+            return laneText.lane;
+          },);
+        }
+        expect([
+          lanesOf(laneTextsForSlate(slice,),),
+          lanesOf(laneTextsForSlate({
+            ...slice,
+            syntax: 'front-matter',
+          },),),
+        ],).toEqual([
+          [ 'repair', 'translate', ],
+          [ 'translate', ],
+        ],);
+      },
+    },),
   ],
 },);

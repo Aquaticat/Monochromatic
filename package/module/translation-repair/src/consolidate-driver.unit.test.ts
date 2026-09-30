@@ -690,9 +690,15 @@ async function driveWith(
     writes,
     signal = AbortSignal.timeout(CALL_TIMEOUT_MS,),
     archiveDisputes,
+    referenceContext,
   }: {
     readonly contests: readonly ArtifactContestSlice[];
     readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
+    /**
+     What the pages the original cites say, for the cases reading whether
+     each round was shown it.
+     */
+    readonly referenceContext?: string;
     readonly resumed?: ReadonlyMap<string, ConsolidationSettlement>;
     readonly projected?: ProjectedLanes;
     readonly client?: SyntheticClient;
@@ -779,6 +785,7 @@ async function driveWith(
     pictureContextBySlice,
     neighbourContextBySlice,
     ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
+    ...((referenceContext === undefined) ? {} : { referenceContext, }),
     l: (messages === undefined) ? l : capturingLogger({ messages, },),
   },);
 
@@ -2133,6 +2140,9 @@ function polishOn({ seats, }: { readonly seats: readonly RosterModelId[]; },): C
 
  @param asked - sink for the seat of every call, in order
 
+ @param sheets - sink for everything each call sent, for the cases reading
+ what a round was shown
+
  @returns Client to drive with
 
  @example
@@ -2141,7 +2151,13 @@ function polishOn({ seats, }: { readonly seats: readonly RosterModelId[]; },): C
  ```
  */
 function roleAnsweringClient(
-  { asked, }: { readonly asked: RosterModelId[]; },
+  {
+    asked,
+    sheets,
+  }: {
+    readonly asked: RosterModelId[];
+    readonly sheets?: string[];
+  },
 ): SyntheticClient {
   return {
     chatText: async () => {
@@ -2155,6 +2171,7 @@ function roleAnsweringClient(
        Everything the call sends, which is where the sheet lives.
        */
       const sent = JSON.stringify(request,);
+      sheets?.push(sent,);
       /**
        Reply this round is given, told apart as `answeringClient` tells it.
        */
@@ -2356,6 +2373,78 @@ await describe({
           keptMatches: true,
           polishedDiffers: true,
         },);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${consolidateDocument.name} showing the cited references (class forty-one)`,
+  children: [
+    it({
+      name: 'SHOWS THE PRODUCERS AND THE SLATE JUDGES what the pages the original cites say, when the document '
+        + 'carries them; a run carrying none is the control, whose sheets never mention them (the gate, which '
+        + 'these judges never reach by keeping the standing, is pinned in consolidate-settle.unit.test.ts)',
+      fn: async () => {
+        /** What the cited page says, marked so a sheet carrying it is plain. */
+        const references = 'CITED PAGE SAYS: the cat naps in the sun every afternoon.';
+        /**
+         Every producer and slate judge sheet one run sent.
+
+         @param referenceContext - the document's references, none left out
+
+         @returns Producer and slate judge sheets
+         */
+        async function sheetsOf(
+          { referenceContext, }: { readonly referenceContext?: string; },
+        ): Promise<{
+          readonly producers: readonly string[];
+          readonly judges: readonly string[];
+        }> {
+          /** Everything each call sent. */
+          const sheets: string[] = [];
+          await driveWith({
+            contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+            client: roleAnsweringClient({ asked: [], sheets, },),
+            ...((referenceContext === undefined) ? {} : { referenceContext, }),
+          },);
+          return {
+            producers: sheets.filter(function isProducer(sheet,): boolean {
+              return sheet.includes('translation_report',);
+            },),
+            judges: sheets.filter(function isJudge(sheet,): boolean {
+              return (!sheet.includes('translation_report',)) && (!sheet.includes(GATE_MARKER,));
+            },),
+          };
+        }
+        /**
+         For each round, whether every sheet it was sent carries the
+         references, none when the round was never asked.
+
+         @param rounds - one run's sheets by round
+
+         @returns Producer and judge answers in that order
+         */
+        function carriedBy(
+          rounds: Awaited<ReturnType<typeof sheetsOf>>,
+        ): readonly string[] {
+          return [rounds.producers, rounds.judges,].map(function carried(sheets,): string {
+            if (sheets.length === 0)
+              return 'never asked';
+            return sheets.every(function carries(sheet,): boolean {
+              return sheet.includes(references,);
+            },)
+              ? 'all'
+              : 'not all';
+          },);
+        }
+        expect([
+          carriedBy(await sheetsOf({},),),
+          carriedBy(await sheetsOf({ referenceContext: references, },),),
+        ],).toEqual([
+          [ 'not all', 'not all', ],
+          [ 'all', 'all', ],
+        ],);
       },
     },),
   ],

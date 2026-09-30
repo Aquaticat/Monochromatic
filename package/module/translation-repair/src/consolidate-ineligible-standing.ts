@@ -194,8 +194,9 @@ export function nothingValidShips(
 
  @param settlement - what the stage settled, before any polish
 
- @param syntax - explicit syntax role, which decides the not-run reason the
- final naturalness check requires
+ @param subject - the slice, whose syntax role decides the not-run reason the
+ final naturalness check requires; taken whole so no exit has to thread the
+ role across on its own
 
  @param sliceIndex - prepared position of the slice, for the log
 
@@ -205,18 +206,18 @@ export function nothingValidShips(
 
  @example
  ```ts
- return keepTheArchive({ settlement, syntax: subject.syntax, sliceIndex, l, },);
+ return keepTheArchive({ settlement, subject, sliceIndex, l, },);
  ```
  */
 export function keepTheArchive(
   {
     settlement,
-    syntax,
+    subject,
     sliceIndex,
     l,
   }: {
     readonly settlement: ConsolidationSettlement;
-    readonly syntax?: SliceSyntax;
+    readonly subject: { readonly syntax?: SliceSyntax; };
     readonly sliceIndex: number;
     readonly l: Logger;
   },
@@ -232,7 +233,7 @@ export function keepTheArchive(
       ...settlement.findings,
       NO_VALID_WORDING_FINDING,
     ],
-    polish: unpolishedBaseline((syntax === undefined) ? {} : { syntax, },),
+    polish: unpolishedBaseline(subject,),
   };
 }
 

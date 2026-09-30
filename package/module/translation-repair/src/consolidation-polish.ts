@@ -180,7 +180,8 @@ export async function polishConsolidation(
     sourceText,
     archiveText,
     baseText,
-    ...((syntax === undefined) ? {} : { syntax, }),
+    // NO SYNTAX ROLE: front matter, the only one, took the `unpolishedBaseline`
+    // return, so the round only ever sees body prose.
     lineStructured,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),

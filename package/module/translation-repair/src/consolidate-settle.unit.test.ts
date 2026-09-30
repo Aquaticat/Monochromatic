@@ -214,6 +214,7 @@ function positionOfText(
     wanted,
     incumbentText = STANDING,
     laneTexts = [],
+    sourceText = SUBJECT.sourceText,
   }: {
     readonly texts: readonly string[];
     readonly wanted: string;
@@ -227,6 +228,11 @@ function positionOfText(
      Lane texts the slate offers beside the proposals (class forty).
      */
     readonly laneTexts?: readonly LaneText[];
+
+    /**
+     Original the rotation is hashed from, for a case deciding another slice.
+     */
+    readonly sourceText?: string;
   },
 ): number {
   const built = buildTranslateCandidates({
@@ -242,7 +248,7 @@ function positionOfText(
   const entries = describeSlate({
     candidates: rotateCandidates({
       candidates: built.candidates,
-      sourceText: SUBJECT.sourceText,
+      sourceText,
     },),
   },);
 
@@ -545,6 +551,7 @@ async function settleWith(
       judge: 0,
       gate: 0,
     },
+    subject = SUBJECT,
   }: {
     readonly voices: readonly {
       readonly modelId: FixtureModelId;
@@ -591,6 +598,12 @@ async function settleWith(
       judge: number;
       gate: number;
     };
+
+    /**
+     The slice decided about, for a case needing another than every other
+     case's.
+     */
+    readonly subject?: Parameters<typeof settleConsolidation>[0]['subject'];
   },
 ) {
   /**
@@ -611,7 +624,7 @@ async function settleWith(
       gateSheets,
     },),
     roster: ROSTER,
-    subject: SUBJECT,
+    subject,
     voices,
     validity,
     producedFindings,
@@ -921,6 +934,109 @@ await describe({
         expect(settled.demoted,).toBe(false,);
         expect(settled.text.split('\n',).length,).toBeGreaterThan(1,);
         expect(served.gate,).toBeGreaterThan(0,);
+      },
+    },),
+
+    it({
+      name: 'SHOWS THE SLATE JUDGES AND THE GATE what the pages the original cites say (class forty-one), when the '
+        + 'slice carries them; the same settlement carrying none is the control, whose sheets never mention them',
+      fn: async () => {
+        /** What the cited page says, marked so a sheet carrying it is plain. */
+        const references = 'CITED PAGE SAYS: the cat sleeps by the window until four.';
+        /**
+         Whether every judge sheet and every gate sheet of one settlement
+         carries the references.
+
+         @param referenceContext - the slice's references, none left out
+
+         @returns Judge and gate answers, false for a round never asked
+         */
+        async function carriedBy(
+          { referenceContext, }: { readonly referenceContext?: string; },
+        ): Promise<readonly boolean[]> {
+          /** Sheets the settlement sent. */
+          const { judgeSheets, gateSheets, } = await settleWith({
+            subject: {
+              ...SUBJECT,
+              ...((referenceContext === undefined) ? {} : { referenceContext, }),
+            },
+            voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+            validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+            judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+            gateReply: gateBallot({ choice: 'consolidated', },),
+          },);
+          return [judgeSheets, gateSheets,].map(function carried(sheets,): boolean {
+            return (sheets.length > 0) && sheets.every(function carries(sheet,): boolean {
+              return sheet.includes(references,);
+            },);
+          },);
+        }
+        expect([
+          await carriedBy({},),
+          await carriedBy({ referenceContext: references, },),
+        ],).toEqual([
+          [false, false,],
+          [true, true,],
+        ],);
+      },
+    },),
+
+    it({
+      name: 'SHOWS THE GATE THE FRONT-MATTER RULE on a front-matter slice, which the gate sheet carries only when '
+        + 'the slice\'s syntax role reaches it; the prose slice every other case decides is the control',
+      fn: async () => {
+        /** The slice's metadata, whose name the alias repeats. */
+        const sourceText = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n---\n';
+        /** The archive's metadata, which stands. */
+        const page = '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n';
+        /** The consolidation, valid under the front-matter rule. */
+        const proposed = '---\nname: Maomao Cat\ninfo:\n  alias: Maomao Cat\n---\n';
+        /** Opening words of the rule the gate reads for front matter. */
+        const rule = 'The candidates are complete YAML front matter';
+        const prose = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({ best: positionOfText({ texts: [FRESH,], wanted: FRESH, },), },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+        },);
+        const frontMatter = await settleWith({
+          subject: {
+            sourceText,
+            incumbentText: page,
+            syntax: 'front-matter',
+          },
+          standingText: page,
+          voices: [voiceOf({ modelId: ROSTER[0], translation: proposed, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: judgeBallot({
+            best: positionOfText({
+              texts: [proposed,],
+              wanted: proposed,
+              incumbentText: page,
+              sourceText,
+            },),
+          },),
+          gateReply: gateBallot({ choice: 'consolidated', },),
+        },);
+        /**
+         Whether every gate sheet of a settlement carries the rule.
+
+         @param gateSheets - what the settlement's gate was sent
+
+         @returns False when the gate was never asked
+         */
+        function everyGateSheetCarriesRule(gateSheets: readonly string[],): boolean {
+          return (gateSheets.length > 0) && gateSheets.every(function carries(sheet,): boolean {
+            return sheet.includes(rule,);
+          },);
+        }
+        expect([
+          [prose.settled.terminal, everyGateSheetCarriesRule(prose.gateSheets,), prose.gateSheets.length > 0,],
+          [frontMatter.settled.terminal, everyGateSheetCarriesRule(frontMatter.gateSheets,), frontMatter.settled.text,],
+        ],).toEqual([
+          ['consolidated', false, true,],
+          ['consolidated', true, proposed,],
+        ],);
       },
     },),
 
