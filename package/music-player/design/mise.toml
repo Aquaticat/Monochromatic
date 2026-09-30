@@ -418,6 +418,11 @@ description = "Sequence native filename review build before exact artifact valid
 dir = "{{config_root}}"
 run = ["node search-filename-comparison.mjs build", "node search-filename-comparison.mjs validate"]
 
+[tasks."test:search:filename-comparison"]
+description = "Exercise native filename review provenance and required-scroll guards on a disposable fixture"
+dir = "{{config_root}}"
+run = "node search-filename-comparison-test.mjs"
+
 [tasks."build:search:ranking"]
 description = "Rebuild the archived D/P and M/F/T comparison from sanitized native captures"
 dir = "{{config_root}}"
