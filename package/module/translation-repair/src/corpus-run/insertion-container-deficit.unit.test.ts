@@ -181,8 +181,21 @@ function missingRow(
 }
 
 /**
+ Archive's closing half rendering the paragraph the original's slice 2 writes,
+ so the archive's block has as many blocks as the original's.
+ */
+const WHOLE_CLOSE_TARGET = `The cat came home at night.\n\n${CLOSE_TARGET}`;
+
+/**
  Four slices: the opening half, one paired paragraph, the missing paragraph
- and the closing half, the archive's block one paragraph short.
+ and the closing half, the archive's block one paragraph short unless a half
+ says otherwise.
+
+ @param openSource - original text of the opening half
+
+ @param openTarget - archive text of the opening half
+
+ @param closeSource - original text of the closing half
 
  @param closeTarget - archive text of the closing half
 
@@ -193,12 +206,24 @@ function missingRow(
  const slices = containerSlices({ closeTarget: CLOSE_TARGET, },);
  ```
  */
-function containerSlices({ closeTarget, }: { readonly closeTarget: string; },): readonly ChunkPair[] {
+function containerSlices(
+  {
+    openSource = OPEN_SOURCE,
+    openTarget = OPEN_TARGET,
+    closeSource = CLOSE_SOURCE,
+    closeTarget = CLOSE_TARGET,
+  }: {
+    readonly openSource?: string;
+    readonly openTarget?: string;
+    readonly closeSource?: string;
+    readonly closeTarget?: string;
+  },
+): readonly ChunkPair[] {
   return [
     paired({
       sliceIndex: 0,
-      source: OPEN_SOURCE,
-      target: OPEN_TARGET,
+      source: openSource,
+      target: openTarget,
     },),
     paired({
       sliceIndex: 1,
@@ -211,7 +236,7 @@ function containerSlices({ closeTarget, }: { readonly closeTarget: string; },): 
     },),
     paired({
       sliceIndex: 3,
-      source: CLOSE_SOURCE,
+      source: closeSource,
       target: closeTarget,
     },),
   ];
@@ -240,8 +265,59 @@ await describe({
       name: 'LEAVES the paragraph unresolved where the archive\'s block has as many blocks as the original\'s',
       fn: async () => {
         const deficit = admitContainerDeficit({
+          slices: containerSlices({ closeTarget: WHOLE_CLOSE_TARGET, },),
+          positions: new Set(),
+          unresolvedRows: [missingRow({ verdict: 'absent', },),],
+        },);
+        expect([...deficit.positions,],).toEqual([],);
+        expect(deficit.unresolvedRows.length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'COUNTS NOTHING AFTER THE CONTAINER\'S OWN CLOSING TAG, where the closing half goes on to a whole '
+        + 'element of the same name whose archive copy is a paragraph short, and still admits where the '
+        + 'container itself is short (ledger B67)',
+      fn: async () => {
+        /**
+         Original's closing half going on to a whole element of two paragraphs.
+         */
+        const closeSource = `${CLOSE_SOURCE}\n\n<details>\n<summary>另一个故事</summary>\n\n第一段。\n\n第二段。\n\n</details>`;
+
+        /**
+         The archive's copy of that element, one paragraph short.
+         */
+        const shortElement = '\n\n<details>\n<summary>Another story</summary>\n\nThe first paragraph.\n\n</details>';
+        const whole = admitContainerDeficit({
           slices: containerSlices({
-            closeTarget: `The cat came home at night.\n\n${CLOSE_TARGET}`,
+            closeSource,
+            closeTarget: `${WHOLE_CLOSE_TARGET}${shortElement}`,
+          },),
+          positions: new Set(),
+          unresolvedRows: [missingRow({ verdict: 'absent', },),],
+        },);
+        expect([...whole.positions,],).toEqual([],);
+        expect(whole.unresolvedRows.length,).toBe(1,);
+        const short = admitContainerDeficit({
+          slices: containerSlices({
+            closeSource,
+            closeTarget: `${CLOSE_TARGET}${shortElement}`,
+          },),
+          positions: new Set(),
+          unresolvedRows: [missingRow({ verdict: 'absent', },),],
+        },);
+        expect([...short.positions,],).toEqual([2,],);
+      },
+    },),
+    it({
+      name: 'COUNTS NOTHING BEFORE THE CONTAINER\'S OWN OPENING TAG, where the opening half starts with a whole '
+        + 'element of the same name whose archive copy is a paragraph short (ledger B67)',
+      fn: async () => {
+        const deficit = admitContainerDeficit({
+          slices: containerSlices({
+            openSource: `<details>\n<summary>前言</summary>\n\n一段。\n\n二段。\n\n</details>\n\n${OPEN_SOURCE}`,
+            openTarget: '<details>\n<summary>Preface</summary>\n\nOne paragraph.\n\n</details>\n\n'
+              + '<details>\n<summary>The cat\'s story</summary>',
+            closeTarget: WHOLE_CLOSE_TARGET,
           },),
           positions: new Set(),
           unresolvedRows: [missingRow({ verdict: 'absent', },),],
