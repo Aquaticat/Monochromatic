@@ -23,9 +23,19 @@ import {
 import {
   contestLaneSlice,
   createSyntheticClient,
+  LANE_CONTEST_QUORUM,
+  NoProviderForModelError,
+  reachableQuorum,
   settleArchiveBallots,
+  shortBenchStageFinding,
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  type RosterModelId,
+  type SyntheticClient,
 } from '../dist/final/node/index.mjs';
 import {
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -58,6 +68,16 @@ const ROSTER = [
 const ELIGIBILITY_ROSTER = [
   ...ROSTER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+] as const;
+
+/**
+ Bench of six, whose quorum of three the router can leave out of reach while
+ the contest's own quorum stays in it.
+ */
+const SIX_SEAT_ROSTER = [
+  ...ELIGIBILITY_ROSTER,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_VISION,
 ] as const;
 
 /**
@@ -162,8 +182,63 @@ function cannedClient(
 }
 
 /**
+ Builds a client the router refuses some seats on, every other seat naming
+ one candidate.
+
+ @param choice - candidate every seat that answers names
+
+ @param refused - seats the router refuses for want of a wet provider
+
+ @returns Scripted contest client
+
+ @example
+ ```ts
+ const client = refusingClient({ choice: 'repair', refused: [], },);
+ ```
+ */
+function refusingClient(
+  {
+    choice,
+    refused,
+  }: {
+    readonly choice: 'repair' | 'translate' | 'neither';
+    readonly refused: readonly RosterModelId[];
+  },
+): SyntheticClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText unused by the lane contest',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      if (refused.includes(request.modelId,)) {
+        throw new NoProviderForModelError({
+          modelId: request.modelId,
+          reason: 'every provider serving this cat is out of budget',
+        },);
+      }
+      /**
+       This seat's ballot.
+       */
+      const value: unknown = JSON.parse(ballot({ choice, },),);
+      if (!request.validate(value,))
+        throw new Error('scripted lane contest ballot failed validation',);
+      return {
+        kind: 'ok',
+        value,
+        rawText: JSON.stringify(value,),
+      };
+    },
+    quotas: async () => {
+      throw new Error('quotas unused by the lane contest',);
+    },
+  };
+}
+
+/**
  Runs one contest over a canned roster.
- 
+
  @param replyByModel - reply body per model
  
  @returns What the roster settled on
@@ -366,6 +441,52 @@ await describe({
         expect(outcome.choice,).toBe('neither',);
         expect(outcome.usable,).toBe(1,);
         expect(outcome.findings.length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'SAYS THE BENCH WAS SHORT when the router refuses seats past the bench quorum, and still settles on '
+        + 'the ballots it heard (ledger X8)',
+      fn: async () => {
+        /**
+         Seats the router refuses, leaving the contest's quorum in reach and
+         the bench's out of it.
+         */
+        const refused = SIX_SEAT_ROSTER.slice(LANE_CONTEST_QUORUM,);
+
+        /**
+         The bench's quorum once those seats are out of reach.
+         */
+        const quorum = reachableQuorum({
+          benchSize: SIX_SEAT_ROSTER.length,
+          unreachable: refused.length,
+        },);
+        expect(quorum.short,).toBe(true,);
+
+        /**
+         What the two reachable seats settled.
+         */
+        const outcome = await contestLaneSlice({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
+          client: refusingClient({
+            choice: 'repair',
+            refused,
+          },),
+          modelIds: SIX_SEAT_ROSTER,
+          subject: SUBJECT,
+          signal: AbortSignal.timeout(EXCHANGE_TIMEOUT_MS,),
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.choice,).toBe('repair',);
+        expect(outcome.usable,).toBe(SIX_SEAT_ROSTER.length - refused.length,);
+        expect(outcome.findings,).toStrictEqual([
+          shortBenchStageFinding({
+            stage: 'lane-contest',
+            quorum,
+            benchSize: SIX_SEAT_ROSTER.length,
+          },),
+        ],);
       },
     },),
     it({

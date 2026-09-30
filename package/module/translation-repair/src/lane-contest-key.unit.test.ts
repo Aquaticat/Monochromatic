@@ -201,5 +201,29 @@ await describe({
         },),).toBe(laneContestSliceKey(catInputs(),),);
       },
     },),
+    it({
+      name: 'SEPARATES a question asked with a dispute note against the archive from one asked without, '
+        + 'and two different notes from each other, since the judges read the note as evidence (class one '
+        + 'hundred eight)',
+      fn: async () => {
+        /**
+         Key for the slice asked with one note against its archive rendering.
+         */
+        const disputed = laneContestSliceKey({
+          ...catInputs(),
+          archiveDisputeNote: 'The archive adds that the cat sleeps on a cushion.',
+        },);
+
+        /**
+         Key for the same slice asked with no note.
+         */
+        const undisputed = laneContestSliceKey(catInputs(),);
+        expect(disputed,).not.toBe(undisputed,);
+        expect(disputed,).not.toBe(laneContestSliceKey({
+          ...catInputs(),
+          archiveDisputeNote: 'The archive adds that the attic is dusty.',
+        },),);
+      },
+    },),
   ],
 },);

@@ -235,52 +235,6 @@ function catComparisonRow(
  const projected = catProjection({ pairs: [[REPAIR_NAP, TRANSLATE_NAP,],], },);
  ```
  */
-/**
- Builds repeated syntax-bearing contest question at requested positions.
- 
- @param sliceCount - document positions carrying same question
- 
- @returns Projection whose position-free keys match
- 
- @example
- ```ts
- const projected = metadataProjection({ sliceCount: 2, });
- ```
- */
-function metadataProjection(
-  { sliceCount, }: { readonly sliceCount: number; },
-): ProjectedLanes {
-  /**
-   Positions this synthetic document carries.
-   */
-  const positions = Array.from({ length: sliceCount, },)
-    .keys();
-  /**
-   Repeated comparison row differing only by position.
-   */
-  const comparison = Array.from(positions, function toRow(sliceIndex,) {
-    return {
-      sliceIndex,
-      incumbentKind: 'present',
-      incumbentText: METADATA_ARCHIVE,
-      repairText: METADATA_ARCHIVE,
-      translateText: METADATA_TRANSLATED,
-    };
-  },);
-  return {
-    delivery: {
-      repair: comparison.map(function toDelivery(row,) {
-        return {
-          sliceIndex: row.sliceIndex,
-          sourceText: METADATA_SOURCE,
-        };
-      },),
-      translate: [],
-    },
-    comparison,
-  } as unknown as ProjectedLanes;
-}
-
 function catProjection(
   {
     pairs,
@@ -322,6 +276,78 @@ function catProjection(
         translateText: pair[1],
       },);
     },),
+  };
+}
+
+/**
+ Builds one front matter question repeated at every requested position.
+
+ BUILT FROM WHOLE ROWS, like every other projection here, rather than cast
+ from the few fields the driver was known to read (ledger B63): a cast
+ fixture keeps compiling when the driver starts reading a field it lacks.
+
+ @param sliceCount - document positions carrying the same question
+
+ @returns Projection whose position-free keys match
+
+ @example
+ ```ts
+ const projected = metadataProjection({ sliceCount: 2, },);
+ ```
+ */
+function metadataProjection(
+  { sliceCount, }: { readonly sliceCount: number; },
+): ProjectedLanes {
+  /**
+   Cat projection over the metadata wordings, before the metadata original
+   and archive replace the nap ones.
+   */
+  const base = catProjection({
+    pairs: Array.from({ length: sliceCount, }, function samePair(): readonly [
+      string,
+      string,
+    ] {
+      return [
+        METADATA_ARCHIVE,
+        METADATA_TRANSLATED,
+      ];
+    },),
+  },);
+
+  /**
+   Ledger row carrying the metadata original and archive.
+
+   @param row - cat row at this position
+
+   @returns Same row over the metadata slice
+   */
+  function metadataRow(row: ArtifactDeliveryRow,): ArtifactDeliveryRow {
+    return {
+      ...row,
+      sourceText: METADATA_SOURCE,
+      incumbentText: METADATA_ARCHIVE,
+    };
+  }
+  return {
+    delivery: {
+      repair: base.delivery
+        .repair
+        .map(function toMetadata(row,): ArtifactDeliveryRow {
+          return metadataRow(row,);
+        },),
+      translate: base.delivery
+        .translate
+        .map(function toMetadata(row,): ArtifactDeliveryRow {
+          return metadataRow(row,);
+        },),
+    },
+    comparison: base.comparison
+      .map(function toMetadata(row,): ArtifactComparisonRow {
+        return {
+          ...row,
+          incumbentText: METADATA_ARCHIVE,
+        };
+      },),
   };
 }
 

@@ -141,6 +141,33 @@ await describe({
         },),).toBe('neither',);
       },
     },),
+
+    it({
+      name: 'KEEPS A BALLOT CHOOSING NEITHER LANE, which names no lane for the floor to exclude and '
+        + 'moves neither lane\'s count, so the eligible lane still wins on its own votes',
+      fn: async () => {
+        /**
+         Admission where the archive and repair wordings keep the directory
+         id and the translate wording carries the source identity.
+         */
+        const eligibility = frontMatterContestEligibility({
+          sourceText: SOURCE,
+          incumbentText: ARCHIVE,
+          repairText: ARCHIVE,
+          translateText: TRANSLATED,
+        },);
+        expect(settleEligibleLaneContestBallots({
+          ballots: [
+            ballotFor({ choice: 'translate', },),
+            ballotFor({ choice: 'neither', },),
+            ballotFor({ choice: 'translate', },),
+            ballotFor({ choice: 'neither', },),
+            ballotFor({ choice: 'neither', },),
+          ],
+          eligibility,
+        },),).toBe('translate',);
+      },
+    },),
   ],
 },);
 
@@ -288,6 +315,43 @@ await describe({
           repairText: TRANSLATED,
           translateText: TRANSLATED,
         },),).toStrictEqual([],);
+      },
+    },),
+    it({
+      name: 'NAMES EVERY LANE INADMISSIBLE, with the reason, when the original\'s front matter carries no '
+        + 'fence to read, since no lane can be compared against it',
+      fn: async () => {
+        expect(describeInadmissibleLanes({
+          sourceText: 'name: 猫猫\n',
+          incumbentText: TRANSLATED,
+          repairText: TRANSLATED,
+          translateText: TRANSLATED,
+        },),).toStrictEqual([
+          'archive inadmissible: no comparison was possible: source front matter could not be read',
+          'repair inadmissible: no comparison was possible: source front matter could not be read',
+          'translate inadmissible: no comparison was possible: source front matter could not be read',
+        ],);
+      },
+    },),
+    it({
+      name: 'REFUSES A WINNER WHOSE ORIGINAL NO GRAMMAR READS, saying no comparison was possible and why, '
+        + 'rather than shipping a wording nothing checked',
+      fn: async () => {
+        /**
+         Verdict where the original opens an expression brace it never closes.
+         */
+        const verdict = laneContestChoiceVerdict({
+          outcome: outcomeFor({ choice: 'repair', },),
+          sourceText: '猫猫在{窗台上打盹。',
+          incumbentText: 'The cat naps on the windowsill.',
+          repairText: 'The cat dozes on the windowsill.',
+          translateText: 'The cat naps on the sill.',
+          lineStructured: false,
+        },);
+        expect(verdict.mayShip,).toBe(false,);
+        expect(verdict.findings.length,).toBe(1,);
+        expect(verdict.findings[0]?.startsWith('no comparison was possible: original could not be read: ',),)
+          .toBe(true,);
       },
     },),
     it({
