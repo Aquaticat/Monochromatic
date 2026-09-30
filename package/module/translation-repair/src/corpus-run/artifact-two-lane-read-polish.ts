@@ -136,7 +136,7 @@ export function parseConsolidationPolish(
   if (changed !== (text !== baseText)) {
     throw new ArtifactParseError({
       path: `${path}.changed`,
-      reason: 'whether final text differs from baseText',
+      reason: `${String(text !== baseText,)}, which is whether final text differs from baseText`,
     },);
   }
   /**

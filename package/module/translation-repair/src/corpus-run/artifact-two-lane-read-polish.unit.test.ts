@@ -316,7 +316,7 @@ await describe({
             ...SETTLED,
             changed: false,
           },
-          says: '.changed: expected whether final text differs from baseText',
+          says: '.changed: expected true, which is whether final text differs from baseText.',
         },);
       },
     },),
