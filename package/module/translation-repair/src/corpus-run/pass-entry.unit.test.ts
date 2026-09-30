@@ -422,6 +422,31 @@ const SEALED_ENTRY = {
 };
 
 /**
+ Original whose one paragraph names a favourite colour.
+ */
+const US_FORMS_SOURCE = '猫猫最喜欢的颜色是灰色。\n';
+
+/**
+ Rendering every scripted translator returns for it, spelled the United
+ States way, which the Canadian forms page pass corrects.
+ */
+const US_FORMS_FRESH = 'The cat\'s favorite color was gray.';
+
+/**
+ That rendering as the page pass leaves it.
+ */
+const CANADIAN_FORMS_FRESH = 'The cat\'s favourite colour was grey.';
+
+/**
+ Entry whose settled wording the page passes rewrite.
+ */
+const US_FORMS_ENTRY = {
+  id: 'CatEntryUsForms',
+  sourceText: US_FORMS_SOURCE,
+  targetText: 'Of all of the colours, the cat is liking the grey one the most out of every one of them.\n',
+};
+
+/**
  Words only a consolidation producer's sheet carries, which tell it apart
  from a translator's under the one translation schema they share.
  */
@@ -552,6 +577,8 @@ function renderingFor({ content, }: { readonly content: string; },): string {
     return MISSING_VISUAL;
   if (content.includes('cat-record',))
     return GAP_FRESH;
+  if (content.includes('最喜欢的颜色',))
+    return US_FORMS_FRESH;
   return FRESH;
 }
 
@@ -588,6 +615,7 @@ function pickCandidate({ content, }: { readonly content: string; },): number {
         || block.includes(FRESH,)
         || block.includes(BIRD_FRESH,)
         || block.includes(GAP_FRESH,)
+        || block.includes(US_FORMS_FRESH,)
         || block.includes(FRONT_MATTER_FRESH,)))
       return index;
   }
@@ -1040,62 +1068,90 @@ async function artifactNames(
 }
 
 /**
- Diverts `console.log` into a list until disposed.
- 
+ Console method a capture diverts: `log` for the pass's printed lines, `warn`
+ for the warnings its entry loggers write.
+ */
+type CapturedMethod = 'log' | 'warn';
+
+/**
+ Diverts one console method into a list until disposed.
+
  @param lines - where diverted lines are appended
- 
+
+ @param method - console method diverted; a logger run arrives as one text
+ whose records are joined by newlines
+
  @returns Capture holding those lines, which restores logging on disposal
- 
+
  @example
  ```ts
- using capture = collectingInto({ lines, },);
+ using capture = collectingInto({ lines, method: 'log', },);
  ```
  */
 function collectingInto(
-  { lines, }: { readonly lines: string[]; },
+  {
+    lines,
+    method,
+  }: {
+    readonly lines: string[];
+    readonly method: CapturedMethod;
+  },
 ): { readonly lines: readonly string[]; } & Disposable {
   /**
-   Real logger, put back on disposal.
+   Real method, put back on disposal.
    */
-  const printed = console.log;
-  console.log = (...parts: readonly unknown[]) => {
+  const printed = console[method];
+  console[method] = (...parts: readonly unknown[]) => {
     lines.push(parts.map(String,)
       .join(' ',),);
   };
   return {
     lines,
     [Symbol.dispose]: () => {
-      console.log = printed;
+      console[method] = printed;
     },
   };
 }
 
 /**
- Runs a body with every `console.log` line collected instead of printed.
- 
+ Runs a body with every line one console method received collected instead
+ of printed.
+
  The lines ARE the contract here: an entry that settled and then failed to
  retire its cache has to say so on a `CLEANUP` line, and the defect this
  guards against is a second `TALLY` after the success line, which made every
  reader counting statuses see one entry as both settled and errored.
- 
+
  @param body - what to run while logging is captured
- 
+
+ @param method - console method captured: `log` for printed lines, `warn` for
+ the entry loggers' warnings
+
  @returns Every line the body logged, in order
- 
+
  @example
  ```ts
- const lines = await capturedLines({ body: async () => { await settleEntry(...); }, },);
+ const lines = await capturedLines({ body: async () => { await settleEntry(...); }, method: 'log', },);
  ```
  */
 async function capturedLines(
-  { body, }: { readonly body: () => Promise<void>; },
+  {
+    body,
+    method,
+  }: {
+    readonly body: () => Promise<void>;
+    readonly method: CapturedMethod;
+  },
 ): Promise<readonly string[]> {
   /**
    Lines the body logged.
    */
   const lines: string[] = [];
 
-  using capture = collectingInto({ lines, },);
+  using capture = collectingInto({
+    lines,
+    method,
+  },);
   await body();
 
   // Read after the body so a case cannot assert on a capture still installed;
@@ -1207,6 +1263,7 @@ await describe({
               baseSignal: new AbortController().signal,
             },);
           },
+          method: 'log',
         },);
         expect(result.outcome,).toEqual({ kind: 'stopped', },);
         expect(served,).not.toContain('coverage_report',);
@@ -1616,6 +1673,7 @@ await describe({
               baseSignal: new AbortController().signal,
             },);
           },
+          method: 'log',
         },);
         /**
          Serialized artifact through production parser.
@@ -1673,6 +1731,90 @@ await describe({
           pageCarriesTheLanesWordingOfSectionTwo: false,
           pageCarriesTheLanesWordingOfSectionOne: true,
           defectLines: [],
+        },);
+      },
+    },),
+    it({
+      name: 'SHIPS THE PAGE PASSES\' CORRECTION of a settled wording, records it on the artifact, and says so on '
+        + 'the run log: each finding, and the count of slices rewritten',
+      fn: async () => {
+        await using dirs = await throwawayDirs();
+        /**
+         What the entry's loggers warned.
+         */
+        const warnings = await capturedLines({
+          body: async () => {
+            await settleEntry({
+              client: entryClient({ served: [], },),
+              entry: US_FORMS_ENTRY,
+              artifactsDir: dirs.artifactsDir,
+              publishDir: dirs.publishDir,
+              declinedDir: dirs.declinedDir,
+              sliceCacheDir: dirs.sliceCacheDir,
+              tip: 'a'.repeat(40,),
+              pipelineDigest: DIGEST,
+              outsideReads: NO_OUTSIDE_READS,
+              hardCapMs: 60_000,
+              baseSignal: new AbortController().signal,
+            },);
+          },
+          method: 'warn',
+        },);
+        /**
+         Serialized artifact through production parser.
+         */
+        const artifact = parseSettledTwoLaneArtifact({
+          value: JSON.parse(await readFile(
+            join(
+              dirs.artifactsDir,
+              `${US_FORMS_ENTRY.id}.json`,
+            ),
+            'utf8',
+          ),),
+        },);
+        /**
+         Page the pass published.
+         */
+        const page = await readFile(
+          fixedPagePath({
+            publishDir: dirs.publishDir,
+            entryId: US_FORMS_ENTRY.id,
+          },),
+          'utf8',
+        );
+        /**
+         Whether any warning run carries a text under this entry's tag.
+
+         @param text - words the warning opens with
+
+         @returns Whether one does
+
+         @example
+         ```ts
+         const warned = warnedUnderEntry({ text: 'page assembly: ', },);
+         ```
+         */
+        function warnedUnderEntry({ text, }: { readonly text: string; },): boolean {
+          return warnings.some(function carries(run,): boolean {
+            return run.includes(`[${US_FORMS_ENTRY.id}] ${text}`,);
+          },);
+        }
+        expect({
+          pageCarriesTheCorrection: page.includes(CANADIAN_FORMS_FRESH,),
+          pageCarriesTheSettledSpelling: page.includes(US_FORMS_FRESH,),
+          rewrittenRecorded: artifact.pageAssembly.trimmed.length > 0,
+          findingRecorded: artifact.pageAssembly.findings.some(function namesTheForm(finding,): boolean {
+            return finding.includes('canadian-form-rewritten',);
+          },),
+          findingLogged: warnedUnderEntry({ text: 'page assembly: ', },),
+          countLogged: warnedUnderEntry({ text: 'page assembly rewrote ', },),
+        },).toEqual({
+          pageCarriesTheCorrection: true,
+          pageCarriesTheSettledSpelling: false,
+          rewrittenRecorded: true,
+          findingRecorded: true,
+          findingLogged: true,
+          countLogged: true,
         },);
       },
     },),
@@ -2165,6 +2307,7 @@ await describe({
               baseSignal: new AbortController().signal,
             },);
           },
+          method: 'log',
         },);
 
         expect(served,).toContain('coverage_report',);
@@ -2531,6 +2674,7 @@ await describe({
               baseSignal: new AbortController().signal,
             },);
           },
+          method: 'log',
         },);
 
         // Put the directory back before asserting, so a failing assertion still
