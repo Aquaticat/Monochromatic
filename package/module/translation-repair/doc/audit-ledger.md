@@ -3834,8 +3834,14 @@ cold since then 0,
 not loaded 6,
 claimed sources with no stretch there 0,
 sources edited since then 0.
-Per-file counts compared between the two census files are the same in every source,
-so the queue and the twelfth batch's cluster stand as read from `census-5PAw2O`.
+No stretch ran,
+none went cold
+and no source with a stretch in either census changed,
+so the queue and the twelfth batch's cluster stand as read from `census-5PAw2O`;
+per-file counts compared between the two census files agree in every source.
+The reading's unmapped fix (`5af5eeec8` and `ce32e438d`) came after this census
+and changes nothing it read,
+since both censuses carry the unmapped chunk under the same bundle name.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
@@ -12461,6 +12467,18 @@ and left one cold stretch in the reading itself,
 the sort's line order,
 which `4304d167d` cased;
 without the order that case alone failed.
+A review found the reading still named code no source map places
+(`5af5eeec8` red,
+`ce32e438d`):
+the census records it as `(unmapped) <bundle>`,
+lines 0 to 0,
+so a rebuild that renames the bundle gives unchanged code a new source,
+and `census-BF4g7o` read against `census-VW2tHL` named six such stretches cold since then.
+The reading leaves unmapped code out,
+since it has no lines to compare and the census's own report counts it,
+and the name now has one writer and one reader (`unmappedSourceOf`,
+`isUnmappedSource`);
+without the check that case alone failed.
 
 Recurrence:
 a comparison of two runs reads each side for what the other cannot say.
@@ -12503,6 +12521,14 @@ Through the built package,
 the check against `ddccea85d~1` names the seven `module-logger` files git lists across that commit.
 Limiting the diff to the package failed the whole-tree case alone,
 and so did splitting its output on newlines.
+One narrower gap of the same kind stays,
+by choice:
+`packageCommit` reads a tree as clean from `git status` under the package alone,
+so a baseline taken while another package's source held uncommitted edits,
+later discarded,
+would match that source's baseline stretches against code that differed when the census ran.
+Reading the whole tree for cleanliness would refuse a census whenever any file of the work tree outside the package is dirty,
+however unrelated.
 
 Recurrence:
 a question put to git covers everything its answer is read against,
