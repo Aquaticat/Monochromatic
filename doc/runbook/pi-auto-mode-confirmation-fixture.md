@@ -21,6 +21,10 @@ Any remaining test window is inactive and cannot grant permission.
 A new window requires a separately corrected,
 frozen,
 and authorized epoch.
+The user has now authorized all tests within the existing qualification limits.
+The agent is preparing a corrected epoch with fresh scope,
+private receipts,
+and a bounded response wait.
 The human response steps apply only when the agent explicitly announces that new epoch.
 
 If the inactive editor is still open,

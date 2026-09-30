@@ -216,13 +216,19 @@ startup-only scripted return did not prove equivalence to detached/unreferenced 
 No Node/Pi defect or SDK-session failure is established.
 
 Next:
-obtain authorization for one new separately frozen genuine epoch.
+the user has explicitly authorized all tests,
+including a new separately frozen genuine epoch within the existing private qualification limits.
+This does not authorize production changes,
+reserved-bank release,
+new model/data-upload scope,
+or replay of consumed attempts.
 Lease integration before dynamic import,
 request cancellation,
 a declared human-response deadline,
 and controller-loss behavior still need verification before dispatch.
 The original launch budget is consumed.
-No second window is authorized or opened by this correction.
+The user has authorized a new attempt;
+no second window has yet been opened by this correction.
 The [human handoff](../runbook/pi-auto-mode-confirmation-fixture.md) remains fixture-only and is not a replay instruction.
 Task #68 is not complete and downstream gates remain separate.
 
