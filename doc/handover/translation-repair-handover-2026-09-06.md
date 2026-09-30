@@ -245,12 +245,18 @@ this one says what changed after it.
   and took the repair modules,
   closing all 46 of their stretches in 17 files
   (`da99d5b69` to `06f231981`).
-  The baseline is now the whole suite at `06f231981` (`census-dUOMFS`,
-  1,421 passes):
-  library source holds 1,044 stretches over 2,125 lines in 368 files,
-  with 20 functions never called.
+  The eighth batch read against the whole suite at `06f231981` (`census-dUOMFS`,
+  1,421 passes)
+  and took the consolidation modules,
+  closing all 55 of their stretches in 17 files
+  (`62a745069` to `0fba3dea4`;
+  ledger B46 to B52).
+  The baseline is now the whole suite at `0fba3dea4` (`census-SfAXnI`,
+  1,429 passes):
+  library source holds 976 stretches over 1,982 lines in 347 files,
+  with 19 functions never called.
   The library batches go on one triage cluster each,
-  the eighth taking the consolidation modules (55 stretches in 17 files),
+  the ninth taking the corpus-run passes (31 stretches in 16 files),
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
   the ledger's T8 entry has the triage counts.

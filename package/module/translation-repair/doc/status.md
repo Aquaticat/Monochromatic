@@ -101,21 +101,33 @@ and the seventh batch took the repair modules,
 and closed every one
 (`da99d5b69` to `06f231981`),
 leaving none of its own making.
-The baseline is now the whole suite at `06f231981` (`census-dUOMFS`,
-1,421 passes,
+The eighth batch took the consolidation modules,
+55 stretches in 17 files,
+and closed every one
+(`62a745069` to `0fba3dea4`),
+finding and fixing B46 to B52 on the way:
+a ballot's findings read the same way in every contest,
+so their shape never costs a voice (B46),
+two dead variants gone with their guards (B47 and B52),
+a polish round that no longer buys refiners for a slice nothing can check (B48),
+a withheld slate's absence exit replaced by a named code-fault error (B51),
+standing flags that no longer default to shipping (B49),
+and a test named for an exit its input stopped reaching (B50).
+The baseline is now the whole suite at `0fba3dea4` (`census-SfAXnI`,
+1,429 passes,
 taken from a tree with nothing uncommitted):
-library source holds 1,044 stretches over 2,125 lines in 368 files,
-with 20 functions never called,
+library source holds 976 stretches over 1,982 lines in 347 files,
+with 19 functions never called,
 and the runner entry files and unloaded bundles come after.
 By the first construct each stretch's lines hold
-(`t8-triage-duomfs.txt` in the audit's scratch folder),
-the queue is 394 returns,
-220 ternaries,
-200 nullish fallbacks,
-117 throws
-and 113 others,
-and the eighth batch takes the consolidation modules
-(55 stretches in 17 files);
+(`t8-triage-sfaxni.txt` in the audit's scratch folder),
+the queue is 372 returns,
+197 nullish fallbacks,
+182 ternaries,
+114 throws
+and 111 others,
+and the ninth batch takes the corpus-run passes
+(31 stretches in 16 files);
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:
