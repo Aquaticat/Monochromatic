@@ -200,13 +200,33 @@ Its census (`census-OGAQiJ`,
 1,468 passes,
 taken from a tree with nothing uncommitted)
 leaves library source at 785 stretches over 1,593 lines in 291 files,
-with 17 functions never called,
+with 17 functions never called.
+The sixteenth batch took the pairing modules,
+19 stretches in 9 files,
+and closed every one
+(`b0924bd4d` and `c2974bea9`):
+arms no input reaches went,
+a definition's label is no longer dropped from the relabel unsaid,
+both pairing readers narrow their catches through a `require<Class>Refusal` helper,
+and the reachable rows,
+among them a short bench on each pairing stage,
+have cases.
+Its census (`census-PgyHZ8`,
+1,470 passes,
+taken from a tree with nothing uncommitted)
+leaves library source at 766 stretches over 1,554 lines in 282 files,
+with 16 functions never called,
 and by the first construct
-(`t8-triage-ogaqij.txt`)
-the sixteenth batch takes the pairing modules
-(`pair`,
-19 stretches in 9 files);
+(`t8-triage-pgyhz8.txt`)
+three clusters tie at 18 stretches,
+so the seventeenth batch takes the one with the most cold lines,
+the slice modules
+(`slice`,
+18 stretches over 112 lines in 7 files);
 the runner entry files and unloaded bundles come after the library.
+A fold in `pair-sections-steps.ts` copied its answers so far at every step,
+a shape no scan reads,
+so the package's folds are to be read for that shape and a scan added.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:

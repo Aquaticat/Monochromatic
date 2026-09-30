@@ -316,10 +316,24 @@ this one says what changed after it.
   1,468 passes)
   leaves library source at 785 stretches over 1,593 lines in 291 files,
   with 17 functions never called,
-  and is the sixteenth batch's baseline,
-  that batch taking the pairing modules
-  (`pair`,
-  19 stretches in 9 files).
+  and was the sixteenth batch's baseline.
+  That batch took the pairing modules,
+  closing all 19 of their stretches in 9 files
+  (`b0924bd4d` and `c2974bea9`;
+  no entry of its own,
+  and ledger M85 to M87 for the three slips its cases corrected before their commit).
+  Its census at `c2974bea9` (`census-PgyHZ8`,
+  1,470 passes)
+  leaves library source at 766 stretches over 1,554 lines in 282 files,
+  with 16 functions never called,
+  and is the seventeenth batch's baseline,
+  that batch taking the slice modules
+  (`slice`,
+  18 stretches over 112 lines in 7 files,
+  the most cold lines of the three clusters tied at 18).
+  A fold that copied its answers so far at every step turned up in that batch,
+  so the package's folds are to be read for the shape,
+  with a scan for it.
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;

@@ -4321,6 +4321,162 @@ ahead of `slice`,
 `archive` and `corpus-run/run` at 18),
 so the sixteenth batch takes it.
 
+The sixteenth batch took the pairing modules against `census-OGAQiJ`
+in two code commits,
+`b0924bd4d` and `c2974bea9`,
+and no entry of its own.
+Its census at `c2974bea9`
+(`census-PgyHZ8`,
+1,470 passes,
+taken clean)
+reads against `census-OGAQiJ`:
+ran 1,
+still cold 1,125,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 8.
+The 8 edited sources are the cluster's files other than `pair-blocks-stage.ts`,
+each "loaded it and left 0 cold stretches",
+and the 1 that ran is that file's stretch,
+which the report does not list
+(`coverage-census-print.ts` prints only the rows that did not run)
+but the per-file counts compared between the two census files place there.
+Library source went from 785 stretches over 1,593 lines in 291 files to 766 over 1,554 in 282,
+with 16 functions never called where there were 17:
+the cluster's 19
+(`pair-agreement.ts` 1,
+`pair-blocks-read-outcomes.ts` 1,
+`pair-blocks-stage.ts` 1,
+`pair-blocks-steps.ts` 1,
+`pair-blocks-wire.ts` 1,
+`pair-definition-order.ts` 3,
+`pair-media-adjacency.ts` 4,
+`pair-sections-stage.ts` 3,
+`pair-sections-steps.ts` 4),
+all nine files now at none,
+and per-file counts compared between the two census files change in no other library file.
+The function no longer listed is the `prefix` callback of `pair-sections-stage.ts`
+(baseline line 353),
+which the contested-source case now calls.
+Other packages keep 63 files and 329 stretches,
+and entry files 30 stretches over 754 lines.
+The 6 not loaded are the baseline's unmapped `wording-key` chunk (`wording-key-C7_uuYqL.mjs`).
+The bundles no test loaded are still 36,
+carrying 38 sources over 13,322 lines.
+
+How the rows closed,
+by commit.
+Which arm of a one-line stretch was cold is inferred from the stretch's width and the tests that existed,
+since the census's bundle is not kept;
+the batch's census is what shows each closed.
+`b0924bd4d` removed the arms no input reaches.
+`bestVoted` is only handed the agreed pairs naming a source drawn from those same pairs,
+so the top-ranked is read with `nonNullishOrThrow` (`agreement` 209).
+The heard filter of `readBlockPairingOutcomes` is now a type guard,
+so the loop's second heard check went (`read-outcomes` 110).
+Each original's targets are held in a `Set`,
+so a pair given twice names its block once,
+and the in-loop carried check,
+which followed a check that none was carried,
+went (`blocks-steps` 166).
+`blockAt` reads the block a pair names,
+so the second lookup and its absent arm went (`definition-order` 253),
+and a definition's opening label is read with `nonNullishOrThrow`
+rather than dropping the pair from the relabel unsaid (263):
+a block is zoned as a definition only for the parser's `footnoteDefinition` node,
+whose text opens with its label.
+The media-adjacency reads of a pair's blocks (`media` 153)
+and of a run's ends (205)
+are range-checked upstream
+(`readBlockPairing`,
+or cached reads keyed by these blocks' text;
+`unclaimedRuns` over `targetBlocks.length`),
+so both use `nonNullishOrThrow`;
+the owner is read as `[owner, ...others]` (269);
+and the only symbol `mediaOwner` returns is the unresolved sentinel,
+so the unknown-sentinel throw went (356).
+In `pair-sections-steps.ts`,
+targets,
+previous and next hold one entry per original section (`sections-steps` 289,
+290,
+299 and 300),
+so those fallbacks are `nonNullishOrThrow`,
+and `scanNearest`,
+which copied its answers so far at every section,
+appends in one loop.
+Both pairing readers' catches narrow through a helper in the repository's `require<Class>Refusal` form
+(`requireSectionPairingRefusal` for `sections-stage` 191,
+and `requireBlockPairingRefusal` to match it).
+`c2974bea9` cased the reachable ones:
+an index past the end on the translation side (`blocks-wire` 392-394),
+each side's refusal now checked for its class and exact message;
+a short bench on each stage (`blocks-stage` 234-245,
+`sections-stage` 305-310):
+five seats,
+whose quorum is three,
+with the router refusing all but the two a stage closes on,
+the findings exactly as `shortBenchStageFinding` words them;
+a source two voices pair one way and two another (`sections-stage` 353-355),
+which keeps no pair and says so with the stage's own prefix;
+two definition pairs sharing an original,
+given with the later archive block first,
+read as not crossing (`definition-order` 153);
+and a pair given twice emitting its translation block once.
+Both helpers are tested directly.
+The short-bench cases share a new fixture,
+`refusing-seats-client.test-fixture.ts`.
+
+Three corrections came before `c2974bea9`.
+Both short-bench cases were first written on a bench of four with two refused,
+and failed at their own premise,
+`expect(quorum.short).toBe(true)`:
+`rosterQuorumSize` is half the bench rounded up,
+so two of four is a quorum and that bench is not short (M86).
+The rewritten out-of-range case first asserted each side's message alone,
+dropping the class check the original side had,
+though `readBlockPairingOutcomes` records only a `BlockPairingError` as an unusable reply
+and rethrows any other class;
+it was read before the commit and checks both (M85).
+The fixture's first form used arrow functions and `async` without `await`,
+which lint refuses outside a test file;
+it follows `archive-selection.test-fixture.ts` (M87).
+The batch's control copy,
+the definition-order test with the shared-source case expecting `crossing: true`,
+failed that case alone and was deleted.
+With the tie-break on the archive side removed from `crosses`,
+and with the targets held in a list rather than a `Set`,
+each new case failed alone in its file,
+and both guards were restored.
+
+Two findings are left open.
+`scanNearest` rebuilt a list inside a fold,
+the quadratic shape rule ITR in `AGENTS.md` rules out,
+and `text-accumulators.unit.test.ts` sees only text grown in a loop,
+so the package's folds are to be read for a step that copies its accumulator,
+with a source scan for the shape.
+And `prepare-block-pairing.ts` keeps a `prefix` callback no test calls
+(line 162 at `c2974bea9`),
+the block-pairing counterpart of the one this batch cased;
+it belongs to its own cluster.
+
+By the first construct
+(`t8-triage-pgyhz8.txt`),
+the queue for the seventeenth batch is 310 returns,
+157 nullish fallbacks,
+130 ternaries,
+86 throws
+and 83 others.
+Three clusters tie at 18 stretches:
+`slice` (7 files,
+112 lines),
+`archive` (9 files,
+36 lines)
+and `corpus-run/run` (2 files,
+18 lines).
+The tie goes to the most cold lines,
+so the seventeenth batch takes `slice`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -13955,6 +14111,70 @@ and neither text applied it.
 Prevention:
 a constant a message or a comment names is read from its declaration in a command before the text is written,
 and a correction is held to the rule it corrects.
+
+### M85: a refusal case rewritten to name its side, checking less than it did
+
+Status:
+happened 2026-09-30 (UTC) while writing T8's sixteenth batch,
+found the same day reading the diff before `c2974bea9`,
+and corrected in that commit.
+The block-pairing reader's out-of-range case asserted `toThrow(BlockPairingError)` on the original side.
+Rewritten to cover both sides and name each,
+it asserted `toThrow` with each message instead,
+and module-test hands a string straight to chai's `.throw`
+(`package/module/test/src/expect-matchers-core.ts` lines 138-140),
+which checks only that the message contains it
+(`compatibleMessage` in chai 6.2.2's `index.js`,
+lines 80-81).
+The class was left unchecked,
+though `readBlockPairingOutcomes` records only a `BlockPairingError` as an unusable reply
+and rethrows any other.
+The rule in `doc/mistake-prevention.md`,
+that a refusal case checks the message beside the class,
+was not applied to the rewrite.
+Prevention:
+a rewritten assertion is compared with the one it replaces,
+and a matcher that takes a class or a text checks one of them only,
+so a refusal is caught with `caught`,
+then checked with `toBeInstanceOf` and with `caughtValueText` whole.
+
+### M86: a short-bench case sized from a quorum not read
+
+Status:
+happened 2026-09-30 (UTC) while writing T8's sixteenth batch,
+found on the first run of both short-bench cases,
+and corrected before `c2974bea9`.
+Both cases refused two seats of four and expected a short bench;
+`rosterQuorumSize` is half the bench rounded up
+(`roster-quorum-size.ts` line 20),
+so two of four is a quorum,
+and each case failed at its own premise,
+`expect(quorum.short).toBe(true)`,
+before reaching the stage.
+The benches are now five seats refusing all but `MIN_STAGE_VOICES`.
+Prevention:
+a fixture's size is taken from the rule it must cross,
+read in the code before the fixture is written,
+and the case keeps asserting its premise from the exported helper,
+which is what caught this.
+
+### M87: a test's idiom moved into a fixture file that lints as source
+
+Status:
+happened 2026-09-30 (UTC) while writing T8's sixteenth batch,
+found by the package lint before `c2974bea9`,
+and corrected in that commit.
+The short-bench client came from a copy in a unit test,
+written with arrow functions and `async` bodies without `await`.
+Moved into `refusing-seats-client.test-fixture.ts`,
+it drew three `no-arrow-function` errors and six `require-await` warnings:
+the shared lint config relaxes those rules only for `**/*.{test,bench}.ts`
+(`testOverride` in `package/config/oxlint/src/overrides.ts`),
+so a `*.test-fixture.ts` file is held to the source rules.
+Prevention:
+code moved from a test into a fixture follows an existing fixture's idiom
+(`archive-selection.test-fixture.ts` for a scripted client),
+and the lint runs before the move is used.
 
 ### M79: a coverage census measuring compressed code
 

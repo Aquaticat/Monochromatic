@@ -140,7 +140,9 @@ polish and census input tests,
 tightened under T8);
 and six artifact refusal reasons printed as something other than what the reader expected,
 two of them the opposite,
-behind cases that checked a fragment the wrong reading also held (B33).
+behind cases that checked a fragment the wrong reading also held (B33);
+and a refusal case rewritten to name its side swapped its class for the message,
+since `toThrow` given a text checks only that the message contains it (M85).
 
 The rule:
 a red guard is read case by case before the fix,
@@ -150,6 +152,11 @@ A refusal case checks the message the refusal carries,
 the path and reason for an artifact read,
 beside the error class,
 and a copy with one expected message changed must fail.
+`toThrow` checks a class or a text,
+never both,
+so a refusal is caught with `caught`,
+then checked with `toBeInstanceOf` and with `caughtValueText` whole,
+and a rewritten assertion is compared with the one it replaces.
 An `ArtifactParseError` reason is printed after "expected",
 so it names what the reader wanted there,
 never what it found or a sentence about the record,
@@ -872,6 +879,10 @@ A short bench whose every reachable seat anchored its quote was left unresolved
 and skipped its naturalness read.
 Two sentences kept saying a short bench cannot settle,
 which the rule had made false.
+And two short-bench cases refused two seats of four,
+which leaves a quorum,
+since the quorum is half the bench rounded up;
+each failed at its own premise before reaching the stage (M86).
 
 The rule:
 when a rule changes what a quorum counts,
@@ -889,6 +900,8 @@ or the definition of short itself counts the whole bench.
 A threshold is a floor a count reaches,
 so a case holds the count exactly at it,
 or a boundary mutant survives.
+A short-bench fixture is sized from `rosterQuorumSize` read in the code:
+a bench is short only when fewer seats are reachable than half the bench rounded up.
 
 What enforces it:
 `archive-block-review-stage.unit.test.ts` holds a bench with most seats refused,
@@ -940,7 +953,10 @@ two error classes were marked safe to print and a third added
 with only each commit's own tests run,
 so the scan that reads every class failed two commits later (M59),
 and the coverage census did the same with the rule written,
-its four error classes and a copied helper failing two scans on the census's own first run.
+its four error classes and a copied helper failing two scans on the census's own first run;
+and a scripted client moved from a unit test into a `.test-fixture.ts` file drew three lint errors and six warnings,
+since the lint config relaxes the arrow-function and `require-await` rules
+only for `*.test.ts` and `*.bench.ts` files (M87).
 
 The rule:
 read a region with the Read tool before editing it.
@@ -973,7 +989,10 @@ the test calls the parts in production's order.
 A module built beside the live path is wired in the change that builds it,
 or goes in the change that supersedes it.
 A helper only tests call lives in a `.test-fixture.ts` file,
-which the package build never ships.
+which the package build never ships,
+and which lints as source:
+code moved there from a test follows an existing fixture's idiom
+(`archive-selection.test-fixture.ts` for a scripted client).
 A line-range `sed --in-place` names one file,
 since it applies the range to every file it is given (M71).
 Commit before `--fix` and read the diff after it for anything but layout.
