@@ -34,6 +34,12 @@
         "alwaysSupportHeight": 49,
         "conditionalSupportHeight": 49
       },
+      "eligibleSoloSupportingPlacement": {
+        "alwaysTitleHeight": 59,
+        "conditionalTitleHeight": 59,
+        "alwaysSupportHeight": 49,
+        "conditionalSupportHeight": 49
+      },
       "initialLiteralFinalRows": [
         {
           "scene": "literalfull",
@@ -116,6 +122,12 @@
         "alwaysSupportHeight": 182,
         "conditionalSupportHeight": 182
       },
+      "eligibleSoloSupportingPlacement": {
+        "alwaysTitleHeight": 103,
+        "conditionalTitleHeight": 103,
+        "alwaysSupportHeight": 182,
+        "conditionalSupportHeight": 182
+      },
       "initialLiteralFinalRows": [
         {
           "scene": "literalfull",
@@ -178,6 +190,12 @@
         }
       ],
       "eligibleSolo": {
+        "alwaysTitleHeight": 59,
+        "conditionalTitleHeight": 59,
+        "alwaysSupportHeight": 49,
+        "conditionalSupportHeight": 49
+      },
+      "eligibleSoloSupportingPlacement": {
         "alwaysTitleHeight": 59,
         "conditionalTitleHeight": 59,
         "alwaysSupportHeight": 49,
@@ -265,6 +283,12 @@
         "alwaysSupportHeight": 182,
         "conditionalSupportHeight": 182
       },
+      "eligibleSoloSupportingPlacement": {
+        "alwaysTitleHeight": 103,
+        "conditionalTitleHeight": 103,
+        "alwaysSupportHeight": 182,
+        "conditionalSupportHeight": 182
+      },
       "initialLiteralFinalRows": [
         {
           "scene": "literalfull",
@@ -327,6 +351,12 @@
         }
       ],
       "eligibleSolo": {
+        "alwaysTitleHeight": 59,
+        "conditionalTitleHeight": 59,
+        "alwaysSupportHeight": 49,
+        "conditionalSupportHeight": 49
+      },
+      "eligibleSoloSupportingPlacement": {
         "alwaysTitleHeight": 59,
         "conditionalTitleHeight": 59,
         "alwaysSupportHeight": 49,
@@ -409,6 +439,12 @@
         }
       ],
       "eligibleSolo": {
+        "alwaysTitleHeight": 103,
+        "conditionalTitleHeight": 103,
+        "alwaysSupportHeight": 182,
+        "conditionalSupportHeight": 182
+      },
+      "eligibleSoloSupportingPlacement": {
         "alwaysTitleHeight": 103,
         "conditionalTitleHeight": 103,
         "alwaysSupportHeight": 182,
@@ -496,6 +532,12 @@
         "alwaysSupportHeight": 49,
         "conditionalSupportHeight": 49
       },
+      "eligibleSoloSupportingPlacement": {
+        "alwaysTitleHeight": 59,
+        "conditionalTitleHeight": 59,
+        "alwaysSupportHeight": 49,
+        "conditionalSupportHeight": 49
+      },
       "initialLiteralFinalRows": [
         {
           "scene": "literalfull",
@@ -578,6 +620,12 @@
         "alwaysSupportHeight": 182,
         "conditionalSupportHeight": 182
       },
+      "eligibleSoloSupportingPlacement": {
+        "alwaysTitleHeight": 103,
+        "conditionalTitleHeight": 103,
+        "alwaysSupportHeight": 182,
+        "conditionalSupportHeight": 182
+      },
       "initialLiteralFinalRows": [
         {
           "scene": "literalfull",
@@ -624,6 +672,6954 @@
             "titleHeight": 103,
             "detailHeight": 41
           }
+        }
+      ]
+    }
+  ],
+  "orderedRecords": [
+    {
+      "basename": "search-filename-comparison-inner-placementfull-light-s100",
+      "panel": "inner",
+      "scene": "placementfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+            "left": 1249,
+            "top": 338,
+            "right": 2037,
+            "bottom": 456
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 456,
+            "right": 1735,
+            "bottom": 505
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3",
+            "left": 1249,
+            "top": 553,
+            "right": 2037,
+            "bottom": 671
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 671,
+            "right": 1735,
+            "bottom": 720
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 1249,
+            "top": 788,
+            "right": 1409,
+            "bottom": 847
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 847,
+            "right": 1650,
+            "bottom": 896
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-placementsupport-light-s100",
+      "panel": "inner",
+      "scene": "placementsupport",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 1249,
+            "top": 338,
+            "right": 2037,
+            "bottom": 456
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 456,
+            "right": 1829,
+            "bottom": 505
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 1249,
+            "top": 553,
+            "right": 2037,
+            "bottom": 671
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 671,
+            "right": 1841,
+            "bottom": 720
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 1249,
+            "top": 788,
+            "right": 1409,
+            "bottom": 847
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 847,
+            "right": 1650,
+            "bottom": 896
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-literalfull-light-s100",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 358,
+            "right": 1414,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · Collection A / Live · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1734,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 553,
+            "right": 1414,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · Collection B / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1733,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 748,
+            "right": 1489,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 807,
+            "right": 1650,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026.FLAC",
+            "left": 1249,
+            "top": 943,
+            "right": 1624,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1623,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session.opus",
+            "left": 1249,
+            "top": 1138,
+            "right": 1601,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1197,
+            "right": 1664,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz.flac",
+            "left": 1249,
+            "top": 1333,
+            "right": 1988,
+            "bottom": 1392
+          },
+          "detail": {
+            "text": "Track · Camellia · Play",
+            "left": 1249,
+            "top": 1392,
+            "right": 1589,
+            "bottom": 1441
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 1528,
+            "right": 1334,
+            "bottom": 1587
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 1249,
+            "top": 1587,
+            "right": 1623,
+            "bottom": 1636
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-literalsupport-light-s100",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 358,
+            "right": 1334,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · .flac · Collection A / Live · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1828,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 553,
+            "right": 1334,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · .flac · Collection B / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1827,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 748,
+            "right": 1489,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 807,
+            "right": 1650,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026",
+            "left": 1249,
+            "top": 943,
+            "right": 1515,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · .FLAC · library root · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1742,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session",
+            "left": 1249,
+            "top": 1138,
+            "right": 1499,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Track · .opus · Archive / Live · Play",
+            "left": 1249,
+            "top": 1197,
+            "right": 1777,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz",
+            "left": 1249,
+            "top": 1333,
+            "right": 1907,
+            "bottom": 1392
+          },
+          "detail": {
+            "text": "Track · .flac · Camellia · Play",
+            "left": 1249,
+            "top": 1392,
+            "right": 1682,
+            "bottom": 1441
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 1528,
+            "right": 1334,
+            "bottom": 1587
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 1249,
+            "top": 1587,
+            "right": 1623,
+            "bottom": 1636
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilityfull-light-s100",
+      "panel": "inner",
+      "scene": "visibilityfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo.opus",
+            "left": 1249,
+            "top": 358,
+            "right": 1528,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1773,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 553,
+            "right": 1414,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1735,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 1249,
+            "top": 748,
+            "right": 1427,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 807,
+            "right": 1735,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 1249,
+            "top": 943,
+            "right": 1568,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1664,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1138,
+            "right": 1489,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1197,
+            "right": 1650,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilityconditional-light-s100",
+      "panel": "inner",
+      "scene": "visibilityconditional",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 358,
+            "right": 1426,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1773,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 553,
+            "right": 1414,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1735,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 1249,
+            "top": 748,
+            "right": 1427,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 807,
+            "right": 1735,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 1249,
+            "top": 943,
+            "right": 1568,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1664,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1138,
+            "right": 1489,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1197,
+            "right": 1650,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilitysupportfull-light-s100",
+      "panel": "inner",
+      "scene": "visibilitysupportfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 358,
+            "right": 1426,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · .opus · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1885,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 553,
+            "right": 1334,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1829,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 748,
+            "right": 1334,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 807,
+            "right": 1841,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 1249,
+            "top": 943,
+            "right": 1488,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1758,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1138,
+            "right": 1489,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1197,
+            "right": 1650,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilitysupportconditional-light-s100",
+      "panel": "inner",
+      "scene": "visibilitysupportconditional",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 358,
+            "right": 1426,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1773,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 553,
+            "right": 1334,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1829,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 748,
+            "right": 1334,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 807,
+            "right": 1841,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 1249,
+            "top": 943,
+            "right": 1488,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1758,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1138,
+            "right": 1489,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1197,
+            "right": 1650,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-placementfull-dark-s100",
+      "panel": "inner",
+      "scene": "placementfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+            "left": 1249,
+            "top": 338,
+            "right": 2037,
+            "bottom": 456
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 456,
+            "right": 1735,
+            "bottom": 505
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3",
+            "left": 1249,
+            "top": 553,
+            "right": 2037,
+            "bottom": 671
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 671,
+            "right": 1735,
+            "bottom": 720
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 1249,
+            "top": 788,
+            "right": 1409,
+            "bottom": 847
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 847,
+            "right": 1650,
+            "bottom": 896
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-placementsupport-dark-s100",
+      "panel": "inner",
+      "scene": "placementsupport",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 1249,
+            "top": 338,
+            "right": 2037,
+            "bottom": 456
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 456,
+            "right": 1829,
+            "bottom": 505
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 1249,
+            "top": 553,
+            "right": 2037,
+            "bottom": 671
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 671,
+            "right": 1841,
+            "bottom": 720
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 1249,
+            "top": 788,
+            "right": 1409,
+            "bottom": 847
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 847,
+            "right": 1650,
+            "bottom": 896
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-literalfull-dark-s100",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 358,
+            "right": 1414,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · Collection A / Live · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1734,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 553,
+            "right": 1414,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · Collection B / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1733,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 748,
+            "right": 1489,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 807,
+            "right": 1650,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026.FLAC",
+            "left": 1249,
+            "top": 943,
+            "right": 1624,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1623,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session.opus",
+            "left": 1249,
+            "top": 1138,
+            "right": 1601,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1197,
+            "right": 1664,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz.flac",
+            "left": 1249,
+            "top": 1333,
+            "right": 1988,
+            "bottom": 1392
+          },
+          "detail": {
+            "text": "Track · Camellia · Play",
+            "left": 1249,
+            "top": 1392,
+            "right": 1589,
+            "bottom": 1441
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 1528,
+            "right": 1334,
+            "bottom": 1587
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 1249,
+            "top": 1587,
+            "right": 1623,
+            "bottom": 1636
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-literalsupport-dark-s100",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 358,
+            "right": 1334,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · .flac · Collection A / Live · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1828,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 553,
+            "right": 1334,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · .flac · Collection B / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1827,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 748,
+            "right": 1489,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 807,
+            "right": 1650,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026",
+            "left": 1249,
+            "top": 943,
+            "right": 1515,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · .FLAC · library root · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1742,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session",
+            "left": 1249,
+            "top": 1138,
+            "right": 1499,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Track · .opus · Archive / Live · Play",
+            "left": 1249,
+            "top": 1197,
+            "right": 1777,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz",
+            "left": 1249,
+            "top": 1333,
+            "right": 1907,
+            "bottom": 1392
+          },
+          "detail": {
+            "text": "Track · .flac · Camellia · Play",
+            "left": 1249,
+            "top": 1392,
+            "right": 1682,
+            "bottom": 1441
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 1528,
+            "right": 1334,
+            "bottom": 1587
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 1249,
+            "top": 1587,
+            "right": 1623,
+            "bottom": 1636
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilityfull-dark-s100",
+      "panel": "inner",
+      "scene": "visibilityfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo.opus",
+            "left": 1249,
+            "top": 358,
+            "right": 1528,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1773,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 553,
+            "right": 1414,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1735,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 1249,
+            "top": 748,
+            "right": 1427,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 807,
+            "right": 1735,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 1249,
+            "top": 943,
+            "right": 1568,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1664,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1138,
+            "right": 1489,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1197,
+            "right": 1650,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilityconditional-dark-s100",
+      "panel": "inner",
+      "scene": "visibilityconditional",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 358,
+            "right": 1426,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1773,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 553,
+            "right": 1414,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1735,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 1249,
+            "top": 748,
+            "right": 1427,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 807,
+            "right": 1735,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 1249,
+            "top": 943,
+            "right": 1568,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1664,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1138,
+            "right": 1489,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1197,
+            "right": 1650,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilitysupportfull-dark-s100",
+      "panel": "inner",
+      "scene": "visibilitysupportfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 358,
+            "right": 1426,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · .opus · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1885,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 553,
+            "right": 1334,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1829,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 748,
+            "right": 1334,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 807,
+            "right": 1841,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 1249,
+            "top": 943,
+            "right": 1488,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1758,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1138,
+            "right": 1489,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1197,
+            "right": 1650,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilitysupportconditional-dark-s100",
+      "panel": "inner",
+      "scene": "visibilitysupportconditional",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 358,
+            "right": 1426,
+            "bottom": 417
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 417,
+            "right": 1773,
+            "bottom": 466
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 553,
+            "right": 1334,
+            "bottom": 612
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 612,
+            "right": 1829,
+            "bottom": 661
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 748,
+            "right": 1334,
+            "bottom": 807
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 807,
+            "right": 1841,
+            "bottom": 856
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 1249,
+            "top": 943,
+            "right": 1488,
+            "bottom": 1002
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 1249,
+            "top": 1002,
+            "right": 1758,
+            "bottom": 1051
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1138,
+            "right": 1489,
+            "bottom": 1197
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1197,
+            "right": 1650,
+            "bottom": 1246
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-placementfull-light-s200",
+      "panel": "inner",
+      "scene": "placementfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+            "left": 1249,
+            "top": 338,
+            "right": 2037,
+            "bottom": 750
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 750,
+            "right": 2037,
+            "bottom": 932
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 412,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3",
+            "left": 1249,
+            "top": 980,
+            "right": 2037,
+            "bottom": 1392
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1392,
+            "right": 2037,
+            "bottom": 1574
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 412,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 1249,
+            "top": 1622,
+            "right": 1531,
+            "bottom": 1725
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1725,
+            "right": 1994,
+            "bottom": 1816
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-placementsupport-light-s200",
+      "panel": "inner",
+      "scene": "placementsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 1249,
+            "top": 338,
+            "right": 2037,
+            "bottom": 750
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 750,
+            "right": 2037,
+            "bottom": 932
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 412,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 1249,
+            "top": 980,
+            "right": 2037,
+            "bottom": 1392
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1392,
+            "right": 2037,
+            "bottom": 1574
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 412,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 1249,
+            "top": 1622,
+            "right": 1531,
+            "bottom": 1725
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1725,
+            "right": 1994,
+            "bottom": 1816
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-literalfull-light-s200",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 338,
+            "right": 1539,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · Collection A / Live · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 671,
+            "right": 1539,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · Collection B / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1004,
+            "right": 1676,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1107,
+            "right": 1994,
+            "bottom": 1198
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026.FLAC",
+            "left": 1249,
+            "top": 1246,
+            "right": 1910,
+            "bottom": 1349
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 1249,
+            "top": 1349,
+            "right": 1944,
+            "bottom": 1440
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session.opus",
+            "left": 1249,
+            "top": 1488,
+            "right": 1867,
+            "bottom": 1591
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1591,
+            "right": 2025,
+            "bottom": 1682
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz.flac",
+            "left": 1249,
+            "top": 1730,
+            "right": 2037,
+            "bottom": 1936
+          },
+          "detail": {
+            "text": "Track · Camellia · Play",
+            "left": 1249,
+            "top": 1936,
+            "right": 1883,
+            "bottom": 2027
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 206,
+          "detailHeight": 91
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 2075,
+            "right": 1395,
+            "bottom": 2152
+          },
+          "detail": null,
+          "supportAbsentInHierarchy": true,
+          "titleHeight": 77,
+          "detailHeight": null
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-literalsupport-light-s200",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 338,
+            "right": 1395,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · .flac · Collection A / Live · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 671,
+            "right": 1395,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · .flac · Collection B / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1004,
+            "right": 1676,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1107,
+            "right": 1994,
+            "bottom": 1198
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026",
+            "left": 1249,
+            "top": 1246,
+            "right": 1716,
+            "bottom": 1349
+          },
+          "detail": {
+            "text": "Track · .FLAC · library root · Play",
+            "left": 1249,
+            "top": 1349,
+            "right": 2037,
+            "bottom": 1531
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session",
+            "left": 1249,
+            "top": 1579,
+            "right": 1688,
+            "bottom": 1682
+          },
+          "detail": {
+            "text": "Track · .opus · Archive / Live · Play",
+            "left": 1249,
+            "top": 1682,
+            "right": 2037,
+            "bottom": 1864
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz",
+            "left": 1249,
+            "top": 1912,
+            "right": 2037,
+            "bottom": 2118
+          },
+          "detail": {
+            "text": "Track · .flac · Camellia · Play",
+            "left": 1249,
+            "top": 2118,
+            "right": 2037,
+            "bottom": 2152
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 206,
+          "detailHeight": 34
+        },
+        {
+          "index": 6,
+          "expectedTitle": "Cam",
+          "expectedDetail": "Track · library root · Play",
+          "title": null,
+          "detail": null,
+          "titleAbsentInHierarchy": true,
+          "supportAbsentInHierarchy": true,
+          "titleHeight": null,
+          "detailHeight": null
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilityfull-light-s200",
+      "panel": "inner",
+      "scene": "visibilityfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo.opus",
+            "left": 1249,
+            "top": 338,
+            "right": 1739,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 671,
+            "right": 1539,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 1249,
+            "top": 1004,
+            "right": 1559,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1107,
+            "right": 2037,
+            "bottom": 1289
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 1249,
+            "top": 1337,
+            "right": 1808,
+            "bottom": 1440
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1440,
+            "right": 2025,
+            "bottom": 1531
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1579,
+            "right": 1676,
+            "bottom": 1682
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1682,
+            "right": 1994,
+            "bottom": 1773
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilityconditional-light-s200",
+      "panel": "inner",
+      "scene": "visibilityconditional",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 338,
+            "right": 1559,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 671,
+            "right": 1539,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 1249,
+            "top": 1004,
+            "right": 1559,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1107,
+            "right": 2037,
+            "bottom": 1289
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 1249,
+            "top": 1337,
+            "right": 1808,
+            "bottom": 1440
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1440,
+            "right": 2025,
+            "bottom": 1531
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1579,
+            "right": 1676,
+            "bottom": 1682
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1682,
+            "right": 1994,
+            "bottom": 1773
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilitysupportfull-light-s200",
+      "panel": "inner",
+      "scene": "visibilitysupportfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 338,
+            "right": 1559,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · .opus · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 671,
+            "right": 1395,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 1004,
+            "right": 1395,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1107,
+            "right": 2037,
+            "bottom": 1289
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 1249,
+            "top": 1337,
+            "right": 1664,
+            "bottom": 1440
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 1249,
+            "top": 1440,
+            "right": 2037,
+            "bottom": 1622
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1670,
+            "right": 1676,
+            "bottom": 1773
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1773,
+            "right": 1994,
+            "bottom": 1864
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilitysupportconditional-light-s200",
+      "panel": "inner",
+      "scene": "visibilitysupportconditional",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 338,
+            "right": 1559,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 671,
+            "right": 1395,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 1004,
+            "right": 1395,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1107,
+            "right": 2037,
+            "bottom": 1289
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 1249,
+            "top": 1337,
+            "right": 1664,
+            "bottom": 1440
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 1249,
+            "top": 1440,
+            "right": 2037,
+            "bottom": 1622
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1670,
+            "right": 1676,
+            "bottom": 1773
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1773,
+            "right": 1994,
+            "bottom": 1864
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-placementfull-dark-s200",
+      "panel": "inner",
+      "scene": "placementfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+            "left": 1249,
+            "top": 338,
+            "right": 2037,
+            "bottom": 750
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 750,
+            "right": 2037,
+            "bottom": 932
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 412,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3",
+            "left": 1249,
+            "top": 980,
+            "right": 2037,
+            "bottom": 1392
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1392,
+            "right": 2037,
+            "bottom": 1574
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 412,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 1249,
+            "top": 1622,
+            "right": 1531,
+            "bottom": 1725
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1725,
+            "right": 1994,
+            "bottom": 1816
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-placementsupport-dark-s200",
+      "panel": "inner",
+      "scene": "placementsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 1249,
+            "top": 338,
+            "right": 2037,
+            "bottom": 750
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 750,
+            "right": 2037,
+            "bottom": 932
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 412,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 1249,
+            "top": 980,
+            "right": 2037,
+            "bottom": 1392
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1392,
+            "right": 2037,
+            "bottom": 1574
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 412,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 1249,
+            "top": 1622,
+            "right": 1531,
+            "bottom": 1725
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1725,
+            "right": 1994,
+            "bottom": 1816
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-literalfull-dark-s200",
+      "panel": "inner",
+      "scene": "literalfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 338,
+            "right": 1539,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · Collection A / Live · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 671,
+            "right": 1539,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · Collection B / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1004,
+            "right": 1676,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1107,
+            "right": 1994,
+            "bottom": 1198
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026.FLAC",
+            "left": 1249,
+            "top": 1246,
+            "right": 1910,
+            "bottom": 1349
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 1249,
+            "top": 1349,
+            "right": 1944,
+            "bottom": 1440
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session.opus",
+            "left": 1249,
+            "top": 1488,
+            "right": 1867,
+            "bottom": 1591
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1591,
+            "right": 2025,
+            "bottom": 1682
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz.flac",
+            "left": 1249,
+            "top": 1730,
+            "right": 2037,
+            "bottom": 1936
+          },
+          "detail": {
+            "text": "Track · Camellia · Play",
+            "left": 1249,
+            "top": 1936,
+            "right": 1883,
+            "bottom": 2027
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 206,
+          "detailHeight": 91
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 2075,
+            "right": 1395,
+            "bottom": 2152
+          },
+          "detail": null,
+          "supportAbsentInHierarchy": true,
+          "titleHeight": 77,
+          "detailHeight": null
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-literalsupport-dark-s200",
+      "panel": "inner",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 338,
+            "right": 1395,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · .flac · Collection A / Live · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 671,
+            "right": 1395,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · .flac · Collection B / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1004,
+            "right": 1676,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1107,
+            "right": 1994,
+            "bottom": 1198
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026",
+            "left": 1249,
+            "top": 1246,
+            "right": 1716,
+            "bottom": 1349
+          },
+          "detail": {
+            "text": "Track · .FLAC · library root · Play",
+            "left": 1249,
+            "top": 1349,
+            "right": 2037,
+            "bottom": 1531
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session",
+            "left": 1249,
+            "top": 1579,
+            "right": 1688,
+            "bottom": 1682
+          },
+          "detail": {
+            "text": "Track · .opus · Archive / Live · Play",
+            "left": 1249,
+            "top": 1682,
+            "right": 2037,
+            "bottom": 1864
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz",
+            "left": 1249,
+            "top": 1912,
+            "right": 2037,
+            "bottom": 2118
+          },
+          "detail": {
+            "text": "Track · .flac · Camellia · Play",
+            "left": 1249,
+            "top": 2118,
+            "right": 2037,
+            "bottom": 2152
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 206,
+          "detailHeight": 34
+        },
+        {
+          "index": 6,
+          "expectedTitle": "Cam",
+          "expectedDetail": "Track · library root · Play",
+          "title": null,
+          "detail": null,
+          "titleAbsentInHierarchy": true,
+          "supportAbsentInHierarchy": true,
+          "titleHeight": null,
+          "detailHeight": null
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilityfull-dark-s200",
+      "panel": "inner",
+      "scene": "visibilityfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo.opus",
+            "left": 1249,
+            "top": 338,
+            "right": 1739,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 671,
+            "right": 1539,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 1249,
+            "top": 1004,
+            "right": 1559,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1107,
+            "right": 2037,
+            "bottom": 1289
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 1249,
+            "top": 1337,
+            "right": 1808,
+            "bottom": 1440
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1440,
+            "right": 2025,
+            "bottom": 1531
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1579,
+            "right": 1676,
+            "bottom": 1682
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1682,
+            "right": 1994,
+            "bottom": 1773
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilityconditional-dark-s200",
+      "panel": "inner",
+      "scene": "visibilityconditional",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 338,
+            "right": 1559,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 1249,
+            "top": 671,
+            "right": 1539,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 1249,
+            "top": 1004,
+            "right": 1559,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1107,
+            "right": 2037,
+            "bottom": 1289
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 1249,
+            "top": 1337,
+            "right": 1808,
+            "bottom": 1440
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 1249,
+            "top": 1440,
+            "right": 2025,
+            "bottom": 1531
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1579,
+            "right": 1676,
+            "bottom": 1682
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1682,
+            "right": 1994,
+            "bottom": 1773
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilitysupportfull-dark-s200",
+      "panel": "inner",
+      "scene": "visibilitysupportfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 338,
+            "right": 1559,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · .opus · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 671,
+            "right": 1395,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 1004,
+            "right": 1395,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1107,
+            "right": 2037,
+            "bottom": 1289
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 1249,
+            "top": 1337,
+            "right": 1664,
+            "bottom": 1440
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 1249,
+            "top": 1440,
+            "right": 2037,
+            "bottom": 1622
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1670,
+            "right": 1676,
+            "bottom": 1773
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1773,
+            "right": 1994,
+            "bottom": 1864
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-inner-visibilitysupportconditional-dark-s200",
+      "panel": "inner",
+      "scene": "visibilitysupportconditional",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 1249,
+            "top": 338,
+            "right": 1559,
+            "bottom": 441
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 1249,
+            "top": 441,
+            "right": 2037,
+            "bottom": 623
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 671,
+            "right": 1395,
+            "bottom": 774
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 774,
+            "right": 2037,
+            "bottom": 956
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 1249,
+            "top": 1004,
+            "right": 1395,
+            "bottom": 1107
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 1249,
+            "top": 1107,
+            "right": 2037,
+            "bottom": 1289
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 1249,
+            "top": 1337,
+            "right": 1664,
+            "bottom": 1440
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 1249,
+            "top": 1440,
+            "right": 2037,
+            "bottom": 1622
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 1249,
+            "top": 1670,
+            "right": 1676,
+            "bottom": 1773
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 1249,
+            "top": 1773,
+            "right": 1994,
+            "bottom": 1864
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-placementfull-light-s100",
+      "panel": "cover",
+      "scene": "placementfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+            "left": 156,
+            "top": 350,
+            "right": 992,
+            "bottom": 468
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 468,
+            "right": 642,
+            "bottom": 517
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3",
+            "left": 156,
+            "top": 557,
+            "right": 992,
+            "bottom": 675
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 675,
+            "right": 642,
+            "bottom": 724
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 156,
+            "top": 788,
+            "right": 316,
+            "bottom": 847
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 847,
+            "right": 557,
+            "bottom": 896
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-placementsupport-light-s100",
+      "panel": "cover",
+      "scene": "placementsupport",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 156,
+            "top": 350,
+            "right": 992,
+            "bottom": 468
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 468,
+            "right": 736,
+            "bottom": 517
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 156,
+            "top": 557,
+            "right": 992,
+            "bottom": 675
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 675,
+            "right": 748,
+            "bottom": 724
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 156,
+            "top": 788,
+            "right": 316,
+            "bottom": 847
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 847,
+            "right": 557,
+            "bottom": 896
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-literalfull-light-s100",
+      "panel": "cover",
+      "scene": "literalfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 374,
+            "right": 321,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · Collection A / Live · Play",
+            "left": 156,
+            "top": 433,
+            "right": 641,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 569,
+            "right": 321,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · Collection B / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 640,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 764,
+            "right": 396,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 823,
+            "right": 557,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026.FLAC",
+            "left": 156,
+            "top": 959,
+            "right": 531,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 530,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session.opus",
+            "left": 156,
+            "top": 1154,
+            "right": 508,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1213,
+            "right": 571,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz.flac",
+            "left": 156,
+            "top": 1349,
+            "right": 895,
+            "bottom": 1408
+          },
+          "detail": {
+            "text": "Track · Camellia · Play",
+            "left": 156,
+            "top": 1408,
+            "right": 496,
+            "bottom": 1457
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 1544,
+            "right": 241,
+            "bottom": 1603
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 1603,
+            "right": 530,
+            "bottom": 1652
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-literalsupport-light-s100",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 374,
+            "right": 241,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · .flac · Collection A / Live · Play",
+            "left": 156,
+            "top": 433,
+            "right": 735,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 569,
+            "right": 241,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · .flac · Collection B / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 734,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 764,
+            "right": 396,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 823,
+            "right": 557,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026",
+            "left": 156,
+            "top": 959,
+            "right": 422,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · .FLAC · library root · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 649,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session",
+            "left": 156,
+            "top": 1154,
+            "right": 406,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Track · .opus · Archive / Live · Play",
+            "left": 156,
+            "top": 1213,
+            "right": 684,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz",
+            "left": 156,
+            "top": 1349,
+            "right": 814,
+            "bottom": 1408
+          },
+          "detail": {
+            "text": "Track · .flac · Camellia · Play",
+            "left": 156,
+            "top": 1408,
+            "right": 589,
+            "bottom": 1457
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 1544,
+            "right": 241,
+            "bottom": 1603
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 1603,
+            "right": 530,
+            "bottom": 1652
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilityfull-light-s100",
+      "panel": "cover",
+      "scene": "visibilityfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo.opus",
+            "left": 156,
+            "top": 374,
+            "right": 435,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 433,
+            "right": 680,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 569,
+            "right": 321,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 642,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 156,
+            "top": 764,
+            "right": 334,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 823,
+            "right": 642,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 156,
+            "top": 959,
+            "right": 475,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 571,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1154,
+            "right": 396,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1213,
+            "right": 557,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilityconditional-light-s100",
+      "panel": "cover",
+      "scene": "visibilityconditional",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 374,
+            "right": 333,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 433,
+            "right": 680,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 569,
+            "right": 321,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 642,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 156,
+            "top": 764,
+            "right": 334,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 823,
+            "right": 642,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 156,
+            "top": 959,
+            "right": 475,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 571,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1154,
+            "right": 396,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1213,
+            "right": 557,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilitysupportfull-light-s100",
+      "panel": "cover",
+      "scene": "visibilitysupportfull",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 374,
+            "right": 333,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · .opus · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 433,
+            "right": 792,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 569,
+            "right": 241,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 736,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 764,
+            "right": 241,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 823,
+            "right": 748,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 156,
+            "top": 959,
+            "right": 395,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 665,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1154,
+            "right": 396,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1213,
+            "right": 557,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilitysupportconditional-light-s100",
+      "panel": "cover",
+      "scene": "visibilitysupportconditional",
+      "scheme": "light",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 374,
+            "right": 333,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 433,
+            "right": 680,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 569,
+            "right": 241,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 736,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 764,
+            "right": 241,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 823,
+            "right": 748,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 156,
+            "top": 959,
+            "right": 395,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 665,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1154,
+            "right": 396,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1213,
+            "right": 557,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-placementfull-dark-s100",
+      "panel": "cover",
+      "scene": "placementfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+            "left": 156,
+            "top": 350,
+            "right": 992,
+            "bottom": 468
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 468,
+            "right": 642,
+            "bottom": 517
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3",
+            "left": 156,
+            "top": 557,
+            "right": 992,
+            "bottom": 675
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 675,
+            "right": 642,
+            "bottom": 724
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 156,
+            "top": 788,
+            "right": 316,
+            "bottom": 847
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 847,
+            "right": 557,
+            "bottom": 896
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-placementsupport-dark-s100",
+      "panel": "cover",
+      "scene": "placementsupport",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 156,
+            "top": 350,
+            "right": 992,
+            "bottom": 468
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 468,
+            "right": 736,
+            "bottom": 517
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 156,
+            "top": 557,
+            "right": 992,
+            "bottom": 675
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 675,
+            "right": 748,
+            "bottom": 724
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 118,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 156,
+            "top": 788,
+            "right": 316,
+            "bottom": 847
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 847,
+            "right": 557,
+            "bottom": 896
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-literalfull-dark-s100",
+      "panel": "cover",
+      "scene": "literalfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 374,
+            "right": 321,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · Collection A / Live · Play",
+            "left": 156,
+            "top": 433,
+            "right": 641,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 569,
+            "right": 321,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · Collection B / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 640,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 764,
+            "right": 396,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 823,
+            "right": 557,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026.FLAC",
+            "left": 156,
+            "top": 959,
+            "right": 531,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 530,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session.opus",
+            "left": 156,
+            "top": 1154,
+            "right": 508,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1213,
+            "right": 571,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz.flac",
+            "left": 156,
+            "top": 1349,
+            "right": 895,
+            "bottom": 1408
+          },
+          "detail": {
+            "text": "Track · Camellia · Play",
+            "left": 156,
+            "top": 1408,
+            "right": 496,
+            "bottom": 1457
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 1544,
+            "right": 241,
+            "bottom": 1603
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 1603,
+            "right": 530,
+            "bottom": 1652
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-literalsupport-dark-s100",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 374,
+            "right": 241,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · .flac · Collection A / Live · Play",
+            "left": 156,
+            "top": 433,
+            "right": 735,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 569,
+            "right": 241,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · .flac · Collection B / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 734,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 764,
+            "right": 396,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 823,
+            "right": 557,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026",
+            "left": 156,
+            "top": 959,
+            "right": 422,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · .FLAC · library root · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 649,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session",
+            "left": 156,
+            "top": 1154,
+            "right": 406,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Track · .opus · Archive / Live · Play",
+            "left": 156,
+            "top": 1213,
+            "right": 684,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz",
+            "left": 156,
+            "top": 1349,
+            "right": 814,
+            "bottom": 1408
+          },
+          "detail": {
+            "text": "Track · .flac · Camellia · Play",
+            "left": 156,
+            "top": 1408,
+            "right": 589,
+            "bottom": 1457
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 1544,
+            "right": 241,
+            "bottom": 1603
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 1603,
+            "right": 530,
+            "bottom": 1652
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilityfull-dark-s100",
+      "panel": "cover",
+      "scene": "visibilityfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo.opus",
+            "left": 156,
+            "top": 374,
+            "right": 435,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 433,
+            "right": 680,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 569,
+            "right": 321,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 642,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 156,
+            "top": 764,
+            "right": 334,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 823,
+            "right": 642,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 156,
+            "top": 959,
+            "right": 475,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 571,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1154,
+            "right": 396,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1213,
+            "right": 557,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilityconditional-dark-s100",
+      "panel": "cover",
+      "scene": "visibilityconditional",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 374,
+            "right": 333,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 433,
+            "right": 680,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 569,
+            "right": 321,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 642,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 156,
+            "top": 764,
+            "right": 334,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 823,
+            "right": 642,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 156,
+            "top": 959,
+            "right": 475,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 571,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1154,
+            "right": 396,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1213,
+            "right": 557,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilitysupportfull-dark-s100",
+      "panel": "cover",
+      "scene": "visibilitysupportfull",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 374,
+            "right": 333,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · .opus · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 433,
+            "right": 792,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 569,
+            "right": 241,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 736,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 764,
+            "right": 241,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 823,
+            "right": 748,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 156,
+            "top": 959,
+            "right": 395,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 665,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1154,
+            "right": 396,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1213,
+            "right": 557,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilitysupportconditional-dark-s100",
+      "panel": "cover",
+      "scene": "visibilitysupportconditional",
+      "scheme": "dark",
+      "fontScale": 1,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 374,
+            "right": 333,
+            "bottom": 433
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 433,
+            "right": 680,
+            "bottom": 482
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 569,
+            "right": 241,
+            "bottom": 628
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 628,
+            "right": 736,
+            "bottom": 677
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 764,
+            "right": 241,
+            "bottom": 823
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 823,
+            "right": 748,
+            "bottom": 872
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 156,
+            "top": 959,
+            "right": 395,
+            "bottom": 1018
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 156,
+            "top": 1018,
+            "right": 665,
+            "bottom": 1067
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1154,
+            "right": 396,
+            "bottom": 1213
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1213,
+            "right": 557,
+            "bottom": 1262
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 59,
+          "detailHeight": 49
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-placementfull-light-s200",
+      "panel": "cover",
+      "scene": "placementfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+            "left": 156,
+            "top": 350,
+            "right": 992,
+            "bottom": 659
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 659,
+            "right": 992,
+            "bottom": 841
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 309,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3",
+            "left": 156,
+            "top": 881,
+            "right": 992,
+            "bottom": 1190
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1190,
+            "right": 992,
+            "bottom": 1372
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 309,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 156,
+            "top": 1412,
+            "right": 438,
+            "bottom": 1515
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1515,
+            "right": 901,
+            "bottom": 1606
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-placementsupport-light-s200",
+      "panel": "cover",
+      "scene": "placementsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 156,
+            "top": 350,
+            "right": 992,
+            "bottom": 659
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 659,
+            "right": 992,
+            "bottom": 841
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 309,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 156,
+            "top": 881,
+            "right": 992,
+            "bottom": 1190
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1190,
+            "right": 992,
+            "bottom": 1372
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 309,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 156,
+            "top": 1412,
+            "right": 438,
+            "bottom": 1515
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1515,
+            "right": 901,
+            "bottom": 1606
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-literalfull-light-s200",
+      "panel": "cover",
+      "scene": "literalfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 350,
+            "right": 446,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · Collection A / Live · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 675,
+            "right": 446,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · Collection B / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1000,
+            "right": 583,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1103,
+            "right": 901,
+            "bottom": 1194
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026.FLAC",
+            "left": 156,
+            "top": 1234,
+            "right": 817,
+            "bottom": 1337
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 1337,
+            "right": 851,
+            "bottom": 1428
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session.opus",
+            "left": 156,
+            "top": 1468,
+            "right": 774,
+            "bottom": 1571
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1571,
+            "right": 932,
+            "bottom": 1662
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz.flac",
+            "left": 156,
+            "top": 1702,
+            "right": 992,
+            "bottom": 1908
+          },
+          "detail": {
+            "text": "Track · Camellia · Play",
+            "left": 156,
+            "top": 1908,
+            "right": 790,
+            "bottom": 1999
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 206,
+          "detailHeight": 91
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 2039,
+            "right": 302,
+            "bottom": 2142
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 2142,
+            "right": 851,
+            "bottom": 2233
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-literalsupport-light-s200",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 350,
+            "right": 302,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · .flac · Collection A / Live · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 675,
+            "right": 302,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · .flac · Collection B / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1000,
+            "right": 583,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1103,
+            "right": 901,
+            "bottom": 1194
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026",
+            "left": 156,
+            "top": 1234,
+            "right": 623,
+            "bottom": 1337
+          },
+          "detail": {
+            "text": "Track · .FLAC · library root · Play",
+            "left": 156,
+            "top": 1337,
+            "right": 992,
+            "bottom": 1519
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session",
+            "left": 156,
+            "top": 1559,
+            "right": 595,
+            "bottom": 1662
+          },
+          "detail": {
+            "text": "Track · .opus · Archive / Live · Play",
+            "left": 156,
+            "top": 1662,
+            "right": 992,
+            "bottom": 1844
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz",
+            "left": 156,
+            "top": 1884,
+            "right": 992,
+            "bottom": 2090
+          },
+          "detail": {
+            "text": "Track · .flac · Camellia · Play",
+            "left": 156,
+            "top": 2090,
+            "right": 965,
+            "bottom": 2181
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 206,
+          "detailHeight": 91
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 2221,
+            "right": 302,
+            "bottom": 2324
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 2324,
+            "right": 851,
+            "bottom": 2365
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 41
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilityfull-light-s200",
+      "panel": "cover",
+      "scene": "visibilityfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo.opus",
+            "left": 156,
+            "top": 350,
+            "right": 646,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 675,
+            "right": 446,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 156,
+            "top": 1000,
+            "right": 466,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1103,
+            "right": 992,
+            "bottom": 1285
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 156,
+            "top": 1325,
+            "right": 715,
+            "bottom": 1428
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1428,
+            "right": 932,
+            "bottom": 1519
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1559,
+            "right": 583,
+            "bottom": 1662
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1662,
+            "right": 901,
+            "bottom": 1753
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilityconditional-light-s200",
+      "panel": "cover",
+      "scene": "visibilityconditional",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 350,
+            "right": 466,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 675,
+            "right": 446,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 156,
+            "top": 1000,
+            "right": 466,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1103,
+            "right": 992,
+            "bottom": 1285
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 156,
+            "top": 1325,
+            "right": 715,
+            "bottom": 1428
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1428,
+            "right": 932,
+            "bottom": 1519
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1559,
+            "right": 583,
+            "bottom": 1662
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1662,
+            "right": 901,
+            "bottom": 1753
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilitysupportfull-light-s200",
+      "panel": "cover",
+      "scene": "visibilitysupportfull",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 350,
+            "right": 466,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · .opus · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 675,
+            "right": 302,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 1000,
+            "right": 302,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1103,
+            "right": 992,
+            "bottom": 1285
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 156,
+            "top": 1325,
+            "right": 571,
+            "bottom": 1428
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 156,
+            "top": 1428,
+            "right": 992,
+            "bottom": 1610
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1650,
+            "right": 583,
+            "bottom": 1753
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1753,
+            "right": 901,
+            "bottom": 1844
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilitysupportconditional-light-s200",
+      "panel": "cover",
+      "scene": "visibilitysupportconditional",
+      "scheme": "light",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 350,
+            "right": 466,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 675,
+            "right": 302,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 1000,
+            "right": 302,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1103,
+            "right": 992,
+            "bottom": 1285
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 156,
+            "top": 1325,
+            "right": 571,
+            "bottom": 1428
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 156,
+            "top": 1428,
+            "right": 992,
+            "bottom": 1610
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1650,
+            "right": 583,
+            "bottom": 1753
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1753,
+            "right": 901,
+            "bottom": 1844
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-placementfull-dark-s200",
+      "panel": "cover",
+      "scene": "placementfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).flac",
+            "left": 156,
+            "top": 350,
+            "right": 992,
+            "bottom": 659
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 659,
+            "right": 992,
+            "bottom": 841
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 309,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version).mp3",
+            "left": 156,
+            "top": 881,
+            "right": 992,
+            "bottom": 1190
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1190,
+            "right": 992,
+            "bottom": 1372
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 309,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 156,
+            "top": 1412,
+            "right": 438,
+            "bottom": 1515
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1515,
+            "right": 901,
+            "bottom": 1606
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-placementsupport-dark-s200",
+      "panel": "cover",
+      "scene": "placementsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 156,
+            "top": 350,
+            "right": 992,
+            "bottom": 659
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 659,
+            "right": 992,
+            "bottom": 841
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 309,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Camellia Waltz (Live at Miraikan 2026, Extended Archive Version)",
+            "left": 156,
+            "top": 881,
+            "right": 992,
+            "bottom": 1190
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1190,
+            "right": 992,
+            "bottom": 1372
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 309,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia",
+            "left": 156,
+            "top": 1412,
+            "right": 438,
+            "bottom": 1515
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1515,
+            "right": 901,
+            "bottom": 1606
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-literalfull-dark-s200",
+      "panel": "cover",
+      "scene": "literalfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 350,
+            "right": 446,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · Collection A / Live · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 675,
+            "right": 446,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · Collection B / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1000,
+            "right": 583,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1103,
+            "right": 901,
+            "bottom": 1194
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026.FLAC",
+            "left": 156,
+            "top": 1234,
+            "right": 817,
+            "bottom": 1337
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 1337,
+            "right": 851,
+            "bottom": 1428
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session.opus",
+            "left": 156,
+            "top": 1468,
+            "right": 774,
+            "bottom": 1571
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1571,
+            "right": 932,
+            "bottom": 1662
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz.flac",
+            "left": 156,
+            "top": 1702,
+            "right": 992,
+            "bottom": 1908
+          },
+          "detail": {
+            "text": "Track · Camellia · Play",
+            "left": 156,
+            "top": 1908,
+            "right": 790,
+            "bottom": 1999
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 206,
+          "detailHeight": 91
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 2039,
+            "right": 302,
+            "bottom": 2142
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 2142,
+            "right": 851,
+            "bottom": 2233
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-literalsupport-dark-s200",
+      "panel": "cover",
+      "scene": "literalsupport",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 350,
+            "right": 302,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · .flac · Collection A / Live · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 675,
+            "right": 302,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · .flac · Collection B / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1000,
+            "right": 583,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1103,
+            "right": 901,
+            "bottom": 1194
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam.mix.2026",
+            "left": 156,
+            "top": 1234,
+            "right": 623,
+            "bottom": 1337
+          },
+          "detail": {
+            "text": "Track · .FLAC · library root · Play",
+            "left": 156,
+            "top": 1337,
+            "right": 992,
+            "bottom": 1519
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": ".Cam.session",
+            "left": 156,
+            "top": 1559,
+            "right": 595,
+            "bottom": 1662
+          },
+          "detail": {
+            "text": "Track · .opus · Archive / Live · Play",
+            "left": 156,
+            "top": 1662,
+            "right": 992,
+            "bottom": 1844
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 5,
+          "title": {
+            "text": "かめりあ(Camellia) - Camellia Waltz",
+            "left": 156,
+            "top": 1884,
+            "right": 992,
+            "bottom": 2090
+          },
+          "detail": {
+            "text": "Track · .flac · Camellia · Play",
+            "left": 156,
+            "top": 2090,
+            "right": 965,
+            "bottom": 2181
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 206,
+          "detailHeight": 91
+        },
+        {
+          "index": 6,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 2221,
+            "right": 302,
+            "bottom": 2324
+          },
+          "detail": {
+            "text": "Track · library root · Play",
+            "left": 156,
+            "top": 2324,
+            "right": 851,
+            "bottom": 2365
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 41
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilityfull-dark-s200",
+      "panel": "cover",
+      "scene": "visibilityfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo.opus",
+            "left": 156,
+            "top": 350,
+            "right": 646,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 675,
+            "right": 446,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 156,
+            "top": 1000,
+            "right": 466,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1103,
+            "right": 992,
+            "bottom": 1285
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 156,
+            "top": 1325,
+            "right": 715,
+            "bottom": 1428
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1428,
+            "right": 932,
+            "bottom": 1519
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1559,
+            "right": 583,
+            "bottom": 1662
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1662,
+            "right": 901,
+            "bottom": 1753
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilityconditional-dark-s200",
+      "panel": "cover",
+      "scene": "visibilityconditional",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 350,
+            "right": 466,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam.flac",
+            "left": 156,
+            "top": 675,
+            "right": 446,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam.mp3",
+            "left": 156,
+            "top": 1000,
+            "right": 466,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1103,
+            "right": 992,
+            "bottom": 1285
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside.flac",
+            "left": 156,
+            "top": 1325,
+            "right": 715,
+            "bottom": 1428
+          },
+          "detail": {
+            "text": "Track · Archive / Live · Play",
+            "left": 156,
+            "top": 1428,
+            "right": 932,
+            "bottom": 1519
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1559,
+            "right": 583,
+            "bottom": 1662
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1662,
+            "right": 901,
+            "bottom": 1753
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilitysupportfull-dark-s200",
+      "panel": "cover",
+      "scene": "visibilitysupportfull",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 350,
+            "right": 466,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · .opus · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 675,
+            "right": 302,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 1000,
+            "right": 302,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1103,
+            "right": 992,
+            "bottom": 1285
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 156,
+            "top": 1325,
+            "right": 571,
+            "bottom": 1428
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 156,
+            "top": 1428,
+            "right": 992,
+            "bottom": 1610
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1650,
+            "right": 583,
+            "bottom": 1753
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1753,
+            "right": 901,
+            "bottom": 1844
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
+        }
+      ]
+    },
+    {
+      "basename": "search-filename-comparison-cover-visibilitysupportconditional-dark-s200",
+      "panel": "cover",
+      "scene": "visibilitysupportconditional",
+      "scheme": "dark",
+      "fontScale": 2,
+      "rows": [
+        {
+          "index": 0,
+          "title": {
+            "text": "Cam Solo",
+            "left": 156,
+            "top": 350,
+            "right": 466,
+            "bottom": 453
+          },
+          "detail": {
+            "text": "Track · Cult of Luna / Studio · Play",
+            "left": 156,
+            "top": 453,
+            "right": 992,
+            "bottom": 635
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 1,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 675,
+            "right": 302,
+            "bottom": 778
+          },
+          "detail": {
+            "text": "Track · .flac · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 778,
+            "right": 992,
+            "bottom": 960
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 2,
+          "title": {
+            "text": "Cam",
+            "left": 156,
+            "top": 1000,
+            "right": 302,
+            "bottom": 1103
+          },
+          "detail": {
+            "text": "Track · .mp3 · Cult of Luna / Live · Play",
+            "left": 156,
+            "top": 1103,
+            "right": 992,
+            "bottom": 1285
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 3,
+          "title": {
+            "text": "Cam Outside",
+            "left": 156,
+            "top": 1325,
+            "right": 571,
+            "bottom": 1428
+          },
+          "detail": {
+            "text": "Track · .flac · Archive / Live · Play",
+            "left": 156,
+            "top": 1428,
+            "right": 992,
+            "bottom": 1610
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 182
+        },
+        {
+          "index": 4,
+          "title": {
+            "text": "Camellia.flac",
+            "left": 156,
+            "top": 1650,
+            "right": 583,
+            "bottom": 1753
+          },
+          "detail": {
+            "text": "Folder · library root · Open",
+            "left": 156,
+            "top": 1753,
+            "right": 901,
+            "bottom": 1844
+          },
+          "supportAbsentInHierarchy": false,
+          "titleHeight": 103,
+          "detailHeight": 91
         }
       ]
     }
