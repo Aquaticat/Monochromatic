@@ -222,10 +222,26 @@ This does not authorize production changes,
 reserved-bank release,
 new model/data-upload scope,
 or replay of consumed attempts.
-Lease integration before dynamic import,
-request cancellation,
-a declared human-response deadline,
-and controller-loss behavior still need verification before dispatch.
+A separate `live-held-confirmation/` epoch now owns a referenced five-minute deadline before dynamic import.
+Generic lifetime controls cover completion,
+rejection,
+interruption,
+controller loss,
+deadline,
+synchronous deadline overrun,
+and a deadline-guard omission.
+`proc_4d23` reconciled the retained completed prefix without replay and passed the unresolved/suffix controls.
+The original control driver `proc_299d` failed while awaiting `close` after explicit IPC disconnect;
+that is separate from the original genuine requester liveness failure.
+New host intake `proc_1d05`,
+freeze `proc_fe19`,
+and rendered handoff `proc_3394` passed.
+The genuine window is not dispatched:
+`ScreenSaver.GetActive` returned true and the current graphical session reported `LockedHint=yes`.
+Task #82 tracks unlocked-desktop readiness,
+not renewed test consent.
+The actual requester/helper cancellation-cleanup controls are separate from generic lifetime checks;
+their `requester-stop/` phase is running and no success is inferred from source review.
 The original launch budget is consumed.
 The user has authorized a new attempt;
 no second window has yet been opened by this correction.

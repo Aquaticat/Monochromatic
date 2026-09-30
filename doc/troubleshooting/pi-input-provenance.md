@@ -657,6 +657,80 @@ A future external filing needs its own contribution,
 duplicate,
 and demonstrated-fix checks.
 
+### Held control driver waits on a different close boundary
+
+The no-desktop `proc_299d` driver failed with Node `v26.10.0` exit `13` while awaiting child `close`,
+not while awaiting a genuine response.
+Its first control cases settled;
+the explicit IPC-disconnect case retained its expected non-content child marker,
+but the driver did not retain that child's exit status.
+The failed epoch and its partial artifacts remain unchanged.
+No genuine window,
+response,
+or grant was created.
+
+The inspected Node release source has a separate IPC close-count path:
+
+```javascript
+// Node v26.10.0 lib/internal/child_process.js:501 to 504
+if (stream.ipc) {
+  this._closesNeeded++;
+  continue;
+}
+```
+
+```javascript
+// Node v26.10.0 lib/internal/child_process.js:690 to 698, EOF branch
+this.buffering = false;
+target.disconnect();
+channel.onread = nop;
+channel.close();
+target.channel = null;
+maybeClose(target);
+```
+
+```javascript
+// Node v26.10.0 lib/internal/child_process.js:984 to 988, explicit disconnect finish
+if (fired) return;
+fired = true;
+channel.close();
+target.emit('disconnect');
+```
+
+The inspected explicit-disconnect finish does not call the EOF close counter.
+`maybeClose()` at `lib/internal/child_process.js:1152` emits child `close` only when its counts match.
+The private source copy is `live-held-confirmation/node-v26-child-process-source.js`,
+retrieved from the Node `v26.10.0` release path.
+This trace explains why awaiting process exit and awaiting IPC/stdio closure are different obligations;
+it is not a complete Node supported-API conformance or native-build attestation.
+Do not merge this control-driver incident with the original unreferenced listener/terminal incident.
+
+The separate `controls-exit/` correction retained the completed prefix without new children,
+then used the actual process `exit` event for the unresolved case and unopened suffix.
+`proc_4d23` passed those controls,
+including natural controller-loss settlement and the expected monotonic-deadline guard-omission failure.
+The workaround relies on file-backed diagnostic streams;
+it does not qualify arbitrary piped-stream draining or detached-window termination.
+Replaying the failed driver or assuming generic abort controls prove requester/helper cleanup does not work.
+The actual requester/helper cancellation controls remain a separate running phase.
+
+#### Upstream filing decision for the close wait
+
+- Upstream fault is not classified by this owned fixture-driver correction.
+- No architectural impossibility or fix-difficulty claim is made.
+- The exact supported-API contract still needs a separate conformance assessment.
+- Contribution-policy assessment is not part of the current fixture qualification.
+- Maintainer willingness and duplicate-tracker assessment have not been performed.
+- No Node fix prototype is claimed;
+  the verified workaround changes the owned driver's settlement boundary.
+
+No upstream report or fileable draft is prepared from this limited incident.
+Any external contribution requires a separate source-clone,
+contract,
+duplicate,
+contribution-policy,
+and tested-fix assessment.
+
 ## Proposed containment and unverified remedies
 
 Treat conversational evidence without a verified witness as non-authorizing.
