@@ -35,7 +35,7 @@ A read-only comparable AOSP source clone is
 revision `87828477f19061e924919c874408a2c34e9093bc`.
 It is not established as the exact source revision of the installed
 Google emulator image.
-The public AOSP [dump source] contains the same branch and diagnostic.
+The public AOSP [dump source][] contains the same branch and diagnostic.
 
 `cmds/uiautomator/src/com/android/commands/uiautomator/DumpCommand.java:86` to `:91`
 gets the active accessibility root and returns when it is absent:
@@ -160,7 +160,7 @@ The later successful reprobe does not establish a timing cause.
 
 The `.out-of-scope/` filename census had no Android/uiautomator exemption.
 Primary-source search found the comparable
-[consumer report] with the same diagnostic and no comments.
+[consumer report][] with the same diagnostic and no comments.
 Cross-repository pull-request search also found consumer retry changes;
 those titles are not source evidence for the installed image.
 The attempted `aosp-mirror` and `LineageOS` repository names did not exist;
