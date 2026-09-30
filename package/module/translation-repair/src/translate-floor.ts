@@ -7,6 +7,7 @@ import type { SliceSyntax, } from './chunk-document.ts';
 import type { DisputedWording, } from './disputed-wording.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import type { HeardVoice, } from './stage-quorum.ts';
+import { requireComparedVerdict, } from './translate-floor-ground.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
 
@@ -59,6 +60,10 @@ const REFUSED_FINDING = 'translate-candidate-refused';
 
  @returns Candidates the rule accepts, with a finding per candidate withheld
 
+ @throws {@link import('./translate-floor-ground.ts').FloorGroundDisagreementError}
+ when the rule says it compared nothing, which the stage rules out before
+ any candidate is written (ledger B43)
+
  @example
  ```ts
  const floored = floorTranslateVoices({ voices, sourceText, incumbentText, lineStructured, l, },);
@@ -104,20 +109,24 @@ export function floorTranslateVoices(
    */
   const accepted = voices.filter(function acceptedByRule(voice,): boolean {
     /**
-     What the rule makes of this candidate.
+     What the rule makes of this candidate: a pass or a refusal, since the
+     stage asks nobody on a slice the rule can compare nothing on (ledger
+     B43), and an answer that it compared nothing here is a fault rather
+     than a candidate to keep.
      */
-    const validation = validateTranslatedSlice({
-      sourceText,
-      candidateText: voice.value
-        .translation,
-      pageText: incumbentText,
-      ...((syntax === undefined) ? {} : { syntax, }),
-      lineStructured,
-      declared,
-      disputedWordings,
+    const validation = requireComparedVerdict({
+      verdict: validateTranslatedSlice({
+        sourceText,
+        candidateText: voice.value
+          .translation,
+        pageText: incumbentText,
+        ...((syntax === undefined) ? {} : { syntax, }),
+        lineStructured,
+        declared,
+        disputedWordings,
+      },),
     },);
-    // A RULE THAT CANNOT SAY keeps the candidate: only a refusal withholds.
-    if (validation.kind !== 'invalid')
+    if (validation.kind === 'valid')
       return true;
     /**
      Why the rule refused it, as one line.

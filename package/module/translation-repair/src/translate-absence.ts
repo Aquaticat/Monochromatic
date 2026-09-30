@@ -98,17 +98,29 @@ export type TranslateAbsenceReason =
    anyway, keeping an incumbent where there is one and leaving the gap where
    there is not.
    */
-  | 'no-candidate-backed';
+  | 'no-candidate-backed'
+  /**
+   The floor could compare nothing written for this slice, so the stage
+   asked nobody (ledger B43).
+
+   SAYS SOMETHING ABOUT THE ORIGINAL OR THE GRAMMAR, never about a model:
+   an original no grammar reads, or a page none does. No candidate could
+   pass there, and a rendering nobody could check is not one to write into
+   the page, so the gap stays until the grammar reads the passage.
+   */
+  | 'unfloored';
 
 /**
  Why a slice with no incumbent was left unfilled, including reasons no stage
  can produce.
- 
- WIDER THAN {@link TranslateAbsenceReason} ON PURPOSE. Every reason there
- describes a round that was PAID FOR and came back empty, which is the only
- kind of answer a stage can give. The driver can also decline to buy a round at
- all, and giving the stage a word for that would let a reader think it might
- return one.
+
+ WIDER THAN {@link TranslateAbsenceReason} ON PURPOSE. Every reason there is
+ the stage's own answer about the slice it was asked to render: a round that
+ was paid for and came back empty, or the one question the stage settles
+ before any round (`unfloored`), since only the stage holds what the floor
+ reads. The driver can also decline to buy a round at all, from what the
+ document around the slice shows, and giving the stage a word for that would
+ let a reader think it might return one.
  */
 export type UnfilledReason =
   | TranslateAbsenceReason

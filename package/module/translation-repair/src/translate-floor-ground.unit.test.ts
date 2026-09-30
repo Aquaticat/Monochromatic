@@ -1,12 +1,13 @@
 /**
  Tests for the one reading of whether the deterministic source floor can
  compare anything on a slice, which the floor reads its `unknown` verdict
- from (ledger B43).
+ from and the translate stage asks before it buys a round (ledger B43).
 
- The cases pin each way a side goes unread, which side it is, and that the
+ The cases pin each way a side goes unread, which side it is, that the
  detail is the one the floor's `unknown` verdict carries for the same slice,
  since two readers that disagreed there would let a slice be bought and
- shipped unchecked.
+ shipped unchecked, and the narrowing a caller that asked first reads the
+ floor's verdict through.
 
  Cat-themed invention throughout; no corpus content appears here.
 
@@ -21,10 +22,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  FloorGroundDisagreementError,
+  floorReach,
   FrontMatterParseError,
   readFrontMatterGround,
   readMarkdownGround,
   readSliceSkeleton,
+  requireComparedVerdict,
   splitFrontMatter,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
@@ -335,6 +339,103 @@ await describe({
             floor: detail,
           };
         },),);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: floorReach.name,
+  children: [
+    it({
+      name: 'READS BY THE SLICE\'S SYNTAX: metadata without fences is blind as front matter and comparable as '
+        + 'prose',
+      fn: async () => {
+        expect(floorReach({
+          sourceText: UNFENCED_METADATA,
+          pageText: '',
+          syntax: 'front-matter',
+        },),).toEqual({
+          kind: 'blind',
+          side: 'original',
+          detail: 'source front matter could not be read',
+        },);
+        expect(floorReach({
+          sourceText: UNFENCED_METADATA,
+          pageText: '',
+        },),).toEqual({ kind: 'comparable', },);
+      },
+    },),
+    it({
+      name: 'ANSWERS WITH THE GROUND ITSELF where a side goes unread, the side and the floor\'s own detail',
+      fn: async () => {
+        expect(floorReach({
+          sourceText: SOURCE_TEXT,
+          pageText: UNREADABLE_PAGE,
+        },),).toEqual(readMarkdownGround({
+          sourceText: SOURCE_TEXT,
+          pageText: UNREADABLE_PAGE,
+        },),);
+        expect(floorReach({
+          sourceText: SOURCE_METADATA,
+          pageText: BROKEN_METADATA,
+          syntax: 'front-matter',
+        },),).toEqual(readFrontMatterGround({
+          sourceText: SOURCE_METADATA,
+          pageText: BROKEN_METADATA,
+        },),);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requireComparedVerdict.name,
+  children: [
+    it({
+      name: 'RETURNS a pass or a refusal as the floor gave it, the same object',
+      fn: async () => {
+        /**
+         The floor's pass on a readable slice.
+         */
+        const pass = validateTranslatedSlice({
+          sourceText: SOURCE_TEXT,
+          candidateText: CANDIDATE_TEXT,
+        },);
+        /**
+         The floor's refusal of a copied original.
+         */
+        const refusal = validateTranslatedSlice({
+          sourceText: SOURCE_TEXT,
+          candidateText: SOURCE_TEXT,
+        },);
+
+        expect([pass.kind, refusal.kind,],).toEqual(['valid', 'invalid',],);
+        expect(requireComparedVerdict({ verdict: pass, },),).toBe(pass,);
+        expect(requireComparedVerdict({ verdict: refusal, },),).toBe(refusal,);
+      },
+    },),
+    it({
+      name: 'REFUSES a verdict that compared nothing, carrying the floor\'s detail beside a fixed sentence',
+      fn: async () => {
+        /**
+         The floor's verdict on an original the strict grammar cannot read.
+         */
+        const blind = validateTranslatedSlice({
+          sourceText: UNCLOSED_SOURCE,
+          candidateText: CANDIDATE_TEXT,
+        },);
+        /**
+         What the narrowing raised over it.
+         */
+        const raised = caught(function narrowBlind(): void {
+          requireComparedVerdict({ verdict: blind, },);
+        },);
+        if (!(raised instanceof FloorGroundDisagreementError))
+          throw new Error('the narrowing raised something other than the disagreement it names',);
+
+        expect(raised.detail,).toBe(`original could not be read: ${unclosedSourceDetail()}`,);
+        expect(raised.message.includes(raised.detail,),).toBe(false,);
       },
     },),
   ],

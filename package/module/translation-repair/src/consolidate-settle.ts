@@ -108,8 +108,11 @@ export type ConsolidationTerminal =
  to ask about. They are separate decisions and the same terminal, because
  what they tell a reader differs while what they tell the consolidation does
  not. `no-candidate-backed` joins the declined, because candidates existed
- and the judges backed none of them.
- 
+ and the judges backed none of them. `unfloored` joins the unjudged, because
+ nobody was asked on a slice the floor could compare nothing on; no slate of
+ this stage raises it, since only the translate stage (`runTranslateStage`)
+ settles a slice before any round (ledger B43).
+
  A RECORD RATHER THAN A CHAIN, so a decision added to the union fails to
  typecheck here instead of falling quietly into whichever branch is last.
  */
@@ -118,6 +121,7 @@ const SLATE_TERMINALS: Record<TranslateDecision, ConsolidationTerminal> = {
   'sole-candidate': 'slate-unjudged-standing',
   'no-candidate': 'slate-unjudged-standing',
   'no-voice-heard': 'slate-unjudged-standing',
+  'unfloored': 'slate-unjudged-standing',
   'declined-indecision': 'slate-declined-standing',
   'declined-rejection': 'slate-declined-standing',
   'no-candidate-backed': 'slate-declined-standing',

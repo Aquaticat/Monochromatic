@@ -30,6 +30,8 @@ import {
   RosterConfigurationError,
   translateDocument,
   TranslationRepairInterruptedError,
+  unflooredFinding,
+  validateTranslatedSlice,
   type ArchiveDispute,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -1528,6 +1530,59 @@ The cat is doing the sleeping on the windowsill.
         expect(result.changedSliceIndices,).toContain(anchorIndex,);
         expect(result.translatedText,).toContain(MISSING_FRESH,);
         expect(result.findings,).toContain('insertion-corroboration fixture admitted',);
+      },
+    },),
+
+    it({
+      name: 'LEAVES AN ADMITTED PASSAGE UNFILLED, before buying a round, where the floor can compare nothing '
+        + 'written for it, rather than writing in a rendering nobody could check (ledger B43)',
+      fn: async () => {
+        /** Cost of the document with nothing appended. */
+        const plain = await runDriver({},);
+
+        /**
+         Passage whose original carries an expression the strict grammar never
+         closes.
+         */
+        const unreadableSource = '## 第三节\n\n猫猫{也喜欢晒太阳。';
+        const {
+          result,
+          prepared,
+          calls,
+        } = await runDriver({
+          anchorSource: unreadableSource,
+          insertionAdmission: {
+            positions: new Set([2,]),
+            findings: ['insertion-corroboration fixture admitted',],
+          },
+        },);
+        const anchorIndex = prepared.slices.length - 1;
+
+        /**
+         The floor's account of why it could compare nothing there.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: unreadableSource,
+          candidateText: MISSING_FRESH,
+          pageText: '',
+          lineStructured: false,
+          declared: [],
+          disputedWordings: [],
+        },);
+        if (verdict.kind !== 'unknown')
+          throw new Error(`the anchor's original must be one no grammar reads, and the floor said ${verdict.kind}`,);
+
+        expect(anchorIndex,).toBe(2,);
+        expect(result.status,).toBe('unfilled',);
+        expect(result.unfilled,).toEqual([{
+          sliceIndex: anchorIndex,
+          reason: 'unfloored',
+          findings: [unflooredFinding({ detail: verdict.detail, },),],
+        },],);
+        expect(calls.translateAttempts,).toBe(plain.calls
+          .translateAttempts,);
+        expect(result.changedSliceIndices,).not.toContain(anchorIndex,);
+        expect(result.translatedText,).not.toContain(MISSING_FRESH,);
       },
     },),
 

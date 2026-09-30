@@ -8,12 +8,14 @@ import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
 import { assertJudgeableProducerRoster, } from './repair-contract.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { IncumbentKind, } from './translate-absence.ts';
+import {
+  floorReach,
+  requireComparedVerdict,
+} from './translate-floor-ground.ts';
 import { runTranslateRepairs, } from './translate-stage-repair.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
-import {
-  type SliceValidation,
-  validateTranslatedSlice,
-} from './translate-validate.ts';
+import { settleUnflooredSlice, } from './translate-unfloored.ts';
+import { validateTranslatedSlice, } from './translate-validate.ts';
 
 //region Translate stage
 // Every slice is translated from the ORIGINAL by several models independently,
@@ -34,42 +36,16 @@ import {
 // policy in it is anchored to an edit bounded by an envelope some accepted
 // issue named, and a whole-slice replacement has none.
 //
+// A SLICE THE FLOOR CAN COMPARE NOTHING ON IS SETTLED BEFORE ANY CALL (ledger
+// B43; `translate-unfloored.ts`): no candidate could pass there, so nothing
+// bought could be used.
+//
 // DECLARED NAMES ARE CHECKED ONE LEVEL UP, in `translate-slice.ts`
 // (`findDroppedDeclaredNames`), against the forms preparation parsed from the
 // front matter; this note once said the check was missing, from before it
 // existed. What this stage still does not do is check anything that crosses a
 // slice boundary.
 
-
-/**
- What the floor said against a text it did not pass.
-
- Whether the text may stand is read off the verdict's kind, not off this
- list, so a refusal that named nothing still keeps the text off the slate;
- the floor names at least one finding for every refusal it returns
- (`translate-validate.ts`), and a stand-in line for one that named none
- was unreachable. TAKES NO PASS: the stage asks only where the text did
- not pass, and an arm for a pass was a statement no case could reach
- (ledger T8, sixth batch).
-
- @param verdict - deterministic source floor's refusal, or its account of
- why no comparison was possible
-
- @returns The refusal's findings, or the reason no comparison was possible,
- which keeps the text off the slate too
-
- @example
- ```ts
- floorFindings({ verdict: { kind: 'unknown', detail: 'unparsable', }, },); // ['unparsable']
- ```
- */
-function floorFindings(
-  { verdict, }: { readonly verdict: Exclude<SliceValidation, { readonly kind: 'valid'; }>; },
-): readonly string[] {
-  if (verdict.kind === 'unknown')
-    return [verdict.detail,];
-  return verdict.findings;
-}
 
 /**
  Translates one slice from its original and returns the text that ships.
@@ -143,6 +119,11 @@ function floorFindings(
  @throws {@link BlankSelectionError} when selection chose text that says
  nothing for a source that says something, in EITHER mode, since that is a
  deletion rather than an outcome
+
+ @throws {@link import('./translate-absence.ts').TranslateAbsenceError}
+ carrying `unfloored`, before any call, where the archive holds no
+ translation and the floor can compare nothing written for the slice
+ (ledger B43); where the archive holds one, it stands with nobody asked
  
  @example
  ```ts
@@ -204,18 +185,43 @@ export async function runTranslateStage(
   },);
 
   /**
+   Whether the floor can pass anything written for this slice, read as the
+   floor reads it: every candidate here is floored against this original and
+   this page (`translate-produce.ts`, `translate-floor.ts`).
+   */
+  const reach = floorReach({
+    sourceText,
+    pageText: incumbentText,
+    ...((syntax === undefined) ? {} : { syntax, }),
+  },);
+  // NOTHING IS BOUGHT WHERE NOTHING BOUGHT COULD PASS (ledger B43): the
+  // archive stands where there is one, and the passage stays unfilled where
+  // there is none.
+  if (reach.kind === 'blind') {
+    return settleUnflooredSlice({
+      incumbentText,
+      incumbentKind,
+      detail: reach.detail,
+      l,
+    },);
+  }
+
+  /**
    Deterministic source floor's verdict on the archive wording, absent where
-   there is no archive wording.
+   there is no archive wording; a pass or a refusal, since the ground was
+   read as comparable.
    */
   const incumbentVerdict = (incumbentKind === 'present')
-    ? validateTranslatedSlice({
-      sourceText,
-      candidateText: incumbentText,
-      pageText: incumbentText,
-      ...((syntax === undefined) ? {} : { syntax, }),
-      lineStructured,
-      declared,
-      disputedWordings,
+    ? requireComparedVerdict({
+      verdict: validateTranslatedSlice({
+        sourceText,
+        candidateText: incumbentText,
+        pageText: incumbentText,
+        ...((syntax === undefined) ? {} : { syntax, }),
+        lineStructured,
+        declared,
+        disputedWordings,
+      },),
     },)
     : undefined;
   /**
@@ -225,12 +231,13 @@ export async function runTranslateStage(
   // The finding line alone said a floor refused the archive, not which: the
   // yingying10 read could not tell the class one hundred fourteen refusal from
   // any other without replaying the slice.
-  if ((incumbentVerdict !== undefined) && (incumbentVerdict.kind !== 'valid')) {
+  if (incumbentVerdict?.kind === 'invalid') {
     /**
      What the floor said against the archive wording.
      */
-    const against = floorFindings({ verdict: incumbentVerdict, },);
-    l.warn(`translate incumbent excluded by deterministic source floor: ${against.join(' | ',)}`,);
+    const against = incumbentVerdict.findings
+      .join(' | ',);
+    l.warn(`translate incumbent excluded by deterministic source floor: ${against}`,);
   }
   /**
    Existing fallback kind after deterministic source floor.

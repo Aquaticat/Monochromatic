@@ -242,6 +242,18 @@ import type { SliceReplacement, } from './splice-slices.ts';
  quote. Checked on 2026-09-30: no slice-cache file was written after 04:27
  UTC on 2026-09-27, where a control from 00:00 UTC that day finds 450.
 
+ Rides inside 15 too: a slice the floor can compare nothing on settles before
+ any call, on the archive's own bytes with the decision `unfloored` where
+ there is one and unfilled with that reason where there is none (ledger B43,
+ `translate-unfloored.ts`), and the front-matter floor answers `unknown`
+ rather than charging a refused side's YAML to the candidate (ledger B44),
+ which changes such a slice's record; no pinned slice is one (0 of 1,351
+ originals, 0 of 92 front-matter slices), and a record whose stage heard
+ nobody is never cached. Checked on 2026-09-30: no slice-cache file was
+ written after 04:27 UTC on 2026-09-27 under the agent runs or the package's
+ runs, where a control from 00:00 UTC that day finds 494, once a throwaway
+ checkout and a worktree-copy payload holding copies are set aside.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written

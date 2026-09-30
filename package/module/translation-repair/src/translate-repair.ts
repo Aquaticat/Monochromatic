@@ -229,8 +229,12 @@ async function repairOneCandidate(
   // on this slate as written and the gap is recorded rather than charged to
   // the model. It is not the last word: where the consolidation reads the
   // slice's standings, it takes no verdict as no pass and refuses the text
-  // (`readStandingVerdict`), as the stage withholds the archive on the same
-  // verdict (ledger T8, sixth batch).
+  // (`readStandingVerdict`).
+  //
+  // THE TRANSLATE STAGE NEVER REACHES THIS: it settles a slice the floor can
+  // compare nothing on before any call (ledger B43). The consolidation's
+  // writers take this turn too (`consolidate-produce.ts`), and are still
+  // asked on such a slice (ledger B45).
   if (validation.kind === 'unknown') {
     rl.warn(`${voice.modelId}: candidate not validated (${validation.detail}), so it stands as written`,);
     return {

@@ -124,11 +124,20 @@ export {
 } from './translate-skeleton.ts';
 export {
   type BlindGround,
+  type ComparedVerdict,
+  FloorGroundDisagreementError,
+  floorReach,
+  type FloorReach,
   type FrontMatterGround,
   type MarkdownGround,
   readFrontMatterGround,
   readMarkdownGround,
+  requireComparedVerdict,
 } from './translate-floor-ground.ts';
+export {
+  settleUnflooredSlice,
+  unflooredFinding,
+} from './translate-unfloored.ts';
 export {
   type SliceValidation,
   validateTranslatedSlice,

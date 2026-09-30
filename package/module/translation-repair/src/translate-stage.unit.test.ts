@@ -32,6 +32,7 @@ import {
   runTranslateStage,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TranslateAbsenceError,
+  unflooredFinding,
   validateTranslatedSlice,
   type ChatJsonOutcome,
   type ChatJsonRequest,
@@ -63,6 +64,12 @@ const SOURCE_TEXT = '猫猫在窗台上打盹，尾巴垂在暖气片旁边。';
  Translation already in the archive, awkward but present.
  */
 const INCUMBENT_TEXT = 'The cat is doing the sleeping on the windowsill, with tail hanging by the radiator.';
+
+/**
+ Original with an expression the strict grammar never closes, so the floor
+ can compare nothing written for it.
+ */
+const UNREADABLE_SOURCE = '猫猫在{窗台上打盹。';
 
 /**
  Models that render the slice.
@@ -491,20 +498,14 @@ await describe({
       },
     },),
     it({
-      name: 'WITHHOLDS the archive where the floor can compare nothing, an original the strict grammar cannot read, '
-        + 'and logs the floor\'s own reason, since the consolidation refuses a standing on no verdict as on a finding '
-        + '(ledger T8, sixth batch)',
+      name: 'ASKS NOBODY where the floor can compare nothing, an original the strict grammar cannot read: the '
+        + 'archive stands, and the finding and the log name the floor\'s own reason (ledger B43)',
       fn: async () => {
-        /**
-         Original with an expression the strict grammar never closes.
-         */
-        const sourceText = '猫猫在{窗台上打盹。';
-
         /**
          The floor's account of why it compared nothing, as the stage asks it.
          */
         const verdict = validateTranslatedSlice({
-          sourceText,
+          sourceText: UNREADABLE_SOURCE,
           candidateText: INCUMBENT_TEXT,
           pageText: INCUMBENT_TEXT,
           lineStructured: false,
@@ -514,21 +515,118 @@ await describe({
         if (verdict.kind !== 'unknown')
           throw new Error(`the fixture's original must be one no grammar reads, and the floor said ${verdict.kind}`,);
         const messages: string[] = [];
-        const { result, } = await runLane({
+        const {
+          result,
+          calls,
+        } = await runLane({
           translations: {
             [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill.',
             [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'The cat dozes on the windowsill.',
             [SEAT_HYPER_VISION]: 'The cat dozes on the windowsill.',
           },
           needle: 'dozes',
-          sourceText,
+          sourceText: UNREADABLE_SOURCE,
           incumbentText: INCUMBENT_TEXT,
           messages,
         },);
-        expect(messages,).toContain(`translate incumbent excluded by deterministic source floor: ${verdict.detail}`,);
-        expect(result.origin,).toBe('fresh',);
-        expect(result.text,).toBe('The cat dozes on the windowsill.',);
-        expect(result.candidateCount,).toBe(1,);
+
+        expect(calls,).toEqual({
+          translate: 0,
+          select: 0,
+        },);
+        expect(result,).toEqual({
+          text: INCUMBENT_TEXT,
+          origin: 'incumbent',
+          producer: {
+            kind: 'incumbent',
+            matched: [],
+          },
+          decision: 'unfloored',
+          voteWeight: 0,
+          tally: {
+            judgesAvailable: 0,
+            ballots: 0,
+            abstentions: 0,
+            selfVotes: 0,
+          },
+          ballots: [],
+          heardTranslators: 0,
+          candidateCount: 0,
+          findings: [unflooredFinding({ detail: verdict.detail, },),],
+          slate: [],
+          selectedIndex: 0,
+          shippedIndex: 0,
+          perCandidate: [],
+        },);
+        expect(messages.some(function namesTheReason(line,): boolean {
+          return line.includes(verdict.detail,) && line.includes('the archive stands',);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES AN ABSENT PASSAGE UNFILLED where the floor can compare nothing, with no call, rather than '
+        + 'writing in a rendering nobody could check (ledger B43)',
+      fn: async () => {
+        /**
+         Calls each stage made.
+         */
+        const calls = {
+          translate: 0,
+          select: 0,
+        };
+        /**
+         What the stage raised.
+         */
+        let raised: unknown;
+        try {
+          await runTranslateStage({
+            client: laneClient({
+              translations: {
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill.',
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'The cat dozes on the windowsill.',
+                [SEAT_HYPER_VISION]: 'The cat dozes on the windowsill.',
+              },
+              needle: 'dozes',
+              calls,
+              judgeSheets: [],
+              producerPrompts: [],
+            },),
+            translatorModelIds: TRANSLATORS,
+            judgeModelIds: JUDGES,
+            sourceText: UNREADABLE_SOURCE,
+            incumbentText: '',
+            incumbentKind: 'absent',
+            lineStructured: false,
+            signal: new AbortController().signal,
+            perCallTimeoutMs: 1_000,
+            l,
+          },);
+        }
+        catch (error) {
+          raised = error;
+        }
+        if (!(raised instanceof TranslateAbsenceError))
+          throw new Error('expected the stage to leave the passage unfilled',);
+
+        expect(calls,).toEqual({
+          translate: 0,
+          select: 0,
+        },);
+        /**
+         The floor's account of why it compared nothing on this slice.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText: UNREADABLE_SOURCE,
+          candidateText: 'The cat dozes on the windowsill.',
+          pageText: '',
+          lineStructured: false,
+          declared: [],
+          disputedWordings: [],
+        },);
+        if (verdict.kind !== 'unknown')
+          throw new Error(`the fixture's original must be one no grammar reads, and the floor said ${verdict.kind}`,);
+        expect(raised.reason,).toBe('unfloored',);
+        expect(raised.findings,).toEqual([unflooredFinding({ detail: verdict.detail, },),],);
       },
     },),
     it({

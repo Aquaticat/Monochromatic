@@ -1390,3 +1390,35 @@ What enforces it:
 habit and review;
 `front-matter-slice.unit.test.ts` carries a refused original and a refused page beside a sound candidate,
 and each narrowing's own cases reach its rethrow.
+
+## Work no floor can check
+
+What happened:
+where the floor could compare nothing
+(an original no grammar reads),
+the translate stage still bought translators and judges,
+kept the archive off the slate on the floor's `unknown`,
+and let a candidate stand on the same `unknown`,
+so an admitted insertion wrote a rendering nobody could check into the page,
+and on a slice the archive translates every call bought nothing
+(ledger B43).
+The consolidation's writers are asked there still
+(ledger B45).
+
+The rule:
+a stage that buys work a deterministic check must pass asks first whether the check can pass anything on that input,
+through the definition the check itself reads
+(`floorReach`,
+`translate-floor-ground.ts`),
+and settles without buying where it cannot:
+on the archive where there is one,
+unfilled where there is none.
+Past that question,
+a verdict the caller has ruled out is read through a narrowing that raises
+(`requireComparedVerdict`),
+never through a branch that keeps a candidate on it.
+
+What enforces it:
+habit and review;
+`translate-stage.unit.test.ts` and `translate-document.unit.test.ts` count the calls on a blind slice,
+and `translate-floor-ground.unit.test.ts` pins the reach and the floor to one reading.

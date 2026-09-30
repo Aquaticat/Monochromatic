@@ -28,7 +28,12 @@ import type { TranslateSlateEntry, } from './translate-slate.ts';
  about the incumbent. A tie, a lost round or an empty slate all ship the
  incumbent too, and counting those as wins would report the archive as
  vindicated by exactly the rounds that examined nothing.
- 
+
+ `unfloored` IS THE ONE DECISION NO ROUND MADE: the floor could compare
+ nothing written for the slice, so no candidate could pass it, and the
+ stage asked nobody (ledger B43). Its absence reason of the same name is
+ the same fact where the archive has no wording.
+
  @example
  ```ts
  const decision: TranslateDecision = 'judged';
@@ -41,7 +46,8 @@ export type TranslateDecision =
   | 'declined-rejection'
   | 'no-candidate-backed'
   | 'no-candidate'
-  | 'no-voice-heard';
+  | 'no-voice-heard'
+  | 'unfloored';
 
 /**
  Everything the translate stage decided for one slice.

@@ -105,6 +105,7 @@ const MARKED_CLASSES: readonly string[] = [
   'EnvelopeOverlapError',
   'EveryProviderDryError',
   'FidelityReferenceError',
+  'FloorGroundDisagreementError',
   'FootnoteOverflowError',
   'FootnoteRewriteError',
   'FrontMatterCompletenessError',

@@ -3311,7 +3311,7 @@ a name `translate-slice-settle.ts` already meant)
 with its shipped-quote case expecting a refusal,
 failed on that case alone.
 The defects the batch found are B35 to B42;
-B43 is open.
+B43 was open at its close.
 The shell rule (M1) held in every call since the batch's last context resume;
 the calls before it were not re-read.
 
@@ -11084,8 +11084,8 @@ shows what it would refuse there.
 ### B43: where the floor compares nothing, the stage withholds the archive and lets a candidate stand
 
 Status:
-open,
-found 2026-09-30 (UTC) closing `translate-stage.ts` 62 in the coverage census's sixth batch.
+fixed 2026-09-30 (UTC),
+found that day closing `translate-stage.ts` 62 in the coverage census's sixth batch.
 Where the floor can compare nothing
 (an original the strict grammar cannot read,
 or a page neither grammar reads),
@@ -11139,6 +11139,54 @@ a candidate the strict grammar refuses against a readable original is refused be
 `translate-floor-ground.unit.test.ts` pins each way a side goes unread,
 and that the floor's detail is the ground's for the same slice.
 
+Fix:
+`runTranslateStage` asks `floorReach` of the original and the page every candidate is floored against,
+after the roster check and before anything is bought.
+On a blind slice `settleUnflooredSlice` (`translate-unfloored.ts`) settles it:
+where the archive has wording,
+the archive stands under the new decision `unfloored`,
+with nobody heard,
+no slate
+and the finding `translate-unfloored (<the floor's detail>)`;
+where it has none,
+the stage raises the absence with the new reason `unfloored`,
+which the slice attempt turns into an unfilled passage and the driver never caches.
+`settleTranslateSlice` settles an `unfloored` stage on the archive's own bytes,
+unchanged,
+so a disputed slice's repair text,
+which no floor could check there either,
+does not ship with nobody heard
+(`assertUnheardKeptIncumbent` would have stopped the entry on it).
+Past the reach check the floor cannot answer `unknown`,
+so the stage and the post-repair floor read its verdict through `requireComparedVerdict`,
+which raises `FloorGroundDisagreementError` rather than keep a candidate on an answer that cannot come;
+the stage's `floorFindings`,
+whose `unknown` arm that made unreachable,
+is gone.
+The consolidation's slate terminals map `unfloored` with the unjudged,
+though no slate of that stage raises it.
+Cases:
+`translate-stage.unit.test.ts`
+(an archive standing with no call,
+and an absent passage raising `unfloored` with no call),
+`translate-slice-guards.unit.test.ts`
+(the archive's own bytes with no sheet sent,
+plain and with a disputed slice's stand-in,
+each passing the unheard-record check),
+`translate-document.unit.test.ts`
+(an admitted insertion left unfilled as `unfloored`,
+with the translate calls of the document without it,
+and its rendering not in the page),
+and `translate-floor-ground.unit.test.ts` for the reach and the narrowing.
+The translate records change,
+so the account rides inside version 15:
+no slice-cache file was written after 04:27 UTC on 2026-09-27,
+where a control from midnight that day finds 494
+(M81 records the two confounds that check first met).
+
+The consolidation's writers are still asked on such a slice
+(B45).
+
 ### B44: the front-matter floor charged a refusal of the original's or the page's YAML to the candidate
 
 Status:
@@ -11181,6 +11229,27 @@ a refused and an unfenced original and page beside a sound candidate,
 and a candidate's own fault still charged first;
 `front-matter.unit.test.ts` for the narrowing,
 whose rethrow its case reaches.
+
+### B45: the consolidation asks its writers on a slice the floor can compare nothing on
+
+Status:
+open,
+found 2026-09-30 (UTC) measuring B43.
+A scratch copy of `consolidate-driver.unit.test.ts`'s case
+"SHIPS THE ARCHIVE where the floor can compare nothing",
+counting the producer requests its scripted client served,
+found 3 for each lane the contest backed,
+and the slice still ends `incumbent-only` on the archive:
+the floor refuses every standing and every text the writers return,
+so their calls buy nothing,
+as the translate stage's did before B43.
+Those writers are also the only path left to the author repair's `unknown` arm (`translate-repair.ts`).
+Reach at the pin is the same as B43's:
+0 of 1,351 slices.
+Next:
+the consolidation settles such a slice before its writers,
+by the same reading (`floorReach`),
+and the arm it leaves unreachable is removed.
 
 ## Process mistakes in this audit
 
@@ -11601,7 +11670,40 @@ so the census that was to show the batch's stretches closed showed a new one of 
 Prevention:
 a change that narrows the condition a call sits under reads the callee's arms against the new condition in the same commit,
 and narrows the callee's parameter type where the language can say it,
-as `floorFindings` now takes only a verdict that is not a pass.
+as `floorFindings` took only a verdict that was not a pass,
+until B43 made the stage read the verdict through `requireComparedVerdict` and removed it.
+
+### M81: a cache-file count taken over a root holding a throwaway checkout and a copy payload
+
+Status:
+happened 2026-09-30 (UTC) during B43,
+caught by listing the matches before any account used the count.
+The rides-inside check for B43 ran over the agent runs,
+where a throwaway worktree for B44's before-measurement had just been checked out
+and the worktree-copy hook,
+which ran out of memory,
+had left a payload of copied run directories
+(`~/temp/agent/.cli-git-worktree-copy-kwEhzq/payload/`).
+`find -path '*slice-cache*' -newermt '2026-09-27T04:27:00Z'` printed 332 where every check since 2026-09-28 printed 0:
+9 were the checkout's own source files named for the slice cache,
+the rest were copies of cached records with fresh times,
+and outside both the only match was a scratch output.
+The same check had also named the package's runs as `package/module/translation-repair/runs`,
+which does not exist
+(bfs said so in the error file);
+they live under the worktree's `node_modules/.monochromatic/translation-repair-runs*`,
+where nothing was written after the cutoff or since midnight that day.
+The control from midnight read 494 once the confounds were set aside,
+the count of 2026-09-29,
+so the 450 of the B42 check was not files leaving those roots,
+as M57's recurrence paragraph inferred;
+what the B42 check counted differently is not recorded.
+Prevention:
+a count over a root lists its matches before it is used,
+names each root by where the runs are written (`runs-layout.ts`),
+and leaves out checkouts and copy payloads;
+`cache-account-audit` is to report the newest cache file and the control itself,
+so an account needs no hand-written `find`.
 
 ### M79: a coverage census measuring compressed code
 
@@ -12155,9 +12257,11 @@ The error went to a file this time,
 and the control's zero sent the check to it;
 the ISO rerun found no file after the cutoff and 450 since 00:00 UTC that day.
 The same form found 494 on 2026-09-29,
-over the agent runs and the package's own runs directory both,
-so 44 files of that window have left those roots since
-(which ones is not measured).
+over the agent runs and the package's own runs directory both;
+this paragraph inferred that 44 files of that window had left those roots,
+and the control read 494 again on 2026-09-30
+(M81),
+so the inference does not hold.
 A written step and a read error file did not stop the slip,
 so the check itself is queued for `cache-account-audit`:
 report the newest slice-cache file and a control count,

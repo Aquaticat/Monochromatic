@@ -265,6 +265,25 @@ export async function settleTranslateSlice(
     incumbentText,
   },);
 
+  // A SLICE NOBODY WAS ASKED ABOUT SETTLES ON THE ARCHIVE'S OWN BYTES (ledger
+  // B43): the floor could compare nothing here, so a disputed slice's
+  // stand-in, the repair lane's text, is as unchecked as any candidate would
+  // have been, and a record that heard nobody may carry only the archive
+  // (`assertUnheardKeptIncumbent`).
+  if (stageResult.decision === 'unfloored') {
+    return {
+      kind: 'translate-slice',
+      schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
+      sliceIndex,
+      stageResult,
+      outputText: pageWording,
+      changed: false,
+      disposition: 'stage-result',
+      alignment,
+      findings,
+    };
+  }
+
   /**
    Whether the stage wants to change the archive text at all.
    */

@@ -1,7 +1,8 @@
 /**
  Tests for what {@link settleTranslateSlice} does with the winner the judges
  chose: the quote guard, the transcript the archive carries past its
- original, and a disputed slice whose repair text may not stand in.
+ original, a disputed slice whose repair text may not stand in, and a slice
+ the floor can compare nothing on, where nobody is asked (ledger B43).
 
  WHY A DRIVEN SLICE RATHER THAN THE HELPERS ALONE. Each helper has its own
  file, and none of them shows what the slice settles on: the quote guard
@@ -27,6 +28,7 @@ import {
 
 import {
   type ArchiveDispute,
+  assertUnheardKeptIncumbent,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   describeArchiveDispute,
@@ -441,6 +443,83 @@ await describe({
         expect(settled.sheets.some(function showsStandIn(sheet,): boolean {
           return sheet.includes(standIn,);
         },),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${settleTranslateSlice.name} where the floor compares nothing`,
+  children: [
+    it({
+      name: 'SETTLES ON THE ARCHIVE\'S OWN BYTES with nobody asked, on a plain slice and on a disputed one whose '
+        + 'repair text may stand in, since no floor could check that text either; the record is one a slice that '
+        + 'heard nobody may keep (ledger B43)',
+      fn: async () => {
+        /**
+         Original with an expression the strict grammar never closes.
+         */
+        const sourceText = '猫猫在{窗台上打盹。';
+
+        /**
+         Archive wording of the slice.
+         */
+        const targetText = 'The cat is doing the sleeping on the windowsill.';
+
+        /**
+         Each settlement: no dispute, then a dispute whose repair text may
+         stand in.
+         */
+        const settled = await Promise.all([
+          settle({
+            sourceText,
+            targetText,
+            rendering: 'The cat dozed on the windowsill.',
+          },),
+          settle({
+            sourceText,
+            targetText,
+            rendering: 'The cat dozed on the windowsill.',
+            archiveDispute: {
+              sliceIndex: 0,
+              standIn: 'The cat slept on the sill all afternoon.',
+              standInEligible: true,
+              acceptedClaims: ['accuracy/addition major: The cat did not swallow pills.',],
+            },
+          },),
+        ],);
+
+        expect(settled.map(function whatSettled({
+          record,
+          sheets,
+          unplanned,
+        },) {
+          // THE CHECK THE DRIVER MAKES before it keeps a record whose stage
+          // heard nobody, which throws on anything but the archive unchanged.
+          assertUnheardKeptIncumbent({
+            sliceIndex: 0,
+            record,
+            incumbentText: targetText,
+          },);
+          return {
+            sheets: sheets.length,
+            unplanned,
+            decision: record.stageResult
+              .decision,
+            outputText: record.outputText,
+            changed: record.changed,
+            disposition: record.disposition,
+          };
+        },),).toEqual([0, 1,].map(function expected() {
+          return {
+            sheets: 0,
+            unplanned: [],
+            decision: 'unfloored',
+            outputText: targetText,
+            changed: false,
+            disposition: 'stage-result',
+          };
+        },),);
       },
     },),
   ],
