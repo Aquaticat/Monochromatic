@@ -20,15 +20,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  BlankSelectionError,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   judgeSlateWithRetry,
   type LaneText,
   messageText,
+  type ProducedSlate,
   producerModelIds,
   produceTranslateSlate,
   type RosterModelId,
   type SyntheticClient,
+  TranslateAbsenceError,
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
 
@@ -660,6 +663,174 @@ await describe({
         expect(result.findings.some(function isTieBroken(finding,): boolean {
           return finding.startsWith(TIE_BROKEN,);
         },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'ASKS A RUN-OFF AGAIN WHERE THE ARCHIVE WORDING IS KEPT while the tie keeps narrowing, since each '
+        + 'decline that keeps the archive still names the finalists a further run-off would ask about',
+      fn: async () => {
+        // The narrowing script of the class eighty-two case over a slice the
+        // archive translates: each decline keeps the archive's wording and
+        // returns, naming the finalists, rather than raising.
+        const { result, judgeCalls, } = await judgedUnder({
+          translators: FOUR_TRANSLATORS,
+          judges: DISINTERESTED_JUDGES,
+          renderings: FOUR_RENDERINGS,
+          ballotFor: function narrowTwice(
+            judging,
+            seat,
+          ): ScriptedBallot {
+            if (seat === DISINTERESTED_JUDGES[0])
+              return 'dozes';
+            if (seat === DISINTERESTED_JUDGES[1])
+              return (judging === 3) ? 'dozes' : 'naps';
+            if (judging === 1)
+              return 'curls';
+            return (judging === 2) ? 'reject' : 'naps';
+          },
+        },);
+        expect({
+          origin: result.origin,
+          text: result.text,
+          runoffs: result.findings.filter(function isRunoff(finding,): boolean {
+            return finding.startsWith('translate-runoff (',);
+          },),
+          judgeCalls,
+        },).toEqual({
+          origin: 'fresh',
+          text: FOUR_RENDERINGS[0],
+          runoffs: [
+            'translate-runoff (finalists 3 of 4)',
+            'translate-runoff (finalists 2 of 3)',
+          ],
+          judgeCalls: DISINTERESTED_JUDGES.length * 3,
+        },);
+      },
+    },),
+    it({
+      name: 'RAISES AN EMPTY SLATE\'S REFUSAL AT ONCE, asking no second round, since no challenge can change a slate '
+        + 'nobody was heard on',
+      fn: async () => {
+        /**
+         Slate with nothing on it, every translator lost.
+         */
+        const produced: ProducedSlate = {
+          candidates: [],
+          heardTranslators: 0,
+          findings: [],
+        };
+        /**
+         What the retry raised.
+         */
+        const raised = await (async function attempt(): Promise<unknown> {
+          try {
+            return await judgeSlateWithRetry({
+              judging: {
+                client: {} as unknown as SyntheticClient,
+                produced,
+                judgeModelIds: JUDGES,
+                sourceText: SOURCE_TEXT,
+                incumbentText: '',
+                incumbentKind: 'absent',
+                lineStructured: false,
+                signal: AbortSignal.timeout(30_000,),
+                perCallTimeoutMs: 5_000,
+                l,
+              },
+            },);
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+        expect(raised,).toBeInstanceOf(TranslateAbsenceError,);
+        expect({
+          reason: (raised as TranslateAbsenceError).reason,
+          findings: (raised as TranslateAbsenceError).findings,
+        },).toEqual({
+          reason: 'no-voice-heard',
+          findings: ['translate-no-voice-heard',],
+        },);
+      },
+    },),
+    it({
+      name: 'PASSES ANY OTHER FAILURE THROUGH UNCHANGED: a judged winner that says nothing raises the blank '
+        + 'selection, which no second round could change',
+      fn: async () => {
+        /**
+         Client whose every judge names the only candidate.
+         */
+        const client: SyntheticClient = {
+          chatText: async () => {
+            throw new Error('chatText unused by the translate lane',);
+          },
+          quotas: async () => {
+            throw new Error('quotas unused by the translate lane',);
+          },
+          chatJson: async <ValueT,>(
+            request: ChatJsonRequest<ValueT>,
+          ): Promise<ChatJsonOutcome<ValueT>> => {
+            /**
+             Ballot naming the only candidate.
+             */
+            const ballot: unknown = {
+              best: 1,
+              reason: 'fixture',
+            };
+            if (!request.validate(ballot,))
+              throw new Error('the fixture ballot failed the wire guard',);
+            return {
+              kind: 'ok',
+              value: ballot as ValueT,
+              rawText: JSON.stringify(ballot,),
+            };
+          },
+        };
+        /**
+         Slate built by hand, since the producer keeps a blank candidate off a
+         real one; its sole candidate says nothing.
+         */
+        const produced: ProducedSlate = {
+          candidates: [{
+            producer: {
+              kind: 'model',
+              modelId: 'hf:cat/Cat-D' as unknown as RosterModelId,
+            },
+            value: {
+              text: '   ',
+              origin: 'fresh',
+            },
+            rendered: '   ',
+          },],
+          heardTranslators: 1,
+          findings: ['translate-blank-fixture-marker',],
+        };
+        /**
+         What the retry raised.
+         */
+        const raised = await (async function attempt(): Promise<unknown> {
+          try {
+            return await judgeSlateWithRetry({
+              judging: {
+                client,
+                produced,
+                judgeModelIds: JUDGES,
+                sourceText: SOURCE_TEXT,
+                incumbentText: INCUMBENT_TEXT,
+                incumbentKind: 'present',
+                lineStructured: false,
+                signal: AbortSignal.timeout(30_000,),
+                perCallTimeoutMs: 5_000,
+                l,
+              },
+            },);
+          }
+          catch (error) {
+            return error;
+          }
+        })();
+        expect(raised,).toBeInstanceOf(BlankSelectionError,);
+        expect((raised as BlankSelectionError).findings,).toEqual(['translate-blank-fixture-marker',],);
       },
     },),
     it({

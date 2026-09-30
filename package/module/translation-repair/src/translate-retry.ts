@@ -129,6 +129,49 @@ function isRetriedDecline({ reason, }: { readonly reason: string; },): boolean {
 }
 
 /**
+ Raises a refusal no challenge round could change, carrying the findings every
+ earlier round gathered; a decline a challenge might change passes.
+
+ ONE RULE FOR EVERY ROUND. The first round has gathered nothing yet; a later
+ round, asked over a slate the first round already judged, raises only a
+ decline, so there the rule holds the invariant rather than a live case.
+
+ @param refusal - reason and findings of the refusal a round raised
+
+ @param findings - what the earlier rounds found, none for the first
+
+ @throws {@link TranslateAbsenceError} with the refusal's own reason when it
+ is not a decline a challenge might change
+
+ @example
+ ```ts
+ raiseUnlessRetried({ refusal: first.error, findings: [], },);
+ ```
+ */
+function raiseUnlessRetried(
+  {
+    refusal,
+    findings,
+  }: {
+    readonly refusal: {
+      readonly reason: TranslateAbsenceReason;
+      readonly findings: readonly string[];
+    };
+    readonly findings: readonly string[];
+  },
+): void {
+  if (isRetriedDecline({ reason: refusal.reason, },))
+    return;
+  throw new TranslateAbsenceError({
+    reason: refusal.reason,
+    findings: [
+      ...findings,
+      ...refusal.findings,
+    ],
+  },);
+}
+
+/**
  Asks the panel once, carrying a decline out by whichever door it leaves.
 
  @param judging - everything {@link judgeTranslateSlate} needs
@@ -217,12 +260,13 @@ export async function judgeSlateWithRetry(
       findings: first.result
         .findings,
     };
-  if (!isRetriedDecline({ reason: firstReport.reason, },)) {
-    if (first.kind === 'raised')
-      throw first.error;
-
+  if (first.kind === 'raised')
+    raiseUnlessRetried({
+      refusal: first.error,
+      findings: [],
+    },);
+  else if (!isRetriedDecline({ reason: firstReport.reason, },))
     return first.result;
-  }
 
   l.info(`translate stage: ${firstReport.reason}; challenging same panel under distinct responsibility`,);
 
@@ -272,13 +316,10 @@ export async function judgeSlateWithRetry(
     findings: firstFindings,
   };
 
-  /**
-   Rounds the run-offs can take at most: each strictly shrinks the finalists
-   and a narrowed run-off keeps at least two, so the slate's width bounds
-   them; the cap is the proof, never reached in practice.
-   */
-  const roundCap = slate.length + 1;
-  for (let round = 2; round <= roundCap; round += 1) {
+  // EVERY PASS ENDS THE LOOP OR NARROWS IT: it returns, raises, or asks again
+  // over strictly fewer finalists than it was offered, and a narrowed run-off
+  // keeps at least two, so the passes are bounded by the slate's width.
+  for (;;) {
     /**
      Candidates this round is over.
      */
@@ -368,15 +409,10 @@ export async function judgeSlateWithRetry(
      Refusal this round raised.
      */
     const { error, } = again;
-    if (!isRetriedDecline({ reason: error.reason, },)) {
-      throw new TranslateAbsenceError({
-        reason: error.reason,
-        findings: [
-          ...cursor.findings,
-          ...error.findings,
-        ],
-      },);
-    }
+    raiseUnlessRetried({
+      refusal: error,
+      findings: cursor.findings,
+    },);
 
     /**
      Finalists a tie this round left, when fewer than it was offered.
@@ -407,9 +443,6 @@ export async function judgeSlateWithRetry(
     ];
     cursor.offered = next;
   }
-  throw new Error(
-    `translate stage: the run-off narrowed more times than the slate of ${String(slate.length,)} allows`,
-  );
 }
 
 //endregion Translate retry
