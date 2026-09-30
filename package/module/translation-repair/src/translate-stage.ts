@@ -42,27 +42,30 @@ import {
 
 
 /**
- What the floor said against a text, read off its verdict.
+ What the floor said against a text it did not pass.
 
  Whether the text may stand is read off the verdict's kind, not off this
  list, so a refusal that named nothing still keeps the text off the slate;
  the floor names at least one finding for every refusal it returns
  (`translate-validate.ts`), and a stand-in line for one that named none
- was unreachable.
+ was unreachable. TAKES NO PASS: the stage asks only where the text did
+ not pass, and an arm for a pass was a statement no case could reach
+ (ledger T8, sixth batch).
 
- @param verdict - deterministic source floor's verdict
+ @param verdict - deterministic source floor's refusal, or its account of
+ why no comparison was possible
 
- @returns Nothing for a pass, the findings of a refusal, or the reason no
- comparison was possible, which keeps the text off the slate too
+ @returns The refusal's findings, or the reason no comparison was possible,
+ which keeps the text off the slate too
 
  @example
  ```ts
  floorFindings({ verdict: { kind: 'unknown', detail: 'unparsable', }, },); // ['unparsable']
  ```
  */
-function floorFindings({ verdict, }: { readonly verdict: SliceValidation; },): readonly string[] {
-  if (verdict.kind === 'valid')
-    return [];
+function floorFindings(
+  { verdict, }: { readonly verdict: Exclude<SliceValidation, { readonly kind: 'valid'; }>; },
+): readonly string[] {
   if (verdict.kind === 'unknown')
     return [verdict.detail,];
   return verdict.findings;
@@ -222,7 +225,7 @@ export async function runTranslateStage(
   // The finding line alone said a floor refused the archive, not which: the
   // yingying10 read could not tell the class one hundred fourteen refusal from
   // any other without replaying the slice.
-  if ((incumbentVerdict !== undefined) && (!incumbentEligible)) {
+  if ((incumbentVerdict !== undefined) && (incumbentVerdict.kind !== 'valid')) {
     /**
      What the floor said against the archive wording.
      */

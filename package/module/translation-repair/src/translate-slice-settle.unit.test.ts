@@ -19,7 +19,6 @@
  @module
  */
 
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -39,6 +38,7 @@ import {
   type SyntheticClient,
   type TranslateSliceRecord,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_HYPER_VISION,
@@ -104,37 +104,6 @@ type Settlement = {
    */
   readonly said: readonly string[];
 };
-
-/**
- Logger keeping every line, at any level.
-
- @param said - array the lines land in
-
- @returns Logger writing into it
-
- @example
- ```ts
- const l = capturingLogger({ said: [], },);
- ```
- */
-function capturingLogger({ said, }: { readonly said: string[]; },): Logger {
-  /**
-   One level's writer, every level sharing the same array.
-   */
-  function keep(message: string,): void {
-    said.push(message,);
-  }
-
-  return {
-    debug: keep,
-    error: keep,
-    fatal: keep,
-    flush: async function flush(): Promise<void> {},
-    info: keep,
-    trace: keep,
-    warn: keep,
-  };
-}
 
 /**
  Builds a client whose translators all return one rendering and whose judges
@@ -281,7 +250,7 @@ async function settle(
     ...((archiveDispute === undefined) ? {} : { archiveDispute, }),
     signal: AbortSignal.timeout(30_000,),
     perCallTimeoutMs: 5_000,
-    l: capturingLogger({ said, },),
+    l: capturingLogger({ messages: said, },),
   },);
   return {
     record,

@@ -32,12 +32,14 @@ import {
   runTranslateStage,
   TRANSLATE_LINE_STRUCTURE_CRITERION,
   TranslateAbsenceError,
+  validateTranslatedSlice,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type IncumbentKind,
   type RosterModelId,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_VISION,
@@ -324,7 +326,9 @@ function laneClient(
  @param incumbentText - translation as it stands
  
  @param sourceText - original passage, defaulting to shared fixture
- 
+
+ @param messages - log the stage's lines are kept in, absent to log as usual
+
  @returns Stage result plus the call log
  
  @example
@@ -343,6 +347,7 @@ async function runLane(
     sourceText = SOURCE_TEXT,
     neighbouringSourceText,
     lineStructured = false,
+    messages,
   }: {
     readonly translations: TranslateScript;
     readonly followupTranslations?: readonly TranslateScript[];
@@ -352,6 +357,7 @@ async function runLane(
     readonly incumbentKind?: IncumbentKind;
     readonly sourceText?: string;
     readonly neighbouringSourceText?: string;
+    readonly messages?: string[];
 
     /**
      Whether the enclosing chunk is governed by the verse rule, which decides
@@ -399,7 +405,7 @@ async function runLane(
     lineStructured,
     signal: new AbortController().signal,
     perCallTimeoutMs: 1_000,
-    l,
+    l: (messages === undefined) ? l : capturingLogger({ messages, },),
   },);
   return {
     result,
@@ -482,6 +488,47 @@ await describe({
         expect(result.text,).toBe(fresh);
         expect(result.findings,).toContain('translate incumbent excluded by deterministic source floor');
         expect(result.candidateCount,).toBe(1);
+      },
+    },),
+    it({
+      name: 'WITHHOLDS the archive where the floor can compare nothing, an original the strict grammar cannot read, '
+        + 'and logs the floor\'s own reason, since the consolidation refuses a standing on no verdict as on a finding '
+        + '(ledger T8, sixth batch)',
+      fn: async () => {
+        /**
+         Original with an expression the strict grammar never closes.
+         */
+        const sourceText = '猫猫在{窗台上打盹。';
+
+        /**
+         The floor's account of why it compared nothing, as the stage asks it.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText,
+          candidateText: INCUMBENT_TEXT,
+          pageText: INCUMBENT_TEXT,
+          lineStructured: false,
+          declared: [],
+          disputedWordings: [],
+        },);
+        if (verdict.kind !== 'unknown')
+          throw new Error(`the fixture's original must be one no grammar reads, and the floor said ${verdict.kind}`,);
+        const messages: string[] = [];
+        const { result, } = await runLane({
+          translations: {
+            [SEAT_SYNTHETIC_VISION_WITHHELD]: 'The cat dozes on the windowsill.',
+            [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 'The cat dozes on the windowsill.',
+            [SEAT_HYPER_VISION]: 'The cat dozes on the windowsill.',
+          },
+          needle: 'dozes',
+          sourceText,
+          incumbentText: INCUMBENT_TEXT,
+          messages,
+        },);
+        expect(messages,).toContain(`translate incumbent excluded by deterministic source floor: ${verdict.detail}`,);
+        expect(result.origin,).toBe('fresh',);
+        expect(result.text,).toBe('The cat dozes on the windowsill.',);
+        expect(result.candidateCount,).toBe(1,);
       },
     },),
     it({

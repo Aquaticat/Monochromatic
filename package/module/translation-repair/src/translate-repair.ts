@@ -226,7 +226,11 @@ async function repairOneCandidate(
     };
 
   // Nothing to compare against says nothing about the candidate, so it stands
-  // as written and the gap is recorded rather than charged to the model.
+  // on this slate as written and the gap is recorded rather than charged to
+  // the model. It is not the last word: where the consolidation reads the
+  // slice's standings, it takes no verdict as no pass and refuses the text
+  // (`readStandingVerdict`), as the stage withholds the archive on the same
+  // verdict (ledger T8, sixth batch).
   if (validation.kind === 'unknown') {
     rl.warn(`${voice.modelId}: candidate not validated (${validation.detail}), so it stands as written`,);
     return {
