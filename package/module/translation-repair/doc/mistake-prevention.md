@@ -294,6 +294,10 @@ a probe) has run.
 A count goes in only from a command run on the staged diff
 (one commit said 44 and five where its diff held 40 and 6;
 another counted its edit script's edits and called them the times they fixed).
+A suite's count is its describe blocks,
+one PASS line each,
+never its cases:
+one record called 1,384 PASS lines cases (M74).
 A message file takes a name no earlier message used,
 checked with `ls` before any tool writes it (M72).
 Before the commit runs,
@@ -516,9 +520,14 @@ among them two readings of one event stream,
 five span-rewrite appliers under three contracts,
 and a benchmark grader whose re-carved slices ran one behind the run's (B10).
 Declaring the shared type for one merge duplicated a type another module already exported (M47).
+A tuning constant was declared in two files from their first commit,
+one copy "mirrored from" the other,
+and only the undocumented copy was read,
+so retuning the documented one changed nothing (ledger B31).
 
 The rule:
-before writing a helper or declaring a type,
+before writing a helper,
+declaring a type or copying a constant,
 `rg` the package for its name and for its shape
 (for example `rg 'function \w*(codePoint|Han|heading)' src`,
 or the field names together) and import what is there.
@@ -902,12 +911,15 @@ which exits 0 only when no finding remains;
 which fails on a relative link,
 image or link definition in the living docs,
 the package's docs or its README whose file or heading does not exist;
-`src/dead-functions.unit.test.ts`,
-which fails on a private function its file never names
-and on a top-level function no production code reaches,
-counting from the module-level code of every non-test source file,
-with the spend meter's reset its one allowed seam,
-and on an allowed seam that production reaches or no file declares (ledger B30).
+`src/dead-code.unit.test.ts`,
+which fails on a private function or value its file never names
+and on a top-level function,
+class or value no production code reaches,
+counting from the module-level statements of every non-test source file that declare nothing,
+with a value named only in types counted as unreached
+and the spend meter's reset its one allowed seam,
+and on an allowed seam that production reaches or no file declares (ledger B30,
+B31).
 
 ## Tasks, builds and bulk output
 

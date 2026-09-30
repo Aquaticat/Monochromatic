@@ -66,16 +66,14 @@ Still open in the ledger on 2026-09-29,
 read off each entry's status line:
 T8 (code no unit test runs,
 measured by block coverage mapped to source lines,
-which the next launch waits for),
+which the next launch waits for;
+B30 and B31 closed on its way,
+so `src/dead-code.unit.test.ts` now fails on any function,
+class or value production does not reach,
+and a fresh whole-suite census is the baseline its batches resume against),
 T9 (every test run writes a log into `node_modules`,
 owned by `module-logger`,
 issue #576),
-B31 (23 top-level values no production code reads,
-found by B30's reach probe run over values,
-where B30's 57 functions are now removed or moved behind a guard by production reach;
-the guard extends to values red first,
-then the values go or move to test fixtures,
-then the whole census reruns and T8's batches resume against it),
 and L6 (the lane contest on insertion slices,
 designed and deferred past the next launch);
 M1 and M6 recur.

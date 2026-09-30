@@ -174,8 +174,18 @@ this one says what changed after it.
   and each function was removed,
   or moved to a `.test-fixture.ts` file.
   B31,
-  the 23 top-level values the same reach leaves unread,
-  is next,
+  the 25 top-level values the same reach left unread,
+  closed the same day
+  (`e91ce423b` to `e28dd54f2`):
+  the guard,
+  now `src/dead-code.unit.test.ts`,
+  tracks classes and values too,
+  the alignment's gap penalty is declared once,
+  where it is documented,
+  and the walk reads it,
+  and the role-named test seats left the package build.
+  Next are a measurement of the unused imports no configured check reports
+  (the package's `mistake-prevention.md` names the issue),
   then a fresh whole-suite census before T8's batches resume.
   Every source commit also runs `mise run source-scans`,
   the package-wide scans a new file can fail (ledger M59).

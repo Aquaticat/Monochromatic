@@ -9896,26 +9896,33 @@ with an account in each key:
 the heading is in no stored slate,
 artifact or cache record,
 and no slice-cache file was written after 04:27 UTC on 2026-09-27.
-The whole suite passes on `32e07afb7`,
-1,384 cases and no failure;
-against the census baseline's 1,397,
-the 25 cases gone belong to removed functions,
+The whole suite passes on `32e07afb7`:
+1,384 describe blocks pass and none fails
+(a PASS line is one block,
+naming its passing cases,
+`describe.ts` in `module-test`;
+this entry first called them cases,
+M74).
+Against the census baseline's 1,397 blocks,
+the 25 gone belong to removed functions,
 were renamed with them,
-or are the guard's first case,
-and the 12 new ones are the renamed and split cases,
+or are the guard's old block,
+and the 12 new ones are the renamed and split blocks,
 the guard's rewritten one
 and the renamed rule's
 (`b30-suite-diff.mjs`,
-which pairs the two logs' passing cases by name).
+which pairs the two logs' PASS lines by tags and first case name,
+so a case removed from a block that keeps others does not show).
 
 ### B31: values only tests read
 
 Status:
-open,
-found 2026-09-29 by B30's reach probe run over top-level values
+fixed 2026-09-29,
+found the same day by B30's reach probe run over top-level values
 (`t8-production-reach.ts --values`).
 Beside `resetRunSpend`,
-23 top-level values are read by no production code:
+the probe listed 23 top-level values no production code reads,
+and the guard that went in red found `GAP_PENALTY` and `OPENROUTER_DECISION_IDS` as well:
 
 - `ABSOLUTE_NATURALNESS_CONFIRMATIONS_REQUIRED`,
   which reads as configuration,
@@ -9938,6 +9945,15 @@ Beside `resetRunSpend`,
   with their three private spelling lists).
 - The 13 role-named seats of `roster-fixture.ts`,
   unit-test support the package build ships.
+- `GAP_PENALTY` in `align-blocks.ts`,
+  documented beside the kind scores it is set against and read by nothing:
+  `align-blocks-walk.ts` declared its own copy,
+  "mirrored from the scoring module's calibration",
+  and read that one,
+  both since the files' first commit (`35c4a4aac`),
+  so retuning the documented one would have changed nothing.
+- `OPENROUTER_DECISION_IDS`,
+  whose only production reader was a type (`typeof` it).
 
 Fix:
 the guard counts values by the same reach,
@@ -9947,7 +9963,40 @@ with the runtime cases that cannot fail,
 since "SERVES every roster id from at least one catalog" carries the invariant the proof named;
 the seated sets and the buckets move to a test fixture,
 and their measurements to the two models' cards;
-the seats move to a `.test-fixture.ts` file.
+the seats move to a `.test-fixture.ts` file;
+the walk reads the documented gap penalty;
+and the decisions spelling becomes a type union.
+
+Done:
+the guard went in red in `e91ce423b`,
+renamed `src/dead-code.unit.test.ts`:
+it tracks every top-level function,
+class and value bound to a plain name,
+roots production at the module-level statements that declare nothing,
+and counts a value named only in type positions as unreached.
+It named the 25 and no class.
+`2efbdbde9` removes the proof,
+its type,
+the constant,
+and the two roster-reach cases that could not fail
+(the Hyper catalog refuses to load unless its rows are exactly the Hyper spellings);
+the walk imports the documented gap penalty,
+whose value is unchanged;
+and the decisions spelling is a type union,
+a choice under the owner's standing quality directive that the owner may veto,
+the model-cards case now checking that no two cards share a decisions spelling.
+`34f7db3b6` moves the seated sets and the Bedrock bucket to `roster-buckets.test-fixture.ts`,
+drops the Hyper and OpenRouter buckets as no test needs them,
+moves the two seating records to the cards,
+and turns the model-cards case that restated the buckets into one about a Bedrock-spelled card.
+`e28dd54f2` moves the seats to `roster-seats.test-fixture.ts`,
+215 test and fixture files importing them from it.
+The guard passes from `e28dd54f2`,
+and the whole suite on it passes 1,384 describe blocks with none failing;
+against B30's run on `32e07afb7`,
+every PASS line pairs but the guard's and the seat test's,
+renamed,
+while the two roster-reach cases left a block that kept a third.
 
 ## Process mistakes in this audit
 
@@ -10355,6 +10404,29 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M74: describe blocks counted as test cases
+
+Status:
+happened 2026-09-29 in B30's record (`c48f674bc`),
+found the same hour by B31's suite comparison,
+corrected here and by a comment on that commit.
+B30's entry and its commit message said the whole suite passed 1,384 cases,
+reconciled against the census's 1,397 case by case.
+The number is the log's PASS lines:
+`module-test`'s `describe` logs one info line per block,
+naming the block's passing cases,
+and each case's own PASS record goes to debug level (`describe.ts`,
+`it.ts`).
+B31's run showed it:
+two cases left a block that kept a third,
+and neither the count nor the pairing of lines moved.
+Earlier entries had it right ("1,309 PASS lines").
+Prevention:
+a suite count is written as describe blocks or PASS lines,
+never as cases,
+and a claim about removed cases is read off the diff of the test files,
+not off the log's line count.
 
 ### M73: an older version written over a tracked file to measure it, an outcome already refused
 
