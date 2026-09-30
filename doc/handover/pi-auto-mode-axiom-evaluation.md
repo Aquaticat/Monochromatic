@@ -487,8 +487,13 @@ Partial syntax intake `proc_d975` passed without original reads or SDK import be
 it does not qualify current bytes,
 closure,
 or runtime.
-Next action: independent complete executable-source review,
-then a full closure freeze before any actual SDK fork dispatch.
+Complete generated worker/SDK-loader source was inspected after independent review identified extraction gaps.
+The declarations and odd/even scripted response schedule were present;
+source closure and own persisted-result JSON references were tightened.
+Independent source-only follow-up found no further concrete blocker.
+Full closure freeze `proc_2cae` passed ten syntax checks and matched the separate reviewed digest list.
+One protected actual SDK fork runtime `proc_90f8` is running;
+its outcome is not established yet.
 The completed `root-sensitivity-controls/` phase read no genuine original and replayed no interaction.
 The new `fork-mechanical-controls/` worker privately rereads retained admitted evidence before SDK startup;
 it does not mutate originals,
