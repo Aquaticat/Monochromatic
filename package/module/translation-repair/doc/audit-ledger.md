@@ -3333,6 +3333,23 @@ The repair modules are now the largest cluster
 (46 stretches in 17 files),
 and the seventh batch takes them.
 
+B43 and B45 landed between the batches,
+so the seventh batch reads against the census at their last commit instead
+(`d780418f7`,
+`census-v7Dz0r`,
+1,417 passes,
+taken clean):
+library source holds 1,092 stretches over 2,276 lines in 385 files,
+with 26 functions never called.
+By the first construct
+(`t8-triage-v7dz0r.txt`),
+the queue is 400 returns,
+244 ternaries,
+206 nullish fallbacks,
+121 throws
+and 121 others,
+and the repair cluster still holds 46 stretches over 148 lines in 17 files.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -11291,6 +11308,29 @@ and with the condition restored it passed.
 So the check is what keeps such a slice from stopping the entry,
 not only what saves the writers' calls.
 
+The fix left two stretches of its own making,
+which the whole-suite census at `cce456093` (`census-qTbkjB`,
+1,417 passes) listed in `consolidate-slice-buy.ts` at lines 169 and 172:
+the fix had given the exits asking no writer their own copy of the settlement's arguments,
+and that copy's two conditional spreads,
+for a polish configuration and a standing refusal,
+took only the arm no case supplied,
+where the produced-slate exit's copy took both.
+`d780418f7` builds the arguments once,
+on every call,
+for all three exits,
+and the census at that commit (`census-v7Dz0r`,
+1,417 passes,
+taken clean) read against `census-qTbkjB`:
+sources edited since then 1,
+that file,
+with 2 cold stretches left,
+lines 203 to 213 (the exit with no standing text)
+and 315 (the standing's `?? true` default),
+both cold in `census-6nasbO` as well;
+the census holds 1,452 stretches,
+2 fewer than `census-qTbkjB`.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -11744,6 +11784,9 @@ names each root by where the runs are written (`runs-layout.ts`),
 and leaves out checkouts and copy payloads;
 `cache-account-audit` is to report the newest cache file and the control itself,
 so an account needs no hand-written `find`.
+The copy that ran out of memory and left its payload is issue #580,
+filed against `cli-git`,
+which owns the hook.
 
 ### M79: a coverage census measuring compressed code
 
@@ -13144,6 +13187,10 @@ and the narration was corrected before the result was used.
 Once more on 2026-09-30 (UTC) during B45:
 `ls <removed worktree> ; git worktree list | rg --count <name>`,
 confirming a removal with two checks joined by `;` where they belonged in two calls.
+Once more that day during B45
+(its arguments were not kept beyond the file the second search read):
+two `rg` searches joined by `;`,
+the second over a T8 triage file in the audit's scratch folder.
 
 ### M2: a wording change committed without the full suite
 

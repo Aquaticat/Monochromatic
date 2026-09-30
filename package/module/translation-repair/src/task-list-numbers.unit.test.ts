@@ -86,6 +86,13 @@ const UNUSED_IMPORT_CHECK_ISSUE = 578;
 const SHELL_RULE_HOOK_ISSUE = 579;
 
 /**
+ GitHub issue on `cli-git`'s linked-worktree copy running out of heap and
+ leaving its payload behind (ledger M81), checked with `gh issue view` on
+ 2026-09-30.
+ */
+const WORKTREE_COPY_ISSUE = 580;
+
+/**
  Real GitHub issues the package may cite by number.
  */
 const GITHUB_ISSUES: ReadonlySet<number> = new Set([
@@ -93,6 +100,7 @@ const GITHUB_ISSUES: ReadonlySet<number> = new Set([
   INDENTATION_CHECK_ISSUE,
   UNUSED_IMPORT_CHECK_ISSUE,
   SHELL_RULE_HOOK_ISSUE,
+  WORKTREE_COPY_ISSUE,
 ],);
 
 /**

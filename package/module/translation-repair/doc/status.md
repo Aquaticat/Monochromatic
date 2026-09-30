@@ -95,18 +95,20 @@ the ledger's T8 entry accounts for each commit),
 finding and fixing B35 to B42 on the way.
 Each batch takes one cluster of the triage and ends with a whole-suite census at its committed head,
 which becomes the next batch's baseline.
-The baseline is now the whole suite at `0fcb75c7b` (`census-6nasbO`,
-1,410 passes,
+B43 and B45 landed after that batch,
+so the baseline is now the whole suite at their last commit,
+`d780418f7` (`census-v7Dz0r`,
+1,417 passes,
 taken from a tree with nothing uncommitted):
-library source holds 1,095 stretches over 2,302 lines in 386 files,
+library source holds 1,092 stretches over 2,276 lines in 385 files,
 with 26 functions never called,
 and the runner entry files and unloaded bundles come after.
 By the first construct each stretch's lines hold
-(`t8-triage-6nasbo.txt` in the audit's scratch folder),
-the queue is 402 returns,
+(`t8-triage-v7dz0r.txt` in the audit's scratch folder),
+the queue is 400 returns,
 244 ternaries,
 206 nullish fallbacks,
-122 throws
+121 throws
 and 121 others,
 and the seventh batch takes the repair modules
 (46 stretches in 17 files);
