@@ -364,21 +364,6 @@ export function pageWeightRefutes(
 }
 
 /**
- Cursor and findings carried from one slice to the next.
- */
-type ScanState = {
-  /**
-   Where the previous wording ended, so the next is searched for after it.
-   */
-  readonly cursor: number;
-
-  /**
-   Wordings the page did not carry at or after the cursor.
-   */
-  readonly missing: readonly MissingWording[];
-};
-
-/**
  Checks that a page carries every wording its artifact says would ship, in
  slice order.
  
@@ -430,71 +415,62 @@ export function pageCarriesEveryWording(
     },)
     .length;
 
+  // ONE PASS THAT APPENDS, since copying the wordings found missing so far at
+  // every slice costs the square of the slice count (ledger B70).
   /**
-   Where the scan ended, and everything it could not find on the way.
+   Wordings the page did not carry at or after the cursor.
    */
-  const scanned = slices.reduce(
-    function findIt(
-      state: ScanState,
-      slice,
-    ): ScanState {
-      /**
-       What this slice would carry, or that it carries nothing.
-       */
-      const { reading, } = slice;
-      if (reading.kind !== 'wording')
-        return state;
+  const missing: MissingWording[] = [];
+  /**
+   Where the previous wording ended, so the next is searched for after it.
+   */
+  const cursor = { at: 0, };
+  for (const slice of slices) {
+    /**
+     What this slice would carry, or that it carries nothing.
+     */
+    const { reading, } = slice;
+    if (reading.kind !== 'wording')
+      continue;
 
-      /**
-       Wording this slice contributes AS THE SPLICE WRITES IT, not as the
-       stage recorded it. An inserted slice goes through the insertion
-       composer, which cuts the blank lines around a fragment and the spaces
-       at its end (class one hundred one: a footnote definition whose lane
-       text ended in two spaces was reported missing from a page that carried
-       every word of it); a content span keeps its interior and takes the
-       archive span's line-ending edges. The body is inside both, so the scan
-       asks for what either path leaves on the page and stays one-sided.
-       */
-      const wording = fragmentBody({ fragment: reading.text, },);
+    /**
+     Wording this slice contributes AS THE SPLICE WRITES IT, not as the
+     stage recorded it. An inserted slice goes through the insertion
+     composer, which cuts the blank lines around a fragment and the spaces
+     at its end (class one hundred one: a footnote definition whose lane
+     text ended in two spaces was reported missing from a page that carried
+     every word of it); a content span keeps its interior and takes the
+     archive span's line-ending edges. The body is inside both, so the scan
+     asks for what either path leaves on the page and stays one-sided.
+     */
+    const wording = fragmentBody({ fragment: reading.text, },);
 
-      /**
-       Where this wording sits, or that the page does not carry it here.
-       */
-      const at = pageText.indexOf(
-        wording,
-        state.cursor,
-      );
+    /**
+     Where this wording sits, or that the page does not carry it here.
+     */
+    const at = pageText.indexOf(
+      wording,
+      cursor.at,
+    );
 
-      if (at === NOT_IN_PAGE)
-        return {
-          cursor: state.cursor,
-          missing: [
-            ...state.missing,
-            {
-              sliceIndex: slice.sliceIndex,
-              characters: wording.length,
-            },
-          ],
-        };
+    if (at === NOT_IN_PAGE) {
+      missing.push({
+        sliceIndex: slice.sliceIndex,
+        characters: wording.length,
+      },);
+      continue;
+    }
 
-      // PAST THIS WORDING RATHER THAN PAST ITS START, so the next slice cannot
-      // match inside it. Two adjacent slices whose wordings share a suffix and
-      // a prefix would otherwise both find the same stretch of page.
-      return {
-        cursor: at + wording.length,
-        missing: state.missing,
-      };
-    },
-    {
-      cursor: 0,
-      missing: [],
-    },
-  );
+    // PAST THIS WORDING RATHER THAN PAST ITS START, so the next slice cannot
+    // match inside it. Two adjacent slices whose wordings share a suffix and
+    // a prefix would otherwise both find the same stretch of page.
+    cursor.at = at + wording.length;
+  }
 
   return {
     wordings: slices.length - silentSlices,
     silentSlices,
-    missing: scanned.missing,
+    missing,
   };
 }
 

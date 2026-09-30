@@ -204,66 +204,61 @@ export function markupDelta(
     },),
   },);
 
+  // LOSSES ARE PAIRED, one for one, with the atom that re-marked them, and the
+  // written atoms left over are the gains. SAME KIND FIRST, so an authored tag
+  // rewritten as a tag does not use up the source's own markup another loss
+  // could pair with. One pass in order that appends and removes in place,
+  // since copying both lists at every loss bought nothing (ledger B70).
   /**
-   Losses paired, one for one, with the atom that re-marked them, and the
-   written atoms left over. SAME KIND FIRST, so an authored tag rewritten as a
-   tag does not use up the source's own markup another loss could pair with.
+   Losses no written atom re-marked.
    */
-  return lost.reduce<MarkupDelta>(
-    function pairOne(
-      delta,
-      atom,
-    ) {
-      /**
-       Whether this loss can be re-marked at all.
-       */
-      const authored = (!MARKUP_IDENTIFIER_KINDS.has(atom.kind,)) && (!sourceKeys.has(keyOf(atom,),));
+  const unexcused: MarkupAtom[] = [];
+  /**
+   Written atoms no loss has paired with yet.
+   */
+  const gained = [
+    ...unmatched({
+      left: afterAtoms,
+      right: beforeAtoms,
+    },),
+  ];
+  for (const atom of lost) {
+    /**
+     Whether this loss can be re-marked at all.
+     */
+    const authored = (!MARKUP_IDENTIFIER_KINDS.has(atom.kind,)) && (!sourceKeys.has(keyOf(atom,),));
 
-      /**
-       Written atom of the same kind, -1 where none.
-       */
-      const sameKind = delta.gained
-        .findIndex(function isSameKind(written,): boolean {
-        return written.kind === atom.kind;
-      },);
+    /**
+     Written atom of the same kind, -1 where none.
+     */
+    const sameKind = gained.findIndex(function isSameKind(written,): boolean {
+      return written.kind === atom.kind;
+    },);
 
-      /**
-       Written atom that re-marks this loss, same kind first, else one the
-       source carries; -1 where none does or the loss cannot be re-marked.
-       */
-      const pairedAt = (!authored)
-        ? -1
-        : ((sameKind === (-1))
-          ? delta.gained
-            .findIndex(function isSourceMarkup(written,): boolean {
-            return sourceKeys.has(keyOf(written,),);
-          },)
-          : sameKind);
-      return (pairedAt === (-1))
-        ? {
-          unexcused: [
-            ...delta.unexcused,
-            atom,
-          ],
-          gained: delta.gained,
-        }
-        : {
-          unexcused: delta.unexcused,
-          gained: delta.gained
-            .toSpliced(
-              pairedAt,
-              1,
-            ),
-        };
-    },
-    {
-      unexcused: [],
-      gained: unmatched({
-        left: afterAtoms,
-        right: beforeAtoms,
-      },),
-    },
-  );
+    /**
+     Written atom that re-marks this loss, same kind first, else one the
+     source carries; -1 where none does or the loss cannot be re-marked.
+     */
+    const pairedAt = (!authored)
+      ? -1
+      : ((sameKind === (-1))
+        ? gained.findIndex(function isSourceMarkup(written,): boolean {
+          return sourceKeys.has(keyOf(written,),);
+        },)
+        : sameKind);
+    if (pairedAt === (-1)) {
+      unexcused.push(atom,);
+      continue;
+    }
+    gained.splice(
+      pairedAt,
+      1,
+    );
+  }
+  return {
+    unexcused,
+    gained,
+  };
 }
 
 /**

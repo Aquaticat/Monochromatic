@@ -168,21 +168,6 @@ function mergeGap(
 }
 
 /**
- Steps rebuilt so far and where the next untouched stretch begins.
- */
-type Rebuild = {
-  /**
-   Index of the first step not yet copied.
-   */
-  readonly cursor: number;
-
-  /**
-   Steps rebuilt so far.
-   */
-  readonly out: readonly AlignmentStep[];
-};
-
-/**
  Pairs every interior gap that the roster left unplaced on both sides as one
  merge; every other step stays as it is.
 
@@ -204,40 +189,33 @@ export function pairUnpartneredGaps(
   const gaps = interiorGaps({ steps, },);
   if (gaps.length === 0)
     return steps;
+  // ONE PASS THAT APPENDS, since copying the steps rebuilt so far at every gap
+  // costs the gap count times the step count (ledger B70).
   /**
-   Steps rebuilt gap by gap: the text before each gap, then the gap as read.
+   Steps rebuilt gap by gap: the steps before each gap, then the gap as read.
    */
-  const rebuilt = gaps.reduce(
-    function rebuild(
-      progress: Rebuild,
-      gap,
-    ): Rebuild {
-      return {
-        cursor: gap.end,
-        out: [
-          ...progress.out,
-          ...steps.slice(
-            progress.cursor,
-            gap.start,
-          ),
-          ...mergeGap({
-            bare: steps.slice(
-              gap.start,
-              gap.end,
-            ),
-          },),
-        ],
-      };
-    },
-    {
-      cursor: 0,
-      out: [],
-    },
-  );
-  return [
-    ...rebuilt.out,
-    ...steps.slice(rebuilt.cursor,),
-  ];
+  const rebuilt: AlignmentStep[] = [];
+  /**
+   Index of the first step not yet copied.
+   */
+  const cursor = { at: 0, };
+  for (const gap of gaps) {
+    rebuilt.push(
+      ...steps.slice(
+        cursor.at,
+        gap.start,
+      ),
+      ...mergeGap({
+        bare: steps.slice(
+          gap.start,
+          gap.end,
+        ),
+      },),
+    );
+    cursor.at = gap.end;
+  }
+  rebuilt.push(...steps.slice(cursor.at,),);
+  return rebuilt;
 }
 
 //endregion Unpartnered gap steps

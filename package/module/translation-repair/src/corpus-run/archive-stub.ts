@@ -248,36 +248,6 @@ export type ArchiveRetainedLine = {
 };
 
 /**
- Scan state carried line to line.
- */
-type StripState = {
-  /**
-   Lines kept so far.
-   */
-  readonly kept: readonly ArchiveRetainedLine[];
-
-  /**
-   Markers removed so far.
-   */
-  readonly stripped: readonly StrippedStubMarker[];
-
-  /**
-   Whether the scan is still inside the leading front matter.
-   */
-  readonly inFrontMatter: boolean;
-
-  /**
-   Whether the scan is inside a fenced code block.
-   */
-  readonly inFence: boolean;
-
-  /**
-   Whether the next line, if blank, is the blank a removed marker owned.
-   */
-  readonly skipBlank: boolean;
-};
-
-/**
  Removes every paragraph that is nothing but a placeholder token.
  
  ONE LINEAR PASS over the lines, with HTML comments masked first so a marker
@@ -320,163 +290,124 @@ export function stripStubMarkersWithOrigins(
    */
   const opensWithFrontMatter = lines[0] === FRONT_MATTER_FENCE;
 
+  // ONE PASS THAT APPENDS. The scan was a fold that copied every line kept so
+  // far at each line, so the pass this function's summary calls linear cost
+  // the square of the line count (ledger B70).
   /**
-   Final state after every line.
+   Lines kept so far.
    */
-  const final = lines.reduce(
-    function scan(
-      state: StripState,
-      line: string,
-      index: number,
-    ): StripState {
-      /**
-       Text and original position stay in one record through every keep or removal branch.
-       */
-      const retainedLine: ArchiveRetainedLine = {
-        text: line,
-        lineNumber: index + 1,
-      };
-      /**
-       This line as masked, unchanged when no comment touches it.
-       */
-      const maskedLine = maskedLines[index] ?? '';
-      if (state.inFrontMatter) {
-        return {
-          ...state,
-          kept: [
-            ...state.kept,
-            retainedLine,
-          ],
-          inFrontMatter: !((index > 0) && (line === FRONT_MATTER_FENCE)),
-        };
-      }
-      if (maskedLine.trimStart()
-        .startsWith(CODE_FENCE,)) {
-        return {
-          ...state,
-          kept: [
-            ...state.kept,
-            retainedLine,
-          ],
-          inFence: !state.inFence,
-          skipBlank: false,
-        };
-      }
-      if (state.inFence) {
-        return {
-          ...state,
-          kept: [
-            ...state.kept,
-            retainedLine,
-          ],
-        };
-      }
-      if (state.skipBlank && (line.trim() === '')) {
-        return {
-          ...state,
-          skipBlank: false,
-        };
-      }
-      /**
-       Whether no comment covers any of this line.
-       */
-      const outsideComment = maskedLine === line;
-      /**
-       Last kept line, or nothing at the document's start.
-       */
-      const previous = state.kept
-        .at(-1,)
-        ?.text
-        ?? '';
-      /**
-       Whether nothing kept stands directly above.
-       */
-      const previousBlank = previous.trim() === '';
-      /**
-       Line after this one, absent when the document ends here.
-       */
-      const next = lines[index + 1];
-      /**
-       Whether the document ends with this line.
-       */
-      const atEnd = next === undefined;
-      /**
-       Whether the paragraph ends with this line.
-       */
-      const nextBlank = atEnd || (next.trim() === '');
-      /**
-       Whether this line stands as a paragraph of its own.
-       */
-      const standsAlone = outsideComment
-        && previousBlank
-        && nextBlank;
-      /**
-       Whether this line is a placeholder paragraph of its own.
-       */
-      const isMarker = standsAlone && isStubMarkerParagraph({ paragraph: line, },);
-      if (!isMarker) {
-        return {
-          ...state,
-          kept: [
-            ...state.kept,
-            retainedLine,
-          ],
-          skipBlank: false,
-        };
-      }
-      /**
-       Kept lines less the blank above the marker.
-       */
-      const withoutBlankAbove = state.kept
-        .slice(
-          0,
-          -1,
-        );
-      /**
-       How many lines are kept so far.
-       */
-      const keptCount = state.kept
-        .length;
-      /**
-       Whether the blank above goes, since no line follows to give up its
-       blank instead.
-       */
-      const dropsBlankAbove = atEnd
-        && previousBlank
-        && (keptCount > 0);
-      /**
-       Kept lines after this marker's removal.
-       */
-      const kept = dropsBlankAbove ? withoutBlankAbove : state.kept;
-      return {
-        ...state,
-        kept,
-        stripped: [
-          ...state.stripped,
-          {
-            lineNumber: index + 1,
-            text: line,
-          },
-        ],
-        skipBlank: !atEnd,
-      };
-    },
-    {
-      kept: [],
-      stripped: [],
-      inFrontMatter: opensWithFrontMatter,
-      inFence: false,
-      skipBlank: false,
-    },
-  );
+  const kept: ArchiveRetainedLine[] = [];
+  /**
+   Markers removed so far.
+   */
+  const stripped: StrippedStubMarker[] = [];
+  /**
+   Where the scan stands: inside the leading front matter, inside a fenced
+   code block, and whether the next line, if blank, is the blank a removed
+   marker owned.
+   */
+  const scan = {
+    inFrontMatter: opensWithFrontMatter,
+    inFence: false,
+    skipBlank: false,
+  };
+  for (const [index, line,] of lines.entries()) {
+    /**
+     Text and original position stay in one record through every keep or removal branch.
+     */
+    const retainedLine: ArchiveRetainedLine = {
+      text: line,
+      lineNumber: index + 1,
+    };
+    /**
+     This line as masked, unchanged when no comment touches it.
+     */
+    const maskedLine = maskedLines[index] ?? '';
+    if (scan.inFrontMatter) {
+      kept.push(retainedLine,);
+      scan.inFrontMatter = !((index > 0) && (line === FRONT_MATTER_FENCE));
+      continue;
+    }
+    if (maskedLine.trimStart()
+      .startsWith(CODE_FENCE,)) {
+      kept.push(retainedLine,);
+      scan.inFence = !scan.inFence;
+      scan.skipBlank = false;
+      continue;
+    }
+    if (scan.inFence) {
+      kept.push(retainedLine,);
+      continue;
+    }
+    if (scan.skipBlank && (line.trim() === '')) {
+      scan.skipBlank = false;
+      continue;
+    }
+    /**
+     Whether no comment covers any of this line.
+     */
+    const outsideComment = maskedLine === line;
+    /**
+     Last kept line, or nothing at the document's start.
+     */
+    const previous = kept
+      .at(-1,)
+      ?.text
+      ?? '';
+    /**
+     Whether nothing kept stands directly above.
+     */
+    const previousBlank = previous.trim() === '';
+    /**
+     Line after this one, absent when the document ends here.
+     */
+    const next = lines[index + 1];
+    /**
+     Whether the document ends with this line.
+     */
+    const atEnd = next === undefined;
+    /**
+     Whether the paragraph ends with this line.
+     */
+    const nextBlank = atEnd || (next.trim() === '');
+    /**
+     Whether this line stands as a paragraph of its own.
+     */
+    const standsAlone = outsideComment
+      && previousBlank
+      && nextBlank;
+    /**
+     Whether this line is a placeholder paragraph of its own.
+     */
+    const isMarker = standsAlone && isStubMarkerParagraph({ paragraph: line, },);
+    if (!isMarker) {
+      kept.push(retainedLine,);
+      scan.skipBlank = false;
+      continue;
+    }
+    /**
+     Whether the blank above goes, since no line follows to give up its
+     blank instead.
+     */
+    const dropsBlankAbove = atEnd
+      && previousBlank
+      && (kept.length > 0);
+    if (dropsBlankAbove)
+      kept.pop();
+    stripped.push({
+      lineNumber: index + 1,
+      text: line,
+    },);
+    scan.skipBlank = !atEnd;
+  }
   return {
-    text: final.kept
+    text: kept
       .map(function lineText(line,): string {
         return line.text;
       },)
       .join('\n',),
-    stripped: final.stripped,
-    lines: final.kept,
+    stripped,
+    lines: kept,
   };
 }
 

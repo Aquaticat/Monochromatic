@@ -56,25 +56,6 @@ export type CandidatePassage = {
 };
 
 /**
- Running state of the budget as candidates are weighed.
- 
- Named rather than written inline at the callback, so the accumulator's two
- halves each get a line and a sentence: what has been committed so far, and
- which candidates committed it.
- */
-type BudgetScan = {
-  /**
-   Expected code points already promised to admitted candidates.
-   */
-  readonly spent: number;
-
-  /**
-   Candidates admitted so far, in the order they were weighed.
-   */
-  readonly names: readonly string[];
-};
-
-/**
  English size a source passage of ordinary completeness would render into.
  
  @param sourceText - original-side text
@@ -184,42 +165,28 @@ export function admitWithinShortfall(
   },
 ): readonly string[] {
 
+  // ONE PASS IN DOCUMENT ORDER THAT APPENDS, so each decision reads the total
+  // the passages before it committed, and copying the names admitted so far
+  // at every passage costs nothing it buys (ledger B70).
   /**
-   Each passage with what admitting it would be expected to add, and the
-   running total of everything admitted before it.
-   
-   Built as a scan rather than a mutated counter so the decision for each
-   passage is a function of the list rather than of when it was reached.
+   Names of the passages admitted so far, in the order they were weighed.
    */
-  const admitted = passages
-    .reduce(
-      function weigh(
-        settled: BudgetScan,
-        passage,
-      ): BudgetScan {
-        /**
-         What this passage's translation would occupy.
-         */
-        const wants = expectedTranslationPoints({ sourceText: passage.sourceText, },);
-
-        if ((settled.spent + wants) > shortfall)
-          return settled;
-
-        return {
-          spent: settled.spent + wants,
-          names: [
-            ...settled.names,
-            passage.where,
-          ],
-        };
-      },
-      {
-        spent: 0,
-        names: [],
-      },
-    );
-
-  return admitted.names;
+  const admitted: string[] = [];
+  /**
+   Expected code points already promised to admitted passages.
+   */
+  const spent = { points: 0, };
+  for (const passage of passages) {
+    /**
+     What this passage's translation would occupy.
+     */
+    const wants = expectedTranslationPoints({ sourceText: passage.sourceText, },);
+    if ((spent.points + wants) > shortfall)
+      continue;
+    spent.points += wants;
+    admitted.push(passage.where,);
+  }
+  return admitted;
 }
 
 //endregion Coverage corroboration

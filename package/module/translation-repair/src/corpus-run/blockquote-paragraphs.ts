@@ -97,55 +97,47 @@ export function splitQuotedLine({ line, }: { readonly line: string; },): QuotedL
  ```
  */
 export function blockquoteParagraphs({ lines, }: { readonly lines: readonly string[]; },): readonly LineRange[] {
-  return lines.reduce<readonly LineRange[]>(
-    function collect(
-      paragraphs,
-      line,
-      index,
-    ): readonly LineRange[] {
-      /**
-       This line's markers and words.
-       */
-      const {
-        prefix,
-        content,
-      } = splitQuotedLine({ line, },);
-      /**
-       Words of the line without edge spaces.
-       */
-      const words = content.trim();
-      if ((prefix === '') || (words === ''))
-        return paragraphs;
-      /**
-       Paragraph the previous line may have continued.
-       */
-      const open = paragraphs.at(-1,);
-      /**
-       Line before this one.
-       */
-      const previous = index - 1;
-      if ((open !== undefined) && (open.last === previous)) {
-        return [
-          ...paragraphs.slice(
-            0,
-            -1,
-          ),
-          {
-            first: open.first,
-            last: index,
-          },
-        ];
-      }
-      return [
-        ...paragraphs,
-        {
-          first: index,
-          last: index,
-        },
-      ];
-    },
-    [],
-  );
+  // ONE PASS THAT APPENDS, since copying the paragraphs found so far at every
+  // line costs the square of the line count (ledger B70).
+  /**
+   Paragraphs found so far, the last one extended while lines continue it.
+   */
+  const paragraphs: LineRange[] = [];
+  for (const [index, line,] of lines.entries()) {
+    /**
+     This line's markers and words.
+     */
+    const {
+      prefix,
+      content,
+    } = splitQuotedLine({ line, },);
+    /**
+     Words of the line without edge spaces.
+     */
+    const words = content.trim();
+    if ((prefix === '') || (words === ''))
+      continue;
+    /**
+     Paragraph the previous line may have continued.
+     */
+    const open = paragraphs.at(-1,);
+    /**
+     Line before this one.
+     */
+    const previous = index - 1;
+    if ((open !== undefined) && (open.last === previous)) {
+      paragraphs[paragraphs.length - 1] = {
+        first: open.first,
+        last: index,
+      };
+      continue;
+    }
+    paragraphs.push({
+      first: index,
+      last: index,
+    },);
+  }
+  return paragraphs;
 }
 
 /**

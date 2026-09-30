@@ -118,114 +118,108 @@ function foldPass(
     readonly target: AnchorTarget;
   },
 ): FoldState {
-  return pending.reduce(
-    function foldOne(
-      state: FoldState,
+  // ONE PASS THAT APPENDS: each passage folds over the slices the passages
+  // before it left, and copying the four records at every passage bought
+  // nothing (ledger B70).
+  /**
+   Slices with every carrier folded so far widened.
+   */
+  const now = { slices: start.slices, };
+  /**
+   Passages still carried, in admission order.
+   */
+  const kept: CarriedInsertion[] = [];
+  /**
+   Passages folded into a carrier, the earlier passes' first.
+   */
+  const folded = [...start.folded,];
+  /**
+   One finding per fold, the earlier passes' first.
+   */
+  const findings = [...start.findings,];
+  /**
+   One line per passage that stayed carried in this pass, naming why.
+   */
+  const asides: string[] = [];
+  for (const candidate of pending) {
+    /**
+     Whether and where this passage folds.
+     */
+    const decision = decideFold({
+      slices: now.slices,
+      sourceText,
+      target,
       candidate,
-    ): FoldState {
-      /**
-       Whether and where this passage folds.
-       */
-      const decision = decideFold({
-        slices: state.slices,
+    },);
+    if (decision.kind === 'aside') {
+      kept.push(candidate,);
+      asides.push(`slice ${String(candidate.sliceIndex,)} stays carried: ${decision.reason}`,);
+      continue;
+    }
+    /**
+     The carrier as the earlier folds left it, and the carried slice.
+     */
+    const {
+      carrier,
+      carried,
+    } = decision;
+    /**
+     Stable index the lanes report the carrier under.
+     */
+    const carrierSliceIndex = carrier.slice
+      .target
+      .sliceIndex;
+    // ON A SHIFT the carrier holds the carried source and its own joins the
+    // receiver (class one hundred seventy-nine); on a plain fold the carrier
+    // widens over both.
+    now.slices = (decision.kind === 'shift')
+      ? shiftSlices({
         sourceText,
-        target,
-        candidate,
-      },);
-      if (decision.kind === 'aside') {
-        return {
-          slices: state.slices,
-          kept: [
-            ...state.kept,
-            candidate,
-          ],
-          folded: state.folded,
-          findings: state.findings,
-          asides: [
-            ...state.asides,
-            `slice ${String(candidate.sliceIndex,)} stays carried: ${decision.reason}`,
-          ],
-        };
-      }
-      /**
-       The carrier as the earlier folds left it, and the carried slice.
-       */
-      const {
+        slices: now.slices,
         carrier,
+        receiver: decision.receiver,
         carried,
-      } = decision;
-      /**
-       Stable index the lanes report the carrier under.
-       */
-      const carrierSliceIndex = carrier.slice
-        .target
-        .sliceIndex;
-      /**
-       Slices after this fold: on a shift the carrier holds the carried source
-       and its own joins the receiver (class one hundred seventy-nine); on a
-       plain fold the carrier widens over both.
-       */
-      const nextSlices = (decision.kind === 'shift')
-        ? shiftSlices({
-          sourceText,
-          slices: state.slices,
-          carrier,
-          receiver: decision.receiver,
-          carried,
-        },)
-        : state.slices
-          .map(function replaceCarrier(
-            slice,
-            position,
-          ): ChunkPair {
-            return (position === carrier.position)
-              ? widenSource({
-                sourceText,
-                widened: carrier.slice,
-                absorbed: carried,
-              },)
-              : slice;
-          },);
-      /**
-       The shift's own finding, none on a plain fold.
-       */
-      const shiftFindings = (decision.kind === 'shift')
-        ? [shiftedFinding({
-          carrierSliceIndex,
-          receiverSliceIndex: decision.receiver
-            .slice
-            .target
-            .sliceIndex,
-          carriedSliceIndex: candidate.sliceIndex,
-        },),]
-        : [];
-      return {
-        slices: nextSlices,
-        kept: state.kept,
-        folded: [
-          ...state.folded,
-          {
-            position: candidate.position,
-            sliceIndex: candidate.sliceIndex,
-            carrierSliceIndex,
-          },
-        ],
-        findings: [
-          ...state.findings,
-          `${CARRIED_FOLDED_FINDING} (slice ${String(candidate.sliceIndex,)} into slice ${
-            String(carrierSliceIndex,)
-          })`,
-          ...shiftFindings,
-        ],
-        asides: state.asides,
-      };
-    },
-    {
-      ...start,
-      kept: [],
-      asides: [],
-    },
-  );
+      },)
+      : now.slices
+        .map(function replaceCarrier(
+          slice,
+          position,
+        ): ChunkPair {
+          return (position === carrier.position)
+            ? widenSource({
+              sourceText,
+              widened: carrier.slice,
+              absorbed: carried,
+            },)
+            : slice;
+        },);
+    folded.push({
+      position: candidate.position,
+      sliceIndex: candidate.sliceIndex,
+      carrierSliceIndex,
+    },);
+    findings.push(`${CARRIED_FOLDED_FINDING} (slice ${String(candidate.sliceIndex,)} into slice ${
+      String(carrierSliceIndex,)
+    })`,);
+    // The shift's own finding follows the fold's; a plain fold has none.
+    if (decision.kind === 'shift') {
+      findings.push(shiftedFinding({
+        carrierSliceIndex,
+        receiverSliceIndex: decision.receiver
+          .slice
+          .target
+          .sliceIndex,
+        carriedSliceIndex: candidate.sliceIndex,
+      },),);
+    }
+  }
+  return {
+    slices: now.slices,
+    kept,
+    folded,
+    findings,
+    asides,
+  };
 }
 
 /**
