@@ -98,15 +98,23 @@ export function stripWorseVotedEdits(
   },
 ): WorseStrip {
   /**
-   Issues the checkers did not confirm and at least one voted worse.
+   Issues an applied envelope served, the only ones whose edits can go.
    */
-  const worseIssueIds = new Set(creditableIssues
-    .filter(function isWorseVoted(issue,): boolean {
-      /**
-       This issue's tally, absent where no checker was heard on it.
-       */
-      const tally = tallies[issue.issueId];
-      if (tally === undefined)
+  const creditableIds = new Set(creditableIssues.map(function toId(issue,): string {
+    return issue.issueId;
+  },),);
+  /**
+   Issues the checkers did not confirm and at least one voted worse.
+
+   READ OFF THE TALLIES, since a worse ballot is only ever counted in one: an
+   issue without a tally has no worse vote to strip. The checker stage keeps a
+   tally for every issue it was given (`tallyResolutionChecks`), one no checker
+   voted on included, so looking each creditable issue up would guard a miss no
+   run can produce.
+   */
+  const worseIssueIds = new Set(Object.entries(tallies,)
+    .filter(function isWorseVoted([issueId, tally,],): boolean {
+      if (!creditableIds.has(issueId,))
         return false;
       /**
        What the checkers answered on it.
@@ -117,8 +125,8 @@ export function stripWorseVotedEdits(
       } = tally;
       return (!resolved) && (worse > 0);
     },)
-    .map(function toId(issue,): string {
-      return issue.issueId;
+    .map(function toId([issueId,],): string {
+      return issueId;
     },),);
   if (worseIssueIds.size === 0)
     return { stripped: false, };
