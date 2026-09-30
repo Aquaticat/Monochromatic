@@ -65,7 +65,12 @@ fixture unit checks and the native capture matrix passed.
 Exact retained RGB,
 opacity,
 PNG chunk and changed-PNG controls passed before publication.
-The scoped rendered-document verification remains the closeout gate.
+Scoped rendered-document verification passed:
+zero changed-block findings,
+with 185 existing findings in the three-file canonical scope left to
+internal task 119.
+Task 136's bounded matrix is complete;
+task 137 is active on the missing comparison evidence.
 The original AVD,
 production Search,
 matcher/library choice,
