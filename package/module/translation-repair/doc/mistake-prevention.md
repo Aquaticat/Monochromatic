@@ -856,7 +856,7 @@ and the commit follows only a clean run of all three (M46).
 The named tests of a source commit include the package-wide source scans,
 run as one task,
 `mise run source-scans`
-(its description lists all fifteen),
+(its description lists all sixteen),
 since a new class,
 function,
 export,
@@ -866,6 +866,7 @@ a ledger entry is closed only after a full suite has passed on its last commit (
 M59).
 Neither the type check nor the linter reports an unused import here
 (issue #578 asks for a check),
+and three of this audit's removals left ten imports unread in one day (M75),
 so a removal counts the removed names' uses,
 and a change that stops calling a function removes it in the same commit.
 Code is live only when production reaches it,
@@ -919,7 +920,11 @@ counting from the module-level statements of every non-test source file that dec
 with a value named only in types counted as unreached
 and the spend meter's reset its one allowed seam,
 and on an allowed seam that production reaches or no file declares (ledger B30,
-B31).
+B31);
+`src/unused-imports.unit.test.ts`,
+which fails on an import binding its file never names outside its imports,
+type positions and export lists counted,
+unless a TSDoc link names it (ledger B32).
 
 ## Tasks, builds and bulk output
 

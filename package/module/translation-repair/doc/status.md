@@ -67,9 +67,11 @@ read off each entry's status line:
 T8 (code no unit test runs,
 measured by block coverage mapped to source lines,
 which the next launch waits for;
-B30 and B31 closed on its way,
+B30,
+B31 and B32 closed on its way,
 so `src/dead-code.unit.test.ts` now fails on any function,
 class or value production does not reach,
+`src/unused-imports.unit.test.ts` on any import nothing reads,
 and a fresh whole-suite census is the baseline its batches resume against),
 T9 (every test run writes a log into `node_modules`,
 owned by `module-logger`,

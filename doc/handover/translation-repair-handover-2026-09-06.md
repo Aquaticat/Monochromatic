@@ -184,9 +184,15 @@ this one says what changed after it.
   where it is documented,
   and the walk reads it,
   and the role-named test seats left the package build.
-  Next are a measurement of the unused imports no configured check reports
+  B32 closed the same day
+  (`40add2b70`,
+  `c077cc881`):
+  no configured check reports an unused import
   (the package's `mistake-prevention.md` names the issue),
-  then a fresh whole-suite census before T8's batches resume.
+  three of the audit's own removals had left ten,
+  and `src/unused-imports.unit.test.ts` now fails on any.
+  Next is a fresh whole-suite census,
+  the baseline T8's batches resume against.
   Every source commit also runs `mise run source-scans`,
   the package-wide scans a new file can fail (ledger M59).
 

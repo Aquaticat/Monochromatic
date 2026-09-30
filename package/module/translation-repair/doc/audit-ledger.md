@@ -9998,6 +9998,56 @@ every PASS line pairs but the guard's and the seat test's,
 renamed,
 while the two roster-reach cases left a block that kept a third.
 
+### B32: imports nothing reads
+
+Status:
+fixed 2026-09-29,
+found the same day:
+B30's last group removed four type imports from the consolidate wire by eye,
+and no configured check reports one
+(GitHub issue 578:
+the repository's lint leaves `no-unused-vars` off,
+and its TypeScript configuration leaves `noUnusedLocals` false).
+TypeScript 7's package ships the native compiler alone,
+with no compiler API a scratch check could call,
+so the measurement used the source scan's parser
+(`b32-unused-imports.ts` in the audit's scratch folder):
+an import binding is unread when its local name stands nowhere in its file outside the import declarations,
+type positions and export lists counted.
+Its control,
+a fixture with one unread value import and one unread type import beside read ones,
+reported exactly those two.
+Over the package's 1,915 files,
+tests and fixtures included,
+it found 15 unread bindings,
+all in package source.
+Five are error classes a TSDoc `@throws {@link …}` line names,
+the only place a file names an error its callee throws;
+the other ten are read nowhere:
+`footnoteMarkerLabels` and `ChunkPair`,
+left by `9f49c2ed5` (B30,
+which removed the functions reading them);
+`fetchTransport` in the five provider clients,
+left by `66cd08426` (X24,
+which made every client's transport required);
+and `ProviderRecord`,
+`ModelCaller` and `ProviderName`,
+left by `3510c8336` (X23,
+which built the run client on a handed transport).
+`git log -S` on each name in its file names the commit.
+
+Fix:
+`src/unused-imports.unit.test.ts` went in red in `40add2b70`,
+reading every package file through the source scan
+and counting a name a TSDoc link names as read;
+it named the ten and joined `mise run source-scans`.
+`c077cc881` removes them;
+the five clients now import only types from the transport module,
+so those imports are `import type`.
+The guard passes from `c077cc881`,
+and the whole suite on it passes 1,385 describe blocks with none failing,
+the one new block the guard's.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -10404,6 +10454,25 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M75: removals that left the imports they no longer read
+
+Status:
+happened three times on 2026-09-29
+(`3510c8336`,
+`66cd08426`,
+`9f49c2ed5`),
+found the same day by B32's guard and fixed in `c077cc881`.
+Each commit removed the last read of a name its file imported
+and left the import:
+ten bindings across nine files.
+The prevention doc already said a removal counts the removed names' uses,
+because no configured check reports an unused import;
+none of the three commits applied it.
+Prevention:
+`src/unused-imports.unit.test.ts` now fails on an unread import,
+and it runs in `mise run source-scans`,
+which every source commit runs.
 
 ### M74: describe blocks counted as test cases
 
