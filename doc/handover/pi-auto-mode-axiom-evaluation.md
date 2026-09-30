@@ -240,8 +240,24 @@ The genuine window is not dispatched:
 `ScreenSaver.GetActive` returned true and the current graphical session reported `LockedHint=yes`.
 Task #82 tracks unlocked-desktop readiness,
 not renewed test consent.
-The actual requester/helper cancellation-cleanup controls are separate from generic lifetime checks;
-their `requester-stop/` phase is running and no success is inferred from source review.
+Actual requester/helper cancellation `proc_c105` then failed the unchanged helper's shutdown expectation:
+the inert editor stopped and workspace was removed,
+but the helper exited with code one and `AbortError` in private stderr.
+A narrowly guarded private helper copy passed `proc_4e89` interruption,
+controller-loss,
+and deadline checks with empty helper stderr,
+terminated inert editors,
+removed workspaces,
+and no raw capture or confirmation publication.
+The exact original helper served as the guard omission and reproduced its failed cleanup expectation.
+`proc_d680` source-method controls also preserved unmatched errors and normal submission;
+these stubs are not desktop parity.
+The frozen unlaunched `live-held-confirmation/` epoch must not dispatch with that original helper.
+The new `live-clean-confirmation/` preparation uses the tested private helper guard,
+unchanged authentication/parser/default launcher,
+and restrictive umask `077`.
+This is not an unchanged deployed-helper claim or production patch.
+Actual Ghostty/Nano detachment and genuine response remain unqualified.
 The original launch budget is consumed.
 The user has authorized a new attempt;
 no second window has yet been opened by this correction.

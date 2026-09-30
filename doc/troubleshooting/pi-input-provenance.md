@@ -712,7 +712,14 @@ including natural controller-loss settlement and the expected monotonic-deadline
 The workaround relies on file-backed diagnostic streams;
 it does not qualify arbitrary piped-stream draining or detached-window termination.
 Replaying the failed driver or assuming generic abort controls prove requester/helper cleanup does not work.
-The actual requester/helper cancellation controls remain a separate running phase.
+Actual requester/helper cancellation is a separate incident with retained failure and private guard controls,
+not proof supplied by these generic checks.
+The read-only clone `~/temp/agent/node-child-close-2026-09-29` is pinned to
+`151845ab90d3926ceb36eedf1eade09619c3adc9`.
+Its `doc/api/child_process.md:1471` states that child `close` follows process termination and closed stdio,
+and promises emission after `exit` or failed-spawn `error`.
+That published contract is relevant evidence for a separate Node conformance investigation;
+no runtime-core patch or general conformance verdict is claimed here.
 
 #### Upstream filing decision for the close wait
 
@@ -730,6 +737,98 @@ contract,
 duplicate,
 contribution-policy,
 and tested-fix assessment.
+
+### Actual helper reports an error after normal originating-request cancellation
+
+The actual no-desktop requester test `proc_c105` stopped its real inert editor after `SIGTERM`,
+removed the requester workspace,
+and captured or published no response.
+The unchanged helper nevertheless exited with code one,
+and its private stderr contained `AbortError`.
+No genuine window or original response was read.
+This is separate from both Node exit-13 incidents.
+
+The first-party editor owner waits for exit then throws its aborted signal:
+
+```typescript
+// package/pi-plugin/ask-user-question/src/editor-process.ts:74 to 94, selected statements
+using abortSubscription = addAbortListener(signal, function abortEditor(): void {
+  child.kill();
+});
+const exit = await once(child, 'exit');
+signal.throwIfAborted();
+```
+
+The first-party helper aborts that signal when the originating socket closes,
+then logs and rethrows the caught value when that socket is destroyed:
+
+```typescript
+// package/pi-plugin/ask-user-question/src/helper-core.ts:65 to 93, selected statements
+const controller = new AbortController();
+socket.once('close', function abortOnPiDisconnect(): void {
+  controller.abort();
+});
+// Existing runEditor call receives controller.signal.
+catch (error: unknown) {
+  l.error(`answer helper failed: ${String(error)}`);
+  if (socket.destroyed) throw error;
+}
+```
+
+A separately owned private helper copy adds a narrowly matched expected-stop path:
+
+```javascript
+// Private requester-stop-clean/answer-helper-clean.mjs, expanded equivalent guard
+if (controller.signal.aborted && socket.destroyed && error === controller.signal.reason) {
+  l.info(`originating request closed; editor cancellation completed: ${String(error)}`);
+  return;
+}
+```
+
+The caught value is still logged.
+Only the helper-owned cancellation reason after origin closure is consumed;
+unmatched errors retain the existing error log and propagation/completion behavior.
+No production source or deployed bundle was changed.
+`git-policy-cli` added a canonical final LF to the private helper copy,
+emitting `final-newline/noncanonical-final-newline`.
+Guard removal alone is therefore not exact byte reversal;
+removing the guard and reversing that separate final-LF normalization restores the unchanged original.
+The executed post-commit hash is retained in `requester-stop-clean/started.json`.
+No genuine streams were changed.
+
+`proc_4e89` passed real requester/private-helper interruption,
+controller-loss,
+and deadline cases.
+Their inert Node editors terminated,
+workspaces were removed,
+helper exits were zero with empty stderr,
+and no response was captured or published.
+The exact original helper served as the guard-omitted control and reproduced exit one with `AbortError`.
+`proc_d680` checked the extracted helper method's unmatched-error,
+normal-submission,
+and expected-stop branches with inert stubs.
+Those source-method checks are not actual helper/desktop parity.
+The failure epoch was not replayed.
+
+The workaround changes the private helper's expected-stop branch only.
+It does not prove actual Ghostty/Nano termination,
+classify physical-human origin,
+or qualify a production grant writer.
+The frozen unlaunched held epoch retains the original helper and must not dispatch.
+A new separately prepared clean-helper epoch is required before genuine interaction.
+Inferring helper cleanup from generic lifecycle abort success does not work.
+Filtering the original shutdown stderr instead of fixing its owner is rejected.
+
+#### Filing decision for helper shutdown
+
+The affected helper is owned by this repository,
+not an external upstream.
+No Node/Pi upstream report or contribution is justified by this first-party failure.
+Production repair remains outside the authorized documentation/private-qualification scope.
+The retained failure,
+private guarded-copy test,
+unchanged-helper omission,
+and source-method limits are the local filing artifact.
 
 ## Proposed containment and unverified remedies
 
