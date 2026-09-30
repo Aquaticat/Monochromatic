@@ -210,6 +210,53 @@ await describe({
     },),
 
     it({
+      name: 'CANONICALIZES CONTENT PART KEYS in a picture prompt while another picture is another prompt',
+      fn: async () => {
+        /** Digest from parts written type first. */
+        const typeFirst = modelPromptDigest({
+          request: {
+            ...REQUEST,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'text', text: 'Read this cat picture.', },
+                { type: 'image_url', image_url: { url: 'data:image/png;base64,AAAA', }, },
+              ],
+            },],
+          },
+        },);
+        /** Digest from the same parts written type last. */
+        const typeLast = modelPromptDigest({
+          request: {
+            ...REQUEST,
+            messages: [{
+              role: 'user',
+              content: [
+                { text: 'Read this cat picture.', type: 'text', },
+                { image_url: { url: 'data:image/png;base64,AAAA', }, type: 'image_url', },
+              ],
+            },],
+          },
+        },);
+        /** Digest after the picture changes and the words do not. */
+        const otherPicture = modelPromptDigest({
+          request: {
+            ...REQUEST,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'text', text: 'Read this cat picture.', },
+                { type: 'image_url', image_url: { url: 'data:image/png;base64,BBBB', }, },
+              ],
+            },],
+          },
+        },);
+        expect(typeLast,).toBe(typeFirst,);
+        expect(otherPicture,).not.toBe(typeFirst,);
+      },
+    },),
+
+    it({
       name: 'SHARES IN-FLIGHT PAYLOAD before second provider call',
       fn: async () => {
         /** Provider calls crossing wrapper. */

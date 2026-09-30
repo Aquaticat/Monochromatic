@@ -1,3 +1,4 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { contextRoot, } from './log-context.ts';
@@ -26,29 +27,56 @@ import {
 const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
- Serializes JSON-like prompt value with stable object-key order.
- 
- Arrays preserve semantic order while object construction order does not affect identity.
- 
- @param value - message value composed from protocol primitives
- 
- @returns Stable structural serialization
- 
+ What a prompt digest is computed over: the model id and the ordered messages,
+ each a role and either a string or a list of content parts, every part a
+ record of strings. No number, boolean, null or absent value reaches it, so
+ the serializer has no arm for one.
+ */
+type PromptValue =
+  | string
+  | readonly PromptValue[]
+  | { readonly [key: string]: PromptValue; };
+
+/**
+ Narrows a prompt value to a list, keeping its items typed as prompt values
+ where `Array.isArray` alone would widen them.
+
+ @param value - prompt value of either compound shape, or a string
+
+ @returns Whether value is a list
+
  @example
  ```ts
- const serialized = canonicalPromptValue({ role: 'user', content: 'Hello' });
+ const isList = isPromptList(value,);
  ```
  */
-function canonicalPromptValue(value: unknown,): string {
-  if (value === null)
-    return 'null';
+function isPromptList(value: PromptValue,): value is readonly PromptValue[] {
+  return Array.isArray(value,);
+}
+
+/**
+ Serializes prompt value with stable object-key order.
+
+ Arrays preserve semantic order while object construction order does not affect identity.
+
+ KEYS SORT BY UTF-16 CODE UNIT, as canonical JSON (RFC 8785) sorts them, and as
+ the default `toSorted` compares strings. `localeCompare` follows the host's
+ locale, and this digest names a durable payload record that a run on another
+ host may read.
+
+ @param value - prompt value composed from protocol strings
+
+ @returns Stable structural serialization
+
+ @example
+ ```ts
+ const serialized = canonicalPromptValue({ role: 'user', content: 'Hello', },);
+ ```
+ */
+function canonicalPromptValue(value: PromptValue,): string {
   if ((typeof value) === 'string')
     return JSON.stringify(value,);
-  if ((typeof value) === 'number')
-    return JSON.stringify(value,);
-  if ((typeof value) === 'boolean')
-    return JSON.stringify(value,);
-  if (Array.isArray(value,)) {
+  if (isPromptList(value,)) {
     /**
      Canonically serialized array items in semantic order.
      */
@@ -57,20 +85,19 @@ function canonicalPromptValue(value: unknown,): string {
     },);
     return `[${items.join(',',)}]`;
   }
-  if ((typeof value) === 'object') {
-    return `{${Object.entries(value,)
-      .toSorted(function byKey(
-        [left,],
-        [right,],
-      ): number {
-        return left.localeCompare(right,);
-      },)
-      .map(function serializeEntry([key, entryValue,],): string {
-        return `${JSON.stringify(key,)}:${canonicalPromptValue(entryValue,)}`;
-      },)
-      .join(',')}}`;
-  }
-  return JSON.stringify(typeof value,);
+  /**
+   Record entries serialized in code-unit order of their keys.
+   */
+  const entries = Object.keys(value,)
+    .toSorted()
+    .map(function serializeEntry(key,): string {
+      /**
+       Value under a key this record was just asked for.
+       */
+      const entryValue = nonNullishOrThrow(value[key],);
+      return `${JSON.stringify(key,)}:${canonicalPromptValue(entryValue,)}`;
+    },);
+  return `{${entries.join(',',)}}`;
 }
 
 /**
