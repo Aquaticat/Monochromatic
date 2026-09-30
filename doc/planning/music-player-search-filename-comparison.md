@@ -184,7 +184,8 @@ service/library loading or playback verification.
 
 ## Prepared usable variants
 
-Task 139 is in progress.
+Task 139 completed as a debug-only native presentation study.
+Task 140 is publishing and verifying the comparison review.
 Prototype `b97387118` adds separate debug-only scene pairs for long-name
 placement,
 literal/ancestor placement and authored visibility.
@@ -223,9 +224,22 @@ not another demonstrated routing or renderer failure.
 The fresh attempt requires a new XML destination,
 exact success output and complete XML;
 allowed/rejected consumer controls and a native probe passed.
-Its eight-scene native recapture is running with leading-title/support
-multiplicity checks,
+Its eight-scene native recapture completed with 64 views and
+leading-title/support multiplicity checks,
 not title-presence checks alone.
+All 16 contact sheets were inspected.
+The retained APK is
+`6f69735270cce6a21e9f65d11822f8a0e774b9a41c432430774317dd1f510755`.
+Six 200% scrolled literal-name witnesses also passed fresh hierarchy,
+keyboard-closed,
+stable-RGB,
+coordinate-movement and changed-RGB checks,
+and were inspected.
+These establish ordinary bounded scrolling in the authored study,
+not accessibility traversal or activation.
+Initial ordered title/support records show a clipped or absent final
+literal row/support in the affected 200% views;
+those records do not establish ink or action bounds.
 Both partial attempts and their APKs remain private and separate.
 See [the hierarchy acquisition diagnosis](../troubleshooting/android-17-uiautomator-null-root-stale-dump.md).
 Native inspection and comparative conclusions remain pending.

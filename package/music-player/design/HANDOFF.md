@@ -92,9 +92,20 @@ command-output and complete-XML controls now pass.
 The capped disposable runtime is capturing the eight-scene matrix in
 `search-comparison-fresh` with those controls and leading-title/support
 multiplicity checks.
-Both rejected attempts and their APKs remain private and separate;
-inspection and any required scrolled witnesses remain pending.
-Task 140 follows with inspected evidence and a verified visual review.
+Task 139 completed with 64 initial keyboard-closed views and six
+needed scrolled literal-name witnesses,
+all inspected.
+The six scroll witnesses include coordinate and changed-RGB positive
+controls,
+not accessibility traversal.
+The initial matrix's crop/RGB/opacity/metadata checks passed.
+Ordered title/support records expose initial 200% clipping rather than
+claim every hierarchy-present label is fully visible.
+Both rejected attempts and their APKs remain private and separate.
+Task 140 is in progress:
+publish provenanced comparisons,
+verify the independent visual review,
+then restore the fresh snapshot and stop the owned runtime.
 Prototype `720ba418f` uses public `playerScreen` and the real controller
 with a paused no-audio double;
 no production source was changed.
