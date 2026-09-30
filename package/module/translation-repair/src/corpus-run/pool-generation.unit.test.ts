@@ -21,14 +21,26 @@
  */
 
 import {
+  mkdtemp,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+
+import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  censusByGeneration,
   type EligibleEntries,
+  keepEligible,
+  listArtifactFiles,
   poolGeneration,
+  selectEligible,
 } from '../../dist/final/node/index.mjs';
 
 //region Pool generation tests
@@ -296,6 +308,118 @@ await describe({
           kind: 'recorded',
           digest: SETTLED_UNDER,
           entries: HOUSEHOLD_SIZE,
+        },);
+      },
+    },),
+  ],
+},);
+
+/**
+ Commit the directory's artifacts record, a full object id so they place.
+ */
+const PLACED_TIP = 'a1b2c3d4e5f60718293a4b5c6d7e8f9012345678';
+
+/**
+ Built pipeline the directory's artifacts record, in the scheme this build
+ reads.
+ */
+const PLACED_DIGEST = `sha256-tree-v1:${'0123456789abcdef'.repeat(4,)}`;
+
+/**
+ Makes one throwaway artifacts directory holding a placed artifact for each
+ entry id, as a pass writes them.
+
+ @param entryIds - entries to settle
+
+ @returns Directory, removed on dispose
+
+ @example
+ ```ts
+ await using settled = await settledArtifacts({ entryIds: ['whiskers',], },);
+ ```
+ */
+async function settledArtifacts(
+  { entryIds, }: { readonly entryIds: readonly string[]; },
+): Promise<AsyncDisposable & { readonly artifactsDir: string; }> {
+  /**
+   Throwaway artifacts directory, never a real run.
+   */
+  const artifactsDir = await mkdtemp(join(
+    tmpdir(),
+    'pool-generation-',
+  ),);
+
+  await Promise.all(entryIds.map(async function settleOne(entryId,): Promise<void> {
+    await writeFile(
+      join(
+        artifactsDir,
+        `${entryId}.json`,
+      ),
+      JSON.stringify({
+        id: entryId,
+        tip: PLACED_TIP,
+        pipelineDigest: PLACED_DIGEST,
+      },),
+      'utf8',
+    );
+  },),);
+
+  return {
+    artifactsDir,
+    [Symbol.asyncDispose]: async function removeArtifacts() {
+      await rm(
+        artifactsDir,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+}
+
+await describe({
+  name: `${poolGeneration.name} over a census`,
+  children: [
+    it({
+      name: 'NAMES the build of a pool resolved from real artifacts, whose lookup keys entry ids while the '
+        + 'draw keeps file names (ledger B63)',
+      fn: async () => {
+        /**
+         Entries the directory settles, every one of which the draw keeps.
+         */
+        const entryIds = [
+          'whiskers',
+          'mittens',
+        ];
+        await using settled = await settledArtifacts({ entryIds, },);
+
+        /**
+         The directory as a draw lists it.
+         */
+        const listed = await listArtifactFiles({ artifactsDir: settled.artifactsDir, },);
+
+        /**
+         The pool as the draw resolves it, from one census of that listing.
+         */
+        const eligible = await selectEligible({
+          census: await censusByGeneration({
+            artifactsDir: settled.artifactsDir,
+            names: listed,
+          },),
+          pooledDeliberately: false,
+        },);
+
+        expect(poolGeneration({
+          eligible,
+          names: keepEligible({
+            names: listed,
+            eligible,
+          },),
+        },),).toEqual({
+          kind: 'recorded',
+          digest: PLACED_DIGEST,
+          entries: entryIds.length,
         },);
       },
     },),
