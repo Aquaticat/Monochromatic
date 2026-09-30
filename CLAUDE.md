@@ -189,10 +189,10 @@ MWK:
  prefer one completion notification.
 
 PXQ:
- "Completion" means the queue,
- not the task:
- finished item with tracked work left -> start the next unasked.
-Never end a turn on a status report the user must answer with "continue".
+ "Completion" means the queue:
+ tracked work left -> start the next item unasked.
+Never end a turn on a status report the user must answer with "continue";
+ low context is no reason to stop.
 
 PX2:
  Proactivity keeps constraints:
