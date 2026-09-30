@@ -11,6 +11,7 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { isLowerHexDigit, } from '../ascii-letters.ts';
+import { wordForCount, } from '../count-word.ts';
 
 //region Pipeline digest
 // WHICH BYTES RAN, as against which commit happened to be checked out.
@@ -368,10 +369,12 @@ export async function digestPipeline(
 
     throw new PipelineDigestError({
       dir,
-      reason: `it holds ${String(foreign.length,)} entr${
-        foreign.length === 1 ? 'y' : 'ies'
-      } that ${
-        foreign.length === 1 ? 'is' : 'are'
+      reason: `it holds ${String(foreign.length,)} ${
+        wordForCount({
+          count: foreign.length,
+          one: 'entry that is',
+          many: 'entries that are',
+        },)
       } neither a regular file nor a directory, such as ${firstName}, which the build never emits`,
     },);
   }

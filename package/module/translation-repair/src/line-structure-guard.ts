@@ -2,6 +2,7 @@ import {
   type BilingualPair,
   pairBoundFindings,
 } from './bilingual-pair-bound.ts';
+import { wordForCount, } from './count-word.ts';
 import { isLatinLetter, } from './latin-letters.ts';
 import { isIdeograph, } from './preservation-tokens.ts';
 import {
@@ -363,7 +364,13 @@ export function compareLineCounts(
   return [
     `This slice is LINE-STRUCTURED: every line stands as its own unit, so your `
       + `rendering owes one line per line of the ORIGINAL and may never merge two `
-      + `into one. Yours carries ${(carried === 1) ? '1 line' : `${String(carried,)} lines`} of content where the `
+      + `into one. Yours carries ${String(carried,)} ${
+        wordForCount({
+          count: carried,
+          one: 'line',
+          many: 'lines',
+        },)
+      } of content where the `
       + `ORIGINAL has ${String(owed,)}. Put back the line breaks you merged, keeping `
       + `the wording you chose.`,
     ...repeats,

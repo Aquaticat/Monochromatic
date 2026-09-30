@@ -1,4 +1,5 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+import { howOften, } from './count-word.ts';
 import {
   addressCount,
   hanThirdPersonCount,
@@ -372,7 +373,7 @@ export function droppedAddressFindings(
   /**
    How often, in words.
    */
-  const times = (addresses === 1) ? 'once' : `${String(addresses,)} times`;
+  const times = howOften({ count: addresses, },);
   return [
     `Your translation drops the address in the second person the ORIGINAL carries: where the ORIGINAL writes 你 or 您 ${times}, your translation carries no "you" and more third-person pronouns than the ORIGINAL writes there (${quoted}: ${String(rendered.length,)} against ${String(written,)}), so a pronoun stands where the address stood. A pronoun the ORIGINAL writes is rendered as written where it stands: address the person the ORIGINAL addresses.`,
   ];

@@ -1,3 +1,4 @@
+import { wordForCount, } from '../count-word.ts';
 import {
   censusByGeneration,
   type GenerationCensus,
@@ -147,9 +148,13 @@ export class LegacyPipelineError extends Error {
   constructor({ entryIds, }: { readonly entryIds: readonly string[]; },) {
     super(
       [
-        `${String(entryIds.length,)} artifact${
-          entryIds.length === 1 ? '' : 's'
-        } here record${entryIds.length === 1 ? 's' : ''} a pipeline this build cannot name:`,
+        `${String(entryIds.length,)} ${
+          wordForCount({
+            count: entryIds.length,
+            one: 'artifact here records',
+            many: 'artifacts here record',
+          },)
+        } a pipeline this build cannot name:`,
         ...entryIds.map(function toLine(entryId,): string {
           return `  ${entryId}`;
         },),
@@ -192,9 +197,13 @@ export class UnplaceableArtifactError extends Error {
   constructor({ entryIds, }: { readonly entryIds: readonly string[]; },) {
     super(
       [
-        `${String(entryIds.length,)} artifact${
-          entryIds.length === 1 ? '' : 's'
-        } in this directory record${entryIds.length === 1 ? 's' : ''} no readable pipeline:`,
+        `${String(entryIds.length,)} ${
+          wordForCount({
+            count: entryIds.length,
+            one: 'artifact in this directory records',
+            many: 'artifacts in this directory record',
+          },)
+        } no readable pipeline:`,
         ...entryIds.map(function toLine(entryId,): string {
           return `  ${entryId}`;
         },),
@@ -346,7 +355,13 @@ export function assertBuildGenerationResumable(
     console.log(
       `POOL resuming across ${
         String(foreign.length,)
-      } foreign pipeline${foreign.length === 1 ? '' : 's'} because ${
+      } foreign ${
+        wordForCount({
+          count: foreign.length,
+          one: 'pipeline',
+          many: 'pipelines',
+        },)
+      } because ${
         ALLOW_DRIFT_VAR
       }=${ALLOW_DRIFT_VALUE}; a rate over this directory must name a required commit`,
     );

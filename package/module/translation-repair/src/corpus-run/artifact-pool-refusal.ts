@@ -1,3 +1,4 @@
+import { wordForCount, } from '../count-word.ts';
 import type { GenerationCensus, } from './artifact-generation.ts';
 import { abbreviate, } from './artifact-provenance.ts';
 
@@ -39,7 +40,11 @@ export const ENTRY_NOUN_WIDTH: number = 'entries'.length;
 export function pluralEntries(
   { count, }: { readonly count: number; },
 ): string {
-  return count === 1 ? 'entry' : 'entries';
+  return wordForCount({
+    count,
+    one: 'entry',
+    many: 'entries',
+  },);
 }
 
 /**
@@ -197,9 +202,13 @@ function emptyCensusLines(
     return ['No entry has settled yet, so there is nothing to pool.',];
 
   return [
-    `No entry could be placed, though ${String(total,)} artifact${
-      total === 1 ? '' : 's'
-    } ${total === 1 ? 'is' : 'are'} present:`,
+    `No entry could be placed, though ${String(total,)} ${
+      wordForCount({
+        count: total,
+        one: 'artifact is',
+        many: 'artifacts are',
+      },)
+    } present:`,
     ...excluded.map(function toLine(group,): string {
       return `  ${group.reason}: ${
         group.entryIds

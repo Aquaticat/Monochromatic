@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { tokenStarts, } from './word-bounds.ts';
 
 //region Neutral pronoun rendering
@@ -171,7 +172,13 @@ export function neutralPronounFindings(
    */
   const named = kept
     .map(function phrase(entry,): string {
-      return `"${entry.spelling}" (${String(entry.count,)} ${(entry.count === 1) ? 'time' : 'times'})`;
+      return `"${entry.spelling}" (${String(entry.count,)} ${
+        wordForCount({
+          count: entry.count,
+          one: 'time',
+          many: 'times',
+        },)
+      })`;
     },)
     .join(' and ',);
   return [`Your translation carries the pronoun untranslated as ${named}: ${RENDERING_RULE}`,];

@@ -1,3 +1,4 @@
+import { howOften, } from './count-word.ts';
 import type { ProtectedAtom, } from './protected-atom.ts';
 import {
   describeAtom,
@@ -216,22 +217,6 @@ function copiesByKey({ atoms, }: { readonly atoms: readonly ProtectedAtom[]; },)
     );
   }
   return counted;
-}
-
-/**
- A count as a finding says it.
-
- @param count - copies, at least one
-
- @returns "once", or the count and "times"
-
- @example
- ```ts
- howOften({ count: 2, },); // '2 times'
- ```
- */
-function howOften({ count, }: { readonly count: number; },): string {
-  return (count === 1) ? 'once' : `${String(count,)} times`;
 }
 
 /**

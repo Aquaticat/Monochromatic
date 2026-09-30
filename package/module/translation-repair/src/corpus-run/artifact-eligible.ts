@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
+import { wordForCount, } from '../count-word.ts';
 import {
   type GenerationCensus,
   tipContains,
@@ -210,24 +211,36 @@ function unplaceableLines(
   return [
     ...(untagged === 0
       ? []
-      : [`POOL   ${String(untagged,)} artifact${
-        untagged === 1 ? '' : 's'
+      : [`POOL   ${String(untagged,)} ${
+        wordForCount({
+          count: untagged,
+          one: 'artifact',
+          many: 'artifacts',
+        },)
       } EXCLUDED, parsed but recording no usable pipeline: ${
         census.untaggedIds
           .join(', ',)
       }`,]),
     ...(legacyCount === 0
       ? []
-      : [`POOL   ${String(legacyCount,)} artifact${
-        legacyCount === 1 ? '' : 's'
+      : [`POOL   ${String(legacyCount,)} ${
+        wordForCount({
+          count: legacyCount,
+          one: 'artifact',
+          many: 'artifacts',
+        },)
       } EXCLUDED, recording a pipeline this build cannot name: ${
         census.legacyIds
           .join(', ',)
       }`,]),
     ...(malformed === 0
       ? []
-      : [`POOL   ${String(malformed,)} artifact${
-        malformed === 1 ? '' : 's'
+      : [`POOL   ${String(malformed,)} ${
+        wordForCount({
+          count: malformed,
+          one: 'artifact',
+          many: 'artifacts',
+        },)
       } unreadable, passed through to be reported as malformed: ${
         census.malformedIds
           .join(', ',)
@@ -384,7 +397,13 @@ export async function selectEligible(
           pluralEntries({ count: census.total, },)
         } across ${
           String(generationCount,)
-        } pipeline generation${generationCount === 1 ? '' : 's'}`,
+        } pipeline ${
+          wordForCount({
+            count: generationCount,
+            one: 'generation',
+            many: 'generations',
+          },)
+        }`,
         ...unplaceableLines({ census, },),
         ...(generationCount > 1
           ? ['POOL pooled DELIBERATELY: this number spans pipeline versions',]
@@ -486,7 +505,13 @@ export async function selectEligible(
         String(census.total,)
       } settled entries eligible, spanning ${
         String(pooledCount,)
-      } pipeline generation${pooledCount === 1 ? '' : 's'}`,
+      } pipeline ${
+        wordForCount({
+          count: pooledCount,
+          one: 'generation',
+          many: 'generations',
+        },)
+      }`,
       ...(pooledCount > 1
         ? [
           'POOL   this is a post-baseline COHORT, not one generation: a rate',

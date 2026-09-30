@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import type { BlockShape, } from './translate-skeleton.ts';
 
 //region Translate validation block comparison
@@ -287,8 +288,12 @@ export function compareBlocks(
     },)
     ? []
     : [
-      `The ${floorName} is ${String(floor.length,)} block${
-        floor.length === 1 ? '' : 's'
+      `The ${floorName} is ${String(floor.length,)} ${
+        wordForCount({
+          count: floor.length,
+          one: 'block',
+          many: 'blocks',
+        },)
       } (${describeBlocks({ blocks: floor, },)}) and your translation is ${
         String(candidate.length,)
       } (${describeBlocks({ blocks: candidate, },)}). Every block of the ${floorName} has `

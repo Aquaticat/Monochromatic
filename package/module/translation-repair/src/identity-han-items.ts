@@ -1,3 +1,4 @@
+import { wordForCount, } from './count-word.ts';
 import { isHanOnly, } from './han-only-text.ts';
 
 //region Han items of a declared value
@@ -83,7 +84,11 @@ export function hanItemsClause({ value, }: { readonly value: string; },): string
   /**
    Verb agreeing with the number of items named.
    */
-  const verb = (hanItems.length === 1) ? 'is' : 'are';
+  const verb = wordForCount({
+    count: hanItems.length,
+    one: 'is',
+    many: 'are',
+  },);
   return ` (of which ${hanItems.join(' and ',)} ${verb} still in Han, which is no English rendering)`;
 }
 

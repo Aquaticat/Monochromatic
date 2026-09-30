@@ -1,6 +1,7 @@
 //region Text barrel
-// Character tests the floors and guards share, exported so each is tested once
-// where it is defined rather than through every caller (audit area six).
+// Character tests the floors and guards share, and the words their findings
+// and reports put to a count, exported so each is tested once where it is
+// defined rather than through every caller (audit area six).
 
 export {
   isAsciiAlphanumeric,
@@ -26,6 +27,10 @@ export {
   codePointCount,
   wholeOpening,
 } from './code-points.ts';
+export {
+  howOften,
+  wordForCount,
+} from './count-word.ts';
 export { isHanCharacter, } from './han-only-text.ts';
 export {
   carriesHandleToken,

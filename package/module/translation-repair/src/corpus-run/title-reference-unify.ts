@@ -1,5 +1,6 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ChunkPair, } from '../chunk-document.ts';
+import { wordForCount, } from '../count-word.ts';
 import { isHanOnly, } from '../han-only-text.ts';
 import { straightenQuotes, } from '../quote-normalize.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
@@ -294,9 +295,13 @@ export function unifyTitleReferences(
       /**
        Heading or headings whose rendering the reference takes.
        */
-      const headingSlices = (sliceIndexes.length === 1)
-        ? `the heading of slice ${sliceIndexes.join('',)}`
-        : `the headings of slices ${sliceIndexes.join(', ',)}`;
+      const headingSlices = `the ${
+        wordForCount({
+          count: sliceIndexes.length,
+          one: 'heading of slice',
+          many: 'headings of slices',
+        },)
+      } ${sliceIndexes.join(', ',)}`;
       /**
        Whose rendering the reference takes, for the findings.
        */

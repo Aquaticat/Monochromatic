@@ -272,8 +272,10 @@ const NAMED_PARTS: Record<string, string> = {
   'disagreementSentence({ disagreement, },)': 'slice indices and character counts, composed from numbers alone',
   'entryId': 'person entry id, which these tools report by design',
   'unreviewedLocations({ blocks, },)': 'pair indexes and parser block ids, composed from names alone',
-  'entryIds.length === 1 ? \'\' : \'s\'': 'plural suffix',
-  'entryIds.length === 1 ? \'s\' : \'\'': 'plural suffix',
+  'wordForCount({ count: entryIds.length, one: \'artifact here records\', many: \'artifacts here record\', },)':
+    'noun and verb agreeing with a count, both forms authored here',
+  'wordForCount({ count: entryIds.length, one: \'artifact in this directory records\', many: \'artifacts in this directory record\', },)':
+    'noun and verb agreeing with a count, both forms authored here',
   'failure': 'name of the failure class a JSON read raised',
   'filesystemCode': 'filesystem code a directory listing raised (ENOTDIR, EACCES), or the class name where there is none',
   'fault': 'authored phrase naming which roster rule was broken',
