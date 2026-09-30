@@ -98,7 +98,7 @@ await describe({
         }
         if (protectedOriginal) {
           expect(cold.prepared.archiveOriginalSpans).toHaveLength(1);
-          expect(cold.findings.some(finding => finding.includes('whole operation withheld'))).toBe(true);
+          expect(cold.prepared.alignmentFindings.some(finding => finding.includes('whole operation withheld'))).toBe(true);
         } else {
           expect(targetNodes.map(node => node.id)).toEqual(currentDocument.nodes.map(node => node.id));
           expect(currentDocument.documentHash).not.toBe(oldDocument.documentHash);

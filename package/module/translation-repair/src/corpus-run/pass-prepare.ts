@@ -46,6 +46,62 @@ import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 // last become findings (doc/planning/translation-repair-no-loop-design.md).
 
 /**
+ What the pass's preparation hands the entry: the slicing both lanes run
+ over, with every finding the preparation reported on its
+ `alignmentFindings`, and the definition pairs the relabel read.
+
+ NO FINDINGS LIST BESIDE IT (ledger B54). One was returned here, and the
+ entry pipeline never read it, so no artifact carried a finding of the
+ relabel, the evidence rounds or the archive review; only the pairing
+ round's, which ride `alignmentFindings` (`prepare-with-pairing.ts`),
+ reached one.
+
+ @example
+ ```ts
+ const { prepared, } = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads: RUN_OUTSIDE_READS, },);
+ ```
+ */
+export type PassPreparation = Omit<PairedPreparation, 'findings'>;
+
+/**
+ A preparation carrying the pass's own findings on the channel the artifact
+ records, after the pairing round's already there.
+
+ @param paired - preparation the lanes run over
+
+ @param findings - what the relabel, the evidence rounds and the archive
+ review reported, which the artifact would otherwise never see
+
+ @returns The preparation with them on its `alignmentFindings`
+
+ @example
+ ```ts
+ return carryingPassFindings({ paired: sightedPaired, findings: passFindings, },);
+ ```
+ */
+function carryingPassFindings(
+  {
+    paired,
+    findings,
+  }: {
+    readonly paired: PairedPreparation;
+    readonly findings: readonly string[];
+  },
+): PassPreparation {
+  return {
+    prepared: {
+      ...paired.prepared,
+      alignmentFindings: [
+        ...paired.prepared
+          .alignmentFindings,
+        ...findings,
+      ],
+    },
+    footnoteDefinitionPairs: paired.footnoteDefinitionPairs,
+  };
+}
+
+/**
  Prepares one pass entry with cached roster pairing and publication safety.
  
  @param client - shared provider client
@@ -77,8 +133,8 @@ import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
  pipeline, required so no caller inherits the run's keys and caches by
  leaving it out (ledger X19): `RUN_OUTSIDE_READS` in a run
 
- @returns Prepared slices and pairing findings
- 
+ @returns Prepared slices, every finding on their `alignmentFindings`
+
  @example
  ```ts
  const paired = await preparePassEntry({ client, entryId, entryCacheDir, pipelineDigest, modelIds, sourceText, targetText, signal, exchangeTimeoutMs, l, outsideReads: RUN_OUTSIDE_READS, });
@@ -114,7 +170,7 @@ export async function preparePassEntry(
     readonly beforeItem?: () => Promise<BenchSeating>;
     readonly outsideReads: PassOutsideReads;
   }>,
-): Promise<PairedPreparation> {
+): Promise<PassPreparation> {
   l.debug(`${preparePassEntry.name}: preparing entry ${entryId}`,);
   /**
    Archive bytes both deciders judge, normalized before preparation so
@@ -407,11 +463,10 @@ export async function preparePassEntry(
     ...pageTitles.findings,
   ];
   /**
-   Findings so far: the preparation's, the relabel's and the evidence
-   rounds'.
+   The pass's own findings so far, the relabel's and the evidence rounds';
+   the pairing round's already ride the preparation (`prepare-with-pairing.ts`).
    */
-  const sightedFindings = [
-    ...sightedPaired.findings,
+  const passFindings = [
     ...relabel.findings,
     ...evidenceFindings,
   ];
@@ -421,11 +476,10 @@ export async function preparePassEntry(
   const pending = sightedPaired.prepared
     .unclaimedTargetBlocks;
   if (pending.length === 0) {
-    return {
-      prepared: sightedPaired.prepared,
-      footnoteDefinitionPairs: sightedPaired.footnoteDefinitionPairs,
-      findings: sightedFindings,
-    };
+    return carryingPassFindings({
+      paired: sightedPaired,
+      findings: passFindings,
+    },);
   }
   /**
    Declared names this preparation built, which the archive review reads.
@@ -456,14 +510,13 @@ export async function preparePassEntry(
     ...((beforeItem === undefined) ? {} : { beforeBlock: beforeItem, }),
   },);
   if (repaired.targetText === relabel.archiveText) {
-    return {
-      prepared: sightedPaired.prepared,
-      footnoteDefinitionPairs: sightedPaired.footnoteDefinitionPairs,
+    return carryingPassFindings({
+      paired: sightedPaired,
       findings: [
-        ...sightedFindings,
+        ...passFindings,
         ...repaired.findings,
       ],
-    };
+    },);
   }
   /**
    Re-preparation over the corrected archive, whose offsets the correction
@@ -478,19 +531,16 @@ export async function preparePassEntry(
    */
   const remaining = secondPaired.prepared
     .unclaimedTargetBlocks;
-  return {
-    prepared: secondPaired.prepared,
-    footnoteDefinitionPairs: secondPaired.footnoteDefinitionPairs,
+  return carryingPassFindings({
+    paired: secondPaired,
     findings: [
-      ...secondPaired.findings,
-      ...relabel.findings,
-      ...evidenceFindings,
+      ...passFindings,
       ...repaired.findings,
       ...(remaining.length === 0
         ? []
         : [`unclaimed archive blocks remain after the single correction round: ${String(remaining.length,)}`,]),
     ],
-  };
+  },);
 }
 
 //endregion Pass preparation

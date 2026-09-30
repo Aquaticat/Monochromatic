@@ -4,8 +4,10 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { BenchSeating, } from '../bench-seating.ts';
-import type { PairedPreparation, } from '../prepare-with-pairing.ts';
-import { preparePassEntry, } from './pass-prepare.ts';
+import {
+  type PassPreparation,
+  preparePassEntry,
+} from './pass-prepare.ts';
 import {
   type Reseated,
   reseatHookFor,
@@ -130,7 +132,7 @@ export function preparationHooksFor(
  @param outsideReads - what the preparation reads from outside the pipeline
  (ledger X19): `RUN_OUTSIDE_READS` in a run
 
- @returns Prepared slices and pairing findings
+ @returns Prepared slices, every finding on their `alignmentFindings`
 
  @example
  ```ts
@@ -159,7 +161,7 @@ export async function runPassPreparation(
     readonly signal: AbortSignal;
     readonly outsideReads: PassOutsideReads;
   },
-): Promise<PairedPreparation> {
+): Promise<PassPreparation> {
   /**
    Entry logger the preparation and its hook write to.
    */

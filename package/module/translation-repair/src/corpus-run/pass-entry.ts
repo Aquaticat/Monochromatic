@@ -228,10 +228,9 @@ async function runEntryPipeline(
      first of all, and every stage that asks the roster re-seats under a hold
      (ledger X12).
      */
-    const {
-      prepared: paired,
-      findings: pairingFindings,
-    } = await runPassPreparation({
+    // EVERY PREPARATION FINDING RIDES `paired.alignmentFindings` into the
+    // artifact (ledger B54); a list returned beside it went unread here.
+    const { prepared: paired, } = await runPassPreparation({
       client,
       entryId: entry.id,
       entryCacheDir,
