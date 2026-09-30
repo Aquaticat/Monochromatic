@@ -41,6 +41,15 @@ Do not treat unverified behavior as a reopened visual decision or schedule
 an IME experiment.
 The stopped disposable emulator and bounded inner speech evidence are
 recorded in `evidence/search-talkback-native-baseline.md`.
+The next design-only investigation is filename presentation,
+recorded in `evidence/search-filename-presentation-frontier.md`.
+Ordinary-player source retains suffixes,
+but neither that incumbent nor D11's shortened Settings example selects
+Search's extension display.
+Internal task 136 checks filename-backed label witnesses;
+task 137 resolves the resulting visual-review boundary.
+Both exclude matcher choices,
+new IME work and native accessibility acceptance.
 
 - **PROVISIONAL: folded-cover picker P4 (D46).**
   The app-bar folder title and caret

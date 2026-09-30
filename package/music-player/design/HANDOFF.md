@@ -22,6 +22,14 @@ The next bounded design investigation is result-name presentation:
 compare the ordinary player's incumbent filename/title treatment with
 Search and duplicate-name disambiguation before deciding whether another
 visual comparison is needed.
+`evidence/search-filename-presentation-frontier.md` records the source
+audit: the ordinary-player helpers retain filename suffixes,
+D11's shortened Settings example does not separately settle Search,
+and the Search fixture lacks real source filenames.
+Internal task 136 checks specifically motivated filename-backed,
+keyboard-closed native label witnesses;
+task 137 evaluates whether they warrant another visual comparison.
+No extension preference has been selected.
 Matcher selection,
 new IME studies and original-AVD changes remain excluded.
 
