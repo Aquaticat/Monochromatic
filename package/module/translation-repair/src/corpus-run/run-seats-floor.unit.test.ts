@@ -111,7 +111,7 @@ await describe({
           dry: BEDROCK_ALONE,
         },),).toEqual([
           `editors 0 of ${String(RUN_MODELS.editorModelIds.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
-          `refiners 0 of ${String((RUN_MODELS.refinerModelIds ?? []).length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
+          `refiners 0 of ${String(RUN_MODELS.refinerModelIds.length,)} reachable, floor ${String(WRITING_BENCH_FLOOR,)}`,
         ],);
         expect(unreachableWritingBenches({
           benches,

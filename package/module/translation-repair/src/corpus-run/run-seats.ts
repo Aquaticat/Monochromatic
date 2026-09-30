@@ -317,9 +317,9 @@ export function judgeSeatsFor(
   // phase would start with a checker stage the contract refuses.
   assertCheckerIndependence({
     editorModelIds: RUN_MODELS.editorModelIds,
-    refinerModelIds: RUN_MODELS.refinerModelIds ?? [],
+    refinerModelIds: RUN_MODELS.refinerModelIds,
     checkerModelIds: checkers,
-    selfCertificationPermitted: RUN_MODELS.checkerSelfCertificationPermitted ?? false,
+    selfCertificationPermitted: RUN_MODELS.checkerSelfCertificationPermitted,
   },);
   assertCheckerQuorumReachable({ checkerModelIds: checkers, },);
   /**

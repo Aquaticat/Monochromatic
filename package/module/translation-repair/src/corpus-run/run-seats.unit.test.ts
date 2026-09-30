@@ -290,7 +290,7 @@ await describe({
         expect(RUN_READER_MODELS.includes(KIMI,),).toBe(true,);
         for (const checker of RUN_CHECKER_ORDER) {
           expect(RUN_MODELS.editorModelIds.includes(checker,),).toBe(false,);
-          expect((RUN_MODELS.refinerModelIds ?? []).includes(checker,),).toBe(false,);
+          expect(RUN_MODELS.refinerModelIds.includes(checker,),).toBe(false,);
         }
 
         const seats = judgeSeatsFor({ dry: OPENROUTER_ONLY, },);

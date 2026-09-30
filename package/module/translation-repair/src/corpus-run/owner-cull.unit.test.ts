@@ -74,7 +74,7 @@ await describe({
             RUN_READER_MODELS,
             RUN_MODELS.checkerModelIds,
             RUN_MODELS.editorModelIds,
-            RUN_MODELS.refinerModelIds ?? [],
+            RUN_MODELS.refinerModelIds,
             // The recall benchmark's judges (ledger P4): its default named the
             // culled seat two days after the cull, since nothing derived it.
             RECALL_JUDGE_MODEL_IDS,

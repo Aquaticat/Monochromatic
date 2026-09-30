@@ -151,7 +151,7 @@ await describe({
          Editors and refiners, none of which Bedrock serves.
          */
         const editors = RUN_MODELS.editorModelIds;
-        const refiners = RUN_MODELS.refinerModelIds ?? [];
+        const refiners = RUN_MODELS.refinerModelIds;
         expect(wideReachable,).toBeLessThan(rosterQuorumSize({ rosterSize: RUN_WIDE_SEATS.length, },),);
         expect(writersReachable,).toBeLessThan(rosterQuorumSize({ rosterSize: RUN_TRANSLATORS.length, },),);
         expect(clauses,).toEqual([
