@@ -380,7 +380,26 @@ not retroactively attributed to the initial consumer runs.
 The fork-local independence contrast is structural coupling,
 not removal of a predicate.
 
-The next private `protected-action-consumer/plan.json` is predeclared but unimplemented/undispatched.
+The private `protected-action-consumer/` draft passed source freeze `proc_9f96`,
+but its original-reading run was withheld before dispatch.
+Independent serialized-source review found unsafe parent `JSON.parse()` failure output,
+a missing SDK construction-owner closure pin,
+and inadequate original-validation sensitivity evidence.
+The completed freeze and unlaunched draft are preserved.
+Separate `protected-action-guarded/` contains parent parse/schema failures,
+returns only fixed code-owned projections,
+pins the reviewed SDK owner,
+and asserts exact privacy-safe API rejection messages.
+Synthetic projection controls `proc_8fc3` passed valid/malformed/null/array/schema/scalar cases,
+including exit-zero malformed output and private diagnostic-write failure.
+An unguarded parser positive control showed input-derived diagnostic text,
+while guarded public errors stayed fixed.
+Synthetic original-binding controls `proc_bda2` passed:
+invalid capture/nonce/scope/writer/finalization and summary-only fixtures stopped before actual SDK import.
+The intact synthetic fixture and capture-check omission reached SDK barrel import,
+with zero sessions/models/genuine reads and no genuine-authority claim.
+Guarded source freeze is running;
+its actual original-reading consumer remains undispatched.
 It carries original configured-writer/byte/presentation/exact-scope evidence,
 not summary booleans or arbitrary tokens.
 Original validation must finish before SDK/provider startup;
