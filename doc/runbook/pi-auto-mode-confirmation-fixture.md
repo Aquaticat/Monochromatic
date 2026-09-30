@@ -49,7 +49,11 @@ Nano's documented `+LINE,COLUMN` argument places the cursor in the response area
 No user configuration is changed.
 
 The agent owns setup and execution under
-`~/temp/agent/auto-mode-consumer-contract.mDLkyNoP/contract/human-origin/live-confirmation/`.
+`~/temp/agent/auto-mode-consumer-contract.mDLkyNoP/contract/human-origin/live-held-confirmation/`.
+The execution deadline is five minutes,
+with a bounded cleanup grace period.
+Controller loss or cancellation stops the requester and cannot produce an accepted completion.
+The earlier unreferenced attempt remains separate private evidence.
 It verifies frozen source identities,
 creates a disposable file,
 and opens exactly one editor through the existing helper workflow.
@@ -64,8 +68,9 @@ stop and have the agent prepare a fresh,
 separately identified test.
 Existing constructor and execution receipts must not be overwritten or replayed.
 
-The expected window title is **Pi answer:
- save and exit to submit**.
+The new window title is **Pi answer: save and exit to submit (held fixture)**.
+Only this new window is active;
+any older test window remains inactive.
 The document is `ANSWER.md`,
 with **Private confirmation test**,
 **Scope**,
