@@ -1,19 +1,29 @@
 /**
- Guards against functions nothing calls (audit area six, ledger B19, B20,
- B30): a top-level function private to its file must be named in that file
- beyond its own declaration, and every top-level function must be reached
- from production. `isAnchored` outlived the change that stopped reading it,
- and `uniqueRosterModelIds` the loop it served, and nothing reported either.
+ Guards against code nothing reaches (audit area six, ledger B19, B20, B30,
+ B31): a top-level declaration private to its file must be named in that
+ file beyond its own declaration, and every top-level function, class and
+ value must be reached from production. `isAnchored` outlived the change
+ that stopped reading it, and `uniqueRosterModelIds` the loop it served, and
+ nothing reported either.
 
  REACH, NOT NAMING (ledger B30). The first form of this guard counted a test,
  or a barrel's re-export list, as naming an export, so 57 functions only
  tests called passed it: wrappers over parts production calls apart, modules
  built beside the live path and superseded, and test support shipped as
  package source. Production's roots are every source file's module-level
- code, which is where the runner entries call their main and where tables
- run on import; a function is reached once reached code names it outside a
- type. Matching is by name, so a name two functions share keeps both
- reached, and the error is only toward calling code reached.
+ statements that declare nothing, which is where the runner entries call
+ their main; a declaration is reached once reached code names it outside a
+ type, and its body or initializer is then reached code. Matching is by
+ name, so a name two declarations share keeps both reached, and the error
+ is only toward calling code reached.
+
+ VALUES TOO (ledger B31). The second form tracked functions alone and ran
+ every other top-level statement as a root, so a constant only tests read
+ passed, and so did everything its initializer named: a type proof that
+ could no longer fail, seat sets only the seat tests read, and the test
+ seats themselves. A value named only in type positions (`typeof X`) is
+ unreached by design: its initializer runs, but nothing reads what it
+ builds.
 
  THE FIXTURES COME FIRST, so the package-wide case is read against a scan
  shown able to find each kind (ledger M21). Fixtures are cat-themed; the
@@ -38,16 +48,16 @@ import {
 } from './source-scan.test-fixture.ts';
 
 /**
- Functions nothing calls, by kind, each as `path#name`.
+ Declarations nothing reaches, by kind, each as `path#name`.
  */
-type DeadFunctions = {
+type DeadCode = {
   /**
-   Private functions nothing in their file names.
+   Private declarations nothing in their file names.
    */
   readonly private: readonly string[];
 
   /**
-   Functions production does not reach, the private ones already listed
+   Declarations production does not reach, the private ones already listed
    left out, and the allowed seams too.
    */
   readonly unreached: readonly string[];
@@ -60,10 +70,10 @@ type DeadFunctions = {
 };
 
 /**
- A top-level function, whether its file exports it inline, and the node
- whose names it reaches when it runs.
+ A top-level function, class or value, whether its file exports it inline,
+ and the node whose names it reaches when it is reached.
  */
-type TopFunction = {
+type TopDeclaration = {
   /**
    Its name.
    */
@@ -75,15 +85,16 @@ type TopFunction = {
   readonly exported: boolean;
 
   /**
-   Its declaration or function expression.
+   Its function or class declaration, its function expression, or its
+   value's initializer.
    */
   readonly body: TreeNode;
 };
 
 /**
- A top-level function and the file declaring it.
+ A top-level declaration and the file declaring it.
  */
-type LocatedFunction = TopFunction & {
+type LocatedDeclaration = TopDeclaration & {
   /**
    File declaring it, relative to `src`.
    */
@@ -201,21 +212,38 @@ function declarationOf({ statement, }: { readonly statement: TreeNode; },): Tree
 }
 
 /**
- The functions one declaration introduces: a function declaration, or
- variables initialised with a function.
+ Whether a variable declarator binds one plain name, the only form this
+ guard tracks; a destructuring declarator stays module-level code.
+
+ @param declarator - variable declarator
+
+ @returns True for `name = ...` and `name`
+
+ @example
+ ```ts
+ const tracked = bindsOneName({ declarator, },);
+ ```
+ */
+function bindsOneName({ declarator, }: { readonly declarator: TreeNode; },): boolean {
+  return isTreeNode(declarator.id,) && (declarator.id.type === 'Identifier');
+}
+
+/**
+ The bindings one declaration introduces: a function or class declaration,
+ or variables bound to a plain name.
 
  @param declaration - top-level declaration
 
  @param exported - whether an inline `export` wraps it
 
- @returns Its functions, none for any other declaration
+ @returns Its bindings, none for any other declaration
 
  @example
  ```ts
- const functions = functionsDeclared({ declaration, exported: false, },);
+ const bindings = bindingsDeclared({ declaration, exported: false, },);
  ```
  */
-function functionsDeclared(
+function bindingsDeclared(
   {
     declaration,
     exported,
@@ -223,8 +251,9 @@ function functionsDeclared(
     readonly declaration: TreeNode;
     readonly exported: boolean;
   },
-): readonly TopFunction[] {
-  if ((declaration.type === 'FunctionDeclaration') && isTreeNode(declaration.id,)) {
+): readonly TopDeclaration[] {
+  if (((declaration.type === 'FunctionDeclaration') || (declaration.type === 'ClassDeclaration'))
+    && isTreeNode(declaration.id,)) {
     return [{
       name: declaration.id.name as string,
       exported,
@@ -233,34 +262,34 @@ function functionsDeclared(
   }
   if (declaration.type !== 'VariableDeclaration')
     return [];
-  return (declaration.declarations as readonly TreeNode[]).flatMap(function initialised(item,): readonly TopFunction[] {
-    if ((!isTreeNode(item.id,)) || (item.id.type !== 'Identifier') || (!isTreeNode(item.init,)))
-      return [];
-    if ((item.init.type !== 'ArrowFunctionExpression') && (item.init.type !== 'FunctionExpression'))
-      return [];
-    return [{
-      name: item.id.name as string,
-      exported,
-      body: item.init,
-    },];
-  },);
+  return (declaration.declarations as readonly TreeNode[])
+    .filter(function tracked(declarator,): boolean {
+      return bindsOneName({ declarator, },);
+    },)
+    .map(function bound(declarator,): TopDeclaration {
+      return {
+        name: (declarator.id as TreeNode).name as string,
+        exported,
+        body: isTreeNode(declarator.init,) ? declarator.init : declarator,
+      };
+    },);
 }
 
 /**
- The functions a file declares at its top level.
+ The functions, classes and values a file declares at its top level.
 
  @param program - parsed program
 
- @returns Its top-level functions
+ @returns Its top-level declarations
 
  @example
  ```ts
- const functions = topFunctions({ program, },);
+ const declarations = topDeclarations({ program, },);
  ```
  */
-function topFunctions({ program, }: { readonly program: TreeNode; },): readonly TopFunction[] {
-  return (program.body as readonly TreeNode[]).flatMap(function declared(statement,): readonly TopFunction[] {
-    return functionsDeclared({
+function topDeclarations({ program, }: { readonly program: TreeNode; },): readonly TopDeclaration[] {
+  return (program.body as readonly TreeNode[]).flatMap(function declared(statement,): readonly TopDeclaration[] {
+    return bindingsDeclared({
       declaration: declarationOf({ statement, },),
       exported: (statement.type === 'ExportNamedDeclaration') && isTreeNode(statement.declaration,),
     },);
@@ -269,11 +298,13 @@ function topFunctions({ program, }: { readonly program: TreeNode; },): readonly 
 
 /**
  A file's module-level code: every top-level statement but imports, export
- lists and the functions it declares, which run only when named.
+ lists and the declarations it tracks, which run their bodies only when
+ named, plus any destructuring declarator, whose initializer runs as it
+ stands.
 
  @param program - parsed program
 
- @returns Statements that run when the file loads
+ @returns Code that runs when the file loads
 
  @example
  ```ts
@@ -281,16 +312,27 @@ function topFunctions({ program, }: { readonly program: TreeNode; },): readonly 
  ```
  */
 function moduleLevelCode({ program, }: { readonly program: TreeNode; },): readonly TreeNode[] {
-  return (program.body as readonly TreeNode[]).filter(function runsOnLoad(statement,): boolean {
+  return (program.body as readonly TreeNode[]).flatMap(function runsOnLoad(statement,): readonly TreeNode[] {
     if ((statement.type === 'ImportDeclaration') || (statement.type === 'ExportAllDeclaration'))
-      return false;
+      return [];
     if ((statement.type === 'ExportNamedDeclaration') && (!isTreeNode(statement.declaration,)))
-      return false;
-    return functionsDeclared({
-      declaration: declarationOf({ statement, },),
-      exported: false,
-    },)
-      .length === 0;
+      return [];
+    /**
+     The declaration the statement carries, past an inline `export`.
+     */
+    const declaration = declarationOf({ statement, },);
+    if (declaration.type === 'VariableDeclaration') {
+      return (declaration.declarations as readonly TreeNode[]).filter(function untracked(declarator,): boolean {
+        return !bindsOneName({ declarator, },);
+      },);
+    }
+    return (bindingsDeclared({
+        declaration,
+        exported: false,
+      },)
+        .length === 0)
+      ? [statement,]
+      : [];
   },);
 }
 
@@ -323,7 +365,7 @@ function listedExports({ program, }: { readonly program: TreeNode; },): Readonly
 }
 
 /**
- Private functions nothing in their file names beyond their declaration.
+ Private declarations nothing in their file names beyond their declaration.
 
  @param path - file path, for the location
 
@@ -353,7 +395,7 @@ function unnamedPrivates(
    Names its export lists carry.
    */
   const listed = listedExports({ program, },);
-  return topFunctions({ program, },)
+  return topDeclarations({ program, },)
     .filter(function unnamedPrivate({ name, exported, },): boolean {
       return (!exported) && (!listed.has(name,)) && ((counts.get(name,) ?? 0) <= 1);
     },)
@@ -363,42 +405,42 @@ function unnamedPrivates(
 }
 
 /**
- Functions production's module-level code reaches, by walking the names
+ Declarations production's module-level code reaches, by walking the names
  reached code carries.
 
- @param functions - every top-level function in the source files
+ @param declarations - every top-level declaration in the source files
 
  @param roots - every source file's module-level code
 
- @returns Functions reached
+ @returns Declarations reached
 
  @example
  ```ts
- const reached = reachedFunctions({ functions, roots, },);
+ const reached = reachedDeclarations({ declarations, roots, },);
  ```
  */
-function reachedFunctions(
+function reachedDeclarations(
   {
-    functions,
+    declarations,
     roots,
   }: {
-    readonly functions: readonly LocatedFunction[];
+    readonly declarations: readonly LocatedDeclaration[];
     readonly roots: readonly TreeNode[];
   },
-): ReadonlySet<LocatedFunction> {
+): ReadonlySet<LocatedDeclaration> {
   /**
-   Functions under each name; two files may declare the same one.
+   Declarations under each name; two files may declare the same one.
    */
   const byName = Map.groupBy(
-    functions,
+    declarations,
     function nameOf({ name, },): string {
       return name;
     },
   );
   /**
-   Functions reached so far.
+   Declarations reached so far.
    */
-  const reached = new Set<LocatedFunction>();
+  const reached = new Set<LocatedDeclaration>();
   /**
    Reached code whose names are still to read.
    */
@@ -409,10 +451,10 @@ function reachedFunctions(
      */
     const code = pending.pop() as TreeNode;
     /**
-     Functions its names reach for the first time.
+     Declarations its names reach for the first time.
      */
     const fresh = [...runtimeNames({ node: code, },),]
-      .flatMap(function named(name,): readonly LocatedFunction[] {
+      .flatMap(function named(name,): readonly LocatedDeclaration[] {
         return byName.get(name,) ?? [];
       },)
       .filter(function unseen(located,): boolean {
@@ -427,22 +469,22 @@ function reachedFunctions(
 }
 
 /**
- Every function nothing calls across a set of files; only source files are
- scanned and only source files reach, so a test naming a function never
- makes it reached.
+ Every declaration nothing reaches across a set of files; only source files
+ are scanned and only source files reach, so a test naming a declaration
+ never makes it reached.
 
  @param files - the package's files
 
- @param seams - functions allowed to go unreached, each as `path#name`
+ @param seams - declarations allowed to go unreached, each as `path#name`
 
- @returns Dead functions by kind, and allowances that no longer hold
+ @returns Dead code by kind, and allowances that no longer hold
 
  @example
  ```ts
- const dead = deadFunctions({ files, seams: PACKAGE_SEAMS, },);
+ const dead = deadCode({ files, seams: PACKAGE_SEAMS, },);
  ```
  */
-function deadFunctions(
+function deadCode(
   {
     files,
     seams,
@@ -450,7 +492,7 @@ function deadFunctions(
     readonly files: readonly SourceText[];
     readonly seams: ReadonlySet<string>;
   },
-): DeadFunctions {
+): DeadCode {
   /**
    Every source file, parsed once.
    */
@@ -468,16 +510,16 @@ function deadFunctions(
       };
     },);
   /**
-   Private functions their file never names.
+   Private declarations their file never names.
    */
   const unnamed = parsed
     .flatMap(unnamedPrivates,)
     .toSorted();
   /**
-   Every top-level function, located.
+   Every top-level declaration, located.
    */
-  const functions = parsed.flatMap(function located({ path, program, },): readonly LocatedFunction[] {
-    return topFunctions({ program, },).map(function withPath(top,): LocatedFunction {
+  const declarations = parsed.flatMap(function located({ path, program, },): readonly LocatedDeclaration[] {
+    return topDeclarations({ program, },).map(function withPath(top,): LocatedDeclaration {
       return {
         ...top,
         path,
@@ -485,18 +527,18 @@ function deadFunctions(
     },);
   },);
   /**
-   Functions production reaches.
+   Declarations production reaches.
    */
-  const reached = reachedFunctions({
-    functions,
+  const reached = reachedDeclarations({
+    declarations,
     roots: parsed.flatMap(function rootsOf({ program, },): readonly TreeNode[] {
       return moduleLevelCode({ program, },);
     },),
   },);
   /**
-   Every function production does not reach, as `path#name`.
+   Every declaration production does not reach, as `path#name`.
    */
-  const notReached = functions
+  const notReached = declarations
     .filter(function unreachedHere(located,): boolean {
       return !reached.has(located,);
     },)
@@ -553,9 +595,9 @@ function fixture(
 }
 
 /**
- The cat fixtures: one source file holding a function of every kind, a
- barrel re-exporting two, a bowl calling two at module level, and a test
- calling one.
+ The cat fixtures: one source file holding a declaration of every kind, a
+ barrel re-exporting some, a bowl whose one module-level statement reads a
+ value built from others, and a test reading some.
  */
 const CAT_FILES: readonly SourceText[] = [
   fixture({
@@ -577,41 +619,62 @@ const CAT_FILES: readonly SourceText[] = [
       'export function tally(): number { return 10; }',
       'export const TOTAL = tally();',
       'export function reset(): void {}',
+      'const WHISKERS = 11;',
+      'export const TAIL = 12;',
+      'export const LITTER = [13,];',
+      'export const LITTER_SIZE = LITTER.length;',
+      'export const PAWS = [4,] as const;',
+      'export type Paw = typeof PAWS[number];',
+      'export class Tabby {}',
+      'export class Calico {}',
+      'const naps = new Map<string, number>();',
+      'export function doze(): number { naps.set(\'cat\', 1,); return naps.size; }',
     ].join('\n',),
     isTest: false,
   },),
   fixture({
     path: 'barrel.ts',
-    text: 'export { yawn, pounce, reset, } from \'./cat.ts\';',
+    text: 'export { yawn, pounce, reset, TAIL, } from \'./cat.ts\';',
     isTest: false,
   },),
   fixture({
     path: 'bowl.ts',
-    text: 'import { loaf, knead, } from \'./cat.ts\';\nexport const meal = loaf() + knead();',
+    text: [
+      'import { loaf, knead, TOTAL, PERCH, Calico, doze, } from \'./cat.ts\';',
+      'export const meal = loaf() + knead() + TOTAL + PERCH + doze();',
+      'console.log(meal, new Calico(),);',
+    ].join('\n',),
     isTest: false,
   },),
   fixture({
     path: 'cat.unit.test.ts',
-    text: 'import { groom, reset, } from \'./cat.ts\';\ngroom();\nreset();',
+    text: 'import { groom, reset, TAIL, } from \'./cat.ts\';\ngroom();\nreset();\nconsole.log(TAIL,);',
     isTest: true,
   },),
 ];
 
 await describe({
-  name: 'functions nothing calls',
+  name: 'code nothing reaches',
   children: [
     it({
-      name: 'FINDS a private function its file never names, and every function production does not reach: '
-        + 'one nothing names, one only a test calls, ones only a barrel re-exports and the private one '
-        + 'only they call, and one named only in types; KEEPS the ones module-level code reaches, directly '
-        + 'or through another, and the allowed seam',
+      name: 'FINDS a private function or value its file never names, and every declaration production does '
+        + 'not reach: a function nothing names, one only a test calls, ones only a barrel re-exports and '
+        + 'the private one only they call, one named only in types, a value only a test reads, a value only '
+        + 'an unreached value reads and that one, a value named only in types, and a class nothing '
+        + 'constructs; KEEPS what a module-level statement reaches, directly or through a value, a '
+        + 'function or a module-level map a reached function reads, and the allowed seam',
       fn: async () => {
-        expect(deadFunctions({
+        expect(deadCode({
           files: CAT_FILES,
           seams: new Set(['cat.ts#reset',],),
         },),).toEqual({
-          private: ['cat.ts#nap',],
+          private: ['cat.ts#WHISKERS', 'cat.ts#nap',],
           unreached: [
+            'cat.ts#LITTER',
+            'cat.ts#LITTER_SIZE',
+            'cat.ts#PAWS',
+            'cat.ts#TAIL',
+            'cat.ts#Tabby',
             'cat.ts#groom',
             'cat.ts#hiss',
             'cat.ts#pounce',
@@ -626,7 +689,7 @@ await describe({
     it({
       name: 'NAMES an allowed seam production reaches, or no file declares, as stale',
       fn: async () => {
-        expect(deadFunctions({
+        expect(deadCode({
           files: CAT_FILES,
           seams: new Set([
             'cat.ts#reset',
@@ -637,7 +700,7 @@ await describe({
       },
     },),
     it({
-      name: 'FINDS NO FUNCTION NOTHING CALLS across the package\'s source, and no stale seam',
+      name: 'FINDS NO CODE NOTHING REACHES across the package\'s source, and no stale seam',
       fn: async () => {
         /**
          Every package file, tests among them, which never reach.
@@ -646,7 +709,7 @@ await describe({
         expect(files.some(function isSource(file,): boolean {
           return !file.isTest;
         },),).toBe(true,);
-        expect(deadFunctions({
+        expect(deadCode({
           files,
           seams: PACKAGE_SEAMS,
         },),).toEqual({

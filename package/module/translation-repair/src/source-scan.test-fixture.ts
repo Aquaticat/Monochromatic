@@ -12,7 +12,7 @@ import { parseSync, } from 'rolldown/utils';
 // What the package-wide guards over this package's own source share (audit
 // area six, ledger B19): the package's TypeScript files as text, each parsed
 // once, and a walk over the syntax tree. `duplicate-bodies.unit.test.ts` and
-// `dead-functions.unit.test.ts` read the source through it.
+// `dead-code.unit.test.ts` read the source through it.
 
 /**
  One TypeScript file under the package's `src`.
