@@ -146,7 +146,8 @@ Its costs are weaker suffix emphasis,
 separation of the literal name across lines and extra supporting-line wraps.
 The long pair had no measured height saving.
 
-Ranking: full literal title > supporting suffix,
+Ranking:
+full literal title > supporting suffix,
 because the tested secondary placement buys no long-name height reduction
 and costs initial literal-list visibility.
 This is an evidence-led preference for correction or veto,
@@ -163,7 +164,8 @@ Its costs are scope-dependent behavior and the need to retain cues for
 non-displayed partners or unknown scope.
 No tested height reduction offsets those costs.
 
-Ranking: always visible > conditional omission,
+Ranking:
+always visible > conditional omission,
 because the authored omission reduced text but not vertical space,
 while a real conditional policy needs knowledge the fixture does not supply.
 This ranking selects no parser,
