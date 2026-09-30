@@ -167,23 +167,25 @@ finding and fixing B66 on the way:
 the lane's coverage refusals and the contest log give each count the word it takes,
 where a repeat read "under 1 distinct indices";
 the rest of that family is queued as one change.
-The baseline is now the whole suite at `de9ced3f0` (`census-lPGpK8`,
-1,465 passes,
-taken from a tree with nothing uncommitted):
-library source holds 826 stretches over 1,686 lines in 300 files,
-with 19 functions never called,
-and the runner entry files and unloaded bundles come after.
-By the first construct each stretch's lines hold
-(`t8-triage-lpgpk8.txt` in the audit's scratch folder),
-the queue is 333 returns,
-162 nullish fallbacks,
-141 ternaries,
-92 throws
-and 98 others,
-and the fourteenth batch takes the insertion modules of `corpus-run`
-(`corpus-run/insertion`,
-21 stretches in 7 files);
-each throw and fallback is read for reachability first,
+The fourteenth batch took the insertion modules of `corpus-run`,
+21 stretches in 7 files,
+and closed every one
+(`1af921d31` to `bc15e9a28`),
+finding and fixing B67 on the way:
+the block deficit cuts a container's half at the container's own tag,
+where a search for the tag's text could land on a whole element of the same name beside it.
+Its census (`census-o4RZ7w`,
+1,466 passes,
+taken from a tree with nothing uncommitted)
+leaves library source at 805 stretches over 1,636 lines in 293 files,
+with 17 functions never called.
+B68,
+found in the same file,
+comes next:
+the deficit counts a container's blocks by blank-line split rather than off the parse,
+and the census after its fix is the fifteenth batch's baseline;
+the runner entry files and unloaded bundles come after the library.
+Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,

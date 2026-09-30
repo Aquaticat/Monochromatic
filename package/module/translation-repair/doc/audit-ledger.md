@@ -4088,6 +4088,104 @@ and 98 others.
 ahead of `prompt` at 20),
 so the fourteenth batch takes it.
 
+The fourteenth batch took the insertion modules of `corpus-run` against `census-lPGpK8`
+in four code commits,
+`1af921d31` to `bc15e9a28`,
+and one entry of its own,
+B67.
+Its census at `bc15e9a28`
+(`census-o4RZ7w`,
+1,466 passes,
+taken clean)
+reads against `census-lPGpK8`:
+ran 0,
+still cold 1,155,
+cold since then 5,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 8.
+The 8 edited sources are the seven cluster files,
+each "loaded it and left 0 cold stretches",
+and `mask-container-tags.ts` (B67),
+which "left 4 cold stretches",
+the 4 it had.
+The 5 cold since then are `module-or-throw` code the batch brought in
+(`nonemptyOrThrow` 1,
+`getSize` in `size.ts` 4),
+not loaded before,
+so other packages' sources go from 61 files and 324 stretches to 63 and 329.
+Library source went from 826 stretches over 1,686 lines in 300 files to 805 over 1,636 in 293,
+with 17 functions never called where 19 were
+(the two sort comparators the cases now call):
+the cluster's 21
+(`insertion-carried-shift.ts` 6,
+`insertion-carried-decide.ts` 4,
+`insertion-container-deficit.ts` 3,
+`insertion-carried-anchor.ts`,
+`insertion-carried-fold.ts`,
+`insertion-container-halves.ts` and `insertion-referenced-definitions.ts` 2 each),
+all seven files now at none,
+and per-file counts compared between the two census files change in no other library file.
+Entry files keep 30 stretches over 754 lines.
+The 6 not loaded are the unmapped `wording-key` chunk,
+renamed again (`wording-key-C7_uuYqL.mjs`).
+The bundles no test loaded are still 36,
+carrying 38 sources over 13,322 lines.
+
+How the rows closed,
+by commit:
+`1af921d31` and `ad58185f7` (B67) cut a container half at the lone tag's own offset,
+and the arm for a tag the text search could not find went with the search (`deficit` 184).
+`0bae4490f` replaced the fallbacks no input reaches with code that has no such branch,
+or with a narrowing that throws where the invariant is the argument.
+In the carried fold,
+positions were looked up again after the lookup that found them:
+`pairedNeighbourToward` now returns each neighbour with its slice narrowed to a paired one,
+the fold decision carries the carrier,
+the receiver and the carried slice,
+and `shiftSlices` takes them
+(`decide` 215-218,
+`fold` 153,
+`shift` 80,
+130 and 272-273);
+the carried slice is read once with `nonNullishOrThrow`,
+and the check that it is the recorded insertion went,
+since the rows are built from the insertion slices at those positions
+and a fold rewrites only a carrier's source (`decide` 226-229);
+a carried passage always names evidence,
+since `judgeCoverage` calls one carried only on a majority of full votes,
+whose matched regions are the evidence (`decide` 146-149,
+`nonemptyOrThrow`);
+a typed `find` and `filter` read the placed regions' holders (`decide` 177);
+and `abutting` takes the two chunks in either order,
+reading the gap from the smaller end to the larger start,
+so neither caller orders them by position and overlapping spans count as abutting
+(`anchor` 237,
+`shift` 139-144).
+Outside the fold:
+`halves` 117-118 and `definitions` 143 read the slice at an admitted position with `nonNullishOrThrow`,
+and `definitions` 224 reads the referrer in the predicate that finds the label.
+`bc15e9a28` cased the reachable ones:
+`anchor` 198-201 (evidence in an archive paragraph no paired span holds),
+`fold` 303 (the chained shape listed bath first,
+both folding on the first pass,
+the order the case's name already claimed),
+`shift` 121 (a new mirrored shape where the carrier follows the passage)
+and 124 (no paired slice on the carrier's far side),
+`deficit` 172 (an archive half not writing the tag)
+and 434-439 (two absent rows out of document order),
+and `halves` 99-104 (admitted positions out of order),
+through the halves admission's first direct test.
+The batch's control copy,
+the halves test with the finding naming the later admitted slice,
+failed at that assertion alone and was deleted.
+
+Reading the deficit also found B68:
+it counts a container's blocks by blank-line split,
+where the rule its prevention section states asks the parse.
+B68 comes before the fifteenth batch,
+whose baseline is the census taken after its fix.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -13017,6 +13115,63 @@ a count in a message takes the word `wordForCount` chooses,
 or `howOften` for a number of times,
 and a case pins the count of 1.
 
+### B67: the container deficit found a container's tag by searching for its text
+
+Found by the fourteenth coverage batch,
+reading `insertion-container-deficit.ts` beside its cold arm for a tag the search could not find.
+`insideContainer` cuts one half of a container at the container's own tag,
+so the deficit counts only the blocks inside it.
+It took the tag from `maskLoneContainerTags`,
+which records each tag's offsets but returned only its kind,
+name and text,
+and then searched the slice for that text:
+`indexOf` in the opening half,
+`lastIndexOf` in the closing half.
+A whole element of the same name in the same half slice
+(a closed `<details>` pair before the container's opener,
+or after its closer)
+holds the same text,
+so the search found it instead and counted its blocks as the container's.
+Where the original's and the archive's copies of that element differ in blocks,
+the difference moves this container's deficit:
+in the red cases,
+a container the archive renders whole admitted an absent passage.
+Whether a pinned page has such a half slice is not measured.
+
+Fixed (`1af921d31` red,
+`ad58185f7`):
+`LoneContainerTag` carries `startOffset` and `endOffset`,
+and the deficit cuts after the first lone opener of the container's name
+and before the last lone closer,
+at those offsets.
+Cutting at the text search again failed the two red cases and their describe,
+and nothing else.
+
+Recurrence:
+a reader that needs where a tag or token stands reads the offset its finder recorded;
+searching the text again for what was found is a second finder,
+which finds the first or last copy of the text rather than the one found.
+
+### B68: the container deficit counts blocks by blank-line split
+
+Status:
+open,
+found by the fourteenth coverage batch reading the same file as B67.
+`countBlocks` counts the blocks one side writes inside a container as runs of non-blank lines.
+The package's rule for a question about what a container holds is to ask the parse the floor reads
+(`mistake-prevention.md`,
+"Structure read off the parse",
+after B42),
+and a blank-line split disagrees with it wherever the two texts write one block differently:
+a list whose items the original writes tight and the archive loose,
+or a fenced block with a blank line inside.
+The count decides admission,
+so a split count can admit a passage into a container the archive renders whole,
+or refuse one the archive lacks.
+It comes before the fifteenth batch:
+red cases for both shapes,
+then the count read off the parse.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -14278,6 +14433,14 @@ so it read the edit),
 and a commit comment was posted in the batch of the write of its body
 (fetched back,
 the posted body matches the file).
+Again in the fourteenth batch,
+once:
+a commit message's check for `#` and task numbers ran in the batch of the message's write;
+its output carried no missing-file error,
+so it read the written file.
+Rerunning that check afterwards also covered the two B67 messages,
+which had not been checked before their commits;
+none of the three held a match.
 The prevention stands as written:
 the edit or write,
 then,

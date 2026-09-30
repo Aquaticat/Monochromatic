@@ -291,14 +291,22 @@ this one says what changed after it.
   ledger B66,
   a count printed before a fixed plural,
   whose wider family is queued as one change).
-  The baseline is now the whole suite at `de9ced3f0` (`census-lPGpK8`,
-  1,465 passes):
-  library source holds 826 stretches over 1,686 lines in 300 files,
-  with 19 functions never called.
+  The fourteenth batch read against the whole suite at `de9ced3f0` (`census-lPGpK8`,
+  1,465 passes)
+  and took the insertion modules of `corpus-run`,
+  closing all 21 of their stretches in 7 files
+  (`1af921d31` to `bc15e9a28`;
+  ledger B67,
+  a container half cut at a text search for its tag rather than at the tag).
+  Its census at `bc15e9a28` (`census-o4RZ7w`,
+  1,466 passes)
+  leaves library source at 805 stretches over 1,636 lines in 293 files,
+  with 17 functions never called.
+  Ledger B68,
+  the same file counting a container's blocks by blank-line split rather than off the parse,
+  comes next,
+  and the census after its fix is the fifteenth batch's baseline.
   The library batches go on one triage cluster each,
-  the fourteenth taking the insertion modules of `corpus-run`
-  (`corpus-run/insertion`,
-  21 stretches in 7 files),
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
   the ledger's T8 entry has the triage counts.

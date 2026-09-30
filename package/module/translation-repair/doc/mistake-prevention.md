@@ -1253,12 +1253,20 @@ both plain strings,
 so no lookup matched and every real sample manifest said no kept entry recorded a pipeline digest;
 the unit fixture keyed its map by file name too,
 agreeing with the defect rather than with the map's builder (ledger B63).
+The lone-tag mask recorded each tag's offsets and returned only its text,
+so the container deficit searched the slice for that text,
+found a whole element of the same name beside the container,
+and counted that element's blocks as the container's (ledger B67).
 
 The rule:
 a producer hands its readers fields;
 a key string is built where keys are compared,
 and nothing reads a part of one back.
 A reader that needs a part of a key reads the field it was built from.
+A finder hands its readers the offsets it found,
+and a reader never searches the text again for what was found:
+the search finds the first or last copy,
+not the one the finder meant.
 Two strings that name one thing differently are two types
 (`ArtifactFileName` against an entry id),
 and a lookup is fed the key its builder used.
