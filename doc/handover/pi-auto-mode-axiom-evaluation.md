@@ -331,7 +331,26 @@ synthetic source handles,
 immutable entry snapshots,
 session-wide reset epochs,
 and grant/branch/policy/cancellation final checks.
-Its actual-session/inert-callback mechanics test `proc_f2c1` is running.
+Its actual-session/inert-callback test `proc_f2c1` passed the executed synthetic assertions
+through two sessions,
+four first-party scripted responses,
+and two inert callbacks,
+with empty private stderr and no model/genuine input.
+Independent serialized-source review then found duplicate lifecycle binding,
+pre-reset witness re-registration,
+incomplete finalization identity/branch dependencies,
+and a mutable nested result array.
+General lifecycle clearance is retracted;
+the result remains only an executed synthetic-assertion pass.
+The entry freshness check covers a tested JSON projection mutation,
+not persisted bytes or every JavaScript property.
+The completed `consumer/` epoch is preserved.
+A separate `consumer-fresh/` revision adds canonical binding,
+session/epoch-bound witness birth,
+selected-record/branch dependencies,
+and a frozen nested array.
+Its new controls and source freeze are pending,
+not a replay or a qualified fix.
 This synthetic-only phase cannot create human grants or qualify the complete lifecycle engine.
 Target/source/deadline/cache guards,
 real original-action admission,
