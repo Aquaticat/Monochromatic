@@ -273,15 +273,20 @@ this one says what changed after it.
   both fixed since (`48c580d16` to `4304d167d`):
   the reading names each stretch cold since its baseline,
   and asks git about every file of the work tree.
-  The baseline is now the whole suite at `4304d167d` (`census-7D4Vp9`,
-  1,447 passes),
-  whose per-file counts match the census at `791bc45fe` in every source:
-  library source holds 874 stretches over 1,782 lines in 316 files,
+  The twelfth batch read against the whole suite at `4304d167d` (`census-7D4Vp9`,
+  1,447 passes)
+  and took the corpus-run artifact modules,
+  closing all 26 of their stretches in 8 files
+  (`21d3654d5` to `99eed862e`;
+  ledger B63 and B64).
+  The baseline is now the whole suite at `99eed862e` (`census-aoSuO0`,
+  1,458 passes):
+  library source holds 848 stretches over 1,747 lines in 308 files,
   with 19 functions never called.
   The library batches go on one triage cluster each,
-  the twelfth taking the corpus-run artifact modules
-  (`corpus-run/artifact`,
-  26 stretches in 8 files),
+  the thirteenth taking the lane modules
+  (`lane`,
+  21 stretches in 7 files),
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
   the ledger's T8 entry has the triage counts.

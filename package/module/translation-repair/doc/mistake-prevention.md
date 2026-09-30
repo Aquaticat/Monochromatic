@@ -590,6 +590,12 @@ A tuning constant was declared in two files from their first commit,
 one copy "mirrored from" the other,
 and only the undocumented copy was read,
 so retuning the documented one changed nothing (ledger B31).
+The rule for what an artifacts directory holds (regular files named `*.json`) was written into two of the directory's readers,
+and four others took any name ending `.json`,
+so a directory or a symlink named like an artifact became a settled entry;
+five more filtered the one lister's names by the suffix again,
+four sliced the suffix off by hand,
+and ten files spelled the directory's name (ledger B64).
 
 The rule:
 before writing a helper,
@@ -603,6 +609,11 @@ Code that claims to rebuild what the pipeline built (slices,
 sheets,
 verdicts) calls the pipeline's own function,
 or measures its agreement over the corpus and records the result.
+A rule about what a directory holds lives in one module every reader lists through
+(`corpus-run/artifact-file-name.ts` for artifacts),
+and a new reader of that directory starts from that module;
+a name spelled in two files becomes a constant one of them owns
+(`runs-layout.ts` for the slice-cache and prompt-payload directories).
 
 What enforces it:
 `src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
@@ -1219,16 +1230,26 @@ What happened:
 footnote mentions were keyed as `role convention identifier` strings,
 and four readers split the keys back into parts three different ways,
 two with a fallback for a part the key always has (ledger B35).
+A draw looked artifact file names (`whiskers.json`) up in a map keyed by entry id (`whiskers`),
+both plain strings,
+so no lookup matched and every real sample manifest said no kept entry recorded a pipeline digest;
+the unit fixture keyed its map by file name too,
+agreeing with the defect rather than with the map's builder (ledger B63).
 
 The rule:
 a producer hands its readers fields;
 a key string is built where keys are compared,
 and nothing reads a part of one back.
 A reader that needs a part of a key reads the field it was built from.
+Two strings that name one thing differently are two types
+(`ArtifactFileName` against an entry id),
+and a lookup is fed the key its builder used.
+A fixture standing in for a lookup another module builds is paired with one case that drives that module.
 
 What enforces it:
 habit and review;
 a fallback on a part a value always has shows in the coverage census as a stretch no test can reach.
+The artifact name's template literal type (`` `${string}.json` ``) refuses a bare entry id where a file name is expected.
 
 ## Counts a finding states
 

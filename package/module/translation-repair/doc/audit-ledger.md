@@ -3843,6 +3843,124 @@ The reading's unmapped fix (`5af5eeec8` and `ce32e438d`) came after this census
 and changes nothing it read,
 since both censuses carry the unmapped chunk under the same bundle name.
 
+The twelfth batch took the artifact modules of `corpus-run` against `census-7D4Vp9`
+in ten code commits,
+`21d3654d5` to `99eed862e`,
+and two entries of its own,
+B63 and B64.
+Its census at `99eed862e`
+(`census-aoSuO0`,
+1,458 passes,
+taken clean)
+reads against `census-7D4Vp9`:
+ran 2,
+still cold 1,164,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 14.
+The 2 that ran are `artifact-two-lane-project.ts`'s two stretches,
+the one cluster source the batch never edited.
+Of the 14 edited sources,
+seven are the rest of the cluster,
+and each "loaded it and left 0 cold stretches";
+the other seven were edited by B63,
+B64 and the plural-word helper,
+and per-file counts compared between the two census files give each of them the count it had
+(`attribution-read.ts` 11,
+`editor-standing-read.ts` 13,
+`verify-published.ts` 6,
+`line-structure-guard.ts` 5,
+`page-republish.ts`,
+`pool-generation.ts` and `rendering-audit-settled-input.ts` 1 each).
+Library source went from 874 stretches over 1,782 lines in 316 files to 848 over 1,747 in 308:
+the cluster's 26
+(`artifact-eligible.ts` 6,
+`artifact-two-lane-rebuild-rows.ts` 5,
+`artifact-generation.ts`,
+`artifact-placement.ts`,
+`artifact-pool-refusal.ts` and `artifact-provenance.ts` 3 each,
+`artifact-two-lane-project.ts` 2,
+`artifact-two-lane-verify.ts` 1),
+all eight files now at none,
+and no other library file changed its count.
+Entry files keep 30 stretches,
+over 754 lines where they covered 778:
+`editor-standing-read.ts` holds its 13 over 114 lines where it held them over 138.
+Other packages' sources are unchanged at 61 files and 324 stretches.
+The 6 not loaded are the unmapped `wording-key` chunk,
+now named `wording-key-BponvTmf.mjs` where it was `wording-key-DoHfCZX0.mjs`,
+6 stretches under each name.
+The bundles no test loaded are still 36,
+carrying 38 sources over 13,323 lines where they carried 39 over 13,450:
+`runs-layout.ts`,
+which `runs-layout.unit.test.ts` (new in the batch) loads,
+is no longer among the library sources only those bundles carry.
+
+How the rows closed,
+by commit:
+`21d3654d5` moved the plural word chosen inline into one `wordForCount` (`count-word.ts`),
+with both arms cased there
+(`eligible` 214,
+222 and 230,
+`pool-refusal` 201 and 202);
+searching library source for that inline choice found it in eleven modules,
+all moved,
+with no output meant to change.
+`8860dc52c`,
+following B64,
+reads the entry id back through `entryIdOfArtifact`,
+and `assertArtifactProvenance`'s arm for a name without the suffix went with it,
+since its callers now pass the `ArtifactFileName` type
+(`provenance` 266-267).
+`06fe7faae` replaced the fallbacks no input reaches with code that has no such branch,
+or with `nonNullishOrThrow` where the invariant is the whole argument:
+`eligible` 168 and 505 (every admitted entry is placed;
+each generation is paired with its count once),
+`generation` 413 and 415 (nano-spawn's own `SubprocessError` and its typed `exitCode`),
+`pool-refusal` 319,
+`provenance` 103 and 309 (the pool records tip and digest together,
+so `assertArtifactProvenance` takes one `expected` record or none,
+and the test for a tip checked alone went with the state it described),
+`rebuild-rows` 101-102 and 116 (rows and slices read as pairs)
+and `verify` 135-137.
+`99eed862e` cased the reachable ones:
+`eligible` 520-521 (a generation the required commit excludes),
+`generation` 211-212 (a file named `.json` alone),
+`placement` 88,
+92 and 94 (an id recorded as null,
+an array,
+an object),
+`project` 80-82 and 90-91 (a member that is not an object,
+one with no kind)
+and `rebuild-rows` 46,
+50 and 89,
+through the first direct test of `carveDivergence`,
+which now takes the rows and slices it reads rather than the whole artifact and preparation.
+The batch's control copy,
+the artifact-placement test with the null-id case expecting `(absent)`,
+failed on that case and its describe alone and was deleted.
+
+The thirteenth batch's baseline is that census
+(`99eed862e`,
+`census-aoSuO0`):
+library source holds 848 stretches over 1,747 lines in 308 files,
+with 19 functions never called.
+By the first construct
+(`t8-triage-aosuo0.txt`),
+the queue is 339 returns,
+167 nullish fallbacks,
+146 ternaries,
+97 throws
+and 99 others.
+Two clusters tie at 21 stretches:
+`lane` (7 files,
+59 lines)
+and `corpus-run/insertion` (7 files,
+50 lines).
+The tie goes to the most cold lines,
+so the thirteenth batch takes `lane`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -12533,6 +12651,112 @@ however unrelated.
 Recurrence:
 a question put to git covers everything its answer is read against,
 and its output is read NUL-separated.
+
+### B63: a draw's manifest never names the pool's build
+
+Found by the twelfth coverage batch,
+reading `corpus-run/pool-generation.ts` beside the census it reads.
+`poolGeneration` looked each kept name up in `eligible.digestByEntry`.
+The draw hands it `keepEligible`'s result,
+artifact file names (`whiskers.json`),
+while `artifact-eligible.ts` `mapDigests` keys that lookup by the census's entry ids (`whiskers`),
+so no lookup matched,
+and every real draw's sample manifest recorded `unrecorded: no kept entry recorded a pipeline digest`,
+the gap the module's region comment says it closes.
+The unit fixture keyed its lookup by file name too,
+agreeing with the defect rather than with the lookup's contract
+("keyed by entry id",
+`EligibleEntries.digestByEntry`).
+A search of the package directory,
+the main checkout's package directory and the cache found no sample manifest outside test fixtures
+(`t8-batch12-plan.md`),
+so by inference no graded sheet carries the wrong record.
+
+Fixed (`568e78912` red,
+`0ad52495e`):
+the names are typed `ArtifactFileName` and looked up by their entry id (`entryIdOfArtifact`);
+the fixture keys entry ids,
+and a case drives the chain the draw runs
+(`listArtifactFiles`,
+`censusByGeneration`,
+`selectEligible`,
+`keepEligible`,
+`poolGeneration`) over two placed artifacts.
+Looking the name up as it came failed four of the fixture's cases.
+
+Recurrence:
+a lookup is fed the key its builder used,
+and an entry's file name and its id are distinct types;
+a fixture standing in for a lookup another module builds is paired with one case that drives that module.
+
+### B64: four readers took any `*.json` name as an artifact
+
+Found by the twelfth coverage batch.
+The census (`readdirArtifacts`,
+then in `artifact-placement.ts`) and the scheduler (`pass-settled.ts`) list only regular files named `*.json`,
+after the drift `pass-settled.ts`'s region comment records,
+where a directory or a symlink called `Mittens.json` marked Mittens settled.
+Four readers of an artifacts directory never took that check:
+`settled-carve.ts` `listSettledEntryIds`,
+the rendering audit's run sets (`rendering-audit-settled-input.ts`,
+whose loose layout did check),
+`published-tree-listing.ts` `settledEntryIds` (read by `verify-published.ts` and `pass-republish.ts`)
+and `editor-standing-read.ts`.
+There a directory or a symlink named like an artifact became a settled entry,
+stopped the archive reading with EISDIR,
+or was read a second time;
+run by hand over an archive holding one artifact,
+a directory and a symlink,
+the built `editor-standing-read` printed `artifacts=3`.
+Five other readers took the census's lister and filtered its names by the suffix again
+(`score-probe.ts`,
+`attribution-read.ts`,
+`damage-sample.ts`,
+`draw-sample.ts`,
+`pass-schema-census.ts`),
+four more sliced the suffix off by hand
+(`keepEligible`,
+`assertArtifactProvenance`,
+`loadEntry`,
+`collectTwoLaneShippedRegions`),
+and the artifacts directory's name was spelled out in ten files,
+two of them as their own constants.
+
+Fixed (`cc74ef7f5` and `7e1305ec6` red,
+`daa5af787`,
+then `8860dc52c` and `a60c1ad38` with no behaviour change):
+`corpus-run/artifact-file-name.ts` owns what names an artifact and where it lives:
+the `ArtifactFileName` type and its guard,
+`entryIdOfArtifact`,
+`artifactFileNameOf`,
+`listArtifactFiles` (regular files only,
+filtered by the suffix),
+`artifactFilesIn` (the same,
+reporting an absent directory),
+`ARTIFACTS_DIR` and `artifactsDirOf`;
+every reader lists through it,
+and every name is built and read back through it.
+`runs-layout.ts` owns the slice-cache and prompt-payload directory names,
+which the cap census's skip list now reads,
+and `prepareRunsLayout` has its first test.
+Letting a non-regular file through the lister failed six test files
+(`artifact-file-name`,
+`settled-carve`,
+`rendering-audit-settled-input`,
+`published-tree-listing`,
+`editor-standing-read`,
+`pass-settled`).
+
+Open:
+the ledger,
+slice-cache and probe-run directories are listed by other code,
+some of it expecting subdirectories;
+whether any of those readers takes a non-file entry as one of its records was not checked.
+
+Recurrence:
+a rule about what a directory holds lives in one module every reader lists through,
+and a new reader of that directory starts from that module;
+a name spelled in two files becomes a constant one of them owns.
 
 ## Process mistakes in this audit
 

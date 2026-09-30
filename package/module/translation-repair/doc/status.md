@@ -144,23 +144,32 @@ including one in a source added since,
 and asks git about every file of the work tree,
 read NUL-separated,
 since it reads other packages' sources too.
-The baseline is now the whole suite at `4304d167d` (`census-7D4Vp9`,
-1,447 passes,
-taken from a tree with nothing uncommitted),
-whose per-file counts match the census at `791bc45fe` (`census-5PAw2O`) in every source:
-library source holds 874 stretches over 1,782 lines in 316 files,
+The twelfth batch took the corpus-run artifact modules,
+26 stretches in 8 files,
+and closed every one
+(`21d3654d5` to `99eed862e`),
+finding and fixing B63 and B64 on the way:
+a draw's sample manifest names the pool's build again,
+where every real draw had recorded none (B63),
+and every reader of an artifacts directory lists regular files named `*.json` through one module,
+where four took a directory or a symlink named like an artifact as a settled entry (B64).
+The baseline is now the whole suite at `99eed862e` (`census-aoSuO0`,
+1,458 passes,
+taken from a tree with nothing uncommitted):
+library source holds 848 stretches over 1,747 lines in 308 files,
 with 19 functions never called,
 and the runner entry files and unloaded bundles come after.
 By the first construct each stretch's lines hold
-(`t8-triage-5paw2o.txt` in the audit's scratch folder),
-the queue is 347 returns,
-171 nullish fallbacks,
-158 ternaries,
-99 throws
+(`t8-triage-aosuo0.txt` in the audit's scratch folder),
+the queue is 339 returns,
+167 nullish fallbacks,
+146 ternaries,
+97 throws
 and 99 others,
-and the twelfth batch takes the corpus-run artifact modules
-(`corpus-run/artifact`,
-26 stretches in 8 files);
+and the thirteenth batch takes the lane modules
+(`lane`,
+21 stretches in 7 files,
+tied with `corpus-run/insertion` and ahead on cold lines);
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:
