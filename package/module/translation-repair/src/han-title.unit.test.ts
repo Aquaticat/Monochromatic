@@ -19,7 +19,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
+import {
+  type SliceValidation,
+  validateTranslatedSlice,
+} from '../dist/final/node/index.mjs';
+import {
+  hanResidueFinding,
+  hanTitleFinding,
+} from './han-findings.test-fixture.ts';
 
 /**
  Original naming the cat's favourite song.
@@ -71,61 +78,106 @@ const LINK_LEFT = 'She sang 《[猫猫摇篮曲](https://example.test/song)》.'
  */
 const LINK_TRANSLATED = 'She sang *[Kitten Lullaby](https://example.test/song)*.';
 
+/**
+ Verdict on a candidate no floor refuses, read against a page.
+ */
+const VALID_ON_PAGE: SliceValidation = {
+  kind: 'valid',
+  pageGrammar: 'strict',
+};
+
+/**
+ Verdict on a candidate no floor refuses, with no page behind it.
+ */
+const VALID_WITHOUT_PAGE: SliceValidation = {
+  kind: 'valid',
+  pageGrammar: 'absent',
+};
+
+/**
+ Verdict refusing the song's title left in Han.
+ */
+const LULLABY_REFUSED: SliceValidation = {
+  kind: 'invalid',
+  findings: [hanTitleFinding({ title: '猫猫摇篮曲', },),],
+};
+
 await describe({
   name: 'a work title the original brackets in 《》 (class ninety-eight)',
   children: [
     it({
       name: 'REFUSES a candidate that leaves a linked title\'s text in Han and ACCEPTS it translated',
       fn: async () => {
-        /**
-         Verdict on the rendering that kept the Han link text.
-         */
-        const verdict = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: LINKED,
           candidateText: LINK_LEFT,
-        },);
-        expect(verdict.kind,).toBe('invalid',);
-        if (verdict.kind !== 'invalid')
-          throw new Error('unreachable',);
-        expect(verdict.findings.join('\n',),).toContain('leaves the title 《猫猫摇篮曲》',);
+        },),).toEqual(LULLABY_REFUSED,);
         expect(validateTranslatedSlice({
           sourceText: LINKED,
           candidateText: LINK_TRANSLATED,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
       },
     },),
     it({
       name: 'REFUSES a candidate that leaves the title in Han where the page never wrote it',
       fn: async () => {
-        /**
-         Verdict on the rendering that kept the Han title.
-         */
-        const verdict = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: NAMED,
           candidateText: LEFT,
-        },);
-        expect(verdict.kind,).toBe('invalid',);
-        if (verdict.kind !== 'invalid')
-          throw new Error('unreachable',);
-        expect(verdict.findings.join('\n',),).toContain('leaves the title',);
+        },),).toEqual(LULLABY_REFUSED,);
+      },
+    },),
+    it({
+      name: 'REFUSES A TITLE WHOSE PARENTHESIS IS NO ENGLISH GLOSS: one broken by a newline, one holding another '
+        + 'parenthesis, and one never closed',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: NAMED,
+          candidateText: 'Her favourite song was 《猫猫摇篮曲》 (Kitten\nLullaby).',
+        },),).toEqual(LULLABY_REFUSED,);
+        expect(validateTranslatedSlice({
+          sourceText: NAMED,
+          candidateText: 'Her favourite song was 《猫猫摇篮曲》 (see (Kitten Lullaby)).',
+        },),).toEqual(LULLABY_REFUSED,);
+        expect(validateTranslatedSlice({
+          sourceText: NAMED,
+          candidateText: 'Her favourite song was 《猫猫摇篮曲》 (Kitten Lullaby',
+        },),).toEqual(LULLABY_REFUSED,);
+      },
+    },),
+    it({
+      name: 'REFUSES A TITLE LEFT BARE at the end of the text, on a later line, after a closed parenthesis, and '
+        + 'inside a parenthesis that never closes',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '她最爱的歌是《猫猫摇篮曲》',
+          candidateText: 'Her favourite song: 《猫猫摇篮曲》',
+        },),).toEqual(LULLABY_REFUSED,);
+        expect(validateTranslatedSlice({
+          sourceText: '她最爱的歌是\n《猫猫摇篮曲》。',
+          candidateText: 'Her favourite song was\n《猫猫摇篮曲》.',
+        },),).toEqual(LULLABY_REFUSED,);
+        expect(validateTranslatedSlice({
+          sourceText: '她（猫）最爱的歌是《猫猫摇篮曲》。',
+          candidateText: 'She (the cat) loved 《猫猫摇篮曲》.',
+        },),).toEqual(LULLABY_REFUSED,);
+        expect(validateTranslatedSlice({
+          sourceText: NAMED,
+          candidateText: 'Her favourite song was Kitten Lullaby (《猫猫摇篮曲》',
+        },),).toEqual(LULLABY_REFUSED,);
       },
     },),
     it({
       name: 'REFUSES A LATIN-BEARING TITLE LEFT BARE through the Han residue floor, not this one, where it once '
         + 'fell between this floor and the Latin title floor (ledger F-3)',
       fn: async () => {
-        /**
-         Verdict on the rendering that kept the Latin-bearing title bare.
-         */
-        const verdict = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: LATIN_NAMED,
           candidateText: LATIN_KEPT,
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [hanResidueFinding({ runs: ['物语',], },),],
         },);
-        expect(verdict.kind,).toBe('invalid',);
-        if (verdict.kind !== 'invalid')
-          throw new Error('unreachable',);
-        expect(verdict.findings.join('\n',),).toContain('leaves Han standing',);
-        expect(verdict.findings.join('\n',),).not.toContain('leaves the title',);
       },
     },),
     it({
@@ -135,14 +187,7 @@ await describe({
         expect(validateTranslatedSlice({
           sourceText: '她的歌：《喵，还有《猫猫摇篮曲》。',
           candidateText: 'Her songs: 《喵，还有《猫猫摇篮曲》.',
-        },),).toEqual({
-          kind: 'invalid',
-          findings: [
-            'Your translation leaves the title 《猫猫摇篮曲》 in Han: a work the ORIGINAL names is called by its English '
-            + 'title on the page, the official English title where one exists and a translation of the title where none '
-            + 'does, and the Han never stands alone as the name.',
-          ],
-        },);
+        },),).toEqual(LULLABY_REFUSED,);
       },
     },),
     it({
@@ -151,24 +196,24 @@ await describe({
         expect(validateTranslatedSlice({
           sourceText: NAMED,
           candidateText: TRANSLATED,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
         expect(validateTranslatedSlice({
           sourceText: NAMED,
           candidateText: GLOSSED,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
         expect(validateTranslatedSlice({
           sourceText: LATIN_NAMED,
           candidateText: LATIN_GLOSSED,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
         expect(validateTranslatedSlice({
           sourceText: NAMED,
           candidateText: LEFT,
           pageText: LEFT,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_ON_PAGE,);
         expect(validateTranslatedSlice({
           sourceText: '<!-- 《猫猫摇篮曲》 -->她睡了。',
           candidateText: 'She slept.',
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
       },
     },),
   ],

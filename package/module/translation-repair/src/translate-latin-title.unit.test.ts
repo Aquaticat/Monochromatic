@@ -17,7 +17,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { validateTranslatedSlice, } from '../dist/final/node/index.mjs';
+import {
+  type SliceValidation,
+  validateTranslatedSlice,
+} from '../dist/final/node/index.mjs';
 
 /**
  Original crediting a song by its Han title.
@@ -29,6 +32,45 @@ const CREDIT = '<p style="text-align: end;">—— 猫猫《喵喵歌》</p>';
  */
 const ENGLISH_TITLE = '她最爱的诗是《Cats Are Liquid》。';
 
+/**
+ Verdict on a candidate no floor refuses, read against a page.
+ */
+const VALID_ON_PAGE: SliceValidation = {
+  kind: 'valid',
+  pageGrammar: 'strict',
+};
+
+/**
+ Verdict on a candidate no floor refuses, with no page behind it.
+ */
+const VALID_WITHOUT_PAGE: SliceValidation = {
+  kind: 'valid',
+  pageGrammar: 'absent',
+};
+
+/**
+ Verdict refusing an English title left in the Chinese title marks.
+
+ @param title - title between the marks
+
+ @returns Whole verdict, so a check reads every word of the finding
+
+ @example
+ ```ts
+ bracketRefusal({ title: 'Meow Song', },);
+ ```
+ */
+function bracketRefusal({ title, }: { readonly title: string; },): SliceValidation {
+  return {
+    kind: 'invalid',
+    findings: [
+      `Your translation sets the English title 《${title}》 in the Chinese title marks 《》, which mean nothing in `
+      + 'English prose: an English page sets a work\'s title in quotation marks, so write '
+      + `“${title}” (keeping any link on the title).`,
+    ],
+  };
+}
+
 await describe({
   name: 'an English title left in 《》 (class one hundred forty-one)',
   children: [
@@ -38,7 +80,7 @@ await describe({
         expect(validateTranslatedSlice({
           sourceText: CREDIT,
           candidateText: '<p style="text-align: end;">— Maomao 《Meow Song》</p>',
-        },).kind,).toBe('invalid',);
+        },),).toEqual(bracketRefusal({ title: 'Meow Song', },),);
       },
     },),
     it({
@@ -50,7 +92,7 @@ await describe({
         expect(validateTranslatedSlice({
           sourceText: CREDIT,
           candidateText: '<p style="text-align: end;">— Maomao (Kitty Kitty), “Meow Song”</p>',
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
       },
     },),
     it({
@@ -59,7 +101,7 @@ await describe({
         expect(validateTranslatedSlice({
           sourceText: ENGLISH_TITLE,
           candidateText: 'Her favourite poem was 《Cats Are Liquid》.',
-        },).kind,).toBe('invalid',);
+        },),).toEqual(bracketRefusal({ title: 'Cats Are Liquid', },),);
       },
     },),
     it({
@@ -69,7 +111,7 @@ await describe({
           sourceText: ENGLISH_TITLE,
           candidateText: 'Her favourite poem was 《Cats Are Liquid》.',
           pageText: 'Her favourite poem is 《Cats Are Liquid》.',
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_ON_PAGE,);
       },
     },),
     it({
@@ -84,12 +126,12 @@ await describe({
           sourceText,
           candidateText: 'Her favourite poem was 《Don\'t Wake the Cat》.',
           pageText: 'Her favourite poem is 《Don’t Wake the Cat》.',
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_ON_PAGE,);
         expect(validateTranslatedSlice({
           sourceText,
           candidateText: 'Her favourite poem was 《Don’t Wake the Cat》.',
           pageText: 'Her favourite poem is 《Don\'t Wake the Cat》.',
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_ON_PAGE,);
       },
     },),
     it({
@@ -99,14 +141,7 @@ await describe({
         expect(validateTranslatedSlice({
           sourceText: '她的诗：《Purr，还有《Cats Are Liquid》；下一首《Meow',
           candidateText: 'Her poems: 《Purr, and 《Cats Are Liquid》; next, 《Meow',
-        },),).toEqual({
-          kind: 'invalid',
-          findings: [
-            'Your translation sets the English title 《Cats Are Liquid》 in the Chinese title marks 《》, which mean '
-            + 'nothing in English prose: an English page sets a work\'s title in quotation marks, so write “Cats Are '
-            + 'Liquid” (keeping any link on the title).',
-          ],
-        },);
+        },),).toEqual(bracketRefusal({ title: 'Cats Are Liquid', },),);
       },
     },),
     it({
@@ -116,7 +151,7 @@ await describe({
         expect(validateTranslatedSlice({
           sourceText: '她最爱的游戏是《喵萌DX》。',
           candidateText: 'Her favourite game was 《喵萌DX》 (Meowmeow DX).',
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
       },
     },),
   ],

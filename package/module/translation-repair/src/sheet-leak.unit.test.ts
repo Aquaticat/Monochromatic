@@ -15,6 +15,7 @@ import {
 
 import {
   sheetLeakFindings,
+  type SliceValidation,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
 
@@ -28,6 +29,79 @@ const SOURCE = `<PhotoScroll photos={[\n'\${path}/photos/cat1.webp'\n]} />\n\n--
  */
 const LEAKED = `${SOURCE}\n\n===== WHAT THE PICTURES HERE SAY =====\nPICTURE cat1.webp\nreader-one:\n[left] 猫在睡觉`;
 
+/**
+ Fenced header labels the sheets write, each with the label the finding
+ names: the listed head the label carries, or the label itself where no
+ listed head covers it.
+ */
+const FENCED_LABELS: readonly (readonly [string, string,])[] = [
+  [
+    'WHAT THE JUDGES FOUND, claims to check against the original',
+    'WHAT THE JUDGES FOUND',
+  ],
+  [
+    'REQUIRED FINDINGS from independent absolute-quality review',
+    'REQUIRED FINDINGS',
+  ],
+  [
+    'PRIOR CORRECTION STRATEGIES THAT FAILED; choose a materially different approach',
+    'PRIOR CORRECTION STRATEGIES',
+  ],
+  [
+    'ORIGINAL (Chinese), the standard',
+    'ORIGINAL (Chinese)',
+  ],
+  [
+    'SURROUNDING ORIGINAL (Chinese), context only',
+    'ORIGINAL (Chinese)',
+  ],
+  [
+    'REJECTED CANDIDATE 1',
+    'REJECTED CANDIDATE',
+  ],
+  [
+    'A LABEL NO LIST NAMES YET',
+    'A LABEL NO LIST NAMES YET',
+  ],
+];
+
+/**
+ Finding refusing a candidate that carries a sheet block.
+
+ @param label - label the finding names: a listed head, or a fenced line's
+ own label where no listed head covers it
+
+ @returns The finding, word for word
+
+ @example
+ ```ts
+ leakFinding({ label: 'ATTESTED DETAILS', },);
+ ```
+ */
+function leakFinding({ label, }: { readonly label: string; },): string {
+  return `Your translation carries the sheet's own "${label}" block, which is evidence shown to you and never part `
+    + 'of the passage. Render the ORIGINAL alone and leave every fenced block out.';
+}
+
+/**
+ Verdict refusing a candidate that carries a sheet block.
+
+ @param label - label the finding names
+
+ @returns Whole verdict
+
+ @example
+ ```ts
+ leakRefusal({ label: 'ATTESTED DETAILS', },);
+ ```
+ */
+function leakRefusal({ label, }: { readonly label: string; },): SliceValidation {
+  return {
+    kind: 'invalid',
+    findings: [leakFinding({ label, },),],
+  };
+}
+
 await describe({
   name: 'sheet evidence copied into a candidate (class forty-four)',
   children: [
@@ -40,40 +114,27 @@ await describe({
       return it({
         name: `REFUSES a candidate carrying the sheet's ${label} block`,
         fn: async () => {
-          const result = validateTranslatedSlice({
+          expect(validateTranslatedSlice({
             sourceText: '猫在睡觉。',
             candidateText: `The cat is sleeping.\n\n===== ${label} =====\nsomething copied`,
-          },);
-          expect(result.kind,).toBe('invalid',);
-          if (result.kind === 'invalid')
-            expect(result.findings.join('\n',),).toContain(label,);
+          },),).toEqual(leakRefusal({ label, },),);
         },
       },);
     },),
     it({
       name: 'REFUSES the transcript block copied under a picture component, the Mio27 shape',
       fn: async () => {
-        const result = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: SOURCE,
           pageText: SOURCE,
           candidateText: LEAKED,
-        },);
-        expect(result.kind,).toBe('invalid',);
-        if (result.kind === 'invalid')
-          expect(result.findings.join('\n',),).toContain('WHAT THE PICTURES HERE SAY',);
+        },),).toEqual(leakRefusal({ label: 'WHAT THE PICTURES HERE SAY', },),);
       },
     },),
-    ...[
-      'WHAT THE JUDGES FOUND, claims to check against the original',
-      'REQUIRED FINDINGS from independent absolute-quality review',
-      'PRIOR CORRECTION STRATEGIES THAT FAILED; choose a materially different approach',
-      'ORIGINAL (Chinese), the standard',
-      'SURROUNDING ORIGINAL (Chinese), context only',
-      'REJECTED CANDIDATE 1',
-      'A LABEL NO LIST NAMES YET',
-    ].map(function refusesFenced(label,) {
+    ...FENCED_LABELS.map(function refusesFenced([label, named,],) {
       return it({
-        name: `REFUSES the fenced "${label}" block (ledger F-8 and E7: the label list had fallen behind the sheets)`,
+        name: `REFUSES the fenced "${label}" block, naming "${named}" (ledger F-8 and E7: the label list had fallen `
+          + 'behind the sheets)',
         fn: async () => {
           // THE FLOOR ITSELF, not the composed verdict: there the added block
           // is refused by the block comparison first, which says nothing
@@ -82,19 +143,19 @@ await describe({
             sourceText: '猫在睡觉。',
             pageText: 'The cat is sleeping.',
             candidateText: `The cat is sleeping.\n\n===== ${label} =====\n- the cat is asleep`,
-          },).length,).toBeGreaterThan(0,);
+          },),).toEqual([leakFinding({ label: named, },),],);
         },
       },);
     },),
     it({
-      name: 'REFUSES a sheet head copied without its fence, and ACCEPTS a setext underline and a fenced line the '
-        + 'original and the page carry',
+      name: 'REFUSES a sheet head copied without its fence, and ACCEPTS a setext underline, a fenced line the '
+        + 'original and the page carry, and a fence with no label between its runs',
       fn: async () => {
         expect(sheetLeakFindings({
           sourceText: '猫在睡觉。',
           pageText: '',
           candidateText: 'The cat is sleeping.\n\nWHAT THE JUDGES FOUND: the cat is asleep.',
-        },).length,).toBeGreaterThan(0,);
+        },),).toEqual([leakFinding({ label: 'WHAT THE JUDGES FOUND', },),],);
         expect(sheetLeakFindings({
           sourceText: '猫的日记\n=====\n\n猫在睡觉。',
           pageText: '',
@@ -105,27 +166,29 @@ await describe({
           pageText: '===== Cat =====\n\nThe cat is sleeping.',
           candidateText: '===== Cat =====\n\nThe cat is sleeping.',
         },),).toStrictEqual([],);
+        expect(sheetLeakFindings({
+          sourceText: '猫在睡觉。',
+          pageText: '',
+          candidateText: 'The cat is sleeping.\n\n=====   =====\n\nThe cat woke.',
+        },),).toStrictEqual([],);
       },
     },),
     it({
       name: 'REFUSES the editor sheet\'s region marker and its unfenced line heads copied into a rendering, '
         + 'unless the original or the page carries them (ledger B24)',
       fn: async () => {
-        for (const candidateText of [
-          'The cat «REGION 3» is sleeping.',
-          'CURRENT TEXT: The cat is sleeping.',
-          'CONTEXT: ...the cat is sleeping...',
-        ]) {
-          /**
-           What the chain refuses the rendering with.
-           */
-          const result = validateTranslatedSlice({
-            sourceText: '猫在睡觉。',
-            candidateText,
-          },);
-          expect(result.kind,).toBe('invalid',);
-          expect((result.kind === 'invalid') ? result.findings.join(' ',) : '',).toContain('the sheet\'s own',);
-        }
+        expect(validateTranslatedSlice({
+          sourceText: '猫在睡觉。',
+          candidateText: 'The cat «REGION 3» is sleeping.',
+        },),).toEqual(leakRefusal({ label: '«REGION', },),);
+        expect(validateTranslatedSlice({
+          sourceText: '猫在睡觉。',
+          candidateText: 'CURRENT TEXT: The cat is sleeping.',
+        },),).toEqual(leakRefusal({ label: 'CURRENT TEXT:', },),);
+        expect(validateTranslatedSlice({
+          sourceText: '猫在睡觉。',
+          candidateText: 'CONTEXT: ...the cat is sleeping...',
+        },),).toEqual(leakRefusal({ label: 'CONTEXT: ...', },),);
         expect(sheetLeakFindings({
           sourceText: '猫在睡觉。',
           pageText: 'CURRENT TEXT: The cat is sleeping.',
@@ -139,12 +202,18 @@ await describe({
         expect(validateTranslatedSlice({
           sourceText: '猫在睡觉。',
           candidateText: 'The cat is sleeping.',
-        },).kind,).toBe('valid',);
+        },),).toEqual({
+          kind: 'valid',
+          pageGrammar: 'absent',
+        },);
         expect(validateTranslatedSlice({
           sourceText: SOURCE,
           pageText: SOURCE,
           candidateText: SOURCE,
-        },).kind,).toBe('valid',);
+        },),).toEqual({
+          kind: 'valid',
+          pageGrammar: 'strict',
+        },);
       },
     },),
   ],

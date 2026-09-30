@@ -31,6 +31,7 @@ import {
   laneTextsForSlate,
   readStandingVerdict,
   type RosterModelId,
+  type SliceValidation,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
 
@@ -82,9 +83,90 @@ const LATIN_SOURCE_PAIRS = [
 ] as const;
 
 /**
+ Original question title @-mentioning the declared cat.
+ */
+const QUESTION = '[如何评价论坛用户@咪咪？](https://example.invalid/question/7)';
+
+/**
+ Archive's rendering of the question, carrying the account handle.
+ */
+const QUESTION_PAGE = '[What do you think of forum user @mi-mi-42 ?](https://example.invalid/question/7)';
+
+/**
+ Verdict on a candidate no floor refuses, read against a page.
+ */
+const VALID_ON_PAGE: SliceValidation = {
+  kind: 'valid',
+  pageGrammar: 'strict',
+};
+
+/**
+ Verdict on a candidate no floor refuses, with no page behind it.
+ */
+const VALID_WITHOUT_PAGE: SliceValidation = {
+  kind: 'valid',
+  pageGrammar: 'absent',
+};
+
+/**
  Logger that forwards every line.
  */
 const l: Logger = tagged({ tag: 'declared-link-name-test', },);
+
+/**
+ Verdict refusing a link text that lacks the declared form.
+
+ @param href - destination both link texts sit under
+
+ @param source - declared source form the original's link text carries
+
+ @param rendering - declared form
+
+ @param quoted - rendered link text, as the finding quotes it
+
+ @param handles - account handles the page writes under the href, which an
+ @-mention may carry instead; none off a mention
+
+ @returns Whole verdict, so a check reads every word of the finding
+
+ @example
+ ```ts
+ linkNameRefusal({ href, source: '咪咪', rendering: 'Mittens', quoted: 'Diary', handles: [], },);
+ ```
+ */
+function linkNameRefusal(
+  {
+    href,
+    source,
+    rendering,
+    quoted,
+    handles,
+  }: {
+    readonly href: string;
+    readonly source: string;
+    readonly rendering: string;
+    readonly quoted: string;
+    readonly handles: readonly string[];
+  },
+): SliceValidation {
+  /**
+   Handle alternative the finding offers, empty off a mention.
+   */
+  const handleClause = (handles.length === 0)
+    ? ''
+    : ' As an @-mention it may instead carry the account handle the existing translation writes there '
+      + `(${handles.join(', ',)}).`;
+  return {
+    kind: 'invalid',
+    findings: [
+      `The link text for ${href} names ${source}, whom this page's front matter declares "${rendering}", but your `
+      + `link text "${quoted}" does not carry "${rendering}". A declared name inside a title takes its declared form, `
+      + `whatever the existing translation calls the person there; keep the rest of the title as you rendered it.${
+        handleClause
+      }`,
+    ],
+  };
+}
 
 await describe({
   name: 'a declared name inside a linked title (class one hundred fourteen)',
@@ -92,24 +174,18 @@ await describe({
     it({
       name: 'REFUSES a rendering whose link text lacks the declared form, and names both forms',
       fn: async () => {
-        /**
-         Verdict on the archive's own rendering.
-         */
-        const verdict = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: SOURCE,
           candidateText: ARCHIVE,
           pageText: ARCHIVE,
           declared: PAIRS,
-        },);
-        expect(verdict.kind,).toBe('invalid',);
-        if (verdict.kind !== 'invalid')
-          throw new Error('unreachable',);
-        /**
-         Findings read as one text.
-         */
-        const findings = verdict.findings.join('\n',);
-        expect(findings,).toContain('咪咪',);
-        expect(findings,).toContain('Mittens',);
+        },),).toEqual(linkNameRefusal({
+          href: 'https://example.invalid/breakfast-mimi.html',
+          source: '咪咪',
+          rendering: 'Mittens',
+          quoted: 'Good morning. Eat all your breakfast today, Whiskers.',
+          handles: [],
+        },),);
       },
     },),
     it({
@@ -120,17 +196,17 @@ await describe({
           candidateText: DECLARED,
           pageText: ARCHIVE,
           declared: PAIRS,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_ON_PAGE,);
         expect(validateTranslatedSlice({
           sourceText: SOURCE,
           candidateText: ARCHIVE,
           pageText: ARCHIVE,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_ON_PAGE,);
         expect(validateTranslatedSlice({
           sourceText: '咪咪在窗台上打盹。',
           candidateText: 'The kitten dozed on the windowsill.',
           declared: PAIRS,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
       },
     },),
     it({
@@ -210,41 +286,58 @@ await describe({
       name: 'PASSES AN @-MENTION CARRYING THE ACCOUNT HANDLE THE PAGE WRITES, or the declared form, and refuses '
         + 'any other handle, offering the page\'s (owner, 2026-09-27, "Account handle")',
       fn: async () => {
-        /**
-         Original question title @-mentioning the declared cat.
-         */
-        const sourceText = '[如何评价论坛用户@咪咪？](https://example.invalid/question/7)';
-
-        /**
-         Archive's rendering, carrying the account handle.
-         */
-        const pageText = '[What do you think of forum user @mi-mi-42 ?](https://example.invalid/question/7)';
         expect(validateTranslatedSlice({
-          sourceText,
+          sourceText: QUESTION,
+          candidateText: QUESTION_PAGE,
+          pageText: QUESTION_PAGE,
+          declared: PAIRS,
+        },),).toEqual(VALID_ON_PAGE,);
+        expect(validateTranslatedSlice({
+          sourceText: QUESTION,
+          candidateText: '[What do you think of forum user @Mittens?](https://example.invalid/question/7)',
+          pageText: QUESTION_PAGE,
+          declared: PAIRS,
+        },),).toEqual(VALID_ON_PAGE,);
+        expect(validateTranslatedSlice({
+          sourceText: QUESTION,
+          candidateText: '[What do you think of forum user @mimi?](https://example.invalid/question/7)',
+          pageText: QUESTION_PAGE,
+          declared: PAIRS,
+        },),).toEqual(linkNameRefusal({
+          href: 'https://example.invalid/question/7',
+          source: '咪咪',
+          rendering: 'Mittens',
+          quoted: 'What do you think of forum user @mimi?',
+          handles: ['@mi-mi-42',],
+        },),);
+      },
+    },),
+    it({
+      name: 'READS A HANDLE ENDING THE PAGE\'S LINK TEXT WHOLE: the rendering carrying it passes, and another handle '
+        + 'is offered it',
+      fn: async () => {
+        /**
+         Archive's rendering of the question, the handle closing its link text.
+         */
+        const pageText = '[What do you think of forum user @mi-mi-42](https://example.invalid/question/7)';
+        expect(validateTranslatedSlice({
+          sourceText: QUESTION,
           candidateText: pageText,
           pageText,
           declared: PAIRS,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_ON_PAGE,);
         expect(validateTranslatedSlice({
-          sourceText,
-          candidateText: '[What do you think of forum user @Mittens?](https://example.invalid/question/7)',
-          pageText,
-          declared: PAIRS,
-        },).kind,).toBe('valid',);
-
-        /**
-         Verdict on a rendering carrying a handle the page never wrote.
-         */
-        const other = validateTranslatedSlice({
-          sourceText,
+          sourceText: QUESTION,
           candidateText: '[What do you think of forum user @mimi?](https://example.invalid/question/7)',
           pageText,
           declared: PAIRS,
-        },);
-        expect(other.kind,).toBe('invalid',);
-        expect((other.kind === 'invalid') ? other.findings.join(' ',) : '',).toContain(
-          'may instead carry the account handle the existing translation writes there (@mi-mi-42)',
-        );
+        },),).toEqual(linkNameRefusal({
+          href: 'https://example.invalid/question/7',
+          source: '咪咪',
+          rendering: 'Mittens',
+          quoted: 'What do you think of forum user @mimi?',
+          handles: ['@mi-mi-42',],
+        },),);
       },
     },),
     it({
@@ -259,12 +352,18 @@ await describe({
           sourceText,
           candidateText: '[^3]: [Good morning, tomcat.](https://example.invalid/tom)',
           declared: TOM_PAIRS,
-        },).kind,).toBe('invalid',);
+        },),).toEqual(linkNameRefusal({
+          href: 'https://example.invalid/tom',
+          source: '\u{6C64}\u{59C6}',
+          rendering: 'Tom',
+          quoted: 'Good morning, tomcat.',
+          handles: [],
+        },),);
         expect(validateTranslatedSlice({
           sourceText,
           candidateText: '[^3]: [Good morning, Tom.](https://example.invalid/tom)',
           declared: TOM_PAIRS,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
       },
     },),
     it({
@@ -275,44 +374,53 @@ await describe({
           sourceText: '[Tomcat\u{7684}\u{65E9}\u{9910}](https://example.invalid/tomcat)',
           candidateText: '[Tomcat\'s breakfast](https://example.invalid/tomcat)',
           declared: LATIN_SOURCE_PAIRS,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
         expect(validateTranslatedSlice({
           sourceText: '[BigTom\u{7684}\u{65E9}\u{9910}](https://example.invalid/bigtom)',
           candidateText: '[BigTom\'s breakfast](https://example.invalid/bigtom)',
           declared: LATIN_SOURCE_PAIRS,
-        },).kind,).toBe('valid',);
+        },),).toEqual(VALID_WITHOUT_PAGE,);
         expect(validateTranslatedSlice({
           sourceText: '[Tom\u{7684}\u{65E9}\u{9910}](https://example.invalid/tom)',
           candidateText: '[Tom\'s breakfast](https://example.invalid/tom)',
           declared: LATIN_SOURCE_PAIRS,
-        },).kind,).toBe('invalid',);
+        },),).toEqual(linkNameRefusal({
+          href: 'https://example.invalid/tom',
+          source: 'Tom',
+          rendering: 'Thomas',
+          quoted: 'Tom\'s breakfast',
+          handles: [],
+        },),);
       },
     },),
     it({
       name: 'TAKES NO LONGER HANDLE FOR A MENTION OF THE DECLARED FORM, and no longer handle for the one the page '
         + 'writes',
       fn: async () => {
-        /**
-         Original link naming Tom and mentioning a different, longer handle.
-         */
-        const sourceText = '[Tom\u{548C}\u{8BBA}\u{575B}\u{7528}\u{6237}@Tomcat](https://example.invalid/pair)';
-
-        /**
-         Page's rendering, which writes that longer handle.
-         */
-        const pageText = '[Tom and forum user @Tomcat](https://example.invalid/pair)';
         expect(validateTranslatedSlice({
-          sourceText,
+          sourceText: '[Tom\u{548C}\u{8BBA}\u{575B}\u{7528}\u{6237}@Tomcat](https://example.invalid/pair)',
           candidateText: '[Tomcat and forum user @Tomcat](https://example.invalid/pair)',
-          pageText,
+          pageText: '[Tom and forum user @Tomcat](https://example.invalid/pair)',
           declared: LATIN_SOURCE_PAIRS,
-        },).kind,).toBe('invalid',);
+        },),).toEqual(linkNameRefusal({
+          href: 'https://example.invalid/pair',
+          source: 'Tom',
+          rendering: 'Thomas',
+          quoted: 'Tomcat and forum user @Tomcat',
+          handles: [],
+        },),);
         expect(validateTranslatedSlice({
-          sourceText: '[\u{5982}\u{4F55}\u{8BC4}\u{4EF7}\u{8BBA}\u{575B}\u{7528}\u{6237}@\u{54AA}\u{54AA}\u{FF1F}](https://example.invalid/question/7)',
+          sourceText: QUESTION,
           candidateText: '[What do you think of forum user @mi-mi-420?](https://example.invalid/question/7)',
-          pageText: '[What do you think of forum user @mi-mi-42 ?](https://example.invalid/question/7)',
+          pageText: QUESTION_PAGE,
           declared: PAIRS,
-        },).kind,).toBe('invalid',);
+        },),).toEqual(linkNameRefusal({
+          href: 'https://example.invalid/question/7',
+          source: '咪咪',
+          rendering: 'Mittens',
+          quoted: 'What do you think of forum user @mi-mi-420?',
+          handles: ['@mi-mi-42',],
+        },),);
       },
     },),
     it({
@@ -320,28 +428,21 @@ await describe({
         + 'the page writes',
       fn: async () => {
         /**
-         Original diary link naming the cat, no mention.
-         */
-        const sourceText = '[咪咪的日记](https://example.invalid/diary)';
-
-        /**
          Page's rendering carrying a handle in place of the name.
          */
         const pageText = '[Diary of @mi-mi-42](https://example.invalid/diary)';
-
-        /**
-         Verdict on the page's own handle outside a mention.
-         */
-        const verdict = validateTranslatedSlice({
-          sourceText,
+        expect(validateTranslatedSlice({
+          sourceText: '[咪咪的日记](https://example.invalid/diary)',
           candidateText: pageText,
           pageText,
           declared: PAIRS,
-        },);
-        expect(verdict.kind,).toBe('invalid',);
-        expect((verdict.kind === 'invalid') ? verdict.findings.join(' ',) : '',).toContain(
-          'does not carry "Mittens"',
-        );
+        },),).toEqual(linkNameRefusal({
+          href: 'https://example.invalid/diary',
+          source: '咪咪',
+          rendering: 'Mittens',
+          quoted: 'Diary of @mi-mi-42',
+          handles: [],
+        },),);
       },
     },),
   ],

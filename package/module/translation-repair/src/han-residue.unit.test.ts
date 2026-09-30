@@ -19,6 +19,7 @@ import {
   untranslatedOrResidueFindings,
   validateTranslatedSlice,
 } from '../dist/final/node/index.mjs';
+import { hanResidueFinding, } from './han-findings.test-fixture.ts';
 
 /**
  Original naming a cat by her handle.
@@ -41,16 +42,11 @@ await describe({
     it({
       name: 'REFUSES A HANDLE LEFT IN HAN in English prose, naming it (the shihai4h shape)',
       fn: async () => {
-        /**
-         Findings against the candidate carrying the handle in Han.
-         */
-        const findings = hanResidueFindings({
+        expect(hanResidueFindings({
           sourceText: HANDLE_SOURCE,
           candidateText: HANDLE_LEFT,
           pageText: HANDLE_PAGE,
-        },);
-        expect(findings.length,).toBe(1,);
-        expect(findings.join(' ',),).toContain('"小橘子"',);
+        },),).toEqual([hanResidueFinding({ runs: ['小橘子',], },),],);
         expect(hanResidueFindings({
           sourceText: HANDLE_SOURCE,
           candidateText: 'Wrong,\nXiao Juzi (Little Tangerine).',
@@ -76,7 +72,7 @@ await describe({
         expect(hanResidueFindings({
           sourceText,
           candidateText: 'The cat loves 橘子 (tangerines) most.',
-        },).join(' ',),).toContain('"橘子"',);
+        },),).toEqual([hanResidueFinding({ runs: ['橘子',], },),],);
       },
     },),
     it({
@@ -91,7 +87,7 @@ await describe({
           sourceText: '> 猫很困\n>\n> The cat is sleepy',
           candidateText: '> 猫很困\n>\n> The cat is sleepy',
           pageText: '> The cat is sleepy',
-        },).join(' ',),).toContain('"猫很困"',);
+        },),).toEqual([hanResidueFinding({ runs: ['猫很困',], },),],);
       },
     },),
     it({
@@ -115,7 +111,7 @@ await describe({
           sourceText,
           candidateText,
           pageText: 'Is that my name, you ask?',
-        },).join(' ',),).toContain('"澪"',);
+        },),).toEqual([hanResidueFinding({ runs: ['澪',], },),],);
       },
     },),
     it({
@@ -142,7 +138,7 @@ await describe({
         expect(hanResidueFindings({
           sourceText,
           candidateText: 'Her favourite was 《猫猫摇篮曲》.',
-        },).join(' ',),).toContain('"猫猫摇篮曲"',);
+        },),).toEqual([hanResidueFinding({ runs: ['猫猫摇篮曲',], },),],);
       },
     },),
     it({
@@ -156,11 +152,38 @@ await describe({
         expect(hanResidueFindings({
           sourceText: '猫总是说“頑張って”。',
           candidateText: 'The cat always said 頑張って every morning.',
-        },).join(' ',),).toContain('"頑張って"',);
+        },),).toEqual([hanResidueFinding({ runs: ['頑張って',], },),],);
         expect(hanResidueFindings({
           sourceText: '猫拿到了大证。',
           candidateText: 'The cat got her 大证 (formal diagnosis).',
-        },).join(' ',),).toContain('"大证"',);
+        },),).toEqual([hanResidueFinding({ runs: ['大证',], },),],);
+      },
+    },),
+    it({
+      name: 'REFUSES A JAPANESE PHRASE WHOSE PARENTHESES HOLD NO ENGLISH: its reading in kana, closed or never '
+        + 'closed, is no gloss',
+      fn: async () => {
+        expect(hanResidueFindings({
+          sourceText: '猫总是说“頑張って”。',
+          candidateText: 'The cat always said “頑張って” (がんばって) every morning.',
+        },),).toEqual([hanResidueFinding({ runs: ['頑張って',], },),],);
+        expect(hanResidueFindings({
+          sourceText: '猫总是说“頑張って”。',
+          candidateText: 'The cat always said “頑張って” (がんばって',
+        },),).toEqual([hanResidueFinding({ runs: ['頑張って',], },),],);
+      },
+    },),
+    it({
+      name: 'PASSES KANA ALONE, which carries no Han, and refuses a run where kana follows an ideograph',
+      fn: async () => {
+        expect(hanResidueFindings({
+          sourceText: '猫说：にゃ。',
+          candidateText: 'The cat said にゃ.',
+        },),).toEqual([],);
+        expect(hanResidueFindings({
+          sourceText: '猫说：喵にゃ。',
+          candidateText: 'The cat said 喵にゃ.',
+        },),).toEqual([hanResidueFinding({ runs: ['喵にゃ',], },),],);
       },
     },),
     it({
@@ -174,7 +197,7 @@ await describe({
         expect(hanResidueFindings({
           sourceText: '猫说：喵。',
           candidateText: 'The cat 🐱 said 喵.',
-        },).join(' ',),).toContain('"喵"',);
+        },),).toEqual([hanResidueFinding({ runs: ['喵',], },),],);
       },
     },),
     it({
@@ -184,11 +207,11 @@ await describe({
         expect(hanResidueFindings({
           sourceText: '\u{20BB7}\u{732B}\u{7761}\u{89C9}\u{3002}',
           candidateText: 'The cat \u{20BB7} naps.',
-        },).join(' ',),).toContain('"\u{20BB7}"',);
+        },),).toEqual([hanResidueFinding({ runs: ['\u{20BB7}',], },),],);
         expect(hanResidueFindings({
           sourceText: '\u{20BB7}\u{732B}\u{7761}\u{89C9}\u{3002}',
           candidateText: 'The cat \u{20BB7}\u{732B} naps.',
-        },).join(' ',),).toContain('"\u{20BB7}\u{732B}"',);
+        },),).toEqual([hanResidueFinding({ runs: ['\u{20BB7}\u{732B}',], },),],);
       },
     },),
   ],
@@ -200,15 +223,13 @@ await describe({
     it({
       name: 'NAMES A COPIED ORIGINAL ONCE, by the untranslated floor, rather than once per run',
       fn: async () => {
-        /**
-         Findings against a candidate that is the original.
-         */
-        const findings = untranslatedOrResidueFindings({
+        expect(untranslatedOrResidueFindings({
           sourceText: '猫睡了。',
           candidateText: '猫睡了。',
-        },);
-        expect(findings.length,).toBe(1,);
-        expect(findings.join(' ',),).toContain('repeats the ORIGINAL untranslated',);
+        },),).toEqual([
+          'Your translation repeats the ORIGINAL untranslated, in all but whitespace. Write the passage in English; '
+          + 'keep only the names, handles, links and code the original carries.',
+        ],);
       },
     },),
   ],
@@ -220,26 +241,21 @@ await describe({
     it({
       name: 'REFUSES THE HANDLE LEFT IN HAN through the composed verdict, readable original or not (ledger F-5)',
       fn: async () => {
-        /**
-         Verdict on the handle left in Han against a readable original.
-         */
-        const readable = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: HANDLE_SOURCE,
           candidateText: 'Wrong, 小橘子.',
           pageText: HANDLE_PAGE,
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [hanResidueFinding({ runs: ['小橘子',], },),],
         },);
-        expect(readable.kind,).toBe('invalid',);
-        expect((readable.kind === 'invalid') ? readable.findings.join(' ',) : '',).toContain('"小橘子"',);
-
-        /**
-         Verdict against an original the strict grammar refuses.
-         */
-        const unreadable = validateTranslatedSlice({
+        expect(validateTranslatedSlice({
           sourceText: '小橘子 <未闭合 的标签 在这里。',
           candidateText: 'Little 小橘子 is here.',
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [hanResidueFinding({ runs: ['小橘子',], },),],
         },);
-        expect(unreadable.kind,).toBe('invalid',);
-        expect((unreadable.kind === 'invalid') ? unreadable.findings.join(' ',) : '',).toContain('"小橘子"',);
       },
     },),
   ],
