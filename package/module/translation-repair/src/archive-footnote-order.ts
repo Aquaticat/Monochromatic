@@ -152,35 +152,11 @@ export function reorderFootnoteDefinitions(
       text,
       changed: false,
     };
-  /**
-   Whether a block that is not a definition sits among them.
-   */
-  const interleaved = nodes.some(function sitsAmong(node,): boolean {
-    return (node.zone !== DEFINITION_ZONE)
-      && (node.startOffset >= first.startOffset)
-      && (node.startOffset < last.endOffset);
-  },);
-  if (interleaved)
-    return {
-      text,
-      changed: false,
-      note: 'the footnote definitions are interleaved with other blocks, so they keep their order',
-    };
-  /**
-   Containers crossing definition boundaries cannot move as independent block fragments.
-   */
-  const splitContainer = containers.some(function crosses(container,): boolean {
-    return (container.openerStartOffset < last.endOffset) && (container.closerEndOffset > first.startOffset)
-      && (!definitions.some(function contains(node,): boolean {
-        return (node.startOffset <= container.openerStartOffset) && (node.endOffset >= container.closerEndOffset);
-      },));
-  },);
-  if (splitContainer)
-    return {
-      text,
-      changed: false,
-      note: 'footnote definitions share container delimiters, so they keep their order',
-    };
+  // ORDER FIRST (ledger B55): definitions that already follow the order need
+  // no move, so no note saying a move was withheld; the checks that refuse a
+  // move come after, where a move is wanted. Read after them, an archive whose
+  // definitions already followed the original's carried "definitions stand"
+  // as a finding whenever prose sat among them.
   /**
    Original label ranks use the same normalization as correspondence and rewriting.
    */
@@ -225,6 +201,35 @@ export function reorderFootnoteDefinitions(
     return {
       text,
       changed: false,
+    };
+  /**
+   Whether a block that is not a definition sits among them.
+   */
+  const interleaved = nodes.some(function sitsAmong(node,): boolean {
+    return (node.zone !== DEFINITION_ZONE)
+      && (node.startOffset >= first.startOffset)
+      && (node.startOffset < last.endOffset);
+  },);
+  if (interleaved)
+    return {
+      text,
+      changed: false,
+      note: 'the footnote definitions are interleaved with other blocks, so they keep their order',
+    };
+  /**
+   Containers crossing definition boundaries cannot move as independent block fragments.
+   */
+  const splitContainer = containers.some(function crosses(container,): boolean {
+    return (container.openerStartOffset < last.endOffset) && (container.closerEndOffset > first.startOffset)
+      && (!definitions.some(function contains(node,): boolean {
+        return (node.startOffset <= container.openerStartOffset) && (node.endOffset >= container.closerEndOffset);
+      },));
+  },);
+  if (splitContainer)
+    return {
+      text,
+      changed: false,
+      note: 'footnote definitions share container delimiters, so they keep their order',
     };
   if (overlapsFootnoteProtection({
     startOffset: first.startOffset,
