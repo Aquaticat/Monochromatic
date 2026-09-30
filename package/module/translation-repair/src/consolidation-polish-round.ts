@@ -30,18 +30,10 @@ const FINAL_POLISH_MINIMUM_CHARS = 0;
  
  @example
  ```ts
- const result: ConsolidationPolishRoundResult = { disposition: 'fallback', text: 'The cat slept.', proposedText: 'The cat slept.', changed: false, refinersHeard: [], contributors: [], rounds: [], findings: [] };
+ const result: ConsolidationPolishRoundResult = { text: 'The cat slept.', proposedText: 'The cat slept.', changed: false, refinersHeard: [], contributors: [], rounds: [], findings: [] };
  ```
  */
 export type ConsolidationPolishRoundResult = {
-  /**
-   Whether round selected text, retained admissible fallback, or found no correction.
-   */
-  readonly disposition:
-    | 'selected'
-    | 'fallback'
-    | 'no-correction';
-
   /**
    Exact text selected after fidelity gate.
    */
@@ -170,7 +162,7 @@ export function reviewParagraphsOf(
  @param disputedWordings - wordings the slice refuses, which the rule refuses
  as the polished text as it does every other text on the slice (ledger B29)
  
- @param mode - comparative polish or required correction findings
+ @param mode - comparative polish or correction of what judges objected to
  
  @param sliceIndex - prepared slice position
  
@@ -267,7 +259,6 @@ export async function runConsolidationPolishRound(
   },);
   if (!refined.changed) {
     return {
-      disposition: refined.disposition,
       text: baseText,
       proposedText: baseText,
       changed: false,
@@ -313,7 +304,6 @@ export async function runConsolidationPolishRound(
   if (demoted) {
     l.info('wording: the polish is the base in all but layout, so the slice keeps what it had',);
     return {
-      disposition: (mode.kind === 'required-naturalness-correction') ? 'no-correction' : 'fallback',
       text: baseText,
       proposedText: polished,
       changed: false,
@@ -357,7 +347,6 @@ export async function runConsolidationPolishRound(
   },);
   if (validation.kind !== 'valid') {
     return {
-      disposition: (mode.kind === 'required-naturalness-correction') ? 'no-correction' : 'fallback',
       text: baseText,
       proposedText: polished,
       changed: false,
@@ -399,9 +388,6 @@ export async function runConsolidationPolishRound(
     ? polished
     : baseText;
   return {
-    disposition: (text === baseText)
-      ? ((mode.kind === 'required-naturalness-correction') ? 'no-correction' : 'fallback')
-      : 'selected',
     text,
     proposedText: polished,
     changed: text !== baseText,

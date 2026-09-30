@@ -54,7 +54,6 @@ const refineModes: readonly RefineStageMode[] = [
     kind: 'objection-correction',
     groups: [{ origin: 'consolidation gate', objections: ['The base drops the tabby\'s name.',], },],
   },
-  { kind: 'required-naturalness-correction', findings: [{ paragraph: 1, problem: 'stiff', },], },
 ];
 
 /**

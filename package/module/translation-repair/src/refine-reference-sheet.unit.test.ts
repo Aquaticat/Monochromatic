@@ -120,10 +120,10 @@ await describe({
         },),).toBe(true,);
         const correction = buildRefineSelectionContext({
           mode: {
-            kind: 'required-naturalness-correction',
-            findings: [{
-              paragraph: 1,
-              problem: 'Reads as a calque.',
+            kind: 'objection-correction',
+            groups: [{
+              origin: 'consolidation gate',
+              objections: ['Reads as a calque.',],
             },],
           },
           sourceText: '猫有一个姐姐。',

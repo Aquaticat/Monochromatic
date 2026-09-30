@@ -191,16 +191,17 @@ await describe({
           },
         },).at(0,)?.content ?? '';
         /**
-         System half of the required-correction sheet.
+         System half of the objection-correction sheet (ledger B47: this case
+         read the removed required-correction sheet).
          */
         const correction = buildConsolidationPolishGateMessages({
           subject: {
             ...subject,
             mode: {
-              kind: 'required-naturalness-correction',
-              findings: [{
-                paragraph: 1,
-                problem: 'stiff',
+              kind: 'objection-correction',
+              groups: [{
+                origin: 'consolidation gate',
+                objections: ['The present tense reads as stiff.',],
               },],
             },
           },
@@ -351,7 +352,8 @@ await describe({
     },),
 
     it({
-      name: 'TREATS REJECTED BASE AS EVIDENCE rather than an approved fallback during required correction',
+      name: 'LABELS THE BASE AS THE FALLBACK in an objection correction and quotes each objection under its '
+        + 'judges (ledger B47: this case read the removed required correction, whose base was no fallback)',
       fn: async () => {
         const messages = buildConsolidationPolishGateMessages({
           subject: {
@@ -361,8 +363,11 @@ await describe({
             polishedText: 'The cat needed affection.',
             lineStructured: false,
             mode: {
-              kind: 'required-naturalness-correction',
-              findings: [{ paragraph: 1, problem: 'Replace the literal emotional phrase.', },],
+              kind: 'objection-correction',
+              groups: [{
+                origin: 'consolidation slate',
+                objections: ['The base softens how much the cat needed.',],
+              },],
             },
           },
         },);
@@ -373,10 +378,13 @@ await describe({
           return messageText({ message, },);
         },)
           .join('\n',);
-        expect(sheet,).toContain('base already failed absolute naturalness review',);
-        expect(sheet,).toContain('must not win merely because improvement is unclear',);
-        expect(sheet,).toContain('Paragraph 1: Replace the literal emotional phrase.',);
-        expect(sheet,).toContain('CANDIDATE "base" (rejected naturalness evidence only)',);
+        expect(sheet,).toContain('The base ships if you refuse the correction, with the objections recorded.',);
+        expect(sheet,).toContain('CANDIDATE "base" (ships if the correction is refused):',);
+        expect(sheet,).toContain(
+          'OBJECTIONS FROM THE CONSOLIDATION SLATE, claims to check against the ORIGINAL:',
+        );
+        expect(sheet,).toContain('- The base softens how much the cat needed.',);
+        expect(sheet,).not.toContain('(already approved)',);
       },
     },),
 

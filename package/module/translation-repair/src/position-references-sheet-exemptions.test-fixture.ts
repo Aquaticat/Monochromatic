@@ -139,11 +139,6 @@ export const SHEET_EXEMPTIONS: readonly PositionExemption[] = [
   },
   {
     path: 'src/refine-prompt.ts',
-    holds: 'the quoted findings below',
-    reason: SHEET_TEXT,
-  },
-  {
-    path: 'src/refine-prompt.ts',
     holds: 'The translation below is already correct',
     reason: SHEET_TEXT,
   },

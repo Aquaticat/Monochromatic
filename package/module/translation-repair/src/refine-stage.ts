@@ -70,14 +70,6 @@ export type RefineStageResult = {
   readonly changed: boolean;
 
   /**
-   Whether unchanged text is fallback or rejected correction produced none.
-   */
-  readonly disposition:
-    | 'selected'
-    | 'fallback'
-    | 'no-correction';
-
-  /**
    Ballots of this slice's refinement round, empty when it never reached the
    judges.
    
@@ -212,9 +204,6 @@ export async function runRefineStage(
   const unchanged: RefineStageResult = {
     refinedText: repairedText,
     changed: false,
-    // Only a required naturalness correction leaves no fallback: the text it
-    // corrects failed review. An objection correction ships its input unchanged.
-    disposition: (mode.kind === 'required-naturalness-correction') ? 'no-correction' : 'fallback',
     contributors: [],
     heard: [],
     rounds: [],
@@ -237,14 +226,6 @@ export async function runRefineStage(
     envelopes,
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
-    ...((mode.kind === 'required-naturalness-correction')
-      ? {
-        naturalnessFindings: mode.findings,
-        ...((mode.priorCorrections === undefined)
-          ? {}
-          : { priorNaturalnessCorrections: mode.priorCorrections, }),
-      }
-      : {}),
     ...((mode.kind === 'objection-correction') ? { objectionGroups: mode.groups, } : {}),
   },);
 
@@ -438,13 +419,7 @@ export async function runRefineStage(
     },),
   ];
   if (outcome.kind === 'declined') {
-    /**
-     Consequence matching whether input remains publication-admissible.
-     */
-    const declineAction = (mode.kind === 'required-naturalness-correction')
-      ? 'required correction remains unresolved'
-      : 'keeping the repaired text';
-    rl.info(`${outcome.reason}; ${declineAction}`,);
+    rl.info(`${outcome.reason}; keeping the repaired text`,);
     return {
       ...unchanged,
       heard,
@@ -505,7 +480,6 @@ export async function runRefineStage(
   return {
     refinedText: outcome.value,
     changed: true,
-    disposition: 'selected',
     contributors,
     heard,
     rounds,

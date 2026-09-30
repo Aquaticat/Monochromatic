@@ -105,20 +105,6 @@ const REFINE_MODES: readonly {
     mode: { kind: 'comparative', },
   },
   {
-    name: 'refine correction slate',
-    mode: {
-      kind: 'required-naturalness-correction',
-      findings: [{
-        paragraph: 1,
-        problem: 'The second sentence repeats the first.',
-      },],
-      priorCorrections: [{
-        candidateText: ARCHIVE,
-        findings: ['It still repeats itself.',],
-      },],
-    },
-  },
-  {
     name: 'refine objection slate',
     mode: {
       kind: 'objection-correction',

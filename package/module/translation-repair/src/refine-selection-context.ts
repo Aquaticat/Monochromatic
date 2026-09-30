@@ -1,20 +1,24 @@
-import type { AbsoluteNaturalnessFinding, } from './absolute-naturalness-review-wire.ts';
 import type { SelectEvidence, } from './candidate-select-wire.ts';
 import { citedReferenceEvidence, } from './cited-reference-rule.ts';
 import { declaredNamesEvidence, } from './declared-names-evidence.ts';
 import { HOUSE_FORM_CORRECTION_KEEPS_MEANING, } from './house-form-corrections.ts';
 
 //region Refinement selection context
-// Keeps exploratory refinement and required correction from asking selectors
-// contradictory questions about whether current wording may remain.
+// Keeps exploratory refinement and objection correction from asking selectors
+// contradictory questions about what they are choosing for.
 //
 // OBJECTION CORRECTION (owner, 2026-09-27, the fourteenth and fifteenth
 // addenda of `doc/decision/translation-repair-ineligible-standing.md`). Over a
 // standing the deterministic rule refused, the consolidation ships whatever
 // the gate or the slate judges held against it, so their objections become
-// corrections to make where the ORIGINAL supports them. Unlike required
-// naturalness correction the text still ships unchanged when no candidate
-// earns its place: an objection is a claim, and the base remains the fallback.
+// corrections to make where the ORIGINAL supports them. The text still ships
+// unchanged when no candidate earns its place: an objection is a claim, and
+// the base remains the fallback.
+//
+// NO REQUIRED NATURALNESS CORRECTION (ledger B47): a third mode corrected text
+// the absolute naturalness review had rejected, with no fallback. Its loop
+// went on 2026-09-01; the mode, its sheets and its "no correction" outcome
+// stayed, built by tests alone, until B47 took them out.
 
 /**
  Judges whose objections an objection correction answers.
@@ -65,64 +69,6 @@ export function objectingJudgesOf(
 }
 
 /**
- One prior correction outcome that failed to replace rejected text.
- 
- @example
- ```ts
- const prior: PriorNaturalnessCorrection = { candidateText: 'The cat slept.', findings: ['gate kept rejected input'], };
- ```
- */
-export type PriorNaturalnessCorrection = {
-  /**
-   Exact proposal prior round tried to authorize.
-   */
-  readonly candidateText: string;
-
-  /**
-   Generation,
-   selection,
-   structure,
-   and fidelity findings explaining failure.
-   */
-  readonly findings: readonly string[];
-};
-
-/**
- Renders prior failed corrections as evidence against repeating them, one
- block per attempt in the order tried.
-
- The refine selection context and the consolidation gate's correction sheet
- each kept their own copy of this rendering (audit area six, 2026-09-28);
- two sheets showing one history two ways would let the judges and the
- selectors read different evidence.
-
- @param priors - failed corrections, oldest first
-
- @returns One rendered block per attempt
-
- @example
- ```ts
- renderPriorCorrections({ priors: [{ candidateText: 'The cat slept.', findings: ['It repeats itself.',], },], },);
- // ['Attempt 1 candidate:\nThe cat slept.\nFindings:\nIt repeats itself.']
- ```
- */
-export function renderPriorCorrections(
-  { priors, }: { readonly priors: readonly PriorNaturalnessCorrection[]; },
-): readonly string[] {
-  return priors.map(function renderPrior(
-    prior,
-    index,
-  ): string {
-    /**
-     Prior findings rendered in original order.
-     */
-    const findings = prior.findings
-      .join('\n',);
-    return `Attempt ${String(index + 1,)} candidate:\n${prior.candidateText}\nFindings:\n${findings}`;
-  },);
-}
-
-/**
  Why refinement is running and whether unchanged text remains admissible.
  
  @example
@@ -136,22 +82,6 @@ export type RefineStageMode =
      Exploratory improvement where accepted input remains fallback.
      */
     readonly kind: 'comparative';
-  }
-  | {
-    /**
-     Mandatory correction because absolute review rejected input.
-     */
-    readonly kind: 'required-naturalness-correction';
-
-    /**
-     Material defects candidate must resolve together.
-     */
-    readonly findings: readonly AbsoluteNaturalnessFinding[];
-
-    /**
-     Earlier failed strategies next correction must not repeat.
-     */
-    readonly priorCorrections?: readonly PriorNaturalnessCorrection[];
   }
   | {
     /**
@@ -211,7 +141,7 @@ export type RefineSelectionContext = {
   readonly evidence: readonly SelectEvidence[];
 
   /**
-   Refusal consequence when accepted fallback is unavailable.
+   What declining every candidate leads to, where the sheet names it.
    */
   readonly declineConsequence?: string;
 };
@@ -219,7 +149,7 @@ export type RefineSelectionContext = {
 /**
  Builds selector question matching refinement mode.
  
- @param mode - comparative exploration or required correction
+ @param mode - comparative exploration or objection correction
  
  @param sourceText - original Chinese fidelity anchor
  
@@ -286,70 +216,17 @@ export function buildRefineSelectionContext(
       ],
     };
   }
-  if (mode.kind === 'objection-correction') {
-    return {
-      task: `Each candidate corrects the CURRENT English translation where the ${
-        objectingJudgesOf({ groups: mode.groups, },)
-      } objected to it.`,
-      criteria: [
-        'Faithful to the Chinese ORIGINAL: nothing it does not say, and nothing it says left out.',
-        'Resolves each objection the ORIGINAL supports. An objection is a claim: one the ORIGINAL does not '
-          + 'support is ignored, and a candidate acting on it has introduced an error.',
-        'Changes nothing an objection the ORIGINAL supports does not concern, beyond a clear naturalness fix '
-          + `that keeps the meaning. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
-        'Reads as natural English.',
-      ],
-      evidence: [
-        {
-          label: 'ORIGINAL (Chinese)',
-          text: sourceText,
-        },
-        {
-          label: 'CURRENT English translation, which ships unchanged unless a candidate resolves an objection '
-            + 'the ORIGINAL supports',
-          text: repairedText,
-        },
-        ...pageEvidence,
-        ...mode.groups
-          .map(function groupEvidence(group,): SelectEvidence {
-            return {
-              label: objectionsHeading({ origin: group.origin, },),
-              text: group.objections
-                .map(function listed(objection,): string {
-                  return `- ${objection}`;
-                },)
-                .join('\n',),
-            };
-          },),
-      ],
-      declineConsequence: 'the CURRENT text ships unchanged, with the objections recorded',
-    };
-  }
-  /**
-   Structured findings rendered only at selector evidence boundary.
-   */
-  const selectionFindings = mode.findings
-    .map(function renderFinding(finding,): string {
-      return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
-    },)
-    .join('\n',);
-  /**
-   Failed prior strategies rendered as evidence against repetition.
-   */
-  const priorCorrections = renderPriorCorrections({ priors: mode.priorCorrections ?? [], },)
-    .join('\n\n',);
   return {
-    task: 'The CURRENT English translation failed an independent absolute-quality review. Choose a faithful correction that resolves every REQUIRED FINDING. Decline every candidate when each one still contains any material naturalness defect.',
+    task: `Each candidate corrects the CURRENT English translation where the ${
+      objectingJudgesOf({ groups: mode.groups, },)
+    } objected to it.`,
     criteria: [
-      'Hard eligibility floor, not a ranking preference: a candidate must preserve exact meaning, resolve every REQUIRED FINDING, and contain no material naturalness defect a careful native editor would change.',
-      'Before comparing candidates, assess each candidate in isolation against absolute publication quality. Improvement over CURRENT or another candidate is irrelevant to eligibility.',
-      'For each candidate, scan every sentence for grammar, collocation, word order, and reference defects, then reread complete affected paragraphs for flow, register, repetition, and defects introduced outside REQUIRED FINDINGS.',
-      `Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
-      'Faithful to the Chinese ORIGINAL.',
-      'Resolves every REQUIRED FINDING across each affected paragraph.',
-      'Treats findings as a minimum, not an edit whitelist: reward additional material naturalness fixes that preserve exact meaning.',
-      'After checking required findings, reread every affected paragraph sentence by sentence and decline any candidate that is merely the least awkward option.',
-      'Reads as publication-quality natural English when considered as a whole.',
+      'Faithful to the Chinese ORIGINAL: nothing it does not say, and nothing it says left out.',
+      'Resolves each objection the ORIGINAL supports. An objection is a claim: one the ORIGINAL does not '
+        + 'support is ignored, and a candidate acting on it has introduced an error.',
+      'Changes nothing an objection the ORIGINAL supports does not concern, beyond a clear naturalness fix '
+        + `that keeps the meaning. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
+      'Reads as natural English.',
     ],
     evidence: [
       {
@@ -357,22 +234,24 @@ export function buildRefineSelectionContext(
         text: sourceText,
       },
       {
-        label: 'CURRENT English translation, which cannot ship unchanged',
+        label: 'CURRENT English translation, which ships unchanged unless a candidate resolves an objection '
+          + 'the ORIGINAL supports',
         text: repairedText,
       },
       ...pageEvidence,
-      {
-        label: 'REQUIRED FINDINGS from independent absolute-quality review',
-        text: selectionFindings,
-      },
-      ...(priorCorrections === ''
-        ? []
-        : [{
-          label: 'PRIOR CORRECTION STRATEGIES THAT FAILED; choose a materially different approach',
-          text: priorCorrections,
-        },]),
+      ...mode.groups
+        .map(function groupEvidence(group,): SelectEvidence {
+          return {
+            label: objectionsHeading({ origin: group.origin, },),
+            text: group.objections
+              .map(function listed(objection,): string {
+                return `- ${objection}`;
+              },)
+              .join('\n',),
+          };
+        },),
     ],
-    declineConsequence: 'the caller refuses publication because CURRENT already failed absolute review',
+    declineConsequence: 'the CURRENT text ships unchanged, with the objections recorded',
   };
 }
 

@@ -24,7 +24,6 @@ import {
   objectingJudgesOf,
   objectionsHeading,
   type RefineStageMode,
-  renderPriorCorrections,
 } from './refine-selection-context.ts';
 import { foldSoftBreaks, } from './soft-break-fold.ts';
 
@@ -92,15 +91,6 @@ ${HOUSE_CORRECTION_IS_AN_IMPROVEMENT}`;
 }
 
 /**
- Fidelity-first policy when absolute review already rejected base.
- */
-const REQUIRED_CORRECTION_POLISH_POLICY = `You are deciding whether a proposed correction may replace an English memorial passage that already failed absolute naturalness review.
-
-THE ORIGINAL CHINESE IS THE FIDELITY STANDARD. First check both candidates for unsupported statements and dropped content. Naturalness can never compensate for either fault.
-
-The base already failed absolute naturalness review. It is evidence for preserving exact meaning, not an approved fallback, and must not win merely because improvement is unclear. Choose polished only when it remains equally faithful, resolves every REQUIRED FINDING, and reads as publication-quality natural English. Choose base only when polished adds, drops, softens, sharpens, or reattributes meaning; the caller will then refuse publication rather than ship base. Answer neither when polished preserves fidelity but fails a REQUIRED FINDING or remains unnatural.`;
-
-/**
  Fidelity-first policy when judges objected to the base and it still ships
  as the fallback (owner, 2026-09-27, the fourteenth and fifteenth addenda of
  `doc/decision/translation-repair-ineligible-standing.md`).
@@ -148,7 +138,7 @@ export type ConsolidationPolishGateSubject = {
   readonly archiveText: string;
 
   /**
-   Standing wording, approved only in comparative mode.
+   Standing wording, which ships unless the polish wins.
    */
   readonly baseText: string;
 
@@ -158,7 +148,7 @@ export type ConsolidationPolishGateSubject = {
   readonly polishedText: string;
 
   /**
-   Whether base remains available or is rejected correction evidence.
+   Whether the polish explores freely or corrects what judges objected to.
    */
   readonly mode: RefineStageMode;
 
@@ -319,16 +309,6 @@ export function buildConsolidationPolishGateMessages(
    */
   const comparative = mode.kind === 'comparative';
   /**
-   Required findings rendered only at prompt boundary.
-   */
-  const requiredFindings = (mode.kind === 'required-naturalness-correction')
-    ? mode
-      .findings
-      .map(function renderFinding(finding,): string {
-        return `Paragraph ${String(finding.paragraph,)}: ${finding.problem}`;
-      },)
-    : [];
-  /**
    What the gate or slate judges objected to, on an objection correction.
    */
   const objectionGroups = (mode.kind === 'objection-correction')
@@ -340,12 +320,6 @@ export function buildConsolidationPolishGateMessages(
   const objections = objectionGroups.flatMap(function objectionsOf(group,): readonly string[] {
     return group.objections;
   },);
-  /**
-   Prior failed strategies correction gate must not repeat.
-   */
-  const priorCorrections = (mode.kind !== 'required-naturalness-correction')
-    ? []
-    : renderPriorCorrections({ priors: mode.priorCorrections ?? [], },);
   /**
    Base as the judge reads it: on prose, each paragraph as it renders.
    */
@@ -365,8 +339,6 @@ export function buildConsolidationPolishGateMessages(
       subject.archiveText,
       shownBase,
       shownPolished,
-      ...requiredFindings,
-      ...priorCorrections,
       ...objections,
       ...((subject.identityContext === undefined) ? [] : [subject.identityContext,]),
       ...((subject.referenceContext === undefined) ? [] : [subject.referenceContext,]),
@@ -424,27 +396,6 @@ export function buildConsolidationPolishGateMessages(
     ...((subject.referenceContext === undefined) ? {} : { referenceContext: subject.referenceContext, }),
   },);
   /**
-   Required findings block, absent while approved base remains available.
-   */
-  const correctionEvidence = (requiredFindings.length === 0)
-    ? []
-    : [
-      'REQUIRED FINDINGS from independent absolute review:',
-      `${fence}\n${requiredFindings.join('\n',)}\n${fence}`,
-      '',
-    ];
-  /**
-   Prior failed strategy block,
-   absent on first correction.
-   */
-  const priorEvidence = (priorCorrections.length === 0)
-    ? []
-    : [
-      'PRIOR CORRECTION STRATEGIES THAT FAILED:',
-      `${fence}\n${priorCorrections.join('\n\n',)}\n${fence}`,
-      '',
-    ];
-  /**
    The judges' objections as quoted review data, absent on any other mode.
    */
   const objectionEvidence = objectionGroups.flatMap(function groupEvidence(group,): readonly string[] {
@@ -465,17 +416,13 @@ export function buildConsolidationPolishGateMessages(
    */
   const baseLabel = comparative
     ? 'CANDIDATE "base" (already approved):'
-    : ((mode.kind === 'objection-correction')
-      ? 'CANDIDATE "base" (ships if the correction is refused):'
-      : 'CANDIDATE "base" (rejected naturalness evidence only):');
+    : 'CANDIDATE "base" (ships if the correction is refused):';
   /**
    Policy matching the mode.
    */
-  const policy = comparative
+  const policy = (mode.kind === 'comparative')
     ? comparativePolishPolicy({ lineStructured: subject.lineStructured, },)
-    : ((mode.kind === 'objection-correction')
-      ? objectionCorrectionPolishPolicy({ groups: mode.groups, },)
-      : REQUIRED_CORRECTION_POLISH_POLICY);
+    : objectionCorrectionPolishPolicy({ groups: mode.groups, },);
   return [
     {
       role: 'system',
@@ -513,8 +460,6 @@ export function buildConsolidationPolishGateMessages(
         ...referenceBlock,
         ...disputeBlock,
         ...communityBlock,
-        ...correctionEvidence,
-        ...priorEvidence,
         ...objectionEvidence,
         `Return JSON: choice one of "polished", "base", "${CONTEST_REFUSAL}";`,
         'unsupported and dropped each a list naming any of "polished", "base";',

@@ -399,13 +399,6 @@ await describe({
         const modes: readonly RefineStageMode[] = [
           { kind: 'comparative', },
           {
-            kind: 'required-naturalness-correction',
-            findings: [{
-              paragraph: 1,
-              problem: 'Reads as a calque.',
-            },],
-          },
-          {
             kind: 'objection-correction',
             groups: [{
               origin: 'consolidation gate',
