@@ -4,7 +4,6 @@ import {
   type DisputedWording,
   disputedWordingFindings,
 } from './disputed-wording.ts';
-import { EMPTY_SLICE_SKELETON, } from './empty-slice-skeleton.ts';
 import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
 import type { DeclaredNamePair, } from './linked-title-declared-name.ts';
@@ -88,6 +87,87 @@ export type SliceValidation =
      */
     readonly detail: string;
   };
+
+/**
+ Verdict where no grammar could read the original or the page: the floors
+ that read text rather than blocks still run (ledger F-5), and with none of
+ them refusing, the candidate is left unvalidated rather than passed.
+
+ @param sourceText - original slice
+
+ @param candidateText - proposed translation of it
+
+ @param pageText - text this candidate would replace, empty where the slice
+ has none
+
+ @param lineStructured - whether the line-structure rule governs this slice
+
+ @param declared - name pairs the front matter declares, which govern a
+ signer they name
+
+ @param unread - which side no grammar read and why, the verdict's detail
+ when no text floor refuses
+
+ @returns A text floor's refusal, or no verdict
+
+ @example
+ ```ts
+ return grammarFreeVerdict({ sourceText, candidateText, pageText, lineStructured, declared, unread, },);
+ ```
+ */
+function grammarFreeVerdict(
+  {
+    sourceText,
+    candidateText,
+    pageText,
+    lineStructured,
+    declared,
+    unread,
+  }: {
+    readonly sourceText: string;
+    readonly candidateText: string;
+    readonly pageText: string;
+    readonly lineStructured: boolean;
+    readonly declared: readonly DeclaredNamePair[];
+    readonly unread: string;
+  },
+): SliceValidation {
+  /**
+   Findings of the floors that read text rather than blocks.
+   */
+  const grammarFree = [
+    ...untranslatedOrResidueFindings({
+      sourceText,
+      candidateText,
+      pageText,
+    },),
+    ...signerHandleFindings({
+      sourceText,
+      candidateText,
+      pageText,
+      declared,
+    },),
+    ...compareLineCounts({
+      lineStructured,
+      sourceText,
+      candidateText,
+      pageText,
+    },),
+    ...neutralPronounFindings({
+      sourceText,
+      candidateText,
+    },),
+  ];
+  if (grammarFree.length > 0)
+    return {
+      kind: 'invalid',
+      findings: grammarFree,
+    };
+  return {
+    kind: 'unknown',
+    detail: unread,
+  };
+}
 
 /**
  Checks one candidate translation against the original and the page it
@@ -258,41 +338,14 @@ export function validateTranslatedSlice(
   // governed slice, or keeping the neutral pronoun is refused whatever the
   // original's grammar, since none of those reads a block.
   if (source.kind === 'unparseable') {
-    /**
-     Findings of the floors that read text rather than blocks.
-     */
-    const grammarFree = [
-      ...untranslatedOrResidueFindings({
-        sourceText,
-        candidateText,
-        pageText,
-      },),
-      ...signerHandleFindings({
-        sourceText,
-        candidateText,
-        pageText,
-        declared,
-      },),
-      ...compareLineCounts({
-        lineStructured,
-        sourceText,
-        candidateText,
-        pageText,
-      },),
-      ...neutralPronounFindings({
-        sourceText,
-        candidateText,
-      },),
-    ];
-    if (grammarFree.length > 0)
-      return {
-        kind: 'invalid',
-        findings: grammarFree,
-      };
-    return {
-      kind: 'unknown',
-      detail: `original could not be read: ${source.detail}`,
-    };
+    return grammarFreeVerdict({
+      sourceText,
+      candidateText,
+      pageText,
+      lineStructured,
+      declared,
+      unread: `original could not be read: ${source.detail}`,
+    },);
   }
 
   /**
@@ -315,23 +368,37 @@ export function validateTranslatedSlice(
     grammar: pageGrammar,
   } = readPageSkeleton({ text: pageText, },);
 
+  // A PAGE NEITHER GRAMMAR READS is not the candidate's fault either, and the
+  // block floor has nothing to stand on. It used to fall back to the original
+  // alone and pass a candidate the page never measured, reported as read by
+  // the relaxed grammar (ledger T8, sixth batch); plain markdown refuses a
+  // page only when reading it exhausts the parser, nesting past its stack.
+  // Such a page is treated as an unreadable original is.
+  if (replaced.kind === 'unparseable') {
+    return grammarFreeVerdict({
+      sourceText,
+      candidateText,
+      pageText,
+      lineStructured,
+      declared,
+      unread: `page could not be read: ${replaced.detail}`,
+    },);
+  }
+
   /**
-   Page's shape, empty only where there is no page or NEITHER grammar reads
-   it.
-   
+   Page's shape, empty only where there is no page.
+
    A PAGE THE STRICT GRAMMAR REFUSES IS NOT A CANDIDATE'S FAULT, and an archive
    written before this grammar existed can be one, so {@link readPageSkeleton}
    downgrades the page to plain markdown rather than refusing the candidate.
-   
+
    IT NO LONGER FALLS BACK TO THE ORIGINAL ALONE, which was a check answering
    yes to a question it had never evaluated. Measured on the sixth
    consolidation bed: a slice boundary between an opening details tag and its
    closing tag made the page unparseable, the floor lost its block list, and a
    164-character rendering passed against a 3875-character page.
    */
-  const page: SliceSkeleton = (replaced.kind === 'read')
-    ? replaced.skeleton
-    : EMPTY_SLICE_SKELETON;
+  const page: SliceSkeleton = replaced.skeleton;
 
   /**
    Page's blocks, named so the emptiness check is one step rather than three.

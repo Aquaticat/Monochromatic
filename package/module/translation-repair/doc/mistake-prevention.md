@@ -1117,6 +1117,8 @@ and the bench read at the checker stage was read for quorum alone;
 two writers' sheets displayed candidates without their break counts;
 reference attestation decided on one voice;
 and a chunk scan swallowed a parse error with `void error` (ledger B29).
+A page no grammar could read was read as an empty page,
+and the translate floor passed the candidate against the original alone (ledger B36).
 Each default read as "none",
 and the code compiled and ran.
 Three exported names were each declared twice,
@@ -1128,6 +1130,8 @@ what a sheet shows or whether a text may ship,
 even where the default happens to equal it;
 a call that leaves one out says why at the call or in the guard's named list.
 A gate flag never defaults to the permissive answer without every caller stating it.
+A reading that failed reaches the verdict as a failure,
+never as an empty value a check then passes.
 A check re-read mid-run applies every rule the first read applied.
 A caught error is logged,
 rethrown,

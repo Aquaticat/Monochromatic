@@ -113,10 +113,12 @@ function readRelaxed({ text, }: { readonly text: string; },): SkeletonRead {
     };
   }
   catch (error) {
-    // Plain markdown refusing is close to impossible, and an unexpected state
-    // rather than a grammar disagreement, so it is reported and not thrown:
-    // the floor's fallback for a page it cannot read at all is still to fall
-    // back to the original alone.
+    // Plain markdown accepts any text, so it refuses a page only when reading
+    // it exhausts the parser: 8,000 nested quotation markers overflow its
+    // stack (ledger T8, sixth batch). That is reported rather than thrown,
+    // and the floor then treats the page as it treats an original no grammar
+    // reads: only the floors that read text run, and a candidate none of them
+    // refuses is left unvalidated.
     return {
       kind: 'unparseable',
       detail: `plain markdown also refused: ${String(error,)}`,

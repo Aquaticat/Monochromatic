@@ -10585,6 +10585,44 @@ The four readers read the fields.
 the counts and the overflow refusal's whole message;
 the two floors' refusal cases read their whole verdicts.
 
+### B36: a page no grammar reads passed a candidate against the original alone
+
+Status:
+fixed 2026-09-30 (UTC) with the sixth T8 batch,
+found reading `translate-skeleton-page.ts` 114 to 124,
+the catch around the plain-markdown reading,
+which its own comment called close to impossible to reach.
+Plain markdown accepts any text,
+but reading a page can exhaust the parser:
+8,000 nested quotation markers overflow its stack
+(`relaxed-shape-probe.mjs` in the audit's scratch folder).
+Such a page read as unparseable,
+the validation took an empty page,
+its block floor compared the candidate with the original alone,
+and the verdict passed the candidate as read by the relaxed grammar:
+at 10,000,
+20,000 and 50,000 markers the verdict on an ordinary rendering was valid,
+where at 1,000 and 5,000 the page was read and the same rendering refused.
+The validation's own comment says a check that cannot run must not answer yes,
+and names the case that taught it.
+No page a run has read reaches it:
+the pinned corpus's 279 Markdown files nest quotation markers at most 3 deep
+(`quote-depth-probe.mjs`),
+so no stored verdict would come out differently.
+
+Fix:
+a page neither grammar reads is treated as an original no grammar reads:
+the floors that read text still run,
+and with none refusing,
+the verdict is unknown with the page's reason,
+so the candidate stands unvalidated and says so.
+`grammarFreeVerdict` holds that path for both sides,
+and the empty skeleton the old path used is gone.
+`translate-validate.unit.test.ts` pins both verdicts over a page of 16,000 markers,
+and the case that said the floor fell back to the original alone,
+whose page plain markdown reads,
+now says it reads the page under plain markdown and checks the grammar it names.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

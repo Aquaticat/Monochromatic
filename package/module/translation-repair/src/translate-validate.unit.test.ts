@@ -36,6 +36,19 @@ const SOURCE_TEXT = `## 猫猫的一天
 
 [^1]: 窗台朝东。`;
 
+/**
+ What the untranslated floor tells a candidate that copied the original.
+ */
+const UNTRANSLATED_FINDING = 'Your translation repeats the ORIGINAL untranslated, in all but whitespace. Write the '
+  + 'passage in English; keep only the names, handles, links and code the original carries.';
+
+/**
+ A page neither grammar reads: plain markdown accepts any text, and refuses
+ only when reading exhausts the parser, and 16,000 nested quotation markers
+ overflow its stack where 8,000 already did when measured on 2026-09-30.
+ */
+const UNREADABLE_PAGE = `${'>'.repeat(16_000,)} cat`;
+
 await describe({
   name: validateTranslatedSlice.name,
   children: [
@@ -257,7 +270,12 @@ In the morning it dozes on the windowsill.
           sourceText: '猫猫 <未闭合 的标签 在这里。',
           candidateText: 'The cat dozes on the windowsill.',
         },);
-        expect(validation.kind,).toBe('unknown',);
+        expect(validation,).toEqual({
+          kind: 'unknown',
+          detail: 'original could not be read: MdxParseError: MDX body refused to parse at 1:16 '
+            + '(micromark-extension-mdx-jsx/unexpected-character); corpus documents compile as MDX upstream, so '
+            + 'failure signals corruption or an unsupported construct.',
+        },);
       },
     },),
 
@@ -269,11 +287,21 @@ In the morning it dozes on the windowsill.
         expect(validateTranslatedSlice({
           sourceText: '猫猫 <未闭合 的标签 在这里。',
           candidateText: '猫猫 <未闭合 的标签 在这里。',
-        },).kind,).toBe('invalid',);
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [UNTRANSLATED_FINDING,],
+        },);
         expect(validateTranslatedSlice({
           sourceText: 'TA 在睡觉 <未闭合 的标签 在这里。',
           candidateText: 'TA is sleeping here.',
-        },).kind,).toBe('invalid',);
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [
+            'Your translation carries the pronoun untranslated as "TA" (1 time): the ORIGINAL writes its neutral '
+              + 'pronoun as TA, Ta or ta, and English renders it as singular they (they, them, their), with TA 们 as '
+              + 'plural they; a Ta left standing in the English is an untranslated word, not a preserved choice.',
+          ],
+        },);
       },
     },),
 
@@ -623,17 +651,44 @@ In the morning it dozes on the windowsill.
     },),
 
     it({
-      name: 'FALLS BACK to the original alone when the page refuses the strict '
-        + 'grammar, since an archive written before this grammar existed is '
-        + 'not the candidate\'s fault',
+      name: 'READS THE PAGE UNDER PLAIN MARKDOWN when the strict grammar refuses it, since an archive written '
+        + 'before this grammar existed is not the candidate\'s fault, and passes a rendering carrying its blocks',
       fn: async () => {
         expect(
           validateTranslatedSlice({
             sourceText: '猫猫在窗台上打盹。',
             pageText: 'The cat dozes {unclosed on the windowsill.',
             candidateText: 'The cat naps on the windowsill.',
-          },).kind,
-        ).toBe('valid',);
+          },),
+        ).toEqual({
+          kind: 'valid',
+          pageGrammar: 'relaxed',
+        },);
+      },
+    },),
+
+    it({
+      name: 'LEAVES A CANDIDATE UNVALIDATED where neither grammar reads the page, as where none reads the original, '
+        + 'rather than passing it against the original alone, and still runs the floors that read text (ledger '
+        + 'T8, sixth batch)',
+      fn: async () => {
+        expect(validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。',
+          pageText: UNREADABLE_PAGE,
+          candidateText: 'The cat naps on the windowsill.',
+        },),).toEqual({
+          kind: 'unknown',
+          detail: 'page could not be read: plain markdown also refused: RangeError: Maximum call stack size '
+            + 'exceeded',
+        },);
+        expect(validateTranslatedSlice({
+          sourceText: '猫猫在窗台上打盹。',
+          pageText: UNREADABLE_PAGE,
+          candidateText: '猫猫在窗台上打盹。',
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [UNTRANSLATED_FINDING,],
+        },);
       },
     },),
     it({
