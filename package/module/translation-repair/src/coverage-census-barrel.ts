@@ -37,6 +37,8 @@ export {
 export {
   type BaselineCensus,
   baselineStatusesOf,
+  type ColdSince,
+  coldSinceOf,
   type EditedClaim,
   editedClaimsOf,
   type EmptyClaim,

@@ -12,6 +12,10 @@ import type { CensusStretch, } from './coverage-census-report.ts';
 // left out of the line match entirely and named with this run's own standing,
 // which is all that speaks for it; the git comparison that names it is
 // `sourcesEditedSince` in `coverage-census-commit.ts`.
+//
+// BOTH CENSUSES ARE READ, since each speaks for code the other does not: the
+// baseline's stretches say what this run reached, and this run's stretches
+// say what it left cold that the baseline did not (ledger B61).
 
 /**
  What a baseline stretch reads as in a later run.
@@ -286,9 +290,12 @@ export function emptyClaimsOf(
  Names each source edited since the baseline's commit that the reading would
  otherwise have read, with this run's standing for it.
 
- WHICH SOURCES: the claimed ones, or, when the batch claims none, those the
- baseline holds a stretch in, so a reading of every source does not list
- every document and test changed since.
+ WHICH SOURCES: the claimed ones, or, when the batch claims none, those
+ either census holds a stretch in, so a reading of every source does not
+ list every document and test changed since, and does list a source added or
+ edited since that this run left cold. Reading the baseline's sources alone
+ counted such a source nowhere, since the baseline holds no stretch there
+ (ledger B61).
 
  @param baseline - earlier census read
 
@@ -327,10 +334,12 @@ export function editedClaimsOf(
    Sources the reading covers.
    */
   const read = (sources.size === 0)
-    ? new Set(baseline.stretches
-      .map(function sourceOf(stretch,): string {
-        return stretch.source;
-      },),)
+    ? new Set([
+      ...baseline.stretches,
+      ...current,
+    ].map(function sourceOf(stretch,): string {
+      return stretch.source;
+    },),)
     : sources;
   return [...read,]
     .filter(function wasEdited(source,): boolean {
@@ -345,6 +354,159 @@ export function editedClaimsOf(
           source,
           current,
         },),
+      };
+    },);
+}
+
+/**
+ A stretch this run left cold holding a line no baseline stretch of its
+ source held.
+
+ @example
+ ```ts
+ const cold: ColdSince = { stretch, loadedAtBaseline: true, };
+ ```
+ */
+export type ColdSince = {
+  /**
+   The stretch, as this run recorded it.
+   */
+  readonly stretch: CensusStretch;
+
+  /**
+   Whether a bundle the baseline loaded carried its source: when one did, the
+   baseline ran the lines this stretch gained; when none did, the baseline
+   proves nothing of them.
+   */
+  readonly loadedAtBaseline: boolean;
+};
+
+/**
+ Whether earlier stretches hold every line of a later one, read line by line
+ so that two stretches meeting across a gap do not hold the line between.
+
+ @param stretch - later stretch
+
+ @param held - earlier stretches in its source
+
+ @returns Whether every line it spans lies in one of them
+
+ @example
+ ```ts
+ const unchanged = heldThroughout({ stretch, held, },);
+ ```
+ */
+function heldThroughout(
+  {
+    stretch,
+    held,
+  }: {
+    readonly stretch: CensusStretch;
+    readonly held: readonly CensusStretch[];
+  },
+): boolean {
+  /**
+   First and last line of the later stretch.
+   */
+  const {
+    startLine,
+    endLine,
+  } = stretch;
+  return Array.from(
+    { length: (endLine - startLine) + 1, },
+    function lineAt(
+      _unused,
+      offset,
+    ): number {
+      return startLine + offset;
+    },
+  )
+    .every(function isHeld(line,): boolean {
+      return held.some(function holds(earlier,): boolean {
+        return (earlier.startLine <= line) && (line <= earlier.endLine);
+      },);
+    },);
+}
+
+/**
+ Names each stretch this run left cold in lines the baseline did not, which
+ reading the baseline's own stretches counts nowhere: before ledger B61 a
+ change that left code cold read clean, and the three stretches of other
+ packages `census-5PAw2O` left cold again went unprinted. A stretch reaching
+ past the baseline's lines is named too, since the lines it gained went cold.
+ A source edited since the baseline's commit is left to `editedClaimsOf`,
+ since its baseline lines name other code now.
+
+ @param baseline - earlier census read
+
+ @param current - stretches of this run
+
+ @param sources - sources the batch claims, empty for every source
+
+ @param edited - sources edited since the baseline's commit
+
+ @returns Each such stretch with whether the baseline loaded its source,
+ sorted by source and then line
+
+ @example
+ ```ts
+ const cold = coldSinceOf({ baseline, current, sources: new Set(), edited, },);
+ ```
+ */
+export function coldSinceOf(
+  {
+    baseline,
+    current,
+    sources,
+    edited,
+  }: {
+    readonly baseline: BaselineCensus;
+    readonly current: readonly CensusStretch[];
+    readonly sources: ReadonlySet<string>;
+    readonly edited: ReadonlySet<string>;
+  },
+): readonly ColdSince[] {
+  /**
+   The baseline's stretches, and the sources its loaded bundles carried.
+   */
+  const {
+    stretches: baselineStretches,
+    loadedSources: loadedAtBaseline,
+  } = baseline;
+  /**
+   The baseline's stretches by source.
+   */
+  const heldBySource = Map.groupBy(
+    baselineStretches,
+    function sourceOf(stretch,): string {
+      return stretch.source;
+    },
+  );
+  return current
+    .filter(function coldSince(stretch,): boolean {
+      /**
+       Source it sits in.
+       */
+      const { source, } = stretch;
+      return ((sources.size === 0) || sources.has(source,))
+        && (!edited.has(source,))
+        && (!heldThroughout({
+          stretch,
+          held: heldBySource.get(source,) ?? [],
+        },));
+    },)
+    .toSorted(function bySourceThenLine(
+      left,
+      right,
+    ): number {
+      return left.source
+        .localeCompare(right.source,)
+        || (left.startLine - right.startLine);
+    },)
+    .map(function standing(stretch,): ColdSince {
+      return {
+        stretch,
+        loadedAtBaseline: loadedAtBaseline.has(stretch.source,),
       };
     },);
 }

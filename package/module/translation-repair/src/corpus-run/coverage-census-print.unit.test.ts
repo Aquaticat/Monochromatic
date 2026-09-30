@@ -3,9 +3,9 @@
  commit, scope and passes; a line per kind; the bundles no test loaded with
  the library sources only they carry; library rows alone; the outermost
  uncalled functions in package source by source and line number, anonymous
- ones named so; and a baseline reading's counts, unproven stretches, and
- claimed sources the baseline holds no stretch in. Paths and names are
- cat-themed invention.
+ ones named so; and a baseline reading's counts, unproven stretches,
+ stretches cold since, claimed sources the baseline holds no stretch in, and
+ sources edited since. Paths and names are cat-themed invention.
 
  @module
  */
@@ -22,6 +22,7 @@ import {
   censusReportLines,
   type MappedFunction,
 } from '../../dist/final/node/index.mjs';
+import { recorded, } from './coverage-census.test-fixture.ts';
 
 /**
  An uncalled function in a source at a line.
@@ -195,15 +196,11 @@ await describe({
     it({
       name: 'COUNTS EACH STATUS, then lists every stretch not proven run',
       fn: async () => {
-        const stretch = {
-          bundle: 'nap.mjs',
-          start: 0,
-          end: 1,
-          name: '',
+        const stretch = recorded({
           source: 'src/nap.ts',
           startLine: 3,
           endLine: 5,
-        };
+        },);
         expect(baselineReportLines({
           path: '/tmp/census.json',
           head: 'c0ffee123',
@@ -228,13 +225,50 @@ await describe({
               status: 'not loaded',
             },
           ],
+          coldSince: [],
           emptyClaims: [],
           editedClaims: [],
         },),).toEqual([
-          'against /tmp/census.json at c0ffee123: ran 1, still cold 1, not loaded 1, claimed sources with no stretch '
-          + 'there 0, sources edited since then 0',
+          'against /tmp/census.json at c0ffee123: ran 1, still cold 1, cold since then 0, not loaded 1, claimed '
+          + 'sources with no stretch there 0, sources edited since then 0',
           '  still cold: src/nap.ts:8-8',
           '  not loaded: src/purr.ts:3-5',
+        ],);
+      },
+    },),
+    it({
+      name: 'COUNTS AND NAMES EACH STRETCH COLD SINCE THE BASELINE, saying whether the baseline ran its lines or never '
+        + 'loaded its source (ledger B61)',
+      fn: async () => {
+        expect(baselineReportLines({
+          path: '/tmp/census.json',
+          head: 'c0ffee123',
+          statuses: [],
+          coldSince: [
+            {
+              stretch: recorded({
+                source: 'src/nap.ts',
+                startLine: 8,
+                endLine: 9,
+              },),
+              loadedAtBaseline: true,
+            },
+            {
+              stretch: recorded({
+                source: 'src/knead.ts',
+                startLine: 2,
+                endLine: 2,
+              },),
+              loadedAtBaseline: false,
+            },
+          ],
+          emptyClaims: [],
+          editedClaims: [],
+        },),).toEqual([
+          'against /tmp/census.json at c0ffee123: ran 0, still cold 0, cold since then 2, not loaded 0, claimed '
+          + 'sources with no stretch there 0, sources edited since then 0',
+          '  cold since then (ran there): src/nap.ts:8-9',
+          '  cold since then (not loaded there): src/knead.ts:2-2',
         ],);
       },
     },),
@@ -247,6 +281,7 @@ await describe({
           path: '/tmp/census.json',
           head: 'c0ffee123',
           statuses: [],
+          coldSince: [],
           emptyClaims: [],
           editedClaims: [
             {
@@ -261,8 +296,8 @@ await describe({
             },
           ],
         },),).toEqual([
-          'against /tmp/census.json at c0ffee123: ran 0, still cold 0, not loaded 0, claimed sources with no stretch '
-          + 'there 0, sources edited since then 2',
+          'against /tmp/census.json at c0ffee123: ran 0, still cold 0, cold since then 0, not loaded 0, claimed '
+          + 'sources with no stretch there 0, sources edited since then 2',
           '  edited since c0ffee123, so its baseline lines name other code; this run loaded it and left 2 cold '
           + 'stretches: src/nap.ts',
           '  edited since c0ffee123, so its baseline lines name other code; this run did not load it: src/purr.ts',
@@ -277,6 +312,7 @@ await describe({
           path: '/tmp/census.json',
           head: 'c0ffee123',
           statuses: [],
+          coldSince: [],
           editedClaims: [],
           emptyClaims: [
             {
@@ -299,8 +335,8 @@ await describe({
             },
           ],
         },),).toEqual([
-          'against /tmp/census.json at c0ffee123: ran 0, still cold 0, not loaded 0, claimed sources with no stretch '
-          + 'there 3, sources edited since then 0',
+          'against /tmp/census.json at c0ffee123: ran 0, still cold 0, cold since then 0, not loaded 0, claimed '
+          + 'sources with no stretch there 3, sources edited since then 0',
           '  no baseline stretch (not loaded there, so the baseline proves nothing of it); '
           + 'this run loaded it and left 0 cold stretches: src/knead.ts',
           '  no baseline stretch (ran whole there); this run loaded it and left 2 cold stretches: src/purr.ts',

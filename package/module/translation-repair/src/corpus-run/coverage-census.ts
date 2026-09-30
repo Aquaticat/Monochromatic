@@ -27,6 +27,7 @@ import {
 import {
   type BaselineCensus,
   baselineStatusesOf,
+  coldSinceOf,
   editedClaimsOf,
   emptyClaimsOf,
 } from './coverage-census-baseline.ts';
@@ -64,7 +65,8 @@ import type { CoverageTally, } from './coverage-tally.ts';
 // claims: every claimed stretch must read as ran, and every claimed source the
 // baseline holds no stretch in must be loaded by this run with no cold
 // stretch left, since a baseline that never loaded a source proves nothing of
-// it. A claimed source edited since the baseline's commit is held to the same
+// it. No stretch may read as cold since then either, code the baseline ran
+// that this run left cold (ledger B61). A claimed source edited since the baseline's commit is held to the same
 // standard, this run loading it and leaving no cold stretch, since its
 // baseline lines name other code now. The baseline must be of the current
 // census format, taken from a tree matching its commit, and is read before the
@@ -260,6 +262,12 @@ async function reportCensus(
         baseline: baseline.stretches,
         current: stretches,
         loadedSources,
+        sources: claimed,
+        edited,
+      },),
+      coldSince: coldSinceOf({
+        baseline,
+        current: stretches,
         sources: claimed,
         edited,
       },),

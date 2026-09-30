@@ -645,7 +645,7 @@ await describe({
     },),
     it({
       name:
-        'NAMES ONLY SOURCES THE BASELINE HOLDS A STRETCH IN when the batch claims none, so a reading of every source '
+        'NAMES ONLY SOURCES A CENSUS HOLDS A STRETCH IN when the batch claims none, so a reading of every source '
         + 'does not list each document and test edited since',
       fn: async () => {
         expect(editedClaimsOf({

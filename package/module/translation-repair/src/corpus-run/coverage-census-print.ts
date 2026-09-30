@@ -1,4 +1,5 @@
 import type {
+  ColdSince,
   EditedClaim,
   EmptyClaim,
   StretchStatus,
@@ -241,6 +242,9 @@ function standingNow(
  @param statuses - each of its stretches in the claimed sources with its
  status, outside sources edited since that commit
 
+ @param coldSince - this run's stretches in lines none of its stretches
+ held, which its statuses cannot speak for (ledger B61)
+
  @param emptyClaims - claimed sources it holds no stretch in, which the
  statuses cannot speak for, so each is printed with both censuses' standing
 
@@ -248,12 +252,12 @@ function standingNow(
  name other code now, so each is printed with this run's standing alone
 
  @returns Lines to print, in order: counts, then every stretch not proven
- run, then every claimed source holding no baseline stretch, then every
- edited source
+ run, then every stretch cold since, then every claimed source holding no
+ baseline stretch, then every edited source
 
  @example
  ```ts
- for (const line of baselineReportLines({ path, head, statuses, emptyClaims, editedClaims, },)) console.log(line,);
+ for (const line of baselineReportLines({ path, head, statuses, coldSince, emptyClaims, editedClaims, },)) console.log(line,);
  ```
  */
 export function baselineReportLines(
@@ -261,6 +265,7 @@ export function baselineReportLines(
     path,
     head,
     statuses,
+    coldSince,
     emptyClaims,
     editedClaims,
   }: {
@@ -270,6 +275,7 @@ export function baselineReportLines(
       readonly stretch: CensusStretch;
       readonly status: StretchStatus;
     }[];
+    readonly coldSince: readonly ColdSince[];
     readonly emptyClaims: readonly EmptyClaim[];
     readonly editedClaims: readonly EditedClaim[];
   },
@@ -293,6 +299,7 @@ export function baselineReportLines(
   const counts = [
     `ran ${String(countOf('ran',),)}`,
     `still cold ${String(countOf('still cold',),)}`,
+    `cold since then ${String(coldSince.length,)}`,
     `not loaded ${String(countOf('not loaded',),)}`,
     `claimed sources with no stretch there ${String(emptyClaims.length,)}`,
     `sources edited since then ${String(editedClaims.length,)}`,
@@ -309,6 +316,24 @@ export function baselineReportLines(
             .startLine,)}-${String(read.stretch
               .endLine,)}`;
       },),
+    ...coldSince.map(function coldSinceLine({
+      stretch,
+      loadedAtBaseline,
+    },): string {
+      /**
+       What the baseline says of the stretch's lines.
+       */
+      const then = loadedAtBaseline ? 'ran there' : 'not loaded there';
+      /**
+       Where the stretch sits.
+       */
+      const {
+        source,
+        startLine,
+        endLine,
+      } = stretch;
+      return `  cold since then (${then}): ${source}:${String(startLine,)}-${String(endLine,)}`;
+    },),
     ...emptyClaims.map(function emptyClaimLine({
       source,
       loadedAtBaseline,
