@@ -261,16 +261,57 @@ and retains unchanged authentication/parser/default-launcher behavior.
 This is a privately changed helper,
 not an unchanged deployed-helper or production-writer admission.
 
-No new genuine window has been dispatched:
+At the retained predispatch checkpoint,
 read-only probes reported active screen saver and graphical-session `LockedHint=yes`.
-Task #82 waits for human desktop unlock/readiness,
-not additional test authorization.
-Recheck freshness before the one-shot outer controller;
-never bypass the lock or synthesize a human response.
-Genuine capture,
-actual Ghostty/Nano closure,
-other writers,
-and downstream gates remain unqualified.
+Later read-only probes reported inactive screen saver and `LockedHint=no`;
+Task #82 was removed on measured device availability,
+without lock bypass,
+synthetic input,
+or a human-authentication claim.
+The one-shot clean controller `proc_7c5f` then completed with `approved-fixture`,
+private original-document capture,
+exact accepted fixture scope,
+and temporary answer-workspace removal.
+No external model call or production grant was created.
+
+## Completed private genuine-host admission
+
+Local reconciliation `proc_3cd6` succeeded;
+separately named protected reconciliation `proc_5cce` succeeded with worker diagnostics on private fds.
+The original UTF-8 bytes,
+code-authored nonce/presentation,
+accepted fixture scope,
+frozen writer identities,
+deadline,
+and finalization match.
+The parser's successful path explicitly creates populated scope and digest fields.
+Summary booleans and a recorded workflow string alone would not carry authority.
+The original reader's successful path does not qualify its assertion-error privacy;
+the protected reader is a distinct evidence-validation transaction,
+not a genuine interaction replay.
+
+Task #68 closes only private Q23-A concrete-host writer/original-response/exact-scope admission.
+This uses the private observed requester and qualified helper-stop correction,
+not an unchanged deployed helper or production writer.
+Physical-person identity,
+comprehension,
+same-account-interference resistance,
+and other producer coverage are not established.
+One-shot `proc_5517` found no exact new request/answer argument matches or new answer workspace/file;
+that limited null does not independently attest GUI surface termination.
+The original failed epoch and unlaunched held epoch remain preserved and cannot dispatch.
+
+Task #69 is active for disposable actual-consumer lifecycle/finalization,
+carrying the private original binding rather than public summary flags.
+The exact fixture approval cannot become a reusable directive,
+broader action approval,
+or production grant.
+Synthetic lifecycle records remain synthetic.
+Semantic profiles,
+preparation-inclusive handback,
+replacement parity,
+cutoff,
+and adoption remain separate and unqualified.
 See the [source trace and limits](../troubleshooting/pi-input-provenance.md).
 
 ## Next bounded work
