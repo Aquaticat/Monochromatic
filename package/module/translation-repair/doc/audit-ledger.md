@@ -3993,6 +3993,101 @@ and 99 others,
 and `lane` still ties `corpus-run/insertion` at 21 stretches with the most cold lines (59 against 50),
 so the thirteenth batch takes `lane` against `census-EiesJ9`.
 
+The thirteenth batch took the lane modules against `census-EiesJ9`
+in four code commits,
+`da74173a1` to `de9ced3f0`,
+and one entry of its own,
+B66.
+Its census at `de9ced3f0`
+(`census-lPGpK8`,
+1,465 passes,
+taken clean)
+reads against `census-EiesJ9`:
+ran 4,
+still cold 1,180,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 5.
+The 4 that ran are the two cluster sources the batch never edited,
+`lane-contest-eligibility.ts` (3) and `lane-contest-key.ts` (1).
+The 5 edited sources are the rest of the cluster,
+and each "loaded it and left 0 cold stretches".
+Library source went from 847 stretches over 1,745 lines in 307 files to 826 over 1,686 in 300:
+the cluster's 21
+(`lane-contest-driver.ts` and `lane-slice-sets.ts` 4 each,
+`lane-contest-eligibility.ts`,
+`lane-contest-stage.ts`,
+`lane-slice-coverage-error.ts` and `lane-slice-text.ts` 3 each,
+`lane-contest-key.ts` 1),
+all seven files now at none,
+and per-file counts compared between the two census files change in no other file.
+Entry files keep 30 stretches over 754 lines,
+and other packages' sources are unchanged at 61 files and 324 stretches.
+The 6 not loaded are the unmapped `wording-key` chunk,
+renamed again (`wording-key-W_GpcIy_.mjs`),
+6 stretches under each name.
+The bundles no test loaded are still 36,
+carrying 38 sources over 13,322 lines,
+as in `census-EiesJ9`.
+
+How the rows closed,
+by commit:
+`da74173a1` and `65deb5167` (B66) cased the driver's rows for the claims and the note the judges are shown
+(`driver` 426-429,
+435-436 and 446-447)
+and the repeat faults
+(`slice-text` 334-340 and 342-348,
+`coverage-error` 249 and 251).
+`67225cfb4` replaced the fallbacks no input reaches with code that has no such branch:
+`driver` 388-390 (`nonNullishOrThrow`:
+`projectLanes` is the only producer of `ProjectedLanes`,
+and its `compareLanes` builds the comparison from the repair ledger row by row),
+`stage` 270 and 313 (a `SeatedBallot` type for the ballots the stage builds,
+each from one seat's reply),
+`slice-text` 220-225 with `coverage-error` 245 (a decision carries its wording as a string,
+so the `typeof` check and its fault kind went)
+and `slice-sets` 265,
+286,
+291 and 314 (each list paired with its indices once,
+rather than looked up by position).
+`de9ced3f0` cased the reachable ones:
+`key` 296-300 (a dispute note keys apart from none,
+and from another note),
+`eligibility` 182 (a ballot choosing neither lane under eligibility),
+367-371 (an original no grammar reads)
+and 469-470 (front matter with no fence),
+and `stage` 463-468 (a short bench).
+By reading `settleVotes`,
+which counts only the two lanes' votes,
+keeping or dropping a neither ballot at `eligibility` 182 cannot change the choice,
+so that case drives the line and cannot tell the two apart.
+The same commit rebuilt the driver test's `metadataProjection` from whole rows,
+where it had been cast from a partial shape against B63's rule,
+and gave `catProjection` its TSDoc back from above `metadataProjection`'s.
+The batch's control copy,
+the contest key test with the dispute case expecting the same key as no note,
+failed on that case alone and was deleted.
+
+The fourteenth batch's baseline is that census
+(`de9ced3f0`,
+`census-lPGpK8`):
+library source holds 826 stretches over 1,686 lines in 300 files,
+with 19 functions never called.
+By the first construct
+(`t8-triage-lpgpk8.txt`),
+the queue is 333 returns,
+162 nullish fallbacks,
+141 ternaries,
+92 throws
+and 98 others.
+`corpus-run/insertion` leads alone
+(21 stretches,
+7 files,
+50 lines,
+ahead of `prompt` at 20),
+so the fourteenth batch takes it.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -12876,6 +12971,52 @@ then filters by the name its writer gives a record,
 so a write still under its temporary name is never read;
 the scan refuses any other listing.
 
+### B66: lane messages printed a count before a fixed plural
+
+Found by the thirteenth coverage batch,
+reading `lane-slice-coverage-error.ts` beside the cases its cold sentences lacked.
+A repeat fault prints how many entries a list claims and how many distinct indices they hold,
+and the distinct count is 1 whenever two entries share one index,
+so the sentences read "under 1 distinct indices" and "over 1 distinct slices".
+`lane-slice-sets.unit.test.ts` asserted "lane reports 2 unfilled slices under 1 distinct indices",
+agreeing with the defect.
+The contest driver's log of the claims shown to the judges read "1 corroborated damage claims" for one claim.
+By inference from `refusalText`'s callers,
+the coverage error's message reaches only log lines and stored records,
+and the driver's line is the run log,
+so no model was shown either wording.
+
+Fixed (`da74173a1` red,
+`65deb5167`):
+each count in those sentences takes the word `wordForCount` (`count-word.ts`) chooses,
+and the number of decisions reads through `howOften`.
+The lane contest's finding "heard N usable ballots,
+below the 2 needed to settle"
+and the polish gate's twin of it are left for the family's own change,
+since both are stored in artifacts and move together.
+`65deb5167`'s message quotes that finding with a 3;
+both quorums are 2,
+and a comment on the commit says so (M84).
+Taking the fix back out failed the three red cases,
+each with its describe,
+and nothing else.
+
+Open:
+the same shape stands elsewhere
+(the slice cache's "discarding N cached slices",
+whose test's header quotes "discarding 1 cached slices",
+the census report's own "1 stretches,
+1 lines",
+and the lane contest's and polish gate's usable-ballot findings);
+the family is classified and fixed as one change,
+red first,
+with the sites a model reads apart from those a person reads.
+
+Recurrence:
+a count in a message takes the word `wordForCount` chooses,
+or `howOften` for a number of times,
+and a case pins the count of 1.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -13395,6 +13536,26 @@ the census,
 `run-guards-named.ts`):
 its log is printed or searched every time,
 and a diagnosis of why a run misread is checked against the tool's source before it is written down.
+
+### M84: a value quoted from memory in a message, and again in its correction
+
+Status:
+happened 2026-09-30 (UTC) in `65deb5167`'s message,
+found the same day while drafting B66's entry,
+and corrected by a comment on that commit,
+whose first wording was wrong as well and was edited within minutes.
+The message quoted the lane contest's finding as "below the 3 needed";
+`LANE_CONTEST_QUORUM` is 2 (`lane-contest-stage.ts` line 49).
+The comment first said the 3 belonged to the polish gate's twin of the finding;
+`CONSOLIDATION_POLISH_GATE_QUORUM` is 2 as well (`consolidation-polish-gate-stage.ts` line 31),
+and it was read only after the comment was posted.
+M77's rule,
+that a class a message names is read from the code,
+covers a constant too,
+and neither text applied it.
+Prevention:
+a constant a message or a comment names is read from its declaration in a command before the text is written,
+and a correction is held to the rule it corrects.
 
 ### M79: a coverage census measuring compressed code
 
@@ -14108,6 +14269,15 @@ matches the file but for the trailing newline the fetch adds).
 The lint and the build were rerun after their writes;
 the test run and the comment were checked after the fact,
 and passed only because their writes happened to land first.
+Again on 2026-09-30 (T8's thirteenth batch),
+twice,
+with no wrong outcome landing:
+a lint ran in the batch of the edit it read
+(it found none of the three warnings the unedited file raised,
+so it read the edit),
+and a commit comment was posted in the batch of the write of its body
+(fetched back,
+the posted body matches the file).
 The prevention stands as written:
 the edit or write,
 then,

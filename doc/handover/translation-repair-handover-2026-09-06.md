@@ -283,13 +283,21 @@ this one says what changed after it.
   run-directory readers taking entries their writer never wrote,
   was fixed before the thirteenth batch (`e987110a1` to `6583c32c4`),
   with a source scan that holds every listing to `directory-listing.ts`.
-  The baseline is now the whole suite at `6583c32c4` (`census-EiesJ9`,
-  1,464 passes):
-  library source holds 847 stretches over 1,745 lines in 307 files,
+  The thirteenth batch read against the whole suite at `6583c32c4` (`census-EiesJ9`,
+  1,464 passes)
+  and took the lane modules,
+  closing all 21 of their stretches in 7 files
+  (`da74173a1` to `de9ced3f0`;
+  ledger B66,
+  a count printed before a fixed plural,
+  whose wider family is queued as one change).
+  The baseline is now the whole suite at `de9ced3f0` (`census-lPGpK8`,
+  1,465 passes):
+  library source holds 826 stretches over 1,686 lines in 300 files,
   with 19 functions never called.
   The library batches go on one triage cluster each,
-  the thirteenth taking the lane modules
-  (`lane`,
+  the fourteenth taking the insertion modules of `corpus-run`
+  (`corpus-run/insertion`,
   21 stretches in 7 files),
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;

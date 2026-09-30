@@ -159,23 +159,30 @@ every reader of a run directory lists through `directory-listing.ts` and takes o
 so the ledger report no longer reads the atomic writer's temporary files as contests
 and a stray file in the published tree no longer stops the verifier,
 and a source scan refuses any other listing.
-The baseline is now the whole suite at `6583c32c4` (`census-EiesJ9`,
-1,464 passes,
+The thirteenth batch took the lane modules,
+21 stretches in 7 files,
+and closed every one
+(`da74173a1` to `de9ced3f0`),
+finding and fixing B66 on the way:
+the lane's coverage refusals and the contest log give each count the word it takes,
+where a repeat read "under 1 distinct indices";
+the rest of that family is queued as one change.
+The baseline is now the whole suite at `de9ced3f0` (`census-lPGpK8`,
+1,465 passes,
 taken from a tree with nothing uncommitted):
-library source holds 847 stretches over 1,745 lines in 307 files,
+library source holds 826 stretches over 1,686 lines in 300 files,
 with 19 functions never called,
 and the runner entry files and unloaded bundles come after.
 By the first construct each stretch's lines hold
-(`t8-triage-eiesj9.txt` in the audit's scratch folder),
-the queue is 339 returns,
-167 nullish fallbacks,
-146 ternaries,
-96 throws
-and 99 others,
-and the thirteenth batch takes the lane modules
-(`lane`,
-21 stretches in 7 files,
-tied with `corpus-run/insertion` and ahead on cold lines);
+(`t8-triage-lpgpk8.txt` in the audit's scratch folder),
+the queue is 333 returns,
+162 nullish fallbacks,
+141 ternaries,
+92 throws
+and 98 others,
+and the fourteenth batch takes the insertion modules of `corpus-run`
+(`corpus-run/insertion`,
+21 stretches in 7 files);
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:

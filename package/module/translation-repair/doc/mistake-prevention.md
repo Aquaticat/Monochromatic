@@ -364,6 +364,10 @@ A batch's stretch counts are read from the baseline census's rows file by file,
 each stretch placed in exactly one of reachable or removed,
 and an edit the census never listed is named apart:
 one record counted a narrowing the census had not listed as a removed stretch (M78).
+A constant a message or a comment names is read from its declaration first,
+and a correction is held to the same rule:
+one message quoted a quorum of 3 where both quorums were 2,
+and its correction's first wording repeated the slip (M84).
 A message file takes a name no earlier message used,
 checked with `ls` before any tool writes it (M72).
 Before the commit runs,
@@ -1271,6 +1275,11 @@ What happened:
 the reference-count floor wrote one sentence per missing or surplus copy,
 each saying the other side carried none,
 so a model carrying a link once where the original carries it twice was told it carried none (ledger B37).
+Lane messages printed a count before a noun fixed in the plural,
+and a repeat fault's distinct count is 1 whenever two entries share one index,
+so they read "under 1 distinct indices";
+one test asserted that wording,
+agreeing with the defect (ledger B66).
 
 The rule:
 a finding comparing how often two sides carry something writes one sentence per thing compared,
@@ -1281,11 +1290,15 @@ Its tests pin each count arm (none,
 once,
 more than once,
 on each side) by the whole sentence.
+A count in any message takes the word `wordForCount` (`count-word.ts`) chooses,
+or `howOften` for a number of times,
+and a case pins the count of 1.
 
 What enforces it:
 habit and review;
 the atom floor's cases pin its arms,
 and an arm no case reaches shows in the coverage census.
+The rest of the count-before-plural family is to be classified and fixed as one change (ledger B66's open list).
 
 ## Paired marks
 
