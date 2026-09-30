@@ -253,6 +253,34 @@ function lengthPlausibility(
 }
 
 /**
+ Characters across one side's blocks, each block's own text counted once.
+
+ @param nodes - blocks of one side
+
+ @returns Their characters, summed
+
+ @example
+ ```ts
+ const chars = charsAcross({ nodes: sourceNodes, },);
+ ```
+ */
+function charsAcross({ nodes, }: { readonly nodes: readonly DocumentNode[]; },): number {
+  return nodes.reduce(
+    function addChars(
+      sum,
+      node,
+    ): number {
+      /**
+       This block's own characters.
+       */
+      const { text, } = node;
+      return sum + text.length;
+    },
+    0,
+  );
+}
+
+/**
  Estimates how far THIS translation expands, in characters per source
  character.
  
@@ -286,38 +314,12 @@ export function estimateExpansion(
   /**
    Total characters on the original side.
    */
-  const sourceChars = sourceNodes
-    .reduce(
-      function addChars(
-        sum,
-        node,
-      ): number {
-        /**
-         This block's own characters.
-         */
-        const { text, } = node;
-        return sum + text.length;
-      },
-      0,
-    );
+  const sourceChars = charsAcross({ nodes: sourceNodes, },);
 
   /**
    Total characters on the translation side.
    */
-  const targetChars = targetNodes
-    .reduce(
-      function addChars(
-        sum,
-        node,
-      ): number {
-        /**
-         This block's own characters.
-         */
-        const { text, } = node;
-        return sum + text.length;
-      },
-      0,
-    );
+  const targetChars = charsAcross({ nodes: targetNodes, },);
   if ((sourceChars === 0) || (targetChars === 0))
     return FALLBACK_EXPANSION;
   return targetChars / sourceChars;
