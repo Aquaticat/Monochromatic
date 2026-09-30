@@ -2897,6 +2897,29 @@ other workspace packages hold 228 stretches over 4,234 lines in 60 files.
 Batches from here read their reach against it,
 and the readings earlier batches took against `census-qilSwP` stand.
 
+B30 and B31 then removed or moved the code only tests reached,
+B32 the imports nothing read,
+and the whole-suite census at `6e631988b` (1,387 passes,
+`census-wNMuym`) is the baseline from there:
+library source holds 1,104 stretches over 2,799 lines in 423 files,
+with 29 functions never called;
+the runner entry files hold 27 stretches over 799 lines,
+with 14 never called;
+the 36 bundles no test loads carry 13,603 physical lines in 40 sources;
+other workspace packages hold 230 stretches over 4,278 lines in 61 files.
+Its first attempt refused before any test ran:
+the build's `index.mjs` had no source map,
+since it holds only import and export statements now that the seats inlined into it left the build (B31),
+and the census refused any bundle without a map,
+without naming it.
+`6e631988b` reads a map only where the census places code in a bundle
+(`coverage-bundle-maps.ts`,
+with its refusals named and tested)
+and moves the tally's placement out of the entry at its line budget
+(`coverage-census-place.ts`),
+which this census lists among the library sources only unloaded bundles carry,
+so a test of it is part of the library batches.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
