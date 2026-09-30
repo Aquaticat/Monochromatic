@@ -67,6 +67,7 @@ export {
   abbreviate,
   ArtifactProvenanceError,
   assertArtifactProvenance,
+  type ExpectedProvenance,
   type GenerationSelection,
 } from './corpus-run/artifact-provenance.ts';
 export { poolGeneration, } from './corpus-run/pool-generation.ts';

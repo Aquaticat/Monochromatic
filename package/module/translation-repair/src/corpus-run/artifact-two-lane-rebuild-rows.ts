@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { isInsertionChunk, } from '../chunk-placement.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
@@ -87,33 +89,23 @@ export function carveDivergence(
   const { slices, } = prepared;
   if (rows.length !== slices.length)
     return `${String(slices.length,)} slices rebuilt where the run recorded ${String(rows.length,)}`;
-  /**
-   Each position's departure, empty where it matches.
-   */
-  const departures = slices.map(function departureAt(
-    slice,
-    position,
-  ): string {
+  // The two lists are one length here, so every position has a row and a slice.
+  // Read as pairs and stopped at the first departure, which retires a "no
+  // recorded row" arm and a fallback for a found departure's text that no
+  // position could reach (ledger T8).
+  for (const [position, row,] of rows.entries()) {
     /**
-     Row the run recorded at this position.
+     How the slice rebuilt at this position departs from the row, empty where
+     it matches.
      */
-    const row = rows[position];
-    return (row === undefined)
-      ? 'no recorded row'
-      : rowDivergence({
-        row,
-        slice,
-      },);
-  },);
-  /**
-   First position that departs, -1 for none.
-   */
-  const first = departures.findIndex(function departs(departure,): boolean {
-    return departure !== '';
-  },);
-  return (first === (-1))
-    ? ''
-    : `slice at position ${String(first,)} has ${departures[first] ?? ''}`;
+    const departure = rowDivergence({
+      row,
+      slice: nonNullishOrThrow(slices[position],),
+    },);
+    if (departure !== '')
+      return `slice at position ${String(position,)} has ${departure}`;
+  }
+  return '';
 }
 
 //endregion Rebuild rows

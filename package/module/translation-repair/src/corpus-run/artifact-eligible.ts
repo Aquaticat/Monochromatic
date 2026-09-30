@@ -3,6 +3,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { wordForCount, } from '../count-word.ts';
 import {
   type GenerationCensus,
+  type GenerationGroup,
   tipContains,
 } from './artifact-generation.ts';
 import {
@@ -91,6 +92,22 @@ export type EligibleEntries = Readonly<{
 }>;
 
 /**
+ One generation of a census and how many entries it contributed to the pool a
+ required commit selected.
+ */
+type GenerationContribution = Readonly<{
+  /**
+   The generation.
+   */
+  group: GenerationGroup;
+
+  /**
+   Its entries that survived the required commit, none when it is stale.
+   */
+  eligible: number;
+}>;
+
+/**
  Built pipeline each placed entry recorded, for the whole census.
  
  @param census - what the directory holds
@@ -156,19 +173,19 @@ function keepAdmitted(
   },
 ): ReadonlyMap<string, string> {
   return new Map(
-    entryIds
-      .filter(function placed(entryId,): boolean {
-        return byEntry.has(entryId,);
-      },)
-      .map(function toPair(entryId,): readonly [
-        string,
-        string,
-      ] {
-        return [
-          entryId,
-          byEntry.get(entryId,) ?? '',
-        ];
-      },),
+    entryIds.map(function toPair(entryId,): readonly [
+      string,
+      string,
+    ] {
+      // Every admitted entry is a placed one, and the census records a placed
+      // entry's commit in the step that files it under its generation, so the
+      // lookup cannot miss. A filter and an empty-string fallback stood here
+      // and no entry could reach either (ledger T8).
+      return [
+        entryId,
+        nonNullishOrThrow(byEntry.get(entryId,),),
+      ];
+    },),
   );
 }
 
@@ -454,15 +471,21 @@ export async function selectEligible(
   },);
 
   /**
-   How many eligible entries each generation contributed, in group order.
+   Each generation with how many eligible entries it contributed, in group
+   order. Paired once rather than kept as a parallel list of counts, which the
+   report then read back by position behind a fallback no index could reach
+   (ledger T8).
    */
   const contributions = census.groups
-    .map(function toContribution(group,): number {
-      return group.entryIds
-        .filter(function survived(entryId,): boolean {
-          return entryIds.includes(entryId,);
-        },)
-        .length;
+    .map(function toContribution(group,): GenerationContribution {
+      return {
+        group,
+        eligible: group.entryIds
+          .filter(function survived(entryId,): boolean {
+            return entryIds.includes(entryId,);
+          },)
+          .length,
+      };
     },);
 
   /**
@@ -470,8 +493,8 @@ export async function selectEligible(
    spans; a generation excluded by the required commit contributes nothing.
    */
   const pooledCount = contributions
-    .filter(function contributed(count,): boolean {
-      return count > 0;
+    .filter(function contributed({ eligible, },): boolean {
+      return eligible > 0;
     },)
     .length;
 
@@ -519,16 +542,13 @@ export async function selectEligible(
         ]
         : []),
       ...unplaceableLines({ census, },),
-      ...census.groups
+      ...contributions
         .map(function toLine(
-          group,
-          index,
+          {
+            group,
+            eligible,
+          },
         ): string {
-          /**
-           Entries of this generation that survived the required commit.
-           */
-          const eligible = contributions[index] ?? 0;
-
           /**
            Entries this generation holds in all.
            */

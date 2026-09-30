@@ -1,5 +1,7 @@
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 
 import { readRunJson, } from '../run-json-read.ts';
 import { parseSettledArtifact, } from '../artifact-read.ts';
@@ -138,16 +140,23 @@ export async function loadEntry(
   const keyedId = entryIdOfArtifact({ name, },);
 
   /**
-   Commit the pool recorded for this file, absent when it placed no tip.
+   Commit the pool recorded for this file, absent when it did not admit it.
    */
   const expectedTip = eligible.tipByEntry
     .get(keyedId,);
 
   /**
-   Built pipeline the pool recorded for this file, absent when it placed none.
+   What the pool recorded for this file, absent when it did not admit it. The
+   pool records a built pipeline for every placed entry and admits only
+   placed ones, so an admitted entry always has both.
    */
-  const expectedDigest = eligible.digestByEntry
-    .get(keyedId,);
+  const expected = (expectedTip === undefined)
+    ? undefined
+    : {
+      tip: expectedTip,
+      digest: nonNullishOrThrow(eligible.digestByEntry
+        .get(keyedId,),),
+    };
 
   // These BYTES, against what the pool said about this file. The pool keyed the
   // entry by file name and classified its generation from a separate read, so
@@ -165,8 +174,7 @@ export async function loadEntry(
     observedDigest: ((typeof artifact.pipelineDigest) === 'string')
       ? artifact.pipelineDigest
       : '',
-    ...((expectedTip === undefined) ? {} : { expectedTip, }),
-    ...((expectedDigest === undefined) ? {} : { expectedDigest, }),
+    ...((expected === undefined) ? {} : { expected, }),
   },);
 
   // The reconcile is REQUIRED, not opportunistic. It used to run only when

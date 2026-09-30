@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { wordForCount, } from '../count-word.ts';
 import type { GenerationCensus, } from './artifact-generation.ts';
 import { abbreviate, } from './artifact-provenance.ts';
@@ -325,11 +327,14 @@ export class EmptyPoolError extends Error {
             `All ${
               String(census.total,)
             } settled entries were excluded by generation filtering.`,
-            ...(requiredCommit === undefined ? [] : [
-              `None of them records a pipeline containing ${
-                short({ id: requiredCommit, },)
-              }:`,
-            ]),
+            // Only a required commit excludes a placed entry. Without one,
+            // selectEligible pools every placed entry and raises this only when
+            // there is none, so a census holding entries always arrives with the
+            // commit that excluded them; an arm for a missing commit stood here
+            // and nothing could reach it (ledger T8).
+            `None of them records a pipeline containing ${
+              short({ id: nonNullishOrThrow(requiredCommit,), },)
+            }:`,
             ...generationLines({
               census,
               short,

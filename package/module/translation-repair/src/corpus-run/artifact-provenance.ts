@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import {
   type ArtifactFileName,
   entryIdOfArtifact,
@@ -95,17 +97,19 @@ export function abbreviate(
    naming one pipeline twice should print it the same way both times, so a
    repeated id is separated at the floor rather than growing the whole
    report chasing a difference that does not exist. Full length is reached
-   only for ids in a prefix relation, and reaching it always separates them,
-   so the fallback is a guard rather than an outcome.
+   only for ids in a prefix relation, and reaching it always separates them:
+   the last candidate is the longest id's length, at which every id is read
+   whole, so the search always finds a width. A fallback to that same width
+   followed it, and no input could reach it (ledger T8).
    */
-  const width = candidates.find(function separates(candidate,): boolean {
+  const width = nonNullishOrThrow(candidates.find(function separates(candidate,): boolean {
     return new Set(ids.map(function toPrefix(id,): string {
       return id.slice(
         0,
         candidate,
       );
     },),).size === new Set(ids,).size;
-  },) ?? longest;
+  },),);
   return function short({ id, }: { readonly id: string; },): string {
     return id.slice(
       0,
@@ -214,34 +218,57 @@ export class ArtifactProvenanceError extends Error {
 }
 
 /**
+ What the pool recorded for one admitted entry.
+
+ @example
+ ```ts
+ const expected: ExpectedProvenance = { tip, digest, };
+ ```
+ */
+export type ExpectedProvenance = Readonly<{
+  /**
+   Repo commit the entry's pass started under.
+   */
+  tip: string;
+
+  /**
+   Built pipeline the entry's pass executed.
+   */
+  digest: string;
+}>;
+
+/**
  Refuses a loaded artifact that is not the one the pool admitted.
- 
+
  Called by READERS rather than by the census, deliberately. The census now
  runs inside `assertArtifactsPlaceable` at pass startup, and a throw there
  would abort an accumulation over a telemetry invariant; a throw here costs
  only the report.
  
+ TAKES THE POOL'S RECORD WHOLE, a tip and a digest together or neither. The
+ pool admits only placed entries and records both for every one, so a tip
+ without a digest was never a record it could hand over; it stood here as a
+ separate optional field with a tip-only check behind it that no reader
+ reached (ledger T8).
+
  @param name - artifact file name, whose stem is the id the pool keyed on
- 
+
  @param observedId - entry id the loaded bytes record
- 
+
  @param observedTip - pipeline commit the loaded bytes record
- 
- @param expectedTip - pipeline commit the pool recorded for this entry, absent
- when the pool carried no tip for it
- 
+
  @param observedDigest - built pipeline the loaded bytes record, empty when
  they record none
- 
- @param expectedDigest - built pipeline the pool recorded for this entry,
- absent when the pool carried no digest for it
- 
+
+ @param expected - commit and built pipeline the pool recorded for this
+ entry, absent when the pool did not admit it
+
  @throws ArtifactProvenanceError when the file name, the recorded id, the
  recorded tip, or the recorded pipeline disagree
- 
+
  @example
  ```ts
- assertArtifactProvenance({ name, observedId, observedTip, expectedTip, },);
+ assertArtifactProvenance({ name, observedId, observedTip, observedDigest, expected, },);
  ```
  */
 export function assertArtifactProvenance(
@@ -249,16 +276,14 @@ export function assertArtifactProvenance(
     name,
     observedId,
     observedTip,
-    observedDigest = '',
-    expectedTip,
-    expectedDigest,
+    observedDigest,
+    expected,
   }: {
     readonly name: ArtifactFileName;
     readonly observedId: string;
     readonly observedTip: string;
-    readonly observedDigest?: string;
-    readonly expectedTip?: string;
-    readonly expectedDigest?: string;
+    readonly observedDigest: string;
+    readonly expected?: ExpectedProvenance;
   },
 ): void {
   /**
@@ -281,7 +306,7 @@ export function assertArtifactProvenance(
   // the file changed between the two reads. Reading it as "nothing to compare"
   // let exactly the race this module exists to close through, since a
   // half-written artifact is classified malformed and is valid moments later.
-  if (expectedTip === undefined) {
+  if (expected === undefined) {
     if ((observedTip !== '') && (observedDigest !== ''))
       throw new ArtifactProvenanceError({
         name,
@@ -292,11 +317,11 @@ export function assertArtifactProvenance(
     return;
   }
 
-  if (observedTip !== expectedTip)
+  if (observedTip !== expected.tip)
     throw new ArtifactProvenanceError({
       name,
       field: 'tip',
-      expected: expectedTip,
+      expected: expected.tip,
       observed: observedTip,
     },);
 
@@ -305,14 +330,11 @@ export function assertArtifactProvenance(
   // generation. A tip mismatch means the file was rewritten; a digest mismatch
   // means the file was rewritten BY A DIFFERENT PIPELINE, which is the case the
   // whole census exists to catch.
-  if (expectedDigest === undefined)
-    return;
-
-  if (observedDigest !== expectedDigest)
+  if (observedDigest !== expected.digest)
     throw new ArtifactProvenanceError({
       name,
       field: 'pipeline digest',
-      expected: expectedDigest,
+      expected: expected.digest,
       observed: observedDigest,
     },);
 }

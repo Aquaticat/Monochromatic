@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { isInsertionChunk, } from '../chunk-placement.ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import type { IdentifiedDeliveryLedger, } from '../lane-comparison.ts';
@@ -128,14 +130,11 @@ export function assertLedgerDescribesPreparation(
     slice,
   ] of slices.entries()) {
     /**
-     Row filed for this position.
+     Row filed for this position. The row count was just held to the slice
+     count, so every position has one; a refusal for a missing row stood here
+     and no ledger could reach it (ledger T8).
      */
-    const record = records[position];
-    if (record === undefined) {
-      throw new ArtifactPreparationMismatchError({
-        message: `${lane} ledger has no row at position ${String(position,)}`,
-      },);
-    }
+    const record = nonNullishOrThrow(records[position],);
 
     /**
      What the preparation says this position holds.

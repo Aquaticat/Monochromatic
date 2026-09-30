@@ -1,4 +1,4 @@
-import spawn from 'nano-spawn';
+import spawn, { SubprocessError, } from 'nano-spawn';
 
 import {
   type ArtifactFileName,
@@ -408,17 +408,12 @@ async function isShallowRepository(
  ```
  */
 function isCleanNegative({ error, }: { readonly error: unknown; },): boolean {
-  if (((typeof error) !== 'object') || (error === null))
-    return false;
-  if (!('exitCode' in error))
-    return false;
-
-  /**
-   Status as the subprocess error carries it.
-   */
-  const { exitCode, } = error;
-
-  return exitCode === NOT_ANCESTOR_EXIT;
+  // Read through nano-spawn's own class, whose `exitCode` is typed and left
+  // undefined when git never started or a signal ended it, rather than by
+  // probing an unknown value's shape: every value reaching here is a spawn
+  // failure, so the probe's two early returns had nothing to refuse (ledger
+  // T8), and neither undefined case is the documented negative.
+  return (error instanceof SubprocessError) && (error.exitCode === NOT_ANCESTOR_EXIT);
 }
 
 /**
