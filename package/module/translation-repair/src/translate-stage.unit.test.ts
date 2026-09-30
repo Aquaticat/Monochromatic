@@ -552,7 +552,7 @@ await describe({
           ballots: [],
           heardTranslators: 0,
           candidateCount: 0,
-          findings: [unflooredFinding({ detail: verdict.detail, },),],
+          findings: [unflooredFinding({ stage: 'translate', detail: verdict.detail, },),],
           slate: [],
           selectedIndex: 0,
           shippedIndex: 0,
@@ -626,7 +626,7 @@ await describe({
         if (verdict.kind !== 'unknown')
           throw new Error(`the fixture's original must be one no grammar reads, and the floor said ${verdict.kind}`,);
         expect(raised.reason,).toBe('unfloored',);
-        expect(raised.findings,).toEqual([unflooredFinding({ detail: verdict.detail, },),],);
+        expect(raised.findings,).toEqual([unflooredFinding({ stage: 'translate', detail: verdict.detail, },),],);
       },
     },),
     it({

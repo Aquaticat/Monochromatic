@@ -19,10 +19,11 @@ import type { SliceValidation, } from './translate-validate.ts';
 // and the page the candidate would replace, each read by the grammar the
 // slice's syntax calls for.
 //
-// ONE DEFINITION OF WHETHER THE FLOOR CAN COMPARE ANYTHING, because two places
-// ask. The floor (`translate-validate.ts`, `front-matter-translation.ts`)
-// answers `unknown` where it cannot, and the translate stage asks nobody
-// where it cannot, since on such a slice no candidate can pass (ledger B43).
+// ONE DEFINITION OF WHETHER THE FLOOR CAN COMPARE ANYTHING, because two kinds
+// of reader ask. The floor (`translate-validate.ts`,
+// `front-matter-translation.ts`) answers `unknown` where it cannot, and the
+// translate stage and the consolidation ask no writer where it cannot, since
+// on such a slice no candidate can pass (ledger B43, B45).
 // Two spellings would eventually disagree, and a slice falling between them
 // would be bought and shipped unchecked, or settled without a round the floor
 // could have checked.

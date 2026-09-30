@@ -27,8 +27,10 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import {
   buildTranslateCandidates,
+  FloorGroundDisagreementError,
   messageText,
   repairInvalidCandidates,
+  validateTranslatedSlice,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type SyntheticClient,
@@ -637,32 +639,69 @@ await describe({
     },),
 
     it({
-      name: 'LETS A CANDIDATE STAND UNVALIDATED where no grammar reads the original, asking nobody, and says why',
+      name: 'RAISES THE DISAGREEMENT where no grammar reads the original, asking nobody: both stages that take '
+        + 'this turn settle such a slice before any writer is asked, and this turn used to let a candidate stand '
+        + 'there unvalidated (ledger B43, B45)',
       fn: async () => {
-        const { repaired, log, } = await runRepair({
-          sourceText: '小橘子 <未闭合 的标签 在这里。',
-          translation: 'Little Orange is here.',
-          answer: {
-            resolution: 'revised',
-            translation: 'unused',
-            explanation: 'unused',
-          },
+        /**
+         Original carrying a tag the strict grammar never closes.
+         */
+        const sourceText = '小橘子 <未闭合 的标签 在这里。';
+        /**
+         What the follow-up call received.
+         */
+        const log: RepairLog = {
+          calls: 0,
+          messages: [],
+        };
+        /**
+         What the turn raised.
+         */
+        let raised: unknown;
+        try {
+          await repairInvalidCandidates({
+            client: repairClient({
+              answer: {
+                resolution: 'revised',
+                translation: 'unused',
+                explanation: 'unused',
+              },
+              log,
+            },),
+            voices: [
+              {
+                modelId: TRANSLATOR,
+                value: { translation: 'Little Orange is here.', },
+              },
+            ],
+            sourceText,
+            incumbentText: '',
+            priorMessages: PRIOR_MESSAGES,
+            signal: new AbortController().signal,
+            perCallTimeoutMs: 1_000,
+            l,
+          },);
+        }
+        catch (error) {
+          raised = error;
+        }
+        if (!(raised instanceof FloorGroundDisagreementError))
+          throw new Error('expected the turn to raise the disagreement',);
+
+        /**
+         The floor's own account of the slice, which the disagreement carries.
+         */
+        const verdict = validateTranslatedSlice({
+          sourceText,
+          candidateText: 'Little Orange is here.',
         },);
+        if (verdict.kind !== 'unknown')
+          throw new Error(`the fixture's original must be one no grammar reads, and the floor said ${verdict.kind}`,);
         expect({
-          repaired,
+          detail: raised.detail,
           calls: log.calls,
         },).toEqual({
-          repaired: {
-            voices: [{
-              modelId: TRANSLATOR,
-              value: { translation: 'Little Orange is here.', },
-            },],
-            findings: [
-              'translate-unvalidated (original could not be read: MdxParseError: MDX body refused to parse at 1:17 '
-              + '(micromark-extension-mdx-jsx/unexpected-character); corpus documents compile as MDX upstream, so '
-              + 'failure signals corruption or an unsupported construct.)',
-            ],
-          },
+          detail: verdict.detail,
           calls: 0,
         },);
       },

@@ -1577,7 +1577,7 @@ The cat is doing the sleeping on the windowsill.
         expect(result.unfilled,).toEqual([{
           sliceIndex: anchorIndex,
           reason: 'unfloored',
-          findings: [unflooredFinding({ detail: verdict.detail, },),],
+          findings: [unflooredFinding({ stage: 'translate', detail: verdict.detail, },),],
         },],);
         expect(calls.translateAttempts,).toBe(plain.calls
           .translateAttempts,);

@@ -120,11 +120,6 @@ The census reading leaves sources edited since its baseline out of its counts,
 since it matches stretches by line (`d27a89dd0`).
 Holding the launch for T8 is a quality call recorded for the owner to veto,
 and these counts are the size of what it holds the launch for),
-B45 (where the floor can compare nothing,
-the consolidation still asks its writers,
-as the translate stage did until B43;
-0 of 1,351 pinned slices reach it,
-and settling such a slice before the writers is next),
 T9 (every test run writes a log into `node_modules`,
 owned by `module-logger`,
 issue #576),

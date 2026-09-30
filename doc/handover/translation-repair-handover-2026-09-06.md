@@ -236,10 +236,9 @@ this one says what changed after it.
   B43,
   what the translate stage should do where the floor can compare nothing,
   is fixed (it settles such a slice before any call),
-  and B45,
-  the consolidation's writers still asked there,
-  is open;
-  neither reaches a pinned slice.
+  and so is B45,
+  the consolidation's writers asked there;
+  neither reached a pinned slice.
   The baseline is now the whole suite at `0fcb75c7b` (`census-6nasbO`,
   1,410 passes):
   library source holds 1,095 stretches over 2,302 lines in 386 files,

@@ -419,7 +419,8 @@ function requestMessages({ body, }: { readonly body: string; }): string {
  the single consolidation attempt (1ba8f713a) ended the re-ask, and its
  branches here went on 2026-09-29 with the evidence builder (ledger B30).
 
- @returns Client plus producer sheets and full payloads
+ @returns Client plus producer sheets and full payloads, and every request
+ body whatever its role, so a case can pin that nothing was bought
 
  @example
  ```ts
@@ -438,17 +439,21 @@ function scriptedClient(
   readonly client: SyntheticClient;
   readonly producerSheets: readonly string[];
   readonly producerPayloads: readonly string[];
+  readonly requests: readonly string[];
 } {
   /** Producer requests in dispatch order. */
   const producerSheets: string[] = [];
   /** Full producer payloads retaining model identity for uniqueness checks. */
   const producerPayloads: string[] = [];
+  /** Every request body served, producers', judges' and the gate's alike. */
+  const requests: string[] = [];
   return {
     client: createSyntheticClient({
       apiKey: 'test-key',
       transport: async function answerByScript(exchange,) {
         /** Complete request body carrying stage sheet. */
         const sent = exchange.bodyJson ?? '';
+        requests.push(sent,);
         /** Current role inferred from schema and gate marker. */
         const role = sent.includes('translation_report',)
           ? 'produce'
@@ -491,6 +496,7 @@ function scriptedClient(
     },),
     producerSheets,
     producerPayloads,
+    requests,
   };
 }
 
@@ -1098,8 +1104,8 @@ await describe({
     },),
     it({
       name: 'SHIPS THE ARCHIVE where the floor can compare nothing, an original the strict grammar cannot read, '
-        + 'whichever lane the contest backed: both lanes\' texts and the archive are refused alike, and the archive '
-        + 'stands (ledger B43)',
+        + 'whichever lane the contest backed: both lanes\' texts and the archive are refused alike, the archive '
+        + 'stands, and no writer, judge or gate is asked (ledger B43, B45)',
       fn: async () => {
         /**
          Original with an expression the strict grammar never closes.
@@ -1109,7 +1115,10 @@ await describe({
          Every settlement, one per lane the contest backed.
          */
         const settled = await Promise.all((['repair', 'translate',] as const).map(async function settleFor(lane,) {
-          const { client, } = scriptedClient({
+          const {
+            client,
+            requests,
+          } = scriptedClient({
             initialText: 'The cat dozes on the windowsill.',
             endorsedText: 'The cat naps on the windowsill.',
           },);
@@ -1137,9 +1146,14 @@ await describe({
           return {
             terminal: slices[0]?.terminal,
             shipped: slices[0]?.shipped,
+            requests: requests.length,
             refusedBoth: messages.some(function refusesBoth(line,): boolean {
               return line.includes('withheld from the slate: no comparison was possible: original could not be read',)
                 && line.includes('the incumbent fails it too: no comparison was possible',);
+            },),
+            askedNobody: messages.some(function namesTheReason(line,): boolean {
+              return line.includes('the floor can compare nothing here (original could not be read',)
+                && line.includes('so no writer is asked',);
             },),
           };
         },),);
@@ -1147,12 +1161,16 @@ await describe({
           {
             terminal: 'incumbent-only',
             shipped: { kind: 'archive', },
+            requests: 0,
             refusedBoth: true,
+            askedNobody: true,
           },
           {
             terminal: 'incumbent-only',
             shipped: { kind: 'archive', },
+            requests: 0,
             refusedBoth: true,
+            askedNobody: true,
           },
         ],);
       },

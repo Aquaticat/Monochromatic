@@ -21,6 +21,7 @@ import {
   isTranslateRepairWire,
   TRANSLATE_REPAIR_RESPONSE_FORMAT,
 } from './translate-repair-wire.ts';
+import { requireComparedVerdict, } from './translate-floor-ground.ts';
 import { validateTranslatedSlice, } from './translate-validate.ts';
 import type { TranslateReportWire, } from './translate-wire.ts';
 import { sameWording, } from './wording-key.ts';
@@ -116,9 +117,13 @@ function unrevisedFate({ contributorViolation, }: { readonly contributorViolatio
  2026-09-27, "No eligible standing")
  
  @param l - stage logger
- 
+
  @returns Final voice for this model plus what was recorded
- 
+
+ @throws {@link import('./translate-floor-ground.ts').FloorGroundDisagreementError}
+ when the floor says it compared nothing, which both callers rule out before
+ any writer is asked (ledger B43, B45)
+
  @example
  ```ts
  const outcome = await repairOneCandidate({ client, voice, sourceText, ... },);
@@ -195,17 +200,25 @@ async function repairOneCandidate(
     };
 
   /**
-   Structural verdict over what this model returned.
+   Structural verdict over what this model returned: a pass or a refusal.
+
+   NEVER THAT THE FLOOR COMPARED NOTHING. Both stages that ask for this turn
+   settle a slice the floor can compare nothing on before any writer is
+   asked (ledger B43 for the translate stage, B45 for the consolidation), so
+   no candidate reaches here on such a slice; this turn let one stand
+   unvalidated there, and an admitted insertion wrote it into the page.
    */
-  const validation = validateTranslatedSlice({
-    sourceText,
-    candidateText: voice.value
-      .translation,
-    pageText,
-    ...((syntax === undefined) ? {} : { syntax, }),
-    lineStructured,
-    declared,
-    disputedWordings,
+  const validation = requireComparedVerdict({
+    verdict: validateTranslatedSlice({
+      sourceText,
+      candidateText: voice.value
+        .translation,
+      pageText,
+      ...((syntax === undefined) ? {} : { syntax, }),
+      lineStructured,
+      declared,
+      disputedWordings,
+    },),
   },);
   // A PASS ON A DOWNGRADED PAGE IS RECORDED, never silent. The strict grammar
   // refuses a span cut through an element, and the page side falls back to
@@ -224,24 +237,6 @@ async function repairOneCandidate(
       voice,
       findings: [],
     };
-
-  // Nothing to compare against says nothing about the candidate, so it stands
-  // on this slate as written and the gap is recorded rather than charged to
-  // the model. It is not the last word: where the consolidation reads the
-  // slice's standings, it takes no verdict as no pass and refuses the text
-  // (`readStandingVerdict`).
-  //
-  // THE TRANSLATE STAGE NEVER REACHES THIS: it settles a slice the floor can
-  // compare nothing on before any call (ledger B43). The consolidation's
-  // writers take this turn too (`consolidate-produce.ts`), and are still
-  // asked on such a slice (ledger B45).
-  if (validation.kind === 'unknown') {
-    rl.warn(`${voice.modelId}: candidate not validated (${validation.detail}), so it stands as written`,);
-    return {
-      voice,
-      findings: [`translate-unvalidated (${validation.detail})`,],
-    };
-  }
 
   /**
    What validation found, recorded whatever the author answers.
@@ -333,16 +328,19 @@ async function repairOneCandidate(
   }
 
   /**
-   Whether the revision actually resolved what was found.
+   Whether the revision actually resolved what was found, a pass or a
+   refusal on the ground the first verdict was read on.
    */
-  const rechecked = validateTranslatedSlice({
-    sourceText,
-    candidateText: translation,
-    pageText,
-    ...((syntax === undefined) ? {} : { syntax, }),
-    lineStructured,
-    declared,
-    disputedWordings,
+  const rechecked = requireComparedVerdict({
+    verdict: validateTranslatedSlice({
+      sourceText,
+      candidateText: translation,
+      pageText,
+      ...((syntax === undefined) ? {} : { syntax, }),
+      lineStructured,
+      declared,
+      disputedWordings,
+    },),
   },);
 
   // A revision that still fails is NOT taken. The model was asked to fix these
@@ -411,9 +409,13 @@ async function repairOneCandidate(
  2026-09-27, "No eligible standing")
  
  @param l - stage logger
- 
+
  @returns Final voices in the order given, plus every finding
- 
+
+ @throws {@link import('./translate-floor-ground.ts').FloorGroundDisagreementError}
+ when the floor says it compared nothing, which both callers rule out before
+ any writer is asked (ledger B43, B45)
+
  @example
  ```ts
  const { voices, findings, } = await repairInvalidCandidates({ ... },);

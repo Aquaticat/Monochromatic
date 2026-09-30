@@ -11184,8 +11184,14 @@ no slice-cache file was written after 04:27 UTC on 2026-09-27,
 where a control from midnight that day finds 494
 (M81 records the two confounds that check first met).
 
-The consolidation's writers are still asked on such a slice
-(B45).
+The guard in `settleTranslateSlice` was shown to fail,
+committed first (`8fb8e6401`):
+with its condition made unmatchable and the build rerun,
+the slice guards' case failed with `TranslateUnheardError`
+("slice 0 heard no translator and c…",
+the check that would have stopped the entry on the disputed slice),
+and with the condition restored it passed.
+The consolidation's writers were still asked on such a slice until B45.
 
 ### B44: the front-matter floor charged a refusal of the original's or the page's YAML to the candidate
 
@@ -11233,8 +11239,8 @@ whose rethrow its case reaches.
 ### B45: the consolidation asks its writers on a slice the floor can compare nothing on
 
 Status:
-open,
-found 2026-09-30 (UTC) measuring B43.
+fixed 2026-09-30 (UTC),
+found that day measuring B43.
 A scratch copy of `consolidate-driver.unit.test.ts`'s case
 "SHIPS THE ARCHIVE where the floor can compare nothing",
 counting the producer requests its scripted client served,
@@ -11243,13 +11249,38 @@ and the slice still ends `incumbent-only` on the archive:
 the floor refuses every standing and every text the writers return,
 so their calls buy nothing,
 as the translate stage's did before B43.
-Those writers are also the only path left to the author repair's `unknown` arm (`translate-repair.ts`).
+Those writers were also the only path left to the author repair's `unknown` arm (`translate-repair.ts`),
+which let a candidate stand unvalidated.
 Reach at the pin is the same as B43's:
 0 of 1,351 slices.
-Next:
-the consolidation settles such a slice before its writers,
-by the same reading (`floorReach`),
-and the arm it leaves unreachable is removed.
+
+Fix:
+`buyConsolidationAttempt` (`consolidate-slice-buy.ts`) asks `floorReach` of the original and the archive's page,
+which every proposal is floored against (`consolidate-produce.ts`),
+before any writer,
+and on a blind slice settles with no voices,
+as it already did with no standing text,
+carrying the finding `consolidate-unfloored (<the floor's detail>)`;
+the settlement's own floor then refuses the standing and every lane text and keeps the archive.
+The author repair reads both its verdicts through `requireComparedVerdict`,
+so its `unknown` arm is gone:
+no caller reaches it,
+and a candidate the floor could not check is a fault there rather than one to keep.
+`unflooredFinding` names the stage it speaks for.
+Cases:
+the consolidation's blind-floor case now counts every request its client served,
+producers',
+judges' and the gate's,
+and expects none for either lane,
+with the log line naming the floor's reason;
+`translate-repair.unit.test.ts` replaces the case that pinned the unvalidated candidate with one expecting the disagreement,
+carrying the floor's detail,
+with no follow-up call.
+A blind slice's settlement ends in `keepTheArchive`,
+which marks it `archiveKept`,
+and `consolidationWorthResuming` persists no archive-kept settlement,
+before this change or after,
+so no cached consolidation answers such a slice and no cache account moves.
 
 ## Process mistakes in this audit
 
@@ -13101,6 +13132,9 @@ its second `find`,
 printing the newest file's time,
 served as one,
 and the narration was corrected before the result was used.
+Once more on 2026-09-30 (UTC) during B45:
+`ls <removed worktree> ; git worktree list | rg --count <name>`,
+confirming a removal with two checks joined by `;` where they belonged in two calls.
 
 ### M2: a wording change committed without the full suite
 

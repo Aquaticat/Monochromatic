@@ -12,6 +12,8 @@ import {
 import type { ConsolidateSubject, } from './consolidate-wire.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type { LaneText, } from './translate-candidates.ts';
+import { floorReach, } from './translate-floor-ground.ts';
+import { unflooredFinding, } from './translate-unfloored.ts';
 import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
 
 //region Consolidate slice buy
@@ -54,9 +56,10 @@ type ConsolidationBuyInput = {
 // eligibility and ordered document aggregation remain driver responsibilities.
 
 /**
- Buys and settles one third-rendering slate, or settles no standing text
- without asking producers.
- 
+ Buys and settles one third-rendering slate, or settles without asking
+ producers where there is no standing text or the floor can compare nothing
+ (ledger B45).
+
  @param client - provider client borrowed by every round
  
  @param roster - voices producing, and judging and gating when no narrower
@@ -134,15 +137,24 @@ async function buyConsolidationAttempt(
     l,
   }: ForeignBorrowed<ConsolidationBuyInput>,
 ): Promise<ConsolidationSettlement> {
-  // NO STANDING TEXT BUYS NO SLATE. Settlement still comes from one stage so
-  // terminal, floor and findings retain their ordinary meanings. The producers
-  // write from the standing text, so with none they are not asked; a lane text
-  // the rule admits still reaches the slate judges through the settlement
-  // (class eighty-seven, XingZ623 slice 89, 2026-09-22).
-  if (standingText === '') {
-    l.info((laneTexts.length === 0)
-      ? `slice ${String(sliceIndex,)}: no standing text to consolidate against, so no slate is bought`
-      : `slice ${String(sliceIndex,)}: no standing text to consolidate against; the lane texts alone go to the slate judges`,);
+  /**
+   Settles this question with no writer asked, on what the settlement's own
+   floor admits, so terminal, floor and findings keep their ordinary
+   meanings.
+
+   @param producedFindings - what the settlement carries in place of the
+   writers' findings
+
+   @returns Complete settlement for this question
+
+   @example
+   ```ts
+   return await settleUnwritten({ producedFindings: standingFindings, },);
+   ```
+   */
+  async function settleUnwritten(
+    { producedFindings, }: { readonly producedFindings: readonly string[]; },
+  ): Promise<ConsolidationSettlement> {
     return await settleConsolidation({
       client,
       roster,
@@ -150,7 +162,7 @@ async function buyConsolidationAttempt(
       subject,
       voices: [],
       validity: [],
-      producedFindings: standingFindings,
+      producedFindings,
       standingText,
       lineStructured,
       sliceIndex,
@@ -164,6 +176,47 @@ async function buyConsolidationAttempt(
       perCallTimeoutMs,
       l,
     },);
+  }
+
+  /**
+   Whether the floor can pass anything a writer here could write, read as it
+   reads every proposal (`consolidate-produce.ts`): against the original and
+   the archive's own page.
+   */
+  const reach = floorReach({
+    sourceText: subject.sourceText,
+    pageText: subject.incumbentText,
+    ...((subject.syntax === undefined) ? {} : { syntax: subject.syntax, }),
+  },);
+  // NOTHING IS BOUGHT WHERE NOTHING BOUGHT COULD PASS (ledger B45): the
+  // settlement refuses the standing and every lane text on the same reading
+  // and keeps the archive, so writers asked here were paid for proposals the
+  // floor would refuse too, as the translate stage's were before ledger B43.
+  if (reach.kind === 'blind') {
+    l.warn(
+      `slice ${String(sliceIndex,)}: the floor can compare nothing here (${reach.detail}), `
+        + 'so no writer is asked',
+    );
+    return await settleUnwritten({
+      producedFindings: [
+        ...standingFindings,
+        unflooredFinding({
+          stage: 'consolidate',
+          detail: reach.detail,
+        },),
+      ],
+    },);
+  }
+
+  // NO STANDING TEXT BUYS NO SLATE. The producers write from the standing
+  // text, so with none they are not asked; a lane text the rule admits still
+  // reaches the slate judges through the settlement (class eighty-seven,
+  // XingZ623 slice 89, 2026-09-22).
+  if (standingText === '') {
+    l.info((laneTexts.length === 0)
+      ? `slice ${String(sliceIndex,)}: no standing text to consolidate against, so no slate is bought`
+      : `slice ${String(sliceIndex,)}: no standing text to consolidate against; the lane texts alone go to the slate judges`,);
+    return await settleUnwritten({ producedFindings: standingFindings, },);
   }
 
   /**

@@ -27,8 +27,11 @@ import {
 // round is not the place either.
 
 /**
- Names the slice the stage settled without asking, the way every stage
- finding is named.
+ Names a slice a stage settled without asking, the way every stage finding
+ is named.
+
+ @param stage - which stage settled it: the translate stage (ledger B43) or
+ the consolidation (ledger B45)
 
  @param detail - why the floor could compare nothing, in its own words
 
@@ -36,11 +39,19 @@ import {
 
  @example
  ```ts
- const finding = unflooredFinding({ detail: 'original could not be read: ...', },);
+ const finding = unflooredFinding({ stage: 'translate', detail: 'original could not be read: ...', },);
  ```
  */
-export function unflooredFinding({ detail, }: { readonly detail: string; },): string {
-  return `translate-unfloored (${detail})`;
+export function unflooredFinding(
+  {
+    stage,
+    detail,
+  }: {
+    readonly stage: 'translate' | 'consolidate';
+    readonly detail: string;
+  },
+): string {
+  return `${stage}-unfloored (${detail})`;
 }
 
 /**
@@ -89,7 +100,12 @@ export function settleUnflooredSlice(
   /**
    What the slice reports either way.
    */
-  const findings = [unflooredFinding({ detail, },),];
+  const findings = [
+    unflooredFinding({
+      stage: 'translate',
+      detail,
+    },),
+  ];
   if (incumbentKind === 'absent') {
     ul.warn(`translate stage: asked nobody, since the floor can compare nothing here (${detail}); `
       + 'the passage stays unfilled',);

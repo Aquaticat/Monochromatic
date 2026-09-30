@@ -1402,7 +1402,8 @@ and let a candidate stand on the same `unknown`,
 so an admitted insertion wrote a rendering nobody could check into the page,
 and on a slice the archive translates every call bought nothing
 (ledger B43).
-The consolidation's writers are asked there still
+The consolidation asked its writers there too,
+and the floor refused all they wrote
 (ledger B45).
 
 The rule:
@@ -1420,5 +1421,6 @@ never through a branch that keeps a candidate on it.
 
 What enforces it:
 habit and review;
-`translate-stage.unit.test.ts` and `translate-document.unit.test.ts` count the calls on a blind slice,
+`translate-stage.unit.test.ts`,
+`translate-document.unit.test.ts` and `consolidate-driver.unit.test.ts` count the calls on a blind slice,
 and `translate-floor-ground.unit.test.ts` pins the reach and the floor to one reading.
