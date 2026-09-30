@@ -426,8 +426,22 @@ second-constructor rejection before allocating another manager,
 and an exact test-owned custom-entry/data allowlist inside the callback and after SDK idle.
 Those references are now included;
 complete source freeze `proc_a39a` passed.
-Actual SDK reference `proc_d4f5` is running;
-no completed outcome is established yet.
+Actual SDK reference `proc_d4f5` passed:
+one session,
+two first-party scripted responses,
+one inert callback,
+zero fetch/model calls,
+zero fixture executions/grant writes,
+and empty private stderr.
+Canonical original transaction views/root binding,
+positive branch A/B eligibility before reset,
+prepared-snapshot/navigation non-revival,
+and original/duplicate/alias re-registration rejection were exercised.
+Historical scope matching remained available after reset.
+`currentEligibilityEstablished:false` is retained;
+constructor-owned association did not establish human-authorized SDK ancestry or a current grant.
+Next work is separately declared synthetic selected-guard sensitivity,
+not replay or mutation of the genuine original epoch.
 Counterfeit root-handle rejection is not actual outsider-manager coverage.
 No source freeze or future intact pass establishes new guard-omission sensitivity.
 Its records must remain operationally test-only,
