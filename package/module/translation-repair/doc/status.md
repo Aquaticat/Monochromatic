@@ -137,13 +137,17 @@ and closed every one
 the alignment tables read their cells without falling back,
 and an empty block's length fit is cased.
 Its census found B61 and B62,
-both open:
-the census reading counts nowhere a stretch that went cold since its baseline or one in a source added since,
-and asks git about edits inside the package only,
-though it reads other packages' sources too.
-The baseline is now the whole suite at `791bc45fe` (`census-5PAw2O`,
-1,446 passes,
-taken from a tree with nothing uncommitted):
+both fixed since
+(`48c580d16` to `4304d167d`):
+the census reading now names each stretch cold since its baseline,
+including one in a source added since,
+and asks git about every file of the work tree,
+read NUL-separated,
+since it reads other packages' sources too.
+The baseline is now the whole suite at `4304d167d` (`census-7D4Vp9`,
+1,447 passes,
+taken from a tree with nothing uncommitted),
+whose per-file counts match the census at `791bc45fe` (`census-5PAw2O`) in every source:
 library source holds 874 stretches over 1,782 lines in 316 files,
 with 19 functions never called,
 and the runner entry files and unloaded bundles come after.
@@ -156,8 +160,7 @@ the queue is 347 returns,
 and 99 others,
 and the twelfth batch takes the corpus-run artifact modules
 (`corpus-run/artifact`,
-26 stretches in 8 files),
-after B61 and B62;
+26 stretches in 8 files);
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:

@@ -269,14 +269,17 @@ this one says what changed after it.
   closing all 26 of their stretches in 5 files
   (`c5fd0b03e` to `791bc45fe`);
   reading its census found ledger B61 and B62,
-  open gaps in the census reading itself.
-  The baseline is now the whole suite at `791bc45fe` (`census-5PAw2O`,
-  1,446 passes):
+  gaps in the census reading itself,
+  both fixed since (`48c580d16` to `4304d167d`):
+  the reading names each stretch cold since its baseline,
+  and asks git about every file of the work tree.
+  The baseline is now the whole suite at `4304d167d` (`census-7D4Vp9`,
+  1,447 passes),
+  whose per-file counts match the census at `791bc45fe` in every source:
   library source holds 874 stretches over 1,782 lines in 316 files,
   with 19 functions never called.
   The library batches go on one triage cluster each,
-  B61 and B62 first,
-  then the twelfth taking the corpus-run artifact modules
+  the twelfth taking the corpus-run artifact modules
   (`corpus-run/artifact`,
   26 stretches in 8 files),
   each throw and nullish fallback read for reachability before a case is written,

@@ -3820,6 +3820,23 @@ and 99 others.
 with 26 stretches in 8 files over 35 lines,
 so the twelfth batch takes it.
 
+B61 and B62 were fixed before the twelfth batch began
+(`48c580d16` to `4304d167d`),
+so the batch reads against a census taken after them:
+the whole suite at `4304d167d`
+(`census-7D4Vp9`,
+1,447 passes,
+taken clean)
+reads against `census-5PAw2O`:
+ran 0,
+still cold 1,228,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 0.
+Per-file counts compared between the two census files are the same in every source,
+so the queue and the twelfth batch's cluster stand as read from `census-5PAw2O`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -12405,8 +12422,6 @@ a rule that drops a case "as ambiguous" states what makes it ambiguous and keeps
 
 ### B61: the census reading counts only the baseline's stretches
 
-Status:
-open.
 Found by the eleventh coverage batch,
 reading `census-5PAw2O` against `census-BF4g7o`.
 `baselineStatusesOf` (`corpus-run/coverage-census-baseline.ts`) reads each baseline stretch as ran,
@@ -12423,10 +12438,35 @@ and the printed reading shows none of them;
 comparing per-file counts in a scratch script (`t8-batch8-file-diff.mjs`) showed them,
 and that comparison misses a stretch going cold where another in the same file ran.
 
+Fixed (`48c580d16` red,
+`5ebe2ab62`,
+and `4304d167d` for the sort's line order):
+`coldSinceOf` names each stretch of this run holding a line no baseline stretch of its source held,
+read line by line,
+so a stretch reaching past the baseline's lines or across the gap between two is named too,
+with whether the baseline loaded its source;
+the reading prints each as "cold since then",
+and in a reading of every source `editedClaimsOf` reads the sources either census holds a stretch in.
+Through the built package,
+`census-5PAw2O` read against `census-BF4g7o` holds 4 stretches cold since then:
+the three of the first kind,
+and `error-format.ts` 31 to 58,
+of which the baseline held only lines 41,
+49,
+50 and 52.
+Reading only the baseline's sources in `editedClaimsOf` failed the added-source case alone;
+reading a stretch as held where any one of its lines was failed the reaching-past case alone.
+The census at `eafa894be` (`census-tBNOKA`) printed "cold since then 0"
+and left one cold stretch in the reading itself,
+the sort's line order,
+which `4304d167d` cased;
+without the order that case alone failed.
+
+Recurrence:
+a comparison of two runs reads each side for what the other cannot say.
+
 ### B62: the census asks git about edits inside the package only
 
-Status:
-open.
 Found with B61.
 `sourcesEditedSince` (`corpus-run/coverage-census-commit.ts`) runs `git diff --name-only --relative` from the package directory,
 which lists no path outside it,
@@ -12444,6 +12484,29 @@ and between no two consecutive census files does a commit edit a source outside 
 41 pairs;
 its `git diff` lists the logger's files across `ddccea85d`,
 the control).
+
+Fixed (`fff46159d` red,
+`eafa894be`):
+`sourcesEditedSince` names every file of the work tree changed since the commit,
+relative to the package as the census names sources,
+and its `sources` parameter is gone,
+since every reading asks after the sources it reads.
+The red case found a second fault in the same call:
+read line by line,
+a name git quotes (one holding a double quote,
+a newline or a Han letter) came back quoted,
+octal escapes and all,
+and matched no source;
+git's output is now read NUL-separated,
+which git prints verbatim.
+Through the built package,
+the check against `ddccea85d~1` names the seven `module-logger` files git lists across that commit.
+Limiting the diff to the package failed the whole-tree case alone,
+and so did splitting its output on newlines.
+
+Recurrence:
+a question put to git covers everything its answer is read against,
+and its output is read NUL-separated.
 
 ## Process mistakes in this audit
 
