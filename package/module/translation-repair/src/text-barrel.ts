@@ -31,6 +31,11 @@ export {
   howOften,
   wordForCount,
 } from './count-word.ts';
+export {
+  OverlappingEditsError,
+  type SpliceEdit,
+  spliceDisjointEdits,
+} from './disjoint-splice.ts';
 export { isHanCharacter, } from './han-only-text.ts';
 export {
   carriesHandleToken,

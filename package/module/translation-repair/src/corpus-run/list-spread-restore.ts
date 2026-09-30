@@ -1,6 +1,10 @@
 import type { Root, } from 'mdast';
 
 import type { ChunkPair, } from '../chunk-document.ts';
+import {
+  type SpliceEdit,
+  spliceDisjointEdits,
+} from '../disjoint-splice.ts';
 import { parseMarkdownBody, } from '../parse-mdx.ts';
 import type { DeepReadonlyData, } from '../readonly-data.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
@@ -290,8 +294,9 @@ function respaceGap(
 }
 
 /**
- Page text with one list's gaps respaced, from the last forward so earlier
- offsets stay true.
+ Page text with one list's gaps respaced, in one pass: the gaps lie between
+ the list's items, so each is read from the text as given and written at its
+ own offsets (ledger B70).
 
  @param text - page text of the slice
 
@@ -317,28 +322,23 @@ function respaceList(
     readonly wanted: 'loose' | 'tight';
   },
 ): string {
-  return list.gaps
-    .toReversed()
-    .reduce(
-      function respace(
-        current,
-        gap,
-      ): string {
-        return `${current.slice(
-          0,
-          gap.start,
-        )}${
-          respaceGap({
-            gapText: current.slice(
-              gap.start,
-              gap.end,
-            ),
-            wanted,
-          },)
-        }${current.slice(gap.end,)}`;
-      },
-      text,
-    );
+  return spliceDisjointEdits({
+    text,
+    edits: list.gaps
+      .map(function respace(gap,): SpliceEdit {
+      return {
+        start: gap.start,
+        end: gap.end,
+        text: respaceGap({
+          gapText: text.slice(
+            gap.start,
+            gap.end,
+          ),
+          wanted,
+        },),
+      };
+    },),
+  },);
 }
 
 /**

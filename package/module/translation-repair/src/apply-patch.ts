@@ -11,6 +11,7 @@ import {
 } from './markup-atom-preservation.ts';
 import { checkPreservation, } from './preservation-check.ts';
 
+import { spliceDisjointEdits, } from './disjoint-splice.ts';
 import { hashContent, } from './document-node.ts';
 import { restoreTypography, } from './restore-typography.ts';
 import {
@@ -438,47 +439,27 @@ export function applyPatchOperations(
    */
   const { applied, } = settled;
 
+  // ONE PASS OVER THE TRANSLATION: every accepted operation names its own
+  // envelope, and the envelopes were checked apart, so each is written at
+  // its offsets into the translation as given (ledger B70). Written one at a
+  // time, last first, the whole translation was copied once per operation.
   /**
-   Accepted operations in descending document order,
-   so applying one never shifts the offsets of those still pending.
+   Translation with every accepted operation written into its envelope.
    */
-  const applyOrder = [...applied,].toSorted(function byStartDescending(
-    left,
-    right,
-  ) {
-    /**
-     Envelope of the left operation, present because acceptance proved it.
-     */
-    const leftEnvelope = nonNullishOrThrow(byId.get(left.envelopeId,),);
-
-    /**
-     Envelope of the right operation, present because acceptance proved it.
-     */
-    const rightEnvelope = nonNullishOrThrow(byId.get(right.envelopeId,),);
-    return rightEnvelope.startOffset - leftEnvelope.startOffset;
-  },);
-
-  /**
-   Translation rebuilt envelope by envelope.
-   */
-  const patchedText = applyOrder.reduce(
-    function applyOne(
-      text: string,
-      operation,
-    ): string {
+  const patchedText = spliceDisjointEdits({
+    text: targetText,
+    edits: applied.map(function toEdit(operation,) {
       /**
        Envelope of this accepted operation, present by acceptance.
        */
       const envelope = nonNullishOrThrow(byId.get(operation.envelopeId,),);
-      return text.slice(
-        0,
-        envelope.startOffset,
-      )
-        + operation.newText
-        + text.slice(envelope.endOffset,);
-    },
-    targetText,
-  );
+      return {
+        start: envelope.startOffset,
+        end: envelope.endOffset,
+        text: operation.newText,
+      };
+    },),
+  },);
 
   return {
     patchedText,

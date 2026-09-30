@@ -1,5 +1,9 @@
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import type { ChunkPair, } from '../chunk-document.ts';
+import {
+  type SpliceEdit,
+  spliceDisjointEdits,
+} from '../disjoint-splice.ts';
 import type { SliceReplacement, } from '../splice-slices.ts';
 import { archiveItalicSpans, } from './archive-italic-spans.ts';
 import {
@@ -62,6 +66,11 @@ type QuoteSpan = {
   readonly end: number;
   readonly inner: string;
 };
+
+/**
+ A quoted span with the italic form it takes, empty where it names no title.
+ */
+type TitleSpan = QuoteSpan & { readonly form: string; };
 
 /**
  Words with every whitespace run read as one space.
@@ -191,7 +200,7 @@ function italicForm(
 
  @param titles - archive italic spans
 
- @returns Text with those spans in italics and a note per span
+ @returns Text with those spans in italics and a note per span written
 
  @example
  ```ts
@@ -212,17 +221,16 @@ function italicizeSlice(
    */
   const ranges = protectedRanges({ text, },);
   /**
-   Quoted titles in prose, last first so earlier offsets hold as each is
-   written.
+   Quoted titles in prose, in document order.
    */
-  const rewrites = QUOTE_PAIRS
+  const restorable = QUOTE_PAIRS
     .flatMap(function spansOf(pair,): readonly QuoteSpan[] {
       return quoteSpans({
         text,
         pair,
       },);
     },)
-    .map(function withForm(span,): QuoteSpan & { readonly form: string; } {
+    .map(function withForm(span,): TitleSpan {
       return {
         ...span,
         form: italicForm({
@@ -231,32 +239,49 @@ function italicizeSlice(
         },),
       };
     },)
-    .filter(function restorable(span,): boolean {
+    .filter(function isRestorable(span,): boolean {
       return (span.form !== '') && inProse({
         ranges,
         start: span.start,
         end: span.end,
       },);
     },)
-    .toSorted(function lastFirst(
+    .toSorted(function byStart(
       left,
       right,
     ): number {
-      return right.start - left.start;
+      return left.start - right.start;
     },);
+  // A CURLY AND A STRAIGHT PAIR CAN NEST, so a title quoted inside a quoted
+  // title yields two spans sharing text. The one that opens first is written
+  // and the other goes: its form was read from quotes the first rewrites.
+  // Written one at a time, last first, the inner went in first and the outer
+  // then cut at its own end, one unit off wherever the inner had shrunk,
+  // which cost a page the mark after the title (ledger B70).
+  /**
+   Spans written, each clear of the one before it.
+   */
+  const rewrites: TitleSpan[] = [];
+  for (const span of restorable) {
+    /**
+     Span written before this one, absent for the first.
+     */
+    const earlier = rewrites.at(-1,);
+    if ((earlier !== undefined) && (span.start < earlier.end))
+      continue;
+    rewrites.push(span,);
+  }
   return {
-    text: rewrites.reduce(
-      function write(
-        current,
-        span,
-      ): string {
-        return `${current.slice(
-          0,
-          span.start,
-        )}${span.form}${current.slice(span.end,)}`;
-      },
+    text: spliceDisjointEdits({
       text,
-    ),
+      edits: rewrites.map(function toEdit(span,): SpliceEdit {
+        return {
+          start: span.start,
+          end: span.end,
+          text: span.form,
+        };
+      },),
+    },),
     changed: rewrites.map(function note(span,): string {
       return `${oneLine({ text: span.inner, },)} to ${span.form}`;
     },),

@@ -244,6 +244,26 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
 }
 
 /**
+ Where a destination's address ends: its first stopper, or its end.
+ 
+ @param url - destination as the tree or the scan produced it
+ 
+ @returns Offset of the first stopper, exclusive end of the address
+ 
+ @example
+ ```ts
+ const end = firstStopper({ url: 'https://example.org/a\uff0c', },);
+ ```
+ */
+function firstStopper({ url, }: { readonly url: string; },): number {
+  for (let at = 0; at < url.length; at += 1) {
+    if (RUN_STOPPERS.has(url.charAt(at,),))
+      return at;
+  }
+  return url.length;
+}
+
+/**
  Destination as a reader would follow it: cut at the first stopper, trailing
  sentence punctuation shed.
  
@@ -261,26 +281,18 @@ export function scanUrlRuns({ text, }: { readonly text: string; },): readonly st
  ```
  */
 function trimDestination({ url, }: { readonly url: string; },): string {
-  /**
-   End of the address, exclusive: the first stopper.
-   */
-  let end = 0;
-  while ((end < url.length) && (!RUN_STOPPERS.has(url.charAt(end,),)))
-    end += 1;
-
-  /**
-   Address with its trailing sentence punctuation shed.
-   */
-  let run = url.slice(
-    0,
-    end,
-  );
-  while ((run.length > 0) && RUN_TRAILERS.has(run.at(-1,) ?? '',))
-    run = run.slice(
-      0,
-      -1,
-    );
-  return run;
+  // ONE CUT: step back from the first stopper over the trailing sentence
+  // punctuation, then slice once, rather than copying the address once per
+  // mark shed (ledger B70).
+  for (let cut = firstStopper({ url, },); cut > 0; cut -= 1) {
+    if (!RUN_TRAILERS.has(url.charAt(cut - 1,),)) {
+      return url.slice(
+        0,
+        cut,
+      );
+    }
+  }
+  return '';
 }
 
 /**
