@@ -58,6 +58,7 @@ export {
 } from './translate-slice-input.ts';
 export {
   absenceFinding,
+  assertAbsentSliceFilled,
   blankAgainst,
   BlankSelectionError,
   type IncumbentKind,

@@ -321,6 +321,47 @@ export function blankAgainst(
 }
 
 /**
+ Refuses to settle a passage the archive never translated on text that
+ shows a reader nothing.
+
+ STATED WHERE THE RECORD IS BUILT rather than trusted to the paths that
+ produce it: every way of producing nothing throws before a record is
+ built, and such a record is cached and read back as finished work, so a
+ route that changes that fails here rather than caching a deletion. A
+ statement in the settling function that no case reached was the census's
+ only view of it (ledger T8, sixth batch); here it has its own cases.
+
+ @param incumbentKind - whether the archive has wording for the slice
+
+ @param text - text the slice would settle on
+
+ @param findings - stage findings, carried by the refusal
+
+ @throws {@link BlankSelectionError} when there is no archive wording and
+ the text shows nothing (ledger B40: invisible characters `trim()` keeps
+ are nothing too)
+
+ @example
+ ```ts
+ assertAbsentSliceFilled({ incumbentKind, text: stageResult.text, findings: stageResult.findings, },);
+ ```
+ */
+export function assertAbsentSliceFilled(
+  {
+    incumbentKind,
+    text,
+    findings,
+  }: {
+    readonly incumbentKind: IncumbentKind;
+    readonly text: string;
+    readonly findings: readonly string[];
+  },
+): void {
+  if ((incumbentKind === 'absent') && rendersAsNothing({ text, },))
+    throw new BlankSelectionError({ findings, },);
+}
+
+/**
  Names an unfilled slice the way every other stage finding is named.
  
  @param reason - why nothing could be written

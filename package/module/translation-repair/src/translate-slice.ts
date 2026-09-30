@@ -8,13 +8,12 @@ import {
   findDroppedDeclaredNames,
 } from './declared-name-survival.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
-import { BlankSelectionError, } from './translate-absence.ts';
+import { assertAbsentSliceFilled, } from './translate-absence.ts';
 import {
   countQuotedPassages,
   dropsQuotedPassage,
   quoteLossRefusalFinding,
 } from './quote-preservation.ts';
-import { rendersAsNothing, } from './renders-as-nothing.ts';
 import { restoreTargetOnlyRun, } from './target-only-run.ts';
 import { assessSliceAlignment, } from './translate-alignment.ts';
 import {
@@ -418,15 +417,13 @@ export async function settleTranslateSlice(
   }
 
   // WHAT AN ABSENT SLICE MAY SETTLE ON, stated where the record is built rather
-  // than trusted to the paths that produce it. Every way of producing nothing has already
-  // thrown by here, so this is unreachable; what it pins is that a record for a
-  // passage the archive never translated always carries a translation, since
-  // such a record is cached and read back as finished work. Nothing is what
-  // shows a reader nothing (ledger B40), not what `trim()` leaves.
-  if ((incumbentKind === 'absent')
-    && rendersAsNothing({ text: stageResult.text, },)) {
-    throw new BlankSelectionError({ findings: stageResult.findings, },);
-  }
+  // than trusted to the paths that produce it: a record for a passage the
+  // archive never translated always carries a translation.
+  assertAbsentSliceFilled({
+    incumbentKind,
+    text: stageResult.text,
+    findings: stageResult.findings,
+  },);
 
   /**
    What this slice leaves the document with.
