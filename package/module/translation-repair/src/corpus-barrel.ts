@@ -73,10 +73,13 @@ export {
 export { openConsolidateCache, } from './corpus-run/consolidate-cache-store.ts';
 export { openLaneContestCache, } from './corpus-run/lane-contest-cache-store.ts';
 export {
-  ArtifactComparisonError,
   assertDerivationsAgree,
   compareLanes,
 } from './corpus-run/artifact-two-lane-comparison.ts';
+export {
+  ArtifactComparisonError,
+  type ArtifactComparisonFault,
+} from './corpus-run/artifact-two-lane-comparison-fault.ts';
 export {
   readRepairRounds,
   RoundsNotRecordedError,
@@ -97,6 +100,7 @@ export {
 } from './corpus-run/artifact-producer-read.ts';
 export {
   comparisonRowDifferences,
+  type ComparisonRowField,
   decisionsEqual,
   deliveriesEqual,
   outcomesEqual,

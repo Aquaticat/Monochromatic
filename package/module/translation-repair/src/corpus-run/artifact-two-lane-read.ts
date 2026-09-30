@@ -5,13 +5,14 @@ import {
   requireRecord,
   requireString,
 } from '../artifact-guard.ts';
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   requireArtifactJsonRecord,
   requireExactKeys,
 } from '../artifact-exact-guard.ts';
 import {
   assertPreparationIdentity,
+  isPreparationIdentityShaped,
+  PREPARATION_IDENTITY_SHAPE,
   type PreparationIdentity,
 } from '../preparation-identity.ts';
 import {
@@ -94,14 +95,17 @@ function requireIdentity(
     value,
     path,
   },);
-  try {
-    assertPreparationIdentity(held,);
-  } catch (error) {
+
+  // REFUSED BY SHAPE, in words this file writes, before the assertion narrows.
+  // Forwarding the assertion's message instead quoted the recorded value into
+  // the refusal (ledger B34).
+  if (!isPreparationIdentityShaped({ value: held, },)) {
     throw new ArtifactParseError({
       path,
-      reason: `an identity of this scheme: ${caughtValueText(error,)}`,
+      reason: `a preparation identity, ${PREPARATION_IDENTITY_SHAPE}`,
     },);
   }
+  assertPreparationIdentity(held,);
   return held;
 }
 

@@ -316,7 +316,9 @@ await describe({
         },);
 
         expect(refusalOfLengthsDiffer,).toBeInstanceOf(ArtifactComparisonError,);
-        expect((refusalOfLengthsDiffer as Error).message,).toContain('cover 2 and 1 slices',);
+        expect((refusalOfLengthsDiffer as Error).message,)
+          .toBe('the repair ledger covers 2 slices and the translate ledger 1, so they describe different '
+            + 'preparations',);
 
         /**
          What positionsDisagree raised, read for its class as well as its wording.
@@ -335,7 +337,8 @@ await describe({
         },);
 
         expect(refusalOfPositionsDisagree,).toBeInstanceOf(ArtifactComparisonError,);
-        expect((refusalOfPositionsDisagree as Error).message,).toContain('position 0 names slice 0',);
+        expect((refusalOfPositionsDisagree as Error).message,)
+          .toBe('position 0 names slice 0 in the repair ledger and slice 1 in the translate ledger',);
       },
     },),
     it({
@@ -360,7 +363,35 @@ await describe({
         },);
 
         expect(refusalOfSourcesDisagree,).toBeInstanceOf(ArtifactComparisonError,);
-        expect((refusalOfSourcesDisagree as Error).message,).toContain('carries a different original in each ledger',);
+        expect((refusalOfSourcesDisagree as Error).message,)
+          .toBe('slice 0 carries a different original in each ledger, so the two ledgers were built over '
+            + 'different slicings',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES two ledgers that disagree about the ARCHIVE`S WORDING at one slice while agreeing on its '
+        + 'original, which is two preparations of one slicing against different archive states',
+      fn: async () => {
+        /**
+         What wordingsDisagree raised, read for its class as well as its wording.
+         */
+        const refusalOfWordingsDisagree = caught(function wordingsDisagree() {
+          compareLanes({
+            repair: [keptArchive({ sliceIndex: 0, },),],
+            translate: [
+              {
+                ...keptArchive({ sliceIndex: 0, },),
+                incumbentText: 'The cat sleeps on the step.',
+              },
+            ],
+          },);
+        },);
+
+        expect(refusalOfWordingsDisagree,).toBeInstanceOf(ArtifactComparisonError,);
+        expect((refusalOfWordingsDisagree as Error).message,)
+          .toBe('slice 0 carries a different archive wording in each ledger, so the two ledgers were built '
+            + 'over different preparations',);
       },
     },),
     it({
@@ -400,7 +431,9 @@ await describe({
         },);
 
         expect(refusalOfKindsDisagree,).toBeInstanceOf(ArtifactComparisonError,);
-        expect((refusalOfKindsDisagree as Error).message,).toContain('is present of archive wording to the repair lane',);
+        expect((refusalOfKindsDisagree as Error).message,)
+          .toBe('the archive\'s wording at slice 0 is present in the repair ledger and absent in the translate '
+            + 'ledger',);
       },
     },),
   ],
@@ -462,11 +495,10 @@ await describe({
         },);
 
         expect(refusalOfDerivationsDiffer,).toBeInstanceOf(ArtifactComparisonError,);
-        expect((refusalOfDerivationsDiffer as Error).message,).toContain('disagree about slice 0',);
         // The field is named; the rows, which carry slice text, are not quoted.
-        expect((refusalOfDerivationsDiffer as Error).message,).toContain('laneRelation',);
-        expect((refusalOfDerivationsDiffer as Error).message,).not.toContain('"repairText"',);
-        expect((refusalOfDerivationsDiffer as Error).message,).not.toContain(ARCHIVE_NAP,);
+        expect((refusalOfDerivationsDiffer as Error).message,)
+          .toBe('version 2 and the pipeline disagree about slice 0 on laneRelation; one of them changed, and '
+            + 'which artifacts mean what depends on which',);
       },
     },),
     it({
@@ -528,7 +560,9 @@ await describe({
         },);
 
         expect(refusalOfLengthsDiffer,).toBeInstanceOf(ArtifactComparisonError,);
-        expect((refusalOfLengthsDiffer as Error).message,).toContain('derives 1 comparison rows where the pipeline derives 0',);
+        expect((refusalOfLengthsDiffer as Error).message,)
+          .toBe('version 2 derives 1 comparison rows where the pipeline derives 0, so the two no longer '
+            + 'describe one comparison',);
       },
     },),
   ],

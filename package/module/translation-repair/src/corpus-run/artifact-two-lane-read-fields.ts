@@ -1,5 +1,3 @@
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
-
 import type { ArchiveOriginalSpan, } from '../archive-original-note.ts';
 import {
   ArtifactParseError,
@@ -10,6 +8,8 @@ import {
 } from '../artifact-guard.ts';
 import {
   assertPipelineDigest,
+  isDigestShaped,
+  PIPELINE_DIGEST_SHAPE,
   type PipelineDigest,
 } from './pipeline-digest.ts';
 
@@ -52,14 +52,17 @@ export function requireDigest(
     value,
     path,
   },);
-  try {
-    assertPipelineDigest(held,);
-  } catch (error) {
+
+  // REFUSED BY SHAPE, in words this file writes, before the assertion narrows.
+  // Forwarding the assertion's message instead quoted the recorded value into
+  // the refusal, which the region's rule forbids (ledger B34).
+  if (!isDigestShaped({ value: held, },)) {
     throw new ArtifactParseError({
       path,
-      reason: `a pipeline digest: ${caughtValueText(error,)}`,
+      reason: `a pipeline digest, ${PIPELINE_DIGEST_SHAPE}`,
     },);
   }
+  assertPipelineDigest(held,);
   return held;
 }
 

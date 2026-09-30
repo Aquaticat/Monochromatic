@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type {
   ArtifactComparisonRow,
   ArtifactDecisionComparison,
@@ -6,6 +8,7 @@ import type {
   ArtifactSliceOutcome,
 } from './artifact-two-lane-vocabulary.ts';
 
+import { ArtifactComparisonError, } from './artifact-two-lane-comparison-fault.ts';
 import { comparisonRowDifferences, } from './artifact-two-lane-row-equality.ts';
 
 //region Artifact version 2 comparison
@@ -132,33 +135,6 @@ function compareTwoLaneDecisions(
 }
 
 /**
- Reports a pair of version 2 ledgers that cannot be compared row for row.
- 
- @example
- ```ts
- throw new ArtifactComparisonError({ message: 'ledgers cover 3 and 4 slices', },);
- ```
- */
-export class ArtifactComparisonError extends Error {
-  /**
-   Names this error for a caller matching on it.
-   */
-  public override readonly name = 'ArtifactComparisonError';
-
-  /**
-   @param message - what disagreed, naming the position
-   
-   @example
-   ```ts
-   new ArtifactComparisonError({ message: 'position 2 names different slices', },);
-   ```
-   */
-  public constructor({ message, }: { readonly message: string; },) {
-    super(message,);
-  }
-}
-
-/**
  Derives the whole comparison from two version 2 delivery ledgers.
  
  OVER PROJECTED ROWS rather than live records, so what it reads is exactly
@@ -173,8 +149,8 @@ export class ArtifactComparisonError extends Error {
  @returns One row per slice, in the order the repair ledger reports them
  
  @throws {@link ArtifactComparisonError} when the two ledgers differ in
- length or disagree at any position about which slice it is or what the
- archive holds there
+ length or disagree at any position about which slice it is, which original
+ it carries, or what the archive holds there
  
  @example
  ```ts
@@ -192,9 +168,11 @@ export function compareLanes(
 ): readonly ArtifactComparisonRow[] {
   if (repair.length !== translate.length) {
     throw new ArtifactComparisonError({
-      message: `ledgers cover ${String(repair.length,)} and ${
-        String(translate.length,)
-      } slices, so they describe different preparations`,
+      fault: {
+        kind: 'ledger-lengths',
+        repairRows: repair.length,
+        translateRows: translate.length,
+      },
     },);
   }
   return repair.map(function toRow(
@@ -203,30 +181,34 @@ export function compareLanes(
   ): ArtifactComparisonRow {
     /**
      Row the other ledger holds at this POSITION, which is where a ledger
-     built over the same preparation holds the same slice.
+     built over the same preparation holds the same slice; the two hold the
+     same number of rows, so there is one.
      */
-    const theirs = translate[position];
-    if (theirs === undefined) {
-      throw new ArtifactComparisonError({
-        message: `translate ledger has no row at position ${String(position,)}`,
-      },);
-    }
+    const theirs = nonNullishOrThrow(translate[position],);
     if (theirs.sliceIndex !== mine.sliceIndex) {
       throw new ArtifactComparisonError({
-        message: `position ${String(position,)} names slice ${
-          String(mine.sliceIndex,)
-        } in the repair ledger and slice ${String(theirs.sliceIndex,)} in the translate ledger`,
+        fault: {
+          kind: 'slice-positions',
+          position,
+          repairSliceIndex: mine.sliceIndex,
+          translateSliceIndex: theirs.sliceIndex,
+        },
       },);
     }
     if (theirs.sourceText !== mine.sourceText) {
       throw new ArtifactComparisonError({
-        message: `slice ${String(mine.sliceIndex,)} carries a different original in each ledger, `
-          + 'so the two ledgers were built over different slicings',
+        fault: {
+          kind: 'different-originals',
+          sliceIndex: mine.sliceIndex,
+        },
       },);
     }
     if (theirs.incumbentText !== mine.incumbentText) {
       throw new ArtifactComparisonError({
-        message: `slice ${String(mine.sliceIndex,)} carries a different archive wording in each ledger`,
+        fault: {
+          kind: 'different-archive-wordings',
+          sliceIndex: mine.sliceIndex,
+        },
       },);
     }
 
@@ -235,11 +217,12 @@ export function compareLanes(
     // pair this comparison must not confuse still equal.
     if (theirs.incumbentKind !== mine.incumbentKind) {
       throw new ArtifactComparisonError({
-        message: `slice ${String(mine.sliceIndex,)} is ${
-          mine.incumbentKind
-        } of archive wording to the repair lane and ${
-          theirs.incumbentKind
-        } to the translate lane`,
+        fault: {
+          kind: 'different-archive-kinds',
+          sliceIndex: mine.sliceIndex,
+          repairKind: mine.incumbentKind,
+          translateKind: theirs.incumbentKind,
+        },
       },);
     }
     return {
@@ -305,9 +288,11 @@ export function assertDerivationsAgree(
 ): void {
   if (frozen.length !== live.length) {
     throw new ArtifactComparisonError({
-      message: `version 2 derives ${String(frozen.length,)} comparison rows where the pipeline derives ${
-        String(live.length,)
-      }, so the two no longer describe one comparison`,
+      fault: {
+        kind: 'derivation-lengths',
+        frozenRows: frozen.length,
+        liveRows: live.length,
+      },
     },);
   }
   for (const [
@@ -315,14 +300,11 @@ export function assertDerivationsAgree(
     row,
   ] of frozen.entries()) {
     /**
-     What the live comparator said about the same position.
+     What the live comparator said about the same position; the two hold the
+     same number of rows, so there is one.
      */
-    const theirs = live[position];
-    if (theirs === undefined) {
-      throw new ArtifactComparisonError({
-        message: `the pipeline has no comparison row at position ${String(position,)}`,
-      },);
-    }
+    const theirs = nonNullishOrThrow(live[position],);
+
     /**
      Fields the two derivations disagree on, named and never quoted: the rows
      carry slice text, and this message reaches the pass's stdout.
@@ -333,10 +315,11 @@ export function assertDerivationsAgree(
     },);
     if (differing.length > 0) {
       throw new ArtifactComparisonError({
-        message: `version 2 and the pipeline disagree about slice ${
-          String(row.sliceIndex,)
-        } on ${differing.join(', ',)}. `
-          + 'One of them changed, and which artifacts mean what depends on which',
+        fault: {
+          kind: 'derivations-differ',
+          sliceIndex: row.sliceIndex,
+          fields: differing,
+        },
       },);
     }
   }

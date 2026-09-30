@@ -140,10 +140,23 @@ export function decisionsEqual(
 }
 
 /**
+ Name of one field of a comparison row.
+
+ A CLOSED SET, so a refusal listing the fields two rows disagree on is a list
+ of names by its type rather than by the care of whoever built it.
+
+ @example
+ ```ts
+ const field: ComparisonRowField = 'laneRelation';
+ ```
+ */
+export type ComparisonRowField = keyof ArtifactComparisonRow;
+
+/**
  One field of a comparison row with whether two rows agree on it.
  */
 type FieldCheck = {
-  readonly name: string;
+  readonly name: ComparisonRowField;
   readonly same: boolean;
 };
 
@@ -173,7 +186,7 @@ export function comparisonRowDifferences(
     readonly left: ArtifactComparisonRow;
     readonly right: ArtifactComparisonRow;
   },
-): readonly string[] {
+): readonly ComparisonRowField[] {
   /**
    Each field with whether the two rows agree on it, in row order.
    */
@@ -242,7 +255,7 @@ export function comparisonRowDifferences(
     .filter(function differs({ same, }: FieldCheck,): boolean {
       return !same;
     },)
-    .map(function toName({ name, }: FieldCheck,): string {
+    .map(function toName({ name, }: FieldCheck,): ComparisonRowField {
       return name;
     },);
 }

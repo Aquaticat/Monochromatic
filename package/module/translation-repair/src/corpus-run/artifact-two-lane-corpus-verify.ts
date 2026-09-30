@@ -1,9 +1,7 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { PreparedDocumentPair, } from '../document-preparation.ts';
 import { sourceBytesOf, } from '../sample-grading.ts';
 import type { ParsedTwoLaneArtifact, } from './artifact-two-lane-read-contract.ts';
-import { assertResultCountsPreparation, } from './artifact-two-lane-verify.ts';
 
 //region Artifact version 2 corpus verification
 // The checks a file ALONE cannot make, run against a preparation somebody else
@@ -22,43 +20,11 @@ import { assertResultCountsPreparation, } from './artifact-two-lane-verify.ts';
 // rebuild matches a run's identity (ledger A12b), so nothing called it, and it
 // went with the other functions only tests reached (ledger B30).
 //
-// EVERY REFUSAL COMES BACK AS A PARSE ERROR, translated by `translating` from
-// the writer-side mismatch error its checks raise. A caller reading artifacts should meet
-// one error type from this layer rather than one named for the writer's
-// internals.
-
-/**
- Runs one writer-side check and reports its refusal as a parse failure.
- 
- @param check - check to run, which raises the writer's mismatch error
- 
- @param path - dotted path the failure is reported under
- 
- @throws {@link ArtifactParseError} carrying whatever the check said
- 
- @example
- ```ts
- translating({ check: function counts() { assertResultCountsPreparation({ ... },); }, path, },);
- ```
- */
-function translating(
-  {
-    check,
-    path,
-  }: {
-    readonly check: () => void;
-    readonly path: string;
-  },
-): void {
-  try {
-    check();
-  } catch (error) {
-    throw new ArtifactParseError({
-      path,
-      reason: `an artifact describing this preparation: ${caughtValueText(error,)}`,
-    },);
-  }
-}
+// EVERY REFUSAL IS A PARSE ERROR this file writes, naming the recorded field
+// and both numbers, so a caller reading artifacts meets one error type from
+// this layer. A wrapper that ran the writer's own count check and forwarded
+// its message stood here until 2026-09-30; it could not fire, since the
+// reader already ties each lane's count to the preparation's (ledger B34).
 
 /**
  Refuses a measurement the preparation does not agree with.
@@ -99,9 +65,14 @@ function assertMeasured(
 
 /**
  Checks what a parsed artifact measured of its preparation against a
- preparation: slice count, document sizes, alignment pairs, and each lane's
- own slice count.
- 
+ preparation: slice count, document sizes and alignment pairs.
+
+ NOT EACH LANE'S SLICE COUNT, which the reader has already tied to the
+ preparation's: every lane's ledger holds one row per prepared slice
+ (`assertLedgerCoversPreparation`) and every lane's recorded count is its
+ ledger's length (`assertIndexSetsMatchLedger`), so the preparation's count
+ checked here answers for both lanes.
+
  SPLIT FROM THE IDENTITY CHECK (ledger A12b), since removed (ledger B30). The recorded identity also
  hashes the declared names as the run's build worded them, and the recorded
  alignment findings include the roster pairing rounds' own (mikaela16's six
@@ -163,32 +134,6 @@ export function verifyArtifactMeasurements(
     recorded: preparation.alignmentPairCount,
     actual: prepared.alignmentPairCount,
     path: `${artifact.id}.preparation.alignmentPairCount`,
-  },);
-  translating({
-    check: function repairCounts(): void {
-      assertResultCountsPreparation({
-        prepared,
-        sliceCount: artifact.lanes
-          .repair
-          .evidence
-          .sliceCount,
-        lane: 'repair',
-      },);
-    },
-    path: `${artifact.id}.lanes.repair.result.sliceCount`,
-  },);
-  translating({
-    check: function translateCounts(): void {
-      assertResultCountsPreparation({
-        prepared,
-        sliceCount: artifact.lanes
-          .translate
-          .evidence
-          .sliceCount,
-        lane: 'translate',
-      },);
-    },
-    path: `${artifact.id}.lanes.translate.result.sliceCount`,
   },);
 }
 

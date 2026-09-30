@@ -275,7 +275,12 @@ await describe({
         },);
 
         expect(refusalOfNarrows,).toBeInstanceOf(TypeError,);
-        expect((refusalOfNarrows as Error).message,).toContain('lowercase hex',);
+        // THE WHOLE SHAPE, scheme name first: the sentence once described only
+        // the hex half, so a value missing its scheme name read as refused for
+        // its hex (ledger B34).
+        expect((refusalOfNarrows as Error).message,)
+          .toBe('A pipeline digest is "sha256-tree-v1:" followed by 64 lowercase hex characters; '
+            + 'received "not-a-digest".',);
       },
     },),
   ],

@@ -92,6 +92,18 @@ const DIGEST_FORMAT = 'sha256-tree-v1';
 const FORMAT_SEPARATOR = ':';
 
 /**
+ What a recorded digest looks like, in words, for every message refusing one.
+
+ BUILT FROM THE CONSTANTS the check reads, so a new scheme or length changes
+ the sentence with it. The sentence was written by hand once and described
+ the hex half as the whole value, omitting the scheme name every digest
+ starts with (ledger B34).
+ */
+export const PIPELINE_DIGEST_SHAPE: string = `${JSON.stringify(`${DIGEST_FORMAT}${FORMAT_SEPARATOR}`,)} followed by ${
+  String(DIGEST_LENGTH,)
+} lowercase hex characters`;
+
+/**
  Suffixes of emitted files that cannot execute, so cannot change behaviour.
  
  TypeScript declarations are excluded deliberately rather than for tidiness.
@@ -118,10 +130,11 @@ const PATH_TERMINATOR = '\u0000';
 /**
  Digest naming the built pipeline that produced a result.
  
- Branded so it cannot be assigned where a git object id belongs. The two are
- indistinguishable by shape, since a sha256 object id is also 64 lowercase hex
- characters, and they answer different questions: this one is NOT a commit and
- has no ancestry, no log entry, and nothing to check out.
+ Branded so it cannot be assigned where a git object id belongs. Both are
+ strings to the type system, and the scheme name this one starts with is a
+ runtime difference no signature sees; they answer different questions: this
+ one is NOT a commit and has no ancestry, no log entry, and nothing to check
+ out.
  
  @example
  ```ts
@@ -212,8 +225,9 @@ export class PipelineDigestError extends Error {
  
  @returns Nothing; it narrows `value` in the caller on success
  
- @throws {@link TypeError} when it is not 64 lowercase hex characters
- 
+ @throws {@link TypeError} when it is not the scheme name, the separator and
+ 64 lowercase hex characters
+
  @example
  ```ts
  assertPipelineDigest(recorded,);
@@ -223,11 +237,7 @@ export function assertPipelineDigest(
   value: string,
 ): asserts value is PipelineDigest {
   if (!isDigestShaped({ value, },))
-    throw new TypeError(
-      `A pipeline digest is ${
-        String(DIGEST_LENGTH,)
-      } lowercase hex characters; received ${JSON.stringify(value,)}.`,
-    );
+    throw new TypeError(`A pipeline digest is ${PIPELINE_DIGEST_SHAPE}; received ${JSON.stringify(value,)}.`,);
 }
 
 /**
@@ -239,7 +249,8 @@ export function assertPipelineDigest(
  
  @param value - string to test
  
- @returns Whether it is 64 lowercase hex characters
+ @returns Whether it is the scheme name, the separator and 64 lowercase hex
+ characters
  
  @example
  ```ts

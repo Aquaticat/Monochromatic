@@ -85,20 +85,109 @@ export type PreparationIdentity = string & { readonly __brand: 'PreparationIdent
 const DIGEST_LENGTH = 64;
 
 /**
+ What a recorded identity looks like, in words, for every message refusing
+ one.
+
+ BUILT FROM THE CONSTANTS the check reads, so a new scheme or length changes
+ the sentence with it, and a reader refusing an identity can say what it
+ expected without repeating what it found (ledger B34).
+ */
+export const PREPARATION_IDENTITY_SHAPE: string = `${
+  IDENTITY_FORMATS
+    .map(function prefixOf(format,): string {
+      return JSON.stringify(`${format}${FORMAT_SEPARATOR}`,);
+    },)
+    .join(' or ',)
+} followed by ${String(DIGEST_LENGTH,)} lowercase hex characters`;
+
+/**
+ Whether a string could be an identity this module produced.
+
+ Scanned rather than matched with a pattern: after the scheme name the rule is
+ one predicate per character over a fixed-length string, a linear pass that
+ cannot backtrack.
+
+ @param value - string claiming to be an identity
+
+ @returns Whether it is a scheme name this reader understands, the separator,
+ and 64 lowercase hex characters
+
+ @example
+ ```ts
+ const usable = isPreparationIdentityShaped({ value: recorded, },);
+ ```
+ */
+export function isPreparationIdentityShaped(
+  { value, }: { readonly value: string; },
+): boolean {
+  /**
+   Scheme this recorded identity declares.
+   */
+  const format = IDENTITY_FORMATS.find(function matches(candidate,): boolean {
+    return value.startsWith(`${candidate}${FORMAT_SEPARATOR}`,);
+  },);
+  if (format === undefined)
+    return false;
+
+  /**
+   Hex half, once the scheme name is off.
+   */
+  const hex = value.slice(`${format}${FORMAT_SEPARATOR}`.length,);
+  if (hex.length !== DIGEST_LENGTH)
+    return false;
+  for (const character of hex) {
+    // Upper case is refused because this module only ever emits lower case,
+    // so another spelling came from elsewhere and would name a second slicing.
+    if (!isLowerHexDigit({ character, },))
+      return false;
+  }
+  return true;
+}
+
+/**
+ Raised when a recorded identity is not one this scheme could have produced.
+
+ NOT MARKED to forward: its sentence quotes the value it refused, which is a
+ recorded identity string rather than document text, and a reader refusing a
+ stored identity writes its own reason instead (ledger B34).
+
+ @example
+ ```ts
+ throw new PreparationIdentityError({ value: 'whiskers', },);
+ ```
+ */
+export class PreparationIdentityError extends Error {
+  /**
+   Builds the refusal naming the shape an identity has and the value refused.
+
+   @param value - string that claimed to be an identity
+
+   @example
+   ```ts
+   throw new PreparationIdentityError({ value: 'whiskers', },);
+   ```
+   */
+  constructor({ value, }: { readonly value: string; },) {
+    super(`A preparation identity is ${PREPARATION_IDENTITY_SHAPE}; received ${JSON.stringify(value,)}.`,);
+    this.name = 'PreparationIdentityError';
+  }
+}
+
+/**
  Narrows a recorded string to an identity, or refuses it.
- 
+
  The brand is built THROUGH this rather than asserted at the construction
  site, so a value read back from an artifact passes exactly the check a fresh
  one does, and a hand-written or truncated string cannot become an identity by
  assertion alone.
- 
+
  @param value - string claiming to be an identity
- 
+
  @returns Nothing; it narrows `value` in the caller on success
- 
- @throws {@link PreparationIdentityError} when the scheme name is missing or
- the hex half is not sixty-four lowercase hex characters
- 
+
+ @throws {@link PreparationIdentityError} when it is not a scheme name this
+ reader understands, the separator, and 64 lowercase hex characters
+
  @example
  ```ts
  assertPreparationIdentity(recorded,);
@@ -107,65 +196,8 @@ const DIGEST_LENGTH = 64;
 export function assertPreparationIdentity(
   value: string,
 ): asserts value is PreparationIdentity {
-  /**
-   Scheme this recorded identity declares.
-   */
-  const format = IDENTITY_FORMATS.find(function matches(candidate,): boolean {
-    return value.startsWith(`${candidate}${FORMAT_SEPARATOR}`,);
-  },);
-  if (format === undefined) {
-    throw new PreparationIdentityError({
-      message: `identity does not name this scheme: ${value}`,
-    },);
-  }
-  /**
-   Prefix selected scheme carries.
-   */
-  const prefix = `${format}${FORMAT_SEPARATOR}`;
-
-  /**
-   Hex half, once the scheme name is off.
-   */
-  const hex = value.slice(prefix.length,);
-  if (hex.length !== DIGEST_LENGTH) {
-    throw new PreparationIdentityError({
-      message: `identity carries ${String(hex.length,)} hex characters rather than ${
-        String(DIGEST_LENGTH,)
-      }`,
-    },);
-  }
-  for (const character of hex) {
-    if (!isLowerHexDigit({ character, },)) {
-      throw new PreparationIdentityError({
-        message: `identity carries a character no digest can: ${character}`,
-      },);
-    }
-  }
-}
-
-/**
- Raised when a recorded identity is not one this scheme could have produced.
- 
- @example
- ```ts
- throw new PreparationIdentityError({ message: 'identity does not name this scheme', },);
- ```
- */
-export class PreparationIdentityError extends Error {
-  /**
-   Builds the refusal naming what is wrong with the value.
-   
-   @param message - what the value is missing or carries that it cannot
-   
-   @example
-   ```ts
-   throw new PreparationIdentityError({ message: 'identity does not name this scheme', },);
-   ```
-   */
-  constructor({ message, }: { readonly message: string; },) {
-    super(message,);
-    this.name = 'PreparationIdentityError';
-  }
+  if (!isPreparationIdentityShaped({ value, },))
+    throw new PreparationIdentityError({ value, },);
 }
 
 /**

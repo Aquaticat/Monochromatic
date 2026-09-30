@@ -73,6 +73,7 @@ const BYTE_OFFSET_OR_NOTHING = "(at === OFFSET_UNSTATED) ? '' : ` at byte $"
  */
 const MARKED_CLASSES: readonly string[] = [
   'ArchiveOriginalCompletenessError',
+  'ArtifactComparisonError',
   'ArtifactParseError',
   'AssemblyContractError',
   'BedrockCreditOverrideError',
@@ -332,6 +333,8 @@ const NAMED_PARTS: Record<string, string> = {
  */
 const WITHHELD: Record<string, string> = {
   ArtifactProvenanceError: 'expected and observed carry whatever field disagreed, which may be text',
+  PreparationIdentityError: 'quotes the string it refused, which a caller may have read from any file; the '
+    + 'artifact reader refuses a stored identity by shape in its own words instead (ledger B34)',
   RenderingAuditInvariantError: 'forwards each site\'s own sentence, which names indexes and vocabulary '
     + 'words and never text; unreachable by construction, so the boundary never has to print it',
   StreamCutShortError: 'the abort reason reaches the message through String of an unknown value',
@@ -743,9 +746,9 @@ const FORWARDING_SITES: readonly (Forwarding & {
   {
     file: 'corpus-run/artifact-two-lane-read-comparison.ts',
     className: 'ArtifactParseError',
-    narrowedTo: ['LaneComparisonError',],
+    narrowedTo: ['ArtifactComparisonError',],
     kind: 'forwards',
-    names: 'positions, slice indexes and lane names',
+    names: 'lane names, counts, positions, slice indexes, archive-wording kinds and comparison-row field names',
   },
   {
     file: 'corpus-run/artifact-two-lane-read-row-relations.ts',

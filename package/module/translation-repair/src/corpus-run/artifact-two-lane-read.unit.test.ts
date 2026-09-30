@@ -699,7 +699,12 @@ await describe({
           },);
         },);
         expect(digestRefusal,).toBeInstanceOf(ArtifactParseError,);
-        expect((digestRefusal as Error).message,).toContain('pipelineDigest',);
+        // THE SHAPE, and never the recorded value: forwarding the assertion's
+        // message once quoted `whiskers` into this refusal (ledger B34).
+        expect((digestRefusal as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.pipelineDigest: expected a pipeline digest, "sha256-tree-v1:" '
+            + 'followed by 64 lowercase hex characters.',
+        );
         expect(authorityRefusal,).toBeInstanceOf(ArtifactParseError,);
         expect((authorityRefusal as Error).message,).toContain('preparation.frontMatterAuthority',);
       },
@@ -1410,8 +1415,9 @@ await describe({
         },);
 
         expect(refusalOfComparisonOverruns,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfComparisonOverruns as Error).message,).toContain(
-          '2 rows, which is how many slices the two ledgers cover, rather than 3',
+        expect((refusalOfComparisonOverruns as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.comparison: expected one row per slice the two ledgers cover, '
+            + 'which is 2 here, rather than 3.',
         );
       },
     },),
@@ -1609,7 +1615,12 @@ await describe({
         },);
 
         expect(refusalOfBadIdentity,).toBeInstanceOf(ArtifactParseError,);
-        expect((refusalOfBadIdentity as Error).message,).toContain('CatEntry1.preparation.identity',);
+        // THE SHAPE, and never the recorded value: forwarding the assertion's
+        // message once quoted the stored identity into this refusal (ledger B34).
+        expect((refusalOfBadIdentity as Error).message,).toBe(
+          'artifact parse failed at CatEntry1.preparation.identity: expected a preparation identity, '
+            + '"sha256-preparation-v1:" or "sha256-preparation-v2:" followed by 64 lowercase hex characters.',
+        );
       },
     },),
     it({

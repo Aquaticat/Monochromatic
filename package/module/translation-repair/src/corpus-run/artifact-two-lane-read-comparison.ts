@@ -1,7 +1,7 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { compareLanes, } from './artifact-two-lane-comparison.ts';
+import { ArtifactComparisonError, } from './artifact-two-lane-comparison-fault.ts';
 import { comparisonRowDifferences, } from './artifact-two-lane-row-equality.ts';
 import type {
   ArtifactComparisonRow,
@@ -43,7 +43,10 @@ import type {
  
  @throws {@link ArtifactParseError} when the two ledgers cannot be compared at
  all, carrying what the comparison said
- 
+
+ @throws Whatever else the comparison raised, unchanged, since only its own
+ refusal is a fact about the file
+
  @example
  ```ts
  const derived = deriveComparison({ repair, translate, path, },);
@@ -66,11 +69,18 @@ function deriveComparison(
       translate,
     },);
   } catch (error) {
+    // ONLY THE COMPARISON'S OWN REFUSAL DESCRIBES THE FILE. Anything else
+    // raised in here is a defect in this reader, and rewriting it as an
+    // artifact refusal would blame the artifact for it.
+    if (!(error instanceof ArtifactComparisonError))
+      throw error;
+
     // TRANSLATED RATHER THAN RETHROWN, so a reader meets one error type from
-    // this layer instead of an error named for the comparison's internals.
+    // this layer; the sentence is forwarded because its class writes it from
+    // names and numbers alone (ledger B34).
     throw new ArtifactParseError({
       path,
-      reason: `two ledgers this version can compare: ${caughtValueText(error,)}`,
+      reason: `two ledgers this version can compare (${error.message})`,
     },);
   }
 }
@@ -121,9 +131,9 @@ export function assertRecordedComparisonMatches(
   if (recorded.length !== derived.length) {
     throw new ArtifactParseError({
       path,
-      reason: `${
+      reason: `one row per slice the two ledgers cover, which is ${
         String(derived.length,)
-      } rows, which is how many slices the two ledgers cover, rather than ${String(recorded.length,)}`,
+      } here, rather than ${String(recorded.length,)}`,
     },);
   }
   for (const [

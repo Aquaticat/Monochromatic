@@ -143,6 +143,7 @@ export {
 } from './delivery-coherence.ts';
 export {
   assertPreparationIdentity,
+  isPreparationIdentityShaped,
   type PreparationIdentity,
   preparationIdentity,
   PreparationIdentityError,
