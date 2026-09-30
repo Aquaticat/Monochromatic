@@ -60,6 +60,7 @@ import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
    targetText,
    models,
    signal,
+   perCallTimeoutMs,
  },);
  ```
  */
@@ -80,7 +81,7 @@ export async function repairTranslation(
     readonly targetText: string;
     readonly models: RepairModels;
     readonly signal: AbortSignal;
-    readonly perCallTimeoutMs?: number;
+    readonly perCallTimeoutMs: number;
     readonly sliceCharBudget?: number;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
     readonly overlap?: number;
@@ -95,7 +96,7 @@ export async function repairTranslation(
     },),
     models,
     signal,
-    ...(perCallTimeoutMs === undefined ? {} : { perCallTimeoutMs, }),
+    perCallTimeoutMs,
     ...(sliceCache === undefined ? {} : { sliceCache, }),
     overlap,
   },);

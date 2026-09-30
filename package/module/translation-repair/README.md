@@ -388,12 +388,16 @@ const result = await repairTranslation({
     checkerModelIds,
   },
   signal,
+  perCallTimeoutMs,
 },);
 ```
 
 - `client` is an injected model client (`createSyntheticClient` or any
   `SyntheticClient` implementation);
   the library performs no IO of its own.
+- `perCallTimeoutMs` is the deadline for each model exchange.
+  It has no default:
+  every caller in the package states its own.
 - `models` names the role roster:
   critic fan-out,
   provenance-blind adjudication panel,

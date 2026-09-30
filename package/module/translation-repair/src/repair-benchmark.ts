@@ -55,12 +55,6 @@ const l = contextRoot({ tag: 'translation-repair-repair-benchmark', },);
 export const MIN_REPAIR_DISPATCH_BUDGET_MS = 120_000;
 
 /**
- Judge exchange deadline when the benchmark sets no per-call timeout;
- grading is a shorter task than repair, so four minutes is generous.
- */
-const DEFAULT_JUDGE_TIMEOUT_MS = 240_000;
-
-/**
  One graded repair attempt over one entry.
  
  @example
@@ -193,7 +187,7 @@ export type RepairBenchmarkResult = {
  
  @example
  ```ts
- const { scorecard, } = await runRepairBenchmark({ client, entries, models, signal, judgeModelIds, },);
+ const { scorecard, } = await runRepairBenchmark({ client, entries, models, signal, perCallTimeoutMs, judgeModelIds, },);
  console.log(scorecard.seededRepairRate,);
  ```
  */
@@ -214,7 +208,7 @@ export async function runRepairBenchmark(
     readonly entries: readonly BenchmarkEntry[];
     readonly models: RepairModels;
     readonly signal: AbortSignal;
-    readonly perCallTimeoutMs?: number;
+    readonly perCallTimeoutMs: number;
     readonly runBudgetMs?: number;
     readonly repair?: typeof repairTranslation;
     readonly judge?: typeof runRestorationJudge;
@@ -284,7 +278,7 @@ export async function runRepairBenchmark(
         targetText: seededText,
         models,
         signal,
-        ...(perCallTimeoutMs === undefined ? {} : { perCallTimeoutMs, }),
+        perCallTimeoutMs,
       },);
       /**
        Seeds this entry planted, as the judge and probe both address them.
@@ -307,7 +301,7 @@ export async function runRepairBenchmark(
         repairedText: result.repairedText,
         references,
         signal,
-        perCallTimeoutMs: perCallTimeoutMs ?? DEFAULT_JUDGE_TIMEOUT_MS,
+        perCallTimeoutMs,
         l: rl,
       },);
 
@@ -326,7 +320,7 @@ export async function runRepairBenchmark(
         sourceText: entry.sourceText,
         references,
         signal,
-        perCallTimeoutMs: perCallTimeoutMs ?? DEFAULT_JUDGE_TIMEOUT_MS,
+        perCallTimeoutMs,
         l: rl,
       },);
       /* oxlint-enable no-await-in-loop */

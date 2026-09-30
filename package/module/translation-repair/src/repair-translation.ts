@@ -57,11 +57,6 @@ export {
 const l = contextRoot({ tag: 'translation-repair-pipeline', },);
 
 /**
- Default per-call deadline for pipeline exchanges.
- */
-const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
-
-/**
  Repairs one already prepared document pair.
  
  @param client - injected model client
@@ -94,6 +89,7 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
    prepared,
    models,
    signal,
+   perCallTimeoutMs,
    overlap: 4,
  },);
  ```
@@ -104,7 +100,7 @@ export async function repairPreparedDocument(
     prepared,
     models,
     signal,
-    perCallTimeoutMs = DEFAULT_PIPELINE_CALL_TIMEOUT_MS,
+    perCallTimeoutMs,
     sliceCache,
     refineCache,
     overlap = 1,
@@ -115,7 +111,7 @@ export async function repairPreparedDocument(
     readonly prepared: PreparedDocumentPair;
     readonly models: RepairModels;
     readonly signal: AbortSignal;
-    readonly perCallTimeoutMs?: number;
+    readonly perCallTimeoutMs: number;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly overlap?: number;

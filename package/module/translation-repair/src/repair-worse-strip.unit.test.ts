@@ -36,6 +36,12 @@ import {
 } from './roster-seats.test-fixture.ts';
 
 /**
+ Deadline per exchange: the driver's former default, which every call here ran
+ under before the driver stopped defaulting it.
+ */
+const CALL_TIMEOUT_MS = 300_000;
+
+/**
  Original with two paragraphs, one mistranslated sentence each.
  */
 const SOURCE_TEXT = `## 简介
@@ -289,6 +295,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
         },);
         expect({
           sunRepaired: result.repairedText.includes(SUN_REPAIR,),
@@ -321,6 +328,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
         },);
         expect({
           sunRepaired: result.repairedText.includes(SUN_REPAIR,),
@@ -354,6 +362,7 @@ await describe({
           targetText: TARGET_TEXT,
           models: MODELS,
           signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
         },);
         expect({
           flyKept: result.repairedText.includes(FLY_REPAIR,),

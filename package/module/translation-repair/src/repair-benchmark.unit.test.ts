@@ -32,6 +32,11 @@ import {
 } from './roster-seats.test-fixture.ts';
 
 /**
+ Deadline per exchange; the scripted repair and judge seams never wait on it.
+ */
+const CALL_TIMEOUT_MS = 300_000;
+
+/**
  Clean fixture translation the seed deletes from.
  */
 const CLEAN_TEXT =
@@ -798,6 +803,7 @@ await describe({
           ],
           models: MODELS,
           signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
           repair: restoringRepair,
           judge: restoringJudge,
         },);
@@ -830,6 +836,7 @@ await describe({
           ],
           models: MODELS,
           signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
           runBudgetMs: 0,
           repair: throwingRepair,
           judge: restoringJudge,
@@ -850,6 +857,7 @@ await describe({
           ],
           models: MODELS,
           signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
           repair: throwingRepair,
           judge: restoringJudge,
         },);

@@ -40,6 +40,12 @@ import {
 } from './roster-seats.test-fixture.ts';
 
 /**
+ Deadline per exchange: the driver's former default, which this case ran under
+ before the driver stopped defaulting it.
+ */
+const CALL_TIMEOUT_MS = 300_000;
+
+/**
  Markers no other section uses, so a sheet can be attributed to the slice it
  was asked about rather than to one that merely mentions it.
  */
@@ -222,6 +228,7 @@ async function askedSheets(): Promise<readonly SplitSheet[]> {
       checkerModelIds: CHECKERS,
     },
     signal: AbortSignal.timeout(120_000,),
+    perCallTimeoutMs: CALL_TIMEOUT_MS,
   },);
 
   return asked.map(function split(sheet,): SplitSheet {
