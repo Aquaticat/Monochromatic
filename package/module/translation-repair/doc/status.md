@@ -72,22 +72,28 @@ B31 and B32 closed on its way,
 so `src/dead-code.unit.test.ts` now fails on any function,
 class or value production does not reach,
 and `src/unused-imports.unit.test.ts` on any import nothing reads.
-Its batches read against the whole-suite census at `d51526b60` (`census-oRsK9f`,
-1,394 PASS lines,
+Its batches read against the whole-suite census at `a46136f5d` (`census-VdHVJb`,
+1,395 PASS lines,
 taken from a tree with nothing uncommitted):
-library source holds 1,051 stretches over 2,581 lines in 407 files,
+library source holds 1,039 stretches over 2,541 lines in 400 files,
 with 27 functions never called,
 and the runner entry files and unloaded bundles come after.
 As of 2026-09-30 (UTC),
 the first batch tests the census's own placement (`5e27208c7`),
 and the census now names a claimed source its baseline holds no stretch in (`297c72fd5`);
-the second to fourth batches took the naturalness review,
+the second to fifth batches took the naturalness review,
 polish,
 and contest,
 lane,
-comparison and consolidation readers (`a564eccc7`,
+comparison and consolidation readers,
+then the comparison,
+coherence,
+digest and identity modules (`a564eccc7`,
 `09b76e1b4`,
-`74387b886`).
+`74387b886`,
+`fc9e80ca8`).
+Each batch now takes one cluster of the triage and ends with a whole-suite census at its committed head,
+which becomes the next batch's baseline.
 B33 and B34 closed on the way:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
@@ -95,11 +101,11 @@ which `message-names-only.unit.test.ts` now checks at every construction.
 The census reading now leaves sources edited since its baseline out of its counts,
 since it matches stretches by line (`d27a89dd0`).
 By the first construct each stretch's lines hold
-(`t8-triage-orsk9f.txt` in the audit's scratch folder),
-the queue is 141 throws,
-221 nullish fallbacks,
-274 ternaries,
-290 returns
+(`t8-triage-vdhvjb.txt` in the audit's scratch folder),
+the queue is 135 throws,
+220 nullish fallbacks,
+271 ternaries,
+288 returns
 and 125 others;
 each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.

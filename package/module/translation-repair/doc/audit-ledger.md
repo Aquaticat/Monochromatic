@@ -3149,6 +3149,29 @@ each batch ends with a whole-suite census at its committed head,
 which is the batch's whole-suite run and the next batch's baseline,
 and each takes one cluster of the triage at a time.
 
+That census at `a46136f5d` (`census-VdHVJb`,
+1,395 PASS lines,
+taken from a tree with nothing uncommitted under the package)
+is the sixth batch's baseline.
+Its suite log matches the FAIL pattern once,
+in the census test's own fixture command,
+as `census-oRsK9f`'s log did.
+Library source holds 1,039 stretches over 2,541 lines in 400 files,
+with 27 functions never called.
+By the first construct each stretch's lines hold
+(`t8-triage-vdhvjb.txt`),
+the queue is 288 returns,
+271 ternaries,
+220 nullish fallbacks,
+135 throws
+and 125 others.
+The largest clusters are the translate modules
+(70 stretches),
+repair (46),
+the corpus-run pass (31)
+and the corpus-run artifact readers (26);
+the sixth batch takes the translate modules.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

@@ -219,13 +219,18 @@ this one says what changed after it.
   (`4ab6436bf`,
   `d27a89dd0`),
   and refuses a baseline taken with uncommitted changes.
-  The new baseline is the whole suite at `d51526b60` (`census-oRsK9f`,
-  1,394 PASS lines):
-  library source holds 1,051 stretches over 2,581 lines in 407 files,
+  The fifth batch took the comparison,
+  coherence,
+  digest and identity modules (`fc9e80ca8`).
+  The baseline is now the whole suite at `a46136f5d` (`census-VdHVJb`,
+  1,395 PASS lines):
+  library source holds 1,039 stretches over 2,541 lines in 400 files,
   with 27 functions never called.
   Next are the library batches,
-  grouped by shared fixture,
-  each throw and nullish fallback read for reachability before a case is written;
+  one triage cluster each,
+  starting with the translate modules,
+  each throw and nullish fallback read for reachability before a case is written,
+  and each batch ending with a whole-suite census at its committed head as the next baseline;
   the ledger's T8 entry has the triage counts.
   Every source commit also runs `mise run source-scans`,
   the package-wide scans a new file can fail (ledger M59).
