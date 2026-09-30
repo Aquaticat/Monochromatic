@@ -303,6 +303,37 @@ The original failed epoch and unlaunched held epoch remain preserved and cannot 
 
 Task #69 is active for disposable actual-consumer lifecycle/finalization,
 carrying the private original binding rather than public summary flags.
+
+Previously unopened synthetic `SessionManager` checks passed separately as `proc_d73c`.
+The initial `proc_f2c1` inert-consumer assertion pass was narrowed after independent serialized-source review:
+duplicate binding,
+historical witness re-registration,
+finalization dependencies,
+and nested-result mutation prevented general lifecycle clearance.
+The failed syntax freeze `proc_3a1d` is preserved.
+Separate source freeze `proc_4a16` and actual consumer `proc_072e` passed finite correction controls.
+Tracked-entry freshness here is a tested JSON projection,
+not persisted-byte or complete-property freshness.
+Separately frozen contrasts `proc_0d66`/`proc_1479` passed all nine intact/one-change pairs
+through eighteen actual SDK inert-tool consumers,
+with thirty-six first-party scripted responses,
+no stderr,
+no external models,
+and no genuine original reads.
+The selected change moved each unchanged reference at the SDK tool-result boundary;
+startup errors and SDK-caught tool exceptions could not satisfy it.
+New-epoch dependency file/link admission does not refresh earlier runs or final source freshness.
+
+A protected original exact-action admission phase is predeclared but unimplemented/undispatched.
+It must bind the retained actual writer,
+original bytes,
+presentation,
+and accepted scope before any SDK/provider startup,
+then expose only fixed non-content projections and privacy-safe errors.
+Historical admission does not itself confer current eligibility or reusable authority.
+Target/source/deadline/cache finalization,
+genuine directive admission,
+and full lifecycle clearance remain open.
 The exact fixture approval cannot become a reusable directive,
 broader action approval,
 or production grant.
