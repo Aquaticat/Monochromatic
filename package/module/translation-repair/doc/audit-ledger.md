@@ -2690,7 +2690,12 @@ the range can take in lines that ran:
 the bundle writes that non-list return as `isNodeList(children)?…:!1`,
 and the separator before `!1` maps to the last line of the arm before it,
 so the stretch read 278 to 284 where only 278 was cold.
-The error is only ever toward calling code cold.
+This entry then said the error was only ever toward calling code cold,
+an inference no build without the minifier had tested,
+and it was wrong (M79):
+compression also folds guards into expressions V8 gives no range,
+so a guard no test reaches read as run.
+The census has measured an unminified build since.
 
 The third batch gave cases to named functions no test called,
 each an exchange or helper production reaches:
@@ -3171,6 +3176,57 @@ repair (46),
 the corpus-run pass (31)
 and the corpus-run artifact readers (26);
 the sixth batch takes the translate modules.
+
+Every census through `census-VdHVJb` measured a compressed build (M79).
+Reading the sixth batch's first stretches found a guard,
+`if (node === undefined) continue;` in `translate-skeleton.ts`,
+that the census never listed although no test can reach it:
+the bundle wrote it as `node!==void 0&&(…)`,
+whose untaken side has no V8 range.
+A whole-suite census of the same commit on a build with `minify: false`
+(`census-gMPS3j`,
+1,395 passes,
+taken with only the coverage config edited)
+lists 1,184 library stretches over 2,481 lines in 418 files,
+against 1,039 over 2,541 in 400;
+`census-compare.mjs` in the audit's scratch folder reads 289 lines in 133 sources only it calls cold
+and 370 lines in 108 sources only the compressed build does.
+Both guards that started this appear only in the unminified census
+(`translate-skeleton.ts` 273,
+`inspect-paragraph.ts` 303),
+beside nine guard returns of `isAbsoluteNaturalnessReviewWire`
+(lines 165 to 196)
+that compression had folded into logical expressions.
+Every row read on the other side is a line that ran:
+a condition line beside its cold return
+(`prompt-payload-store.ts` 191 and 207,
+`list-spread-restore.ts` 181,
+`seed-detection.ts` 122),
+or a span stretched over lines that ran,
+where a swapped arm maps across the branch between
+(`refine-eligibility.ts` 241 to 283 against 241 to 244,
+`attribution-read.ts` 57 to 68 against 57,
+61 and 67,
+`window-trial-probe.ts` 142 to 240 against 142 to 202 and 218 to 240).
+The coverage build now keeps the source as written,
+and the census refuses a minified build before the suite runs (`requireUnminifiedBuild`):
+rolldown opens each module's code with a region comment only where it does not minify,
+and the compressed normal build held none in any chunk,
+the unminified one held one in 174 of its 175
+(all but the index,
+which only re-exports).
+A unit test importing the build config was the first guard written,
+and the package lint refused it
+(`test-import(require-eventual-artifact)`:
+tests import what the package ships);
+the census's own refusal also covers a compressed build reaching the directory any other way.
+The five batches' readings stand for what a compressed build could show;
+a file they closed can hold a folded guard,
+and the next baseline,
+the first taken unminified,
+lists it again for its cluster.
+The suite passing 1,395 times on both builds also says the tests do not depend on minification,
+which matters now that the census runs them against a build that differs from the shipped one.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
@@ -10883,6 +10939,29 @@ a red guard is read case by case before the fix
 and after the fix every case must turn green;
 a case that stays red after the fix is a guard defect,
 not a fix defect.
+
+### M79: a coverage census measuring compressed code
+
+Status:
+found 2026-09-30 (UTC) while reading the sixth T8 batch's stretches,
+fixed in the commit that switched the coverage build to `minify: false`
+and made the census refuse a minified build (`requireUnminifiedBuild`).
+The coverage build took the shared Node output options,
+which compress,
+and compression rewrites control flow:
+`if (x) continue;` becomes `!x&&(…)`,
+a chain of `if (…) return false;` guards becomes one `||` expression,
+and an `if` whose arms swap places maps its cold arm across the branch between them.
+V8 gives the untaken side of a logical expression no range,
+so a guard no test reaches read as run,
+and the swapped arms stretched cold spans over lines that ran.
+The ledger's T8 entry had seen the stretching twice and concluded the error ran only toward calling code cold,
+without a build that could show the other direction;
+the first such build lists 145 more stretches on the same commit (the T8 entry has the comparison).
+Prevention:
+a measurement reads code as its source writes it,
+so the coverage build keeps every statement (no minification),
+and a claim that a transform's error runs one way is tested by measuring once without the transform.
 
 ### M78: a batch record counting its edits as its stretches
 

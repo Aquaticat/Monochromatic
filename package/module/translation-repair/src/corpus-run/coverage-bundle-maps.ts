@@ -50,8 +50,9 @@ export type BundleMaps = {
 
  @returns The bundles with a map and those without
 
- @throws {@link StatedRefusalError} when no bundle has a map, which is the
- normal build and not one the census can read
+ @throws {@link StatedRefusalError} when the directory holds no bundle, which
+ no build wrote, or no bundle has a map, which is the normal build and not
+ one the census can read
 
  @example
  ```ts
@@ -85,6 +86,12 @@ export function bundleMapsOf(
   const mapped = bundles.filter(function hasMap(bundle,): boolean {
     return names.has(`${bundle}.map`,);
   },);
+  if (bundles.length === 0) {
+    throw new StatedRefusalError({
+      says: `${distDirectory} holds no bundle, so no build has written it; run the census through `
+        + 'mise run //package/module/translation-repair:coverage-census, which builds with maps first',
+    },);
+  }
   if (mapped.length === 0) {
     throw new StatedRefusalError({
       says: `${distDirectory} holds ${String(bundles.length,)} bundles and no source map beside any of them, `
@@ -153,6 +160,80 @@ export function requireMapFor(
     says: `${loss}; the coverage build writes a map for every bundle that holds code, so this one came from `
       + 'another build: run the census through mise run //package/module/translation-repair:coverage-census, '
       + 'which builds with maps first',
+  },);
+}
+
+// A MINIFIED BUILD READS FOLDED GUARDS AS RUN (ledger M79). Compression
+// writes `if (x) continue;` as `!x&&(…)` and a chain of guard returns as one
+// `||` expression, and V8 gives the untaken side of either no range, so a
+// guard no test reaches has nothing to report it; it also swaps branches,
+// stretching a cold arm over lines that ran. The coverage build keeps the
+// code as written (`rolldown.coverage.config.ts`), and rolldown then opens
+// each module's code in a chunk with a region comment, which minification
+// strips: the compressed normal build of 2026-09-30 held none in any of its
+// chunks, the unminified coverage build held one in 174 of its 175 (all but
+// the index, which only re-exports).
+
+/**
+ Comment rolldown opens each module's code with in a chunk it has not
+ minified, followed by the module's path.
+ */
+const MODULE_REGION_MARK = '//#region ';
+
+/**
+ Whether a bundle's text opens some module's code with rolldown's region
+ comment.
+
+ @param text - bundle text
+
+ @returns Whether some line starts with the mark
+
+ @example
+ ```ts
+ carriesModuleRegion('//#region src/nap.ts\nfunction nap() {}\n'); // true
+ ```
+ */
+function carriesModuleRegion(text: string,): boolean {
+  return text
+    .split('\n',)
+    .some(function opensRegion(line,): boolean {
+      return line.startsWith(MODULE_REGION_MARK,);
+    },);
+}
+
+/**
+ Refuses a build whose mapped bundles were minified, before the suite runs
+ on it.
+
+ @param texts - text of every bundle with a map beside it
+
+ @param distDirectory - build directory, named by the refusal
+
+ @throws {@link StatedRefusalError} when no bundle opens a module's code with
+ rolldown's region comment, which a minified build strips
+
+ @example
+ ```ts
+ requireUnminifiedBuild({ texts: ['//#region src/nap.ts\nfunction nap() {}\n',], distDirectory, },);
+ ```
+ */
+export function requireUnminifiedBuild(
+  {
+    texts,
+    distDirectory,
+  }: {
+    readonly texts: readonly string[];
+    readonly distDirectory: string;
+  },
+): void {
+  if (texts.some(carriesModuleRegion,))
+    return;
+  throw new StatedRefusalError({
+    says: `${distDirectory} holds ${String(texts.length,)} bundles with a source map and no module region `
+      + 'comment in any of them, so the build was minified, and minification folds guards into expressions '
+      + 'the coverage gives no range, which would read as run (ledger M79): run the census through '
+      + 'mise run //package/module/translation-repair:coverage-census, whose build keeps the code as written, '
+      + 'or restore minify: false in rolldown.coverage.config.ts if it was changed',
   },);
 }
 

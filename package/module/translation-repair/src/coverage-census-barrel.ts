@@ -12,6 +12,7 @@ export {
   bundleMapsOf,
   type MapNeed,
   requireMapFor,
+  requireUnminifiedBuild,
 } from './corpus-run/coverage-bundle-maps.ts';
 export {
   type PlacedTally,

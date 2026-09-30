@@ -203,7 +203,10 @@ and the search by shape then missed the same test written negated (M48);
 a search for an entry id printed corpus text (M36);
 the coverage census recorded each cold stretch under its first character's source,
 dropping every module a stretch ran on into,
-and a port control reproducing an earlier census's totals passed because that census had the same flaw (M67).
+and a port control reproducing an earlier census's totals passed because that census had the same flaw (M67);
+the coverage census measured a compressed build,
+where guards folded into logical expressions had no range and read as run,
+after the ledger had inferred from the stretched spans alone that its error ran only toward cold (M79).
 
 The rule:
 a search whose result licenses a change runs uncapped over all of `src` (or `--count` first),
@@ -221,6 +224,9 @@ A measurement that aggregates is checked against an invariant any correct output
 not only against an earlier tool's totals,
 since two tools sharing a flaw agree:
 the coverage census refuses a report in which an uncalled function's first line sits in no stretch of its own source.
+A measurement reads code as its source writes it:
+the coverage build is not minified,
+and a claim that a transform's error runs only one way is tested by measuring once without the transform.
 A generated list's line count is printed before anything consumes it.
 A probe's output goes outside the tree it searches.
 Corpus text is never printed:
@@ -232,8 +238,10 @@ code points and markup.
 What enforces it:
 habit,
 the control-byte scan in the checklist,
-and the coverage census's placement refusal and baseline format check (`requirePlacedFunctions`,
-`CENSUS_FORMAT`).
+the coverage census's placement refusal and baseline format check (`requirePlacedFunctions`,
+`CENSUS_FORMAT`),
+and the census's refusal of a minified build (`requireUnminifiedBuild`),
+before the suite runs.
 
 ## Claims without their evidence
 

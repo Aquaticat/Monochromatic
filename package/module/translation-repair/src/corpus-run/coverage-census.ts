@@ -45,6 +45,7 @@ import {
 import {
   type BundleMaps,
   bundleMapsOf,
+  requireUnminifiedBuild,
 } from './coverage-bundle-maps.ts';
 import { placeTally, } from './coverage-census-place.ts';
 import type { CoverageTally, } from './coverage-tally.ts';
@@ -362,7 +363,23 @@ async function runCoverageCensus(): Promise<void> {
   /**
    Bundles without a map, named so a census that reads none of them says so.
    */
-  const { unmapped, } = bundleMaps;
+  const {
+    mapped,
+    unmapped,
+  } = bundleMaps;
+  // Before the suite, so a minified build costs no suite run (ledger M79).
+  requireUnminifiedBuild({
+    texts: await Promise.all(mapped.map(function textOf(bundle,): Promise<string> {
+      return readFile(
+        join(
+          distDirectory,
+          bundle,
+        ),
+        'utf8',
+      );
+    },),),
+    distDirectory,
+  },);
   censusLog.info(`bundles with no source map, read only where the census must place code in them: ${(unmapped.length === 0) ? 'none' : unmapped.join(', ',)}`,);
   /**
    The commit and whether the files match it.
