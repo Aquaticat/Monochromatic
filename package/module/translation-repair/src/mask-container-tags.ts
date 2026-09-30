@@ -22,7 +22,7 @@ import { isAsciiLetter, } from './ascii-letters.ts';
  
  @example
  ```ts
- const tag: LoneContainerTag = { kind: 'close', name: 'details', text: '</details>', };
+ const tag: LoneContainerTag = { kind: 'close', name: 'details', text: '</details>', startOffset: 12, endOffset: 22, };
  ```
  */
 export type LoneContainerTag = {
@@ -40,14 +40,13 @@ export type LoneContainerTag = {
    Tag exactly as the slice writes it.
    */
   readonly text: string;
-};
 
-/**
- One tag line found while scanning, before pairing.
- */
-type TagLine = LoneContainerTag & {
   /**
-   Offset of the tag's first character.
+   Offset of the tag's first character in the text the mask read.
+   
+   CARRIED SO A READER CUTS AT THE TAG ITSELF (ledger B67). The block
+   deficit searched the slice for the tag's text instead, and a whole
+   element of the same name beside the container moved the cut.
    */
   readonly startOffset: number;
 
@@ -56,6 +55,12 @@ type TagLine = LoneContainerTag & {
    */
   readonly endOffset: number;
 };
+
+/**
+ One tag line found while scanning, before pairing: a lone tag once nothing
+ partners it.
+ */
+type TagLine = LoneContainerTag;
 
 /**
  One tag the pairing reads: a whole tag line, carried so it can be masked,
@@ -389,6 +394,8 @@ export function maskLoneContainerTags(
         kind: tag.kind,
         name: tag.name,
         text: tag.text,
+        startOffset: tag.startOffset,
+        endOffset: tag.endOffset,
       };
     },),
   };

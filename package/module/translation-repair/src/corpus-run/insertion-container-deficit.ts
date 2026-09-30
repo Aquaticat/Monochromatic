@@ -52,11 +52,6 @@ export const CONTAINER_DEFICIT_ADMITTED_FINDING: string = 'insertion-container-d
 export const SPLIT_IN_CONTAINER_DEFICIT_FINDING: string = 'insertion-split-in-container-deficit';
 
 /**
- Not found, as `indexOf` reports it.
- */
-const NOT_FOUND = -1;
-
-/**
  Which part of a container a slice is.
  */
 type ContainerRole = 'open' | 'close' | 'inside';
@@ -163,30 +158,29 @@ function insideContainer(
   if (role === 'inside')
     return masked;
   /**
-   Tag of the container on this side, if this side writes it.
+   Lone tags of the container's kind and name on this side, in order.
    */
-  const tag = tags.find(function ofContainer(candidate,): boolean {
+  const ownTags = tags.filter(function ofContainer(candidate,): boolean {
     return (candidate.kind === role) && (candidate.name === name);
   },);
+
+  // CUT AT THE TAG ITSELF, by the offset the mask read it at (ledger B67).
+  // Searching for the tag's text found a whole element of the same name
+  // beside the container instead, and counted its blocks as the container's.
+  // The first lone opener and the last lone closer are the outermost where
+  // two containers of one name nest.
+  /**
+   The container's own tag on this side, absent where this side does not
+   write it.
+   */
+  const tag = (role === 'open') ? ownTags.at(0,) : ownTags.at(-1,);
   if (tag === undefined)
     return masked;
-  /**
-   Tag exactly as written.
-   */
-  const written = tag.text;
-  /**
-   Where the tag stands in the unmasked text; the mask keeps every offset.
-   */
-  const at = (role === 'open')
-    ? uncommented.indexOf(written,)
-    : uncommented.lastIndexOf(written,);
-  if (at === NOT_FOUND)
-    return masked;
   if (role === 'open')
-    return masked.slice(at + written.length,);
+    return masked.slice(tag.endOffset,);
   return masked.slice(
     0,
-    at,
+    tag.startOffset,
   );
 }
 
