@@ -207,10 +207,10 @@ export async function placeTally(
     unloadedBundles,
     unloadedSources: await unloadedSourcesOf({
       packageDirectory,
-      carried: unloadedBundles.flatMap(function carried(bundle,): readonly string[] {
-        return read.get(bundle,)
-          ?.sources
-          ?? [];
+      // Every unloaded bundle has a map by now, so the mapped readings hold
+      // each one's sources.
+      carried: [...read,].flatMap(function carried([bundle, reading,],): readonly string[] {
+        return loaded.has(bundle,) ? [] : reading.sources;
       },),
       loadedSources,
       entryFiles,

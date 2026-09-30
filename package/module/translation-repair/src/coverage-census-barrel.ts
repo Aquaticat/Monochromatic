@@ -14,6 +14,10 @@ export {
   requireMapFor,
 } from './corpus-run/coverage-bundle-maps.ts';
 export {
+  type PlacedTally,
+  placeTally,
+} from './corpus-run/coverage-census-place.ts';
+export {
   CENSUS_FORMAT,
   CensusBaselineError,
   type CensusArguments,
