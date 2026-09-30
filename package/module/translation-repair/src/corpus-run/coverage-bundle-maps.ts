@@ -32,6 +32,18 @@ export type BundleMaps = {
  Splits the bundles a build directory holds by whether a source map stands
  beside each.
 
+ The census reads this before the suite runs, and it refuses only a build
+ with no map at all. Before 6e631988b, which wrote this, the census refused
+ any bundle without a map at the same point, before the suite. Whether such
+ a bundle holds code no test ran is known only from the coverage, so that
+ refusal (`requireMapFor`) now comes after the suite, and a build it refuses
+ has cost one suite run. Unless rolldown leaves the map off a chunk holding
+ code, such a bundle can only come from a build writing into the directory
+ during the census, since the coverage build cleans the directory before it
+ writes (`cleanDir` in `nodeConfig` of `@monochromatic-dev/config-rolldown`,
+ which rolldown 1.2.9 documents as cleaning the output directory before
+ emitting output).
+
  @param built - file names the build directory holds
 
  @param distDirectory - build directory, named by the refusal
