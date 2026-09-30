@@ -221,8 +221,19 @@ Prototype commit `7ecfb4880` prepares these bounded controls:
   complete player chrome or D11 Settings.
 
 The controls preserve the selected Search host and remain nonfunctional.
-Build/test verification and their native captures are pending.
-Their preparation does not add a selected visibility or placement policy.
+The first host-JVM run caught an omitted shared-entry-point route:
+`Unknown Search ranking fixture: rankfilecontext`.
+Prototype commit `a2e74a012` added the routes and checked both parent-hit
+flag values.
+The restored fixture report now records 9 tests with zero failures,
+errors or skips;
+removing the unknown-scene guard was rejected again.
+The rebuilt control APK SHA-256 is
+`9e1f40a131931f13b44e1a6e8200c30bce553c777cee6b5cc615631765698f9d`.
+The 32-view control capture is running,
+not yet inspected or published.
+The original 24-view matrix retains its original APK provenance.
+No visibility or placement policy has been selected.
 Before recommending,
 add a matched ordinary-player rendering and equal complete filenames
 under different ancestor paths sharing a leaf-folder label.

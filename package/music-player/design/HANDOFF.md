@@ -42,8 +42,15 @@ Prototype commit `7ecfb4880` prepares a matched suffix-omitted Search
 negative control,
 equal filenames under distinct ancestors with the same leaf-folder name,
 and a source-shaped ordinary-row ellipsis control.
-That replica is not a live ordinary-player baseline;
-its build/tests and the new native captures are pending.
+That replica is not a live ordinary-player baseline.
+The shared-route test caught the omitted new scenes before installation;
+prototype commit `a2e74a012` fixed the routes.
+The 9 fixture tests,
+unknown-guard mutation/restoration and rebuild passed.
+Control APK SHA-256 is
+`9e1f40a131931f13b44e1a6e8200c30bce553c777cee6b5cc615631765698f9d`.
+The new 32-view capture is running;
+no control image or comparative conclusion has been accepted yet.
 No extension preference has been selected.
 Matcher selection,
 new IME studies and original-AVD changes remain excluded.
