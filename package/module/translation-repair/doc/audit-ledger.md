@@ -11100,24 +11100,28 @@ Reach at the pin:
 (`~/temp/agent/audit-glossary-fix/t8b6-unreadable-originals.mjs`,
 whose positive control flags an unclosed tag).
 
-To decide,
-measured with a fixture rather than read:
-whether the consolidation settles such a slice on the archive,
-which would make the stage's calls there waste,
-and whether a path that skips the consolidation
-(the lanes agreeing,
-or an insertion slice the translate lane alone fills)
-ships an unvalidated text,
-which would make it a defect.
-The candidate rule:
-a slice no grammar can floor settles on the archive,
-or stays unfilled where there is none,
-before any call,
+Measured with fixtures on 2026-09-30:
+where the contest backed either lane,
+the consolidation refuses both lanes' texts and the archive alike and ships the archive
+(`incumbent-only`;
+`consolidate-driver.unit.test.ts`,
+"SHIPS THE ARCHIVE where the floor can compare nothing"),
+so on a contested slice the stage's calls are waste;
+but an admitted insertion whose original no grammar reads ships the translate lane's unvalidated rendering into the page
+(a scratch case over `translateDocument`,
+status complete and the rendering in the page),
+since no consolidation reads an insertion slice.
+That is wrong output,
+reaching no pinned slice.
+
+Decided,
+for the owner to veto:
+a slice no grammar can floor settles before any call,
+on the archive where there is one,
+unfilled where there is none,
 with a finding naming the floor's reason.
 The revision round is not the place,
 since a finding about an unreadable original is one no translator can act on.
-Until then the stage case added in `0fcb75c7b` pins today's rule,
-and `translate-repair.ts` says the consolidation refuses what it lets stand.
 
 ## Process mistakes in this audit
 

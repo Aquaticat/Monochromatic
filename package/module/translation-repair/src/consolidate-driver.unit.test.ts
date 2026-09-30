@@ -1097,6 +1097,67 @@ await describe({
       },
     },),
     it({
+      name: 'SHIPS THE ARCHIVE where the floor can compare nothing, an original the strict grammar cannot read, '
+        + 'whichever lane the contest backed: both lanes\' texts and the archive are refused alike, and the archive '
+        + 'stands (ledger B43)',
+      fn: async () => {
+        /**
+         Original with an expression the strict grammar never closes.
+         */
+        const sourceText = '猫猫在{窗台上打盹。';
+        /**
+         Every settlement, one per lane the contest backed.
+         */
+        const settled = await Promise.all((['repair', 'translate',] as const).map(async function settleFor(lane,) {
+          const { client, } = scriptedClient({
+            initialText: 'The cat dozes on the windowsill.',
+            endorsedText: 'The cat naps on the windowsill.',
+          },);
+          const messages: string[] = [];
+          const projected = {
+            comparison: [{
+              sliceIndex: 0,
+              incumbentKind: 'present',
+              incumbentText: 'The cat is doing the dozing on the windowsill.',
+              repairText: 'The cat dozed on the sill.',
+              translateText: 'The cat dozes on the windowsill.',
+            },],
+            delivery: {
+              repair: [{ sliceIndex: 0, sourceText, },],
+              translate: [],
+            },
+          } as unknown as ProjectedLanes;
+          const { slices, } = await driveWith({
+            client,
+            modelIds: WIDE_ROSTER,
+            projected,
+            contests: [contestSettling({ sliceIndex: 0, lane, }),],
+            messages,
+          },);
+          return {
+            terminal: slices[0]?.terminal,
+            shipped: slices[0]?.shipped,
+            refusedBoth: messages.some(function refusesBoth(line,): boolean {
+              return line.includes('withheld from the slate: no comparison was possible: original could not be read',)
+                && line.includes('the incumbent fails it too: no comparison was possible',);
+            },),
+          };
+        },),);
+        expect(settled,).toEqual([
+          {
+            terminal: 'incumbent-only',
+            shipped: { kind: 'archive', },
+            refusedBoth: true,
+          },
+          {
+            terminal: 'incumbent-only',
+            shipped: { kind: 'archive', },
+            refusedBoth: true,
+          },
+        ],);
+      },
+    },),
+    it({
       name: 'ASKS identical unsafe twins once and ships both with the recorded non-endorsement',
       fn: async () => {
         const {
