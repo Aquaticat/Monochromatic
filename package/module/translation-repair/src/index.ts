@@ -135,6 +135,7 @@ export {
 export {
   isJsonArray,
   isJsonRecord,
+  requireJsonSyntaxRefusal,
 } from './json-guard.ts';
 export {
   detectRefusalShape,

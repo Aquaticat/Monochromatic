@@ -22,6 +22,7 @@ import {
 import {
   ArtifactParseError,
   requireArray,
+  requireArtifactParseRefusal,
   requireBoolean,
   requireCount,
   requireRecord,
@@ -53,6 +54,42 @@ await describe({
           `artifact parse failed at ${PATH}: expected a string.`,
         );
         expect(error.name,).toBe('ArtifactParseError',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requireArtifactParseRefusal.name,
+  children: [
+    it({
+      name: 'RETURNS the parse refusal a catch around an artifact reader holds, the same object',
+      fn: async () => {
+        /**
+         Refusal a guard raised.
+         */
+        const refusal = new ArtifactParseError({
+          path: PATH,
+          reason: 'a string',
+        },);
+
+        expect(requireArtifactParseRefusal({ error: refusal, },),).toBe(refusal,);
+      },
+    },),
+    it({
+      name: 'RETHROWS anything else unchanged, an error or not, since an unexpected state must keep propagating',
+      fn: async () => {
+        /**
+         A failure that is not a parse refusal.
+         */
+        const stray = new TypeError('the cat knocked the artifact off the table',);
+
+        expect(caught(function narrowStray(): void {
+          requireArtifactParseRefusal({ error: stray, },);
+        },),).toBe(stray,);
+        expect(caught(function narrowString(): void {
+          requireArtifactParseRefusal({ error: 'hairball', },);
+        },),).toBe('hairball',);
       },
     },),
   ],

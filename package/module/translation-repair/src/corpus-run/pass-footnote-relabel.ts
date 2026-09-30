@@ -6,7 +6,7 @@ import {
   footnoteProtectedRanges,
   footnoteRenameTouchesOriginal,
 } from '../footnote-protected-ranges.ts';
-import { FootnoteRewriteError, } from '../footnote-rewrite-error.ts';
+import { requireFootnoteRewriteRefusal, } from '../footnote-rewrite-error.ts';
 
 import {
   definitionLabelOrder,
@@ -307,14 +307,16 @@ export function relabelArchiveFootnotes(input: Parameters<typeof attemptArchiveF
     },);
   }
   catch (error) {
-    if (!(error instanceof FootnoteRewriteError))
-      throw error;
-    l.warn(error.message,);
+    /**
+     The rewrite's refusal; anything else keeps propagating.
+     */
+    const refusal = requireFootnoteRewriteRefusal({ error, },);
+    l.warn(refusal.message,);
     return {
       archiveText: input.archiveText,
       changed: false,
       withheld: 'rewrite-validation',
-      findings: [`footnotes: archive kept unchanged: ${error.message}`,],
+      findings: [`footnotes: archive kept unchanged: ${refusal.message}`,],
     };
   }
 }

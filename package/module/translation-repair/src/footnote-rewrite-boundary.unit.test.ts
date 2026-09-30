@@ -1,5 +1,5 @@
-import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { applyFootnoteRelabel, FootnoteRewriteError, } from '../dist/final/node/index.mjs';
+import { caught as caughtBy, describe, expect, it, } from '@monochromatic-dev/module-test/ts';
+import { applyFootnoteRelabel, FootnoteRewriteError, requireFootnoteRewriteRefusal, } from '../dist/final/node/index.mjs';
 
 await describe({
   name: 'footnote operational rewrite boundaries',
@@ -67,6 +67,31 @@ await describe({
         expect(error.messageNamesOnly).toBe(true);
         expect(error.name).toBe('FootnoteRewriteError');
         expect(new FootnoteRewriteError({ kind: 'label' }).message).toContain('label');
+      },
+    }),
+  ],
+});
+
+await describe({
+  name: requireFootnoteRewriteRefusal.name,
+  children: [
+    it({
+      name: 'RETURNS the rewrite refusal a catch around a footnote rewrite holds, the same object',
+      fn: async () => {
+        const refusal = new FootnoteRewriteError({ kind: 'collision' });
+        expect(requireFootnoteRewriteRefusal({ error: refusal })).toBe(refusal);
+      },
+    }),
+    it({
+      name: 'RETHROWS anything else unchanged, an error or not, since an unexpected state must keep propagating',
+      fn: async () => {
+        const stray = new TypeError('the cat knocked the footnotes off the table');
+        expect(caughtBy(function narrowStray(): void {
+          requireFootnoteRewriteRefusal({ error: stray });
+        })).toBe(stray);
+        expect(caughtBy(function narrowString(): void {
+          requireFootnoteRewriteRefusal({ error: 'hairball' });
+        })).toBe('hairball');
       },
     }),
   ],

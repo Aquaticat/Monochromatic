@@ -6,6 +6,7 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
@@ -13,6 +14,7 @@ import {
 import {
   isJsonArray,
   isJsonRecord,
+  requireJsonSyntaxRefusal,
 } from '../dist/final/node/index.mjs';
 
 await describe({
@@ -64,6 +66,41 @@ await describe({
             expect(isJsonArray({ cat: '喵', },),).toBe(false,);
             expect(isJsonArray(null,),).toBe(false,);
             expect(isJsonArray('喵',),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: requireJsonSyntaxRefusal.name,
+      children: [
+        it({
+          name: 'RETURNS the syntax refusal a catch around JSON.parse holds, the same object',
+          fn: async () => {
+            /**
+             Refusal the parser raised over text that is not JSON.
+             */
+            const refusal = caught(function parseHairball(): void {
+              JSON.parse('the cat sat on {',);
+            },);
+
+            expect(refusal,).toBeInstanceOf(SyntaxError,);
+            expect(requireJsonSyntaxRefusal({ error: refusal, },),).toBe(refusal,);
+          },
+        },),
+        it({
+          name: 'RETHROWS anything else unchanged, an error or not, since an unexpected state must keep propagating',
+          fn: async () => {
+            /**
+             A failure that is not a syntax refusal.
+             */
+            const stray = new TypeError('the cat knocked the parser off the table',);
+
+            expect(caught(function narrowStray(): void {
+              requireJsonSyntaxRefusal({ error: stray, },);
+            },),).toBe(stray,);
+            expect(caught(function narrowString(): void {
+              requireJsonSyntaxRefusal({ error: 'hairball', },);
+            },),).toBe('hairball',);
           },
         },),
       ],

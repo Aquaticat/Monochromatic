@@ -28,6 +28,7 @@ export {
 export {
   FootnoteRewriteError,
   type FootnoteRewriteFailure,
+  requireFootnoteRewriteRefusal,
 } from './footnote-rewrite-error.ts';
 export {
   crossingFinding,

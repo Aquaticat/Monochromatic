@@ -1,12 +1,13 @@
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { ArtifactParseError, } from '../artifact-guard.ts';
+import { requireArtifactParseRefusal, } from '../artifact-guard.ts';
 import { readArtifactSchemaVersion, } from '../artifact-schema-version.ts';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
   isJsonArray,
   isJsonRecord,
+  requireJsonSyntaxRefusal,
 } from '../json-guard.ts';
 import { readdirArtifacts, } from './artifact-placement.ts';
 
@@ -152,14 +153,59 @@ function classifyArtifact(
       }
       : { kind: 'unversioned', };
   } catch (error) {
-    if (error instanceof ArtifactParseError) {
-      return {
-        kind: 'unreadable-version',
-        reason: caughtValueText(error,),
-      };
-    }
+    return {
+      kind: 'unreadable-version',
+      reason: caughtValueText(requireArtifactParseRefusal({ error, },),),
+    };
+  }
+}
 
-    throw error;
+/**
+ Parses one artifact file's text, or classifies it malformed where it is not
+ JSON.
+
+ A file that is not JSON is CLASSIFIED rather than skipped or thrown out of
+ the census. The pipeline guard refuses it before this runs, so reaching
+ here means somebody called the census alone, and answering a question about
+ a directory by ignoring part of the directory is how a guard reports that
+ everything is fine.
+
+ @param text - artifact text as it sits on disk
+
+ @returns The parsed value, or the malformed classification with the
+ parser's reason
+
+ @throws Whatever the parse raised that is not a syntax refusal, which a
+ parse of a string never does
+
+ @example
+ ```ts
+ const parsed = parsedArtifactText({ text, },);
+ ```
+ */
+function parsedArtifactText(
+  { text, }: { readonly text: string; },
+): {
+  /**
+   The text is JSON.
+   */
+  readonly kind: 'parsed';
+
+  /**
+   The value it holds, of any shape.
+   */
+  readonly artifact: unknown;
+} | Extract<SchemaClassification, { readonly kind: 'malformed'; }> {
+  try {
+    return {
+      kind: 'parsed',
+      artifact: JSON.parse(text,),
+    };
+  } catch (error) {
+    return {
+      kind: 'malformed',
+      reason: caughtValueText(requireJsonSyntaxRefusal({ error, },),),
+    };
   }
 }
 
@@ -208,32 +254,20 @@ export async function censusBySchema(
       'utf8',
     );
 
-    try {
-      return {
-        entryId,
-        classification: classifyArtifact({
-          artifact: JSON.parse(text,),
+    /**
+     The file's value, or its malformed classification.
+     */
+    const parsed = parsedArtifactText({ text, },);
+
+    return {
+      entryId,
+      classification: (parsed.kind === 'malformed')
+        ? parsed
+        : classifyArtifact({
+          artifact: parsed.artifact,
           entryId,
         },),
-      };
-    } catch (error) {
-      // A file that is not JSON is CLASSIFIED rather than skipped or thrown
-      // out of the census. The pipeline guard refuses it before this runs, so
-      // reaching here means somebody called the census alone, and answering a
-      // question about a directory by ignoring part of the directory is how a
-      // guard reports that everything is fine.
-      if (error instanceof SyntaxError) {
-        return {
-          entryId,
-          classification: {
-            kind: 'malformed',
-            reason: caughtValueText(error,),
-          },
-        };
-      }
-
-      throw error;
-    }
+    };
   },),);
 }
 

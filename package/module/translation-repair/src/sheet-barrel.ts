@@ -8,6 +8,7 @@
 export {
   ArtifactParseError,
   requireArray,
+  requireArtifactParseRefusal,
   requireBoolean,
   requireCount,
   requireFinite,

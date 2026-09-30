@@ -75,4 +75,33 @@ export class FootnoteRewriteError extends Error {
   }
 }
 
+/**
+ The rewrite refusal a catch around a footnote rewrite holds, for a catch
+ that acts on the refusal alone.
+
+ SHARED RATHER THAN INLINE (ledger T8, ninth batch), as `requireMdxRefusal`
+ is for the grammar's refusal: the pass's relabel catch tested the class and
+ rethrew anything else, and no test reached the rethrow, since the rewrite
+ raises its refusals as this class and throws otherwise only where an
+ invariant breaks. The narrowing stands here, where a case reaches the
+ rethrow.
+
+ @param error - what the catch caught
+
+ @returns The refusal
+
+ @throws The caught value unchanged when it is anything but a rewrite
+ refusal, an unexpected state that must keep propagating
+
+ @example
+ ```ts
+ const refusal = requireFootnoteRewriteRefusal({ error, },);
+ ```
+ */
+export function requireFootnoteRewriteRefusal({ error, }: { readonly error: unknown; },): FootnoteRewriteError {
+  if (error instanceof FootnoteRewriteError)
+    return error;
+  throw error;
+}
+
 //endregion Footnote rewrite refusals

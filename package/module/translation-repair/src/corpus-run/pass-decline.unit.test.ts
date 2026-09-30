@@ -19,7 +19,10 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 
 import {
   describe,
@@ -159,6 +162,34 @@ await describe({
 
         expect(await readdir(run.pageDir,),).toStrictEqual([],);
         expect(await readdir(run.declinedDir,),).toStrictEqual([`${ENTRY.id}.json`,],);
+      },
+    },),
+    it({
+      name: 'RETHROWS a removal failure other than a missing page and records nothing, so a page it could not '
+        + 'remove never stands behind a recorded decline',
+      fn: async () => {
+        const run = await runsDirectory();
+        // A FILE WHERE THE ENTRY'S PAGE DIRECTORY BELONGS: removing the page
+        // under it fails with ENOTDIR, a failure that is not the page's absence.
+        await mkdir(
+          dirname(run.pageDir,),
+          { recursive: true, },
+        );
+        await writeFile(
+          run.pageDir,
+          'A file where the cat\'s page directory belongs.\n',
+        );
+
+        await expect(decline({ run, },),).rejects.toHaveProperty(
+          'code',
+          'ENOTDIR',
+        );
+        /**
+         What the runs directory holds after the refusal: the mirrored tree,
+         and no decline record's directory.
+         */
+        const written = await readdir(dirname(run.declinedDir,),);
+        expect(written,).toStrictEqual(['fixed',],);
       },
     },),
   ],

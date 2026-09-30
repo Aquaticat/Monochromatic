@@ -52,6 +52,34 @@ export class ArtifactParseError extends Error {
 }
 
 /**
+ The parse refusal a catch around an artifact reader holds, for a catch that
+ acts on the refusal alone.
+
+ SHARED RATHER THAN INLINE (ledger T8, ninth batch), as `requireMdxRefusal`
+ is for the grammar's refusal: the schema census's catch around the version
+ reader tested the class and rethrew anything else, and no test reached the
+ rethrow, since the reader raises every refusal as this class. The narrowing
+ stands here, where a case reaches the rethrow.
+
+ @param error - what the catch caught
+
+ @returns The refusal
+
+ @throws The caught value unchanged when it is anything but an artifact
+ parse refusal, an unexpected state that must keep propagating
+
+ @example
+ ```ts
+ const refusal = requireArtifactParseRefusal({ error, },);
+ ```
+ */
+export function requireArtifactParseRefusal({ error, }: { readonly error: unknown; },): ArtifactParseError {
+  if (error instanceof ArtifactParseError)
+    return error;
+  throw error;
+}
+
+/**
  Reads a required string, throwing when the value is any other shape.
  
  @param value - value to check

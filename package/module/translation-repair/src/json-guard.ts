@@ -37,3 +37,32 @@ export function isJsonArray(value: unknown,): value is readonly unknown[] {
 }
 
 //endregion JSON record guard
+
+//region JSON parse refusal
+// `JSON.parse` over a string refuses only with a `SyntaxError`; a catch around
+// it narrows to that refusal here, where a case reaches the rethrow (ledger
+// T8, ninth batch), rather than rethrowing inline where none can.
+
+/**
+ The syntax refusal a catch around `JSON.parse` holds, for a catch that acts
+ on the refusal alone.
+
+ @param error - what the catch caught
+
+ @returns The refusal
+
+ @throws The caught value unchanged when it is anything but a syntax
+ refusal, an unexpected state that must keep propagating
+
+ @example
+ ```ts
+ const refusal = requireJsonSyntaxRefusal({ error, },);
+ ```
+ */
+export function requireJsonSyntaxRefusal({ error, }: { readonly error: unknown; },): SyntaxError {
+  if (error instanceof SyntaxError)
+    return error;
+  throw error;
+}
+
+//endregion JSON parse refusal
