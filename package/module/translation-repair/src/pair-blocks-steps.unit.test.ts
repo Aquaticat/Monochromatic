@@ -132,6 +132,50 @@ await describe({
       },
     },),
     it({
+      name: 'EMITS a translation block once when a caller gives the same pair twice',
+      fn: async () => {
+        const steps = blockPairingToSteps({
+          pairs: [
+            {
+              source: 0,
+              target: 0,
+            },
+            {
+              source: 0,
+              target: 1,
+            },
+            {
+              source: 0,
+              target: 1,
+            },
+            {
+              source: 1,
+              target: 2,
+            },
+          ],
+          sourceCount: 2,
+          targetCount: 3,
+        },);
+        expect(steps,).toStrictEqual([
+          {
+            kind: 'paired',
+            sourceIndex: 0,
+            targetIndex: 0,
+          },
+          {
+            kind: 'target-only',
+            targetIndex: 1,
+            continuesPairing: true,
+          },
+          {
+            kind: 'paired',
+            sourceIndex: 1,
+            targetIndex: 2,
+          },
+        ],);
+      },
+    },),
+    it({
       name: 'NAMES an unpaired original as source-only rather than dropping it',
       fn: async () => {
         const steps = blockPairingToSteps({

@@ -178,5 +178,43 @@ await describe({
         expect(crossingFinding({ pairIndex: 4, },),).toContain('section 4',);
       },
     },),
+
+    it({
+      name: 'reads two definition pairs sharing an original as in order whichever comes first, '
+        + 'since pairs tied on the original are ordered by the archive before any step back is sought',
+      fn: async () => {
+        /**
+         One original note the archive split across both its definitions,
+         given with the later archive block first.
+         */
+        const pairs = [
+          {
+            source: 2,
+            target: 4,
+          },
+          {
+            source: 2,
+            target: 3,
+          },
+        ];
+        const split = splitDefinitionPairs({
+          pairs,
+          sourceNodes: SOURCE.nodes,
+          targetNodes: TARGET.nodes,
+        },);
+        expect(split.crossing,).toBe(false,);
+        expect(split.forSlicing,).toStrictEqual(pairs,);
+        expect(split.definitionPairs,).toStrictEqual([
+          {
+            sourceLabel: '1',
+            targetLabel: '2',
+          },
+          {
+            sourceLabel: '1',
+            targetLabel: '1',
+          },
+        ],);
+      },
+    },),
   ],
 },);

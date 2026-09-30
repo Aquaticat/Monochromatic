@@ -25,12 +25,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   createSyntheticClient,
+  MIN_STAGE_VOICES,
   pairSectionsWithRoster,
+  reachableQuorum,
+  shortBenchStageFinding,
 } from '../dist/final/node/index.mjs';
+import { refusingSeatsClient, } from './refusing-seats-client.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 
 /**
@@ -165,6 +171,26 @@ async function roundOf(replyByModel: readonly string[],) {
     l,
   },);
 }
+
+/**
+ Bench of four, whose quorum of two a pair can meet with half the bench, so
+ two voices each way leave a source named against two targets.
+ */
+const FOUR_SEAT_ROSTER = [
+  ...ROSTER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+] as const;
+
+/**
+ Bench of five, whose quorum of three the router can leave out of reach while
+ the fewest voices a stage closes on still answer.
+ */
+const FIVE_SEAT_ROSTER = [
+  ...FOUR_SEAT_ROSTER,
+  SEAT_HYPER_VISION,
+] as const;
+
 
 await describe({
   name: pairSectionsWithRoster.name,
@@ -318,6 +344,82 @@ await describe({
         expect(outcome.usable,).toBe(2,);
         expect(outcome.pairs.length,).toBe(0,);
         expect(outcome.findings.length,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'SAYS a short bench in the findings when the router leaves the bench quorum out of reach, '
+        + 'and still keeps what the seats that answered agreed on (ledger X8)',
+      fn: async () => {
+        /**
+         Seats the router refuses, leaving the fewest voices a stage closes on.
+         */
+        const refused = FIVE_SEAT_ROSTER.slice(MIN_STAGE_VOICES,);
+        /**
+         The bench's quorum once those seats are out of reach.
+         */
+        const quorum = reachableQuorum({
+          benchSize: FIVE_SEAT_ROSTER.length,
+          unreachable: refused.length,
+        },);
+        expect(quorum.short,).toBe(true,);
+
+        const outcome = await pairSectionsWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
+          client: refusingSeatsClient({
+            reply: '{"pairs":[{"source":0,"target":0}]}',
+            refused,
+          },),
+          modelIds: FIVE_SEAT_ROSTER,
+          sourceSections: SOURCE,
+          targetSections: TARGET,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.usable,).toBe(MIN_STAGE_VOICES,);
+        expect(outcome.pairs,).toEqual([{
+          source: 0,
+          target: 0,
+        },],);
+        expect(outcome.findings,).toStrictEqual([
+          shortBenchStageFinding({
+            stage: 'section-pairing',
+            quorum,
+            benchSize: FIVE_SEAT_ROSTER.length,
+          },),
+        ],);
+      },
+    },),
+
+    it({
+      name: 'SAYS in its own vocabulary what agreement dropped: a source two voices pair one way and '
+        + 'two another is contested, and no pair is kept for it',
+      fn: async () => {
+        const outcome = await pairSectionsWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
+          client: cannedClient({
+            replyByModel: [
+              '{"pairs":[{"source":0,"target":0}]}',
+              '{"pairs":[{"source":0,"target":0}]}',
+              '{"pairs":[{"source":0,"target":1}]}',
+              '{"pairs":[{"source":0,"target":1}]}',
+            ],
+          },),
+          modelIds: FOUR_SEAT_ROSTER,
+          sourceSections: SOURCE,
+          targetSections: TARGET,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.usable,).toBe(FOUR_SEAT_ROSTER.length,);
+        expect(outcome.pairs,).toEqual([],);
+        expect(outcome.findings,).toStrictEqual([
+          'section-pairing contested (source 0 named against 2 targets)',
+        ],);
       },
     },),
   ],

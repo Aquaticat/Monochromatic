@@ -14,11 +14,16 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { buildSectionPairingMessages, } from '../dist/final/node/index.mjs';
+import {
+  buildSectionPairingMessages,
+  requireSectionPairingRefusal,
+  SectionPairingError,
+} from '../dist/final/node/index.mjs';
 
 /**
  Original sections as the sheet numbers them.
@@ -182,6 +187,29 @@ await describe({
           targetSections: [],
         },);
         expect(sheet,).toContain('TRANSLATION SECTIONS',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requireSectionPairingRefusal.name,
+  children: [
+    it({
+      name: 'hands back a pairing refusal as it is, and rethrows anything else unchanged',
+      fn: async () => {
+        /**
+         A refusal the reader raises.
+         */
+        const refusal = new SectionPairingError({ message: 'pairing moves backwards on the original side at position 2', },);
+        /**
+         A failure that is not a bad reply.
+         */
+        const stray = new TypeError('the cat sat on the keyboard',);
+        expect(requireSectionPairingRefusal({ error: refusal, },),).toBe(refusal,);
+        expect(caught(function narrowStray(): void {
+          requireSectionPairingRefusal({ error: stray, },);
+        },),).toBe(stray,);
       },
     },),
   ],

@@ -12,7 +12,9 @@
  @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import {
+  caught,
   describe,
   expect,
   it,
@@ -22,6 +24,7 @@ import {
   buildBlockPairingMessages,
   isBlockPairingWire,
   readBlockPairing,
+  requireBlockPairingRefusal,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -460,9 +463,12 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES an index no block carries',
+      name: 'REFUSES an index no block carries, on either side, naming the side',
       fn: async () => {
-        expect(function readsOutOfRange() {
+        /**
+         The refusal for an original index past the end.
+         */
+        const sourceRefusal = caught(function readsOutOfRange(): void {
           readBlockPairing({
             value: {
               pairs: [
@@ -475,7 +481,31 @@ await describe({
             sourceCount: 3,
             targetCount: 4,
           },);
-        },).toThrow(BlockPairingError,);
+        },);
+        /**
+         The refusal for a translation index past the end.
+         */
+        const targetRefusal = caught(function readsTargetOutOfRange(): void {
+          readBlockPairing({
+            value: {
+              pairs: [
+                {
+                  source: 0,
+                  target: 9,
+                },
+              ],
+            },
+            sourceCount: 3,
+            targetCount: 4,
+          },);
+        },);
+        // THE CLASS IS PART OF THE CONTRACT: `readBlockPairingOutcomes`
+        // records a `BlockPairingError` as that seat's unusable reply and
+        // rethrows anything else.
+        expect(sourceRefusal,).toBeInstanceOf(BlockPairingError,);
+        expect(targetRefusal,).toBeInstanceOf(BlockPairingError,);
+        expect(caughtValueText(sourceRefusal,),).toBe('pairing names original block 9, and there are 3',);
+        expect(caughtValueText(targetRefusal,),).toBe('pairing names translation block 9, and there are 4',);
       },
     },),
     it({
@@ -500,6 +530,29 @@ await describe({
             targetCount: 4,
           },).length,
         ).toBe(0,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: requireBlockPairingRefusal.name,
+  children: [
+    it({
+      name: 'hands back a pairing refusal as it is, and rethrows anything else unchanged',
+      fn: async () => {
+        /**
+         A refusal the reader raises.
+         */
+        const refusal = new BlockPairingError({ message: 'pairing names original block 9, and there are 3', },);
+        /**
+         A failure that is not a bad reply.
+         */
+        const stray = new TypeError('the cat sat on the keyboard',);
+        expect(requireBlockPairingRefusal({ error: refusal, },),).toBe(refusal,);
+        expect(caught(function narrowStray(): void {
+          requireBlockPairingRefusal({ error: stray, },);
+        },),).toBe(stray,);
       },
     },),
   ],

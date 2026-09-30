@@ -19,12 +19,18 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   createSyntheticClient,
+  MIN_STAGE_VOICES,
   pairBlocksWithRoster,
+  reachableQuorum,
+  shortBenchStageFinding,
 } from '../dist/final/node/index.mjs';
+import { refusingSeatsClient, } from './refusing-seats-client.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 
 /**
@@ -61,6 +67,17 @@ const TARGET = [
 const ROSTER = [
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+] as const;
+
+/**
+ Bench of five, whose quorum of three the router can leave out of reach while
+ the fewest voices a stage closes on still answer.
+ */
+const FIVE_SEAT_ROSTER = [
+  ...ROSTER,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_HYPER_VISION,
 ] as const;
 
 /**
@@ -296,6 +313,48 @@ await describe({
         expect(outcome.heard,).toBe(0,);
         expect(outcome.usable,).toBe(0,);
         expect(outcome.findings.join(' ',),).toContain(`no-usable-voice (0 heard of ${String(ROSTER.length,)})`,);
+      },
+    },),
+    it({
+      name: 'SAYS a short bench in the findings when the router leaves the bench quorum out of reach, '
+        + 'and still keeps what the seats that answered agreed on (ledger X8)',
+      fn: async () => {
+        /**
+         Seats the router refuses, leaving the fewest voices a stage closes on.
+         */
+        const refused = FIVE_SEAT_ROSTER.slice(MIN_STAGE_VOICES,);
+        /**
+         The bench's quorum once those seats are out of reach.
+         */
+        const quorum = reachableQuorum({
+          benchSize: FIVE_SEAT_ROSTER.length,
+          unreachable: refused.length,
+        },);
+        expect(quorum.short,).toBe(true,);
+
+        const outcome = await pairBlocksWithRoster({
+          // Whole bench: this case scripts every seat and reads over the bench it wrote.
+          fanOut: 'whole-bench',
+          client: refusingSeatsClient({
+            reply: '{"pairs":[{"source":0,"target":0},{"source":1,"target":1}]}',
+            refused,
+          },),
+          modelIds: FIVE_SEAT_ROSTER,
+          sourceBlocks: SOURCE,
+          targetBlocks: TARGET,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS,
+          l,
+        },);
+        expect(outcome.usable,).toBe(MIN_STAGE_VOICES,);
+        expect(outcome.pairs,).toEqual([{ source: 0, target: 0, }, { source: 1, target: 1, },],);
+        expect(outcome.findings,).toStrictEqual([
+          shortBenchStageFinding({
+            stage: 'block-pairing',
+            quorum,
+            benchSize: FIVE_SEAT_ROSTER.length,
+          },),
+        ],);
       },
     },),
   ],
