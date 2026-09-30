@@ -967,7 +967,7 @@ and the commit follows only a clean run of all three (M46).
 The named tests of a source commit include the package-wide source scans,
 run as one task,
 `mise run source-scans`
-(its description lists all sixteen),
+(its description names each),
 since a new class,
 function,
 export,
@@ -1533,3 +1533,53 @@ habit and review;
 `translate-stage.unit.test.ts`,
 `translate-document.unit.test.ts` and `consolidate-driver.unit.test.ts` count the calls on a blind slice,
 and `translate-floor-ground.unit.test.ts` pins the reach and the floor to one reading.
+
+## Loops that copy what they built
+
+What happened:
+folds over a page's lines,
+a slice list,
+a gap list or a list of losses returned what they had built so far spread into a new list,
+or cut and rejoined,
+at every step,
+so each step cost as much as every step before it (ledger B70).
+One of them was the stub-marker scan,
+whose summary called it one linear pass;
+it copied every line kept so far at each line of the page.
+Text edited in several places was spliced one edit at a time,
+last first,
+at offsets into the original,
+copying the whole text per edit,
+and where one edit's rewrite changed its length and another's range held it,
+the second cut in the wrong place:
+a title quoted inside a quoted title lost the mark after it.
+Nothing read the shape:
+the text accumulator scan sees only a `let` begun as text and grown in a loop.
+
+The rule:
+a fold or loop over its input appends to what it builds,
+and removes in place where a step removes;
+it never returns a copy of the list or text built so far.
+A record of fixed fields may be copied per step,
+since it costs the same each time.
+Several edits into one text are placed by offsets into that text
+and written in one pass with `spliceDisjointEdits`,
+which refuses edits that share a unit or a start;
+a caller whose edits can nest decides which it keeps before it writes,
+and names only the edits it wrote.
+A fold whose each step reads what the step before wrote,
+or that walks a fixed table,
+may rebuild,
+and says so where the guard names it.
+A summary that calls a pass linear is read against the pass.
+
+What enforces it:
+`fold-copies.unit.test.ts` fails on a `reduce` or `reduceRight` callback that copies its accumulator
+(a spread into a list,
+a copying method,
+a `Map` or `Set` built from it,
+or `+` where the fold starts from text)
+and on a loop that reassigns a list or text as a copy of itself,
+unless the fold is named with why its copies are bounded or are its meaning,
+and on a named fold that no longer copies;
+`disjoint-splice.unit.test.ts` holds the one-pass writer to the old splice's text and its refusals.

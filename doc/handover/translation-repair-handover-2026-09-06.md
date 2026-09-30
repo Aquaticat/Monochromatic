@@ -325,15 +325,25 @@ this one says what changed after it.
   Its census at `c2974bea9` (`census-PgyHZ8`,
   1,470 passes)
   leaves library source at 766 stretches over 1,554 lines in 282 files,
-  with 16 functions never called,
+  with 16 functions never called.
+  A fold that copied its answers so far at every step turned up in that batch,
+  and reading the package's folds for the shape found ledger B70
+  (`42d7a0f08` to `66b77b040`):
+  seven folds and loops copying a growing list,
+  and four splices writing text one edit at a time,
+  one of which cut a title quoted inside a quoted title one unit late.
+  The lists now grow by appending,
+  the splices write in one pass,
+  and `fold-copies.unit.test.ts` fails on a new fold that copies.
+  Its census at `66b77b040` (`census-DapwaX`,
+  1,472 passes)
+  leaves library source at 765 stretches over 1,547 lines in 282 files,
+  with 15 functions never called,
   and is the seventeenth batch's baseline,
   that batch taking the slice modules
   (`slice`,
   18 stretches over 112 lines in 7 files,
   the most cold lines of the three clusters tied at 18).
-  A fold that copied its answers so far at every step turned up in that batch,
-  so the package's folds are to be read for the shape,
-  with a scan for it.
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;

@@ -215,18 +215,37 @@ Its census (`census-PgyHZ8`,
 1,470 passes,
 taken from a tree with nothing uncommitted)
 leaves library source at 766 stretches over 1,554 lines in 282 files,
-with 16 functions never called,
+with 16 functions never called.
+A fold in `pair-sections-steps.ts` copied its answers so far at every step,
+a shape no scan read,
+and reading the package's folds for it found B70
+(`42d7a0f08` to `66b77b040`):
+seven folds and loops copied a list that grows with the input,
+four splices wrote text one edit at a time,
+and one of those,
+the italic-title pass,
+cut a title quoted inside a quoted title one unit late,
+taking the mark after it.
+The lists now grow by appending,
+the splices write in one pass (`spliceDisjointEdits`),
+and `fold-copies.unit.test.ts` fails on a new fold that copies.
+One finding from reading that pass is open:
+a quoted title inside an emphasis span is rewritten into italics nested in italics,
+losing the quotes that set it apart,
+and is to be measured over the pinned corpus before its red case.
+Its census (`census-DapwaX`,
+1,472 passes,
+taken from a tree with nothing uncommitted)
+leaves library source at 765 stretches over 1,547 lines in 282 files,
+with 15 functions never called,
 and by the first construct
-(`t8-triage-pgyhz8.txt`)
-three clusters tie at 18 stretches,
+(`t8-triage-dapwax.txt`)
+three clusters still tie at 18 stretches,
 so the seventeenth batch takes the one with the most cold lines,
 the slice modules
 (`slice`,
 18 stretches over 112 lines in 7 files);
 the runner entry files and unloaded bundles come after the library.
-A fold in `pair-sections-steps.ts` copied its answers so far at every step,
-a shape no scan reads,
-so the package's folds are to be read for that shape and a scan added.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.
 B33 and B34 closed on the way as well:

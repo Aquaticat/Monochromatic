@@ -4490,6 +4490,56 @@ and `corpus-run/run` (2 files,
 The tie goes to the most cold lines,
 so the seventeenth batch takes `slice`.
 
+The first finding the sixteenth batch left open became B70 and was fixed before the seventeenth batch,
+in four commits
+(`42d7a0f08`,
+`be0897f00`,
+`f033d19e8`,
+`66b77b040`);
+the `prefix` callback stays open.
+The seventeenth batch reads against the census at `66b77b040`
+(`census-DapwaX`,
+1,472 passes,
+taken clean),
+which reads against `census-PgyHZ8`:
+ran 0,
+still cold 1,104,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 7.
+The 7 edited sources are B70's
+(`apply-patch.ts` 2 cold stretches,
+`archive-italic-title-restore.ts` 1,
+`archive-stub.ts` 2,
+`dropped-destinations.ts` 3,
+`list-spread-restore.ts` 7,
+`published-page-check.ts` 4
+and `markup-atom-preservation.ts` 1).
+Library source went from 766 stretches over 1,554 lines in 282 files to 765 over 1,547 in 282,
+with 15 functions never called where there were 16:
+compared file by file,
+only `archive-italic-title-restore.ts` moved,
+from 2 stretches to 1,
+since `lastFirst`,
+the comparator ordering its titles last first that no test called,
+went with that splice.
+By the first construct
+(`t8-triage-dapwax.txt`),
+the queue is 311 returns,
+156 nullish fallbacks,
+129 ternaries,
+86 throws
+and 83 others,
+and the tie is unchanged:
+`slice`,
+`archive`
+and `corpus-run/run` at 18 stretches each,
+with 112,
+36
+and 18 lines,
+so the seventeenth batch still takes `slice`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -13580,6 +13630,108 @@ a marked class names what refused,
 since its message is all an operator sees;
 one sentence for several checks also lets a case pass on the wrong check.
 
+### B70: folds that copied what they had built at every step
+
+Found by the sixteenth coverage batch,
+which rewrote `scanNearest` (`pair-sections-steps.ts`) as a loop:
+a `reduce` whose step returned its answers so far spread into a new list,
+so each step cost as much as every step before it,
+the quadratic shape rule ITR in `AGENTS.md` rules out.
+Nothing read that shape:
+`text-accumulators.unit.test.ts` sees only a `let` begun as text and grown in a loop.
+A scratch probe (`fold-copies-probe.mjs`) over the 1,068 production files
+read 159 `reduce` calls and flagged 16 folds and one loop,
+with controls:
+the pre-refactor `scanNearest` and a synthetic file of every shape were reported,
+and a numeric sum and an appending fold were not.
+The guard written from it found three more loops the probe's rule missed.
+
+The guard's 19 findings sort four ways.
+Seven copied a list that grows with the input,
+among them `stripStubMarkersWithOrigins` (`archive-stub.ts`),
+which copied every line kept so far at each line of a page
+while its summary called the pass linear.
+Four spliced text one edit at a time,
+last first,
+at offsets into the original:
+patch operations,
+italic titles,
+a list's gaps,
+and a URL's trailing marks shed one slice at a time.
+Six are sequential or bounded and are named in the guard with why:
+four whose each step reads what the step before wrote
+(the archive block repair,
+name glosses,
+seeded errors,
+the slice splice),
+two folds over fixed tables,
+the merged regions `grownSpans` checks each run against,
+and `collectRounds`' next-round queue,
+rebuilt once per round and bounded by `maxRetryRounds`.
+A spread inside a record of fixed fields is not read,
+since it costs the same at every step.
+
+One splice was a defect in output,
+not only in cost.
+`italicizeSlice` (`archive-italic-title-restore.ts`) reads curly and straight quotes,
+which can nest.
+With a title quoted inside a quoted title,
+the inner went in first,
+its form read its two spaces as one,
+and the outer then cut at its original end,
+one unit past its closing quote,
+taking the mark after it;
+its findings also named the inner rewrite the outer had overwritten.
+
+Fixed (`42d7a0f08` red guard,
+`be0897f00` the growing lists,
+`f033d19e8` red case for the nested titles,
+`66b77b040` the splices):
+each growing list is a loop that appends,
+removing in place where a step removes;
+the splices go through `spliceDisjointEdits` (`disjoint-splice.ts`),
+which sorts by start,
+copies each untouched run once,
+and refuses two edits that share a unit or a start (`OverlappingEditsError`),
+since each caller builds its edits apart;
+the italic pass keeps a nested span only where it opens first
+and names only the spans it writes;
+and the URL trim steps back to its cut and slices once.
+The whole unit suite at `66b77b040` prints 1,472 PASS lines and no FAIL line.
+With the old copying fold put back in `respaceList`
+the guard's package case failed
+("expected [ …(9) ] to deeply equal [ …(8) ]"),
+and with the helper's refusal disabled
+its two refusal cases failed and nothing else;
+both were restored.
+The first whole-suite run of the splice change failed the message inventory alone,
+since the new error class was unlisted;
+it is marked and listed in the same commit.
+
+Reading the italic pass for the splice left one finding open.
+`protectedRanges` (`prose-ranges.ts`) reads emphasis as prose,
+so a quoted title inside an emphasis span is rewritten in asterisks there too.
+Parsed with `mdast-util-from-markdown` 2.0.3
+(`italic-in-emphasis-probe.mjs`,
+cat-themed inputs),
+the result inside `*…*` or `_…_` is an emphasis node inside an emphasis node,
+and inside `**…**` an emphasis node inside a strong one.
+Inside emphasis the title then shows in the same italics as the words around it,
+and the quotes that set it apart are gone
+(an inference from the default styling:
+the local site checkout holds only `data`,
+so its stylesheet was not read).
+How many settled pages hold such a span is not yet measured;
+the fix is to be measured over the pinned corpus,
+then taken red first.
+
+Recurrence:
+a fold or loop over the input never copies what it has built;
+it appends,
+and several edits into one text are written in one pass from offsets into that text.
+`fold-copies.unit.test.ts` fails on a new one,
+and an exemption names why a fold's copies are bounded or are its meaning.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -13740,6 +13892,10 @@ One more during T8's fifteenth batch on 2026-09-30:
 a call that printed `wait` and did nothing,
 sent beside the write of a commit message,
 against the rule that every call does work;
+it changed nothing committed.
+One more during B70 on 2026-09-30:
+a call that read a background suite's output while it ran,
+against the rule that a background task is left to report when it ends;
 it changed nothing committed.
 
 ### M19: a suite run against a stale build after a mutation was restored
@@ -14928,6 +15084,11 @@ so it read the written file.
 Rerunning that check afterwards also covered the two B67 messages,
 which had not been checked before their commits;
 none of the three held a match.
+Again during B70's docs on 2026-09-30,
+once:
+an edit to a scratch note and the `sed` inserting that note into this ledger went out in one batch;
+a search afterwards found the edited wording in the ledger,
+so the edit happened to land first.
 The prevention stands as written:
 the edit or write,
 then,
