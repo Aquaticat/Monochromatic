@@ -247,13 +247,12 @@ async function reportCensus(
     census: baseline,
   },): Promise<readonly string[]> {
     /**
-     Claimed sources, or every file under the package, changed since the
-     baseline's commit, whose baseline lines name other code now.
+     Files of the work tree changed since the baseline's commit, named as
+     the census names sources, whose baseline lines name other code now.
      */
     const edited = await sourcesEditedSince({
       packageDirectory,
       head: baseline.head,
-      sources: asked.sources,
     },);
     return baselineReportLines({
       path,

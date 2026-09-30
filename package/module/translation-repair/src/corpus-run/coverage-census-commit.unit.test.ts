@@ -256,7 +256,6 @@ await describe({
         expect([...await sourcesEditedSince({
           packageDirectory,
           head,
-          sources: ['src/nap.ts', 'src/purr.ts', 'src/knead.ts',],
         },),].toSorted(),).toEqual(['src/knead.ts', 'src/nap.ts',],);
       },
     },),
@@ -344,7 +343,6 @@ await describe({
         expect([...await sourcesEditedSince({
           packageDirectory,
           head,
-          sources: [],
         },),].toSorted(),).toEqual([
           '../../README.md',
           '../whisker/src/index.ts',

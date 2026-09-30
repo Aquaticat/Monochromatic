@@ -1,3 +1,5 @@
+import { posix, } from 'node:path';
+
 import spawn from 'nano-spawn';
 
 import { resolveGit, } from './git-command.ts';
@@ -5,8 +7,8 @@ import { resolveGit, } from './git-command.ts';
 //region Coverage census commit
 // Ledger T8: what git says about the tree a census reads, apart from the
 // entry so each question is tested against a throwaway repository: which
-// commit the build came from and whether the files match it, and which
-// sources have changed since an earlier census's commit.
+// commit the build came from and whether the files match it, and which files
+// of the work tree have changed since an earlier census's commit.
 
 /**
  The commit the package's files were built from, and whether they match it.
@@ -62,37 +64,44 @@ export async function packageCommit({ packageDirectory, }: { readonly packageDir
 }
 
 /**
- Names the sources whose files differ from an earlier commit.
+ Names the files of the work tree that differ from an earlier commit, as a
+ census names sources: relative to the package, so another package's file
+ reads `../<package>/src/<file>.ts`, as its stretches do.
+
+ THE WHOLE WORK TREE, since the census reads the sources of other packages
+ the suite loads as well as the package's own, and matches their baseline
+ stretches by line too. Asked about the package alone, git never named an
+ edit to one of them (ledger B62). A reading asks after the sources it
+ reads, so naming every changed file costs it nothing.
 
  THE TREE AS IT STANDS, uncommitted edits included, against that commit, since
  the census this reads beside was taken from the tree as it stands. A file
  added since that commit counts as changed; one never committed is not listed
  by git, and no census taken at that commit can hold a stretch in it.
 
+ NUL-SEPARATED (`-z`), which git prints verbatim: read line by line, a name
+ git quotes (one holding a double quote, a newline or a non-ASCII letter)
+ came back quoted and matched no source (ledger B62).
+
  @param packageDirectory - package directory, inside a git work tree
 
  @param head - earlier commit, as a census records it
-
- @param sources - package-relative sources to ask about, empty for every file
- under the package
 
  @returns Package-relative paths, as a census names sources, of those that
  changed
 
  @example
  ```ts
- const edited = await sourcesEditedSince({ packageDirectory, head: baseline.head, sources: ['src/nap.ts',], },);
+ const edited = await sourcesEditedSince({ packageDirectory, head: baseline.head, },);
  ```
  */
 export async function sourcesEditedSince(
   {
     packageDirectory,
     head,
-    sources,
   }: {
     readonly packageDirectory: string;
     readonly head: string;
-    readonly sources: readonly string[];
   },
 ): Promise<ReadonlySet<string>> {
   /**
@@ -100,7 +109,20 @@ export async function sourcesEditedSince(
    */
   const git = await resolveGit();
   /**
-   Changed paths, one a line, relative to the package directory.
+   Where the package sits under the work tree's root, ending in `/`, or
+   empty at the root.
+   */
+  const { stdout: prefix, } = await spawn(
+    git,
+    [
+      '-C',
+      packageDirectory,
+      'rev-parse',
+      '--show-prefix',
+    ],
+  );
+  /**
+   Changed paths relative to the work tree's root, each ended by NUL.
    */
   const { stdout: changed, } = await spawn(
     git,
@@ -109,16 +131,20 @@ export async function sourcesEditedSince(
       packageDirectory,
       'diff',
       '--name-only',
-      '--relative',
+      '-z',
       head,
-      '--',
-      ...((sources.length === 0) ? ['.',] : sources),
     ],
   );
   return new Set(changed
-    .split('\n',)
-    .filter(function named(line,): boolean {
-      return line !== '';
+    .split('\0',)
+    .filter(function named(path,): boolean {
+      return path !== '';
+    },)
+    .map(function fromPackage(path,): string {
+      return posix.relative(
+        prefix,
+        path,
+      );
     },),);
 }
 
