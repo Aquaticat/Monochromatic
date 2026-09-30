@@ -96,6 +96,35 @@ function withDriftVar({ value, }: { readonly value: string; },): Disposable {
 }
 
 /**
+ Diverts `console.log` into a list until disposed, for the one line the
+ build check prints when drift is permitted.
+
+ @param lines - where diverted lines are appended
+
+ @returns Disposable putting the terminal's writer back
+
+ @example
+ ```ts
+ using _capture = printingInto({ lines, },);
+ ```
+ */
+function printingInto({ lines, }: { readonly lines: string[]; },): Disposable {
+  /**
+   The terminal's own writer, put back on disposal.
+   */
+  const terminal = console.log;
+  console.log = (...parts: readonly unknown[]) => {
+    lines.push(parts.map(String,)
+      .join(' ',),);
+  };
+  return {
+    [Symbol.dispose](): void {
+      console.log = terminal;
+    },
+  };
+}
+
+/**
  Writes a throwaway artifacts directory.
 
  Written to a fresh temporary directory every time rather than to any real runs
@@ -304,6 +333,49 @@ await describe({
         },);
       },
     },),
+
+    it({
+      name: 'SAYS how many foreign pipelines a permitted drift resumes across, in the number the count takes',
+      fn: async () => {
+        /**
+         What a directory under one foreign pipeline reads as.
+         */
+        const oneForeign = await censusOf({ generations: { Mittens: DIGEST_A, }, },);
+        /**
+         What a directory under two foreign pipelines reads as.
+         */
+        const twoForeign = await censusOf({
+          generations: {
+            Mittens: DIGEST_A,
+            Pepper: DIGEST_B,
+          },
+        },);
+        /**
+         Lines the build check printed.
+         */
+        const printed: string[] = [];
+        {
+          using _capture = printingInto({ lines: printed, },);
+          assertBuildGenerationResumable({
+            census: oneForeign,
+            digest: DIGEST_C,
+            driftAllowed: true,
+          },);
+          assertBuildGenerationResumable({
+            census: twoForeign,
+            digest: DIGEST_C,
+            driftAllowed: true,
+          },);
+        }
+
+        expect(printed,).toContain(
+          `POOL resuming across 1 foreign pipeline because ${ALLOW_DRIFT_VAR}=yes; a rate over this directory must name a required commit`,
+        );
+        expect(printed,).toContain(
+          `POOL resuming across 2 foreign pipelines because ${ALLOW_DRIFT_VAR}=yes; a rate over this directory must name a required commit`,
+        );
+      },
+    },),
   ],
 },);
 
@@ -391,6 +463,61 @@ await describe({
 
         await expect(refusal,).rejects.toBeInstanceOf(UnplaceableArtifactError,);
         await expect(refusal,).rejects.toThrow('Biscuit',);
+      },
+    },),
+
+    it({
+      name: 'COUNTS the entries each refusal names in the number the count takes, one artifact or several',
+      fn: async () => {
+        /**
+         The count line and the named entries opening a refusal's message.
+
+         @param error - refusal built over some entries
+
+         @param named - how many entries it names
+
+         @returns Those lines
+         */
+        function openingOf(
+          {
+            error,
+            named,
+          }: {
+            readonly error: Error;
+            readonly named: number;
+          },
+        ): readonly string[] {
+          return error.message
+            .split('\n',)
+            .slice(
+              0,
+              named + 1,
+            );
+        }
+
+        expect({
+          legacyOne: openingOf({
+            error: new LegacyPipelineError({ entryIds: ['Mittens',], },),
+            named: 1,
+          },),
+          legacyTwo: openingOf({
+            error: new LegacyPipelineError({ entryIds: ['Mittens', 'Pepper',], },),
+            named: 2,
+          },),
+          unplaceableOne: openingOf({
+            error: new UnplaceableArtifactError({ entryIds: ['Mittens',], },),
+            named: 1,
+          },),
+          unplaceableTwo: openingOf({
+            error: new UnplaceableArtifactError({ entryIds: ['Mittens', 'Pepper',], },),
+            named: 2,
+          },),
+        },).toEqual({
+          legacyOne: ['1 artifact here records a pipeline this build cannot name:', '  Mittens',],
+          legacyTwo: ['2 artifacts here record a pipeline this build cannot name:', '  Mittens', '  Pepper',],
+          unplaceableOne: ['1 artifact in this directory records no readable pipeline:', '  Mittens',],
+          unplaceableTwo: ['2 artifacts in this directory record no readable pipeline:', '  Mittens', '  Pepper',],
+        },);
       },
     },),
   ],

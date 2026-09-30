@@ -436,6 +436,80 @@ await describe({
         expect(said,).toContain('this pass writes schema version 14',);
       },
     },),
+    it({
+      name:
+        'REFUSES a file that is not an artifact at all APART, with removing it as the remedy, rather than '
+        + 'naming it among the foreign generations with the advice to archive it as the generation it is '
+        + '(ledger B53)',
+      fn: async () => {
+        /**
+         A directory holding a sound artifact of another generation beside
+         two files that are not artifacts.
+         */
+        const artifactsDir = await writeArtifacts({
+          entries: {
+            Mittens: {
+              version: 1,
+              digest: DIGEST_A,
+            },
+          },
+        },);
+        await writeFile(
+          join(
+            artifactsDir,
+            'Smudge.json',
+          ),
+          'not json {',
+          'utf8',
+        );
+        await writeFile(
+          join(
+            artifactsDir,
+            'Tuxedo.json',
+          ),
+          '["a", "list", "of", "cats"]',
+          'utf8',
+        );
+
+        /**
+         What the guard said about it.
+         */
+        const said = await refusalOf({ artifactsDir, },);
+        expect(said,).toContain('2 artifacts in this directory record no readable pipeline',);
+        expect(said,).toContain('  Smudge',);
+        expect(said,).toContain('  Tuxedo',);
+        expect(said,).toContain('Deleting the file is the whole remedy',);
+        expect(said,).not.toContain('another schema generation',);
+        expect(said,).not.toContain('Mittens',);
+      },
+    },),
+    it({
+      name:
+        'NAMES the first five entries of a generation and COUNTS the rest, so a corpus-sized directory '
+        + 'still produces a readable refusal',
+      fn: async () => {
+        /**
+         Six entries of one foreign generation.
+         */
+        const artifactsDir = await writeArtifacts({
+          entries: Object.fromEntries(
+            ['Ash', 'Biscuit', 'Clover', 'Dusty', 'Ember', 'Fig',].map(function versionOne(entryId,): [string, Fixture,] {
+              return [
+                entryId,
+                {
+                  version: 1,
+                  digest: DIGEST_A,
+                },
+              ];
+            },),
+          ),
+        },);
+
+        expect(await refusalOf({ artifactsDir, },),).toContain(
+          'schema version 1: 6 settled, Ash, Biscuit, Clover, Dusty, Ember, and 1 more',
+        );
+      },
+    },),
   ],
 },);
 

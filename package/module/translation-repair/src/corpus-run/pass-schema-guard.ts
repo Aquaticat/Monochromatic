@@ -6,6 +6,7 @@ import { contextRoot, } from '../log-context.ts';
 import { refusalText, } from '../refusal-text.ts';
 import { ARTIFACT_SCHEMA_VERSION_V14, } from './artifact-two-lane-contract.ts';
 import { parseSettledTwoLaneArtifact, } from './artifact-two-lane-read.ts';
+import { UnplaceableArtifactError, } from './pass-generation-guard.ts';
 import {
   censusBySchema,
   type SchemaCensusRow,
@@ -61,23 +62,55 @@ const NAMED_EXAMPLES = 5;
 const ARTIFACT_SUFFIX = '.json';
 
 /**
- Phrase naming one classification, for a refusal.
- 
+ What the census made of a file that is an artifact of some generation.
+ */
+type GenerationClassification = Exclude<SchemaClassification, { readonly kind: 'malformed'; }>;
+
+/**
+ A census row for a file that is an artifact of some generation.
+ */
+type GenerationRow = SchemaCensusRow & { readonly classification: GenerationClassification; };
+
+/**
+ Whether a census row is an artifact of some generation, rather than a file
+ that is not an artifact at all.
+
+ @param row - one settled entry's classification
+
+ @returns Whether its classification names a generation
+
+ @example
+ ```ts
+ const artifacts = rows.filter(isGenerationRow,);
+ ```
+ */
+function isGenerationRow(row: SchemaCensusRow,): row is GenerationRow {
+  /**
+   What the census made of the row's file.
+   */
+  const { classification, } = row;
+  return classification.kind !== 'malformed';
+}
+
+/**
+ Phrase naming one generation, for a refusal.
+
  BUILT FROM THE CLASSIFICATION rather than used as its key, so a message can
- distinguish a sound artifact of another generation from a file that is not an
- artifact, and can offer each the remedy that fits.
- 
- @param classification - what the census made of one file
- 
+ distinguish the generations it names. A file that is not an artifact at all
+ gets no phrase: the guard refuses it apart, with the remedy that fits it
+ (ledger B53).
+
+ @param classification - what the census made of one artifact
+
  @returns Phrase a refusal groups by
- 
+
  @example
  ```ts
  const label = generationLabel({ classification, },);
  ```
  */
 function generationLabel(
-  { classification, }: { readonly classification: SchemaClassification; },
+  { classification, }: { readonly classification: GenerationClassification; },
 ): string {
   if (classification.kind === 'declared')
     return `schema version ${String(classification.version,)}`;
@@ -85,10 +118,7 @@ function generationLabel(
   if (classification.kind === 'unversioned')
     return 'no schema version at all';
 
-  if (classification.kind === 'unreadable-version')
-    return 'a schema generation this build cannot read';
-
-  return 'not an artifact this build recognizes at all';
+  return 'a schema generation this build cannot read';
 }
 
 /**
@@ -305,7 +335,7 @@ function foreignGroups(
     rows,
     writes,
   }: {
-    readonly rows: readonly SchemaCensusRow[];
+    readonly rows: readonly GenerationRow[];
     readonly writes: number;
   },
 ): ReadonlyMap<string, readonly string[]> {
@@ -409,9 +439,14 @@ async function assertBodyMatchesLabel(
  an empty directory, and on 2026-09-02 it refused XIEPT2 a directory holding
  keyword233's generation-ten artifact, the generation this same build writes.
  
+ @throws {@link UnplaceableArtifactError} when a settled file is not an
+ artifact at all (not JSON, or JSON that is not a record), whose remedy is
+ removing it; the pass's placement half refuses such a file first, so only
+ a caller running this guard alone meets it here (ledger B53)
+
  @throws {@link SchemaGenerationError} when any settled artifact belongs to
  another generation, naming every one of them
- 
+
  @throws {@link MislabelledArtifactError} when an artifact declares this
  generation and this generation's reader refuses it
  
@@ -434,11 +469,33 @@ export async function assertResumableSchemaGeneration(
    */
   const rows = await censusBySchema({ artifactsDir, },);
 
+  // A FILE THAT IS NOT AN ARTIFACT AT ALL IS REFUSED APART (ledger B53), with
+  // the remedy that fits it: it is a file to investigate and remove, not a
+  // sound result of another generation to archive, which is what naming it
+  // among the foreign generations told an operator.
+  /**
+   Entries whose file is not an artifact at all.
+   */
+  const malformedIds = rows
+    .filter(function isMalformed(row,): boolean {
+      return !isGenerationRow(row,);
+    },)
+    .map(function idOf({ entryId, },): string {
+      return entryId;
+    },);
+  if (malformedIds.length > 0)
+    throw new UnplaceableArtifactError({ entryIds: malformedIds, });
+
+  /**
+   Every settled entry, each an artifact of some generation.
+   */
+  const artifacts = rows.filter(isGenerationRow,);
+
   /**
    Entries belonging to any other generation.
    */
   const foreign = foreignGroups({
-    rows,
+    rows: artifacts,
     writes,
   },);
 
@@ -452,7 +509,7 @@ export async function assertResumableSchemaGeneration(
   // THE LABEL CHECK PASSED, so every remaining file claims this generation.
   // Now they have to BE it, which only this generation's reader can say.
   await Promise.all(
-    rows.map(async function checkBody({ entryId, },): Promise<void> {
+    artifacts.map(async function checkBody({ entryId, },): Promise<void> {
       await assertBodyMatchesLabel({
         artifactsDir,
         entryId,
