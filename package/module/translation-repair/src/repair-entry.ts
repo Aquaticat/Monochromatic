@@ -1,6 +1,5 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { prepareDocumentPair, } from './document-preparation.ts';
 import type {
@@ -37,9 +36,7 @@ import { SLICE_CHAR_BUDGET, } from './slice-pair.ts';
  @param targetText - translation under repair, front matter included
  
  @param models - role roster
- 
- @param adjudicationConfig - tally thresholds and weights
- 
+
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -72,7 +69,6 @@ export async function repairTranslation(
     sourceText,
     targetText,
     models,
-    adjudicationConfig,
     signal,
     perCallTimeoutMs,
     sliceCharBudget = SLICE_CHAR_BUDGET,
@@ -83,7 +79,6 @@ export async function repairTranslation(
     readonly sourceText: string;
     readonly targetText: string;
     readonly models: RepairModels;
-    readonly adjudicationConfig?: AdjudicationConfig;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
     readonly sliceCharBudget?: number;
@@ -99,7 +94,6 @@ export async function repairTranslation(
       sliceCharBudget,
     },),
     models,
-    ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
     signal,
     ...(perCallTimeoutMs === undefined ? {} : { perCallTimeoutMs, }),
     ...(sliceCache === undefined ? {} : { sliceCache, }),

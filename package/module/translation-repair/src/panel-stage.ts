@@ -6,7 +6,6 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type {
   AdjudicatedIssue,
-  AdjudicationConfig,
   PanelBallot,
 } from './adjudicate-model.ts';
 import {
@@ -201,9 +200,7 @@ function describePanelReasons(issue: AdjudicatedIssue,): readonly string[] {
  @param targetText - current translation being reviewed
  
  @param clusters - original merge proposals, fixed before any panel call
- 
- @param adjudicationConfig - existing tally thresholds and weights
- 
+
  @param neighbouringSourceText - nearby factual evidence for current claims
  
  @param neighbouringIncumbentText - nearby archive placement context
@@ -236,7 +233,6 @@ export async function runPanelStage(
     sourceText,
     targetText,
     clusters,
-    adjudicationConfig,
     neighbouringIncumbentText,
     neighbouringSourceText,
     documentSourceText,
@@ -251,7 +247,6 @@ export async function runPanelStage(
     readonly sourceText: string;
     readonly targetText: string;
     readonly clusters: readonly ClaimCluster[];
-    readonly adjudicationConfig?: AdjudicationConfig;
     readonly neighbouringIncumbentText?: string;
     readonly neighbouringSourceText?: string;
     readonly documentSourceText?: string;
@@ -371,7 +366,6 @@ export async function runPanelStage(
         clusters: [cluster,],
         ballots,
         configuredPanelists: panelModelIds.length,
-        ...(adjudicationConfig === undefined ? {} : { config: adjudicationConfig, }),
       },);
       for (const issue of issues) {
         packetLogger.info(describePanelDecision(issue,),);

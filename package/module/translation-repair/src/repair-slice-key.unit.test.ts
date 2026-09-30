@@ -19,7 +19,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  DEFAULT_ADJUDICATION_CONFIG,
   prepareDocumentPair,
   repairRunShape,
   repairSliceKey,
@@ -173,8 +172,7 @@ await describe({
     it({
       name:
         'moves the key for every input a resumed slice would be wrong about: the roster, the '
-        + 'thresholds, the declared names, either text, and the line-structure verdict the '
-        + 'enclosing chunk carries',
+        + 'declared names, either text, and the line-structure verdict the enclosing chunk carries',
       fn: async () => {
         /**
          Key under the unchanged fixture.
@@ -186,13 +184,6 @@ await describe({
               ...MODELS,
               criticModelIds: [SEAT_SYNTHETIC_VISION_WITHHELD,],
             },
-          },),
-        },),).not
-          .toBe(settled,);
-        expect(keyed({
-          runShape: repairRunShape({
-            models: MODELS,
-            adjudicationConfig: DEFAULT_ADJUDICATION_CONFIG,
           },),
         },),).not
           .toBe(settled,);

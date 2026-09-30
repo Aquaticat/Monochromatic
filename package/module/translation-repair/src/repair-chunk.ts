@@ -1,7 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import { recordIssuesWithFilers, } from './claim-filers.ts';
 import { aggregateClaims, } from './aggregate-claims.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
@@ -61,9 +60,7 @@ import { settleShippedPatch, } from './repair-chunk-settle.ts';
  @param reseat - reads the seating again at the checker stage, so a chunk
  in flight when a provider runs dry asks the bench a fresh reading seats
  (class one hundred nine)
- 
- @param adjudicationConfig - tally thresholds and weights
- 
+
  @param identityContext - declared names from both sides' front matter,
  passed down from the whole document because chunk text carries no front
  matter of its own
@@ -116,7 +113,6 @@ export async function repairChunk(
     lineStructured,
     models,
     reseat = standingSeating,
-    adjudicationConfig,
     identityContext,
     referenceContext,
     attestedDetails = [],
@@ -135,7 +131,6 @@ export async function repairChunk(
     readonly lineStructured: boolean;
     readonly models: RepairModels;
     readonly reseat?: () => Promise<RepairSliceSeating>;
-    readonly adjudicationConfig?: AdjudicationConfig;
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly attestedDetails?: readonly AttestedDetail[];
@@ -255,7 +250,6 @@ export async function repairChunk(
     targetText,
     ...windowFragment,
     clusters,
-    ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
     signal,
     perCallTimeoutMs,
     l,

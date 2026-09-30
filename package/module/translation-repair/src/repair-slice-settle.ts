@@ -1,7 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { isInsertionChunk, } from './chunk-placement.ts';
@@ -97,8 +96,6 @@ function storedOutcome(
  in flight when a provider runs dry asks the bench a fresh reading seats
  (class one hundred nine)
  
- @param adjudicationConfig - tally thresholds and weights
- 
  @param slice - slice being settled
  
  @param slicePosition - position in prepared slice array
@@ -131,7 +128,6 @@ export async function settleRepairSlice(
     prepared,
     models,
     reseat,
-    adjudicationConfig,
     slice,
     slicePosition,
     runShape,
@@ -145,7 +141,6 @@ export async function settleRepairSlice(
     readonly prepared: PreparedDocumentPair;
     readonly models: RepairModels;
     readonly reseat?: () => Promise<RepairSliceSeating>;
-    readonly adjudicationConfig?: AdjudicationConfig;
     readonly slice: ChunkPair;
     readonly slicePosition: number;
     readonly runShape: string;
@@ -282,7 +277,6 @@ export async function settleRepairSlice(
         prepared,
         models,
         ...((reseat === undefined) ? {} : { reseat, }),
-        ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
         slice,
         key,
         neighbouringIncumbentText,

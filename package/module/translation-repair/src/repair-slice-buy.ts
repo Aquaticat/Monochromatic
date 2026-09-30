@@ -1,7 +1,6 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import { frontMatterRepairOutcome, } from './front-matter-repair.ts';
 import type { ChunkPair, } from './chunk-document.ts';
@@ -40,8 +39,6 @@ import { assertSettledRecordAgrees, } from './slice-record-agreement.ts';
  in flight when a provider runs dry asks the bench a fresh reading seats
  (class one hundred nine)
  
- @param adjudicationConfig - tally thresholds and weights
- 
  @param slice - slice being repaired
  
  @param key - cross-run key outcome is stored under
@@ -76,7 +73,6 @@ export async function buyRepairSlice(
     prepared,
     models,
     reseat,
-    adjudicationConfig,
     slice,
     key,
     neighbouringIncumbentText,
@@ -91,7 +87,6 @@ export async function buyRepairSlice(
     readonly prepared: PreparedDocumentPair;
     readonly models: RepairModels;
     readonly reseat?: () => Promise<RepairSliceSeating>;
-    readonly adjudicationConfig?: AdjudicationConfig;
     readonly slice: ChunkPair;
     readonly key: string;
     readonly neighbouringIncumbentText: string;
@@ -142,7 +137,6 @@ export async function buyRepairSlice(
         ...(documentSourceText === '' ? {} : { documentSourceText, }),
         models,
         ...((reseat === undefined) ? {} : { reseat, }),
-        ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
         ...((prepared.identityContext === undefined)
           ? {}
           : { identityContext: prepared.identityContext, }),

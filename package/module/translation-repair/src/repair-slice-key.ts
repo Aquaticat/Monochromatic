@@ -1,4 +1,3 @@
-import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import { hashContent, } from './document-node.ts';
 import type { RepairModels, } from './repair-contract.ts';
 
@@ -487,11 +486,18 @@ export const SLICE_CACHE_VERSION = 34;
  into every cache key.
  
  Without it a resumed slice could return an outcome produced under a different
- roster, a different adjudication threshold, or a different editor addendum,
- and nothing would look wrong: the texts match, so the key matches. That is
- the failure a version constant cannot catch, because no shape changed.
- Identity context belongs here for the same reason, since it is
- front-matter-derived prompt content that varies per document pair.
+ roster or a different editor addendum, and nothing would look wrong: the
+ texts match, so the key matches. That is the failure a version constant
+ cannot catch, because no shape changed. Identity context belongs here for the
+ same reason, since it is front-matter-derived prompt content that varies per
+ document pair.
+
+ THE ADJUDICATION THRESHOLDS ARE NOT A RUN'S TO CHOOSE. They are
+ `DEFAULT_ADJUDICATION_CONFIG`, which no run can replace since the
+ per-run override went (T8 in the audit ledger): no production caller ever
+ passed one, so every key this shape made held `null` in their slot. The slot
+ stays `null`, so no settled slice's key moves, and a change to the thresholds
+ themselves bumps {@link SLICE_CACHE_VERSION} rather than any key.
  
  THE PER-CALL DEADLINE IS DELIBERATELY OUT, decided when the two-lane driver
  began passing one explicitly rather than letting each lane keep its own
@@ -514,9 +520,7 @@ export const SLICE_CACHE_VERSION = 34;
  discarded half a document's cached work and kept the other half.
  
  @param models - every role roster this run seats
- 
- @param adjudicationConfig - thresholds the panel is read under
- 
+
  @param identityContext - declared names travelling with every slice
  
  @param referenceContext - what the original's cited pages say, which the
@@ -527,18 +531,16 @@ export const SLICE_CACHE_VERSION = 34;
  
  @example
  ```ts
- const runShape = repairRunShape({ models, adjudicationConfig, identityContext, },);
+ const runShape = repairRunShape({ models, identityContext, },);
  ```
  */
 export function repairRunShape(
   {
     models,
-    adjudicationConfig,
     identityContext,
     referenceContext,
   }: {
     readonly models: RepairModels;
-    readonly adjudicationConfig?: AdjudicationConfig;
     readonly identityContext?: string;
     readonly referenceContext?: string;
   },
@@ -551,7 +553,9 @@ export function repairRunShape(
     models.refinerModelIds ?? [],
     models.checkerModelIds,
     models.editorRuleAddendum ?? '',
-    adjudicationConfig ?? null,
+    // THE THRESHOLDS' SLOT, `null` in every key a run ever made, kept so none
+    // moves (see the summary).
+    null,
     identityContext ?? '',
     // ONLY WHERE THE ORIGINAL LINKS SOMEWHERE, so the 33 entries that cite
     // nothing keep the keys their slices were settled under.

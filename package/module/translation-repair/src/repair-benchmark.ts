@@ -2,7 +2,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { contextRoot, } from './log-context.ts';
-import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { BenchmarkEntry, } from './prepare-entry.ts';
 import type { RepairModels, } from './repair-contract.ts';
@@ -175,9 +174,7 @@ export type RepairBenchmarkResult = {
  @param entries - corpus entries with derived seeds
  
  @param models - role roster for every repair run
- 
- @param adjudicationConfig - tally thresholds and weights
- 
+
  @param signal - abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -205,7 +202,6 @@ export async function runRepairBenchmark(
     client,
     entries,
     models,
-    adjudicationConfig,
     signal,
     perCallTimeoutMs,
     runBudgetMs,
@@ -217,7 +213,6 @@ export async function runRepairBenchmark(
     readonly client: SyntheticClient;
     readonly entries: readonly BenchmarkEntry[];
     readonly models: RepairModels;
-    readonly adjudicationConfig?: AdjudicationConfig;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
     readonly runBudgetMs?: number;
@@ -288,7 +283,6 @@ export async function runRepairBenchmark(
         sourceText: entry.sourceText,
         targetText: seededText,
         models,
-        ...(adjudicationConfig === undefined ? {} : { adjudicationConfig, }),
         signal,
         ...(perCallTimeoutMs === undefined ? {} : { perCallTimeoutMs, }),
       },);

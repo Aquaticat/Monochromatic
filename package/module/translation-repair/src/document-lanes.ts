@@ -8,7 +8,6 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { ChunkPair, } from './chunk-document.ts';
 import { assertDeliveryAgreesWithDocument, } from './delivery-invariants.ts';
@@ -231,8 +230,6 @@ function laneDelivery(
  lane's slice (ledger H5)
  
  
- @param adjudicationConfig - tally thresholds and weights for the repair lane
- 
  @param signal - entry abort both lanes honor
  
  @param perCallTimeoutMs - deadline per exchange, passed to both lanes rather
@@ -279,7 +276,6 @@ export async function runDocumentLanes(
     translateModels,
     reseatTranslate,
     beforeSlice,
-    adjudicationConfig,
     pictureReadings,
     signal,
     perCallTimeoutMs,
@@ -298,7 +294,6 @@ export async function runDocumentLanes(
     readonly beforeSlice?: (
       args: { readonly lane: 'repair' | 'translate'; },
     ) => Promise<RepairSliceSeating & TranslateSliceSeating>;
-    readonly adjudicationConfig?: AdjudicationConfig;
 
     /**
      What each of this document's pictures was read as, gathered before either
@@ -366,9 +361,6 @@ export async function runDocumentLanes(
     client,
     prepared,
     models: repairModels,
-    ...((adjudicationConfig === undefined)
-      ? {}
-      : { adjudicationConfig, }),
     signal,
     perCallTimeoutMs,
     overlap,

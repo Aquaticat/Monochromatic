@@ -9,7 +9,6 @@ import {
   inSliceLogContext,
   sliceTagged,
 } from './log-context.ts';
-import type { AdjudicationConfig, } from './adjudicate-model.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import {
@@ -70,9 +69,7 @@ const DEFAULT_PIPELINE_CALL_TIMEOUT_MS = 300_000;
  @param prepared - slices, governance, declared names and alignment findings
  
  @param models - repair role roster
- 
- @param adjudicationConfig - tally thresholds and weights
- 
+
  @param signal - caller abort honored by every exchange
  
  @param perCallTimeoutMs - deadline per exchange
@@ -106,7 +103,6 @@ export async function repairPreparedDocument(
     client,
     prepared,
     models,
-    adjudicationConfig,
     signal,
     perCallTimeoutMs = DEFAULT_PIPELINE_CALL_TIMEOUT_MS,
     sliceCache,
@@ -118,7 +114,6 @@ export async function repairPreparedDocument(
     readonly client: SyntheticClient;
     readonly prepared: PreparedDocumentPair;
     readonly models: RepairModels;
-    readonly adjudicationConfig?: AdjudicationConfig;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs?: number;
     readonly sliceCache?: SliceCache<ChunkRepairOutcome>;
@@ -202,7 +197,6 @@ export async function repairPreparedDocument(
    */
   const runShape = repairRunShape({
     models,
-    ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
     ...identityFragment,
     ...referenceFragment,
   },);
@@ -236,7 +230,6 @@ export async function repairPreparedDocument(
             prepared,
             models: seating.repairModels ?? models,
             ...((beforeSlice === undefined) ? {} : { reseat: beforeSlice, }),
-            ...((adjudicationConfig === undefined) ? {} : { adjudicationConfig, }),
             slice,
             slicePosition,
             runShape,
