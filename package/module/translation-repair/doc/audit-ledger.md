@@ -3112,6 +3112,36 @@ the queue is 290 returns,
 141 throws
 and 125 others.
 
+The fifth batch (`fc9e80ca8`) took the comparison,
+coherence,
+digest
+and identity modules,
+12 stretches in seven files.
+Nine were reachable and got cases:
+repeated repair rows,
+a repair slice the translate ledger lacks,
+two ledgers in different orders,
+a retained incumbent carrying other text,
+the two wording faults no case reached,
+the digest's plural refusal
+and the identity of line-structured slices,
+which the whole suite had never hashed.
+The case named for repeated repair rows repeated both ledgers,
+so the translate check refused first and the repair check it names never ran;
+its fixture is now the one its name describes.
+Three were unreachable and went:
+`decisionsEqual`'s last return,
+and two lookups after a length or emptiness check,
+now `nonNullishOrThrow`.
+The digest refusal now names the first foreign entry by name,
+since a directory lists its entries in no promised order.
+Every refusal case in the batch's six test files reads its message whole,
+and `LaneComparisonError`'s archive-kind sentence was reworded to read as English.
+Its census (`census-Xs4MQy`) read against `census-oRsK9f`:
+ran 4,
+still cold 0,
+and each of the four sources edited since then left no cold stretch in this run's own rows.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:

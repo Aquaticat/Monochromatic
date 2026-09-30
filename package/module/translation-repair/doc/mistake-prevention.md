@@ -113,7 +113,10 @@ guarded one branch of a new condition (M5);
 asked a function that never reads the entry guarded (M29);
 matched a word the message carries twice (M34);
 used fixtures that never reached the sites they named (M42,
-X18's first fixture),
+X18's first fixture,
+and a lane comparison case whose fixture repeated both ledgers where its name repeats one,
+so an earlier check refused it
+(T8's fifth batch)),
 among them a test committed for a defect it passed on under the build before the fix (M53),
 or that could not tell the claimed order from another (M44);
 and mutation runs could not report a catch,
