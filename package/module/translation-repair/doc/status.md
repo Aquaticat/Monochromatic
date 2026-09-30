@@ -185,15 +185,27 @@ is fixed too
 (`8ec62ce62` and `19eb118ab`):
 the deficit counts a container's blocks off the parse rather than by blank-line split,
 and a passage costs what the container counted for its slice.
-The baseline is now the whole suite at `19eb118ab` (`census-VmhQQH`,
-1,467 passes,
-taken from a tree with nothing uncommitted),
-with the same library counts,
+The fifteenth batch read against the whole suite at `19eb118ab` (`census-VmhQQH`,
+1,467 passes)
+and took the prompt modules,
+20 stretches in 2 files,
+closing every one
+(`2d3b02c45` to `f7838ffb3`)
+and finding and fixing B69 on the way:
+each refusal of the prompt payload store now names what refused,
+where one sentence served every check and a tally line could not tell a corrupted record from a format change.
+The prompt digest's keys now sort by code unit rather than by the host's locale,
+with every digest the scratch comparison tried unchanged.
+Its census (`census-OGAQiJ`,
+1,468 passes,
+taken from a tree with nothing uncommitted)
+leaves library source at 785 stretches over 1,593 lines in 291 files,
+with 17 functions never called,
 and by the first construct
-(`t8-triage-vmhqqh.txt`)
-the fifteenth batch takes the prompt modules
-(`prompt`,
-20 stretches in 2 files);
+(`t8-triage-ogaqij.txt`)
+the sixteenth batch takes the pairing modules
+(`pair`,
+19 stretches in 9 files);
 the runner entry files and unloaded bundles come after the library.
 Each throw and fallback is read for reachability first,
 and an unreachable one is removed rather than tested.

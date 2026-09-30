@@ -4209,6 +4209,118 @@ and 96 others.
 ahead of `pair` at 19),
 so the fifteenth batch takes it.
 
+The fifteenth batch took the prompt modules against `census-VmhQQH`
+in five code commits,
+`2d3b02c45` to `f7838ffb3`,
+and one entry of its own,
+B69.
+Its census at `f7838ffb3`
+(`census-OGAQiJ`,
+1,468 passes,
+taken clean)
+reads against `census-VmhQQH`:
+ran 0,
+still cold 1,144,
+cold since then 0,
+not loaded 6,
+claimed sources with no stretch there 0,
+sources edited since then 2.
+The 2 edited sources are the cluster's two files,
+each "loaded it and left 0 cold stretches".
+Library source went from 805 stretches over 1,636 lines in 293 files to 785 over 1,593 in 291,
+with 17 functions never called as before:
+the cluster's 20
+(`prompt-payload-store.ts` 16,
+`prompt-uniqueness-client.ts` 4),
+both files now at none,
+and per-file counts compared between the two census files change in no other library file.
+Other packages keep 63 files and 329 stretches,
+and entry files 30 stretches over 754 lines.
+The 6 not loaded are the baseline's unmapped `wording-key` chunk (`wording-key-C7_uuYqL.mjs`).
+The bundles no test loaded are still 36,
+carrying 38 sources over 13,322 lines.
+
+How the rows closed,
+by commit.
+Which arm of a one-line stretch was cold is inferred from the stretch's width and the tests that existed,
+since the census's bundle is not kept;
+the batch's census is what shows each closed.
+`2d3b02c45` and `a56cde819` (B69) gave each of the store's refusals a reason
+and cased every one:
+the read that fails on something other than absence (`store` 123-129,
+with the cause arm of 66),
+each field of the stored reply (177 to 199,
+212,
+221 and 223),
+the envelope and the format version (277 and 279),
+text that is not JSON (287-293,
+now a narrow `try` of its own)
+and a write the filesystem refuses (316-323).
+The arm after the read for a symbol other than the absence sentinel went,
+since `readPayloadText` returns no other (`store` 268-270).
+`2d6237b3e` typed the prompt digest's input:
+`canonicalPromptValue` is only handed the model id and the messages,
+whose content is a string or a list of parts that are records of strings,
+so its arms for null,
+numbers,
+booleans and anything else went (`client` 44,
+48,
+50 and 71-73).
+Its keys now sort by UTF-16 code unit rather than `localeCompare`,
+which follows the host's locale;
+a scratch copy of both serializers over six requests
+(text and vision content,
+keys written in both orders)
+printed "samples 6,
+differing 0",
+and its control showed the two orders disagree on `a` and `B`,
+so digests the payload store already holds still name their records.
+`d811fcf2b` gave the batch's new TSDoc blocks the blank-line form their files use,
+which the edit tool had dropped.
+`f7838ffb3` cased a stored refusal replayed whole (`store` 205)
+and asserts every B69 refusal as `tallyErrorText` prints it.
+The batch's control copy,
+the store test with the format-version case expecting the `reply.text` reason,
+failed that case alone and was deleted.
+
+Two findings are left open for work of their own.
+Ten more production orderings,
+in eight files,
+sort with `localeCompare`
+(`corpus-run/bench-draw.ts`,
+`select-candidate.ts`,
+`aggregate-claims.ts` twice,
+`corpus-run/coverage-census-baseline.ts`,
+`corpus-run/coverage-census-report.ts`,
+`corpus-run/coverage-census-print.ts`,
+`corpus-run/sentinel-probe.ts`,
+and `corpus-run/coverage-tally.ts` twice),
+where `critic-attribution.ts` and `repair-stages.ts` already state the code-unit rule;
+each is to be read for whether its order decides an outcome,
+keys a record or only prints.
+And blank lines inside TSDoc blocks are written empty in 570 source files,
+with a single space or the indentation in 1,049,
+and both ways in 266
+(a scratch count over the package's 1,975 source files);
+nothing enforces either,
+and the edit tool writes them empty,
+so one form per file with a source scan is queued.
+
+By the first construct
+(`t8-triage-ogaqij.txt`),
+the queue for the sixteenth batch is 316 returns,
+162 nullish fallbacks,
+132 ternaries,
+89 throws
+and 86 others.
+`pair` leads alone
+(19 stretches,
+9 files,
+39 lines,
+ahead of `slice`,
+`archive` and `corpus-run/run` at 18),
+so the sixteenth batch takes it.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -13244,6 +13356,61 @@ Recurrence:
 a count of what a passage holds reads the parse the floor reads,
 and one measure serves both sides of a comparison and what the comparison is spent on.
 
+### B69: the prompt payload store's refusals named nothing that refused
+
+Found by the fifteenth coverage batch,
+reading `prompt-payload-store.ts` beside the cold stretches of its refusals.
+Every refusal the store raised read `prompt payload read failed for <digest>`
+(or `write`),
+whichever of its checks refused:
+a record that could not be opened,
+text that was not JSON,
+another format version,
+each field of the stored reply,
+or a write the filesystem refused.
+The error declares its message names-only,
+so that message is all a `TALLY` line prints (`refusalText`),
+and the cause it carried for a filesystem or parse failure was never shown.
+An operator could not tell a corrupted record from a format change from a full disk,
+and the one refusal case
+(reply text 7)
+asserted the class alone,
+so it passed whichever check fired.
+
+Fixed (`2d3b02c45` red,
+`a56cde819`):
+the error carries a `reason`,
+in its message after the digest and as a field,
+naming a JSON path in the record,
+the envelope,
+the format version this build reads
+(never the stored one),
+or a filesystem code from `failureName`.
+Its TSDoc says what to do about one:
+where the record lives,
+that a read refusal stops every later run too,
+that deleting the record asks the provider again at that call's cost,
+and that a write refusal lost a reply already bought;
+the README points there beside its other `INCOMPLETE` sentence.
+The parse has a narrow `try` of its own,
+through `requireJsonSyntaxRefusal`,
+so the wide catch that rethrew the store's own refusal went.
+Taking the reason out of the message again failed the 14 red cases and nothing else.
+Two red expectations were corrected in the fix commit:
+the not-JSON reason no longer names `SyntaxError`,
+the only class that narrowing lets through,
+and the not-an-object record became a JSON string,
+since `isJsonRecord` lets an array through to the version check (M58;
+the red commit carries a correcting comment).
+`f7838ffb3` then asserts each refusal as `tallyErrorText` prints it,
+whole,
+so the reason is shown to survive the line's cap.
+
+Recurrence:
+a marked class names what refused,
+since its message is all an operator sees;
+one sentence for several checks also lets a case pass on the wrong check.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -13400,6 +13567,11 @@ and one search with its standard error sent to `/dev/null`,
 against the rule that a check's errors go to a file,
 so a refused root reads as a refusal rather than as no match.
 Neither changed what was committed.
+One more during T8's fifteenth batch on 2026-09-30:
+a call that printed `wait` and did nothing,
+sent beside the write of a commit message,
+against the rule that every call does work;
+it changed nothing committed.
 
 ### M19: a suite run against a stale build after a mutation was restored
 
@@ -14305,6 +14477,16 @@ a message says a case pins a branch only after the mutant that removes the branc
 before that it says what the case fails on today,
 and a case that must pass a precondition to reach its branch
 is read against that precondition in the code before it is committed.
+Again in T8's fifteenth batch (`2d3b02c45`),
+caught while writing the fix rather than after it:
+B69's red case for a record that is not a JSON object used an array,
+which `isJsonRecord` lets through to be probed for fields,
+so after the fix it would have reached the format-version check
+and been refused with that check's reason rather than pinning its own.
+The fix commit (`a56cde819`) made the record a JSON string and says why in the case,
+and the red commit carries a correcting comment.
+The prevention's last clause covers it:
+the red case's input was not read against the guard it passes first.
 
 ### M57: a cache-file check whose time this host's `find` refused, with its error discarded
 

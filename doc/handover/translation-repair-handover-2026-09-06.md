@@ -304,13 +304,22 @@ this one says what changed after it.
   with 17 functions never called.
   Ledger B68,
   the same file counting a container's blocks by blank-line split rather than off the parse,
-  is fixed too (`8ec62ce62` and `19eb118ab`),
-  and the baseline is now the whole suite at `19eb118ab` (`census-VmhQQH`,
-  1,467 passes,
-  the same library counts),
-  the fifteenth batch taking the prompt modules
-  (`prompt`,
-  20 stretches in 2 files).
+  is fixed too (`8ec62ce62` and `19eb118ab`).
+  The fifteenth batch read against the whole suite at `19eb118ab` (`census-VmhQQH`,
+  1,467 passes)
+  and took the prompt modules,
+  closing all 20 of their stretches in 2 files
+  (`2d3b02c45` to `f7838ffb3`;
+  ledger B69,
+  prompt payload store refusals that named nothing that refused).
+  Its census at `f7838ffb3` (`census-OGAQiJ`,
+  1,468 passes)
+  leaves library source at 785 stretches over 1,593 lines in 291 files,
+  with 17 functions never called,
+  and is the sixteenth batch's baseline,
+  that batch taking the pairing modules
+  (`pair`,
+  19 stretches in 9 files).
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;

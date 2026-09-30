@@ -1213,6 +1213,10 @@ The inventory checked what each marked constructor interpolates,
 so none of it showed (ledger B34).
 The digest's own message described the hex half as the whole value,
 leaving out the scheme name every digest starts with.
+A marked class can also say too little:
+`PromptPayloadStoreError` gave one sentence for every check the prompt payload store makes,
+so a `TALLY` line could not tell a corrupted record from a format change from a full disk,
+and the one refusal case passed whichever check fired (ledger B69).
 
 The rule:
 a marked class writes its sentence itself,
@@ -1227,6 +1231,13 @@ built from the constants the check reads,
 and never quotes the value;
 an assertion that also narrows runs after that test.
 A class that writes its own sentence and stays unmarked says why in the inventory's withheld list.
+A marked class names what refused,
+by a field's path,
+a check,
+a filesystem code or a class name,
+since its message is all an operator sees;
+where one class serves several checks,
+each throw site hands it a reason of its own.
 
 What enforces it:
 `message-names-only.unit.test.ts` fails on a marked class whose constructor interpolates a part the inventory does not name,
@@ -1241,6 +1252,9 @@ or lists as forwarding from a catch narrowed to anything but marked classes.
 It reads a narrowing by its presence in the catch,
 not as proof that it guards the throw,
 so each listed site is still read by hand.
+`prompt-payload-store.unit.test.ts` asserts each of the store's refusals as `tallyErrorText` prints it;
+no scan finds a marked class whose throw sites share one sentence,
+so that too is read by hand.
 
 ## Fields carried as strings
 
