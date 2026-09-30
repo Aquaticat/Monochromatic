@@ -387,10 +387,33 @@ file-backed streams are checked after exit,
 not live disk-write capped.
 Separate inert control `proc_2ced` passed explicit force-signal timeout settlement,
 not scheduler/kernel stall resistance or preparation-inclusive handback.
-Next is a separately predeclared,
-unimplemented/undispatched test-owned independent-fork mechanics phase:
-a positive mechanical origin premise is required,
-but inheritance does not supply an initial human grant.
+The separately declared test-owned fork source closure `proc_2cae` passed ten syntax checks
+and matched the separately captured reviewed digest list.
+Actual protected runtime `proc_90f8` failed after one second:
+worker exit one,
+no signal or bounded stop,
+empty stdout and 818 bytes of private stderr.
+Fixed-coordinate inspection `proc_5f79` identified the owned role-sequence guard before fork construction.
+Strict enum reader `proc_2412` failed and remains consumed;
+separate enum-only metadata correction `proc_ef03` passed.
+Actual origin roles were `system/user/assistant/toolResult/assistant`;
+the owned reference omitted the leading system entry.
+The completed origin reference does not qualify the unopened fork/child/reset suffix.
+Earlier source-only clearance missed that transcript premise;
+no Pi defect or upstream filing is established.
+The old runtime/source/freeze and metadata epochs are preserved without replay.
+A separate `fork-system-prefix-controls/` correction is predeclared,
+unimplemented and undispatched.
+Its scope is immutable owned prefix entry ID/JSON and full pre-copy branch JSON retention,
+exact role order and named call/result/stop positions,
+not configuration fidelity or instruction authority.
+Independent scope review dissolved configuration-derived section equality as a prerequisite
+for mechanical copying consistency only.
+New prefix rejection controls,
+source review,
+closure freeze and runtime remain required.
+Current human-grant eligibility remains unestablished;
+inheritance does not supply an initial human grant.
 No genuine original mutation or interaction replay is permitted.
 Historical admission does not itself confer current eligibility or reusable authority.
 Target/source/deadline/cache finalization,
