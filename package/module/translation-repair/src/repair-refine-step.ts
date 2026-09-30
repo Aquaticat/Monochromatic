@@ -84,6 +84,14 @@ import { UnpreparedSliceError, } from './unprepared-slice.ts';
  
  @throws Whatever `signal.reason` carries, once the caller aborts while this
  lane is buying
+
+ @throws Whatever the phase refuses under a live signal, by its own identity:
+ a roster whose rewriter also checks (`CheckerIndependenceError`), which a
+ run reaches here only where no slice reached a chunk's own check, as in a
+ document of front matter alone, since each chunk refuses it first
+
+ @throws {@link UnpreparedSliceError} when an outcome names a slice
+ preparation never made, even with the lane off
  
  @example
  ```ts

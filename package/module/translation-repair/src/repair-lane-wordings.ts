@@ -112,9 +112,20 @@ export function repairLaneWordings(
   // no stage spoke about cannot carry a wording, and one that does means
   // something produced text without being recorded as having produced it.
   for (const outcome of mendable) {
+    /**
+     Archive wording at this outcome's slice, absent where preparation made
+     no such slice.
+     */
+    const incumbentText = incumbents.get(outcome.sliceIndex,);
+    // AN INDEX PREPARATION NEVER MADE is refused by the coverage check in
+    // `buildLaneSliceTexts`, which says so. Read against an empty archive
+    // instead, a silent outcome carrying any text was refused as one that had
+    // not kept the archive's wording, where there was no archive to keep.
+    if (incumbentText === undefined)
+      continue;
     assertUnheardKeptArchive({
       outcome,
-      incumbentText: incumbents.get(outcome.sliceIndex,) ?? '',
+      incumbentText,
     },);
   }
 

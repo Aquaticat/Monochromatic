@@ -26,6 +26,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  LaneSliceCoverageError,
   makeInsertionChunk,
   repairLaneWordings,
   RepairUnheardError,
@@ -370,6 +371,33 @@ await describe({
         expect((refusalOfSilentSliceClaimsChange as Error).message,).toContain(
           'slice 2 heard no critic and was never refined, and claims a change',
         );
+      },
+    },),
+    it({
+      name:
+        'REFUSES an outcome at a slice preparation never made as a coverage fault, not as a silent '
+        + 'slice that changed the archive, since there is no archive there for it to have kept',
+      fn: async () => {
+        /**
+         What an outcome at an unmade slice raised.
+         */
+        const refusalOfUnmadeSlice = caught(function unmadeSlice() {
+          repairLaneWordings({
+            slices: alternatingSlices(),
+            undecided: 'refuse',
+            outcomes: [
+              heard({ sliceIndex: 0, repairedText: 'The cat is asleep on the windowsill.', },),
+              heard({ sliceIndex: 1, repairedText: '', },),
+              heard({ sliceIndex: 2, repairedText: 'The bowl is full.', },),
+              heard({ sliceIndex: 3, repairedText: '', },),
+              unheard({ sliceIndex: 7, repairedText: 'The kitten waves from the fence.', },),
+            ],
+          },);
+        },);
+
+        expect(refusalOfUnmadeSlice,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(refusalOfUnmadeSlice,).not
+          .toBeInstanceOf(RepairUnheardError,);
       },
     },),
   ],

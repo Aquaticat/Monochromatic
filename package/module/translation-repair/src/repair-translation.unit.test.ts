@@ -14,12 +14,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
+  CheckerIndependenceError,
   makeInsertionChunk,
   messageText,
   notApplicableFinding,
   prepareDocumentPair,
   repairPreparedDocument,
   repairTranslation,
+  resumedSliceDiscardFinding,
   type ChatJsonOutcome,
   type ChatJsonRequest,
   type ChunkRepairOutcome,
@@ -2104,6 +2106,155 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           .map(function toChunk(record,): number {
             return record.sliceIndex;
           },),);
+      },
+    },),
+
+    it({
+      name: 'RECOMPUTES a resumed slice whose record contradicts its own changed flag, and says so in '
+        + 'the run\'s findings, since a record claiming a change it does not carry, or carrying one it '
+        + 'denies, would ship or drop wording nobody decided',
+      fn: async () => {
+        /**
+         Slices the first run persists.
+         */
+        const store = new Map<string, string>();
+
+        /**
+         What the first run settled on, which recomputing must reproduce.
+         */
+        const first = await repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          sliceCache: {
+            resumed: new Map<string, ChunkRepairOutcome>(),
+            persist: async ({
+              key,
+              serialized,
+            },) => {
+              store.set(
+                key,
+                serialized,
+              );
+            },
+          },
+        },);
+        expect(store.size,).toBeGreaterThan(0,);
+
+        /**
+         Same outcomes under the same keys, each claiming the opposite of what
+         its text shows.
+         */
+        const contradicted = new Map(
+          [...store.entries(),].map(function toContradicted([key, serialized,],) {
+            /**
+             Outcome as the cache stored it.
+             */
+            const outcome = JSON.parse(serialized,) as ChunkRepairOutcome;
+            return [
+              key,
+              {
+                ...outcome,
+                changed: !outcome.changed,
+              },
+            ] as const;
+          },),
+        );
+
+        /**
+         Slices the recomputing run persists afresh.
+         */
+        const rewritten = new Map<string, string>();
+
+        /**
+         Run offered only those records.
+         */
+        const recomputed = await repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TWO_SECTIONS,
+          targetText: TARGET_TWO_SECTIONS,
+          models: MODELS,
+          signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
+          sliceCache: {
+            resumed: contradicted,
+            persist: async ({
+              key,
+              serialized,
+            },) => {
+              rewritten.set(
+                key,
+                serialized,
+              );
+            },
+          },
+        },);
+        // Every slice was bought again, and stored as the first run stored it.
+        expect(rewritten,).toEqual(store,);
+        expect(recomputed.repairedText,).toBe(first.repairedText,);
+        expect(recomputed.findings
+          .filter(function isDiscard(finding,): boolean {
+            return finding.startsWith('repair-discarded-contradictory-slice',);
+          },),).toEqual([...contradicted.values(),].map(function toFinding(outcome,): string {
+          return resumedSliceDiscardFinding({
+            lane: 'repair',
+            sliceIndex: outcome.sliceIndex,
+            changed: outcome.changed,
+          },);
+        },),);
+      },
+    },),
+
+    it({
+      name: 'RAISES a chunk\'s refusal of a rewriter that also checks by its own identity: the entry '
+        + 'check does not read the rewriters, each chunk refuses the roster before any stage buys '
+        + 'anything, and under a live signal the slice purchase passes that fault on rather than '
+        + 'reading it as an abort',
+      fn: async () => {
+        await expect(repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          sourceText: SOURCE_TEXT,
+          targetText: TARGET_TEXT,
+          models: {
+            ...MODELS,
+            refinerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
+          },
+          signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
+        },),).rejects.toBeInstanceOf(CheckerIndependenceError,);
+      },
+    },),
+
+    it({
+      name: 'RAISES the naturalness lane\'s refusal of the same roster by its own identity where no '
+        + 'chunk ran to refuse it first, as in a document of front matter alone',
+      fn: async () => {
+        /**
+         Original and archive carrying front matter and nothing else.
+         */
+        const pair = {
+          sourceText: '---\ntitle: 猫\n---\n',
+          targetText: '---\ntitle: Cat\n---\n',
+        };
+        // The precondition, stated: every slice is front matter, which the
+        // repair lane settles without a chunk.
+        expect(prepareDocumentPair({ ...pair, },).slices
+          .map(function toSyntax(slice,) {
+            return slice.syntax;
+          },),).toEqual(['front-matter',],);
+        await expect(repairTranslation({
+          client: scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },),
+          ...pair,
+          models: {
+            ...MODELS,
+            refinerModelIds: [SEAT_SYNTHETIC_TEXT_EVERYWHERE,],
+          },
+          signal: new AbortController().signal,
+          perCallTimeoutMs: CALL_TIMEOUT_MS,
+        },),).rejects.toBeInstanceOf(CheckerIndependenceError,);
       },
     },),
 
