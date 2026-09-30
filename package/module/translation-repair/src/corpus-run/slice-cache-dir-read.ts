@@ -1,41 +1,14 @@
-import { readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
 import { readTextOrEmptyIfMissing, } from '../read-text-if-present.ts';
 import type { SliceNamespace, } from './slice-cache-claims.ts';
 
 //region Slice cache directory reads
-// The two reads every lane's cache starts with: what is in the entry
-// directory, and which generation this lane last stamped there. Lifted out of
-// `slice-cache-namespace.ts` for the line cap; that module re-exports them, so
-// no call site moved.
-
-/**
- Lists a directory, reporting an absent one as empty.
- 
- @param dir - directory to list
- 
- @returns File names, empty when the directory does not exist
- 
- @example
- ```ts
- const names = await readDirectoryNames({ dir, },);
- ```
- */
-export async function readDirectoryNames(
-  { dir, }: { readonly dir: string; },
-): Promise<readonly string[]> {
-  try {
-    return await readdir(dir,);
-  }
-  catch (error) {
-    // An absent directory (ENOENT) means no prior progress; anything else is a
-    // real fault and must surface.
-    rethrowUnlessMissingPath({ error, },);
-    return [];
-  }
-}
+// Which generation a lane last stamped in an entry directory. Lifted out of
+// `slice-cache-namespace.ts` for the line cap; that module re-exports it, so
+// no call site moved. What the directory holds is listed through
+// `directory-listing.ts`, files only, since a directory named like a slice is
+// no slice (ledger B65).
 
 /**
  Reads the pipeline that filled one lane's slices.

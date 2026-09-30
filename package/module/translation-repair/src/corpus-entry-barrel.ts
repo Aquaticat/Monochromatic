@@ -72,5 +72,13 @@ export {
   type RunsLayout,
   SLICE_CACHE_DIR,
 } from './corpus-run/runs-layout.ts';
+export {
+  type DirectoryReading,
+  type EntryKind,
+  filesystemReason,
+  namesIn,
+  namesOfKind,
+  presentNamesOfKind,
+} from './corpus-run/directory-listing.ts';
 
 //endregion Corpus entry barrel

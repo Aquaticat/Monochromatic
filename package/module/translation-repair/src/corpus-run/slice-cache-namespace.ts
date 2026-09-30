@@ -11,10 +11,8 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { contextRoot, } from '../log-context.ts';
 import type { SliceCache, } from '../slice-cache.ts';
 import { writeFileAtomic, } from './atomic-write.ts';
-import {
-  readDirectoryNames,
-  readNamespaceGeneration,
-} from './slice-cache-dir-read.ts';
+import { presentNamesOfKind, } from './directory-listing.ts';
+import { readNamespaceGeneration, } from './slice-cache-dir-read.ts';
 
 
 //region Slice cache namespace
@@ -53,10 +51,7 @@ export {
   TRANSLATE_SLICE_NAMESPACE,
 } from './slice-cache-claims.ts';
 // LIFTED for the line cap and re-exported for the same reason as the claims.
-export {
-  readDirectoryNames,
-  readNamespaceGeneration,
-} from './slice-cache-dir-read.ts';
+export { readNamespaceGeneration, } from './slice-cache-dir-read.ts';
 
 /**
  Logger root for the namespaced slice cache.
@@ -298,9 +293,13 @@ export async function loadNamespacedSlices<ValueT,>(
   const resumed = new Map<string, ValueT>();
 
   /**
-   File names present under the directory.
+   Files present under the directory. A directory named like a slice is none,
+   and read as one it stopped the entry on EISDIR (ledger B65).
    */
-  const names = await readDirectoryNames({ dir, },);
+  const names = await presentNamesOfKind({
+    dir,
+    kind: 'file',
+  },);
   for (const name of names) {
     if (!belongsToNamespace({
       name,
@@ -498,9 +497,14 @@ export async function discardNamespace(
   },
 ): Promise<void> {
   /**
-   This lane's files, named before any of them is removed.
+   This lane's files, named before any of them is removed. Files only: a
+   directory named like a slice is no lane's, and removing it raised EISDIR
+   out of the open that asked for the discard (ledger B65).
    */
-  const owned = (await readDirectoryNames({ dir, },))
+  const owned = (await presentNamesOfKind({
+    dir,
+    kind: 'file',
+  },))
     .filter(function isOwned(name,): boolean {
       return belongsToNamespace({
         name,

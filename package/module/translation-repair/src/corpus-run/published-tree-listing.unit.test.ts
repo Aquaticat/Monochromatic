@@ -205,7 +205,13 @@ await describe({
         + 'other case departs from',
       fn: async () => {
         const dir = await runSettling({ names: ['Mittens.json',], },);
-        expect(namesOf({ reading: await namesIn({ dir: join(dir, ARTIFACTS,), },), },),)
+        expect(namesOf({ reading: await namesIn({
+          dir: join(
+            dir,
+            ARTIFACTS,
+          ),
+          kind: 'file',
+        },), },),)
           .toEqual(['Mittens.json',],);
       },
     },),
@@ -214,7 +220,13 @@ await describe({
       name: 'REFUSES a directory that is not there, naming ENOENT rather than '
         + 'returning an empty listing a caller reads as a clean one',
       fn: async () => {
-        const reading = await namesIn({ dir: join(await disposableRun(), 'nowhere',), },);
+        const reading = await namesIn({
+          dir: join(
+            await disposableRun(),
+            'nowhere',
+          ),
+          kind: 'directory',
+        },);
         expect(reading.kind,).toBe('unreadable',);
         expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOENT',);
       },
@@ -234,7 +246,10 @@ await describe({
           'the cat sat on the keyboard\n',
           'utf8',
         );
-        const reading = await namesIn({ dir: file, },);
+        const reading = await namesIn({
+          dir: file,
+          kind: 'directory',
+        },);
         expect((reading.kind === 'unreadable') ? reading.reason : '',).toBe('ENOTDIR',);
       },
     },),

@@ -16,10 +16,10 @@ import {
   TRANSLATE_SLICE_CACHE_VERSION,
   type TranslateSliceRecord,
 } from '../translate-document-contract.ts';
+import { presentNamesOfKind, } from './directory-listing.ts';
 import {
   belongsToNamespace,
   openNamespacedCache,
-  readDirectoryNames,
   PAIRING_NAMESPACE,
   REFINE_NAMESPACE,
   SECTION_PAIRING_NAMESPACE,
@@ -118,8 +118,11 @@ function isTranslateSliceRecord(
  completion before starting fresh ones.
  
  A settled entry (directory discarded) or one that aborted before settling
- anything (empty directory) contributes nothing.
- 
+ anything (empty directory) contributes nothing, and neither does anything
+ the pass never writes there: a file under the root, or a symlink, which
+ resumed an entry with progress a second time under another name (ledger
+ B65).
+
  @param dir - slice-cache root holding one subdirectory per entry
  
  @returns Set of entry ids carrying resumable progress, empty when none
@@ -140,36 +143,34 @@ export async function listResumableEntries(
   /**
    Per-entry subdirectory names under the cache root.
    */
-  const ids = await readDirectoryNames({ dir, },);
+  const ids = await presentNamesOfKind({
+    dir,
+    kind: 'directory',
+  },);
   for (const id of ids) {
-    try {
-      /**
-       File names inside this entry's cache directory.
-       */
-      /* oxlint-disable-next-line no-await-in-loop -- small one-time setup scan over per-entry dirs */
-      const names = await readDirectoryNames({ dir: join(
+    /**
+     Files inside this entry's cache directory, none where a settled entry's
+     discard removed it since the root was listed.
+     */
+    /* oxlint-disable-next-line no-await-in-loop -- small one-time setup scan over per-entry dirs */
+    const names = await presentNamesOfKind({
+      dir: join(
         dir,
         id,
-      ), },);
-      if (names.some(function isSliceFile(name,): boolean {
-        return belongsToNamespace({
+      ),
+      kind: 'file',
+    },);
+    if (names.some(function isSliceFile(name,): boolean {
+      return belongsToNamespace({
+        name,
+        namespace: REPAIR_SLICE_NAMESPACE,
+      },)
+        || belongsToNamespace({
           name,
-          namespace: REPAIR_SLICE_NAMESPACE,
-        },)
-          || belongsToNamespace({
-            name,
-            namespace: TRANSLATE_SLICE_NAMESPACE,
-          },);
-      },))
-        resumable.add(id,);
-    }
-    catch (error) {
-      // A non-directory child (ENOTDIR) simply carries no resumable slices;
-      // other faults are real.
-      if (!(Error.isError(error,) && ('code' in error)
-        && (error.code === 'ENOTDIR')))
-        throw error;
-    }
+          namespace: TRANSLATE_SLICE_NAMESPACE,
+        },);
+    },))
+      resumable.add(id,);
   }
   return resumable;
 }

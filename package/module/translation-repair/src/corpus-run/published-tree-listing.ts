@@ -172,15 +172,20 @@ export async function publishedEntryIds(
     PEOPLE_DIR,
   );
   /**
-   Everything it holds.
+   Entry directories it holds. Only a directory is an entry the pass
+   published: a file there raised ENOTDIR when its page was looked for, and a
+   symlink counted a page under a second name (ledger B65).
    */
-  const reading = await namesIn({ dir: peopleDir, },);
+  const reading = await namesIn({
+    dir: peopleDir,
+    kind: 'directory',
+  },);
 
   if (reading.kind === 'unreadable')
     return reading;
 
   /**
-   Entry directories the people directory holds.
+   Entry directories, by entry id.
    */
   const { names, } = reading;
 

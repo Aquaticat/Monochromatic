@@ -53,7 +53,13 @@ import {
 /**
  Directory under a runs dir holding one file per judged contest.
  */
-const LEDGER_DIR = 'ledger';
+export const LEDGER_DIR = 'ledger';
+
+/**
+ What ends a contest's file name. The atomic write's temporary name carries
+ more after it, so a file still being written never ends in it.
+ */
+const LEDGER_SUFFIX = '.json';
 
 /**
  Width the ordinal is padded to, so a thousand contests still sort as text.
@@ -134,7 +140,26 @@ export function ledgerFileName(
       ORDINAL_DIGITS,
       '0',
     );
-  return `${launch}-${padded}.json`;
+  return `${launch}-${padded}${LEDGER_SUFFIX}`;
+}
+
+/**
+ Whether a file name in the ledger directory names a recorded contest. A
+ contest still being written sits under its atomic write's temporary name,
+ which does not end in the suffix, and is no contest until it is renamed
+ (ledger B65).
+
+ @param name - file name, without a directory
+
+ @returns Whether it ends in the contest suffix
+
+ @example
+ ```ts
+ const recorded = isLedgerFileName({ name: '000001.json', },);
+ ```
+ */
+export function isLedgerFileName({ name, }: { readonly name: string; },): boolean {
+  return name.endsWith(LEDGER_SUFFIX,);
 }
 
 /**

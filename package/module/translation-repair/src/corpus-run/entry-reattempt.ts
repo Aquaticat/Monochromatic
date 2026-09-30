@@ -1,5 +1,5 @@
+import { presentNamesOfKind, } from './directory-listing.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
-import { readDirectoryNames, } from './slice-cache-namespace.ts';
 
 //region Entry reattempt
 // Why a capped entry gets another go INSIDE one invocation, and what stops it.
@@ -112,8 +112,11 @@ export type ReattemptVerdict =
  
  @param dir - per-entry cache directory, absent before its first slice
  
+ FILES ONLY: a directory named like a slice was bought by no attempt (ledger
+ B65).
+
  @returns How many slices sit there, zero when nothing has been cached
- 
+
  @example
  ```ts
  const cached = await countCachedSlices({ dir: entryCacheDir, },);
@@ -122,7 +125,10 @@ export type ReattemptVerdict =
 export async function countCachedSlices(
   { dir, }: { readonly dir: string; },
 ): Promise<number> {
-  return (await readDirectoryNames({ dir, },))
+  return (await presentNamesOfKind({
+    dir,
+    kind: 'file',
+  },))
     .filter(function isSlice(name,): boolean {
       return name.endsWith(SLICE_SUFFIX,);
     },)

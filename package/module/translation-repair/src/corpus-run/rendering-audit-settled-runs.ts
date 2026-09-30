@@ -1,4 +1,3 @@
-import { readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -7,6 +6,7 @@ import {
 } from '../artifact-guard.ts';
 import { readRunJson, } from '../run-json-read.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import { namesOfKind, } from './directory-listing.ts';
 import { repeatBandOf, } from './rendering-audit-settled-band.ts';
 import { printBand, } from './rendering-audit-settled-print.ts';
 import { auditRepeatsAcross, } from './rendering-audit-settled-repeat.ts';
@@ -145,9 +145,14 @@ export async function newestRun({ runsDir, }: { readonly runsDir: string; },): P
   );
 
   /**
-   Every run kept, oldest first.
+   Every run kept, oldest first: files the store finished, so neither a
+   directory named like a later run nor a run still being written under its
+   temporary name (ledger B65).
    */
-  const kept = (await readdir(probeDir,))
+  const kept = (await namesOfKind({
+    dir: probeDir,
+    kind: 'file',
+  },))
     .filter(function isRun(name,): boolean {
       return name.endsWith('.json',);
     },)

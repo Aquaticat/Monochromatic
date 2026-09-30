@@ -89,11 +89,6 @@ export {
   groupByDigest,
 } from './corpus-run/digest-group.ts';
 export {
-  type DirectoryReading,
-  filesystemReason,
-  namesIn,
-} from './corpus-run/directory-listing.ts';
-export {
   OffRosterModelError,
   requireProducer,
   requireRosterModelId,

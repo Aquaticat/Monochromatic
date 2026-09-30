@@ -1,12 +1,12 @@
-import { readdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { isLedgerFileName, } from '../candidate-ledger.ts';
 import { failureName, } from '../error-name.ts';
-import { isMissingPathError, } from '../missing-path-error.ts';
 import { refusalText, } from '../refusal-text.ts';
 import {
   readRunJson,
 } from '../run-json-read.ts';
+import { presentNamesOfKind, } from './directory-listing.ts';
 import {
   parseLedgerRound,
   type ReadRound,
@@ -21,9 +21,16 @@ import {
 // answers WHAT THE DIRECTORY HOLDS and the CLI half decides what to print, so
 // the reading is now testable without running a command.
 //
-// EVERY FILE IS ATTEMPTED. A report exists to say what a run recorded, and one
-// unreadable file is not an answer about the others. Stopping at the first would
-// also make the report's completeness depend on directory order.
+// EVERY CONTEST FILE IS ATTEMPTED. A report exists to say what a run recorded,
+// and one unreadable file is not an answer about the others. Stopping at the
+// first would also make the report's completeness depend on directory order.
+//
+// ONLY WHAT THE RECORDER WROTE IS A CONTEST (ledger B65). It writes regular
+// files named by `ledgerFileName`, each under its atomic write's temporary
+// name first. A report listing every name read that temporary file mid-write,
+// or after a crash between write and rename, as a contest (a whole one read,
+// a cut one refused), took a directory named like a contest as a refused
+// contest, and counted a contest twice through a symlink.
 
 /**
  One ledger file that could not be read, said without being quoted.
@@ -91,14 +98,15 @@ export function refusalOf(
 }
 
 /**
- Lists a ledger directory, reporting an absent one as empty.
- 
+ Lists the contests a ledger directory holds, reporting an absent one as
+ empty.
+
  @param dir - ledger directory to list
- 
- @returns File names, empty where the directory is not there
- 
+
+ @returns Contest file names, empty where the directory is not there
+
  @throws {@link Error} where the directory exists and could not be listed
- 
+
  @example
  ```ts
  const names = await namesUnder({ dir, },);
@@ -108,16 +116,20 @@ async function namesUnder(
   { dir, }: { readonly dir: string; },
 ): Promise<readonly string[]> {
   try {
-    return await readdir(dir,);
+    // ONLY AN ABSENT DIRECTORY IS AN ANSWER, which the listing reads as
+    // empty. Every other failure is re-raised, because a run whose ledger
+    // could not be READ and a run that recorded nothing read the same
+    // downstream, and treating a permission failure as an empty ledger would
+    // report a roster question as unanswerable when the evidence is sitting
+    // there.
+    return (await presentNamesOfKind({
+      dir,
+      kind: 'file',
+    },))
+      .filter(function isContest(name,): boolean {
+        return isLedgerFileName({ name, },);
+      },);
   } catch (error) {
-    // ONLY AN ABSENT DIRECTORY IS AN ANSWER. Every other failure is re-raised,
-    // because a run whose ledger could not be READ and a run that recorded
-    // nothing read the same downstream, and treating a permission failure as an
-    // empty ledger would report a roster question as unanswerable when the
-    // evidence is sitting there.
-    if (isMissingPathError({ error, },))
-      return [];
-
     throw new Error(
       `could not list the ledger directory (${failureName({ error, },)})`,
       { cause: error, },
