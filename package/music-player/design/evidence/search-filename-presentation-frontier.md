@@ -292,6 +292,27 @@ setup outside the authorized scope remains gated.
 It would still establish static presentation only,
 not playback or complete player behavior.
 
+### Publication verification
+
+The final verifier checked the complete 32-view control matrix,
+published hashes,
+retained APK digest,
+crop geometry,
+PNG chunks,
+layout records and local document references.
+Scoped Markdown lint and GitHub-rendered checks passed;
+the three canonical-document prefixes have zero changed-block findings
+and retain 185 existing findings outside the changed blocks.
+The documented Node.js buffer harness also passed as written.
+
+An initial private verifier wrongly treated `stableAppFrames` as a count.
+The capture record defines it as a boolean stable-frame result;
+strict boolean validation corrected the verifier without changing any
+published frame or manifest.
+It does not imply activation or other behavioral verification.
+Internal task 137 is complete as a bounded comparison assessment,
+not filename-presentation acceptance.
+
 ## Runtime shutdown
 
 The owned filename runtime was shut down through its container's ADB
