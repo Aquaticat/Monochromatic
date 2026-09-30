@@ -701,3 +701,69 @@ and duplicate-tracker applicability remain unestablished for this incident.
 No vendor contact,
 account change,
 or upstream filing was made.
+
+## Scoped Git source-frontier commit rejection
+
+### Symptom
+
+During the pure prefix source handoff,
+`proc_7306` failed with exit code 128 at `git add`.
+Its diagnostic was:
+
+```text
+fatal: Unable to create '<private repository>/.git/index.lock': File exists.
+```
+
+The repository path is redacted;
+the original diagnostic remains in retained process logs.
+`git --version` subsequently reported Git `2.55.0` with the configured `cli-git` wrapper.
+This is separate from earlier renderer receipt lock incidents.
+The source smoke `proc_29bd` passed;
+a rejected documentation commit is not a failed source test.
+
+### Owned dispatch and cause limit
+
+The assistant dispatched receipt commit `proc_28ae` and frontier commit `proc_7306`
+concurrently against the same private repository.
+The receipt writer completed successfully.
+The rejected command identifies the index-lock path,
+not its actual owner or whether it was stale.
+No lock owner,
+upstream defect,
+or source-level Git cause is established.
+Future owned writers are serialized rather than treating concurrency as harmless.
+
+### Verification and recovery
+
+Scoped `git status --short` showed the frontier `README.md` modified and the source-check `README.md` untracked.
+Scoped `git log` had no commit for the new source-check document.
+A subsequent `git rev-parse --verify HEAD` returned `73f68daf332837a08b21b2f35d0a46adb4ab7f88`;
+`test ! -e .git/index.lock` passed.
+After observing the receipt writer's completion,
+`proc_9aca` committed the already existing documents and incident note with explicit scoped paths.
+No lock was removed and no source smoke or renderer was replayed.
+The failed catalog is `proc_7306`;
+the clean catalog is the inspected existing-document recovery `proc_9aca`.
+Recovery establishes this scoped retention,
+not general Git process-tree or lock-owner guarantees.
+
+### What does not work
+
+Blindly repeating a commit can duplicate an ambiguous success.
+Removing an unassigned lock can interfere with another writer.
+Rerunning a consumed test or renderer cannot repair a rejected Git operation.
+Scoped document retention is not global worktree cleanliness.
+
+### Upstream filing decision
+
+Nothing to add or file:
+upstream fault,
+a deciding implementation cause,
+a supported failing Git use case,
+contribution acceptance,
+maintainer response,
+and a compatible tested upstream patch are unestablished.
+No source clone,
+account change,
+vendor contact,
+or upstream mutation is needed for this owned command-serialization correction.
