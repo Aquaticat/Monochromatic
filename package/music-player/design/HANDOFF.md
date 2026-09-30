@@ -85,9 +85,14 @@ Prototype `3f92634aa` corrects the terminal scene marker;
 Fresh unknown-scene and terminal-marker mutation failures,
 restoration,
 complete tests and rebuild passed.
-The capped disposable runtime is capturing the corrected eight-scene
-matrix with leading-title/support multiplicity checks.
-The rejected run and its APK remain private and separate;
+The next attempt rejected stale hierarchy input after `uiautomator`
+returned a null root.
+Fresh-path,
+command-output and complete-XML controls now pass.
+The capped disposable runtime is capturing the eight-scene matrix in
+`search-comparison-fresh` with those controls and leading-title/support
+multiplicity checks.
+Both rejected attempts and their APKs remain private and separate;
 inspection and any required scrolled witnesses remain pending.
 Task 140 follows with inspected evidence and a verified visual review.
 Prototype `720ba418f` uses public `playerScreen` and the real controller

@@ -213,10 +213,21 @@ complete tests and the rebuilt APK passed after this addition.
 The positive,
 unknown-scene-mutant and terminal-marker-mutant reports are retained
 privately beside the corrected capture.
-The eight-scene native recapture is running with leading-title/support
+The corrected attempt then rejected stale hierarchy input after
+`uiautomator` reported a null root.
+The old XML matched the previous accepted scene;
+a fresh-path reprobe contained the expected current supporting cue.
+This was an evidence-acquisition failure,
+not another demonstrated routing or renderer failure.
+
+The fresh attempt requires a new XML destination,
+exact success output and complete XML;
+allowed/rejected consumer controls and a native probe passed.
+Its eight-scene native recapture is running with leading-title/support
 multiplicity checks,
 not title-presence checks alone.
-The initial partial capture and its APK remain private and separate.
+Both partial attempts and their APKs remain private and separate.
+See [the hierarchy acquisition diagnosis](../troubleshooting/android-17-uiautomator-null-root-stale-dump.md).
 Native inspection and comparative conclusions remain pending.
 
 The placement pair retains exact literal suffixes either in the title or
