@@ -103,22 +103,24 @@ const html = template.replace('__FILENAME_REVIEW_IMAGES__', () => serialized);
 const command = process.argv[2];
 if (command === 'build') {
   writeFileSync(outputPath, html);
-  console.log('Built self-contained independent filename placement and visibility review with 102 verified images.');
+  console.log('Built self-contained filename evidence review with 102 verified images and optional observations.');
 } else if (command === 'validate') {
   if (readFileSync(outputPath, 'utf8') !== html) throw new Error('Filename review differs from template and checked evidence.');
-  for (const marker of ['color-scheme: light dark', 'name="placement"', 'name="visibility"',
-    'Full literal title (Recommended)', 'Always visible (Recommended)', 'Ranking: full literal title &gt; supporting suffix',
-    'Ranking: always visible &gt; conditional omission', 'Cam Outside.mp3', 'not indexed files',
-    'id="final-notes"', 'id="reply"', 'Reset 100% dp', 'Native pixels', 'Unknown scope is not proof of uniqueness',
-    'not native accessibility acceptance', 'no production Search implementation', 'Reply in this chat']) {
+  for (const marker of ['color-scheme: light dark', 'Fixed-policy question withdrawn',
+    'Supporting text is user-configurable through templates in Settings',
+    'not template-engine output, implemented presets or Settings functionality',
+    'Default templates and their interaction with required distinguishing information remain undesigned',
+    'Cam Outside.mp3', 'not indexed files', 'id="final-notes"', 'id="reply"', 'Reset 100% dp', 'Native pixels',
+    'Unknown scope is not proof of uniqueness', 'not native accessibility acceptance',
+    'no production Search implementation', 'Optional evidence observations', 'No filename policy is selected']) {
     if (!html.includes(marker)) throw new Error(`Filename review is missing ${marker}.`);
   }
   if (/__FILENAME_REVIEW_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
-      (html.match(/<form\b/g) ?? []).length !== 1 || (html.match(/type="radio"/g) ?? []).length !== 6 ||
-      /type="radio"[^>]*\bchecked\b/.test(html)) {
-    throw new Error('Filename review is not a self-contained unselected independent-question form.');
+      (html.match(/<form\b/g) ?? []).length !== 1 || /type="radio"|name="placement"|name="visibility"/.test(html) ||
+      /data\.get\('(placement|visibility)'\)|<textarea\b[^>]*\brequired\b/.test(html)) {
+    throw new Error('Filename review is not a self-contained evidence-only form with optional observations.');
   }
-  console.log('Validated exact offline review, independent unselected questions, native images and immutable provenance.');
+  console.log('Validated exact offline evidence review, optional observations, native images and immutable provenance.');
 } else {
   throw new Error('Expected build or validate.');
 }

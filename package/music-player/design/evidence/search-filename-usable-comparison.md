@@ -3,10 +3,12 @@
 ## Purpose and status
 
 Task 139 completed the debug-only native comparison.
-Task 140's comparison publication and independent review are verified.
-Scoped lint,
-changed-block checks,
-rendered Markdown and local-link checks passed.
+Task 140's technical evidence publication and browser checks passed.
+Its fixed-policy question is withdrawn after the user reaffirmed supporting-text
+templates editable in Settings.
+D81 preserves that agreement;
+task 141 corrects this to evidence-only review.
+The authored layouts are not template-engine output or implemented presets.
 Neither filename policy is selected.
 The accepted Search A layout,
 E2 information-only clearance,
@@ -121,7 +123,8 @@ Displayed `Cam Outside.flac` also retains its cue because an authored
 same-parent `Cam Outside.mp3` partner exists outside the displayed subset.
 The dotted folder remains literal.
 Supporting placement has its own always-visible and conditional pair,
-so the two questions can be answered independently.
+so the two analytical dimensions are composable.
+They are not exhaustive independently selectable product policies.
 
 Omitting the eligible suffix changes text,
 not the measured title/support heights:
@@ -133,7 +136,14 @@ Any conditional production policy would need independently established scope;
 an unknown scope must not be presented as proven unique.
 No implementation or universal disambiguation guarantee is established.
 
-## Recommendation for review
+## Withdrawn policy recommendations, retained measurements
+
+The rankings in this section are historical reasoning,
+not current questions,
+accepted defaults or restrictions on configurable supporting text.
+They omitted the D35/D81 template agreement and are withdrawn.
+Template defaults and customization/disambiguation interactions remain
+explicitly unresolved.
 
 ### Placement
 
@@ -152,8 +162,8 @@ Ranking:
 full literal title > supporting suffix,
 because the tested secondary placement buys no long-name height reduction
 and costs initial literal-list visibility.
-This is an evidence-led preference for correction or veto,
-not acceptance.
+That policy preference is withdrawn;
+only the exact authored-layout measurements remain evidence.
 
 ### Visibility
 
@@ -186,10 +196,10 @@ a narrower replica when making that claim.
 
 Use the self-contained
 [filename review](../questions/search-filename-comparison.html)
-to inspect placement and visibility separately,
-including their composition,
-then answer both questions and the final free-text field.
-The recommendation is not a preselected answer.
+to inspect the authored placement and retention controls,
+including their composition.
+There is no policy ballot;
+observations are optional and select neither defaults nor renderer fallback.
 The review contains 102 checked images,
 including the separately provenanced actual-player baseline.
 Offline consumer verification decoded and opened each one,
@@ -197,8 +207,12 @@ exercised every form/viewer control,
 checked independent and keep-open answers,
 and confirmed that edited choices or notes invalidate a prepared reply.
 Adversarial notes remained inert textarea text.
-The [review verification summary](../questions/evidence/search-filename-comparison-review-verification.json)
+These checks apply to the archived,
+withdrawn policy form;
+[its verification summary](../questions/evidence/search-filename-policy-withdrawn-verification.json)
 keeps the image census and interaction-context coverage distinct.
+They do not verify the corrected evidence-only review.
+Task 141 reruns the consumer and document checks for that replacement.
 All 102 images opened in the first desktop/light interaction pass.
 Modal/zoom/pan controls and all four composed answers were separately checked
 in each desktop/mobile light/dark context.

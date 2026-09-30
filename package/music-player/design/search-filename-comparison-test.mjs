@@ -60,7 +60,7 @@ try {
   copyFileSync(join(evidence, original), join(evidence, target.file));
   expectRejection({ data: missingScroll, diagnostic: 'exact initial, baseline and six scrolled combinations' });
   const output = join(fixture, 'questions', 'search-filename-comparison.html');
-  writeFileSync(output, readFileSync(output, 'utf8').replace('No policy is preselected.', 'Changed review.'));
+  writeFileSync(output, readFileSync(output, 'utf8').replace('Fixed-policy question withdrawn.', 'Changed review.'));
   const changed = invoke('validate');
   if (changed.status === 0 || !changed.stderr.includes('differs from template and checked evidence')) {
     throw new Error('Changed output was not rejected.');

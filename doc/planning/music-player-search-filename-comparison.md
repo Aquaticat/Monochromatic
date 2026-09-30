@@ -182,6 +182,48 @@ synthetic tracks,
 not a live player,
 service/library loading or playback verification.
 
+## Supporting-text constraint correction
+
+The human reaffirmed that supporting text is templated and configurable
+in Settings.
+D35 already left row content and emphasis to custom display templating;
+D81 records the Search-review clarification and editing location.
+The fixed placement/visibility ballot omitted that agreement and is withdrawn.
+Task 141 corrects the artifact to evidence-only inspection with optional
+observations,
+not another default-only version of the same question.
+No user answer is required to close this correction.
+
+The 70 comparisons remain authored debug layouts,
+not template-engine output or implemented presets.
+The 32 actual-renderer views remain a separately provenanced production
+renderer baseline with synthetic paused inputs.
+Default templates,
+fields,
+grammar,
+editor details,
+other row-type scope and customization/disambiguation interactions remain
+open.
+Neither title customization nor a renderer fallback is implied.
+D77 and visible distinction before activation remain requirements.
+
+The superseded artifact is retained at
+`package/music-player/design/questions/archive/search-filename-policy-withdrawn.html`.
+Its prior verification record does not verify the corrected artifact.
+
+The concrete proposed tightening of `AGENTS.md`'s existing `QPM` rule is
+recorded only here;
+no instruction file is edited in this round:
+
+```text
+# AGENTS.md (proposed, not applied)
+QPM:
+ Before asking which mechanism,
+ recover settled customization and ownership;
+ dissolve the constraint demanding one.
+ Offer options only for the remaining undecided choice.
+```
+
 ## Prepared usable variants
 
 Task 139 completed as a debug-only native presentation study.
@@ -244,9 +286,9 @@ Both partial attempts and their APKs remain private and separate.
 See [the hierarchy acquisition diagnosis](../troubleshooting/android-17-uiautomator-null-root-stale-dump.md).
 Native inspection is complete.
 [The usable comparison](../../package/music-player/design/evidence/search-filename-usable-comparison.md)
-records bounded recommendations:
-full literal title > supporting suffix,
-and always visible > conditional omission.
+retains the bounded layout measurements.
+The former fixed-policy rankings are withdrawn because they omitted
+user-configurable supporting-text templates.
 The tested long pair had no semantic title/support-height reduction;
 secondary placement wrapped some literal support and reduced initial content.
 The eligible-only omission reduced text but not tested height in either
@@ -259,15 +301,17 @@ container,
 ADB target and owner/emulator process absence were verified.
 
 [The self-contained review](../../package/music-player/design/questions/search-filename-comparison.html)
-has independent placement and visibility questions,
-composition examples and final notes.
-Recommendations are not preselected answers.
+is being corrected under task 141 to an evidence-only artifact with
+composition examples and optional observations.
+It no longer asks for fixed supporting-text placement or retention policies.
 Its exact cohort includes every intended scrolled witness.
 A fresh disposable guard-removal mutant failed the intended missing-scroll
 assertion;
 restored fixture tests passed.
 Build precedes artifact validation through a sequenced package task.
-Changing either response or final notes invalidates any prepared reply.
+The archived ballot invalidated prepared replies on changed choices or notes.
+The replacement requires observations to stay optional and never encode
+policy selection.
 Offline consumer checks decoded and opened all 102 images,
 including the separately provenanced actual-player baseline,
 while modal/zoom/pan and all four composed answers were separately checked
@@ -281,8 +325,9 @@ Mobile open-dialog checks had no incompletes.
 The published verification summary retains exact coverage.
 No console errors were observed.
 Rendered/scoped Markdown and changed-block/link verification passed.
-Task 140 is complete as comparison publication and review verification.
-No filename policy has been adopted.
+Task 140's technical checks passed for the archived form;
+its question framing is superseded by task 141.
+No filename policy or template default has been adopted.
 Suffix-query emphasis and changing real inventory scope remain unexercised.
 
 The placement pair retains exact literal suffixes either in the title or
