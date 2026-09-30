@@ -25,6 +25,7 @@ import {
   promptPayloadStore,
   PromptPayloadStoreError,
   promptUniqueClient,
+  tallyErrorText,
   type ChatTextRequest,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
@@ -175,6 +176,22 @@ await describe({
     },),
 
     it({
+      name: 'REPLAYS A STORED REFUSAL, where the provider declined in words rather than answered',
+      fn: async () => {
+        await using dir = await temporaryDirectory();
+        const store = promptPayloadStore({ dir: dir.path, },);
+        const promptDigest = modelPromptDigest({ request: REQUEST, },);
+        const reply = {
+          text: '',
+          refusal: 'The cat declines to judge.',
+          finishReason: 'stop',
+        };
+        await store.write({ promptDigest, reply, },);
+        expect(await store.read({ promptDigest, },),).toStrictEqual(reply,);
+      },
+    },),
+
+    it({
       name: 'REFUSES CORRUPTED DURABLE PAYLOAD rather than recalling provider',
       fn: async () => {
         await using dir = await temporaryDirectory();
@@ -306,6 +323,31 @@ function readRefusal({ reason, }: { readonly reason: string; },): string {
 }
 
 /**
+ What a store call refused with, held so a case can assert its class and the
+ text a tally line prints for it.
+ 
+ @param pending - store call expected to refuse
+ 
+ @returns Refusal, unchanged
+ 
+ @throws Error when the call answers instead of refusing
+ 
+ @example
+ ```ts
+ const refusal = await refusalOf(store.read({ promptDigest, },),);
+ ```
+ */
+async function refusalOf(pending: Promise<unknown>,): Promise<unknown> {
+  try {
+    await pending;
+  }
+  catch (error) {
+    return error;
+  }
+  throw new Error('expected the store to refuse, but it answered',);
+}
+
+/**
  One stored record the store must refuse, and what the refusal must name.
  */
 type RefusedRecord = {
@@ -425,10 +467,10 @@ await describe({
             ),
             `${record}\n`,
           );
-          const read = promptPayloadStore({ dir: dir.path, },).read({ promptDigest: PROMPT_DIGEST, },);
-          const message = readRefusal({ reason, },);
-          await expect(read,).rejects.toThrow(PromptPayloadStoreError,);
-          await expect(read,).rejects.toThrow(message,);
+          const refusal = await refusalOf(promptPayloadStore({ dir: dir.path, },).read({ promptDigest: PROMPT_DIGEST, },),);
+          expect(refusal,).toBeInstanceOf(PromptPayloadStoreError,);
+          // WHAT THE TALLY LINE PRINTS, whole: the reason survives its cap.
+          expect(tallyErrorText({ error: refusal, },),).toBe(readRefusal({ reason, },),);
         },
       },);
     },),
@@ -443,10 +485,9 @@ await describe({
           dir.path,
           `${PROMPT_DIGEST}.json`,
         ),);
-        const read = promptPayloadStore({ dir: dir.path, },).read({ promptDigest: PROMPT_DIGEST, },);
-        const message = readRefusal({ reason: 'the record could not be read (EISDIR)', },);
-        await expect(read,).rejects.toThrow(PromptPayloadStoreError,);
-        await expect(read,).rejects.toThrow(message,);
+        const refusal = await refusalOf(promptPayloadStore({ dir: dir.path, },).read({ promptDigest: PROMPT_DIGEST, },),);
+        expect(refusal,).toBeInstanceOf(PromptPayloadStoreError,);
+        expect(tallyErrorText({ error: refusal, },),).toBe(readRefusal({ reason: 'the record could not be read (EISDIR)', },),);
       },
     },),
 
@@ -465,13 +506,13 @@ await describe({
           storeDir,
           '',
         );
-        const write = promptPayloadStore({ dir: storeDir, },).write({
+        const refusal = await refusalOf(promptPayloadStore({ dir: storeDir, },).write({
           promptDigest: PROMPT_DIGEST,
           reply: { text: SLEPT, },
-        },);
+        },),);
         const message = `prompt payload write failed for ${PROMPT_DIGEST}: the record could not be written (EEXIST)`;
-        await expect(write,).rejects.toThrow(PromptPayloadStoreError,);
-        await expect(write,).rejects.toThrow(message,);
+        expect(refusal,).toBeInstanceOf(PromptPayloadStoreError,);
+        expect(tallyErrorText({ error: refusal, },),).toBe(message,);
       },
     },),
   ],
