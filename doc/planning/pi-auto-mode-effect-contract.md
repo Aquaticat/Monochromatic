@@ -100,6 +100,20 @@ broader action approval,
 or production grant.
 Task #69 now qualifies lifecycle/finalization through disposable actual-consumer sessions,
 carrying the original private binding rather than summary booleans.
+Protected actual consumer `proc_baa1` carried original writer/UTF-8/presentation/nonce/exact scope
+through one SDK session without raw-content export,
+external models,
+or grant writes.
+Private validation finished before SDK startup;
+post-startup callbacks exposed fixed historical-match projections and exact privacy-safe errors.
+Parent parse containment and synthetic original-binding sensitivity controls passed separately.
+Historical exact-action admission still reports `currentEligibilityEstablished:false`.
+The original standalone fixture transaction did not name an SDK session ID.
+Constructor-owned experimental root/epoch association cannot become retroactive human-witnessed ancestry
+or renewed human authorization.
+The next root attachment/reset phase must keep records operationally test-only,
+canonicalize duplicate views by original transaction identity rather than handle allocation,
+and retain original evidence after reset without permitting historical re-registration.
 Lifecycle/finalization,
 semantic instruction/effect profiles,
 preparation-inclusive handback,
