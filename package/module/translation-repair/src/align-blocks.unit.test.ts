@@ -192,6 +192,40 @@ Mittens adored tuna, and would sing for it every single morning without ever fai
             );
           },
         },),
+
+        it({
+          name: 'READS NO LENGTH FIT FOR A BLOCK WITH NO CHARACTERS: two empty blocks score as an empty block does '
+            + 'beside a worded one, a finite number rather than the 0/0 of their lengths',
+          fn: async () => {
+            /**
+             A worded paragraph.
+             */
+            const paragraph = nonNullishOrThrow(parseDocument({ text: 'Mittens.\n', },).nodes
+              .at(0,),);
+
+            /**
+             The same block with no characters, which a caller of the
+             exported scorer may hand it though no parse writes one.
+             */
+            const empty = {
+              ...paragraph,
+              text: '',
+            };
+
+            /**
+             Score of two empty blocks.
+             */
+            const bothEmpty = scorePairing({
+              source: empty,
+              target: empty,
+            },);
+            expect(Number.isFinite(bothEmpty,),).toBe(true,);
+            expect(bothEmpty,).toBe(scorePairing({
+              source: empty,
+              target: paragraph,
+            },),);
+          },
+        },),
       ],
     },),
 
