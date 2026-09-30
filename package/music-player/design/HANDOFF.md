@@ -27,9 +27,18 @@ audit:
 the ordinary-player helpers retain filename suffixes,
 D11's shortened Settings example does not separately settle Search,
 and the Search fixture lacks real source filenames.
-Internal task 136 checks specifically motivated synthetic complete-filename,
-keyboard-closed native label witnesses;
-task 137 evaluates whether they warrant another visual comparison.
+Internal task 136 captured 24 synthetic complete-filename,
+keyboard-closed native label views across both panels,
+100%/200% text and light/dark.
+The inspected,
+status-cropped matrix is in
+`questions/evidence/search-filename-witnesses.json`.
+Both suffix-distinct pairs remain visibly distinguishable in the tested
+states;
+long titles wrap to four lines inner and three cover at 200%.
+Task 137 still needs matched ordinary-player/Search baselines and equal
+filenames under ancestors sharing a leaf-folder label before any
+presentation recommendation.
 No extension preference has been selected.
 Matcher selection,
 new IME studies and original-AVD changes remain excluded.
@@ -51,8 +60,12 @@ The accessibility study's disposable emulator was stopped.
 A separately motivated,
 keyboard-closed filename-label witness now uses the disposable AVD
 within an inspected 6 GiB/2 CPU cap.
-Build and fixture unit checks pass;
-native captures remain pending.
+Build,
+fixture unit checks and the native capture matrix passed.
+Exact retained RGB,
+opacity,
+PNG chunk and changed-PNG controls passed before publication.
+The scoped rendered-document verification remains the closeout gate.
 The original AVD,
 production Search,
 matcher/library choice,

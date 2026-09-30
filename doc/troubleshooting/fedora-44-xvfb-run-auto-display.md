@@ -146,10 +146,103 @@ not Android rendering or label evidence.
 The private binary bridge depends on the measured runtime dependencies;
 it is not a portable installation recipe.
 
-The added container case changes no upstream filing decision:
-the container omitted the required executable,
-and the original command-only probe did not exercise a display.
-No upstream defect or source fix was established by this case.
+### DRI-path control enabled the missing GLX extension
+
+The copied Xvfb binary could answer `xdpyinfo`,
+but the default display's extension list did not include `GLX`.
+Android Emulator `37.1.11.0` then emitted:
+
+```text
+queryConfigs: Could not query GLX version!
+```
+
+The boot watcher found no `emulator-5580` and expired.
+Stopping the hung disposable container after 60 seconds required
+`SIGKILL`;
+the emulator process exited `137`.
+A successful stop command did not mean graceful guest shutdown.
+
+The copied binary's `strings` output contains both
+`LIBGL_DRIVERS_PATH` and `/usr/lib/x86_64-linux-gnu/dri`.
+The mounted Fedora runtime instead supplies drivers under
+`/usr/lib64/dri`.
+Setting `LIBGL_DRIVERS_PATH=/usr/lib64/dri` in the same bounded display
+control made `xdpyinfo` report `GLX`.
+The resulting 6 GiB/2 CPU disposable emulator boot reported:
+
+```text
+Boot completed in 100398 ms
+```
+
+ADB independently reported `Fold_No_Hardware_Probe` and
+`sys.boot_completed=1`.
+The installed debug APK subsequently supplied the accepted native
+filename-label captures;
+boot readiness alone was not their rendering proof.
+
+A comparable source trace is `mirror/xserver` commit
+`fc625fe172d9f6a149a594b5214364bedf680239`,
+`glx/glxdricommon.c:303` to `309` and `322` to `328`:
+
+```c
+/* glx/glxdricommon.c */
+if (!PrivsElevated())
+    path = getenv("LIBGL_DRIVERS_PATH");
+if (!path)
+    path = dri_driver_path;
+snprintf(filename, sizeof filename, "%.*s/%s_dri.so", path_len, path,
+         driverName);
+driver = dlopen(filename, RTLD_LAZY | RTLD_LOCAL);
+```
+
+This shows the driver's environment-override and fallback mechanism in
+that source revision,
+not a matching-source audit of the copied `21.1.11` binary.
+The mirror did not have the requested `xorg-server-21.1.11` tag;
+the corresponding GitLab raw-file request was denied by Anubis.
+The binary observations and actual controls are the deciding evidence
+for this runtime-specific workaround.
+
+Run the display control with the existing private bridge:
+
+```sh
+# Existing private bridge; no host or SDK installation.
+podman run --memory=2g --cpus=2 --rm --security-opt label=disable \
+  --volume /usr:/usr:ro \
+  --volume "${HOME}/temp/agent/fold-no-hardware-avd/Xvfb-container:/opt/Xvfb:ro" \
+  --volume "${HOME}/temp/agent/fold-no-hardware-avd/xvfb-run-fedora44:/opt/xvfb-run:ro" \
+  --env PATH=/opt:/usr/bin:/usr/sbin \
+  --env LIBGL_DRIVERS_PATH=/usr/lib64/dri \
+  registry.fedoraproject.org/fedora:44 \
+  /usr/bin/sh /opt/xvfb-run --auto-servernum --error-file=/dev/stderr /usr/bin/xdpyinfo
+```
+
+The override also belongs in the emulator container's environment.
+It depends on the measured Fedora driver directory and copied binary;
+it is not a portable installation recipe or a fix to all emulator
+renderers.
+No host package,
+SDK file or original AVD was changed.
+
+### A separate dialog blocked the first capture
+
+The first hierarchy check failed while the focused window was
+`Application Not Responding: com.android.systemui`.
+The inspected private app-area screenshot showed
+`System UI isn't responding` over the synthetic Search rows.
+The keyboard remained closed.
+A guest-only tap on the measured `Wait` button dismissed that dialog;
+the subsequent matrix passed capture prerequisites.
+No cause for the System UI incident was established,
+and `dumpsys activity lastanr` reported no retained ANR.
+Do not attribute it to the DRI-path failure or label renderer.
+The blocked frame was not accepted as filename evidence.
+
+These container cases change no upstream filing decision:
+the bridge omitted the executable and then needed its measured driver
+path,
+while the command-only probe had not exercised a display.
+No new upstream defect or source fix was established.
 
 ## Upstream filing decision
 

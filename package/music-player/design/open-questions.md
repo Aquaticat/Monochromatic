@@ -46,8 +46,14 @@ recorded in `evidence/search-filename-presentation-frontier.md`.
 Ordinary-player source retains suffixes,
 but neither that incumbent nor D11's shortened Settings example selects
 Search's extension display.
-Internal task 136 checks synthetic complete-filename label witnesses;
-task 137 resolves the resulting visual-review boundary.
+Internal task 136 captured the inspected 24-view synthetic
+complete-filename matrix;
+its manifest is `questions/evidence/search-filename-witnesses.json`.
+Suffix-distinct examples remain visibly distinguishable in those
+captured states,
+not proven for every filename or a live source.
+Task 137 retains the unrendered matched ordinary-player/Search baselines
+and ancestor-path disambiguation before presentation advice.
 Both exclude matcher choices,
 new IME work and native accessibility acceptance.
 

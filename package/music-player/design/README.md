@@ -44,9 +44,12 @@ implementation verification.
 No new IME experiment or production Search work is authorized.
 The accessibility study's disposable emulator was stopped.
 The next design-only,
-keyboard-closed filename-label witness uses the capped disposable AVD;
-`evidence/search-filename-presentation-frontier.md` records its purpose
-and pending native evidence.
+keyboard-closed filename-label study used the capped disposable AVD.
+`evidence/search-filename-presentation-frontier.md` records the inspected
+24-view native matrix and remaining comparative evidence;
+`questions/evidence/search-filename-witnesses.json` links sanitized
+app-area crops.
+This does not select extension visibility or prove native activation.
 
 Status vocabulary follows `open-questions.md` section 0:
 settled decisions are not shipped behavior,

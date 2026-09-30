@@ -131,26 +131,78 @@ successful `/usr/bin/true` did not prove Xvfb readiness.
 The actual display control passed before the new disposable boot.
 `podman inspect` reports `6442450944` memory bytes and `2000000000`
 NanoCPUs for `fold-search-filename-avd`.
-Native captures remain pending.
+The first display control did not establish GLX readiness.
+An explicit driver-directory override enabled GLX and the disposable
+Android boot;
+the troubleshooting document separates that recovery from a System UI
+dialog that blocked the first capture.
+Neither failed attempt supplied accepted filename evidence.
 
-## Next verification
+## Inspected native witnesses
 
-Internal task 136 checks synthetic complete-filename labels in the existing
-nonfunctional Compose study,
-keyboard closed,
-on both Fold panels at 100% and 200% text.
-Use only `Fold_No_Hardware_Probe` within 6 GiB/2 CPU bounds.
-This is a specifically motivated label witness,
-not a default emulator restart or native accessibility acceptance.
-Keep membership,
-order,
-query,
-highlights and surrounding selected geometry fixed.
-Inspect every published region and sanitize status information.
+Internal task 136 produced 24 keyboard-closed views:
+short,
+long and edge labels across both panels,
+100% and 200% text,
+light and dark.
+The [witness manifest][filename-manifest] records every expected matrix
+combination,
+the installed APK digest,
+selected scene,
+measured panel dimensions and retained crop.
+These are synthetic complete-filename strings,
+not actual media files or indexed results.
 
-Internal task 137 then decides whether the witnessed filename-preserving
-incumbent supports an evidence-led recommendation or a consequential
-visual comparison remains.
+The retained app-area crops are 2076 × 2016 pixels for inner and
+1080 × 2273 pixels for cover.
+Only the top system-status strips were removed;
+bottom navigation remains.
+Every crop was inspected,
+its retained RGB bytes matched its native frame,
+and native/published opacity and PNG chunk checks passed.
+A separately changed PNG was rejected by the same retained-pixel
+verifier.
+Raw frames and hierarchies remain private.
+
+### What the captured states show
+
+- Both `Cam.flac` and `Cam.mp3` visibly retain their distinguishing
+  suffixes with identical supporting parent context.
+- Both long equal-stem titles retain `.flac` or `.mp3` visibly.
+  At 200% text,
+  each title takes four lines inner and three lines cover.
+  All rows in these fixture lists fit without scrolling.
+- The dotted folder remains `Camellia.flac`,
+  with a folder glyph and `Folder` label.
+  The uppercase,
+  multi-dot,
+  dot-prefixed,
+  Unicode and extensionless examples remain literal.
+- The inner views retain the folder region and complete deck;
+  cover views remain full width without an added deck.
+
+Inspect the [inner long-name witness][inner-long] and
+[cover long-name witness][cover-long] at 200% text for the observed
+wrapping and visible suffixes.
+The manifest links the complete matrix.
+
+This establishes the tested labels in their captured states,
+not universal filename legibility,
+unchanged result capacity,
+comparative superiority,
+activation,
+spoken output or focus behavior.
+No extension-visibility preference was adopted.
+
+## Remaining comparison evidence
+
+Internal task 137 assesses whether incumbent advice or a consequential
+visual comparison is supported.
+The native matrix alone does not isolate the suffix's contribution to
+wrapping or compare presentation alternatives.
+Matched ordinary-player and Search baselines remain unrendered,
+as do equal complete filenames under ancestors sharing a leaf-folder
+label.
 Before recommending,
 add a matched ordinary-player rendering and equal complete filenames
 under different ancestor paths sharing a leaf-folder label.
@@ -165,3 +217,7 @@ No hide/show preference is selected by this source audit.
 TalkBack,
 activation,
 focus transitions and keyboard-open behavior remain outside its proof.
+
+[filename-manifest]: ../questions/evidence/search-filename-witnesses.json
+[inner-long]: ../questions/evidence/search-filename-inner-long-dark-s200.png
+[cover-long]: ../questions/evidence/search-filename-cover-long-dark-s200.png
