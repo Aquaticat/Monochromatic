@@ -1,4 +1,5 @@
 import type { LaneSliceText, } from './lane-slice-text.ts';
+import type { QuotedPassages, } from './quote-preservation.ts';
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import type {
   UnfilledReason,
@@ -232,6 +233,15 @@ import type { SliceReplacement, } from './splice-slices.ts';
  2026-09-29: no slice-cache file was written after 04:27 UTC on 2026-09-27,
  where a control from midnight finds 494.
 
+ Rides inside 15 too: the quote guard counts blockquotes off the parse the
+ floor reads, at every depth, where it counted blank-line chunks opening with
+ `>` (ledger B42, `quote-preservation.ts`), and a quote-loss refusal stores
+ the counts it compared, so the record shape changes and a replacement is
+ refused or kept differently; over the stored records one refusal,
+ hulicaijia24 slice 2, kept the archive over a replacement carrying its
+ quote. Checked on 2026-09-30: no slice-cache file was written after 04:27
+ UTC on 2026-09-27, where a control from 00:00 UTC that day finds 450.
+
  THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 15 was set
  in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
  agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
@@ -371,6 +381,10 @@ type TranslateSliceRecordFields = {
  union now says which record carries them, and the cache reader refuses a
  declared-name refusal without them.
 
+ THE QUOTE COUNTS COME WITH THEIRS (ledger B42), for the reason
+ `QuotedPassages` gives: the reporter recounted the whole archive where the
+ guard counted its judged part.
+
  @example
  ```ts
  const changed = record.outputText !== incumbentText;
@@ -395,10 +409,21 @@ export type TranslateSliceRecord = TranslateSliceRecordFields & (
   }
   | {
     /**
-     What the driver did with the stage result, where no declared name
-     refused it.
+     The quote guard refused the replacement.
      */
-    readonly disposition: Exclude<TranslateDisposition, 'refused-declared-name'>;
+    readonly disposition: 'refused-quote-loss';
+
+    /**
+     Quoted passages the guard compared, which are why it was refused.
+     */
+    readonly quotedPassages: QuotedPassages;
+  }
+  | {
+    /**
+     What the driver did with the stage result, where neither a declared name
+     nor a quoted passage refused it.
+     */
+    readonly disposition: Exclude<TranslateDisposition, 'refused-declared-name' | 'refused-quote-loss'>;
   }
 );
 

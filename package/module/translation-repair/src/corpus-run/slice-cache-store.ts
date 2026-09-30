@@ -8,6 +8,7 @@ import { isIndexPairList, } from '../index-pair-list.ts';
 import type { PairedSectionRecord, } from '../pair-blocks-stage.ts';
 import type { BlockPair, } from '../pair-blocks-wire.ts';
 import type { PairedDocumentRecord, } from '../pair-sections-stage.ts';
+import { isQuotedPassages, } from '../quote-preservation.ts';
 import type { RefinedSliceSettlement, } from '../refine-slice-settle.ts';
 import type { ChunkRepairOutcome, } from '../repair-contract.ts';
 import type { SliceCache, } from '../slice-cache.ts';
@@ -78,7 +79,9 @@ function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
 
  A DECLARED-NAME REFUSAL CARRIES THE NAMES IT DROPPED, which the report
  names from the record; the driver has always written them, so one without
- them came from no driver and is recomputed (ledger T8, sixth batch).
+ them came from no driver and is recomputed (ledger T8, sixth batch). A
+ QUOTE-LOSS REFUSAL CARRIES THE COUNTS IT COMPARED, for the same reason
+ (ledger B42).
 
  @param value - parsed JSON of a cache file
  
@@ -103,6 +106,7 @@ function isTranslateSliceRecord(
       || (value.disposition === 'refused-quote-loss')
       || (value.disposition === 'refused-declared-name'))
     && ((value.disposition !== 'refused-declared-name') || Array.isArray(value.droppedDeclaredNames,))
+    && ((value.disposition !== 'refused-quote-loss') || isQuotedPassages(value.quotedPassages,))
     && isJsonRecord(value.stageResult,)
     && isJsonRecord(value.alignment,)
     && Array.isArray(value.findings,);

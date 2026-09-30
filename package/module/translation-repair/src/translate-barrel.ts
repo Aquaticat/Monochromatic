@@ -262,12 +262,13 @@ export {
   type PhotoReference,
   photoReferences,
 } from './photo-reference.ts';
+export { topLevelBlocks, } from './markdown-blocks.ts';
 export {
-  quoteBlockCount,
-  topLevelBlocks,
-} from './markdown-blocks.ts';
-export {
+  countQuotedPassages,
   dropsQuotedPassage,
+  isQuotedPassages,
+  type QuotedPassageCount,
+  type QuotedPassages,
   quoteLossRefusalFinding,
 } from './quote-preservation.ts';
 export {

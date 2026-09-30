@@ -797,6 +797,118 @@ await describe({
     },),
 
     it({
+      name: 'RESUMES A QUOTE-LOSS REFUSAL ONLY WITH THE COUNTS IT COMPARED, whole counts or the unreadable mark on '
+        + 'both sides, which the report names from the record rather than recounting texts the guard never compared '
+        + '(ledger B42)',
+      fn: async () => {
+        await using scratch = await scratchDir();
+
+        /**
+         Entry directory both lanes share.
+         */
+        const dir = join(
+          scratch.path,
+          'whiskers',
+        );
+
+        /**
+         Cache this run writes into.
+         */
+        const first = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+
+        /**
+         Quote-loss refusals as the driver writes them, one per kind of count.
+         */
+        const counted = {
+          ...catTranslateRecord({ sliceIndex: 0, },),
+          disposition: 'refused-quote-loss',
+          quotedPassages: {
+            archive: 2,
+            replacement: 1,
+          },
+        };
+        const unread = {
+          ...catTranslateRecord({ sliceIndex: 1, },),
+          disposition: 'refused-quote-loss',
+          quotedPassages: {
+            archive: 1,
+            replacement: 'unreadable',
+          },
+        };
+
+        /**
+         Refusals no driver writes: no counts, a side missing, a negative
+         count, a fractional count, a mark the reader does not know.
+         */
+        const malformed = [
+          {},
+          { quotedPassages: { archive: 1, }, },
+          {
+            quotedPassages: {
+              archive: -1,
+              replacement: 0,
+            },
+          },
+          {
+            quotedPassages: {
+              archive: 1.5,
+              replacement: 0,
+            },
+          },
+          {
+            quotedPassages: {
+              archive: 1,
+              replacement: 'unread',
+            },
+          },
+        ];
+        await Promise.all([
+          first.persist({
+            key: 'slice-hash-counted',
+            serialized: JSON.stringify(counted,),
+          },),
+          first.persist({
+            key: 'slice-hash-unread',
+            serialized: JSON.stringify(unread,),
+          },),
+          ...malformed.map(async function persistMalformed(
+            fields,
+            at,
+          ): Promise<void> {
+            await first.persist({
+              key: `slice-hash-malformed-${String(at,)}`,
+              serialized: JSON.stringify({
+                ...catTranslateRecord({ sliceIndex: 2 + at, },),
+                disposition: 'refused-quote-loss',
+                ...fields,
+              },),
+            },);
+          },),
+        ],);
+
+        /**
+         Same cache reopened, as the next attempt does.
+         */
+        const second = await openTranslateSliceCache({
+          dir,
+          generation: TEST_GENERATION,
+        },);
+        expect([...second.resumed.entries(),].toSorted(function byKey(
+          [left,],
+          [right,],
+        ): number {
+          return left.localeCompare(right,);
+        },),).toEqual([
+          ['slice-hash-counted', counted,],
+          ['slice-hash-unread', unread,],
+        ],);
+      },
+    },),
+
+    it({
       name: 'NEVER resumes a repair outcome as a translation, however the file '
         + 'is named. The two lanes share one directory, and a repair outcome '
         + 'carries neither the lane discriminator nor the schema, so the guard '

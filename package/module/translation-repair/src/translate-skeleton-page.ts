@@ -6,6 +6,7 @@ import { explicitBreakCounts, } from './source-only-breaks.ts';
 import { parseMarkdownBody, } from './parse-mdx.ts';
 import {
   blockDetail,
+  quotedPassageCount,
   readSliceSkeleton,
   type SkeletonRead,
 } from './translate-skeleton.ts';
@@ -96,6 +97,11 @@ function readRelaxed({ text, }: { readonly text: string; },): SkeletonRead {
       kind: 'read',
       skeleton: {
         explicitBreaks: explicitBreakCounts({ root, },),
+        // A quote inside an html region is hidden in that one opaque node, as
+        // the atoms are, so on this reading the count is a floor rather than
+        // the whole: a quote guard reading it can miss a quote lost from inside
+        // one, never refuse a replacement over a quote that is not there.
+        quotedPassages: quotedPassageCount({ root, },),
         blocks: root.children
           .map(function toShape(node,) {
             return {
@@ -107,7 +113,7 @@ function readRelaxed({ text, }: { readonly text: string; },): SkeletonRead {
         // a whole html region into one opaque node, so the references and code
         // inside it are not visible as atoms, and reporting an empty atom list
         // as if it were complete would make the atom check pass by ignorance.
-        // Only the block sequence is claimed here.
+        // Only the block sequence and the quote count's floor are claimed here.
         atoms: [],
       },
     };

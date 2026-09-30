@@ -10911,6 +10911,97 @@ and the B39 case pins both rounds on the kept record.
 The translate records change,
 so the cache-account audit before a launch takes this change beside B36 to B40.
 
+### B42: the quote guard counted quotes on a blank-line split
+
+Status:
+fixed 2026-09-30 (UTC),
+found closing the coverage census's translate-slice stretch for the quote-loss refusal (ledger T8's sixth batch).
+The stretch looked unreachable:
+the floor requires every top-level block of the page as it stands in the candidate,
+of the same kind and in the same order,
+so a floor-valid winner keeps every top-level blockquote.
+It was reachable,
+because the guard did not count what the floor reads.
+`quoteBlockCount` split a text on blank lines and counted the chunks opening with `>`,
+and the parser disagrees twice:
+a quote opening on the line after a paragraph's is a blockquote to the parser and the floor,
+and was none to the count;
+a quote inside a container tag sits inside a block the floor compares only as a whole,
+and was none to the count unless blank lines set it apart.
+A scratch probe over the build from before the fix found a floor-valid candidate the guard refused in two shapes,
+a paragraph then a quote,
+and a quote in a list item,
+each with no blank line opening the quote.
+Over the stored translate records on disk
+(2,958 records,
+8,295 distinct texts,
+read through the floor's own reader,
+`~/temp/agent/audit-glossary-fix/b42-reach-floor-reader.mjs`):
+the old count was below the parse's in 26 texts and above it in none,
+and 20 texts carry a quote below the top level,
+which the raw parse finds inside a container tag or inside another quote
+(`b42-nested-quote-kinds.mjs`).
+Of the 4 stored quote-loss refusals,
+one,
+hulicaijia24 slice 2,
+kept the archive over a replacement the parse reads as carrying its one quote;
+replayed through the fixed guard,
+it ships,
+and the other three,
+XingZ60 slice 88 in two runs and slice 29,
+still refuse
+(`b42-stored-refusals-replay.mjs`).
+
+The reporter was wrong beside it.
+`alignmentRefusals` rebuilt the refusal's sentence by recounting the record's `outputText`,
+the whole archive,
+where the guard compared the archive's judged part with the target-only transcript held out,
+so a slice with a held-out transcript would have reported the transcript's quotes as the judged part's
+(read from the code;
+no stored refusal carries a held-out transcript).
+The sentence also said "1 quoted passages".
+
+Fix:
+the slice skeleton counts blockquotes at every depth off the parse (`quotedPassages`),
+under the strict grammar and under plain markdown alike,
+and the guard reads both texts as the floor reads a page
+(`readPageSkeleton`:
+strict first,
+plain markdown where it refuses).
+A quote inside another quote counts,
+so a winner turning a quoted reply into the letter's own words is refused,
+as a top-level quote turned into a paragraph is refused by the floor;
+that is a behaviour change rather than a repair,
+since such a winner shipped before it.
+A text neither grammar reads keeps the archive,
+since a check that could not run has not shown the quotes survive.
+A quote-loss refusal stores the counts it compared,
+the reporter names them,
+the cache reader recomputes a refusal without them,
+and the sentence puts each count in its number.
+`quoteBlockCount` is gone;
+`topLevelBlocks` stays for the target-only run,
+which splices text and so needs each block's text.
+Cases:
+`quote-preservation.unit.test.ts` for the counter and the sentence,
+`translate-slice-settle.unit.test.ts` for a floor-valid winner dropping a quote from inside a container tag
+(refused,
+the counts stored)
+and one keeping its quote on the line after a paragraph's
+(shipped),
+and `slice-cache-store.unit.test.ts` for the stored counts.
+The translate records change,
+so the cache-account audit before a launch takes this change beside B36 to B41.
+
+Queued:
+the floor itself still compares top-level blocks only,
+so a candidate dropping a quote inside a container tag passes the floor and is refused only after the judges chose it,
+keeping the whole archive,
+where a floor finding would send it back to its translator first.
+Moving the count into the floor changes every lane's floor,
+so it lands after the replay over the pinned human archives and settled pages that every floor had before landing
+shows what it would refuse there.
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,

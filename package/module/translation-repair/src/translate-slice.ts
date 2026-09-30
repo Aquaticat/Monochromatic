@@ -10,6 +10,7 @@ import {
 import type { PreparedDocumentPair, } from './document-preparation.ts';
 import { BlankSelectionError, } from './translate-absence.ts';
 import {
+  countQuotedPassages,
   dropsQuotedPassage,
   quoteLossRefusalFinding,
 } from './quote-preservation.ts';
@@ -289,62 +290,60 @@ export async function settleTranslateSlice(
     && (alignment.kind === 'incumbent-dominates-source');
 
   /**
-   Whether the replacement would leave the document with fewer quoted
-   passages than the archive carries.
-   
-   A SEPARATE GUARD FROM THE ALIGNMENT ONE, because a ratio and a structure
-   catch different things. The alignment guard refuses above sixteen times the
-   source length, and the two transcripts measured on 2026-08-18 sat at 15.49
-   and 8.71: a near miss and nowhere near. Counting quoted passages catches
-   both, and over sixty-nine natural rows it caught nothing else.
-   */
-  const losesQuote = keepsArchive
-    && wantsReplacement
-    && (!refused)
-    && dropsQuotedPassage({
-      incumbentText,
-      shippedText: stageResult.text,
-    },);
-  if (losesQuote) {
-    l.warn(
-      quoteLossRefusalFinding({
-        sliceIndex,
-        incumbentText,
-        shippedText: stageResult.text,
-      },),
-    );
-    return {
-      kind: 'translate-slice',
-      schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
-      sliceIndex,
-      stageResult,
-      // The whole archive, for the reason the alignment refusal gives.
-      outputText: archiveText,
-      changed: standInDiffers,
-      disposition: 'refused-quote-loss',
-      alignment,
-      findings,
-    };
-  }
-  /**
-   Whether this slice is one the declared-name guard applies to at all.
-   
-   Only a slice whose archive text is being replaced can lose a name from it.
+   Whether this slice is one the quote and declared-name guards apply to at
+   all.
+
+   Only a slice whose archive text is being replaced can lose a quote or a
+   name from it.
    */
   const guardsThisSlice = keepsArchive
     && wantsReplacement
     && (!refused);
-  /**
-   Declared names the archive text carries and the replacement does not.
-   
-   CHECKED RATHER THAN ASKED FOR. Probed against the repair lane's own judge
-   sheet and roster, six of six judges preferred a candidate that dropped a
-   declared alias, and stating the exception in the criterion moved their
-   reasoning without moving the vote.
-   */
+
+  // WHETHER THE REPLACEMENT WOULD LEAVE FEWER QUOTED PASSAGES than the judged
+  // archive carries, its held-out transcript aside, since that is restored
+  // onto any replacement.
+  //
+  // A SEPARATE GUARD FROM THE ALIGNMENT ONE, because a ratio and a structure
+  // catch different things. The alignment guard refuses above sixteen times the
+  // source length, and the two transcripts measured on 2026-08-18 sat at 15.49
+  // and 8.71: a near miss and nowhere near. Counting quoted passages catches
+  // both, and over sixty-nine natural rows it caught nothing else. It reaches
+  // what the floor does not: the floor compares top-level blocks, and a quote
+  // inside a container tag or another quote is none of them (ledger B42).
+  if (guardsThisSlice) {
+    /**
+     Quoted passages on both sides, as the floor reads a page.
+     */
+    const quotedPassages = countQuotedPassages({
+      incumbentText,
+      shippedText: stageResult.text,
+    },);
+    if (dropsQuotedPassage({ quotedPassages, },)) {
+      l.warn(
+        quoteLossRefusalFinding({
+          sliceIndex,
+          quotedPassages,
+        },),
+      );
+      return {
+        kind: 'translate-slice',
+        schemaVersion: TRANSLATE_SLICE_CACHE_VERSION,
+        sliceIndex,
+        stageResult,
+        // The whole archive, for the reason the alignment refusal gives.
+        outputText: archiveText,
+        changed: standInDiffers,
+        disposition: 'refused-quote-loss',
+        quotedPassages,
+        alignment,
+        findings,
+      };
+    }
+  }
   /**
    Whether target-declared forms govern this ordinary prose slice.
-   
+
    Front matter is where declarations themselves are corrected from source,
    so protecting target values there would make metadata unrepairable.
    */
@@ -352,7 +351,13 @@ export async function settleTranslateSlice(
     ? false
     : guardsThisSlice;
   /**
-   Target-declared forms ordinary prose replacement would drop.
+   Declared names the archive text carries and an ordinary prose
+   replacement does not.
+
+   CHECKED RATHER THAN ASKED FOR. Probed against the repair lane's own judge
+   sheet and roster, six of six judges preferred a candidate that dropped a
+   declared alias, and stating the exception in the criterion moved their
+   reasoning without moving the vote.
    */
   const droppedDeclaredNames = guardDeclaredNames
     ? findDroppedDeclaredNames({

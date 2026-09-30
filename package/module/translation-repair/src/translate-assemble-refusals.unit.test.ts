@@ -99,6 +99,12 @@ const PLANNED = [
     disposition: 'refused-quote-loss',
     stageText: 'The cat remembers the promise: the bowl is always full.',
     dropped: [],
+    // What the guard compared, which the record stores: the finding names these
+    // rather than recounting the record's texts (ledger B42).
+    quotedPassages: {
+      archive: 1,
+      replacement: 0,
+    },
   },
   {
     disposition: 'refused-declared-name',
@@ -117,8 +123,9 @@ const PLANNED = [
  
  CAST because `TranslateStageResult` carries a producer, a tally and two
  chosen indices this test never reaches: assembly reads `disposition`,
- `sliceIndex`, `outputText`, `changed`, `alignment`, `droppedDeclaredNames`
- and `stageResult.text`, and those are the fields spelled out here. The
+ `sliceIndex`, `outputText`, `changed`, `alignment`, `droppedDeclaredNames`,
+ `quotedPassages` and `stageResult.text`, and those are the fields spelled
+ out here. The
  sibling `translate-lane-wordings.unit.test.ts` builds its records the same
  way and for the same reason.
  
@@ -164,6 +171,9 @@ function recordFor(
     disposition: planned?.disposition,
     findings: [],
     droppedDeclaredNames: planned?.dropped,
+    ...((planned !== undefined) && ('quotedPassages' in planned)
+      ? { quotedPassages: planned.quotedPassages, }
+      : {}),
     alignment: {
       kind: 'incumbent-dominates-source',
       sourceCodePoints: 11,
@@ -310,10 +320,11 @@ await describe({
           },);
         expect(refusals,).toHaveLength(3,);
         expect(refusals[0],).toContain('translate-refused-alignment (slice 0:',);
-        // The two counts come from OPPOSITE sides of the record, so a swap
+        // The two counts come from OPPOSITE sides of the stored pair, so a swap
         // between them reads as a replacement that gained a quotation.
         expect(refusals[1],).toBe(
-          'translate-refused-quote-loss (slice 1: archive carries 1 quoted passages, replacement carries 0)',
+          'translate-refused-quote-loss (slice 1: archive carries 1 quoted passage, replacement carries 0 quoted '
+            + 'passages)',
         );
         expect(refusals[2],).toBe(
           `translate-refused-declared-name (slice 2: archive text carries "${DECLARED_NAME}" and the `

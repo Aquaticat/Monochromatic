@@ -1332,3 +1332,35 @@ Its test compares the whole record around that finding.
 What enforces it:
 habit and review;
 the stage case and the B39 case fail if the depth-two layer drops a round again.
+
+## Structure read off the parse
+
+What happened:
+the quote guard counted blockquotes as blank-line-separated chunks opening with `>`,
+while the floor it stands beside reads the parse,
+so a quote opening on the line after a paragraph's was a blockquote to the floor and none to the guard,
+and a replacement keeping every quote was refused
+(hulicaijia24 slice 2,
+ledger B42).
+The census stretch for the refusal looked unreachable because the floor was read as the guard's reading.
+
+The rule:
+a question about what a passage's blocks are
+(how many quotes,
+which kind a block is,
+what a container holds)
+is asked of the parse the floor reads
+(`readPageSkeleton` or `readSliceSkeleton`),
+never of a blank-line split or a first character.
+A split on the text stays where the question is the text itself,
+as splicing a held-out run back is.
+A guard's tests carry a case where the split and the parse disagree:
+a block opening on the line after a paragraph's,
+and one inside a container tag.
+Before calling a guard behind the floor unreachable,
+check that both read the structure one way.
+
+What enforces it:
+habit and review;
+`quote-preservation.unit.test.ts` carries both disagreeing shapes,
+and `quoteBlockCount` no longer exists to be reached for.

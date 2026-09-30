@@ -44,13 +44,14 @@ export function alignmentRefusals(
       // A QUOTE-LOSS REFUSAL IS NAMED TOO, and named differently. Both keep the
       // archive and both are worth counting, but a run whose refusals are all
       // one kind is a different run from one whose refusals are all the other,
-      // and a single label would hide that.
+      // and a single label would hide that. The counts are the ones the guard
+      // compared, stored with the refusal: recounting the record's whole
+      // archive counted a held-out transcript's quotes as the judged part's
+      // (ledger B42).
       if (record.disposition === 'refused-quote-loss') {
         return [quoteLossRefusalFinding({
           sliceIndex: record.sliceIndex,
-          incumbentText: record.outputText,
-          shippedText: record.stageResult
-            .text,
+          quotedPassages: record.quotedPassages,
         },),];
       }
       // A DROPPED DECLARED NAME IS NAMED TOO, and named separately for the same

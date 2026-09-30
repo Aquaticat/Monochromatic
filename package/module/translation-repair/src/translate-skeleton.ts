@@ -99,7 +99,7 @@ export type BlockShape = {
  
  @example
  ```ts
- const skeleton: SliceSkeleton = { blocks, atoms, explicitBreaks, };
+ const skeleton: SliceSkeleton = { blocks, atoms, explicitBreaks, quotedPassages, };
  ```
  */
 export type SliceSkeleton = {
@@ -117,6 +117,17 @@ export type SliceSkeleton = {
    Explicit rendered breaks within each corresponding top-level block.
    */
   readonly explicitBreaks: readonly number[];
+
+  /**
+   Blockquotes at every depth: at the top level, inside a container tag, a
+   list or a footnote, and inside another blockquote.
+
+   READ OFF THE PARSE, as the blocks are (ledger B42). The quote guard once
+   counted blank-line-separated chunks opening with `>`, so a quote opening
+   on the line after a paragraph's, which the parser and the floor read as a
+   blockquote, counted as none, and a replacement keeping it was refused.
+   */
+  readonly quotedPassages: number;
 };
 
 /**
@@ -279,6 +290,51 @@ export function walkAtoms({ root, }: { readonly root: ReadonlyMdastRoot; },): re
 }
 
 /**
+ @internal
+
+ Counts the blockquotes of a parsed slice at every depth.
+
+ A QUOTE INSIDE A CONTAINER COUNTS, which is the reach the top-level block
+ floor lacks: 20 of the 8,295 distinct texts of the stored translate records
+ carry a quote below the top level (ledger B42). A quote inside a
+ quote counts too, so turning a quoted reply into the letter's own words
+ is a quoted passage lost, as turning a top-level quote into a paragraph is
+ for the floor.
+
+ EXPORTED FOR THE PAGE READING, which counts the plain-markdown tree the
+ same way.
+
+ @param root - parsed slice, under either grammar
+
+ @returns Blockquote count
+
+ @example
+ ```ts
+ const quotedPassages = quotedPassageCount({ root, },);
+ ```
+ */
+export function quotedPassageCount({ root, }: { readonly root: ReadonlyMdastRoot; },): number {
+  /**
+   Nodes still to visit, held as a stack so the walk stays iterative over a
+   tree of unknown depth; order does not matter to a count.
+   */
+  const pending: ReadonlyMdastContent[] = [...root.children,];
+
+  /**
+   Blockquotes met so far.
+   */
+  const quotes: ReadonlyMdastContent[] = [];
+  // Next node, until the stack is empty.
+  for (let node = pending.pop(); node !== undefined; node = pending.pop()) {
+    if (node.type === 'blockquote')
+      quotes.push(node,);
+    if ('children' in node)
+      pending.push(...node.children,);
+  }
+  return quotes.length;
+}
+
+/**
  Lone container tags of one kind as atoms, in document order.
  
  @param tags - lone tags the mask reported
@@ -341,6 +397,7 @@ export function readSliceSkeleton(
       kind: 'read',
       skeleton: {
         explicitBreaks: explicitBreakCounts({ root, },),
+        quotedPassages: quotedPassageCount({ root, },),
         blocks: root.children
           .map(function toShape(node,): BlockShape {
             return {
