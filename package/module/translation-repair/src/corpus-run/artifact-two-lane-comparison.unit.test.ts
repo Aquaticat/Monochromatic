@@ -665,6 +665,54 @@ await describe({
     },),
     it({
       name:
+        'ACCEPTS two readings saying the same thing, of either kind, and REFUSES a comparable reading beside '
+        + 'one that is not, from either side, since whether the two lanes could be compared is part of what '
+        + 'the row says',
+      fn: async () => {
+        expect(decisionsEqual({
+          left: {
+            kind: 'comparable',
+            verdict: 'same',
+          },
+          right: {
+            kind: 'comparable',
+            verdict: 'same',
+          },
+        },),).toBe(true,);
+        expect(decisionsEqual({
+          left: {
+            kind: 'not-comparable',
+            undecidedLanes: ['repair',],
+          },
+          right: {
+            kind: 'not-comparable',
+            undecidedLanes: ['repair',],
+          },
+        },),).toBe(true,);
+        expect(decisionsEqual({
+          left: {
+            kind: 'comparable',
+            verdict: 'same',
+          },
+          right: {
+            kind: 'not-comparable',
+            undecidedLanes: ['repair',],
+          },
+        },),).toBe(false,);
+        expect(decisionsEqual({
+          left: {
+            kind: 'not-comparable',
+            undecidedLanes: ['repair',],
+          },
+          right: {
+            kind: 'comparable',
+            verdict: 'same',
+          },
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name:
         'answers over EVERY field version 2 owns, so a row differing in exactly one of them names that one '
         + 'whichever one it is: a check reading only some fields would pass artifacts it should stop',
       fn: async () => {

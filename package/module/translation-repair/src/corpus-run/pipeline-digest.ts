@@ -8,6 +8,8 @@ import {
   relative,
 } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import { isLowerHexDigit, } from '../ascii-letters.ts';
 
 //region Pipeline digest
@@ -351,9 +353,18 @@ export async function digestPipeline(
 
   if (foreign.length > 0) {
     /**
-     One of them, named so the message points somewhere.
+     One of them, named so the message points somewhere: the first by name,
+     since the directory reports its entries in no promised order and the
+     same directory should give the same message. The list is not empty here,
+     so there is one.
      */
-    const [first,] = foreign;
+    const firstName = nonNullishOrThrow(
+      foreign
+        .map(function nameOf(entry,): string {
+          return entry.name;
+        },)
+        .toSorted()[0],
+    );
 
     throw new PipelineDigestError({
       dir,
@@ -361,9 +372,7 @@ export async function digestPipeline(
         foreign.length === 1 ? 'y' : 'ies'
       } that ${
         foreign.length === 1 ? 'is' : 'are'
-      } neither a regular file nor a directory, such as ${
-        first?.name ?? ''
-      }, which the build never emits`,
+      } neither a regular file nor a directory, such as ${firstName}, which the build never emits`,
     },);
   }
 

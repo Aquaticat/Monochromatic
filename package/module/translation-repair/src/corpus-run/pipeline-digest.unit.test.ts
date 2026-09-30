@@ -96,6 +96,42 @@ async function writeBuild(
   return dir;
 }
 
+/**
+ The whole message a refusal to identify a build carries, written out here so
+ a case checks every line of it rather than a fragment.
+
+ @param dir - directory the digest was to be taken over
+
+ @param reason - clause saying what made it unusable
+
+ @returns Message the refusal should carry
+
+ @example
+ ```ts
+ const expected = refusalMessage({ dir, reason: 'it holds no file that could execute', },);
+ ```
+ */
+function refusalMessage(
+  {
+    dir,
+    reason,
+  }: {
+    readonly dir: string;
+    readonly reason: string;
+  },
+): string {
+  return [
+    `Cannot identify the built pipeline in ${dir}: ${reason}.`,
+    '',
+    'This digest is what every artifact records as the generation that',
+    'produced it, so a pass that cannot compute one would settle entries',
+    'stamped with nothing and the pool could not tell its versions apart.',
+    '',
+    'Every corpus-run task depends on the build and runs the built file, so',
+    'reaching this means the build did not run or its output was moved.',
+  ].join('\n',);
+}
+
 await describe({
   name: digestPipeline.name,
   children: [
@@ -202,7 +238,57 @@ await describe({
         const refusalOfDigestPipeline = digestPipeline({ dir, },);
 
         await expect(refusalOfDigestPipeline,).rejects.toBeInstanceOf(PipelineDigestError,);
-        await expect(refusalOfDigestPipeline,).rejects.toThrow('neither a regular file nor a directory',);
+        await expect(refusalOfDigestPipeline,).rejects.toHaveProperty(
+          'message',
+          refusalMessage({
+            dir,
+            reason: 'it holds 1 entry that is neither a regular file nor a directory, such as linked.mjs, which '
+              + 'the build never emits',
+          },),
+        );
+      },
+    },),
+
+    it({
+      name: 'COUNTS every such entry and names the first by name, so a directory holding several says how '
+        + 'many and gives the same example whatever order the directory lists them in',
+      fn: async () => {
+        const dir = await writeBuild({ files: BUILT, },);
+        await symlink(
+          join(
+            dir,
+            'index.mjs',
+          ),
+          join(
+            dir,
+            'linked.mjs',
+          ),
+        );
+        await symlink(
+          join(
+            dir,
+            'index.mjs',
+          ),
+          join(
+            dir,
+            'aliased.mjs',
+          ),
+        );
+
+        /**
+         What digestPipeline refused with, read for class as well as wording.
+         */
+        const refusalOfTwoLinks = digestPipeline({ dir, },);
+
+        await expect(refusalOfTwoLinks,).rejects.toBeInstanceOf(PipelineDigestError,);
+        await expect(refusalOfTwoLinks,).rejects.toHaveProperty(
+          'message',
+          refusalMessage({
+            dir,
+            reason: 'it holds 2 entries that are neither a regular file nor a directory, such as aliased.mjs, '
+              + 'which the build never emits',
+          },),
+        );
       },
     },),
 
@@ -221,7 +307,13 @@ await describe({
         const refusalOfDigestPipeline = digestPipeline({ dir, },);
 
         await expect(refusalOfDigestPipeline,).rejects.toBeInstanceOf(PipelineDigestError,);
-        await expect(refusalOfDigestPipeline,).rejects.toThrow('no file that could execute',);
+        await expect(refusalOfDigestPipeline,).rejects.toHaveProperty(
+          'message',
+          refusalMessage({
+            dir,
+            reason: 'it holds no file that could execute',
+          },),
+        );
       },
     },),
 

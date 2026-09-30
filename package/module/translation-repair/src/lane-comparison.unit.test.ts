@@ -28,10 +28,12 @@ import {
 import {
   assertPreparationIdentity,
   compareDocumentLanes,
+  DeliveryCoherenceError,
   type IdentifiedDeliveryLedger,
   type PreparationIdentity,
   LaneComparisonError,
   type SliceDeliveryRecord,
+  WordingCoherenceError,
 } from '../dist/final/node/index.mjs';
 
 /**
@@ -171,6 +173,34 @@ function undecidedLaneOf(
   },], },);
 }
 
+/**
+ Builds one row where the lane examined the archive's wording and kept it, at
+ a given slice, for the cases about which slices two ledgers name.
+
+ @param sliceIndex - slice the row is for
+
+ @returns Row a ledger could hold at any position
+
+ @example
+ ```ts
+ const row = keptAt({ sliceIndex: 2, },);
+ ```
+ */
+function keptAt({ sliceIndex, }: { readonly sliceIndex: number; },): SliceDeliveryRecord {
+  return {
+    sliceIndex,
+    sourceText: SOURCE_NAP,
+    incumbentKind: 'present',
+    incumbentText: ARCHIVE_NAP,
+    outcome: {
+      kind: 'decided',
+      acceptedText: ARCHIVE_NAP,
+    },
+    shippedText: ARCHIVE_NAP,
+    delivery: { kind: 'incumbent-retained', },
+  };
+}
+
 await describe({
   name: compareDocumentLanes.name,
   children: [
@@ -293,6 +323,7 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect((caught as Error).message,).toBe('lanes report 1 and 0 slices, so they ran over different preparations',);
       },
     },),
     it({
@@ -325,6 +356,8 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect((caught as Error).message,)
+          .toBe('slice 0 carries a different incumbent in each lane, so the two results describe different preparations',);
       },
     },),
     it({
@@ -359,7 +392,10 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect(String(caught,),).toContain('whether the archive translates it',);
+        expect((caught as Error).message,).toBe(
+          'the archive\'s wording at slice 0 is present in the repair lane and absent in the translate lane, so '
+            + 'the two disagree about whether the archive translates it',
+        );
       },
     },),
     it({
@@ -388,7 +424,9 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(String(caught,),).toContain('standing by default, and the archive holds none',);
+        expect(caught,).toBeInstanceOf(WordingCoherenceError,);
+        expect((caught as Error).message,)
+          .toBe('slice 0 reports the archive\'s wording standing by default, and the archive holds none',);
       },
     },),
     it({
@@ -528,21 +566,25 @@ await describe({
         + 'twice while dropping slice 2 without a symptom',
       fn: async () => {
         /**
-         Failure the comparison raised.
+         Failure the comparison raised. The fixture is the one the name
+         describes: repair rows for slice 1 twice against translate rows for 1
+         and 2. A translate ledger repeating a slice too would be refused by the
+         translate check first, and this case once used exactly that pair, so
+         the repair check it names never ran (ledger T8).
          */
         let caught: unknown;
         try {
           compareDocumentLanes({
             repair: ledgerOf({
               records: [
-                ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },).records,
-                ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },).records,
+                keptAt({ sliceIndex: 1, },),
+                keptAt({ sliceIndex: 1, },),
               ],
             },),
             translate: ledgerOf({
               records: [
-                ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },).records,
-                ...laneOf({ acceptedText: ARCHIVE_NAP, shipped: false, },).records,
+                keptAt({ sliceIndex: 1, },),
+                keptAt({ sliceIndex: 2, },),
               ],
             },),
           },);
@@ -551,7 +593,106 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect(String(caught,),).toContain('distinct slices',);
+        expect((caught as Error).message,).toBe('repair lane reports 2 rows over 1 distinct slices',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a translate ledger that reports one slice twice, the same check from the other end, since the '
+        + 'join looks translate rows up by slice and a repeat there drops one of them just as silently',
+      fn: async () => {
+        /**
+         Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: ledgerOf({
+              records: [
+                keptAt({ sliceIndex: 1, },),
+                keptAt({ sliceIndex: 2, },),
+              ],
+            },),
+            translate: ledgerOf({
+              records: [
+                keptAt({ sliceIndex: 1, },),
+                keptAt({ sliceIndex: 1, },),
+              ],
+            },),
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect((caught as Error).message,).toBe('translate lane reports 2 rows over 1 distinct slices',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a repair slice the translate ledger does not name, which two ledgers of equal length and '
+        + 'no repeats can still hold when they cover different slices',
+      fn: async () => {
+        /**
+         Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: ledgerOf({
+              records: [
+                keptAt({ sliceIndex: 1, },),
+                keptAt({ sliceIndex: 3, },),
+              ],
+            },),
+            translate: ledgerOf({
+              records: [
+                keptAt({ sliceIndex: 1, },),
+                keptAt({ sliceIndex: 2, },),
+              ],
+            },),
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect((caught as Error).message,).toBe('slice 3 is missing from the translate lane',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES two ledgers naming the same slices in a different order, since a ledger built over one '
+        + 'preparation states them in document order, and two orders mean two preparations',
+      fn: async () => {
+        /**
+         Failure the comparison raised.
+         */
+        let caught: unknown;
+        try {
+          compareDocumentLanes({
+            repair: ledgerOf({
+              records: [
+                keptAt({ sliceIndex: 1, },),
+                keptAt({ sliceIndex: 2, },),
+              ],
+            },),
+            translate: ledgerOf({
+              records: [
+                keptAt({ sliceIndex: 2, },),
+                keptAt({ sliceIndex: 1, },),
+              ],
+            },),
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneComparisonError,);
+        expect((caught as Error).message,).toBe(
+          'slice 1 sits at position 0 in one ledger and elsewhere in the other, so the two are not in one '
+            + 'document order',
+        );
       },
     },),
     it({
@@ -583,7 +724,8 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect(String(caught,),).toContain('different slicings',);
+        expect((caught as Error).message,)
+          .toBe('the two ledgers name different slicings, so their slice indices number different passages',);
       },
     },),
     it({
@@ -618,7 +760,8 @@ await describe({
           caught = error;
         }
         expect(caught,).toBeInstanceOf(LaneComparisonError,);
-        expect(String(caught,),).toContain('a different original in each lane',);
+        expect((caught as Error).message,)
+          .toBe('slice 0 covers a different original in each lane, so the two results describe different preparations',);
       },
     },),
     it({
@@ -650,7 +793,11 @@ await describe({
         catch (error) {
           caught = error;
         }
-        expect(String(caught,),).toContain('no decision for the delivery to describe',);
+        expect(caught,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((caught as Error).message,).toBe(
+          'slice 0 reports a replacement and an outcome of not-evaluated, so there is no decision for the '
+            + 'delivery to describe',
+        );
       },
     },),
     it({

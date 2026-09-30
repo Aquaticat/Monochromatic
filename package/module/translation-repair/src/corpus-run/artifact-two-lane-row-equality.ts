@@ -113,30 +113,32 @@ export function decisionsEqual(
     readonly right: ArtifactDecisionComparison;
   },
 ): boolean {
-  if (left.kind !== right.kind)
-    return false;
-  if ((left.kind === 'comparable') && (right.kind === 'comparable'))
-    return left.verdict === right.verdict;
-  if ((left.kind === 'not-comparable') && (right.kind === 'not-comparable')) {
-    /**
-     Lanes the left reading names, in the order it names them.
-     */
-    const mine = left.undecidedLanes;
+  // EITHER COMPARABLE decides it at once: two comparable readings agree when
+  // their verdicts do, and a comparable one never equals one that is not.
+  // Past this, both are `not-comparable`, the union's only other member, so no
+  // pairing is left unread.
+  if ((left.kind === 'comparable') || (right.kind === 'comparable'))
+    return (left.kind === 'comparable')
+      && (right.kind === 'comparable')
+      && (left.verdict === right.verdict);
 
-    /**
-     Same from the right reading.
-     */
-    const theirs = right.undecidedLanes;
-    if (mine.length !== theirs.length)
-      return false;
-    return mine.every(function sameLane(
-      lane,
-      position,
-    ): boolean {
-      return lane === theirs[position];
-    },);
-  }
-  return true;
+  /**
+   Lanes the left reading names, in the order it names them.
+   */
+  const mine = left.undecidedLanes;
+
+  /**
+   Same from the right reading.
+   */
+  const theirs = right.undecidedLanes;
+  if (mine.length !== theirs.length)
+    return false;
+  return mine.every(function sameLane(
+    lane,
+    position,
+  ): boolean {
+    return lane === theirs[position];
+  },);
 }
 
 /**

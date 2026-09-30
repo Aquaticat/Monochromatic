@@ -94,16 +94,25 @@ await describe({
             delivery: { kind: 'replacement-shipped', },
           },),
         },);
-        expect(() => assertDeliveryCoherent({
-          record: rowOf({
-            outcome: {
-              kind: 'decided',
-              acceptedText: `${REWRITE}\n\n[^1]: A cat note.\n\n[^2]: Nothing points here.`,
-            },
-            shippedText: `${REWRITE}\n\n[^1]: A cat note.\n\n[^2]: Something points here.`,
-            delivery: { kind: 'replacement-shipped', },
-          },),
-        },),).toThrow(DeliveryCoherenceError,);
+        /**
+         What otherDifference raised, read for its class as well as its wording.
+         */
+        const refusalOfOtherDifference = caught(function otherDifference() {
+          assertDeliveryCoherent({
+            record: rowOf({
+              outcome: {
+                kind: 'decided',
+                acceptedText: `${REWRITE}\n\n[^1]: A cat note.\n\n[^2]: Nothing points here.`,
+              },
+              shippedText: `${REWRITE}\n\n[^1]: A cat note.\n\n[^2]: Something points here.`,
+              delivery: { kind: 'replacement-shipped', },
+            },),
+          },);
+        },);
+
+        expect(refusalOfOtherDifference,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfOtherDifference as Error).message,)
+          .toBe('slice 2 reports a delivery whose text is not the one that delivery carries',);
       },
     },),
     it({
@@ -156,7 +165,10 @@ await describe({
         'REFUSES a shipped replacement with no decision behind it, since the delivery names a wording the '
         + 'lane is not reporting and the document would carry English nobody chose',
       fn: async () => {
-        expect(function shippedNothing() {
+        /**
+         What shippedNothing raised, read for its class as well as its wording.
+         */
+        const refusalOfShippedNothing = caught(function shippedNothing() {
           assertDeliveryCoherent({
             record: rowOf({
               outcome: { kind: 'not-evaluated', },
@@ -164,7 +176,13 @@ await describe({
               delivery: { kind: 'replacement-shipped', },
             },),
           },);
-        },).toThrow(DeliveryCoherenceError,);
+        },);
+
+        expect(refusalOfShippedNothing,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfShippedNothing as Error).message,).toBe(
+          'slice 2 reports a replacement and an outcome of not-evaluated, so there is no decision for the '
+            + 'delivery to describe',
+        );
       },
     },),
     it({
@@ -190,7 +208,8 @@ await describe({
         },);
 
         expect(refusalOfReplacedNothing,).toBeInstanceOf(DeliveryCoherenceError,);
-        expect((refusalOfReplacedNothing as Error).message,).toContain('nothing was replaced',);
+        expect((refusalOfReplacedNothing as Error).message,)
+          .toBe('slice 2 reports a replacement whose wording is the archive\'s own, so nothing was replaced',);
       },
     },),
     it({
@@ -215,7 +234,8 @@ await describe({
         },);
 
         expect(refusalOfCarriedSomethingElse,).toBeInstanceOf(DeliveryCoherenceError,);
-        expect((refusalOfCarriedSomethingElse as Error).message,).toContain('not the one that delivery carries',);
+        expect((refusalOfCarriedSomethingElse as Error).message,)
+          .toBe('slice 2 reports a delivery whose text is not the one that delivery carries',);
       },
     },),
     it({
@@ -243,7 +263,8 @@ await describe({
         },);
 
         expect(refusalOfWithdrewAndShipped,).toBeInstanceOf(DeliveryCoherenceError,);
-        expect((refusalOfWithdrewAndShipped as Error).message,).toContain('not the one that delivery carries',);
+        expect((refusalOfWithdrewAndShipped as Error).message,)
+          .toBe('slice 2 reports a delivery whose text is not the one that delivery carries',);
       },
     },),
     it({
@@ -269,7 +290,34 @@ await describe({
         },);
 
         expect(refusalOfHidAChange,).toBeInstanceOf(DeliveryCoherenceError,);
-        expect((refusalOfHidAChange as Error).message,).toContain('saying what took the decision back',);
+        expect((refusalOfHidAChange as Error).message,).toBe(
+          'slice 2 decided wording of its own and reports the document unchanged, with nothing saying what '
+            + 'took the decision back',
+        );
+      },
+    },),
+    it({
+      name:
+        'REFUSES a retained incumbent carrying text other than the archive`s, since "retained" is the '
+        + 'claim that the document reads as the archive does here, and a reader would take the other text '
+        + 'for the archive`s own',
+      fn: async () => {
+        /**
+         What retainedSomethingElse raised, read for its class as well as its wording.
+         */
+        const refusalOfRetainedSomethingElse = caught(function retainedSomethingElse() {
+          assertDeliveryCoherent({
+            record: rowOf({
+              outcome: { kind: 'incumbent-fallback', },
+              shippedText: REWRITE,
+              delivery: { kind: 'incumbent-retained', },
+            },),
+          },);
+        },);
+
+        expect(refusalOfRetainedSomethingElse,).toBeInstanceOf(DeliveryCoherenceError,);
+        expect((refusalOfRetainedSomethingElse as Error).message,)
+          .toBe('slice 2 reports the archive\'s wording retained and carries different text',);
       },
     },),
     it({
@@ -292,7 +340,8 @@ await describe({
         },);
 
         expect(refusalOfRetainedNothing,).toBeInstanceOf(DeliveryCoherenceError,);
-        expect((refusalOfRetainedNothing as Error).message,).toContain('where the archive holds none',);
+        expect((refusalOfRetainedNothing as Error).message,)
+          .toBe('slice 2 reports the archive\'s wording retained where the archive holds none',);
         /**
          What gappedSomething raised, read for its class as well as its wording.
          */
@@ -307,7 +356,7 @@ await describe({
         },);
 
         expect(refusalOfGappedSomething,).toBeInstanceOf(DeliveryCoherenceError,);
-        expect((refusalOfGappedSomething as Error).message,).toContain('a gap where the archive holds wording',);
+        expect((refusalOfGappedSomething as Error).message,).toBe('slice 2 reports a gap where the archive holds wording',);
       },
     },),
     it({
@@ -330,7 +379,7 @@ await describe({
         },);
 
         expect(refusalOfGapWithText,).toBeInstanceOf(DeliveryCoherenceError,);
-        expect((refusalOfGapWithText as Error).message,).toContain('carries wording anyway',);
+        expect((refusalOfGapWithText as Error).message,).toBe('slice 2 reports a gap and carries wording anyway',);
       },
     },),
     it({

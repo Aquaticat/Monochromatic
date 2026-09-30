@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type {
   LaneSliceOutcome,
 } from './lane-slice-text.ts';
@@ -500,10 +502,11 @@ export function compareDocumentLanes(
       /**
        Row the other ledger holds at this POSITION, as against the one it
        holds for this index: a ledger built over one preparation has them in
-       the same order, and two that do not were not built over one.
+       the same order, and two that do not were not built over one. The two
+       hold the same number of rows, so there is one.
        */
-      const alongside = translateRecords[position];
-      if (theirs.sliceIndex !== alongside?.sliceIndex)
+      const alongside = nonNullishOrThrow(translateRecords[position],);
+      if (theirs.sliceIndex !== alongside.sliceIndex)
         throw new LaneComparisonError({
           fault: {
             kind: 'position-differs',

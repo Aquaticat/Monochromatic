@@ -99,7 +99,10 @@ await describe({
         + 'archive`s own English stands here and there is none: the row would report a passage as covered '
         + 'by a translation that has never existed',
       fn: async () => {
-        expect(function fellBackOnNothing() {
+        /**
+         What fellBackOnNothing raised, read for its class as well as its wording.
+         */
+        const refusalOfFellBackOnNothing = caught(function fellBackOnNothing() {
           assertWordingCoherent({
             wording: {
               sliceIndex: 2,
@@ -108,7 +111,11 @@ await describe({
               outcome: { kind: 'incumbent-fallback', },
             },
           },);
-        },).toThrow(WordingCoherenceError,);
+        },);
+
+        expect(refusalOfFellBackOnNothing,).toBeInstanceOf(WordingCoherenceError,);
+        expect((refusalOfFellBackOnNothing as Error).message,)
+          .toBe('slice 2 reports the archive\'s wording standing by default, and the archive holds none',);
       },
     },),
     it({
@@ -131,7 +138,60 @@ await describe({
         },);
 
         expect(refusalOfMissingWhatExists,).toBeInstanceOf(WordingCoherenceError,);
-        expect((refusalOfMissingWhatExists as Error).message,).toContain('holds wording for it',);
+        expect((refusalOfMissingWhatExists as Error).message,)
+          .toBe('slice 3 reports a missing passage, and the archive holds wording for it',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES a lane reporting nothing to work on where the archive holds wording, since the only slice '
+        + 'a lane can have no input at is one the archive never translated: declining one it did translate '
+        + 'is a choice, and reporting it as a structural fact hides the choice',
+      fn: async () => {
+        /**
+         What declinedWhatExists raised, read for its class as well as its wording.
+         */
+        const refusalOfDeclinedWhatExists = caught(function declinedWhatExists() {
+          assertWordingCoherent({
+            wording: {
+              sliceIndex: 6,
+              incumbentKind: 'present',
+              incumbentText: ARCHIVE_NAP,
+              outcome: { kind: 'not-applicable', },
+            },
+          },);
+        },);
+
+        expect(refusalOfDeclinedWhatExists,).toBeInstanceOf(WordingCoherenceError,);
+        expect((refusalOfDeclinedWhatExists as Error).message,)
+          .toBe('slice 6 reports this lane having nothing to work on, and the archive holds wording there',);
+      },
+    },),
+    it({
+      name:
+        'REFUSES wording beside an archive reported as holding none, whatever the outcome, since a place '
+        + 'the archive never translated carries no text by construction and wording there came from another '
+        + 'preparation',
+      fn: async () => {
+        /**
+         What wordingBesideNothing raised, read for its class as well as its wording.
+         */
+        const refusalOfWordingBesideNothing = caught(function wordingBesideNothing() {
+          assertWordingCoherent({
+            wording: {
+              sliceIndex: 7,
+              incumbentKind: 'absent',
+              incumbentText: ARCHIVE_NAP,
+              outcome: { kind: 'not-evaluated', },
+            },
+          },);
+        },);
+
+        expect(refusalOfWordingBesideNothing,).toBeInstanceOf(WordingCoherenceError,);
+        expect((refusalOfWordingBesideNothing as Error).message,).toBe(
+          'slice 7 says the archive holds no wording and carries some anyway, so the two sides of this row '
+            + 'were built from different preparations',
+        );
       },
     },),
     it({
@@ -140,7 +200,10 @@ await describe({
         + 'and leaves the passage exactly as it was, so recording it as a decision credits the lane with '
         + 'work indistinguishable from the gap it started with',
       fn: async () => {
-        expect(function decidedNothing() {
+        /**
+         What decidedNothing raised, read for its class as well as its wording.
+         */
+        const refusalOfDecidedNothing = caught(function decidedNothing() {
           assertWordingCoherent({
             wording: {
               sliceIndex: 4,
@@ -152,7 +215,13 @@ await describe({
               },
             },
           },);
-        },).toThrow(WordingCoherenceError,);
+        },);
+
+        expect(refusalOfDecidedNothing,).toBeInstanceOf(WordingCoherenceError,);
+        expect((refusalOfDecidedNothing as Error).message,).toBe(
+          'slice 4 reports a decision of empty wording where the archive holds none, so nothing was filled '
+            + 'and nothing distinguishes it from a passage still missing',
+        );
       },
     },),
     it({

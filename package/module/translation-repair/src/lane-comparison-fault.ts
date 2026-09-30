@@ -163,9 +163,9 @@ export function comparisonSentence({ fault, }: { readonly fault: LaneComparisonF
     return `slice ${
       String(fault.sliceIndex,)
     } carries a different incumbent in each lane, so the two results describe different preparations`;
-  return `slice ${String(fault.sliceIndex,)} is ${fault.repair} of archive wording to the repair lane and ${
+  return `the archive's wording at slice ${String(fault.sliceIndex,)} is ${fault.repair} in the repair lane and ${
     fault.translate
-  } to the translate lane, so the two disagree about whether the archive translates it`;
+  } in the translate lane, so the two disagree about whether the archive translates it`;
 }
 
 //endregion Lane comparison faults
