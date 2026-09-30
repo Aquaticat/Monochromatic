@@ -79,7 +79,15 @@ prototype `40d1f76bc`.
 Its 9 comparison tests,
 fresh unknown-scene mutation failure,
 restoration and APK rebuild passed.
-The capped disposable runtime is capturing the six-scene initial matrix;
+The first native matrix rejected a generic fallback on dark cover.
+Prototype `3f92634aa` corrects the terminal scene marker;
+`a5560abb2` adds composable supporting-line visibility controls.
+Fresh unknown-scene and terminal-marker mutation failures,
+restoration,
+complete tests and rebuild passed.
+The capped disposable runtime is capturing the corrected eight-scene
+matrix with leading-title/support multiplicity checks.
+The rejected run and its APK remain private and separate;
 inspection and any required scrolled witnesses remain pending.
 Task 140 follows with inspected evidence and a verified visual review.
 Prototype `720ba418f` uses public `playerScreen` and the real controller

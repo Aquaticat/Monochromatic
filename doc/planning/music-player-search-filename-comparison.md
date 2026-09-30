@@ -194,8 +194,29 @@ with 9 comparison tests and zero failures/errors/skips.
 Removing the unknown-scene guard made its fresh targeted test fail;
 exact restoration,
 complete tests and APK rebuild passed.
-The capped disposable runtime is capturing the initial six-scene native
-matrix.
+The initial native run rejected the first dark cover scene:
+the expected complete filename was absent,
+and its retained hierarchy contained the generic `Camellia` and
+`Another Xronixle` fallback.
+`SearchPersistentDeckStudy.kt` delegates a dark cover candidate with the
+comparison marker at the end;
+the new registry had required a following hyphen.
+The correction accepts a complete terminal marker and tests the actual
+cover delegate grammar.
+Prototype `3f92634aa` corrects the terminal-marker route.
+Removing that correction failed the fresh shared-route regression test;
+exact restoration and complete tests passed.
+Prototype `a5560abb2` also adds supporting-line visibility controls so
+both independent choices remain composable rather than alternatives.
+Both mutation proofs,
+complete tests and the rebuilt APK passed after this addition.
+The positive,
+unknown-scene-mutant and terminal-marker-mutant reports are retained
+privately beside the corrected capture.
+The eight-scene native recapture is running with leading-title/support
+multiplicity checks,
+not title-presence checks alone.
+The initial partial capture and its APK remain private and separate.
 Native inspection and comparative conclusions remain pending.
 
 The placement pair retains exact literal suffixes either in the title or
