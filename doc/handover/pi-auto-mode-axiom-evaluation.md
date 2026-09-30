@@ -367,6 +367,27 @@ not complete lifecycle clearance.
 A separately declared `omission-controls/` phase now freezes intact/one-change pairs.
 It requires unchanged references to move the actual SDK tool result;
 startup errors or caught SDK tool exceptions cannot count as guard evidence.
+Artifact freeze `proc_0d66` and actual contrasts `proc_1479` passed:
+all nine intact/one-change pairs moved the unchanged reference at the SDK tool-result boundary.
+This phase used eighteen disposable SDK sessions,
+thirty-six first-party scripted responses,
+and eighteen inert callbacks,
+with zero stderr,
+external models,
+or genuine input.
+Dependency files and symbolic-link placements were checked in this new epoch,
+not retroactively attributed to the initial consumer runs.
+The fork-local independence contrast is structural coupling,
+not removal of a predicate.
+
+The next private `protected-action-consumer/plan.json` is predeclared but unimplemented/undispatched.
+It carries original configured-writer/byte/presentation/exact-scope evidence,
+not summary booleans or arbitrary tokens.
+Original validation must finish before SDK/provider startup;
+only non-content projections and fixed privacy-safe errors may cross the tool/provider boundary.
+This new evidence-admission transaction is not a replay of the completed human interaction.
+Historical witness admission alone establishes neither current permission eligibility
+nor reusable-directive authority.
 This synthetic-only phase cannot create human grants or qualify the complete lifecycle engine.
 Target/source/deadline/cache guards,
 real original-action admission,
