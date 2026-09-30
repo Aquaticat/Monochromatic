@@ -37,6 +37,7 @@ import {
   type SliceCache,
   type SyntheticClient,
 } from '../dist/final/node/index.mjs';
+import { capturingLogger, } from './capturing-logger.test-fixture.ts';
 import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -1400,6 +1401,80 @@ await describe({
           lookups: [1, 1, 1,],
           movedDiffers: true,
           keptMatches: true,
+        },);
+      },
+    },),
+  ],
+},);
+
+/**
+ Claim a probe corroborated against the repair lane's wording.
+ */
+const DAMAGE_CLAIM = 'the repair lane adds a second cat the original never mentions';
+
+/**
+ Accepted addition against the archive rendering.
+ */
+const DISPUTE_NOTE = 'the archive adds a garden the original never mentions';
+
+await describe({
+  name: `${contestDocumentLanes.name} with evidence against a lane (T8 batch 13)`,
+  children: [
+    it({
+      name: 'SHOWS THE JUDGES a corroborated damage claim and a dispute note, and logs the claim count in words '
+        + 'that agree with it (ledger B66)',
+      fn: async () => {
+        /**
+         Every request the judges were sent, as text.
+         */
+        const prompts: string[] = [];
+        /**
+         Lines the driver logged.
+         */
+        const messages: string[] = [];
+        /**
+         Client casting the one ballot every judge casts, recording each request.
+         */
+        const recording = judgeRecordingClient({ asked: [], },);
+        await contestDocumentLanes({
+          client: {
+            ...recording,
+            chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>,): Promise<ChatJsonOutcome<ValueT>> => {
+              prompts.push(JSON.stringify(request,),);
+              return await recording.chatJson(request,);
+            },
+          },
+          projected: catProjection({ pairs: [[REPAIR_NAP, TRANSLATE_NAP,],], },),
+          modelIds: ROSTER,
+          frontMatterSlices: new Set(),
+          lineStructuredSlices: new Set(),
+          cache: {
+            resumed: new Map(),
+            persist: async function keepNothing(): Promise<void> {},
+          },
+          damageClaimsBySlice: new Map([[0, [DAMAGE_CLAIM,],],],),
+          disputeNotesBySlice: new Map([[0, DISPUTE_NOTE,],],),
+          signal: AbortSignal.timeout(30_000,),
+          perCallTimeoutMs: PER_CALL_TIMEOUT_MS,
+          l: capturingLogger({ messages, },),
+          fanOut: 'whole-bench',
+        },);
+        expect({
+          asked: prompts.length > 0,
+          everyPromptCarriesClaim: prompts.every(function carriesClaim(prompt,): boolean {
+            return prompt.includes(DAMAGE_CLAIM,);
+          },),
+          everyPromptCarriesNote: prompts.every(function carriesNote(prompt,): boolean {
+            return prompt.includes(DISPUTE_NOTE,);
+          },),
+          claimLine: messages.some(function namesClaim(line,): boolean {
+            return line.includes('slice 0: 1 corroborated damage claim shown to the judges',);
+          },),
+        },).toEqual({
+          asked: true,
+          everyPromptCarriesClaim: true,
+          everyPromptCarriesNote: true,
+          claimLine: true,
         },);
       },
     },),

@@ -585,5 +585,64 @@ await describe({
         expect(error.messageNamesOnly,).toBe(true,);
       },
     },),
+    it({
+      name: 'REFUSES A PREPARATION REPEATING AN INDEX, which would let one decision answer for two slices, in '
+        + 'words that agree with each count (ledger B66)',
+      fn: async () => {
+        /**
+         Failure the builder raised.
+         */
+        let caught: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: [
+              pairOf({
+                index: 0,
+                source: 'source of the nap',
+                target: 'The cat sleeps on the sill.',
+              },),
+              pairOf({
+                index: 0,
+                source: 'source of the bowl',
+                target: 'The bowl is full.',
+              },),
+            ],
+            undecided: 'refuse',
+            decided: [],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(caught,),).toContain('preparation produced 2 slices under 1 distinct index',);
+      },
+    },),
+    it({
+      name: 'REFUSES A LANE DECIDING ONE SLICE TWICE, where the later wording would silently win, in words '
+        + 'that agree with each count (ledger B66)',
+      fn: async () => {
+        /**
+         Failure the builder raised.
+         */
+        let caught: unknown;
+        try {
+          buildLaneSliceTexts({
+            slices: CAT_SLICES,
+            undecided: 'refuse',
+            decided: [
+              { sliceIndex: 0, text: 'The cat is asleep.', },
+              { sliceIndex: 0, text: 'The cat naps.', },
+            ],
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(LaneSliceCoverageError,);
+        expect(String(caught,),).toContain('lane decided 2 times over 1 distinct slice',);
+        expect(String(caught,),).not.toContain('1 distinct slices',);
+      },
+    },),
   ],
 },);

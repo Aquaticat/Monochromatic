@@ -289,9 +289,8 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES a list naming one slice twice, naming both counts: the '
-        + 'set would still be the right shape afterwards and one slice would '
-        + 'be named once',
+      name: 'REFUSES a list naming one slice twice, naming both counts in words that agree with each (ledger '
+        + 'B66): the set would still be the right shape afterwards and one slice would be named once',
       fn: async () => {
         const refusalOfRepeat = caught(function repeat() {
           validateNamedSets({
@@ -310,7 +309,8 @@ await describe({
 
         expect(refusalOfRepeat,).toBeInstanceOf(LaneSliceCoverageError,);
         expect((refusalOfRepeat as Error).message,)
-          .toContain('lane reports 2 unfilled slices under 1 distinct indices',);
+          .toContain('lane reports 2 unfilled slices under 1 distinct index',);
+        expect((refusalOfRepeat as Error).message,).not.toContain('1 distinct indices',);
       },
     },),
 
