@@ -1,0 +1,633 @@
+{
+  "scope": "Ordered semantic title/support rectangles and exact retained browser/deck/header RGB across authored options, not ink or action bounds. Visual inspection separately covers row wrapping, exact cues and clipping.",
+  "groups": [
+    {
+      "panel": "inner",
+      "scheme": "light",
+      "fontScale": 1,
+      "queryTextBounds": {
+        "left": 1249,
+        "top": 166,
+        "right": 1920,
+        "bottom": 283
+      },
+      "headerComparedRawRegion": "1038x147+1038+136",
+      "retainedLeftComparedRawRegion": "1038x2016+0+136",
+      "viewsCompared": 8,
+      "longPairs": [
+        {
+          "fullTitleHeight": 118,
+          "supportTitleHeight": 118,
+          "fullSupportHeight": 49,
+          "supportSupportHeight": 49
+        },
+        {
+          "fullTitleHeight": 118,
+          "supportTitleHeight": 118,
+          "fullSupportHeight": 49,
+          "supportSupportHeight": 49
+        }
+      ],
+      "eligibleSolo": {
+        "alwaysTitleHeight": 59,
+        "conditionalTitleHeight": 59,
+        "alwaysSupportHeight": 49,
+        "conditionalSupportHeight": 49
+      },
+      "initialLiteralFinalRows": [
+        {
+          "scene": "literalfull",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 1249,
+              "top": 1528,
+              "right": 1334,
+              "bottom": 1587
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 1249,
+              "top": 1587,
+              "right": 1623,
+              "bottom": 1636
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 59,
+            "detailHeight": 49
+          }
+        },
+        {
+          "scene": "literalsupport",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 1249,
+              "top": 1528,
+              "right": 1334,
+              "bottom": 1587
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 1249,
+              "top": 1587,
+              "right": 1623,
+              "bottom": 1636
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 59,
+            "detailHeight": 49
+          }
+        }
+      ]
+    },
+    {
+      "panel": "inner",
+      "scheme": "light",
+      "fontScale": 2,
+      "queryTextBounds": {
+        "left": 1249,
+        "top": 166,
+        "right": 1920,
+        "bottom": 283
+      },
+      "headerComparedRawRegion": "1038x147+1038+136",
+      "retainedLeftComparedRawRegion": "1038x2016+0+136",
+      "viewsCompared": 8,
+      "longPairs": [
+        {
+          "fullTitleHeight": 412,
+          "supportTitleHeight": 412,
+          "fullSupportHeight": 182,
+          "supportSupportHeight": 182
+        },
+        {
+          "fullTitleHeight": 412,
+          "supportTitleHeight": 412,
+          "fullSupportHeight": 182,
+          "supportSupportHeight": 182
+        }
+      ],
+      "eligibleSolo": {
+        "alwaysTitleHeight": 103,
+        "conditionalTitleHeight": 103,
+        "alwaysSupportHeight": 182,
+        "conditionalSupportHeight": 182
+      },
+      "initialLiteralFinalRows": [
+        {
+          "scene": "literalfull",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 1249,
+              "top": 2075,
+              "right": 1395,
+              "bottom": 2152
+            },
+            "detail": null,
+            "supportAbsentInHierarchy": true,
+            "titleHeight": 77,
+            "detailHeight": null
+          }
+        },
+        {
+          "scene": "literalsupport",
+          "last": {
+            "index": 6,
+            "expectedTitle": "Cam",
+            "expectedDetail": "Track · library root · Play",
+            "title": null,
+            "detail": null,
+            "titleAbsentInHierarchy": true,
+            "supportAbsentInHierarchy": true,
+            "titleHeight": null,
+            "detailHeight": null
+          }
+        }
+      ]
+    },
+    {
+      "panel": "inner",
+      "scheme": "dark",
+      "fontScale": 1,
+      "queryTextBounds": {
+        "left": 1249,
+        "top": 166,
+        "right": 1920,
+        "bottom": 283
+      },
+      "headerComparedRawRegion": "1038x147+1038+136",
+      "retainedLeftComparedRawRegion": "1038x2016+0+136",
+      "viewsCompared": 8,
+      "longPairs": [
+        {
+          "fullTitleHeight": 118,
+          "supportTitleHeight": 118,
+          "fullSupportHeight": 49,
+          "supportSupportHeight": 49
+        },
+        {
+          "fullTitleHeight": 118,
+          "supportTitleHeight": 118,
+          "fullSupportHeight": 49,
+          "supportSupportHeight": 49
+        }
+      ],
+      "eligibleSolo": {
+        "alwaysTitleHeight": 59,
+        "conditionalTitleHeight": 59,
+        "alwaysSupportHeight": 49,
+        "conditionalSupportHeight": 49
+      },
+      "initialLiteralFinalRows": [
+        {
+          "scene": "literalfull",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 1249,
+              "top": 1528,
+              "right": 1334,
+              "bottom": 1587
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 1249,
+              "top": 1587,
+              "right": 1623,
+              "bottom": 1636
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 59,
+            "detailHeight": 49
+          }
+        },
+        {
+          "scene": "literalsupport",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 1249,
+              "top": 1528,
+              "right": 1334,
+              "bottom": 1587
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 1249,
+              "top": 1587,
+              "right": 1623,
+              "bottom": 1636
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 59,
+            "detailHeight": 49
+          }
+        }
+      ]
+    },
+    {
+      "panel": "inner",
+      "scheme": "dark",
+      "fontScale": 2,
+      "queryTextBounds": {
+        "left": 1249,
+        "top": 166,
+        "right": 1920,
+        "bottom": 283
+      },
+      "headerComparedRawRegion": "1038x147+1038+136",
+      "retainedLeftComparedRawRegion": "1038x2016+0+136",
+      "viewsCompared": 8,
+      "longPairs": [
+        {
+          "fullTitleHeight": 412,
+          "supportTitleHeight": 412,
+          "fullSupportHeight": 182,
+          "supportSupportHeight": 182
+        },
+        {
+          "fullTitleHeight": 412,
+          "supportTitleHeight": 412,
+          "fullSupportHeight": 182,
+          "supportSupportHeight": 182
+        }
+      ],
+      "eligibleSolo": {
+        "alwaysTitleHeight": 103,
+        "conditionalTitleHeight": 103,
+        "alwaysSupportHeight": 182,
+        "conditionalSupportHeight": 182
+      },
+      "initialLiteralFinalRows": [
+        {
+          "scene": "literalfull",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 1249,
+              "top": 2075,
+              "right": 1395,
+              "bottom": 2152
+            },
+            "detail": null,
+            "supportAbsentInHierarchy": true,
+            "titleHeight": 77,
+            "detailHeight": null
+          }
+        },
+        {
+          "scene": "literalsupport",
+          "last": {
+            "index": 6,
+            "expectedTitle": "Cam",
+            "expectedDetail": "Track · library root · Play",
+            "title": null,
+            "detail": null,
+            "titleAbsentInHierarchy": true,
+            "supportAbsentInHierarchy": true,
+            "titleHeight": null,
+            "detailHeight": null
+          }
+        }
+      ]
+    },
+    {
+      "panel": "cover",
+      "scheme": "light",
+      "fontScale": 1,
+      "queryTextBounds": {
+        "left": 156,
+        "top": 182,
+        "right": 924,
+        "bottom": 299
+      },
+      "headerComparedRawRegion": "1080x148+0+151",
+      "retainedLeftComparedRawRegion": null,
+      "viewsCompared": 8,
+      "longPairs": [
+        {
+          "fullTitleHeight": 118,
+          "supportTitleHeight": 118,
+          "fullSupportHeight": 49,
+          "supportSupportHeight": 49
+        },
+        {
+          "fullTitleHeight": 118,
+          "supportTitleHeight": 118,
+          "fullSupportHeight": 49,
+          "supportSupportHeight": 49
+        }
+      ],
+      "eligibleSolo": {
+        "alwaysTitleHeight": 59,
+        "conditionalTitleHeight": 59,
+        "alwaysSupportHeight": 49,
+        "conditionalSupportHeight": 49
+      },
+      "initialLiteralFinalRows": [
+        {
+          "scene": "literalfull",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 156,
+              "top": 1544,
+              "right": 241,
+              "bottom": 1603
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 156,
+              "top": 1603,
+              "right": 530,
+              "bottom": 1652
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 59,
+            "detailHeight": 49
+          }
+        },
+        {
+          "scene": "literalsupport",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 156,
+              "top": 1544,
+              "right": 241,
+              "bottom": 1603
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 156,
+              "top": 1603,
+              "right": 530,
+              "bottom": 1652
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 59,
+            "detailHeight": 49
+          }
+        }
+      ]
+    },
+    {
+      "panel": "cover",
+      "scheme": "light",
+      "fontScale": 2,
+      "queryTextBounds": {
+        "left": 156,
+        "top": 182,
+        "right": 924,
+        "bottom": 299
+      },
+      "headerComparedRawRegion": "1080x148+0+151",
+      "retainedLeftComparedRawRegion": null,
+      "viewsCompared": 8,
+      "longPairs": [
+        {
+          "fullTitleHeight": 309,
+          "supportTitleHeight": 309,
+          "fullSupportHeight": 182,
+          "supportSupportHeight": 182
+        },
+        {
+          "fullTitleHeight": 309,
+          "supportTitleHeight": 309,
+          "fullSupportHeight": 182,
+          "supportSupportHeight": 182
+        }
+      ],
+      "eligibleSolo": {
+        "alwaysTitleHeight": 103,
+        "conditionalTitleHeight": 103,
+        "alwaysSupportHeight": 182,
+        "conditionalSupportHeight": 182
+      },
+      "initialLiteralFinalRows": [
+        {
+          "scene": "literalfull",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 156,
+              "top": 2039,
+              "right": 302,
+              "bottom": 2142
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 156,
+              "top": 2142,
+              "right": 851,
+              "bottom": 2233
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 103,
+            "detailHeight": 91
+          }
+        },
+        {
+          "scene": "literalsupport",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 156,
+              "top": 2221,
+              "right": 302,
+              "bottom": 2324
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 156,
+              "top": 2324,
+              "right": 851,
+              "bottom": 2365
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 103,
+            "detailHeight": 41
+          }
+        }
+      ]
+    },
+    {
+      "panel": "cover",
+      "scheme": "dark",
+      "fontScale": 1,
+      "queryTextBounds": {
+        "left": 156,
+        "top": 182,
+        "right": 924,
+        "bottom": 299
+      },
+      "headerComparedRawRegion": "1080x148+0+151",
+      "retainedLeftComparedRawRegion": null,
+      "viewsCompared": 8,
+      "longPairs": [
+        {
+          "fullTitleHeight": 118,
+          "supportTitleHeight": 118,
+          "fullSupportHeight": 49,
+          "supportSupportHeight": 49
+        },
+        {
+          "fullTitleHeight": 118,
+          "supportTitleHeight": 118,
+          "fullSupportHeight": 49,
+          "supportSupportHeight": 49
+        }
+      ],
+      "eligibleSolo": {
+        "alwaysTitleHeight": 59,
+        "conditionalTitleHeight": 59,
+        "alwaysSupportHeight": 49,
+        "conditionalSupportHeight": 49
+      },
+      "initialLiteralFinalRows": [
+        {
+          "scene": "literalfull",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 156,
+              "top": 1544,
+              "right": 241,
+              "bottom": 1603
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 156,
+              "top": 1603,
+              "right": 530,
+              "bottom": 1652
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 59,
+            "detailHeight": 49
+          }
+        },
+        {
+          "scene": "literalsupport",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 156,
+              "top": 1544,
+              "right": 241,
+              "bottom": 1603
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 156,
+              "top": 1603,
+              "right": 530,
+              "bottom": 1652
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 59,
+            "detailHeight": 49
+          }
+        }
+      ]
+    },
+    {
+      "panel": "cover",
+      "scheme": "dark",
+      "fontScale": 2,
+      "queryTextBounds": {
+        "left": 156,
+        "top": 182,
+        "right": 924,
+        "bottom": 299
+      },
+      "headerComparedRawRegion": "1080x148+0+151",
+      "retainedLeftComparedRawRegion": null,
+      "viewsCompared": 8,
+      "longPairs": [
+        {
+          "fullTitleHeight": 309,
+          "supportTitleHeight": 309,
+          "fullSupportHeight": 182,
+          "supportSupportHeight": 182
+        },
+        {
+          "fullTitleHeight": 309,
+          "supportTitleHeight": 309,
+          "fullSupportHeight": 182,
+          "supportSupportHeight": 182
+        }
+      ],
+      "eligibleSolo": {
+        "alwaysTitleHeight": 103,
+        "conditionalTitleHeight": 103,
+        "alwaysSupportHeight": 182,
+        "conditionalSupportHeight": 182
+      },
+      "initialLiteralFinalRows": [
+        {
+          "scene": "literalfull",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 156,
+              "top": 2039,
+              "right": 302,
+              "bottom": 2142
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 156,
+              "top": 2142,
+              "right": 851,
+              "bottom": 2233
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 103,
+            "detailHeight": 91
+          }
+        },
+        {
+          "scene": "literalsupport",
+          "last": {
+            "index": 6,
+            "title": {
+              "text": "Cam",
+              "left": 156,
+              "top": 2221,
+              "right": 302,
+              "bottom": 2324
+            },
+            "detail": {
+              "text": "Track · library root · Play",
+              "left": 156,
+              "top": 2324,
+              "right": 851,
+              "bottom": 2365
+            },
+            "supportAbsentInHierarchy": false,
+            "titleHeight": 103,
+            "detailHeight": 41
+          }
+        }
+      ]
+    }
+  ],
+  "orderedRowSlotCount": 320,
+  "comparatorChangedByteRejected": true
+}
