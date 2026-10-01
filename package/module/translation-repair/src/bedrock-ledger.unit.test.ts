@@ -396,6 +396,32 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES AN OVERRIDE NOT WRITTEN AS A PLAIN DECIMAL, which `Number` read as a credit nobody typed: '
+        + 'a hexadecimal, an exponent, a sign, a space either side and a point missing digits on one side; '
+        + 'and a digit run past the range a double holds (ledger B73)',
+      fn: async () => {
+        /**
+         Spellings `Number` reads as an amount that no operator writes as one.
+         */
+        const spellings = [
+          '0x10',
+          '1e1',
+          '+15',
+          ' 15',
+          '15 ',
+          '15.',
+          '.5',
+          `1${'0'.repeat(400,)}`,
+        ];
+        for (const raw of spellings) {
+          expect(function readSpelling(): number {
+            return bedrockCreditUsdFrom({ env: { [BEDROCK_CREDIT_USD_VAR]: raw, }, },);
+          },).toThrow(BedrockCreditOverrideError,);
+        }
+      },
+    },),
+
+    it({
       name: 'PUTS THE FILE UNDER THE HOME IT IS GIVEN by default, never a spelled-out username, and '
         + 'where the variable points otherwise',
       fn: async () => {

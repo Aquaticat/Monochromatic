@@ -239,6 +239,50 @@ await describe({
         expect((refusal as Error).message,).toContain('do nothing',);
       },
     },),
+
+    it({
+      name: 'REFUSES a window not written in digits, which `Number` read as a window nobody typed: a '
+        + 'hexadecimal, an exponent, a sign, a space either side and a point; a leading zero still reads as '
+        + 'written (ledger B73)',
+      fn: async () => {
+        /**
+         Spellings `Number` reads as one second that no operator writes as one.
+         */
+        const spellings = [
+          '0x3E8',
+          '1e3',
+          '+1000',
+          ' 1000',
+          '1000 ',
+          '1000.0',
+        ];
+        expect(spellings.map(function refusalOf(raw,): string {
+          /**
+           What the reader threw.
+           */
+          const refusal = caught(function readSpelling(): number {
+            return readWindowDial({
+              variable: STRAGGLER_GRACE_VAR,
+              fallback: FALLBACK,
+              raw,
+              unsetMeans: 'run under the built-in window',
+            },);
+          },);
+          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+          return (refusal as Error).message;
+        },),).toEqual(spellings.map(function expectedOf(raw,): string {
+          return `${STRAGGLER_GRACE_VAR} must be a whole number of milliseconds from 1 to `
+            + `${String(MAX_TIMER_DELAY_MS,)}, and ${JSON.stringify(raw,)} is not; leave it unset to run under `
+            + 'the built-in window';
+        },),);
+        expect(readWindowDial({
+          variable: STRAGGLER_GRACE_VAR,
+          fallback: FALLBACK,
+          raw: '01000',
+          unsetMeans: 'run under the built-in window',
+        },),).toBe(1_000,);
+      },
+    },),
   ],
 },);
 

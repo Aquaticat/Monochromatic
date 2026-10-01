@@ -82,6 +82,36 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES a value not written as a plain decimal, which `Number` read as dollars nobody typed: a '
+        + 'hexadecimal, an exponent, a sign, a space either side and a point missing digits on one side; and a '
+        + 'digit run past the range a double holds (ledger B73)',
+      fn: async () => {
+        /**
+         Spellings `Number` reads as an amount that no operator writes as one.
+         */
+        const spellings = [
+          '0x10',
+          '1e1',
+          '+15',
+          ' 15',
+          '15 ',
+          '15.',
+          '.5',
+          `1${'0'.repeat(400,)}`,
+        ];
+        expect(spellings.map(function refusedOf(raw,): boolean {
+          return caught(function readSpelling(): number {
+            return resolveSpendCeilingUsd({
+              fallback: FALLBACK,
+              raw,
+            },);
+          },) instanceof SpendCeilingOverrideError;
+        },),).toEqual(spellings.map(function refused(): boolean {
+          return true;
+        },),);
+      },
+    },),
+    it({
       name: 'READS THE DIAL FROM THE ENVIRONMENT when no value is handed in, and the built-in when the dial is unset '
         + '(ledger T8)',
       fn: async () => {

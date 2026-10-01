@@ -283,6 +283,33 @@ await describe({
           .toBe(HYPER_REQUESTS_PER_HOUR,);
       },
     },),
+    it({
+      name: 'REFUSES A RATE NOT WRITTEN AS A PLAIN DECIMAL, which `Number` read as a pace nobody typed: a '
+        + 'hexadecimal, an exponent, a sign, a space either side and a point missing digits on one side, '
+        + 'while a plain decimal such as 0.5 still reads (ledger B73)',
+      fn: async () => {
+        /**
+         Spellings `Number` reads as a rate that no operator writes as one.
+         */
+        const spellings = [
+          '0x10',
+          '1e1',
+          '+15',
+          ' 15',
+          '15 ',
+          '15.',
+          '.5',
+        ];
+        expect(spellings.map(function refusedOf(written,): boolean {
+          return caught(function readSpelling(): number {
+            return hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: written, }, },);
+          },) instanceof StatedRefusalError;
+        },),).toEqual(spellings.map(function refused(): boolean {
+          return true;
+        },),);
+        expect(hyperRequestsPerHour({ env: { TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR: '0.5', }, },),).toBe(0.5,);
+      },
+    },),
   ],
 },);
 

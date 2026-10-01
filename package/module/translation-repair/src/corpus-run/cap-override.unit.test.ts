@@ -130,6 +130,48 @@ await describe({
             },);
           },),
         ).toBeInstanceOf(HardCapOverrideError,);
+        expect(
+          caught(function readNegative(): number {
+            return resolveHardCapMinutes({
+              fallback: FALLBACK,
+              raw: '-5',
+            },);
+          },),
+        ).toBeInstanceOf(HardCapOverrideError,);
+      },
+    },),
+
+    it({
+      name: 'REFUSES a value not written as a plain decimal, which `Number` read as minutes nobody typed: a '
+        + 'hexadecimal, an exponent, a sign, a space either side and a point missing digits on one side, '
+        + 'while a plain decimal such as 7.5 still reads (ledger B73)',
+      fn: async () => {
+        /**
+         Spellings `Number` reads as minutes that no operator writes as minutes.
+         */
+        const spellings = [
+          '0x10',
+          '1e1',
+          '+15',
+          ' 15',
+          '15 ',
+          '15.',
+          '.5',
+        ];
+        expect(spellings.map(function refusedOf(raw,): boolean {
+          return caught(function readSpelling(): number {
+            return resolveHardCapMinutes({
+              fallback: FALLBACK,
+              raw,
+            },);
+          },) instanceof HardCapOverrideError;
+        },),).toEqual(spellings.map(function refused(): boolean {
+          return true;
+        },),);
+        expect(resolveHardCapMinutes({
+          fallback: FALLBACK,
+          raw: '7.5',
+        },),).toBe(7.5,);
       },
     },),
   ],
