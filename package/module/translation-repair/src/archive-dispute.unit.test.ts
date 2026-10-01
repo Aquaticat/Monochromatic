@@ -19,11 +19,14 @@ import {
 
 import {
   archiveDisputeNote,
+  archiveDisputeNotesOf,
   archiveDisputesOf,
   describeArchiveDispute,
+  logArchiveDisputes,
   type AdjudicatedIssue,
   type IssueClaim,
 } from '../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from './capturing-logger.test-fixture.ts';
 
 /**
  Claim the critics filed against the archive rendering.
@@ -292,6 +295,108 @@ await describe({
         );
         // No addition was accepted, so the addition rule stays off the sheet.
         expect(note,).not.toContain('carries an accepted addition',);
+      },
+    },),
+    it({
+      name: 'LOGS EVERY DISPUTE ONCE as a warning, in slice order, and nothing where none was read (ledger T8, '
+        + 'eighteenth batch)',
+      fn: async () => {
+        /**
+         Two disputed slices, one the repair fixed and one it did not.
+         */
+        const disputes = archiveDisputesOf({
+          chunks: [
+            {
+              sliceIndex: 2,
+              repairedText: REPAIRED,
+              changed: true,
+              resolvedIssueIds: [`adjudicated/${INVENTED.summary}`,],
+              issues: [issueOf({ status: 'accepted', claim: INVENTED, },),],
+            },
+            {
+              sliceIndex: 5,
+              repairedText: REPAIRED,
+              changed: true,
+              resolvedIssueIds: [],
+              issues: [issueOf({ status: 'accepted', claim: WRONG_COLOUR, },),],
+            },
+          ],
+        },);
+        /**
+         Lines logged, each behind its level.
+         */
+        const lines: string[] = [];
+        logArchiveDisputes({
+          disputes,
+          l: levelCapturingLogger({ lines, },),
+        },);
+        // Both slices are disputes, the case's premise.
+        expect([...disputes.keys(),],).toEqual([
+          2,
+          5,
+        ],);
+        expect(lines,).toEqual([...disputes.values(),].map(function warned(dispute,): string {
+          return `warn ${describeArchiveDispute({ dispute, },)}`;
+        },),);
+        /**
+         Lines logged for no dispute.
+         */
+        const silent: string[] = [];
+        logArchiveDisputes({
+          disputes: new Map(),
+          l: levelCapturingLogger({ lines: silent, },),
+        },);
+        expect(silent,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'KEYS A SHEET NOTE TO EVERY DISPUTED SLICE and to no other, each naming that slice\'s claims (ledger T8, '
+        + 'eighteenth batch: the contest reads these, and no case gave it a dispute)',
+      fn: async () => {
+        /**
+         Notes over a disputed slice, an undisputed one, and a second
+         disputed one.
+         */
+        const notes = archiveDisputeNotesOf({
+          chunks: [
+            {
+              sliceIndex: 1,
+              repairedText: REPAIRED,
+              changed: true,
+              resolvedIssueIds: [],
+              issues: [issueOf({ status: 'accepted', claim: INVENTED, },),],
+            },
+            {
+              sliceIndex: 2,
+              repairedText: REPAIRED,
+              changed: true,
+              resolvedIssueIds: [],
+              issues: [issueOf({ status: 'accepted', claim: NEAR_SYNONYM, },),],
+            },
+            {
+              sliceIndex: 4,
+              repairedText: REPAIRED,
+              changed: true,
+              resolvedIssueIds: [],
+              issues: [issueOf({ status: 'accepted', claim: WRONG_COLOUR, },),],
+            },
+          ],
+        },);
+        expect([...notes.keys(),],).toEqual([
+          1,
+          4,
+        ],);
+        expect({
+          first: (notes.get(1,) ?? '').includes(`(1) accuracy/addition major: ${INVENTED.summary}`,),
+          firstOther: (notes.get(1,) ?? '').includes(WRONG_COLOUR.summary,),
+          second: (notes.get(4,) ?? '').includes(`(1) accuracy/mistranslation major: ${WRONG_COLOUR.summary}`,),
+          secondOther: (notes.get(4,) ?? '').includes(INVENTED.summary,),
+        },).toEqual({
+          first: true,
+          firstOther: false,
+          second: true,
+          secondOther: false,
+        },);
       },
     },),
   ],

@@ -232,6 +232,43 @@ await describe({
       },
     },),
     it({
+      name: 'ENDS A REFUSAL WITH THE OTHER SHAPES A POSITION TAKES: one or more, any number, and one that may be '
+        + 'left off (ledger T8, eighteenth batch: no case printed these, though runners declare each)',
+      fn: async () => {
+        expect([
+          refusalOf({
+            read: function readsLogsMistyped(): unknown {
+              return lineOf({
+                command: 'meter-report',
+                typed: ['tabby.log', '--paln',],
+              },);
+            },
+          },),
+          refusalOf({
+            read: function readsCensusMistyped(): unknown {
+              return lineOf({
+                command: 'coverage-census',
+                typed: ['--paln',],
+              },);
+            },
+          },),
+          refusalOf({
+            read: function readsBenchMistyped(): unknown {
+              return lineOf({
+                command: 'roster-bench',
+                typed: ['--paln',],
+              },);
+            },
+          },),
+        ],).toEqual([
+          '--paln is not a flag this command reads. Usage: meter-report <log file> [<log file> ...]',
+          '--paln is not a flag this command reads. Usage: coverage-census [--baseline <census.json>] '
+            + '[--source <src/file.ts> ...] [<unit test file> ...]',
+          '--paln is not a flag this command reads. Usage: roster-bench [<slices>]',
+        ],);
+      },
+    },),
+    it({
       name: 'READS positions between flags and after the terminator, and a repeatable flag in the order written',
       fn: async () => {
         /**

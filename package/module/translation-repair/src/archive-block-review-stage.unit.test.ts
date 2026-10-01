@@ -133,10 +133,12 @@ function scriptedClient(
     readonly prompts: string[];
     readonly payloads?: string[];
     /**
-     Seats whose every reply the completion cap cut before its content, the
-     shape `chat-json-outcome.ts` reads off `finish_reason=length`.
+     Seats whose reply to a prompt the completion cap cut before its
+     content, the shape `chat-json-outcome.ts` reads off
+     `finish_reason=length`; the prompt lets a case cut one review's replies
+     and not another's.
      */
-    readonly unreadableFor?: (modelId: string) => boolean;
+    readonly unreadableFor?: (request: { readonly modelId: string; readonly prompt: string; }) => boolean;
     /**
      Seats the router refuses because no provider serving them is wet, the
      refusal `stage-call.ts` counts out of reach.
@@ -163,7 +165,10 @@ function scriptedClient(
           reason: 'every provider serving this model is out of budget',
         },);
       }
-      if (unreadableFor(request.modelId,)) {
+      if (unreadableFor({
+        modelId: request.modelId,
+        prompt,
+      },)) {
         return {
           kind: 'schema-mismatch',
           rawText: '',
@@ -277,6 +282,16 @@ await describe({
         expect(isVerifiableEditorialArchiveBlock({ blockText: 'Translator: Cat Friend', },),).toBe(true,);
         expect(isVerifiableEditorialArchiveBlock({ blockText: 'Source: [Cat notes](https://example.test)', },),).toBe(true,);
         expect(isVerifiableEditorialArchiveBlock({ blockText: 'The cat won an award in spring.', },),).toBe(false,);
+        // The archive's contributor line, read by the contributor reader: the
+        // singular label and the full-width colon fit no prefix (ledger T8,
+        // eighteenth batch).
+        expect(isVerifiableEditorialArchiveBlock({ blockText: 'Contributor for this entry: Mittens', },),).toBe(true,);
+        expect(isVerifiableEditorialArchiveBlock({ blockText: 'Contributors for this entry：Mittens, Biscuit', },),)
+          .toBe(true,);
+        // A picture, and a comment only when it closes.
+        expect(isVerifiableEditorialArchiveBlock({ blockText: '![A tabby asleep](tabby.png)', },),).toBe(true,);
+        expect(isVerifiableEditorialArchiveBlock({ blockText: '<!-- translator note -->', },),).toBe(true,);
+        expect(isVerifiableEditorialArchiveBlock({ blockText: '<!-- translator note', },),).toBe(false,);
       },
     },),
     it({
@@ -374,7 +389,7 @@ await describe({
         const outcome = await runArchiveBlockReviewStage({
           client: scriptedClient({
             prompts,
-            unreadableFor: (modelId,) => {
+            unreadableFor: ({ modelId, },) => {
               asked.add(modelId,);
               return modelId !== ROSTER[0];
             },
@@ -784,6 +799,76 @@ await describe({
           return prompt.includes('Review English archive wording',);
         },);
         expect(new Set(reviewPrompts,).size,).toBe(1);
+      },
+    },),
+    it({
+      name: 'RECORDS AN UNHEARD NATURALNESS REVIEW on the retained block, each responsibility on its own: a '
+        + 'defect-discovery or acceptance-challenge round short of its quorum is a finding the block ships with, '
+        + 'never withholding authority',
+      fn: async () => {
+        /**
+         The retained block's findings when the replies to one naturalness
+         responsibility, named by a phrase only its sheet carries, are cut
+         for every seat but the first.
+ 
+         @param sheetPhrase - phrase naming the starved responsibility's sheet
+ 
+         @returns Which naturalness lines the findings carry
+         */
+        async function linesStarving(
+          { sheetPhrase, }: { readonly sheetPhrase: string; },
+        ): Promise<Readonly<Record<string, boolean>>> {
+          /**
+           Stage result with that responsibility's replies cut.
+           */
+          const outcome = await runArchiveBlockReviewStage({
+            client: scriptedClient({
+              prompts: [],
+              unreadableFor: ({ modelId, prompt, },) => (modelId !== ROSTER[0]) && prompt.includes(sheetPhrase,),
+              replyFor: ({ schema, },) => schema === 'archive_block_review'
+                ? {
+                  disposition: 'source-supported',
+                  sourceQuote: '窗边安静地睡觉',
+                  replacementText: '',
+                  finding: 'Expected section supports this sentence.',
+                }
+                : ACCEPTABLE_NATURALNESS,
+            },),
+            modelIds: ROSTER,
+            sourceText: '猫在窗边安静地睡觉。',
+            targetText: 'The cat sleeps quietly by the window.',
+            blockText: 'The cat sleeps quietly by the window.',
+            priorFindings: [],
+            signal: new AbortController().signal,
+            exchangeTimeoutMs: 5_000,
+            l,
+          },);
+          expect(outcome.kind,).toBe('retained',);
+          return {
+            discoveryShort: outcome.findings.includes('archive naturalness defect-discovery review quorum not met',),
+            challengeShort: outcome.findings.includes('archive naturalness acceptance-challenge review quorum not met',),
+            recorded: outcome.findings.includes('archive block retained with naturalness findings recorded',),
+            accepted: outcome.findings.includes('archive block absolute naturalness accepted and challenged',),
+          };
+        }
+
+        expect([
+          await linesStarving({ sheetPhrase: 'Discover material defects', },),
+          await linesStarving({ sheetPhrase: 'A prior editor accepted this exact candidate', },),
+        ],).toEqual([
+          {
+            discoveryShort: true,
+            challengeShort: false,
+            recorded: true,
+            accepted: false,
+          },
+          {
+            discoveryShort: false,
+            challengeShort: true,
+            recorded: true,
+            accepted: false,
+          },
+        ],);
       },
     },),
     it({

@@ -110,6 +110,47 @@ const GUARD_CASES: readonly GuardCase[] = [
     },
     false,
   ],
+  // The shape checks before the disposition's own rule (ledger T8, eighteenth
+  // batch): a reply that is no record, a quote or replacement that is no
+  // text, and no finding.
+  [
+    'no record at all',
+    null,
+    false,
+  ],
+  [
+    'a bare sentence where the record belongs',
+    'The block is fine.',
+    false,
+  ],
+  [
+    'a quote that is not text',
+    {
+      disposition: 'editorial-context',
+      sourceQuote: 7,
+      replacementText: '',
+      finding: 'A translator label.',
+    },
+    false,
+  ],
+  [
+    'no replacement field',
+    {
+      disposition: 'editorial-context',
+      sourceQuote: '',
+      finding: 'A translator label.',
+    },
+    false,
+  ],
+  [
+    'no finding',
+    {
+      disposition: 'editorial-context',
+      sourceQuote: '',
+      replacementText: '',
+    },
+    false,
+  ],
 ];
 
 await describe({
@@ -117,7 +158,7 @@ await describe({
   children: [
     it({
       name: 'ADMITS an editorial-context reply whatever its quote, as it admits a revision\'s, and still refuses '
-        + 'retention with no anchor and a disposition outside the list',
+        + 'retention with no anchor, a disposition outside the list, and a reply not shaped as the record',
       fn: async () => {
         expect(GUARD_CASES.map(function readingOf({ 0: label, 1: reply, },): string {
           return `${label}: ${String(isArchiveBlockReviewWire(reply,),)}`;
