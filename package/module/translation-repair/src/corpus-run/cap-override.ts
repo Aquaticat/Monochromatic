@@ -1,3 +1,5 @@
+import { isDecimalText, } from '../whole-number-text.ts';
+
 //region Cap override
 // Lets one invocation run under a different per-entry ceiling than the built-in
 // one, without rebuilding.
@@ -92,7 +94,11 @@ export function resolveHardCapMinutes(
    */
   const minutes = Number(raw,);
 
-  if ((!Number.isFinite(minutes,)) || (minutes <= 0))
+  // A PLAIN DECIMAL, as an operator writes minutes: `Number` also read `0x10`,
+  // `1e1`, `+15`, ` 15` and `.5` as minutes nobody wrote that way (ledger B73).
+  if ((!isDecimalText({ text: raw, },))
+    || (!Number.isFinite(minutes,))
+    || (minutes <= 0))
     throw new HardCapOverrideError({ value: raw, },);
 
   return minutes;

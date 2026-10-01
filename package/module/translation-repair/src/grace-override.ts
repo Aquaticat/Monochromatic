@@ -1,4 +1,5 @@
 import { StatedRefusalError, } from './stated-refusal.ts';
+import { isWholeNumberText, } from './whole-number-text.ts';
 
 //region Grace override
 // Lets one invocation run its stage rounds under a different straggler window
@@ -180,7 +181,9 @@ export function readWindowDial(
    */
   const ms = Number(raw,);
 
-  if (!isTimerWindow({ ms, },))
+  // DIGITS AS AN OPERATOR WRITES A COUNT OF MILLISECONDS: `Number` also read
+  // `0x3E8`, `1e3`, `+1000`, ` 1000` and `1000.0` as one second (ledger B73).
+  if ((!isWholeNumberText({ text: raw, },)) || (!isTimerWindow({ ms, },)))
     throw new StatedRefusalError({
       says: `${variable} must be a whole number of milliseconds from 1 to ${
         String(MAX_TIMER_DELAY_MS,)

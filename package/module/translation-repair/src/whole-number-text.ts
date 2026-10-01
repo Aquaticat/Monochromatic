@@ -16,6 +16,10 @@ import { isAsciiDigits, } from './ascii-letters.ts';
 // types it, and no writer here pads, so reading it costs nothing; a sign, a
 // point, a radix prefix or a space is refused, since none is how a count is
 // written here.
+//
+// AN AMOUNT THAT TAKES A FRACTION (minutes, dollars, a rate) is a plain
+// decimal: digits, or digits, a point and digits. The same spellings are
+// refused, and the point needs a digit on each side.
 
 /**
  How a refusal names the numbers this rule takes, so every reader says the
@@ -74,6 +78,117 @@ export function isNegativeWholeNumberText({ text, }: { readonly text: string; },
   return text.startsWith(MINUS,)
     && isWholeNumberText({ text: magnitude, },)
     && (Number(magnitude,) > 0);
+}
+
+/**
+ Separator between a decimal's whole and fractional digits.
+ */
+const DECIMAL_POINT = '.';
+
+/**
+ Whether text is a plain decimal written in ASCII digits, with at most one
+ point that has digits on both sides.
+
+ NOT WHETHER `Number` READS IT FINITE: a digit run past the largest double
+ is a plain decimal that `Number` reads as Infinity, so a reader checks that
+ too.
+
+ @param text - amount as written
+
+ @returns Whether it is digits, or digits, a point and digits
+
+ @example
+ ```ts
+ isDecimalText({ text: '7.5', },); // true
+ isDecimalText({ text: '.5', },); // false
+ ```
+ */
+export function isDecimalText({ text, }: { readonly text: string; },): boolean {
+  /**
+   Digits before the point, those after it where one is written, and any
+   text past a second point, which no decimal has.
+   */
+  const [
+    whole = '',
+    fraction,
+    ...beyond
+  ] = text.split(DECIMAL_POINT,);
+  return (beyond.length === 0)
+    && isAsciiDigits({ text: whole, },)
+    && ((fraction === undefined) || isAsciiDigits({ text: fraction, },));
+}
+
+/**
+ Letters that open a number's exponent, as JSON writes one.
+ */
+const EXPONENT_MARKS: ReadonlySet<string> = new Set([
+  'e',
+  'E',
+],);
+
+/**
+ Signs an exponent may carry.
+ */
+const EXPONENT_SIGNS: ReadonlySet<string> = new Set([
+  '+',
+  '-',
+],);
+
+/**
+ What `findIndex` returns when no character matches.
+ */
+const NOT_FOUND = -1;
+
+/**
+ Whether text is an unsigned number as JSON writes one: a plain decimal, then
+ optionally an exponent mark, an optional sign and digits.
+
+ FOR NUMBERS A SERVICE WRITES AS TEXT, not ones a person types. A catalogue
+ in OpenRouter's shape (LLM Gateway's) writes a price as `0.042e-6`, the one
+ exponent spelling among the 7,866 stored listing prices the audit read
+ (ledger B73). Like {@link isDecimalText} it does not ask whether `Number`
+ reads the text finite.
+
+ @param text - number as written, currency sign removed
+
+ @returns Whether it is a plain decimal with at most one exponent after it
+
+ @example
+ ```ts
+ isUnsignedNumberText({ text: '0.042e-6', },); // true
+ isUnsignedNumberText({ text: '1e', },); // false
+ ```
+ */
+export function isUnsignedNumberText({ text, }: { readonly text: string; },): boolean {
+  /**
+   The text's characters, so the mark is found and cut at the same offsets.
+   */
+  const characters = Array.from(text,);
+  /**
+   Where the exponent mark stands, when the number has one.
+   */
+  const markAt = characters.findIndex(function isMark(character,): boolean {
+    return EXPONENT_MARKS.has(character,);
+  },);
+  if (markAt === NOT_FOUND)
+    return isDecimalText({ text, },);
+  /**
+   What follows the mark: an optional sign, then digits. A second mark lands
+   here and is no digit.
+   */
+  const exponent = characters.slice(markAt + 1,);
+  /**
+   The exponent's digits, past the sign it may open with.
+   */
+  const digits = EXPONENT_SIGNS.has(exponent[0] ?? '',) ? exponent.slice(1,) : exponent;
+  return isDecimalText({
+    text: characters.slice(
+      0,
+      markAt,
+    )
+      .join('',),
+  },)
+    && isAsciiDigits({ text: digits.join('',), },);
 }
 
 //endregion Whole number text

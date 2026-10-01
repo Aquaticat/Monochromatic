@@ -1,4 +1,5 @@
 import type { ProviderName, } from '../provider-name.ts';
+import { isDecimalText, } from '../whole-number-text.ts';
 
 //region Spend ceiling
 // HOW MUCH ONE RUN MAY SPEND ON THE PROVIDER THAT BILLS IN USD before it stops
@@ -106,7 +107,11 @@ export function resolveSpendCeilingUsd(
    */
   const usd = Number(raw,);
 
-  if ((!Number.isFinite(usd,)) || (usd < 0))
+  // A PLAIN DECIMAL, as an operator writes dollars, which carries no sign:
+  // `Number` also read `0x10`, `1e1`, `+15`, ` 15` and `.5` as amounts nobody
+  // wrote that way (ledger B73). A digit run past the largest double is still
+  // a plain decimal, and reads as Infinity.
+  if ((!isDecimalText({ text: raw, },)) || (!Number.isFinite(usd,)))
     throw new SpendCeilingOverrideError({ value: raw, },);
 
   return usd;

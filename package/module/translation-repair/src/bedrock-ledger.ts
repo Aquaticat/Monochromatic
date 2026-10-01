@@ -13,6 +13,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { contextRoot, } from './log-context.ts';
 import { errorName, } from './error-name.ts';
 import { isJsonRecord, } from './json-guard.ts';
+import { isDecimalText, } from './whole-number-text.ts';
 import { readTextOrEmptyIfMissing, } from './read-text-if-present.ts';
 import {
   isSpendReckoning,
@@ -303,10 +304,13 @@ export function bedrockCreditUsdFrom(
   const parsed = Number(raw,);
 
   /**
-   Whether the override reads as an amount at all.
+   Whether the override reads as an amount at all: a plain decimal, as an
+   operator writes dollars, which carries no sign, and finite. `Number` also
+   read `0x10`, `1e1`, `+15`, ` 15` and `.5` as amounts nobody wrote that way
+   (ledger B73).
    */
-  const isAmount = Number.isFinite(parsed,);
-  if ((!isAmount) || (parsed < 0))
+  const isAmount = isDecimalText({ text: raw, },) && Number.isFinite(parsed,);
+  if (!isAmount)
     throw new BedrockCreditOverrideError({ value: raw, },);
   return parsed;
 }

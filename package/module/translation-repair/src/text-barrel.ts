@@ -75,7 +75,9 @@ export {
   wordStarts,
 } from './word-bounds.ts';
 export {
+  isDecimalText,
   isNegativeWholeNumberText,
+  isUnsignedNumberText,
   isWholeNumberText,
   WHOLE_NUMBER_RULE,
 } from './whole-number-text.ts';

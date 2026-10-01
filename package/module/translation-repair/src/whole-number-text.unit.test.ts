@@ -13,7 +13,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  isDecimalText,
   isNegativeWholeNumberText,
+  isUnsignedNumberText,
   isWholeNumberText,
   WHOLE_NUMBER_RULE,
 } from '../dist/final/node/index.mjs';
@@ -106,6 +108,93 @@ await describe({
         ];
         expect(refused.filter(function taken(text,): boolean {
           return isNegativeWholeNumberText({ text, },);
+        },),).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isDecimalText.name,
+  children: [
+    it({
+      name: 'TAKES digits, and digits, a point and digits, leading and trailing zeros included, and a digit run '
+        + 'past the largest double, which the rule leaves to its readers to check for finite',
+      fn: async () => {
+        expect(['0', '7', '7.5', '0.000003', '007.50', `1${'0'.repeat(400,)}`,].map(function taken(text,): boolean {
+          return isDecimalText({ text, },);
+        },),).toEqual([true, true, true, true, true, true,],);
+      },
+    },),
+    it({
+      name: 'REFUSES empty, blank, a sign, a point missing a digit on either side, a second point, an exponent, a '
+        + 'radix, a space either side, a comma and a full-width digit',
+      fn: async () => {
+        /**
+         Texts `Number` reads, or reads as something else, that no plain decimal is written as.
+         */
+        const refused = [
+          '',
+          ' ',
+          '-1',
+          '+1',
+          '.5',
+          '5.',
+          '.',
+          '1.2.3',
+          '1e3',
+          '0x1F',
+          ' 1',
+          '1 ',
+          '1,5',
+          '１',
+          'Infinity',
+        ];
+        expect(refused.filter(function taken(text,): boolean {
+          return isDecimalText({ text, },);
+        },),).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isUnsignedNumberText.name,
+  children: [
+    it({
+      name: 'TAKES a plain decimal, and one followed by an exponent mark in either case, a sign or none, and digits',
+      fn: async () => {
+        expect(['7', '7.5', '0.042e-6', '1.28E5', '1e+3', '15e0',].map(function taken(text,): boolean {
+          return isUnsignedNumberText({ text, },);
+        },),).toEqual([true, true, true, true, true, true,],);
+      },
+    },),
+    it({
+      name: 'REFUSES an exponent missing its digits or carrying anything else, a second mark, a mark with no decimal '
+        + 'before it, a sign before the number, and what a plain decimal refuses',
+      fn: async () => {
+        /**
+         Texts that are no unsigned number as JSON writes one.
+         */
+        const refused = [
+          '1e',
+          '1e+',
+          '1e-',
+          '1e5e5',
+          '1e5.5',
+          '1e 5',
+          '1e+-5',
+          'e5',
+          '.5e3',
+          '5.e3',
+          '-1e3',
+          '+1e3',
+          '0x1e3',
+          '',
+          ' 1e3',
+        ];
+        expect(refused.filter(function taken(text,): boolean {
+          return isUnsignedNumberText({ text, },);
         },),).toEqual([],);
       },
     },),

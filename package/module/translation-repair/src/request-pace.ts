@@ -4,6 +4,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from './log-context.ts';
 import { StatedRefusalError, } from './stated-refusal.ts';
+import { isDecimalText, } from './whole-number-text.ts';
 
 //region Request pace
 // A sliding-window pacer that lets at most `perWindow` requests START in any
@@ -315,7 +316,11 @@ export function hyperRequestsPerHour(
    number out of a typo such as `300/h`.
    */
   const parsed = Number(raw,);
-  if ((!Number.isFinite(parsed,)) || (parsed <= 0)) {
+  // A PLAIN DECIMAL, as an operator writes a rate: `Number` also read `0x10`,
+  // `1e1`, `+15`, ` 15` and `.5` as rates nobody wrote that way (ledger B73).
+  if ((!isDecimalText({ text: raw, },))
+    || (!Number.isFinite(parsed,))
+    || (parsed <= 0)) {
     throw new StatedRefusalError({
       says: `${HYPER_REQUESTS_PER_HOUR_VAR} must be a positive number of requests per hour, and `
         + `${JSON.stringify(raw,)} is not; leave it unset for the account limit of ${String(HYPER_REQUESTS_PER_HOUR,)}`,
