@@ -24,6 +24,7 @@ import {
   rankWithinBands,
   smallBandIds,
 } from './band-order.ts';
+import { askedAmong, } from './command-flags.ts';
 import { readOnlyIds, } from './entry-filter.ts';
 import { inEntryLogContext, } from '../log-context.ts';
 import { collectEligiblePairs, } from './pass-eligibility.ts';
@@ -373,11 +374,10 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
     settled,
     incomplete,
   } = await collectEligiblePairs({
-    ids: (onlyIds.size === 0)
-      ? people
-      : people.filter(function isChosen(candidate,): boolean {
-        return onlyIds.has(candidate,);
-      },),
+    ids: askedAmong({
+      asked: [...onlyIds,],
+      known: people,
+    },),
     done,
     pin: RUN_CORPUS_PIN,
   },);

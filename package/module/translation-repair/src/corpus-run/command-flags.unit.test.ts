@@ -1,7 +1,8 @@
 /**
  Tests for the readers of flag values the probes and the rendering audit
  share (ledger B73): what a whole number, an id list and a file flag each
- read as, given what the command-line reader handed on (ledger B75), whose
+ read as, and which reachable ids an id list keeps, given what the
+ command-line reader handed on (ledger B75), whose
  own refusals of a flag written with nothing after it, written twice or
  written in a form nobody reads are tested in `command-line.unit.test.ts`.
  Fixtures are cat-themed invention only.
@@ -17,6 +18,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  askedAmong,
   type FlagValue,
   idListFlag,
   StatedRefusalError,
@@ -227,6 +229,47 @@ await describe({
           asked: UNWRITTEN,
           unwritten: 'cushion.md',
         },),).toBe('cushion.md',);
+      },
+    },),
+  ],
+},);
+
+/**
+ Entries a runner can reach, in the order it walks them.
+ */
+const LITTER: readonly string[] = [
+  'Tabby_01',
+  'Ginger42',
+  'Mittens',
+];
+
+await describe({
+  name: askedAmong.name,
+  children: [
+    it({
+      name: 'KEEPS every reachable id when none was asked, in the order the runner walks them',
+      fn: async () => {
+        expect(askedAmong({
+          asked: [],
+          known: LITTER,
+        },),).toEqual(LITTER,);
+      },
+    },),
+    it({
+      name: 'KEEPS the reachable ids asked for, in the order the runner walks them rather than as written, '
+        + 'each once',
+      fn: async () => {
+        expect(askedAmong({
+          asked: [
+            'Mittens',
+            'Tabby_01',
+            'Mittens',
+          ],
+          known: LITTER,
+        },),).toEqual([
+          'Tabby_01',
+          'Mittens',
+        ],);
       },
     },),
   ],

@@ -17,7 +17,10 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
-import { idListFlag, } from './command-flags.ts';
+import {
+  askedAmong,
+  idListFlag,
+} from './command-flags.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
 
@@ -70,10 +73,10 @@ async function gatherCases(
   /**
    Entries to walk.
    */
-  const entryIds = (await listCorpusPeople({ pin: RUN_CORPUS_PIN, },))
-    .filter(function isWanted(entryId,): boolean {
-      return (onlyIds.length === 0) || onlyIds.includes(entryId,);
-    },);
+  const entryIds = askedAmong({
+    asked: onlyIds,
+    known: await listCorpusPeople({ pin: RUN_CORPUS_PIN, },),
+  },);
 
   for (const entryId of entryIds) {
     if (cases.length >= CASES_OFFERED)

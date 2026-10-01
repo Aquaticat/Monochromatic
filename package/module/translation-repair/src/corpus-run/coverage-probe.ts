@@ -18,6 +18,7 @@ import {
   RUN_ROSTER,
 } from './run-config.ts';
 import { reportingRefusals, } from './cli-refusal.ts';
+import { askedAmong, } from './command-flags.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 import { readCoverageProbeArguments, } from './coverage-probe-args.ts';
 
@@ -235,10 +236,10 @@ async function main({ line, }: { readonly line: CommandLineOf<'coverage-probe'>;
   /**
    Entries to walk, filtered when the caller named some.
    */
-  const entryIds = (await listCorpusPeople({ pin: RUN_CORPUS_PIN, },))
-    .filter(function isWanted(entryId,): boolean {
-      return (onlyIds.length === 0) || onlyIds.includes(entryId,);
-    },);
+  const entryIds = askedAmong({
+    asked: onlyIds,
+    known: await listCorpusPeople({ pin: RUN_CORPUS_PIN, },),
+  },);
   /* oxlint-disable no-await-in-loop -- Sequential on purpose: this probe exists
      to be read while it runs, and a fan-out over entries would interleave the
      progress of several documents into one stream. */

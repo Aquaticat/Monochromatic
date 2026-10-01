@@ -10,6 +10,7 @@
 
 export { readAskedCount, } from './corpus-run/asked-count.ts';
 export {
+  askedAmong,
   idListFlag,
   wholeNumberFlag,
   writtenOr,

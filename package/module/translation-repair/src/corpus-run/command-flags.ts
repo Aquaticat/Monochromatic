@@ -168,4 +168,47 @@ export function idListFlag(
   return named;
 }
 
+/**
+ The ids a runner works over: those its line asks for, among those it can
+ reach.
+
+ ONE FILTER FOR EVERY RUNNER that narrows its walk by id. The pass, the two
+ coverage probes and the settled audit each wrote their own, the same
+ predicate in each.
+
+ @param asked - ids the line names, in the order written; empty when it
+ names none, which reads as no restriction
+
+ @param known - ids the runner can reach, in the order it walks them
+
+ @returns The known ids asked for, in `known`'s order, so a filtered run
+ walks its entries as an unfiltered one does; every known id when none was
+ asked
+
+ @example
+ ```ts
+ const entryIds = askedAmong({ asked: onlyIds, known: people, },);
+ ```
+ */
+export function askedAmong(
+  {
+    asked,
+    known,
+  }: {
+    readonly asked: readonly string[];
+    readonly known: readonly string[];
+  },
+): readonly string[] {
+  if (asked.length === 0)
+    return known;
+
+  /**
+   Ids asked for, for lookup.
+   */
+  const wanted = new Set(asked,);
+  return known.filter(function isAsked(id,): boolean {
+    return wanted.has(id,);
+  },);
+}
+
 //endregion Command flags

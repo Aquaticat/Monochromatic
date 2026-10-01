@@ -4,6 +4,7 @@ import type { SyntheticClient, } from '../chat-contract.ts';
 import { citedReferenceUrlsOf, } from '../cited-reference-scan.ts';
 import { runRenderingAudit, } from '../rendering-audit.ts';
 import { RenderingAuditInvariantError, } from '../rendering-audit-invariant.ts';
+import { askedAmong, } from './command-flags.ts';
 import type { PassReferenceReader, } from './pass-outside-reads.ts';
 import { digestAuditedText, } from './rendering-audit-settled-digest.ts';
 import type { SettledArtifactReading, } from './rendering-audit-settled-input.ts';
@@ -340,14 +341,21 @@ export function eligibleSubjects(
     readonly onlyIds: readonly string[];
   },
 ): readonly SettledAuditSubject[] {
+  /**
+   Entries the archive holds that the filter keeps.
+   */
+  const kept = new Set(askedAmong({
+    asked: onlyIds,
+    known: readings.map(function entryOf(reading,): string {
+      return reading.entryId;
+    },),
+  },),);
   return readings
     .flatMap(function subjectsOf(reading,): readonly SettledAuditSubject[] {
       return reading.subjects;
     },)
     .filter(function isWanted(subject,): boolean {
-      if (onlyIds.length === 0)
-        return true;
-      return onlyIds.includes(subject.entryId,);
+      return kept.has(subject.entryId,);
     },);
 }
 
