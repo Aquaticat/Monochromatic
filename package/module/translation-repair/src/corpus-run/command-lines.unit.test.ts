@@ -1,13 +1,17 @@
 /**
  Tests the declaration of what every runner reads from its command line
  (ledger B75): that it declares every runner the build makes and nothing
- else, that each declaration can be read as written, and that each runner's
- mise task description offers exactly the flags its runner reads.
+ else, that each declaration can be read as written, that each runner's
+ mise task description offers exactly the flags its runner reads, and that
+ the living docs invoke each runner only with flags it reads.
 
  @module
  */
 
-import { readFile, } from 'node:fs/promises';
+import {
+  readdir,
+  readFile,
+} from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -21,6 +25,10 @@ import {
   isAsciiLowerLetter,
   nodeEntries,
 } from '../../dist/final/node/index.mjs';
+import {
+  readLivingRepositoryDocs,
+  REPOSITORY_ROOT,
+} from '../living-docs.test-fixture.ts';
 
 /**
  The package's task file, beside `src`.
@@ -129,22 +137,22 @@ function startsFlag({
 }
 
 /**
- Every long flag a description spells, in order: two dashes, then a
- lowercase word that may carry inner dashes. A bare `--`, which descriptions
- write before the arguments mise passes on, has no word and is not one.
+ Every long flag a text spells, in order: two dashes, then a lowercase word
+ that may carry inner dashes. A bare `--`, which descriptions and docs write
+ before the arguments mise passes on, has no word and is not one.
 
- One pass from the start, so the time is linear in the description.
+ One pass from the start, so the time is linear in the text.
 
- @param description - a task description
+ @param text - a task description, or what a doc types after a runner
 
- @returns The flags, dashes included, as often as the description spells them
+ @returns The flags, dashes included, as often as the text spells them
 
  @example
  ```ts
- flagsSpelled({ description: 'probe (pass -- --only a,b)', },); // ['--only']
+ flagsSpelled({ text: 'probe (pass -- --only a,b)', },); // ['--only']
  ```
  */
-function flagsSpelled({ description, }: { readonly description: string; },): readonly string[] {
+function flagsSpelled({ text, }: { readonly text: string; },): readonly string[] {
   /**
    Flags found so far.
    */
@@ -154,9 +162,9 @@ function flagsSpelled({ description, }: { readonly description: string; },): rea
    Where the scan stands.
    */
   let at = 0;
-  while (at < description.length) {
+  while (at < text.length) {
     if (!startsFlag({
-      text: description,
+      text,
       at,
     },)) {
       at += 1;
@@ -167,9 +175,9 @@ function flagsSpelled({ description, }: { readonly description: string; },): rea
      Just past the flag's last character.
      */
     let end = at + LONG_PREFIX.length + 1;
-    while (continuesFlagWord({ character: description.charAt(end,), },))
+    while (continuesFlagWord({ character: text.charAt(end,), },))
       end += 1;
-    flags.push(description.slice(
+    flags.push(text.slice(
       at,
       end,
     ),);
@@ -227,6 +235,194 @@ function taskDescriptions({ text, }: { readonly text: string; },): ReadonlyMap<s
     }
   }
   return found;
+}
+
+/**
+ How a doc spells an invocation of a runner, up to what is typed after it:
+ the package task, the same task named from the repository root, and the
+ built file.
+
+ @param runner - runner name
+
+ @returns The spellings, each ending where the typed arguments start
+
+ @example
+ ```ts
+ invocationsOf({ runner: 'corpus-pass', },)[0]; // 'mise run corpus-pass '
+ ```
+ */
+function invocationsOf({ runner, }: { readonly runner: string; },): readonly string[] {
+  return [
+    `mise run ${runner} `,
+    `mise run //package/module/translation-repair:${runner} `,
+    `node dist/final/node/${runner}.mjs`,
+  ];
+}
+
+/**
+ Every flag a doc's runner invocations write that the runner does not read.
+
+ Each line is read for every runner's spellings; what follows one, up to the
+ next backtick or the line's end, is what the doc types after the runner. An
+ invocation broken across lines is read up to its first line's end.
+
+ @param path - doc path, which names each finding
+
+ @param text - doc text
+
+ @returns Each flag as `path:line runner --flag`, and how many invocations
+ were read, so an empty list is read against a scan that saw some
+
+ @example
+ ```ts
+ const { undeclared, invocations, } = undeclaredFlagsIn({ path: 'doc/cat.md', text, },);
+ ```
+ */
+function undeclaredFlagsIn(
+  {
+    path,
+    text,
+  }: {
+    readonly path: string;
+    readonly text: string;
+  },
+): {
+  readonly undeclared: readonly string[];
+  readonly invocations: number;
+} {
+  /**
+   Each invocation found: where, which runner, and what was typed after it.
+   */
+  const found = text.split('\n',).flatMap(function invocationsOnLine(line, index,): readonly {
+    readonly where: string;
+    readonly runner: string;
+    readonly typed: string;
+  }[] {
+    return Object.keys(COMMAND_LINES,).flatMap(function spellingsOf(runner,): readonly {
+      readonly where: string;
+      readonly runner: string;
+      readonly typed: string;
+    }[] {
+      return invocationsOf({ runner, },).flatMap(function occurrencesOf(spelling,): readonly {
+        readonly where: string;
+        readonly runner: string;
+        readonly typed: string;
+      }[] {
+        return line
+          .split(spelling,)
+          .slice(1,)
+          .map(function typedAfter(after,): {
+            readonly where: string;
+            readonly runner: string;
+            readonly typed: string;
+          } {
+            /**
+             Where the code span closes, absent when it runs to the line's end.
+             */
+            const closes = after.indexOf('`',);
+            return {
+              where: `${path}:${String(index + 1,)}`,
+              runner,
+              typed: (closes === (-1)) ? after : after.slice(
+                0,
+                closes,
+              ),
+            };
+          },);
+      },);
+    },);
+  },);
+  return {
+    undeclared: found.flatMap(function undeclaredOf({
+      where,
+      runner,
+      typed,
+    },): readonly string[] {
+      /**
+       What the runner reads.
+       */
+      const spec = COMMAND_LINES[runner as keyof typeof COMMAND_LINES];
+
+      /**
+       Its flags, dashes included.
+       */
+      const declared = new Set(
+        [
+          ...Object.keys(spec.valued,),
+          ...Object.keys(spec.repeatable,),
+          ...Object.keys(spec.switches,),
+        ].map(function dashed(name,): string {
+          return `${LONG_PREFIX}${name}`;
+        },),
+      );
+      return flagsSpelled({ text: typed, },)
+        .filter(function isUndeclared(flag,): boolean {
+          return !declared.has(flag,);
+        },)
+        .map(function shown(flag,): string {
+          return `${where} ${runner} ${flag}`;
+        },);
+    },),
+    invocations: found.length,
+  };
+}
+
+/**
+ The docs the invocation case reads, from the repository root: the living
+ repository-level docs and the package's docs and README. The audit ledger is
+ left out, since it records what was typed when it was typed.
+
+ @returns Paths from the repository root
+
+ @example
+ ```ts
+ const paths = await invokingDocs();
+ ```
+ */
+async function invokingDocs(): Promise<readonly string[]> {
+  /**
+   Package root, from the repository root.
+   */
+  const pkg = join(
+    'package',
+    'module',
+    'translation-repair',
+  );
+
+  /**
+   Living repository-level docs.
+   */
+  const {
+    decisionRecords,
+    handover,
+    currentPlanning,
+    operations,
+  } = await readLivingRepositoryDocs();
+  return [
+    ...decisionRecords,
+    ...handover,
+    ...currentPlanning,
+    ...operations,
+    ...(await readdir(join(
+      REPOSITORY_ROOT,
+      pkg,
+      'doc',
+    ),))
+      .filter(function isLivingMarkdown(name,): boolean {
+        return name.endsWith('.md',) && (name !== 'audit-ledger.md');
+      },)
+      .map(function underDoc(name,): string {
+        return join(
+          pkg,
+          'doc',
+          name,
+        );
+      },),
+    join(
+      pkg,
+      'README.md',
+    ),
+  ];
 }
 
 await describe({
@@ -302,7 +498,7 @@ await describe({
         ] {
           return [
             command,
-            [...new Set(flagsSpelled({ description: descriptions.get(command,) ?? '', },),),].toSorted(),
+            [...new Set(flagsSpelled({ text: descriptions.get(command,) ?? '', },),),].toSorted(),
           ];
         },),);
 
@@ -328,6 +524,60 @@ await describe({
         },),);
 
         expect(offered,).toEqual(read,);
+      },
+    },),
+    it({
+      name: 'FINDS a flag a doc types after a runner that the runner does not read, in each spelling of an '
+        + 'invocation, the equals form included, and leaves declared flags and a runner named bare',
+      fn: async () => {
+        expect(undeclaredFlagsIn({
+          path: 'doc/cat.md',
+          text: [
+            'Run `mise run corpus-pass -- --olny Tabby_01 --plan` first.',
+            'Or `mise run //package/module/translation-repair:coverage-probe -- --cap 2 --cpa=3`,',
+            'then `node dist/final/node/verify-published.mjs --nap`, and `mise run corpus-pass` bare.',
+          ].join('\n',),
+        },),).toEqual({
+          undeclared: [
+            'doc/cat.md:1 corpus-pass --olny',
+            'doc/cat.md:2 coverage-probe --cpa',
+            'doc/cat.md:3 verify-published --nap',
+          ],
+          invocations: 3,
+        },);
+      },
+    },),
+    it({
+      name: 'INVOKES each runner in the living docs only with flags it reads, so a doc cannot hand a reader a '
+        + 'command the runner refuses',
+      fn: async () => {
+        /**
+         Each doc's findings and invocation count.
+         */
+        const scanned = await Promise.all((await invokingDocs()).map(async function scanDoc(path,): Promise<{
+          readonly undeclared: readonly string[];
+          readonly invocations: number;
+        }> {
+          return undeclaredFlagsIn({
+            path,
+            text: await readFile(
+              join(
+                REPOSITORY_ROOT,
+                path,
+              ),
+              'utf8',
+            ),
+          },);
+        },),);
+
+        // The docs invoke runners, so an empty list is not a scan that read
+        // nothing.
+        expect(scanned.some(function invokes({ invocations, },): boolean {
+          return invocations > 0;
+        },),).toBe(true,);
+        expect(scanned.flatMap(function undeclaredOf({ undeclared, },): readonly string[] {
+          return undeclared;
+        },),).toEqual([],);
       },
     },),
   ],
