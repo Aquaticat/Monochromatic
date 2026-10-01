@@ -102,6 +102,38 @@ await describe({
     },),
 
     it({
+      name: 'REFUSES AN EXTENSION SPELLED AS A NAME EVERY OBJECT INHERITS, where a plain-object table of '
+        + 'media types answered with the inherited function or object and sent it as the media type '
+        + '(ledger B77)',
+      fn: async () => {
+        expect([
+          'tabby.constructor',
+          'tabby.__proto__',
+          'tabby.CONSTRUCTOR',
+        ].map(function encoded(assetName,) {
+          return encodeImageAsset({
+            bytes: bytesOf({ length: 64, },),
+            assetName,
+            maxBytes: CEILING,
+          },);
+        },),).toStrictEqual([
+          {
+            kind: 'refused',
+            reason: 'unknown-media-type',
+          },
+          {
+            kind: 'refused',
+            reason: 'unknown-media-type',
+          },
+          {
+            kind: 'refused',
+            reason: 'unknown-media-type',
+          },
+        ],);
+      },
+    },),
+
+    it({
       name: 'REFUSES A PICTURE TOO LARGE TO SEND, rather than shrinking it: the pictures that '
         + 'do not fit are the handwritten letters, which are the hardest to read, so a downscale '
         + 'would produce the confident wrong reading this all exists to avoid. TO SEND, not to '

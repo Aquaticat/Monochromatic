@@ -681,6 +681,27 @@ await describe({
     },),
 
     it({
+      name: 'carries a disposition spelled as a name every object inherits as unrecognized too, where a '
+        + 'plain-object table of notes printed the inherited function or object as the note (ledger B77)',
+      fn: async () => {
+        for (const disposition of ['constructor', '__proto__', 'toString',]) {
+          /**
+           Sheet for one item whose stored disposition is that name.
+           */
+          const sheet = formatRepairSheet({
+            sample: [catCandidate({ repair: catRepair({ disposition, },), },),],
+            seed: 'cat-seed',
+            corpusSha: 'sha/1',
+            drawDigest: 'digest-of-this-draw',
+          },);
+          expect(sheet.includes(
+            `- outcome: ${disposition} (unrecognized disposition; report this rather than grading it)`,
+          ),).toBe(true,);
+        }
+      },
+    },),
+
+    it({
       name: 'says a side quoted nothing, rather than printing an empty line the grader would read '
         + 'as a lost quote',
       fn: async () => {

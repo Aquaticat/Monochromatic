@@ -33,6 +33,8 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  attemptsOf,
+  countAttempt,
   readAttemptMap,
   writeAttemptMap,
 } from '../../dist/final/node/index.mjs';
@@ -354,6 +356,91 @@ await describe({
           Marmalade: 5,
         },);
         expect(await readdir(scratch.path,),).toStrictEqual(['attempts.json',],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: `${attemptsOf.name} and ${countAttempt.name} (ledger B77)`,
+  children: [
+    it({
+      name: 'COUNTS NO ATTEMPT for an entry whose id is a name every object inherits, where a plain-object '
+        + 'map answered with the inherited function or object as the count',
+      fn: async () => {
+        await using scratch = await scratchDir();
+        /**
+         Counts read from a file that records none.
+         */
+        const attempts = await readWritten({
+          directory: scratch.path,
+          contents: '{}',
+        },);
+        expect([
+          'constructor',
+          '__proto__',
+          'toString',
+        ].map(function countOf(id,): number {
+          return attemptsOf({
+            attempts,
+            id,
+          },);
+        },),).toStrictEqual([0, 0, 0,],);
+      },
+    },),
+
+    it({
+      name: 'COUNTS AND WRITES an attempt for an entry whose id is __proto__, where a plain-object map took the '
+        + 'count as setting its prototype and dropped it, so the entry sorted as never tried',
+      fn: async () => {
+        await using scratch = await scratchDir();
+        /**
+         Path the attempts file occupies.
+         */
+        const attemptsPath = join(
+          scratch.path,
+          'attempts.json',
+        );
+        await writeFile(
+          attemptsPath,
+          '{}',
+          'utf8',
+        );
+        /**
+         Counts this case adds to.
+         */
+        const attempts = await readAttemptMap(attemptsPath,);
+        countAttempt({
+          attempts,
+          id: '__proto__',
+        },);
+        expect(attemptsOf({
+          attempts,
+          id: '__proto__',
+        },),).toBe(1,);
+        await writeAttemptMap({
+          attemptsPath,
+          attempts,
+        },);
+        expect(attemptsOf({
+          attempts: await readAttemptMap(attemptsPath,),
+          id: '__proto__',
+        },),).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'READS BACK a count a file records for an entry whose id is __proto__, which the file holds as a '
+        + 'field of its own',
+      fn: async () => {
+        await using scratch = await scratchDir();
+        expect(attemptsOf({
+          attempts: await readWritten({
+            directory: scratch.path,
+            contents: '{"__proto__": 2}',
+          },),
+          id: '__proto__',
+        },),).toBe(2,);
       },
     },),
   ],

@@ -570,5 +570,40 @@ await describe({
         expect(scanner.servedBy(),).toBe('',);
       },
     },),
+
+    it({
+      name: 'READS NO TEXT from a delta whose type is a name every object inherits, where plain-object '
+        + 'tables of channels and fields answered with the inherited object or function and read text '
+        + 'from the field its string form names (ledger B77)',
+      fn: async () => {
+        // Each field is the string form of what the type's name inherits:
+        // Object.prototype for __proto__, the Object function for constructor.
+        expect([
+          {
+            deltaType: '__proto__',
+            field: '[object Object]',
+          },
+          {
+            deltaType: 'constructor',
+            field: 'function Object() { [native code] }',
+          },
+        ].flatMap(function deltasOf({
+          deltaType,
+          field,
+        },) {
+          return scanAll({
+            raw: blockStart({
+              index: 0,
+              type: 'text',
+            },) + blockDelta({
+              index: 0,
+              deltaType,
+              field,
+              text: 'Mittens naps.',
+            },),
+          },);
+        },),).toStrictEqual([],);
+      },
+    },),
   ],
 },);
