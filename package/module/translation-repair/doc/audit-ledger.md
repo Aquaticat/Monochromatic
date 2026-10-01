@@ -16112,6 +16112,14 @@ red in `3086d2ffe`,
 fixed in `0e7353948`.
 `strictRefusalOffset` names where the strict grammar stopped,
 and `advancingStructuralWithdrawal` is its one reader.
+It is also the one reader of `MdxParseError`'s `line` and `column`:
+of the six other production sites holding a refusal
+(`rg 'requireMdxRefusal' src`,
+tests and fixtures excluded),
+three read only its message,
+which `mdxRefusalSite` writes from the parser's own place name and the fix leaves as it was,
+one passes it on as a cause,
+and two only narrow it.
 `mdast-util-mdx-jsx` raises its refusals on leaving the span it names
 (`onErrorRightIsTag` and `exitMdxJsxTag` in `lib/index.js`,
 3.2.0):
@@ -16890,6 +16898,18 @@ a shell call chains at most three steps with `&&` and reports with `||`;
 `git` runs from the worktree root,
 with paths relative to it,
 read from a list file where they are many.
+
+Recurred 2026-10-01 (UTC) after T8's twenty-first batch,
+with no wrong outcome landing:
+the source scans for the B86 readers note ran without pinning the worktree,
+from the main checkout the shell returns to after each call,
+where `mise` has no such task and exited 1 before any scan ran.
+The log was read as that,
+not as a scan result,
+and the scans ran again from the worktree root.
+The prevention stands:
+every shell call names its directory,
+a `mise run` included.
 
 ### M93: line numbers for in-place edits worked out rather than read
 
