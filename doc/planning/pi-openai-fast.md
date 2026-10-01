@@ -79,6 +79,29 @@ These answers settle requirements,
  not the complete implementation design.
 The user has not yet confirmed shared understanding of that complete design.
 
+### Round-two scope question
+
+Should global installation leave `enabledModels` unchanged,
+ or append exact fast-companion entries beside currently enabled Codex entries?
+
+Recommendation:
+leave scope unchanged to preserve the strongest interpretation of opt-in.
+Appending entries makes aliases eligible to callers that select automatically within that scope,
+ including auto-mode's judge.
+If auxiliary use is desired,
+ scope inclusion should be an explicit decision rather than an installation side effect.
+
+### Round-two registration coverage question
+
+Should the extension register companions for all compatible Codex models in pi's registry,
+ or only for currently enabled Codex models?
+
+Recommendation:
+register compatible Codex companions independently of scope.
+This avoids binding extension model discovery to personal workflow restrictions.
+Registration coverage does not authorize widening the enabled-model scope.
+Compatibility requirements remain subject to the provider research.
+
 ## Local selection evidence
 
 `package/pi-shared/model-selection/src/scope-patterns.ts` resolves scope by model identity.
