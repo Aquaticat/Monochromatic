@@ -515,15 +515,21 @@ await describe({
     },),
 
     it({
-      name: 'DECLARES nothing for a block start that names no index or carries no block, so its '
-        + 'type cannot claim a later delta',
+      name: 'DECLARES nothing for a block start that names no index, carries no block, or names '
+        + 'no type, so it cannot claim a later delta, and COUNTS each as unreadable: a start is '
+        + 'read for its declaration alone (ledger B93)',
       fn: async () => {
         /**
-         Two thinking starts the scanner cannot place, then a text delta at
-         index 0.
+         Scanner fed three thinking starts it cannot read, then a text delta
+         at index 0.
          */
-        const deltas = scanAll({
-          raw: frameOf({
+        const scanner = scanAnthropicDeltas();
+
+        /**
+         Deltas those frames yielded.
+         */
+        const deltas = scanner.feed({
+          chunk: frameOf({
             body: {
               type: 'content_block_start',
               content_block: { type: 'thinking', },
@@ -533,6 +539,13 @@ await describe({
               body: {
                 type: 'content_block_start',
                 index: 0,
+              },
+            },)
+            + frameOf({
+              body: {
+                type: 'content_block_start',
+                index: 0,
+                content_block: { type: 7, },
               },
             },)
             + blockDelta({
@@ -547,6 +560,7 @@ await describe({
           channel: 'content',
           text: 'Smug.',
         },],);
+        expect(scanner.unreadableFrames(),).toBe(3,);
       },
     },),
 
