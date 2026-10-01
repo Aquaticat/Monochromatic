@@ -844,6 +844,62 @@ account change,
 vendor contact,
 or upstream mutation follows from the owned exit-status correction.
 
+## Owned read-only checkpoint rejected native normalization
+
+### Symptom and source
+
+The consumed read-only document checkpoint,
+`proc_78cc`,
+stopped with Node 26.10.0 exit code 1:
+
+```text
+// Owned private contract: contract/sdk/docs/render-combined-source-policy-correction.mjs:22
+AssertionError [ERR_ASSERTION]: Read-only checkpoint must not rewrite audit or any documentation
+```
+
+Its owned assertion compared the native formatter result with unchanged input:
+
+```javascript
+// Owned private contract: contract/sdk/docs/render-combined-source-policy-correction.mjs:22
+assert.equal(fixed.source, bytes.toString('utf8'), 'Read-only checkpoint must not rewrite audit or any documentation');
+```
+
+The audit HTML was created before the handover comparison failed.
+No completed checkpoint receipt existed for that run.
+This is a consumer assumption failure,
+not evidence of a Node or Sätteri defect.
+
+### Verification and recovery
+
+A separately named renderer,
+`render-combined-source-policy-correction-normalized.mjs`,
+used the already qualified native-coordinate formatter.
+It kept the historical audit read-only,
+allowed native formatting of other task documents,
+checked source freshness before replacement,
+and created new source-path-hashed HTML artifacts.
+
+`proc_95b6` exited successfully with 31 rendered documents and zero native diagnostics.
+The retained receipt is
+`contract/sdk/docs/combined-source-policy-correction-normalized-result.json`.
+It explicitly leaves audit-context compatibility unvalidated.
+No genuine witness inputs were read;
+`AGENTS.md` and the retiring Markdown linter were unchanged.
+
+### Rejected approaches and upstream filing decision
+
+Do not rerun the consumed renderer,
+delete its audit HTML,
+weaken the native linter,
+or infer a complete pass from its partial artifact.
+The new renderer namespace preserves the failed attempt.
+
+No upstream filing:
+the failed assertion was owned consumer code.
+There is no established upstream defect,
+supported upstream change request,
+or upstream patch to evaluate.
+
 ## Owned fork source-accounting and encoded import boundary
 
 ### Symptom and source
