@@ -1,7 +1,13 @@
+import {
+  idListFlag,
+  wholeNumberFlag,
+} from './command-flags.ts';
+
 //region Coverage probe arguments
 // What the coverage probe is asked on its command line, kept apart from the
 // probe so the reading can be tested without a subprocess, as
-// `judge-fidelity-args.ts` and `rendering-audit-settled-args.ts` are.
+// `judge-fidelity-args.ts` and `rendering-audit-settled-args.ts` are. All
+// three read their flags through `command-flags.ts` (ledger B73).
 
 /**
  How many candidates one invocation asks about by default.
@@ -23,6 +29,10 @@ export const DEFAULT_CANDIDATE_CAP = 12;
 
  @returns Entry ids to probe, empty for every entry, and the candidate cap
 
+ @throws StatedRefusalError when a flag was written without a usable value:
+ nothing after it, a cap that is not a whole number written in digits or is
+ below zero, or an entry filter naming no entry
+
  @example
  ```ts
  const { onlyIds, cap, } = readCoverageProbeArguments({ argv: process.argv, },);
@@ -39,37 +49,17 @@ export function readCoverageProbeArguments(
    */
   const args = argv
     .slice(2,);
-
-  /**
-   Entry ids named after `--only`, comma separated.
-   */
-  const onlyAt = args.indexOf('--only',);
-
-  /**
-   Cap named after `--cap`.
-   */
-  const capAt = args.indexOf('--cap',);
-
-  /**
-   Cap as written, when one was named.
-   */
-  const capText = (capAt === (-1)) ? '' : (args[capAt + 1] ?? '');
-
-  /**
-   Cap as a number, falling back when it is not one.
-   */
-  const cap = (capText === '')
-    ? Number.NaN
-    : Math.trunc(Number(capText,),);
   return {
-    onlyIds: (onlyAt === (-1))
-      ? []
-      : (args[onlyAt + 1] ?? '')
-        .split(',',)
-        .filter(function isNamed(id,): boolean {
-          return id !== '';
-        },),
-    cap: Number.isNaN(cap,) ? DEFAULT_CANDIDATE_CAP : cap,
+    onlyIds: idListFlag({
+      args,
+      flag: '--only',
+    },),
+    cap: wholeNumberFlag({
+      args,
+      flag: '--cap',
+      unwritten: DEFAULT_CANDIDATE_CAP,
+      leaveOffTo: `ask about the default of ${String(DEFAULT_CANDIDATE_CAP,)} candidates`,
+    },),
   };
 }
 

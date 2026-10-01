@@ -1,4 +1,9 @@
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import {
+  isNegativeWholeNumberText,
+  isWholeNumberText,
+  WHOLE_NUMBER_RULE,
+} from '../whole-number-text.ts';
 
 //region Slice overlap
 // How many independent units a driver may have in flight at once.
@@ -60,13 +65,19 @@ export type OverlapSetting = {
  Reads overlap and names where it came from.
  
  Refuses rather than falls back on invalid environment input because matched
- arms must not silently become identical after a typo.
+ arms must not silently become identical after a typo. A variable unset,
+ empty or blank says nothing, as it does for every numeric dial in the
+ package, and takes the fallback (ledger B73).
+ 
+ DIGITS ONLY, by the package's one count rule (ledger B73), which also reads
+ `04` as four; a minus sign before digits is answered as a value below one.
  
  @param fallback - slices in flight when environment says nothing
  
  @returns Valid overlap beside fallback or variable source
  
- @throws StatedRefusalError when variable is not a whole number of at least one
+ @throws StatedRefusalError when variable is not a whole number written in
+ digits, or is below one
  
  @example
  ```ts
@@ -80,22 +91,24 @@ export function readOverlapSetting(
    Value as invoking environment wrote it, empty when unset or empty.
    */
   const written = process.env[OVERLAP_VAR] ?? '';
-  if (written === '') {
+  if (written.trim() === '') {
     return {
       overlap: fallback,
       source: 'fallback',
     };
   }
 
-  /**
-   Numeric value before whole-number validation.
-   */
-  const asked = Number(written,);
-  if ((!Number.isInteger(asked,)) || (String(asked,) !== written)) {
+  if ((!isWholeNumberText({ text: written, },)) && (!isNegativeWholeNumberText({ text: written, },))) {
     throw new StatedRefusalError({
-      says: `${OVERLAP_VAR} must be a canonical decimal whole number, and ${written} is not one`,
+      says: `${OVERLAP_VAR} must be ${WHOLE_NUMBER_RULE}, and ${written} is not one`,
     },);
   }
+
+  /**
+   Value as written, which `Number` now reads exactly: digits, with or
+   without a minus sign before them.
+   */
+  const asked = Number(written,);
   if (asked < MINIMUM_OVERLAP) {
     throw new StatedRefusalError({
       says: `${OVERLAP_VAR} must be at least ${String(MINIMUM_OVERLAP,)}, and ${written} is not`,
@@ -116,7 +129,8 @@ export function readOverlapSetting(
  
  @returns Valid overlap
  
- @throws StatedRefusalError when variable is not a whole number of at least one
+ @throws StatedRefusalError when variable is not a whole number written in
+ digits, or is below one
  
  @example
  ```ts

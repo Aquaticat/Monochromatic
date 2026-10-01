@@ -231,7 +231,10 @@ await describe({
     it({
       name: 'REPEATS what the operator typed, since the refusal is in our own words',
       fn: async () => {
-        expect(() => {
+        /**
+         What the reader threw.
+         */
+        const refusal = caught(function readsWord(): void {
           readAuditArguments({
             argv: commandLine({
               typed: [
@@ -240,7 +243,12 @@ await describe({
               ],
             },),
           },);
-        },).toThrow('--cap needs a whole number, and once is not one',);
+        },);
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toBe(
+          `--cap needs a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
+            + 'and once is not one',
+        );
       },
     },),
     it({

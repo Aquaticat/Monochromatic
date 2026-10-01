@@ -13,6 +13,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  isNegativeWholeNumberText,
   isWholeNumberText,
   WHOLE_NUMBER_RULE,
 } from '../dist/final/node/index.mjs';
@@ -65,6 +66,47 @@ await describe({
       name: 'NAMES its rule with the limit spelled out, for every refusal that cites it',
       fn: async () => {
         expect(WHOLE_NUMBER_RULE,).toBe(`a whole number written in digits, at most ${LARGEST}`,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isNegativeWholeNumberText.name,
+  children: [
+    it({
+      name: 'TAKES a minus sign before digits above zero, a leading zero among them, up to the exact range',
+      fn: async () => {
+        expect(['-1', '-3', '-04', `-${LARGEST}`,].map(function taken(text,): boolean {
+          return isNegativeWholeNumberText({ text, },);
+        },),).toEqual([true, true, true, true,],);
+      },
+    },),
+    it({
+      name: 'REFUSES minus zero, which names no count below zero, a bare sign, a doubled or mixed sign, a space, '
+        + 'a point, an exponent, a typographic minus, digits with no sign, and one past the exact range',
+      fn: async () => {
+        /**
+         Texts that are no minus sign before a whole number above zero.
+         */
+        const refused = [
+          '-0',
+          '-00',
+          '-',
+          '',
+          '--3',
+          '-+3',
+          '- 3',
+          '-3 ',
+          '-3.0',
+          '-1e3',
+          '−3',
+          '3',
+          `-${String(BigInt(Number.MAX_SAFE_INTEGER,) + 1n,)}`,
+        ];
+        expect(refused.filter(function taken(text,): boolean {
+          return isNegativeWholeNumberText({ text, },);
+        },),).toEqual([],);
       },
     },),
   ],

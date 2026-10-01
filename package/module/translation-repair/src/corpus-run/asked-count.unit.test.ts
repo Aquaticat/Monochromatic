@@ -63,6 +63,12 @@ const ASKS = 'slices';
 const MISTYPED = 'fourty';
 
 /**
+ How the reader names the counts it takes: whole, in digits, and no larger
+ than a double holds exactly.
+ */
+const WHOLE_NUMBER_RULE = `a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}`;
+
+/**
  Builds a command line the way `process.argv` presents one.
  
  @param typed - what the operator wrote after the script path
@@ -146,8 +152,7 @@ await describe({
           expect(refusal,).toBeInstanceOf(StatedRefusalError,);
           return (refusal as Error).message;
         },),).toEqual(counts.map(function expectedOf(count,): string {
-          return `${ASKS} must be a whole number written in digits, at most ${String(Number.MAX_SAFE_INTEGER,)}, `
-            + `and ${count} is not one`;
+          return `${ASKS} must be ${WHOLE_NUMBER_RULE}, and ${count} is not one`;
         },),);
       },
     },),
@@ -162,9 +167,16 @@ await describe({
     it({
       name: 'NAMES both the units and what was typed, so the operator can see the typo',
       fn: async () => {
-        expect(() => {
+        /**
+         What the reader threw.
+         */
+        const refusal = caught(function readsWord(): void {
           countFrom({ typed: [MISTYPED,], },);
-        },).toThrow(`${ASKS} must be a whole number, and ${MISTYPED} is not one`,);
+        },);
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toBe(
+          `${ASKS} must be ${WHOLE_NUMBER_RULE}, and ${MISTYPED} is not one`,
+        );
       },
     },),
     it({
@@ -211,13 +223,18 @@ await describe({
     it({
       name: 'ANSWERS in the caller\'s own words, so two runs do not share a noun',
       fn: async () => {
-        expect(() => {
+        /**
+         What the reader threw.
+         */
+        const refusal = caught(function readsEntries(): void {
           readAskedCount({
             argv: commandLine({ typed: [MISTYPED,], },),
             fallback: FALLBACK,
             asks: 'entries',
           },);
-        },).toThrow(`entries must be a whole number, and ${MISTYPED} is not one`,);
+        },);
+        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+        expect((refusal as Error).message,).toBe(`entries must be ${WHOLE_NUMBER_RULE}, and ${MISTYPED} is not one`,);
       },
     },),
   ],

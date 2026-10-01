@@ -1,5 +1,11 @@
 import type { FidelityDamageKind, } from '../fidelity-damage.ts';
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import {
+  flagValue,
+  type FlagValue,
+  idListFlag,
+  wholeNumberFlag,
+} from './command-flags.ts';
 
 //region Judge fidelity arguments
 // What the fidelity probe is asked on its command line, kept beside the probe
@@ -26,20 +32,48 @@ export const DAMAGE_KINDS: readonly FidelityDamageKind[] = [
 ];
 
 /**
- Defects each `--damage` spelling asks for.
+ Defects each `--damage` spelling asks for; every defect when the flag is
+ not written.
  
- BOTH BY DEFAULT, because either fixture alone leaves a habit unmeasured: the
- deletion cannot separate reading from preferring length, and the insertion
- alone would not say the roster sees an omission at all. An unlisted spelling
- reads as absent and the caller is told, rather than silently running
- something it did not ask for.
+ EVERY DEFECT BY DEFAULT, because one fixture alone leaves a habit
+ unmeasured: the deletion cannot separate reading from preferring length, and
+ the insertion alone would not say the roster sees an omission at all. An
+ unlisted spelling is refused, rather than silently running something the
+ caller did not ask for; so is `--damage` written last, which read as no
+ spelling and ran every defect (ledger B73).
  */
 const DAMAGE_BY_NAME: Readonly<Record<string, readonly FidelityDamageKind[]>> = {
-  '': DAMAGE_KINDS,
   deletion: ['deletion',],
   insertion: ['insertion',],
   alteration: ['alteration',],
 };
+
+/**
+ Reads which defects `--damage` asks for.
+ 
+ @param damage - what the flag carried, or that nobody wrote it
+ 
+ @returns Every defect when the flag was not written, else the one named
+ 
+ @throws StatedRefusalError when the flag names a defect this probe does not
+ build
+ 
+ @example
+ ```ts
+ const kinds = damageKindsOf({ damage: { kind: 'written', value: 'insertion', }, },);
+ ```
+ */
+function damageKindsOf({ damage, }: { readonly damage: FlagValue; },): readonly FidelityDamageKind[] {
+  if (damage.kind === 'unwritten')
+    return DAMAGE_KINDS;
+  /**
+   Defects that spelling asks for, absent when it names none this probe builds.
+   */
+  const named = DAMAGE_BY_NAME[damage.value];
+  if (named === undefined)
+    throw new StatedRefusalError({ says: `--damage takes deletion, insertion or alteration, not ${damage.value}`, },);
+  return named;
+}
 
 /**
  Reads `--only`, `--cap` and `--damage` from the command line.
@@ -51,6 +85,11 @@ const DAMAGE_BY_NAME: Readonly<Record<string, readonly FidelityDamageKind[]>> = 
  
  @returns Entry ids to trial, empty for every entry, the trial cap, and which
  defects to build
+ 
+ @throws StatedRefusalError when a flag was written without a usable value:
+ nothing after it, a cap that is not a whole number written in digits or is
+ below zero, an entry filter naming no entry, or a defect this probe does
+ not build
  
  @example
  ```ts
@@ -72,56 +111,30 @@ export function readFidelityArguments(
     .slice(2,);
 
   /**
-   Entry ids named after `--only`, comma separated.
+   Defects to build, read before the other flags so a bad one is refused
+   first.
    */
-  const onlyAt = args.indexOf('--only',);
-
-  /**
-   Cap named after `--cap`.
-   */
-  const capAt = args.indexOf('--cap',);
-
-  /**
-   Cap as written, when one was named.
-   */
-  const capText = (capAt === (-1)) ? '' : (args[capAt + 1] ?? '');
-
-  /**
-   Cap as a number, falling back when it is not one.
-   */
-  const cap = (capText === '')
-    ? Number.NaN
-    : Math.trunc(Number(capText,),);
-
-  /**
-   Defect named after `--damage`, absent for both.
-   */
-  const damageAt = args.indexOf('--damage',);
-
-  /**
-   Defect as written, when one was named.
-   */
-  const damageText = (damageAt === (-1)) ? '' : (args[damageAt + 1] ?? '');
-
-  /**
-   Defects that spelling asks for, absent when it names none this probe builds.
-   */
-  const damageKinds = DAMAGE_BY_NAME[damageText];
-  if (damageKinds === undefined)
-    throw new StatedRefusalError({ says: `--damage takes deletion, insertion or alteration, not ${damageText}`, },);
+  const damageKinds = damageKindsOf({
+    damage: flagValue({
+      args,
+      flag: '--damage',
+    },),
+  },);
   return {
     // Whether the sheet also carries the neighbouring sections' original,
     // which is the one thing that differs between a narrow run and a wide one.
     withContext: args.includes('--context',),
     damageKinds,
-    onlyIds: (onlyAt === (-1))
-      ? []
-      : (args[onlyAt + 1] ?? '')
-        .split(',',)
-        .filter(function isNamed(id,): boolean {
-          return id !== '';
-        },),
-    cap: Number.isNaN(cap,) ? DEFAULT_TRIAL_CAP : cap,
+    onlyIds: idListFlag({
+      args,
+      flag: '--only',
+    },),
+    cap: wholeNumberFlag({
+      args,
+      flag: '--cap',
+      unwritten: DEFAULT_TRIAL_CAP,
+      leaveOffTo: `run the default of ${String(DEFAULT_TRIAL_CAP,)} trials`,
+    },),
   };
 }
 

@@ -1,4 +1,9 @@
 import { StatedRefusalError, } from '../stated-refusal.ts';
+import {
+  isNegativeWholeNumberText,
+  isWholeNumberText,
+  WHOLE_NUMBER_RULE,
+} from '../whole-number-text.ts';
 
 //region Asked count
 // How many units a person asked a bench or calibration to run, read off the
@@ -20,6 +25,11 @@ import { StatedRefusalError, } from '../stated-refusal.ts';
 // reading a whole archive and buying nothing, and these have none: a bench over
 // zero slices asks nobody anything and reports nothing. Where a run wants to do
 // nothing, not running it is the way to say so.
+//
+// DIGITS ONLY, by the package's one count rule (ledger B73). This reader once
+// truncated `40.9` to 40 and took `4e1`, `0x28` and `+40` as forty: a count
+// nobody typed, run without a word. A minus sign before digits is still
+// answered as a count below one, since that is what was typed.
 
 /**
  Position a bare count is written at, after the runtime and the script.
@@ -45,7 +55,7 @@ const AT_LEAST = 1;
  @returns Count asked for, or the fallback when none was named
  
  @throws StatedRefusalError when a count was named that is not a whole number
- of at least one
+ written in digits, or is below one
  
  @example
  ```ts
@@ -70,15 +80,16 @@ export function readAskedCount(
   if (written === '')
     return fallback;
 
-  /**
-   Count as a whole number, which a mistyped one is not.
-   */
-  const asked = Math.trunc(Number(written,),);
-
-  if (!Number.isFinite(asked,))
+  if ((!isWholeNumberText({ text: written, },)) && (!isNegativeWholeNumberText({ text: written, },)))
     throw new StatedRefusalError({
-      says: `${asks} must be a whole number, and ${written} is not one`,
+      says: `${asks} must be ${WHOLE_NUMBER_RULE}, and ${written} is not one`,
     },);
+
+  /**
+   Count as written, which `Number` now reads exactly: digits, with or
+   without a minus sign before them.
+   */
+  const asked = Number(written,);
 
   if (asked < AT_LEAST)
     throw new StatedRefusalError({

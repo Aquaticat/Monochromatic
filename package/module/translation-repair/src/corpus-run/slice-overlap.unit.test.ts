@@ -7,9 +7,9 @@
  difference, and a recorded conclusion that overlapping units does nothing.
  That is not a failed measurement, it is a wrong one, and it would be believed.
  
- THE DEFAULT IS STILL A FALLBACK, deliberately: an UNSET variable is an
- invoker who did not ask for overlap, which is a different thing from one who
- asked for something unreadable.
+ THE DEFAULT IS STILL A FALLBACK, deliberately: an UNSET, empty or blank
+ variable is an invoker who did not ask for overlap, which is a different
+ thing from one who asked for something unreadable.
  
  Fixtures are cat-themed invention. No corpus content appears here.
  
@@ -166,26 +166,30 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES non-canonical numeric spellings rather than silently turning hexadecimal, '
-        + 'exponent, decimal-point, or padded input into another arm',
+      name: 'REFUSES what is no whole number written in digits rather than silently turning hexadecimal, '
+        + 'exponent, decimal-point, signed, padded or minus-zero input into another arm (ledger B73)',
       fn: async () => {
         /**
-         Numeric strings JavaScript would otherwise canonicalize.
+         Numeric strings JavaScript would otherwise read as a number.
          */
         const spellings = [
           '0x2',
           '1e1',
           '2.0',
           ' 2',
+          '+2',
+          '-0',
         ];
         for (const spelling of spellings) {
           using dial = dialSaying({ says: spelling, },);
-          const refusal = caught(function readsNonCanonical() {
+          const refusal = caught(function readsNotDigits() {
             readOverlap({ fallback: 1, },);
           },);
           expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-          expect((refusal as Error).message,).toContain('canonical decimal',);
-          expect((refusal as Error).message,).toContain(spelling,);
+          expect((refusal as Error).message,).toBe(
+            `${OVERLAP_VAR} must be a whole number written in digits, at most `
+              + `${String(Number.MAX_SAFE_INTEGER,)}, and ${spelling} is not one`,
+          );
         }
       },
     },),

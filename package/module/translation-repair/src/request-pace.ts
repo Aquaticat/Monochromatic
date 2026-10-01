@@ -285,8 +285,9 @@ export function createRequestPace(
  
  @param env - environment to read
  
- @returns Positive number from the variable, or the default when it is unset
-
+ @returns Positive number from the variable, or the default when it is unset,
+ empty or blank
+ 
  @throws {@link StatedRefusalError} when the variable is set and is not a
  positive number, as every other dial refuses (ledger D14): a mistyped rate
  that fell back to the account limit ran a launch at a pace nobody asked for
@@ -303,7 +304,11 @@ export function hyperRequestsPerHour(
    Raw value when set.
    */
   const raw = env[HYPER_REQUESTS_PER_HOUR_VAR] ?? '';
-  if (raw === '')
+  // BLANKS SAY NOTHING, as for every numeric dial in the package: `Number`
+  // read them as a rate of zero, so this refused a variable set to spaces
+  // that the grace, cap, spend ceiling and credit dials read as unset
+  // (ledger B73).
+  if (raw.trim() === '')
     return HYPER_REQUESTS_PER_HOUR;
   /**
    Parsed value. `Number` rather than `parseFloat`, which would read a leading
