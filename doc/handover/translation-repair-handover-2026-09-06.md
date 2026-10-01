@@ -411,13 +411,20 @@ this one says what changed after it.
   and `wall-clock-reads.unit.test.ts` fails on a new read of the system clock as a number.
   Its red cases' stub first replaced `Date.now` for the whole test process,
   and a guard-off hung a file instead of failing it;
-  the stub now holds the clock for its own case only (ledger M100),
-  and the package's 29 other test files that replace process globals are open as a family.
-  The census taken next is the eighteenth batch's baseline,
+  the stub now holds the clock for its own case only (ledger M100).
+  The eighteenth batch's baseline is `census-dKGOhZ` at `36e3f36cc`
+  (730 library stretches over 1,404 lines in 274 files),
   that batch taking the archive modules
   (`archive`,
   18 stretches over 36 lines in 9 files,
-  the most cold lines of the two clusters tied at 18).
+  the most cold lines of the two clusters tied at 18)
+  and the two usage-line arms of `corpus-run/command-line.ts` that went cold with B75.
+  Ledger B79 followed the census
+  (`b9edc1542` to `cf17f1dd0`):
+  13 test files wrote an environment variable,
+  a `console` method or the working directory in suites that ran their cases at once;
+  each such suite now runs one case at a time,
+  and `global-writes-sequenced.unit.test.ts` fails on a write outside one.
   The library batches go on one triage cluster each,
   each throw and nullish fallback read for reachability before a case is written,
   and each batch ending with a whole-suite census at its committed head as the next baseline;
