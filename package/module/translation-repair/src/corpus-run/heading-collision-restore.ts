@@ -1,3 +1,5 @@
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
+
 import type { ChunkPair, } from '../chunk-document.ts';
 import { headingWords, } from '../entry-notes.ts';
 import { parseDocument, } from '../parse-document.ts';
@@ -80,6 +82,11 @@ function headingLinesOf({ text, }: { readonly text: string; },): readonly Headin
  Restores the archive's heading into every slice whose rendered heading
  repeats another section's while the original's headings differ.
 
+ PAIRS HEADINGS BY POSITION ONLY WHERE THE POSITIONS LINE UP: the original
+ and the archive carry as many headings as each other, and every slice of the
+ page carries as many as its archive text does. Anywhere else the page is left
+ as it stands for the publish guard (ledger B83).
+
  @param sourceText - the original document
 
  @param targetText - the archive document the replacements address
@@ -141,10 +148,14 @@ export function restoreCollidingHeadings(
     ] as const;
   },),);
   /**
-   Page headings in document order, each with its slice.
+   Each slice's page headings, beside how many headings its archive text
+   carries.
    */
-  const page: readonly PageHeading[] = slicesInOrder({ slices, },)
-    .flatMap(function headingsOf(slice,): readonly PageHeading[] {
+  const bySlice = slicesInOrder({ slices, },)
+    .map(function headingsOf(slice,): {
+      readonly headings: readonly PageHeading[];
+      readonly archived: number;
+    } {
       /**
        Index of this slice.
        */
@@ -158,14 +169,40 @@ export function restoreCollidingHeadings(
        What the page carries for this slice.
        */
       const text = textBySlice.get(sliceIndex,) ?? incumbent;
-      return headingLinesOf({ text, },)
-        .map(function withSlice(line,): PageHeading {
-          return {
-            ...line,
-            sliceIndex,
-          };
-        },);
+      return {
+        headings: headingLinesOf({ text, },)
+          .map(function withSlice(line,): PageHeading {
+            return {
+              ...line,
+              sliceIndex,
+            };
+          },),
+        archived: headingLinesOf({ text: incumbent, },)
+          .length,
+      };
     },);
+  // POSITIONS PAIR ONLY WHERE EVERY SLICE KEEPS ITS HEADING COUNT (ledger
+  // B83). A slice that drops a heading and another that gains one leave the
+  // page's total where the original's is, while every heading between them
+  // sits one position off; pairing those positions once compared a section
+  // the page never replaced with its neighbour's archive heading and shipped
+  // that section as empty text. Where any slice moved its count, nothing here
+  // can say which heading answers which, and the publish guard keeps the last
+  // word.
+  if (bySlice.some(function movedCount(slice,): boolean {
+    /**
+     Headings the page carries in this slice.
+     */
+    const { headings, } = slice;
+    return headings.length !== slice.archived;
+  },))
+    return unchanged;
+  /**
+   Page headings in document order, each with its slice.
+   */
+  const page: readonly PageHeading[] = bySlice.flatMap(function headingsOf(slice,): readonly PageHeading[] {
+    return slice.headings;
+  },);
   if (page.length !== source.length)
     return unchanged;
   /**
@@ -218,21 +255,24 @@ export function restoreCollidingHeadings(
   const findings: string[] = [];
   for (const index of colliding) {
     /**
-     Heading being restored.
+     Heading being restored, which exists because every colliding position is
+     an index into the page's headings.
      */
-    const heading = page[index];
+    const heading = nonNullishOrThrow(page[index],);
     /**
-     Archive heading at the same position.
+     Archive heading at the same position, which exists because the archive
+     carries as many headings as the page.
      */
-    const replacement = archive[index];
-    if ((heading === undefined) || (replacement === undefined))
-      continue;
+    const replacement = nonNullishOrThrow(archive[index],);
+    // ONLY A SLICE THE PAGE REPLACES CAN COLLIDE. With every slice keeping its
+    // heading count, a slice the page leaves alone carries the archive's own
+    // headings at the archive's own positions, so it never differs from the
+    // archive there (ledger B83).
     /**
      Slice text as it stands after earlier restorations.
      */
     const current = restoredText.get(heading.sliceIndex,)
-      ?? textBySlice.get(heading.sliceIndex,)
-      ?? '';
+      ?? nonNullishOrThrow(textBySlice.get(heading.sliceIndex,),);
     restoredText.set(
       heading.sliceIndex,
       current.replace(
