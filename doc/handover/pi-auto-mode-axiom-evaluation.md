@@ -928,9 +928,20 @@ sampling immediately before native controlled waiting,
 and separate initial-missing/during-read instability classifications.
 Those changes remain source-only and require complete closure review.
 The controller,
-startup gate,
-exact caller,
-source-data admission,
+builtin startup/worker gates,
+and exact managed start/input/EOF orchestration are also draft source.
+The complete literal-source review held executable admission for unchecked intermediate cached success,
+discarded measurement evidence,
+unmeasured totals and factory/artifact accounting,
+diagnostic-write replacement of primary failures,
+and early-failure consumption outside the startup marker.
+Prospective source corrections now retain full actual A/B evidence and completed prefixes,
+aggregate success/rejection/wait totals,
+check scoped environment and fixture counts,
+retain bounded primary/cleanup/logging cause graphs with private descriptor fallback,
+and reserve a unique external launch marker before stream redirections.
+Every corrected literal source and caller still requires another independent review.
+Source-data admission,
 executable freeze,
 and runtime qualification remain absent.
 Current permission,
