@@ -209,6 +209,17 @@ await describe({
       },
     },),
     it({
+      name: 'READS NO TITLE out of a JSX comment beside an HTML comment: the HTML comment is blanked before '
+        + 'the strict parse, which then reads the JSX comment as an expression, where plain Markdown would '
+        + 'read its starred words as italics (ledger B72)',
+      fn: async () => {
+        expect(secondSlice({
+          archive: 'The cat napped. <!-- a note --> {/*Hidden Nap*/}',
+          replacement: 'The kitten loved “Hidden Nap”.',
+        },),).toBe('The kitten loved “Hidden Nap”.',);
+      },
+    },),
+    it({
       name: 'READS a linked title in italics as its words, which a split at the stars read as link markup and '
         + 'never as a title (ledger B72)',
       fn: async () => {
