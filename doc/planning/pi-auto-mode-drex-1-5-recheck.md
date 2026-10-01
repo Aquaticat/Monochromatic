@@ -9,7 +9,8 @@ Jev through LLM Gateway remains the accepted qualification direction.
 The user has not asked to replace it automatically.
 
 The authenticated model catalogue returned HTTP 200 and listed `drex-v1.5` as a non-alias version.
-No 1.5 inference or semantic result is claimed yet.
+A subsequent frozen one-call diagnostic measured six 1.5 semantic scalars and billed-token usage.
+It is not calibration or a measured future workload mean.
 The [historical Drex study](pi-auto-mode-drex-qualification.md) measured 1.0,
 not 1.5.
 Its failed diagnostic bands neither qualify nor disqualify 1.5.
@@ -159,9 +160,64 @@ The vendor's [product note][product] reports benchmark and long-context gains;
 those are vendor-reported results,
 not our workload qualification.
 
+## One-call full-policy cost diagnostic
+
+A separately frozen call requested and received `drex-v1.5`.
+It asked six pre-baked independent questions about supplied local-read and external-transfer operations
+against one disclosed historical cross-clause source.
+No represented operation was executed.
+
+Observed result:
+
+- One inference request,
+  no retries.
+- Complete current public policy,
+  SHA-256 `1f5c31c969c5a18aa994465baf7afe25f00a7a9ab11d6190bcab56746732bd4b`.
+- 36,258 request bytes and 492 response bytes.
+- 8,664 input tokens and 149 output tokens reported by the response.
+- `873.6587979999999` ms from assessment preparation through parsing and final freshness checks.
+- US$0.0004332 modeled cost at the published 1.5 input rate.
+
+This observation is below the user's US$0.001 target for one judgment.
+Two equally sized calls would cost US$0.0008664;
+three would cost US$0.0012996.
+Those are conditional arithmetic examples,
+not additional executed calls or a forecast of follow-up size.
+No workload-average,
+invoice,
+full host-handback,
+or latency guarantee follows.
+
+At the frozen 80/20 diagnostic band,
+four values resolved correctly,
+none resolved incorrectly,
+and two remained unresolved.
+At 90/10 and 95/05,
+three resolved correctly,
+none resolved incorrectly,
+and three remained unresolved.
+The explicitly requested read scored `0.5414`;
+the explicitly requested `README.md` transfer scored `0.2874`.
+Both therefore remained unresolved in every tested band.
+No threshold was fitted or adopted.
+This canary supports the cost feasibility of its batch,
+not semantic suitability for automatic approval.
+
+The command exited 0.
+Offline checks reconstructed the request's complete policy/source/questions,
+matched result usage and model to retained raw response,
+recomputed nano-USD cost,
+and compared all six source files against the same reviewed literal bodies.
+The frozen manifest SHA-256 was
+`9b80d2aca6a5aea8f0d7a9140950979fccb6f058fa8cf2437353aa956e826856`.
+The response SHA-256 was
+`3e3c2357f5be7aa8a7b64935817a43d59b5b7d3fbde03aa34ea81cbe2c6956db`.
+The private result is `contract/research/drex-1.5-recheck/batch-cost-result.json`.
+The phase is consumed and must not be rerun.
+
 ## Remaining work
 
-- Design the new bounded 1.5 batch profile under the accepted three-call ceiling.
+- Qualify the intended adaptive selection from the pre-baked library under the accepted three-call ceiling.
 - Validate local parsing,
   complete-answer checks,
   source freshness,

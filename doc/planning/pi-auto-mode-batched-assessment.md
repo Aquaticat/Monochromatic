@@ -40,6 +40,11 @@ At Drex 1.5's published US$0.05 per million input tokens,
 US$0.001 corresponds to 20,000 billed input tokens across the entire judgment.
 This arithmetic is conditional on that published rate,
 not a verified invoice or measured workload average.
+The [one-call 1.5 canary](pi-auto-mode-drex-1-5-recheck.md#one-call-full-policy-cost-diagnostic)
+reported 8,664 input tokens for six questions with complete policy,
+modeling US$0.0004332 for that judgment.
+That supports feasibility for the observed case,
+not an assurance about the future average.
 Count every model attempt and chargeable retry against the judgment's cost.
 Retain failed and abandoned-attempt costs rather than discarding them from the average.
 Report the model-using judgment mean separately from the complete guard-assessment mean;
