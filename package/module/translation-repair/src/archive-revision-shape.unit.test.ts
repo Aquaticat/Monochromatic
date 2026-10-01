@@ -77,6 +77,16 @@ await describe({
           `archive-revision-refused (${REVIEWER}): the block is 1 block (paragraph) and the revision is 2 blocks `
             + '(paragraph, paragraph); a revision keeps the block\'s own shape',
         ],);
+        // A revision of white space alone is no removal, which is written
+        // empty, and holds no block at all.
+        expect(revisionShapeFindings({
+          modelId: REVIEWER,
+          blockText: PARAGRAPH,
+          replacementText: '   ',
+        },),).toEqual([
+          `archive-revision-refused (${REVIEWER}): the block is 1 block (paragraph) and the revision is nothing; a `
+            + 'revision keeps the block\'s own shape',
+        ],);
         expect([
           revisionShapeFindings({
             modelId: REVIEWER,
