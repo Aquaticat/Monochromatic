@@ -2129,3 +2129,38 @@ and a case for each refusal.
 Nothing yet ties those fixtures to the writer's template,
 so a new shape in `stage-round.ts` or `reportStreamProgress` reaches the reader untested
 (ledger B82 records the follow-up).
+
+## Pairing by position
+
+What happened:
+three page-assembly passes paired page headings with the original's or the archive's by position.
+The heading collision restore checked only that the page's total matched,
+so a slice that dropped a heading and another that gained one shifted every heading between them,
+and a section the page never replaced shipped as empty text (ledger B83).
+The heading series pass and the contributor name pass paired inside one slice with no count check at all,
+so a page slice that dropped its first heading gave the next section the wrong number,
+or wrote a signer's name over its title (ledger B84).
+The contributor name pass already checked the count for signatures,
+one line away.
+
+The rule:
+pair two lists by position only where they carry the same count
+at the level the positions are read:
+per slice where positions are read per slice,
+and per slice as well where a page-wide position runs through slices,
+since equal totals can hide a shift.
+Where the counts differ,
+leave the items as they stand and let the guard downstream speak;
+never fall back to empty text or a neighbour's item.
+A pass reads per-slice page text through `pageTextOf` (`assembly-page-text.ts`),
+which refuses a slice its map was not built from.
+
+What enforces it:
+each pass's tests hold a case whose page drops or gains one item inside a slice
+(`heading-collision-restore`,
+`heading-series-unify`,
+`contributor-name-restore`),
+and `assembly-page-text.unit.test.ts` holds the refusal.
+No scan finds a new positional pairing;
+a search for position-indexed reads over `corpus-run/` found the others,
+each already checking its count.

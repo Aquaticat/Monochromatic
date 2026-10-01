@@ -4997,6 +4997,49 @@ The full suite on `143e786eb`
 with the worktree clean)
 printed 1,509 PASS lines and no FAIL line.
 
+The twentieth batch took `corpus-run/heading` against `census-IqLEk4`.
+Reading its cold stretches found B83,
+a heading restore that shipped a section the page never replaced as empty text,
+and reading B83's family found B84,
+two passes pairing a slice's headings by position without checking the count
+(both recorded in their own entries).
+The rest were reachable arms,
+cased in `4c0039a57` and `c6464ab59`
+(`heading-title-lines.ts` had no test file and has one now),
+and unreachable fallbacks,
+which throw now.
+The closing census,
+`census-STKkse` at `4c0039a57`,
+read against `census-IqLEk4`:
+ran 6,
+still cold 1,003,
+cold since then 0,
+not loaded 6,
+sources edited since then 8.
+Of the edited sources,
+`heading-series-unify.ts` left 0 cold stretches where the baseline held 10,
+`heading-collision-restore.ts` 1 where it held 4
+(the return cased in `c6464ab59`),
+five of the six other files the B83 and B84 fixes touched left fewer than the baseline held,
+and `assembly-page-text.ts` kept its one,
+the stretch the baseline had at line 315 standing at 389 below the added reader;
+the stretches left in those six files belong to other clusters.
+Library source went from 693 stretches in 263 files to 666 in 260.
+
+By the first construct
+(`t8-triage-stkkse.txt`),
+the queue for the twenty-first batch is 286 returns,
+120 nullish fallbacks,
+112 ternaries,
+72 throws
+and 76 others.
+`assembly` leads at 16 stretches
+(8 files,
+27 lines),
+before `anthropic` at 16 over 22 lines,
+so the twenty-first batch takes `assembly`
+against the census taken once this batch's docs close.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -15799,6 +15842,126 @@ and is tested against lines built the way the writer builds them;
 `mistake-prevention.md`,
 "Readers of the package's own log lines".
 
+### B83: a heading restore that shipped a section the page never replaced as empty text
+
+Found by T8's twentieth batch,
+red in `66927af39`,
+fixed in `339ce9118`.
+`restoreCollidingHeadings` (`corpus-run/heading-collision-restore.ts`,
+class forty-five)
+paired the page's headings with the original's and the archive's by position across the whole page,
+and checked only that the three totals agreed.
+A replaced slice that drops its heading and another that gains one leave the totals equal,
+while every heading between them sits one position off.
+A slice the page never replaced then had its own heading compared with its neighbour's archive heading;
+having no replacement,
+its text fell back to the empty string,
+and the restored row rides the override a trimmed slice does (`page-assembly-guard.ts`),
+so the page would have carried that section as nothing,
+with a finding claiming a restoration.
+The probe through `guardPageAssembly`
+(`b20-shift-probe.mjs` in the audit's scratch folder,
+cat-themed)
+printed the empty row before the fix and none after.
+
+The restore now pairs by position only where every slice carries as many headings as its archive text;
+anywhere else the page is left for the publish guard.
+With every slice's count kept,
+a slice the page leaves alone carries the archive's own headings at the archive's positions,
+so it cannot collide,
+and the fallbacks that guarded its absence throw (`nonNullishOrThrow`).
+
+The pass also kept its own replacement-only map of page text,
+apart from the contract `assembly-page-text.ts` states for every pass.
+`a6edb4665` moves it onto `pageTextBySlice` and `withRewrittenText`,
+and adds `pageTextOf`,
+one reader of a slice's page text that refuses a slice the map was not built from
+(`SliceNotOnPageError`,
+`4c0039a57`,
+naming the slice)
+in place of eight reads in six modules,
+six of which took a missing slice for empty text
+and two of which already threw without naming the slice;
+`70c8c8918` moves the last pass onto it.
+No such read was reachable,
+since each pass reads only the slices its map was built from.
+The message of `a6edb4665` miscounted those reads as seven `?? ''` fallbacks;
+a commit comment on it gives the count above.
+
+Guard shown to fail:
+with the per-slice count check disabled,
+the case failed alone in its file.
+With `pageTextOf`'s refusal disabled,
+its own case failed alone in its file
+and the B83 case still passed,
+since the count check keeps the restore from asking.
+
+### B84: heading passes that paired a slice's headings by position without checking the count
+
+Found by T8's twentieth batch while reading B83's family:
+the same pairing inside one slice.
+Red in `26e24853e` and `3c35e130b`,
+fixed in `57920abed` and `5f059feff`.
+
+- `unifyHeadingSeries` (`corpus-run/heading-series-unify.ts`,
+  class sixty-eight)
+  numbered a slice's page headings from the original's numbered headings by position.
+  A page slice that dropped its first heading gave the third section the second's number:
+  `### Part Three: Snowy` shipped as `### Part Two: Snowy`.
+  Reading the archive's style the same way,
+  an archive slice that opens with an interlude heading of its own had that heading read as the series' third,
+  so the archive seemed to use two styles and its own "Part" style was lost.
+- `restoreContributorNames` (`corpus-run/contributor-name-restore.ts`,
+  class sixty-seven)
+  paired a slice's page headings with the original's titles by position,
+  though it already refused to pair signatures where the counts differed.
+  A page slice that dropped its first heading had the signer's name written over the next section's title:
+  `### Four: Doggo` shipped as `### Four: Maomao`.
+
+Each slice now joins the pairing only where it carries as many headings as the original's slice,
+and is left as it stands otherwise.
+`b20-series-probe.mjs` and `b20-contrib-probe.mjs` in the audit's scratch folder
+printed the wrong rewrites before the fixes and none after.
+The remaining positional pairings in the page passes already check their counts
+(`contributor-name-authorities.ts` for signatures,
+`archive-destination-restore.ts` for links,
+`jsx-attribute-restore.ts` for tags,
+`title-reference-unify.ts` and `heading-distinctness.ts` for headings),
+by a search for position-indexed reads over `corpus-run/`.
+
+Guards shown to fail:
+with the page-side count check disabled,
+the dropped-heading series case failed alone in its file;
+with the archive-side check disabled,
+the interlude case failed,
+and four older cases threw,
+since an archive slice that never headed its section now takes the same count check;
+with the contributor heading check forced true,
+its case failed alone in its file.
+
+Measured while here:
+`contributor-name-restore.ts` reads ATX headings only,
+so a signer named in an HTML heading would never take the signer's rendering.
+Over the 92 pinned originals
+(`b20-html-signer-probe.mjs` in the audit's scratch folder,
+ids and counts only),
+13 HTML heading lines stand in 3 entries and none names one of its page's signers,
+while 9 ATX headings do (all in XingZ60,
+the positive control),
+so the ATX-only reading misses nothing at the pin.
+
+Calls made here are open to veto:
+
+- a slice whose heading count moved is left as the page has it rather than paired by some other rule;
+- the page-text reader throws a named refusal rather than reading a missing slice as empty text;
+- `contributor-name-restore.ts` keeps reading ATX headings only,
+  on the measurement.
+
+Recurrence:
+pairing items by position is sound only where both sides carry the same count at the level the positions are read;
+`mistake-prevention.md`,
+"Pairing by position".
+
 ## Process mistakes in this audit
 
 These are the agent's own mistakes while fixing,
@@ -17572,6 +17735,26 @@ and once when the check of `e2b0962fd`'s message for `#` and task numbers ran in
 so it read the file;
 rerun alone,
 no match).
+Again during T8's twentieth batch on 2026-10-01 (UTC),
+four times,
+with no wrong outcome landing:
+the lint of the handover ran in the batch of the edit it read,
+while this entry was being written
+(rerun alone,
+no finding);
+the check of `339ce9118`'s message for `#` and task numbers ran in the batch of the message's write
+(rerun alone,
+no match);
+the read of a lint log ran in the batch of the lint that wrote it
+(the lint rerun alone printed the same "Found 0 warnings and 0 errors.");
+and a named test run ran in the batch of the edit adding the case it ran
+(rerun alone,
+no FAIL line).
+Once more in that batch the check came after the commit:
+`70c8c8918`'s message was written and committed in one call,
+and its check,
+run next,
+found no match.
 The prevention stands as written:
 the edit or write,
 then,

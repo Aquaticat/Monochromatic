@@ -413,8 +413,23 @@ each is now read or refused by name
 (`71f7720a9` to `37f637675`).
 Its census (`census-IqLEk4` at `8175dc866`)
 leaves library source at 693 stretches in 263 files,
-and the twentieth batch takes `corpus-run/heading`
+and the twentieth batch took `corpus-run/heading`
 (17 stretches over 25 lines in 3 files) against it.
+It closed B83:
+the heading collision restore paired headings by position across the page,
+and where one replaced slice dropped a heading and another gained one,
+it shipped a section the page never replaced as empty text
+(`66927af39` and `339ce9118`).
+It closed B84 on the same family inside one slice:
+the heading series pass gave a section the wrong number,
+and the contributor name pass wrote a signer's name over another section's title,
+wherever a page slice dropped a heading
+(`26e24853e` to `5f059feff`).
+Every page pass now reads a slice's page text through one reader that refuses a slice it was not built from.
+Its census (`census-STKkse` at `4c0039a57`)
+leaves library source at 666 stretches in 260 files,
+and the twenty-first batch takes `assembly`
+(16 stretches over 27 lines in 8 files) against the census taken after this batch's docs.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
