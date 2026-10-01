@@ -1,7 +1,8 @@
 /**
- Tests archive-block context, reverse splicing, removal, and the linear
- two-step preparation: one correction round, one re-preparation, remaining
- unclaimed blocks recorded as findings instead of a cycle pause.
+ Tests archive-block context, reverse splicing, removal, the footnote check
+ reading the page the revisions already applied leave (ledger B80), and the
+ linear two-step preparation: one correction round, one re-preparation,
+ remaining unclaimed blocks recorded as findings instead of a cycle pause.
  
  Fixtures are cat-themed invention.
  
@@ -484,25 +485,57 @@ await describe({
             },),);
             // Each revision alone leaves the note referenced, the case's premise.
             expect([
-              revisionFootnoteFindings({ modelId: ROSTER[0], blockText: earlier, replacementText: earlierRevision, targetText, },),
-              revisionFootnoteFindings({ modelId: ROSTER[0], blockText: later, replacementText: laterRevision, targetText, },),
+              revisionFootnoteFindings({
+                modelId: ROSTER[0],
+                blockText: earlier,
+                replacementText: earlierRevision,
+                targetText,
+              },),
+              revisionFootnoteFindings({
+                modelId: ROSTER[0],
+                blockText: later,
+                replacementText: laterRevision,
+                targetText,
+              },),
             ],).toEqual([
               [],
               [],
             ],);
+            /**
+             Whether a prompt asks about the earlier block: the block under
+             review is quoted after the page, and the later block's archive
+             wording is gone from the page once its revision stands.
+
+             @param prompt - request messages, serialized
+
+             @returns Whether the earlier block is the one under review
+             */
+            function reviewsEarlier(prompt: string,): boolean {
+              return prompt.lastIndexOf(earlier,) > prompt.lastIndexOf(later,);
+            }
+            /** Scripted reviewers revising whichever block they are asked about. */
+            const inner = correctionClient({
+              replacementFor: function replacement(prompt,): string {
+                return reviewsEarlier(prompt,) ? earlierRevision : laterRevision;
+              },
+            },);
+            /** Seats asked to review the earlier block: the gather asks a window of the bench, not all of it. */
+            const askedEarlier: RosterModelId[] = [];
             /** Lines the review logged, each behind its level. */
             const lines: string[] = [];
             const repaired = await repairArchiveBlocks({
-              client: correctionClient({
-                // The block under review is quoted after the page, and the
-                // later block's archive wording is gone from the page once
-                // its revision stands.
-                replacementFor: function replacement(prompt,): string {
-                  return prompt.lastIndexOf(earlier,) > prompt.lastIndexOf(later,)
-                    ? earlierRevision
-                    : laterRevision;
+              client: {
+                chatText: inner.chatText,
+                chatJson: async (request,) => {
+                  if (
+                    (request.responseFormat?.json_schema.name === 'archive_block_review')
+                    && reviewsEarlier(JSON.stringify(request.messages,),)
+                  )
+                    askedEarlier.push(request.modelId,);
+                  return await inner.chatJson(request,);
                 },
-              },),
+                quotas: inner.quotas,
+              },
               modelIds: ROSTER,
               targetText,
               sourceContexts,
@@ -524,10 +557,12 @@ await describe({
               .toSorted();
             expect({
               page: repaired.targetText,
+              askedAny: askedEarlier.length > 0,
               withheld,
             },).toEqual({
               page: afterLater,
-              withheld: ROSTER.flatMap(function refusedIn(modelId,): readonly string[] {
+              askedAny: true,
+              withheld: askedEarlier.flatMap(function refusedIn(modelId,): readonly string[] {
                 return revisionFootnoteFindings({
                   modelId,
                   blockText: earlier,
@@ -538,8 +573,8 @@ await describe({
                 .toSorted(),
             },);
             // The page the earlier revisions would join carries the defect,
-            // one refusal per reviewer.
-            expect(withheld,).toHaveLength(ROSTER.length,);
+            // one refusal per seat asked.
+            expect(withheld,).toHaveLength(askedEarlier.length,);
           },
         },),
         it({

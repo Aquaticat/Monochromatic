@@ -71,7 +71,9 @@ export type ArchiveBlockReviewOutcome = {
  
  @param sourceText - whole source searched for support
  
- @param targetText - whole archive supplying context
+ @param targetText - page the block stands in, as the revisions already
+ applied leave it: the reviewers' context, the quote style a revision is
+ restored to, and the page a revision's footnote check reads (ledger B80)
  
  @param blockText - exact block under review
  
@@ -94,7 +96,7 @@ export type ArchiveBlockReviewOutcome = {
  @throws TranslationRepairInterruptedError when fewer seats answered at all
  than the quorum on the reachable bench needs
  
- @throws BlockOutsideArchiveError when the archive does not carry the block,
+ @throws BlockOutsideArchiveError when the page does not carry the block,
  which a revision's footnote check reads it in
  
  @example

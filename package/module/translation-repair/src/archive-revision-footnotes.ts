@@ -13,9 +13,16 @@ import { introducedFootnoteFindings, } from './assembly-regressions.ts';
 // so a defect the review introduces is inherited by the page and blamed on
 // nobody. A footnote is a relation BETWEEN blocks, and a revision of one
 // block is judged here against the whole page it would leave: a revision
-// that introduces a footnote defect the archive did not carry is withheld
+// that introduces a footnote defect the page did not carry is withheld
 // under the shape floor's finding prefix, and the note ships as the archive
 // wrote it.
+//
+// THE PAGE IS THE ONE THE REVISIONS ALREADY APPLIED LEAVE (ledger B80). Read
+// against the archive as it came, two revisions each dropping one marker of
+// a note passed alone, and together shipped the note with nothing
+// referencing it. Each revision now joins a page carrying no footnote defect
+// its predecessor lacked, so the page the review ends with carries none the
+// archive lacked.
 
 /**
  What `indexOf` returns for a block the archive does not carry verbatim.
@@ -23,7 +30,7 @@ import { introducedFootnoteFindings, } from './assembly-regressions.ts';
 const NOT_FOUND = -1;
 
 /**
- Refusal of a block the archive it was read from does not carry, so the page
+ Refusal of a block the page it is reviewed in does not carry, so the page
  its revision would leave cannot be built.
 
  MARKED: its message is one sentence written here, naming nothing.
@@ -45,7 +52,7 @@ export class BlockOutsideArchiveError extends Error {
    */
   constructor() {
     super(
-      'the archive block under review is not in the archive it was read from, so the page its revision would leave '
+      'the archive block under review is not in the page it is reviewed in, so the page its revision would leave '
         + 'cannot be built and its footnotes cannot be checked',
     );
     this.name = 'BlockOutsideArchiveError';
@@ -54,14 +61,15 @@ export class BlockOutsideArchiveError extends Error {
 
 /**
  Why a revision cannot replace the block it revises, when the page it would
- leave carries a footnote defect the archive did not: a reference with no
- definition, a definition nothing references, or an identifier defined
- twice.
+ leave carries a footnote defect the page as it stands does not: a reference
+ with no definition, a definition nothing references, or an identifier
+ defined twice.
 
  A BLOCK THE PAGE DOES NOT CARRY IS REFUSED (ledger T8, eighteenth batch).
- The block under review is an exact slice of the archive
- (`corpus-run/archive-block-repair.ts`), so one not found in it breaks the
- caller's contract; it once passed every revision unread, a branch kept for
+ The block under review is an exact slice of the archive, and stands at its
+ archive offsets in the page the revisions already applied leave, since
+ `corpus-run/archive-block-repair.ts` reviews later blocks first; so one not
+ found in that page breaks the caller's contract; it once passed every revision unread, a branch kept for
  fixtures a caller composed and reached by none. A block the page carries
  more than once is replaced at its first occurrence; the footnote graph
  reads the same labels whichever occurrence is replaced.
@@ -72,11 +80,12 @@ export class BlockOutsideArchiveError extends Error {
 
  @param replacementText - revision as it would ship, empty for a removal
 
- @param targetText - whole archive the block stands in
+ @param targetText - page the block stands in, as the revisions already
+ applied leave it (ledger B80)
 
  @returns Findings withholding the revision, empty when it may stand
 
- @throws BlockOutsideArchiveError when the archive does not carry the block
+ @throws BlockOutsideArchiveError when the page does not carry the block
 
  @example
  ```ts
@@ -126,7 +135,7 @@ export function revisionFootnoteFindings(
   },)
     .join(', ',);
   return [
-    `${REVISION_SHAPE_REFUSED} (${modelId}): the revision leaves the page with a footnote defect the archive did not carry (${spelled}); a footnote is a relation between blocks, and its marker stands outside the block under review`,
+    `${REVISION_SHAPE_REFUSED} (${modelId}): the revision gives the page a footnote defect it does not carry as it stands (${spelled}); a footnote is a relation between blocks, and its other end stands outside the block under review`,
   ];
 }
 

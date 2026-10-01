@@ -190,6 +190,12 @@ function removalSpan(
 /**
  Reviews unclaimed blocks in reverse offset order and applies selected revisions.
  
+ EACH BLOCK IS REVIEWED IN THE PAGE THE REVISIONS ALREADY APPLIED LEAVE
+ (ledger B80), so its reviewers, the quote style its revisions are restored
+ to, and the footnote check on them all read the page a revision would
+ join. Where two blocks' revisions conflict, the later block's, reviewed
+ first, stands.
+ 
  @param client - provider client
  
  @param modelIds - review roster
@@ -298,7 +304,13 @@ export async function repairArchiveBlocks(
       client,
       modelIds: blockSeating.modelIds ?? modelIds,
       sourceText: sourceContexts.get(identity,) ?? '',
-      targetText,
+      // THE PAGE THE REVISIONS ALREADY APPLIED LEAVE (ledger B80): a footnote
+      // is a relation between blocks, so a revision is read in the page it
+      // would join. Read in the archive as it came, two revisions each
+      // dropping one marker of a note passed alone and shipped the note with
+      // nothing referencing it. Later blocks go first, so this block stands
+      // in that page at its archive offsets.
+      targetText: revisedText,
       blockText,
       priorFindings: [],
       ...((identityContext === undefined) ? {} : { identityContext, }),

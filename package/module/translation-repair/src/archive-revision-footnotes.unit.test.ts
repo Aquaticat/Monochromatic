@@ -35,7 +35,7 @@ await describe({
   name: revisionFootnoteFindings.name,
   children: [
     it({
-      name: 'REFUSES a block the archive does not carry, which once passed every revision without reading the '
+      name: 'REFUSES a block the page does not carry, which once passed every revision without reading the '
         + 'page it would leave',
       fn: async () => {
         /**
@@ -51,7 +51,7 @@ await describe({
         },);
         expect(refusal,).toBeInstanceOf(BlockOutsideArchiveError,);
         expect((refusal as Error).message,).toBe(
-          'the archive block under review is not in the archive it was read from, so the page its revision would '
+          'the archive block under review is not in the page it is reviewed in, so the page its revision would '
             + 'leave cannot be built and its footnotes cannot be checked',
         );
       },
