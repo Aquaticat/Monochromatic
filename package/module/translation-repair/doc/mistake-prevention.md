@@ -2099,3 +2099,33 @@ following helpers called by name to their cases;
 Out of the scan's reach:
 a write through an alias such as `const env = process.env`,
 and a case made by a function the suite's text only calls.
+
+## Readers of the package's own log lines
+
+What happened:
+`run-timing-report` reads back the round and completion lines a run logs.
+Its reader knew one of the two round lines `runGatherRound` writes,
+so a round whose quorum never stood left every figure the report printed;
+a round line short of its fields was refused for a missing unit,
+a completion line without its outcome read as an empty outcome,
+and calls spanning no time divided by a zero span (ledger B82).
+
+The rule:
+a reader of a line the package writes starts from the writer:
+list every shape the writer can emit,
+read each into its own kind rather than optional fields,
+and refuse,
+naming the field,
+any line that carries the marker but none of those shapes.
+Fixtures copy the writer's template for each shape,
+and a figure folded from the readings counts every kind
+or says why one is left out.
+A division whose divisor the input can make zero is refused or guarded,
+never printed as a number.
+
+What enforces it:
+`run-timing.unit.test.ts` holds a fixture line for each round shape and the completion line,
+and a case for each refusal.
+Nothing yet ties those fixtures to the writer's template,
+so a new shape in `stage-round.ts` or `reportStreamProgress` reaches the reader untested
+(ledger B82 records the follow-up).

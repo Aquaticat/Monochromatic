@@ -4953,6 +4953,45 @@ The full suite on `7f7b1610a`
 with the worktree clean)
 printed 1,505 PASS lines and no FAIL line.
 
+The nineteenth batch took `corpus-run/run` against `census-EJl6yz`.
+Its reading found four defects,
+red in `71f7720a9` and fixed in `43e444768` and `8175dc866`
+(ledger B82);
+`8c622b09e` cased three reachable arms that already behaved,
+and the census's line-340 stretch is an attribution note,
+since the existing no-slash ratio case reaches that refusal.
+The closing census,
+`census-IqLEk4` at `8175dc866`,
+read against `census-EJl6yz`:
+ran 0,
+still cold 1,046,
+cold since then 4,
+not loaded 6,
+sources edited since then 2.
+The 4 cold since then are the other packages' timing-dependent stretches recorded for earlier batches
+(`with-timeout.ts` 57-59,
+`create-logger.ts` 240-247 and 366-373,
+`error-format.ts` 31-58).
+Of the edited sources,
+`run-timing-read.ts` left 0 cold stretches
+and `run-timing-parse.ts` 3,
+all reachable frame refusals the fix added,
+which `37f637675` cases.
+Library source went from 711 stretches to 693 in 263 files.
+
+By the first construct
+(`t8-triage-iqlek4.txt`),
+the queue for the twentieth batch is 292 returns,
+132 nullish fallbacks,
+118 ternaries,
+73 throws
+and 33 others.
+`corpus-run/heading` leads at 17 stretches
+(3 files,
+25 lines),
+so the twentieth batch takes `corpus-run/heading`
+against `census-IqLEk4`.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
@@ -15668,6 +15707,92 @@ a check that vouches for a whole block reads every part a reader sees,
 never one part or the block's edges;
 `mistake-prevention.md`,
 "Checks that vouch for a whole block".
+
+### B82: timing readers that read less than their writers write
+
+Found by T8's nineteenth batch,
+whose red commit `71f7720a9` cases all four,
+and fixed in `43e444768`.
+The run timing readers (`corpus-run/run-timing-parse.ts` and `corpus-run/run-timing-read.ts`)
+read back the round and completion lines a run logs,
+and `run-timing-report` prints what they read.
+
+- A round whose quorum never stood read as a line about something else.
+  `runGatherRound` (`stage-round.ts`) writes such a round as
+  `<stage> round: h/n heard, Tms total, no quorum (h of k needed), every ask settled`,
+  and the reader knew only the line that ends in grace,
+  so the report left the round out of its count,
+  its total time
+  and its voices never heard.
+  `readRoundTiming` now reads both shapes into a `quorum` that either `stood`
+  (time to quorum and time in grace)
+  or was `never` reached
+  (the count needed),
+  and refuses a no-quorum field whose heard count is not the ratio's.
+  `summariseRounds` folds every round into the report's figures
+  and sums grace only where quorum stood.
+- A round line short of its four fields was refused as a field that "carries no ms unit",
+  naming a unit where a whole field was missing.
+  It is now refused by its field count against the four its writer writes.
+- A completion line whose first field is not `<label>: <outcome>` read with an empty outcome.
+  `reportStreamProgress` always writes `stream <label>: <outcome>`,
+  so such a line is now refused as an unreadable completion line.
+- `measureInFlight` divided by a zero span as if it held calls:
+  timed calls that all took no time at one instant
+  reported every call in flight on average
+  while the sweep,
+  which takes an end ahead of a start at one instant,
+  counted a peak of none.
+  A zero span is now refused with `NothingInFlightError`,
+  as an empty call list already was,
+  and the report says which empty span the calls left.
+
+The refusals are named classes:
+`TimingFieldError` for a field,
+`TimingLineError` wrapping it for a line,
+`NothingInFlightError` for an empty span.
+`NothingInFlightError` carries the forwarding marker,
+since both its sentences are fixed;
+`TimingLineError` is on the message scan's withheld list,
+because it quotes the whole line it could not read.
+
+Running the built report on a throwaway log
+(both round shapes and two calls of no duration at one instant)
+printed the no-quorum round in every figure
+and found one more defect:
+the in-flight refusal followed its heading after a period,
+so the refusal's lower-case sentence read as a broken one.
+`8175dc866` joins them with a colon
+and brings the corpus-pass runbook's quoted output to the report.
+
+Guards shown to fail:
+the four red cases failed in `71f7720a9` against the code before the fix;
+with the heard-count agreement check disabled,
+the case naming what a round line contradicts failed alone in its file;
+with no-quorum rounds left out of the fold,
+the `summariseRounds` case failed alone in its file.
+
+Calls made here are open to veto:
+
+- a round is one of two kinds rather than one shape with optional fields,
+  so no reader can take a no-quorum round's missing grace for a zero;
+- the refusals are named classes rather than plain errors;
+- a zero span is refused rather than reported as a mean of zero;
+- a completion line missing its outcome is refused rather than read as an empty outcome;
+- the report prints no grace share where the rounds took no time,
+  since a NaN percentage reads as a measurement.
+
+Open:
+the fixture lines are copies of the writers' templates,
+so a case that builds each line through `stage-round.ts` and `reportStreamProgress` themselves
+would catch a new shape the copies miss.
+
+Recurrence:
+a reader of a log line the package itself writes
+reads every shape that writer writes,
+and is tested against lines built the way the writer builds them;
+`mistake-prevention.md`,
+"Readers of the package's own log lines".
 
 ## Process mistakes in this audit
 
