@@ -71,7 +71,14 @@ const hostRoot = fileURLToPath(new URL('../', entry))
 const settingsPath = join(getAgentDir(), 'settings.json')
 const before = JSON.parse(await readFile(settingsPath, 'utf8'))
 const packagePath = resolve('.')
-for (const args of [['remove', 'npm:pi-openai-codex-fast'], ['install', packagePath]]) {
+const { isLocalPath, resolvePath } = await import(new URL('./utils/paths.js', entry))
+function isIncumbent(value) {
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && (source.trim() === 'npm:pi-openai-codex-fast' || source.trim().startsWith('npm:pi-openai-codex-fast@'))
+}
+const incumbentEntries = before.packages.filter(isIncumbent)
+const commands = [...incumbentEntries.map(function removal(value) { return ['remove', typeof value === 'string' ? value : value.source] }), ['install', packagePath]]
+for (const args of commands) {
   const result = await run(process.execPath, [cli, ...args], { env: { ...process.env, PI_PACKAGE_DIR: hostRoot } })
   process.stdout.write(result.stdout)
   process.stderr.write(result.stderr)
@@ -83,13 +90,13 @@ if (JSON.stringify(previousSettings) !== JSON.stringify(installedSettings)) {
   throw new GlobalInstallationError('Pi package installation changed non-package settings; inspect the settings diff before continuing.')
 }
 function isReplacement(value) {
-  const source = typeof value === 'string' ? value : value.source
-  return typeof source === 'string' && resolve(dirname(settingsPath), source) === packagePath
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && isLocalPath(source) && resolvePath(source, dirname(settingsPath), { trim: true }) === packagePath
 }
-if (installedPackages.includes('npm:pi-openai-codex-fast') || !installedPackages.some(isReplacement)) {
+if (installedPackages.some(isIncumbent) || !installedPackages.some(isReplacement)) {
   throw new GlobalInstallationError('Pi global package replacement did not produce the expected package declarations.')
 }
-const unrelatedBefore = previousPackages.filter(function unrelated(value) { return value !== 'npm:pi-openai-codex-fast' && !isReplacement(value) })
+const unrelatedBefore = previousPackages.filter(function unrelated(value) { return !isIncumbent(value) && !isReplacement(value) })
 const unrelatedAfter = installedPackages.filter(function unrelated(value) { return !isReplacement(value) })
 if (JSON.stringify(unrelatedBefore) !== JSON.stringify(unrelatedAfter)) {
   throw new GlobalInstallationError('Pi package installation changed unrelated package declarations; inspect the settings diff before continuing.')
@@ -107,8 +114,9 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 import { readFile, writeFile, mkdtemp, rm } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { join, resolve, dirname } from 'node:path'
+import { join, resolve, dirname, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { getAgentDir } from '@earendil-works/pi-coding-agent'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 class LiveVerificationError extends Error {
@@ -117,7 +125,8 @@ class LiveVerificationError extends Error {
 if (process.env.PI_OPENAI_FAST_LIVE_CHILD === '1') {
   throw new LiveVerificationError('Live verification cannot recursively launch itself')
 }
-const authPath = join(homedir(), '.pi', 'agent', 'auth.json')
+const originalAgentDir = getAgentDir()
+const authPath = join(originalAgentDir, 'auth.json')
 const stored = JSON.parse(await readFile(authPath, 'utf8'))
 const credential = stored['openai-codex']
 if (credential?.type !== 'oauth' || typeof credential.access !== 'string' || credential.expires <= Date.now()) {
@@ -128,19 +137,22 @@ const cliPath = fileURLToPath(new URL('./cli.js', hostEntry))
 const hostRoot = fileURLToPath(new URL('../', hostEntry))
 const bundle = resolve('dist/final/node/index.mjs')
 const installedVerification = process.env.PI_OPENAI_FAST_VERIFY_INSTALLED === '1'
-const globalSettingsPath = join(homedir(), '.pi', 'agent', 'settings.json')
+const globalSettingsPath = join(originalAgentDir, 'settings.json')
+const { isLocalPath, resolvePath } = await import(new URL('./utils/paths.js', hostEntry))
 const globalSettings = installedVerification ? JSON.parse(await readFile(globalSettingsPath, 'utf8')) : undefined
 const installedSource = globalSettings?.packages.find(function replacement(value) {
-  const source = typeof value === 'string' ? value : value.source
-  return typeof source === 'string' && resolve(dirname(globalSettingsPath), source) === resolve('.')
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && isLocalPath(source) && resolvePath(source, dirname(globalSettingsPath), { trim: true }) === resolve('.')
 })
 if (installedVerification && !installedSource) throw new LiveVerificationError('The replacement package is absent from global pi settings')
 const declaredSource = typeof installedSource === 'string' ? installedSource : installedSource?.source
-const installedPath = declaredSource ? resolve(dirname(globalSettingsPath), declaredSource) : undefined
+const installedPath = declaredSource ? resolvePath(declaredSource, dirname(globalSettingsPath), { trim: true }) : undefined
 const extensionArgs = installedVerification ? [] : ['--no-extensions', '--extension', bundle]
 const root = await mkdtemp(join(homedir(), 'temp', 'agent', 'pi-openai-fast-live-'))
 try {
-  await writeFile(join(root, 'settings.json'), JSON.stringify({ packages: installedPath ? [installedPath] : [], transport: 'auto', retry: { enabled: false }, compaction: { enabled: false } }))
+  const rebasedSource = installedPath ? relative(root, installedPath) : undefined
+  const declaration = typeof installedSource === 'object' ? { ...installedSource, source: rebasedSource } : rebasedSource
+  await writeFile(join(root, 'settings.json'), JSON.stringify({ packages: declaration ? [declaration] : [], transport: 'auto', retry: { enabled: false }, compaction: { enabled: false } }))
   await writeFile(join(root, 'models.json'), JSON.stringify({ providers: { 'openai-codex': { apiKey: '$PI_OPENAI_FAST_ACCESS' } } }))
   const observer = join(root, 'observe.ts')
   await writeFile(observer, `import { appendFile } from 'node:fs/promises';
