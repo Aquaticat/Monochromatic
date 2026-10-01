@@ -23,6 +23,18 @@ const WHOLE = '## The cat\n\nThe cat naps on the windowsill[^1].\n\n[^1]: Its fa
  */
 const BROKEN = '## The cat\n\nThe cat naps on the windowsill.\n\nA bird sits there too. {\'unclosed\n';
 
+/**
+ Document whose element is still open when it ends, which the parser
+ refuses with no place named.
+ */
+const OPEN_AT_END = 'The cat naps.\n\n<div>\n\nA bird sits there too.\n';
+
+/**
+ Document whose first paragraph leaves an element open, refused on leaving
+ that paragraph.
+ */
+const OPEN_IN_PARAGRAPH = 'The cat <b>naps on the windowsill.\n\nA bird sits there too.\n';
+
 await describe({
   name: strictRefusalOffset.name,
   children: [
@@ -61,6 +73,28 @@ await describe({
         if ((!bare.refused) || (!withFence.refused))
           throw new Error('both documents carry the break',);
         expect(withFence.offset - bare.offset,).toBe(fenced.length - BROKEN.length,);
+      },
+    },),
+    it({
+      name: 'NAMES THE END OF THE DOCUMENT for an element still open there, where the grammar stopped though the '
+        + 'parser names no place, rather than the start of the body (ledger B86)',
+      fn: async () => {
+        expect(strictRefusalOffset({ text: OPEN_AT_END, },),).toEqual({ refused: true, offset: OPEN_AT_END.length, },);
+        /**
+         Same document behind a front matter block.
+         */
+        const fenced = `---\nname: cat\n---\n\n${OPEN_AT_END}`;
+        expect(strictRefusalOffset({ text: fenced, },),).toEqual({ refused: true, offset: fenced.length, },);
+      },
+    },),
+    it({
+      name: 'NAMES THE END OF THE SPAN THE PARSER NAMES, which it refuses on leaving: an element left open in a '
+        + 'paragraph stops the grammar where the paragraph ends, not where it starts (ledger B86)',
+      fn: async () => {
+        expect(strictRefusalOffset({ text: OPEN_IN_PARAGRAPH, },),).toEqual({
+          refused: true,
+          offset: OPEN_IN_PARAGRAPH.indexOf('\n',),
+        },);
       },
     },),
   ],

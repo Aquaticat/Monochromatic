@@ -37,6 +37,15 @@ const SHIFTING = [
   { sliceIndex: 1, replacementText: `## The bird\n\nOn the windowsill there sits a bird. ${BIRD_BREAK}`, },
   { sliceIndex: 2, replacementText: '## Notes {\'unclosed\n\n[^1]: That is its favourite spot.', },
 ];
+/**
+ First section leaves an element open to the end of the page, the second breaks an expression, the third is
+ whole: the parser names the expression, and once it goes the open element stops the grammar at the page's end.
+ */
+const LEFT_OPEN = [
+  { sliceIndex: 0, replacementText: '## The cat\n\n<div>\n\nThe cat naps on the windowsill[^1].', },
+  { sliceIndex: 1, replacementText: `## The bird\n\nA bird sits there. ${BIRD_BREAK}`, },
+  { sliceIndex: 2, replacementText: '## Notes\n\n[^1]: That is the spot it likes best.', },
+];
 
 await describe({
   name: 'structural assembly withdrawal',
@@ -203,6 +212,36 @@ await describe({
           return left - right;
         },),).toEqual([1, 2,],);
         expect(guarded.assembledText,).toContain('It naps[^1].',);
+      },
+    },),
+    it({
+      name: 'READS AN ELEMENT LEFT OPEN TO THE END AS STOPPING THERE, so withdrawing the break the parser named first '
+        + 'moves the refusal to the page\'s end rather than back to its start (ledger B86)',
+      fn: async () => {
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: SECTIONS_TARGET, },);
+        /** Page as assembled, both defects on it. */
+        const standing = spliceSlices({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements: LEFT_OPEN, },);
+        /** Where the grammar first stops on it: the bird's open expression. */
+        const first = strictRefusalOffset({ text: standing, },);
+        if (!first.refused)
+          throw new Error('the expression is on the page',);
+        expect(advancingStructuralWithdrawal({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements: LEFT_OPEN, },),)
+          .toEqual([{ sliceIndex: 1, from: first.offset, to: standing.length, cleared: false, },],);
+      },
+    },),
+    it({
+      name: 'KEEPS THE WHOLE SECTION beside an element left open and a broken expression, withdrawing the two '
+        + 'one round at a time instead of every replacement (ledger B86)',
+      fn: async () => {
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: SECTIONS_TARGET, },);
+        /** Real assembly guard over both defects. */
+        const guarded = guardFootnoteAssembly({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements: LEFT_OPEN, },);
+        expect(guarded.replacements,).toEqual(LEFT_OPEN.slice(2,),);
+        expect(guarded.findings.some(function blanket(finding,): boolean {
+          return finding.startsWith('assembly-withdrew-every-replacement',);
+        },),).toBe(false,);
       },
     },),
   ],
