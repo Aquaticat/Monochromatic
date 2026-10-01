@@ -2264,7 +2264,8 @@ which sits before "TSDoc comments".
 
 ### Concurrent `AGENTS.md` changes
 
-Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- AGENTS.md`, checked 2026-09-29):
+Other sessions edited `AGENTS.md` during the walk (`git diff d38e8e6ca HEAD -- AGENTS.md`,
+checked 2026-09-29):
 
 - 0879faf1f added EDR to "Command execution conventions" after batch 9 was approved;
    approved with batch 15.
@@ -2365,3 +2366,10 @@ The open question before concrete adoption is the intended sorting criterion:
 canonical lifecycle organization or relevance to the current task.
 Until that is settled and the proposed behavior is exercised,
 there is no recommendation to deploy Voyage as the instruction sorter.
+
+### Verification
+
+The assessment section passed the repository's scoped Markdown stdin check
+and rendered with Sätteri's installed `markdownToHtml` API.
+Full-file lint identified an unchanged semantic-line-breaks finding in "Concurrent `AGENTS.md` changes";
+its prose line was wrapped without changing content.
