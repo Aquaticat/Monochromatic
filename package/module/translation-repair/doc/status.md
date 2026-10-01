@@ -392,10 +392,12 @@ Its census (`census-JXU9Js` at `67f85061a`,
 1,505 passes)
 leaves library source at 711 stretches over 1,367 lines in 265 files,
 with 14 functions never called.
-The two findings it left open,
-the editorial-apparatus check accepting prose after a label
-and archive revisions checked one at a time though they compose,
-close before the nineteenth batch takes `corpus-run/run`.
+It left two findings open,
+and both close before the nineteenth batch takes `corpus-run/run`.
+B80 closed one:
+archive revisions were checked one at a time though they compose,
+and each block is now reviewed in the page the revisions already applied leave.
+The editorial-apparatus check accepting prose after a label is still open.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,

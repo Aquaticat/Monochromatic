@@ -4901,7 +4901,8 @@ so prose following a label in one block passes as apparatus;
 how often the pinned archives carry such a block is to be measured before any tightening.
 And `revisionFootnoteFindings` reads each revision against the archive as it came,
 while `archive-block-repair.ts` composes the revisions it accepts into one text,
-so two revisions harmless alone could together leave a footnote defect no check sees.
+so two revisions harmless alone could together leave a footnote defect no check sees;
+B80 closes it.
 
 Its census at `67f85061a`
 (`census-JXU9Js`,
@@ -15474,6 +15475,95 @@ or replaces a method through its own sandbox;
 `global-writes-sequenced.unit.test.ts`,
 which `source-scans` runs,
 fails on any other.
+
+### B80: archive revisions checked one at a time and composed into one page
+
+Found by T8's eighteenth batch,
+which left it open.
+`repairArchiveBlocks` (`corpus-run/archive-block-repair.ts`) reviews each unclaimed archive block,
+latest first,
+and splices every revision it accepts into one page,
+but it handed each review the archive as it came,
+so the footnote check on a revision (`revisionFootnoteFindings`,
+the class eighty-four floor) never saw the revisions beside it.
+The check's own comment calls a footnote a relation between blocks.
+Two blocks each carrying the one marker of a note,
+each revised to drop it,
+passed alone,
+since the other block's marker still referenced the note,
+and together shipped the note with nothing referencing it;
+the page guard downstream reads the reviewed page as its archive,
+so it inherits the defect rather than finding it.
+The red case (`ffe8132b1`) asserted both premises,
+each revision alone leaving the note referenced,
+and the page shipped both revisions with no refusal logged.
+
+Fixed (`5faa6f689`):
+each block's review now takes the page the revisions already applied leave,
+and since later blocks go first,
+the block under review stands in it at its archive offsets.
+The reviewers' context,
+the quote style a revision is restored to
+and the footnote check all read that page.
+`introducedFootnoteFindings` counts defects by kind,
+convention and identifier,
+so a revision passes only into a page whose defects are a sub-multiset of the page before it,
+and the reviewed page carries none the archive lacked.
+In the red case the later block's revision stands
+and each revision of the earlier block is refused.
+The refusal now says the revision "gives the page a footnote defect it does not carry as it stands",
+and its tail says the defect's "other end" stands outside the block,
+since the end outside may be a note rather than a marker.
+The block-outside refusal now says "not in the page it is reviewed in".
+
+No stored reply moves with the changed prompts:
+preparation caches only its pairing,
+section-pairing and page-title rounds,
+each keyed by its full content (`corpus-run/pass-prepare.ts`),
+and nothing under `src` keys an archive review reply.
+The other callers of `introducedFootnoteFindings`
+(`assembly-integrity.ts`,
+`assembly-structural-withdrawal.ts`,
+`corpus-run/page-footnote-integrity.ts`)
+each read a whole spliced page,
+so the archive review was the one reading a part.
+
+A correction on the way.
+The red case first expected one refusal from every roster seat,
+but the gather asks a window of quorum plus one seats
+(`stage-quorum.ts`,
+`fanOut`),
+and three of the four were asked,
+so the case would have failed with the fix in place.
+It now records the seats asked about the earlier block and expects one refusal from each.
+Before the red case,
+`308bbe206` wrapped the file's two awaited suites in one root suite,
+so a failing case in the first no longer keeps the second from running.
+
+Guard-off on the fixed tree:
+the review handed the archive as it came again failed the new case alone in its file,
+and `git diff` printed nothing after the restore.
+
+Calls made here are open to veto:
+
+- the quote style a revision is restored to follows the page as it will ship,
+  not the archive as written;
+  the two differ only where an earlier accepted revision removed the archive's only quotes of a style;
+- where two blocks' revisions conflict,
+  the later block's stands,
+  since it is reviewed first;
+  a pair that is sound only together,
+  such as a note and its only marker both removed,
+  stays refusable as before,
+  each half refused for the defect it alone would leave;
+- the reviewers see the page as revised so far,
+  which is the page their block would join.
+
+Recurrence:
+a check guarding a relation between parts of a composed text
+reads each part's change in the text the changes already accepted leave;
+`mistake-prevention.md`,
+"Checks on one part of a composed text".
 
 ## Process mistakes in this audit
 

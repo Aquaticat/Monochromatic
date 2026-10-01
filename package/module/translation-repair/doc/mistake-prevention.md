@@ -941,6 +941,9 @@ And two short-bench cases refused two seats of four,
 which leaves a quorum,
 since the quorum is half the bench rounded up;
 each failed at its own premise before reaching the stage (M86).
+And B80's first case expected one refusal from every roster seat,
+where the gather asks a window of quorum plus one,
+so it would have failed with the fix in place.
 
 The rule:
 when a rule changes what a quorum counts,
@@ -960,6 +963,9 @@ so a case holds the count exactly at it,
 or a boundary mutant survives.
 A short-bench fixture is sized from `rosterQuorumSize` read in the code:
 a bench is short only when fewer seats are reachable than half the bench rounded up.
+A case counting what a gather's voices did counts the seats its scripted client was asked,
+recorded as each is asked,
+never the roster.
 
 What enforces it:
 `archive-block-review-stage.unit.test.ts` holds a bench with most seats refused,
@@ -1522,6 +1528,32 @@ What enforces it:
 the reorder and pass relabel cases on the unmovable definition;
 habit and review for the probe,
 whose counts the batch's ledger record states.
+
+## Checks on one part of a composed text
+
+What happened:
+the archive block review read each revision's footnotes against the archive as it came,
+while the pass splices every revision it accepts into one page,
+so two blocks each dropping one marker of a note passed alone
+and together shipped the note with nothing referencing it (ledger B80).
+The check's own comment called a footnote a relation between blocks,
+and the check still read one block's change at a time.
+
+The rule:
+a check guarding a relation between parts of a text
+(a marker and its note,
+a label and what it names,
+a link and its anchor)
+reads each part's change in the text the changes already accepted leave,
+never in the input the composition started from,
+and the composition applies its changes in an order that keeps every later part's place.
+Its case pairs two changes each harmless alone and harmful together,
+and asserts both premises before the composed refusal.
+
+What enforces it:
+`corpus-run/archive-block-repair.unit.test.ts` holds the two-marker case;
+habit and review elsewhere,
+since no scan tells a relation check from a check on one part.
 
 ## Text that shows nothing
 
