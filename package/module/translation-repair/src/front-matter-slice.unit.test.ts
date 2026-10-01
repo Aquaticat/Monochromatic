@@ -72,6 +72,41 @@ const COMMENT_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n  location: �
  */
 const COMMENT_TARGET = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Guangdong #Qingyuan, by MoguHandle\n---\n';
 
+/**
+ Archive establishing one contributor spelling at info.location, paired with
+ COMMENT_AUTHORITY_CANDIDATE below, which establishes a different spelling:
+ the two differ so a source that wrongly resolved a comment relation would
+ route through to a refusal, not coincidentally stay quiet.
+ */
+const COMMENT_AUTHORITY_PAGE = '---\nname: 猫猫\ninfo:\n  alias: 猫猫\n  location: Guangdong #Qingyuan, by MoguHandle\n---\n\nBody.\n';
+
+/**
+ Candidate establishing its own contributor spelling, deliberately different
+ from COMMENT_AUTHORITY_PAGE's.
+ */
+const COMMENT_AUTHORITY_CANDIDATE = '---\nname: Maomao\ninfo:\n  alias: Maomao\n  location: Guangdong #Qingyuan, by 魔骨\n---\n';
+
+/**
+ Source whose front matter declares no info mapping at all.
+ */
+const INFO_MISSING_SOURCE = '---\nname: 猫猫\n---\n\nBody.\n';
+
+/**
+ Source whose info.location is a bare scalar with no inline comment.
+ */
+const LOCATION_NO_COMMENT_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 咪咪\n  location: Garden Shed\n---\n\nBody.\n';
+
+/**
+ Source whose info.location comment names a place but no contributor.
+ */
+const PLACE_ONLY_COMMENT_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 咪咪\n  location: Garden Shed #a sunny corner\n---\n\nBody.\n';
+
+/**
+ Source whose info.location comment ends at the contributor marker with
+ nothing, not even whitespace, trimmed out of it.
+ */
+const DANGLING_MARKER_SOURCE = '---\nname: 猫猫\ninfo:\n  alias: 咪咪\n  location: Garden Shed #Garden Shed, by \n---\n\nBody.\n';
+
 await describe({
   name: frontMatterSlice.name,
   children: [
@@ -368,6 +403,166 @@ await describe({
           pageText: DIRECTORY_ID_TARGET,
           candidateText: '---\nname: Maomao\ninfo:\n  alias: Maomao\n---\n',
         },).kind,).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'FINDS NO COMMENT RELATION WHEN SOURCE HAS NO info MAPPING, so a missing block establishes '
+        + 'nothing to protect',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: INFO_MISSING_SOURCE,
+          pageText: COMMENT_AUTHORITY_PAGE,
+          candidateText: COMMENT_AUTHORITY_CANDIDATE,
+        },).kind,).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'FINDS NO COMMENT RELATION WHEN SOURCE\'S LOCATION CARRIES NO INLINE COMMENT, so a bare '
+        + 'scalar establishes nothing to protect',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: LOCATION_NO_COMMENT_SOURCE,
+          pageText: COMMENT_AUTHORITY_PAGE,
+          candidateText: COMMENT_AUTHORITY_CANDIDATE,
+        },).kind,).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'FINDS NO COMMENT RELATION WHEN SOURCE\'S COMMENT NAMES NO CONTRIBUTOR, so a place-only note '
+        + 'establishes nothing to protect',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: PLACE_ONLY_COMMENT_SOURCE,
+          pageText: COMMENT_AUTHORITY_PAGE,
+          candidateText: COMMENT_AUTHORITY_CANDIDATE,
+        },).kind,).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'FINDS NO COMMENT RELATION WHEN SOURCE\'S CONTRIBUTOR MARKER IS FOLLOWED BY NOTHING, so a '
+        + 'dangling `, by ` establishes nothing to protect',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: DANGLING_MARKER_SOURCE,
+          pageText: COMMENT_AUTHORITY_PAGE,
+          candidateText: COMMENT_AUTHORITY_CANDIDATE,
+        },).kind,).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'READS other-schema FROM A NULL FRONT MATTER ROOT, so the identity rule stays quiet instead '
+        + 'of guessing a name',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: '---\n---\n',
+          pageText: '',
+          candidateText: '---\n---\n',
+        },).kind,).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'READS other-schema FROM FRONT MATTER WITH NO info BLOCK, so the identity rule has nothing to '
+        + 'carry the name into',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: '---\nname: Tuxedo\n---\n\nBody.\n',
+          pageText: '---\nname: Biscuit\n---\n\nBody.\n',
+          candidateText: '---\nname: Whiskers\n---\n',
+        },).kind,).toBe('valid',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A CANDIDATE WHOSE VISIBLE name IS NOT A STRING, so a numeric placeholder never '
+        + 'counts as carrying the name into info.alias',
+      fn: async () => {
+        expect(validateFrontMatterTranslation({
+          sourceText: '---\nname: Mittens\ninfo:\n  alias: Mittens\n---\n\nBody.\n',
+          pageText: '---\nname: 42\ninfo:\n  alias: Mittens\n---\n\nBody.\n',
+          candidateText: '---\nname: 42\ninfo:\n  alias: Mittens\n---\n',
+        },),).toEqual({
+          kind: 'invalid',
+          findings: [
+            'Your translation must carry the name among the comma-separated renderings in info.alias because ORIGINAL declares name and info.alias as the same identity.',
+          ],
+        },);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS A NULL-VALUED FIELD MATCHING THE ARCHIVE, so two front matters whose info.location '
+        + 'is left empty compare as the same shape, AND REFUSES THE SAME FIELD WRITTEN AS TEXT',
+      fn: async () => {
+        /**
+         Source establishing a distinct name and alias, so the identity rule
+         stays quiet regardless of the shape outcome below.
+         */
+        const sourceText = '---\nname: Clementine\ninfo:\n  alias: Clem\n---\n\nBody.\n';
+        /**
+         Archive whose info.location key is declared with nothing after it.
+         */
+        const pageText = '---\nname: Clementine\ninfo:\n  alias: Clem\n  location:\n---\n\nBody.\n';
+
+        expect(validateFrontMatterTranslation({
+          sourceText,
+          pageText,
+          candidateText: '---\nname: Clementine\ninfo:\n  alias: Clem\n  location:\n---\n',
+        },).kind,).toBe('valid',);
+        expect(validateFrontMatterTranslation({
+          sourceText,
+          pageText,
+          candidateText: '---\nname: Clementine\ninfo:\n  alias: Clem\n  location: Garden Shed\n---\n',
+        },),).toEqual({
+          kind: 'invalid',
+          findings: ['Your translation changed YAML field names, nesting, container lengths, or scalar kinds.',],
+        },);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS A TRANSLATED TAG LIST MATCHING SHAPE, AND REFUSES THE SAME KEYS WITH AN ITEM '
+        + 'DROPPED OR WRITTEN AS A MAPPING, since a YAML list signs by position and length, never by '
+        + 'key count alone',
+      fn: async () => {
+        /**
+         Source establishing a distinct name and alias, so the identity rule
+         stays quiet regardless of the shape outcome below.
+         */
+        const sourceText = '---\nname: Clementine\ninfo:\n  alias: Clem\n---\n\nThe cat naps.\n';
+        /**
+         Archive declaring a two-item tag list.
+         */
+        const pageText =
+          '---\nname: Clementine\ninfo:\n  alias: Clem\n  tags:\n    - orange\n    - fluffy\n---\n\nThe cat naps.\n';
+        /**
+         Shape-mismatch finding shared by every assertion here except the first.
+         */
+        const changedShapeFinding = {
+          kind: 'invalid',
+          findings: ['Your translation changed YAML field names, nesting, container lengths, or scalar kinds.',],
+        };
+
+        expect(validateFrontMatterTranslation({
+          sourceText,
+          pageText,
+          candidateText: '---\nname: Clementine\ninfo:\n  alias: Clem\n  tags:\n    - 橘色\n    - 蓬松\n---\n',
+        },).kind,).toBe('valid',);
+        expect(validateFrontMatterTranslation({
+          sourceText,
+          pageText,
+          candidateText: '---\nname: Clementine\ninfo:\n  alias: Clem\n  tags:\n    - 橘色\n---\n',
+        },),).toEqual(changedShapeFinding,);
+        expect(validateFrontMatterTranslation({
+          sourceText,
+          pageText,
+          candidateText: '---\nname: Clementine\ninfo:\n  alias: Clem\n  tags:\n    \'0\': 橘色\n    \'1\': 蓬松\n---\n',
+        },),).toEqual(changedShapeFinding,);
       },
     },),
   ],

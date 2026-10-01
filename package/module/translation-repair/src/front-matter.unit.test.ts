@@ -332,6 +332,21 @@ await describe({
         expect(namesWithoutQuoting(refusal,),).toBe(true,);
       },
     },),
+    it({
+      name: 'NAMES THE JAVASCRIPT ERROR CLASS WHEN AN ALIAS POINTS AT NO ANCHOR, since the parser raises '
+        + 'a ReferenceError the YAML grammar never assigns a position or a fault code to',
+      fn: async () => {
+        /**
+         Refusal for a front matter whose alias names no anchor the document
+         ever sets.
+         */
+        const refusal = refusalFrom({ text: '---\nname: *ghost\n---\n\nBody.\n', },);
+
+        expect(refusal instanceof FrontMatterParseError,).toBe(true,);
+        expect(refusal.message.includes('at an unstated position (ReferenceError)',),).toBe(true,);
+        expect(refusal.message.includes('ghost',),).toBe(false,);
+      },
+    },),
   ],
 },);
 

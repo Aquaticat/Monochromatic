@@ -605,5 +605,166 @@ await describe({
         },),).toThrow(FrontMatterCompletenessError,);
       },
     },),
+
+    it({
+      name: 'REFUSES A CHANGED TARGET-ONLY METADATA when the source declares none at all, naming '
+        + 'invalid-page, since nothing was translated and the page must keep the archive\'s own bytes',
+      fn: async () => {
+        /**
+         What the guard threw for a target-only archive whose bytes the page changed.
+         */
+        const refusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'EntryId',
+            sourceText: 'The cat sleeps on the windowsill.\n',
+            archiveText: TARGET_TEXT,
+            pageText: '---\nname: EntryId\ninfo:\n  alias: Changed\n---\n\nBody.\n',
+            slices: [],
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('invalid-page',);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A PAGE WHOSE ASSEMBLED TEXT DROPPED THE METADATA BLOCK, naming invalid-page, even '
+        + 'though the slice bookkeeping still names the right source and archive bytes',
+      fn: async () => {
+        /**
+         What the guard threw for an assembled page with no fence pair at all.
+         */
+        const refusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'EntryId',
+            sourceText: SOURCE_TEXT,
+            archiveText: FOLDER_TEXT,
+            pageText: 'The cat sleeps on the windowsill.\n',
+            slices: [sliceResult.slice,],
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('invalid-page',);
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS A FRESH INSERTION WHOSE SOURCE NAMES ITSELF BY THE DIRECTORY ID, with no prior '
+        + 'archive to consult',
+      fn: async () => {
+        /**
+         Entry id carrying a digit, so no pinyin reading of a name can also
+         spell it: verified against the installed pinyin-pro package, a digit
+         contributes no Latin letters to the reading walk.
+         */
+        const entryId = 'Tuxedo7';
+        /**
+         Source page naming itself by the directory id, with a script alias
+         distinct from it.
+         */
+        const sourceText = '---\nname: Tuxedo7\ninfo:\n  alias: 小猫\n---\n\n正文。\n';
+        /**
+         Parsed source metadata.
+         */
+        const source = splitFrontMatter({ text: sourceText, },).frontMatter;
+        if (source === undefined)
+          throw new Error('handle-digit source fixture did not parse',);
+        /**
+         Insertion slice over the source-only metadata.
+         */
+        const insertion = frontMatterSlice({ source, },);
+        if (insertion.kind !== 'paired')
+          throw new Error('handle-digit source fixture did not pair',);
+
+        expect(() => assertFrontMatterComplete({
+          entryId,
+          sourceText,
+          archiveText: 'Body.\n',
+          pageText: '---\nname: Tuxedo7\ninfo:\n  alias: 小猫\n---\n\nBody.\n',
+          slices: [insertion.slice,],
+        },),).not.toThrow();
+      },
+    },),
+
+    it({
+      name: 'ACCEPTS A PAGE THAT ADDS THE LATIN ALIAS A STILL-UNTRANSLATED ARCHIVE NEVER HAD, clearing '
+        + 'the directory-id check at publication whether or not an archive exists to consult',
+      fn: async () => {
+        /**
+         Source naming the person in script the id does not spell: verified
+         against the installed pinyin-pro package, neither reading of 雪爪
+         (xue + zhua or zhao) produces the letters `snowpaw`.
+         */
+        const sourceText = '---\nname: 雪爪\ninfo:\n  alias: 小雪\n---\n\n正文。\n';
+        /**
+         Parsed source metadata.
+         */
+        const source = splitFrontMatter({ text: sourceText, },).frontMatter;
+        if (source === undefined)
+          throw new Error('snowpaw source fixture did not parse',);
+        /**
+         Archive still showing the directory id as the name, with a
+         script-only alias that carries no Latin rendering of its own.
+         */
+        const archiveText = '---\nname: Snowpaw\ninfo:\n  alias: 小雪\n---\n\nBody.\n';
+        /**
+         Parsed archive metadata.
+         */
+        const archive = splitFrontMatter({ text: archiveText, },).frontMatter;
+        if (archive === undefined)
+          throw new Error('snowpaw archive fixture did not parse',);
+        /**
+         Explicit metadata slice the still-untranslated archive requires rendering.
+         */
+        const renderedSlice = frontMatterSlice({ source, target: archive, },);
+        if (renderedSlice.kind !== 'paired')
+          throw new Error('snowpaw archive fixture did not pair',);
+        /**
+         Insertion slice for the no-archive variant below.
+         */
+        const insertionSlice = frontMatterSlice({ source, },);
+        if (insertionSlice.kind !== 'paired')
+          throw new Error('snowpaw insertion fixture did not pair',);
+        /**
+         Page whose alias now carries a Latin rendering distinct from the id,
+         an exemption neither the source nor the archive alone establishes.
+         */
+        const pageWithLatinAlias = '---\nname: Snowpaw\ninfo:\n  alias: 小雪, Xuezhua\n---\n\nBody.\n';
+
+        // Against an existing, still-untranslated archive.
+        expect(() => assertFrontMatterComplete({
+          entryId: 'Snowpaw',
+          sourceText,
+          archiveText,
+          pageText: pageWithLatinAlias,
+          slices: [renderedSlice.slice,],
+        },),).not.toThrow();
+
+        // Against no archive at all, a fresh insertion.
+        expect(() => assertFrontMatterComplete({
+          entryId: 'Snowpaw',
+          sourceText,
+          archiveText: 'Body.\n',
+          pageText: pageWithLatinAlias,
+          slices: [insertionSlice.slice,],
+        },),).not.toThrow();
+
+        /**
+         What the guard threw for a page keeping the script-only alias, with
+         no Latin rendering anywhere to clear the exemption.
+         */
+        const refusal = thrownBy({
+          run: () => assertFrontMatterComplete({
+            entryId: 'Snowpaw',
+            sourceText,
+            archiveText,
+            pageText: archiveText,
+            slices: [renderedSlice.slice,],
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(FrontMatterCompletenessError,);
+        expect((refusal as Error).message,).toContain('directory-id-name',);
+      },
+    },),
   ],
 },);
