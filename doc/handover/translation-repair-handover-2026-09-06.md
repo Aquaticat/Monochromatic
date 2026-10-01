@@ -375,11 +375,23 @@ this one says what changed after it.
   set a map entry to a copy of what it held at every repeat;
   they append in place now,
   and `fold-copies.unit.test.ts` fails on a new one.
+  Ledger B75 followed
+  (`6035e9b03` to `5a3e38037`):
+  every runner found its own flags as exact tokens,
+  so `--cap=0`,
+  a mistyped flag,
+  a second `--only` or an argument to a runner that reads none
+  read as not written;
+  each runner now declares its line in `corpus-run/command-lines.ts`,
+  `reportingRefusals` reads the whole line against it before the runner starts,
+  and the task descriptions and the living docs' invocations are held to the declarations.
   Open,
   each to close before the eighteenth batch:
   elapsed times measured on the wall clock (found in the seventeenth batch),
-  a flag written twice read at its first value,
-  and plain-object tables looked up by text from outside the package (both found in B73).
+  plain-object tables looked up by text from outside the package (found in B73;
+  the fidelity probe's defect table closed by B75),
+  and an `--only` naming no entry,
+  which runs over none without a word.
   The census taken once they close is the eighteenth batch's baseline,
   that batch taking the archive modules
   (`archive`,
