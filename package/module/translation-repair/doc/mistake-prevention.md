@@ -1039,7 +1039,9 @@ Lint,
 type check and the named tests run after the final edit of a commit,
 in that order,
 and the commit follows only a clean run of all three (M46).
-The named tests of a source commit include the package-wide source scans,
+The named tests of a commit touching the package's source,
+docs,
+README or task file include the package-wide source scans,
 run as one task,
 `mise run source-scans`
 (its description names each),
@@ -1047,7 +1049,10 @@ since a new class,
 function,
 export,
 link,
-sheet or clock time is read by those and not by its own file's tests;
+sheet,
+clock time or reference by position is read by those and not by its own file's tests;
+a docs-only commit runs them too,
+since four of them read the docs (M59);
 a ledger entry is closed only after a full suite has passed on its last commit (M12,
 M59).
 Neither the type check nor the linter reports an unused import here

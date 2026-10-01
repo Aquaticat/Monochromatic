@@ -15885,8 +15885,8 @@ and two of which already threw without naming the slice;
 `70c8c8918` moves the last pass onto it.
 No such read was reachable,
 since each pass reads only the slices its map was built from.
-The message of `a6edb4665` miscounted those reads as seven `?? ''` fallbacks;
-a commit comment on it gives the count above.
+The message of `a6edb4665` miscounted those reads as seven `?? ''` fallbacks,
+and a commit comment on it corrects the count to eight reads in six modules.
 
 Guard shown to fail:
 with the per-slice count check disabled,
@@ -17460,6 +17460,23 @@ the coverage census's own `parseArgs` catch.
 The prevention stands:
 `mise run //package/module/translation-repair:source-scans` runs before each source commit,
 beside its named tests.
+
+Recurred 2026-10-01 (UTC) at the close of T8's twentieth batch,
+through a gap in the rule itself:
+the rule named source commits,
+and the batch's docs commit `fb16c5128` ran only the Markdown linter.
+Its B84 entry said a commit comment "gives the count above",
+which `position-references.unit.test.ts` reads as a reference by position;
+the full suite on `7b61bb928` failed that one package-wide case.
+The clock-time,
+task-list-number,
+living-doc-link and position-reference scans read the docs as well as `src`,
+so a docs commit can fail them as readily as a source commit.
+Prevention:
+`source-scans` runs before every commit that touches the package's source,
+docs,
+README or task file,
+and the task's description and `mistake-prevention.md` now say so.
 
 ### M58: a red case whose fixture could not reach the check it was said to pin
 
