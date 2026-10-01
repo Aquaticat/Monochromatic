@@ -259,6 +259,22 @@ The user does not want a reporting UI or compatibility catalog to manage those u
    and consumer-facing host verification.
 - Perform a live Codex smoke request after implementation without claiming that success alone proves acceleration.
 
+## Design-stage verification
+
+The scoped `mise run lint:markdown` command passed for this plan,
+ both research notes,
+ and [the troubleshooting record](../troubleshooting/pi-virtual-priority-options.md).
+Local renderer tests passed for those documents and confirmed that the embedded troubleshooting harnesses
+match the executed scratch programs.
+The routing and native-adapter fixture tests passed without live inference.
+
+Independent reviews were used to check selection-consent boundaries and the proposed native virtual routing architecture.
+No extension source,
+ global settings,
+ default model,
+ or enabled-model scope has been changed.
+The pre-existing `pnpm-lock.yaml` modification remains unrelated and unstaged.
+
 ## Next action
 
 Ask the user to confirm the complete shared design and request-only backend contract.
