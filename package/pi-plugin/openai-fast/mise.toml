@@ -145,6 +145,10 @@ const installedSource = globalSettings?.packages.find(function replacement(value
   return typeof source === 'string' && isLocalPath(source) && resolvePath(source, dirname(globalSettingsPath), { trim: true }) === resolve('.')
 })
 if (installedVerification && !installedSource) throw new LiveVerificationError('The replacement package is absent from global pi settings')
+if (globalSettings?.packages.some(function incumbent(value) {
+  const source = typeof value === 'string' ? value : value?.source
+  return typeof source === 'string' && (source.trim() === 'npm:pi-openai-codex-fast' || source.trim().startsWith('npm:pi-openai-codex-fast@'))
+})) throw new LiveVerificationError('The incumbent fast package remains declared alongside the replacement')
 const declaredSource = typeof installedSource === 'string' ? installedSource : installedSource?.source
 const installedPath = declaredSource ? resolvePath(declaredSource, dirname(globalSettingsPath), { trim: true }) : undefined
 const extensionArgs = installedVerification ? [] : ['--no-extensions', '--extension', bundle]
