@@ -8,6 +8,7 @@
  @module
  */
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -141,6 +142,151 @@ function settledOn({ second, }: { readonly second: string; },): WouldShipSource 
   } as unknown as WouldShipSource;
 }
 
+/**
+ Original sections of a three-section page.
+ */
+const THREE_SOURCE = [
+  '## 一猫\n\n它睡了。',
+  '## 二猫\n\n它醒了。',
+  '## 三猫\n\n它跑了。',
+];
+
+/**
+ Archive sections of the same page, each under its own heading.
+ */
+const THREE_ARCHIVE = [
+  '## One Cat\n\nIt sleeps.',
+  '## Two Cat\n\nIt wakes.',
+  '## Three Cat\n\nIt runs.',
+];
+
+/**
+ Places each section of a page one blank line after the last.
+
+ @param parts - sections in page order
+
+ @returns Each section's text and offsets in the joined page
+
+ @example
+ ```ts
+ const sections = placedSections({ parts: THREE_ARCHIVE, },);
+ ```
+ */
+function placedSections({ parts, }: { readonly parts: readonly string[]; },): readonly {
+  readonly text: string;
+  readonly startOffset: number;
+  readonly endOffset: number;
+}[] {
+  return parts.map(function place(
+    text,
+    index,
+  ) {
+    /**
+     Characters every earlier section and its blank line take.
+     */
+    const startOffset = parts
+      .slice(0, index,)
+      .reduce(function add(
+        total,
+        earlier,
+      ): number {
+        return total + earlier.length + '\n\n'.length;
+      }, 0,);
+    return {
+      text,
+      startOffset,
+      endOffset: startOffset + text.length,
+    };
+  },);
+}
+
+/**
+ One content slice per section of the three-section page.
+ */
+const THREE_SLICES: readonly ChunkPair[] = placedSections({ parts: THREE_SOURCE, },)
+  .map(function pair(
+    source,
+    sliceIndex,
+  ): ChunkPair {
+    /**
+     Archive section this slice spans.
+     */
+    const target = nonNullishOrThrow(placedSections({ parts: THREE_ARCHIVE, },)[sliceIndex],);
+    return {
+      source: {
+        kind: 'content',
+        sliceIndex,
+        nodes: [],
+        ...source,
+      },
+      target: {
+        kind: 'content',
+        sliceIndex,
+        nodes: [],
+        ...target,
+      },
+    };
+  },);
+
+/**
+ Builds a source whose consolidation settled the named slices of the
+ three-section page on the given texts and left the rest as the archive has
+ them.
+
+ @param shipped - text per slice index the consolidation settled on
+
+ @returns Narrow artifact source read by the publication assembler
+
+ @example
+ ```ts
+ const artifact = settledEach({ shipped: new Map([[0, 'It sleeps.',],],), },);
+ ```
+ */
+function settledEach({ shipped, }: { readonly shipped: ReadonlyMap<number, string>; },): WouldShipSource {
+  return {
+    comparison: THREE_ARCHIVE.map(function row(
+      incumbent,
+      sliceIndex,
+    ) {
+      /**
+       What ships for this slice.
+       */
+      const text = shipped.get(sliceIndex,) ?? incumbent;
+      return {
+        sliceIndex,
+        incumbentKind: 'present',
+        incumbentText: incumbent,
+        repairText: text,
+        translateText: text,
+        laneRelation: 'both-kept',
+        repairOutcome: { kind: 'decided', acceptedText: text, },
+        translateOutcome: { kind: 'decided', acceptedText: text, },
+        decisionComparison: { kind: 'comparable', verdict: 'same', },
+        repairDelivery: { kind: 'incumbent-retained', },
+        translateDelivery: { kind: 'incumbent-retained', },
+      };
+    },),
+    consolidation: {
+      kind: 'settled',
+      slices: [...shipped.entries(),].map(function settled([
+        sliceIndex,
+        text,
+      ],) {
+        return {
+          sliceIndex,
+          terminal: 'consolidated',
+          shipped: { kind: 'consolidated', text, },
+          rewrapped: false,
+          demoted: false,
+          verdicts: [],
+          gate: { kind: 'not-asked', },
+        };
+      },),
+    },
+    laneSelection: { kind: 'contested', slices: [], },
+  } as unknown as WouldShipSource;
+}
+
 await describe({
   name: 'colliding headings restored at page assembly (class forty-five)',
   children: [
@@ -184,6 +330,44 @@ await describe({
           targetText: TARGET,
         },);
         expect(assembly.trimmed,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'LEAVES THE PAGE ALONE where the original and the archive carry different numbers of headings, since no '
+        + 'position pairs them (T8, twentieth batch)',
+      fn: async () => {
+        const assembly = guardPageAssembly({
+          artifact: settledOn({ second: '## Kitten\n\nIt wakes.', },),
+          slices: SLICES,
+          sourceText: `${SOURCE_TEXT}\n## 小小猫\n\n它飞了。\n`,
+          targetText: TARGET,
+        },);
+        expect(assembly,).toEqual({ trimmed: [], withdrawn: [], findings: [], },);
+      },
+    },),
+    it({
+      name: 'LEAVES A SECTION THE PAGE DOES NOT REPLACE AS THE ARCHIVE HAS IT where one replaced slice dropped its '
+        + 'heading and another carries two: the totals still match, but every heading between them sits one '
+        + 'position off, and pairing by position once shipped the untouched section as empty text (ledger B83)',
+      fn: async () => {
+        const assembly = guardPageAssembly({
+          artifact: settledEach({
+            shipped: new Map([
+              [
+                0,
+                'It sleeps.',
+              ],
+              [
+                2,
+                '## Two Cat\n\nIt runs.\n\n## Three Cat\n\nIt runs on.',
+              ],
+            ],),
+          },),
+          slices: THREE_SLICES,
+          sourceText: `${THREE_SOURCE.join('\n\n',)}\n`,
+          targetText: `${THREE_ARCHIVE.join('\n\n',)}\n`,
+        },);
+        expect(assembly,).toEqual({ trimmed: [], withdrawn: [], findings: [], },);
       },
     },),
   ],
