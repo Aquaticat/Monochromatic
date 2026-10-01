@@ -5040,6 +5040,15 @@ before `anthropic` at 16 over 22 lines,
 so the twenty-first batch takes `assembly`
 against the census taken once this batch's docs close.
 
+The full suite on `7b61bb928`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1512 PASS lines and failed the package-wide case in `position-references.unit.test.ts`:
+the B84 entry this batch's docs commit wrote pointed at a count by position
+(M59 records the recurrence).
+`ac44c5378` names the count,
+and the full suite on it printed 1512 PASS lines and no FAIL line.
+
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
