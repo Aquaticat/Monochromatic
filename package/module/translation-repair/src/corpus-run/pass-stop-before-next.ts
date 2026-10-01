@@ -7,7 +7,7 @@ import {
 
 //region Stop before the next entry
 // THE TWO REASONS A PASS STARTS NO FURTHER ENTRY, asked by the attempt queue
-// before each one and never mid-entry: the soft wall-clock budget, and since
+// before each one and never mid-entry: the soft time budget, and since
 // 2026-09-04 the per-run spend ceiling on the provider that bills in USD.
 // Split out of `corpus-pass.ts` at the line cap, and because the pass had no
 // unit test of its scheduler's stop rules while both rules were inline.
@@ -19,9 +19,11 @@ import {
  SOFT BUDGET FIRST, because it is the older rule and the cheaper check; a run
  past both prints the time reason, which is the one an operator planned.
  
- @param elapsedMs - wall time since the processing loop began
+ @param elapsedMs - time since the processing loop began, on `monotonicMs`,
+ so setting the system clock neither spends the budget nor refunds it
+ (ledger B78)
  
- @param softBudgetMs - wall time after which no new entry starts
+ @param softBudgetMs - time after which no new entry starts
  
  @param ceilingUsd - USD this run may spend on the metered provider before
  no new entry starts
@@ -30,7 +32,7 @@ import {
  
  @example
  ```ts
- const stop = stopBeforeNextEntry({ elapsedMs: Date.now() - start, softBudgetMs, ceilingUsd, },);
+ const stop = stopBeforeNextEntry({ elapsedMs: monotonicMs() - start, softBudgetMs, ceilingUsd, },);
  ```
  */
 export function stopBeforeNextEntry(

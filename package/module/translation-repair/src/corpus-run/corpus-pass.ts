@@ -29,6 +29,7 @@ import {
 import { askedAmong, } from './command-flags.ts';
 import { readOnlyIds, } from './entry-filter.ts';
 import { inEntryLogContext, } from '../log-context.ts';
+import { monotonicMs, } from '../monotonic-clock.ts';
 import { collectEligiblePairs, } from './pass-eligibility.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
 import {
@@ -93,12 +94,15 @@ import {
 // zero-quota setup check).
 
 /**
- Minutes expressed in milliseconds, for the wall-time budgets.
+ Minutes expressed in milliseconds, for the time budgets.
  */
 const MS_PER_MINUTE = 60_000;
 
 /**
- Minutes of wall time after which no new entry starts.
+ Minutes after which no new entry starts, counted on `monotonicMs` like the
+ per-entry hard cap's timer, so setting the system clock neither spends the
+ budget nor refunds it, and time the machine spends suspended does not count
+ (ledger B78).
  
  Was 25, which throttled the whole accumulation to about one entry per launch.
  The interaction that caused it: `BANDS` puts the large band first within a
@@ -143,7 +147,9 @@ const MS_PER_MINUTE = 60_000;
 const SOFT_BUDGET_MINUTES = 4_320;
 
 /**
- Minutes of wall time ONE entry may run before its exchanges abort.
+ Minutes ONE entry may run before its exchanges abort, on the timer clock,
+ which a step of the system clock does not move and which does not count a
+ suspend.
  Per entry, not per run: the ceiling was previously armed once for the
  whole loop, so an entry that started near the soft budget got only the
  remaining sliver, and Arita (12 slices, ~68 min) could never finish. A
@@ -170,7 +176,7 @@ const SOFT_BUDGET_MINUTES = 4_320;
  quota regenerates faster than runs spend, and the user confirmed cost does
  not matter, so the thing a low cap actually costs is entries covered per
  run. Slice-level resumability means a capped entry resumes next run, so a
- generous cap risks wall time and never work.
+ generous cap risks time and never work.
  */
 const HARD_CAP_MINUTES = 420;
 
@@ -575,9 +581,9 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
   },);
 
   /**
-   Wall-clock start of the processing loop.
+   Start of the processing loop on `monotonicMs` (ledger B78).
    */
-  const start = Date.now();
+  const start = monotonicMs();
 
   /**
    Shared base signal each entry's deadline forwards from; the driver
@@ -599,7 +605,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
 
     stopBeforeNext: function stopBeforeNext(): boolean {
       return stopBeforeNextEntry({
-        elapsedMs: Date.now() - start,
+        elapsedMs: monotonicMs() - start,
         softBudgetMs: SOFT_BUDGET_MS,
         ceilingUsd: RUN_SPEND_CEILING_USD,
       },);
@@ -653,7 +659,7 @@ async function runCorpusPass({ line, }: { readonly line: CommandLineOf<'corpus-p
     declinedDir,
   },);
   console.log(
-    `DONE processed=${String(processed,)} of pending=${String(pending.length,)}; artifacts=${String(total,)}/${String(CORPUS_PAIR_TARGET,)} elapsed=${String(Date.now() - start,)}ms`,
+    `DONE processed=${String(processed,)} of pending=${String(pending.length,)}; artifacts=${String(total,)}/${String(CORPUS_PAIR_TARGET,)} elapsed=${String(monotonicMs() - start,)}ms`,
   );
 }
 

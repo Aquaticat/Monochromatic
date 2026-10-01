@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from './log-context.ts';
+import { monotonicMs, } from './monotonic-clock.ts';
 
 //region Stream idle guard
 // Distinguishes a dead stream from a long one, which a total-duration deadline
@@ -161,7 +162,9 @@ export type StreamProgress = {
   /**
    Milliseconds from arming the guard to this reading.
    
-   ANSWERS WHERE A RUN'S WALL-CLOCK WENT, which nothing could before the timing work.
+   ANSWERS WHERE A RUN'S HOURS WENT, which nothing could before the timing work.
+   Read on `monotonicMs`, like the first byte and the gaps, so setting the
+   system clock mid-call cannot move it (ledger B78).
    Dispatch is logged at `debug` and production runs emit `info` and `warn`
    only, so a stream's start time was unrecoverable and the only concurrency
    figure derivable was a clustering of completion timestamps, which cannot
@@ -236,7 +239,7 @@ export function armIdleGuard(
    root has to be reassignable.
    */
   const state = {
-    armedAt: Date.now(),
+    armedAt: monotonicMs(),
     lastChunkAt: 0,
     firstByteMs: -1,
     maxGapMs: 0,
@@ -321,7 +324,7 @@ export function armIdleGuard(
       /**
        When this chunk landed, for gap bookkeeping.
        */
-      const now = Date.now();
+      const now = monotonicMs();
       if (state.firstByteMs < 0)
         state.firstByteMs = now - state.armedAt;
       else
@@ -342,7 +345,7 @@ export function armIdleGuard(
         firstByteMs: state.firstByteMs,
         maxGapMs: state.maxGapMs,
         chars: state.chars,
-        elapsedMs: Date.now() - state.armedAt,
+        elapsedMs: monotonicMs() - state.armedAt,
       };
     },
     [Symbol.dispose](): void {

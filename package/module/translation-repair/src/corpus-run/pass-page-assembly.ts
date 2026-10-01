@@ -24,7 +24,7 @@ import type { PipelineDigest, } from './pipeline-digest.ts';
  
  @param pipelineDigest - digest of the pipeline that ran
  
- @param durationMs - wall time the entry took
+ @param durationMs - time the entry took, on `monotonicMs`
  
  @param prepared - preparation both lanes ran over
  

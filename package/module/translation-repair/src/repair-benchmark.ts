@@ -2,6 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { contextRoot, } from './log-context.ts';
+import { monotonicMs, } from './monotonic-clock.ts';
 import type { SyntheticClient, } from './chat-contract.ts';
 import type { BenchmarkEntry, } from './prepare-entry.ts';
 import type { RepairModels, } from './repair-contract.ts';
@@ -173,7 +174,8 @@ export type RepairBenchmarkResult = {
  
  @param perCallTimeoutMs - deadline per exchange
  
- @param runBudgetMs - wall budget for the whole benchmark
+ @param runBudgetMs - real time the whole benchmark may take, counted on the
+ monotonic clock so setting the system clock neither spends nor refunds it
  
  @param repair - repair driver seam; tests inject a scripted one
  
@@ -228,9 +230,9 @@ export async function runRepairBenchmark(
   },);
 
   /**
-   Clock start the run budget counts from.
+   Monotonic reading the run budget counts from (ledger B78).
    */
-  const runStartedAt = Date.now();
+  const runStartedAt = monotonicMs();
 
   /**
    Graded attempts in entry order.
@@ -242,7 +244,7 @@ export async function runRepairBenchmark(
      */
     const remaining = runBudgetMs === undefined
       ? Number.POSITIVE_INFINITY
-      : runBudgetMs - (Date.now() - runStartedAt);
+      : runBudgetMs - (monotonicMs() - runStartedAt);
     if (remaining < MIN_REPAIR_DISPATCH_BUDGET_MS) {
       rl.warn(`${entry.entryId}: run budget exhausted, skipping`,);
       records.push({

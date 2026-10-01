@@ -35,7 +35,7 @@ import {
  
  @param pipelineDigest - identity of the built pipeline
  
- @param durationMs - wall time the entry took, both lanes and the contest
+ @param durationMs - time the entry took on `monotonicMs`, both lanes and the contest
  included
  
  @param prepared - slicing both lanes ran over

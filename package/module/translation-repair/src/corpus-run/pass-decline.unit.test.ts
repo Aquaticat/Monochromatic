@@ -33,6 +33,7 @@ import {
 import {
   assertPipelineDigest,
   entryArchiveOriginalOf,
+  monotonicMs,
   type PipelineDigest,
   recordEntryDecline,
   removeDeclinedPages,
@@ -127,7 +128,7 @@ async function decline(
     tip: 'a'.repeat(DIGEST_HEX_LENGTH,),
     pipelineDigest: DIGEST,
     note: '原文即英文',
-    startedAt: Date.now(),
+    startedAt: monotonicMs(),
   },);
 }
 

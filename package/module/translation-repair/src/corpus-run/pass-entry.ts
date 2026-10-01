@@ -3,6 +3,7 @@ import { join, } from 'node:path';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { armCallDeadline, } from '../call-deadline.ts';
+import { monotonicMs, } from '../monotonic-clock.ts';
 import { archiveDisputesOfRepair, } from '../archive-dispute.ts';
 import {
   entryArchiveOriginalOf,
@@ -84,7 +85,7 @@ import { runPassLanes, } from './pass-lanes.ts';
  @param pipelineDigest - identity of the built pipeline, which also generation
  -stamps the slice cache so a changed pipeline cannot resume foreign slices
  
- @param hardCapMs - wall time this entry may run before its exchanges abort
+ @param hardCapMs - time this entry may run before its exchanges abort
  
  @param baseSignal - abort this entry's deadline forwards from
  
@@ -133,7 +134,7 @@ async function runEntryPipeline(
   /**
    Start time of this entry, for its duration.
    */
-  const t0 = Date.now();
+  const t0 = monotonicMs();
 
   /**
    Per-entry hard-cap deadline. Disposal at return defuses the timer and
@@ -142,7 +143,7 @@ async function runEntryPipeline(
    
    ARMED BEFORE THE CACHE OPENS rather than after. Opening reads and may
    discard a directory of settled slices, and on a large entry that is real
-   wall time; a ceiling armed afterwards would not be counting it, so the cap
+   time; a ceiling armed afterwards would not be counting it, so the cap
    would mean something slightly different for a resumed entry than for a
    fresh one.
    */
@@ -409,9 +410,9 @@ async function runEntryPipeline(
     },);
 
     /**
-     Wall time this entry took, both lanes and the contest included.
+     Time this entry took, both lanes and the contest included, on `monotonicMs` (ledger B78).
      */
-    const durationMs = Date.now() - t0;
+    const durationMs = monotonicMs() - t0;
 
     /**
      Rich artifact for later grading (`pass-entry-artifact.ts`).
@@ -486,7 +487,7 @@ async function runEntryPipeline(
     return tallyCaughtEntry({
       entryId: entry.id,
       error,
-      durationMs: Date.now() - t0,
+      durationMs: monotonicMs() - t0,
       aborted: deadline.callSignal
         .aborted,
     },);
@@ -524,7 +525,7 @@ async function runEntryPipeline(
  @param pipelineDigest - identity of the built pipeline, which also generation
  -stamps the slice cache so a changed pipeline cannot resume foreign slices
  
- @param hardCapMs - wall time this entry may run before its exchanges abort
+ @param hardCapMs - time this entry may run before its exchanges abort
  
  @param baseSignal - abort every entry deadline forwards from; the pass never
  aborts it, so only a per-entry timeout ever fires

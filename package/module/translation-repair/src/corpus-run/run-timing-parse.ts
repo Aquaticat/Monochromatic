@@ -5,7 +5,7 @@ import {
 } from '../whole-number-text.ts';
 
 //region Run timing parse
-// Reads a run's own log back into the two shapes that say where its wall-clock
+// Reads a run's own log back into the two shapes that say where its hours
 // went, and answers the question the timing work was opened on.
 //
 // TWO LINES CARRY THE CLOCK, and neither did before the timing work:
@@ -83,17 +83,17 @@ export type RoundTiming = {
   readonly asked: number;
 
   /**
-   Wall-clock the whole round took.
+   Time the whole round took.
    */
   readonly totalMs: number;
 
   /**
-   Wall-clock before quorum stood, which is the round doing its work.
+   Time before quorum stood, which is the round doing its work.
    */
   readonly toQuorumMs: number;
 
   /**
-   Wall-clock after quorum stood, which is the round waiting on voices it may
+   Time after quorum stood, which is the round waiting on voices it may
    never hear. THIS IS THE STRAGGLER COST, measured rather than bounded.
    */
   readonly inGraceMs: number;

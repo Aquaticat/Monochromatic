@@ -22,7 +22,7 @@ export const UPSTREAM_MODEL_HOLD_MS = 60_000;
 
  @example
  ```ts
- const holds = createUpstreamModelHolds({ holdMs: UPSTREAM_MODEL_HOLD_MS, now: Date.now, },);
+ const holds = createUpstreamModelHolds({ holdMs: UPSTREAM_MODEL_HOLD_MS, now: monotonicMs, },);
  holds.hold({ modelId: 'inception/mercury-2.5', },);
  holds.remainingMs({ modelId: 'inception/mercury-2.5', },); // 60000
  ```
@@ -44,13 +44,13 @@ export type UpstreamModelHolds = {
 
  @param holdMs - how long a hold lasts
 
- @param now - clock the holds are read by, injectable for tests
+ @param now - clock the holds are read by, injectable for tests; the router passes `monotonicMs` (ledger B78)
 
  @returns Holds shared by every call the router makes
 
  @example
  ```ts
- const holds = createUpstreamModelHolds({ holdMs: UPSTREAM_MODEL_HOLD_MS, now: Date.now, },);
+ const holds = createUpstreamModelHolds({ holdMs: UPSTREAM_MODEL_HOLD_MS, now: monotonicMs, },);
  ```
  */
 export function createUpstreamModelHolds(

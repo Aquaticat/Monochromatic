@@ -44,7 +44,7 @@ export type SliceCostRow = {
   readonly sourceChars: number;
 
   /**
-   Wall time the slice took.
+   Real time the slice took, read on the writer's monotonic clock.
    */
   readonly elapsedMs: number;
 
@@ -379,7 +379,7 @@ function readLine(
   },);
 
   /**
-   Wall time the slice took.
+   Real time the slice took, read on the writer's monotonic clock.
    */
   const elapsedMs = countField({
     fields,

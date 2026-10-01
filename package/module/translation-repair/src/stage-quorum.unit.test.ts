@@ -254,7 +254,7 @@ const DRY_SEVEN: readonly RosterModelId[] = [
  
  THE SHAPE THE RECOVERY ROUND'S BOUND IS FOR. A model that finished once is
  re-asked, and nothing says the second call comes back: this scripts the worst
- case so the round's wall clock can be read rather than reasoned about.
+ case so the round's time can be read rather than reasoned about.
  
  @param stallingModel - model that answers unusably once, then never returns
  
@@ -1322,7 +1322,7 @@ await describe({
         const calls: Record<string, number> = {};
 
         /** Instant the gather began, for the only figure this case reads. */
-        const startedAt = Date.now();
+        const startedAt = performance.now();
 
         /** Two answer at once; the third answers unusably, then hangs. */
         const gather = await gatherStageVoices({
@@ -1342,7 +1342,7 @@ await describe({
         },);
 
         /** What the whole gather cost, recovery round included. */
-        const spentMs = Date.now() - startedAt;
+        const spentMs = performance.now() - startedAt;
 
         // The re-ask happened and never came back, so the roster is still two.
         expect(calls[SEAT_SYNTHETIC_VISION_WITHHELD],).toBe(2,);
@@ -1414,7 +1414,7 @@ await describe({
           graceMs: 50,
         },);
 
-        /** Wall time the gather took. */
+        /** Time the gather took. */
         const elapsed = performance.now() - started;
         expect(gather.voices,).toHaveLength(2,);
         expect(gather.quorumMet,).toBe(true,);

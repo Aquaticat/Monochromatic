@@ -90,7 +90,7 @@ function sectionAlignmentOf(
  
  @param callConfig - model call configuration this run used
  
- @param durationMs - wall time the entry took, both lanes included
+ @param durationMs - time the entry took on `monotonicMs`, both lanes included
  
  @param prepared - preparation both lanes ran over, which supplies the
  identity and every measurement rather than being measured by the caller

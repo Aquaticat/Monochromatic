@@ -3,6 +3,7 @@ import { setTimeout as sleepFor, } from 'node:timers/promises';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from './log-context.ts';
+import { monotonicMs, } from './monotonic-clock.ts';
 import { StatedRefusalError, } from './stated-refusal.ts';
 import { isDecimalText, } from './whole-number-text.ts';
 
@@ -139,7 +140,9 @@ async function abortableSleep(
  
  @param windowMs - window length
  
- @param now - clock, injectable for tests
+ @param now - clock, injectable for tests; `monotonicMs` by default, since a
+ window measured on the system clock moved an hour when it was set
+ (ledger B78)
  
  @param wait - sleeper that must end when the signal aborts, injectable for
  tests
@@ -155,7 +158,7 @@ export function createRequestPace(
   {
     perWindow,
     windowMs,
-    now = Date.now,
+    now = monotonicMs,
     wait = abortableSleep,
   }: {
     readonly perWindow: number;
@@ -245,19 +248,26 @@ export function createRequestPace(
       if (ms <= 0)
         return;
       rl.info(`window full (${String(held,)} starts in ${String(windowMs,)}ms); waiting ${String(ms,)}ms`,);
-      try {
-        await wait({
-          ms,
-          signal,
-        },);
-      } catch (error) {
-        release(at,);
-        signal.throwIfAborted();
-        throw error;
-      }
-      if (signal.aborted) {
-        release(at,);
-        signal.throwIfAborted();
+      // SLEPT AGAIN FOR WHAT IS LEFT whenever a sleep ends before the reserved
+      // start: a timer ends by libuv's coarser loop clock, which can fall a
+      // millisecond short of this one, and a take that returned there let its
+      // request start before its place opened (ledger B78).
+      for (let left = ms; left > 0; left = at - now()) {
+        try {
+          // oxlint-disable-next-line no-await-in-loop -- the loop IS the wait: each sleep is for what the last one left
+          await wait({
+            ms: left,
+            signal,
+          },);
+        } catch (error) {
+          release(at,);
+          signal.throwIfAborted();
+          throw error;
+        }
+        if (signal.aborted) {
+          release(at,);
+          signal.throwIfAborted();
+        }
       }
     },
     inWindow: function inWindow(): number {

@@ -169,15 +169,15 @@ await describe({
         + 'aborted, before a step and after the last one alike',
       fn: async () => {
         /**
-         Wall clock around a short wait.
+         Monotonic clock around a short wait.
          */
-        const before = Date.now();
+        const before = performance.now();
         await waitOutHold({
           ms: 6,
           signal: SIGNAL,
           pollMs: 2,
         },);
-        expect(Date.now() - before,).toBeGreaterThanOrEqual(5,);
+        expect(performance.now() - before,).toBeGreaterThanOrEqual(5,);
 
         /**
          Abort already fired.

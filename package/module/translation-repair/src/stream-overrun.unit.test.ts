@@ -4,7 +4,7 @@
  The bound exists because repetition cannot see this failure: a model writing
  ten times more answer than any legitimate call is not repeating itself, so
  every window is distinct and both detectors report a healthy stream while it
- runs to the wall clock.
+ runs to its deadline.
  
  The reasoning half of the same idea was measured and REFUSED, and one test
  here pins that refusal so it cannot be reintroduced by someone reading only

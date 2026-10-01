@@ -1,5 +1,5 @@
 /**
- Tests for the scheduler's stop rule: the soft wall-clock budget and the
+ Tests for the scheduler's stop rule: the soft time budget and the
  per-run spend ceiling, asked before each entry.
  
  @module

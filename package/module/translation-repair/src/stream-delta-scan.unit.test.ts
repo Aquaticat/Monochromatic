@@ -420,7 +420,7 @@ await describe({
       name: 'CATCHES A THINKING-TRACE RUNAWAY SPELLED `reasoning` TOO, which is the case that '
         + 'was live and unguarded: the same loop spelled `reasoning_content` was caught, and this '
         + 'one produced no text for the detector to read at all, so the model was neither silent '
-        + 'nor repetitive and ran to the wall clock',
+        + 'nor repetitive and ran to its deadline',
       fn: async () => {
         /**
          A model that thinks the same thing forever, spelling its channel the

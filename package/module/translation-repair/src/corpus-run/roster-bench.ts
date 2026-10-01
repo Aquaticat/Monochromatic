@@ -166,7 +166,7 @@ export type BenchRow = {
   readonly calls: readonly BenchCall[];
 
   /**
-   Wall time of the whole stage call.
+   Time of the whole stage call, on `performance.now()`.
    */
   readonly ms: number;
 };

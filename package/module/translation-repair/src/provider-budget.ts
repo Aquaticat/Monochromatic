@@ -1,6 +1,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from './log-context.ts';
+import { monotonicMs, } from './monotonic-clock.ts';
 import type { BedrockClient, } from './bedrock-client.ts';
 import type { HyperClient, } from './hyper-client.ts';
 import type { OpenRouterClient, } from './openrouter-client.ts';
@@ -271,7 +272,9 @@ function unreadBeforeReading(): MeterState {
  @param rateLimitBackoffMs - how long a refusal on a wet meter holds a
  provider out while another provider can take the traffic
  
- @param now - clock, injectable so tests do not wait
+ @param now - clock, injectable so tests do not wait; `monotonicMs` by
+ default, since a hold read on the system clock lasted an hour longer when
+ it was set back (ledger B78)
  
  @returns Budget view plus the correction a refused call feeds back
  
@@ -289,7 +292,7 @@ export function createProviderBudgets(
     freshForMs = BUDGET_FRESH_MS,
     cooldownMs = REFUSAL_COOLDOWN_MS,
     rateLimitBackoffMs = RATE_LIMIT_BACKOFF_MS,
-    now = Date.now,
+    now = monotonicMs,
   }: {
     readonly synthetic?: Pick<SyntheticClient, 'quotas'>;
     readonly hyper?: Pick<HyperClient, 'credits'>;
@@ -302,20 +305,25 @@ export function createProviderBudgets(
   },
 ): ProviderBudgets {
   /**
-   Last meter reading and when it was taken, with a zero stamp for never.
+   Last meter reading and when it was taken, stamped infinitely long ago until
+   the first.
    
    THE PRE-READ VIEW IS NOT A PLACEHOLDER LIE. Before any meter has answered,
    nothing is known about any budget, and this file's policy for an unknown
-   budget is already that it counts as spendable. The zero stamp forces a
-   read on the first call regardless, exactly as `heldUntil` uses zero for a
-   provider that has never refused us.
+   budget is already that it counts as spendable. A stamp infinitely long ago
+   is stale on any clock, so the first call reads every meter regardless.
+   
+   NOT ZERO. The stamp was zero for never, which an epoch clock never reads;
+   `monotonicMs` counts from near the process's start and reads zero in its
+   first millisecond, so a reading taken then passed for no reading and every
+   meter was read again inside the window (ledger B78).
    */
   const cache: {
     startedAt: number;
     inFlight: boolean;
     reading: Promise<MeterReading>;
   } = {
-    startedAt: 0,
+    startedAt: Number.NEGATIVE_INFINITY,
     inFlight: false,
     reading: Promise.resolve({
       view: providerRecord({ of: spendableBeforeReading, },),
@@ -604,7 +612,7 @@ export function createProviderBudgets(
       // says when this reading BEGAN, so a call arriving while it is still in
       // flight sees a fresh stamp and waits on the same promise instead of
       // starting a second read of every meter.
-      if ((cache.startedAt === 0) || ((now() - cache.startedAt) >= freshForMs))
+      if ((now() - cache.startedAt) >= freshForMs)
         await readNow({ signal, },);
 
       /**

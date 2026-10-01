@@ -262,7 +262,7 @@ await describe({
 
     it({
       name: 'STOPS on the budget without attempting what is left, so a run '
-        + 'that has spent its wall time starts nothing new',
+        + 'that has spent its time starts nothing new',
       fn: async () => {
         expect(
           await attemptOrder({

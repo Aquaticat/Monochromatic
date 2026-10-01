@@ -15,6 +15,7 @@ import {
 import type { RosterModelId, } from './synthetic-catalog.ts';
 import { describeAbandon, } from './abandon-kind.ts';
 import { resolveStragglerGraceMs, } from './grace-override.ts';
+import { monotonicMs, } from './monotonic-clock.ts';
 
 //region Stage round
 // ONE fan-out round, and the rule that a stage never finishes later than its
@@ -310,9 +311,11 @@ export async function runGatherRound<ValueT,>(
    `doc/audit/every-volume-guard-is-blind-to-one-model.md` could bound only
    from above, at the grace window times the number of cut events, and said
    confirming it "needs the dispatch timestamps the run does not currently
-   record". This is that timestamp.
+   record". This is that timestamp, read on `monotonicMs` like the round's
+   other two marks, so setting the system clock mid-round cannot move the
+   durations between them (ledger B78).
    */
-  const startedAt = Date.now();
+  const startedAt = monotonicMs();
 
   /**
    Reserve seats this round took in place of refused ones, in the order it
@@ -456,7 +459,7 @@ export async function runGatherRound<ValueT,>(
    Only the second half is straggler cost, and a single round duration cannot
    tell them apart.
    */
-  const quorumAt = Date.now();
+  const quorumAt = monotonicMs();
 
   // Whichever comes first: everyone answers, or the grace expires. A round
   // that never reaches quorum has already waited for every one of `asks`, since
@@ -526,7 +529,7 @@ export async function runGatherRound<ValueT,>(
   /**
    When this round finished, once the grace window closed.
    */
-  const finishedAt = Date.now();
+  const finishedAt = monotonicMs();
 
   /**
    The round's timing after its total: time to quorum and in grace where

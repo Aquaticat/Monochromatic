@@ -144,7 +144,7 @@ type CostBucket = {
   readonly chars: number;
 
   /**
-   Wall time they took in total.
+   Time they took in total.
    */
   readonly ms: number;
 };
@@ -239,12 +239,12 @@ function printBucket({ bucket, }: { readonly bucket: CostBucket; },): void {
     return;
 
   /**
-   Wall time a slice in this band costs.
+   Time a slice in this band costs.
    */
   const perSlice = bucket.ms / bucket.slices;
 
   /**
-   Wall time a CHARACTER in this band costs, which is the figure that tells a
+   Time a CHARACTER in this band costs, which is the figure that tells a
    fixed overhead from a size-driven cost.
    */
   const perChar = (bucket.chars === 0) ? 0 : (bucket.ms / bucket.chars);

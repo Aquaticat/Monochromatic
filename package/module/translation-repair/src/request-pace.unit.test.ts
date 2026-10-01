@@ -269,7 +269,10 @@ await describe({
             await pace.take({ signal: SIGNAL, },);
             // ONE-SIDED, so load cannot fail it: the second place opens only once
             // the first has left the window, a stall only lengthens the wait, and
-            // the millisecond allows for timer rounding.
+            // the millisecond allows for the pacer reading whole milliseconds: its
+            // first take is stamped at a floored reading up to a millisecond before
+            // this case's own start, and it sleeps until a floored reading passes
+            // the window (ledger B78).
             expect(performance.now() - startedAt,).toBeGreaterThanOrEqual(REAL_WINDOW_MS - 1,);
           },
         },),

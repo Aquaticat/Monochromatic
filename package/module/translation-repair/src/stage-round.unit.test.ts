@@ -63,7 +63,7 @@ const SLOW_MS = 40;
  Milliseconds a measured wait may fall short of the delay that produced it.
  
  NOT A TOLERANCE ON THE BEHAVIOUR, a tolerance on the CLOCK. `stage-round.ts`
- reads both ends of every figure with `Date.now()`, which truncates to whole
+ reads both ends of every figure with `monotonicMs`, which floors to whole
  milliseconds, and Node's timer list may fire a delay fractionally early. The
  two together let a 40 ms wait report 39, which this suite did on 2026-08-25
  under load while the rest of the package was building.
@@ -243,7 +243,7 @@ function scheduledClient(
       const scripted: unknown = { meow: request.modelId, };
       if (!request.validate(scripted,))
         throw new Error('scripted payload failed the guard',);
-      answeredAt.push(Date.now(),);
+      answeredAt.push(performance.now(),);
       return {
         kind: 'ok',
         value: scripted,
@@ -369,7 +369,7 @@ await describe({
             /**
              Clock before the round starts, at or before its own start mark.
              */
-            const startedAt = Date.now();
+            const startedAt = performance.now();
 
             await runGatherRound({
               client: scheduledClient({

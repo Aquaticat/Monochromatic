@@ -633,7 +633,7 @@ export type SettledArtifact = {
   readonly callConfig: Readonly<Record<string, ArtifactJsonValue>>;
 
   /**
-   Wall time the entry took, both lanes included.
+   Time the entry took, both lanes included, on `monotonicMs`.
    */
   readonly durationMs: number;
 

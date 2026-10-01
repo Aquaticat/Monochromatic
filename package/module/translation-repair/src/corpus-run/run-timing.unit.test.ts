@@ -1,6 +1,6 @@
 /**
  Tests for reading a run's own timing lines back, which is what the timing work built
- so a run could say where its wall-clock went.
+ so a run could say where its hours went.
  
  THE OVERLAP CASE IS THE POINT. Achieved concurrency is an overlap count over
  call intervals, and before the timing work a completion line said only when a call

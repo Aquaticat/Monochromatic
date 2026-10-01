@@ -288,7 +288,7 @@ export async function consolidateDocument(
             throw new ConsolidationLedgerGapError({ sliceIndex: row.sliceIndex, },);
 
           /**
-           Wall-time bracket making this slice visible before and after settlement.
+           Time bracket making this slice visible before and after settlement.
            */
           using cost = armSliceCost({
             l: dl,

@@ -96,7 +96,7 @@ export type BenchCall = CallTokens & {
   readonly modelId: string;
 
   /**
-   Wall time of the exchange, retries included, since retries are part of
+   Time of the exchange on `performance.now()`, retries included, since retries are part of
    what a width costs.
    */
   readonly ms: number;

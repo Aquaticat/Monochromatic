@@ -90,7 +90,7 @@ export function entryErrorOutcome(
  
  @param error - what it raised
  
- @param durationMs - wall time before it failed
+ @param durationMs - time before it failed, on `monotonicMs`
  
  @param aborted - whether the hard-ceiling abort fired
  

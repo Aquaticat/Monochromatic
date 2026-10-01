@@ -38,7 +38,7 @@ export type StreamBoundPair = {
 
  @example
  ```ts
- const holds = createStreamBoundHolds({ holdMs: 60_000, now: Date.now, },);
+ const holds = createStreamBoundHolds({ holdMs: 60_000, now: monotonicMs, },);
  holds.hold({ provider: 'bedrock', modelId: 'google.gemma-4-e2b', },);
  ```
  */
@@ -59,13 +59,13 @@ export type StreamBoundHolds = {
 
  @param holdMs - how long a hold lasts
 
- @param now - clock the holds are read by, injectable for tests
+ @param now - clock the holds are read by, injectable for tests; the router passes `monotonicMs` (ledger B78)
 
  @returns Holds shared by every call the router makes
 
  @example
  ```ts
- const holds = createStreamBoundHolds({ holdMs: 60_000, now: Date.now, },);
+ const holds = createStreamBoundHolds({ holdMs: 60_000, now: monotonicMs, },);
  ```
  */
 export function createStreamBoundHolds(

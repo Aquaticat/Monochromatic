@@ -364,7 +364,7 @@ export type ParsedTwoLaneArtifact = {
   readonly callConfig: Readonly<Record<string, ArtifactJsonValue>>;
 
   /**
-   Wall time the entry took.
+   Time the entry took, on the writer's monotonic clock.
    */
   readonly durationMs: number;
 

@@ -319,7 +319,7 @@ function describeRows(
   const cost = tokensOfRows({ rows, },);
 
   /**
-   Wall time this set took.
+   Time this set took.
    */
   const ms = sumOf({ values: rows.map(function toMs(row,): number {
     return row.ms;

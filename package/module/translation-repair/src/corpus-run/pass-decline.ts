@@ -11,6 +11,7 @@ import {
   archiveOriginalReadingOf,
 } from '../archive-original-note.ts';
 import { rethrowUnlessMissingPath, } from '../missing-path-error.ts';
+import { monotonicMs, } from '../monotonic-clock.ts';
 import { parseDocument, } from '../parse-document.ts';
 import {
   declinedEntryIds,
@@ -146,7 +147,7 @@ async function removeLeftoverPage(
  
  @param note - the archive's note that decided it
  
- @param startedAt - when the entry started, for the tally's duration
+ @param startedAt - `monotonicMs` reading when the entry started, for the tally's duration
  
  @returns The declined outcome
  
@@ -200,7 +201,7 @@ export async function recordEntryDecline(
       + `English (${note}), so the pipeline declines to repair it and the archive stands`,
   );
   console.log(
-    `TALLY ${entry.id} status=DECLINED reason=archive-original ms=${String(Date.now() - startedAt,)}`,
+    `TALLY ${entry.id} status=DECLINED reason=archive-original ms=${String(monotonicMs() - startedAt,)}`,
   );
   return { kind: 'declined', };
 }

@@ -275,7 +275,7 @@ await describe({
         /**
          When the exchange started.
          */
-        const startedAt = Date.now();
+        const startedAt = performance.now();
         expect(
           await exchangeWithRetry({
             transport: scriptedTransport({
@@ -291,7 +291,7 @@ await describe({
         ).toStrictEqual(dailyRefusal,);
         expect(calls.count,).toBe(1,);
         // The reply came back without the ladder sleeping the named wait.
-        expect(Date.now() - startedAt,).toBeLessThan(retryAfterMsOf({ bodyText: dailyRefusal.bodyText, },),);
+        expect(performance.now() - startedAt,).toBeLessThan(retryAfterMsOf({ bodyText: dailyRefusal.bodyText, },),);
       },
     },),
 
@@ -315,7 +315,7 @@ await describe({
         /**
          When the exchange started.
          */
-        const startedAt = Date.now();
+        const startedAt = performance.now();
         expect(
           await exchangeWithRetry({
             transport: scriptedTransport({
@@ -336,7 +336,7 @@ await describe({
         expect(calls.count,).toBe(2,);
         // WAIT_POLICY backs off in hundreds of milliseconds; only the body's
         // wait can hold the retry for a full second.
-        expect(Date.now() - startedAt,).toBeGreaterThanOrEqual(1_000,);
+        expect(performance.now() - startedAt,).toBeGreaterThanOrEqual(1_000,);
       },
     },),
 

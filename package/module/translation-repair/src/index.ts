@@ -121,6 +121,7 @@ export {
 } from './corpus-source.ts';
 export { buildCriticMessages, } from './critic-prompt.ts';
 export { foldCarriageReturns, } from './line-endings.ts';
+export { monotonicMs, } from './monotonic-clock.ts';
 export {
   CRITIC_RESPONSE_FORMAT,
   type CriticIssueResolution,

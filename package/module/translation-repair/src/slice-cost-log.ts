@@ -1,5 +1,7 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
+import { monotonicMs, } from './monotonic-clock.ts';
+
 //region Slice cost log
 // Records what one slice cost, so a later reader can ask whether cost scales
 // with size.
@@ -14,10 +16,11 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 // elapsed time. A reader needs the log and nothing else, so whatever the
 // artifact stores cannot reach this measurement.
 //
-// ELAPSED IS WALL TIME. With overlap one it prices one slice directly. With
-// higher overlap it deliberately includes contention for shared provider limits,
-// so readers must compare runs carrying same overlap rather than treating it as
-// isolated service time.
+// ELAPSED IS REAL TIME, read on `monotonicMs` so setting the system clock
+// mid-slice cannot move it (ledger B78). With overlap one it prices one slice
+// directly. With higher overlap it deliberately includes contention for shared
+// provider limits, so readers must compare runs carrying same overlap rather
+// than treating it as isolated service time.
 //
 // EVERY LINE NAMES HOW ITS SLICE WAS LEFT, because the paths cost wildly
 // different things and only one of them answers the question. A slice resumed
@@ -209,7 +212,7 @@ export function armSliceCost(
   /**
    When this slice began, against which the report is measured.
    */
-  const startedAt = Date.now();
+  const startedAt = monotonicMs();
 
   l.info(
     `${SLICE_START_MARKER} lane=${lane} chunk=${String(sliceIndex,)} sourceChars=${String(sourceChars,)}`,
@@ -249,7 +252,7 @@ export function armSliceCost(
       l.info(
         `${SLICE_COST_MARKER} lane=${lane} chunk=${String(sliceIndex,)} sourceChars=${
           String(sourceChars,)
-        } ms=${String(Date.now() - startedAt,)} exit=${exit}`,
+        } ms=${String(monotonicMs() - startedAt,)} exit=${exit}`,
       );
     },
   };

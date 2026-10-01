@@ -223,7 +223,7 @@ await describe({
         },),
 
         it({
-          name: 'CARRIES THE WALL CLOCK SINCE ARMING, which is the only number that says where a '
+          name: 'CARRIES THE TIME SINCE ARMING, which is the only number that says where a '
             + "run's own hours went: first-byte and gap measure phases inside a call, and no sum "
             + 'of them is the call',
           fn: async () => {

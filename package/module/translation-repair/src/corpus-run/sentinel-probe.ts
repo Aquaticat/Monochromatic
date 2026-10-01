@@ -5,6 +5,7 @@ import {
   readCorpusFile,
 } from '../corpus-source.ts';
 import { repairTranslation, } from '../repair-entry.ts';
+import { monotonicMs, } from '../monotonic-clock.ts';
 import {
   createRunClient,
   RUN_CORPUS_PIN,
@@ -84,7 +85,7 @@ async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sen
     /**
      Start time of this probe, for its duration.
      */
-    const t0 = Date.now();
+    const t0 = monotonicMs();
     try {
       /**
        Original zh page text for this entry.
@@ -174,7 +175,7 @@ async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sen
               .length,
           )
         } findings=${String(result.findings
-          .length,)} ms=${String(Date.now() - t0,)}`,
+          .length,)} ms=${String(monotonicMs() - t0,)}`,
       );
     }
     catch (error) {
@@ -186,7 +187,7 @@ async function probeCorpusEntries({ line, }: { readonly line: CommandLineOf<'sen
         text: refusalText({ error, },),
         units: ERROR_MESSAGE_CAP,
       },);
-      console.log(`PROBE ${id} status=ERROR ms=${String(Date.now() - t0,)} error=${message}`,);
+      console.log(`PROBE ${id} status=ERROR ms=${String(monotonicMs() - t0,)} error=${message}`,);
     }
   }
 

@@ -10,7 +10,7 @@ import { reportingRefusals, } from './cli-refusal.ts';
 import type { CommandLineOf, } from './command-lines.ts';
 
 //region Run timing report
-// WHERE A RUN'S WALL-CLOCK WENT, read back off its own log. Spends no quota and
+// WHERE A RUN'S HOURS WENT, read back off its own log. Spends no quota and
 // touches no model.
 //
 // THE TIMING WORK OPENED ON A LOG THAT COULD NOT ANSWER THIS.
@@ -67,12 +67,12 @@ const SHARE_PLACES = 1;
  */
 type RoundTotals = {
   /**
-   Wall-clock every round took together.
+   Time every round took together.
    */
   readonly totalMs: number;
 
   /**
-   Wall-clock every round spent waiting after quorum.
+   Time every round spent waiting after quorum.
    */
   readonly graceMs: number;
 
@@ -204,7 +204,7 @@ function printInFlight({ flight, }: { readonly flight: InFlight; },): void {
 }
 
 /**
- Reads every named log and reports where its wall-clock went.
+ Reads every named log and reports where its hours went.
  
  Returns nothing: the report on stdout IS the output.
  

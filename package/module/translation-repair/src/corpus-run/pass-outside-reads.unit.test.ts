@@ -431,9 +431,10 @@ await describe({
           };
         }
         /**
-         Wall clock before the reads.
+         Wall clock before the reads, as the stamps write it: ISO text of one
+         length sorts as the moments it names (ledger B78).
          */
-        const before = Date.now();
+        const before = new Date().toISOString();
         /**
          What the wall-clock readers answered.
          */
@@ -442,9 +443,9 @@ await describe({
           clock: 'wall',
         },);
         /**
-         Wall clock after the reads.
+         Wall clock after the reads, as the stamps write it.
          */
-        const after = Date.now();
+        const after = new Date().toISOString();
         await readAll({
           dir: fixed,
           clock: 'fixed',
@@ -459,15 +460,13 @@ await describe({
           { url: EXA_CONTENTS_URL, key: KEY, },
         ],);
         /**
-         Stamps of the wall-clock records, as milliseconds.
+         Stamps of the wall-clock records, as written.
          */
-        const wallStamps = (await recordStamps({ dir: walled, },)).map(function millisecondsOf(stamp,): number {
-          return Date.parse(stamp,);
-        },);
+        const wallStamps = await recordStamps({ dir: walled, },);
         expect(wallStamps.length,).toBe(2,);
         for (const stamp of wallStamps) {
-          expect(stamp,).toBeGreaterThanOrEqual(before,);
-          expect(stamp,).toBeLessThanOrEqual(after,);
+          expect(stamp.length,).toBe(before.length,);
+          expect((stamp >= before) && (stamp <= after),).toBe(true,);
         }
         expect(await recordStamps({ dir: fixed, },),).toEqual([
           FIXED.toISOString(),

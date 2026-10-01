@@ -3,6 +3,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { contextRoot, } from './log-context.ts';
+import { monotonicMs, } from './monotonic-clock.ts';
 import {
   HOLD_POLL_MS,
   NOBODY_REFUSED,
@@ -192,7 +193,9 @@ export type ProviderCallers = {
  @param modelHoldMs - how long a model whose upstream endpoint rate-limited
  it is held out before it is asked again (class sixty-four)
 
- @param now - clock the model holds are read by, injectable for tests
+ @param now - clock the model holds are read by, injectable for tests;
+ `monotonicMs` by default, since a hold read on the system clock lasted an
+ hour longer when it was set back (ledger B78)
 
  @param paces - request windows of the providers that pace their calls; a
  provider whose window would make the call wait reads saturated, so the call
@@ -213,7 +216,7 @@ export function createRoutingClient(
     holdPollMs = HOLD_POLL_MS,
     decider,
     modelHoldMs = UPSTREAM_MODEL_HOLD_MS,
-    now = Date.now,
+    now = monotonicMs,
     paces = {},
   }: {
     readonly callers: ProviderCallers;
