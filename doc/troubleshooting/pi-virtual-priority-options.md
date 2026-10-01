@@ -104,7 +104,7 @@ filterModels: (models, credential) => {
 },
 ```
 
-The installed equivalent is `coding-agent/dist/core/virtual-models.js:116`.
+The installed equivalent begins at `coding-agent/dist/core/virtual-models.js:114`.
 The routing fixture verifies availability-list exclusion,
 not invisibility in every registry API or in pi's native routed-model display.
 
