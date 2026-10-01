@@ -83,7 +83,7 @@ Prerequisites for a fresh machine and a fresh checkout:
 
 The Worker is `monochromatic-lfs`,
  the R2 bucket is `monochromatic-lfs`,
-and the public Worker URL is `https://monochromatic-lfs.an1298.workers.dev`.
+and the public Worker URL is `https://monochromatic-lfs.aquaticat.workers.dev`.
 If the bucket does not exist yet (full recreate),
 create it once with `cf r2 buckets create --name monochromatic-lfs`
 or `wrangler r2 bucket create monochromatic-lfs`.
@@ -104,7 +104,7 @@ TODO
    Expected:
     the output lists the binding `env.BUCKET (monochromatic-lfs)`,
    then `Deployed monochromatic-lfs triggers` and the URL
-   `https://monochromatic-lfs.an1298.workers.dev`.
+   `https://monochromatic-lfs.aquaticat.workers.dev`.
 
 2. To validate a change without shipping it,
     run the dry run instead.
@@ -156,7 +156,7 @@ The token lives in local git config,
    Replace `<TOKEN>` with the current `LFS_WRITE_TOKEN`.
 
    ```sh
-   git config --local lfs.url "https://lfs:<TOKEN>@monochromatic-lfs.an1298.workers.dev"
+   git config --local lfs.url "https://lfs:<TOKEN>@monochromatic-lfs.aquaticat.workers.dev"
    ```
 
    Expected:
@@ -186,7 +186,7 @@ TODO
 
    ```sh
    curl --silent \
-     "https://monochromatic-lfs.an1298.workers.dev/8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8" \
+     "https://monochromatic-lfs.aquaticat.workers.dev/8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8" \
      | sha256sum
    ```
 
@@ -198,7 +198,7 @@ TODO
 
    ```sh
    curl --silent --head \
-     "https://monochromatic-lfs.an1298.workers.dev/8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8/wolf-s.png"
+     "https://monochromatic-lfs.aquaticat.workers.dev/8a2f3dfd12cbaf3aa59a65937584ce25070bf3be5156dcbc14f0b4920626c0b8/package/ssg/aquati.cat/src/content/wolf-s.png"
    ```
 
    Expected:

@@ -21,7 +21,7 @@ The repo-root `.lfsconfig` points every clone at this Worker:
 ```ini
 # .lfsconfig
 [lfs]
-	url = https://monochromatic-lfs.an1298.workers.dev
+	url = https://monochromatic-lfs.aquaticat.workers.dev
 ```
 
 GitHub never consults `.lfsconfig`.
@@ -76,7 +76,7 @@ Routes:
 
 The `lfs-image-url` rule of `cli-markdown-lint` (`package/cli/markdown-lint`)
 rewrites a Markdown image whose target is an LFS-tracked file to
-`https://monochromatic-lfs.an1298.workers.dev/<oid>/<repo-relative path>`.
+`https://monochromatic-lfs.aquaticat.workers.dev/<oid>/<repo-relative path>`.
 The `markdown/autofix` cli-git policy (`package/git-policy/markdown-lint`) applies that rewrite inside every commit,
 so authors keep writing relative links and the landed commit carries absolute ones.
 `package/ssg/` is excluded because those MDX pages resolve images through the site build.
@@ -117,7 +117,7 @@ The R2 bucket is created once with `cf r2 buckets create --name monochromatic-lf
 A machine that adds images needs the upload token in its local git config (not committed):
 
 ```sh
-git config --local lfs.url "https://lfs:<LFS_WRITE_TOKEN>@monochromatic-lfs.an1298.workers.dev"
+git config --local lfs.url "https://lfs:<LFS_WRITE_TOKEN>@monochromatic-lfs.aquaticat.workers.dev"
 ```
 
 With that set,
