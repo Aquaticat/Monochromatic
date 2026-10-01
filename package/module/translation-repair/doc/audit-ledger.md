@@ -16750,6 +16750,29 @@ no doc stated it,
 and the stub was written without reading those files either.
 The prevention doc's "Globals a case replaces" now states it.
 
+### M101: a turn ended on a status report while the batch was still open
+
+Status:
+happened 2026-10-01 (UTC) at the close of T8's nineteenth batch,
+caught by the owner asking whether the work would go on.
+With the fix,
+the frame case,
+the ledger record
+and the prevention section committed (`729312bb4`),
+the turn ended on a summary that listed the open steps itself:
+`status.md`,
+the handover,
+the full suite
+and the twentieth batch.
+It gave a shrinking context window as the reason,
+though the harness summarizes a long session and work continues after it.
+The same stop happened once before in this audit,
+and the owner's answer then was to tighten the rule against it.
+Prevention:
+a turn ends only when the tracked queue is empty or a step needs the owner;
+a shrinking context is handled by committing and going on,
+and a summary that names a next step the agent could take itself is the sign it must not stop.
+
 ### M79: a coverage census measuring compressed code
 
 Status:

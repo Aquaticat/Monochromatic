@@ -401,8 +401,20 @@ B81:
 the editorial-apparatus check vouched for a block on one of its lines,
 and now every line a reader sees must be apparatus;
 over the pinned archives it accepts the same 40 blocks as before.
-The nineteenth batch takes `corpus-run/run`
-against the census taken after them.
+The nineteenth batch took `corpus-run/run`
+against the census taken after them (`census-EJl6yz`)
+and closed B82:
+the run timing readers read less than their writers write.
+A round whose quorum never stood was left out of the report,
+a round line short of its fields was refused for a missing unit,
+a completion line without its outcome read as an empty one,
+and calls spanning no time were divided by a zero span;
+each is now read or refused by name
+(`71f7720a9` to `37f637675`).
+Its census (`census-IqLEk4` at `8175dc866`)
+leaves library source at 693 stretches in 263 files,
+and the twentieth batch takes `corpus-run/heading`
+(17 stretches over 25 lines in 3 files) against it.
 B33 and B34 closed on the way as well:
 every artifact refusal reason the B33 census read now reads as what the reader expected,
 and a marked refusal carries a caught error's text only from a catch narrowed to marked classes,
