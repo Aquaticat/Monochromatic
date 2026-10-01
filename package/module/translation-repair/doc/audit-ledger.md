@@ -15543,6 +15543,10 @@ so a failing case in the first no longer keeps the second from running.
 Guard-off on the fixed tree:
 the review handed the archive as it came again failed the new case alone in its file,
 and `git diff` printed nothing after the restore.
+The full suite on `5695cd5be`
+(`mise run //package/module/translation-repair:buildAndTest`,
+with the worktree clean)
+printed 1,506 PASS lines and no FAIL line.
 
 Calls made here are open to veto:
 
