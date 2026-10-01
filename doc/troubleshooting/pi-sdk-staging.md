@@ -1009,3 +1009,141 @@ No external source edit,
 account change,
 vendor contact,
 or upstream mutation follows from this source-only correction.
+
+## Owned Mise 2026.9.12 descriptor contrast assumed non-inheritance
+
+### Symptom
+
+The normal-task negative `proc_fddd` exited one.
+Node 26.10.0 emitted `AssertionError [ERR_ASSERTION]` at the owned
+`sdk-startup/fd-pair-control/check.mjs:20:8`:
+
+```text
+// Private contract: combined-sdk-phase/sdk-startup/fd-pair-control/check.mjs:20
+Expected values to be strictly equal:
+true !== false
+```
+
+Mise also printed `[normal] ERROR task failed`.
+The control expected both descriptors not to match their private files merely because the task lacked `raw = true`.
+The stdout comparison was true.
+The stderr assertion was not reached,
+and no accepted negative projection was produced.
+
+### Root cause and source trace
+
+The failed assumption was owned:
+absence of `raw = true` does not imply piped output.
+The installed `mise --version` reported `2026.9.12 linux-x64 (2026-09-20)`.
+The deciding published `v2026.9.12` sources were inspected read-only.
+
+`src/cli/run.rs:1284` obtains the dependency graph's linearity:
+
+```rust
+// Mise v2026.9.12, src/cli/run.rs:1284
+self.is_linear = tasks.is_linear();
+```
+
+`src/task/task_output_handler.rs:554` permits interleaved output for a linear graph without raw mode:
+
+```rust
+// Mise v2026.9.12, src/task/task_output_handler.rs:554 to 558
+if self.raw(task) || self.jobs() == 1 || self.is_linear {
+    TaskOutput::Interleave
+} else {
+    TaskOutput::Prefix
+}
+```
+
+`src/task/task_executor.rs:1790` permits inherited descriptors when raw mode is false but redactions are empty:
+
+```rust
+// Mise v2026.9.12, src/task/task_executor.rs:1790 to 1797
+} else if raw || redactions.is_empty() {
+    if !task.silent.suppresses_stdout() {
+        cmd = cmd.stdout(Stdio::inherit());
+    } else {
+        cmd = cmd.stdout(Stdio::null());
+    }
+    if !task.silent.suppresses_stderr() {
+        cmd = cmd.stderr(Stdio::inherit());
+```
+
+The one-task control defines no dependencies.
+Its measured global `raw` setting was false and `jobs` was eight;
+`settings get task.output` returned `Setting [task.output] is not set`.
+The failed control is consistent with the source's linear-graph inheritance path,
+not evidence that Mise ignored an output guarantee.
+
+### Verification catalog
+
+The consumed raw controls `proc_2662` and `proc_f108` exited zero.
+The former checked only stdout.
+The latter checked both actual descriptors against their named files and returned
+`stdoutBound: true` and `stderrBound: true`.
+Both retained Mise command echoes privately.
+
+The normal-task negative `proc_fddd` is the failing catalog.
+Its frozen expectation and original output remain unchanged.
+It is not replayed or relabeled.
+These controls contain no SDK imports,
+genuine input reads,
+models,
+grants,
+or represented actions.
+
+The fresh `sdk-startup/fd-identity-control/plan.json` declares a different contrast:
+matched destinations first,
+then distinct existing decoy destinations,
+with independent expected pairs `[true, true]` and `[false, false]`.
+Its outcome is tracked separately;
+declaring this plan does not establish a pass.
+
+### Verified boundary and tradeoffs
+
+The consumed raw positive establishes descriptor identity for its own invocation.
+The prospective caller redirects the entire Mise startup into precreated private files.
+The builtin startup gate additionally compares its actual descriptors using
+`fstatSync()`,
+device,
+and inode before importing the controller.
+
+This preserves parsing and loader diagnostics privately.
+It does not establish total memory,
+live disk-write bounds,
+startup timing,
+or descriptor identity for an invocation that has not run.
+A false decoy comparison alone does not identify the actual destination or prove it is regular.
+
+### What does not work
+
+- Treating `raw = false` as the complement of descriptor inheritance.
+- Checking named file modes without comparing inherited descriptor identities.
+- Counting an assertion failure as an accepted negative result.
+- Replaying a consumed control or replacing its frozen expectation.
+- Running the startup gate as a harmless preflight:
+  it imports the controller and launches the actual phase.
+
+### Upstream filing decision
+
+Nothing to add or file.
+
+- Upstream fault:
+  not established;
+  the failed expectation was owned and published source permits the observed behavior.
+- Upstream fix:
+  unnecessary for this caller-owned admission boundary.
+- Supported failing use case:
+  no violated output guarantee was established.
+- Contribution acceptance:
+  not investigated because no upstream change is proposed.
+- Maintainer willingness:
+  not investigated because no upstream defect is claimed.
+- Compatible upstream patch:
+  none;
+  the separately declared correction belongs in the owned control.
+
+No upstream source edit,
+issue,
+comment,
+or vendor contact follows.
