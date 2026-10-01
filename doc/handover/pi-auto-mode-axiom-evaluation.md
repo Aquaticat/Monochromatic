@@ -749,7 +749,20 @@ It has no complete reviewed generated-source records,
 admitted executable closure,
 freeze,
 or actual SDK sensitivity dispatch.
-The phase remains unadmitted.
+The SDK phase remains unadmitted.
+One separately admitted text-only generated preview `proc_f232` exited zero:
+26 maps,
+156 syntax parses,
+and 17 retained distinct source bodies.
+Each actual source pair was compared to exactly one selected region.
+Complete saved reviewer bodies and the actual canonical executable were checked before helper evaluation.
+The preview linked or evaluated no generated module,
+created no fixture,
+and imported no SDK.
+It read public parser source in the historical runtime directory,
+not genuine witness/private inputs/target.
+Its expected Node experimental warning remains privately retained.
+Neither this source inspection nor the older constructor probe establishes complete preparation timing.
 A separate consumed syntax probe `proc_a690` observed two unlinked modules and one syntax rejection;
 it imported no SDK and evaluated no generated source.
 Its selected dispatch executable was not bound by the original substring preflight.
