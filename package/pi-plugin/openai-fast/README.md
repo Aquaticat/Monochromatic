@@ -1,7 +1,8 @@
 # pi-plugin-openai-fast
 
 Genuine pi virtual models that request priority through the existing Codex login.
-The implementation is being verified against pi `0.99.2`.
+Real pi `0.99.2` ordinary and priority-request smoke checks have passed.
+Offline lifecycle tests and standards verification remain in progress.
 
 ## Model selection
 

@@ -293,7 +293,7 @@ Implementation began only after Q7 confirmation.
 - The adapter reads only the live original provider's catalog,
    never recursively enumerating itself.
    Structural registration uses an owned reentrancy latch and scope disposal.
-- `OriginalDispatch` privately owns the session registry binding,
+- A frozen capability factory privately owns the session registry binding,
    and actual inference before `session_start` is explicitly rejected.
 - Catalog bootstrap uses an empty read-only credential capability and cached-only refresh for the original provider.
    Native cache restoration precedes auth/network phases.
@@ -317,12 +317,20 @@ The package build passed after the current source changes.
 The subsequent type check reported test-fixture typing errors,
  not production-source errors;
  runtime tests and standards cleanup remain in progress.
+Native adapter readiness now uses an explicit side-effect-free auth check.
+Host investigation found that `ModelRuntime.getAvailable(providerId)` does not populate its auth snapshot,
+ unlike the full availability refresh used by the real CLI.
+The fixture is being corrected at that boundary without weakening lifecycle assertions.
 
-A guarded `verify:live` task has been added but not run.
-It uses disposable settings and the existing access token through an environment override,
+The guarded `verify:live` task passed through the real pi CLI for ordinary and fast Luna selections.
+Both returned the expected marker.
+Captured native request metadata used the original `gpt-6-luna` ID,
+ with priority only for the fast selection.
+The verifier used disposable settings and the existing access token through an environment override,
  without copying or refreshing the real credential store.
-It proves live request intent and response handling,
+This proves live request intent and response handling,
  not acceleration or live OAuth refresh.
+The recursion-rejection control also emitted the expected `LiveVerificationError` before credential access.
 
 No global package installation or settings change has been performed yet.
 
