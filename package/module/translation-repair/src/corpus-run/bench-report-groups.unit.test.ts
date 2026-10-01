@@ -162,20 +162,21 @@ await describe({
         }
 
         /**
-         Each line cut down to its group and its slice count, which is the
-         only thing that distinguishes the groups here.
+         Each line cut down to its group and its slice count with the noun
+         the count chose, which is the only thing that distinguishes the
+         groups here; the group of one slice shows the singular.
          */
         const counted = lines.map(function toCount(line,): string {
           return line.slice(
             0,
-            line.indexOf(' slices',),
+            line.indexOf(' (',),
           );
         },);
 
         expect(counted,).toStrictEqual([
-          'BENCH width 2 pass 1: 2',
-          'BENCH width 2 pass 2: 1',
-          'BENCH width 3 pass 1: 3',
+          'BENCH width 2 pass 1: 2 slices',
+          'BENCH width 2 pass 2: 1 slice',
+          'BENCH width 3 pass 1: 3 slices',
         ],);
       },
     },),

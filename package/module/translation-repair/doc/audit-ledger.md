@@ -18027,6 +18027,29 @@ the runner now prints `FAILED: ` before every line it keeps,
 so the marker survives the cut,
 and a red run is read by that prefix and checked against the header's count.
 
+### M105: a commit across 139 sources verified by named test files alone
+
+Status:
+happened 2026-10-01 (UTC) in `de323fc97` (B98),
+found by the next full suite,
+fixed in the commit adding this entry
+and corrected by a comment on `de323fc97`.
+B98 chose the noun after `corpus-run/bench-report.ts`'s slice count by the count,
+so a group of one slice now prints "1 slice".
+`corpus-run/bench-report-groups.unit.test.ts` cut each summary line at " slices"
+and expected the bare count,
+so its group of one cut nothing and the case failed.
+The commit's runs were the test files its list named,
+and the list did not name that file;
+its message called them "the 21 test files the change touches",
+which reads as every test file reaching the change.
+The case now cuts at the line's parenthesis and expects the noun with its count,
+so it also holds the group of one to the singular.
+Prevention:
+a change across many sources runs the full suite before its commit,
+and a message names a named-file run as the files it lists,
+never as the files the change reaches.
+
 ### M79: a coverage census measuring compressed code
 
 Status:
