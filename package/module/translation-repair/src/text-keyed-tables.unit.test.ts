@@ -17,15 +17,16 @@
  the declaration's annotation or an `as` around its value. Such a declaration
  is a table when it sits at the top of its module with an object literal for
  its value, and an accumulator wherever its value is `{}`; and any name so
- typed, declared or taken as a parameter annotated in place, is filled by text
- wherever an assignment or an update writes it through a key that is not a
- written string or number. A `satisfies` is not
- read as typing it: it checks the object without widening it, so the keys stay
- the literal's own. Out of the scan's reach: a table built by
- `Object.fromEntries` or handed back from a function, a class field, a key
- typed by a template literal, and a literal-keyed table reached through a cast
- of text to its keys; ledger B77 records how the package's own cases of these
- were read.
+ typed, declared or taken as a parameter (annotated in place, or destructured
+ from an object a type literal types), is filled by text wherever an
+ assignment or an update writes it through a key that is not a written string
+ or number. A `satisfies` is not read as typing it: it checks the object
+ without widening it, so the keys stay the literal's own. Out of the scan's
+ reach: a table built by `Object.fromEntries` or handed back from a function
+ and then read by text, a class field, a parameter destructured from an object
+ an alias types, a key typed by a template literal, and a literal-keyed table
+ reached through a cast of text to its keys; ledger B77 records how the
+ package's own cases of these were read.
 
  THE FIXTURE CASE COMES FIRST, so the package-wide case is read against a scan
  shown able to find each form (ledger M21). Fixtures are cat-themed; the
@@ -282,8 +283,103 @@ const FUNCTION_KINDS: ReadonlySet<string> = new Set([
 ],);
 
 /**
- Names of the parameters a file's functions type as keyed by any string,
- each written as a name with its own annotation.
+ Type a parameter or pattern is annotated with in place.
+
+ @param node - parameter or pattern read
+
+ @returns The annotated type, absent when it carries none
+
+ @example
+ ```ts
+ const type = annotatedType({ node: parameter, },); // Record<string, number> for (seen: Record<string, number>)
+ ```
+ */
+function annotatedType({ node, }: { readonly node: TreeNode; },): unknown {
+  /**
+   The annotation wrapper.
+   */
+  const { typeAnnotation, } = node;
+  return isTreeNode(typeAnnotation,) ? typeAnnotation.typeAnnotation : undefined;
+}
+
+/**
+ Names one parameter binds that it types as keyed by any string: a name
+ annotated in place, or a name destructured from an object whose annotation
+ is a type literal giving that property such a type, defaults allowed.
+
+ @param parameter - parameter read
+
+ @param aliases - names of the package's type aliases keyed by any string
+
+ @returns Local names
+
+ @example
+ ```ts
+ const names = keyedNamesOf({ parameter, aliases, },); // ['beds'] for ({ beds, }: { readonly beds: Record<string, string>; })
+ ```
+ */
+function keyedNamesOf(
+  {
+    parameter,
+    aliases,
+  }: {
+    readonly parameter: TreeNode;
+    readonly aliases: ReadonlySet<string>;
+  },
+): readonly string[] {
+  /**
+   The binding itself, out of a default value.
+   */
+  const binding = ((parameter.type === 'AssignmentPattern') && isTreeNode(parameter.left,))
+    ? parameter.left
+    : parameter;
+  /**
+   Its annotation.
+   */
+  const type = annotatedType({ node: binding, },);
+  if (binding.type === 'Identifier') {
+    return isStringKeyed({
+      type,
+      aliases,
+    },)
+      ? [identifierName({ node: binding, },),]
+      : [];
+  }
+  if ((binding.type !== 'ObjectPattern') || (!isTreeNode(type,)) || (type.type !== 'TSTypeLiteral'))
+    return [];
+  /**
+   Each property's type, by the name the type literal gives it.
+   */
+  const memberTypes = new Map((type.members as readonly TreeNode[])
+    .filter(function isProperty(member,): boolean {
+      return member.type === 'TSPropertySignature';
+    },)
+    .map(function named(member,): [string, unknown,] {
+      return [
+        identifierName({ node: member.key, },),
+        annotatedType({ node: member, },),
+      ];
+    },),);
+  return (binding.properties as readonly TreeNode[]).flatMap(function keyedName(property,): readonly string[] {
+    if (property.type !== 'Property')
+      return [];
+    /**
+     The local name the property binds, out of a default value.
+     */
+    const local = (isTreeNode(property.value,) && (property.value.type === 'AssignmentPattern'))
+      ? property.value.left
+      : property.value;
+    return isStringKeyed({
+      type: memberTypes.get(identifierName({ node: property.key, },),),
+      aliases,
+    },)
+      ? [identifierName({ node: local, },),]
+      : [];
+  },);
+}
+
+/**
+ Names of the parameters a file's functions type as keyed by any string.
 
  @param nodes - the file's nodes
 
@@ -312,16 +408,11 @@ function keyedParameterNames(
     .flatMap(function parametersOf(node,): readonly TreeNode[] {
       return node.params as readonly TreeNode[];
     },)
-    .filter(function isKeyed(parameter,): boolean {
-      return (parameter.type === 'Identifier')
-        && isTreeNode(parameter.typeAnnotation,)
-        && isStringKeyed({
-          type: parameter.typeAnnotation.typeAnnotation,
-          aliases,
-        },);
-    },)
-    .map(function nameOf(parameter,): string {
-      return identifierName({ node: parameter, },);
+    .flatMap(function keyedNames(parameter,): readonly string[] {
+      return keyedNamesOf({
+        parameter,
+        aliases,
+      },);
     },);
 }
 
@@ -546,6 +637,18 @@ await describe({
                 '  seen[\'tabby\'] = 0;',
                 '  coats[cat as \'tabby\'] = 1;',
                 '}',
+                'export function settle(',
+                '  { beds, cat, pads = {}, }: {',
+                '    readonly beds: Record<string, string>; readonly cat: string; readonly pads?: Naps;',
+                '  },',
+                '  { bowls, }: { readonly bowls: Record<\'tabby\', string>; },',
+                '  rugs: Naps = {},',
+                '): void {',
+                '  beds[cat] = \'box\';',
+                '  pads[cat] = 1;',
+                '  bowls[cat as \'tabby\'] = \'tuna\';',
+                '  rugs[cat] = 2;',
+                '}',
                 'export function count(cats: readonly string[],): Readonly<Record<string, number>> {',
                 '  const counts: Record<string, number> = {};',
                 '  for (const cat of cats) counts[cat] = (counts[cat] ?? 0) + 1;',
@@ -580,9 +683,12 @@ await describe({
           'litter.ts: NAPS is a text-keyed table',
           'litter.ts: PURRS is a text-keyed table',
           'litter.ts: YOWLS is a text-keyed table',
+          'litter.ts: beds is filled by a computed key',
           'litter.ts: counts is filled by a computed key',
           'litter.ts: counts is filled by a computed key',
           'litter.ts: counts starts a text-keyed record as {}',
+          'litter.ts: pads is filled by a computed key',
+          'litter.ts: rugs is filled by a computed key',
           'litter.ts: seen is filled by a computed key',
         ],);
       },
