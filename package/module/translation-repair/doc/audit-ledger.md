@@ -16425,7 +16425,55 @@ and a type the scanner does not read is passed over whatever it holds,
 as the streaming documentation asks of types added later.
 
 Recurrence:
-two readers of one wire count the same frames as unreadable;
+each reader of a wire counts or refuses a frame it reads and cannot,
+judged by what it reads that frame for;
+`mistake-prevention.md`,
+"Provider fields read by their documentation".
+
+### B94: Anthropic usage reported a zero for a count the stream never sent
+
+Found in T8's twenty-second batch,
+reviewing the lenient-arm case committed in `08635488c`,
+which expected `prompt_tokens` 0 from a body that reported only `output_tokens`;
+red in `4e82b6d7a`,
+fixed in the commit adding this entry.
+`usageOf` reported usage once any count series held a report,
+and `latestOf` read a series never reported as 0,
+so a stream that sent its completion count alone
+came back with a prompt count of 0 that nobody measured,
+and one that sent its prompt count alone
+came back with a completion count of 0.
+The same file's case for a stream reporting no count at all
+says why that matters:
+a reader must tell a call that cost nothing from one whose cost went unreported.
+`readUsage` in `completion-shape.ts`,
+the OpenAI-compatible reader,
+reports usage only when both counts are numbers.
+Now `usageOf` reports usage only when the stream reported both its `input_tokens` and its `output_tokens`,
+and logs which one was missing when it reported one alone;
+a cache series still reads as 0 when absent,
+since a stream reporting no cache field used no cache this reader can count.
+
+Reach:
+`spend-line.ts` prints `prompt=` and `completion=` as unreported when usage is absent,
+so a stream reporting one count alone now prints both as unreported
+where it printed the one count and a 0.
+The two captured streams the unit suite reads
+(Charm Hyper on 2026-08-24,
+OpenRouter's Messages endpoint on 2026-09-03)
+report both counts,
+and their cases pass unchanged.
+
+Calls made here are open to veto:
+
+- a count reported alone is dropped with its missing partner,
+  as the OpenAI-compatible reader drops it,
+  rather than kept beside an unreported partner:
+  `CompletionUsage` in `module-llm-type` requires both counts.
+
+Recurrence:
+a count the provider never sent is absent,
+never 0;
 `mistake-prevention.md`,
 "Provider fields read by their documentation".
 

@@ -2244,6 +2244,8 @@ The scanner reading the same stream for the stream guards passed those frames ov
 and block starts it could not read too,
 so the tally its contract says should stay at zero
 read zero for a body the reader then refused (ledger B93).
+The reader also reported a count the stream never sent as 0
+once the other count arrived (ledger B94).
 
 The rule:
 a field on a provider's wire is read as the provider's current documentation defines it,
@@ -2264,6 +2266,10 @@ Where two readers walk one wire,
 each counts or refuses a frame it reads and cannot,
 judged by what that reader reads the frame for,
 so neither reports a clean stream the other refused.
+A count the provider never sent is absent,
+never 0,
+unless its documentation says an absent field means none,
+as the cache fields do.
 
 What enforces it:
 habit and review;

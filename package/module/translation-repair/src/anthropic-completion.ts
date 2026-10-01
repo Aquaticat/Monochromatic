@@ -1,4 +1,7 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import {
   readFrame,
@@ -392,8 +395,10 @@ type ReportedCounts = Readonly<Record<(typeof USAGE_SERIES)[number][1], readonly
  
  THE LAST REPORT, because `message_delta` counts are cumulative (the
  streaming documentation's warning) and may repeat or update what
- `message_start` reported. Zero where the stream reported none: a stream
- reporting no cache field used no cache this reader can count.
+ `message_start` reported. Zero where the stream reported none, which only
+ a cache series may be read as: a stream reporting no cache field used no
+ cache this reader can count. The input and output series are checked for
+ a report before this is asked (ledger B94).
  
  @param series - one count series, in arrival order
  
@@ -409,20 +414,44 @@ function latestOf({ series, }: { readonly series: readonly number[]; },): number
 }
 
 /**
- Usage fragment for the result, present only when the stream reported counts.
+ Usage fragment for the result, present only when the stream reported both
+ its prompt count and its completion count.
+ 
+ BOTH OR NOTHING (ledger B94), as `readUsage` in `completion-shape.ts` reads
+ the OpenAI-compatible wire. Usage was reported once any series held a
+ report, and a series never reported read as zero, so a stream that sent
+ its completion count alone came back with a prompt count of zero nobody
+ measured. A cache series still reads as zero when absent, as
+ {@link latestOf} explains.
  
  @param counts - token counts the body reported, read only
+ 
+ @param l - logger of the reader that folded them
  
  @returns Spreadable fragment carrying usage, or nothing
  
  @example
  ```ts
- const fragment = usageOf({ counts: fold, },);
+ const fragment = usageOf({ counts: fold, l: rl, },);
  ```
  */
 function usageOf(
-  { counts, }: { readonly counts: ReportedCounts; },
+  {
+    counts,
+    l: parentLogger,
+  }: {
+    readonly counts: ReportedCounts;
+    readonly l: Logger;
+  },
 ): Pick<ExtractedCompletion, 'usage'> {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const ul = tagged({
+    tag: usageOf.name,
+    l: parentLogger,
+  },);
+
   /**
    Every count series, named so no read is a three-step chain.
    */
@@ -432,6 +461,26 @@ function usageOf(
     cacheReadTokens,
     completionTokens,
   } = counts;
+
+  /**
+   Whether the stream reported the count before any cache breakpoint.
+   */
+  const promptReported = inputTokens.length > 0;
+
+  /**
+   Whether the stream reported its completion count.
+   */
+  const completionReported = completionTokens.length > 0;
+
+  if ((!promptReported) && (!completionReported))
+    return {};
+  if ((!promptReported) || (!completionReported)) {
+    ul.debug(
+      `usage left unreported: prompt count ${promptReported ? 'reported' : 'missing'}, `
+        + `completion count ${completionReported ? 'reported' : 'missing'}`,
+    );
+    return {};
+  }
 
   /**
    Prompt tokens the model read: those after the last cache breakpoint, plus
@@ -446,20 +495,6 @@ function usageOf(
    */
   const completion = latestOf({ series: completionTokens, },);
 
-  /**
-   Whether the provider reported any count at all.
-   */
-  const silent = [
-    inputTokens,
-    cacheWriteTokens,
-    cacheReadTokens,
-    completionTokens,
-  ].every(function unreported(series,): boolean {
-    return series.length === 0;
-  },);
-
-  if (silent)
-    return {};
   return {
     usage: {
       prompt_tokens: prompt,
@@ -608,7 +643,10 @@ export function extractAnthropicCompletion(
   return {
     text: (toolAnswer === '') ? prose : toolAnswer,
     ...((stopReason === '') ? {} : { finishReason: stopReason, }),
-    ...usageOf({ counts: fold, },),
+    ...usageOf({
+      counts: fold,
+      l: rl,
+    },),
   };
 }
 
