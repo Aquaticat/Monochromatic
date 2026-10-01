@@ -615,6 +615,64 @@ await describe({
     },),
 
     it({
+      name: 'WITHDRAWS EVERY CARRIER OF A DOUBLED DEFINITION when every carrier\'s original defines the note, '
+        + 'since ownership then names no one to keep',
+      fn: async () => {
+        /**
+         Original that defines the note in the opening section as well as in
+         the notes, each on a line of its own.
+         */
+        const doubledSource = SOURCE_TEXT.replace('打盹〔1〕。\n', '打盹〔1〕。\n〔1〕：那是它最喜欢的位置。\n',);
+
+        /**
+         Archive that never rendered the note, so both carriers are changes.
+         */
+        const skeleton = TARGET_TEXT.replace("[^1]: That is its favourite spot.\n", '',);
+
+        /**
+         Slices of the pair over that original and archive.
+         */
+        const { slices, } = prepareDocumentPair({
+          sourceText: doubledSource,
+          targetText: skeleton,
+        },);
+
+        /**
+         Index of the slice carrying the reference.
+         */
+        const referring = sliceCarrying({
+          slices,
+          needle: 'doing the sleeping',
+        },);
+
+        /**
+         Index of the slice carrying the definition.
+         */
+        const defining = sliceCarrying({
+          slices,
+          needle: '## Notes',
+        },);
+        const guarded = guardFootnoteAssembly({
+          targetText: skeleton,
+          slices,
+          replacements: [
+            {
+              sliceIndex: referring,
+              replacementText: 'The cat naps on the windowsill[^1].\n\n[^1]: That is its favourite spot.',
+            },
+            {
+              sliceIndex: defining,
+              replacementText: '## Notes\n\n[^1]: That is its favourite spot indeed.',
+            },
+          ],
+        },);
+        expect(doubledSource,).not.toBe(SOURCE_TEXT,);
+        expect(byIndex({ indices: guarded.revertedChunkIndices, },),).toEqual(byIndex({ indices: [referring, defining,], },),);
+        expect(guarded.assembledText,).toBe(skeleton,);
+      },
+    },),
+
+    it({
       name: 'ITERATES TO A FIXPOINT, because one revert can orphan an '
         + 'identifier a DIFFERENT slice introduced alongside it. One pass '
         + 'reverts the slice that dropped [^1] and ships a [^2] definition '

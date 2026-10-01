@@ -179,6 +179,22 @@ await describe({
       },
     },),
     it({
+      name: 'IGNORES a repeated run of function words as long as the longest window, which is read apart from '
+        + 'the shorter ones and filtered there too',
+      fn: async () => {
+        // Twelve words, none longer than four letters: one window of the
+        // longest length, which the growing step would report whole had its
+        // own filter let it through.
+        const thin = 'and so it was that the cat sat on the mat as';
+        expect(thin.split(' ',).length,).toBe(12,);
+        const findings = findIntroducedRepetitions({
+          archiveText: `A cat sat. ${thin} day ended.`,
+          shippedText: `A cat sat. ${thin} day ended. ${thin} night came.`,
+        },);
+        expect(findings.length,).toBe(0,);
+      },
+    },),
+    it({
       name: 'REPORTS ONE LONG DUPLICATION ONCE, naming its whole length, '
         + 'rather than once per window position. Growth stops at twelve words, '
         + 'so a longer passage spans many windows of exactly that length and '

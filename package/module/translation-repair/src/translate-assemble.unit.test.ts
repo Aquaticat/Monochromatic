@@ -295,6 +295,32 @@ await describe({
       },
     },),
     it({
+      name: 'WITHHOLDS THE OPENING HALF when the closing half ships nothing, the same pair from the other side: '
+        + 'the page would carry an opening tag that never closes',
+      fn: async () => {
+        const prepared = preparedWithHalves();
+        const said: string[] = [];
+        const result = assembleTranslation({
+          prepared,
+          settled: [
+            recordFor({ sliceIndex: 0, incumbentText: HALVES_TARGET, outputText: HALVES_TARGET, },),
+            recordFor({ sliceIndex: 1, incumbentText: '', outputText: OPEN_HALF_TEXT, },),
+          ],
+          unfilled: [{ sliceIndex: 2, reason: 'not-corroborated', findings: [], },],
+          carriedChunkIndices: [],
+          resumedSliceCount: 0,
+          findings: [],
+          l: capturingLogger({ said, },),
+        },);
+        expect(result.withdrawnSliceIndices,).toEqual([1,],);
+        expect(result.changedSliceIndices,).toEqual([],);
+        expect(result.translatedText,).toBe(HALVES_TARGET,);
+        expect(result.findings.some(function namesTheHalf(finding,): boolean {
+          return finding.startsWith('assembly-container-half-withheld (slice 1 beside slice 2',);
+        },),).toBe(true,);
+      },
+    },),
+    it({
       name: 'SHIPS BOTH HALVES when both settle, the page parsing as one block',
       fn: async () => {
         const prepared = preparedWithHalves();

@@ -244,5 +244,41 @@ await describe({
         },),).toBe(false,);
       },
     },),
+    it({
+      name: 'MARKS A WITHDRAWAL AFTER WHICH THE GRAMMAR ACCEPTS THE PAGE as clearing the refusal, its step ending at '
+        + 'the page\'s length',
+      fn: async () => {
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: SECTIONS_TARGET, },);
+        /** A whole section and the bird's break, the only one on the page. */
+        const replacements = SHIFTING.slice(0, 2,);
+        /** Page as assembled. */
+        const standing = spliceSlices({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },);
+        /** Where the grammar stops on it. */
+        const first = strictRefusalOffset({ text: standing, },);
+        if (!first.refused)
+          throw new Error('the break is on the page',);
+        expect(advancingStructuralWithdrawal({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },),)
+          .toEqual([{ sliceIndex: 1, from: first.offset, to: standing.length, cleared: true, },],);
+      },
+    },),
+    it({
+      name: 'CHOOSES NOTHING when no single withdrawal moves the first refusal: two expressions each left open to the '
+        + 'end of the page stop the grammar there whichever one is withdrawn',
+      fn: async () => {
+        /** Three sections, three slices. */
+        const prepared = prepareDocumentPair({ sourceText: SECTIONS_SOURCE, targetText: SECTIONS_TARGET, },);
+        /** Two sections each opening an expression at the start of a line, which the grammar refuses at the end. */
+        const replacements = [
+          { sliceIndex: 1, replacementText: '## The bird\n\n{\'one', },
+          { sliceIndex: 2, replacementText: '## Notes\n\n{\'two', },
+        ];
+        /** Page as assembled. */
+        const standing = spliceSlices({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },);
+        expect(strictRefusalOffset({ text: standing, },),).toEqual({ refused: true, offset: standing.length, },);
+        expect(advancingStructuralWithdrawal({ targetText: SECTIONS_TARGET, slices: prepared.slices, replacements, },),)
+          .toEqual([],);
+      },
+    },),
   ],
 },);

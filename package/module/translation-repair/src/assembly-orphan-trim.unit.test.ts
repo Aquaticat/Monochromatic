@@ -229,6 +229,16 @@ await describe({
         },),).toBe('[^2]: Two.',);
       },
     },),
+    it({
+      name: 'KEEPS A LINE THAT OPENS WITH A REFERENCE, since a marker with no colon after it defines nothing, '
+        + 'and cuts the definition of the same label beside it',
+      fn: async () => {
+        expect(cutDefinitionBlocks({
+          text: '[^1] is where the cat naps.\n[^1]: That is its favourite spot.\n',
+          labels: new Set(['1',],),
+        },),).toBe('[^1] is where the cat naps.\n',);
+      },
+    },),
   ],
 },);
 
