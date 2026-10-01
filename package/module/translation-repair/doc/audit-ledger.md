@@ -4691,9 +4691,13 @@ a cluster of its own,
 so `archive` and `corpus-run/run` still tie at 18 stretches,
 and the eighteenth batch takes `archive`.
 B73 and B74 followed,
-and three findings are to close first (the elapsed-time family,
-a flag written twice and prototype keys),
-so the batch reads against the census taken once they close.
+and three findings were to close first (the elapsed-time family,
+a flag written twice and prototype keys).
+B75 closed the repeated flag and found a fourth,
+an `--only` naming no entry,
+so the elapsed-time family,
+prototype keys and that one close first,
+and the batch reads against the census taken once they close.
 
 ### T9: every test run writes a log into `node_modules/.monochromatic/`
 
