@@ -861,6 +861,29 @@ or cache-release freshness.
 Next:
 freeze a separate disposable source/target/deadline/cache contract and independent controls,
 keeping current human permission and SDK-linked human ancestry as separate evidence requirements.
+Task #93 is a separately declared native SDK planned-ID and constructor-owner probe.
+Its SDK worker remains unopened.
+The complete first-party closure,
+builtin startup gate,
+and source-data helpers received independent literal-source review.
+Fresh source-data preparation `proc_53ff` exited zero:
+17,974 original submitted bytes,
+six exact bodies,
+actual distinct private descriptors,
+and no SDK/helper imports.
+The consumed namespace-creation failure used incorrect GNU `install` argument grouping.
+The separate `proc_1e6f` failed after the caller sent empty stdin instead of the retained source records.
+Both failures and private artifacts remain preserved;
+the successful v3 preparation repairs neither history nor SDK authority.
+A seventh stale task-registry observation was reconciled from receipts,
+with no cause or new authority inferred.
+Next:
+admit the unchanged exact SDK caller,
+canonical executable,
+unused private dispatch namespace,
+current policy,
+and scoped Git state before its single permitted dispatch.
+Task #92 remains pending literal-catalog corrections before implementation.
 Task #92 designs those mechanical controls using the existing collector and root snapshot owners.
 Independent review requires root-bound instances,
 fixed monotonic deadlines,

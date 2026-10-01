@@ -1148,3 +1148,115 @@ No upstream source edit,
 issue,
 comment,
 or vendor contact follows.
+
+## Owned GNU install 9.10 argument grouping stopped preparation
+
+### Symptom and evidence boundary
+
+The prospective SDK-ID caller created an empty `0700` preparation directory,
+then rejected its destination-file command before source-data admission or SDK startup.
+The original command's stderr was not retained in the model-visible transcript.
+Do not substitute a later control's diagnostic for that historical receipt.
+
+The owned command passed `/dev/null`,
+`stdout`,
+and `stderr` as operands to one `install` invocation.
+Installed GNU coreutils 9.10 documents `SOURCE DEST` and `SOURCE... DIRECTORY` in `install --help`.
+That operand grouping is not two destinations.
+
+### Verification and correction
+
+Fresh disposable controls ran independently of the consumed namespace.
+Two separate `SOURCE DEST` invocations exited zero and produced distinct empty `0600` regular files.
+The failing control supplied an absent final destination:
+it exited one with `install: target 'missing-destination': No such file or directory`.
+
+```sh
+# Fresh disposable GNU install grammar fixture, not an existing consumed namespace.
+fixture=$(mktemp --directory)
+install --mode=600 /dev/null "$fixture/stdout"
+install --mode=600 /dev/null "$fixture/stderr"
+stat --format='%a:%F' -- "$fixture" "$fixture/stdout" "$fixture/stderr"
+install --mode=600 /dev/null "$fixture/missing-second-source" "$fixture/missing-destination"
+```
+
+Individual destination commands preserve stdout/stderr separation.
+Their success is not inherited descriptor identity:
+the invoked Node gate must still compare actual descriptors to the named files.
+The old directory remains untouched;
+only separately named future preparation namespaces may be created.
+
+### Upstream filing decision
+
+Nothing to file or draft.
+
+- Upstream fault:
+  none established;
+  the caller contradicted documented operand grammar.
+- Fixability:
+  the fix belongs in the owned caller.
+- Supported use case:
+  the documented individual source/destination form passed.
+- Contribution acceptance:
+  not investigated because no upstream change is proposed.
+- Maintainer willingness:
+  not investigated because no upstream defect is claimed.
+- Compatible upstream patch:
+  unnecessary;
+  no public issue or vendor contact follows.
+
+## Owned empty stdin stopped Node 26.10.0 source-data admission
+
+### Symptom and root cause
+
+Consumed `proc_1e6f` exited one.
+Node's `JSON.parse` emitted `SyntaxError: Unexpected end of JSON input` at
+`contract/lifecycle/prospective-sdk-id-controls/prepare-reviewed-source-v2.mjs:45:34`
+in the private prototype repository.
+The caller sent zero stdin bytes and EOF instead of its retained original source record.
+No SDK startup or manager construction occurred.
+
+The data helper correctly rejected the missing input.
+Changing its parser,
+accepting empty input,
+or reopening the consumed process would undermine admission rather than fix delivery.
+
+### Verification and corrected boundary
+
+Fresh `proc_53ff` used a separately named v3 helper and namespace.
+One orchestration loaded the retained records,
+verified their nonempty UTF-8 size,
+started the managed process,
+and sent all 17,974 bytes plus EOF to that returned process ID.
+It exited zero with exact stdout/result projections and a byte-identical `0600` saved record.
+Actual private stdout/stderr identity checks ran before record creation.
+The original v2 helper,
+diagnostics,
+and failed namespace remain preserved.
+
+The correction qualifies only this source-data transaction:
+zero SDK imports,
+zero helper imports,
+and no human authority.
+It does not qualify arbitrary stdin producers,
+general process cleanup,
+or an SDK invocation that has not run.
+
+### Upstream filing decision
+
+Nothing to file or draft.
+
+- Upstream fault:
+  no;
+  the owned caller sent no document.
+- Fixability:
+  the correction belongs in orchestration.
+- Supported use case:
+  nonempty JSON passed in the fresh source-data transaction.
+- Contribution acceptance:
+  not investigated because no upstream change is proposed.
+- Maintainer willingness:
+  not investigated because no upstream defect is claimed.
+- Compatible upstream patch:
+  unnecessary;
+  the parser's rejection remains required.
